@@ -1,0 +1,36 @@
+<section class="es-section es-video es-video--{{ section.settings.width }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-section-head es-section-head--center" data-reveal="lines">{{ section.settings.heading }}</h2>{%- endif -%}
+    <div class="es-video__frame es-media-frame" data-reveal="zoom" style="--ratio: {{ section.settings.ratio }}">
+      {% render 'es-video', video: section.settings.video, asset: section.settings.video_asset, poster: section.settings.poster, poster_asset: section.settings.poster_asset, class: 'es-cover', autoplay: section.settings.autoplay, controls: section.settings.controls, alt: section.settings.heading %}
+      {%- if section.settings.autoplay -%}
+        <button type="button" class="es-video__toggle" data-video-toggle aria-label="{{ 'general.pause' | t }}"><span aria-hidden="true"></span></button>
+      {%- endif -%}
+    </div>
+    {%- if section.settings.caption != blank -%}<p class="es-video__caption es-muted" data-reveal="up">{{ section.settings.caption }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Vidéo",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre" },
+    { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+    { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4)" },
+    { "type": "image_picker", "id": "poster", "label": "Image d'attente" },
+    { "type": "text", "id": "poster_asset", "label": "Image d'attente fournie avec le thème" },
+    { "type": "select", "id": "ratio", "label": "Format", "default": "16/9", "options": [ { "value": "16/9", "label": "16:9" }, { "value": "4/5", "label": "4:5" }, { "value": "1/1", "label": "1:1" }, { "value": "9/16", "label": "9:16" } ] },
+    { "type": "select", "id": "width", "label": "Largeur", "default": "contained", "options": [ { "value": "contained", "label": "Contenue" }, { "value": "full", "label": "Pleine largeur" } ] },
+    { "type": "checkbox", "id": "autoplay", "label": "Lecture automatique muette en boucle", "default": true },
+    { "type": "checkbox", "id": "controls", "label": "Afficher les commandes", "default": false },
+    { "type": "text", "id": "caption", "label": "Légende" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Vidéo" }]
+}
+{% endschema %}

@@ -1,0 +1,55 @@
+<section class="es-section es-features es-features--{{ section.settings.style }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    <header class="es-section-head es-section-head--{{ section.settings.heading_align }}">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="lines">{{ section.settings.heading }}</h2>{%- endif -%}
+    </header>
+    <div class="es-features__grid" style="--cols: {{ section.settings.columns }}" data-reveal-stagger>
+      {%- for block in section.blocks -%}
+        <article class="es-feature" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          {%- if block.settings.image != blank or block.settings.image_asset != blank -%}
+            <div class="es-feature__media es-media-frame">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 30vw, 90vw', class: 'es-cover' %}</div>
+          {%- elsif block.settings.icon != 'none' -%}
+            <span class="es-feature__icon">{% render 'icon', name: block.settings.icon %}</span>
+          {%- else -%}
+            <span class="es-feature__num">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+          {%- endif -%}
+          <h3 class="es-heading es-h4">{{ block.settings.title }}</h3>
+          <div class="es-rte es-muted">{{ block.settings.text }}</div>
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Grille d'atouts",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Pensé dans les moindres détails" },
+    { "type": "select", "id": "heading_align", "label": "Alignement du titre", "default": "left", "options": [ { "value": "left", "label": "Gauche" }, { "value": "center", "label": "Centré" } ] },
+    { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes", "default": 3 },
+    { "type": "select", "id": "style", "label": "Style", "default": "plain", "options": [ { "value": "plain", "label": "Épuré" }, { "value": "cards", "label": "Cartes" }, { "value": "lines", "label": "Filets" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "feature", "name": "Atout", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "none", "options": [
+        { "value": "none", "label": "Numéro" }, { "value": "sparkle", "label": "Éclat" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" },
+        { "value": "hand", "label": "Main" }, { "value": "shield", "label": "Bouclier" }, { "value": "truck", "label": "Livraison" }, { "value": "check", "label": "Coche" }
+      ] },
+      { "type": "image_picker", "id": "image", "label": "Image (remplace l'icône)" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Un atout réel" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Décrivez un bénéfice vérifiable.</p>" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Grille d'atouts", "blocks": [{ "type": "feature" }, { "type": "feature" }, { "type": "feature" }] }]
+}
+{% endschema %}

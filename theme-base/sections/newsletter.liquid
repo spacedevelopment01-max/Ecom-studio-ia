@@ -1,0 +1,35 @@
+<section class="es-section es-newsletter color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container es-newsletter__inner">
+    <h2 class="es-heading es-h2" data-reveal="lines">{{ section.settings.heading }}</h2>
+    {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+    {%- form 'customer', class: 'es-newsletter-form', id: 'NewsletterSection' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <div class="es-inline-field" data-reveal="up">
+        <label class="visually-hidden" for="NewsletterEmail-{{ section.id }}">{{ 'newsletter.label' | t }}</label>
+        <input id="NewsletterEmail-{{ section.id }}" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ 'newsletter.label' | t }}">
+        <button type="submit" class="es-button">{{ section.settings.button_label | default: 'S’inscrire' }}</button>
+      </div>
+      {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
+      {%- if form.errors -%}<p class="es-form-error" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+    {%- endform -%}
+    {%- if section.settings.legal != blank -%}<p class="es-small es-muted">{{ section.settings.legal }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Inscription e-mail",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Recevez nos nouvelles" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Lancements et coulisses, sans excès.</p>" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "S'inscrire" },
+    { "type": "text", "id": "legal", "label": "Mention", "default": "Désinscription possible à tout moment." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Inscription e-mail" }]
+}
+{% endschema %}

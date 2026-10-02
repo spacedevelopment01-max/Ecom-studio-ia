@@ -1,0 +1,37 @@
+<section class="es-section es-search color-{{ section.settings.color_scheme }}" style="--pt: 48px; --pb: 96px;">
+  <div class="es-container">
+    <h1 class="es-heading es-h1">{{ 'search.title' | t }}</h1>
+    <form action="{{ routes.search_url }}" method="get" role="search" class="es-search__form">
+      <label class="visually-hidden" for="SearchInput">{{ 'search.label' | t }}</label>
+      <div class="es-inline-field">
+        <input id="SearchInput" type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ 'search.placeholder' | t }}" autocomplete="off">
+        <input type="hidden" name="options[prefix]" value="last">
+        <button type="submit" class="es-button">{{ 'search.submit' | t }}</button>
+      </div>
+    </form>
+    {%- if search.performed -%}
+      {%- paginate search.results by 24 -%}
+        <p class="es-muted">{{ 'search.results_count' | t: count: search.results_count, terms: search.terms }}</p>
+        <div class="es-product-grid" style="--cols: 4">
+          {%- for item in search.results -%}
+            {%- if item.object_type == 'product' -%}
+              {% render 'product-card', product_card: item, show_secondary: false, ratio: 'portrait' %}
+            {%- else -%}
+              <article class="es-search__item"><a href="{{ item.url }}"><strong>{{ item.title }}</strong></a><p class="es-muted">{{ item.content | strip_html | truncate: 140 }}</p></article>
+            {%- endif -%}
+          {%- else -%}
+            <p class="es-empty">{{ 'search.no_results' | t: terms: search.terms }}</p>
+          {%- endfor -%}
+        </div>
+        {% render 'pagination', paginate: paginate %}
+      {%- endpaginate -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Recherche",
+  "settings": [ { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" } ]
+}
+{% endschema %}

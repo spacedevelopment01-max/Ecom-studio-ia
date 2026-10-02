@@ -1,0 +1,118 @@
+<!doctype html>
+<html class="no-js" lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="">
+    <link rel="canonical" href="{{ canonical_url }}">
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 64, height: 64 }}">
+    {%- elsif settings.favicon_asset != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon_asset | asset_url }}">
+    {%- endif -%}
+    <title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; {{ current_tags | join: ', ' }}{% endif -%}
+      {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+    {% if page_description %}<meta name="description" content="{{ page_description | escape }}">{% endif %}
+    {% render 'meta-tags' %}
+
+    <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+    {{ content_for_header }}
+
+    {%- liquid
+      assign heading_font = settings.type_heading_font
+      assign body_font = settings.type_body_font
+      assign body_font_bold = body_font | font_modify: 'weight', 'bold'
+      assign heading_weight = heading_font.weight | plus: settings.heading_weight_boost | at_most: 900
+    -%}
+    {% style %}
+      {{ heading_font | font_face: font_display: 'swap' }}
+      {{ body_font | font_face: font_display: 'swap' }}
+      {{ body_font_bold | font_face: font_display: 'swap' }}
+
+      {% for scheme in settings.color_schemes -%}
+        .color-{{ scheme.id }}, {% if forloop.first %}:root,{% endif %} .color-{{ scheme.id }} .es-scheme-inherit {
+          --c-bg: {{ scheme.settings.background }};
+          --c-bg-rgb: {{ scheme.settings.background.red }}, {{ scheme.settings.background.green }}, {{ scheme.settings.background.blue }};
+          --c-surface: {{ scheme.settings.surface }};
+          --c-text: {{ scheme.settings.text }};
+          --c-text-rgb: {{ scheme.settings.text.red }}, {{ scheme.settings.text.green }}, {{ scheme.settings.text.blue }};
+          --c-muted: {{ scheme.settings.muted }};
+          --c-accent: {{ scheme.settings.accent }};
+          --c-accent-rgb: {{ scheme.settings.accent.red }}, {{ scheme.settings.accent.green }}, {{ scheme.settings.accent.blue }};
+          --c-accent-text: {{ scheme.settings.accent_text }};
+          --c-border: {{ scheme.settings.border }};
+        }
+      {% endfor %}
+
+      :root {
+        --font-heading: {{ heading_font.family }}, {{ heading_font.fallback_families }};
+        --font-heading-style: {{ heading_font.style }};
+        --font-heading-weight: {{ heading_weight }};
+        --font-body: {{ body_font.family }}, {{ body_font.fallback_families }};
+        --font-body-style: {{ body_font.style }};
+        --font-body-weight: {{ body_font.weight }};
+        --font-body-weight-bold: {{ body_font_bold.weight | default: 700 }};
+        --heading-scale: {{ settings.heading_scale | divided_by: 100.0 }};
+        --body-scale: {{ settings.body_scale | divided_by: 100.0 }};
+        --heading-case: {{ settings.heading_case }};
+        --heading-tracking: {{ settings.heading_tracking | divided_by: 100.0 }}em;
+        --page-width: {{ settings.page_width }}px;
+        --space-scale: {{ settings.spacing_scale | divided_by: 100.0 }};
+        --radius-button: {{ settings.button_radius }}px;
+        --radius-card: {{ settings.card_radius }}px;
+        --button-transform: {% if settings.button_uppercase %}uppercase{% else %}none{% endif %};
+        --logo-width: {{ settings.logo_width }}px;
+        {%- case settings.motion_intensity -%}
+          {%- when 'subtle' -%} --motion-distance: 14px; --motion-duration: .7s;
+          {%- when 'expressive' -%} --motion-distance: 56px; --motion-duration: 1.15s;
+          {%- else -%} --motion-distance: 28px; --motion-duration: .9s;
+        {%- endcase -%}
+      }
+    {% endstyle %}
+
+    {{ 'theme.css' | asset_url | stylesheet_tag }}
+    <script>
+      document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+      window.routes = {
+        root: {{ routes.root_url | json }},
+        cart: {{ routes.cart_url | json }},
+        cart_add: {{ routes.cart_add_url | json }},
+        cart_change: {{ routes.cart_change_url | json }},
+        cart_update: {{ routes.cart_update_url | json }},
+        search: {{ routes.search_url | json }},
+        predictive_search: {{ routes.predictive_search_url | json }}
+      };
+      window.themeStrings = {
+        addToCart: {{ 'products.product.add_to_cart' | t | json }},
+        soldOut: {{ 'products.product.sold_out' | t | json }},
+        unavailable: {{ 'products.product.unavailable' | t | json }},
+        added: {{ 'products.product.added' | t | json }},
+        error: {{ 'general.error' | t | json }}
+      };
+      window.themeSettings = { moneyFormat: {{ shop.money_format | json }}, cartType: {{ settings.cart_type | json }}, motion: {{ settings.motion_enabled | json }}, parallax: {{ settings.motion_parallax | json }} };
+    </script>
+  </head>
+
+  <body class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
+    <a class="skip-link visually-hidden-focusable" href="#MainContent">{{ 'accessibility.skip_to_text' | t }}</a>
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" class="es-main" role="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {%- if settings.cart_type == 'drawer' -%}
+      {% section 'cart-drawer' %}
+    {%- endif -%}
+
+    <div class="es-toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

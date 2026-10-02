@@ -1,0 +1,23 @@
+<section class="es-section es-recos color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-recos data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.limit }}&intent=related">
+  {%- if recommendations.performed and recommendations.products_count > 0 -%}
+    <div class="es-container">
+      <h2 class="es-heading es-h3 es-section-head">{{ section.settings.heading }}</h2>
+      <div class="es-product-grid" style="--cols: {{ section.settings.limit }}">
+        {%- for p in recommendations.products -%}{% render 'product-card', product_card: p, show_secondary: true, ratio: 'portrait' %}{%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Produits associés",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Vous aimerez aussi" },
+    { "type": "range", "id": "limit", "min": 2, "max": 4, "step": 1, "label": "Nombre", "default": 4 },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ]
+}
+{% endschema %}

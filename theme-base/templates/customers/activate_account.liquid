@@ -1,0 +1,11 @@
+<section class="es-section es-account" style="--pt: 64px; --pb: 96px;">
+  <div class="es-container es-account__narrow">
+    <h1 class="es-heading es-h2">{{ 'customer.activate.title' | t }}</h1>
+    {%- form 'activate_customer_password', class: 'es-form' -%}
+      {{ form.errors | default_errors }}
+      <label>{{ 'customer.login.password' | t }}<input type="password" name="customer[password]" autocomplete="new-password" required></label>
+      <label>{{ 'customer.activate.confirm' | t }}<input type="password" name="customer[password_confirmation]" autocomplete="new-password" required></label>
+      <button class="es-button" type="submit">{{ 'customer.activate.submit' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>

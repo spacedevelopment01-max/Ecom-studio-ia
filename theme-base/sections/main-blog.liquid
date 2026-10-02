@@ -1,0 +1,19 @@
+<section class="es-section es-blog color-{{ section.settings.color_scheme }}" style="--pt: 48px; --pb: 96px;">
+  <div class="es-container">
+    <h1 class="es-heading es-h1 es-section-head">{{ blog.title }}</h1>
+    {%- paginate blog.articles by 9 -%}
+      <div class="es-product-grid" style="--cols: 3">
+        {%- for article in blog.articles -%}
+          <article class="es-card" data-reveal="up">
+            <a href="{{ article.url }}" class="es-card__media">{%- if article.image -%}{{ article.image | image_url: width: 900 | image_tag: loading: 'lazy', class: 'es-card__img', alt: article.title }}{%- endif -%}</a>
+            <div class="es-card__info"><h2 class="es-card__title"><a href="{{ article.url }}">{{ article.title }}</a></h2><p class="es-small es-muted">{{ article.published_at | time_tag: format: 'date' }}</p></div>
+          </article>
+        {%- endfor -%}
+      </div>
+      {% render 'pagination', paginate: paginate %}
+    {%- endpaginate -%}
+  </div>
+</section>
+{% schema %}
+{ "name": "Blog", "settings": [ { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" } ] }
+{% endschema %}

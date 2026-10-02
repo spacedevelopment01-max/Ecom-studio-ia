@@ -1,0 +1,13 @@
+<section class="es-section es-account" style="--pt: 64px; --pb: 96px;">
+  <div class="es-container es-account__narrow">
+    <h1 class="es-heading es-h2">{{ 'customer.register.title' | t }}</h1>
+    {%- form 'create_customer', class: 'es-form' -%}
+      {{ form.errors | default_errors }}
+      <label>{{ 'customer.register.first_name' | t }}<input type="text" name="customer[first_name]" autocomplete="given-name"></label>
+      <label>{{ 'customer.register.last_name' | t }}<input type="text" name="customer[last_name]" autocomplete="family-name"></label>
+      <label>{{ 'contact.email' | t }}<input type="email" name="customer[email]" autocomplete="email" required></label>
+      <label>{{ 'customer.login.password' | t }}<input type="password" name="customer[password]" autocomplete="new-password" required></label>
+      <button class="es-button es-button--full" type="submit">{{ 'customer.register.submit' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>

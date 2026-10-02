@@ -1,0 +1,49 @@
+<section class="es-section es-cart color-{{ section.settings.color_scheme }}" style="--pt: 48px; --pb: 96px;" data-cart-page>
+  <div class="es-container">
+    <h1 class="es-heading es-h1">{{ 'cart.title' | t }}</h1>
+    {%- if cart.item_count == 0 -%}
+      <div class="es-cart__empty">
+        <p class="es-lead">{{ 'cart.empty' | t }}</p>
+        <a href="{{ routes.all_products_collection_url }}" class="es-button">{{ 'cart.continue' | t }}</a>
+      </div>
+    {%- else -%}
+      <form action="{{ routes.cart_url }}" method="post" id="CartForm" class="es-cart__grid">
+        <ul role="list" class="es-line-items es-line-items--page">
+          {%- for item in cart.items -%}
+            <li class="es-line-item" data-key="{{ item.key }}">
+              <a href="{{ item.url }}" class="es-line-item__media">{%- if item.image -%}{{ item.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: item.title }}{%- endif -%}</a>
+              <div class="es-line-item__info">
+                <a href="{{ item.url }}" class="es-line-item__title">{{ item.product.title }}</a>
+                {%- unless item.product.has_only_default_variant -%}<p class="es-muted es-small">{{ item.variant.title }}</p>{%- endunless -%}
+                <p class="es-small">{{ item.final_price | money }}</p>
+                <label class="visually-hidden" for="Qty-{{ forloop.index }}">{{ 'products.product.quantity' | t }}</label>
+                <input class="es-qty-input" id="Qty-{{ forloop.index }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0" data-cart-qty="{{ item.key }}">
+              </div>
+              <div class="es-line-item__total">{{ item.final_line_price | money }}</div>
+              <a href="{{ item.url_to_remove }}" class="es-line-item__remove es-link-button">{{ 'cart.remove' | t }}</a>
+            </li>
+          {%- endfor -%}
+        </ul>
+        <aside class="es-cart__summary">
+          {%- if settings.cart_show_note -%}
+            <label for="CartNote" class="es-small">{{ 'cart.note' | t }}</label>
+            <textarea id="CartNote" name="note" class="es-textarea">{{ cart.note }}</textarea>
+          {%- endif -%}
+          <div class="es-drawer__total"><span>{{ 'cart.subtotal' | t }}</span><strong>{{ cart.total_price | money_with_currency }}</strong></div>
+          <p class="es-muted es-small">{{ 'cart.taxes_and_shipping' | t }}</p>
+          <button type="submit" name="update" class="es-button es-button--secondary es-button--full">{{ 'cart.update' | t }}</button>
+          <button type="submit" name="checkout" class="es-button es-button--full">{{ 'cart.checkout' | t }}</button>
+          {%- if additional_checkout_buttons -%}<div class="es-cart__extra">{{ content_for_additional_checkout_buttons }}</div>{%- endif -%}
+          {%- if settings.cart_reassurance != blank -%}<p class="es-small es-center">{{ settings.cart_reassurance }}</p>{%- endif -%}
+        </aside>
+      </form>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Panier",
+  "settings": [ { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" } ]
+}
+{% endschema %}

@@ -1,0 +1,51 @@
+{%- comment -%}
+  Formulaire d'achat : variantes, quantité, ajout au panier, paiement accéléré.
+  Paramètres : product, section_id, show_quantity, show_dynamic_checkout, picker
+{%- endcomment -%}
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign form_id = 'product-form-' | append: section_id
+-%}
+<div class="es-buy" data-product-buy data-section="{{ section_id }}" data-product-url="{{ product.url }}">
+  {%- unless product.has_only_default_variant -%}
+    {%- for option in product.options_with_values -%}
+      {%- assign option_index = forloop.index0 -%}
+      <fieldset class="es-option es-option--{{ picker | default: 'buttons' }}">
+        <legend class="es-option__label">{{ option.name }} : <span data-option-value="{{ forloop.index0 }}">{{ option.selected_value }}</span></legend>
+        {%- if picker == 'dropdown' -%}
+          <select class="es-select" data-option-index="{{ forloop.index0 }}" aria-label="{{ option.name }}">
+            {%- for value in option.values -%}<option value="{{ value | escape }}"{% if option.selected_value == value %} selected{% endif %}>{{ value }}</option>{%- endfor -%}
+          </select>
+        {%- else -%}
+          <div class="es-option__values">
+            {%- for value in option.values -%}
+              {%- assign input_id = section_id | append: '-' | append: option_index | append: '-' | append: forloop.index0 -%}
+              <input type="radio" class="visually-hidden" id="{{ input_id }}" name="{{ section_id }}-{{ option.name | handleize }}" value="{{ value | escape }}" data-option-index="{{ option_index }}"{% if option.selected_value == value %} checked{% endif %}>
+              <label for="{{ input_id }}" class="es-chip">{{ value }}</label>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </fieldset>
+    {%- endfor -%}
+  {%- endunless -%}
+
+  {%- form 'product', product, id: form_id, class: 'es-buy__form', data-product-form: '' -%}
+    <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
+    <div class="es-buy__row">
+      {%- if show_quantity -%}
+        <div class="es-qty">
+          <button type="button" data-qty-step="-1" aria-label="{{ 'cart.decrease' | t }}">{% render 'icon', name: 'minus' %}</button>
+          <label class="visually-hidden" for="Quantity-{{ section_id }}">{{ 'products.product.quantity' | t }}</label>
+          <input id="Quantity-{{ section_id }}" type="number" name="quantity" value="1" min="1" inputmode="numeric">
+          <button type="button" data-qty-step="1" aria-label="{{ 'cart.increase' | t }}">{% render 'icon', name: 'plus' %}</button>
+        </div>
+      {%- endif -%}
+      <button type="submit" name="add" class="es-button es-button--grow" data-add-button{% unless current_variant.available %} disabled{% endunless %}>
+        <span data-add-label>{%- if current_variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}</span>
+      </button>
+    </div>
+    {%- if show_dynamic_checkout -%}{{ form | payment_button }}{%- endif -%}
+    <p class="es-form-error" role="alert" data-form-error hidden></p>
+  {%- endform -%}
+  <script type="application/json" data-variants>{{ product.variants | json }}</script>
+</div>

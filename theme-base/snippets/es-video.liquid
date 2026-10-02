@@ -1,0 +1,24 @@
+{%- comment -%}
+  Vidéo : vidéo hébergée par Shopify (réglage « video »), sinon fichier MP4
+  fourni dans les assets du thème. Lecture automatique muette en boucle.
+  Paramètres : video, asset, poster, poster_asset, class, autoplay, controls, alt
+{%- endcomment -%}
+{%- liquid
+  assign poster_url = ''
+  if poster != blank
+    assign poster_url = poster | image_url: width: 1600
+  elsif poster_asset != blank
+    assign poster_url = poster_asset | asset_url
+  endif
+-%}
+{%- if video != blank -%}
+  {%- if autoplay -%}
+    {{ video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, controls: controls, class: class, image_size: '1600x' }}
+  {%- else -%}
+    {{ video | video_tag: controls: true, playsinline: true, class: class, image_size: '1600x' }}
+  {%- endif -%}
+{%- elsif asset != blank -%}
+  <video class="{{ class }}" src="{{ asset | asset_url }}"{% if poster_url != blank %} poster="{{ poster_url }}"{% endif %} playsinline preload="metadata"{% if autoplay %} autoplay muted loop data-autoplay{% endif %}{% if controls %} controls{% endif %} aria-label="{{ alt | escape }}"></video>
+{%- else -%}
+  <div class="es-placeholder {{ class }}">{{ 'lifestyle-1' | placeholder_svg_tag: 'es-placeholder__svg' }}</div>
+{%- endif -%}

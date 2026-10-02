@@ -1,0 +1,63 @@
+<section class="es-section es-collection color-{{ section.settings.color_scheme }}" style="--pt: 48px; --pb: 96px;">
+  <div class="es-container">
+    <header class="es-collection__head">
+      <h1 class="es-heading es-h1" data-reveal="lines">{{ collection.title }}</h1>
+      {%- if collection.description != blank -%}<div class="es-rte es-muted es-lead">{{ collection.description }}</div>{%- endif -%}
+    </header>
+    {%- paginate collection.products by section.settings.per_page -%}
+      <form class="es-filters" data-filters action="{{ collection.url }}" method="get">
+        {%- if section.settings.enable_filters -%}
+          {%- for filter in collection.filters -%}
+            <details class="es-filter">
+              <summary>{{ filter.label }}{% if filter.active_values.size > 0 %} ({{ filter.active_values.size }}){% endif %}</summary>
+              <div class="es-filter__panel">
+                {%- case filter.type -%}
+                  {%- when 'price_range' -%}
+                    <div class="es-filter__price">
+                      <label>{{ 'collections.from' | t }} <input type="number" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}" min="0" placeholder="0"></label>
+                      <label>{{ 'collections.to' | t }} <input type="number" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}" min="0" placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"></label>
+                    </div>
+                  {%- else -%}
+                    {%- for value in filter.values -%}
+                      <label class="es-check"><input type="checkbox" name="{{ value.param_name }}" value="{{ value.value }}"{% if value.active %} checked{% endif %}{% if value.count == 0 and value.active == false %} disabled{% endif %}> {{ value.label }} <span class="es-muted">({{ value.count }})</span></label>
+                    {%- endfor -%}
+                {%- endcase -%}
+              </div>
+            </details>
+          {%- endfor -%}
+        {%- endif -%}
+        {%- if section.settings.enable_sorting -%}
+          <label class="es-sort">{{ 'collections.sort_by' | t }}
+            <select name="sort_by" class="es-select" data-autosubmit>
+              {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+              {%- for option in collection.sort_options -%}<option value="{{ option.value }}"{% if option.value == sort_by %} selected{% endif %}>{{ option.name }}</option>{%- endfor -%}
+            </select>
+          </label>
+        {%- endif -%}
+        <noscript><button type="submit" class="es-button es-button--small">{{ 'collections.apply' | t }}</button></noscript>
+      </form>
+      <p class="es-small es-muted">{{ 'collections.product_count' | t: count: collection.products_count }}</p>
+      <div class="es-product-grid" style="--cols: {{ section.settings.columns }}">
+        {%- for product in collection.products -%}
+          {% render 'product-card', product_card: product, show_secondary: true, ratio: 'portrait' %}
+        {%- else -%}
+          <p class="es-empty">{{ 'collections.empty' | t }}</p>
+        {%- endfor -%}
+      </div>
+      {% render 'pagination', paginate: paginate %}
+    {%- endpaginate -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection",
+  "settings": [
+    { "type": "range", "id": "per_page", "min": 8, "max": 48, "step": 4, "label": "Produits par page", "default": 16 },
+    { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes", "default": 3 },
+    { "type": "checkbox", "id": "enable_filters", "label": "Filtres", "default": true },
+    { "type": "checkbox", "id": "enable_sorting", "label": "Tri", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,42 @@
+<section class="es-section es-hero-split es-hero-split--{{ section.settings.image_position }} es-hero-split--{{ section.settings.height }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container es-hero-split__grid">
+    <div class="es-hero-split__content">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h1 class="es-heading es-h1" data-reveal="lines">{{ section.settings.heading }}</h1>
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up" style="--d: 1">{{ section.settings.text }}</div>{%- endif -%}
+      <div class="es-actions" data-reveal="up" style="--d: 2">
+        {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ section.settings.button_label }}</a>{%- endif -%}
+        {%- if section.settings.button2_label != blank -%}<a href="{{ section.settings.button2_link }}" class="es-button es-button--secondary">{{ section.settings.button2_label }}</a>{%- endif -%}
+      </div>
+    </div>
+    <div class="es-hero-split__media es-media-frame" data-reveal="zoom"{% if section.settings.parallax %} data-parallax="0.12"{% endif %}>
+      {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 50vw, 100vw', loading: 'eager', fetchpriority: 'high', class: 'es-cover' %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Héros divisé",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Le titre principal de votre produit" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Une phrase claire sur ce que le produit apporte.</p>" },
+    { "type": "text", "id": "button_label", "label": "Bouton principal", "default": "Découvrir" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton principal" },
+    { "type": "text", "id": "button2_label", "label": "Bouton secondaire" },
+    { "type": "url", "id": "button2_link", "label": "Lien du bouton secondaire" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème", "info": "Utilisée si aucune image n'est choisie." },
+    { "type": "select", "id": "image_position", "label": "Position de l'image", "default": "right", "options": [ { "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" } ] },
+    { "type": "select", "id": "height", "label": "Hauteur", "default": "large", "options": [ { "value": "auto", "label": "Selon le contenu" }, { "value": "large", "label": "Grande" }, { "value": "screen", "label": "Plein écran" } ] },
+    { "type": "checkbox", "id": "parallax", "label": "Effet de profondeur", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Héros divisé" }]
+}
+{% endschema %}

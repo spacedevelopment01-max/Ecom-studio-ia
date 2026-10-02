@@ -1,0 +1,25 @@
+<section class="es-section es-clist color-{{ section.settings.color_scheme }}" style="--pt: 48px; --pb: 96px;">
+  <div class="es-container">
+    <h1 class="es-heading es-h1 es-section-head">{{ section.settings.heading | default: page_title }}</h1>
+    <div class="es-clist__grid" style="--cols: 3">
+      {%- for c in collections -%}
+        <a href="{{ c.url }}" class="es-clist__item" data-reveal="up">
+          <div class="es-media-frame es-media-frame--square">
+            {%- if c.featured_image -%}{{ c.featured_image | image_url: width: 900 | image_tag: loading: 'lazy', class: 'es-cover', alt: c.title }}{%- else -%}{{ 'collection-1' | placeholder_svg_tag: 'es-placeholder__svg' }}{%- endif -%}
+          </div>
+          <span class="es-clist__title">{{ c.title }} {% render 'icon', name: 'arrow' %}</span>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Liste des collections",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Catalogue" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
+  ]
+}
+{% endschema %}

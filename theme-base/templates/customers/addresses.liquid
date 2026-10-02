@@ -1,0 +1,32 @@
+<section class="es-section es-account" style="--pt: 64px; --pb: 96px;">
+  <div class="es-container es-account__narrow">
+    <a href="{{ routes.account_url }}" class="es-link-button">← {{ 'customer.account' | t }}</a>
+    <h1 class="es-heading es-h2">{{ 'customer.addresses.title' | t }}</h1>
+    {%- paginate customer.addresses by 10 -%}
+      {%- for address in customer.addresses -%}
+        <div class="es-address">
+          {{ address | format_address }}
+          {%- form 'customer_address', address, class: 'es-form' -%}
+            <label>{{ 'customer.addresses.address1' | t }}<input type="text" name="address[address1]" value="{{ form.address1 }}"></label>
+            <label>{{ 'customer.addresses.city' | t }}<input type="text" name="address[city]" value="{{ form.city }}"></label>
+            <label>{{ 'customer.addresses.zip' | t }}<input type="text" name="address[zip]" value="{{ form.zip }}"></label>
+            <label>{{ 'customer.addresses.country' | t }}<select name="address[country]" data-default="{{ form.country }}">{{ all_country_option_tags }}</select></label>
+            <button class="es-button es-button--small" type="submit">{{ 'customer.addresses.update' | t }}</button>
+          {%- endform -%}
+        </div>
+      {%- endfor -%}
+      {% render 'pagination', paginate: paginate %}
+    {%- endpaginate -%}
+    <h2 class="es-heading es-h4">{{ 'customer.addresses.add' | t }}</h2>
+    {%- form 'customer_address', customer.new_address, class: 'es-form' -%}
+      <label>{{ 'customer.register.first_name' | t }}<input type="text" name="address[first_name]" autocomplete="given-name"></label>
+      <label>{{ 'customer.register.last_name' | t }}<input type="text" name="address[last_name]" autocomplete="family-name"></label>
+      <label>{{ 'customer.addresses.address1' | t }}<input type="text" name="address[address1]" autocomplete="address-line1"></label>
+      <label>{{ 'customer.addresses.city' | t }}<input type="text" name="address[city]" autocomplete="address-level2"></label>
+      <label>{{ 'customer.addresses.zip' | t }}<input type="text" name="address[zip]" autocomplete="postal-code"></label>
+      <label>{{ 'customer.addresses.country' | t }}<select name="address[country]">{{ all_country_option_tags }}</select></label>
+      <label class="es-check">{{ form.set_as_default_checkbox }} {{ 'customer.addresses.default' | t }}</label>
+      <button class="es-button" type="submit">{{ 'customer.addresses.add' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>

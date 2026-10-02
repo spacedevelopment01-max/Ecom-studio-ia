@@ -1,0 +1,27 @@
+<section class="es-marquee color-{{ section.settings.color_scheme }} es-marquee--{{ section.settings.size }}" aria-label="{{ section.settings.items | strip_newlines | escape }}" style="--speed: {{ section.settings.speed }}s;">
+  {%- assign items = section.settings.items | newline_to_br | split: '<br />' -%}
+  <div class="es-marquee__track{% if section.settings.reverse %} es-marquee__track--reverse{% endif %}" aria-hidden="true">
+    {%- for n in (1..2) -%}
+      <div class="es-marquee__group">
+        {%- for item in items -%}{%- assign t = item | strip -%}{%- if t != blank -%}<span class="es-marquee__item">{{ t }}</span><span class="es-marquee__sep">{{ section.settings.separator }}</span>{%- endif -%}{%- endfor -%}
+      </div>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau défilant",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "textarea", "id": "items", "label": "Mots ou phrases (un par ligne)", "default": "Conçu avec soin\nExpédié par nos soins\nPensé pour durer" },
+    { "type": "text", "id": "separator", "label": "Séparateur", "default": "✦" },
+    { "type": "select", "id": "size", "label": "Taille", "default": "large", "options": [ { "value": "small", "label": "Petite" }, { "value": "large", "label": "Grande" }, { "value": "huge", "label": "Immense" } ] },
+    { "type": "range", "id": "speed", "min": 10, "max": 80, "step": 5, "unit": "s", "label": "Durée d'un tour", "default": 35 },
+    { "type": "checkbox", "id": "reverse", "label": "Sens inverse", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-4" }
+  ],
+  "presets": [{ "name": "Bandeau défilant" }]
+}
+{% endschema %}

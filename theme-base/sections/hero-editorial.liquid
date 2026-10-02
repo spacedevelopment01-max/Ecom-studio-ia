@@ -1,0 +1,42 @@
+<section class="es-section es-hero-edito color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-hero-edito>
+  <div class="es-container es-hero-edito__inner">
+    {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow es-hero-edito__eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+    <h1 class="es-heading es-hero-edito__title" aria-label="{{ section.settings.heading_line1 | escape }} {{ section.settings.heading_line2 | escape }}">
+      <span class="es-hero-edito__line" data-reveal="mask" aria-hidden="true">{{ section.settings.heading_line1 }}</span>
+      <span class="es-hero-edito__line es-hero-edito__line--accent" data-reveal="mask" style="--d: 1" aria-hidden="true">{{ section.settings.heading_line2 }}</span>
+    </h1>
+    <div class="es-hero-edito__product" data-float{% if section.settings.parallax %} data-parallax="-0.18"{% endif %}>
+      {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.image_alt, sizes: '(min-width: 990px) 40vw, 80vw', loading: 'eager', fetchpriority: 'high', class: 'es-hero-edito__img' %}
+    </div>
+    <div class="es-hero-edito__foot">
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up" style="--d: 2">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.settings.button_label != blank -%}
+        <a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button" data-reveal="up" style="--d: 3">{{ section.settings.button_label }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Héros éditorial",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading_line1", "label": "Titre — première ligne", "default": "L'essentiel," },
+    { "type": "text", "id": "heading_line2", "label": "Titre — seconde ligne", "default": "rien de plus." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "image", "label": "Image détourée du produit" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème", "info": "Idéalement un PNG détouré." },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de l'image" },
+    { "type": "checkbox", "id": "parallax", "label": "Effet de profondeur", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Héros éditorial" }]
+}
+{% endschema %}
