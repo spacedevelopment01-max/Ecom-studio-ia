@@ -24,6 +24,7 @@ type ThemeData = {
 };
 type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string } | null;
 
+const DESKTOP_W = 1280;
 const DEVICES = { desktop: { w: "100%", icon: Monitor, label: "Ordinateur" }, tablet: { w: "820px", icon: Tablet, label: "Tablette" }, mobile: { w: "390px", icon: Smartphone, label: "Téléphone" } } as const;
 
 const SUGGESTIONS = [
@@ -53,6 +54,17 @@ export default function TabBoutique() {
   const [exportOpen, setExportOpen] = useState(false);
   const [viewVersion, setViewVersion] = useState<string | null>(null);
   const iframe = useRef<HTMLIFrameElement>(null);
+  // Mode « Ordinateur » : la page est rendue à 1280 px puis réduite, pour voir la vraie mise en page bureau.
+  const frameBox = useRef<HTMLDivElement>(null);
+  const [boxW, setBoxW] = useState(0);
+  useEffect(() => {
+    const el = frameBox.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setBoxW(el.clientWidth - (window.innerWidth >= 640 ? 32 : 0)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
+  const desktopScale = device === "desktop" && boxW > 0 && boxW < DESKTOP_W ? boxW / DESKTOP_W : 1;
   const scrollY = useRef(0);
   const chatEnd = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -98,7 +110,8 @@ export default function TabBoutique() {
     prevActive.current = chatJobs.length;
   }, [chatJobs.length, reload]);
   useEffect(() => {
-    chatEnd.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const box = chatEnd.current?.parentElement;
+    if (box) box.scrollTo({ top: box.scrollHeight, behavior: "smooth" });
   }, [theme?.messages.length, chatActive?.id]);
 
   // Insertion d'un prompt de la bibliothèque.
@@ -246,10 +259,10 @@ export default function TabBoutique() {
             }}
             rows={2}
             placeholder={selection ? "Que faut-il changer sur l'élément désigné ?" : "Ex. « Modifie uniquement ce bouton » …"}
-            className="min-h-11 flex-1 resize-none rounded-2xl border border-line bg-card px-3 py-2.5 text-sm outline-none focus:border-ink"
+            className="min-h-11 min-w-0 flex-1 resize-none rounded-2xl border border-line bg-card px-3 py-2.5 text-sm outline-none focus:border-ink"
             aria-label="Votre demande"
           />
-          <Button type="submit" variant="signal" size="md" loading={sending} className="size-11 !px-0" aria-label="Envoyer"><Send className="size-4" /></Button>
+          <Button type="submit" variant="signal" size="md" loading={sending} className="size-11 shrink-0 !px-0" aria-label="Envoyer"><Send className="size-4" /></Button>
         </form>
         {!data?.ai.llm && <p className="mt-2 text-[11px] text-muted">Moteur local : commandes simples uniquement (couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, monter, supprimer, revenir en arrière, changer de direction).</p>}
       </div>
@@ -325,8 +338,14 @@ export default function TabBoutique() {
           </span>
         </div>
       )}
-      <div className="relative flex-1 overflow-auto bg-paper-2 p-0 sm:p-4">
-        {src && <iframe ref={iframe} key={versionId ?? ""} src={src} title="Aperçu de la boutique" className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />}
+      <div ref={frameBox} className="relative flex-1 overflow-hidden bg-paper-2 p-0 sm:p-4">
+        {src && (desktopScale < 1 ? (
+          <div className="mx-auto overflow-hidden rounded-none bg-white shadow-soft sm:rounded-2xl" style={{ width: DESKTOP_W * desktopScale, height: "100%" }}>
+            <iframe ref={iframe} key={versionId ?? ""} src={src} title="Aperçu de la boutique" className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
+          </div>
+        ) : (
+          <iframe ref={iframe} key={versionId ?? ""} src={src} title="Aperçu de la boutique" className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
+        ))}
       </div>
     </div>
   );

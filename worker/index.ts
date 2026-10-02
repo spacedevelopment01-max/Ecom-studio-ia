@@ -3,6 +3,7 @@
  * programmées indépendamment du navigateur. À lancer en continu
  * (`npm run worker`, inclus dans `npm run dev` et `npm start`).
  */
+import "./env";
 import os from "node:os";
 import { claimNext, completeJob, failJob, JobContext, JobCancelled, WORKER_ID, getJob } from "../src/lib/jobs";
 import { db, logError, now, run } from "../src/lib/db";

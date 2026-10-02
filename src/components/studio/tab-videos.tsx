@@ -45,7 +45,7 @@ export default function TabVideos() {
         <Card className="h-max p-5 lg:sticky lg:top-24">
           <h2 className="font-display text-xl font-semibold">Produire une vidéo</h2>
           <p className="mt-1 text-xs text-muted">Motion design image par image : typographie animée, révélation du produit réel, balayage lumineux, transitions, musique originale, sous-titres SRT. Livré en MP4 H.264.</p>
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             <Field label="Format" htmlFor="vfmt">
               <Select id="vfmt" value={form.format} onChange={(e) => setForm({ ...form, format: e.target.value })}>
                 <option value="9:16">9:16 — Reels, TikTok, Shorts, stories (1080×1920)</option>

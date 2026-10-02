@@ -19,7 +19,7 @@ export type Overview = {
   coverUrl: string | null;
   cutoutUrl: string | null;
   ai: { llm: boolean; image: boolean; video: boolean };
-  credits: { usedPct: number; alert: boolean; paused: boolean };
+  credits: { usedPct: number; alert: boolean; paused: boolean; empty?: boolean };
 };
 
 const Ctx = createContext<{ id: string; data: Overview | null; reload: () => Promise<void>; error: string | null } | null>(null);

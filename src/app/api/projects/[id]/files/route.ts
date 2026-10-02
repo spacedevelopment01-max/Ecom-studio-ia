@@ -34,9 +34,11 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     args.push(...role.split(","));
   }
   const assets = all<Asset>(`SELECT * FROM assets WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT 400`, ...args);
-  const counts = Object.fromEntries(all<{ folder_id: string; n: number }>("SELECT folder_id, COUNT(*) n FROM assets WHERE project_id = ? AND deleted_at IS NULL GROUP BY folder_id", p.id).map((r) => [r.folder_id ?? "root", r.n]));
+  const folderList = listFolders(p.id);
+  const total = (fid: string): number => (counts[fid] ?? 0) + folderList.filter((x) => x.parent_id === fid).reduce((n, x) => n + total(x.id), 0);
+  const counts: Record<string, number> = Object.fromEntries(all<{ folder_id: string; n: number }>("SELECT folder_id, COUNT(*) n FROM assets WHERE project_id = ? AND deleted_at IS NULL GROUP BY folder_id", p.id).map((r) => [r.folder_id ?? "root", r.n]));
   return ok({
-    folders: listFolders(p.id).map((f) => ({ id: f.id, name: f.name, parentId: f.parent_id, system: !!f.system_key, key: f.system_key, count: counts[f.id] ?? 0 })),
+    folders: folderList.map((f) => ({ id: f.id, name: f.name, parentId: f.parent_id, system: !!f.system_key, key: f.system_key, count: counts[f.id] ?? 0, total: total(f.id) })),
     assets: assets.map((a) => ({ ...publicAssetSummary(a), usages: usagesOf(a.id) })),
     rootCount: counts.root ?? 0,
   });

@@ -151,7 +151,7 @@ export function Badge({ tone = "neutral", children, className, dot }: { tone?: k
 
 export function Field({ label, hint, error, children, htmlFor }: { label: string; hint?: ReactNode; error?: string | null; children: ReactNode; htmlFor?: string }) {
   return (
-    <div className="grid gap-1.5">
+    <div className="grid min-w-0 gap-1.5">
       <label htmlFor={htmlFor} className="text-sm font-medium text-ink">
         {label}
       </label>
@@ -162,7 +162,7 @@ export function Field({ label, hint, error, children, htmlFor }: { label: string
   );
 }
 
-export const inputCls = "h-11 w-full rounded-2xl border border-line bg-card px-4 text-[15px] text-ink placeholder:text-muted/70 outline-none transition focus:border-ink";
+export const inputCls = "h-11 w-full min-w-0 rounded-2xl border border-line bg-card px-4 text-[15px] text-ink placeholder:text-muted/70 outline-none transition focus:border-ink";
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cx(inputCls, props.className)} />;
 }

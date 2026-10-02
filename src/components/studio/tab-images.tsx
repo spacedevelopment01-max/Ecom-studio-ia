@@ -75,7 +75,7 @@ export default function TabImages() {
         <Card className="h-max p-5 lg:sticky lg:top-24">
           <h2 className="font-display text-xl font-semibold">Créer</h2>
           <p className="mt-1 text-xs text-muted">Le produit est toujours composé à partir de ses pixels réels ; les textes sont ajoutés typographiquement.</p>
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             <Field label="Type" htmlFor="ikind">
               <Select id="ikind" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value, format: e.target.value === "packshot" ? "packshot" : e.target.value === "banner" ? "banner" : e.target.value === "scene" ? "product" : "portrait" })}>
                 <option value="packshot">Packshot</option>

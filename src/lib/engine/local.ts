@@ -115,19 +115,61 @@ export function paletteFromColors(colors: { hex: string; share: number }[]) {
   return { primary, secondary, accent, light, dark };
 }
 
+/** Noms proposés par le moteur local : évocateurs, sans promesse, à valider par le marchand. */
+const NAME_WORDS: Record<string, string[]> = {
+  beaute: ["Aube", "Sève", "Lumen", "Nacre", "Brume", "Velours", "Iris", "Opaline"],
+  mode: ["Faubourg", "Ligne", "Trame", "Allure", "Écru", "Sillon", "Atelier Nord", "Lin"],
+  bijoux: ["Éclat", "Orée", "Fil d'Or", "Constellation", "Perle", "Aurore", "Facette", "Lueur"],
+  maison: ["Sillage", "Ardoise", "Braise", "Lueur", "Foyer", "Argile", "Terre d'Ombre", "Nuance"],
+  hightech: ["Pixel", "Onde", "Vecteur", "Nova", "Circuit", "Prisme", "Signal", "Orbite"],
+  sport: ["Cap", "Élan", "Altitude", "Sentier", "Horizon", "Relief", "Boussole", "Crête"],
+  alimentation: ["Récolte", "Terroir", "Fournil", "Verger", "Saveur", "Garrigue", "Moisson", "Cueillette"],
+  enfants: ["Petit Pas", "Câlin", "Nuage", "Grelot", "Pirouette", "Doudou", "Ritournelle", "Comptine"],
+  animaux: ["Patte", "Museau", "Gamelle", "Truffe", "Compagnon", "Pelage", "Balade", "Moustache"],
+  artisanat: ["Papier", "Encre", "Établi", "Copeau", "Plume", "Fusain", "Canevas", "Atelier"],
+};
+const NAME_FORMS = (w: string) => [w, `Maison ${w}`, `${w} & Co`, ...(w.includes(" ") ? [] : [`Atelier ${w}`]), ...(/[\s'sx]/.test(w) ? [] : [`Les ${w}s`])];
+const TAGLINES: Record<string, string> = {
+  beaute: "Le soin, simplement.",
+  mode: "Des pièces pensées pour vous.",
+  bijoux: "Des détails qui comptent.",
+  maison: "Des objets à vivre.",
+  hightech: "La technologie, sans détour.",
+  sport: "Fait pour bouger.",
+  alimentation: "Le goût des bonnes choses.",
+  enfants: "Grandir en douceur.",
+  animaux: "Pour nos compagnons.",
+  artisanat: "Fait avec soin.",
+};
+
+function proposeNames(sector: string, seed: string): string[] {
+  const words = NAME_WORDS[sector] ?? NAME_WORDS.maison;
+  let h = 0;
+  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const out: string[] = [];
+  for (let i = 0; out.length < 5 && i < 40; i++) {
+    const w = words[(h + i * 3) % words.length];
+    const forms = NAME_FORMS(w).filter((f) => f.length <= 18 && !f.startsWith("Atelier Atelier"));
+    const f = forms[(h >> (i % 8)) % forms.length];
+    if (!out.includes(f)) out.push(f);
+  }
+  return out;
+}
+
 export function localBrand(p: ProductProfile, providedBrand?: string): { brand: Brand; strategy: Strategy; logoSpec: Omit<LogoSpec, "color"> } {
   const sector = (p.sector ?? "maison") as SectorId;
   const direction = SECTOR_DIRECTION[sector];
   const d = DIRECTIONS.find((x) => x.id === direction)!;
-  const name = providedBrand?.trim() || p.name || "Ma marque";
+  const proposals = proposeNames(sector, p.visual.colors.map((c) => c.hex).join("") + (p.name ?? ""));
+  const name = providedBrand?.trim() || proposals[0];
   const palette = paletteFromColors(p.visual.colors.length ? p.visual.colors : [{ hex: "#7A6552", share: 1 }]);
   const logoFamily = canvasFamily(d.fonts.heading, "Cormorant");
   return {
     brand: {
       name,
       nameStatus: providedBrand ? "provided" : "proposed",
-      alternatives: [],
-      tagline: "",
+      alternatives: providedBrand ? [] : proposals.slice(1),
+      tagline: TAGLINES[sector] ?? "",
       positioning: "[À définir avec vous : pour qui, pour quel usage, avec quelle différence]",
       audience: "[À préciser]",
       personality: [],

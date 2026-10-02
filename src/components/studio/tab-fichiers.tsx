@@ -6,7 +6,7 @@ import { useProject } from "./project-context";
 import { AssetThumb, JobProgress, ROLE_LABEL, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 
-type FolderView = { id: string; name: string; parentId: string | null; system: boolean; key: string | null; count: number };
+type FolderView = { id: string; name: string; parentId: string | null; system: boolean; key: string | null; count: number; total?: number };
 
 export default function TabFichiers() {
   const { id } = useProject();
@@ -137,7 +137,7 @@ export default function TabFichiers() {
         {drag && <div className="mb-4 rounded-2xl border-2 border-dashed border-signal bg-signal-soft p-8 text-center text-sm text-signal">Déposez pour importer dans « {current?.name ?? "Racine"} »</div>}
         {!q && !trash && folder !== undefined && children(folder).length > 0 && (
           <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {children(folder).map((f) => <button key={f.id} onClick={() => setFolder(f.id)} className="flex items-center gap-2 rounded-2xl border border-line bg-card px-3 py-3 text-left text-sm hover:border-ink"><Folder className="size-4 shrink-0 text-signal" /><span className="truncate">{f.name}</span><span className="ml-auto text-xs text-muted">{f.count}</span></button>)}
+            {children(folder).map((f) => <button key={f.id} onClick={() => setFolder(f.id)} className="flex items-center gap-2 rounded-2xl border border-line bg-card px-3 py-3 text-left text-sm hover:border-ink"><Folder className="size-4 shrink-0 text-signal" /><span className="truncate">{f.name}</span><span className="ml-auto text-xs text-muted">{f.total ?? f.count}</span></button>)}
           </div>
         )}
         {(data?.assets ?? []).length === 0 ? (

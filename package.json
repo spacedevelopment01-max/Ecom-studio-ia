@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n web,worker -c cyan,magenta \"next dev -p 3000\" \"tsx watch worker/index.ts\"",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "concurrently -k -n web,worker \"next start -p 3000\" \"tsx worker/index.ts\"",
     "worker": "tsx worker/index.ts",
-    "setup": "prisma db push && tsx scripts/seed.ts",
+    "setup": "tsx scripts/setup.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

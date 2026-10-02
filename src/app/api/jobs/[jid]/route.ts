@@ -7,7 +7,7 @@ async function jobOf(ctx: { params: Promise<{ jid: string }> }) {
   const user = await requireUser();
   const { jid } = await ctx.params;
   const j = getJob(jid);
-  if (!j || j.user_id !== user.id) throw new HttpError(404, "Tâche introuvable.");
+  if (!j || (j.user_id !== user.id && user.role !== "admin")) throw new HttpError(404, "Tâche introuvable.");
   return j;
 }
 

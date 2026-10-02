@@ -35,7 +35,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     coverUrl: cover ? `/api/files/${cover.id}?thumb=1` : null,
     cutoutUrl: cutout ? `/api/files/${cutout.id}?thumb=1` : null,
     ai: aiAvailability(),
-    credits: { usedPct: b.usedPct, alert: b.alert, paused: b.paused },
+    credits: { usedPct: b.usedPct, alert: b.alert, paused: b.paused, empty: b.capacity === 0 },
   });
 });
 

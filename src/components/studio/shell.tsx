@@ -134,6 +134,12 @@ export function CreditPill() {
   const { data } = useProject();
   const c = data?.credits;
   if (!c) return null;
+  if (c.empty)
+    return (
+      <Link href="/studio/compte" className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-3 text-xs md:flex" title="Aucune enveloppe IA : le moteur intégré est utilisé">
+        <Wallet className="size-4" /> Moteur intégré
+      </Link>
+    );
   const left = Math.max(0, 1 - c.usedPct);
   return (
     <Link href="/studio/compte" className={cx("hidden h-10 items-center gap-2 rounded-full border px-3 text-xs md:flex", c.paused ? "border-bad bg-bad-soft text-bad" : c.alert ? "border-warn bg-warn-soft text-warn" : "border-line bg-card")} title="Enveloppe IA">
