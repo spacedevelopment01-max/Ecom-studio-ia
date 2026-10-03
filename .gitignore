@@ -8,3 +8,5 @@ storage/
 next-env.d.ts
 tsconfig.tsbuildinfo
 test-results/
+.next-pages
+_site

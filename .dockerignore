@@ -9,3 +9,5 @@ storage
 .git
 test-results
 tsconfig.tsbuildinfo
+.next-pages
+_site
