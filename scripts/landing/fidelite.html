@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<!--
+  Visuel « Création du studio » de la section Fidélité de l'accueil (avant / après).
+  Produit réel : détourage du drone de la démonstration Ostral (public/demo/drone/cutout-1.webp).
+  Textes : nom, slogan et observations visibles sur la photo, aucune caractéristique inventée.
+  Rendu : npx tsx scripts/build-landing-visual.ts
+-->
+<style>
+  @font-face { font-family: "Lora"; font-weight: 600; src: url("../../assets/fonts/Lora-600.ttf"); }
+  @font-face { font-family: "Lora"; font-weight: 400; src: url("../../assets/fonts/Lora-400.ttf"); }
+  @font-face { font-family: "Inter"; font-weight: 400; src: url("../../assets/fonts/Inter-400.ttf"); }
+  @font-face { font-family: "Inter"; font-weight: 600; src: url("../../assets/fonts/Inter-600.ttf"); }
+  @font-face { font-family: "Inter"; font-weight: 700; src: url("../../assets/fonts/Inter-700.ttf"); }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1800px; height: 1100px; overflow: hidden; }
+  body { font-family: Inter, sans-serif; color: #EEF2FB; -webkit-font-smoothing: antialiased; }
+  .stage { position: relative; width: 1800px; height: 1100px; overflow: hidden;
+    background:
+      radial-gradient(760px 560px at 1250px 520px, rgba(120,116,180,.42), transparent 70%),
+      radial-gradient(1100px 700px at 1300px 1150px, rgba(69,87,115,.55), transparent 70%),
+      linear-gradient(160deg, #1A2536 0%, #0F1724 55%, #090E17 100%); }
+  /* Grille fine et horizon */
+  .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px); background-size: 90px 90px; mask-image: radial-gradient(900px 620px at 1250px 560px, #000 20%, transparent 75%); }
+  .horizon { position: absolute; left: 820px; right: 0; top: 905px; height: 2px; background: linear-gradient(90deg, transparent, rgba(185,181,240,.55), transparent); }
+  .wm { position: absolute; right: -40px; bottom: -70px; font: 600 330px/1 Lora, serif; letter-spacing: -.02em; color: #fff; opacity: .045; white-space: nowrap; }
+  /* Produit */
+  .halo { position: absolute; left: 950px; top: 300px; width: 760px; height: 440px; border-radius: 50%; background: radial-gradient(closest-side, rgba(200,196,255,.30), transparent); filter: blur(30px); }
+  .drone { position: absolute; left: 880px; top: 250px; width: 860px; filter: drop-shadow(0 40px 50px rgba(0,0,0,.55)) drop-shadow(0 8px 12px rgba(0,0,0,.35)); }
+  .shadow { position: absolute; left: 1040px; top: 905px; width: 520px; height: 46px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,.6), transparent); filter: blur(10px); }
+  /* Texte */
+  .logo { position: absolute; left: 110px; top: 92px; height: 70px; }
+  .tag { position: absolute; right: 110px; top: 110px; padding: 14px 26px; border-radius: 999px; border: 1.5px solid rgba(238,242,251,.25); background: rgba(255,255,255,.06); font: 600 26px Inter; letter-spacing: .16em; text-transform: uppercase; color: #D9DDF3; }
+  .col { position: absolute; left: 110px; top: 300px; width: 760px; }
+  .eyebrow { font: 600 26px Inter; letter-spacing: .24em; text-transform: uppercase; color: #B9B5F0; }
+  h1 { margin-top: 26px; font: 600 92px/1.02 Lora, serif; white-space: nowrap; letter-spacing: -.025em; }
+  h1 em { display: block; font-style: italic; font-weight: 400; color: #C9C5FF; }
+  .sub { margin-top: 34px; font: 400 38px/1.35 Inter; color: rgba(238,242,251,.78); max-width: 600px; }
+  .cta { display: inline-flex; align-items: center; gap: 18px; margin-top: 52px; padding: 26px 46px; border-radius: 999px; background: #EEF2FB; color: #121A28; font: 700 36px Inter; box-shadow: 0 20px 50px -14px rgba(120,116,180,.8); }
+  /* Points forts reliés au produit */
+  .pin { position: absolute; width: 22px; height: 22px; margin: -11px; border-radius: 50%; background: #C9C5FF; box-shadow: 0 0 0 8px rgba(201,197,255,.25), 0 0 26px rgba(201,197,255,.9); }
+  .line { position: absolute; height: 2px; background: linear-gradient(90deg, rgba(201,197,255,.95), rgba(201,197,255,.35)); transform-origin: 0 50%; }
+  .label { position: absolute; display: flex; align-items: center; gap: 16px; padding: 18px 28px; border-radius: 22px; background: rgba(18,26,40,.78); border: 1.5px solid rgba(201,197,255,.45); backdrop-filter: blur(8px); font: 600 34px Inter; white-space: nowrap; box-shadow: 0 18px 40px -16px rgba(0,0,0,.7); }
+  .label i { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #7874B4; font-style: normal; font-size: 24px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="grid"></div>
+  <div class="wm">OSTRAL</div>
+  <div class="horizon"></div>
+  <div class="halo"></div>
+  <div class="shadow"></div>
+  <img class="drone" src="../../public/demo/drone/cutout-1.webp" alt="">
+  <img class="logo" src="ostral-logo-light.svg" alt="Ostral">
+  <div class="col">
+    <p class="eyebrow">Ostral · Drone</p>
+    <h1>La technologie,<em>sans détour.</em></h1>
+    <p class="sub">Drone pliable avec caméra stabilisée orientable.</p>
+    <span class="cta">Découvrir le drone <b>→</b></span>
+  </div>
+  <!-- Repères (positions calées sur le détourage) -->
+  <div id="callouts"></div>
+</div>
+<script>
+  // [x, y] du repère sur le produit, [x, y] de l'étiquette, texte.
+  const C = [
+    [[1305, 683], [1190, 965], "Caméra stabilisée orientable"],
+    [[1047, 646], [820, 850], "Bras repliables"],
+  ];
+  const root = document.getElementById("callouts");
+  for (const [[px, py], [lx, ly], text] of C) {
+    const label = document.createElement("div");
+    label.className = "label";
+    label.innerHTML = `<i>✓</i>${text}`;
+    label.style.left = lx + "px";
+    label.style.top = ly + "px";
+    root.appendChild(label);
+    const r = label.getBoundingClientRect();
+    const ax = Math.min(Math.max(px, r.left + 30), r.right - 30), ay = py < r.top ? r.top : r.bottom;
+    const dx = ax - px, dy = ay - py;
+    const line = document.createElement("div");
+    line.className = "line";
+    line.style.left = px + "px";
+    line.style.top = py + "px";
+    line.style.width = Math.hypot(dx, dy) + "px";
+    line.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+    root.prepend(line);
+    const pin = document.createElement("div");
+    pin.className = "pin";
+    pin.style.left = px + "px";
+    pin.style.top = py + "px";
+    root.appendChild(pin);
+  }
+</script>
+</body>
+</html>
