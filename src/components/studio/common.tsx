@@ -157,10 +157,17 @@ export function SectionTitle({ title, children, action }: { title: string; child
 
 export function EngineNotice({ what }: { what: string }) {
   const { data } = useProject();
-  if (!data || data.ai.llm) return null;
+  if (!data) return null;
+  const configured = data.ai.llm;
+  if (configured && data.ai.credits !== false) return null;
   return (
     <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
-      <strong>Moteur local actif.</strong> Aucun fournisseur d'IA n'est configuré sur cette installation : {what} sont produits par le moteur local (détourage, compositions, motion design, textes de base sans invention). L'administration peut activer l'IA à tout moment.
+      <strong>Version sans IA (moteur local).</strong>{" "}
+      {configured
+        ? <>Vos crédits de création sont épuisés ou vous êtes en essai gratuit : {what} sont produits par le moteur local, sans invention.</>
+        : <>Aucun fournisseur d'IA n'est connecté sur cette installation : {what} sont produits par le moteur local (détourage, compositions, motion design, textes de base sans invention).</>}{" "}
+      <strong>Les résultats avec l'IA connectée sont bien meilleurs</strong> : marque et textes écrits pour votre produit, thème composé sur mesure, retouches comprises en langage naturel, photos réalistes et vidéos UGC.
+      {configured && <> <a href="/studio/compte" className="font-semibold underline">Passer à l'abonnement</a></>}
     </div>
   );
 }

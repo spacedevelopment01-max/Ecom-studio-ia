@@ -11,6 +11,7 @@
 import OpenAI, { toFile } from "openai";
 import sharp from "sharp";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
+import { currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
 import { providerKey, requirePrice, routeFor, usdToEur } from "./config";
 
@@ -27,6 +28,7 @@ function cost(provider: string, model: string, units: { input?: number; output?:
 }
 
 export function imageProviderAvailable(): "openai" | "google" | null {
+  if (!currentUserHasAiCredits()) return null;
   const r = routeFor("image_generation");
   if (providerKey(r.provider)) return r.provider === "openai" || r.provider === "google" ? r.provider : null;
   if (providerKey("openai")) return "openai";
@@ -35,6 +37,7 @@ export function imageProviderAvailable(): "openai" | "google" | null {
 }
 
 export function videoProviderAvailable(): "google" | "fal" | null {
+  if (!currentUserHasAiCredits()) return null;
   const r = routeFor("video_generation");
   if ((r.provider === "google" || r.provider === "fal") && providerKey(r.provider)) return r.provider;
   if (providerKey("google")) return "google";

@@ -18,7 +18,7 @@ export type Overview = {
   logoUrl: string | null;
   coverUrl: string | null;
   cutoutUrl: string | null;
-  ai: { llm: boolean; image: boolean; video: boolean; ugc?: boolean; ugcVoice?: boolean };
+  ai: { llm: boolean; image: boolean; video: boolean; ugc?: boolean; ugcVoice?: boolean; credits?: boolean };
   credits: { usedPct: number; alert: boolean; paused: boolean; empty?: boolean };
 };
 

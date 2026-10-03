@@ -11,6 +11,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
+import { currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
 import { priceFor, providerKey, requirePrice, routeFor, usdToEur, type TaskId } from "./config";
 
@@ -42,8 +43,9 @@ function client(): Anthropic {
   return cached.client;
 }
 
+/** IA texte utilisable pour la tâche en cours : fournisseur configuré et crédits disponibles (sinon moteur local). */
 export function llmConfigured() {
-  return !!providerKey("anthropic");
+  return !!providerKey("anthropic") && currentUserHasAiCredits();
 }
 
 async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {

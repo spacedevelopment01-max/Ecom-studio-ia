@@ -50,3 +50,22 @@ describe("protection de la marge", () => {
     setJsonSetting("ai.prices", {});
   });
 });
+
+describe("essai gratuit et crédits épuisés", () => {
+  it("bascule sur le moteur local sans crédits, utilise l'IA avec crédits", async () => {
+    const { setSetting } = await import("@/lib/settings");
+    const { runForUser } = await import("@/lib/ai/access");
+    const { llmConfigured } = await import("@/lib/ai/llm");
+    const { imageProviderAvailable } = await import("@/lib/ai/media-providers");
+    setSetting("provider.anthropic.apiKey", "sk-test", true);
+    setSetting("provider.google.apiKey", "g-test", true);
+    const free = await createUser(`essai${Date.now()}@test.fr`, "motdepasse-test", "Essai");
+    expect(await runForUser(free.id, async () => llmConfigured())).toBe(false);
+    expect(await runForUser(free.id, async () => imageProviderAvailable())).toBe(null);
+    creditTopup(free.id, 20, "pay_essai");
+    expect(await runForUser(free.id, async () => llmConfigured())).toBe(true);
+    expect(await runForUser(free.id, async () => imageProviderAvailable())).not.toBe(null);
+    setSetting("provider.anthropic.apiKey", null, true);
+    setSetting("provider.google.apiKey", null, true);
+  });
+});

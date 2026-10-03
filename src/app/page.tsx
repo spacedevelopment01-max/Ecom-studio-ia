@@ -325,6 +325,7 @@ export default async function Home() {
               </p>
             </div>
             {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">Les démonstrations s'affichent après génération (script « npm run demos »).</p>}
+            {list.length > 0 && <p className="reveal mt-6 text-center text-sm text-muted">Ces démonstrations ont été produites par le <strong className="text-ink">moteur local, sans IA connectée</strong>. Avec l'IA de l'abonnement, les résultats sont bien meilleurs : textes et marque sur mesure, photos réalistes, vidéos UGC.</p>}
           </div>
           {list.length > 0 && (
             <div className="mt-20">
@@ -460,7 +461,11 @@ export default async function Home() {
                 <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Alerte à 80 % ; générations en pause seulement quand le budget est épuisé</li>
                 <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Recharges de crédits par 10 €, conservées d'un mois à l'autre</li>
                 <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Aucune clé d'API à fournir : les IA sont incluses</li>
+                              <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Essai gratuit en version sans IA (moteur local)</li>
               </ul>
+              <p className="reveal mt-6 rounded-2xl border border-signal/30 bg-signal-soft p-4 text-[15px] leading-relaxed text-ink">
+                <strong>Les résultats avec l'IA connectée sont bien meilleurs.</strong> L'essai gratuit utilise le moteur local du studio. Avec l'abonnement, l'IA écrit votre marque et vos textes pour votre produit, compose un thème sur mesure, comprend toutes vos retouches en langage naturel, crée des photos réalistes et des vidéos UGC.
+              </p>
             </div>
             <div className="reveal reveal-scale grid gap-4">
               <div className="neon on relative overflow-hidden rounded-[2rem] bg-[#0A1024] p-8 text-white sm:p-10">

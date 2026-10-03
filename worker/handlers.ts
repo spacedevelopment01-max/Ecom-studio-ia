@@ -166,7 +166,7 @@ export const handlers: Record<string, Handler> = {
     if (["published", "publishing"].includes(post.status)) throw new UserFacingError("Une publication déjà envoyée ne peut pas être régénérée.");
     const p = loadProject(post.project_id);
     if (part !== "media") {
-      if (!llmConfigured()) throw new UserFacingError("La réécriture des légendes nécessite l'IA (non configurée).");
+      if (!llmConfigured()) throw new UserFacingError("La réécriture des légendes nécessite l'IA : elle est disponible avec l'abonnement et l'IA connectée.");
       const r = await aiRewritePost({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:rewrite` }, p, post, instruction ?? "");
       run("UPDATE posts SET title = ?, caption = ?, hashtags = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", r.title, r.caption, r.hashtags.join(" "), now(), postId);
     }

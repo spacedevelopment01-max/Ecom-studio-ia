@@ -19,6 +19,7 @@ import { loadProject, type Project } from "../projects";
 import { tmpDir } from "../storage";
 import { UserFacingError, type JobContext } from "../jobs";
 import { llmConfigured } from "../ai/llm";
+import { hasAiCredits } from "../ai/access";
 import { aiQcImage, aiUgcScript, type UgcScript } from "../ai/tasks";
 import { imageProviderAvailable, ugcFrame, veoClip, falClip, videoProviderAvailable } from "../ai/media-providers";
 import { brandTypo, confirmedFacts, ensureCutouts, palette } from "./images";
@@ -284,6 +285,7 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
   let project = loadProject(projectId);
   const brand = project.brand;
   if (!brand) throw new UserFacingError("Définissez la marque avant de produire une vidéo UGC.");
+  if (!hasAiCredits(project.userId)) throw new UserFacingError("La vidéo UGC est créée par l'IA : elle est disponible avec l'abonnement (crédits de création). Vos crédits sont épuisés ou vous êtes en essai gratuit.");
   const video = videoProviderAvailable();
   if (!video) throw new UserFacingError("Aucun fournisseur vidéo configuré (Google Veo ou fal.ai) : la vidéo UGC ne peut pas être générée.");
   if (!imageProviderAvailable()) throw new UserFacingError("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.");
