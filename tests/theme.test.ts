@@ -128,3 +128,34 @@ describe("textes sans IA", () => {
     expect(items.join(" ")).not.toMatch(/origine|fait pour durer|prise en main/i);
   });
 });
+
+describe("commandes locales de fiche produit", () => {
+  it("ajoute la livraison estimée avec les délais donnés, et refuse d'en inventer", async () => {
+    const { localThemeCommand } = await import("@/lib/engine/local");
+    const spec = sampleSpec();
+    const r = localThemeCommand(spec, "ajoute la livraison estimée 2 à 4 jours", null);
+    expect(r.ops).toHaveLength(1);
+    const op = r.ops[0] as any;
+    expect(op.type).toBe("delivery");
+    expect(op.settings).toMatchObject({ min_days: 2, max_days: 4 });
+    const res = applyOps(spec, r.ops);
+    expect(res.rejected).toHaveLength(0);
+    expect(validateSpec(res.spec)).toEqual([]);
+    expect(localThemeCommand(spec, "ajoute la livraison estimée", null).ops).toHaveLength(0);
+  });
+
+  it("pastilles entre guillemets, lots et prix dans le bouton s'appliquent", async () => {
+    const { localThemeCommand } = await import("@/lib/engine/local");
+    let spec = sampleSpec();
+    for (const msg of ["ajoute des pastilles « Vegan » « Sans sucre ajouté »", "ajoute des lots", "mets le prix dans le bouton", "ajoute un abonnement"]) {
+      const r = localThemeCommand(spec, msg, null);
+      expect(r.ops.length, msg).toBeGreaterThan(0);
+      const res = applyOps(spec, r.ops);
+      expect(res.rejected, msg).toHaveLength(0);
+      spec = res.spec;
+    }
+    const html = compileTheme(spec).get("templates/product.json")!;
+    expect(html).toContain("Sans sucre ajouté");
+    expect(html).toContain("bundles");
+  });
+});

@@ -250,6 +250,9 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
       return { ops, reply: `Texte remplacé par « ${quoted} ».`, revert: false };
     }
   }
+  // Fiche produit qui convertit : blocs ajoutés au produit, uniquement avec les informations données.
+  const pdp = productPageCommand(spec, message, m);
+  if (pdp) return pdp;
   const adds: [RegExp, string][] = [
     [/faq|questions/, "faq"],
     [/vidéo|video/, "video-showcase"],
@@ -285,8 +288,48 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   return {
     ops: [],
     revert: false,
-    reply: "Le moteur local ne comprend que des commandes simples (couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, supprimer, monter, revenir en arrière, changer de direction). Les retouches libres nécessitent l'IA, à activer dans l'administration.",
+    reply: "Le moteur local comprend des commandes simples : couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, des lots, la livraison estimée (avec vos délais), des pastilles (entre guillemets), une section avis, un abonnement, le prix dans le bouton ; supprimer, monter, revenir en arrière, changer de direction. Les retouches libres nécessitent l'IA, à activer dans l'administration.",
   };
+}
+
+/** Commandes simples pour la fiche produit (lots, livraison, pastilles, avis, abonnement…). */
+function productPageCommand(spec: ThemeSpec, message: string, m: string): { ops: ThemeOp[]; reply: string; revert: boolean } | null {
+  if (!/ajoute|ajouter|insère|mets|active/.test(m)) return null;
+  const tpl = spec.templates.product;
+  const mainId = tpl?.order.find((id) => tpl.sections[id]?.type === "main-product");
+  if (!tpl || !mainId) return null;
+  const main = tpl.sections[mainId];
+  const blockOf = (type: string) => Object.entries(main.blocks ?? {}).find(([, b]) => b.type === type)?.[0];
+  const buy = blockOf("buy_buttons");
+  const after = (type: string) => ({ after: blockOf(type) ?? buy });
+  const add = (type: string, settings: Record<string, string | number | boolean>, pos: { after?: string }, reply: string) => ({ ops: [{ op: "add_block", template: "product", section: mainId, type, settings, position: pos } as ThemeOp], reply, revert: false });
+  const quotes = [...message.matchAll(/[«"“]\s*([^»"”]+?)\s*[»"”]/g)].map((x) => x[1]).slice(0, 4);
+  if (/\blots?\b|packs?\b|compose ton panier|quantités? dégressi/.test(m)) {
+    return add("bundles", { layout: /ligne/.test(m) ? "rows" : "cards", heading: "Compose ton panier", qty1: 1, label1: "1 article", qty2: 2, label2: "2 articles", qty3: 3, label3: "3 articles", default_tier: "1" }, after("price"), "Lots ajoutés (1, 2 et 3 articles, sans remise). Indiquez vos remises dans l'éditeur Shopify et créez-les aussi dans Shopify › Réductions pour qu'elles s'appliquent au paiement.");
+  }
+  if (/livraison estimée|délais? de livraison|date de livraison/.test(m)) {
+    const nums = (m.match(/(\d+)\s*(?:à|-|et)\s*(\d+)\s*jours?/) ?? m.match(/(\d+)\s*jours?/))?.slice(1).filter(Boolean).map(Number);
+    if (!nums?.length) return { ops: [], revert: false, reply: "Indiquez vos délais réels, par exemple : « ajoute la livraison estimée 2 à 4 jours ». Je n'invente pas de délai." };
+    const [min, max] = nums.length > 1 ? nums : [0, nums[0]];
+    return add("delivery", { min_days: Math.min(min, max), max_days: Math.max(min, max), business_days: !/calendaire/.test(m), label: "Livraison estimée" }, { after: buy }, `Livraison estimée ajoutée : ${min ? `${min} à ` : "sous "}${max} jours ${/calendaire/.test(m) ? "" : "ouvrés"}.`.trim());
+  }
+  if (/pastilles?|badges?/.test(m)) {
+    if (!quotes.length) return { ops: [], revert: false, reply: "Donnez les pastilles entre guillemets, par exemple : ajoute des pastilles « Fabriqué en France » « Vegan ». Seulement des engagements vérifiés." };
+    return add("badges", Object.fromEntries(quotes.map((q, i) => [`badge${i + 1}`, q])), { after: blockOf("title") }, `Pastilles ajoutées : ${quotes.join(", ")}.`);
+  }
+  if (/abonnement/.test(m)) return add("subscription", {}, after("price"), "Bloc abonnement ajouté : il s'affichera avec les plans de votre application d'abonnement Shopify.");
+  if (/autres? (saveurs?|modèles?|couleurs?|parfums?)|variantes? en cartes/.test(m)) {
+    const col = spec.store.collections?.[0]?.handle ?? "all";
+    return add("siblings", { collection: col, heading: /saveur/.test(m) ? "Choisissez votre saveur" : "Choisissez votre modèle" }, after("title"), "Cartes des autres modèles ajoutées (collection « " + col + " »).");
+  }
+  if (/prix dans le bouton/.test(m) && buy) return { ops: [{ op: "set_setting", template: "product", section: mainId, block: buy, key: "price_in_button", value: true }], reply: "Le prix s'affiche désormais dans le bouton d'ajout.", revert: false };
+  if (/\bavis\b/.test(m) && !tpl.order.some((id) => tpl.sections[id]?.type === "product-reviews")) {
+    return { ops: [{ op: "add_section", template: "product", type: "product-reviews", position: { after: mainId } }], reply: "Section avis ajoutée : ajoutez-y le bloc de votre application d'avis (seuls de vrais avis s'afficheront).", revert: false };
+  }
+  if (/situations?|vous reconnaissez/.test(m)) {
+    return { ops: [{ op: "add_section", template: "index", type: "situations" }], reply: "Section « Vous vous reconnaissez ? » ajoutée avec trois cartes à rédiger.", revert: false };
+  }
+  return null;
 }
 
 export { mix, withLightness, contrast };
