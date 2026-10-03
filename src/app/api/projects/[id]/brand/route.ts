@@ -42,9 +42,12 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   saveBrand(p.id, brand);
   // Le logo suit le nom, la signature et la palette (sauf logo fourni par le client).
   const touchesLogo = (b.name !== undefined && b.name !== p.brand.name) || (b.tagline !== undefined && b.tagline !== p.brand.tagline) || (b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette));
-  if (touchesLogo && !hasClientLogo(p.id)) await generateLogos(null, p.id);
+  // Un logo validé par le client n'est jamais remplacé en silence : il faut d'abord retirer sa validation.
+  const logoLocked = brand.validated.includes("logo") || brand.logo?.status === "validated";
+  const regenerate = touchesLogo && !hasClientLogo(p.id) && !logoLocked;
+  if (regenerate) await generateLogos(null, p.id);
   await saveBrandGuide(p.id);
-  return ok({ brand, logoUpdated: touchesLogo });
+  return ok({ brand, logoUpdated: regenerate, logoKept: touchesLogo && logoLocked });
 });
 
 /** Nouvelle proposition de marque (les éléments validés sont conservés). */

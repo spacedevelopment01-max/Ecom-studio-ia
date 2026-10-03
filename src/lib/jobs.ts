@@ -91,9 +91,10 @@ export function claimNext(types?: string[]): Job | null {
     const t = now();
     const candidates = all<Job>(
       `SELECT * FROM jobs
-       WHERE ((status = 'queued' AND run_at <= ?) OR (status = 'running' AND locked_until < ?))
+       WHERE ((status = 'queued' AND run_at <= ? AND (locked_until IS NULL OR locked_until < ?)) OR (status = 'running' AND locked_until < ?))
        ${types?.length ? `AND type IN (${types.map(() => "?").join(",")})` : ""}
        ORDER BY run_at ASC LIMIT 25`,
+      t,
       t,
       t,
       ...(types ?? []),
@@ -138,9 +139,12 @@ export class JobContext {
   }
   /** Met à jour l'avancement et prolonge le bail. Lève JobCancelled si annulée. */
   progress(p: number, message?: string) {
-    const row = one<{ status: string }>("SELECT status FROM jobs WHERE id = ?", this.job.id);
+    const row = one<{ status: string; locked_by: string | null }>("SELECT status, locked_by FROM jobs WHERE id = ?", this.job.id);
     if (row?.status === "cancelled") throw new JobCancelled("Tâche annulée.");
     if (row?.status === "paused") throw new JobPaused("Tâche mise en pause.");
+    // Pause puis reprise pendant que ce worker travaillait encore : il garde la main (aucun autre ne la prend
+    // tant que le bail court) et poursuit, sans refaire ni repayer ce qui est en cours.
+    if (row?.status === "queued" && row.locked_by === WORKER_ID) run("UPDATE jobs SET status='running' WHERE id=?", this.job.id);
     run(
       "UPDATE jobs SET progress=?, message=COALESCE(?, message), locked_until=?, updated_at=? WHERE id=?",
       Math.max(0, Math.min(1, p)),
@@ -165,14 +169,20 @@ export class JobContext {
   }
 }
 
+/** Le worker rend la main (pause ou annulation constatée) : une reprise peut alors être prise. */
+export function releaseJob(jid: string) {
+  run("UPDATE jobs SET locked_by=NULL, locked_until=NULL WHERE id=? AND locked_by=?", jid, WORKER_ID);
+}
+
 export function completeJob(jid: string, result: unknown) {
   run(
-    "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND status IN ('running','paused')",
+    "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND (status IN ('running','paused') OR (status='queued' AND locked_by=?))",
     JSON.stringify(result ?? null),
     "Terminé",
     now(),
     now(),
     jid,
+    WORKER_ID,
   );
 }
 
@@ -214,8 +224,9 @@ export function cancelJob(jid: string) {
  */
 export function pauseJob(jid: string) {
   const t = now();
-  // L'essai consommé par une tâche interrompue volontairement n'est pas compté.
-  run("UPDATE jobs SET status='paused', message='En pause', locked_by=NULL, locked_until=NULL, attempts=MAX(0, attempts-1), updated_at=? WHERE id=? AND status='running'", t, jid);
+  // L'essai consommé par une tâche interrompue volontairement n'est pas compté. Le bail du worker est
+  // conservé : tant qu'il n'a pas rendu la main, une reprise rapide ne peut pas lancer un second worker.
+  run("UPDATE jobs SET status='paused', message='En pause', attempts=MAX(0, attempts-1), updated_at=? WHERE id=? AND status='running'", t, jid);
   run("UPDATE jobs SET status='paused', message='En pause', updated_at=? WHERE (id=? OR parent_id=?) AND status IN ('queued','blocked')", t, jid, jid);
 }
 

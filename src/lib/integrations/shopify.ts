@@ -79,6 +79,10 @@ export async function pushProduct(c: Connection, spec: ThemeSpec, product?: Stor
       price: ((v.price ?? p.price!) / 100).toFixed(2),
     })),
   };
+  // Produit déjà créé (envoi précédent, reprise après une erreur) : mis à jour au lieu d'être dupliqué.
+  const found = await gql(c, `query($q: String!){ products(first: 1, query: $q){ nodes{ id handle } } }`, { q: `handle:${p.handle}` });
+  const existing = found?.products?.nodes?.find((n: { handle: string }) => n.handle === p.handle);
+  if (existing) input.id = existing.id;
   const d = await gql(c, `mutation($input: ProductSetInput!){ productSet(synchronous: true, input: $input){ product{ id handle } userErrors{ field message } } }`, { input });
   userErrors(d, "productSet");
   return { productId: d.productSet.product.id, handle: d.productSet.product.handle };

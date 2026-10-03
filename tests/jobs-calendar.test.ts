@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createUser } from "@/lib/auth";
-import { claimNext, enqueue, getJob, JobContext, JobPaused, pauseJob, resumeJob } from "@/lib/jobs";
+import { claimNext, enqueue, getJob, JobContext, JobPaused, pauseJob, releaseJob, resumeJob } from "@/lib/jobs";
 import { localBrand } from "@/lib/engine/local";
 import { emptyProduct } from "@/lib/project-types";
 import { scheduleTime } from "@/lib/engine/calendar";
@@ -47,7 +47,11 @@ describe("pause et reprise", () => {
     expect(getJob(j.id)!.status).toBe("paused");
     expect(getJob(j.id)!.attempts).toBe(0);
     expect(claimNext(["test.pause"])).toBeNull();
+    // Reprise rapide alors que le worker n'a pas encore rendu la main : personne d'autre ne la prend.
     resumeJob(j.id);
+    expect(claimNext(["test.pause"])).toBeNull();
+    // Le worker constate la pause et rend la main : la reprise est alors réclamée.
+    releaseJob(j.id);
     const again = claimNext(["test.pause"])!;
     expect(again.id).toBe(j.id);
     expect(new JobContext(again).checkpoint.etape1).toBe(42);

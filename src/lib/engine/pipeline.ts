@@ -124,7 +124,8 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
             await saveAsset({ projectId, userId: p.userId, data: buf, name: `photo-importee-${k + 1}.${/png/.test(u) ? "png" : "jpg"}`, mime: /png/.test(u) ? "image/png" : "image/jpeg", role: "original", folderKey: "product.originals", origin: "link", meta: { source: u, page: r.url } });
             photos++;
           }
-          const sources = [...json<any[]>(loadProject(projectId).row.sources_json, []), { type: "link", ref: r.url, note: r.title }];
+          // La source « lien » déjà notée au lancement est complétée (adresse finale, titre), pas dupliquée.
+          const sources = [...json<any[]>(loadProject(projectId).row.sources_json, []).filter((x) => !(x.type === "link" && (x.ref === inp.link || x.ref === r.url))), { type: "link", ref: r.url, note: r.title }];
           run("UPDATE projects SET sources_json = ? WHERE id = ?", JSON.stringify(sources), projectId);
           return { url: r.url, title: r.title, description: r.description, text: r.text.slice(0, 15000), product: r.product, platform: r.platform, photos };
         });

@@ -1,6 +1,6 @@
 /** Gestionnaires des tâches d'arrière-plan. */
 import { all, json, now, one, run } from "../src/lib/db";
-import { JobContext, PermanentError, UserFacingError } from "../src/lib/jobs";
+import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
 import { runPipeline } from "../src/lib/engine/pipeline";
 import { generateImageSet, generateSingleImage } from "../src/lib/engine/images";
 import { produceVideo } from "../src/lib/engine/videos";
@@ -134,6 +134,7 @@ export const handlers: Record<string, Handler> = {
             }
           }
         } catch (e) {
+          if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[chat] auto-correction indisponible :", (e as Error).message);
         }
       }

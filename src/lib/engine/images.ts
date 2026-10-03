@@ -14,7 +14,7 @@ import { canvasFamily } from "../media/fonts";
 import { aiImageBrief, aiQcImage } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { geminiPlate, imageProviderAvailable, openaiScene } from "../ai/media-providers";
-import type { JobContext } from "../jobs";
+import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 
 export function latestAsset(projectId: string, role: string): Asset | undefined {
@@ -195,6 +195,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
             provider = "Gemini (décor) + composition locale";
           }
         } catch (e) {
+          if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           qc = { fallback: (e as Error).message };
         }
       }
@@ -225,6 +226,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           }
           return [await save(await sharp(r.image).jpeg({ quality: 92 }).toBuffer(), `${base}-en-situation-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: `Photo en situation générée autour du produit réel : ${situation}`, provider: "OpenAI", qc })];
         } catch (e) {
+          if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[images] photo en situation indisponible :", (e as Error).message);
           return [];
         }

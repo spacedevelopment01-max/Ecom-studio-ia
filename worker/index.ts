@@ -5,7 +5,7 @@
  */
 import "./env";
 import os from "node:os";
-import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, WORKER_ID, getJob } from "../src/lib/jobs";
+import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, WORKER_ID, getJob, releaseJob } from "../src/lib/jobs";
 import { db, logError, now, run } from "../src/lib/db";
 import { enqueueDuePosts } from "../src/lib/engine/calendar";
 import { handlers, HANDLER_TYPES } from "./handlers";
@@ -28,12 +28,14 @@ async function runOne() {
       console.log(`[worker] ✓ ${job.type} ${job.id} en ${((Date.now() - started) / 1000).toFixed(1)} s`);
     } catch (e) {
       if (e instanceof JobCancelled) {
+        releaseJob(job.id);
         console.log(`[worker] ■ ${job.type} ${job.id} annulée`);
       } else if (e instanceof JobPaused) {
+        releaseJob(job.id);
         console.log(`[worker] ❚❚ ${job.type} ${job.id} en pause`);
       } else {
         const fresh = getJob(job.id) ?? job;
-        if (fresh.status === "paused") return;
+        if (fresh.status === "paused") return releaseJob(job.id);
         failJob(fresh, e);
         logError(`job:${job.type}`, e, { userId: job.user_id, projectId: job.project_id ?? undefined, details: { jobId: job.id } });
         console.error(`[worker] ✗ ${job.type} ${job.id} :`, (e as Error).message);

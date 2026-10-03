@@ -17,7 +17,7 @@ import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
 import { llmConfigured } from "../ai/llm";
-import type { JobContext } from "../jobs";
+import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "produit";
 
@@ -167,6 +167,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         summary = `Boutique conçue par l'IA — ${design.reasoning.slice(0, 160)}`;
       }
     } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[shop] composition IA indisponible, direction conservée :", (e as Error).message);
     }
     // Relecture visuelle : l'IA regarde la boutique rendue (ordinateur et téléphone) et corrige ce qui se voit.
@@ -185,6 +186,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         }
       } else if (review) summary += ` · relue sur captures (${review.score}/10)`;
     } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[shop] relecture visuelle indisponible :", (e as Error).message);
     }
   }
