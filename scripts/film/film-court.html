@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!--
-  Film explicatif sans voix (16:9, ~50 s) : un seul produit réel (l'oreiller Somnéa) suivi de la photo
+  Film explicatif sans voix (16:9, ~50 s) : un seul produit réel (le drone Ostral) suivi de la photo
   à la publication, en 6 étapes. Style clair, typographie animée, curseur qui montre les gestes.
   Rendu par scripts/build-film.ts (FILM=court) : chaque image est figée via window.seek.
 -->
@@ -11,7 +11,7 @@
   @font-face { font-family: "Bricolage"; src: url("../../public/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
   @font-face { font-family: "Inter"; src: url("../../public/fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
   @font-face { font-family: "Instrument"; src: url("../../public/fonts/instrument-italic.woff2") format("woff2"); font-style: italic; }
-  :root { --paper: #F5F6FA; --ink: #0B1020; --muted: #5B6478; --blue: #2F5BEA; --sky: #7CC4FF; --plum: #454873; --lav: #8B74B4; --line: #E1E4EE; --e: cubic-bezier(.16,1,.3,1); --spring: cubic-bezier(.34,1.56,.64,1); }
+  :root { --paper: #F5F6FA; --ink: #0B1020; --muted: #5B6478; --blue: #2F5BEA; --sky: #7CC4FF; --plum: #455773; --lav: #8B74B4; --line: #E1E4EE; --e: cubic-bezier(.16,1,.3,1); --spring: cubic-bezier(.34,1.56,.64,1); }
   * { box-sizing: border-box; margin: 0; }
   html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: Inter, sans-serif; }
   .stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
@@ -80,7 +80,7 @@
   /* 3 · Marque */
   #t3 .title { position: absolute; left: 120px; top: 120px; }
   #t3 .brandcard { position: absolute; top: 420px; width: 520px; height: 420px; padding: 44px; }
-  #t3 .logo { width: 100%; height: 230px; object-fit: contain; transform: scale(1.5); }
+  #t3 .logo { width: 100%; height: 230px; object-fit: contain; }
   #t3 .aa { font: 400 120px/1 Instrument, serif; font-style: italic; color: var(--plum); }
   #t3 .fontname { font: 500 24px Inter; color: var(--muted); margin-top: 18px; }
   #t3 .pal { display: flex; gap: 0; height: 100%; border-radius: 20px; overflow: hidden; }
@@ -94,7 +94,7 @@
   #t4 .tel { position: absolute; left: 1290px; top: 130px; width: 380px; height: 800px; border-radius: 54px; border: 12px solid var(--ink); --t: .9s; }
   #t4 .tel .scroll { animation: scrollme 4s ease-in-out 2.4s both; }
   #t4 .tel img { width: 100%; }
-  @keyframes scrollme { to { transform: translateY(-14%); } }
+  @keyframes scrollme { from { transform: scale(1.08); transform-origin: top; } to { transform: scale(1); transform-origin: top; } }
   #t4 .cart { position: absolute; left: 1730px; top: 200px; width: 120px; height: 120px; border-radius: 50%; background: var(--blue); color: #fff; display: grid; place-items: center; font: 700 48px Inter; --t: 6s; }
 
   /* 5 · Contenus */
@@ -136,7 +136,7 @@
     <div class="title"><p class="num in">ÉTAPE 1</p><p class="k" style="font-size:120px;margin-top:14px"><span class="mask"><span style="--t:.1s">Déposez</span></span><br><span class="mask"><span style="--t:.3s">une <i>photo</i>.</span></span></p></div>
     <p class="alt lead in" style="--t:1.2s;max-width:760px">Ou collez un lien, ou décrivez votre produit en trois lignes.</p>
     <div class="zone in"><p>Glissez votre photo ici</p></div>
-    <div class="file card" data-sfx="whoosh" style="--t:1s"><img src="../../public/demo/oreiller/photo.jpg" alt=""></div>
+    <div class="file card" data-sfx="whoosh" style="--t:1s"><img src="../../public/demo/drone/photo.jpg" alt=""></div>
     <div class="bar fade"><i></i></div>
     <div class="ok pop" data-sfx="ding">✓</div>
   </section>
@@ -144,51 +144,51 @@
   <!-- 2 · Analyse -->
   <section class="scene" id="t2">
     <div class="title"><p class="num in">ÉTAPE 2</p><p class="k" style="font-size:120px;margin-top:14px"><span class="mask"><span style="--t:.1s">L'IA <i>analyse</i></span></span><br><span class="mask"><span style="--t:.3s">votre produit.</span></span></p></div>
-    <div class="cut card in"><img src="../../public/demo/oreiller/cutout-1.webp" alt=""></div>
+    <div class="cut card in"><img src="../../public/demo/drone/cutout-1.webp" alt=""></div>
     <span class="tag pop" style="left:980px;top:420px;--t:1.6s" data-sfx="pop"><b>✓</b> Détourage au pixel</span>
     <span class="tag pop" style="left:980px;top:510px;--t:2.1s" data-sfx="pop"><b>✓</b> Forme et matière</span>
     <span class="tag pop" style="left:980px;top:600px;--t:2.6s" data-sfx="pop"><b>✓</b> Couleurs mesurées</span>
-    <div class="sw pop" style="left:980px;top:700px;background:#454873;color:#fff;--t:3.2s" data-sfx="pop">#454873</div>
-    <div class="sw pop" style="left:1230px;top:700px;background:#D3D4D9;color:#14151F;--t:3.45s">#D3D4D9</div>
-    <div class="sw pop" style="left:1480px;top:700px;background:#8B74B4;color:#fff;--t:3.7s" data-sfx="pop">#8B74B4</div>
+    <div class="sw pop" style="left:980px;top:700px;background:#455773;color:#fff;--t:3.2s" data-sfx="pop">#455773</div>
+    <div class="sw pop" style="left:1230px;top:700px;background:#9AA3B2;color:#14181F;--t:3.45s">#9AA3B2</div>
+    <div class="sw pop" style="left:1480px;top:700px;background:#2C3442;color:#fff;--t:3.7s" data-sfx="pop">#2C3442</div>
   </section>
 
   <!-- 3 · Marque -->
   <section class="scene" id="t3">
     <div class="title"><p class="num in">ÉTAPE 3</p><p class="k" style="font-size:120px;margin-top:14px"><span class="mask"><span style="--t:.1s">Votre <i>marque</i>,</span></span><br><span class="mask"><span style="--t:.3s">proposée.</span></span></p></div>
-    <div class="brandcard card in" style="left:120px;--t:1s" data-sfx="whoosh"><img class="logo" src="../../public/demo/oreiller/logo.svg" alt=""><p class="lbl">Nom et logo</p></div>
+    <div class="brandcard card in" style="left:120px;--t:1s" data-sfx="whoosh"><img class="logo" src="../../public/demo/drone/logo.svg" alt=""><p class="lbl">Nom et logo</p></div>
     <div class="brandcard card in" style="left:700px;--t:1.6s" data-sfx="whoosh"><p class="aa">Aa</p><p class="fontname">Titres et textes accordés</p><p class="lbl">Typographies</p></div>
-    <div class="brandcard card in" style="left:1280px;--t:2.2s;padding:0" data-sfx="whoosh"><div class="pal"><i style="background:#454873"></i><i style="background:#8B74B4"></i><i style="background:#D3D4D9"></i><i style="background:#14151F"></i></div></div>
+    <div class="brandcard card in" style="left:1280px;--t:2.2s;padding:0" data-sfx="whoosh"><div class="pal"><i style="background:#455773"></i><i style="background:#8E7CC3"></i><i style="background:#C9CFD8"></i><i style="background:#14181F"></i></div></div>
   </section>
 
   <!-- 4 · Boutique -->
   <section class="scene" id="t4">
     <div class="title"><p class="num in">ÉTAPE 4</p><p class="k" style="font-size:110px;margin-top:14px"><span class="mask"><span style="--t:.1s">Votre <i>boutique</i></span></span><br><span class="mask"><span style="--t:.3s">Shopify.</span></span></p></div>
-    <div class="desk card in" data-sfx="whoosh"><img src="../../public/demo/oreiller/fiche-produit.jpg" alt=""></div>
-    <div class="tel card in" data-sfx="whoosh"><div class="scroll"><img src="../../public/demo/oreiller/boutique-mobile.jpg" alt=""></div></div>
+    <div class="desk card in" data-sfx="whoosh"><img src="../../public/demo/drone/fiche-produit.jpg" alt=""></div>
+    <div class="tel card in" data-sfx="whoosh"><div class="scroll"><img src="../../public/demo/drone/boutique-mobile.jpg" alt=""></div></div>
     <div class="cart pop" data-sfx="ding">+1</div>
   </section>
 
   <!-- 5 · Contenus -->
   <section class="scene" id="t5">
     <div class="title"><p class="num in">ÉTAPE 5</p><p class="k" style="font-size:110px;margin-top:14px"><span class="mask"><span style="--t:.1s">Images et</span></span><br><span class="mask"><span style="--t:.3s"><i>vidéos</i>.</span></span></p></div>
-    <div class="g card pop" style="left:820px;top:110px;width:330px;height:300px;--t:.8s" data-sfx="pop"><img src="../../public/demo/oreiller/scene-1.jpg" alt=""><span>Scène</span></div>
-    <div class="g card pop" style="left:1180px;top:110px;width:300px;height:300px;--t:1.1s" data-sfx="pop"><img src="../../public/demo/oreiller/packshot-1.jpg" alt=""><span>Packshot</span></div>
-    <div class="g card pop" style="left:1510px;top:110px;width:290px;height:516px;--t:1.4s" data-sfx="pop"><img src="../../public/demo/oreiller/video-poster.jpg" alt=""><span>Vidéo 9:16</span></div>
-    <div class="g card pop" style="left:120px;top:470px;width:420px;height:420px;--t:1.7s" data-sfx="pop"><img src="../../public/demo/oreiller/ad-1.jpg" alt=""><span>Publicité</span></div>
-    <div class="g card pop" style="left:570px;top:550px;width:340px;height:340px;--t:2s"><img src="../../public/demo/oreiller/social-1.jpg" alt=""><span>Réseaux</span></div>
-    <div class="g card pop" style="left:940px;top:440px;width:540px;height:450px;--t:2.3s" data-sfx="pop"><img src="../../public/demo/oreiller/detail-1.jpg" alt=""><span>Détail</span></div>
-    <div class="g card pop" style="left:1510px;top:656px;width:290px;height:234px;--t:2.6s"><img src="../../public/demo/oreiller/banner-1.jpg" alt=""><span>Bannière</span></div>
+    <div class="g card pop" style="left:820px;top:110px;width:330px;height:300px;--t:.8s" data-sfx="pop"><img src="../../public/demo/drone/scene-1.jpg" alt=""><span>Scène</span></div>
+    <div class="g card pop" style="left:1180px;top:110px;width:300px;height:300px;--t:1.1s" data-sfx="pop"><img src="../../public/demo/drone/packshot-1.jpg" alt=""><span>Packshot</span></div>
+    <div class="g card pop" style="left:1510px;top:110px;width:290px;height:516px;--t:1.4s" data-sfx="pop"><img src="../../public/demo/drone/video-poster.jpg" alt=""><span>Vidéo 9:16</span></div>
+    <div class="g card pop" style="left:120px;top:470px;width:420px;height:420px;--t:1.7s" data-sfx="pop"><img src="../../public/demo/drone/ad-1.jpg" alt=""><span>Publicité</span></div>
+    <div class="g card pop" style="left:570px;top:550px;width:340px;height:340px;--t:2s"><img src="../../public/demo/drone/social-1.jpg" alt=""><span>Réseaux</span></div>
+    <div class="g card pop" style="left:940px;top:440px;width:540px;height:450px;--t:2.3s" data-sfx="pop"><img src="../../public/demo/drone/detail-1.jpg" alt=""><span>Détail</span></div>
+    <div class="g card pop" style="left:1510px;top:656px;width:290px;height:234px;--t:2.6s"><img src="../../public/demo/drone/banner-1.jpg" alt=""><span>Bannière</span></div>
   </section>
 
   <!-- 6 · Publication -->
   <section class="scene" id="t6">
     <div class="title"><p class="num in">ÉTAPE 6</p><p class="k" style="font-size:110px;margin-top:14px"><span class="mask"><span style="--t:.1s">Vous <i>validez</i>,</span></span><br><span class="mask"><span style="--t:.3s">c'est programmé.</span></span></p></div>
     <div class="row">
-      <div class="post card in" style="--t:.6s"><img src="../../public/demo/oreiller/scene-2.jpg" alt=""><p>Instagram · lun. 12:00</p><i class="chk pop" style="--t:2.6s" data-sfx="pop">✓</i></div>
-      <div class="post card in" style="--t:.8s"><img src="../../public/demo/oreiller/social-1.jpg" alt=""><p>Facebook · mar. 18:30</p><i class="chk pop" style="--t:2.9s" data-sfx="pop">✓</i></div>
-      <div class="post card in" style="--t:1s"><img src="../../public/demo/oreiller/video-poster.jpg" alt=""><p>TikTok · jeu. 17:00</p><i class="chk pop" style="--t:3.2s" data-sfx="pop">✓</i></div>
-      <div class="post card in" style="--t:1.2s"><img src="../../public/demo/oreiller/scene-1.jpg" alt=""><p>Pinterest · sam. 10:00</p><i class="chk pop" style="--t:3.5s" data-sfx="pop">✓</i></div>
+      <div class="post card in" style="--t:.6s"><img src="../../public/demo/drone/scene-2.jpg" alt=""><p>Instagram · lun. 12:00</p><i class="chk pop" style="--t:2.6s" data-sfx="pop">✓</i></div>
+      <div class="post card in" style="--t:.8s"><img src="../../public/demo/drone/social-1.jpg" alt=""><p>Facebook · mar. 18:30</p><i class="chk pop" style="--t:2.9s" data-sfx="pop">✓</i></div>
+      <div class="post card in" style="--t:1s"><img src="../../public/demo/drone/video-poster.jpg" alt=""><p>TikTok · jeu. 17:00</p><i class="chk pop" style="--t:3.2s" data-sfx="pop">✓</i></div>
+      <div class="post card in" style="--t:1.2s"><img src="../../public/demo/drone/scene-1.jpg" alt=""><p>Pinterest · sam. 10:00</p><i class="chk pop" style="--t:3.5s" data-sfx="pop">✓</i></div>
     </div>
   </section>
 
