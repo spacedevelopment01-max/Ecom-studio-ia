@@ -21,9 +21,9 @@ const SECTOR_SYMBOL: Record<string, SymbolKind> = {
 const KEYWORD_SYMBOL: [RegExp, SymbolKind][] = [
   [/\bth[ée]s?\b|matcha|infusion|tisane/i, "leaf"],
   [/caf[ée]|espresso|barista|mousseur/i, "bean"],
-  [/v[êe]tement|t-?shirt|sweat|hoodie|robe|pantalon|veste|textile|lin|coton/i, "hanger"],
+  [/v[êe]tement|t-?shirt|sweat|hoodie|robe|pantalon|veste|textile|\blin\b|coton/i, "hanger"],
   [/plante|botani|v[ée]g[ée]tal|bio\b/i, "leaf"],
-  [/chat|chien|animal|animaux/i, "paw"],
+  [/\bchats?\b|chien|animal|animaux/i, "paw"],
   [/lampe|lumi[èe]re|bougie/i, "sun"],
   [/tasse|mug|th[ée]i[èe]re/i, "cup"],
 ];
@@ -31,8 +31,13 @@ const KEYWORD_SYMBOL: [RegExp, SymbolKind][] = [
 /** Symbole cohérent avec l'univers : d'abord les mots du produit, puis le secteur. */
 export function symbolFor(p: Project): SymbolKind {
   const text = `${p.product.name} ${p.product.category} ${p.product.summary} ${p.catalog.map((c) => `${c.name} ${c.category}`).join(" ")}`;
-  for (const [re, sym] of KEYWORD_SYMBOL) if (re.test(text)) return sym;
-  return SECTOR_SYMBOL[p.product.sector ?? ""] ?? "spark";
+  // Le mot-clé cité en premier l'emporte (« gant pour poils de chat… sur les vêtements » → patte, pas cintre).
+  let best: { sym: SymbolKind; at: number } | null = null;
+  for (const [re, sym] of KEYWORD_SYMBOL) {
+    const m = new RegExp(re.source, re.flags.replace("g", "")).exec(text);
+    if (m && (!best || m.index < best.at)) best = { sym, at: m.index };
+  }
+  return best?.sym ?? SECTOR_SYMBOL[p.product.sector ?? ""] ?? "spark";
 }
 
 export function logoProposals(p: Project, base?: Omit<LogoSpec, "color">): LogoProposal[] {
