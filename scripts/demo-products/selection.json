@@ -1,0 +1,27 @@
+{
+  "note": "Produits réels vendus en marque blanche (AliExpress / Alibaba). Les marques des démonstrations sont créées par le studio ; les fiches fournisseurs servent de source (photos, caractéristiques).",
+  "stores": [
+    { "id": "brosse", "type": "mono", "direction": "atelier", "products": [
+      { "name": "Brosse soufflante 3 en 1", "category": "Coiffure", "url": "https://www.aliexpress.com/item/1005002786897707.html" } ] },
+    { "id": "lampe", "type": "mono", "direction": "terroir", "products": [
+      { "name": "Lampe champignon sans fil rechargeable", "category": "Luminaires", "url": "https://www.aliexpress.com/i/3256811816769898.html" } ] },
+    { "id": "projecteur", "type": "mono", "direction": "nocturne", "products": [
+      { "name": "Mini projecteur HY300", "category": "Image et son", "url": "https://www.aliexpress.com/item/1005005967258007.html" } ] },
+    { "id": "ventilateur", "type": "mono", "direction": "flux", "products": [
+      { "name": "Ventilateur de cou sans pales", "category": "Été", "url": "https://www.aliexpress.com/item/1005005108800448.html" } ] },
+    { "id": "maison", "type": "multi", "direction": "clinique", "products": [
+      { "name": "Lampe champignon sans fil rechargeable", "category": "Maison", "url": "https://www.aliexpress.com/i/3256811816769898.html" },
+      { "name": "Mini projecteur HY300", "category": "High-tech", "url": "https://www.aliexpress.com/item/1005005967258007.html" },
+      { "name": "Ventilateur de cou sans pales", "category": "High-tech", "url": "https://www.aliexpress.com/item/1005005108800448.html" },
+      { "name": "Brosse soufflante 3 en 1", "category": "Beauté", "url": "https://www.aliexpress.com/item/1005002786897707.html" },
+      { "name": "Mousseur à lait rechargeable", "category": "Cuisine", "url": "https://www.aliexpress.com/item/1005010025689402.html" } ] },
+    { "id": "chat", "type": "niche", "direction": "pop", "products": [
+      { "name": "Fontaine à eau sans fil pour chat", "category": "Hydratation", "url": "https://www.aliexpress.com/w/wholesale-cat-water-fountain-with-filter.html" },
+      { "name": "Brosse autonettoyante", "category": "Toilettage", "url": "https://www.aliexpress.com/item/1005001728751528.html" },
+      { "name": "Jouet laser automatique", "category": "Jeux", "url": "https://www.aliexpress.com/item/1005012510803676.html" } ] },
+    { "id": "cafe", "type": "niche", "direction": "galerie", "products": [
+      { "name": "Mousseur à lait rechargeable", "category": "Lait et mousse", "url": "https://www.aliexpress.com/item/1005010025689402.html" },
+      { "name": "Balance café avec minuteur", "category": "Mesure", "url": "https://www.aliexpress.com/i/3256806253538059.html" },
+      { "name": "Bouilloire col de cygne", "category": "Infusion", "url": "https://www.aliexpress.com/item/1005001967530136.html" } ] }
+  ]
+}
