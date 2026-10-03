@@ -1,70 +1,7 @@
 {
-  "generatedAt": "2026-10-03T13:06:27.316Z",
+  "generatedAt": "2026-10-03T15:34:14.128Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
-    {
-      "id": "oreiller",
-      "brand": "Somnéa",
-      "product": "Oreiller ergonomique Papillon",
-      "sector": "Maison",
-      "direction": "clinique",
-      "palette": [
-        "#454873",
-        "#D3D4D9",
-        "#8D74B4",
-        "#F2F3F7",
-        "#14151F"
-      ],
-      "photo": "/demo/oreiller/photo.jpg",
-      "logo": "/demo/oreiller/logo.svg",
-      "shopDesktop": "/demo/oreiller/boutique-bureau.jpg",
-      "shopMobile": "/demo/oreiller/boutique-mobile.jpg",
-      "productPage": "/demo/oreiller/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/oreiller/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/oreiller/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/oreiller/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/oreiller/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/oreiller/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/oreiller/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/oreiller/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/oreiller/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/oreiller/video.mp4",
-      "videoPoster": "/demo/oreiller/video-poster.jpg",
-      "shopVideo": "/demo/oreiller/video-boutique.mp4",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio."
-      }
-    },
     {
       "id": "verger",
       "brand": "Verger",
@@ -126,6 +63,69 @@
         "supplier": "AliExpress",
         "url": "https://fr.aliexpress.com/",
         "note": "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio."
+      }
+    },
+    {
+      "id": "oreiller",
+      "brand": "Somnéa",
+      "product": "Oreiller ergonomique Papillon",
+      "sector": "Maison",
+      "direction": "clinique",
+      "palette": [
+        "#454873",
+        "#D3D4D9",
+        "#8D74B4",
+        "#F2F3F7",
+        "#14151F"
+      ],
+      "photo": "/demo/oreiller/photo.jpg",
+      "logo": "/demo/oreiller/logo.svg",
+      "shopDesktop": "/demo/oreiller/boutique-bureau.jpg",
+      "shopMobile": "/demo/oreiller/boutique-mobile.jpg",
+      "productPage": "/demo/oreiller/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/oreiller/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/oreiller/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/oreiller/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/oreiller/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/oreiller/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/oreiller/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/oreiller/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/oreiller/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/oreiller/video.mp4",
+      "videoPoster": "/demo/oreiller/video-poster.jpg",
+      "shopVideo": "/demo/oreiller/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio."
       }
     },
     {
