@@ -18,6 +18,10 @@ Le premier compte créé (ou celui de `ADMIN_EMAIL`) est administrateur : consol
 
 Autres commandes : `npm test` (tests vitest), `npm run typecheck`, `npx tsx scripts/theme-check.ts` (Shopify Theme Check sur les 8 directions), `npx tsx scripts/e2e-pipeline.ts <photo>` (pipeline complet sans navigateur), `CHROMIUM=… PHOTO=… npx tsx scripts/e2e-browser.ts` (parcours navigateur bureau + mobile), `RENDERS=… npx tsx scripts/build-demos.ts` (régénère les démonstrations de la page d'accueil).
 
+### Essayer sans rien installer (GitHub Codespaces, gratuit)
+
+Sur la page du dépôt : **Code › Codespaces › Create codespace on main**. L'installation se fait seule (5 minutes environ la première fois), puis le studio s'ouvre dans un onglet. Le quota gratuit de GitHub couvre environ 60 heures par mois ; arrêtez le codespace quand vous avez fini.
+
 ## Ce qui fonctionne sans aucune clé externe
 
 Le **moteur intégré** tourne entièrement sur le serveur :
@@ -51,6 +55,15 @@ Tout se règle dans `/admin` ; les secrets sont chiffrés (AES-256-GCM, clé `AP
 | Paiements (abonnement 49,90 €/mois, +40 €/boutique, recharges par 10 €) | Clés Stripe + secret webhook | Code complet ; annoncé « actif » seulement après réception d'un événement signé. En attendant, l'administration active les abonnements manuellement. |
 
 Instagram, TikTok, Pinterest et Shopify récupèrent les médias par URL : la publication automatique exige que le studio soit déployé sur une **adresse publique HTTPS** (réglage « Adresse publique » dans l'administration).
+
+## Mise en ligne
+
+Le studio a besoin d'un processus qui tourne en continu (site + worker), d'un disque persistant (base SQLite et fichiers générés dans `/data`) et de ffmpeg : un hébergement « serverless » ne convient pas. L'image Docker fournie contient tout ; la CI la construit et vérifie qu'elle démarre.
+
+- **Serveur (VPS)** : `APP_SECRET=… APP_URL=https://votre-domaine docker compose up -d --build`, derrière un proxy HTTPS (Caddy, Traefik, nginx).
+- **Plateforme avec volume** (Railway, Fly.io, Render…) : déployez le `Dockerfile`, montez un volume sur `/data`, définissez `APP_SECRET` (32 caractères aléatoires ou plus) et `APP_URL` (l'adresse publique HTTPS). Prévoyez au moins 2 Go de mémoire (détourage local).
+
+Ensuite : créez votre compte (le premier devient administrateur), puis renseignez dans `/admin` l'adresse publique, les clés IA, les applications OAuth et Stripe.
 
 ## Architecture
 

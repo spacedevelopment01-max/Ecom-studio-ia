@@ -1,0 +1,18 @@
+# Déploiement sur un serveur (VPS) : docker compose up -d --build
+# Placez devant un proxy HTTPS (Caddy, Traefik, nginx) : les réseaux sociaux et Shopify
+# exigent une adresse publique en HTTPS.
+services:
+  studio:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      APP_SECRET: ${APP_SECRET:?Définissez APP_SECRET (32 caractères aléatoires au moins)}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+    volumes:
+      - studio-data:/data
+
+volumes:
+  studio-data:

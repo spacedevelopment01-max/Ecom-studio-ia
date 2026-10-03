@@ -1,0 +1,12 @@
+{
+  "name": "E-COM STUDIO IA",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "hostRequirements": { "cpus": 2, "memory": "8gb" },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg && npm ci && npm run setup",
+  "postAttachCommand": { "studio": "npm run dev" },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "Studio", "onAutoForward": "openBrowser" }
+  },
+  "containerEnv": { "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1", "NEXT_TELEMETRY_DISABLED": "1" }
+}
