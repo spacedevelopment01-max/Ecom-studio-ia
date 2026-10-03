@@ -32,3 +32,21 @@ describe("offre et enveloppe IA", () => {
     expect(balance(u.id).available).toBe(monthlyAllowanceMicro(2));
   });
 });
+
+describe("protection de la marge", () => {
+  it("refuse toute génération avec un modèle sans tarif (sinon comptée 0 € hors enveloppe)", async () => {
+    const { requirePrice, priceValid } = await import("@/lib/ai/config");
+    expect(() => requirePrice("google", "modele-inconnu")).toThrow(/Tarif inconnu/);
+    expect(requirePrice("google", "veo-3.0-generate-001")).toMatchObject({ unit: "video_second" });
+    expect(priceValid({ unit: "tokens", inputPerM: 3, outputPerM: 0 } as any)).toBe(false);
+    expect(priceValid({ unit: "image", perImage: 0.04 })).toBe(true);
+  });
+
+  it("refuse un tarif incomplet saisi dans l'administration", async () => {
+    const { setJsonSetting } = await import("@/lib/settings");
+    const { requirePrice } = await import("@/lib/ai/config");
+    setJsonSetting("ai.prices", { "fal:modele-gratuit": { unit: "video_second" } });
+    expect(() => requirePrice("fal", "modele-gratuit")).toThrow(/Tarif inconnu/);
+    setJsonSetting("ai.prices", {});
+  });
+});

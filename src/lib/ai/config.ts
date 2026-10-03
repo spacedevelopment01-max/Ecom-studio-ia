@@ -4,6 +4,7 @@
  * départ. Les clients n'ont jamais besoin de clé : E-COM STUDIO IA fournit l'IA.
  */
 import { getJsonSetting, getSetting } from "../settings";
+import { UserFacingError } from "../jobs";
 
 export type ProviderId = "anthropic" | "openai" | "google" | "fal";
 
@@ -106,6 +107,33 @@ export function routeFor(task: TaskId): Route {
 export function priceFor(provider: string, model: string): Price | null {
   const custom = getJsonSetting<Record<string, Price>>("ai.prices", {});
   return custom[`${provider}:${model}`] ?? DEFAULT_PRICES[`${provider}:${model}`] ?? null;
+}
+
+/** Tarifs à revérifier au-delà de ce délai (alerte dans l'administration). */
+export const PRICE_REVIEW_DAYS = 90;
+
+/** Date de la dernière vérification des tarifs par l'administration (null : jamais confirmés). */
+export function pricesCheckedAt(): number | null {
+  const v = Number(getSetting("ai.prices.checkedAt"));
+  return Number.isFinite(v) && v > 0 ? v : null;
+}
+
+/**
+ * Tarif obligatoire avant toute génération payante : un modèle sans tarif connu serait compté 0 €
+ * et contournerait l'enveloppe IA des clients. La génération est donc refusée.
+ */
+export function requirePrice(provider: string, model: string): Price {
+  const p = priceFor(provider, model);
+  if (!p || !priceValid(p)) throw new UserFacingError(`Tarif inconnu pour ${provider}:${model} : renseignez-le dans l'administration (Modèles et tarifs) avant d'utiliser ce modèle.`);
+  return p;
+}
+
+export function priceValid(p: Price): boolean {
+  const pos = (n: unknown) => typeof n === "number" && Number.isFinite(n) && n > 0;
+  if (p.unit === "tokens") return pos(p.inputPerM) && pos(p.outputPerM);
+  if (p.unit === "image") return pos(p.perImage);
+  if (p.unit === "video_second") return pos(p.perSecond);
+  return false;
 }
 
 export function usdToEur(): number {

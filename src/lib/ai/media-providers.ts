@@ -12,13 +12,13 @@ import OpenAI, { toFile } from "openai";
 import sharp from "sharp";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
 import { PermanentError, UserFacingError } from "../jobs";
-import { priceFor, providerKey, routeFor, usdToEur } from "./config";
+import { providerKey, requirePrice, routeFor, usdToEur } from "./config";
 
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string };
 
 function cost(provider: string, model: string, units: { input?: number; output?: number; imageIn?: number; imageOut?: number; images?: number; seconds?: number }) {
-  const p = priceFor(provider, model);
-  if (!p) return { micro: 0, estimated: true };
+  // Sans tarif connu, la génération est refusée (sinon elle serait comptée 0 € hors enveloppe).
+  const p = requirePrice(provider, model);
   let usd = 0;
   if (p.unit === "tokens") usd = ((units.input ?? 0) * p.inputPerM + (units.imageIn ?? 0) * (p.imageInputPerM ?? p.inputPerM) + (units.output ?? 0) * p.outputPerM + (units.imageOut ?? 0) * (p.imageOutputPerM ?? p.outputPerM)) / 1e6;
   if (p.unit === "image") usd = (units.images ?? 1) * p.perImage;

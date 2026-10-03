@@ -10,6 +10,7 @@ type Overview = {
   tasks: { id: string; label: string; kind: string; route: { provider: string; model: string; effort?: string }; defaultRoute: { provider: string; model: string }; price: unknown }[];
   prices: Record<string, unknown>;
   usdToEur: number;
+  pricing: { checkedAt: number | null; reviewDays: number; missing: { task: string; label: string; key: string }[] };
   markup: number;
   oauth: { key: string; label: string; configured: boolean; clientIdMasked: string; redirectUri: string; needs: string; docs: string }[];
   stripe: { secretMasked: string; webhookConfigured: boolean; verifiedAt: string | null; live: boolean; webhookUrl: string };
@@ -75,6 +76,7 @@ export function AdminConsole() {
         </nav>
         {!data ? <div className="skeleton h-72 rounded-3xl" /> : (
           <div className="grid gap-5">
+            <PricingAlert data={data} post={post} onOpen={() => setTab("routes")} />
             {tab === "ia" && <AiProviders data={data} set={set} />}
             {tab === "routes" && <Routes data={data} post={post} />}
             {tab === "connexions" && <OAuthApps data={data} set={set} />}
@@ -165,6 +167,37 @@ function UrlRow({ initial, onSave }: { initial: string; onSave: (v: string) => v
   );
 }
 
+/** Rentabilité : tarif manquant (génération refusée) et tarifs à revérifier. */
+function PricingAlert({ data, post, onOpen }: { data: Overview; post: (b: Record<string, unknown>, msg?: string) => Promise<void>; onOpen: () => void }) {
+  const { checkedAt, reviewDays, missing } = data.pricing;
+  const age = checkedAt ? Math.floor((Date.now() - checkedAt) / 86400_000) : null;
+  const stale = age === null || age > reviewDays;
+  if (!missing.length && !stale) return null;
+  return (
+    <div className="grid gap-3">
+      {missing.length > 0 && (
+        <div className="rounded-2xl border border-bad/30 bg-bad-soft p-4 text-sm text-bad">
+          <p className="font-semibold">Tarif manquant : ces générations sont refusées pour protéger votre marge.</p>
+          <ul className="mt-1.5 list-disc pl-5">{missing.map((m) => <li key={m.task}>{m.label} · <span className="font-mono text-xs">{m.key}</span></li>)}</ul>
+          <Button size="sm" variant="secondary" className="mt-3" onClick={onOpen}>Renseigner les tarifs</Button>
+        </div>
+      )}
+      {stale && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warn/30 bg-warn-soft p-4 text-sm text-warn">
+          <p>
+            <span className="font-semibold">{age === null ? "Tarifs des fournisseurs jamais confirmés." : `Tarifs vérifiés il y a ${age} jours.`}</span>{" "}
+            Si un fournisseur a augmenté ses prix, les crédits des clients sous-estiment la dépense réelle. Comparez avec les pages officielles (OpenAI, Google, Anthropic, fal.ai) et le taux USD → EUR, tous les {reviewDays} jours.
+          </p>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={onOpen}>Voir les tarifs</Button>
+            <Button size="sm" onClick={() => post({ pricesChecked: true }, "Tarifs marqués comme vérifiés.")}>J'ai vérifié les tarifs</Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Routes({ data, post }: { data: Overview; post: (b: Record<string, unknown>, msg?: string) => Promise<void> }) {
   const [edit, setEdit] = useState<Record<string, { provider: string; model: string; effort?: string }>>({});
   const [priceKey, setPriceKey] = useState("");
@@ -214,7 +247,7 @@ function Routes({ data, post }: { data: Overview; post: (b: Record<string, unkno
             <Button type="submit" variant="secondary">OK</Button>
           </form>
           <form onSubmit={(e) => { e.preventDefault(); post({ markup: Number(markup) }, "Coefficient enregistré."); }} className="flex items-end gap-2">
-            <label className="grid flex-1 gap-1 text-xs font-medium text-ink-2">Coefficient appliqué au coût (débit de l'enveloppe)<Input value={markup} onChange={(e) => setMarkup(e.target.value)} inputMode="decimal" /></label>
+            <label className="grid flex-1 gap-1 text-xs font-medium text-ink-2">Coefficient appliqué au coût (débit de l'enveloppe, 1 au minimum)<Input value={markup} onChange={(e) => setMarkup(e.target.value)} inputMode="decimal" /></label>
             <Button type="submit" variant="secondary">OK</Button>
           </form>
         </div>
