@@ -1011,3 +1011,7 @@ input:checked + .es-chip { background: var(--c-accent); color: var(--c-accent-te
 .es-product__info, .es-product__sticky, .es-siblings { min-width: 0; max-width: 100%; }
 .es-product__grid > * { min-width: 0; }
 .es-product__sticky > .es-pills, .es-product__sticky > .es-siblings, .es-product__sticky > .es-benefits, .es-product__sticky > .es-bundles, .es-product__sticky > .es-subscribe, .es-product__sticky > .es-eta, .es-product__sticky > .es-callout, .es-product__sticky > .es-promo { margin-block: 10px; }
+
+.es-sticky-buy__meta { margin: 2px 0 0; font-size: .9rem; color: var(--c-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60vw; }
+.es-sticky-buy__meta strong { color: var(--c-text); }
+@media (max-width: 749px) { .es-sticky-buy__inner { display: grid; grid-template-columns: 1fr; gap: 8px; } .es-sticky-buy__title { max-width: none; font-size: .95rem; } .es-sticky-buy__meta { max-width: none; } }

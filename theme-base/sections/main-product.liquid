@@ -201,7 +201,10 @@
       <div class="es-container es-sticky-buy__inner">
         <div class="es-sticky-buy__product">
           {%- if product.featured_media -%}{{ product.featured_media | image_url: width: 120 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}
-          <div><p class="es-sticky-buy__title">{{ product.title }}</p>{% render 'price', product: product, use_variant: true %}</div>
+          <div>
+            <p class="es-sticky-buy__title">{{ product.title }}</p>
+            <p class="es-sticky-buy__meta"><span data-sticky-meta>{% unless product.has_only_default_variant %}{{ product.selected_or_first_available_variant.title }}{% endunless %}</span> <strong data-sticky-total>{{ product.selected_or_first_available_variant.price | money }}</strong></p>
+          </div>
         </div>
         <button type="button" class="es-button" data-sticky-add {% unless current_variant.available %}disabled{% endunless %}>{{ 'products.product.add_to_cart' | t }}</button>
       </div>

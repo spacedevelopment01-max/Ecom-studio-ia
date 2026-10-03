@@ -297,17 +297,45 @@
     stickyBuy = $('[data-sticky-buy]'); mainBuy = $('#MainBuy');
     if (!stickyBuy || !mainBuy) return;
     stickyBuy.hidden = false;
+    var section = mainBuy.closest('[data-main-product]') || document;
+    section.addEventListener('es:variant', stickySummary);
+    section.addEventListener('click', function (e) { if (e.target.closest('.es-bundle, [data-qty-step]')) setTimeout(stickySummary, 0); });
+    section.addEventListener('input', function (e) { if (e.target.name === 'quantity') stickySummary(); });
+    stickySummary();
     var btn = $('[data-sticky-add]', stickyBuy);
     btn && btn.addEventListener('click', function () {
       var form = $('[data-product-form]', mainBuy);
       if (form) { if (form.requestSubmit) form.requestSubmit(); else form.submit(); }
     });
   }
+  /* Résumé de la barre : lot ou quantité, variante, total. */
+  function stickySummary() {
+    if (!stickyBuy || !mainBuy) return;
+    var section = mainBuy.closest('[data-main-product]') || document;
+    var variants = []; try { variants = JSON.parse(($('[data-variants]', section) || {}).textContent || '[]'); } catch (e) {}
+    var idInput = $('[data-variant-id]', section);
+    var v = variants.find(function (x) { return idInput && String(x.id) === String(idInput.value); }) || variants[0];
+    if (!v) return;
+    var qInput = $('input[name="quantity"]', section);
+    var q = Math.max(1, parseInt(qInput && qInput.value, 10) || 1);
+    var bundle = $('.es-bundle[aria-checked="true"]', section);
+    var discount = bundle && +bundle.getAttribute('data-qty') === q ? +bundle.getAttribute('data-discount') || 0 : 0;
+    var parts = [];
+    if (bundle && +bundle.getAttribute('data-qty') === q) { var lab = $('.es-bundle__label', bundle); parts.push(lab ? lab.childNodes[0].textContent.trim() : q + ' ×'); }
+    else if (q > 1) parts.push(q + ' ×');
+    if (v.title && v.title !== 'Default Title') parts.push(v.title);
+    var meta = $('[data-sticky-meta]', stickyBuy); if (meta) meta.textContent = parts.join(' · ') + (parts.length ? ' ·' : '');
+    var total = $('[data-sticky-total]', stickyBuy); if (total && v.price != null) total.textContent = formatMoney(Math.round(v.price * q * (100 - discount) / 100));
+    var btn = $('[data-sticky-add]', stickyBuy); if (btn) btn.disabled = !v.available;
+  }
   function stickyBuyOnScroll() {
     if (!stickyBuy || !mainBuy) return;
     var r = mainBuy.getBoundingClientRect();
     var footer = $('.es-footer'); var fr = footer ? footer.getBoundingClientRect().top : Infinity;
-    stickyBuy.classList.toggle('is-visible', r.bottom < 0 && fr > window.innerHeight);
+    // Visible dès que le bouton d'ajout n'est plus à l'écran (passé sous l'en-tête ou hors champ), masquée au pied de page.
+    var headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 0;
+    var inView = r.top < window.innerHeight && r.bottom > headerH;
+    stickyBuy.classList.toggle('is-visible', !inView && window.scrollY > 120 && fr > window.innerHeight);
   }
 
   /* ---------- Présentation au défilement ---------- */
