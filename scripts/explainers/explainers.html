@@ -71,27 +71,50 @@
   /* 3 · Retouche par conversation */
   #chat .panel { position: absolute; left: 56px; top: 150px; width: 380px; height: 590px; padding: 22px; --t: .1s; }
   #chat .panel h4 { font: 600 18px Bricolage, sans-serif; color: var(--muted); margin-bottom: 18px; }
+  #chat .ex { position: absolute; left: 22px; right: 22px; top: 62px; }
   #chat .msg { max-width: 300px; padding: 14px 18px; border-radius: 20px; font-size: 19px; line-height: 1.35; margin-bottom: 14px; }
-  #chat .me { margin-left: auto; background: var(--blue); color: #fff; border-bottom-right-radius: 6px; --t: .9s; }
-  #chat .ai { background: #1A2340; border-bottom-left-radius: 6px; --t: 4.6s; }
-  #chat .pin { display: inline-flex; gap: 8px; align-items: center; padding: 7px 12px; border-radius: 999px; background: rgba(124,196,255,.14); border: 1px solid rgba(124,196,255,.4); font-size: 15px; color: #CFE3FF; margin: 0 0 14px auto; --t: .5s; }
+  #chat .me { margin-left: auto; width: fit-content; background: var(--blue); color: #fff; border-bottom-right-radius: 6px; }
+  #chat .ai { background: #1A2340; border-bottom-left-radius: 6px; }
+  #chat .pin { display: inline-flex; gap: 8px; align-items: center; padding: 7px 12px; border-radius: 999px; background: rgba(124,196,255,.14); border: 1px solid rgba(124,196,255,.4); font-size: 15px; color: #CFE3FF; margin: 0 0 14px auto; }
   #chat .row { display: flex; }
-  #chat .dots { display: flex; gap: 6px; padding: 18px; width: 86px; background: #1A2340; border-radius: 20px; --t: 3.2s; --o: 4.5s; position: absolute; top: 250px; left: 22px; }
+  #chat .dots { display: flex; gap: 6px; padding: 18px; width: 86px; background: #1A2340; border-radius: 20px; position: absolute; top: 112px; left: 0; }
   #chat .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); animation: blink 1s infinite; }
   #chat .dots i:nth-child(2) { animation-delay: .2s; } #chat .dots i:nth-child(3) { animation-delay: .4s; }
-  @keyframes blink { 50% { opacity: .25; } }
-  #chat .ver { font-size: 14px; color: var(--sky); margin-top: 6px; display: block; }
-  #chat .shop { position: absolute; left: 470px; top: 150px; width: 434px; height: 590px; background: #FFF6EE; color: #2B1416; --t: .3s; }
+  #chat .vers { position: absolute; left: 22px; right: 22px; bottom: 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  #chat .vers span { width: 100%; font: 600 14px Inter, sans-serif; color: var(--muted); }
+  #chat .vers i { font-style: normal; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: #5B6580; animation: von .5s ease var(--a, 0s) both; }
+  #chat .vers i.on { animation: none; background: rgba(124,196,255,.14); color: #CFE3FF; border-color: rgba(124,196,255,.4); }
+  #chat .vers small { width: 100%; font-size: 13px; }
+  @keyframes von { to { background: var(--blue); color: #fff; border-color: var(--blue); } }
+  #chat .shop { position: absolute; left: 470px; top: 150px; width: 434px; height: 590px; background: #FFF6EE; color: #2B1416; --t: .3s; animation: in .8s var(--e) .3s both, sage .8s ease var(--a3) forwards; }
+  @keyframes sage { to { background: #E3EBDD; } }
+  #chat .bar { height: 0; overflow: hidden; background: #2B1416; color: #FFF6EE; font: 600 14px Inter, sans-serif; letter-spacing: .04em; display: flex; align-items: center; justify-content: center; animation: bar .7s var(--e) var(--a) forwards; }
+  @keyframes bar { to { height: 38px; } }
   #chat .shop header { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; font: 700 26px Bricolage, sans-serif; letter-spacing: -.03em; color: #90282C; }
   #chat .shop header span { width: 26px; height: 3px; background: #2B1416; box-shadow: 0 -8px 0 #2B1416; }
-  #chat .shop .im { margin: 0 22px; height: 300px; border-radius: 20px; overflow: hidden; background: #F3E1D6; }
-  #chat .shop .im img { width: 100%; height: 100%; object-fit: cover; }
-  #chat .shop h5 { margin: 22px 22px 6px; font: 700 34px/1 Bricolage, sans-serif; letter-spacing: -.04em; }
+  #chat .shop .im { position: relative; margin: 0 22px; height: 290px; border-radius: 20px; overflow: hidden; background: #F3E1D6; }
+  #chat .shop .im img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #chat .shop .im img.alt { opacity: 0; animation: fadein .9s ease var(--a) forwards; }
+  #chat .shop .im .ring { inset: 8px; border-radius: 14px; }
+  #chat .shop .im .ring b { top: 8px; left: 8px; }
+  @keyframes fadein { to { opacity: 1; } }
+  #chat .shop h5 { position: relative; height: 40px; margin: 22px 22px 8px; font: 700 34px/1 Bricolage, sans-serif; letter-spacing: -.04em; }
+  #chat .shop h5 span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+  #chat .shop h5 .t1 { animation: fadeout .5s ease var(--a) forwards; }
+  #chat .shop h5 .t2 { opacity: 0; font: italic 400 42px/.95 Instrument, serif; letter-spacing: -.01em; animation: fadein .6s ease var(--a) forwards; }
+  @keyframes fadeout { to { opacity: 0; } }
+  #chat .shop h5 .ring { inset: -8px -10px; border-radius: 12px; }
   #chat .shop p { margin: 0 22px; font-size: 16px; color: #6E4A4C; }
-  #chat .btn { position: relative; display: inline-block; margin: 22px; padding: 16px 30px; border-radius: 999px; font: 600 18px Inter, sans-serif; color: #fff; background: #E8607A; animation: tob .6s ease 5.3s both; }
+  @keyframes blink { 50% { opacity: .25; } }
   @keyframes tob { to { background: #111111; } }
-  #chat .ring { position: absolute; inset: -9px; border: 2.5px dashed var(--blue); border-radius: 999px; animation: in .5s var(--e) 1.9s both, out .4s ease 6.4s both; }
+  #chat .btn { position: relative; display: inline-block; margin: 20px 22px; padding: 16px 30px; border-radius: 999px; font: 600 18px Inter, sans-serif; color: #fff; background: #E8607A; animation: tob .6s ease var(--a) both; }
+  #chat .ring { position: absolute; inset: -9px; border: 2.5px dashed var(--blue); border-radius: 999px; opacity: 0; animation: in .5s var(--e) var(--r) both, out .4s ease var(--x) both; }
   #chat .ring b { position: absolute; top: -34px; left: 0; padding: 4px 10px; border-radius: 8px; background: var(--blue); color: #fff; font: 600 13px Inter, sans-serif; white-space: nowrap; }
+  #chat .btn .ring b { top: 50%; left: calc(100% + 14px); transform: translateY(-50%); }
+  #chat .ring.page { inset: 6px; border-radius: 22px; }
+  #chat .ring.page b { top: auto; bottom: 10px; left: auto; right: 10px; }
+  #chat .ring.top { inset: 4px 4px auto 4px; height: 52px; border-radius: 14px; }
+  #chat .ring.top b { top: auto; bottom: -32px; left: auto; right: 0; }
 
   /* 4 · Formats */
   #formats .f { position: absolute; }
@@ -205,19 +228,49 @@
     <div class="tag in"><i></i>03 · Retouche en discutant</div>
     <div class="panel card in">
       <h4>Discussion</h4>
-      <div class="row"><span class="pin in">◎ Bouton du héros</span></div>
-      <p class="msg me in">Mets ce bouton en noir</p>
-      <div class="dots io"><i></i><i></i><i></i></div>
-      <p class="msg ai in">C'est fait : seul ce bouton a changé.<span class="ver">Nouvelle version · restaurable</span></p>
+      <div class="ex io" style="--t:0.50s;--o:3.65s">
+        <div class="row"><span class="pin">◎ Bouton du héros</span></div>
+        <p class="msg me in" style="--t:0.85s">Mets ce bouton en noir</p>
+        <div class="dots io" style="--t:1.40s;--o:2.35s"><i></i><i></i><i></i></div>
+        <p class="msg ai in" style="--t:2.50s">C'est fait : seul ce bouton a changé.</p>
+      </div>
+      <div class="ex io" style="--t:3.80s;--o:6.95s">
+        <div class="row"><span class="pin">◎ Titre</span></div>
+        <p class="msg me in" style="--t:4.15s">Titre plus élégant, en italique</p>
+        <div class="dots io" style="--t:4.70s;--o:5.65s"><i></i><i></i><i></i></div>
+        <p class="msg ai in" style="--t:5.80s">Titre passé en italique, le reste ne bouge pas.</p>
+      </div>
+      <div class="ex io" style="--t:7.10s;--o:10.25s">
+        <div class="row"><span class="pin">◎ Fond de la page</span></div>
+        <p class="msg me in" style="--t:7.45s">Un fond vert sauge</p>
+        <div class="dots io" style="--t:8.00s;--o:8.95s"><i></i><i></i><i></i></div>
+        <p class="msg ai in" style="--t:9.10s">Fond changé sur toute la page.</p>
+      </div>
+      <div class="ex io" style="--t:10.40s;--o:13.55s">
+        <div class="row"><span class="pin">◎ Image</span></div>
+        <p class="msg me in" style="--t:10.75s">Mets la photo en situation</p>
+        <div class="dots io" style="--t:11.30s;--o:12.25s"><i></i><i></i><i></i></div>
+        <p class="msg ai in" style="--t:12.40s">Image remplacée par votre photo en situation.</p>
+      </div>
+      <div class="ex io" style="--t:13.70s;--o:99s">
+        <div class="row"><span class="pin">◎ Haut de page</span></div>
+        <p class="msg me in" style="--t:14.05s">Ajoute un bandeau d'annonce</p>
+        <div class="dots io" style="--t:14.60s;--o:15.55s"><i></i><i></i><i></i></div>
+        <p class="msg ai in" style="--t:15.70s">Bandeau ajouté en haut de la page.</p>
+      </div>
+      <div class="vers"><span>Versions</span><i class="on">v1</i><i style="--a:2.50s">v2</i><i style="--a:5.80s">v3</i><i style="--a:9.10s">v4</i><i style="--a:12.40s">v5</i><i style="--a:15.70s">v6</i><small>restaurables à tout moment</small></div>
     </div>
-    <div class="shop card in">
+    <div class="shop card in" style="--a3:9.10s">
+      <div class="bar" style="--a:15.70s">Nouveau : Thé glacé Pêche</div>
       <header>verger<span></span></header>
-      <div class="im"><img src="../../public/demo/verger/packshot-1.jpg" alt=""></div>
-      <h5>Thé glacé Pêche</h5>
+      <div class="im"><img src="../../public/demo/verger/packshot-1.jpg" alt=""><img class="alt" style="--a:12.40s" src="../../public/demo/verger/scene-1.jpg" alt=""><i class="ring" style="--r:10.60s;--x:13.30s"><b>Image</b></i></div>
+      <h5><span class="t1" style="--a:5.80s">Thé glacé Pêche</span><span class="t2" style="--a:5.80s">Thé glacé Pêche</span><i class="ring" style="--r:4.00s;--x:6.70s"><b>Titre</b></i></h5>
       <p>Thé glacé · canette 33 cl</p>
-      <span class="btn">Découvrir<i class="ring"><b>Élément désigné</b></i></span>
+      <span class="btn" style="--a:2.50s">Découvrir<i class="ring" style="--r:0.70s;--x:3.40s"><b>Bouton</b></i></span>
+      <i class="ring page" style="--r:7.30s;--x:10.00s"><b>Fond de la page</b></i>
+      <i class="ring top" style="--r:13.90s;--x:16.60s"><b>Haut de page</b></i>
     </div>
-    <div class="caps" style="height:110px"><p class="cap in" style="--t:6.6s;font-size:46px">Modifiez <b>en discutant</b>.<small>Désignez un élément : seul lui change, chaque version reste restaurable.</small></p></div>
+    <div class="caps" style="height:110px"><p class="cap in" style="--t:.8s;font-size:46px">Tout se modifie <b>en discutant</b>.<small>Boutons, textes, couleurs, images, sections : une version à chaque étape.</small></p></div>
   </section>
 
   <!-- 4 · Images et vidéos -->
