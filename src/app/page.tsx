@@ -63,7 +63,7 @@ export default async function Home() {
   const features: [any, string, string][] = [
     [MessageSquare, "Boutique par conversation", "Discutez à gauche, la boutique s'actualise à droite. Désignez une zone, joignez une image, demandez « modifie uniquement ce bouton »."],
     [Palette, "Thème sur mesure par l'IA", "Identité, composition et sections codées pour votre produit. Online Store 2.0 complet, contrôlé avec Theme Check (l'outil officiel de Shopify), exporté en ZIP identique à l'aperçu."],
-    [ImageIcon, "Images fidèles", "Packshots, détails, scènes, bannières, visuels sociaux et publicitaires — rangés et réutilisables partout."],
+    [ImageIcon, "Images fidèles", "Packshots, détails, scènes, bannières, visuels sociaux et publicitaires, rangés et réutilisables partout."],
     [Film, "Vidéos abouties", "Typographie animée, révélation du produit, transitions, musique originale, sous-titres. MP4 en 9:16, 1:1, 4:5 et 16:9."],
     [CalendarDays, "Calendrier qui publie", "Jour, semaine, mois. Validation à l'unité ou en lot, règles d'automatisation, reprises sans doublon."],
     [Pause, "Pause et reprise", "Mettez une création en pause, reprenez-la plus tard : les étapes terminées sont conservées, rien n'est refait."],
@@ -80,7 +80,7 @@ export default async function Home() {
       {/* En-tête */}
       <header className="glass sticky top-0 z-50 border-b border-line/70">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/" aria-label="E-COM STUDIO IA — accueil">
+          <Link href="/" aria-label="E-COM STUDIO IA, accueil">
             <Logo />
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-ink-2 lg:flex" aria-label="Navigation principale">
@@ -126,7 +126,7 @@ export default async function Home() {
                 <Words text="Une boutique qui vend." className="text-gradient pb-1" d={4} />
               </h1>
               <p className="reveal mt-7 max-w-xl text-lg leading-relaxed text-ink-2 sm:text-xl" style={{ ["--d" as any]: 6 }}>
-                Déposez la photo de votre produit, collez un lien — ou commencez sans rien. L'IA construit la marque, le thème Shopify, les images, les vidéos et vos publications. Vous gardez la main à chaque étape.
+                Déposez la photo de votre produit, collez un lien, ou commencez sans rien. L'IA construit la marque, le thème Shopify, les images, les vidéos et vos publications. Vous gardez la main à chaque étape.
               </p>
               <div className="reveal mt-9 flex flex-wrap items-center gap-3" style={{ ["--d" as any]: 7 }}>
                 <Link href={cta} className="btn-glow inline-flex h-14 items-center gap-2.5 rounded-full bg-signal px-7 text-[15px] font-semibold text-signal-ink transition hover:-translate-y-0.5">
@@ -245,7 +245,7 @@ export default async function Home() {
               </h2>
             </div>
             <div>
-              <p className="reveal text-[17px] leading-relaxed text-ink-2">L'IA peut partir de l'une de ces onze directions — chacune avec sa composition, ses typographies et ses animations — ou composer un thème entièrement nouveau pour votre produit. Dans tous les cas, tout reste modifiable : en discutant avec le studio, puis dans l'éditeur Shopify.</p>
+              <p className="reveal text-[17px] leading-relaxed text-ink-2">L'IA peut partir de l'une de ces onze directions (chacune avec sa composition, ses typographies et ses animations) ou composer un thème entièrement nouveau pour votre produit. Dans tous les cas, tout reste modifiable : en discutant avec le studio, puis dans l'éditeur Shopify.</p>
               <Link href={user ? "/studio/themes" : "/inscription"} className="reveal mt-5 inline-flex h-11 items-center gap-2 rounded-full border border-line bg-card px-5 text-sm font-medium hover:border-ink">
                 Voir la galerie <ArrowUpRight className="size-4" />
               </Link>
@@ -304,7 +304,7 @@ export default async function Home() {
                 Le studio ne « réinvente » jamais votre produit. Il le détoure, puis compose le décor autour de ses pixels réels. Lorsqu'un fournisseur d'images est activé, seul l'environnement est peint ; le produit d'origine est replacé par-dessus et une vérification visuelle compare la création à votre photo.
               </p>
               <ul className="reveal mt-7 grid gap-3 text-[15px]">
-                {["Forme, proportions, étiquette et logo conservés", "Textes publicitaires composés typographiquement — nets et sans faute", "Ombres, cadrages et marges de sécurité contrôlés pour chaque format"].map((t) => (
+                {["Forme, proportions, étiquette et logo conservés", "Textes publicitaires composés typographiquement, nets et sans faute", "Ombres, cadrages et marges de sécurité contrôlés pour chaque format"].map((t) => (
                   <li key={t} className="flex gap-3">
                     <Check className="mt-0.5 size-5 shrink-0 text-signal" /> {t}
                   </li>
@@ -376,7 +376,7 @@ export default async function Home() {
               <ul className="reveal mt-8 grid gap-3 text-[15px] text-ink-2">
                 <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Jauge de consommation et pourcentages visibles à tout moment</li>
                 <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Alerte à 80 % ; générations en pause seulement quand le budget est épuisé</li>
-                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Recharges par 10 € — la moitié va à l'IA, le solde est conservé</li>
+                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Recharges par 10 € : la moitié va à l'IA, le solde est conservé</li>
                 <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Aucune clé d'API à fournir : les IA sont incluses</li>
               </ul>
             </div>
@@ -412,7 +412,7 @@ export default async function Home() {
                 ["Faut-il savoir écrire des prompts ?", "Non. Une photo, un lien ou quelques lignes suffisent pour démarrer. La bibliothèque de prompts sert à aller plus loin, quand vous le souhaitez."],
                 ["Le thème Shopify est-il vraiment installable ?", "Oui : c'est un thème Online Store 2.0 complet (sections, blocs, réglages natifs, panier latéral, recherche, pages). Vous l'importez en ZIP, ou le studio l'installe comme thème non publié si vous connectez votre boutique."],
                 ["Puis-je changer de thème après coup ?", "Oui, à tout moment depuis l'onglet Boutique (bouton « Thèmes »). Textes, images et produit sont conservés ; l'ancienne version reste restaurable."],
-                ["Que se passe-t-il si une information manque ?", "Elle reste visible « à compléter » dans les textes, et le studio vous pose la question. Quand vous répondez, seuls les passages concernés sont mis à jour — sans écraser ce que vous avez validé."],
+                ["Que se passe-t-il si une information manque ?", "Elle reste visible « à compléter » dans les textes, et le studio vous pose la question. Quand vous répondez, seuls les passages concernés sont mis à jour, sans écraser ce que vous avez validé."],
                 ["Mes publications partent-elles si mon ordinateur est éteint ?", "Oui, une fois vos comptes connectés. Les publications programmées sont exécutées par le serveur, avec reprises contrôlées et protection contre les doublons. Les limites propres à chaque réseau sont indiquées dans le studio."],
                 ["Puis-je gérer plusieurs boutiques ?", "Oui, chacune avec ses fichiers, sa marque, ses comptes sociaux et son calendrier ; 40 € par boutique supplémentaire."],
               ].map(([q, a]) => (

@@ -211,7 +211,7 @@ function VariantsCard() {
             return (
               <li key={val} className="flex items-center gap-3 rounded-xl border border-line p-2">
                 <span className={cx("grid size-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-paper-2", !ph && "text-[10px] text-muted")}>
-                  {ph ? <img src={ph.url} alt={`Photo ${val}`} className="size-full object-cover" /> : "—"}
+                  {ph ? <img src={ph.url} alt={`Photo ${val}`} className="size-full object-cover" /> : "Photo"}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm">{val}</span>
                 <Button size="sm" variant="secondary" icon={<ImagePlus className="size-4" />} onClick={() => (setTarget(val), file.current?.click())}>{ph ? "Changer" : "Photo"}</Button>

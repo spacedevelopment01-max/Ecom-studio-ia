@@ -420,6 +420,10 @@ const VideoSceneSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("scene"), duration: z.number(), image: z.number().int(), caption: z.string().optional() }),
   z.object({ kind: z.literal("clip"), duration: z.number(), clip: z.number().int(), caption: z.string().optional() }),
   z.object({ kind: z.literal("end"), duration: z.number(), headline: z.string(), cta: z.string(), url: z.string().optional() }),
+  z.object({ kind: z.literal("hook"), duration: z.number(), image: z.number().int(), headline: z.string(), tag: z.string().optional() }),
+  z.object({ kind: z.literal("spotlight"), duration: z.number(), headline: z.string().optional() }),
+  z.object({ kind: z.literal("split"), duration: z.number(), image: z.number().int(), headline: z.string().optional() }),
+  z.object({ kind: z.literal("words"), duration: z.number(), items: z.array(z.string()).min(1).max(4) }),
 ]);
 const VideoPlanSchema = z.object({ concept: z.string(), scenes: z.array(VideoSceneSchema).min(3).max(9), transition: z.enum(["panel", "fade", "push"]), music: z.enum(["calm", "pulse", "none"]) });
 

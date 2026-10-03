@@ -109,7 +109,7 @@ function RulesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   }, [data]);
   return (
     <Modal open={open} onClose={onClose} title="Règles d'automatisation">
-      <p className="text-sm text-muted">Lorsqu'elles sont activées, les publications préparées en mode automatique sont programmées sans validation individuelle — uniquement sur les réseaux cochés et avec un compte connecté. Elles partent ensuite à l'heure prévue, même navigateur fermé.</p>
+      <p className="text-sm text-muted">Lorsqu'elles sont activées, les publications préparées en mode automatique sont programmées sans validation individuelle, uniquement sur les réseaux cochés et avec un compte connecté. Elles partent ensuite à l'heure prévue, même navigateur fermé.</p>
       <div className="mt-4 grid gap-3">
         <Toggle checked={r.enabled} onChange={(v) => setR({ ...r, enabled: v })} label="Autoriser la programmation automatique" />
         <div className="grid grid-cols-2 gap-2">

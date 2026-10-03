@@ -219,6 +219,12 @@ for (const p of PRODUCTS) {
     const r = await ctx.request.post(`${BASE}/api/projects/${pid}/files`, { multipart: { role: "lifestyle", files: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
     if (!r.ok()) throw new Error(await r.text());
   }
+  // Vidéos refaites avec les photos en situation (elles ouvrent le montage).
+  if (p.lifestyle?.length) {
+    await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "9:16", target: "ads", goal: "publicité courte pour les réseaux sociaux" } });
+    await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "16:9", target: "shop", goal: "vidéo d'ambiance pour la boutique", music: "none" } });
+    await waitIdle(ctx, pid);
+  }
   // Variante (coloris…) : valeurs du produit, puis photo de chaque valeur.
   if (p.variants) {
     await api(ctx, `/api/projects/${pid}/product`, { method: "PATCH", body: { variants: [{ name: p.variants.name, values: p.variants.values }] } });
@@ -271,7 +277,7 @@ for (const p of PRODUCTS) {
   const logo = byRole("logo-svg")[0] ?? byRole("logo")[0];
   const logoFile = logo?.mime === "image/svg+xml" ? "logo.svg" : "logo.png";
   if (logo) await saveRaw(ctx, logo.url, path.join(dir, logoFile));
-  const videos = byRole("video");
+  const videos = byRole("video").sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0));
   const vertical = videos.find((v) => v.meta?.format === "9:16") ?? videos[0];
   const wide = videos.find((v) => v.meta?.format === "16:9");
   if (vertical) await saveRaw(ctx, vertical.url, path.join(dir, "video.mp4"));

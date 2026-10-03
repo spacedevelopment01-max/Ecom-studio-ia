@@ -19,7 +19,7 @@ export default function ThemesPage() {
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <Link href="/studio" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink"><ArrowLeft className="size-4" /> Mes boutiques</Link>
         <h1 className="mt-4 font-display text-4xl font-semibold sm:text-5xl">Les onze thèmes</h1>
-        <p className="mt-3 max-w-2xl text-lg text-ink-2">Chaque direction est un vrai thème Shopify Online Store 2.0, avec sa composition, ses typographies, ses animations et sa combinaison d'en-tête, de pied de page et de bandeau — tout reste modifiable dans l'éditeur Shopify. Le studio en choisit un selon votre produit ; vous en changez quand vous voulez depuis l'onglet Boutique (bouton « Thèmes »).</p>
+        <p className="mt-3 max-w-2xl text-lg text-ink-2">Chaque direction est un vrai thème Shopify Online Store 2.0, avec sa composition, ses typographies, ses animations et sa combinaison d'en-tête, de pied de page et de bandeau. Tout reste modifiable dans l'éditeur Shopify. Le studio en choisit un selon votre produit ; vous en changez quand vous voulez depuis l'onglet Boutique (bouton « Thèmes »).</p>
         <p className="mt-2 text-sm text-muted">Aperçus réalisés sur un produit de démonstration fictif.</p>
         <div className="mt-8"><ThemeGrid directions={directionCards()} /></div>
       </main>

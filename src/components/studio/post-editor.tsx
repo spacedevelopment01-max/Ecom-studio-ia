@@ -95,7 +95,7 @@ export function PostEditor({ post, onClose, onChanged }: { post: PostView | null
             </Field>
             <Field label="Compte" htmlFor="pacc" hint={accounts.length ? undefined : "Aucun compte connecté pour ce réseau."}>
               <Select id="pacc" value={f.connectionId ?? ""} disabled={locked} onChange={(e) => setF({ ...f, connectionId: e.target.value || null })}>
-                <option value="">— choisir —</option>
+                <option value="">Choisir…</option>
                 {accounts.map((c) => <option key={c.id} value={c.id}>{c.name}{c.status !== "active" ? " (à reconnecter)" : ""}</option>)}
               </Select>
             </Field>

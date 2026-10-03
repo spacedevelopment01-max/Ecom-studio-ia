@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "E-COM STUDIO IA — du produit à la boutique", template: "%s · E-COM STUDIO IA" },
+  title: { default: "E-COM STUDIO IA · du produit à la boutique", template: "%s · E-COM STUDIO IA" },
   description: "Une photo ou un lien suffit : l'IA construit la marque, la boutique Shopify, les images, les vidéos et le calendrier de publications. Vous gardez la main à chaque étape.",
   icons: { icon: "/favicon.svg" },
 };

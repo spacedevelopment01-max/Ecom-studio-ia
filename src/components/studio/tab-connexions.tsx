@@ -96,7 +96,7 @@ export default function TabConnexions() {
                   </div>
                   {c.statusMessage && <p className="mt-2 text-xs text-bad">{c.statusMessage}</p>}
                   {c.can.length > 0 && <p className="mt-2 text-xs text-ink-2">Peut : {c.can.join(" · ")}</p>}
-                  {c.missing.length > 0 && <p className="mt-1 text-xs text-warn">Autorisations manquantes : {c.missing.join(", ")} — reconnectez le compte en les acceptant.</p>}
+                  {c.missing.length > 0 && <p className="mt-1 text-xs text-warn">Autorisations manquantes : {c.missing.join(", ")}. Reconnectez le compte en les acceptant.</p>}
                   {p.networks.length > 0 && (
                     <div className="mt-3"><Toggle checked={c.linked} onChange={(v) => patch(c.id, { projectId: id, linked: v })} label="Utiliser pour cette boutique" /></div>
                   )}

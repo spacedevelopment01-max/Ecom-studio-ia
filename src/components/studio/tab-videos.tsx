@@ -6,7 +6,7 @@ import { useProject } from "./project-context";
 import { EngineNotice, JobProgress, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 
-const SCENE_LABEL: Record<string, string> = { title: "Accroche", reveal: "Révélation", callouts: "Points clés", detail: "Détail", scene: "Scène", clip: "Plan généré", end: "Fin + appel" };
+const SCENE_LABEL: Record<string, string> = { title: "Accroche", reveal: "Révélation", callouts: "Points clés", detail: "Détail", scene: "Scène", clip: "Plan généré", end: "Fin + appel", hook: "Produit en action", spotlight: "Projecteur", split: "Écran partagé", words: "Phrases chocs" };
 
 export default function TabVideos() {
   const { id, data } = useProject();
@@ -48,10 +48,10 @@ export default function TabVideos() {
           <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             <Field label="Format" htmlFor="vfmt">
               <Select id="vfmt" value={form.format} onChange={(e) => setForm({ ...form, format: e.target.value })}>
-                <option value="9:16">9:16 — Reels, TikTok, Shorts, stories (1080×1920)</option>
-                <option value="1:1">1:1 — fil d'actualité (1080×1080)</option>
-                <option value="4:5">4:5 — fil Instagram et Facebook (1080×1350)</option>
-                <option value="16:9">16:9 — boutique, YouTube (1920×1080)</option>
+                <option value="9:16">9:16 · Reels, TikTok, Shorts, stories (1080×1920)</option>
+                <option value="1:1">1:1 · fil d'actualité (1080×1080)</option>
+                <option value="4:5">4:5 · fil Instagram et Facebook (1080×1350)</option>
+                <option value="16:9">16:9 · boutique, YouTube (1920×1080)</option>
               </Select>
             </Field>
             <Field label="Objectif" htmlFor="vgoal"><Input id="vgoal" value={form.goal} onChange={(e) => setForm({ ...form, goal: e.target.value })} placeholder="Ex. publicité de lancement, vidéo d'ambiance…" /></Field>
@@ -101,7 +101,7 @@ export default function TabVideos() {
                         {plan.scenes.map((s: any, i: number) => (
                           <li key={i} className="flex gap-3">
                             <span className="w-24 shrink-0 text-xs text-muted">{SCENE_LABEL[s.kind] ?? s.kind} · {Number(s.duration).toFixed(1)} s</span>
-                            <span className="text-ink-2">{s.text ?? s.headline ?? s.caption ?? (s.items ? s.items.join(" · ") : "")}{s.cta ? ` — ${s.cta}` : ""}</span>
+                            <span className="text-ink-2">{s.text ?? s.headline ?? s.caption ?? (s.items ? s.items.join(" · ") : "")}{s.cta ? ` · ${s.cta}` : ""}</span>
                           </li>
                         ))}
                       </ol>

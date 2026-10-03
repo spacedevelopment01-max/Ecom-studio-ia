@@ -82,7 +82,7 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
   const returns = fact("returns") ?? UNKNOWN("conditions de retour");
 
   return {
-    seo: { title: `${name} — ${brand.name}`, description: summary.slice(0, 155) },
+    seo: { title: `${name} | ${brand.name}`, description: summary.slice(0, 155) },
     announcement: [],
     hero: {
       eyebrow: v.eyebrow,

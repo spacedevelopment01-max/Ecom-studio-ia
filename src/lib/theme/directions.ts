@@ -742,7 +742,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
 
   return {
     v: 1,
-    name: `${input.shopName} — ${d.name}`,
+    name: `${input.shopName} · ${d.name}`,
     direction: d.id,
     settings,
     groups: { header, footer },

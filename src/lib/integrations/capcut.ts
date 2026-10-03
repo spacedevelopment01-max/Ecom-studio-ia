@@ -9,7 +9,7 @@ import { zipSync, strToU8 } from "fflate";
 import { json } from "../db";
 import { assetData, getAsset, type Asset } from "../library";
 import { all } from "../db";
-import { synthMusic, type VideoSpec } from "../media/video";
+import { sceneText, synthMusic, type VideoSpec } from "../media/video";
 
 export async function capcutPack(projectId: string, videoId: string): Promise<{ zip: Buffer; name: string }> {
   const video = getAsset(videoId);
@@ -37,7 +37,7 @@ export async function capcutPack(projectId: string, videoId: string): Promise<{ 
   const storyboard = plan
     ? plan.scenes
         .map((s, i) => {
-          const txt = s.kind === "title" ? s.text : s.kind === "reveal" ? s.headline : s.kind === "callouts" ? s.items.join(" · ") : s.kind === "end" ? `${s.headline} — ${s.cta}` : s.caption;
+          const txt = sceneText(s);
           return `| ${i + 1} | ${s.kind} | ${s.duration.toFixed(1)} s | ${txt ?? ""} |`;
         })
         .join("\n")

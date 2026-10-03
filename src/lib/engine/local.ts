@@ -201,17 +201,72 @@ export function localBrand(p: ProductProfile, providedBrand?: string): { brand: 
   };
 }
 
-export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpec["format"], imageCount: number, url?: string): VideoSpec {
-  const facts = p.facts.filter((f) => f.status !== "unknown" && f.value && f.value.length < 60).slice(0, 3);
-  const scenes: VideoSpec["scenes"] = [
-    { kind: "title", duration: 2.4, text: brand.tagline || p.name || brand.name, sub: brand.tagline ? `${p.name} — ${brand.name}` : brand.name, bg: "brand" },
-    { kind: "reveal", duration: 3, headline: p.name || brand.name, motion: "rise" },
-  ];
-  if (facts.length >= 2) scenes.push({ kind: "callouts", duration: 3.4, items: facts.map((f) => f.value), heading: "En détail" });
-  if (imageCount > 0) scenes.push({ kind: "detail", duration: 2.4, image: 0 });
-  if (imageCount > 1) scenes.push({ kind: "scene", duration: 2.2, image: 1 });
-  scenes.push({ kind: "end", duration: 3, headline: p.name || brand.name, cta: "Découvrir", url });
-  return { format, scenes, transition: "panel", music: "calm", captions: true };
+/**
+ * Découpage sans IA : une structure différente selon le produit (secteur, photos disponibles),
+ * pour que deux boutiques n'aient jamais la même vidéo. Seules les informations confirmées sont montrées.
+ */
+export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpec["format"], imageRoles: string[], url?: string): VideoSpec {
+  const facts = p.facts.filter((f) => f.status !== "unknown" && f.value && f.value.length < 60).slice(0, 3).map((f) => f.value.replace(/\.$/, ""));
+  const name = p.name || brand.name;
+  const line = brand.tagline || name;
+  const life = imageRoles.indexOf("lifestyle");
+  const life2 = imageRoles.indexOf("lifestyle", life + 1);
+  const detail = imageRoles.indexOf("detail");
+  const scene = imageRoles.indexOf("scene");
+  const other = (exclude: number[]) => [life2, detail, scene].find((i) => i >= 0 && !exclude.includes(i)) ?? -1;
+  // Variation stable par produit : deux produits d'un même secteur n'ont pas le même montage.
+  const seed = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const pick = <T,>(xs: T[]) => xs[seed % xs.length];
+  const end: VideoSpec["scenes"][number] = { kind: "end", duration: 3, headline: name, cta: "Découvrir", url };
+  const factScene = (): VideoSpec["scenes"] => facts.length >= 2 ? [pick<VideoSpec["scenes"][number]>([{ kind: "callouts", duration: 3.4, items: facts, heading: "En détail" }, { kind: "words", duration: Math.min(5.4, 1.8 * facts.length), items: facts }])] : [];
+  const scenes: VideoSpec["scenes"] = [];
+  let transition: VideoSpec["transition"] = "panel";
+  let music: VideoSpec["music"] = "calm";
+  const sector = p.sector ?? "";
+
+  if (sector === "hightech" || sector === "sport") {
+    // Énergique : le produit en action, puis sous le projecteur, détails, fin.
+    transition = "push";
+    music = "pulse";
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: line, tag: brand.name });
+    else scenes.push({ kind: "words", duration: 2.2, items: [line] });
+    scenes.push({ kind: "spotlight", duration: 3, headline: name });
+    scenes.push(...factScene());
+    const o = other([life]);
+    if (o >= 0) scenes.push({ kind: "detail", duration: 2.2, image: o });
+  } else if (sector === "mode" || sector === "bijoux" || sector === "beaute") {
+    // Éditorial : phrase forte, photo plein cadre, écran partagé, détail.
+    transition = pick<VideoSpec["transition"]>(["push", "fade"]);
+    music = "pulse";
+    scenes.push({ kind: "words", duration: 2, items: [line] });
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: name });
+    else scenes.push({ kind: "reveal", duration: 2.8, headline: name, motion: "zoom" });
+    const o = other([life]);
+    if (o >= 0) scenes.push({ kind: "split", duration: 3, image: o, headline: facts[0] ?? name });
+    else scenes.push(...factScene());
+  } else if (sector === "animaux" || sector === "enfants" || sector === "maison") {
+    // Chaleureux : la vie de tous les jours d'abord, le produit ensuite, ce qu'il apporte.
+    transition = pick<VideoSpec["transition"]>(["fade", "panel"]);
+    music = "calm";
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.8, image: life, headline: line, tag: brand.name });
+    else scenes.push({ kind: "title", duration: 2.4, text: line, sub: name, bg: "brand" });
+    const o = other([life]);
+    if (o >= 0 && life >= 0) scenes.push({ kind: "split", duration: 3, image: o === life2 ? o : life, headline: name });
+    else scenes.push({ kind: "reveal", duration: 2.8, headline: name, motion: pick(["rise", "zoom", "slide"] as const) });
+    scenes.push(...factScene());
+    if (o >= 0 && o !== life2) scenes.push({ kind: "detail", duration: 2.2, image: o });
+  } else {
+    // Classique (alimentation, artisanat…) : titre, révélation, détails, photos.
+    transition = pick<VideoSpec["transition"]>(["panel", "fade"]);
+    scenes.push({ kind: "title", duration: 2.4, text: line, sub: brand.tagline ? name : undefined, bg: pick(["brand", "dark"] as const) });
+    scenes.push({ kind: "reveal", duration: 3, headline: name, motion: pick(["rise", "zoom", "slide"] as const) });
+    scenes.push(...factScene());
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: facts[0] ?? line });
+    const o = other([life]);
+    if (o >= 0) scenes.push({ kind: "scene", duration: 2.2, image: o });
+  }
+  scenes.push(end);
+  return { format, scenes, transition, music, captions: true };
 }
 
 /**

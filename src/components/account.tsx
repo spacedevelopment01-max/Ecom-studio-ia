@@ -80,7 +80,7 @@ export function AccountPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-medium uppercase tracking-[.16em] text-muted">Enveloppe IA</p>
-                  <p className="mt-2 font-display text-5xl font-semibold">{data.gauge.capacityEur === 0 ? "—" : pct(data.gauge.availablePct)} <span className="font-sans text-lg font-normal tracking-normal text-ink-2">disponible</span></p>
+                  <p className="mt-2 font-display text-5xl font-semibold">{data.gauge.capacityEur === 0 ? "0 %" : pct(data.gauge.availablePct)} <span className="font-sans text-lg font-normal tracking-normal text-ink-2">disponible</span></p>
                 </div>
                 {data.gauge.capacityEur === 0 ? <Badge>Aucune enveloppe</Badge> : data.gauge.paused ? <Badge tone="bad" dot>Générations en pause</Badge> : data.gauge.alert ? <Badge tone="warn" dot>80 % utilisés</Badge> : <Badge tone="ok" dot>Actif</Badge>}
               </div>
