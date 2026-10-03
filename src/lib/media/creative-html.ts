@@ -90,7 +90,7 @@ function page(t: ProTemplate, f: ProFormat, i: ProInput, productUri: string, log
       .chips li{background:${mix(deep, "#FFFFFF", 0.16)};color:${fg}}
       .cta{background:${fg};color:${deep}}
       </style><div class="stage"><div class="top">${logo}<span class="tag">${esc(i.subline ?? "")}</span></div>
-      <div class="kw">${kw}</div><div class="floor"></div><img class="prod" src="${productUri}" alt="">
+      <div class="kw"><span>${kw}</span></div><div class="floor"></div><img class="prod" src="${productUri}" alt="">
       <div class="bottom"><p class="h fit">${esc(i.headline)}</p><div class="row"><ul class="chips">${facts}</ul>${cta}</div></div></div>`;
   }
   if (t === "editorial") {
@@ -177,7 +177,10 @@ export async function renderProCreatives(input: ProInput, jobs: { template: ProT
         // Grand mot en filigrane : occupe la largeur sans être coupé.
         document.querySelectorAll<HTMLElement>(".kw").forEach((el) => {
           let size = parseFloat(getComputedStyle(el).fontSize);
-          while (el.scrollWidth > el.clientWidth * 0.94 && size > 40) {
+          const span = el.firstElementChild as HTMLElement | null;
+          if (!span) return;
+          span.style.display = "inline-block";
+          while (span.offsetWidth > el.clientWidth * 0.92 && size > 40) {
             size *= 0.95;
             el.style.fontSize = `${size}px`;
           }
