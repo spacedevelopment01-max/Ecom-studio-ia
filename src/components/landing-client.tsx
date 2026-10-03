@@ -38,10 +38,14 @@ export function AutoVideo({ src, poster, className, label }: { src: string; post
   return <video ref={ref} src={src} poster={poster} muted loop playsInline preload="none" aria-label={label} className={className} />;
 }
 
-/** Film de présentation : lu en silence (sous-titres incrustés) ; « avec le son » le relance depuis le début. */
-export function FilmPlayer({ src, poster, captions }: { src: string; poster: string; captions?: string }) {
+type Film = { label: string; src: string; poster: string; captions?: string; description: string };
+
+/** Films de présentation : lus en silence ; « avec le son » relance le film choisi depuis le début. */
+export function FilmPlayer({ films }: { films: Film[] }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const [i, setI] = useState(0);
   const [sound, setSound] = useState(false);
+  const film = films[i];
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
@@ -63,15 +67,42 @@ export function FilmPlayer({ src, poster, captions }: { src: string; poster: str
     setSound(true);
     v.play().catch(() => {});
   };
+  const choose = (k: number) => {
+    if (k === i) return;
+    setI(k);
+    setSound(false);
+    const v = ref.current;
+    if (v) {
+      v.muted = true;
+      v.loop = true;
+      v.controls = false;
+      // Nouvelle source : rechargée puis lue (en silence) au prochain rendu.
+      requestAnimationFrame(() => {
+        v.load();
+        v.play().catch(() => {});
+      });
+    }
+  };
   return (
-    <div className="relative">
-      <video ref={ref} src={src} poster={poster} muted loop playsInline preload="metadata" aria-label="Film de présentation d'E-COM STUDIO IA (1 minute, voix off et sous-titres)" className="aspect-video w-full bg-[#070B17] object-cover">
-        {captions && <track kind="captions" src={captions} srcLang="fr" label="Français" />}
-      </video>
-      {!sound && (
-        <button onClick={withSound} className="btn-glow absolute right-2.5 top-2.5 inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:right-4 sm:top-4 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm">
-          <span aria-hidden>▶</span> Avec le son<span className="hidden sm:inline"> · 1 min</span>
-        </button>
+    <div>
+      <div className="relative">
+        <video ref={ref} src={film.src} poster={film.poster} muted={!sound} loop={!sound} autoPlay playsInline preload="metadata" aria-label={film.description} className="aspect-video w-full bg-[#070B17] object-cover">
+          {film.captions && <track kind="captions" src={film.captions} srcLang="fr" label="Français" />}
+        </video>
+        {!sound && (
+          <button onClick={withSound} className="btn-glow absolute right-2.5 top-2.5 inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:right-4 sm:top-4 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm">
+            <span aria-hidden>▶</span> Avec le son
+          </button>
+        )}
+      </div>
+      {films.length > 1 && (
+        <div className="flex gap-1 border-t border-white/10 bg-[#0A1024] p-1.5" role="tablist" aria-label="Choisir le film">
+          {films.map((f, k) => (
+            <button key={f.src} role="tab" aria-selected={k === i} onClick={() => choose(k)} className={cx("flex-1 rounded-full px-3 py-2 text-xs font-medium transition sm:text-sm", k === i ? "bg-white text-[#0A1024]" : "text-white/70 hover:text-white")}>
+              {f.label}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -145,7 +145,12 @@ export default async function Home() {
             <div className="relative lg:col-span-7">
               <div data-sfx className="sfx-tilt reveal reveal-scale relative mx-auto max-w-[860px]" style={{ ["--d" as any]: 3 }}>
                 <div className="neon on overflow-hidden rounded-[2rem] border border-line bg-[#070B17] shadow-[0_40px_120px_-40px_var(--glow)]">
-                  <FilmPlayer src="/explainers/film.mp4" poster="/explainers/film.jpg" captions="/explainers/film.vtt" />
+                  <FilmPlayer
+                    films={[
+                      { label: "Comment ça marche · 50 s", src: "/explainers/film-court.mp4", poster: "/explainers/film-court.jpg", description: "Film explicatif sans voix : de la photo à la publication en 6 étapes" },
+                      { label: "Version commentée · 1 min", src: "/explainers/film.mp4", poster: "/explainers/film.jpg", captions: "/explainers/film.vtt", description: "Film de présentation commenté (voix off et sous-titres)" },
+                    ]}
+                  />
                 </div>
                 <ul className="mt-6 flex flex-wrap justify-center gap-2">
                   {["Thème Shopify OS 2.0", "Vidéos 9:16 · 1:1 · 4:5 · 16:9", "Palette mesurée sur le produit"].map((t, i) => (
