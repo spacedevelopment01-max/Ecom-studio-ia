@@ -9,7 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { zipSync, strToU8 } from "fflate";
-import type { ThemeSpec, SectionInstance } from "./spec";
+import { storeProducts, type ThemeSpec, type SectionInstance } from "./spec";
 import { themeAssetBinary, type AssetLoader } from "./compile";
 import { FONT_FILES } from "./render";
 
@@ -323,7 +323,6 @@ export async function exportKit(spec: ThemeSpec, load: AssetLoader, platform: "w
   const files: Record<string, Uint8Array> = {};
   for (const [f, data] of Object.entries(media)) files[`medias/${f}`] = new Uint8Array(data);
   for (const fam of [hf, bf]) for (const f of new Set(Object.values(fam.files))) files[`polices/${f}`] = new Uint8Array(fs.readFileSync(path.join(process.cwd(), "assets", "fonts", f)));
-  const p = spec.store.product;
   const textPage = (key: string, title: string) => {
     const t = spec.templates[key];
     if (!t) return "";
@@ -372,7 +371,7 @@ ${Object.entries(sc).map(([k, v]) => `- ${k} : fond ${v.background} · texte ${v
   const csvEsc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   files["produits.csv"] = strToU8(
     ["Nom,Description,Prix,Variante,SKU,Images"]
-      .concat((p.variants.length ? p.variants : [{ title: "", options: [""], price: p.price, available: true }]).map((v) => [p.title, strip(p.description_html), v.price != null ? (v.price / 100).toFixed(2) : "", v.title === "Default Title" ? "" : v.title, (v as any).sku ?? "", p.images.map((f) => `medias/${f}`).join(" ")].map(csvEsc).join(",")))
+      .concat(storeProducts(spec).flatMap((p) => (p.variants.length ? p.variants : [{ title: "", options: [""], price: p.price, available: true }]).map((v) => [p.title, strip(p.description_html), (v.price ?? p.price) != null ? ((v.price ?? p.price)! / 100).toFixed(2) : "", v.title === "Default Title" ? "" : v.title, (v as any).sku ?? "", p.images.map((f) => `medias/${f}`).join(" ")].map(csvEsc).join(","))))
       .join("\n"),
   );
   return { zip: Buffer.from(zipSync(files, { level: 6 })), name: `${slug(spec.store.shopName)}-kit-${platform}.zip`, kind: "kit" as const };

@@ -12,6 +12,7 @@ import type { ShopCopy } from "../theme/copy";
 import { applyOps, validateSpec, type ThemeOp } from "../theme/ops";
 import type { StoreProduct, ThemeSpec } from "../theme/spec";
 import { localCopy } from "./local-copy";
+import { catalogStore, ensureCatalogMedia } from "./catalog";
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
@@ -111,6 +112,14 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   if (!brand) throw new Error("La marque doit être définie avant la boutique.");
   const copy = savedCopy(projectId) ?? localCopy(p.product, brand);
   const { slots, files, gallery } = collectImages(projectId);
+  const main = storeProduct(p, copy, gallery);
+  // Boutique multi-produit ou niche : les autres produits sont détourés, mis en packshot et rangés en collections.
+  let catalog: ReturnType<typeof catalogStore> | null = null;
+  if (p.storeType !== "mono" && p.catalog.length) {
+    await ensureCatalogMedia(ctx, projectId);
+    catalog = catalogStore(loadProject(projectId), main, themeFileName);
+    Object.assign(files, catalog.files);
+  }
   const direction = opts.direction ?? brand.direction;
   ctx?.progress(0.2, `Composition de la boutique (direction ${directionById(direction).name})`);
   let spec = buildSpec({
@@ -122,8 +131,9 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     copy,
     images: slots,
     files,
-    product: storeProduct(p, copy, gallery),
+    product: main,
     social: p.settings.socialLinks,
+    ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
   let author: "ai" | "system" = "system";
   let summary = opts.summary ?? `Boutique créée — direction ${directionById(direction).name}`;
@@ -134,6 +144,11 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       if (design.custom && /^es-custom-[a-z0-9-]{2,40}$/.test(design.custom.type)) ops.push({ op: "custom_section", type: design.custom.type, name: design.custom.name.slice(0, 25), liquid: design.custom.liquid });
       const fresh: ThemeSpec = { ...spec, settings: { ...spec.settings, ...Object.fromEntries(Object.entries(design.globals ?? {}).filter(([, v]) => v !== undefined)) }, templates: { ...spec.templates, index: { sections: {}, order: [] } } };
       for (const s of design.index) ops.push({ op: "add_section", template: "index", type: s.type, settings: s.settings, blocks: s.blocks });
+      // Catalogue : la grille de produits figure toujours juste après l'ouverture.
+      if (catalog && !design.index.some((s) => s.type === "featured-collection")) {
+        const first = ops.findIndex((o) => o.op === "add_section");
+        ops.splice(first + 1, 0, { op: "add_section", template: "index", type: "featured-collection", settings: { heading: p.storeType === "multi" ? "Les incontournables" : "La sélection", collection: "all", limit: 8, columns: 4 } });
+      }
       const r = applyOps(fresh, ops);
       if (r.spec.templates.index.order.length >= 4 && !validateSpec(r.spec).length) {
         spec = r.spec;

@@ -42,12 +42,13 @@ export const POST = handle(async (req: Request) => {
   }
   const pid = id();
   run(
-    "INSERT INTO projects (id, user_id, name, status, platform, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
+    "INSERT INTO projects (id, user_id, name, status, platform, store_type, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
     pid,
     user.id,
     input.productName || input.brandName || "Nouveau projet",
     "draft",
     input.platform,
+    input.storeType,
     JSON.stringify({ ...DEFAULT_SETTINGS, mode: input.mode, timezone: user.timezone }),
     "[]",
     now(),

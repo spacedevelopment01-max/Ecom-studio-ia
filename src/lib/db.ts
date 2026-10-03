@@ -377,6 +377,19 @@ CREATE TABLE IF NOT EXISTS worker_heartbeat (
 );
 `;
 
+/** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */
+const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
+  ["projects", "store_type", "TEXT NOT NULL DEFAULT 'mono'"],
+  ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
+];
+
+function migrate(db: Database.Database) {
+  for (const [table, column, ddl] of ADDED_COLUMNS) {
+    const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (!cols.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+  }
+}
+
 function open(): Database.Database {
   const file = process.env.DATABASE_FILE || path.join(DATA_DIR, "studio.db");
   const db = new Database(file);
@@ -385,6 +398,7 @@ function open(): Database.Database {
   db.pragma("foreign_keys = ON");
   db.pragma("synchronous = NORMAL");
   db.exec(SCHEMA);
+  migrate(db);
   return db;
 }
 

@@ -5,6 +5,7 @@ import { applyOps, validateSpec } from "@/lib/theme/ops";
 import { renderPage } from "@/lib/theme/render";
 import { DIRECTIONS } from "@/lib/theme/directions";
 import { sampleSpec } from "./fixtures";
+import { shopifyProductsCsv } from "@/lib/theme/catalog-export";
 
 describe("thème Shopify", () => {
   it("chaque direction produit un thème OS 2.0 complet et valide", () => {
@@ -34,12 +35,47 @@ describe("thème Shopify", () => {
     const spec = sampleSpec();
     const files = compileTheme(spec);
     for (const path of ["/", "/products/serum-eclat", "/collections/all", "/cart", "/search", "/pages/faq", "/nope"]) {
-      const r = await renderPage({ spec, base: "/p", files, cart: [{ variantIndex: 1, quantity: 1 }] }, path, new URLSearchParams("q=sérum"));
+      const r = await renderPage({ spec, base: "/p", files, cart: [{ variantId: 1001, quantity: 1 }] }, path, new URLSearchParams("q=sérum"));
       expect(r.html.length, path).toBeGreaterThan(1000);
       if (path === "/nope") expect(r.status).toBe(404);
     }
     const product = await renderPage({ spec, base: "/p", files, cart: [] }, "/products/serum-eclat", new URLSearchParams());
     expect(product.html).toContain("34,90");
+  });
+
+  it("boutiques multi-produit et niche : grille, collections, fiches, panier et exports", async () => {
+    for (const type of ["multi", "niche"] as const) {
+      for (const d of DIRECTIONS) {
+        const spec = sampleSpec(d.id, type);
+        expect(validateSpec(spec), `${d.id}/${type}`).toEqual([]);
+        const types = spec.templates.index.order.map((id) => spec.templates.index.sections[id].type);
+        expect(types, `${d.id}/${type}`).toContain("featured-collection");
+        expect(types, `${d.id}/${type}`).toContain("collection-list");
+      }
+      const spec = sampleSpec("atelier", type);
+      const files = compileTheme(spec);
+      const home = await renderPage({ spec, base: "/p", files, cart: [] }, "/", new URLSearchParams());
+      for (const t of ["Sérum Éclat", "Brosse nettoyante", "Rouleau de jade", "/p/collections/soin-du-visage"]) expect(home.html, `${type} accueil : ${t}`).toContain(t);
+      const coll = await renderPage({ spec, base: "/p", files, cart: [] }, "/collections/outils", new URLSearchParams());
+      expect(coll.status).toBe(200);
+      expect(coll.html).toContain("Rouleau de jade");
+      expect(coll.html).not.toContain("Brosse nettoyante</");
+      const second = await renderPage({ spec, base: "/p", files, cart: [] }, "/products/rouleau-de-jade", new URLSearchParams());
+      expect(second.status).toBe(200);
+      expect(second.html).toContain("Quartz rose");
+      expect(second.html).toContain("19,90");
+      // Les textes rédigés pour le produit principal ne débordent pas sur les autres fiches.
+      const short = (await renderPage({ spec, base: "/p", files, cart: [] }, "/products/serum-eclat", new URLSearchParams())).html.match(/es-product__text[^>]*>([\s\S]{0,80})/)?.[1];
+      if (short) expect(second.html).not.toContain(short);
+      // Panier mixte : une variante du produit principal et une du troisième produit.
+      const cart = await renderPage({ spec, base: "/p", files, cart: [{ variantId: 1000, quantity: 1 }, { variantId: 3001, quantity: 2 }] }, "/cart", new URLSearchParams());
+      expect(cart.html).toContain("Rouleau de jade - Quartz rose");
+      expect(cart.html).toContain("78,70");
+      expect((await renderPage({ spec, base: "/p", files, cart: [] }, "/collections/inconnue", new URLSearchParams())).status).toBe(404);
+      const csv = shopifyProductsCsv(spec);
+      expect(csv.split("\n").filter((l) => /^"(serum-eclat|brosse-nettoyante|rouleau-de-jade)",/.test(l)).length).toBeGreaterThanOrEqual(5);
+      expect(csv).toContain("Soin du visage");
+    }
   });
 
   it("une modification ciblée ne touche pas le reste et respecte les verrous", () => {

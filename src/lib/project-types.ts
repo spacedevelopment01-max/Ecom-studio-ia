@@ -87,6 +87,29 @@ export type Strategy = {
   generatedBy: "ai" | "local";
 };
 
+/** Type de boutique : un produit phare, un catalogue varié, ou une niche (plusieurs produits d'un même univers). */
+export type StoreType = "mono" | "multi" | "niche";
+export const STORE_TYPES: Record<StoreType, { label: string; hint: string }> = {
+  mono: { label: "Mono-produit", hint: "Un produit phare, toute la boutique raconte son histoire." },
+  multi: { label: "Multi-produit", hint: "Un catalogue varié, organisé en collections." },
+  niche: { label: "Niche", hint: "Plusieurs produits d'un même univers, pour une communauté précise." },
+};
+
+/** Produit du catalogue (en plus du produit principal analysé en détail). */
+export type CatalogItem = {
+  key: string;
+  name: string;
+  category: string;
+  price: number | null; // centimes
+  compareAt: number | null;
+  description: string;
+  features: string[];
+  /** Photo d'origine (rôle « catalog-original »). */
+  originalAssetId: string | null;
+  /** Provenance déclarée (fournisseur en marque blanche), affichée dans le studio seulement. */
+  source?: { supplier: string; url: string; ref?: string };
+};
+
 export type ProjectSettings = {
   mode: "autopilot" | "guided";
   timezone: string;

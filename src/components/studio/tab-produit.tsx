@@ -4,6 +4,7 @@ import { ImagePlus, Plus, Trash2, RefreshCw } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, Input, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, SectionTitle, type AssetView } from "./common";
+import { CatalogPanel } from "./catalog-panel";
 import type { Fact } from "@/lib/project-types";
 
 const STATUS = { confirmed: { label: "Confirmé", tone: "ok" }, inferred: { label: "Observé", tone: "info" }, unknown: { label: "Inconnu", tone: "warn" } } as const;
@@ -158,6 +159,7 @@ export default function TabProduit() {
           </Card>
         </div>
       </div>
+      <CatalogPanel />
     </div>
   );
 }

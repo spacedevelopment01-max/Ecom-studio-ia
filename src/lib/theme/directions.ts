@@ -6,7 +6,7 @@
  */
 import { contrast, ensureContrast, isDark, mix, onColor, withLightness, hsl } from "../color";
 import type { ShopCopy } from "./copy";
-import type { BlockInstance, GroupJson, SectionInstance, StoreProduct, TemplateJson, ThemeSpec } from "./spec";
+import type { BlockInstance, GroupJson, SectionInstance, StoreCollection, StoreProduct, TemplateJson, ThemeSpec } from "./spec";
 
 export type DirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
 
@@ -319,6 +319,10 @@ export type BuildInput = {
   files: Record<string, string>;
   product: StoreProduct;
   social?: Partial<Record<"instagram" | "tiktok" | "facebook" | "youtube" | "pinterest", string>>;
+  /** Boutique multi-produit ou niche : autres produits et collections. */
+  storeType?: "mono" | "multi" | "niche";
+  products?: StoreProduct[];
+  collections?: StoreCollection[];
 };
 
 const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -586,16 +590,42 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       break;
   }
 
-  const productTabs = c.product.tabs.map((t) => ({ type: "collapsible", settings: { heading: t.heading, content: p(t.content_html), open: false } }));
+  // Boutiques multi-produit et niche : grille de produits dès l'ouverture, univers à explorer,
+  // liens vers le catalogue. La niche garde le récit du produit phare ; le multi-produit l'allège.
+  const catalogProducts = input.products ?? [];
+  const isCatalog = !!input.storeType && input.storeType !== "mono" && catalogProducts.length > 0;
+  if (isCatalog) {
+    const multi = input.storeType === "multi";
+    const total = catalogProducts.length + 1;
+    const drop = new Set(multi ? ["scroll-story", "specs-list", "stats", "stack-cards", "timeline"] : ["specs-list", "stats"]);
+    index = index.filter((r) => !drop.has(r[0]));
+    if (multi) {
+      for (const r of index) if (/^hero-|^cta-banner$/.test(r[0]) && r[1].button_link === productUrl) r[1] = { ...r[1], button_link: "/collections/all" };
+    }
+    const grid: Row = ["featured-collection", { heading: multi ? "Les incontournables" : "La sélection", collection: "all", limit: Math.min(8, total), columns: total >= 4 ? 4 : 3, ratio: "portrait", color_scheme: scheme(1), ...pad(96) }];
+    const at = Math.max(1, index.findIndex((r, i) => i >= 1 && !["rich-text", "wave-divider", "marquee", "curved-marquee"].includes(r[0])));
+    index.splice(at === -1 ? index.length : at, 0, grid);
+    const cols = input.collections ?? [];
+    if (cols.length >= 2) {
+      const clist: Row = ["collection-list", { heading: multi ? "Explorer par univers" : "Explorer la collection", columns: Math.min(4, cols.length), color_scheme: scheme(1), ...pad(96) }, cols.slice(0, 8).map((col) => ({ type: "collection", settings: { collection: col.handle, title: col.title, image_asset: col.image ?? "" } }))];
+      const end = index.findIndex((r) => ["faq", "newsletter", "cta-banner"].includes(r[0]));
+      index.splice(end === -1 ? index.length : end, 0, clist);
+    }
+  }
+
+  // Catalogue : les textes rédigés pour le produit principal ne s'affichent que sur sa fiche.
+  const only = isCatalog ? { product_handle: input.product.handle } : {};
+  const productTabs = c.product.tabs.map((t) => ({ type: "collapsible", settings: { heading: t.heading, content: p(t.content_html), open: false, ...(/livraison|retour/i.test(t.heading) ? {} : only) } }));
   const productBlocks = [
     { type: "eyebrow", settings: { text: input.shopName } },
     { type: "title", settings: {} },
     { type: "price", settings: {} },
-    { type: "text", settings: { text: p(c.product.short) } },
+    { type: "text", settings: { text: p(c.product.short), ...only } },
     { type: "buy_buttons", settings: { picker: "buttons", show_quantity: true, show_dynamic_checkout: true } },
-    ...(c.product.highlights.length ? [{ type: "highlights", settings: { items: c.product.highlights.join("\n") } }] : []),
+    ...(c.product.highlights.length ? [{ type: "highlights", settings: { items: c.product.highlights.join("\n"), ...only } }] : []),
     // La description n'est affichée que si elle apporte plus que l'accroche courte.
-    ...(stripTags(input.product.description_html) !== stripTags(c.product.short) ? [{ type: "description", settings: {} }] : []),
+    // En catalogue, chaque fiche a besoin de sa description ; sur la fiche principale, masquée si elle répète l'accroche.
+    ...(stripTags(input.product.description_html) !== stripTags(c.product.short) ? [{ type: "description", settings: {} }] : isCatalog ? [{ type: "description", settings: { hide_for_handle: input.product.handle } }] : []),
     ...productTabs,
     ...(c.product.reassurance.length
       ? [{ type: "reassurance", settings: { item1: c.product.reassurance[0] ?? "", icon1: "truck", item2: c.product.reassurance[1] ?? "", icon2: "return", item3: c.product.reassurance[2] ?? "", icon3: "shield" } }]
@@ -716,6 +746,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     store: {
       shopName: input.shopName,
       product: input.product,
+      ...(isCatalog ? { products: catalogProducts, collections: input.collections ?? [] } : {}),
       pages: [
         { handle: "notre-histoire", title: "Notre histoire", template_suffix: "about", body_html: "" },
         { handle: "faq", title: "Questions fréquentes", template_suffix: "faq", body_html: "" },
@@ -728,6 +759,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
           links: [
             { title: "Accueil", url: "/" },
             { title: "Boutique", url: "/collections/all" },
+            ...(isCatalog ? (input.collections ?? []).slice(0, 3).map((col) => ({ title: col.title, url: `/collections/${col.handle}` })) : []),
             { title: "Notre histoire", url: "/pages/notre-histoire" },
             { title: "FAQ", url: "/pages/faq" },
             { title: "Contact", url: "/pages/contact" },

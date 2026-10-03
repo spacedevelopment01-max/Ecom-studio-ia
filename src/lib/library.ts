@@ -46,6 +46,7 @@ export const DEFAULT_TREE: { key: string; name: string; children?: { key: string
   { key: "product", name: "01 · Produit", children: [
     { key: "product.originals", name: "Photos originales" },
     { key: "product.cutouts", name: "Détourages" },
+    { key: "product.catalog", name: "Catalogue (autres produits)" },
   ] },
   { key: "brand", name: "02 · Marque", children: [
     { key: "brand.logos", name: "Logos" },
@@ -76,13 +77,20 @@ export const DEFAULT_TREE: { key: string; name: string; children?: { key: string
   ] },
 ];
 
+/** Crée l'arborescence par défaut ; les dossiers ajoutés dans une version ultérieure sont créés s'ils manquent. */
 export function ensureFolders(projectId: string) {
-  if (one("SELECT 1 FROM folders WHERE project_id = ? LIMIT 1", projectId)) return;
+  const existing = new Map(all<{ id: string; system_key: string }>("SELECT id, system_key FROM folders WHERE project_id = ? AND system_key IS NOT NULL", projectId).map((f) => [f.system_key, f.id]));
+  const missing = DEFAULT_TREE.some((t) => !existing.has(t.key) || (t.children ?? []).some((c) => !existing.has(c.key)));
+  if (!missing) return;
   tx(() => {
     for (const top of DEFAULT_TREE) {
-      const tid = id();
-      run("INSERT INTO folders (id, project_id, parent_id, name, system_key, created_at) VALUES (?,?,?,?,?,?)", tid, projectId, null, top.name, top.key, now());
+      let tid = existing.get(top.key);
+      if (!tid) {
+        tid = id();
+        run("INSERT INTO folders (id, project_id, parent_id, name, system_key, created_at) VALUES (?,?,?,?,?,?)", tid, projectId, null, top.name, top.key, now());
+      }
       for (const c of top.children ?? []) {
+        if (existing.has(c.key)) continue;
         run("INSERT INTO folders (id, project_id, parent_id, name, system_key, created_at) VALUES (?,?,?,?,?,?)", id(), projectId, tid, c.name, c.key, now());
       }
     }

@@ -16,6 +16,7 @@ export const StartInput = z.object({
   price: z.string().max(40).optional(),
   platform: z.enum(["shopify", "woocommerce", "prestashop", "wix", "squarespace"]).default("shopify"),
   mode: z.enum(["autopilot", "guided"]).default("autopilot"),
+  storeType: z.enum(["mono", "multi", "niche"]).default("mono"),
 });
 export type StartInput = z.infer<typeof StartInput>;
 

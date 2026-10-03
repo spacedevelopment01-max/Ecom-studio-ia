@@ -117,6 +117,8 @@ export type ProjectRow = {
   current_theme_version_id: string | null;
   cover_asset_id: string | null;
   store_url: string | null;
+  store_type: string;
+  catalog_json: string;
   archived: number;
   created_at: number;
   updated_at: number;

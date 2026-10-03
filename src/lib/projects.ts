@@ -1,7 +1,7 @@
 /** Accès aux projets : produit, marque, mémoire, versions du thème. */
 import { all, id, json, now, one, run, tx } from "./db";
 import type { ProjectRow } from "./auth";
-import { emptyProduct, type Brand, type ProductProfile, type ProjectSettings, type Strategy } from "./project-types";
+import { emptyProduct, type Brand, type CatalogItem, type ProductProfile, type ProjectSettings, type StoreType, type Strategy } from "./project-types";
 import type { ThemeSpec } from "./theme/spec";
 
 export type Project = {
@@ -15,6 +15,8 @@ export type Project = {
   brand: Brand | null;
   strategy: Strategy | null;
   settings: ProjectSettings;
+  storeType: StoreType;
+  catalog: CatalogItem[];
   sources: { type: "photo" | "link" | "description"; ref: string; note?: string }[];
 };
 
@@ -40,6 +42,8 @@ export function loadProject(projectId: string): Project {
     brand: brand && (brand as any).name ? brand : null,
     strategy: strategy && (strategy as any).angles ? strategy : null,
     settings: { ...DEFAULT_SETTINGS, ...json<Partial<ProjectSettings>>(row.settings_json, {}) },
+    storeType: (["mono", "multi", "niche"].includes(row.store_type) ? row.store_type : "mono") as StoreType,
+    catalog: json<CatalogItem[]>(row.catalog_json, []),
     sources: json(row.sources_json, []),
   };
 }
@@ -52,6 +56,9 @@ export function saveBrand(projectId: string, brand: Brand) {
 }
 export function saveStrategy(projectId: string, s: Strategy) {
   run("UPDATE projects SET strategy_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(s), now(), projectId);
+}
+export function saveCatalog(projectId: string, catalog: CatalogItem[], storeType?: StoreType) {
+  run("UPDATE projects SET catalog_json = ?, store_type = COALESCE(?, store_type), updated_at = ? WHERE id = ?", JSON.stringify(catalog), storeType ?? null, now(), projectId);
 }
 export function saveSettings(projectId: string, s: ProjectSettings) {
   run("UPDATE projects SET settings_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(s), now(), projectId);
