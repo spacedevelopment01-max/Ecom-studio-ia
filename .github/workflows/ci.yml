@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verifications:
+    name: Typecheck, tests, Theme Check, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      APP_SECRET: ci-only-secret-not-used-in-production-000000
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installation
+        run: npm ci
+
+      - name: Vérification des types
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test
+
+      - name: Shopify Theme Check (8 directions)
+        run: |
+          for d in atelier clinique brut terroir nocturne pop galerie elan; do
+            echo "::group::$d"
+            npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-$d" "$d"
+            echo "::endgroup::"
+          done
+
+      - name: Build de production
+        run: npm run build
