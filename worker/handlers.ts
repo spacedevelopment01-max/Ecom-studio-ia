@@ -4,6 +4,7 @@ import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } 
 import { runPipeline } from "../src/lib/engine/pipeline";
 import { generateImageSet, generateSingleImage } from "../src/lib/engine/images";
 import { produceVideo } from "../src/lib/engine/videos";
+import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
 import { createContentPlan, attachVideoToPlan, NETWORK_FORMATS } from "../src/lib/engine/calendar";
 import { buildBrand } from "../src/lib/engine/brand";
@@ -35,6 +36,10 @@ export const handlers: Record<string, Handler> = {
     if (ctx.payload.attachPlan) attachVideoToPlan(ctx.payload.attachPlan, r.assetId);
     return r;
   },
+
+  /** Script UGC à relire et modifier avant la génération. */
+  "ugc.script": async (ctx) => writeUgcScript(ctx, ctx.job.project_id!, ctx.payload.options),
+  "video.ugc": async (ctx) => produceUgc(ctx, ctx.job.project_id!, { options: ctx.payload.options, script: ctx.payload.script }),
 
   "brand.build": async (ctx) => {
     const b = await buildBrand(ctx, ctx.payload.projectId, { guidance: ctx.payload.guidance });

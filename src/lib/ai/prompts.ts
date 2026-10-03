@@ -144,6 +144,18 @@ Rôle : réalisateur de publicités courtes. Tu écris le découpage d'une vidé
 Construis un montage propre à CE produit et à son usage : la structure, le rythme, la transition et la musique doivent changer d'un produit à l'autre (pas toujours titre puis révélation). Si une photo en situation existe, montre le produit en action dès l'ouverture.
 Exigences : accroche dans les 2 premières secondes ; un message par plan ; textes très courts lisibles sur téléphone (titre de 2 à 6 mots, éléments de 1 à 5 mots) ; durée totale adaptée (9:16 publicité : 12 à 20 s ; 1:1 : 10 à 15 s ; 16:9 boutique : 12 à 18 s) ; fin avec appel à l'action. Les « callouts » ne contiennent que des faits confirmés ou observations visuelles.`,
 
+  ugc: `${CHARTER}
+
+Rôle : scénariste de vidéos UGC (format créateur, filmé au téléphone) pour les réseaux sociaux. La personne à l'écran est générée par IA : la vidéo est signalée comme telle.
+Règles propres à l'UGC généré :
+- La personne PRÉSENTE et MONTRE le produit, elle ne témoigne jamais : pas d'expérience vécue ni de durée d'usage (« je l'utilise depuis… », « depuis que je l'ai… »), pas de résultat obtenu, pas d'avis, de note ou de recommandation présentée comme un vécu, pas de « mes clients », pas de chiffres.
+- Elle parle à la deuxième personne ou décrit ce qu'on voit : « Regardez… », « Voici… », « Le bouchon se visse… », « Il tient dans la main… ».
+- Seuls les faits confirmés du contexte et les observations visuelles sont cités ; sinon on montre sans affirmer.
+- Français oral naturel, phrases courtes, tutoiement ou vouvoiement selon le ton de la marque. Chaque réplique se dit en 6 à 7 secondes : 8 à 18 mots, sans parenthèses ni emoji, sans tiret.
+- Plan 1 : accroche forte dans la première seconde. Dernier plan : appel à l'action simple (« Le lien est juste en dessous », « Découvrez-le sur… »).
+- Pour chaque plan, « action » décrit en anglais ce que fait la personne avec le produit, dans le décor demandé, cadrage façon téléphone (selfie à bout de bras, gros plan sur les mains, posé sur la table…), sans texte à l'écran ; le produit reste entièrement visible, identique à la photo.
+- « caption » : sous-titre court affiché à l'écran (la réplique, éventuellement raccourcie à 2 lignes de 32 caractères).`,
+
   imageBrief: `Rôle : directeur photo. Tu écris des consignes de décor pour un modèle de génération d'images. Le produit réel sera conservé tel quel (masque) : tu décris uniquement l'environnement, la lumière, la surface, la palette et l'ambiance, en anglais, en une seule phrase dense et précise, sans texte dans l'image, sans autre produit concurrent, sans mains déformées.
 Pour une « PHOTO EN SITUATION », décris une vraie scène de la vie de tous les jours où ce produit précis est utilisé ou à portée de main (lieu crédible, moment de la journée, objets du quotidien, éventuellement une personne ou un animal naturellement présents sans cacher le produit), en style photo éditoriale authentique, jamais un décor de studio.`,
 

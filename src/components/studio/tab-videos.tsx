@@ -5,13 +5,15 @@ import { api, Badge, Button, Card, cx, Empty, Field, Input, Select, Toggle, useA
 import { useProject } from "./project-context";
 import { EngineNotice, JobProgress, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
+import { UgcPanel } from "./ugc-panel";
 
 const SCENE_LABEL: Record<string, string> = { title: "Accroche", reveal: "Révélation", callouts: "Points clés", detail: "Détail", scene: "Scène", clip: "Plan généré", end: "Fin + appel", hook: "Produit en action", spotlight: "Projecteur", split: "Écran partagé", words: "Phrases chocs" };
 
 export default function TabVideos() {
   const { id, data } = useProject();
   const toast = useToast();
-  const active = useActive("video.render");
+  const active = useActive(["video.render", "video.ugc"]);
+  const [mode, setMode] = useState<"motion" | "ugc">("motion");
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=video,subtitles`);
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [form, setForm] = useState({ format: "9:16", goal: "", music: "calm", useAiClip: false, target: "ads", url: "" });
@@ -44,7 +46,13 @@ export default function TabVideos() {
       <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
         <Card className="h-max p-5 lg:sticky lg:top-24">
           <h2 className="font-display text-xl font-semibold">Produire une vidéo</h2>
-          <p className="mt-1 text-xs text-muted">Motion design image par image : typographie animée, révélation du produit réel, balayage lumineux, transitions, musique originale, sous-titres SRT. Livré en MP4 H.264.</p>
+          <div className="mt-3 grid grid-cols-2 gap-1 rounded-full bg-paper-2 p-1" role="tablist" aria-label="Type de vidéo">
+            {([["motion", "Motion design"], ["ugc", "UGC par IA"]] as const).map(([k, l]) => (
+              <button key={k} role="tab" aria-selected={mode === k} onClick={() => setMode(k)} className={cx("rounded-full px-3 py-1.5 text-xs font-medium transition", mode === k ? "bg-card text-ink shadow-soft" : "text-muted hover:text-ink")}>{l}</button>
+            ))}
+          </div>
+          {mode === "ugc" ? <div className="mt-4"><UgcPanel /></div> : <>
+          <p className="mt-3 text-xs text-muted">Motion design image par image : typographie animée, révélation du produit réel, balayage lumineux, transitions, musique originale, sous-titres SRT. Livré en MP4 H.264.</p>
           <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             <Field label="Format" htmlFor="vfmt">
               <Select id="vfmt" value={form.format} onChange={(e) => setForm({ ...form, format: e.target.value })}>
@@ -76,6 +84,7 @@ export default function TabVideos() {
             </div>
             <Button onClick={create} icon={<Film className="size-4" />}>Produire la vidéo</Button>
           </div>
+          </>}
         </Card>
         <div className="grid content-start gap-5">
           {videos.length === 0 && <Empty title="Aucune vidéo pour l'instant" icon={<Play className="size-5" />}>La première vidéo est produite automatiquement par le pilote ; vous pouvez en créer d'autres ici.</Empty>}
@@ -96,6 +105,19 @@ export default function TabVideos() {
                       <span className="text-xs text-muted">{v.meta?.delivered}</span>
                     </div>
                     <p className="mt-2 text-sm text-ink-2">{v.meta?.method}</p>
+                    {v.meta?.kind === "ugc" && (
+                      <>
+                        <p className="mt-2 inline-flex rounded-full bg-signal-soft px-2.5 py-0.5 text-[11px] font-medium text-signal">{v.meta.aiLabel ?? "Vidéo générée par IA"} · mention incrustée</p>
+                        <ol className="mt-3 grid gap-1.5 text-sm">
+                          {(v.meta.script?.beats ?? []).map((b: any, i: number) => (
+                            <li key={i} className="flex gap-3">
+                              <span className="w-24 shrink-0 text-xs text-muted">Plan {i + 1} · 8 s</span>
+                              <span className="text-ink-2">« {b.line} »</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </>
+                    )}
                     {plan && (
                       <ol className="mt-4 grid gap-1.5 text-sm">
                         {plan.scenes.map((s: any, i: number) => (

@@ -125,5 +125,8 @@ export function aiAvailability() {
   const llm = providerEnabled("anthropic");
   const image = providerEnabled("openai") || providerEnabled("google");
   const video = providerEnabled("google") || providerEnabled("fal");
-  return { llm, image, video };
+  // Vidéo UGC : une personne générée (images) puis animée (vidéo) ; la voix vient de Veo 3 (Google).
+  const ugc = image && video;
+  const ugcVoice = ugc && providerEnabled("google");
+  return { llm, image, video, ugc, ugcVoice };
 }
