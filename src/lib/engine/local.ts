@@ -27,19 +27,24 @@ const SECTOR_WORDS: [SectorId, RegExp][] = [
   ["artisanat", /carnet|papeterie|céramique|fait main|artisan|tissage|bois tourné|poterie/i],
 ];
 
+/** Secteur probable : le mot-clé cité en premier l'emporte (« bougie parfumée » → maison). */
 export function guessSector(text: string): SectorId | null {
-  for (const [s, re] of SECTOR_WORDS) if (re.test(text)) return s;
-  return null;
+  let best: { s: SectorId; at: number; len: number } | null = null;
+  for (const [s, re] of SECTOR_WORDS) {
+    const m = re.exec(text);
+    if (m && (!best || m.index < best.at || (m.index === best.at && m[0].length > best.len))) best = { s, at: m.index, len: m[0].length };
+  }
+  return best?.s ?? null;
 }
 
 export const SECTOR_DIRECTION: Record<SectorId, DirectionId> = {
   beaute: "atelier",
-  mode: "brut",
-  bijoux: "galerie",
+  mode: "flux",
+  bijoux: "joaillerie",
   maison: "terroir",
   hightech: "nocturne",
   sport: "elan",
-  alimentation: "terroir",
+  alimentation: "gourmand",
   enfants: "pop",
   animaux: "pop",
   artisanat: "galerie",

@@ -1,6 +1,6 @@
 <section class="es-section es-mosaic es-mosaic--{{ section.settings.layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container">
-    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-section-head" data-reveal="lines">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-section-head" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
     <div class="es-mosaic__grid">
       {%- for block in section.blocks -%}
         <figure class="es-mosaic__item es-media-frame" data-reveal="zoom" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>

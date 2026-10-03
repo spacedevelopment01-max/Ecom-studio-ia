@@ -1,0 +1,20 @@
+{%- comment -%} Séparation ondulée entre deux sections de couleurs différentes. {%- endcomment -%}
+<div class="es-wave color-{{ section.settings.from_scheme }}" aria-hidden="true">
+  <div class="es-wave__shape color-{{ section.settings.color_scheme }}">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,{{ section.settings.amplitude | plus: 20 }} C360,{{ section.settings.amplitude | times: 2 | plus: 20 }} 720,0 1080,{{ section.settings.amplitude }} C1260,{{ section.settings.amplitude | plus: 10 }} 1380,{{ section.settings.amplitude | divided_by: 2 }} 1440,20 L1440,120 L0,120 Z"></path></svg>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Vague de séparation",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "color_scheme", "id": "from_scheme", "label": "Couleur au-dessus (section précédente)", "default": "scheme-1" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleur de la vague (section suivante)", "default": "scheme-3" },
+    { "type": "range", "id": "amplitude", "min": 10, "max": 50, "step": 5, "unit": "px", "label": "Amplitude", "default": 40 }
+  ],
+  "presets": [{ "name": "Vague de séparation" }]
+}
+{% endschema %}

@@ -10,11 +10,37 @@
   {
     "name": "Logo et identité",
     "settings": [
-      { "type": "image_picker", "id": "logo", "label": "Logo" },
-      { "type": "text", "id": "logo_asset", "label": "Logo fourni avec le thème", "info": "Fichier du dossier assets utilisé si aucun logo n'est choisi ci-dessus." },
-      { "type": "range", "id": "logo_width", "min": 60, "max": 300, "step": 10, "unit": "px", "label": "Largeur du logo", "default": 140 },
-      { "type": "image_picker", "id": "favicon", "label": "Favicon" },
-      { "type": "text", "id": "favicon_asset", "label": "Favicon fourni avec le thème" }
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo"
+      },
+      {
+        "type": "text",
+        "id": "logo_asset",
+        "label": "Logo fourni avec le thème",
+        "info": "Fichier du dossier assets utilisé si aucun logo n'est choisi ci-dessus."
+      },
+      {
+        "type": "range",
+        "id": "logo_width",
+        "min": 60,
+        "max": 300,
+        "step": 10,
+        "unit": "px",
+        "label": "Largeur du logo",
+        "default": 140
+      },
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon"
+      },
+      {
+        "type": "text",
+        "id": "favicon_asset",
+        "label": "Favicon fourni avec le thème"
+      }
     ]
   },
   {
@@ -24,13 +50,48 @@
         "type": "color_scheme_group",
         "id": "color_schemes",
         "definition": [
-          { "type": "color", "id": "background", "label": "Arrière-plan", "default": "#FFFFFF" },
-          { "type": "color", "id": "surface", "label": "Surface (cartes, champs)", "default": "#F5F3EF" },
-          { "type": "color", "id": "text", "label": "Texte", "default": "#1A1A1A" },
-          { "type": "color", "id": "muted", "label": "Texte secondaire", "default": "#6B6B6B" },
-          { "type": "color", "id": "accent", "label": "Boutons et accents", "default": "#1A1A1A" },
-          { "type": "color", "id": "accent_text", "label": "Texte des boutons", "default": "#FFFFFF" },
-          { "type": "color", "id": "border", "label": "Bordures", "default": "#E3E0DA" }
+          {
+            "type": "color",
+            "id": "background",
+            "label": "Arrière-plan",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "surface",
+            "label": "Surface (cartes, champs)",
+            "default": "#F5F3EF"
+          },
+          {
+            "type": "color",
+            "id": "text",
+            "label": "Texte",
+            "default": "#1A1A1A"
+          },
+          {
+            "type": "color",
+            "id": "muted",
+            "label": "Texte secondaire",
+            "default": "#6B6B6B"
+          },
+          {
+            "type": "color",
+            "id": "accent",
+            "label": "Boutons et accents",
+            "default": "#1A1A1A"
+          },
+          {
+            "type": "color",
+            "id": "accent_text",
+            "label": "Texte des boutons",
+            "default": "#FFFFFF"
+          },
+          {
+            "type": "color",
+            "id": "border",
+            "label": "Bordures",
+            "default": "#E3E0DA"
+          }
         ],
         "role": {
           "background": "background",
@@ -50,35 +111,175 @@
   {
     "name": "Typographie",
     "settings": [
-      { "type": "font_picker", "id": "type_heading_font", "label": "Police des titres", "default": "playfair_display_n4" },
-      { "type": "font_picker", "id": "type_body_font", "label": "Police du texte", "default": "dm_sans_n4" },
-      { "type": "range", "id": "heading_scale", "min": 80, "max": 150, "step": 5, "unit": "%", "label": "Taille des titres", "default": 100 },
-      { "type": "range", "id": "body_scale", "min": 90, "max": 120, "step": 5, "unit": "%", "label": "Taille du texte", "default": 100 },
       {
-        "type": "select", "id": "heading_case", "label": "Casse des titres", "default": "none",
-        "options": [ { "value": "none", "label": "Normale" }, { "value": "uppercase", "label": "Majuscules" } ]
+        "type": "font_picker",
+        "id": "type_heading_font",
+        "label": "Police des titres",
+        "default": "playfair_display_n4"
       },
-      { "type": "range", "id": "heading_tracking", "min": -6, "max": 20, "step": 1, "label": "Interlettrage des titres (‰ ×10)", "default": 0 },
-      { "type": "range", "id": "heading_weight_boost", "min": 0, "max": 400, "step": 100, "label": "Graisse supplémentaire des titres", "default": 0 }
+      {
+        "type": "font_picker",
+        "id": "type_body_font",
+        "label": "Police du texte",
+        "default": "dm_sans_n4"
+      },
+      {
+        "type": "font_picker",
+        "id": "type_accent_font",
+        "label": "Police d'accent (mots en italique)",
+        "default": "cormorant_i5",
+        "info": "Utilisée pour les mots mis en valeur dans les titres."
+      },
+      {
+        "type": "range",
+        "id": "heading_scale",
+        "min": 80,
+        "max": 150,
+        "step": 5,
+        "unit": "%",
+        "label": "Taille des titres",
+        "default": 100
+      },
+      {
+        "type": "range",
+        "id": "body_scale",
+        "min": 90,
+        "max": 120,
+        "step": 5,
+        "unit": "%",
+        "label": "Taille du texte",
+        "default": 100
+      },
+      {
+        "type": "select",
+        "id": "heading_case",
+        "label": "Casse des titres",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "Normale"
+          },
+          {
+            "value": "uppercase",
+            "label": "Majuscules"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "heading_tracking",
+        "min": -6,
+        "max": 20,
+        "step": 1,
+        "label": "Interlettrage des titres (‰ ×10)",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "heading_weight_boost",
+        "min": 0,
+        "max": 400,
+        "step": 100,
+        "label": "Graisse supplémentaire des titres",
+        "default": 0
+      }
     ]
   },
   {
     "name": "Mise en page",
     "settings": [
-      { "type": "range", "id": "page_width", "min": 1000, "max": 1800, "step": 50, "unit": "px", "label": "Largeur maximale", "default": 1320 },
-      { "type": "range", "id": "spacing_scale", "min": 60, "max": 160, "step": 10, "unit": "%", "label": "Respiration entre les sections", "default": 100 },
       {
-        "type": "select", "id": "style_preset", "label": "Direction artistique", "default": "atelier",
+        "type": "range",
+        "id": "page_width",
+        "min": 1000,
+        "max": 1800,
+        "step": 50,
+        "unit": "px",
+        "label": "Largeur maximale",
+        "default": 1320
+      },
+      {
+        "type": "range",
+        "id": "spacing_scale",
+        "min": 60,
+        "max": 160,
+        "step": 10,
+        "unit": "%",
+        "label": "Respiration entre les sections",
+        "default": 100
+      },
+      {
+        "type": "select",
+        "id": "style_preset",
+        "label": "Direction artistique",
+        "default": "atelier",
         "info": "Applique un caractère graphique d'ensemble (détails, ornements, rythme).",
         "options": [
-          { "value": "atelier", "label": "Atelier — éditorial raffiné" },
-          { "value": "clinique", "label": "Clinique — précis et lumineux" },
-          { "value": "brut", "label": "Brut — contraste et grandes capitales" },
-          { "value": "terroir", "label": "Terroir — chaleureux et artisanal" },
-          { "value": "nocturne", "label": "Nocturne — sombre et technologique" },
-          { "value": "pop", "label": "Pop — vif et arrondi" },
-          { "value": "galerie", "label": "Galerie — blanc d'exposition" },
-          { "value": "elan", "label": "Élan — sportif et dynamique" }
+          {
+            "value": "atelier",
+            "label": "Atelier — éditorial raffiné"
+          },
+          {
+            "value": "clinique",
+            "label": "Clinique — précis et lumineux"
+          },
+          {
+            "value": "brut",
+            "label": "Brut — contraste et grandes capitales"
+          },
+          {
+            "value": "terroir",
+            "label": "Terroir — chaleureux et artisanal"
+          },
+          {
+            "value": "nocturne",
+            "label": "Nocturne — sombre et technologique"
+          },
+          {
+            "value": "pop",
+            "label": "Pop — vif et arrondi"
+          },
+          {
+            "value": "galerie",
+            "label": "Galerie — blanc d'exposition"
+          },
+          {
+            "value": "elan",
+            "label": "Élan — sportif et dynamique"
+          },
+          {
+            "value": "flux",
+            "label": "Flux"
+          },
+          {
+            "value": "joaillerie",
+            "label": "Joaillerie"
+          },
+          {
+            "value": "gourmand",
+            "label": "Gourmand"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "header_shape",
+        "label": "Forme de l'en-tête",
+        "default": "floating",
+        "options": [
+          {
+            "value": "floating",
+            "label": "Flottant, coins arrondis"
+          },
+          {
+            "value": "bar",
+            "label": "Barre classique"
+          },
+          {
+            "value": "boxed",
+            "label": "Encadré blanc, à distance des bords"
+          }
         ]
       }
     ]
@@ -86,51 +287,233 @@
   {
     "name": "Boutons et cartes",
     "settings": [
-      { "type": "range", "id": "button_radius", "min": 0, "max": 40, "step": 2, "unit": "px", "label": "Arrondi des boutons", "default": 0 },
-      { "type": "range", "id": "card_radius", "min": 0, "max": 32, "step": 2, "unit": "px", "label": "Arrondi des cartes et images", "default": 0 },
       {
-        "type": "select", "id": "button_style", "label": "Style des boutons", "default": "solid",
-        "options": [ { "value": "solid", "label": "Plein" }, { "value": "outline", "label": "Contour" }, { "value": "underline", "label": "Souligné" } ]
+        "type": "range",
+        "id": "button_radius",
+        "min": 0,
+        "max": 40,
+        "step": 2,
+        "unit": "px",
+        "label": "Arrondi des boutons",
+        "default": 40,
+        "info": "40 px donne des boutons en pilule."
       },
-      { "type": "checkbox", "id": "button_uppercase", "label": "Boutons en majuscules", "default": false }
+      {
+        "type": "range",
+        "id": "card_radius",
+        "min": 0,
+        "max": 40,
+        "step": 2,
+        "unit": "px",
+        "label": "Arrondi des cartes et images",
+        "default": 28
+      },
+      {
+        "type": "select",
+        "id": "button_style",
+        "label": "Style des boutons",
+        "default": "solid",
+        "options": [
+          {
+            "value": "solid",
+            "label": "Plein"
+          },
+          {
+            "value": "outline",
+            "label": "Contour"
+          },
+          {
+            "value": "underline",
+            "label": "Souligné"
+          },
+          {
+            "value": "frame",
+            "label": "Cadré (rectangle à bordure)"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "button_uppercase",
+        "label": "Boutons en majuscules",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "button_shine",
+        "label": "Reflet animé sur les boutons",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "glow_enabled",
+        "label": "Contours lumineux (néon) sur les cartes",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "glow_intensity",
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "unit": "%",
+        "label": "Intensité des lueurs",
+        "default": 50
+      }
     ]
   },
   {
     "name": "Animations",
     "settings": [
-      { "type": "checkbox", "id": "motion_enabled", "label": "Activer les animations au défilement", "default": true, "info": "Désactivées automatiquement si le visiteur a demandé moins d'animations dans son système." },
       {
-        "type": "select", "id": "motion_intensity", "label": "Intensité", "default": "normal",
-        "options": [ { "value": "subtle", "label": "Discrète" }, { "value": "normal", "label": "Normale" }, { "value": "expressive", "label": "Expressive" } ]
+        "type": "checkbox",
+        "id": "motion_enabled",
+        "label": "Activer les animations au défilement",
+        "default": true,
+        "info": "Désactivées automatiquement si le visiteur a demandé moins d'animations dans son système."
       },
-      { "type": "checkbox", "id": "motion_parallax", "label": "Effets de profondeur (parallaxe)", "default": true }
+      {
+        "type": "select",
+        "id": "motion_intensity",
+        "label": "Intensité",
+        "default": "normal",
+        "options": [
+          {
+            "value": "subtle",
+            "label": "Discrète"
+          },
+          {
+            "value": "normal",
+            "label": "Normale"
+          },
+          {
+            "value": "expressive",
+            "label": "Expressive"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "motion_parallax",
+        "label": "Effets de profondeur (parallaxe)",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Boutons flottants",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "fab_back_to_top",
+        "label": "Bouton « retour en haut »",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "fab_contact_link",
+        "label": "Bouton de contact : lien",
+        "info": "Exemples : tel:+33600000000, mailto:bonjour@exemple.fr, https://wa.me/33600000000 ou /pages/contact. Laissez vide pour le masquer."
+      },
+      {
+        "type": "select",
+        "id": "fab_contact_icon",
+        "label": "Icône du bouton de contact",
+        "default": "chat",
+        "options": [
+          {
+            "value": "chat",
+            "label": "Message"
+          },
+          {
+            "value": "phone",
+            "label": "Téléphone"
+          },
+          {
+            "value": "mail",
+            "label": "E-mail"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "id": "fab_contact_label",
+        "label": "Texte d'accessibilité du bouton de contact",
+        "default": "Nous contacter"
+      }
     ]
   },
   {
     "name": "Panier",
     "settings": [
       {
-        "type": "select", "id": "cart_type", "label": "Type de panier", "default": "drawer",
-        "options": [ { "value": "drawer", "label": "Panier latéral" }, { "value": "page", "label": "Page panier" } ]
+        "type": "select",
+        "id": "cart_type",
+        "label": "Type de panier",
+        "default": "drawer",
+        "options": [
+          {
+            "value": "drawer",
+            "label": "Panier latéral"
+          },
+          {
+            "value": "page",
+            "label": "Page panier"
+          }
+        ]
       },
-      { "type": "checkbox", "id": "cart_show_note", "label": "Permettre une note de commande", "default": false },
-      { "type": "text", "id": "cart_reassurance", "label": "Message sous le bouton de commande", "info": "N'indiquez que des engagements réels (livraison, retours)." }
+      {
+        "type": "checkbox",
+        "id": "cart_show_note",
+        "label": "Permettre une note de commande",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "cart_reassurance",
+        "label": "Message sous le bouton de commande",
+        "info": "N'indiquez que des engagements réels (livraison, retours)."
+      }
     ]
   },
   {
     "name": "Réseaux sociaux",
     "settings": [
-      { "type": "text", "id": "social_instagram", "label": "Instagram" },
-      { "type": "text", "id": "social_tiktok", "label": "TikTok" },
-      { "type": "text", "id": "social_facebook", "label": "Facebook" },
-      { "type": "text", "id": "social_youtube", "label": "YouTube" },
-      { "type": "text", "id": "social_pinterest", "label": "Pinterest" }
+      {
+        "type": "text",
+        "id": "social_instagram",
+        "label": "Instagram"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok",
+        "label": "TikTok"
+      },
+      {
+        "type": "text",
+        "id": "social_facebook",
+        "label": "Facebook"
+      },
+      {
+        "type": "text",
+        "id": "social_youtube",
+        "label": "YouTube"
+      },
+      {
+        "type": "text",
+        "id": "social_pinterest",
+        "label": "Pinterest"
+      }
     ]
   },
   {
     "name": "Référencement",
     "settings": [
-      { "type": "image_picker", "id": "share_image", "label": "Image de partage par défaut" }
+      {
+        "type": "image_picker",
+        "id": "share_image",
+        "label": "Image de partage par défaut"
+      }
     ]
   }
 ]

@@ -57,3 +57,13 @@ describe("thème Shopify", () => {
     expect(JSON.stringify(res.spec.templates.index.sections[first])).toBe(before);
   });
 });
+
+describe("icônes", () => {
+  it("la branche par défaut est la dernière (sinon les icônes suivantes s'empilent)", async () => {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync("theme-base/snippets/icon.liquid", "utf8");
+    const lastWhen = src.lastIndexOf("{%- when");
+    const elseAt = src.indexOf("{%- else");
+    expect(elseAt).toBeGreaterThan(lastWhen);
+  });
+});

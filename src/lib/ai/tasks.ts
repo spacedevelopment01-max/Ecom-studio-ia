@@ -245,6 +245,19 @@ const DesignSchema = z.object({
   reasoning: z.string(),
   index: z.array(z.object({ type: z.string(), settings: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])), blocks: z.array(z.object({ type: z.string(), settings: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])) })).optional() })).min(4).max(12),
   custom: z.object({ type: z.string(), name: z.string(), liquid: z.string() }).nullable().optional(),
+  globals: z
+    .object({
+      header_shape: z.enum(["floating", "bar"]).optional(),
+      button_shine: z.boolean().optional(),
+      glow_enabled: z.boolean().optional(),
+      glow_intensity: z.number().min(0).max(100).optional(),
+      button_radius: z.number().min(0).max(40).optional(),
+      card_radius: z.number().min(0).max(40).optional(),
+      motion_intensity: z.enum(["subtle", "normal", "expressive"]).optional(),
+      heading_scale: z.number().min(70).max(140).optional(),
+    })
+    .nullable()
+    .optional(),
 });
 
 /** Composition de la page d'accueil par l'IA (le reste du thème vient de la direction). */
@@ -262,7 +275,7 @@ export async function aiDesignHome(b: Base, p: Project, spec: ThemeSpec) {
 Fichiers d'images disponibles (à utiliser dans les réglages *_asset) : ${Object.keys(spec.files).join(", ")}
 Catalogue des sections :\n${sectionCatalog(spec)}
 Schémas de couleurs : scheme-1 (fond principal), scheme-2 (surface douce), scheme-3 (contraste sombre), scheme-4 (accent).
-Compose la page d'accueil (« index ») : liste ordonnée de sections avec réglages et blocs. Reprends les textes rédigés de la structure actuelle et améliore le rythme si utile. Si une section sur mesure apporte une vraie valeur (ex. animation de présentation du produit), fournis-la dans « custom » (type commençant par es-custom-) et utilise son type dans la liste.`,
+Compose la page d'accueil (« index ») : liste ordonnée de sections avec réglages et blocs, au niveau visuel décrit (héros immersif, mots d'accent, cartes lumineuses, texte qui s'allume, chiffres vérifiés). Reprends les textes rédigés de la structure actuelle et améliore le rythme si utile. Ajuste si besoin les réglages globaux dans « globals » (forme de l'en-tête, reflets, lueurs, arrondis, intensité des animations). Si une section sur mesure apporte une vraie valeur (ex. animation de présentation du produit), fournis-la dans « custom » (type commençant par es-custom-) et utilise son type dans la liste.`,
       maxTokens: 32000,
     },
     DesignSchema,

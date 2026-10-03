@@ -27,12 +27,14 @@
       assign heading_font = settings.type_heading_font
       assign body_font = settings.type_body_font
       assign body_font_bold = body_font | font_modify: 'weight', 'bold'
+      assign accent_font = settings.type_accent_font
       assign heading_weight = heading_font.weight | plus: settings.heading_weight_boost | at_most: 900
     -%}
     {% style %}
       {{ heading_font | font_face: font_display: 'swap' }}
       {{ body_font | font_face: font_display: 'swap' }}
       {{ body_font_bold | font_face: font_display: 'swap' }}
+      {{ accent_font | font_face: font_display: 'swap' }}
 
       {% for scheme in settings.color_schemes -%}
         .color-{{ scheme.id }}, {% if forloop.first %}:root,{% endif %} .color-{{ scheme.id }} .es-scheme-inherit {
@@ -57,6 +59,10 @@
         --font-body-style: {{ body_font.style }};
         --font-body-weight: {{ body_font.weight }};
         --font-body-weight-bold: {{ body_font_bold.weight | default: 700 }};
+        --font-accent: {{ accent_font.family }}, {{ accent_font.fallback_families }};
+        --font-accent-style: {{ accent_font.style }};
+        --font-accent-weight: {{ accent_font.weight }};
+        --glow: {{ settings.glow_intensity | divided_by: 100.0 }};
         --heading-scale: {{ settings.heading_scale | divided_by: 100.0 }};
         --body-scale: {{ settings.body_scale | divided_by: 100.0 }};
         --heading-case: {{ settings.heading_case }};
@@ -98,7 +104,7 @@
     </script>
   </head>
 
-  <body class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
+  <body class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
     <a class="skip-link visually-hidden-focusable" href="#MainContent">{{ 'accessibility.skip_to_text' | t }}</a>
 
     {% sections 'header-group' %}
@@ -113,6 +119,7 @@
       {% section 'cart-drawer' %}
     {%- endif -%}
 
+    {% render 'floating-actions' %}
     <div class="es-toast" role="status" aria-live="polite" hidden></div>
   </body>
 </html>

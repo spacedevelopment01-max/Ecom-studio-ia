@@ -3,9 +3,9 @@
     <div class="es-cta__media"{% if section.settings.parallax %} data-parallax="0.2"{% endif %}>{% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: '', sizes: '100vw', class: 'es-cover' %}</div>
   {%- endif -%}
   <div class="es-container es-cta__inner">
-    <h2 class="es-heading es-h1" data-reveal="lines">{{ section.settings.heading }}</h2>
+    <h2 class="es-heading es-h1" data-reveal="words">{{ section.settings.heading }}</h2>
     {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
-    {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button" data-reveal="up" style="--d: 1">{{ section.settings.button_label }}</a>{%- endif -%}
+    {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button" data-reveal="up" style="--d: 1">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
   </div>
 </section>
 

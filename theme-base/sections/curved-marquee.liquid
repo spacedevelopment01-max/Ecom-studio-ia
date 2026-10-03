@@ -1,0 +1,32 @@
+{%- comment -%} Texte qui défile le long d'une courbe. {%- endcomment -%}
+{%- liquid
+  assign path_id = 'es-curve-' | append: section.id
+  assign repeated = ''
+  for i in (1..8)
+    assign repeated = repeated | append: section.settings.text | append: ' ' | append: section.settings.separator | append: ' '
+  endfor
+-%}
+<section class="es-section es-curve es-curve--{{ section.settings.size }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <svg class="es-curve__svg" viewBox="0 0 1200 {{ section.settings.curve | plus: 120 }}" preserveAspectRatio="none" role="img" aria-label="{{ section.settings.text | escape }}">
+    <path id="{{ path_id }}" d="M -40 {{ section.settings.curve | plus: 90 }} Q 600 {{ 100 | minus: section.settings.curve }} 1240 {{ section.settings.curve | plus: 90 }}" fill="none"></path>
+    <text class="es-curve__text"><textPath href="#{{ path_id }}" startOffset="0%" data-curve-text>{{ repeated }}</textPath></text>
+  </svg>
+</section>
+
+{% schema %}
+{
+  "name": "Texte en courbe",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "text", "label": "Texte", "default": "Allez plus loin" },
+    { "type": "text", "id": "separator", "label": "Séparateur", "default": "✦" },
+    { "type": "range", "id": "curve", "min": 0, "max": 90, "step": 5, "unit": "px", "label": "Courbure", "default": 70 },
+    { "type": "select", "id": "size", "label": "Taille", "default": "large", "options": [ { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 32 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 32 }
+  ],
+  "presets": [{ "name": "Texte en courbe" }]
+}
+{% endschema %}

@@ -1,0 +1,40 @@
+{%- comment -%} Rangée de cercles façon « stories » : chaque cercle mène à une page, un produit ou une collection. {%- endcomment -%}
+<section class="es-section es-circles color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h3 es-circles__heading" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+    <ul class="es-circles__track" role="list">
+      {%- for block in section.blocks -%}
+        <li class="es-circles__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          <a href="{{ block.settings.link | default: routes.all_products_collection_url }}" class="es-circles__link">
+            <span class="es-circles__ring"><span class="es-circles__img">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.label, sizes: '160px', class: 'es-cover' %}</span></span>
+            <span class="es-circles__label">{{ block.settings.label }}</span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cercles (stories)",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 48 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 48 }
+  ],
+  "blocks": [
+    { "type": "circle", "name": "Cercle", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "label", "label": "Libellé", "default": "Nouveautés" },
+      { "type": "url", "id": "link", "label": "Lien" }
+    ] }
+  ],
+  "max_blocks": 10,
+  "presets": [{ "name": "Cercles (stories)", "blocks": [{ "type": "circle" }, { "type": "circle" }, { "type": "circle" }, { "type": "circle" }] }]
+}
+{% endschema %}

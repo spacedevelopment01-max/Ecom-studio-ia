@@ -8,14 +8,31 @@
   </div>
   <div class="es-hero-full__content es-container">
     <div class="es-hero-full__box">
+      {%- if section.settings.badge != blank -%}<p class="es-pill-badge" data-reveal="up">{% render 'icon', name: 'check' %}{{ section.settings.badge }}</p>{%- endif -%}
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
-      <h1 class="es-heading es-display" data-reveal="lines">{{ section.settings.heading }}</h1>
-      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up" style="--d: 1">{{ section.settings.text }}</div>{%- endif -%}
-      {%- if section.settings.button_label != blank -%}
-        <div class="es-actions" data-reveal="up" style="--d: 2"><a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ section.settings.button_label }}</a></div>
+      <h1 class="es-heading es-display{% if section.settings.heading_font == 'body' %} es-heading-sans{% endif %}" data-reveal="words">
+        {{- section.settings.heading -}}
+        {%- if section.settings.heading_accent != blank %} <span class="es-accent">{{ section.settings.heading_accent }}</span>{% endif -%}
+      </h1>
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up" style="--d: 2">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.settings.button_label != blank or section.settings.button2_label != blank -%}
+        <div class="es-actions es-actions--stack" data-reveal="up" style="--d: 3">
+          {%- if section.settings.button_label != blank -%}
+            <a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>
+          {%- endif -%}
+          {%- if section.settings.button2_label != blank -%}
+            <a href="{{ section.settings.button2_link | default: routes.root_url }}" class="es-button es-button--secondary">{{ section.settings.button2_label }}</a>
+          {%- endif -%}
+        </div>
       {%- endif -%}
     </div>
   </div>
+{%- if section.settings.sticker_text != blank -%}
+  <span class="es-sticker" aria-hidden="true">
+    <svg viewBox="0 0 120 120"><path id="es-sticker-{{ section.id }}" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0" fill="none"></path><text><textPath href="#es-sticker-{{ section.id }}">{{ section.settings.sticker_text }} • {{ section.settings.sticker_text }} •</textPath></text></svg>
+    <span class="es-sticker__icon">{% render 'icon', name: 'star' %}</span>
+  </span>
+{%- endif -%}
   {%- if section.settings.show_scroll_cue -%}<span class="es-scroll-cue" aria-hidden="true"></span>{%- endif -%}
 </section>
 
@@ -25,11 +42,17 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
+    { "type": "text", "id": "sticker_text", "label": "Pastille ronde tournante (texte court)", "info": "Ex. « Nouvelle collection 2026 ». Faits vérifiés uniquement." },
+    { "type": "text", "id": "badge", "label": "Pastille au-dessus du titre", "info": "Ex. « Fait main • Livré en 48 h » (faits vérifiés uniquement)." },
     { "type": "text", "id": "eyebrow", "label": "Surtitre" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Une image qui raconte tout" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur (italique colorée)" },
+    { "type": "select", "id": "heading_font", "label": "Police du titre", "default": "heading", "options": [ { "value": "heading", "label": "Police des titres" }, { "value": "body", "label": "Police du texte, en gras" } ] },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "button2_label", "label": "Second bouton" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
     { "type": "image_picker", "id": "image", "label": "Image (ou affiche de la vidéo)" },
     { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
     { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },

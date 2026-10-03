@@ -2,7 +2,7 @@
 <section class="es-section es-fcoll color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container">
     <header class="es-section-head es-section-head--split">
-      <h2 class="es-heading es-h2" data-reveal="lines">{{ section.settings.heading | default: coll.title }}</h2>
+      <h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading | default: coll.title }}</h2>
       <a href="{{ coll.url }}" class="es-link-arrow" data-reveal="up">{{ 'collections.view_all' | t }} {% render 'icon', name: 'arrow' %}</a>
     </header>
     <div class="es-product-grid" style="--cols: {{ section.settings.columns }}">

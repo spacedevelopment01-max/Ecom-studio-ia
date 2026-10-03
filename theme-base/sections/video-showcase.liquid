@@ -1,6 +1,6 @@
 <section class="es-section es-video es-video--{{ section.settings.width }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container">
-    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-section-head es-section-head--center" data-reveal="lines">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-section-head es-section-head--center" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
     <div class="es-video__frame es-media-frame" data-reveal="zoom" style="--ratio: {{ section.settings.ratio }}">
       {% render 'es-video', video: section.settings.video, asset: section.settings.video_asset, poster: section.settings.poster, poster_asset: section.settings.poster_asset, class: 'es-cover', autoplay: section.settings.autoplay, controls: section.settings.controls, alt: section.settings.heading %}
       {%- if section.settings.autoplay -%}

@@ -1,9 +1,14 @@
-<section class="es-section es-richtext es-richtext--{{ section.settings.style }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+<section class="es-section es-ambient es-richtext es-richtext--{{ section.settings.style }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container es-richtext__inner es-richtext__inner--{{ section.settings.align }}">
     {%- for block in section.blocks -%}
       {%- case block.type -%}
         {%- when 'eyebrow' -%}<p class="es-eyebrow" data-reveal="up" {{ block.shopify_attributes }}>{{ block.settings.text }}</p>
-        {%- when 'heading' -%}<h2 class="es-heading es-{{ block.settings.size }}" data-reveal="lines" {{ block.shopify_attributes }}>{{ block.settings.text }}</h2>
+        {%- when 'heading' -%}
+          {%- if section.settings.style == 'reveal' -%}
+            <h2 class="es-heading es-{{ block.settings.size }}" data-scroll-words {{ block.shopify_attributes }}>{{ block.settings.text }}</h2>
+          {%- else -%}
+            <h2 class="es-heading es-{{ block.settings.size }}" data-reveal="words" {{ block.shopify_attributes }}>{{ block.settings.text }}</h2>
+          {%- endif -%}
         {%- when 'text' -%}<div class="es-rte es-lead" data-reveal="up" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
         {%- when 'button' -%}<div data-reveal="up" {{ block.shopify_attributes }}><a href="{{ block.settings.link }}" class="es-button{% if block.settings.secondary %} es-button--secondary{% endif %}">{{ block.settings.label }}</a></div>
         {%- when 'signature' -%}<p class="es-signature" data-reveal="up" {{ block.shopify_attributes }}>{{ block.settings.text }}</p>
@@ -19,7 +24,7 @@
   "class": "es-section-wrapper",
   "settings": [
     { "type": "select", "id": "align", "label": "Alignement", "default": "center", "options": [ { "value": "left", "label": "Gauche" }, { "value": "center", "label": "Centré" } ] },
-    { "type": "select", "id": "style", "label": "Style", "default": "statement", "options": [ { "value": "statement", "label": "Déclaration" }, { "value": "quote", "label": "Citation" }, { "value": "plain", "label": "Simple" } ] },
+    { "type": "select", "id": "style", "label": "Style", "default": "statement", "options": [ { "value": "statement", "label": "Déclaration" }, { "value": "reveal", "label": "Texte qui s'allume au défilement" }, { "value": "quote", "label": "Citation" }, { "value": "plain", "label": "Simple" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }

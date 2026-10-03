@@ -1,11 +1,11 @@
 <section class="es-section es-iwt es-iwt--{{ section.settings.layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container es-iwt__grid">
-    <div class="es-iwt__media es-media-frame es-media-frame--{{ section.settings.ratio }}" data-reveal="{{ section.settings.reveal }}"{% if section.settings.parallax %} data-parallax="0.1"{% endif %}>
+    <div class="es-iwt__media es-media-frame es-media-frame--{{ section.settings.ratio }}" data-reveal="{{ section.settings.reveal }}"{% if section.settings.parallax %} data-parallax="0.1"{% else %} data-scroll-zoom{% endif %}>
       {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-cover' %}
     </div>
     <div class="es-iwt__content">
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
-      <h2 class="es-heading es-h2" data-reveal="lines">{{ section.settings.heading }}</h2>
+      <h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>
       <div class="es-rte" data-reveal="up" style="--d: 1">{{ section.settings.text }}</div>
       {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link }}" class="es-button es-button--secondary" data-reveal="up" style="--d: 2">{{ section.settings.button_label }}</a>{%- endif -%}
     </div>

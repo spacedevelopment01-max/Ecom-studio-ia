@@ -13,8 +13,9 @@ import { parseSchemaBlock, withDefaults, type SectionInstance, type ThemeSpec } 
 // ---------------------------------------------------------------- polices
 
 /** Correspondance des polices Shopify utilisées par les directions → fichiers locaux. */
-export const FONT_FILES: Record<string, { family: string; files: Record<number, string>; fallback: string }> = {
-  cormorant: { family: "Cormorant", files: { 400: "Cormorant-400.ttf", 500: "Cormorant-500.ttf", 600: "Cormorant-600.ttf" }, fallback: "serif" },
+export const FONT_FILES: Record<string, { family: string; files: Record<number, string>; italic?: Record<number, string>; fallback: string }> = {
+  cormorant: { family: "Cormorant", files: { 400: "Cormorant-400.ttf", 500: "Cormorant-500.ttf", 600: "Cormorant-600.ttf" }, italic: { 400: "Cormorant-500italic.ttf", 500: "Cormorant-500italic.ttf" }, fallback: "serif" },
+  inter: { family: "Inter", files: { 400: "Inter-400.ttf", 500: "Inter-500.ttf", 600: "Inter-600.ttf", 700: "Inter-700.ttf", 800: "Inter-700.ttf" }, fallback: "sans-serif" },
   jost: { family: "Jost", files: { 400: "Jost-400.ttf", 500: "Jost-500.ttf", 600: "Jost-600.ttf", 700: "Jost-600.ttf" }, fallback: "sans-serif" },
   dm_sans: { family: "DM Sans", files: { 400: "DMSans-400.ttf", 500: "DMSans-500.ttf", 700: "DMSans-700.ttf" }, fallback: "sans-serif" },
   archivo: { family: "Archivo", files: { 400: "Archivo-400.ttf", 600: "Archivo-600.ttf", 700: "Archivo-800.ttf", 800: "Archivo-800.ttf" }, fallback: "sans-serif" },
@@ -28,7 +29,10 @@ export const FONT_FILES: Record<string, { family: string; files: Record<number, 
   playfair_display: { family: "Playfair Display", files: { 400: "PlayfairDisplay-400.ttf", 600: "PlayfairDisplay-600.ttf", 700: "PlayfairDisplay-700.ttf" }, fallback: "serif" },
 };
 
-export const FONT_HANDLES = Object.keys(FONT_FILES).flatMap((k) => Object.keys(FONT_FILES[k].files).map((w) => `${k}_n${String(w)[0]}`));
+export const FONT_HANDLES = Object.keys(FONT_FILES).flatMap((k) => [
+  ...Object.keys(FONT_FILES[k].files).map((w) => `${k}_n${String(w)[0]}`),
+  ...Object.keys(FONT_FILES[k].italic ?? {}).map((w) => `${k}_i${String(w)[0]}`),
+]);
 
 class FontDrop extends Drop {
   family: string;
@@ -44,11 +48,13 @@ class FontDrop extends Drop {
     this.family = `"${def.family}"`;
     this.fallback_families = def.fallback;
     this.weight = m ? Number(m[3]) * 100 : 400;
+    if (m?.[2] === "i") this.style = "italic";
   }
   file() {
     const def = FONT_FILES[this.key] ?? FONT_FILES.dm_sans;
-    const weights = Object.keys(def.files).map(Number).sort((a, b) => Math.abs(a - this.weight) - Math.abs(b - this.weight));
-    return `${this.base}/__fonts/${def.files[weights[0]]}`;
+    const set = this.style === "italic" && def.italic ? def.italic : def.files;
+    const weights = Object.keys(set).map(Number).sort((a, b) => Math.abs(a - this.weight) - Math.abs(b - this.weight));
+    return `${this.base}/__fonts/${set[weights[0]]}`;
   }
   valueOf() {
     return this.handle;
@@ -479,14 +485,15 @@ export function createEngine(files: ThemeFiles, base: string) {
   f("t", (key: string, ...args: any[]) => translate(locale, key, Object.fromEntries(args.filter(Array.isArray))));
   f("font_face", (font: unknown) => {
     if (!(font instanceof FontDrop)) return "";
-    return `@font-face { font-family: ${font.family}; font-weight: ${font.weight}; font-style: normal; font-display: swap; src: url("${font.file()}") format("truetype"); }`;
+    return `@font-face { font-family: ${font.family}; font-weight: ${font.weight}; font-style: ${font.style}; font-display: swap; src: url("${font.file()}") format("truetype"); }`;
   });
   f("font_modify", (font: unknown, prop: string, value: string) => {
     if (!(font instanceof FontDrop)) return font;
     if (prop === "weight") {
       const w = value === "bold" ? 7 : value === "bolder" ? Math.min(9, font.weight / 100 + 3) : Number(value) / 100;
-      return new FontDrop(`${font.key}_n${Math.round(w)}`, base);
+      return new FontDrop(`${font.key}_${font.style === "italic" ? "i" : "n"}${Math.round(w)}`, base);
     }
+    if (prop === "style") return new FontDrop(`${font.key}_${value === "italic" ? "i" : "n"}${Math.round(font.weight / 100)}`, base);
     return font;
   });
   f("font_url", (font: unknown) => (font instanceof FontDrop ? font.file() : ""));
