@@ -78,7 +78,7 @@ export default async function Home() {
       <RevealObserver />
       <ScrollFX />
       {/* En-tête */}
-      <header className="glass sticky top-0 z-50 border-b border-line/70">
+      <header className="glass sticky top-0 z-50 border-b border-line/70" style={{ background: "color-mix(in srgb, var(--card) 94%, transparent)" }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" aria-label="E-COM STUDIO IA, accueil">
             <Logo />
