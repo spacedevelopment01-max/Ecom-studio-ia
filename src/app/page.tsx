@@ -68,7 +68,7 @@ export default async function Home() {
     [CalendarDays, "Calendrier qui publie", "Jour, semaine, mois. Validation à l'unité ou en lot, règles d'automatisation, reprises sans doublon."],
     [Pause, "Pause et reprise", "Mettez une création en pause, reprenez-la plus tard : les étapes terminées sont conservées, rien n'est refait."],
     [BookOpen, `${PROMPT_STATS.total} prompts sectoriels`, `${PROMPT_STATS.sectors} secteurs, complétés automatiquement avec votre produit, votre marque et vos médias.`],
-    [FolderTree, "Fichiers organisés", "Dossiers par boutique, versions préservées, originaux intacts, liens vers chaque usage."],
+    [FolderTree, "Fichiers rangés par l'IA", "Dossiers et sous-dossiers par boutique : l'IA classe et renomme chaque fichier, vous gardez la main pour déplacer ou créer les vôtres."],
     [Plug, "Connexions officielles", "Instagram, Facebook, TikTok, YouTube, Pinterest, Canva et Shopify par leurs autorisations officielles. Jamais de mot de passe."],
     [Sparkles, "Une IA qui se souvient", "Faits confirmés, décisions et corrections forment une mémoire commune, respectée par toutes les créations suivantes."],
   ];
@@ -366,6 +366,31 @@ export default async function Home() {
           </section>
         )}
 
+        {/* Rangement */}
+        <section id="rangement" className="scroll-mt-20 border-y border-line bg-card py-24 sm:py-32">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Rangement automatique</p>
+              <h2 className="words mt-4 font-display text-[clamp(2rem,4.6vw,3.6rem)] font-semibold leading-[1]">
+                <Words text="Tout est rangé." /> <Words text="C'est l'IA qui classe." className="text-gradient" d={3} />
+              </h2>
+              <p className="reveal mt-5 text-lg leading-relaxed text-ink-2">
+                Chaque boutique a son arborescence de dossiers et sous-dossiers : produit, marque, images, vidéos, boutique, contenus. Chaque création arrive directement à sa place. Les fichiers que vous importez sont classés et renommés par l'IA.
+              </p>
+              <ul className="reveal mt-7 grid gap-3 text-[15px]">
+                {["Dossiers et sous-dossiers prêts dès le premier projet", "Fichiers importés classés et renommés clairement par l'IA", "Vos propres dossiers, glisser-déposer et déplacement en lot", "Originaux toujours conservés, rien n'est écrasé"].map((t) => (
+                  <li key={t} className="flex gap-3">
+                    <Check className="mt-0.5 size-5 shrink-0 text-signal" /> {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="reveal reveal-scale lg:col-span-7">
+              <FilesMock />
+            </div>
+          </div>
+        </section>
+
         {/* Le studio */}
         <section id="studio" className="relative isolate scroll-mt-20 py-24 sm:py-32">
           <div className="hero-glow absolute inset-0 -z-10 opacity-60" aria-hidden />
@@ -497,6 +522,64 @@ export default async function Home() {
       </main>
 
       <SiteFooter />
+    </div>
+  );
+}
+
+/** Maquette du gestionnaire de fichiers : arborescence réelle du studio et fichiers classés. */
+function FilesMock() {
+  const tree: [string, string[]][] = [
+    ["01 · Produit", ["Photos originales", "Détourages", "Catalogue"]],
+    ["02 · Marque", ["Logos", "Charte & palette"]],
+    ["03 · Images", ["Packshots", "Scènes & usages", "Bannières boutique", "Réseaux sociaux", "Publicités"]],
+    ["04 · Vidéos", ["Publicités", "Réseaux sociaux", "Boutique"]],
+    ["05 · Boutique", ["Exports de thèmes"]],
+    ["06 · Contenus", ["Textes", "Calendrier"]],
+  ];
+  const open = new Set(["03 · Images", "04 · Vidéos"]);
+  const files: [string, string, string][] = [
+    ["IMG_4821.jpg", "drone-photo-originale.jpg", "01 · Produit › Photos originales"],
+    ["capture (3).png", "drone-detoure.png", "01 · Produit › Détourages"],
+    ["Sans titre.jpg", "drone-post-4x5.jpg", "03 · Images › Réseaux sociaux"],
+    ["video_final_v2.mp4", "drone-pub-9x16.mp4", "04 · Vidéos › Publicités"],
+    ["logo ok.svg", "logo-principal.svg", "02 · Marque › Logos"],
+  ];
+  return (
+    <div className="overflow-hidden rounded-[28px] border border-line bg-paper shadow-soft">
+      <div className="flex items-center gap-2 border-b border-line px-4 py-3">
+        <span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" />
+        <span className="ml-2 text-xs text-muted">Fichiers · Ostral</span>
+        <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-signal-soft px-2.5 py-1 text-[11px] font-medium text-signal"><Sparkles className="size-3" /> Classement par l'IA</span>
+      </div>
+      <div className="grid sm:grid-cols-[minmax(0,200px)_1fr]">
+        <ul className="border-b border-line p-3 text-[13px] sm:border-b-0 sm:border-r">
+          {tree.map(([f, kids]) => (
+            <li key={f}>
+              <p className="flex items-center gap-2 rounded-lg px-2 py-1.5 font-medium text-ink"><FolderTree className="size-3.5 text-signal" /> {f}</p>
+              {open.has(f) && (
+                <ul className={`ml-4 border-l border-line pl-2 ${f === "04 · Vidéos" ? "hidden sm:block" : ""}`}>
+                  {kids.map((k) => <li key={k} className="truncate px-2 py-1 text-ink-2">{k}</li>)}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+        <div className="p-4 sm:p-5">
+          <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">Fichiers importés</p>
+          <ul className="mt-3 grid gap-2.5">
+            {files.map(([from, to, dest], i) => (
+              <li key={from} className="reveal rounded-2xl border border-line bg-card p-3" style={{ ["--d" as any]: i + 2 }}>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
+                  <span className="text-muted line-through decoration-1">{from}</span>
+                  <ArrowRight className="size-3.5 shrink-0 text-signal" />
+                  <span className="font-medium text-ink">{to}</span>
+                </div>
+                <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-paper-2 px-2 py-0.5 text-[11px] text-ink-2"><FolderTree className="size-3 text-signal" /> {dest}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
