@@ -213,22 +213,26 @@ export function Empty({ icon, title, children, action }: { icon?: ReactNode; tit
 
 export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
+  // onClose change à chaque rendu du parent (actualisation automatique du studio) : on garde la dernière
+  // version dans une ref pour que l'ouverture (focus, défilement) ne soit faite qu'une fois.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
     if (!open) return;
     const prev = document.activeElement as HTMLElement | null;
-    ref.current?.querySelector<HTMLElement>("input,textarea,select,button")?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    ref.current?.querySelector<HTMLElement>("input,textarea,select,button")?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeRef.current();
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
-      prev?.focus();
+      prev?.focus({ preventScroll: true });
     };
-  }, [open, onClose]);
+  }, [open]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(e) => e.target === e.currentTarget && closeRef.current()}>
       <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className={cx("max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl border border-line bg-card p-5 shadow-soft sm:rounded-3xl sm:p-7", wide ? "sm:max-w-4xl" : "sm:max-w-lg")}>
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2 className="font-display text-2xl">{title}</h2>
