@@ -66,7 +66,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       name: f.name,
       mime,
       role: role ?? (kindFromMime(mime) === "image" && !folderId ? "original" : null) ?? undefined,
-      folderId,
+      // Photos en situation : rangées avec les scènes.
+      ...(role === "lifestyle" && !folderId ? { folderKey: "images.scenes" } : { folderId }),
       origin: "upload",
       meta: { uploadedAt: Date.now() },
     });

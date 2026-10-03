@@ -29,7 +29,15 @@ export type VideoScene =
   | { kind: "detail"; duration: number; image: number; caption?: string }
   | { kind: "scene"; duration: number; image: number; caption?: string }
   | { kind: "clip"; duration: number; clip: number; caption?: string }
-  | { kind: "end"; duration: number; headline: string; cta: string; url?: string };
+  | { kind: "end"; duration: number; headline: string; cta: string; url?: string }
+  /** Ouverture sur une photo (de préférence le produit en situation), plein cadre, titre en bas. */
+  | { kind: "hook"; duration: number; image: number; headline: string; tag?: string }
+  /** Produit seul sous un projecteur, fond sombre, halo de la couleur de marque. */
+  | { kind: "spotlight"; duration: number; headline?: string }
+  /** Écran partagé : photo d'un côté, produit détouré et titre de l'autre. */
+  | { kind: "split"; duration: number; image: number; headline?: string }
+  /** Phrases courtes plein écran, l'une après l'autre, sur fonds alternés. */
+  | { kind: "words"; duration: number; items: string[] };
 
 export type VideoSpec = {
   format: VideoFormat;
@@ -359,6 +367,130 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       if (scene.caption) kinetic(ctx, scene.caption, { x: safe.side, y: H - safe.bottom - headSize * 2.4, maxW: W - safe.side * 2, size: Math.round(headSize * 0.72), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.2, uppercase: typo.uppercase });
       break;
     }
+    case "hook": {
+      const im = a.images[scene.image] ?? a.images[0];
+      if (im) {
+        const z = 1.14 - 0.1 * easeOut(progress);
+        const r = Math.max(W / im.width, H / im.height) * z;
+        ctx.drawImage(im as any, (W - im.width * r) / 2, (H - im.height * r) / 2 - (1 - progress) * H * 0.015, im.width * r, im.height * r);
+      } else ctx.drawImage(P.bgDark as any, 0, 0);
+      const g = ctx.createLinearGradient(0, H * 0.45, 0, H);
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(1, "rgba(0,0,0,0.78)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, H * 0.45, W, H * 0.55);
+      if (scene.tag) {
+        ctx.globalAlpha = easeOut(seg(local, 0.2, 0.5));
+        const ts = Math.round(bodySize * 0.8);
+        ctx.font = font(typo.body, 600, ts);
+        const tw = ctx.measureText(scene.tag).width + ts * 1.8;
+        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        pill(ctx, safe.side, safe.top, tw, ts * 2.1);
+        ctx.fill();
+        ctx.fillStyle = "#141414";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(scene.tag, safe.side + ts * 0.9, safe.top + ts * 1.07);
+        ctx.globalAlpha = 1;
+      }
+      const hs = Math.round(headSize * 0.95);
+      ctx.font = font(typo.heading, headW, hs);
+      const n = Math.min(3, wrapLines(ctx, typo.uppercase ? scene.headline.toLocaleUpperCase("fr-FR") : scene.headline, W - safe.side * 2).length);
+      kinetic(ctx, scene.headline, { x: safe.side, y: H - safe.bottom - n * hs * 1.08, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.35, uppercase: typo.uppercase });
+      break;
+    }
+    case "spotlight": {
+      ctx.drawImage(P.bgDark as any, 0, 0);
+      const L = P.big;
+      const baseY = H - safe.bottom - H * 0.05;
+      const cy = baseY - L.height * 0.5;
+      const glow = easeOut(seg(local, 0, 1.2));
+      const rg = ctx.createRadialGradient(W / 2, cy, 0, W / 2, cy, Math.max(W, H) * 0.55 * glow + 1);
+      rg.addColorStop(0, mix(pal.brand, "#FFFFFF", 0.25));
+      rg.addColorStop(0.45, pal.brand + "88");
+      rg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = rg;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
+      // Anneau d'orbite qui se trace autour du produit.
+      const ringP = easeInOut(seg(local, 0.3, 1.4));
+      ctx.strokeStyle = "rgba(255,255,255,0.55)";
+      ctx.lineWidth = Math.max(2, W * 0.003);
+      ctx.beginPath();
+      ctx.ellipse(W / 2, baseY - L.height * 0.06, L.pw * 0.75, L.pw * 0.14, 0, Math.PI * 0.5, Math.PI * 0.5 + Math.PI * 2 * ringP);
+      ctx.stroke();
+      const p = easeOutBack(seg(local, 0.1, 1.1));
+      const scale = 0.62 + 0.38 * p;
+      const rot = (1 - easeOut(seg(local, 0.1, 1.3))) * -0.14 + Math.sin(local * 1.4) * 0.012;
+      ctx.save();
+      ctx.globalAlpha = clamp(seg(local, 0.05, 0.35) * 1.5);
+      ctx.translate(W / 2, baseY + Math.sin(local * 1.6) * H * 0.006);
+      ctx.rotate(rot);
+      ctx.scale(scale, scale);
+      ctx.drawImage(L.canvas as any, -L.canvas.width / 2, -L.baseOffset);
+      ctx.restore();
+      const sw = seg(local, 1.2, 1.1);
+      if (sw > 0 && sw < 1) drawSweep(ctx, P.bigSweep, W / 2 - L.pw / 2, baseY - L.height, sw);
+      if (scene.headline) kinetic(ctx, scene.headline, { x: W / 2, y: safe.top, maxW: W - safe.side * 2, size: Math.round(headSize * 0.85), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.6, align: "center", uppercase: typo.uppercase });
+      break;
+    }
+    case "split": {
+      ctx.drawImage(P.bgLight as any, 0, 0);
+      const im = a.images[scene.image] ?? a.images[0];
+      const wide = W > H;
+      const iw = wide ? W * 0.5 : W, ih = wide ? H : H * 0.5;
+      const open = easeInOut(seg(local, 0, 0.8));
+      if (im) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, wide ? iw * open : iw, wide ? ih : ih * open);
+        ctx.clip();
+        const r = Math.max(iw / im.width, ih / im.height) * (1.08 - 0.06 * progress);
+        ctx.drawImage(im as any, (iw - im.width * r) / 2, (ih - im.height * r) / 2, im.width * r, im.height * r);
+        ctx.restore();
+      }
+      const L = P.big;
+      const zoneX = wide ? W * 0.5 : 0, zoneY = wide ? 0 : H * 0.5, zw = wide ? W * 0.5 : W, zh = wide ? H : H * 0.5;
+      const k = Math.min((zh * 0.6) / L.height, (zw * 0.62) / L.pw);
+      const p = easeOutBack(seg(local, 0.45, 0.9));
+      const bx = zoneX + zw * (wide ? 0.5 : 0.7), by = zoneY + zh - Math.min(safe.bottom * 0.7, zh * 0.12);
+      ctx.save();
+      ctx.globalAlpha = clamp(seg(local, 0.45, 0.3) * 2);
+      ctx.translate(bx + (1 - p) * zw * 0.3, by);
+      ctx.scale(k, k);
+      ctx.drawImage(L.canvas as any, -L.canvas.width / 2, -L.baseOffset);
+      ctx.restore();
+      if (scene.headline) {
+        const hs = Math.round(headSize * (wide ? 0.7 : 0.62));
+        kinetic(ctx, scene.headline, wide
+          ? { x: zoneX + safe.side * 0.6, y: safe.top, maxW: zw - safe.side * 1.2, size: hs, family: typo.heading, weight: headW, color: pal.text, t: local - 0.7, uppercase: typo.uppercase }
+          : { x: safe.side, y: zoneY + zh * 0.12, maxW: W * 0.42, size: hs, family: typo.heading, weight: headW, color: pal.text, t: local - 0.7, uppercase: typo.uppercase });
+      }
+      break;
+    }
+    case "words": {
+      const items = scene.items.filter(Boolean).slice(0, 4);
+      const per = scene.duration / Math.max(1, items.length);
+      const i = Math.min(items.length - 1, Math.floor(local / per));
+      const bgs = [P.bgBrand, P.bgDark, P.bgLight];
+      const cols = [pal.brand, pal.bgDark, pal.bg];
+      ctx.drawImage(bgs[i % 3] as any, 0, 0);
+      const color = textColorFor(cols[i % 3]);
+      const it = items[i] ?? "";
+      const size = Math.round(headSize * (it.length > 28 ? 0.85 : 1.1));
+      ctx.font = font(typo.heading, headW, size);
+      const n = wrapLines(ctx, typo.uppercase ? it.toLocaleUpperCase("fr-FR") : it, W - safe.side * 2).length;
+      kinetic(ctx, it, { x: W / 2, y: H / 2 - (n * size * 1.08) / 2 - size * 0.1, maxW: W - safe.side * 2, size, family: typo.heading, weight: headW, color, t: local - i * per - 0.05, align: "center", uppercase: typo.uppercase });
+      ctx.globalAlpha = 0.7;
+      ctx.font = font(typo.body, 600, Math.round(bodySize * 0.75));
+      ctx.fillStyle = color;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(`${String(i + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`, W / 2, H - safe.bottom);
+      ctx.globalAlpha = 1;
+      break;
+    }
     case "end": {
       ctx.drawImage(P.bgDark as any, 0, 0);
       const color = "#FFFFFF";
@@ -420,6 +552,17 @@ function drawTransition(ctx: Ctx, kind: VideoSpec["transition"], p: number, P: P
   if (kind === "fade") {
     ctx.fillStyle = `rgba(0,0,0,${Math.sin(p * Math.PI) * 0.9})`;
     ctx.fillRect(0, 0, W, H);
+    return;
+  }
+  if (kind === "push") {
+    // Iris : un disque de la couleur de marque couvre l'écran puis s'ouvre sur le plan suivant.
+    const r = Math.sin(p * Math.PI) * Math.hypot(W, H) * 0.55;
+    ctx.save();
+    ctx.fillStyle = pal.brand;
+    ctx.beginPath();
+    ctx.arc(W / 2, H / 2, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
     return;
   }
   // p de 0 à 1 : le panneau entre (0 → 0,5) puis sort (0,5 → 1).
@@ -511,7 +654,7 @@ export function srtFromSpec(spec: VideoSpec): string {
   };
   let n = 1;
   for (const s of spec.scenes) {
-    const text = s.kind === "title" ? [s.text, s.sub].filter(Boolean).join(" — ") : s.kind === "reveal" ? s.headline : s.kind === "callouts" ? [s.heading, ...s.items].filter(Boolean).join(" · ") : s.kind === "end" ? `${s.headline} — ${s.cta}` : s.caption;
+    const text = sceneText(s);
     if (text) out.push(`${n++}\n${fmt(t + 0.2)} --> ${fmt(t + s.duration - 0.1)}\n${text}\n`);
     t += s.duration;
   }
@@ -568,7 +711,7 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
     // Transition centrée sur chaque coupe.
     for (const c of cuts) {
       const d = t - (c - TR / 2);
-      if (d >= 0 && d <= TR && spec.transition !== "push") drawTransition(ctx, spec.transition, d / TR, P);
+      if (d >= 0 && d <= TR) drawTransition(ctx, spec.transition, d / TR, P);
     }
     const buf = canvas.data();
     if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
@@ -578,6 +721,19 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
   await done;
   if (audio) fs.rmSync(audio, { force: true });
   return { file: outFile, duration: total, width: P.W, height: P.H, frames, hasAudio: !!audio };
+}
+
+/** Texte lisible d'un plan (sous-titres, storyboard). */
+export function sceneText(s: VideoScene): string | undefined {
+  switch (s.kind) {
+    case "title": return [s.text, s.sub].filter(Boolean).join(". ");
+    case "reveal": case "spotlight": case "split": return s.headline;
+    case "callouts": return [s.heading, ...s.items].filter(Boolean).join(" · ");
+    case "words": return s.items.join(" · ");
+    case "hook": return s.headline;
+    case "end": return `${s.headline}. ${s.cta}`;
+    default: return s.caption;
+  }
 }
 
 /** Durée totale recommandée et limites par réseau (contrôle avant export). */

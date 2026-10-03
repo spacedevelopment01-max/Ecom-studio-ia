@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-03T08:44:41.874Z",
-  "note": "Marques créées par E-COM STUDIO IA (moteur intégré). Les démonstrations « produit réel » partent de photos de fournisseurs ; les autres de rendus 3D.",
+  "generatedAt": "2026-10-03T18:41:19.748Z",
+  "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
     {
       "id": "verger",
@@ -66,73 +66,80 @@
       }
     },
     {
-      "id": "serum",
-      "brand": "Maison Ondine",
-      "product": "Sérum Éclat",
-      "sector": "Beauté",
-      "direction": "atelier",
+      "id": "oreiller",
+      "brand": "Somnéa",
+      "product": "Oreiller ergonomique Papillon",
+      "sector": "Maison",
+      "direction": "clinique",
       "palette": [
-        "#7F5739",
-        "#E0D5CD",
-        "#BDB46B",
-        "#F7F4F2",
-        "#1F1914"
+        "#454873",
+        "#D3D4D9",
+        "#8D74B4",
+        "#F2F3F7",
+        "#14151F"
       ],
-      "photo": "/demo/serum/photo.jpg",
-      "logo": "/demo/serum/logo.svg",
-      "shopDesktop": "/demo/serum/boutique-bureau.jpg",
-      "shopMobile": "/demo/serum/boutique-mobile.jpg",
-      "productPage": "/demo/serum/fiche-produit.jpg",
+      "photo": "/demo/oreiller/photo.jpg",
+      "logo": "/demo/oreiller/logo.svg",
+      "shopDesktop": "/demo/oreiller/boutique-bureau.jpg",
+      "shopMobile": "/demo/oreiller/boutique-mobile.jpg",
+      "productPage": "/demo/oreiller/fiche-produit.jpg",
       "images": [
         {
-          "src": "/demo/serum/cutout-1.webp",
+          "src": "/demo/oreiller/cutout-1.webp",
           "label": "Détourage"
         },
         {
-          "src": "/demo/serum/packshot-1.jpg",
+          "src": "/demo/oreiller/packshot-1.jpg",
           "label": "Packshot"
         },
         {
-          "src": "/demo/serum/detail-1.jpg",
+          "src": "/demo/oreiller/detail-1.jpg",
           "label": "Détail"
         },
         {
-          "src": "/demo/serum/scene-1.jpg",
+          "src": "/demo/oreiller/scene-1.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/serum/scene-2.jpg",
+          "src": "/demo/oreiller/scene-2.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/serum/social-1.jpg",
+          "src": "/demo/oreiller/social-1.jpg",
           "label": "Visuel social"
         },
         {
-          "src": "/demo/serum/ad-1.jpg",
+          "src": "/demo/oreiller/ad-1.jpg",
           "label": "Publicité"
         },
         {
-          "src": "/demo/serum/banner-1.jpg",
+          "src": "/demo/oreiller/banner-1.jpg",
           "label": "Bannière"
         }
       ],
-      "video": "/demo/serum/video.mp4",
-      "videoPoster": "/demo/serum/video-poster.jpg",
-      "shopVideo": "/demo/serum/video-boutique.mp4"
+      "video": "/demo/oreiller/video.mp4",
+      "videoPoster": "/demo/oreiller/video-poster.jpg",
+      "shopVideo": "/demo/oreiller/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio."
+      }
     },
     {
       "id": "drone",
-      "brand": "Aeris",
-      "product": "Drone Aeris X1",
+      "brand": "Ostral",
+      "product": "Drone pliable à caméra stabilisée",
       "sector": "High-tech",
       "direction": "nocturne",
       "palette": [
-        "#735945",
-        "#DAD6D2",
-        "#B4AD74",
-        "#F7F4F2",
-        "#1F1914"
+        "#455773",
+        "#D4D6D8",
+        "#7874B4",
+        "#F2F4F7",
+        "#14181F"
       ],
       "photo": "/demo/drone/photo.jpg",
       "logo": "/demo/drone/logo.svg",
@@ -175,343 +182,140 @@
       ],
       "video": "/demo/drone/video.mp4",
       "videoPoster": "/demo/drone/video-poster.jpg",
-      "shopVideo": "/demo/drone/video-boutique.mp4"
+      "shopVideo": "/demo/drone/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Drone pliable en marque blanche d'un fournisseur ; les inscriptions du fabricant ont été retirées de la photo, la marque et la boutique sont créées par le studio."
+      }
     },
     {
-      "id": "soda",
-      "brand": "Pétale",
-      "product": "Pétale Framboise & Hibiscus",
-      "sector": "Boissons",
-      "direction": "gourmand",
+      "id": "chat",
+      "brand": "Ronron",
+      "product": "Gant anti-poils",
+      "sector": "Animaux",
+      "direction": "pop",
       "palette": [
-        "#90282C",
-        "#E4C8C9",
-        "#CF8C59",
-        "#F7F2F2",
-        "#1F1414"
+        "#454573",
+        "#D6D6D7",
+        "#9274B4",
+        "#F2F2F7",
+        "#14141F"
       ],
-      "photo": "/demo/soda/photo.jpg",
-      "logo": "/demo/soda/logo.svg",
-      "shopDesktop": "/demo/soda/boutique-bureau.jpg",
-      "shopMobile": "/demo/soda/boutique-mobile.jpg",
-      "productPage": "/demo/soda/fiche-produit.jpg",
+      "photo": "/demo/chat/photo.jpg",
+      "logo": "/demo/chat/logo.svg",
+      "shopDesktop": "/demo/chat/boutique-bureau.jpg",
+      "shopMobile": "/demo/chat/boutique-mobile.jpg",
+      "productPage": "/demo/chat/fiche-produit.jpg",
       "images": [
         {
-          "src": "/demo/soda/cutout-1.webp",
+          "src": "/demo/chat/cutout-1.webp",
           "label": "Détourage"
         },
         {
-          "src": "/demo/soda/packshot-1.jpg",
+          "src": "/demo/chat/packshot-1.jpg",
           "label": "Packshot"
         },
         {
-          "src": "/demo/soda/detail-1.jpg",
+          "src": "/demo/chat/detail-1.jpg",
           "label": "Détail"
         },
         {
-          "src": "/demo/soda/scene-1.jpg",
+          "src": "/demo/chat/scene-1.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/soda/scene-2.jpg",
+          "src": "/demo/chat/scene-2.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/soda/social-1.jpg",
+          "src": "/demo/chat/social-1.jpg",
           "label": "Visuel social"
         },
         {
-          "src": "/demo/soda/ad-1.jpg",
+          "src": "/demo/chat/ad-1.jpg",
           "label": "Publicité"
         },
         {
-          "src": "/demo/soda/banner-1.jpg",
+          "src": "/demo/chat/banner-1.jpg",
           "label": "Bannière"
         }
       ],
-      "video": "/demo/soda/video.mp4",
-      "videoPoster": "/demo/soda/video-poster.jpg",
-      "shopVideo": "/demo/soda/video-boutique.mp4"
+      "video": "/demo/chat/video.mp4",
+      "videoPoster": "/demo/chat/video-poster.jpg",
+      "shopVideo": "/demo/chat/video-boutique.mp4",
+      "storeType": "niche",
+      "products": 2,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio."
+      }
     },
     {
-      "id": "montre",
-      "brand": "Pulso",
-      "product": "Montre connectée Pulso",
-      "sector": "High-tech",
-      "direction": "clinique",
-      "palette": [
-        "#815437",
-        "#E0D4CC",
-        "#BFB369",
-        "#F7F4F2",
-        "#1F1814"
-      ],
-      "photo": "/demo/montre/photo.jpg",
-      "logo": "/demo/montre/logo.svg",
-      "shopDesktop": "/demo/montre/boutique-bureau.jpg",
-      "shopMobile": "/demo/montre/boutique-mobile.jpg",
-      "productPage": "/demo/montre/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/montre/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/montre/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/montre/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/montre/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/montre/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/montre/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/montre/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/montre/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/montre/video.mp4",
-      "videoPoster": "/demo/montre/video-poster.jpg",
-      "shopVideo": "/demo/montre/video-boutique.mp4"
-    },
-    {
-      "id": "the",
-      "brand": "Kumo",
-      "product": "Thé vert Sencha",
-      "sector": "Thé",
-      "direction": "joaillerie",
-      "palette": [
-        "#766041",
-        "#DDD7CF",
-        "#B2B474",
-        "#F7F5F2",
-        "#1F1A14"
-      ],
-      "photo": "/demo/the/photo.jpg",
-      "logo": "/demo/the/logo.svg",
-      "shopDesktop": "/demo/the/boutique-bureau.jpg",
-      "shopMobile": "/demo/the/boutique-mobile.jpg",
-      "productPage": "/demo/the/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/the/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/the/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/the/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/the/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/the/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/the/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/the/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/the/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/the/video.mp4",
-      "videoPoster": "/demo/the/video-poster.jpg",
-      "shopVideo": "/demo/the/video-boutique.mp4"
-    },
-    {
-      "id": "gourde",
-      "brand": "Nordvik",
-      "product": "Gourde isotherme 750 ml",
-      "sector": "Sport",
+      "id": "tribunes",
+      "brand": "Les Tribunes",
+      "product": "T-shirt supporter Lavande",
+      "sector": "Mode",
       "direction": "flux",
       "palette": [
-        "#736045",
-        "#DBD7D2",
-        "#B1B474",
-        "#F7F5F2",
-        "#1F1A14"
+        "#263C91",
+        "#C8CEE4",
+        "#7859CF",
+        "#F2F3F7",
+        "#14161F"
       ],
-      "photo": "/demo/gourde/photo.jpg",
-      "logo": "/demo/gourde/logo.svg",
-      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
-      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
-      "productPage": "/demo/gourde/fiche-produit.jpg",
+      "photo": "/demo/tribunes/photo.jpg",
+      "logo": "/demo/tribunes/logo.svg",
+      "shopDesktop": "/demo/tribunes/boutique-bureau.jpg",
+      "shopMobile": "/demo/tribunes/boutique-mobile.jpg",
+      "productPage": "/demo/tribunes/fiche-produit.jpg",
       "images": [
         {
-          "src": "/demo/gourde/cutout-1.webp",
+          "src": "/demo/tribunes/cutout-1.webp",
           "label": "Détourage"
         },
         {
-          "src": "/demo/gourde/packshot-1.jpg",
+          "src": "/demo/tribunes/packshot-1.jpg",
           "label": "Packshot"
         },
         {
-          "src": "/demo/gourde/detail-1.jpg",
+          "src": "/demo/tribunes/detail-1.jpg",
           "label": "Détail"
         },
         {
-          "src": "/demo/gourde/scene-1.jpg",
+          "src": "/demo/tribunes/scene-1.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/gourde/scene-2.jpg",
+          "src": "/demo/tribunes/scene-2.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/gourde/social-1.jpg",
+          "src": "/demo/tribunes/social-1.jpg",
           "label": "Visuel social"
         },
         {
-          "src": "/demo/gourde/ad-1.jpg",
+          "src": "/demo/tribunes/ad-1.jpg",
           "label": "Publicité"
         },
         {
-          "src": "/demo/gourde/banner-1.jpg",
+          "src": "/demo/tribunes/banner-1.jpg",
           "label": "Bannière"
         }
       ],
-      "video": "/demo/gourde/video.mp4",
-      "videoPoster": "/demo/gourde/video-poster.jpg",
-      "shopVideo": "/demo/gourde/video-boutique.mp4"
-    },
-    {
-      "id": "bougie",
-      "brand": "Atelier Braise",
-      "product": "Bougie Figuier & Bois fumé",
-      "sector": "Maison",
-      "direction": "terroir",
-      "palette": [
-        "#765B41",
-        "#DDD6CF",
-        "#B4B174",
-        "#F7F5F2",
-        "#1F1914"
-      ],
-      "photo": "/demo/bougie/photo.jpg",
-      "logo": "/demo/bougie/logo.svg",
-      "shopDesktop": "/demo/bougie/boutique-bureau.jpg",
-      "shopMobile": "/demo/bougie/boutique-mobile.jpg",
-      "productPage": "/demo/bougie/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/bougie/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/bougie/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/bougie/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/bougie/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/bougie/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/bougie/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/bougie/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/bougie/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/bougie/video.mp4",
-      "videoPoster": "/demo/bougie/video-poster.jpg",
-      "shopVideo": "/demo/bougie/video-boutique.mp4"
-    },
-    {
-      "id": "tasse",
-      "brand": "Terre & Feu",
-      "product": "Tasse en grès émaillé",
-      "sector": "Maison",
-      "direction": "galerie",
-      "palette": [
-        "#735B45",
-        "#DAD6D3",
-        "#B4B074",
-        "#F7F5F2",
-        "#1F1914"
-      ],
-      "photo": "/demo/tasse/photo.jpg",
-      "logo": "/demo/tasse/logo.svg",
-      "shopDesktop": "/demo/tasse/boutique-bureau.jpg",
-      "shopMobile": "/demo/tasse/boutique-mobile.jpg",
-      "productPage": "/demo/tasse/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/tasse/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/tasse/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/tasse/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/tasse/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tasse/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tasse/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/tasse/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/tasse/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/tasse/video.mp4",
-      "videoPoster": "/demo/tasse/video-poster.jpg",
-      "shopVideo": "/demo/tasse/video-boutique.mp4"
+      "video": "/demo/tribunes/video.mp4",
+      "videoPoster": "/demo/tribunes/video-poster.jpg",
+      "shopVideo": "/demo/tribunes/video-boutique.mp4",
+      "storeType": "niche",
+      "products": 2,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "T-shirts de supporter d'un fournisseur (visuels du fournisseur) : la marque et la boutique sont créées par le studio. Les modèles reprenant l'écusson officiel de la fédération ont été écartés."
+      }
     }
   ]
 }

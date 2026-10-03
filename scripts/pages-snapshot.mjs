@@ -19,6 +19,9 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const server = spawn(path.join("node_modules", ".bin", "next"), ["start", "-p", String(PORT)], { env: { ...process.env, PORT: String(PORT) }, stdio: ["ignore", "inherit", "inherit"], detached: true });
 let html = "";
+/** Pages statiques publiées avec l'accueil (pages légales). */
+const PAGES = ["mentions-legales", "conditions", "confidentialite", "cookies", "contact"];
+const pages = {};
 try {
   for (let i = 0; i < 60 && !html; i++) {
     await new Promise((r) => setTimeout(r, 1000));
@@ -26,6 +29,11 @@ try {
       const res = await fetch(`http://127.0.0.1:${PORT}${BASE}`);
       if (res.ok) html = await res.text();
     } catch {}
+  }
+  for (const p of PAGES) {
+    const res = await fetch(`http://127.0.0.1:${PORT}${BASE}/${p}`);
+    if (!res.ok) throw new Error(`Page ${p} : ${res.status}`);
+    pages[p] = await res.text();
   }
 } finally {
   process.kill(-server.pid); // tout le groupe : next démarre ses propres processus
@@ -36,6 +44,10 @@ if (!html) throw new Error("La page d'accueil n'a pas répondu.");
 const prefix = (s) => s.replace(/(["'(])\/(demo|explainers|fonts)\//g, `$1${BASE}/$2/`).replace(/(["'])\/favicon\.svg/g, `$1${BASE}/favicon.svg`);
 
 fs.writeFileSync(path.join(OUT, "index.html"), prefix(html));
+for (const [p, h] of Object.entries(pages)) {
+  fs.mkdirSync(path.join(OUT, p), { recursive: true });
+  fs.writeFileSync(path.join(OUT, p, "index.html"), prefix(h));
+}
 fs.cpSync("public", OUT, { recursive: true });
 fs.cpSync(path.join(".next-pages", "static"), path.join(OUT, "_next", "static"), { recursive: true });
 for (const f of fs.readdirSync(path.join(OUT, "_next", "static", "css"))) {

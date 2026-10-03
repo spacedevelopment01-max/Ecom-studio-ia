@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     "@imgly/background-removal-node",
     "onnxruntime-node",
     "liquidjs",
+    "playwright",
   ],
   images: { unoptimized: true },
   poweredByHeader: false,

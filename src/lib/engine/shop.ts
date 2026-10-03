@@ -12,11 +12,12 @@ import type { ShopCopy } from "../theme/copy";
 import { applyOps, validateSpec, type ThemeOp } from "../theme/ops";
 import type { StoreProduct, ThemeSpec } from "../theme/spec";
 import { localCopy } from "./local-copy";
-import { catalogStore, ensureCatalogMedia } from "./catalog";
+import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedia } from "./catalog";
 import { assetsByRole, latestAsset } from "./images";
-import { aiDesignHome } from "../ai/tasks";
+import { aiDesignHome, aiReviewHome } from "../ai/tasks";
+import { snapshotTheme } from "../theme/snapshot";
 import { llmConfigured } from "../ai/llm";
-import type { JobContext } from "../jobs";
+import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "produit";
 
@@ -46,11 +47,16 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
     const list = approved.length ? [...approved, ...assetsByRole(projectId, role).filter((x) => !approved.some((y) => y.id === x.id))] : assetsByRole(projectId, role);
     return list.filter((x) => x.status !== "rejected")[n];
   };
+  // Photos en situation (vie de tous les jours) : héros de la boutique et première scène.
+  // Celles du marchand passent avant celles générées par l'IA.
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (status = 'approved') DESC, created_at DESC", projectId);
+  put("lifestyle", life[0], "en-situation-1");
+  put("lifestyle2", life[1], "en-situation-2");
   put("cutout", pick("cutout"), "produit-detoure");
   put("packshot", pick("packshot"), "packshot");
   put("detail1", pick("detail", 0), "detail-1");
   put("detail2", pick("detail", 1), "detail-2");
-  put("scene1", pick("scene", 0), "scene-1");
+  put("scene1", life[1] ?? pick("scene", 0), "scene-1");
   put("scene2", pick("scene", 1), "scene-2");
   put("scene3", pick("scene", 2), "scene-3");
   put("banner", pick("banner"), "banniere");
@@ -81,9 +87,9 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   put("favicon", pick("favicon"), "favicon");
   // Galerie produit : packshots puis détails puis scènes.
   const gallery: string[] = [];
-  for (const a of [pick("packshot"), pick("detail", 0), pick("scene", 0), pick("detail", 1), pick("scene", 1)]) {
+  for (const a of [pick("packshot"), life[0], pick("detail", 0), life[1], pick("scene", 0), pick("detail", 1), pick("scene", 1)]) {
     if (!a) continue;
-    const f = themeFileName(a, a.role === "packshot" ? "galerie-packshot" : `galerie-${a.role}`);
+    const f = themeFileName(a, a.role === "packshot" ? "galerie-packshot" : `galerie-${a.role}-${a.id.slice(0, 4)}`);
     files[f] = a.id;
     gallery.push(f);
   }
@@ -114,8 +120,10 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   const brand = p.brand;
   if (!brand) throw new Error("La marque doit être définie avant la boutique.");
   const copy = savedCopy(projectId) ?? localCopy(p.product, brand);
+  await ensureVariantMedia(ctx, projectId);
   const { slots, files, gallery } = collectImages(projectId);
   const main = storeProduct(p, copy, gallery);
+  attachVariantMedia(projectId, main, files, themeFileName);
   // Boutique multi-produit ou niche : les autres produits sont détourés, mis en packshot et rangés en collections.
   let catalog: ReturnType<typeof catalogStore> | null = null;
   if (p.storeType !== "mono" && p.catalog.length) {
@@ -159,7 +167,27 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         summary = `Boutique conçue par l'IA — ${design.reasoning.slice(0, 160)}`;
       }
     } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[shop] composition IA indisponible, direction conservée :", (e as Error).message);
+    }
+    // Relecture visuelle : l'IA regarde la boutique rendue (ordinateur et téléphone) et corrige ce qui se voit.
+    try {
+      ctx.progress(0.7, "Relecture visuelle de la boutique");
+      const review = await ctx.step(`review:${direction}`, async () => {
+        const shots = await snapshotTheme(spec);
+        return shots ? aiReviewHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:review:${direction}` }, p, spec, shots) : null;
+      });
+      if (review?.ops.length) {
+        const r = applyOps(spec, review.ops);
+        if (r.applied.length && !validateSpec(r.spec).length) {
+          spec = r.spec;
+          author = "ai";
+          summary += ` · relue sur captures (${review.score}/10, ${r.applied.length} correction${r.applied.length > 1 ? "s" : ""})`;
+        }
+      } else if (review) summary += ` · relue sur captures (${review.score}/10)`;
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      console.warn("[shop] relecture visuelle indisponible :", (e as Error).message);
     }
   }
   const problems = validateSpec(spec);

@@ -75,7 +75,7 @@ export async function topupCheckout(user: { id: string; email: string }, amountE
     "line_items[0][price_data][currency]": "eur",
     "line_items[0][price_data][unit_amount]": String(amountEur * 100),
     "line_items[0][price_data][tax_behavior]": "inclusive",
-    "line_items[0][price_data][product_data][name]": `Recharge de ${amountEur} € (dont ${amountEur / 2} € d'enveloppe IA)`,
+    "line_items[0][price_data][product_data][name]": `Recharge de crédits de création : ${amountEur} €`,
   });
   return { url: s.url as string };
 }

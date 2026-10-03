@@ -15,10 +15,10 @@ const strip = (h: string) => h.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").tri
 
 function imageUrls(spec: ThemeSpec, files: string[]): string[] {
   if (!isPublicAppUrl()) return [];
+  // Fichier et identifiant restent appariés : un fichier manquant ne décale pas les extensions suivantes.
   return files
-    .map((f) => spec.files[f])
-    .filter(Boolean)
-    .map((id, i) => publicMediaUrl(id, files[i]?.split(".").pop() ?? "jpg", 7 * 24 * 3600));
+    .filter((f) => spec.files[f])
+    .map((f) => publicMediaUrl(spec.files[f], f.split(".").pop() ?? "jpg", 7 * 24 * 3600));
 }
 
 /** Collections auxquelles appartient chaque produit (pour les étiquettes et catégories). */

@@ -18,12 +18,12 @@ const SECTOR_WORDS: [SectorId, RegExp][] = [
   ["beaute", /sérum|serum|crème|creme|soin|visage|peau|cosm|parfum|maquill|shampo|lotion|baume|huile/i],
   ["bijoux", /bijou|bague|collier|bracelet|boucle|montre|pendentif|or |argent/i],
   ["mode", /t-?shirt|robe|pantalon|veste|sac|chaussure|basket|casquette|écharpe|vêtement|sweat|jean/i],
-  ["hightech", /écouteur|casque|chargeur|câble|enceinte|bluetooth|usb|smart|clavier|souris|batterie|led/i],
+  ["hightech", /drone|caméra|camera|projecteur|gps|écouteur|casque|chargeur|câble|enceinte|bluetooth|usb|smart|clavier|souris|batterie|led/i],
   ["sport", /gourde|yoga|fitness|sport|randonn|vélo|running|musculation|isotherme|camping/i],
   ["alimentation", /café|thé|chocolat|miel|épice|confiture|huile d'olive|vin|bière|biscuit|sauce|infusion/i],
   ["enfants", /bébé|enfant|jouet|doudou|biberon|poussette|naissance/i],
-  ["animaux", /chien|chat|animal|croquette|laisse|litière|collier pour/i],
-  ["maison", /bougie|tasse|mug|vase|coussin|lampe|déco|plaid|vaisselle|assiette|cuisine|carafe/i],
+  ["animaux", /chien|\bchats?\b|animal|croquette|laisse|litière|collier pour/i],
+  ["maison", /bougie|tasse|mug|vase|coussin|oreiller|couette|linge de lit|lampe|déco|plaid|vaisselle|assiette|cuisine|carafe/i],
   ["artisanat", /carnet|papeterie|céramique|fait main|artisan|tissage|bois tourné|poterie/i],
 ];
 
@@ -201,17 +201,72 @@ export function localBrand(p: ProductProfile, providedBrand?: string): { brand: 
   };
 }
 
-export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpec["format"], imageCount: number, url?: string): VideoSpec {
-  const facts = p.facts.filter((f) => f.status !== "unknown" && f.value && f.value.length < 60).slice(0, 3);
-  const scenes: VideoSpec["scenes"] = [
-    { kind: "title", duration: 2.4, text: brand.tagline || p.name || brand.name, sub: brand.tagline ? `${p.name} — ${brand.name}` : brand.name, bg: "brand" },
-    { kind: "reveal", duration: 3, headline: p.name || brand.name, motion: "rise" },
-  ];
-  if (facts.length >= 2) scenes.push({ kind: "callouts", duration: 3.4, items: facts.map((f) => f.value), heading: "En détail" });
-  if (imageCount > 0) scenes.push({ kind: "detail", duration: 2.4, image: 0 });
-  if (imageCount > 1) scenes.push({ kind: "scene", duration: 2.2, image: 1 });
-  scenes.push({ kind: "end", duration: 3, headline: p.name || brand.name, cta: "Découvrir", url });
-  return { format, scenes, transition: "panel", music: "calm", captions: true };
+/**
+ * Découpage sans IA : une structure différente selon le produit (secteur, photos disponibles),
+ * pour que deux boutiques n'aient jamais la même vidéo. Seules les informations confirmées sont montrées.
+ */
+export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpec["format"], imageRoles: string[], url?: string): VideoSpec {
+  const facts = p.facts.filter((f) => f.status !== "unknown" && f.value && f.value.length < 60).slice(0, 3).map((f) => f.value.replace(/\.$/, ""));
+  const name = p.name || brand.name;
+  const line = brand.tagline || name;
+  const life = imageRoles.indexOf("lifestyle");
+  const life2 = imageRoles.indexOf("lifestyle", life + 1);
+  const detail = imageRoles.indexOf("detail");
+  const scene = imageRoles.indexOf("scene");
+  const other = (exclude: number[]) => [life2, detail, scene].find((i) => i >= 0 && !exclude.includes(i)) ?? -1;
+  // Variation stable par produit : deux produits d'un même secteur n'ont pas le même montage.
+  const seed = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const pick = <T,>(xs: T[]) => xs[seed % xs.length];
+  const end: VideoSpec["scenes"][number] = { kind: "end", duration: 3, headline: name, cta: "Découvrir", url };
+  const factScene = (): VideoSpec["scenes"] => facts.length >= 2 ? [pick<VideoSpec["scenes"][number]>([{ kind: "callouts", duration: 3.4, items: facts, heading: "En détail" }, { kind: "words", duration: Math.min(5.4, 1.8 * facts.length), items: facts }])] : [];
+  const scenes: VideoSpec["scenes"] = [];
+  let transition: VideoSpec["transition"] = "panel";
+  let music: VideoSpec["music"] = "calm";
+  const sector = p.sector ?? "";
+
+  if (sector === "hightech" || sector === "sport") {
+    // Énergique : le produit en action, puis sous le projecteur, détails, fin.
+    transition = "push";
+    music = "pulse";
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: line, tag: brand.name });
+    else scenes.push({ kind: "words", duration: 2.2, items: [line] });
+    scenes.push({ kind: "spotlight", duration: 3, headline: name });
+    scenes.push(...factScene());
+    const o = other([life]);
+    if (o >= 0) scenes.push({ kind: "detail", duration: 2.2, image: o });
+  } else if (sector === "mode" || sector === "bijoux" || sector === "beaute") {
+    // Éditorial : phrase forte, photo plein cadre, écran partagé, détail.
+    transition = pick<VideoSpec["transition"]>(["push", "fade"]);
+    music = "pulse";
+    scenes.push({ kind: "words", duration: 2, items: [line] });
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: name });
+    else scenes.push({ kind: "reveal", duration: 2.8, headline: name, motion: "zoom" });
+    const o = other([life]);
+    if (o >= 0) scenes.push({ kind: "split", duration: 3, image: o, headline: facts[0] ?? name });
+    else scenes.push(...factScene());
+  } else if (sector === "animaux" || sector === "enfants" || sector === "maison") {
+    // Chaleureux : la vie de tous les jours d'abord, le produit ensuite, ce qu'il apporte.
+    transition = pick<VideoSpec["transition"]>(["fade", "panel"]);
+    music = "calm";
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.8, image: life, headline: line, tag: brand.name });
+    else scenes.push({ kind: "title", duration: 2.4, text: line, sub: name, bg: "brand" });
+    const o = other([life]);
+    if (o >= 0 && life >= 0) scenes.push({ kind: "split", duration: 3, image: o === life2 ? o : life, headline: name });
+    else scenes.push({ kind: "reveal", duration: 2.8, headline: name, motion: pick(["rise", "zoom", "slide"] as const) });
+    scenes.push(...factScene());
+    if (o >= 0 && o !== life2) scenes.push({ kind: "detail", duration: 2.2, image: o });
+  } else {
+    // Classique (alimentation, artisanat…) : titre, révélation, détails, photos.
+    transition = pick<VideoSpec["transition"]>(["panel", "fade"]);
+    scenes.push({ kind: "title", duration: 2.4, text: line, sub: brand.tagline ? name : undefined, bg: pick(["brand", "dark"] as const) });
+    scenes.push({ kind: "reveal", duration: 3, headline: name, motion: pick(["rise", "zoom", "slide"] as const) });
+    scenes.push(...factScene());
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: facts[0] ?? line });
+    const o = other([life]);
+    if (o >= 0) scenes.push({ kind: "scene", duration: 2.2, image: o });
+  }
+  scenes.push(end);
+  return { format, scenes, transition, music, captions: true };
 }
 
 /**
@@ -219,7 +274,7 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
  * bouton, texte entre guillemets dans l'élément désigné, ajout ou
  * suppression de sections courantes, changement de direction.
  */
-export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string } | null): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string } | null): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|undo)/.test(m)) return { ops: [], reply: "Je reviens à la version précédente.", revert: true };
   const quoted = message.match(/[«"“]\s*([^»"”]+?)\s*[»"”]/)?.[1];
@@ -245,11 +300,14 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
     const target = selection.block ? s?.blocks?.[selection.block] : s;
     const key = target ? ["heading", "title", "text", "question", "label", "button_label", "heading_line1"].find((k) => k in target.settings) : undefined;
     if (key) {
-      const wantsButton = /bouton/.test(m) && target && "button_label" in target.settings;
+      const wantsButton = (/bouton/.test(m) || selection.kind === "Bouton") && target && "button_label" in target.settings;
       ops.push({ op: "set_setting", template: selection.template, section: selection.section, block: selection.block, key: wantsButton ? "button_label" : key, value: quoted });
       return { ops, reply: `Texte remplacé par « ${quoted} ».`, revert: false };
     }
   }
+  // Fiche produit qui convertit : blocs ajoutés au produit, uniquement avec les informations données.
+  const pdp = productPageCommand(spec, message, m);
+  if (pdp) return pdp;
   const adds: [RegExp, string][] = [
     [/faq|questions/, "faq"],
     [/vidéo|video/, "video-showcase"],
@@ -285,8 +343,48 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   return {
     ops: [],
     revert: false,
-    reply: "Le moteur local ne comprend que des commandes simples (couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, supprimer, monter, revenir en arrière, changer de direction). Les retouches libres nécessitent l'IA, à activer dans l'administration.",
+    reply: "Le moteur local comprend des commandes simples : couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, des lots, la livraison estimée (avec vos délais), des pastilles (entre guillemets), une section avis, un abonnement, le prix dans le bouton ; supprimer, monter, revenir en arrière, changer de direction. Les retouches libres nécessitent l'IA, à activer dans l'administration.",
   };
+}
+
+/** Commandes simples pour la fiche produit (lots, livraison, pastilles, avis, abonnement…). */
+function productPageCommand(spec: ThemeSpec, message: string, m: string): { ops: ThemeOp[]; reply: string; revert: boolean } | null {
+  if (!/ajoute|ajouter|insère|mets|active/.test(m)) return null;
+  const tpl = spec.templates.product;
+  const mainId = tpl?.order.find((id) => tpl.sections[id]?.type === "main-product");
+  if (!tpl || !mainId) return null;
+  const main = tpl.sections[mainId];
+  const blockOf = (type: string) => Object.entries(main.blocks ?? {}).find(([, b]) => b.type === type)?.[0];
+  const buy = blockOf("buy_buttons");
+  const after = (type: string) => ({ after: blockOf(type) ?? buy });
+  const add = (type: string, settings: Record<string, string | number | boolean>, pos: { after?: string }, reply: string) => ({ ops: [{ op: "add_block", template: "product", section: mainId, type, settings, position: pos } as ThemeOp], reply, revert: false });
+  const quotes = [...message.matchAll(/[«"“]\s*([^»"”]+?)\s*[»"”]/g)].map((x) => x[1]).slice(0, 4);
+  if (/\blots?\b|packs?\b|compose ton panier|quantités? dégressi/.test(m)) {
+    return add("bundles", { layout: /ligne/.test(m) ? "rows" : "cards", heading: "Compose ton panier", qty1: 1, label1: "1 article", qty2: 2, label2: "2 articles", qty3: 3, label3: "3 articles", default_tier: "1" }, after("price"), "Lots ajoutés (1, 2 et 3 articles, sans remise). Indiquez vos remises dans l'éditeur Shopify et créez-les aussi dans Shopify › Réductions pour qu'elles s'appliquent au paiement.");
+  }
+  if (/livraison estimée|délais? de livraison|date de livraison/.test(m)) {
+    const nums = (m.match(/(\d+)\s*(?:à|-|et)\s*(\d+)\s*jours?/) ?? m.match(/(\d+)\s*jours?/))?.slice(1).filter(Boolean).map(Number);
+    if (!nums?.length) return { ops: [], revert: false, reply: "Indiquez vos délais réels, par exemple : « ajoute la livraison estimée 2 à 4 jours ». Je n'invente pas de délai." };
+    const [min, max] = nums.length > 1 ? nums : [0, nums[0]];
+    return add("delivery", { min_days: Math.min(min, max), max_days: Math.max(min, max), business_days: !/calendaire/.test(m), label: "Livraison estimée" }, { after: buy }, `Livraison estimée ajoutée : ${min ? `${min} à ` : "sous "}${max} jours ${/calendaire/.test(m) ? "" : "ouvrés"}.`.trim());
+  }
+  if (/pastilles?|badges?/.test(m)) {
+    if (!quotes.length) return { ops: [], revert: false, reply: "Donnez les pastilles entre guillemets, par exemple : ajoute des pastilles « Fabriqué en France » « Vegan ». Seulement des engagements vérifiés." };
+    return add("badges", Object.fromEntries(quotes.map((q, i) => [`badge${i + 1}`, q])), { after: blockOf("title") }, `Pastilles ajoutées : ${quotes.join(", ")}.`);
+  }
+  if (/abonnement/.test(m)) return add("subscription", {}, after("price"), "Bloc abonnement ajouté : il s'affichera avec les plans de votre application d'abonnement Shopify.");
+  if (/autres? (saveurs?|modèles?|couleurs?|parfums?)|variantes? en cartes/.test(m)) {
+    const col = spec.store.collections?.[0]?.handle ?? "all";
+    return add("siblings", { collection: col, heading: /saveur/.test(m) ? "Choisissez votre saveur" : "Choisissez votre modèle" }, after("title"), "Cartes des autres modèles ajoutées (collection « " + col + " »).");
+  }
+  if (/prix dans le bouton/.test(m) && buy) return { ops: [{ op: "set_setting", template: "product", section: mainId, block: buy, key: "price_in_button", value: true }], reply: "Le prix s'affiche désormais dans le bouton d'ajout.", revert: false };
+  if (/\bavis\b/.test(m) && !tpl.order.some((id) => tpl.sections[id]?.type === "product-reviews")) {
+    return { ops: [{ op: "add_section", template: "product", type: "product-reviews", position: { after: mainId } }], reply: "Section avis ajoutée : ajoutez-y le bloc de votre application d'avis (seuls de vrais avis s'afficheront).", revert: false };
+  }
+  if (/situations?|vous reconnaissez/.test(m)) {
+    return { ops: [{ op: "add_section", template: "index", type: "situations" }], reply: "Section « Vous vous reconnaissez ? » ajoutée avec trois cartes à rédiger.", revert: false };
+  }
+  return null;
 }
 
 export { mix, withLightness, contrast };

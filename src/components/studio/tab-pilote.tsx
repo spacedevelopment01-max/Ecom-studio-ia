@@ -40,7 +40,7 @@ function Questions() {
   }
   return (
     <Card className="p-5 sm:p-6">
-      <SectionTitle title="Quelques questions indispensables">Ces informations ne se déduisent pas d'une photo. Tant qu'elles manquent, elles restent « à compléter » dans vos textes — rien n'est inventé.</SectionTitle>
+      <SectionTitle title="Quelques questions indispensables">Ces informations ne se déduisent pas d'une photo. Tant qu'elles manquent, elles restent « à compléter » dans vos textes : rien n'est inventé.</SectionTitle>
       <div className="grid gap-4">
         {open.map((q) => (
           <div key={q.id} className="grid gap-1.5">

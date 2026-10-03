@@ -196,7 +196,7 @@ export default function TabFichiers() {
             let depth = 0;
             let p = f.parentId;
             while (p) { depth++; p = folders.find((x) => x.id === p)?.parentId ?? null; }
-            return <option key={f.id} value={f.id}>{"— ".repeat(depth)}{f.name}</option>;
+            return <option key={f.id} value={f.id}>{"\u00a0\u00a0".repeat(depth)}{f.name}</option>;
           })}
         </Select>
       </Modal>

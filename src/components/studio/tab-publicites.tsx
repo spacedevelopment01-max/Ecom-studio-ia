@@ -20,7 +20,7 @@ export default function TabPublicites() {
   const [picker, setPicker] = useState<number | null>(null);
   const blank = (): Campaign => ({
     id: "",
-    name: `Lancement — ${data?.brand?.name ?? data?.project.name ?? ""}`,
+    name: `Lancement · ${data?.brand?.name ?? data?.project.name ?? ""}`,
     objective: "Trafic vers la boutique",
     networks: ["instagram", "facebook"],
     status: "draft",

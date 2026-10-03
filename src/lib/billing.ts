@@ -78,7 +78,7 @@ function ensureWallet(userId: string): Wallet {
       allowance,
       now(),
     );
-    if (allowance) run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance, "Enveloppe IA initiale", now());
+    if (allowance) run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance, "Crédits de création activés", now());
     w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
   }
   return renewIfDue(w);
@@ -104,7 +104,7 @@ function renewIfDue(w: Wallet): Wallet {
       now(),
       w.user_id,
     );
-    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), w.user_id, "renewal", "monthly", allowance, "Renouvellement de l'enveloppe IA mensuelle", now());
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), w.user_id, "renewal", "monthly", allowance, "Renouvellement mensuel des crédits de création", now());
   });
   return one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", w.user_id)!;
 }
@@ -116,7 +116,7 @@ export function syncAllowance(userId: string) {
   const allowance = subscriptionActive(sub) && sub.status !== "trial" ? monthlyAllowanceMicro(sub.stores) : 0;
   if (allowance !== w.monthly_allowance) {
     run("UPDATE wallets SET monthly_allowance=?, updated_at=? WHERE user_id=?", allowance, now(), userId);
-    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance - w.monthly_allowance, "Ajustement de l'enveloppe (abonnement)", now());
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance - w.monthly_allowance, "Crédits ajustés à votre abonnement", now());
   }
 }
 
@@ -157,10 +157,10 @@ export function assertCanSpend(userId: string, estimateMicro: number) {
   if (estimateMicro <= 0) return;
   const b = balance(userId);
   if (b.available <= 0) {
-    throw new UserFacingError("Vos crédits IA sont épuisés : les nouvelles générations sont en pause. Rechargez votre enveloppe ou attendez son renouvellement.");
+    throw new UserFacingError("Vos crédits de création sont épuisés : les nouvelles générations sont en pause. Rechargez vos crédits ou attendez leur renouvellement.");
   }
   if (b.available < estimateMicro) {
-    throw new UserFacingError(`Crédits IA insuffisants pour cette génération (environ ${(estimateMicro / EUR).toFixed(2)} € nécessaires, ${(b.available / EUR).toFixed(2)} € disponibles).`);
+    throw new UserFacingError(`Crédits de création insuffisants pour cette génération (environ ${Math.max(1, Math.round((estimateMicro / Math.max(1, b.capacity ?? b.available)) * 100))} % de vos crédits nécessaires). Rechargez vos crédits ou attendez leur renouvellement.`);
   }
 }
 
@@ -191,8 +191,8 @@ export function charge(userId: string, amountMicro: number, ref: string | null, 
       id(),
       userId,
       "warning",
-      "80 % de votre enveloppe IA est consommée",
-      "Les générations continuent jusqu'à épuisement. Vous pouvez recharger par tranches de 10 € (50 % alimentent l'IA).",
+      "80 % de vos crédits de création sont utilisés",
+      "Les générations continuent jusqu'à épuisement. Vous pouvez recharger vos crédits par tranches de 10 €.",
       now(),
     );
   }
@@ -206,7 +206,7 @@ export function creditTopup(userId: string, paidEur: number, ref: string) {
     if (one("SELECT 1 FROM ledger WHERE type='topup' AND ref=?", ref)) return;
     ensureWallet(userId);
     run("UPDATE wallets SET topup_balance = topup_balance + ?, topup_period_added = topup_period_added + ?, updated_at=? WHERE user_id=?", ai, ai, now(), userId);
-    run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), userId, "topup", "topup", ai, ref, `Recharge de ${paidEur} € (50 % IA)`, now());
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), userId, "topup", "topup", ai, ref, `Recharge de ${paidEur} €`, now());
   });
 }
 

@@ -133,7 +133,7 @@ export default function TabMarque() {
                       <div key={pr.id} className={cx("rounded-2xl border p-2", on ? "border-signal ring-2 ring-signal/30" : "border-line")}>
                         <div className="flex h-24 items-center justify-center overflow-hidden rounded-xl bg-white p-3"><img src={pr.url} alt={`Proposition ${pr.label}`} className="h-full w-full object-contain" /></div>
                         <div className="mt-2 flex items-start justify-between gap-2 px-1">
-                          <p className="min-w-0 text-xs"><span className="font-semibold">{pr.label}</span> <span className="text-muted">— {pr.concept}</span></p>
+                          <p className="min-w-0 text-xs"><span className="font-semibold">{pr.label}</span> <span className="text-muted">· {pr.concept}</span></p>
                           <Button size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || validated.has("logo")} loading={choosing === pr.key} onClick={() => chooseLogo({ choice: pr.key })}>{on ? "Choisi" : "Choisir"}</Button>
                         </div>
                       </div>
@@ -177,7 +177,7 @@ export default function TabMarque() {
           <SectionTitle title="Stratégie">Angles et messages réutilisés pour les publications et les campagnes.</SectionTitle>
           <div className="grid gap-6 md:grid-cols-3">
             <div><p className="text-xs font-medium uppercase tracking-wider text-muted">Messages clés</p><ul className="mt-2 grid gap-1.5 text-sm">{data.strategy.keyMessages.map((m) => <li key={m} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-ok" />{m}</li>)}</ul></div>
-            <div><p className="text-xs font-medium uppercase tracking-wider text-muted">Angles</p><ul className="mt-2 grid gap-2 text-sm">{data.strategy.angles.map((a) => <li key={a.title}><strong>{a.title}</strong> — <span className="text-ink-2">{a.idea}</span></li>)}</ul></div>
+            <div><p className="text-xs font-medium uppercase tracking-wider text-muted">Angles</p><ul className="mt-2 grid gap-2 text-sm">{data.strategy.angles.map((a) => <li key={a.title}><strong>{a.title}</strong> : <span className="text-ink-2">{a.idea}</span></li>)}</ul></div>
             <div><p className="text-xs font-medium uppercase tracking-wider text-muted">Piliers</p><div className="mt-2 flex flex-wrap gap-1.5">{data.strategy.pillars.map((p) => <Badge key={p}>{p}</Badge>)}</div></div>
           </div>
         </Card>

@@ -4,7 +4,7 @@
  * Le produit est toujours dessiné à partir de ses pixels d'origine ; les
  * textes sont composés typographiquement (nets, orthographe contrôlée).
  */
-import { createCanvas, loadImage, type Image, type SKRSContext2D } from "@napi-rs/canvas";
+import { createCanvas, loadImage, type Canvas, type Image, type SKRSContext2D } from "@napi-rs/canvas";
 import { contrast, ensureContrast, hsl, isDark, mix, onColor, withLightness } from "../color";
 import { ensureFonts, font } from "./fonts";
 
@@ -280,9 +280,154 @@ export function drawButton(ctx: SKRSContext2D, label: string, x: number, y: numb
   return { x: bx, y, w, h };
 }
 
+/**
+ * Intérieur lumineux « vie quotidienne » : mur enduit chaud baigné de soleil, ombres de fenêtre et de feuillage,
+ * plateau en pierre claire (travertin) avec profondeur de champ. Retourne la ligne de pose et le calque d'ombres
+ * (réutilisé sur le produit pour l'intégrer à la même lumière).
+ */
+function everyday(ctx: SKRSContext2D, w: number, h: number, pal: Palette, seed: number): { baseY: number; shade: Canvas } {
+  const r = rng(seed);
+  const tableY = h * 0.68;
+  // Mur : enduit chaud, plus clair côté fenêtre.
+  const wall = mix("#E9DFD2", withLightness(pal.light, 0.88, 0.3), 0.25);
+  const wg = ctx.createLinearGradient(0, 0, w, tableY);
+  wg.addColorStop(0, mix(wall, "#FFF6E8", 0.5));
+  wg.addColorStop(1, mix(wall, "#A8957F", 0.32));
+  ctx.fillStyle = wg;
+  ctx.fillRect(0, 0, w, tableY);
+  // Grain d'enduit (bruit fin agrandi, très doux).
+  const noise = (cw: number, ch: number, a: number) => {
+    const n = createCanvas(cw, ch);
+    const nc = n.getContext("2d");
+    const img = nc.createImageData(cw, ch);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = 128 + (r() - 0.5) * 255;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 255 * a;
+    }
+    nc.putImageData(img, 0, 0);
+    return n;
+  };
+  ctx.save();
+  ctx.globalCompositeOperation = "overlay";
+  ctx.filter = `blur(${Math.round(w * 0.004)}px)`;
+  ctx.drawImage(noise(Math.round(w / 6), Math.round(tableY / 6), 0.35) as any, 0, 0, w, tableY);
+  ctx.restore();
+
+  // Calque d'ombres : tout est ombre sauf la tache de soleil, découpée par les montants et le feuillage.
+  const shade = createCanvas(w, h);
+  const sc = shade.getContext("2d");
+  sc.fillStyle = "#000";
+  sc.fillRect(0, 0, w, h);
+  sc.globalCompositeOperation = "destination-out";
+  sc.beginPath();
+  sc.moveTo(w * 0.18, -h * 0.05);
+  sc.lineTo(w * 0.78, -h * 0.05);
+  sc.lineTo(w * 1.08, h * 1.05);
+  sc.lineTo(w * 0.42, h * 1.05);
+  sc.closePath();
+  sc.fill();
+  sc.globalCompositeOperation = "source-over";
+  sc.save();
+  sc.transform(1, 0, 0.32, 1, 0, 0);
+  sc.fillRect(w * 0.44, -h, w * 0.024, h * 3);
+  sc.restore();
+  sc.fillRect(-w, h * 0.33, w * 3, h * 0.022);
+  // Feuillage : grappes de feuilles en amande sur une branche.
+  for (let k = 0; k < 3; k++) {
+    let bx = w * (0.1 + r() * 0.5), by = h * (r() * 0.15);
+    const ang = 0.6 + r() * 0.8;
+    for (let i = 0; i < 14; i++) {
+      bx += Math.cos(ang) * w * 0.02;
+      by += Math.sin(ang) * h * 0.022;
+      for (const side of [-1, 1]) {
+        sc.save();
+        sc.translate(bx, by);
+        sc.rotate(ang + side * (0.9 + r() * 0.4));
+        const L = w * (0.035 + r() * 0.03);
+        sc.beginPath();
+        sc.moveTo(0, 0);
+        sc.quadraticCurveTo(L * 0.5, -L * 0.28, L, 0);
+        sc.quadraticCurveTo(L * 0.5, L * 0.28, 0, 0);
+        sc.fill();
+        sc.restore();
+      }
+    }
+  }
+  // Plateau en travertin : base claire, veines horizontales douces, pores, dégradé de profondeur.
+  const stone = mix("#E3D2BC", pal.light, 0.12);
+  const tg = ctx.createLinearGradient(0, tableY, 0, h);
+  tg.addColorStop(0, mix(stone, "#C9B79F", 0.25));
+  tg.addColorStop(0.25, stone);
+  tg.addColorStop(1, mix(stone, "#8F7C66", 0.3));
+  ctx.fillStyle = tg;
+  ctx.fillRect(0, tableY, w, h - tableY);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, tableY, w, h - tableY);
+  ctx.clip();
+  ctx.globalCompositeOperation = "multiply";
+  ctx.filter = `blur(${Math.round(h * 0.002)}px)`;
+  for (let i = 0; i < 18; i++) {
+    const y0 = tableY + (h - tableY) * r();
+    ctx.fillStyle = `rgba(160,135,105,${0.08 + r() * 0.1})`;
+    ctx.beginPath();
+    ctx.ellipse(w * r(), y0, w * (0.2 + r() * 0.5), h * (0.002 + r() * 0.004), 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.filter = "none";
+  for (let i = 0; i < 260; i++) {
+    const y0 = tableY + (h - tableY) * Math.pow(r(), 0.7);
+    const d = (y0 - tableY) / (h - tableY);
+    ctx.fillStyle = `rgba(120,98,74,${0.04 + r() * 0.06})`;
+    ctx.beginPath();
+    ctx.ellipse(w * r(), y0, w * (0.002 + r() * 0.006) * (0.5 + d), h * 0.0012 * (0.5 + d), 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  // Arête arrière du plateau : fine ligne d'ombre puis reflet.
+  ctx.fillStyle = "rgba(70,50,32,0.22)";
+  ctx.fillRect(0, tableY - h * 0.002, w, h * 0.004);
+  ctx.fillStyle = "rgba(255,248,236,0.35)";
+  ctx.fillRect(0, tableY + h * 0.002, w, h * 0.002);
+  // Lumière naturelle douce venant de la gauche (sans ombres projetées artificielles).
+  const soft = ctx.createLinearGradient(0, 0, w, 0);
+  soft.addColorStop(0, "rgba(255,236,205,0.22)");
+  soft.addColorStop(0.6, "rgba(255,236,205,0)");
+  ctx.fillStyle = soft;
+  ctx.fillRect(0, 0, w, h);
+  // Vignette douce et chaleur générale.
+  const vg = ctx.createRadialGradient(w * 0.45, h * 0.55, Math.min(w, h) * 0.35, w * 0.5, h * 0.5, Math.max(w, h) * 0.85);
+  vg.addColorStop(0, "rgba(0,0,0,0)");
+  vg.addColorStop(1, "rgba(48,30,14,0.3)");
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, w, h);
+  return { baseY: tableY + (h - tableY) * 0.45, shade };
+}
+
+/** Intègre le produit à la lumière de la scène : soleil côté fenêtre, ombre de l'autre côté, ombres de feuillage. */
+function lightProduct(ctx: SKRSContext2D, box: { x: number; y: number; w: number; h: number }, product: Image, shade: Canvas, w: number, h: number) {
+  const L = createCanvas(w, h);
+  const lc = L.getContext("2d");
+  // Masque du produit.
+  lc.drawImage(product as any, box.x, box.y, box.w, box.h);
+  lc.globalCompositeOperation = "source-in";
+  const g = lc.createLinearGradient(box.x, 0, box.x + box.w, 0);
+  g.addColorStop(0, "rgba(255,228,180,0.35)");
+  g.addColorStop(0.45, "rgba(255,228,180,0)");
+  g.addColorStop(0.7, "rgba(40,24,12,0)");
+  g.addColorStop(1, "rgba(40,24,12,0.32)");
+  lc.fillStyle = g;
+  lc.fillRect(0, 0, w, h);
+  ctx.save();
+  ctx.globalCompositeOperation = "soft-light";
+  ctx.drawImage(L as any, 0, 0);
+  ctx.restore();
+}
+
 // ---------------------------------------------------------------- recettes
 
-export type SceneStyle = "studio" | "podium" | "arch" | "window" | "spotlight" | "split" | "color";
+export type SceneStyle = "studio" | "podium" | "arch" | "window" | "spotlight" | "split" | "color" | "everyday";
 export const SCENE_STYLES: { id: SceneStyle; label: string }[] = [
   { id: "studio", label: "Studio doux" },
   { id: "podium", label: "Podium" },
@@ -291,6 +436,7 @@ export const SCENE_STYLES: { id: SceneStyle; label: string }[] = [
   { id: "spotlight", label: "Projecteur sombre" },
   { id: "split", label: "Aplats de couleur" },
   { id: "color", label: "Fond de marque" },
+  { id: "everyday", label: "Vie quotidienne" },
 ];
 
 export type SceneInput = { product: Image; palette: Palette; style: SceneStyle; format: Format; productScale?: number; offsetX?: number; seed?: number; background?: Image | null; baseYRatio?: number };
@@ -303,11 +449,12 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
   const ctx = c.getContext("2d");
   const pal = s.palette;
   const light = withLightness(pal.light, Math.max(0.9, hsl(pal.light)[2]), 0.7);
-  const scale = s.productScale ?? 0.62;
+  const scale = s.productScale ?? (s.style === "everyday" ? 0.46 : 0.62);
   const cx = w * (0.5 + (s.offsetX ?? 0));
   let baseY = h * 0.8;
   let shadow: "soft" | "hard" = "soft";
   let shadowColor = "rgba(20,14,10,";
+  let everydayShade: Canvas | null = null;
   const ph = h / w > 1.6 ? h * scale : Math.min(h * scale, w * scale * 1.15);
 
   if (s.background) {
@@ -378,6 +525,14 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
         baseY = h * 0.84;
         break;
       }
+      case "everyday": {
+        const e = everyday(ctx, w, h, pal, s.seed ?? 5);
+        baseY = e.baseY;
+        everydayShade = e.shade;
+        shadow = "hard";
+        shadowColor = "rgba(46,28,12,";
+        break;
+      }
       case "color": {
         const base = pal.primary;
         const g = ctx.createLinearGradient(0, 0, w, h);
@@ -393,6 +548,7 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
   }
   if (s.baseYRatio) baseY = h * s.baseYRatio;
   const box = drawProduct(ctx, s.product, { cx, baseY, height: ph, maxWidth: w * 0.8 }, { shadow, shadowColor, reflection: s.style === "spotlight" });
+  if (everydayShade) lightProduct(ctx, box, s.product, everydayShade, w, h);
   if (!s.background) grain(ctx, w, h, 0.03, s.seed ?? 3);
   return { png: await c.encode("png"), productBox: box };
 }

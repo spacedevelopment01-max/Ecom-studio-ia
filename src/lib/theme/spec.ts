@@ -28,7 +28,8 @@ export type StoreProduct = {
   compare_at_price: number | null;
   currency: string;
   options: string[];
-  variants: { title: string; options: string[]; price: number | null; available: boolean; sku?: string }[];
+  /** image : fichier de la galerie montré quand la variante est choisie (ex. le coloris). */
+  variants: { title: string; options: string[]; price: number | null; available: boolean; sku?: string; image?: string }[];
   images: string[]; // noms de fichiers d'assets (aperçu) — ordre de la galerie
   tags: string[];
 };

@@ -33,8 +33,10 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   project = loadProject(projectId);
   const brand = project.brand;
   if (!brand) throw new Error("Définissez la marque avant de produire une vidéo.");
-  const imgs: Asset[] = [...assetsByRole(projectId, "detail", 2), ...assetsByRole(projectId, "scene", 3)].filter((a) => a.status !== "rejected");
-  const descriptions = imgs.map((a) => `${a.role} — ${a.name}`);
+  // Photos en situation d'abord (celles du marchand avant les générées) : elles ouvrent les vidéos.
+  const life = assetsByRole(projectId, "lifestyle", 6).filter((a) => a.status !== "rejected").sort((x, y) => Number(y.origin === "upload") - Number(x.origin === "upload")).slice(0, 2);
+  const imgs: Asset[] = [...life, ...assetsByRole(projectId, "detail", 2), ...assetsByRole(projectId, "scene", 3)].filter((a) => a.status !== "rejected");
+  const descriptions = imgs.map((a) => `${a.role === "lifestyle" ? "produit en situation" : a.role} : ${a.name}`);
 
   // 1. Plans générés (facultatif, coûteux) : à partir d'une scène réelle.
   const clipDirs: string[][] = [];
@@ -81,14 +83,14 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const r = await aiVideoPlan({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:plan` }, project, { format: req.format, goal: req.goal ?? "publicité courte qui donne envie d'acheter", images: descriptions, clips: clipDirs.length, url: req.url });
       return { format: req.format, scenes: r.scenes, transition: r.transition, music: req.music ?? r.music, captions: true } as VideoSpec;
     }
-    return localVideoPlan(project.product, brand, req.format, imgs.length, req.url);
+    return localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url);
   }));
   plan.format = req.format;
   if (req.music) plan.music = req.music;
   // Bornes de sécurité (lecture sur téléphone) et références d'images valides.
   plan.scenes = plan.scenes
     .map((s) => ({ ...s, duration: Math.max(1.6, Math.min(6, s.duration)) }))
-    .filter((s) => (s.kind === "detail" || s.kind === "scene" ? s.image < imgs.length : s.kind === "clip" ? s.clip < clipDirs.length : true));
+    .filter((s) => (s.kind === "detail" || s.kind === "scene" || s.kind === "hook" || s.kind === "split" ? s.image < imgs.length : s.kind === "clip" ? s.clip < clipDirs.length : true));
   const issues = checkVideoSpec(plan);
 
   // 3. Rendu.

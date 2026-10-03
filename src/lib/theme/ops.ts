@@ -233,10 +233,13 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           const sid = newId(c, op.type);
           const inst: SectionInstance = { type: op.type, settings: v.settings };
           const errors = [...v.errors];
-          if (op.blocks?.length) {
+          // Sans blocs précisés : ceux du préréglage de la section (comme l'éditeur Shopify).
+          const presetBlocks = ((schema.presets?.[0] as { blocks?: { type: string; settings?: Record<string, unknown> }[] } | undefined)?.blocks ?? []).filter((b) => !b.type.startsWith("@"));
+          const wanted = op.blocks ?? presetBlocks;
+          if (wanted.length) {
             inst.blocks = {};
             inst.block_order = [];
-            for (const b of op.blocks) {
+            for (const b of wanted) {
               if (!schema.blocks.some((x) => x.type === b.type)) {
                 errors.push(`bloc « ${b.type} » inconnu`);
                 continue;
@@ -318,10 +321,13 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           for (const def of schema.settings) if (def.id && def.id in s.settings) carry[def.id] = s.settings[def.id];
           const v = validateSettings(spec, op.type, null, { ...carry, ...(op.settings ?? {}) });
           const inst: SectionInstance = { type: op.type, settings: v.settings };
-          if (op.blocks?.length) {
+          // Sans blocs précisés : ceux du préréglage de la section (comme l'éditeur Shopify).
+          const presetBlocks = ((schema.presets?.[0] as { blocks?: { type: string; settings?: Record<string, unknown> }[] } | undefined)?.blocks ?? []).filter((b) => !b.type.startsWith("@"));
+          const wanted = op.blocks ?? presetBlocks;
+          if (wanted.length) {
             inst.blocks = {};
             inst.block_order = [];
-            for (const b of op.blocks) {
+            for (const b of wanted) {
               if (!schema.blocks.some((x) => x.type === b.type)) continue;
               const bv = validateSettings(spec, op.type, b.type, b.settings);
               const bid = newBlockId(inst, b.type);

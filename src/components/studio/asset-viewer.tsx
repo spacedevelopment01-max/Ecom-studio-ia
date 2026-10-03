@@ -70,7 +70,7 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
             {a.version > 1 && <Badge tone="info">version {a.version}</Badge>}
           </div>
           <dl className="grid grid-cols-2 gap-2 text-xs">
-            <div><dt className="text-muted">Dimensions</dt><dd>{a.width && a.height ? `${a.width} × ${a.height}` : "—"}</dd></div>
+            <div><dt className="text-muted">Dimensions</dt><dd>{a.width && a.height ? `${a.width} × ${a.height}` : "Inconnues"}</dd></div>
             <div><dt className="text-muted">Poids</dt><dd>{formatBytes(a.size)}</dd></div>
             {a.duration && <div><dt className="text-muted">Durée</dt><dd>{a.duration.toFixed(1)} s</dd></div>}
             <div><dt className="text-muted">Origine</dt><dd>{a.origin === "upload" ? "Importé" : a.origin === "generated" ? "Créé par le studio" : a.origin}</dd></div>
@@ -118,7 +118,7 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
           {(data?.usages.length ?? 0) > 0 && (
             <div>
               <p className="text-xs font-medium text-muted">Utilisé dans</p>
-              <ul className="mt-1 grid gap-1 text-xs">{data!.usages.map((u) => <li key={u.target_type + u.target_id}>• {u.target_type === "post" ? "Publication" : u.target_type === "theme_section" ? "Boutique" : u.target_type} — {u.label || u.target_id}</li>)}</ul>
+              <ul className="mt-1 grid gap-1 text-xs">{data!.usages.map((u) => <li key={u.target_type + u.target_id}>• {u.target_type === "post" ? "Publication" : u.target_type === "theme_section" ? "Boutique" : u.target_type} · {u.label || u.target_id}</li>)}</ul>
             </div>
           )}
           {data && (data.versions.length > 1 || data.derived.length > 0 || data.source) && (

@@ -75,4 +75,4 @@ Ensuite : créez votre compte (le premier devient administrateur), puis renseign
 - `src/lib/theme` + `theme-base/` — moteur de thème Shopify (spécification JSON OS 2.0 → fichiers ; rendu Liquid pour l'aperçu ; opérations ciblées validées).
 - `src/lib/media` — détourage, compositions (Skia), logos SVG, vidéo (ffmpeg).
 - `src/lib/engine` — pipeline et moteur intégré ; `src/lib/ai` — routage multi-fournisseurs, contexte et mémoire du projet, prompts spécialisés, contrôle qualité.
-- `public/demo` — démonstrations de la page d'accueil, **produits et marques fictifs** générés par le studio à partir de rendus 3D (`scripts/demo-renders`).
+- `public/demo` — démonstrations de la page d'accueil : **produits réels** de fournisseurs (marque blanche, photos retouchées dans `scripts/demo-products/inputs`), marques et boutiques créées par le studio (`scripts/build-demos.ts`).

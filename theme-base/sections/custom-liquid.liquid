@@ -1,0 +1,18 @@
+<section class="es-section es-custom color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">{{ section.settings.custom_liquid }}</div>
+</section>
+
+{% schema %}
+{
+  "name": "Liquid personnalisé",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "liquid", "id": "custom_liquid", "label": "Code Liquid ou HTML", "info": "Pour un widget ou un code fourni par une application." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 40 }
+  ],
+  "presets": [{ "name": "Liquid personnalisé" }]
+}
+{% endschema %}

@@ -12,7 +12,7 @@ import { chromium } from "playwright";
 const FPS = 30;
 const DURATION = 10;
 const SIZE = 960;
-const SCENES = ["photo", "themes", "chat", "formats", "cal"];
+const SCENES = process.env.ONLY ? process.env.ONLY.split(",") : ["hero", "photo", "themes", "chat", "formats", "cal"];
 const OUT = path.join(process.cwd(), "public", "explainers");
 const PAGE = "file://" + path.join(process.cwd(), "scripts", "explainers", "explainers.html");
 fs.mkdirSync(OUT, { recursive: true });

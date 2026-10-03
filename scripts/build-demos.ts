@@ -1,7 +1,7 @@
 /**
  * Génère les démonstrations de la page d'accueil avec le vrai studio
- * (serveur + worker lancés) : produits et marques FICTIFS, rendus 3D en entrée.
- *   BASE=http://localhost:3000 tsx scripts/build-demos.ts   (entrées : scripts/demo-renders/inputs)
+ * (serveur + worker lancés) à partir de produits réels de fournisseurs (scripts/demo-products/inputs).
+ *   BASE=http://localhost:3000 ONLY=verger,oreiller,drone,chat,tribunes tsx scripts/build-demos.ts
  * Sortie : public/demo/<id>/…, public/demo/directions/<direction>.jpg, public/demo/manifest.json
  */
 import fs from "node:fs";
@@ -24,6 +24,12 @@ type DemoDef = {
   catalog?: CatalogDemo[];
   /** Produit réel : provenance affichée sur la page d'accueil. */
   source?: { supplier: string; url: string; note: string };
+  /** Photos du produit en situation (vie de tous les jours) : héros de la boutique. */
+  lifestyle?: string[];
+  /** Blocs de fiche produit réglés comme le ferait le marchand (lots, livraison, autres saveurs…), insérés après le bloc « after ». */
+  pdp?: { type: string; after: string; settings: Record<string, unknown> }[];
+  /** Variante (ex. coloris) : valeurs et photo de chaque valeur autre que celle de la photo principale. */
+  variants?: { name: string; values: string[]; photos?: Record<string, string> };
 };
 
 const REAL = path.join(process.cwd(), "scripts", "demo-products", "inputs");
@@ -39,6 +45,59 @@ const REAL_DEMOS: DemoDef[] = [
       { name: "Thé glacé Fruits rouges", category: "Thés glacés", price: "2,40", description: "Thé glacé aux fruits rouges en canette de 33 cl.", photo: path.join(REAL, "boissons", "canette-fruits-rouges.png") },
     ],
     source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio." },
+    pdp: [
+      { type: "badges", after: "title", settings: { badge1: "🥫 Canette 33 cl", badge2: "♻️ Aluminium recyclable" } },
+      { type: "siblings", after: "badges", settings: { collection: "thes-glaces", heading: "Choisissez votre saveur" } },
+      { type: "bundles", after: "price", settings: { layout: "cards", heading: "Compose ton pack", units_per_pack: 1, unit_label: "canette", default_tier: "2", qty1: 6, label1: "Pack de 6", discount1: 0, qty2: 12, label2: "Pack de 12", discount2: 5, tag2: "-5 %", qty3: 24, label3: "Pack de 24", discount3: 10, tag3: "-10 %" } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 2, max_days: 4, business_days: true, label: "Livraison estimée" } },
+    ],
+  },
+  {
+    id: "oreiller", sector: "Maison", direction: "clinique", category: "Sommeil",
+    productName: "Oreiller ergonomique Papillon", brandName: "Somnéa", price: "39,90 €",
+    description: "Oreiller ergonomique en forme de papillon. Deux côtés de hauteurs différentes (un côté bas, un côté haut), un creux central pour la tête et des ailes latérales pour dormir sur le côté. Housse respirante. Coloris : bleu ardoise ou vert sauge.",
+    photo: path.join(REAL, "maison", "oreiller-bleu.jpg"),
+    lifestyle: [path.join(REAL, "situations", "oreiller-sommeil.jpg")],
+    variants: { name: "Coloris", values: ["Bleu ardoise", "Vert sauge"], photos: { "Vert sauge": path.join(REAL, "maison", "oreiller-vert.jpg") } },
+    pdp: [
+      { type: "benefits", after: "price", settings: { emoji1: "🦋", title1: "Forme papillon", text1: "Un creux central pour la tête et des ailes latérales pour dormir sur le côté.", emoji2: "↕️", title2: "Deux hauteurs", text2: "Un côté bas, un côté haut : on tourne l'oreiller selon sa préférence.", emoji3: "🌬️", title3: "Housse respirante", text3: "", emoji4: "", title4: "" } },
+      { type: "bundles", after: "buy_buttons", settings: { layout: "rows", heading: "Pour toute la maison", qty1: 1, label1: "1 oreiller", discount1: 0, qty2: 2, label2: "2 oreillers", chip2: "Le duo", discount2: 10, tag2: "-10 %", qty3: 0, default_tier: "1" } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 6, business_days: true, label: "Livraison estimée" } },
+    ],
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio." },
+  },
+  {
+    id: "drone", sector: "High-tech", direction: "nocturne", category: "Drones",
+    productName: "Drone pliable à caméra stabilisée", brandName: "Ostral", price: "189 €",
+    description: "Drone pliable avec caméra stabilisée orientable. Selon la fiche du fournisseur : capteur 1 pouce, ouverture f/1.8, autonomie annoncée de 30 minutes, retour au point de départ par GPS, détection d'obstacles dans quatre directions, prise de vue verticale, radiocommande à écran pliable de 6,9 pouces.",
+    photo: path.join(REAL, "hightech", "drone-pliable.jpg"),
+    lifestyle: [path.join(REAL, "situations", "drone-montagne.jpg")],
+    pdp: [
+      { type: "benefits", after: "price", settings: { emoji1: "📍", title1: "Retour au point de départ", text1: "Par GPS, selon la fiche du fournisseur.", emoji2: "🛰️", title2: "Détection d'obstacles", text2: "Dans quatre directions, selon la fiche du fournisseur.", emoji3: "🔋", title3: "30 minutes annoncées", text3: "Autonomie indiquée par le fournisseur, par batterie.", emoji4: "🎒", title4: "Pliable", text4: "Les bras se replient pour le transport." } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 7, business_days: true, label: "Livraison estimée" } },
+    ],
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Drone pliable en marque blanche d'un fournisseur ; les inscriptions du fabricant ont été retirées de la photo, la marque et la boutique sont créées par le studio." },
+  },
+  {
+    id: "chat", sector: "Animaux", direction: "pop", storeType: "niche", category: "Toilettage",
+    productName: "Gant anti-poils", brandName: "Ronron", price: "12,90 €",
+    description: "Gant double face pour retirer les poils de chat des canapés, vêtements et coussins. Dos en maille avec dragonne, face en tissu qui accroche les poils. Dimensions : 20 × 15 cm.",
+    photo: path.join(REAL, "animaux", "gant-anti-poils.jpg"),
+    lifestyle: [path.join(REAL, "situations", "gant-canape.jpg"), path.join(REAL, "situations", "protege-canape-chat.jpg")],
+    catalog: [
+      { name: "Protège-canapé anti-griffures", category: "Maison", price: "19,90", description: "Revêtement en rouleau à découper puis coller sur les zones griffées (canapé, mur, porte) : le chat y fait ses griffes sans abîmer le meuble.", features: ["Se découpe aux ciseaux", "Dos adhésif"], photo: path.join(REAL, "animaux", "protege-canape.jpg") },
+    ],
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio." },
+  },
+  {
+    id: "tribunes", sector: "Mode", direction: "flux", storeType: "niche", category: "T-shirts supporters",
+    productName: "T-shirt supporter Lavande", brandName: "Les Tribunes", price: "29,90 €",
+    description: "T-shirt de supporter bleu marine, inscription FRANCE et numéro 10, brins de lavande brodés en ton sur ton, liserés bleu-blanc-rouge, drapeau sur la poitrine.",
+    photo: path.join(REAL, "vetements", "tshirt-lavande.jpg"),
+    catalog: [
+      { name: "T-shirt supporter Aquarelle", category: "T-shirts supporters", price: "29,90", description: "T-shirt de supporter écru, motif aquarelle bleu et rouge, écusson tricolore et paysage en relief (tour Eiffel, champs de lavande).", photo: path.join(REAL, "vetements", "tshirt-aquarelle.jpg") },
+    ],
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "T-shirts de supporter d'un fournisseur (visuels du fournisseur) : la marque et la boutique sont créées par le studio. Les modèles reprenant l'écusson officiel de la fédération ont été écartés." },
   },
 ];
 
@@ -155,15 +214,51 @@ for (const p of PRODUCTS) {
       if (!r.ok()) throw new Error(await r.text());
     }
   }
+  // Photos en situation (héros de la boutique).
+  for (const file of p.lifestyle ?? []) {
+    const r = await ctx.request.post(`${BASE}/api/projects/${pid}/files`, { multipart: { role: "lifestyle", files: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
+    if (!r.ok()) throw new Error(await r.text());
+  }
+  // Vidéos refaites avec les photos en situation (elles ouvrent le montage).
+  if (p.lifestyle?.length) {
+    await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "9:16", target: "ads", goal: "publicité courte pour les réseaux sociaux" } });
+    await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "16:9", target: "shop", goal: "vidéo d'ambiance pour la boutique", music: "none" } });
+    await waitIdle(ctx, pid);
+  }
+  // Variante (coloris…) : valeurs du produit, puis photo de chaque valeur.
+  if (p.variants) {
+    await api(ctx, `/api/projects/${pid}/product`, { method: "PATCH", body: { variants: [{ name: p.variants.name, values: p.variants.values }] } });
+    for (const [value, file] of Object.entries(p.variants.photos ?? {})) {
+      const r = await ctx.request.post(`${BASE}/api/projects/${pid}/product/variant-photo`, { multipart: { value, photo: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
+      if (!r.ok()) throw new Error(await r.text());
+    }
+  }
   // Chaque démonstration montre une direction différente.
   await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
   ov = await waitIdle(ctx, pid);
   firstProject ??= { pid };
+  // Fiche produit réglée comme le ferait le marchand (nouvelle version du thème).
+  if (p.pdp?.length) {
+    const { currentTheme, saveThemeVersion } = await import("../src/lib/projects");
+    const cur = currentTheme(pid)!;
+    const spec = structuredClone(cur.spec);
+    const mainId = spec.templates.product.order.find((id) => spec.templates.product.sections[id]?.type === "main-product")!;
+    const mp = spec.templates.product.sections[mainId];
+    for (const [n, b] of p.pdp.entries()) {
+      const id = `demo_${b.type}_${n}`;
+      mp.blocks![id] = { type: b.type, settings: b.settings } as any;
+      const order = mp.block_order!;
+      const after = order.find((x) => x.startsWith(`demo_${b.after}`)) ?? order.find((x) => mp.blocks![x].type === b.after);
+      order.splice(after ? order.indexOf(after) + 1 : order.length, 0, id);
+    }
+    saveThemeVersion(pid, spec, "Fiche produit : lots, livraison et autres réglages du marchand", "user");
+  }
 
   const files = (await api(ctx, `/api/projects/${pid}/files?q=`)).assets as any[];
   const all = (await api(ctx, `/api/projects/${pid}/files`)).assets as any[];
   const assets = files.length ? files : all;
-  const byRole = (r: string) => assets.filter((a) => a.role === r);
+  // Scènes dans l'ordre de création : la première (« vie quotidienne ») sert d'exemple principal.
+  const byRole = (r: string) => assets.filter((a) => a.role === r).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
   await sharp(photo).resize({ width: 900 }).jpeg({ quality: 84 }).toFile(path.join(dir, "photo.jpg"));
   const images: { src: string; label: string }[] = [];
   const pick: [string, string, number][] = [["cutout", "Détourage", 1], ["packshot", "Packshot", 1], ["detail", "Détail", 1], ["scene", "Scène", 2], ["social", "Visuel social", 1], ["ad", "Publicité", 1], ["banner", "Bannière", 1]];
@@ -183,7 +278,7 @@ for (const p of PRODUCTS) {
   const logo = byRole("logo-svg")[0] ?? byRole("logo")[0];
   const logoFile = logo?.mime === "image/svg+xml" ? "logo.svg" : "logo.png";
   if (logo) await saveRaw(ctx, logo.url, path.join(dir, logoFile));
-  const videos = byRole("video");
+  const videos = byRole("video").sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0));
   const vertical = videos.find((v) => v.meta?.format === "9:16") ?? videos[0];
   const wide = videos.find((v) => v.meta?.format === "16:9");
   if (vertical) await saveRaw(ctx, vertical.url, path.join(dir, "video.mp4"));
@@ -222,7 +317,9 @@ for (const p of PRODUCTS) {
 // Toutes les directions de boutique, appliquées au premier produit (sauf régénération partielle).
 if (!process.env.ONLY) await shootDirections(firstProject!.pid);
 
-const merged = process.env.ONLY ? [...demos, ...previous.filter((d: any) => !demos.some((x) => x.id === d.id))] : demos;
-fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Marques créées par E-COM STUDIO IA (moteur intégré). Les démonstrations « produit réel » partent de photos de fournisseurs ; les autres de rendus 3D.", demos: merged }, null, 2));
+// DROP=<id,…> : démonstrations retirées (produits 3D remplacés par des produits réels).
+const drop = (process.env.DROP ?? "").split(",").filter(Boolean);
+const merged = (process.env.ONLY ? [...demos, ...previous.filter((d: any) => !demos.some((x) => x.id === d.id))] : demos).filter((d: any) => !drop.includes(d.id));
+fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).", demos: merged }, null, 2));
 console.log(`✓ ${demos.length} démonstrations → public/demo`);
 await browser.close();

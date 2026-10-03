@@ -103,3 +103,84 @@ describe("icônes", () => {
     expect(elseAt).toBeGreaterThan(lastWhen);
   });
 });
+
+describe("référence de thème pour l'IA", () => {
+  it("est stable d'un appel à l'autre (mise en cache) et décrit sections, réglages et opérations", async () => {
+    const { themeReference } = await import("@/lib/ai/tasks");
+    const a = themeReference(sampleSpec("atelier"), true);
+    const b = themeReference(sampleSpec("atelier"), true);
+    expect(a).toBe(b);
+    expect(a).toContain("hero-fullbleed");
+    expect(a).toContain("set_global");
+    expect(themeReference(sampleSpec("atelier"))).not.toContain("Opérations :");
+  });
+});
+
+describe("textes sans IA", () => {
+  it("le bandeau ne reprend que des informations confirmées, jamais de promesse générique", async () => {
+    const { factMarquee } = await import("@/lib/engine/local-copy");
+    const items = factMarquee(
+      { name: "Thé glacé Pêche", category: "Thés glacés", variants: [{ name: "Goût", values: ["Pêche", "Citron"] }], facts: [{ key: "capacity", label: "Contenance", value: "33 cl.", status: "confirmed", source: "user" }, { key: "origin", label: "Origine", value: "", status: "unknown", source: "ai" }] } as any,
+      { name: "Verger", tagline: "Le goût des bonnes choses." },
+    );
+    expect(items).toContain("Contenance : 33 cl");
+    expect(items).toContain("2 goûts au choix");
+    expect(items.join(" ")).not.toMatch(/origine|fait pour durer|prise en main/i);
+  });
+});
+
+describe("commandes locales de fiche produit", () => {
+  it("ajoute la livraison estimée avec les délais donnés, et refuse d'en inventer", async () => {
+    const { localThemeCommand } = await import("@/lib/engine/local");
+    const spec = sampleSpec();
+    const r = localThemeCommand(spec, "ajoute la livraison estimée 2 à 4 jours", null);
+    expect(r.ops).toHaveLength(1);
+    const op = r.ops[0] as any;
+    expect(op.type).toBe("delivery");
+    expect(op.settings).toMatchObject({ min_days: 2, max_days: 4 });
+    const res = applyOps(spec, r.ops);
+    expect(res.rejected).toHaveLength(0);
+    expect(validateSpec(res.spec)).toEqual([]);
+    expect(localThemeCommand(spec, "ajoute la livraison estimée", null).ops).toHaveLength(0);
+  });
+
+  it("pastilles entre guillemets, lots et prix dans le bouton s'appliquent", async () => {
+    const { localThemeCommand } = await import("@/lib/engine/local");
+    let spec = sampleSpec();
+    for (const msg of ["ajoute des pastilles « Vegan » « Sans sucre ajouté »", "ajoute des lots", "mets le prix dans le bouton", "ajoute un abonnement"]) {
+      const r = localThemeCommand(spec, msg, null);
+      expect(r.ops.length, msg).toBeGreaterThan(0);
+      const res = applyOps(spec, r.ops);
+      expect(res.rejected, msg).toHaveLength(0);
+      spec = res.spec;
+    }
+    const html = compileTheme(spec).get("templates/product.json")!;
+    expect(html).toContain("Sans sucre ajouté");
+    expect(html).toContain("bundles");
+  });
+});
+
+describe("accroche du héros", () => {
+  it("coupe à la fin d'une proposition plutôt qu'au milieu d'une phrase", async () => {
+    const { heroLead } = await import("@/lib/engine/local-copy");
+    expect(heroLead("T-shirt de supporter bleu marine, inscription FRANCE et numéro 10, brins de lavande brodés en ton sur ton dans le dos et sur les manches")).toBe("T-shirt de supporter bleu marine, inscription FRANCE et numéro 10.");
+    expect(heroLead("Court et clair.")).toBe("Court et clair.");
+  });
+});
+
+describe("bibliothèque de sections", () => {
+  it("une section ajoutée reprend les blocs de son préréglage et les médias du projet", async () => {
+    const { withProjectMedia } = await import("@/lib/theme/section-defaults");
+    const spec = sampleSpec();
+    spec.files["es-produit-detoure-x1.png"] = { kind: "asset", assetId: "a1" } as any;
+    const filled = withProjectMedia(spec, "routine-steps");
+    expect(filled.settings.image_asset).toBe("es-produit-detoure-x1.png");
+    expect(filled.blocks?.length).toBe(3);
+    const res = applyOps(spec, [{ op: "add_section", template: "index", type: "routine-steps", settings: filled.settings as any, blocks: filled.blocks as any } as any]);
+    expect(res.rejected).toHaveLength(0);
+    expect(validateSpec(res.spec)).toEqual([]);
+    const plain = applyOps(spec, [{ op: "add_section", template: "index", type: "faq" } as any]);
+    const id = plain.spec.templates.index.order.at(-1)!;
+    expect(Object.keys(plain.spec.templates.index.sections[id].blocks ?? {}).length).toBeGreaterThan(0);
+  });
+});

@@ -110,7 +110,7 @@ function productDrop(sp: StoreProduct, pi: number, base: string) {
   }));
   const withPreview = media.map((m) => ({ ...m, preview_image: m }));
   const url = `${base}/products/${sp.handle}`;
-  const variants = (sp.variants.length ? sp.variants : [{ title: "Default Title", options: ["Default Title"], price: sp.price, available: true }]).map((v, i) => ({
+  const variants = (sp.variants.length ? sp.variants : [{ title: "Default Title", options: ["Default Title"], price: sp.price, available: true } as StoreProduct["variants"][number]]).map((v, i) => ({
     id: variantId(pi, i),
     title: v.title,
     options: v.options,
@@ -122,7 +122,7 @@ function productDrop(sp: StoreProduct, pi: number, base: string) {
     available: v.available,
     sku: v.sku ?? "",
     url: `${url}?variant=${variantId(pi, i)}`,
-    featured_media: withPreview[0] ?? null,
+    featured_media: withPreview[v.image ? Math.max(0, sp.images.indexOf(v.image)) : 0] ?? null,
     unit_price_measurement: null,
   }));
   const hasOnlyDefault = variants.length === 1 && variants[0].title === "Default Title";

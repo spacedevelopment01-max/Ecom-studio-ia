@@ -1,6 +1,6 @@
 {%- comment -%}
   Formulaire d'achat : variantes, quantité, ajout au panier, paiement accéléré.
-  Paramètres : product, section_id, show_quantity, show_dynamic_checkout, picker
+  Paramètres : product, section_id, show_quantity, show_dynamic_checkout, picker, price_in_button
 {%- endcomment -%}
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
@@ -41,7 +41,7 @@
         </div>
       {%- endif -%}
       <button type="submit" name="add" class="es-button es-button--grow" data-add-button{% unless current_variant.available %} disabled{% endunless %}>
-        <span data-add-label>{%- if current_variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}</span>
+        <span data-add-label>{%- if current_variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- if price_in_button -%}<span data-button-price> – {{ current_variant.price | money }}</span>{%- endif -%}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}</span>
       </button>
     </div>
     {%- if show_dynamic_checkout -%}{{ form | payment_button }}{%- endif -%}

@@ -3,6 +3,7 @@
  * mises en scène (décor IA si disponible, sinon studio local), bannières,
  * visuels sociaux et publicitaires. Chaque fichier est rangé, nommé et lié.
  */
+import { renderProCreatives } from "../media/creative-html";
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { all, one } from "../db";
@@ -14,7 +15,7 @@ import { canvasFamily } from "../media/fonts";
 import { aiImageBrief, aiQcImage } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { geminiPlate, imageProviderAvailable, openaiScene } from "../ai/media-providers";
-import type { JobContext } from "../jobs";
+import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 
 export function latestAsset(projectId: string, role: string): Asset | undefined {
@@ -37,6 +38,15 @@ export function palette(p: Project) {
 }
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "produit";
+
+/** Ligne d'accroche courte pour les visuels (au plus ~60 caractères, coupée sur une virgule ou un mot). */
+export function shortLine(text: string, max = 60): string {
+  const first = text.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, "").trim();
+  if (first.length <= max) return first;
+  const clause = first.split(",")[0].trim();
+  if (clause.length >= 20 && clause.length <= max) return clause;
+  return first.slice(0, max).replace(/\s+\S*$/, "").replace(/[\s,;:–-]+$/, "");
+}
 
 /** Détoure les photos originales qui ne le sont pas encore. */
 export async function ensureCutouts(ctx: JobContext | null, project: Project): Promise<Asset[]> {
@@ -71,12 +81,14 @@ export async function ensureCutouts(ctx: JobContext | null, project: Project): P
 
 type ImgCtx = { userId: string; projectId: string; jobId?: string | null };
 
-async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string): Promise<{ image: Buffer; provider: string; qc?: unknown } | null> {
+async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string): Promise<{ image: Buffer; provider: string; qc?: unknown } | null> {
   const provider = imageProviderAvailable();
   if (!provider) return null;
   const brief = llmConfigured()
-    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, `${style}, format ${FORMATS[formatId].label}`)
-    : { prompt: `${style} product photography set, soft natural light, ${project.brand?.palette.secondary ?? "neutral"} tones`, surface: "", lightFrom: "left" as const };
+    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? `PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}, format ${FORMATS[formatId].label}` : `${style}, format ${FORMATS[formatId].label}`)
+    : lifestyle
+      ? { prompt: `Authentic everyday lifestyle photograph: ${lifestyle}. Natural daylight, real home or outdoor setting, candid editorial style, shallow depth of field. People may appear naturally around the product without covering it. No text, no logos, no other branded products.`, surface: "", lightFrom: "left" as const }
+      : { prompt: `${style} product photography set, soft natural light, ${project.brand?.palette.secondary ?? "neutral"} tones`, surface: "", lightFrom: "left" as const };
   const f = FORMATS[formatId];
   if (provider === "openai") {
     // Cadre à la taille OpenAI la plus proche, produit placé, masque du produit.
@@ -98,6 +110,20 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
   const plate = await geminiPlate({ ...ictx, usageKey: `${key}:gemini` }, { prompt: brief.prompt, reference: cut, aspect });
   return { image: plate, provider: "google-plate" };
 }
+
+/** Situations de la vie de tous les jours, par secteur (consignes pour le modèle d'image). */
+const LIFESTYLE: Record<string, [string, string]> = {
+  beaute: ["on a sunlit bathroom shelf among everyday toiletries, morning routine", "held near a vanity mirror in a bright bedroom, getting ready"],
+  mode: ["laid on a bed next to sneakers and a tote bag, bright apartment, getting dressed", "hanging in an entryway by the door, keys and plants nearby, city apartment"],
+  bijoux: ["on a wooden dresser next to a hand, soft morning light through linen curtains", "on a café table beside a cup of coffee and a notebook, city morning"],
+  maison: ["in a cosy lived-in bedroom on an unmade bed with linen sheets, warm morning light", "in a bright living room on a sofa with a throw blanket and a book, afternoon light"],
+  hightech: ["outdoors on a wooden picnic table with a backpack, hills in the background, golden hour", "on a tidy home desk next to a laptop and a coffee mug, daylight"],
+  sport: ["on a forest trail next to running shoes and a backpack, early morning", "on a gym bench beside a towel and a water bottle, natural light"],
+  alimentation: ["on a sunny café terrace table next to a glass with ice, summer afternoon", "in a picnic basket on a blanket in a park, friends blurred in the background"],
+  enfants: ["on a playroom rug among wooden toys, soft daylight", "on a child's bedside table next to a picture book, evening lamp light"],
+  animaux: ["on a light grey sofa with a relaxed cat nearby, cosy living room, daylight", "on a wooden floor in a bright living room with a dog resting nearby"],
+  artisanat: ["on a wooden workshop table among tools and paper, window light", "on a shelf in a bright home studio next to plants and ceramics"],
+};
 
 export type ImageSetOptions = { scenes?: SceneStyle[]; withAi?: boolean; social?: boolean; banner?: boolean };
 
@@ -144,7 +170,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     return ids;
   });
 
-  const styles = opts.scenes ?? (["window", "arch", "spotlight"] as SceneStyle[]);
+  const styles = opts.scenes ?? (["everyday", "arch", "studio"] as SceneStyle[]);
   const withAi = opts.withAi !== false && !!imageProviderAvailable();
   for (const [i, style] of styles.entries()) {
     await ctx.step(`scene:${style}`, async () => {
@@ -170,12 +196,43 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
             provider = "Gemini (décor) + composition locale";
           }
         } catch (e) {
+          if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           qc = { fallback: (e as Error).message };
         }
       }
       const s = await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, background: bg ? await loadImage(bg) : null });
       return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}.jpg`, "scene", "images.scenes", { recipe: `Mise en scène ${style}`, provider, qc })];
     });
+  }
+
+  // Photos en situation, dans la vie de tous les jours (IA d'image requise) : elles ouvrent la boutique.
+  if (withAi) {
+    const contexts = LIFESTYLE[project.product.sector ?? ""] ?? LIFESTYLE.maison;
+    for (const [i, situation] of contexts.entries()) {
+      await ctx.step(`lifestyle:${i}`, async () => {
+        ctx.progress(0.7 + i * 0.02, "Photos du produit en situation");
+        try {
+          const r = await aiBackground(ictx, project, cutBuf, "lifestyle", i === 0 ? "landscape" : "product", `${ctx.job.id}:lifestyle:${i}`, situation);
+          if (!r) return [];
+          if (r.provider !== "openai") {
+            // Gemini : décor de vie généré, produit réel posé dessus par la composition locale (ombres, sol).
+            const s = await renderScene({ product, palette: pal, style: "spotlight", format: i === 0 ? FORMATS.landscape : FORMATS.product, seed: 31 + i, background: await loadImage(r.image) });
+            return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-en-situation-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: `Photo en situation : décor généré (${situation}) et produit réel composé`, provider: "Gemini + composition locale" })];
+          }
+          let qc: unknown = null;
+          if (llmConfigured()) {
+            const check = await aiQcImage({ ...ictx, usageKey: `${ctx.job.id}:qc:lifestyle:${i}` }, assetData(one<Asset>("SELECT * FROM assets WHERE id = ?", main.source_asset_id)!), r.image);
+            qc = check;
+            if (!check.sameProduct || check.score < 6) return [];
+          }
+          return [await save(await sharp(r.image).jpeg({ quality: 92 }).toBuffer(), `${base}-en-situation-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: `Photo en situation générée autour du produit réel : ${situation}`, provider: "OpenAI", qc })];
+        } catch (e) {
+          if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+          console.warn("[images] photo en situation indisponible :", (e as Error).message);
+          return [];
+        }
+      });
+    }
   }
 
   if (opts.banner !== false) {
@@ -192,7 +249,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     await ctx.step("social", async () => {
       ctx.progress(0.85, "Visuels réseaux sociaux et publicités");
       const headline = project.brand?.tagline || project.product.name || project.brand?.name || "Découvrir";
-      const sub = project.product.summary?.slice(0, 90) || "";
+      const sub = shortLine(project.product.summary ?? "");
       const brandName = project.brand?.name ?? project.name;
       const logoAsset = latestAsset(projectId, "logo");
       const logo = logoAsset ? await loadImage(assetData(logoAsset)) : null;
@@ -203,6 +260,23 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
         ["square", "bold", "images.ads", "ad"],
       ];
       const ids: string[] = [];
+      // Visuels de niveau agence (mise en page HTML) quand un navigateur est disponible.
+      const pro = await renderProCreatives(
+        { product: cutBuf, palette: pal, typo, brand: brandName, logo: null, headline, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: "Découvrir" },
+        [
+          { template: "signature", format: "portrait" },
+          { template: "editorial", format: "square" },
+          { template: "signature", format: "story" },
+          { template: confirmedFacts(project).length >= 3 ? "arguments" : "editorial", format: confirmedFacts(project).length >= 3 ? "square" : "story" },
+        ],
+      ).catch(() => null);
+      if (pro?.length) {
+        for (const [k, r] of pro.entries()) {
+          const role = k < 2 ? "social" : "ad";
+          ids.push(await save(r.jpg, `${base}-${role === "ad" ? "publicite" : "post"}-${r.label.replace(":", "x")}-${r.template}.jpg`, role, role === "ad" ? "images.ads" : "images.social", { recipe: `Visuel ${r.label} (${r.template})`, text: { headline }, format: r.label }));
+        }
+        return ids;
+      }
       for (const [fmt, layout, folder, role] of variants) {
         const r = await renderCreative({ product, palette: pal, typo, format: FORMATS[fmt], layout, headline, subline: sub, cta: role === "ad" ? "Découvrir" : undefined, brand: brandName, logo, seed: ids.length + 3 });
         ids.push(await save(r.jpg, `${base}-${role === "ad" ? "publicite" : "post"}-${FORMATS[fmt].label.replace(":", "x")}-${layout}.jpg`, role, folder, { recipe: `Visuel ${FORMATS[fmt].label} (${layout})`, text: { headline, sub }, safeArea: r.safe, minFontPx: r.minFontPx, format: FORMATS[fmt].label }));
@@ -212,6 +286,28 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   }
   ctx.progress(0.98, "Images prêtes");
   return { created };
+}
+
+/** Informations confirmées, très courtes, pour les pastilles des visuels (jamais d'allégation inventée). */
+function confirmedFacts(p: Project): string[] {
+  const out: string[] = [];
+  const cat = (p.product as any).category as string | undefined;
+  if (cat && cat.length <= 24) out.push(cat);
+  for (const f of p.product.facts) {
+    if (f.status === "unknown" || !f.value || f.key === "price") continue;
+    const v = f.value.replace(/\.$/, "").trim();
+    if (v.length <= 28) out.push(v);
+  }
+  for (const v of p.product.variants ?? []) if (v.values.length > 1) out.push(`${v.values.length} ${v.name.toLowerCase()}${/[sx]$/.test(v.name) ? "" : "s"} au choix`);
+  // Peu d'informations confirmées : le nom du produit sert de repère (jamais d'argument inventé).
+  if (out.length < 2 && p.product.name && p.product.name.length <= 28) out.unshift(p.product.name);
+  return [...new Set(out)].slice(0, 3);
+}
+
+/** Mot court pour le filigrane : dernier mot distinctif du nom (saveur, modèle), sinon la marque. */
+function keywordFor(p: Project): string {
+  const words = (p.product.name || "").split(/\s+/).filter((w) => w.length >= 3 && w.length <= 10);
+  return words.at(-1) ?? p.brand?.name ?? "";
 }
 
 /** Génère une image unique à la demande (studio Images). */

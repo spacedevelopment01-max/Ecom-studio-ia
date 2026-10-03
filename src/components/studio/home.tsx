@@ -112,7 +112,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
             <>
               <span className="grid size-14 place-items-center rounded-2xl bg-paper-2"><ImagePlus className="size-6" /></span>
               <p className="font-display text-xl">Déposez la photo de votre produit</p>
-              <p className="max-w-sm text-sm text-muted">Une seule suffit. Plusieurs angles améliorent la fidélité. JPEG, PNG, WebP — 25 Mo au plus.</p>
+              <p className="max-w-sm text-sm text-muted">Une seule suffit. Plusieurs angles améliorent la fidélité. JPEG, PNG, WebP, 25 Mo au plus.</p>
               <Button type="button" variant="secondary" onClick={() => input.current?.click()}>Choisir des photos</Button>
             </>
           )}
@@ -124,7 +124,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
           <Input id="link" name="link" type="url" placeholder="https://…" />
         </Field>
       </div>
-      <Field label={mode === "text" ? "Décrivez votre produit" : "Quelques précisions (facultatif)"} hint="Exemple : « Contenance : 30 ml. Composition : … » — ce que vous écrivez est considéré comme confirmé." htmlFor="description">
+      <Field label={mode === "text" ? "Décrivez votre produit" : "Quelques précisions (facultatif)"} hint="Exemple : « Contenance : 30 ml. Composition : … ». Ce que vous écrivez est considéré comme confirmé." htmlFor="description">
         <Textarea id="description" name="description" rows={mode === "text" ? 6 : 3} placeholder="Ce que le produit est, pour qui, ses caractéristiques réelles…" />
       </Field>
       <button type="button" onClick={() => setMore((v) => !v)} className="justify-self-start text-sm font-medium text-ink-2 underline underline-offset-4">

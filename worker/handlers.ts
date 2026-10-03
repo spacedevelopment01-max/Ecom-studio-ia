@@ -1,6 +1,6 @@
 /** Gestionnaires des tâches d'arrière-plan. */
 import { all, json, now, one, run } from "../src/lib/db";
-import { JobContext, PermanentError, UserFacingError } from "../src/lib/jobs";
+import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
 import { runPipeline } from "../src/lib/engine/pipeline";
 import { generateImageSet, generateSingleImage } from "../src/lib/engine/images";
 import { produceVideo } from "../src/lib/engine/videos";
@@ -8,7 +8,7 @@ import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/sho
 import { createContentPlan, attachVideoToPlan, NETWORK_FORMATS } from "../src/lib/engine/calendar";
 import { buildBrand } from "../src/lib/engine/brand";
 import { loadProject, currentTheme, saveThemeVersion, themeVersion, listThemeVersions, remember, notify } from "../src/lib/projects";
-import { aiThemeChat, aiRewritePost, aiClassify, aiShopCopyChecked } from "../src/lib/ai/tasks";
+import { aiThemeChat, aiRewritePost, aiClassify, aiShopCopyChecked, aiRepairOps } from "../src/lib/ai/tasks";
 import { llmConfigured } from "../src/lib/ai/llm";
 import { applyOps, validateSpec, type ThemeOp } from "../src/lib/theme/ops";
 import { localThemeCommand } from "../src/lib/engine/local";
@@ -111,19 +111,38 @@ export const handlers: Record<string, Handler> = {
     } else if (ops.length) {
       const targeted = new Set<string>();
       if (selection) targeted.add(`${selection.template}:${selection.section}`);
-      const res = applyOps(cur.spec, ops, {
-        targeted,
-        mediaFile: (assetId) => {
-          const a = getAsset(assetId);
-          return a && a.project_id === projectId ? { filename: themeFileName(a, a.role ?? "media") } : null;
-        },
-      });
+      const mediaFile = (assetId: string) => {
+        const a = getAsset(assetId);
+        return a && a.project_id === projectId ? { filename: themeFileName(a, a.role ?? "media") } : null;
+      };
+      const res = applyOps(cur.spec, ops, { targeted, mediaFile });
+      let next = res.spec;
       applied = res.applied;
-      rejected = res.rejected.map((x) => ({ reason: x.reason }));
-      const problems = validateSpec(res.spec);
+      let refused = res.rejected;
+      // Auto-correction : l'IA reçoit les motifs exacts des refus et propose des opérations corrigées (une passe).
+      if (mode === "ai" && refused.length) {
+        try {
+          ctx.progress(0.8, "Correction des opérations refusées");
+          const fix = await ctx.step("repair", () => aiRepairOps({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:repair` }, p, next, { request: message, page: page || "index", rejected: refused }));
+          if (fix.ops.length) {
+            const again = applyOps(next, fix.ops, { targeted, mediaFile });
+            if (again.applied.length && !validateSpec(again.spec).length) {
+              next = again.spec;
+              applied = [...applied, ...again.applied];
+              refused = again.rejected;
+              ops = [...ops, ...fix.ops];
+            }
+          }
+        } catch (e) {
+          if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+          console.warn("[chat] auto-correction indisponible :", (e as Error).message);
+        }
+      }
+      rejected = refused.map((x) => ({ reason: x.reason }));
+      const problems = validateSpec(next);
       if (problems.length) throw new PermanentError(`La modification rendrait le thème invalide : ${problems.join(" ; ")}`);
-      if (res.applied.length) {
-        versionId = saveThemeVersion(projectId, res.spec, `${message.slice(0, 120)}`, mode === "ai" ? "ai" : "user", { applied: res.applied, rejected: res.rejected.map((x) => x.reason) }).id;
+      if (applied.length) {
+        versionId = saveThemeVersion(projectId, next, `${message.slice(0, 120)}`, mode === "ai" ? "ai" : "user", { applied, rejected: refused.map((x) => x.reason) }).id;
         for (const op of ops) if (op.op === "use_media") addUsage(op.assetId, "theme_section", `${op.template}:${op.section}`, "Section de boutique");
       }
     }

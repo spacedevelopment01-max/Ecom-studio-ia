@@ -20,7 +20,7 @@ export function ThemeGrid({ directions, current, onPick, busy }: { directions: D
               </div>
             </div>
             <div className="flex flex-1 flex-col p-4">
-              <p className="font-display text-xl font-semibold">{d.name} <span className="serif-i text-base font-normal text-muted">— {d.tagline}</span></p>
+              <p className="font-display text-xl font-semibold">{d.name} <span className="serif-i text-base font-normal text-muted">· {d.tagline}</span></p>
               <p className="mt-1.5 line-clamp-3 text-sm text-ink-2">{d.description}</p>
               <ul className="mt-3 flex flex-wrap gap-1.5">
                 {d.chrome.map((c) => <li key={c} className="rounded-full bg-paper-2 px-2.5 py-1 text-[11px] text-ink-2">{c}</li>)}
