@@ -25,6 +25,8 @@ export type LlmCall = {
   system: string;
   /** Contexte commun du projet (mémoire), placé avant la demande. */
   context?: string;
+  /** Référence stable d'une tâche (catalogue des sections, réglages…) : mise en cache avec le contexte. */
+  reference?: string;
   prompt: string;
   images?: LlmImage[];
   maxTokens?: number;
@@ -56,11 +58,14 @@ async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {
 
 async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
   const content: Anthropic.ContentBlockParam[] = [];
+  // Contexte du projet puis référence de la tâche en tête : identiques d'un appel à l'autre (corrections,
+  // contrôles, retouches successives), ils sont mis en cache — réponses plus rapides et moins coûteuses.
+  const stable = [call.context, call.reference].filter(Boolean) as string[];
+  stable.forEach((text, i) => content.push(i === stable.length - 1 ? { type: "text", text, cache_control: { type: "ephemeral" } } : { type: "text", text }));
   for (const [i, img] of (call.images ?? []).entries()) {
     content.push({ type: "text", text: `Image ${i + 1}${img.label ? ` — ${img.label}` : ""} :` });
     content.push(await imageBlock(img));
   }
-  if (call.context) content.push({ type: "text", text: call.context });
   content.push({ type: "text", text: call.prompt });
   return content;
 }
@@ -68,7 +73,7 @@ async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[
 function estimateMicro(call: LlmCall, model: string) {
   const p = priceFor("anthropic", model);
   if (!p || p.unit !== "tokens") return 0;
-  const inTok = (call.system.length + (call.context?.length ?? 0) + call.prompt.length) / 3.2 + (call.images?.length ?? 0) * 1600;
+  const inTok = (call.system.length + (call.context?.length ?? 0) + (call.reference?.length ?? 0) + call.prompt.length) / 3.2 + (call.images?.length ?? 0) * 1600;
   const outTok = Math.min(call.maxTokens ?? 16000, 6000);
   return Math.round(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * EUR);
 }

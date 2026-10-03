@@ -222,7 +222,9 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
   let feedback = "";
   let copy: ShopCopy | null = null;
   let remaining: string[] = [];
+  let rounds = 0;
   for (let round = 0; round < 3; round++) {
+    rounds = round + 1;
     onStep?.(round === 0 ? "Rédaction des textes de la boutique" : `Correction des textes (passe ${round + 1})`);
     copy = await aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, feedback || undefined);
     const lint = lintClaims(copy, p);
@@ -236,7 +238,7 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
     if (!blocking.length) break;
     feedback = blocking.join("\n");
   }
-  return { copy: copy!, qc: { rounds: 1, remaining } };
+  return { copy: copy!, qc: { rounds, remaining } };
 }
 
 // ---------------------------------------------------------------- thème
@@ -272,10 +274,9 @@ export async function aiDesignHome(b: Base, p: Project, spec: ThemeSpec) {
       usageKey: b.usageKey,
       system: SYSTEM.themeDesign,
       context: projectContext(p, "shop"),
+      reference: themeReference(spec),
       prompt: `Direction choisie : ${spec.direction}. Structure actuelle proposée par la direction :\n${outline(spec, ["index"])}
 Fichiers d'images disponibles (à utiliser dans les réglages *_asset) : ${Object.keys(spec.files).join(", ")}
-Catalogue des sections :\n${sectionCatalog(spec)}
-Schémas de couleurs : scheme-1 (fond principal), scheme-2 (surface douce), scheme-3 (contraste sombre), scheme-4 (accent).
 ${(spec.store.products?.length ?? 0) > 0 ? `Type de boutique : ${p.storeType === "niche" ? "niche (plusieurs produits d'un même univers)" : "multi-produit (catalogue varié)"} — ${(spec.store.products?.length ?? 0) + 1} produits, collections : ${(spec.store.collections ?? []).map((c) => `${c.title} (handle « ${c.handle} »)`).join(", ")}. Place une grille « featured-collection » (collection « all ») juste après l'ouverture et une « collection-list » (un bloc par collection, réglage collection = handle) ; les boutons mènent vers /collections/all.
 ` : ""}Compose la page d'accueil (« index ») : liste ordonnée de sections avec réglages et blocs, au niveau visuel décrit (héros immersif, mots d'accent, cartes lumineuses, texte qui s'allume, chiffres vérifiés). Reprends les textes rédigés de la structure actuelle et améliore le rythme si utile. Ajuste si besoin les réglages globaux dans « globals » (forme de l'en-tête, style des cartes produit, reflets, lueurs, arrondis, intensité des animations). Si une section sur mesure apporte une vraie valeur (ex. animation de présentation du produit), fournis-la dans « custom » (type commençant par es-custom-) et utilise son type dans la liste.`,
       maxTokens: 32000,
@@ -311,23 +312,100 @@ export async function aiThemeChat(
       usageKey: b.usageKey,
       system: SYSTEM.themeEdit,
       context: projectContext(p, "shop"),
+      reference: themeReference(spec, true),
       images: input.attachments.filter((a) => a.image).map((a) => ({ data: a.image!, label: `pièce jointe ${a.name} (identifiant ${a.assetId})` })),
       prompt: `Page affichée dans l'aperçu : ${input.page}
 Structure de la boutique (gabarits concernés) :\n${outline(spec, templates)}
 Autres gabarits : ${Object.keys(spec.templates).join(", ")}
-Réglages généraux disponibles (set_global) : ${globalSettingsCatalog()}
 Couleurs (set_scheme_color) : ${JSON.stringify(spec.settings.color_schemes)}
 Fichiers d'images du thème : ${Object.keys(spec.files).join(", ")}
 Pièces jointes du message (use_media avec assetId) : ${input.attachments.map((a) => `${a.name}=${a.assetId}`).join(", ") || "aucune"}
-Catalogue des sections :\n${sectionCatalog(spec)}
-Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value}, add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
-Le gabarit d'une section du groupe d'en-tête est « group:header », du pied de page « group:footer ».
 ${sel}
 Historique récent :\n${input.history.slice(-8).map((h) => `${h.role === "user" ? "Client" : "Studio"} : ${h.content.slice(0, 400)}`).join("\n")}
 Demande du client : <demande>${input.message}</demande>`,
       maxTokens: 32000,
     },
     ChatSchema,
+  );
+}
+
+const OPS_HELP = `Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value}, add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
+Le gabarit d'une section du groupe d'en-tête est « group:header », du pied de page « group:footer ».`;
+
+/** Référence stable du thème (mise en cache entre les appels) : sections, réglages, couleurs, opérations. */
+export function themeReference(spec: ThemeSpec, withOps = false): string {
+  return [
+    "<reference_theme>",
+    `Catalogue des sections :\n${sectionCatalog(spec)}`,
+    `Réglages généraux disponibles (set_global) : ${globalSettingsCatalog()}`,
+    "Schémas de couleurs : scheme-1 (fond principal), scheme-2 (surface douce), scheme-3 (contraste sombre), scheme-4 (accent).",
+    withOps ? OPS_HELP : "",
+    "</reference_theme>",
+  ].filter(Boolean).join("\n");
+}
+
+const RepairSchema = z.object({ reply: z.string(), ops: z.array(OpSchema) });
+
+/**
+ * Auto-correction : certaines opérations ont été refusées par la validation (réglage inexistant, option
+ * hors liste, section introuvable…). L'IA reçoit les motifs exacts et propose des opérations corrigées.
+ */
+export async function aiRepairOps(b: Base, p: Project, spec: ThemeSpec, input: { request: string; page: string; rejected: { op: ThemeOp; reason: string }[] }) {
+  return llmJson(
+    {
+      task: "theme_edit",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: SYSTEM.themeEdit,
+      context: projectContext(p, "shop"),
+      reference: themeReference(spec, true),
+      prompt: `Structure actuelle (après application des opérations acceptées) :\n${outline(spec, ["group:header", input.page, "group:footer"].filter((v, i, a) => a.indexOf(v) === i))}
+Demande du client : <demande>${input.request}</demande>
+Ces opérations ont été REFUSÉES par la validation :
+${input.rejected.map((r) => `- ${JSON.stringify(r.op).slice(0, 600)} → ${r.reason}`).join("\n")}
+Propose uniquement les opérations corrigées qui réalisent la partie manquante de la demande, en respectant exactement le catalogue (identifiants de sections existants, réglages et options autorisés). Si c'est impossible, ops vide et explique-le brièvement dans reply.`,
+      maxTokens: 16000,
+    },
+    RepairSchema,
+  );
+}
+
+const ReviewSchema = z.object({
+  score: z.number().min(0).max(10),
+  strengths: z.array(z.string()).max(5),
+  issues: z.array(z.object({ where: z.string(), problem: z.string(), severity: z.enum(["bloquant", "important", "mineur"]) })).max(12),
+  ops: z.array(OpSchema).max(14),
+});
+export type HomeReview = z.infer<typeof ReviewSchema>;
+
+/**
+ * Relecture visuelle : l'IA regarde la boutique rendue (ordinateur et téléphone), comme un directeur artistique,
+ * et corrige ce qui se voit (hiérarchie, contrastes, rythme, images mal cadrées, textes trop longs, répétitions).
+ */
+export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: { desktop: Buffer[]; mobile: Buffer[] }) {
+  return llmJson(
+    {
+      task: "theme_design",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: SYSTEM.themeReview,
+      context: projectContext(p, "shop"),
+      reference: themeReference(spec, true),
+      images: [
+        ...shots.desktop.map((data, i) => ({ data, label: `ordinateur (1440 px) — planche ${i + 1}/${shots.desktop.length}, la page se lit colonne par colonne de gauche à droite` })),
+        ...shots.mobile.map((data, i) => ({ data, label: `téléphone (390 px) — planche ${i + 1}/${shots.mobile.length}, colonnes de gauche à droite` })),
+      ],
+      prompt: `Direction : ${spec.direction}. Structure rendue sur les captures :\n${outline(spec, ["group:header", "index", "group:footer"])}
+Fichiers d'images du thème : ${Object.keys(spec.files).join(", ")}
+Captures prises en mode « animations réduites » : les vidéos y montrent leurs commandes de lecture et les effets d'apparition sont désactivés — ce n'est pas un défaut.
+Évalue la page (score sur 10), liste ses forces et ses défauts visibles, puis donne les opérations qui corrigent les défauts « bloquant » et « important ». Ne touche pas aux textes validés ni aux éléments verrouillés ; pas de refonte si le score est d'au moins 8.`,
+      maxTokens: 24000,
+    },
+    ReviewSchema,
   );
 }
 

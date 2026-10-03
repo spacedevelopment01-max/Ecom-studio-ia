@@ -14,7 +14,8 @@ import type { StoreProduct, ThemeSpec } from "../theme/spec";
 import { localCopy } from "./local-copy";
 import { catalogStore, ensureCatalogMedia } from "./catalog";
 import { assetsByRole, latestAsset } from "./images";
-import { aiDesignHome } from "../ai/tasks";
+import { aiDesignHome, aiReviewHome } from "../ai/tasks";
+import { snapshotTheme } from "../theme/snapshot";
 import { llmConfigured } from "../ai/llm";
 import type { JobContext } from "../jobs";
 
@@ -160,6 +161,24 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       }
     } catch (e) {
       console.warn("[shop] composition IA indisponible, direction conservée :", (e as Error).message);
+    }
+    // Relecture visuelle : l'IA regarde la boutique rendue (ordinateur et téléphone) et corrige ce qui se voit.
+    try {
+      ctx.progress(0.7, "Relecture visuelle de la boutique");
+      const review = await ctx.step(`review:${direction}`, async () => {
+        const shots = await snapshotTheme(spec);
+        return shots ? aiReviewHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:review:${direction}` }, p, spec, shots) : null;
+      });
+      if (review?.ops.length) {
+        const r = applyOps(spec, review.ops);
+        if (r.applied.length && !validateSpec(r.spec).length) {
+          spec = r.spec;
+          author = "ai";
+          summary += ` · relue sur captures (${review.score}/10, ${r.applied.length} correction${r.applied.length > 1 ? "s" : ""})`;
+        }
+      } else if (review) summary += ` · relue sur captures (${review.score}/10)`;
+    } catch (e) {
+      console.warn("[shop] relecture visuelle indisponible :", (e as Error).message);
     }
   }
   const problems = validateSpec(spec);

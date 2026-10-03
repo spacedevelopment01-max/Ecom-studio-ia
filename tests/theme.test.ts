@@ -103,3 +103,15 @@ describe("icônes", () => {
     expect(elseAt).toBeGreaterThan(lastWhen);
   });
 });
+
+describe("référence de thème pour l'IA", () => {
+  it("est stable d'un appel à l'autre (mise en cache) et décrit sections, réglages et opérations", async () => {
+    const { themeReference } = await import("@/lib/ai/tasks");
+    const a = themeReference(sampleSpec("atelier"), true);
+    const b = themeReference(sampleSpec("atelier"), true);
+    expect(a).toBe(b);
+    expect(a).toContain("hero-fullbleed");
+    expect(a).toContain("set_global");
+    expect(themeReference(sampleSpec("atelier"))).not.toContain("Opérations :");
+  });
+});
