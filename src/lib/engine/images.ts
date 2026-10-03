@@ -235,12 +235,18 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     }
   }
 
+  // Bannière publicitaire 16:9 de niveau agence (texte, produit, informations confirmées).
+  const proBanner = async () => {
+    const r = await renderProCreatives({ product: cutBuf, palette: pal, typo: brandTypo(project), brand: project.brand?.name ?? project.name, headline: project.brand?.tagline || project.product.name || project.name, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: "Découvrir" }, [{ template: "signature", format: "landscape" }]).catch(() => null);
+    return r?.length ? [await save(r[0].jpg, `${base}-banniere-publicite-16x9.jpg`, "banner", "images.banners", { recipe: "Bannière publicitaire 16:9 (mise en page agence)" })] : [];
+  };
   if (opts.banner !== false) {
     await ctx.step("banner", async () => {
       ctx.progress(0.75, "Bannières de boutique");
       return [
         await save(await renderBanner(product, pal, "studio", FORMATS.banner, 21), `${base}-banniere-studio.jpg`, "banner", "images.banners", { recipe: "Bannière 2:1 sans texte (textes dans le thème)" }),
         await save(await renderBanner(product, pal, "color", FORMATS.landscape, 22), `${base}-banniere-couleur.jpg`, "banner", "images.banners", { recipe: "Bannière 16:9 fond de marque" }),
+        ...(await proBanner()),
       ];
     });
   }
@@ -300,7 +306,12 @@ function confirmedFacts(p: Project): string[] {
   }
   for (const v of p.product.variants ?? []) if (v.values.length > 1) out.push(`${v.values.length} ${v.name.toLowerCase()}${/[sx]$/.test(v.name) ? "" : "s"} au choix`);
   // Peu d'informations confirmées : le nom du produit sert de repère (jamais d'argument inventé).
-  if (out.length < 2 && p.product.name && p.product.name.length <= 28) out.unshift(p.product.name);
+  if (out.length < 2 && p.product.name) {
+    // Nom long : les premiers mots, sans couper un mot.
+    let short = "";
+    for (const w of p.product.name.split(/\s+/)) if ((short + " " + w).trim().length <= 26) short = (short + " " + w).trim(); else break;
+    if (short) out.unshift(short.replace(/\s+(à|de|du|des|et|en|pour|avec)$/i, ""));
+  }
   return [...new Set(out)].slice(0, 3);
 }
 

@@ -345,7 +345,7 @@ export default async function Home() {
         {d0 && (
           <section className="mx-auto grid max-w-7xl items-center gap-12 px-4 pb-24 sm:px-6 sm:pb-32 lg:grid-cols-2">
             <div className="reveal reveal-scale">
-              <BeforeAfter before={d0.photo} after={d0.images.find((x) => /scène|scene/i.test(x.label))?.src ?? d0.photo} beforeLabel="Photo d'origine" afterLabel="Création du studio" />
+              <BeforeAfter before={d0.photo} after={d0.images.find((x) => /social/i.test(x.label))?.src ?? d0.images.find((x) => /scène|scene/i.test(x.label))?.src ?? d0.photo} beforeLabel="Photo d'origine" afterLabel="Création du studio" />
             </div>
             <div>
               <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Fidélité au produit</p>
