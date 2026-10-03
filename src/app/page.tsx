@@ -3,6 +3,7 @@ import path from "node:path";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check, Camera, Link2, Type, Sparkles, Store, Image as ImageIcon, Film, CalendarDays, FolderTree, BookOpen, Plug, ShieldCheck, MessageSquare, Pause, Palette, Lock } from "lucide-react";
 import { Logo, ThemeToggle } from "@/components/ui";
+import { SiteFooter } from "@/components/site-footer";
 import { AutoVideo, BeforeAfter, FilmPlayer, DemoTabs, RevealObserver, ScrollFX, ThemeShowcase, VideoChapters, type Demo } from "@/components/landing-client";
 import { directionCards } from "@/lib/theme/directions";
 import { OFFER } from "@/lib/billing";
@@ -148,7 +149,6 @@ export default async function Home() {
                   <FilmPlayer
                     films={[
                       { label: "Comment ça marche · 1 min", src: "/explainers/film-court.mp4", poster: "/explainers/film-court.jpg", description: "Film explicatif sans voix : de la photo à la publication en 7 étapes" },
-                      { label: "Version commentée · 1 min", src: "/explainers/film.mp4", poster: "/explainers/film.jpg", captions: "/explainers/film.vtt", description: "Film de présentation commenté (voix off et sous-titres)" },
                     ]}
                   />
                 </div>
@@ -496,12 +496,7 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-10 text-sm text-muted sm:px-6">
-          <Logo />
-          <p>Démonstrations : produits réels de fournisseurs, marques créées par le studio. © {new Date().getFullYear()} E-COM STUDIO IA</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
