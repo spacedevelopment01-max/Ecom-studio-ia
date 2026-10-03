@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-03T12:33:54.166Z",
-  "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (marques d'origine retirées).",
+  "generatedAt": "2026-10-03T13:06:27.316Z",
+  "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
     {
       "id": "oreiller",
@@ -9,9 +9,9 @@
       "sector": "Maison",
       "direction": "clinique",
       "palette": [
-        "#454A73",
+        "#454873",
         "#D3D4D9",
-        "#8B74B4",
+        "#8D74B4",
         "#F2F3F7",
         "#14151F"
       ],
@@ -198,11 +198,11 @@
       "sector": "Animaux",
       "direction": "pop",
       "palette": [
-        "#734573",
-        "#D7D5D7",
-        "#B47496",
-        "#F7F2F7",
-        "#1F141F"
+        "#454573",
+        "#D6D6D7",
+        "#9274B4",
+        "#F2F2F7",
+        "#14141F"
       ],
       "photo": "/demo/chat/photo.jpg",
       "logo": "/demo/chat/logo.svg",
