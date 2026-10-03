@@ -1,7 +1,70 @@
 {
-  "generatedAt": "2026-10-03T12:33:54.166Z",
-  "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (marques d'origine retirées).",
+  "generatedAt": "2026-10-03T12:50:55.914Z",
+  "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
+    {
+      "id": "chat",
+      "brand": "Ronron",
+      "product": "Gant anti-poils",
+      "sector": "Animaux",
+      "direction": "pop",
+      "palette": [
+        "#454573",
+        "#D6D6D7",
+        "#9274B4",
+        "#F2F2F7",
+        "#14141F"
+      ],
+      "photo": "/demo/chat/photo.jpg",
+      "logo": "/demo/chat/logo.svg",
+      "shopDesktop": "/demo/chat/boutique-bureau.jpg",
+      "shopMobile": "/demo/chat/boutique-mobile.jpg",
+      "productPage": "/demo/chat/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/chat/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/chat/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/chat/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/chat/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/chat/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/chat/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/chat/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/chat/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/chat/video.mp4",
+      "videoPoster": "/demo/chat/video-poster.jpg",
+      "shopVideo": "/demo/chat/video-boutique.mp4",
+      "storeType": "niche",
+      "products": 2,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio."
+      }
+    },
     {
       "id": "oreiller",
       "brand": "Somnéa",
@@ -189,69 +252,6 @@
         "supplier": "AliExpress",
         "url": "https://fr.aliexpress.com/",
         "note": "Drone pliable en marque blanche d'un fournisseur ; les inscriptions du fabricant ont été retirées de la photo, la marque et la boutique sont créées par le studio."
-      }
-    },
-    {
-      "id": "chat",
-      "brand": "Ronron",
-      "product": "Gant anti-poils",
-      "sector": "Animaux",
-      "direction": "pop",
-      "palette": [
-        "#734573",
-        "#D7D5D7",
-        "#B47496",
-        "#F7F2F7",
-        "#1F141F"
-      ],
-      "photo": "/demo/chat/photo.jpg",
-      "logo": "/demo/chat/logo.svg",
-      "shopDesktop": "/demo/chat/boutique-bureau.jpg",
-      "shopMobile": "/demo/chat/boutique-mobile.jpg",
-      "productPage": "/demo/chat/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/chat/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/chat/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/chat/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/chat/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/chat/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/chat/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/chat/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/chat/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/chat/video.mp4",
-      "videoPoster": "/demo/chat/video-poster.jpg",
-      "shopVideo": "/demo/chat/video-boutique.mp4",
-      "storeType": "niche",
-      "products": 2,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio."
       }
     },
     {
