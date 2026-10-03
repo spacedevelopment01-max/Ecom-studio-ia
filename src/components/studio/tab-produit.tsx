@@ -157,9 +157,89 @@ export default function TabProduit() {
               Réanalyser tout le projet
             </Button>
           </Card>
+          <VariantsCard />
         </div>
       </div>
       <CatalogPanel />
     </div>
+  );
+}
+
+/** Variante du produit (ex. coloris) et photo de chaque valeur, montrée quand le client la choisit. */
+function VariantsCard() {
+  const { id, data, reload } = useProject();
+  const toast = useToast();
+  const v = data?.product.variants[0];
+  const [label, setLabel] = useState(v?.name ?? "");
+  const [values, setValues] = useState(v?.values.join(", ") ?? "");
+  const [busy, setBusy] = useState(false);
+  const [target, setTarget] = useState<string | null>(null);
+  const file = useRef<HTMLInputElement>(null);
+  const { data: photos, reload: reloadPhotos } = useApi<{ photos: { id: string; variant: string; url: string }[] }>(`/api/projects/${id}/product/variant-photo`);
+  useEffect(() => {
+    setLabel(v?.name ?? "");
+    setValues(v?.values.join(", ") ?? "");
+  }, [v?.name, v?.values.join("|")]);
+  const list = (v?.values ?? []).filter(Boolean);
+  async function save() {
+    setBusy(true);
+    try {
+      const vals = values.split(",").map((x) => x.trim()).filter(Boolean);
+      await api(`/api/projects/${id}/product`, { method: "PATCH", body: { variants: vals.length && label.trim() ? [{ name: label.trim(), values: vals }] : [] } });
+      toast("ok", "Variantes enregistrées. Reconstruisez la boutique pour les voir dans l'aperçu.");
+      reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Card className="p-5">
+      <h3 className="font-display text-lg font-semibold">Variantes</h3>
+      <p className="mt-1 text-xs text-muted">Ex. « Coloris » : Bleu, Vert. Ajoutez la photo de chaque valeur : elle s'affiche quand l'acheteur la choisit.</p>
+      <div className="mt-3 grid gap-2">
+        <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Nom (ex. Coloris, Taille)" className="h-9 text-sm" aria-label="Nom de la variante" />
+        <Input value={values} onChange={(e) => setValues(e.target.value)} placeholder="Valeurs séparées par des virgules" className="h-9 text-sm" aria-label="Valeurs" />
+        <Button size="sm" onClick={save} loading={busy}>Enregistrer les variantes</Button>
+      </div>
+      {list.length > 0 && (
+        <ul className="mt-4 grid gap-2">
+          {list.map((val) => {
+            const ph = photos?.photos.find((x) => x.variant.toLowerCase() === val.toLowerCase());
+            return (
+              <li key={val} className="flex items-center gap-3 rounded-xl border border-line p-2">
+                <span className={cx("grid size-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-paper-2", !ph && "text-[10px] text-muted")}>
+                  {ph ? <img src={ph.url} alt={`Photo ${val}`} className="size-full object-cover" /> : "—"}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm">{val}</span>
+                <Button size="sm" variant="secondary" icon={<ImagePlus className="size-4" />} onClick={() => (setTarget(val), file.current?.click())}>{ph ? "Changer" : "Photo"}</Button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <input
+        ref={file}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={async (e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (!f || !target) return;
+          const fd = new FormData();
+          fd.append("value", target);
+          fd.append("photo", f);
+          try {
+            await api(`/api/projects/${id}/product/variant-photo`, { form: fd });
+            toast("ok", `Photo « ${target} » ajoutée : elle sera détourée à la prochaine construction de la boutique.`);
+            reloadPhotos();
+          } catch (err) {
+            toast("bad", (err as Error).message);
+          }
+        }}
+      />
+    </Card>
   );
 }

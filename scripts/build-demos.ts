@@ -24,6 +24,8 @@ type DemoDef = {
   catalog?: CatalogDemo[];
   /** Produit réel : provenance affichée sur la page d'accueil. */
   source?: { supplier: string; url: string; note: string };
+  /** Variante (ex. coloris) : valeurs et photo de chaque valeur autre que celle de la photo principale. */
+  variants?: { name: string; values: string[]; photos?: Record<string, string> };
 };
 
 const REAL = path.join(process.cwd(), "scripts", "demo-products", "inputs");
@@ -39,6 +41,31 @@ const REAL_DEMOS: DemoDef[] = [
       { name: "Thé glacé Fruits rouges", category: "Thés glacés", price: "2,40", description: "Thé glacé aux fruits rouges en canette de 33 cl.", photo: path.join(REAL, "boissons", "canette-fruits-rouges.png") },
     ],
     source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio." },
+  },
+  {
+    id: "oreiller", sector: "Maison", direction: "clinique", category: "Sommeil",
+    productName: "Oreiller ergonomique Papillon", brandName: "Somnéa", price: "39,90 €",
+    description: "Oreiller ergonomique en forme de papillon. Deux côtés de hauteurs différentes (un côté bas, un côté haut), un creux central pour la tête et des ailes latérales pour dormir sur le côté. Housse respirante. Coloris : bleu ardoise ou vert sauge.",
+    photo: path.join(REAL, "maison", "oreiller-bleu.jpg"),
+    variants: { name: "Coloris", values: ["Bleu ardoise", "Vert sauge"], photos: { "Vert sauge": path.join(REAL, "maison", "oreiller-vert.jpg") } },
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio." },
+  },
+  {
+    id: "drone", sector: "High-tech", direction: "nocturne", category: "Drones",
+    productName: "Drone pliable à caméra stabilisée", brandName: "Ostral", price: "149 €",
+    description: "Drone pliable avec caméra stabilisée. Selon la fiche du fournisseur : 246 g, retour au point de départ par GPS, maintien en vol par flux optique, évitement d'obstacles, moteurs sans balais, radiocommande avec écran intégré.",
+    photo: path.join(REAL, "hightech", "drone-vol.jpg"),
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Drone pliable en marque blanche d'un fournisseur ; le nom du modèle a été retiré de la photo, la marque et la boutique sont créées par le studio." },
+  },
+  {
+    id: "chat", sector: "Animaux", direction: "pop", storeType: "niche", category: "Toilettage",
+    productName: "Gant anti-poils", brandName: "Ronron", price: "12,90 €",
+    description: "Gant double face pour retirer les poils de chat des canapés, vêtements et coussins. Dos en maille avec dragonne, face en tissu qui accroche les poils. Dimensions : 20 × 15 cm.",
+    photo: path.join(REAL, "animaux", "gant-anti-poils.jpg"),
+    catalog: [
+      { name: "Protège-canapé anti-griffures", category: "Maison", price: "19,90", description: "Revêtement en rouleau à découper puis coller sur les zones griffées (canapé, mur, porte) : le chat y fait ses griffes sans abîmer le meuble.", features: ["Se découpe aux ciseaux", "Dos adhésif"], photo: path.join(REAL, "animaux", "protege-canape.jpg") },
+    ],
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio." },
   },
 ];
 
@@ -155,6 +182,14 @@ for (const p of PRODUCTS) {
       if (!r.ok()) throw new Error(await r.text());
     }
   }
+  // Variante (coloris…) : valeurs du produit, puis photo de chaque valeur.
+  if (p.variants) {
+    await api(ctx, `/api/projects/${pid}/product`, { method: "PATCH", body: { variants: [{ name: p.variants.name, values: p.variants.values }] } });
+    for (const [value, file] of Object.entries(p.variants.photos ?? {})) {
+      const r = await ctx.request.post(`${BASE}/api/projects/${pid}/product/variant-photo`, { multipart: { value, photo: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
+      if (!r.ok()) throw new Error(await r.text());
+    }
+  }
   // Chaque démonstration montre une direction différente.
   await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
   ov = await waitIdle(ctx, pid);
@@ -222,7 +257,9 @@ for (const p of PRODUCTS) {
 // Toutes les directions de boutique, appliquées au premier produit (sauf régénération partielle).
 if (!process.env.ONLY) await shootDirections(firstProject!.pid);
 
-const merged = process.env.ONLY ? [...demos, ...previous.filter((d: any) => !demos.some((x) => x.id === d.id))] : demos;
+// DROP=<id,…> : démonstrations retirées (produits 3D remplacés par des produits réels).
+const drop = (process.env.DROP ?? "").split(",").filter(Boolean);
+const merged = (process.env.ONLY ? [...demos, ...previous.filter((d: any) => !demos.some((x) => x.id === d.id))] : demos).filter((d: any) => !drop.includes(d.id));
 fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Marques créées par E-COM STUDIO IA (moteur intégré). Les démonstrations « produit réel » partent de photos de fournisseurs ; les autres de rendus 3D.", demos: merged }, null, 2));
 console.log(`✓ ${demos.length} démonstrations → public/demo`);
 await browser.close();

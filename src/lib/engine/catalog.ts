@@ -4,7 +4,7 @@
  * pixels réels de sa photo. Le catalogue alimente les fiches produits et les collections du thème.
  */
 import { loadImage } from "@napi-rs/canvas";
-import { one } from "../db";
+import { all, one } from "../db";
 import { assetData, getAsset, saveAsset, type Asset } from "../library";
 import { loadProject, saveCatalog, type Project } from "../projects";
 import { cutoutProduct, extractPalette } from "../media/cutout";
@@ -100,4 +100,44 @@ export function upsertCatalogItem(projectId: string, item: CatalogItem) {
   const list = p.catalog.some((i) => i.key === item.key) ? p.catalog.map((i) => (i.key === item.key ? item : i)) : [...p.catalog, item];
   saveCatalog(projectId, list);
   return list;
+}
+
+// ---------------------------------------------------------------- photos par variante
+
+/** Photo d'une valeur de variante (ex. coloris « Vert sauge ») : détourée puis mise en packshot comme le produit. */
+export async function ensureVariantMedia(ctx: JobContext | null, projectId: string) {
+  const p = loadProject(projectId);
+  const originals = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'variant-original' AND deleted_at IS NULL ORDER BY created_at", projectId);
+  for (const original of originals) {
+    const value = (JSON.parse(original.meta || "{}") as { variant?: string }).variant ?? "";
+    let cut = derived(projectId, "variant-cutout", original.id);
+    if (!cut) {
+      ctx?.progress(0.1, `Détourage : ${value}`);
+      const c = await cutoutProduct(assetData(original));
+      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(value)}-detoure.png`, mime: "image/png", role: "variant-cutout", folderKey: "product.cutouts", origin: "generated", sourceAssetId: original.id, meta: { variant: value, colors: await extractPalette(c.png), method: c.method } });
+    }
+    if (!derived(projectId, "variant-packshot", cut.id)) {
+      ctx?.progress(0.15, `Packshot : ${value}`);
+      const jpg = await renderPackshot(await loadImage(assetData(cut)), { background: palette(p).light });
+      await saveAsset({ projectId, userId: p.userId, data: Buffer.from(jpg), name: `${slug(value)}-packshot.jpg`, mime: "image/jpeg", role: "variant-packshot", folderKey: "images.packshots", origin: "generated", sourceAssetId: cut.id, meta: { variant: value, recipe: "Packshot fond de marque, ombre de contact", fidelity: "pixels d'origine du produit" } });
+    }
+  }
+}
+
+/** Associe à chaque variante du produit principal la photo de sa valeur (packshot, sinon photo d'origine). */
+export function attachVariantMedia(projectId: string, product: StoreProduct, files: Record<string, string>, fileName: (a: Asset, hint: string) => string) {
+  const originals = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'variant-original' AND deleted_at IS NULL ORDER BY created_at DESC", projectId);
+  const norm = (s: string) => s.trim().toLowerCase();
+  for (const v of product.variants) {
+    const value = v.options[0];
+    const original = originals.find((o) => norm((JSON.parse(o.meta || "{}") as { variant?: string }).variant ?? "") === norm(value ?? ""));
+    if (!original) continue;
+    const cut = derived(projectId, "variant-cutout", original.id);
+    const asset = (cut && derived(projectId, "variant-packshot", cut.id)) || original;
+    const f = fileName(asset, `variante-${slug(value)}`);
+    files[f] = asset.id;
+    if (!product.images.includes(f)) product.images.push(f);
+    v.image = f;
+  }
+  // La variante par défaut garde la première image de la galerie.
 }

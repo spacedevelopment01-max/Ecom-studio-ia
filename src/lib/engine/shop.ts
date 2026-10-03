@@ -12,7 +12,7 @@ import type { ShopCopy } from "../theme/copy";
 import { applyOps, validateSpec, type ThemeOp } from "../theme/ops";
 import type { StoreProduct, ThemeSpec } from "../theme/spec";
 import { localCopy } from "./local-copy";
-import { catalogStore, ensureCatalogMedia } from "./catalog";
+import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedia } from "./catalog";
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
@@ -115,8 +115,10 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   const brand = p.brand;
   if (!brand) throw new Error("La marque doit être définie avant la boutique.");
   const copy = savedCopy(projectId) ?? localCopy(p.product, brand);
+  await ensureVariantMedia(ctx, projectId);
   const { slots, files, gallery } = collectImages(projectId);
   const main = storeProduct(p, copy, gallery);
+  attachVariantMedia(projectId, main, files, themeFileName);
   // Boutique multi-produit ou niche : les autres produits sont détourés, mis en packshot et rangés en collections.
   let catalog: ReturnType<typeof catalogStore> | null = null;
   if (p.storeType !== "mono" && p.catalog.length) {
