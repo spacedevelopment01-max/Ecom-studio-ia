@@ -53,14 +53,35 @@ async function shot(ctx: BrowserContext, url: string, dest: string, viewport: { 
   await page.setViewportSize(viewport);
   await page.goto(`${BASE}${url}`, { waitUntil: "networkidle" });
   await page.addStyleTag({ content: ".es-pv-bar{display:none!important}" });
+  await page.evaluate(async () => { for (let y = 0; y < 2400; y += 400) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } window.scrollTo(0, 0); });
   await page.waitForTimeout(1200);
-  const png = await page.screenshot({ clip: { x: 0, y: 0, width: viewport.width, height: clipH ?? viewport.height } });
+  // Capture plus haute que l'écran : page entière recadrée (le héros garde sa hauteur d'écran réelle).
+  const full = await page.screenshot({ fullPage: !!clipH && clipH > viewport.height });
+  const png = await sharp(full).extract({ left: 0, top: 0, width: viewport.width, height: Math.min(clipH ?? viewport.height, (await sharp(full).metadata()).height!) }).toBuffer();
   await sharp(png).resize({ width: Math.min(viewport.width, 1200) }).jpeg({ quality: 82, mozjpeg: true }).toFile(dest);
   await page.close();
 }
 
+const ONLY_DIRECTIONS = process.env.ONLY_DIRECTIONS; // identifiant d'un projet existant : ne refait que les vignettes
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const ctx = await browser.newContext({ reducedMotion: "reduce" });
+async function shootDirections(pid: string) {
+  const { DIRECTIONS } = await import("../src/lib/theme/directions");
+  fs.mkdirSync(path.join(OUT, "directions"), { recursive: true });
+  for (const d of DIRECTIONS) {
+    await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: d.id } });
+    await waitIdle(ctx, pid);
+    const theme = await api(ctx, `/api/projects/${pid}/theme`);
+    await shot(ctx, `/preview/${pid}/v/${theme.current.versionId}/`, path.join(OUT, "directions", `${d.id}.jpg`), { width: 1280, height: 860 }, 1600);
+    console.log(`  direction ${d.id} ✓`);
+  }
+}
+if (ONLY_DIRECTIONS) {
+  await api(ctx, "/api/auth/login", { body: { email: process.env.EMAIL, password: PASSWORD } });
+  await shootDirections(ONLY_DIRECTIONS);
+  await browser.close();
+  process.exit(0);
+}
 const email = `demo-${Date.now()}@ecom-studio.local`;
 await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: "Démonstrations" } });
 // Le compte de démonstration a besoin de plusieurs boutiques : activation manuelle locale.
@@ -149,16 +170,8 @@ for (const p of PRODUCTS) {
   });
 }
 
-// Les 8 directions de boutique, appliquées au premier produit.
-const { DIRECTIONS } = await import("../src/lib/theme/directions");
-const pid = firstProject!.pid;
-for (const d of DIRECTIONS) {
-  await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: d.id } });
-  await waitIdle(ctx, pid);
-  const theme = await api(ctx, `/api/projects/${pid}/theme`);
-  await shot(ctx, `/preview/${pid}/v/${theme.current.versionId}/`, path.join(OUT, "directions", `${d.id}.jpg`), { width: 1280, height: 1600 });
-  console.log(`  direction ${d.id} ✓`);
-}
+// Toutes les directions de boutique, appliquées au premier produit.
+await shootDirections(firstProject!.pid);
 
 fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Produits, marques et contenus fictifs générés par E-COM STUDIO IA (moteur intégré) à partir de rendus 3D.", demos }, null, 2));
 console.log(`✓ ${demos.length} démonstrations → public/demo`);
