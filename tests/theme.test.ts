@@ -159,3 +159,11 @@ describe("commandes locales de fiche produit", () => {
     expect(html).toContain("bundles");
   });
 });
+
+describe("accroche du héros", () => {
+  it("coupe à la fin d'une proposition plutôt qu'au milieu d'une phrase", async () => {
+    const { heroLead } = await import("@/lib/engine/local-copy");
+    expect(heroLead("T-shirt de supporter bleu marine, inscription FRANCE et numéro 10, brins de lavande brodés en ton sur ton dans le dos et sur les manches")).toBe("T-shirt de supporter bleu marine, inscription FRANCE et numéro 10.");
+    expect(heroLead("Court et clair.")).toBe("Court et clair.");
+  });
+});

@@ -58,7 +58,7 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
   const summary = product.summary || visualLine || `${name}, présenté par ${brand.name}.`;
   // Accroche du héros : première phrase, coupée proprement (le résumé complet reste dans la fiche).
   const firstSentence = summary.split(/(?<=[.!?])\s/)[0];
-  const lead = firstSentence.length <= 110 ? firstSentence : `${firstSentence.slice(0, 110).replace(/[\s,;:]+\S*$/, "")}…`;
+  const lead = heroLead(firstSentence);
 
   const featureFacts = facts.filter((f) => !["price", "name"].includes(f.key)).slice(0, 4);
   const icons = ["sparkle", "leaf", "hand", "shield"] as const;
@@ -133,4 +133,14 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
     contact: { heading: "Écrivez-nous", text: "Une question sur une commande ou un produit ? Nous vous répondons." },
     footer: { about: brand.tagline || summary.slice(0, 120), newsletter: "Nouveautés et coulisses, sans excès." },
   };
+}
+
+/** Phrase courte pour le héros : s'arrête de préférence à la fin d'une proposition (virgule), sans points de suspension. */
+export function heroLead(sentence: string, max = 110): string {
+  const s = sentence.trim();
+  if (s.length <= max) return s;
+  const head = s.slice(0, max + 1);
+  const clause = Math.max(head.lastIndexOf(","), head.lastIndexOf(";"), head.lastIndexOf(" – "), head.lastIndexOf(" — "));
+  if (clause >= 40) return `${s.slice(0, clause).replace(/\s+$/, "")}.`;
+  return `${head.replace(/[\s,;:]+\S*$/, "")}…`;
 }
