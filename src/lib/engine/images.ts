@@ -317,8 +317,10 @@ function confirmedFacts(p: Project): string[] {
 
 /** Mot court pour le filigrane : dernier mot distinctif du nom (saveur, modèle), sinon la marque. */
 function keywordFor(p: Project): string {
-  const words = (p.product.name || "").split(/\s+/).filter((w) => w.length >= 3 && w.length <= 10);
-  return words.at(-1) ?? p.brand?.name ?? "";
+  const all = (p.product.name || "").split(/\s+/).filter(Boolean);
+  // Nom court (« Thé glacé Pêche ») : son dernier mot ; nom descriptif long : la marque.
+  const last = all.at(-1) ?? "";
+  return all.length <= 3 && last.length >= 3 && last.length <= 10 ? last : p.brand?.name ?? last;
 }
 
 /** Génère une image unique à la demande (studio Images). */
