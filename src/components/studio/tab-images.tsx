@@ -68,10 +68,10 @@ export default function TabImages() {
   };
   const textual = form.kind === "social" || form.kind === "ad";
   return (
-    <div className="mx-auto grid max-w-7xl gap-6">
+    <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6">
       <EngineNotice what="les décors (studio, podium, arche, lumière de fenêtre…)" />
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
-      <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <Card className="h-max p-5 lg:sticky lg:top-24">
           <h2 className="font-display text-xl font-semibold">Créer</h2>
           <p className="mt-1 text-xs text-muted">Le produit est toujours composé à partir de ses pixels réels ; les textes sont ajoutés typographiquement.</p>
@@ -116,7 +116,7 @@ export default function TabImages() {
               </div>
             )}
             <Button onClick={() => create("single")} icon={<Wand2 className="size-4" />}>Créer l'image</Button>
-            <Button variant="secondary" onClick={() => create("set")} icon={<Sparkles className="size-4" />}>Jeu complet (packshots, détails, scènes, bannières, réseaux)</Button>
+            <Button variant="secondary" className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>Jeu complet (packshots, détails, scènes, bannières, réseaux)</Button>
           </div>
         </Card>
         <div>

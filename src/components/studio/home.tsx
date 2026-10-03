@@ -2,12 +2,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowRight, Camera, ImagePlus, Link2, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
+import { ArrowRight, Camera, ImagePlus, Link2, Palette, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
 
-export function NewProject({ onDone, compact }: { onDone?: (id: string) => void; compact?: boolean }) {
+/** Formulaire de départ. Sans « projectId » : crée un projet ; avec : démarre la création d'un projet existant. */
+export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number }) {
   const toast = useToast();
   const router = useRouter();
   const [photos, setPhotos] = useState<File[]>([]);
@@ -15,6 +16,8 @@ export function NewProject({ onDone, compact }: { onDone?: (id: string) => void;
   const [more, setMore] = useState(false);
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
+  const [typed, setTyped] = useState(false);
+  const hasInput = photos.length > 0 || typed;
   const input = useRef<HTMLInputElement>(null);
   const addFiles = (list: FileList | null) => {
     if (!list) return;
@@ -29,8 +32,15 @@ export function NewProject({ onDone, compact }: { onDone?: (id: string) => void;
     photos.forEach((p) => fd.append("photos", p));
     setBusy(true);
     try {
-      const r = await api<{ id: string }>("/api/projects", { form: fd });
-      toast("ok", "Projet créé : le studio se met au travail.");
+      if (projectId) {
+        await api(`/api/projects/${projectId}/start`, { form: fd });
+        toast("ok", "C'est parti : le studio se met au travail.");
+        onDone?.(projectId);
+        setBusy(false);
+        return;
+      }
+      const r = await api<{ id: string; started: boolean }>("/api/projects", { form: fd });
+      toast("ok", r.started ? "Projet créé : le studio se met au travail." : "Projet créé. Ajoutez votre produit quand vous voulez depuis le Pilote ou l'onglet Produit.");
       onDone?.(r.id);
       router.push(`/studio/${r.id}/pilote`);
     } catch (err) {
@@ -39,7 +49,16 @@ export function NewProject({ onDone, compact }: { onDone?: (id: string) => void;
     }
   }
   return (
-    <form onSubmit={submit} className="grid gap-5">
+    <form
+      onSubmit={submit}
+      onInput={(e) => {
+        const f = e.currentTarget;
+        const link = (f.elements.namedItem("link") as HTMLInputElement | null)?.value ?? "";
+        const desc = (f.elements.namedItem("description") as HTMLTextAreaElement | null)?.value ?? "";
+        setTyped(!!link.trim() || desc.trim().length > 10);
+      }}
+      className="grid gap-5"
+    >
       <div role="tablist" aria-label="Point de départ" className="flex flex-wrap gap-2">
         {[
           ["photo", Camera, "Photo(s)"],
@@ -101,6 +120,7 @@ export function NewProject({ onDone, compact }: { onDone?: (id: string) => void;
           <Field label="Nom du produit" htmlFor="productName"><Input id="productName" name="productName" /></Field>
           <Field label="Nom de marque (si vous en avez un)" htmlFor="brandName"><Input id="brandName" name="brandName" /></Field>
           <Field label="Prix de vente TTC" htmlFor="price"><Input id="price" name="price" placeholder="ex. 34,90 €" /></Field>
+{!projectId && (
           <Field label="Plateforme de la boutique" htmlFor="platform">
             <Select id="platform" name="platform" defaultValue="shopify">
               <option value="shopify">Shopify (thème installable)</option>
@@ -110,6 +130,7 @@ export function NewProject({ onDone, compact }: { onDone?: (id: string) => void;
               <option value="squarespace">Squarespace (kit de reprise)</option>
             </Select>
           </Field>
+          )}
           <Field label="Votre logo (facultatif)" htmlFor="logo" hint="S'il est fourni, il est conservé tel quel."><Input id="logo" name="logo" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="pt-2.5" /></Field>
           <Field label="Mode de travail" htmlFor="mode">
             <Select id="mode" name="mode" defaultValue="autopilot">
@@ -119,9 +140,13 @@ export function NewProject({ onDone, compact }: { onDone?: (id: string) => void;
           </Field>
         </div>
       )}
-      <Button type="submit" variant="signal" size="lg" loading={busy} className="justify-self-start">
-        Lancer la création <ArrowRight className="size-4" />
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button type="submit" variant="signal" size="lg" loading={busy} disabled={!!projectId && !hasInput && !existingPhotos}>
+          {hasInput || projectId ? "Lancer la création" : "Ouvrir le studio"} <ArrowRight className="size-4" />
+        </Button>
+        {!!projectId && !hasInput && existingPhotos > 0 && <p className="text-sm text-muted">{existingPhotos} photo(s) déjà ajoutée(s) dans l'onglet Produit seront utilisées.</p>}
+        {!projectId && !hasInput && <p className="text-sm text-muted">Pas encore de photo ? Le projet est créé vide : vous ajouterez le produit plus tard.</p>}
+      </div>
     </form>
   );
 }
@@ -132,6 +157,8 @@ const STATUS: Record<string, { label: string; tone: any }> = {
   awaiting_validation: { label: "À valider", tone: "warn" },
   ready: { label: "Prêt", tone: "ok" },
   error: { label: "À reprendre", tone: "bad" },
+  paused: { label: "En pause", tone: "warn" },
+  draft: { label: "À démarrer", tone: "neutral" },
 };
 
 export function StudioHome() {
@@ -147,7 +174,8 @@ export function StudioHome() {
           <Link href="/"><Logo /></Link>
           <div className="flex items-center gap-2">
             {me?.user.role === "admin" && <Link href="/admin" className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm sm:inline-flex"><Shield className="size-4" /> Administration</Link>}
-            <Link href="/studio/compte" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm"><Settings className="size-4" /> Compte</Link>
+            <Link href="/studio/themes" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm"><Palette className="size-4" /> Thèmes</Link>
+            <Link href="/studio/compte" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm" aria-label="Compte"><Settings className="size-4" /> <span className="hidden sm:inline">Compte</span></Link>
             <ThemeToggle />
           </div>
         </div>

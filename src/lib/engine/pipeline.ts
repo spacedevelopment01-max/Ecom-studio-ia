@@ -6,7 +6,7 @@
  * marque avant la suite (mode guidé).
  */
 import { all, id, json, now, one, run } from "../db";
-import { enqueue, JobContext, type Job } from "../jobs";
+import { enqueue, JobContext, JobPaused, type Job } from "../jobs";
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, saveProduct, setStatus, remember, notify } from "../projects";
 import { importLink, fetchImage } from "./import-link";
@@ -47,7 +47,7 @@ class StepContext extends JobContext {
   }
 }
 
-function markStep(ctx: JobContext, step: StepId, status: "running" | "done" | "skipped" | "failed", note?: string) {
+function markStep(ctx: JobContext, step: StepId, status: "running" | "done" | "skipped" | "failed" | "paused", note?: string) {
   const steps = (ctx.checkpoint.__steps ?? {}) as Record<string, { status: string; at: number; note?: string }>;
   steps[step] = { status, at: now(), note };
   ctx.save("__steps", steps);
@@ -95,6 +95,12 @@ export async function runPipeline(ctx: JobContext) {
     return { done: true };
   } catch (e) {
     const cur = Object.entries((ctx.checkpoint.__steps ?? {}) as Record<string, any>).find(([, v]) => v.status === "running")?.[0];
+    if (e instanceof JobPaused) {
+      // Mise en pause demandée : l'étape en cours sera refaite à la reprise, les précédentes sont conservées.
+      if (cur) markStep(ctx, cur as StepId, "paused");
+      setStatus(projectId, "paused");
+      throw e;
+    }
     if (cur) markStep(ctx, cur as StepId, "failed", (e as Error).message);
     setStatus(projectId, "error");
     throw e;

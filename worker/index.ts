@@ -5,7 +5,7 @@
  */
 import "./env";
 import os from "node:os";
-import { claimNext, completeJob, failJob, JobContext, JobCancelled, WORKER_ID, getJob } from "../src/lib/jobs";
+import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, WORKER_ID, getJob } from "../src/lib/jobs";
 import { db, logError, now, run } from "../src/lib/db";
 import { enqueueDuePosts } from "../src/lib/engine/calendar";
 import { handlers, HANDLER_TYPES } from "./handlers";
@@ -29,8 +29,11 @@ async function runOne() {
     } catch (e) {
       if (e instanceof JobCancelled) {
         console.log(`[worker] ■ ${job.type} ${job.id} annulée`);
+      } else if (e instanceof JobPaused) {
+        console.log(`[worker] ❚❚ ${job.type} ${job.id} en pause`);
       } else {
         const fresh = getJob(job.id) ?? job;
+        if (fresh.status === "paused") return;
         failJob(fresh, e);
         logError(`job:${job.type}`, e, { userId: job.user_id, projectId: job.project_id ?? undefined, details: { jobId: job.id } });
         console.error(`[worker] ✗ ${job.type} ${job.id} :`, (e as Error).message);

@@ -11,7 +11,7 @@
 import os from "node:os";
 import { all, id, json, now, one, run, tx } from "./db";
 
-export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked";
+export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked" | "paused";
 
 export type Job = {
   id: string;
@@ -124,6 +124,8 @@ export function claimNext(types?: string[]): Job | null {
 }
 
 export class JobCancelled extends Error {}
+/** Levée au prochain point d'avancement quand l'utilisateur met la tâche en pause. */
+export class JobPaused extends Error {}
 
 /** Contexte passé aux gestionnaires de tâches. */
 export class JobContext {
@@ -138,6 +140,7 @@ export class JobContext {
   progress(p: number, message?: string) {
     const row = one<{ status: string }>("SELECT status FROM jobs WHERE id = ?", this.job.id);
     if (row?.status === "cancelled") throw new JobCancelled("Tâche annulée.");
+    if (row?.status === "paused") throw new JobPaused("Tâche mise en pause.");
     run(
       "UPDATE jobs SET progress=?, message=COALESCE(?, message), locked_until=?, updated_at=? WHERE id=?",
       Math.max(0, Math.min(1, p)),
@@ -164,7 +167,7 @@ export class JobContext {
 
 export function completeJob(jid: string, result: unknown) {
   run(
-    "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND status='running'",
+    "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND status IN ('running','paused')",
     JSON.stringify(result ?? null),
     "Terminé",
     now(),
@@ -203,6 +206,22 @@ export function cancelJob(jid: string) {
   run("UPDATE jobs SET status='cancelled', message='Annulée', finished_at=?, updated_at=? WHERE id=? AND status IN ('queued','running','blocked')", now(), now(), jid);
   // Les sous-tâches en attente sont annulées aussi.
   run("UPDATE jobs SET status='cancelled', message='Annulée', finished_at=?, updated_at=? WHERE parent_id=? AND status IN ('queued','blocked')", now(), now(), jid);
+}
+
+/**
+ * Pause : une tâche en file n'est plus prise ; une tâche en cours s'arrête à son prochain point
+ * d'avancement. Les étapes terminées restent enregistrées (points de reprise).
+ */
+export function pauseJob(jid: string) {
+  const t = now();
+  // L'essai consommé par une tâche interrompue volontairement n'est pas compté.
+  run("UPDATE jobs SET status='paused', message='En pause', locked_by=NULL, locked_until=NULL, attempts=MAX(0, attempts-1), updated_at=? WHERE id=? AND status='running'", t, jid);
+  run("UPDATE jobs SET status='paused', message='En pause', updated_at=? WHERE (id=? OR parent_id=?) AND status IN ('queued','blocked')", t, jid, jid);
+}
+
+/** Reprise après une pause : repart du dernier point de reprise. */
+export function resumeJob(jid: string) {
+  run("UPDATE jobs SET status='queued', run_at=?, message='Reprise…', updated_at=? WHERE (id=? OR parent_id=?) AND status='paused'", now(), now(), jid, jid);
 }
 
 /** Relance manuelle : repart du dernier point de reprise. */

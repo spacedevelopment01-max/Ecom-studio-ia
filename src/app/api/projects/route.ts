@@ -1,9 +1,8 @@
-import { z } from "zod";
 import { requireUser, HttpError } from "@/lib/auth";
 import { all, id, now, one, run } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
-import { enqueue } from "@/lib/jobs";
-import { ensureFolders, saveAsset } from "@/lib/library";
+import { ensureFolders } from "@/lib/library";
+import { hasProductInput, launchPipeline, readStartForm, saveStartFiles } from "@/lib/project-start";
 import { getSubscription, subscriptionActive } from "@/lib/billing";
 import { DEFAULT_SETTINGS } from "@/lib/projects";
 
@@ -27,28 +26,13 @@ export const GET = handle(async () => {
   });
 });
 
-const MAX_FILE = 25 * 1024 * 1024;
-
-/** Création d'un projet : photo(s), lien ou description, puis lancement du pilote. */
+/**
+ * Création d'un projet. Avec une photo, un lien ou une description, le pilote démarre aussitôt ;
+ * sans rien, le projet est créé « à démarrer » et l'entrée produit s'ajoute plus tard dans le studio.
+ */
 export const POST = handle(async (req: Request) => {
   const user = await requireUser();
-  const form = await req.formData();
-  const input = z
-    .object({
-      link: z.string().url().optional().or(z.literal("")),
-      description: z.string().max(8000).optional(),
-      productName: z.string().max(120).optional(),
-      brandName: z.string().max(80).optional(),
-      price: z.string().max(40).optional(),
-      platform: z.enum(["shopify", "woocommerce", "prestashop", "wix", "squarespace"]).default("shopify"),
-      mode: z.enum(["autopilot", "guided"]).default("autopilot"),
-    })
-    .parse(Object.fromEntries([...form.entries()].filter(([, v]) => typeof v === "string")));
-  const files = form.getAll("photos").filter((f): f is File => typeof f !== "string" && f.size > 0);
-  const logo = form.get("logo");
-  if (!files.length && !input.link && !(input.description && input.description.trim().length > 10)) {
-    throw new HttpError(400, "Ajoutez au moins une photo, un lien ou une description de quelques lignes.");
-  }
+  const { input, files, logo } = readStartForm(await req.formData());
   // Nombre de boutiques : limité par l'abonnement (une boutique d'essai sans abonnement).
   const sub = getSubscription(user.id);
   const count = one<{ n: number }>("SELECT COUNT(*) n FROM projects WHERE user_id = ? AND archived = 0", user.id)!.n;
@@ -62,22 +46,16 @@ export const POST = handle(async (req: Request) => {
     pid,
     user.id,
     input.productName || input.brandName || "Nouveau projet",
-    "queued",
+    "draft",
     input.platform,
     JSON.stringify({ ...DEFAULT_SETTINGS, mode: input.mode, timezone: user.timezone }),
-    JSON.stringify([...(files.length ? [{ type: "photo", ref: `${files.length} photo(s)` }] : []), ...(input.description ? [{ type: "description", ref: "description du client" }] : [])]),
+    "[]",
     now(),
     now(),
   );
   ensureFolders(pid);
-  for (const [i, f] of files.slice(0, 8).entries()) {
-    if (f.size > MAX_FILE) throw new HttpError(413, `La photo « ${f.name} » dépasse 25 Mo.`);
-    if (!/^image\/(jpeg|png|webp|avif|heic|heif)$/.test(f.type)) throw new HttpError(415, `Format non pris en charge pour « ${f.name} » (JPEG, PNG, WebP, AVIF).`);
-    await saveAsset({ projectId: pid, userId: user.id, data: Buffer.from(await f.arrayBuffer()), name: f.name || `photo-${i + 1}.jpg`, mime: f.type, role: "original", folderKey: "product.originals", origin: "upload", meta: { uploadedAt: now() } });
-  }
-  if (logo && typeof logo !== "string" && logo.size > 0) {
-    await saveAsset({ projectId: pid, userId: user.id, data: Buffer.from(await logo.arrayBuffer()), name: logo.name || "logo.png", mime: logo.type, kind: "image", role: "logo", folderKey: "brand.logos", origin: "upload", meta: { provided: true } });
-  }
-  const job = enqueue({ userId: user.id, projectId: pid, type: "pipeline.run", label: "Création du projet", payload: { projectId: pid, mode: input.mode, input: { link: input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price } }, maxAttempts: 2 });
-  return ok({ id: pid, jobId: job.id });
+  await saveStartFiles(pid, user.id, files, logo);
+  if (!hasProductInput(input, files)) return ok({ id: pid, jobId: null, started: false });
+  const job = launchPipeline(pid, user.id, input, files.length);
+  return ok({ id: pid, jobId: job.id, started: true });
 });

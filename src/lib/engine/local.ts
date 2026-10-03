@@ -155,8 +155,8 @@ function proposeNames(sector: string, seed: string): string[] {
   for (let i = 0; out.length < 5 && i < 40; i++) {
     const w = words[(h + i * 3) % words.length];
     const forms = NAME_FORMS(w).filter((f) => f.length <= 18 && !f.startsWith("Atelier Atelier"));
-    const f = forms[(h >> (i % 8)) % forms.length];
-    if (!out.includes(f)) out.push(f);
+    const f = forms[(h >>> (i % 8)) % forms.length];
+    if (f && !out.includes(f)) out.push(f);
   }
   return out;
 }
@@ -166,7 +166,7 @@ export function localBrand(p: ProductProfile, providedBrand?: string): { brand: 
   const direction = SECTOR_DIRECTION[sector];
   const d = DIRECTIONS.find((x) => x.id === direction)!;
   const proposals = proposeNames(sector, p.visual.colors.map((c) => c.hex).join("") + (p.name ?? ""));
-  const name = providedBrand?.trim() || proposals[0];
+  const name = providedBrand?.trim() || proposals[0] || NAME_WORDS.maison[0];
   const palette = paletteFromColors(p.visual.colors.length ? p.visual.colors : [{ hex: "#7A6552", share: 1 }]);
   const logoFamily = canvasFamily(d.fonts.heading, "Cormorant");
   return {

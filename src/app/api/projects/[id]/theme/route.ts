@@ -3,7 +3,7 @@ import { handle, ok } from "@/lib/http";
 import { currentTheme, listThemeVersions } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { containerOf, sectionSchema, baseSectionTypes } from "@/lib/theme/spec";
-import { DIRECTIONS } from "@/lib/theme/directions";
+import { directionCards } from "@/lib/theme/directions";
 import { themeFingerprint } from "@/lib/theme/compile";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   const cur = currentTheme(p.id);
   const messages = all<any>("SELECT id, role, content, attachments, selection, theme_version_id, job_id, created_at FROM chat_messages WHERE project_id = ? AND thread = 'shop' ORDER BY created_at ASC LIMIT 200", p.id).map((m) => ({ ...m, attachments: JSON.parse(m.attachments || "[]"), selection: m.selection ? JSON.parse(m.selection) : null }));
-  if (!cur) return ok({ current: null, versions: [], messages, directions: DIRECTIONS });
+  if (!cur) return ok({ current: null, versions: [], messages, directions: directionCards() });
   const structure = ["group:header", ...Object.keys(cur.spec.templates), "group:footer"].map((t) => {
     const c = containerOf(cur.spec, t)!;
     return {
@@ -24,7 +24,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     current: { versionId: cur.version.id, number: cur.version.number, direction: cur.spec.direction, name: cur.spec.name, summary: cur.version.summary, fingerprint: themeFingerprint(cur.spec), structure, pages: cur.spec.store.pages, product: { handle: cur.spec.store.product.handle, title: cur.spec.store.product.title, price: cur.spec.store.product.price } },
     versions: listThemeVersions(p.id),
     messages,
-    directions: DIRECTIONS,
+    directions: directionCards(),
     library: baseSectionTypes().map((t) => ({ type: t, name: sectionSchema(null, t)?.name ?? t })),
   });
 });
