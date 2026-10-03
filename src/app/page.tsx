@@ -65,7 +65,7 @@ export default async function Home() {
     [MessageSquare, "Boutique par conversation", "Discutez à gauche, la boutique s'actualise à droite. Désignez une zone, joignez une image, demandez « modifie uniquement ce bouton »."],
     [Palette, "Thème sur mesure par l'IA", "Identité, composition et sections codées pour votre produit. Livré pour Shopify (Online Store 2.0 contrôlé avec Theme Check), WooCommerce ou PrestaShop, identique à l'aperçu."],
     [ImageIcon, "Images fidèles", "Packshots, détails, scènes, bannières, visuels sociaux et publicitaires, rangés et réutilisables partout."],
-    [Film, "Vidéos abouties", "Typographie animée, révélation du produit, transitions, musique originale, sous-titres. MP4 en 9:16, 1:1, 4:5 et 16:9."],
+    [Film, "Vidéos et UGC par IA", "Motion design animé, ou vidéo UGC : une personne générée par IA présente votre produit réel face caméra, avec voix et sous-titres, signalée comme contenu IA. MP4 en 9:16, 1:1, 4:5 et 16:9."],
     [CalendarDays, "Calendrier qui publie", "Jour, semaine, mois. Validation à l'unité ou en lot, règles d'automatisation, reprises sans doublon."],
     [Pause, "Pause et reprise", "Mettez une création en pause, reprenez-la plus tard : les étapes terminées sont conservées, rien n'est refait."],
     [BookOpen, `${PROMPT_STATS.total} prompts sectoriels`, `${PROMPT_STATS.sectors} secteurs, complétés automatiquement avec votre produit, votre marque et vos médias.`],
@@ -154,7 +154,7 @@ export default async function Home() {
                   />
                 </div>
                 <ul className="mt-6 flex flex-wrap justify-center gap-2">
-                  {["Monoproduit, multiproduits ou niche", "Shopify · WooCommerce · PrestaShop", "Vidéos 9:16 · 1:1 · 4:5 · 16:9"].map((t, i) => (
+                  {["Monoproduit, multiproduits ou niche", "Shopify · WooCommerce · PrestaShop", "Vidéos et UGC par IA"].map((t, i) => (
                     <li key={t} className="floaty glass rounded-full border border-line px-4 py-2 text-xs font-medium text-ink-2 shadow-soft" style={{ animationDelay: `${-i * 2}s` }}>{t}</li>
                   ))}
                 </ul>
@@ -168,7 +168,7 @@ export default async function Home() {
           <div className="marquee flex w-max">
             {[0, 1].map((k) => (
               <div key={k} className="flex shrink-0 items-center gap-10 pr-10 font-display text-xl sm:text-2xl">
-                {["Analyse produit", "Direction de marque", "Logo vectoriel", "Thème sur mesure par l'IA", "Packshots fidèles", "Vidéos 9:16 · 1:1 · 4:5 · 16:9", "Retouche en discutant", "Calendrier éditorial", "Pause et reprise"].map((t) => (
+                {["Analyse produit", "Direction de marque", "Logo vectoriel", "Thème sur mesure par l'IA", "Packshots fidèles", "Vidéos 9:16 · 1:1 · 4:5 · 16:9", "Vidéos UGC par IA", "Retouche en discutant", "Calendrier éditorial", "Pause et reprise"].map((t) => (
                   <span key={t} className="flex items-center gap-10">
                     {t} <span className="text-[#7CC4FF]">✦</span>
                   </span>

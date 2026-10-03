@@ -295,7 +295,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
 }
 
 /** Informations confirmées, très courtes, pour les pastilles des visuels (jamais d'allégation inventée). */
-function confirmedFacts(p: Project): string[] {
+export function confirmedFacts(p: Project): string[] {
   const out: string[] = [];
   const cat = (p.product as any).category as string | undefined;
   if (cat && cat.length <= 24) out.push(cat);

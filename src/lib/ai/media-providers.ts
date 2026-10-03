@@ -117,8 +117,11 @@ export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?:
   return Buffer.from(b64, "base64");
 }
 
-/** Plan vidéo image-vers-vidéo (Veo via l'API Gemini). Retourne un MP4. */
-export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number }, onWait?: (msg: string) => void) {
+/**
+ * Plan vidéo image-vers-vidéo (Veo via l'API Gemini). Retourne un MP4.
+ * `people` : plan avec une personne (UGC) — le prompt est transmis tel quel et Veo 3 génère aussi la voix et le son.
+ */
+export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean }, onWait?: (msg: string) => void) {
   const key = providerKey("google");
   if (!key) throw new UserFacingError("Aucune clé Google configurée pour la vidéo.");
   const route = routeFor("video_generation");
@@ -130,8 +133,8 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
-      instances: [{ prompt: `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
-      parameters: { aspectRatio: input.aspect, personGeneration: "dont_allow" },
+      instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
+      parameters: { aspectRatio: input.aspect, personGeneration: input.people ? "allow_adult" : "dont_allow" },
     }),
   });
   if (start.status === 401 || start.status === 403) throw new PermanentError("Clé Google refusée pour Veo.");
@@ -155,6 +158,63 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
     }
   }
   throw new Error("Délai dépassé pour la génération Veo.");
+}
+
+/**
+ * Image d'ouverture d'un plan UGC : une personne générée tient ou utilise le produit réel.
+ * Le détourage du produit est fourni en référence (forme, étiquette, couleurs à conserver) ;
+ * `persona` (image du premier plan) garde la même personne et le même décor d'un plan à l'autre.
+ */
+export async function ugcFrame(ctx: Ctx, input: { prompt: string; product: Buffer; persona?: Buffer; aspect: "9:16" | "16:9" }) {
+  const provider = imageProviderAvailable();
+  if (!provider) throw new UserFacingError("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) pour créer la personne de la vidéo UGC.");
+  const product = await sharp(input.product).flatten({ background: "#ffffff" }).resize(1024, 1024, { fit: "contain", background: "#ffffff" }).jpeg({ quality: 90 }).toBuffer();
+  const persona = input.persona ? await sharp(input.persona).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
+  const text = `${input.prompt}
+The product shown in the first reference image must appear exactly as it is: same shape, proportions, label, logo, text and colors; do not redesign it, do not add another product.${persona ? " Keep the same person, outfit and room as in the second reference image." : ""}
+Authentic smartphone video still, natural light, realistic skin and hands, no text overlay, no watermark. Aspect ratio ${input.aspect}.`;
+  if (provider === "google") {
+    const key = providerKey("google")!;
+    const route = routeFor("image_generation");
+    const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
+    assertCanSpend(ctx.userId, cost("google", model, { images: 1 }).micro);
+    const parts: any[] = [{ text }, { inline_data: { mime_type: "image/jpeg", data: product.toString("base64") } }];
+    if (persona) parts.push({ inline_data: { mime_type: "image/jpeg", data: persona.toString("base64") } });
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: input.aspect } } }),
+    });
+    if (r.status === 401 || r.status === 403) throw new PermanentError("Clé Google refusée : vérifiez-la dans l'administration.");
+    if (r.status === 400) throw new PermanentError(`Requête refusée par Gemini : ${(await r.text()).slice(0, 300)}`);
+    if (!r.ok) throw new Error(`Gemini ${r.status} : ${(await r.text()).slice(0, 200)}`);
+    const j: any = await r.json();
+    const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
+    const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
+    if (!b64) throw new Error("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).");
+    recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
+    return Buffer.from(b64, "base64");
+  }
+  const key = providerKey("openai")!;
+  const route = routeFor("image_generation");
+  const model = route.provider === "openai" ? route.model : "gpt-image-1";
+  assertCanSpend(ctx.userId, cost("openai", model, { input: 400, imageIn: 3000, imageOut: 6300 }).micro);
+  const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
+  const images = [await toFile(product, "produit.jpg", { type: "image/jpeg" })];
+  if (persona) images.push(await toFile(persona, "personne.jpg", { type: "image/jpeg" }));
+  let res: any;
+  try {
+    res = await client.images.edit({ model, image: images as any, prompt: text, size: input.aspect === "9:16" ? "1024x1536" : "1536x1024", quality: "high" } as any);
+  } catch (e: any) {
+    if (e?.status === 401 || e?.status === 403) throw new PermanentError("Clé OpenAI refusée : vérifiez-la dans l'administration.");
+    if (e?.status === 400) throw new PermanentError(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`);
+    throw e;
+  }
+  const b64 = res.data?.[0]?.b64_json;
+  if (!b64) throw new Error("OpenAI n'a pas renvoyé d'image.");
+  const u = res.usage ?? {};
+  recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  return Buffer.from(b64, "base64");
 }
 
 /** Plan vidéo via fal.ai (file d'attente officielle). */
