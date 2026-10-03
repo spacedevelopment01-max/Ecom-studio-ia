@@ -1,0 +1,21 @@
+<section class="es-section es-account" style="--pt: 64px; --pb: 96px;">
+  <div class="es-container">
+    <h1 class="es-heading es-h2">{{ 'customer.account' | t }}</h1>
+    <p><a href="{{ routes.account_logout_url }}" class="es-link-button">{{ 'customer.logout' | t }}</a></p>
+    <h2 class="es-heading es-h4">{{ 'customer.orders.title' | t }}</h2>
+    {%- paginate customer.orders by 20 -%}
+      {%- if customer.orders.size > 0 -%}
+        <table class="es-table">
+          <thead><tr><th>{{ 'customer.orders.order' | t }}</th><th>{{ 'customer.orders.date' | t }}</th><th>{{ 'customer.orders.status' | t }}</th><th>{{ 'customer.orders.total' | t }}</th></tr></thead>
+          <tbody>
+            {%- for order in customer.orders -%}<tr><td><a href="{{ order.customer_url }}">{{ order.name }}</a></td><td>{{ order.created_at | time_tag: format: 'date' }}</td><td>{{ order.fulfillment_status_label }}</td><td>{{ order.total_net_amount | money_with_currency }}</td></tr>{%- endfor -%}
+          </tbody>
+        </table>
+      {%- else -%}<p class="es-muted">{{ 'customer.orders.none' | t }}</p>{%- endif -%}
+      {% render 'pagination', paginate: paginate %}
+    {%- endpaginate -%}
+    <h2 class="es-heading es-h4">{{ 'customer.addresses.title' | t }}</h2>
+    {{ customer.default_address | format_address }}
+    <a href="{{ routes.account_addresses_url }}" class="es-link-button">{{ 'customer.addresses.manage' | t }} ({{ customer.addresses_count }})</a>
+  </div>
+</section>

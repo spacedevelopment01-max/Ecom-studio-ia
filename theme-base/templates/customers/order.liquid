@@ -1,0 +1,16 @@
+<section class="es-section es-account" style="--pt: 64px; --pb: 96px;">
+  <div class="es-container">
+    <a href="{{ routes.account_url }}" class="es-link-button">← {{ 'customer.account' | t }}</a>
+    <h1 class="es-heading es-h2">{{ 'customer.orders.order' | t }} {{ order.name }}</h1>
+    <p class="es-muted">{{ order.created_at | time_tag: format: 'date_at_time' }}</p>
+    <table class="es-table">
+      <thead><tr><th>{{ 'customer.orders.product' | t }}</th><th>{{ 'products.product.quantity' | t }}</th><th>{{ 'customer.orders.total' | t }}</th></tr></thead>
+      <tbody>{%- for line_item in order.line_items -%}<tr><td>{{ line_item.title | link_to: line_item.product.url }}</td><td>{{ line_item.quantity }}</td><td>{{ line_item.final_line_price | money }}</td></tr>{%- endfor -%}</tbody>
+      <tfoot><tr><td colspan="2">{{ 'customer.orders.total' | t }}</td><td>{{ order.total_net_amount | money_with_currency }}</td></tr></tfoot>
+    </table>
+    <div class="es-account__addresses">
+      <div><h2 class="es-heading es-h4">{{ 'customer.orders.billing' | t }}</h2>{{ order.billing_address | format_address }}</div>
+      <div><h2 class="es-heading es-h4">{{ 'customer.orders.shipping' | t }}</h2>{{ order.shipping_address | format_address }}</div>
+    </div>
+  </div>
+</section>

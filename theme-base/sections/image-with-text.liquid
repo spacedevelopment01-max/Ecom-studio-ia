@@ -1,0 +1,38 @@
+<section class="es-section es-iwt es-iwt--{{ section.settings.layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container es-iwt__grid">
+    <div class="es-iwt__media es-media-frame es-media-frame--{{ section.settings.ratio }}" data-reveal="{{ section.settings.reveal }}"{% if section.settings.parallax %} data-parallax="0.1"{% endif %}>
+      {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-cover' %}
+    </div>
+    <div class="es-iwt__content">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 class="es-heading es-h2" data-reveal="lines">{{ section.settings.heading }}</h2>
+      <div class="es-rte" data-reveal="up" style="--d: 1">{{ section.settings.text }}</div>
+      {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link }}" class="es-button es-button--secondary" data-reveal="up" style="--d: 2">{{ section.settings.button_label }}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Image et texte",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Image à gauche" }, { "value": "image-right", "label": "Image à droite" }, { "value": "overlap", "label": "Superposée" } ] },
+    { "type": "select", "id": "ratio", "label": "Format de l'image", "default": "portrait", "options": [ { "value": "portrait", "label": "Portrait" }, { "value": "square", "label": "Carré" }, { "value": "landscape", "label": "Paysage" } ] },
+    { "type": "select", "id": "reveal", "label": "Apparition de l'image", "default": "curtain", "options": [ { "value": "zoom", "label": "Zoom doux" }, { "value": "curtain", "label": "Rideau" }, { "value": "up", "label": "Glissement" } ] },
+    { "type": "checkbox", "id": "parallax", "label": "Effet de profondeur", "default": false },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Raconter le produit" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Un paragraphe qui développe une idée.</p>" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Image et texte" }]
+}
+{% endschema %}

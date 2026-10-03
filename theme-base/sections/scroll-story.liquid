@@ -1,0 +1,59 @@
+<section class="es-section es-story color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-scroll-story>
+  <div class="es-container">
+    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-story__heading" data-reveal="lines">{{ section.settings.heading }}</h2>{%- endif -%}
+    <div class="es-story__grid">
+      <div class="es-story__visual">
+        <div class="es-story__sticky">
+          <div class="es-story__stage es-media-frame">
+            {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 45vw, 90vw', class: 'es-story__base' %}
+            {%- for block in section.blocks -%}
+              {%- if block.settings.image != blank or block.settings.image_asset != blank -%}
+                <div class="es-story__layer" data-story-layer="{{ forloop.index0 }}">
+                  {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 45vw, 90vw', class: 'es-cover' %}
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+          <ol class="es-story__dots" aria-hidden="true">
+            {%- for block in section.blocks -%}<li data-story-dot="{{ forloop.index0 }}"></li>{%- endfor -%}
+          </ol>
+        </div>
+      </div>
+      <div class="es-story__steps">
+        {%- for block in section.blocks -%}
+          <article class="es-story__step" data-story-step="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            <span class="es-story__index">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            <h3 class="es-heading es-h3">{{ block.settings.title }}</h3>
+            <div class="es-rte">{{ block.settings.text }}</div>
+          </article>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Défilement produit",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Regardez-le de plus près" },
+    { "type": "image_picker", "id": "image", "label": "Image principale" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-2" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Un détail qui compte" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Décrivez une caractéristique confirmée du produit.</p>" },
+      { "type": "image_picker", "id": "image", "label": "Image affichée à cette étape" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Défilement produit", "blocks": [{ "type": "step" }, { "type": "step" }, { "type": "step" }] }]
+}
+{% endschema %}

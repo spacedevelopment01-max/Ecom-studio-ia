@@ -1,0 +1,18 @@
+{%- comment -%}
+  Image réactive : image choisie dans l'éditeur Shopify, sinon fichier fourni
+  dans le dossier assets du thème.
+  Paramètres : image, asset, alt, sizes, class, loading, width, height, fetchpriority
+{%- endcomment -%}
+{%- liquid
+  assign img_loading = loading | default: 'lazy'
+  assign img_sizes = sizes | default: '100vw'
+-%}
+{%- if image != blank -%}
+  {{ image | image_url: width: 2400 | image_tag: loading: img_loading, sizes: img_sizes, widths: '375, 550, 750, 1100, 1500, 1800, 2400', class: class, alt: alt, fetchpriority: fetchpriority }}
+{%- elsif asset != blank -%}
+  <img src="{{ asset | asset_url }}" alt="{{ alt | escape }}" class="{{ class }}" width="{{ width | default: 1600 }}" height="{{ height | default: 1600 }}" loading="{{ img_loading }}" decoding="async"{% if fetchpriority %} fetchpriority="{{ fetchpriority }}"{% endif %}>
+{%- else -%}
+  <div class="es-placeholder {{ class }}" role="img" aria-label="{{ 'general.image_placeholder' | t }}">
+    {{ 'image' | placeholder_svg_tag: 'es-placeholder__svg' }}
+  </div>
+{%- endif -%}

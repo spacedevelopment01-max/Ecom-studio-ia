@@ -1,0 +1,43 @@
+<section class="es-section es-richtext es-richtext--{{ section.settings.style }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container es-richtext__inner es-richtext__inner--{{ section.settings.align }}">
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'eyebrow' -%}<p class="es-eyebrow" data-reveal="up" {{ block.shopify_attributes }}>{{ block.settings.text }}</p>
+        {%- when 'heading' -%}<h2 class="es-heading es-{{ block.settings.size }}" data-reveal="lines" {{ block.shopify_attributes }}>{{ block.settings.text }}</h2>
+        {%- when 'text' -%}<div class="es-rte es-lead" data-reveal="up" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+        {%- when 'button' -%}<div data-reveal="up" {{ block.shopify_attributes }}><a href="{{ block.settings.link }}" class="es-button{% if block.settings.secondary %} es-button--secondary{% endif %}">{{ block.settings.label }}</a></div>
+        {%- when 'signature' -%}<p class="es-signature" data-reveal="up" {{ block.shopify_attributes }}>{{ block.settings.text }}</p>
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Texte enrichi",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "align", "label": "Alignement", "default": "center", "options": [ { "value": "left", "label": "Gauche" }, { "value": "center", "label": "Centré" } ] },
+    { "type": "select", "id": "style", "label": "Style", "default": "statement", "options": [ { "value": "statement", "label": "Déclaration" }, { "value": "quote", "label": "Citation" }, { "value": "plain", "label": "Simple" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Surtitre", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Notre parti pris" } ] },
+    { "type": "heading", "name": "Titre", "settings": [
+      { "type": "text", "id": "text", "label": "Texte", "default": "Une conviction, formulée simplement." },
+      { "type": "select", "id": "size", "label": "Taille", "default": "h2", "options": [ { "value": "h3", "label": "Moyenne" }, { "value": "h2", "label": "Grande" }, { "value": "h1", "label": "Très grande" }, { "value": "display", "label": "Affiche" } ] }
+    ] },
+    { "type": "text", "name": "Texte", "settings": [ { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Développez votre propos.</p>" } ] },
+    { "type": "button", "name": "Bouton", "settings": [
+      { "type": "text", "id": "label", "label": "Libellé", "default": "En savoir plus" },
+      { "type": "url", "id": "link", "label": "Lien" },
+      { "type": "checkbox", "id": "secondary", "label": "Style secondaire", "default": false }
+    ] },
+    { "type": "signature", "name": "Signature", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "— L'équipe" } ] }
+  ],
+  "presets": [{ "name": "Texte enrichi", "blocks": [{ "type": "eyebrow" }, { "type": "heading" }, { "type": "text" }] }]
+}
+{% endschema %}

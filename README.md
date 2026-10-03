@@ -1,0 +1,63 @@
+# E-COM STUDIO IA
+
+Plateforme qui transforme un produit — une photo, un lien de fiche produit ou quelques lignes — en marque, boutique Shopify, images, vidéos, publications et calendrier, avec un studio où l'on garde la main à chaque étape.
+
+## Démarrer
+
+Prérequis : Node.js 22+, `ffmpeg`/`ffprobe` dans le PATH.
+
+```bash
+npm install
+npm run setup      # crée .env.local (APP_SECRET aléatoire) et la base SQLite dans ./data
+npm run dev        # site (http://localhost:3000) + worker de tâches de fond
+```
+
+Production : `npm run build` puis `npm start` (lance le site **et** le worker). Le worker doit tourner en continu : c'est lui qui exécute les créations longues et les publications programmées, navigateur fermé.
+
+Le premier compte créé (ou celui de `ADMIN_EMAIL`) est administrateur : console sur `/admin`.
+
+Autres commandes : `npm test` (tests vitest), `npm run typecheck`, `npx tsx scripts/theme-check.ts` (Shopify Theme Check sur les 8 directions), `npx tsx scripts/e2e-pipeline.ts <photo>` (pipeline complet sans navigateur), `CHROMIUM=… PHOTO=… npx tsx scripts/e2e-browser.ts` (parcours navigateur bureau + mobile), `RENDERS=… npx tsx scripts/build-demos.ts` (régénère les démonstrations de la page d'accueil).
+
+## Ce qui fonctionne sans aucune clé externe
+
+Le **moteur intégré** tourne entièrement sur le serveur :
+
+- détourage local du produit (modèle ONNX embarqué), couleurs mesurées, gros plans tirés de la photo d'origine ;
+- analyse prudente : rien n'est inventé, l'inconnu reste « [À compléter : …] » et seules les questions indispensables sont posées (prix, nom, livraison, retours) ; les réponses remplacent les marques à compléter partout (boutique, publications, textes) ;
+- marque : nom proposé (ou le vôtre), palette tirée du produit avec contrastes WCAG, typographies, logo vectoriel (SVG/PNG, version claire, monogramme, favicon), charte ;
+- **thème Shopify Online Store 2.0 réel** : 8 directions, plus de 30 sections, accueil, fiche produit (variantes, prix, panier latéral AJAX, achat collant), collection, recherche, panier, pages Notre histoire / FAQ / Contact / Livraison et retours, politiques à compléter, 404, mot de passe, comptes clients, carte cadeau ; animations compatibles « réduire les animations » ; 0 erreur Shopify Theme Check ;
+- éditeur de boutique : discussion + aperçu côte à côte (pages, ordinateur/tablette/téléphone, désignation d'un élément), structure, verrous, versions et restauration. **L'aperçu, la version enregistrée et le ZIP exporté proviennent des mêmes fichiers** (empreinte affichée). Sans IA, l'éditeur comprend des commandes simples (couleur des boutons, texte entre guillemets, ajouter une FAQ, monter, supprimer, revenir en arrière, changer de direction) ;
+- exports WooCommerce (thème bloc installable), PrestaShop (thème enfant), Wix et Squarespace (kits : ces plateformes n'acceptent pas de thème importé — c'est indiqué) ;
+- images réelles : packshots, détails, scènes (studio, podium, arche, fenêtre, projecteur, aplats), bannières, visuels sociaux et publicités 1:1, 4:5, 9:16, 16:9, avec textes composés typographiquement et zones de sécurité ;
+- vidéos MP4 H.264 réelles (9:16, 1:1, 4:5, 16:9) en motion design image par image (révélation, gros plans, légendes, transitions, musique originale synthétisée, sous-titres SRT), pack CapCut ;
+- bibliothèque de fichiers (dossiers, sous-dossiers, import, déplacement, recherche, versions, usages, corbeille ; le rangement automatique ne supprime jamais) ;
+- 200 prompts français (10 secteurs × 20), recherche, filtres, favoris, insertion avec le contexte du projet ;
+- publications et calendrier (jour/semaine/mois, glisser-déposer, statuts, validation groupée, règles d'automatisation), file de tâches persistante avec reprise, nouvelles tentatives et anti-doublon ;
+- comptes, plusieurs boutiques, jauge d'enveloppe IA, administration.
+
+## Ce qui demande une configuration (implémenté, non testé faute d'accès)
+
+Tout se règle dans `/admin` ; les secrets sont chiffrés (AES-256-GCM, clé `APP_SECRET`) et ne repartent jamais vers le navigateur.
+
+| Fonction | Ce qu'il faut fournir | État |
+|---|---|---|
+| IA de texte et de vision (analyse de la photo, stratégie, rédaction, conception des sections, chat de boutique, contrôle qualité) | Clé API Anthropic | Code complet, **non exécuté ici** (pas de clé). Bouton « Tester réellement ». |
+| Décors générés autour du produit réel | Clé OpenAI (images) ou Gemini | Idem |
+| Plans vidéo générés | Clé Gemini (Veo) ou fal.ai | Idem |
+| Publication Facebook / Instagram | Application Meta validée (client id/secret) + adresse publique HTTPS | Idem |
+| TikTok, YouTube, Pinterest | Applications développeur respectives + adresse publique | Idem (limites d'API affichées dans le studio) |
+| Canva | Intégration Canva Connect | Idem |
+| Installation Shopify (thème non publié, produit, pages) | Application Shopify + adresse publique | Idem ; sinon import manuel du ZIP |
+| Paiements (abonnement 49,90 €/mois, +40 €/boutique, recharges par 10 €) | Clés Stripe + secret webhook | Code complet ; annoncé « actif » seulement après réception d'un événement signé. En attendant, l'administration active les abonnements manuellement. |
+
+Instagram, TikTok, Pinterest et Shopify récupèrent les médias par URL : la publication automatique exige que le studio soit déployé sur une **adresse publique HTTPS** (réglage « Adresse publique » dans l'administration).
+
+## Architecture
+
+- `src/app` — Next.js 15 (App Router) : page d'accueil, studio, administration, API REST (`src/app/api`).
+- `worker/` — processus de tâches de fond (baux, reprise par étapes, nouvelles tentatives, idempotence, planificateur des publications).
+- `src/lib` — base SQLite (better-sqlite3, WAL) partagée site/worker, facturation en micro-euros, chiffrement, OAuth et publication, intégrations.
+- `src/lib/theme` + `theme-base/` — moteur de thème Shopify (spécification JSON OS 2.0 → fichiers ; rendu Liquid pour l'aperçu ; opérations ciblées validées).
+- `src/lib/media` — détourage, compositions (Skia), logos SVG, vidéo (ffmpeg).
+- `src/lib/engine` — pipeline et moteur intégré ; `src/lib/ai` — routage multi-fournisseurs, contexte et mémoire du projet, prompts spécialisés, contrôle qualité.
+- `public/demo` — démonstrations de la page d'accueil, **produits et marques fictifs** générés par le studio à partir de rendus 3D (`scripts/demo-renders`).

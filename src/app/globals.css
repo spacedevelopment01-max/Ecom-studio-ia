@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) { @slot; }
+  @media (prefers-color-scheme: dark) { &:where(:root:not([data-theme="light"]) *) { @slot; } }
+}
+
+@font-face { font-family: "Bricolage"; src: url("/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Instrument"; src: url("/fonts/instrument.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Instrument"; src: url("/fonts/instrument-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+
+/* Identité E-COM STUDIO IA : papier, encre, signal. */
+:root {
+  --paper: #F5F2EC;
+  --paper-2: #ECE7DE;
+  --card: #FFFFFF;
+  --ink: #141210;
+  --ink-2: #3A3530;
+  --muted: #6E675E;
+  --line: #DED7CB;
+  --signal: #FF4D2A;
+  --signal-ink: #FFFFFF;
+  --signal-soft: #FFE3DB;
+  --ok: #1F7A4D;
+  --ok-soft: #DDF2E6;
+  --warn: #A15C00;
+  --warn-soft: #FCEBD0;
+  --bad: #B42318;
+  --bad-soft: #FDE2DF;
+  --info: #2546D8;
+  --info-soft: #E1E7FD;
+  --shadow: 0 1px 0 rgba(20, 18, 16, .04), 0 12px 40px -24px rgba(20, 18, 16, .28);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F0E0D; --paper-2: #181614; --card: #1C1A17; --ink: #F3EFE8; --ink-2: #D6CFC4; --muted: #A39B90; --line: #2E2A26;
+    --signal: #FF6A4A; --signal-ink: #140A06; --signal-soft: #3A1B12; --ok: #4CC38A; --ok-soft: #13291D; --warn: #F0A43A; --warn-soft: #33240E;
+    --bad: #FF7B6E; --bad-soft: #3A1714; --info: #8CA2FF; --info-soft: #182040; --shadow: 0 1px 0 rgba(0,0,0,.2), 0 16px 48px -24px rgba(0,0,0,.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F0E0D; --paper-2: #181614; --card: #1C1A17; --ink: #F3EFE8; --ink-2: #D6CFC4; --muted: #A39B90; --line: #2E2A26;
+  --signal: #FF6A4A; --signal-ink: #140A06; --signal-soft: #3A1B12; --ok: #4CC38A; --ok-soft: #13291D; --warn: #F0A43A; --warn-soft: #33240E;
+  --bad: #FF7B6E; --bad-soft: #3A1714; --info: #8CA2FF; --info-soft: #182040; --shadow: 0 1px 0 rgba(0,0,0,.2), 0 16px 48px -24px rgba(0,0,0,.7);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-signal: var(--signal);
+  --color-signal-ink: var(--signal-ink);
+  --color-signal-soft: var(--signal-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --font-display: "Bricolage", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --shadow-soft: var(--shadow);
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--signal); color: var(--signal-ink); }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; border-radius: 6px; }
+.font-display { font-variation-settings: "opsz" 96; letter-spacing: -0.035em; }
+.serif-i { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
+.scrollbar-none { scrollbar-width: none; } .scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Apparitions au défilement (accueil). */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); transition-delay: calc(var(--d, 0) * 90ms); }
+.reveal.in { opacity: 1; transform: none; }
+@supports (animation-timeline: view()) {
+  .scroll-scale { animation: scroll-scale linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
+  @keyframes scroll-scale { from { transform: scale(.88); opacity: .4; border-radius: 48px; } to { transform: none; opacity: 1; border-radius: 24px; } }
+  .scroll-parallax { animation: scroll-parallax linear both; animation-timeline: view(); }
+  @keyframes scroll-parallax { from { transform: translateY(8%); } to { transform: translateY(-8%); } }
+}
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee { animation: marquee 40s linear infinite; }
+@keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+.skeleton { background: linear-gradient(90deg, var(--paper-2) 0px, var(--card) 120px, var(--paper-2) 240px); background-size: 800px 100%; animation: shimmer 1.4s infinite linear; }
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; }
+}

@@ -1,0 +1,82 @@
+{%- liquid
+  assign menu = linklists[section.settings.menu]
+  assign transparent = false
+  if section.settings.transparent_on_home and request.page_type == 'index'
+    assign transparent = true
+  endif
+-%}
+<header class="es-header es-header--{{ section.settings.layout }}{% if section.settings.sticky %} es-header--sticky{% endif %}{% if transparent %} es-header--transparent{% endif %} color-{{ section.settings.color_scheme }}" data-header>
+  <div class="es-header__inner es-container">
+    <button class="es-header__burger es-icon-button" type="button" aria-controls="MobileMenu" aria-expanded="false" data-menu-open>
+      {% render 'icon', name: 'menu' %}<span class="visually-hidden">{{ 'sections.header.menu' | t }}</span>
+    </button>
+
+    <a href="{{ routes.root_url }}" class="es-header__logo" aria-label="{{ shop.name }}">
+      {%- if settings.logo != blank -%}
+        {{ settings.logo | image_url: width: 600 | image_tag: class: 'es-header__logo-img', widths: '150, 300, 600', sizes: '200px', alt: shop.name, loading: 'eager' }}
+      {%- elsif settings.logo_asset != blank -%}
+        <img src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" class="es-header__logo-img" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 }}" loading="eager">
+      {%- else -%}
+        <span class="es-header__wordmark">{{ shop.name }}</span>
+      {%- endif -%}
+    </a>
+
+    <nav class="es-header__nav" aria-label="{{ 'sections.header.navigation' | t }}">
+      <ul role="list">
+        {%- for link in menu.links -%}
+          <li><a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <div class="es-header__icons">
+      {%- if section.settings.show_search -%}
+        <a href="{{ routes.search_url }}" class="es-icon-button" aria-label="{{ 'general.search' | t }}">{% render 'icon', name: 'search' %}</a>
+      {%- endif -%}
+      {%- if shop.customer_accounts_enabled -%}
+        <a href="{{ routes.account_url }}" class="es-icon-button es-hide-mobile" aria-label="{{ 'customer.account' | t }}">{% render 'icon', name: 'account' %}</a>
+      {%- endif -%}
+      <a href="{{ routes.cart_url }}" class="es-icon-button es-cart-link" data-cart-open aria-label="{{ 'cart.title' | t }}">
+        {% render 'icon', name: 'cart' %}
+        <span class="es-cart-count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="es-mobile-menu color-{{ section.settings.color_scheme }}" id="MobileMenu" hidden data-mobile-menu>
+    <div class="es-mobile-menu__head">
+      <span class="es-header__wordmark">{{ shop.name }}</span>
+      <button type="button" class="es-icon-button" data-menu-close aria-label="{{ 'general.close' | t }}">{% render 'icon', name: 'close' %}</button>
+    </div>
+    <ul role="list" class="es-mobile-menu__list">
+      {%- for link in menu.links -%}
+        <li style="--i: {{ forloop.index }}"><a href="{{ link.url }}">{{ link.title }}</a></li>
+      {%- endfor -%}
+    </ul>
+    {% render 'social-icons' %}
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "En-tête",
+  "class": "es-header-section",
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    {
+      "type": "select", "id": "layout", "label": "Disposition", "default": "logo-left",
+      "options": [
+        { "value": "logo-left", "label": "Logo à gauche, menu au centre" },
+        { "value": "logo-center", "label": "Logo centré, menu dessous" },
+        { "value": "split", "label": "Menu à gauche, logo centré" },
+        { "value": "minimal", "label": "Minimal (menu dans le tiroir)" }
+      ]
+    },
+    { "type": "checkbox", "id": "sticky", "label": "Rester visible au défilement", "default": true },
+    { "type": "checkbox", "id": "transparent_on_home", "label": "Transparent au-dessus de la première section de l'accueil", "default": false },
+    { "type": "checkbox", "id": "show_search", "label": "Afficher la recherche", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
+  ],
+  "enabled_on": { "groups": ["header"] }
+}
+{% endschema %}

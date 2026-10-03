@@ -1,0 +1,11 @@
+<article class="es-section es-page es-page--narrow color-{{ section.settings.color_scheme }}" style="--pt: 48px; --pb: 96px;">
+  <div class="es-container es-page__inner">
+    <p class="es-eyebrow">{{ article.published_at | time_tag: format: 'date' }}</p>
+    <h1 class="es-heading es-h1">{{ article.title }}</h1>
+    {%- if article.image -%}<div class="es-media-frame">{{ article.image | image_url: width: 1600 | image_tag: class: 'es-cover', alt: article.title }}</div>{%- endif -%}
+    <div class="es-rte es-page__content">{{ article.content }}</div>
+  </div>
+</article>
+{% schema %}
+{ "name": "Article", "settings": [ { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" } ] }
+{% endschema %}

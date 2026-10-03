@@ -1,0 +1,44 @@
+<section class="es-section es-hgallery color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-hgallery>
+  <div class="es-container">
+    <header class="es-section-head es-section-head--split">
+      <h2 class="es-heading es-h2" data-reveal="lines">{{ section.settings.heading }}</h2>
+      <div class="es-hgallery__nav">
+        <button type="button" class="es-icon-button es-icon-button--outline" data-hg-prev aria-label="{{ 'general.previous' | t }}">{% render 'icon', name: 'arrow-left' %}</button>
+        <button type="button" class="es-icon-button es-icon-button--outline" data-hg-next aria-label="{{ 'general.next' | t }}">{% render 'icon', name: 'arrow' %}</button>
+      </div>
+    </header>
+  </div>
+  <div class="es-hgallery__track" data-hg-track tabindex="0" role="region" aria-label="{{ section.settings.heading | escape }}">
+    {%- for block in section.blocks -%}
+      <figure class="es-hgallery__item es-hgallery__item--{{ block.settings.size }}" {{ block.shopify_attributes }}>
+        <div class="es-media-frame">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 35vw, 80vw', class: 'es-cover' %}</div>
+        {%- if block.settings.title != blank -%}<figcaption><strong>{{ block.settings.title }}</strong>{%- if block.settings.text != blank -%}<span class="es-muted">{{ block.settings.text }}</span>{%- endif -%}</figcaption>{%- endif -%}
+      </figure>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Carrousel horizontal",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "En situation" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "slide", "name": "Visuel", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "text", "label": "Texte" },
+      { "type": "select", "id": "size", "label": "Taille", "default": "portrait", "options": [ { "value": "portrait", "label": "Portrait" }, { "value": "landscape", "label": "Paysage" }, { "value": "square", "label": "Carré" } ] }
+    ] }
+  ],
+  "max_blocks": 10,
+  "presets": [{ "name": "Carrousel horizontal", "blocks": [{ "type": "slide" }, { "type": "slide" }, { "type": "slide" }] }]
+}
+{% endschema %}

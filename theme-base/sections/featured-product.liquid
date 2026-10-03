@@ -1,0 +1,44 @@
+{%- assign product = section.settings.product | default: collections.all.products.first -%}
+<section class="es-section es-featured color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-featured-product>
+  <div class="es-container es-featured__grid">
+    <div class="es-featured__media es-media-frame" data-reveal="zoom">
+      {%- if section.settings.image != blank or section.settings.image_asset != blank -%}
+        {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: product.title, sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-cover' %}
+      {%- elsif product.featured_media -%}
+        {{ product.featured_media | image_url: width: 1500 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 50vw, 100vw', widths: '550, 750, 1100, 1500', class: 'es-cover', alt: product.featured_media.alt }}
+      {%- else -%}
+        {{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}
+      {%- endif -%}
+    </div>
+    <div class="es-featured__info" data-reveal="up">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 class="es-heading es-h2"><a href="{{ product.url }}">{{ product.title | default: 'Votre produit' }}</a></h2>
+      {% render 'price', product: product, use_variant: true %}
+      {%- if section.settings.text != blank -%}<div class="es-rte">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if product != blank -%}
+        {% render 'product-buy', product: product, section_id: section.id, show_quantity: section.settings.show_quantity, show_dynamic_checkout: false, picker: 'buttons' %}
+      {%- endif -%}
+      <a href="{{ product.url }}" class="es-link-arrow">{{ 'products.product.view_details' | t }} {% render 'icon', name: 'arrow' %}</a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Produit en vedette",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Produit" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "image", "label": "Image de mise en scène (facultatif)" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "checkbox", "id": "show_quantity", "label": "Sélecteur de quantité", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Produit en vedette" }]
+}
+{% endschema %}

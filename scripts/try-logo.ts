@@ -1,0 +1,10 @@
+import fs from "node:fs";
+import { logoSet } from "../src/lib/media/logo";
+const S = "/tmp/claude-0/-home-user-Ecom-studio-ia/30a1ccd5-08f9-5162-80f0-38bf5e876ac5/scratchpad";
+const a = await logoSet({ name: "Maison Ondine", tagline: "Soins essentiels", family: "Cormorant", weight: 500, case: "upper", tracking: 0.18, layout: "stacked", emblem: "none", color: "#2A1E18" });
+fs.writeFileSync(`${S}/logo1.png`, a.mainPng); fs.writeFileSync(`${S}/logo1m.png`, a.monoPng);
+const b = await logoSet({ name: "Nordvik", family: "Space Grotesk", weight: 700, case: "upper", tracking: 0.06, layout: "wordmark", emblem: "line", color: "#14302B" });
+fs.writeFileSync(`${S}/logo2.png`, b.mainPng);
+const c = await logoSet({ name: "Atelier Braise", family: "Archivo", weight: 800, case: "upper", tracking: 0.02, layout: "emblem", emblem: "arch", color: "#1A1A1A" });
+fs.writeFileSync(`${S}/logo3.png`, c.mainPng);
+fs.writeFileSync(`${S}/logo1.svg`, a.mainSvg);

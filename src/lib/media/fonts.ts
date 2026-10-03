@@ -1,0 +1,81 @@
+/** Polices embarquées (OFL) pour les compositions d'images, logos et vidéos. */
+import fs from "node:fs";
+import path from "node:path";
+import { GlobalFonts } from "@napi-rs/canvas";
+
+export const FONT_DIR = path.join(process.cwd(), "assets", "fonts");
+
+/** Familles disponibles pour la composition (nom canvas → fichiers par graisse). */
+export const CANVAS_FONTS: Record<string, { file: Record<number, string>; italic?: string; kind: "serif" | "sans" | "display" }> = {
+  "Cormorant": { file: { 400: "Cormorant-400.ttf", 500: "Cormorant-500.ttf", 600: "Cormorant-600.ttf" }, italic: "Cormorant-500italic.ttf", kind: "serif" },
+  "Jost": { file: { 400: "Jost-400.ttf", 500: "Jost-500.ttf", 600: "Jost-600.ttf" }, kind: "sans" },
+  "DM Sans": { file: { 400: "DMSans-400.ttf", 500: "DMSans-500.ttf", 700: "DMSans-700.ttf" }, kind: "sans" },
+  "Archivo": { file: { 400: "Archivo-400.ttf", 600: "Archivo-600.ttf", 800: "Archivo-800.ttf" }, kind: "display" },
+  "Chivo": { file: { 400: "Chivo-400.ttf", 600: "Chivo-600.ttf", 800: "Chivo-800.ttf" }, kind: "sans" },
+  "Lora": { file: { 400: "Lora-400.ttf", 600: "Lora-600.ttf" }, kind: "serif" },
+  "Work Sans": { file: { 400: "WorkSans-400.ttf", 500: "WorkSans-500.ttf", 600: "WorkSans-600.ttf" }, kind: "sans" },
+  "Space Grotesk": { file: { 400: "SpaceGrotesk-400.ttf", 500: "SpaceGrotesk-500.ttf", 700: "SpaceGrotesk-700.ttf" }, kind: "display" },
+  "Montserrat": { file: { 400: "Montserrat-400.ttf", 600: "Montserrat-600.ttf", 800: "Montserrat-800.ttf" }, kind: "display" },
+  "Karla": { file: { 400: "Karla-400.ttf", 600: "Karla-600.ttf" }, kind: "sans" },
+  "Libre Baskerville": { file: { 400: "LibreBaskerville-400.ttf", 700: "LibreBaskerville-700.ttf" }, kind: "serif" },
+  "Playfair Display": { file: { 400: "PlayfairDisplay-400.ttf", 600: "PlayfairDisplay-600.ttf", 700: "PlayfairDisplay-700.ttf" }, kind: "serif" },
+  "Bricolage Grotesque": { file: { 400: "BricolageGrotesque-400.ttf", 600: "BricolageGrotesque-600.ttf", 800: "BricolageGrotesque-800.ttf" }, kind: "display" },
+  "Instrument Serif": { file: { 400: "InstrumentSerif-400.ttf" }, italic: "InstrumentSerif-400italic.ttf", kind: "serif" },
+  "Inter": { file: { 400: "Inter-400.ttf", 500: "Inter-500.ttf", 600: "Inter-600.ttf", 700: "Inter-700.ttf" }, kind: "sans" },
+};
+
+/** Correspondance entre les polices Shopify des directions et les familles locales. */
+export const SHOPIFY_TO_CANVAS: Record<string, string> = {
+  cormorant: "Cormorant",
+  jost: "Jost",
+  dm_sans: "DM Sans",
+  archivo: "Archivo",
+  chivo: "Chivo",
+  lora: "Lora",
+  work_sans: "Work Sans",
+  space_grotesk: "Space Grotesk",
+  montserrat: "Montserrat",
+  karla: "Karla",
+  libre_baskerville: "Libre Baskerville",
+  playfair_display: "Playfair Display",
+};
+
+export function canvasFamily(shopifyHandle: string | undefined, fallback = "Inter"): string {
+  if (!shopifyHandle) return fallback;
+  const key = shopifyHandle.replace(/_[ni]\d$/, "");
+  return SHOPIFY_TO_CANVAS[key] ?? fallback;
+}
+
+let registered = false;
+/** Enregistre chaque graisse sous un alias unique : « Famille@600 », « Famille@italic ». */
+export function ensureFonts() {
+  if (registered) return;
+  for (const [family, def] of Object.entries(CANVAS_FONTS)) {
+    for (const [w, file] of Object.entries(def.file)) {
+      const p = path.join(FONT_DIR, file);
+      if (fs.existsSync(p)) GlobalFonts.registerFromPath(p, `${family}@${w}`);
+    }
+    if (def.italic) {
+      const p = path.join(FONT_DIR, def.italic);
+      if (fs.existsSync(p)) GlobalFonts.registerFromPath(p, `${family}@italic`);
+    }
+  }
+  registered = true;
+}
+
+/** Chaîne CSS « font » utilisable par canvas, avec la graisse la plus proche disponible. */
+export function font(family: string, weight: number, sizePx: number, italic = false): string {
+  ensureFonts();
+  const def = CANVAS_FONTS[family] ?? CANVAS_FONTS.Inter;
+  const name = CANVAS_FONTS[family] ? family : "Inter";
+  if (italic && def.italic) return `${sizePx}px "${name}@italic"`;
+  const weights = Object.keys(def.file).map(Number).sort((a, b) => Math.abs(a - weight) - Math.abs(b - weight));
+  return `${sizePx}px "${name}@${weights[0]}"`;
+}
+
+export function fontFile(family: string, weight = 400, italic = false): string {
+  const def = CANVAS_FONTS[family] ?? CANVAS_FONTS.Inter;
+  if (italic && def.italic) return path.join(FONT_DIR, def.italic);
+  const weights = Object.keys(def.file).map(Number).sort((a, b) => Math.abs(a - weight) - Math.abs(b - weight));
+  return path.join(FONT_DIR, def.file[weights[0]]);
+}

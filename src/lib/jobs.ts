@@ -1,0 +1,241 @@
+/**
+ * File de tâches persistante (SQLite).
+ *  - Exécution par le worker, indépendante du navigateur.
+ *  - Bail (lease) renouvelé pendant l'exécution : une tâche abandonnée par un
+ *    worker arrêté est reprise automatiquement.
+ *  - Clé d'idempotence : une même demande n'est jamais mise deux fois en file.
+ *  - Point de reprise (checkpoint) : une reprise ne refait pas — et ne repaie
+ *    pas — les étapes déjà terminées.
+ *  - Dépendances : une tâche attend que ses prérequis soient terminés.
+ */
+import os from "node:os";
+import { all, id, json, now, one, run, tx } from "./db";
+
+export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked";
+
+export type Job = {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  type: string;
+  label: string;
+  payload: string;
+  status: JobStatus;
+  progress: number;
+  message: string;
+  result: string | null;
+  error: string | null;
+  attempts: number;
+  max_attempts: number;
+  run_at: number;
+  locked_by: string | null;
+  locked_until: number | null;
+  idempotency_key: string | null;
+  parent_id: string | null;
+  depends_on: string;
+  checkpoint: string;
+  created_at: number;
+  updated_at: number;
+  finished_at: number | null;
+};
+
+export type EnqueueInput = {
+  userId: string;
+  projectId?: string | null;
+  type: string;
+  label?: string;
+  payload?: unknown;
+  runAt?: number;
+  maxAttempts?: number;
+  idempotencyKey?: string;
+  parentId?: string | null;
+  dependsOn?: string[];
+};
+
+export function enqueue(input: EnqueueInput): Job {
+  if (input.idempotencyKey) {
+    const existing = one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey);
+    if (existing) return existing;
+  }
+  const jid = id();
+  const t = now();
+  run(
+    `INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, max_attempts, idempotency_key, parent_id, depends_on, created_at, updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    jid,
+    input.userId,
+    input.projectId ?? null,
+    input.type,
+    input.label ?? "",
+    JSON.stringify(input.payload ?? {}),
+    "queued",
+    input.runAt ?? t,
+    input.maxAttempts ?? 3,
+    input.idempotencyKey ?? null,
+    input.parentId ?? null,
+    JSON.stringify(input.dependsOn ?? []),
+    t,
+    t,
+  );
+  return getJob(jid)!;
+}
+
+export const getJob = (jid: string) => one<Job>("SELECT * FROM jobs WHERE id = ?", jid);
+
+export const WORKER_ID = `${os.hostname()}:${process.pid}`;
+const LEASE_MS = 90_000;
+
+/** Réserve atomiquement la prochaine tâche prête dont les dépendances sont terminées. */
+export function claimNext(types?: string[]): Job | null {
+  return tx(() => {
+    const t = now();
+    const candidates = all<Job>(
+      `SELECT * FROM jobs
+       WHERE ((status = 'queued' AND run_at <= ?) OR (status = 'running' AND locked_until < ?))
+       ${types?.length ? `AND type IN (${types.map(() => "?").join(",")})` : ""}
+       ORDER BY run_at ASC LIMIT 25`,
+      t,
+      t,
+      ...(types ?? []),
+    );
+    for (const j of candidates) {
+      const deps = json<string[]>(j.depends_on, []);
+      if (deps.length) {
+        const states = all<{ status: string }>(`SELECT status FROM jobs WHERE id IN (${deps.map(() => "?").join(",")})`, ...deps);
+        if (states.some((s) => s.status === "failed" || s.status === "cancelled")) {
+          run("UPDATE jobs SET status='blocked', message=?, updated_at=? WHERE id=?", "Une étape préalable a échoué.", t, j.id);
+          continue;
+        }
+        if (states.length < deps.length || states.some((s) => s.status !== "done")) continue;
+      }
+      const recovered = j.status === "running";
+      run(
+        "UPDATE jobs SET status='running', locked_by=?, locked_until=?, attempts=attempts+1, updated_at=?, message=? WHERE id=?",
+        WORKER_ID,
+        t + LEASE_MS,
+        t,
+        recovered ? "Reprise après interruption…" : j.message || "Démarrage…",
+        j.id,
+      );
+      return getJob(j.id)!;
+    }
+    return null;
+  });
+}
+
+export class JobCancelled extends Error {}
+
+/** Contexte passé aux gestionnaires de tâches. */
+export class JobContext {
+  constructor(public job: Job) {}
+  get payload() {
+    return json<any>(this.job.payload, {});
+  }
+  get checkpoint() {
+    return json<Record<string, any>>(this.job.checkpoint, {});
+  }
+  /** Met à jour l'avancement et prolonge le bail. Lève JobCancelled si annulée. */
+  progress(p: number, message?: string) {
+    const row = one<{ status: string }>("SELECT status FROM jobs WHERE id = ?", this.job.id);
+    if (row?.status === "cancelled") throw new JobCancelled("Tâche annulée.");
+    run(
+      "UPDATE jobs SET progress=?, message=COALESCE(?, message), locked_until=?, updated_at=? WHERE id=?",
+      Math.max(0, Math.min(1, p)),
+      message ?? null,
+      now() + LEASE_MS,
+      now(),
+      this.job.id,
+    );
+  }
+  /** Enregistre un point de reprise : utilisé pour ne pas refaire une étape coûteuse. */
+  save(key: string, value: unknown) {
+    const cp = { ...this.checkpoint, [key]: value };
+    run("UPDATE jobs SET checkpoint=?, locked_until=?, updated_at=? WHERE id=?", JSON.stringify(cp), now() + LEASE_MS, now(), this.job.id);
+    this.job.checkpoint = JSON.stringify(cp);
+  }
+  async step<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    const cp = this.checkpoint;
+    if (key in cp) return cp[key] as T;
+    const v = await fn();
+    this.save(key, v);
+    return v;
+  }
+}
+
+export function completeJob(jid: string, result: unknown) {
+  run(
+    "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND status='running'",
+    JSON.stringify(result ?? null),
+    "Terminé",
+    now(),
+    now(),
+    jid,
+  );
+}
+
+/** Échec : nouvelle tentative avec attente exponentielle, sauf erreur définitive. */
+export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = {}) {
+  const message = err instanceof Error ? err.message : String(err);
+  const permanent = opts.permanent || (err as any)?.permanent === true || job.attempts >= job.max_attempts;
+  if (permanent) {
+    run(
+      "UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=? WHERE id=?",
+      message.slice(0, 4000),
+      message.slice(0, 300),
+      now(),
+      now(),
+      job.id,
+    );
+  } else {
+    const delay = Math.min(15 * 60_000, 20_000 * 2 ** (job.attempts - 1));
+    run(
+      "UPDATE jobs SET status='queued', error=?, message=?, run_at=?, locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=?",
+      message.slice(0, 4000),
+      `Nouvelle tentative dans ${Math.round(delay / 1000)} s : ${message.slice(0, 200)}`,
+      now() + delay,
+      now(),
+      job.id,
+    );
+  }
+}
+
+export function cancelJob(jid: string) {
+  run("UPDATE jobs SET status='cancelled', message='Annulée', finished_at=?, updated_at=? WHERE id=? AND status IN ('queued','running','blocked')", now(), now(), jid);
+  // Les sous-tâches en attente sont annulées aussi.
+  run("UPDATE jobs SET status='cancelled', message='Annulée', finished_at=?, updated_at=? WHERE parent_id=? AND status IN ('queued','blocked')", now(), now(), jid);
+}
+
+/** Relance manuelle : repart du dernier point de reprise. */
+export function retryJob(jid: string) {
+  run(
+    "UPDATE jobs SET status='queued', run_at=?, attempts=0, error=NULL, message='Relance demandée', updated_at=? WHERE id=? AND status IN ('failed','cancelled','blocked')",
+    now(),
+    now(),
+    jid,
+  );
+}
+
+export class PermanentError extends Error {
+  permanent = true;
+}
+
+/** Erreur utilisateur à afficher telle quelle, sans nouvelle tentative. */
+export class UserFacingError extends PermanentError {}
+
+export function publicJob(j: Job) {
+  return {
+    id: j.id,
+    type: j.type,
+    label: j.label,
+    status: j.status,
+    progress: j.progress,
+    message: j.message,
+    error: j.status === "failed" ? j.error : null,
+    attempts: j.attempts,
+    parentId: j.parent_id,
+    result: json(j.result, null),
+    createdAt: j.created_at,
+    updatedAt: j.updated_at,
+    finishedAt: j.finished_at,
+  };
+}
