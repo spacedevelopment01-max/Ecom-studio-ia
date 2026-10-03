@@ -50,6 +50,10 @@ const SECTIONS_COUNT = (() => {
 export default async function Home() {
   const list = demos();
   const d0 = list[0];
+  // Avant / après : le drone (photo fournisseur sur fond de ciel) puis composé dans un décor du quotidien,
+  // au même cadrage que la photo d'origine (public/demo/drone/avant-apres.jpg, produit réel détouré).
+  const ba = list.find((d) => d.id === "drone") ?? d0;
+  const baAfter = ba?.id === "drone" ? "/demo/drone/avant-apres.jpg" : ba?.images.find((x) => /scène|scene/i.test(x.label))?.src ?? ba?.photo;
   const user = await currentUser();
   const live = paymentsLive();
   const themes = directionCards();
@@ -343,10 +347,10 @@ export default async function Home() {
         </section>
 
         {/* Fidélité */}
-        {d0 && (
+        {ba && (
           <section className="mx-auto grid max-w-7xl items-center gap-12 px-4 pb-24 sm:px-6 sm:pb-32 lg:grid-cols-2">
             <div className="reveal reveal-scale">
-              <BeforeAfter before={d0.photo} after={d0.images.find((x) => /social/i.test(x.label))?.src ?? d0.images.find((x) => /scène|scene/i.test(x.label))?.src ?? d0.photo} beforeLabel="Photo d'origine" afterLabel="Création du studio" />
+              <BeforeAfter before={ba.photo} after={baAfter!} aspect={ba.id === "drone" ? "18 / 11" : undefined} beforeLabel="Photo d'origine" afterLabel="Création du studio" />
             </div>
             <div>
               <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Fidélité au produit</p>

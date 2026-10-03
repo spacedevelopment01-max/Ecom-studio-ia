@@ -109,10 +109,10 @@ export function FilmPlayer({ films }: { films: Film[] }) {
 }
 
 /** Comparaison avant / après (photo d'origine ↔ création). */
-export function BeforeAfter({ before, after, beforeLabel, afterLabel }: { before: string; after: string; beforeLabel: string; afterLabel: string }) {
+export function BeforeAfter({ before, after, beforeLabel, afterLabel, aspect = "4 / 5" }: { before: string; after: string; beforeLabel: string; afterLabel: string; aspect?: string }) {
   const [pos, setPos] = useState(52);
   return (
-    <div className="relative aspect-[4/5] w-full select-none overflow-hidden rounded-3xl bg-paper-2">
+    <div className="relative w-full select-none overflow-hidden rounded-3xl bg-paper-2" style={{ aspectRatio: aspect }}>
       <img src={after} alt={afterLabel} className="absolute inset-0 size-full object-cover" loading="lazy" />
       <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
         <img src={before} alt={beforeLabel} className="absolute inset-0 size-full object-cover" loading="lazy" />
