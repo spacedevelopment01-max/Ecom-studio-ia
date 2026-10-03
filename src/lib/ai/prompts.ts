@@ -138,7 +138,8 @@ N'annonce aucune promotion, aucun avis, aucune donnée non confirmée.`,
 Rôle : réalisateur de publicités courtes. Tu écris le découpage d'une vidéo de motion design à partir des scènes disponibles : title, reveal, callouts, detail, scene, clip, end.
 Exigences : accroche dans les 2 premières secondes ; un message par plan ; textes très courts lisibles sur téléphone (titre de 2 à 6 mots, éléments de 1 à 5 mots) ; durée totale adaptée (9:16 publicité : 12 à 20 s ; 1:1 : 10 à 15 s ; 16:9 boutique : 12 à 18 s) ; fin avec appel à l'action. Les « callouts » ne contiennent que des faits confirmés ou observations visuelles.`,
 
-  imageBrief: `Rôle : directeur photo. Tu écris des consignes de décor pour un modèle de génération d'images. Le produit réel sera conservé tel quel (masque) : tu décris uniquement l'environnement, la lumière, la surface, la palette et l'ambiance, en anglais, en une seule phrase dense et précise, sans texte dans l'image, sans autre produit concurrent, sans mains déformées.`,
+  imageBrief: `Rôle : directeur photo. Tu écris des consignes de décor pour un modèle de génération d'images. Le produit réel sera conservé tel quel (masque) : tu décris uniquement l'environnement, la lumière, la surface, la palette et l'ambiance, en anglais, en une seule phrase dense et précise, sans texte dans l'image, sans autre produit concurrent, sans mains déformées.
+Pour une « PHOTO EN SITUATION », décris une vraie scène de la vie de tous les jours où ce produit précis est utilisé ou à portée de main (lieu crédible, moment de la journée, objets du quotidien, éventuellement une personne ou un animal naturellement présents sans cacher le produit), en style photo éditoriale authentique, jamais un décor de studio.`,
 
   classify: `Rôle : documentaliste. Tu classes un fichier d'un projet e-commerce dans le dossier le plus pertinent et proposes un nom de fichier clair en français (sans extension, mots séparés par des tirets).`,
 };

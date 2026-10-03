@@ -48,13 +48,15 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
     return list.filter((x) => x.status !== "rejected")[n];
   };
   // Photos en situation (vie de tous les jours) : héros de la boutique et première scène.
-  put("lifestyle", pick("lifestyle", 0), "en-situation-1");
-  put("lifestyle2", pick("lifestyle", 1), "en-situation-2");
+  // Celles du marchand passent avant celles générées par l'IA.
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (status = 'approved') DESC, created_at DESC", projectId);
+  put("lifestyle", life[0], "en-situation-1");
+  put("lifestyle2", life[1], "en-situation-2");
   put("cutout", pick("cutout"), "produit-detoure");
   put("packshot", pick("packshot"), "packshot");
   put("detail1", pick("detail", 0), "detail-1");
   put("detail2", pick("detail", 1), "detail-2");
-  put("scene1", pick("lifestyle", 1) ?? pick("scene", 0), "scene-1");
+  put("scene1", life[1] ?? pick("scene", 0), "scene-1");
   put("scene2", pick("scene", 1), "scene-2");
   put("scene3", pick("scene", 2), "scene-3");
   put("banner", pick("banner"), "banniere");
@@ -85,7 +87,7 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   put("favicon", pick("favicon"), "favicon");
   // Galerie produit : packshots puis détails puis scènes.
   const gallery: string[] = [];
-  for (const a of [pick("packshot"), pick("lifestyle", 0), pick("detail", 0), pick("lifestyle", 1), pick("scene", 0), pick("detail", 1), pick("scene", 1)]) {
+  for (const a of [pick("packshot"), life[0], pick("detail", 0), life[1], pick("scene", 0), pick("detail", 1), pick("scene", 1)]) {
     if (!a) continue;
     const f = themeFileName(a, a.role === "packshot" ? "galerie-packshot" : `galerie-${a.role}-${a.id.slice(0, 4)}`);
     files[f] = a.id;

@@ -80,12 +80,14 @@ export async function ensureCutouts(ctx: JobContext | null, project: Project): P
 
 type ImgCtx = { userId: string; projectId: string; jobId?: string | null };
 
-async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string): Promise<{ image: Buffer; provider: string; qc?: unknown } | null> {
+async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string): Promise<{ image: Buffer; provider: string; qc?: unknown } | null> {
   const provider = imageProviderAvailable();
   if (!provider) return null;
   const brief = llmConfigured()
-    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, `${style}, format ${FORMATS[formatId].label}`)
-    : { prompt: `${style} product photography set, soft natural light, ${project.brand?.palette.secondary ?? "neutral"} tones`, surface: "", lightFrom: "left" as const };
+    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? `PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}, format ${FORMATS[formatId].label}` : `${style}, format ${FORMATS[formatId].label}`)
+    : lifestyle
+      ? { prompt: `Authentic everyday lifestyle photograph: ${lifestyle}. Natural daylight, real home or outdoor setting, candid editorial style, shallow depth of field. People may appear naturally around the product without covering it. No text, no logos, no other branded products.`, surface: "", lightFrom: "left" as const }
+      : { prompt: `${style} product photography set, soft natural light, ${project.brand?.palette.secondary ?? "neutral"} tones`, surface: "", lightFrom: "left" as const };
   const f = FORMATS[formatId];
   if (provider === "openai") {
     // Cadre à la taille OpenAI la plus proche, produit placé, masque du produit.
@@ -107,6 +109,20 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
   const plate = await geminiPlate({ ...ictx, usageKey: `${key}:gemini` }, { prompt: brief.prompt, reference: cut, aspect });
   return { image: plate, provider: "google-plate" };
 }
+
+/** Situations de la vie de tous les jours, par secteur (consignes pour le modèle d'image). */
+const LIFESTYLE: Record<string, [string, string]> = {
+  beaute: ["on a sunlit bathroom shelf among everyday toiletries, morning routine", "held near a vanity mirror in a bright bedroom, getting ready"],
+  mode: ["laid on a bed next to sneakers and a tote bag, bright apartment, getting dressed", "hanging in an entryway by the door, keys and plants nearby, city apartment"],
+  bijoux: ["on a wooden dresser next to a hand, soft morning light through linen curtains", "on a café table beside a cup of coffee and a notebook, city morning"],
+  maison: ["in a cosy lived-in bedroom on an unmade bed with linen sheets, warm morning light", "in a bright living room on a sofa with a throw blanket and a book, afternoon light"],
+  hightech: ["outdoors on a wooden picnic table with a backpack, hills in the background, golden hour", "on a tidy home desk next to a laptop and a coffee mug, daylight"],
+  sport: ["on a forest trail next to running shoes and a backpack, early morning", "on a gym bench beside a towel and a water bottle, natural light"],
+  alimentation: ["on a sunny café terrace table next to a glass with ice, summer afternoon", "in a picnic basket on a blanket in a park, friends blurred in the background"],
+  enfants: ["on a playroom rug among wooden toys, soft daylight", "on a child's bedside table next to a picture book, evening lamp light"],
+  animaux: ["on a light grey sofa with a relaxed cat nearby, cosy living room, daylight", "on a wooden floor in a bright living room with a dog resting nearby"],
+  artisanat: ["on a wooden workshop table among tools and paper, window light", "on a shelf in a bright home studio next to plants and ceramics"],
+};
 
 export type ImageSetOptions = { scenes?: SceneStyle[]; withAi?: boolean; social?: boolean; banner?: boolean };
 
@@ -185,6 +201,35 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
       const s = await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, background: bg ? await loadImage(bg) : null });
       return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}.jpg`, "scene", "images.scenes", { recipe: `Mise en scène ${style}`, provider, qc })];
     });
+  }
+
+  // Photos en situation, dans la vie de tous les jours (IA d'image requise) : elles ouvrent la boutique.
+  if (withAi) {
+    const contexts = LIFESTYLE[project.product.sector ?? ""] ?? LIFESTYLE.maison;
+    for (const [i, situation] of contexts.entries()) {
+      await ctx.step(`lifestyle:${i}`, async () => {
+        ctx.progress(0.7 + i * 0.02, "Photos du produit en situation");
+        try {
+          const r = await aiBackground(ictx, project, cutBuf, "lifestyle", i === 0 ? "landscape" : "product", `${ctx.job.id}:lifestyle:${i}`, situation);
+          if (!r) return [];
+          if (r.provider !== "openai") {
+            // Gemini : décor de vie généré, produit réel posé dessus par la composition locale (ombres, sol).
+            const s = await renderScene({ product, palette: pal, style: "spotlight", format: i === 0 ? FORMATS.landscape : FORMATS.product, seed: 31 + i, background: await loadImage(r.image) });
+            return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-en-situation-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: `Photo en situation : décor généré (${situation}) et produit réel composé`, provider: "Gemini + composition locale" })];
+          }
+          let qc: unknown = null;
+          if (llmConfigured()) {
+            const check = await aiQcImage({ ...ictx, usageKey: `${ctx.job.id}:qc:lifestyle:${i}` }, assetData(one<Asset>("SELECT * FROM assets WHERE id = ?", main.source_asset_id)!), r.image);
+            qc = check;
+            if (!check.sameProduct || check.score < 6) return [];
+          }
+          return [await save(await sharp(r.image).jpeg({ quality: 92 }).toBuffer(), `${base}-en-situation-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: `Photo en situation générée autour du produit réel : ${situation}`, provider: "OpenAI", qc })];
+        } catch (e) {
+          console.warn("[images] photo en situation indisponible :", (e as Error).message);
+          return [];
+        }
+      });
+    }
   }
 
   if (opts.banner !== false) {

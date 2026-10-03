@@ -11,6 +11,7 @@ const GROUPS = [
   { id: "packshot", label: "Packshots", roles: "packshot" },
   { id: "detail", label: "Détails", roles: "detail" },
   { id: "scene", label: "Scènes", roles: "scene" },
+  { id: "lifestyle", label: "En situation", roles: "lifestyle" },
   { id: "banner", label: "Bannières", roles: "banner" },
   { id: "social", label: "Réseaux", roles: "social" },
   { id: "ad", label: "Publicités", roles: "ad" },
