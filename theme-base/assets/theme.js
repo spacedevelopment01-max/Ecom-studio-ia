@@ -358,6 +358,35 @@
     });
   }
 
+  /* ---------- Routine en gestes : un geste par portion de défilement ---------- */
+  function initRoutine() {
+    $$('[data-routine]').forEach(function (s) {
+      if (s.__routine) return; s.__routine = true;
+      var steps = $$('[data-routine-step]', s), shots = $$('[data-routine-shot]', s);
+      var cur = $('[data-routine-current]', s), bar = $('[data-routine-bar]', s), track = $('.es-routine__track', s);
+      var n = steps.length, last = -1;
+      function show(i, p) {
+        if (i !== last) {
+          last = i;
+          steps.forEach(function (x, j) { x.classList.toggle('is-active', j === i); });
+          shots.forEach(function (x, j) { x.classList.toggle('is-active', j === i); });
+          if (cur) cur.textContent = (i + 1 < 10 ? '0' : '') + (i + 1);
+        }
+        if (bar) bar.style.width = Math.round(p * 100) + '%';
+      }
+      if (reduce || !n) { show(0, 1); return; }
+      function onScroll() {
+        var r = track.getBoundingClientRect();
+        var total = Math.max(1, r.height - window.innerHeight);
+        var p = Math.min(1, Math.max(0, -r.top / total));
+        show(Math.min(n - 1, Math.floor(p * n)), p);
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      onScroll();
+    });
+  }
+
   /* ---------- Carrousel horizontal ---------- */
   function initHGallery() {
     $$('[data-hgallery]').forEach(function (g) {
@@ -559,6 +588,7 @@
     initGallery();
     initStickyBuy();
     initStory();
+    initRoutine();
     initHGallery();
     initVideos();
     initMisc();
@@ -569,5 +599,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
   /* Éditeur de thème Shopify : réinitialise les sections rechargées. */
-  document.addEventListener('shopify:section:load', function (e) { initNarrative(e.target); initWords(e.target); initCounters(e.target); initCompare(e.target); initGlow(e.target); initScrollEffects(); initReveal(e.target); initBuy(e.target); initOffers(e.target); initEta(e.target); initStory(); initHGallery(); initParallax(); initVideos(); initGallery(); });
+  document.addEventListener('shopify:section:load', function (e) { initNarrative(e.target); initWords(e.target); initCounters(e.target); initCompare(e.target); initGlow(e.target); initScrollEffects(); initReveal(e.target); initBuy(e.target); initOffers(e.target); initEta(e.target); initStory(); initRoutine(); initHGallery(); initParallax(); initVideos(); initGallery(); });
 })();

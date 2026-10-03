@@ -1,0 +1,90 @@
+{%- assign steps = section.blocks | size -%}
+<section class="es-section es-routine color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --steps: {{ steps | at_least: 1 }};" data-routine>
+  <div class="es-routine__track">
+    <div class="es-routine__pin">
+      <div class="es-container es-routine__inner">
+        <header class="es-routine__head">
+          <div>
+            {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+            {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h3 es-routine__title">{{ section.settings.heading }}</h2>{%- endif -%}
+          </div>
+          <p class="es-routine__count" aria-hidden="true"><span data-routine-current>01</span><small>/ {{ steps | prepend: '0' | slice: -2, 2 }}</small></p>
+        </header>
+
+        <div class="es-routine__grid">
+          <div class="es-routine__stage">
+            <span class="es-routine__ring" aria-hidden="true"></span>
+            {%- if section.settings.watermark != blank -%}<span class="es-routine__mark" aria-hidden="true">{{ section.settings.watermark }}</span>{%- endif -%}
+            {%- for block in section.blocks -%}
+              <figure class="es-routine__shot{% if forloop.first %} is-active{% endif %}" data-routine-shot="{{ forloop.index0 }}">
+                {%- if block.settings.image != blank or block.settings.image_asset != blank -%}
+                  {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 45vw, 90vw', class: 'es-routine__img' %}
+                {%- else -%}
+                  {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 45vw, 90vw', class: 'es-routine__img' %}
+                {%- endif -%}
+                {%- if block.settings.label != blank -%}
+                  <figcaption class="es-routine__callout" style="--x: {{ block.settings.label_x }}%; --y: {{ block.settings.label_y }}%;">
+                    <i class="es-routine__dot"></i><i class="es-routine__line"></i><span>{{ block.settings.label }}</span>
+                  </figcaption>
+                {%- endif -%}
+              </figure>
+            {%- endfor -%}
+            {%- if section.settings.chip1 != blank or section.settings.chip2 != blank -%}
+              <p class="es-routine__chips">
+                {%- if section.settings.chip1 != blank -%}<span class="is-on">{{ section.settings.chip1 }}</span>{%- endif -%}
+                {%- if section.settings.chip2 != blank -%}<span>{{ section.settings.chip2 }}</span>{%- endif -%}
+              </p>
+            {%- endif -%}
+          </div>
+
+          <div class="es-routine__steps">
+            {%- for block in section.blocks -%}
+              <article class="es-routine__step{% if forloop.first %} is-active{% endif %}" data-routine-step="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+                <p class="es-routine__kicker"><b>{{ forloop.index | prepend: '0' | slice: -2, 2 }}</b>{%- if block.settings.eyebrow != blank -%} {{ block.settings.eyebrow }}{%- endif -%}</p>
+                <h3 class="es-heading es-h2">{{ block.settings.title }}</h3>
+                <div class="es-rte">{{ block.settings.text }}</div>
+                {%- if block.settings.note != blank -%}<p class="es-routine__note">{% render 'icon', name: 'sparkle' %}<span>{{ block.settings.note }}</span></p>{%- endif -%}
+              </article>
+            {%- endfor -%}
+            <div class="es-routine__progress" aria-hidden="true"><i data-routine-bar></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Routine en gestes",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Mode d'emploi" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Votre routine, en quelques gestes." },
+    { "type": "text", "id": "watermark", "label": "Mot en filigrane", "info": "Un mot court affiché en grand derrière le produit (nom du modèle par exemple)." },
+    { "type": "image_picker", "id": "image", "label": "Image du produit (par défaut)" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "chip1", "label": "Pastille 1" },
+    { "type": "text", "id": "chip2", "label": "Pastille 2" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 0 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Geste", "settings": [
+      { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Le premier geste" },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Un geste simple." },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Décrivez ce geste avec les informations confirmées du produit.</p>" },
+      { "type": "text", "id": "note", "label": "Conseil", "info": "Ex. « Suivez la notice pour l'entretien »." },
+      { "type": "image_picker", "id": "image", "label": "Image de ce geste" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "label", "label": "Étiquette sur le produit", "info": "Ex. « Tête de brosse ». Laissez vide pour ne pas afficher d'étiquette." },
+      { "type": "range", "id": "label_x", "min": 0, "max": 100, "step": 1, "unit": "%", "label": "Point visé : position horizontale", "default": 50 },
+      { "type": "range", "id": "label_y", "min": 0, "max": 100, "step": 1, "unit": "%", "label": "Point visé : position verticale", "default": 30 }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Routine en gestes", "blocks": [{ "type": "step" }, { "type": "step" }, { "type": "step" }] }]
+}
+{% endschema %}

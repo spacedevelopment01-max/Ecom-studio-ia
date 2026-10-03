@@ -1,0 +1,40 @@
+<section class="es-section es-trust color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h3 es-trust__heading" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+    <ul class="es-trust__list" style="--n: {{ section.blocks.size | at_least: 1 }}" data-reveal-stagger>
+      {%- for block in section.blocks -%}
+        <li class="es-trust__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          <span class="es-trust__icon">{% render 'icon', name: block.settings.icon %}</span>
+          <span><b>{{ block.settings.title }}</b>{%- if block.settings.text != blank -%}<small>{{ block.settings.text }}</small>{%- endif -%}</span>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Arguments de confiance",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "N'indiquez que des engagements que vous tenez réellement (délais, retours, paiement, service client)." },
+    { "type": "text", "id": "heading", "label": "Titre" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-2" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 40 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Argument", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "shield", "options": [
+        { "value": "shield", "label": "Bouclier" }, { "value": "truck", "label": "Livraison" }, { "value": "return", "label": "Retour" }, { "value": "check", "label": "Coche" },
+        { "value": "chat", "label": "Service client" }, { "value": "clock", "label": "Horloge" }, { "value": "gift", "label": "Cadeau" }, { "value": "leaf", "label": "Feuille" }, { "value": "heart", "label": "Cœur" }, { "value": "globe", "label": "Globe" }
+      ] },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Paiement sécurisé" },
+      { "type": "text", "id": "text", "label": "Précision", "default": "Géré par votre plateforme de paiement" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Arguments de confiance", "blocks": [{ "type": "item" }] }]
+}
+{% endschema %}

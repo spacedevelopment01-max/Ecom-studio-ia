@@ -1,0 +1,58 @@
+{%- comment -%}
+  Avis clients saisis par le marchand (citations réelles uniquement). Sans avis, la section n'affiche rien
+  sur la boutique ; un rappel apparaît seulement dans l'éditeur.
+{%- endcomment -%}
+<section class="es-section es-testi color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.blocks.size > 0 -%}
+      <header class="es-section-head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+      </header>
+      <div class="es-testi__track" data-reveal-stagger>
+        {%- for block in section.blocks -%}
+          <figure class="es-testi__card" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            {%- assign stars = block.settings.rating | plus: 0 -%}
+            {%- if stars > 0 -%}<p class="es-testi__stars" aria-label="{{ stars }} sur 5">{%- for i in (1..5) -%}<span{% if i > stars %} class="is-off"{% endif %}>★</span>{%- endfor -%}</p>{%- endif -%}
+            <blockquote class="es-testi__quote">{{ block.settings.quote }}</blockquote>
+            <figcaption class="es-testi__who">
+              {%- if block.settings.image != blank or block.settings.image_asset != blank -%}<span class="es-testi__avatar">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.author, sizes: '48px', class: 'es-cover' %}</span>{%- endif -%}
+              <span><b>{{ block.settings.author }}</b>{%- if block.settings.detail != blank -%}<small>{{ block.settings.detail }}</small>{%- endif -%}</span>
+            </figcaption>
+          </figure>
+        {%- endfor -%}
+      </div>
+    {%- elsif request.design_mode -%}
+      <p class="es-reviews__hint">Ajoutez de vrais avis de vos clients (bloc « Avis ») : rien ne s'affiche tant qu'il n'y en a pas.</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Avis clients premium",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Ils en parlent" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "L'avis de nos clients" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "review", "name": "Avis", "settings": [
+      { "type": "paragraph", "content": "Uniquement de vrais avis, recopiés avec l'accord du client." },
+      { "type": "textarea", "id": "quote", "label": "Avis" },
+      { "type": "text", "id": "author", "label": "Prénom du client" },
+      { "type": "text", "id": "detail", "label": "Précision (ville, produit acheté…)" },
+      { "type": "select", "id": "rating", "label": "Note", "default": "0", "options": [{ "value": "0", "label": "Sans note" }, { "value": "5", "label": "5 / 5" }, { "value": "4", "label": "4 / 5" }, { "value": "3", "label": "3 / 5" }, { "value": "2", "label": "2 / 5" }, { "value": "1", "label": "1 / 5" }] },
+      { "type": "image_picker", "id": "image", "label": "Photo (avec accord)" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" }
+    ] },
+    { "type": "@app" }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Avis clients premium" }]
+}
+{% endschema %}

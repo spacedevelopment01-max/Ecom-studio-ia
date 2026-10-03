@@ -1,0 +1,24 @@
+<section class="es-section es-apps color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.blocks.size > 0 -%}
+      {%- for block in section.blocks -%}{% render block %}{%- endfor -%}
+    {%- elsif request.design_mode -%}
+      <p class="es-reviews__hint">Ajoutez ici le bloc d'une application installée sur votre boutique.</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Applications",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 40 }
+  ],
+  "blocks": [{ "type": "@app" }],
+  "presets": [{ "name": "Applications" }]
+}
+{% endschema %}
