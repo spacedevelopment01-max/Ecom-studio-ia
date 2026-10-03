@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check, Camera, Link2, Type, Sparkles, Store, Image as ImageIcon, Film, CalendarDays, FolderTree, BookOpen, Plug, ShieldCheck, MessageSquare, Pause, Palette, Lock } from "lucide-react";
 import { Logo, ThemeToggle } from "@/components/ui";
 import { SiteFooter } from "@/components/site-footer";
+import { FilesSorter } from "@/components/files-sorter";
 import { AutoVideo, BeforeAfter, FilmPlayer, DemoTabs, RevealObserver, ScrollFX, ThemeShowcase, VideoChapters, type Demo } from "@/components/landing-client";
 import { directionCards } from "@/lib/theme/directions";
 import { OFFER } from "@/lib/billing";
@@ -386,7 +387,7 @@ export default async function Home() {
               </ul>
             </div>
             <div className="reveal reveal-scale lg:col-span-7">
-              <FilesMock />
+              <FilesSorter />
             </div>
           </div>
         </section>
@@ -522,64 +523,6 @@ export default async function Home() {
       </main>
 
       <SiteFooter />
-    </div>
-  );
-}
-
-/** Maquette du gestionnaire de fichiers : arborescence réelle du studio et fichiers classés. */
-function FilesMock() {
-  const tree: [string, string[]][] = [
-    ["01 · Produit", ["Photos originales", "Détourages", "Catalogue"]],
-    ["02 · Marque", ["Logos", "Charte & palette"]],
-    ["03 · Images", ["Packshots", "Scènes & usages", "Bannières boutique", "Réseaux sociaux", "Publicités"]],
-    ["04 · Vidéos", ["Publicités", "Réseaux sociaux", "Boutique"]],
-    ["05 · Boutique", ["Exports de thèmes"]],
-    ["06 · Contenus", ["Textes", "Calendrier"]],
-  ];
-  const open = new Set(["03 · Images", "04 · Vidéos"]);
-  const files: [string, string, string][] = [
-    ["IMG_4821.jpg", "drone-photo-originale.jpg", "01 · Produit › Photos originales"],
-    ["capture (3).png", "drone-detoure.png", "01 · Produit › Détourages"],
-    ["Sans titre.jpg", "drone-post-4x5.jpg", "03 · Images › Réseaux sociaux"],
-    ["video_final_v2.mp4", "drone-pub-9x16.mp4", "04 · Vidéos › Publicités"],
-    ["logo ok.svg", "logo-principal.svg", "02 · Marque › Logos"],
-  ];
-  return (
-    <div className="overflow-hidden rounded-[28px] border border-line bg-paper shadow-soft">
-      <div className="flex items-center gap-2 border-b border-line px-4 py-3">
-        <span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" />
-        <span className="ml-2 text-xs text-muted">Fichiers · Ostral</span>
-        <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-signal-soft px-2.5 py-1 text-[11px] font-medium text-signal"><Sparkles className="size-3" /> Classement par l'IA</span>
-      </div>
-      <div className="grid sm:grid-cols-[minmax(0,200px)_1fr]">
-        <ul className="border-b border-line p-3 text-[13px] sm:border-b-0 sm:border-r">
-          {tree.map(([f, kids]) => (
-            <li key={f}>
-              <p className="flex items-center gap-2 rounded-lg px-2 py-1.5 font-medium text-ink"><FolderTree className="size-3.5 text-signal" /> {f}</p>
-              {open.has(f) && (
-                <ul className={`ml-4 border-l border-line pl-2 ${f === "04 · Vidéos" ? "hidden sm:block" : ""}`}>
-                  {kids.map((k) => <li key={k} className="truncate px-2 py-1 text-ink-2">{k}</li>)}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
-        <div className="p-4 sm:p-5">
-          <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">Fichiers importés</p>
-          <ul className="mt-3 grid gap-2.5">
-            {files.map(([from, to, dest], i) => (
-              <li key={from} className="reveal rounded-2xl border border-line bg-card p-3" style={{ ["--d" as any]: i + 2 }}>
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
-                  <span className="text-muted line-through decoration-1">{from}</span>
-                  <ArrowRight className="size-3.5 shrink-0 text-signal" />
-                  <span className="font-medium text-ink">{to}</span>
-                </div>
-                <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-paper-2 px-2 py-0.5 text-[11px] text-ink-2"><FolderTree className="size-3 text-signal" /> {dest}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
     </div>
   );
 }
