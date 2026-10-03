@@ -79,18 +79,18 @@ export function AccountPage() {
             <Card className="p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium uppercase tracking-[.16em] text-muted">Enveloppe IA</p>
+                  <p className="text-sm font-medium uppercase tracking-[.16em] text-muted">Crédits de création</p>
                   <p className="mt-2 font-display text-5xl font-semibold">{data.gauge.capacityEur === 0 ? "0 %" : pct(data.gauge.availablePct)} <span className="font-sans text-lg font-normal tracking-normal text-ink-2">disponible</span></p>
                 </div>
-                {data.gauge.capacityEur === 0 ? <Badge>Aucune enveloppe</Badge> : data.gauge.paused ? <Badge tone="bad" dot>Générations en pause</Badge> : data.gauge.alert ? <Badge tone="warn" dot>80 % utilisés</Badge> : <Badge tone="ok" dot>Actif</Badge>}
+                {data.gauge.capacityEur === 0 ? <Badge>Aucun crédit</Badge> : data.gauge.paused ? <Badge tone="bad" dot>Générations en pause</Badge> : data.gauge.alert ? <Badge tone="warn" dot>80 % utilisés</Badge> : <Badge tone="ok" dot>Actif</Badge>}
               </div>
               <Progress value={data.gauge.capacityEur === 0 ? 0 : data.gauge.usedPct * 100} className={cx("mt-5 h-3", data.gauge.alert && "[&>span]:bg-warn")} />
               <div className="mt-2 flex justify-between text-xs text-muted">
                 <span>{pct(data.gauge.usedPct)} utilisés</span>
-                <span>Renouvellement de l'enveloppe mensuelle le {formatDate(data.gauge.periodEnd, { day: "numeric", month: "long" })}</span>
+                <span>Renouvellement des crédits le {formatDate(data.gauge.periodEnd, { day: "numeric", month: "long" })}</span>
               </div>
-              {data.gauge.paused && data.gauge.capacityEur > 0 && <p className="mt-4 rounded-2xl bg-bad-soft p-3 text-sm text-bad">Votre enveloppe est épuisée : les nouvelles générations par IA sont en pause. Tout le reste (édition, aperçu, export, fichiers, publications déjà validées, moteur intégré) continue de fonctionner.</p>}
-              {data.gauge.capacityEur === 0 && <p className="mt-4 rounded-2xl bg-paper-2 p-3 text-sm text-ink-2">Votre compte n'a pas encore d'enveloppe IA (elle est incluse dans l'abonnement, ou ajoutée par une recharge). En attendant, le studio utilise son moteur intégré (analyse, marque, textes, images de composition et vidéos motion design générés sur le serveur, sans IA externe).</p>}
+              {data.gauge.paused && data.gauge.capacityEur > 0 && <p className="mt-4 rounded-2xl bg-bad-soft p-3 text-sm text-bad">Vos crédits sont épuisés : les nouvelles générations par IA sont en pause. Tout le reste (édition, aperçu, export, fichiers, publications déjà validées, moteur intégré) continue de fonctionner.</p>}
+              {data.gauge.capacityEur === 0 && <p className="mt-4 rounded-2xl bg-paper-2 p-3 text-sm text-ink-2">Votre compte n'a pas encore de crédits de création (ils sont inclus dans l'abonnement, ou ajoutés par une recharge). En attendant, le studio utilise son moteur intégré (analyse, marque, textes, images de composition et vidéos motion design générés sur le serveur, sans IA externe).</p>}
               <div className="mt-6 grid gap-2">
                 <p className="text-sm font-medium">Répartition de votre consommation ce mois-ci</p>
                 {data.byTask.length === 0 ? (
@@ -113,7 +113,7 @@ export function AccountPage() {
                   <p className="font-display text-xl font-semibold">Abonnement</p>
                   <Badge tone={SUB[data.subscription.status]?.tone}>{SUB[data.subscription.status]?.label ?? data.subscription.status}</Badge>
                 </div>
-                <p className="mt-2 text-sm text-ink-2">{euro(o!.basePriceEur)} TTC / mois pour une boutique, {euro(o!.extraStorePriceEur)} / mois par boutique supplémentaire. Un tiers de l'abonnement alimente votre enveloppe IA, renouvelée chaque mois. Aucun quota de créations : seule l'enveloppe compte.</p>
+                <p className="mt-2 text-sm text-ink-2">{euro(o!.basePriceEur)} TTC / mois pour une boutique, {euro(o!.extraStorePriceEur)} / mois par boutique supplémentaire. L'IA est comprise, avec des crédits de création renouvelés chaque mois. Aucun quota de créations : seuls les crédits comptent.</p>
                 <div className="mt-5 flex items-center justify-between rounded-2xl border border-line p-3">
                   <span className="text-sm">Boutiques</span>
                   <div className="flex items-center gap-2">
@@ -133,8 +133,8 @@ export function AccountPage() {
               </Card>
 
               <Card className="flex flex-col p-6">
-                <p className="font-display text-xl font-semibold">Recharger l'enveloppe IA</p>
-                <p className="mt-2 text-sm text-ink-2">Par multiples de {euro(o!.topupStepEur)}. La moitié de chaque recharge alimente l'enveloppe IA ; ce solde est conservé d'un mois à l'autre.</p>
+                <p className="font-display text-xl font-semibold">Recharger mes crédits</p>
+                <p className="mt-2 text-sm text-ink-2">Par multiples de {euro(o!.topupStepEur)}. Les crédits rechargés s'ajoutent à ceux de l'abonnement et sont conservés d'un mois à l'autre.</p>
                 {data.gauge.topupEur > 0 && <p className="mt-2 text-sm">Solde de recharge conservé : <strong>{pct(data.gauge.capacityEur ? data.gauge.topupEur / data.gauge.capacityEur : 0)}</strong> de votre capacité actuelle.</p>}
                 <div className="mt-5 flex flex-wrap gap-2">
                   {[10, 20, 50, 100].map((v) => (
@@ -153,7 +153,7 @@ export function AccountPage() {
 
             {data.history.length > 0 && (
               <Card className="p-6">
-                <p className="font-display text-xl font-semibold">Historique de l'enveloppe</p>
+                <p className="font-display text-xl font-semibold">Historique des crédits</p>
                 <ul className="mt-3 divide-y divide-line text-sm">
                   {data.history.map((h, i) => (
                     <li key={i} className="flex justify-between gap-3 py-2"><span>{h.note}</span><span className="shrink-0 text-muted">{formatDate(h.at, { day: "numeric", month: "short", year: "numeric" })}</span></li>

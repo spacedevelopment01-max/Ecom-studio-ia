@@ -5,7 +5,7 @@ import { ArrowRight, ArrowUpRight, Check, Camera, Link2, Type, Sparkles, Store, 
 import { Logo, ThemeToggle } from "@/components/ui";
 import { AutoVideo, BeforeAfter, FilmPlayer, DemoTabs, RevealObserver, ScrollFX, ThemeShowcase, VideoChapters, type Demo } from "@/components/landing-client";
 import { directionCards } from "@/lib/theme/directions";
-import { OFFER, monthlyAllowanceMicro, EUR } from "@/lib/billing";
+import { OFFER } from "@/lib/billing";
 import { paymentsLive } from "@/lib/payments";
 import { currentUser } from "@/lib/auth";
 import { PROMPT_STATS } from "@/lib/prompts-library";
@@ -50,7 +50,6 @@ export default async function Home() {
   const d0 = list[0];
   const user = await currentUser();
   const live = paymentsLive();
-  const allowance = monthlyAllowanceMicro(1) / EUR;
   const themes = directionCards();
   const cta = user ? "/studio" : "/inscription";
   const chapters = [
@@ -425,11 +424,11 @@ export default async function Home() {
               <h2 className="words mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-semibold leading-[0.98]">
                 <Words text="Un prix clair. L'IA comprise," /> <Words text="sans quota caché." className="text-gradient" d={4} />
               </h2>
-              <p className="reveal mt-5 text-lg text-ink-2">Un tiers de votre abonnement alimente votre enveloppe IA, renouvelée chaque mois. Vous créez autant que votre budget le permet : aucune limite arbitraire de créations s'y ajoute.</p>
+              <p className="reveal mt-5 text-lg text-ink-2">L'IA est comprise dans l'abonnement, avec des crédits de création renouvelés chaque mois. Aucune clé, aucun supplément caché, aucune limite arbitraire du nombre de créations.</p>
               <ul className="reveal mt-8 grid gap-3 text-[15px] text-ink-2">
-                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Jauge de consommation et pourcentages visibles à tout moment</li>
+                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Jauge de crédits visible à tout moment</li>
                 <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Alerte à 80 % ; générations en pause seulement quand le budget est épuisé</li>
-                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Recharges par 10 € : la moitié va à l'IA, le solde est conservé</li>
+                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Recharges de crédits par 10 €, conservées d'un mois à l'autre</li>
                 <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> Aucune clé d'API à fournir : les IA sont incluses</li>
               </ul>
             </div>
@@ -438,12 +437,11 @@ export default async function Home() {
                 <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-[radial-gradient(circle,rgba(61,110,240,.55),transparent_65%)]" aria-hidden />
                 <p className="text-sm text-white/70">Une boutique</p>
                 <p className="mt-2 font-display text-6xl font-semibold">{eur(OFFER.basePriceEur)}<span className="text-xl font-normal text-white/60"> TTC / mois</span></p>
-                <p className="mt-4 text-white/80">dont <strong>{eur(Math.round(allowance * 100) / 100)}</strong> d'enveloppe IA chaque mois</p>
+                <p className="mt-4 text-white/80">IA et crédits de création inclus, renouvelés chaque mois</p>
                 <hr className="my-6 border-white/15" />
                 <div className="grid gap-3 text-sm text-white/80">
                   <p className="flex justify-between gap-4"><span>Boutique supplémentaire</span><strong className="text-white">+ {eur(OFFER.extraStorePriceEur)} / mois</strong></p>
-                  <p className="flex justify-between gap-4"><span>Enveloppe IA par boutique supplémentaire</span><strong className="text-white">+ {eur(Math.round((OFFER.extraStorePriceEur / 3) * 100) / 100)}</strong></p>
-                  <p className="flex justify-between gap-4"><span>Recharge</span><strong className="text-white">par tranches de 10 € (5 € d'IA)</strong></p>
+                  <p className="flex justify-between gap-4"><span>Recharge</span><strong className="text-white">par tranches de 10 €</strong></p>
                 </div>
                 <Link href={user ? "/studio/compte" : "/inscription"} className="btn-glow mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#3D6EF0] font-semibold text-white">
                   {live ? "S'abonner" : "Créer mon compte"} <ArrowRight className="size-4" />
