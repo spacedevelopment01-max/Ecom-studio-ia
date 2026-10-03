@@ -7,7 +7,7 @@ import { AssetThumb, EngineNotice, JobProgress, ROLE_LABEL, SectionTitle, Status
 import { AssetViewer } from "./asset-viewer";
 
 const GROUPS = [
-  { id: "all", label: "Tout", roles: "packshot,detail,scene,banner,social,ad,cutout" },
+  { id: "all", label: "Tout", roles: "packshot,detail,scene,lifestyle,banner,social,ad,cutout" },
   { id: "packshot", label: "Packshots", roles: "packshot" },
   { id: "detail", label: "Détails", roles: "detail" },
   { id: "scene", label: "Scènes", roles: "scene" },
