@@ -52,6 +52,15 @@ Tout se règle dans `/admin` ; les secrets sont chiffrés (AES-256-GCM, clé `AP
 
 Instagram, TikTok, Pinterest et Shopify récupèrent les médias par URL : la publication automatique exige que le studio soit déployé sur une **adresse publique HTTPS** (réglage « Adresse publique » dans l'administration).
 
+## Mise en ligne
+
+Le studio a besoin d'un processus qui tourne en continu (site + worker), d'un disque persistant (base SQLite et fichiers générés dans `/data`) et de ffmpeg : un hébergement « serverless » ne convient pas. L'image Docker fournie contient tout ; la CI la construit et vérifie qu'elle démarre.
+
+- **Serveur (VPS)** : `APP_SECRET=… APP_URL=https://votre-domaine docker compose up -d --build`, derrière un proxy HTTPS (Caddy, Traefik, nginx).
+- **Plateforme avec volume** (Railway, Fly.io, Render…) : déployez le `Dockerfile`, montez un volume sur `/data`, définissez `APP_SECRET` (32 caractères aléatoires ou plus) et `APP_URL` (l'adresse publique HTTPS). Prévoyez au moins 2 Go de mémoire (détourage local).
+
+Ensuite : créez votre compte (le premier devient administrateur), puis renseignez dans `/admin` l'adresse publique, les clés IA, les applications OAuth et Stripe.
+
 ## Architecture
 
 - `src/app` — Next.js 15 (App Router) : page d'accueil, studio, administration, API REST (`src/app/api`).

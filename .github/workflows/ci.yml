@@ -45,3 +45,34 @@ jobs:
 
       - name: Build de production
         run: npm run build
+
+  image-docker:
+    name: Image Docker (construction et démarrage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construction de l'image
+        run: docker build -t ecom-studio-ia:ci .
+
+      - name: Démarrage et vérifications
+        run: |
+          docker run -d --name studio -p 3000:3000 \
+            -e APP_SECRET=ci-only-secret-not-used-in-production-000000 \
+            -e APP_URL=http://localhost:3000 \
+            -v studio-data:/data ecom-studio-ia:ci
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:3000/api/health | grep -q '"worker":"actif"'; then break; fi
+            sleep 2
+          done
+          curl -fs http://localhost:3000/api/health
+          echo
+          curl -fs -o /dev/null -w "Accueil : %{http_code}\n" http://localhost:3000/
+          curl -fs -o /dev/null -w "Inscription : %{http_code}\n" http://localhost:3000/inscription
+          curl -fs http://localhost:3000/api/health | grep -q '"worker":"actif"'
+          docker exec studio ffmpeg -version | head -1
+
+      - name: Journaux du conteneur
+        if: always()
+        run: docker logs studio 2>&1 | tail -80 || true
