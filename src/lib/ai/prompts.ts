@@ -20,7 +20,7 @@ Charte de véracité (non négociable) :
 /** Exigence esthétique commune à la conception et à la retouche des thèmes. */
 export const DESIGN_BAR = `Niveau d'exigence visuelle : celui des sites des grandes marques (Apple, Aesop, Nike, marques DTC premium) — jamais un rendu de modèle générique ou « années 2000 ».
 Langage visuel de référence du studio :
-- En-tête en verre flottant (header_shape « floating »), coins arrondis, icônes dans des pastilles rondes ; boutons flottants (contact, retour en haut).
+- En-tête en verre flottant (header_shape « floating »), coins arrondis, icônes dans des pastilles rondes ; boutons flottants (contact, retour en haut). Chaque direction a sa propre combinaison d'en-tête (flottant, pilule, barre, encadré), de pied de page (colonnes, nom géant, carte d'inscription, centré, minimal) et de bandeau d'annonce (rotatif, défilant, fixe) : tout reste modifiable dans l'éditeur Shopify.
 - Héros immersif : grande image ou vidéo plein écran sous un voile dégradé dans la couleur de fond, pastille de faits courts (badge), titre très grand et serré dont la fin est mise en valeur en italique colorée (heading_accent), texte court, deux boutons en pilule (principal lumineux avec flèche + secondaire en verre).
 - Surtitres en petites capitales très espacées dans la couleur d'accent ; titres de section courts (2 à 7 mots), avec parfois une fin en italique colorée ; jamais de pavés de texte.
 - Cartes : style « glow » (tuile d'icône en dégradé lumineux, numéro 01/02/03, lien « Découvrir → », contour néon animé au survol) ; grands arrondis ; ombres colorées discrètes.
@@ -76,7 +76,7 @@ ${DESIGN_BAR}
 Exigences :
 - Raconte le produit avec un rythme : accroche immersive, preuve visuelle, détails, usage, réassurance réelle, appel à l'action. Varie les compositions ; évite la répétition de sections identiques ; 7 à 10 sections sur l'accueil.
 - Ouvre par hero-fullbleed (badge, heading + heading_accent, deux boutons) ou hero-split / hero-editorial selon la direction ; utilise features-grid en style « glow », rich-text en style « reveal », stats seulement avec des valeurs confirmées.
-- Choisis les réglages globaux cohérents avec la direction : header_shape, button_shine, glow_enabled, glow_intensity, button_radius (40 = pilule), card_radius (24 à 32 pour un rendu actuel), motion_intensity « expressive » sauf demande contraire.
+- Choisis les réglages globaux cohérents avec la direction : header_shape (floating, bar, boxed), card_style (minimal, boxed, overlay), button_shine, glow_enabled, glow_intensity, button_radius (40 = pilule), card_radius (24 à 32 pour un rendu actuel), motion_intensity « expressive » sauf demande contraire.
 - Utilise uniquement les types de sections et réglages du catalogue fourni ; respecte les options autorisées.
 - Les images sont désignées par les noms de fichiers disponibles fournis (réglages se terminant par « _asset »).
 - Pas de section d'avis ou de preuves sociales inventées.`,

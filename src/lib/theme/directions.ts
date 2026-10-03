@@ -324,6 +324,21 @@ export type BuildInput = {
 const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 const p = (html: string) => (/^\s*</.test(html) ? html : `<p>${html}</p>`);
 
+/** Combinaisons d'en-tête, pied de page, bandeau et cartes : chaque direction montre une autre possibilité. */
+const CHROME: Record<DirectionId, { shape: string; icons: string; menu: string; footer: string; ann: string; card: string }> = {
+  atelier: { shape: "floating", icons: "circles", menu: "fullscreen", footer: "wordmark", ann: "rotate", card: "minimal" },
+  clinique: { shape: "pill", icons: "plain", menu: "drawer", footer: "columns", ann: "static", card: "boxed" },
+  brut: { shape: "bar", icons: "plain", menu: "fullscreen", footer: "wordmark", ann: "marquee", card: "overlay" },
+  terroir: { shape: "floating", icons: "circles", menu: "drawer", footer: "card", ann: "rotate", card: "boxed" },
+  nocturne: { shape: "floating", icons: "circles", menu: "drawer", footer: "columns", ann: "marquee", card: "overlay" },
+  pop: { shape: "pill", icons: "circles", menu: "fullscreen", footer: "card", ann: "marquee", card: "boxed" },
+  galerie: { shape: "bar", icons: "plain", menu: "drawer", footer: "minimal", ann: "static", card: "minimal" },
+  elan: { shape: "bar", icons: "plain", menu: "fullscreen", footer: "wordmark", ann: "marquee", card: "overlay" },
+  flux: { shape: "boxed", icons: "plain", menu: "fullscreen", footer: "centered", ann: "static", card: "minimal" },
+  joaillerie: { shape: "boxed", icons: "plain", menu: "drawer", footer: "centered", ann: "rotate", card: "minimal" },
+  gourmand: { shape: "bar", icons: "plain", menu: "fullscreen", footer: "card", ann: "marquee", card: "boxed" },
+};
+
 export function buildSpec(input: BuildInput): ThemeSpec {
   const d = directionById(input.direction);
   const ids = new Ids();
@@ -435,7 +450,6 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   let index: Row[];
   let gallery = "stack";
   let headerLayout = "logo-left";
-  let headerShape = "floating";
   let radius = { button: 40, card: 28 };
   let buttonStyle = "solid";
   let headingCase = "none";
@@ -452,7 +466,6 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       index = [heroEdito(1), ...stats(1), iwt(1, "image-left", im.scene1), feat(2), ...statementRow(1), story(2), hgallery(1), faqSec(2), newsletter(1)];
       break;
     case "clinique":
-      headerShape = "bar";
       headingScale = 100;
       tracking = -4;
       glow = 25;
@@ -490,7 +503,6 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       break;
     case "galerie":
       headerLayout = "minimal";
-      headerShape = "bar";
       radius = { button: 40, card: 6 };
       headingScale = 94;
       glow = 15;
@@ -509,7 +521,6 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       break;
     case "flux":
       headerLayout = "logo-center";
-      headerShape = "boxed";
       buttonStyle = "frame";
       radius = { button: 0, card: 0 };
       headingScale = 104;
@@ -521,7 +532,6 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       break;
     case "joaillerie":
       headerLayout = "logo-center";
-      headerShape = "boxed";
       buttonStyle = "frame";
       headingCase = "uppercase";
       radius = { button: 0, card: 0 };
@@ -533,7 +543,6 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       break;
     case "gourmand":
       headerLayout = "logo-center";
-      headerShape = "bar";
       radius = { button: 40, card: 28 };
       headingScale = 108;
       glow = 0;
@@ -608,19 +617,21 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     password: { ...tpl(ids, [["main-password", { heading: "Bientôt en ligne" }]]), layout: "password" },
   };
 
+  // Bandeau : annonces confirmées, sinon les expressions courtes de la marque (jamais d'offre inventée).
+  const annItems = c.announcement.length ? c.announcement : shortItems.slice(0, 3);
   const header: GroupJson = {
     type: "header",
     name: "Groupe en-tête",
     ...tpl(ids, [
-      ...(c.announcement.length ? [["announcement-bar", { color_scheme: darkTheme ? "scheme-3" : "scheme-3" }, c.announcement.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
-      ["header", { menu: "main-menu", layout: headerLayout, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: true, color_scheme: "scheme-1" }],
+      ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
+      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: true, color_scheme: "scheme-1" }],
     ]),
   };
   const footer: GroupJson = {
     type: "footer",
     name: "Groupe pied de page",
     ...tpl(ids, [
-      ["footer", { show_wordmark: d.id !== "clinique", show_policies: true, show_payment: true, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, [
+      ["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: true, show_payment: true, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, [
         { type: "text", settings: { heading: input.shopName, text: p(c.footer.about) } },
         { type: "links", settings: { heading: "Boutique", menu: "main-menu" } },
         { type: "links", settings: { heading: "Aide", menu: "footer" } },
@@ -652,7 +663,8 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     button_shine: shine,
     glow_enabled: glow > 20,
     glow_intensity: glow,
-    header_shape: headerShape,
+    header_shape: CHROME[d.id].shape === "pill" ? "floating" : CHROME[d.id].shape,
+    card_style: CHROME[d.id].card,
     motion_enabled: true,
     motion_intensity: d.motion,
     motion_parallax: true,

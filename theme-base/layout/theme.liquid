@@ -104,7 +104,7 @@
     </script>
   </head>
 
-  <body class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
+  <body class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }} card-{{ settings.card_style }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
     <a class="skip-link visually-hidden-focusable" href="#MainContent">{{ 'accessibility.skip_to_text' | t }}</a>
 
     {% sections 'header-group' %}

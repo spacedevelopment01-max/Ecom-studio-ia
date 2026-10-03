@@ -69,6 +69,53 @@ def label_mug(path):
     im.save(path)
 
 
+def label_drone(path):
+    w, h = 1024, 512
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.text((w // 2, 230), "AERIS", font=font("SpaceGrotesk-700.ttf", 150), fill=(235, 235, 232, 255), anchor="mm")
+    d.text((w // 2, 360), "X1", font=font("SpaceGrotesk-500.ttf", 70), fill=(255, 106, 40, 255), anchor="mm")
+    im.save(path)
+
+
+def face_watch(path):
+    w = h = 1024
+    im = Image.new("RGBA", (w, h), (4, 4, 6, 255))
+    d = ImageDraw.Draw(im)
+    for i, (col, r) in enumerate([((255, 70, 90), 430), ((150, 255, 90), 380), ((70, 210, 255), 330)]):
+        d.arc((w // 2 - r, h // 2 - r, w // 2 + r, h // 2 + r), start=-90, end=-90 + [250, 200, 150][i], fill=col, width=34)
+    d.text((w // 2, 470), "10:09", font=font("Inter-600.ttf", 190), fill=(250, 250, 250, 255), anchor="mm")
+    d.text((w // 2, 610), "MAR. 14", font=font("Inter-500.ttf", 54), fill=(255, 140, 60, 255), anchor="mm")
+    d.text((w // 2, 720), "PULSO", font=font("SpaceGrotesk-700.ttf", 46), fill=(170, 170, 175, 255), anchor="mm")
+    im.save(path)
+
+
+def label_can(path):
+    w, h = 2048, 900
+    im = Image.new("RGBA", (w, h), (240, 98, 128, 255))
+    d = ImageDraw.Draw(im)
+    for i in range(0, w, 140):
+        d.ellipse((i + 20, 40, i + 70, 90), fill=(255, 210, 90, 255))
+        d.ellipse((i + 80, 800, i + 120, 840), fill=(255, 255, 255, 200))
+    cx = w // 2
+    d.text((cx, 330), "pétale", font=font("LibreBaskerville-700.ttf", 150), fill=(255, 247, 236, 255), anchor="mm")
+    d.text((cx, 520), "FRAMBOISE & HIBISCUS", font=font("Montserrat-800.ttf", 38), fill=(120, 20, 50, 255), anchor="mm")
+    d.text((cx, 640), "SODA PÉTILLANT · 33 cl", font=font("Montserrat-600.ttf", 34), fill=(255, 247, 236, 255), anchor="mm")
+    im.save(path)
+
+
+def label_tea(path):
+    w, h = 2048, 700
+    im = Image.new("RGBA", (w, h), (24, 64, 50, 255))
+    d = ImageDraw.Draw(im)
+    cx = w // 2
+    d.ellipse((cx - 70, 70, cx + 70, 210), outline=(214, 182, 110, 255), width=6)
+    d.text((cx, 300), "KUMO", font=font("Cormorant-600.ttf", 150), fill=(232, 208, 150, 255), anchor="mm")
+    d.text((cx, 430), "Thé vert Sencha", font=font("Cormorant-500italic.ttf", 80), fill=(240, 230, 205, 255), anchor="mm")
+    d.text((cx, 560), "FEUILLES ENTIÈRES · 100 G", font=font("Jost-500.ttf", 34), fill=(214, 182, 110, 255), anchor="mm")
+    im.save(path)
+
+
 # ---------------------------------------------------------------- utilitaires
 def reset():
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -295,7 +342,126 @@ def mug(tmp):
     return parts, 0.1
 
 
-PRODUCTS = {"serum": serum, "bougie": candle, "gourde": bottle, "tasse": mug}
+def box(size, loc, m, bevel=0.0, rot=(0, 0, 0), name="box"):
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc, rotation=rot)
+    o = bpy.context.object
+    o.name = name
+    o.scale = size
+    bpy.ops.object.transform_apply(scale=True)
+    o.data.materials.append(m)
+    if bevel:
+        mod = o.modifiers.new("bevel", "BEVEL")
+        mod.width = bevel
+        mod.segments = 8
+    bpy.ops.object.shade_smooth()
+    return o
+
+
+def decal(size, loc, image, rot=(0, 0, 0), name="decal"):
+    bpy.ops.mesh.primitive_plane_add(size=1, location=loc, rotation=rot)
+    o = bpy.context.object
+    o.name = name
+    o.scale = (size[0], size[1], 1)
+    bpy.ops.object.transform_apply(scale=True)
+    m = mat(name, (0.05, 0.05, 0.05), rough=0.4, image=image, alpha_img=True)
+    o.data.materials.append(m)
+    return o
+
+
+def drone(tmp):
+    lab = os.path.join(tmp, "drone-label.png")
+    label_drone(lab)
+    shell = mat("graphite", (0.06, 0.065, 0.07), rough=0.38, coat=0.3)
+    dark = mat("noir", (0.015, 0.015, 0.017), rough=0.5)
+    orange = mat("orange", (1.0, 0.32, 0.08), rough=0.4)
+    parts = [box((0.12, 0.2, 0.05), (0, 0, 0.07), shell, bevel=0.018, name="corps")]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            ang = math.atan2(sy, sx)
+            ax, ay = sx * 0.11, sy * 0.13
+            parts.append(box((0.17, 0.022, 0.018), (sx * 0.06, sy * 0.07, 0.075), shell, bevel=0.006, rot=(0, 0, ang), name="bras"))
+            parts.append(cyl(0.022, 0.03, 0.07, dark, name="moteur", bevel=0.004))
+            parts[-1].location.x, parts[-1].location.y = ax, ay
+            parts.append(cyl(0.006, 0.01, 0.1, orange, name="axe"))
+            parts[-1].location.x, parts[-1].location.y = ax, ay
+            for k in range(2):
+                b = box((0.13, 0.016, 0.003), (ax, ay, 0.108), dark, bevel=0.002, rot=(0, math.radians(4), math.radians(25 + 90 * k + (sx * sy) * 20)), name="pale")
+                parts.append(b)
+            parts.append(cyl(0.006, 0.07, 0.0, dark, name="pied"))
+            parts[-1].location.x, parts[-1].location.y = sx * 0.045, sy * 0.08
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.026, location=(0, -0.105, 0.05), segments=64, ring_count=32)
+    gimbal = bpy.context.object
+    gimbal.data.materials.append(dark)
+    bpy.ops.object.shade_smooth()
+    parts.append(gimbal)
+    lens = cyl(0.013, 0.012, 0, mat("lentille", (0.02, 0.03, 0.06), rough=0.03, coat=1.0), name="lentille")
+    lens.rotation_euler = (math.radians(90), 0, 0)
+    lens.location = (0, -0.128, 0.05)
+    parts.append(lens)
+    parts.append(decal((0.09, 0.045), (0, 0.02, 0.0961), lab, name="logo"))
+    return parts, 0.07
+
+
+def watch(tmp):
+    face = os.path.join(tmp, "watch-face.png")
+    face_watch(face)
+    alu = mat("aluminium", (0.78, 0.79, 0.8), rough=0.22, metal=1.0)
+    band_m = mat("silicone", (0.85, 0.42, 0.22), rough=0.7)
+    bpy.ops.mesh.primitive_cylinder_add(radius=0.05, depth=0.026, location=(0, 0.045, 0.06), rotation=(0, math.radians(90), 0), vertices=96, end_fill_type="NOTHING")
+    band = bpy.context.object
+    band.name = "bracelet"
+    band.data.materials.append(band_m)
+    sol = band.modifiers.new("epaisseur", "SOLIDIFY")
+    sol.thickness = 0.005
+    bpy.ops.object.shade_smooth()
+    case = box((0.046, 0.013, 0.054), (0, -0.007, 0.06), alu, bevel=0.009, name="boitier")
+    glass = box((0.041, 0.002, 0.049), (0, -0.0142, 0.06), mat("verre", (0.01, 0.01, 0.012), rough=0.02, coat=1.0), bevel=0.006, name="verre")
+    screen = decal((0.036, 0.036), (0, -0.0155, 0.06), face, rot=(math.radians(90), 0, 0), name="ecran")
+    # L'écran émet sa propre lumière (cadran allumé).
+    nt = screen.data.materials[0].node_tree
+    tex = [n for n in nt.nodes if n.type == "TEX_IMAGE"][0]
+    bsdf = nt.nodes["Principled BSDF"]
+    nt.links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
+    bsdf.inputs["Emission Strength"].default_value = 1.6
+    crown = cyl(0.0035, 0.006, 0, alu, name="couronne")
+    crown.rotation_euler = (0, math.radians(90), 0)
+    crown.location = (0.026, -0.006, 0.07)
+    return [band, case, glass, screen, crown], 0.06
+
+
+def can(tmp):
+    lab = os.path.join(tmp, "can-label.png")
+    label_can(lab)
+    alu = mat("alu", (0.8, 0.8, 0.82), rough=0.25, metal=1.0)
+    parts = [cyl(0.033, 0.115, 0.0, alu, name="canette", bevel=0.006)]
+    parts.append(label_wrap(0.0334, 0.095, 0.01, mat("etiquette", (0.94, 0.38, 0.5), rough=0.3, coat=0.6, image=lab), "etiquette"))
+    parts.append(cyl(0.028, 0.006, 0.115, alu, name="col", bevel=0.002))
+    parts.append(box((0.018, 0.009, 0.0015), (0.006, 0, 0.1215), alu, bevel=0.0015, name="languette"))
+    return parts, 0.06
+
+
+def tea(tmp):
+    lab = os.path.join(tmp, "tea-label.png")
+    label_tea(lab)
+    tin = mat("boîte", (0.09, 0.25, 0.19), rough=0.35, metal=0.6, coat=0.4)
+    gold = mat("or", (0.83, 0.68, 0.4), rough=0.25, metal=1.0)
+    parts = [cyl(0.055, 0.12, 0.0, tin, name="boite", bevel=0.004)]
+    parts.append(label_wrap(0.0556, 0.07, 0.02, mat("etiquette", (0.09, 0.25, 0.19), rough=0.4, image=lab), "etiquette"))
+    parts.append(cyl(0.057, 0.035, 0.11, gold, name="couvercle", bevel=0.004))
+    # quelques feuilles de thé sur la table
+    leaf = mat("feuille", (0.16, 0.24, 0.08), rough=0.6)
+    for i, (x, y) in enumerate([(0.09, -0.05), (0.11, -0.02), (0.075, -0.075), (0.12, -0.065)]):
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.01, location=(x, y, 0.003), segments=16, ring_count=8)
+        lf = bpy.context.object
+        lf.scale = (1.6, 0.6, 0.25)
+        lf.rotation_euler = (0, 0, i * 0.9)
+        lf.data.materials.append(leaf)
+        parts.append(lf)
+    return parts, 0.075
+
+
+PRODUCTS = {"serum": serum, "bougie": candle, "gourde": bottle, "tasse": mug, "drone": drone, "montre": watch, "soda": can, "the": tea}
+CAMERA = {"gourde": dict(dist=1.35), "drone": dict(dist=0.92, height=0.55, lens=60), "montre": dict(dist=0.4, height=0.14, lens=85), "soda": dict(dist=0.52, height=0.16), "the": dict(dist=0.66, height=0.22)}
 
 if __name__ == "__main__":
     only = os.environ.get("ONLY")
@@ -305,7 +471,7 @@ if __name__ == "__main__":
         sc = reset()
         studio(sc)
         parts, tz = fn(OUT)
-        camera(sc, tz, dist=1.35 if pid == "gourde" else 1.15)
+        camera(sc, tz, **{"dist": 1.15, **CAMERA.get(pid, {})})
         render(sc, os.path.join(OUT, f"{pid}-photo.png"))
         decor = [o for o in sc.objects if o.type == "MESH" and o not in parts]
         render(sc, os.path.join(OUT, f"{pid}-cutout.png"), transparent=True, hide=decor)

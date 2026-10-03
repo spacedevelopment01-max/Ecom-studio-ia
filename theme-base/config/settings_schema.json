@@ -359,6 +359,26 @@
         "unit": "%",
         "label": "Intensité des lueurs",
         "default": 50
+      },
+      {
+        "type": "select",
+        "id": "card_style",
+        "label": "Style des cartes produit",
+        "default": "minimal",
+        "options": [
+          {
+            "value": "minimal",
+            "label": "Épuré (image puis texte)"
+          },
+          {
+            "value": "boxed",
+            "label": "Encadré (carte arrondie)"
+          },
+          {
+            "value": "overlay",
+            "label": "Texte sur l'image"
+          }
+        ]
       }
     ]
   },

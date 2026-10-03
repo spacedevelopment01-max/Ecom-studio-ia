@@ -15,10 +15,14 @@ const OUT = path.join(process.cwd(), "public", "demo");
 const PASSWORD = "demo-studio-2026";
 
 const PRODUCTS = [
-  { id: "serum", sector: "Beauté", productName: "Sérum Éclat", brandName: "Maison Ondine", price: "34,90 €", description: "Sérum visage en flacon compte-gouttes en verre de 30 ml. Formule à la niacinamide et à l'acide hyaluronique. Texture légère, à appliquer matin et soir sur peau propre." },
-  { id: "bougie", sector: "Maison", productName: "Bougie Figuier & Bois fumé", brandName: "Atelier Braise", price: "29 €", description: "Bougie parfumée de 220 g dans un pot en verre teinté avec couvercle en bois. Notes de figue et de bois fumé. Cire végétale et mèche en coton." },
-  { id: "gourde", sector: "Sport", productName: "Gourde isotherme 750 ml", brandName: "Nordvik", price: "32 €", description: "Gourde en acier inoxydable à double paroi, 750 ml, bouchon vissé étanche. Garde les boissons froides ou chaudes. Sans BPA." },
-  { id: "tasse", sector: "Maison", productName: "Tasse en grès émaillé", brandName: "Terre & Feu", price: "24 €", description: "Tasse en grès émaillé de 300 ml, tournée à la main dans notre atelier. Passe au lave-vaisselle. Chaque pièce présente de légères variations d'émail." },
+  { id: "serum", sector: "Beauté", direction: "atelier", productName: "Sérum Éclat", brandName: "Maison Ondine", price: "34,90 €", description: "Sérum visage en flacon compte-gouttes en verre de 30 ml. Formule à la niacinamide et à l'acide hyaluronique. Texture légère, à appliquer matin et soir sur peau propre." },
+  { id: "drone", sector: "High-tech", direction: "nocturne", productName: "Drone Aeris X1", brandName: "Aeris", price: "499 €", description: "Drone de loisir quadrirotor avec caméra stabilisée sur nacelle. Châssis graphite, poids : 249 g. Autonomie : 31 minutes par batterie. Vidéo 4K à 30 images par seconde." },
+  { id: "soda", sector: "Boissons", direction: "gourmand", productName: "Pétale Framboise & Hibiscus", brandName: "Pétale", price: "2,90 €", description: "Soda pétillant à la framboise et à l'hibiscus en canette de 33 cl. 4 g de sucre pour 100 ml. Sans édulcorant." },
+  { id: "montre", sector: "High-tech", direction: "clinique", productName: "Montre connectée Pulso", brandName: "Pulso", price: "229 €", description: "Montre connectée à écran AMOLED de 1,8 pouce, boîtier en aluminium de 44 mm, bracelet en silicone. Étanche 5 ATM. Autonomie : 7 jours." },
+  { id: "the", sector: "Thé", direction: "joaillerie", productName: "Thé vert Sencha", brandName: "Kumo", price: "18 €", description: "Thé vert sencha en feuilles entières, boîte métal de 100 g. Infusion : 2 minutes à 75 °C." },
+  { id: "gourde", sector: "Sport", direction: "flux", productName: "Gourde isotherme 750 ml", brandName: "Nordvik", price: "32 €", description: "Gourde en acier inoxydable à double paroi, 750 ml, bouchon vissé étanche. Garde les boissons froides ou chaudes. Sans BPA." },
+  { id: "bougie", sector: "Maison", direction: "terroir", productName: "Bougie Figuier & Bois fumé", brandName: "Atelier Braise", price: "29 €", description: "Bougie parfumée de 220 g dans un pot en verre teinté avec couvercle en bois. Notes de figue et de bois fumé. Cire végétale et mèche en coton." },
+  { id: "tasse", sector: "Maison", direction: "galerie", productName: "Tasse en grès émaillé", brandName: "Terre & Feu", price: "24 €", description: "Tasse en grès émaillé de 300 ml, tournée à la main dans notre atelier. Passe au lave-vaisselle. Chaque pièce présente de légères variations d'émail." },
 ];
 
 async function api(ctx: BrowserContext, url: string, init?: { method?: string; body?: unknown }) {
@@ -89,7 +93,7 @@ const { db } = await import("../src/lib/db");
 const { syncAllowance, getSubscription } = await import("../src/lib/billing");
 const me = await api(ctx, "/api/me");
 getSubscription(me.user.id);
-db().prepare("UPDATE subscriptions SET status = 'manual', stores = 10 WHERE user_id = ?").run(me.user.id);
+db().prepare("UPDATE subscriptions SET status = 'manual', stores = 20 WHERE user_id = ?").run(me.user.id);
 syncAllowance(me.user.id);
 
 fs.rmSync(OUT, { recursive: true, force: true });
@@ -110,8 +114,11 @@ for (const p of PRODUCTS) {
   if (!res.ok()) throw new Error(JSON.stringify(created));
   const pid = created.id ?? created.project?.id;
   const t0 = Date.now();
-  const ov = await waitIdle(ctx, pid);
+  let ov = await waitIdle(ctx, pid);
   console.log(`  pipeline ${Math.round((Date.now() - t0) / 1000)} s`, ov.pipeline?.job?.status);
+  // Chaque démonstration montre une direction différente.
+  await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
+  ov = await waitIdle(ctx, pid);
   firstProject ??= { pid };
 
   const files = (await api(ctx, `/api/projects/${pid}/files?q=`)).assets as any[];

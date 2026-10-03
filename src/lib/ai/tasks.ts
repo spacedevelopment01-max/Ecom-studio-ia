@@ -247,7 +247,8 @@ const DesignSchema = z.object({
   custom: z.object({ type: z.string(), name: z.string(), liquid: z.string() }).nullable().optional(),
   globals: z
     .object({
-      header_shape: z.enum(["floating", "bar"]).optional(),
+      header_shape: z.enum(["floating", "bar", "boxed"]).optional(),
+      card_style: z.enum(["minimal", "boxed", "overlay"]).optional(),
       button_shine: z.boolean().optional(),
       glow_enabled: z.boolean().optional(),
       glow_intensity: z.number().min(0).max(100).optional(),
@@ -275,7 +276,7 @@ export async function aiDesignHome(b: Base, p: Project, spec: ThemeSpec) {
 Fichiers d'images disponibles (à utiliser dans les réglages *_asset) : ${Object.keys(spec.files).join(", ")}
 Catalogue des sections :\n${sectionCatalog(spec)}
 Schémas de couleurs : scheme-1 (fond principal), scheme-2 (surface douce), scheme-3 (contraste sombre), scheme-4 (accent).
-Compose la page d'accueil (« index ») : liste ordonnée de sections avec réglages et blocs, au niveau visuel décrit (héros immersif, mots d'accent, cartes lumineuses, texte qui s'allume, chiffres vérifiés). Reprends les textes rédigés de la structure actuelle et améliore le rythme si utile. Ajuste si besoin les réglages globaux dans « globals » (forme de l'en-tête, reflets, lueurs, arrondis, intensité des animations). Si une section sur mesure apporte une vraie valeur (ex. animation de présentation du produit), fournis-la dans « custom » (type commençant par es-custom-) et utilise son type dans la liste.`,
+Compose la page d'accueil (« index ») : liste ordonnée de sections avec réglages et blocs, au niveau visuel décrit (héros immersif, mots d'accent, cartes lumineuses, texte qui s'allume, chiffres vérifiés). Reprends les textes rédigés de la structure actuelle et améliore le rythme si utile. Ajuste si besoin les réglages globaux dans « globals » (forme de l'en-tête, style des cartes produit, reflets, lueurs, arrondis, intensité des animations). Si une section sur mesure apporte une vraie valeur (ex. animation de présentation du produit), fournis-la dans « custom » (type commençant par es-custom-) et utilise son type dans la liste.`,
       maxTokens: 32000,
     },
     DesignSchema,

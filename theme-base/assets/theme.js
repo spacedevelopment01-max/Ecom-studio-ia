@@ -79,6 +79,12 @@
     if (!header) return;
     var y = window.scrollY;
     header.classList.toggle('is-scrolled', y > 40);
+    // En-tête transparent fixé : il reste sous le bandeau d'annonce tant que celui-ci est visible.
+    if (header.classList.contains('es-header--transparent')) {
+      var ann = $('.es-announcement-section');
+      var annBottom = ann ? ann.getBoundingClientRect().bottom : 0;
+      header.style.setProperty('--es-hoff', Math.max(0, annBottom) + 'px');
+    }
     if (header.classList.contains('es-header--sticky')) header.classList.toggle('is-hidden', y > 300 && y > lastY && !document.body.classList.contains('menu-open'));
     lastY = y;
   }
