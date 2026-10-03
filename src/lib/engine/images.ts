@@ -169,7 +169,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     return ids;
   });
 
-  const styles = opts.scenes ?? (["window", "arch", "spotlight"] as SceneStyle[]);
+  const styles = opts.scenes ?? (["everyday", "window", "arch"] as SceneStyle[]);
   const withAi = opts.withAi !== false && !!imageProviderAvailable();
   for (const [i, style] of styles.entries()) {
     await ctx.step(`scene:${style}`, async () => {
