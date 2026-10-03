@@ -21,7 +21,8 @@ export function UgcPanel() {
   const [writing, setWriting] = useState(false);
   const [sending, setSending] = useState(false);
   const poll = useRef<ReturnType<typeof setInterval> | null>(null);
-  const ugc = !!data?.ai.ugc;
+  const ugc = !!data?.ai.ugc && data?.ai.credits !== false;
+  const noCredits = !!data?.ai.ugc && data?.ai.credits === false;
   const voice = !!data?.ai.ugcVoice;
   useEffect(() => () => void (poll.current && clearInterval(poll.current)), []);
 
@@ -69,7 +70,12 @@ export function UgcPanel() {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
       <p className="text-xs text-muted">Une personne générée par IA présente votre produit réel face caméra, filmée comme au téléphone : décor, gestes, voix et sous-titres. Vous relisez le script avant de lancer la génération.</p>
-      {!ugc && (
+      {noCredits && (
+        <p className="rounded-2xl border border-info/30 bg-info-soft p-3 text-xs text-info">
+          La vidéo UGC est créée par l'IA : elle est disponible avec l'abonnement (vos crédits de création sont épuisés ou vous êtes en essai gratuit). Vous pouvez déjà écrire et préparer le script. <a href="/studio/compte" className="font-semibold underline">Passer à l'abonnement</a>
+        </p>
+      )}
+      {!ugc && !noCredits && (
         <p className="rounded-2xl border border-warn/30 bg-warn-soft p-3 text-xs text-warn">
           La génération UGC demande un fournisseur d'images (Google Gemini ou OpenAI) et un fournisseur vidéo (Google Veo ou fal.ai), activés par l'administration. Vous pouvez déjà écrire et préparer le script.
         </p>

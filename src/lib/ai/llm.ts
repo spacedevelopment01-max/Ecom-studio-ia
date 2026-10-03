@@ -11,8 +11,9 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
+import { currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
-import { priceFor, providerKey, routeFor, usdToEur, type TaskId } from "./config";
+import { priceFor, providerKey, requirePrice, routeFor, usdToEur, type TaskId } from "./config";
 
 export type LlmImage = { data: Buffer; label?: string };
 
@@ -42,8 +43,9 @@ function client(): Anthropic {
   return cached.client;
 }
 
+/** IA texte utilisable pour la tâche en cours : fournisseur configuré et crédits disponibles (sinon moteur local). */
 export function llmConfigured() {
-  return !!providerKey("anthropic");
+  return !!providerKey("anthropic") && currentUserHasAiCredits();
 }
 
 async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {
@@ -71,8 +73,9 @@ async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[
 }
 
 function estimateMicro(call: LlmCall, model: string) {
-  const p = priceFor("anthropic", model);
-  if (!p || p.unit !== "tokens") return 0;
+  // Sans tarif « jetons » connu, l'appel est refusé (sinon il serait compté 0 € hors enveloppe).
+  const p = requirePrice("anthropic", model);
+  if (p.unit !== "tokens") throw new UserFacingError(`Tarif « jetons » attendu pour anthropic:${model} : corrigez-le dans l'administration.`);
   const inTok = (call.system.length + (call.context?.length ?? 0) + (call.reference?.length ?? 0) + call.prompt.length) / 3.2 + (call.images?.length ?? 0) * 1600;
   const outTok = Math.min(call.maxTokens ?? 16000, 6000);
   return Math.round(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * EUR);

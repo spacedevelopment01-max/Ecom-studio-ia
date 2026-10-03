@@ -1,7 +1,7 @@
 import { all, one } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { requireAdmin } from "@/lib/auth";
-import { DEFAULT_PRICES, DEFAULT_ROUTES, PROVIDERS, TASKS, providerKey, routeFor, priceFor, usdToEur, type ProviderId, type TaskId } from "@/lib/ai/config";
+import { DEFAULT_PRICES, DEFAULT_ROUTES, PRICE_REVIEW_DAYS, PROVIDERS, TASKS, providerKey, routeFor, priceFor, priceValid, pricesCheckedAt, usdToEur, type ProviderId, type TaskId } from "@/lib/ai/config";
 import { mask } from "@/lib/secrets";
 import { balance, getSubscription, EUR } from "@/lib/billing";
 import { getSetting, getJsonSetting, appUrl } from "@/lib/settings";
@@ -25,6 +25,12 @@ export const GET = handle(async () => {
     tasks: (Object.keys(TASKS) as TaskId[]).map((t) => ({ id: t, ...TASKS[t], route: routeFor(t), defaultRoute: DEFAULT_ROUTES[t], price: priceFor(routeFor(t).provider, routeFor(t).model) })),
     prices: { ...DEFAULT_PRICES, ...getJsonSetting<Record<string, unknown>>("ai.prices", {}) },
     usdToEur: usdToEur(),
+    pricing: {
+      checkedAt: pricesCheckedAt(),
+      reviewDays: PRICE_REVIEW_DAYS,
+      // Tâches dont le modèle n'a pas de tarif valide : leurs générations sont refusées.
+      missing: (Object.keys(TASKS) as TaskId[]).filter((t) => { const r = routeFor(t); const p = priceFor(r.provider, r.model); return !p || !priceValid(p); }).map((t) => ({ task: t, label: TASKS[t].label, key: `${routeFor(t).provider}:${routeFor(t).model}` })),
+    },
     markup: getJsonSetting<number>("billing.markup", 1),
     oauth: (Object.keys(PROVIDER_INFO) as ProviderKey[]).map((k) => ({ key: k, label: PROVIDER_INFO[k].label, configured: providerConfig(k).configured, clientIdMasked: mask(providerConfig(k).clientId), redirectUri: redirectUri(k), needs: PROVIDER_INFO[k].needs, docs: PROVIDER_INFO[k].docs })),
     stripe: { secretMasked: mask(stripeKeys().secret), webhookConfigured: !!stripeKeys().webhookSecret, verifiedAt: getSetting("stripe.verifiedAt"), live: paymentsLive(), webhookUrl: `${appUrl()}/api/stripe/webhook` },

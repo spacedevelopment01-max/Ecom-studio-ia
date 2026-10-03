@@ -5,6 +5,7 @@ import { publicJob, type Job } from "@/lib/jobs";
 import { currentTheme, saveSettings } from "@/lib/projects";
 import { pipelineState } from "@/lib/engine/pipeline";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
+import { hasAiCredits } from "@/lib/ai/access";
 import { aiAvailability } from "@/lib/ai/config";
 import { balance } from "@/lib/billing";
 import { sectorLabel } from "@/lib/project-types";
@@ -34,7 +35,8 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     logoUrl: logo ? `/api/files/${logo.id}` : null,
     coverUrl: cover ? `/api/files/${cover.id}?thumb=1` : null,
     cutoutUrl: cutout ? `/api/files/${cutout.id}?thumb=1` : null,
-    ai: aiAvailability(),
+    // credits : l'IA est réellement utilisée pour ce client (sinon moteur local).
+    ai: { ...aiAvailability(), credits: hasAiCredits(user.id) },
     credits: { usedPct: b.usedPct, alert: b.alert, paused: b.paused, empty: b.capacity === 0 },
   });
 });

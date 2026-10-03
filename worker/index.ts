@@ -9,6 +9,7 @@ import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, W
 import { db, logError, now, run } from "../src/lib/db";
 import { enqueueDuePosts } from "../src/lib/engine/calendar";
 import { handlers, HANDLER_TYPES } from "./handlers";
+import { runForUser } from "../src/lib/ai/access";
 
 const CONCURRENCY = Math.max(1, Math.min(3, Number(process.env.WORKER_CONCURRENCY) || Math.floor(os.cpus().length / 2) || 1));
 let running = 0;
@@ -23,7 +24,8 @@ async function runOne() {
   console.log(`[worker] ▶ ${job.type} ${job.id} (essai ${job.attempts})`);
   (async () => {
     try {
-      const result = await handlers[job.type](ctx);
+      // Sans crédits de création, les étapes IA basculent sur le moteur local (voir src/lib/ai/access.ts).
+      const result = await runForUser(job.user_id, () => handlers[job.type](ctx));
       completeJob(job.id, result);
       console.log(`[worker] ✓ ${job.type} ${job.id} en ${((Date.now() - started) / 1000).toFixed(1)} s`);
     } catch (e) {
