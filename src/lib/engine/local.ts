@@ -18,12 +18,12 @@ const SECTOR_WORDS: [SectorId, RegExp][] = [
   ["beaute", /sérum|serum|crème|creme|soin|visage|peau|cosm|parfum|maquill|shampo|lotion|baume|huile/i],
   ["bijoux", /bijou|bague|collier|bracelet|boucle|montre|pendentif|or |argent/i],
   ["mode", /t-?shirt|robe|pantalon|veste|sac|chaussure|basket|casquette|écharpe|vêtement|sweat|jean/i],
-  ["hightech", /écouteur|casque|chargeur|câble|enceinte|bluetooth|usb|smart|clavier|souris|batterie|led/i],
+  ["hightech", /drone|caméra|camera|projecteur|gps|écouteur|casque|chargeur|câble|enceinte|bluetooth|usb|smart|clavier|souris|batterie|led/i],
   ["sport", /gourde|yoga|fitness|sport|randonn|vélo|running|musculation|isotherme|camping/i],
   ["alimentation", /café|thé|chocolat|miel|épice|confiture|huile d'olive|vin|bière|biscuit|sauce|infusion/i],
   ["enfants", /bébé|enfant|jouet|doudou|biberon|poussette|naissance/i],
-  ["animaux", /chien|chat|animal|croquette|laisse|litière|collier pour/i],
-  ["maison", /bougie|tasse|mug|vase|coussin|lampe|déco|plaid|vaisselle|assiette|cuisine|carafe/i],
+  ["animaux", /chien|\bchats?\b|animal|croquette|laisse|litière|collier pour/i],
+  ["maison", /bougie|tasse|mug|vase|coussin|oreiller|couette|linge de lit|lampe|déco|plaid|vaisselle|assiette|cuisine|carafe/i],
   ["artisanat", /carnet|papeterie|céramique|fait main|artisan|tissage|bois tourné|poterie/i],
 ];
 

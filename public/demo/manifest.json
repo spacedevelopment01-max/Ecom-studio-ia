@@ -1,7 +1,133 @@
 {
-  "generatedAt": "2026-10-03T08:44:41.874Z",
+  "generatedAt": "2026-10-03T12:09:31.178Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré). Les démonstrations « produit réel » partent de photos de fournisseurs ; les autres de rendus 3D.",
   "demos": [
+    {
+      "id": "oreiller",
+      "brand": "Somnéa",
+      "product": "Oreiller ergonomique Papillon",
+      "sector": "Maison",
+      "direction": "clinique",
+      "palette": [
+        "#454A73",
+        "#D3D4D9",
+        "#8B74B4",
+        "#F2F3F7",
+        "#14151F"
+      ],
+      "photo": "/demo/oreiller/photo.jpg",
+      "logo": "/demo/oreiller/logo.svg",
+      "shopDesktop": "/demo/oreiller/boutique-bureau.jpg",
+      "shopMobile": "/demo/oreiller/boutique-mobile.jpg",
+      "productPage": "/demo/oreiller/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/oreiller/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/oreiller/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/oreiller/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/oreiller/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/oreiller/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/oreiller/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/oreiller/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/oreiller/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/oreiller/video.mp4",
+      "videoPoster": "/demo/oreiller/video-poster.jpg",
+      "shopVideo": "/demo/oreiller/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio."
+      }
+    },
+    {
+      "id": "drone",
+      "brand": "Ostral",
+      "product": "Drone pliable à caméra stabilisée",
+      "sector": "High-tech",
+      "direction": "nocturne",
+      "palette": [
+        "#3F5078",
+        "#CFD3DE",
+        "#7E72B5",
+        "#F2F4F7",
+        "#14171F"
+      ],
+      "photo": "/demo/drone/photo.jpg",
+      "logo": "/demo/drone/logo.svg",
+      "shopDesktop": "/demo/drone/boutique-bureau.jpg",
+      "shopMobile": "/demo/drone/boutique-mobile.jpg",
+      "productPage": "/demo/drone/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/drone/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/drone/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/drone/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/drone/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/drone/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/drone/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/drone/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/drone/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/drone/video.mp4",
+      "videoPoster": "/demo/drone/video-poster.jpg",
+      "shopVideo": "/demo/drone/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Drone pliable en marque blanche d'un fournisseur ; le nom du modèle a été retiré de la photo, la marque et la boutique sont créées par le studio."
+      }
+    },
     {
       "id": "verger",
       "brand": "Verger",
@@ -120,118 +246,6 @@
       "video": "/demo/serum/video.mp4",
       "videoPoster": "/demo/serum/video-poster.jpg",
       "shopVideo": "/demo/serum/video-boutique.mp4"
-    },
-    {
-      "id": "drone",
-      "brand": "Aeris",
-      "product": "Drone Aeris X1",
-      "sector": "High-tech",
-      "direction": "nocturne",
-      "palette": [
-        "#735945",
-        "#DAD6D2",
-        "#B4AD74",
-        "#F7F4F2",
-        "#1F1914"
-      ],
-      "photo": "/demo/drone/photo.jpg",
-      "logo": "/demo/drone/logo.svg",
-      "shopDesktop": "/demo/drone/boutique-bureau.jpg",
-      "shopMobile": "/demo/drone/boutique-mobile.jpg",
-      "productPage": "/demo/drone/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/drone/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/drone/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/drone/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/drone/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/drone/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/drone/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/drone/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/drone/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/drone/video.mp4",
-      "videoPoster": "/demo/drone/video-poster.jpg",
-      "shopVideo": "/demo/drone/video-boutique.mp4"
-    },
-    {
-      "id": "soda",
-      "brand": "Pétale",
-      "product": "Pétale Framboise & Hibiscus",
-      "sector": "Boissons",
-      "direction": "gourmand",
-      "palette": [
-        "#90282C",
-        "#E4C8C9",
-        "#CF8C59",
-        "#F7F2F2",
-        "#1F1414"
-      ],
-      "photo": "/demo/soda/photo.jpg",
-      "logo": "/demo/soda/logo.svg",
-      "shopDesktop": "/demo/soda/boutique-bureau.jpg",
-      "shopMobile": "/demo/soda/boutique-mobile.jpg",
-      "productPage": "/demo/soda/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/soda/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/soda/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/soda/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/soda/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/soda/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/soda/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/soda/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/soda/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/soda/video.mp4",
-      "videoPoster": "/demo/soda/video-poster.jpg",
-      "shopVideo": "/demo/soda/video-boutique.mp4"
     },
     {
       "id": "montre",
@@ -400,62 +414,6 @@
       "video": "/demo/gourde/video.mp4",
       "videoPoster": "/demo/gourde/video-poster.jpg",
       "shopVideo": "/demo/gourde/video-boutique.mp4"
-    },
-    {
-      "id": "bougie",
-      "brand": "Atelier Braise",
-      "product": "Bougie Figuier & Bois fumé",
-      "sector": "Maison",
-      "direction": "terroir",
-      "palette": [
-        "#765B41",
-        "#DDD6CF",
-        "#B4B174",
-        "#F7F5F2",
-        "#1F1914"
-      ],
-      "photo": "/demo/bougie/photo.jpg",
-      "logo": "/demo/bougie/logo.svg",
-      "shopDesktop": "/demo/bougie/boutique-bureau.jpg",
-      "shopMobile": "/demo/bougie/boutique-mobile.jpg",
-      "productPage": "/demo/bougie/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/bougie/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/bougie/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/bougie/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/bougie/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/bougie/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/bougie/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/bougie/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/bougie/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/bougie/video.mp4",
-      "videoPoster": "/demo/bougie/video-poster.jpg",
-      "shopVideo": "/demo/bougie/video-boutique.mp4"
     },
     {
       "id": "tasse",

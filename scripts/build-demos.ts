@@ -67,6 +67,16 @@ const REAL_DEMOS: DemoDef[] = [
     ],
     source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio." },
   },
+  {
+    id: "tribunes", sector: "Mode", direction: "flux", storeType: "niche", category: "T-shirts supporters",
+    productName: "T-shirt supporter Lavande", brandName: "Les Tribunes", price: "29,90 €",
+    description: "T-shirt de supporter bleu marine, inscription FRANCE et numéro 10, brins de lavande brodés en ton sur ton, liserés bleu-blanc-rouge, drapeau sur la poitrine.",
+    photo: path.join(REAL, "vetements", "tshirt-lavande.jpg"),
+    catalog: [
+      { name: "T-shirt supporter Aquarelle", category: "T-shirts supporters", price: "29,90", description: "T-shirt de supporter écru, motif aquarelle bleu et rouge, écusson tricolore et paysage en relief (tour Eiffel, champs de lavande).", photo: path.join(REAL, "vetements", "tshirt-aquarelle.jpg") },
+    ],
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "T-shirts de supporter d'un fournisseur (visuels du fournisseur) : la marque et la boutique sont créées par le studio. Les modèles reprenant l'écusson officiel de la fédération ont été écartés." },
+  },
 ];
 
 const PRODUCTS: DemoDef[] = process.env.ONLY ? REAL_DEMOS.filter((d) => process.env.ONLY!.split(",").includes(d.id)) : [
