@@ -1,0 +1,31 @@
+{%- comment -%}
+  Avis clients : emplacement pour le bloc de votre application d'avis (Judge.me, Loox, Shopify Product Reviews…).
+  Aucun avis n'est inventé : sans application, la section reste vide (un rappel s'affiche seulement dans l'éditeur).
+{%- endcomment -%}
+<section id="{{ section.settings.anchor | default: 'avis' }}" class="es-section es-reviews color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.blocks.size > 0 -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-reviews__heading">{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- for block in section.blocks -%}{% render block %}{%- endfor -%}
+    {%- elsif request.design_mode -%}
+      <p class="es-reviews__hint">Ajoutez ici le bloc de votre application d'avis : seuls de vrais avis clients s'afficheront.</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Avis clients",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Avis des clients" },
+    { "type": "text", "id": "anchor", "label": "Ancre (lien depuis la note)", "default": "avis" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 64 }
+  ],
+  "blocks": [{ "type": "@app" }],
+  "presets": [{ "name": "Avis clients" }]
+}
+{% endschema %}

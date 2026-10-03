@@ -8,7 +8,7 @@
         {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
       </header>
     {%- endif -%}
-    <div class="es-stats__grid" style="--cols: {{ section.blocks.size | at_most: 4 }}">
+    <div class="es-stats__grid es-stats__grid--{{ section.settings.layout | default: 'grid' }}" style="--cols: {{ section.blocks.size | at_most: 4 }}">
       {%- for block in section.blocks -%}
         <div class="es-stat" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
           <span class="es-stat__value{% if section.settings.accent_values %} es-stat__value--accent{% endif %}" data-count="{{ block.settings.value | escape }}">{{ block.settings.value }}</span>
@@ -16,6 +16,7 @@
         </div>
       {%- endfor -%}
     </div>
+    {%- if section.settings.source != blank -%}<p class="es-stats__source es-small es-muted" data-reveal="up">{{ section.settings.source }}</p>{%- endif -%}
   </div>
 </section>
 
@@ -30,6 +31,8 @@
     { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur" },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "checkbox", "id": "accent_values", "label": "Chiffres en couleur d'accent", "default": true },
+    { "type": "select", "id": "layout", "label": "Présentation", "default": "grid", "options": [ { "value": "grid", "label": "Grille" }, { "value": "rows", "label": "Lignes (chiffre puis phrase)" } ] },
+    { "type": "text", "id": "source", "label": "Source des chiffres", "info": "Ex. « Étude réalisée sur 143 participants, mai 2026 ». Indispensable pour un chiffre issu d'une étude ou d'un sondage." },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }

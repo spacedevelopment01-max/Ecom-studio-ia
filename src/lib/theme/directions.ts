@@ -619,6 +619,8 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const productBlocks = [
     { type: "eyebrow", settings: { text: input.shopName } },
     { type: "title", settings: {} },
+    // Note réelle de l'application d'avis : invisible tant qu'il n'y a pas d'avis.
+    { type: "rating", settings: { anchor: "avis" } },
     { type: "price", settings: {} },
     { type: "text", settings: { text: p(c.product.short), ...only } },
     { type: "buy_buttons", settings: { picker: "buttons", show_quantity: true, show_dynamic_checkout: true } },
@@ -633,6 +635,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   ];
   const productTpl = tpl(ids, [
     ["main-product", { gallery_layout: gallery, sticky_bar: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96 }, productBlocks],
+    ["product-reviews", { heading: "Avis des clients", anchor: "avis", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 }],
     story(2),
     ...(specs.length ? [specList(1)] : []),
     faqSec(2, 4),

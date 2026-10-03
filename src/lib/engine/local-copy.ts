@@ -33,6 +33,9 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
   const fact = (key: string) => facts.find((f) => f.key === key)?.value;
   const visualLine = product.visual.description || "";
   const summary = product.summary || visualLine || `${name}, présenté par ${brand.name}.`;
+  // Accroche du héros : première phrase, coupée proprement (le résumé complet reste dans la fiche).
+  const firstSentence = summary.split(/(?<=[.!?])\s/)[0];
+  const lead = firstSentence.length <= 110 ? firstSentence : `${firstSentence.slice(0, 110).replace(/[\s,;:]+\S*$/, "")}…`;
 
   const featureFacts = facts.filter((f) => !["price", "name"].includes(f.key)).slice(0, 4);
   const icons = ["sparkle", "leaf", "hand", "shield"] as const;
@@ -63,7 +66,7 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
       heading: brand.tagline || name,
       line1: name.split(" ").slice(0, 2).join(" ") || brand.name,
       line2: brand.tagline ? brand.tagline.split(" ").slice(0, 4).join(" ") : "par " + brand.name,
-      text: summary,
+      text: lead,
       cta: "Découvrir",
     },
     statement: { eyebrow: brand.name, heading: brand.tagline || summary, text: brand.story || "" },

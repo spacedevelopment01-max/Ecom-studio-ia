@@ -1,0 +1,43 @@
+{%- comment -%} Cartes « Vous vous reconnaissez ? » : les situations que vit le client avant d'acheter. {%- endcomment -%}
+<section class="es-section es-situations color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container es-container--narrow">
+    <header class="es-section-head es-section-head--center">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+    </header>
+    <div class="es-situations__list" data-reveal-stagger>
+      {%- for block in section.blocks -%}
+        <article class="es-situation" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          {%- if block.settings.emoji != blank -%}<span class="es-situation__icon" aria-hidden="true">{{ block.settings.emoji }}</span>{%- endif -%}
+          <h3 class="es-situation__title">{{ block.settings.title }}</h3>
+          {%- if block.settings.text != blank -%}<p class="es-situation__text">{{ block.settings.text }}</p>{%- endif -%}
+        </article>
+      {%- endfor -%}
+    </div>
+    {%- if section.settings.conclusion != blank -%}<p class="es-situations__end" data-reveal="up">{{ section.settings.conclusion }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Situations",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Vous vous reconnaissez dans ces situations ?" },
+    { "type": "text", "id": "conclusion", "label": "Phrase de conclusion" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-2" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "situation", "name": "Situation", "settings": [
+      { "type": "text", "id": "emoji", "label": "Pictogramme (émoji)", "default": "😣" },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Une situation que vit votre client ?" },
+      { "type": "textarea", "id": "text", "label": "Texte", "default": "Décrivez-la avec ses mots, sans promesse de résultat." }
+    ] }
+  ],
+  "presets": [{ "name": "Situations", "blocks": [{ "type": "situation" }, { "type": "situation" }, { "type": "situation" }] }]
+}
+{% endschema %}

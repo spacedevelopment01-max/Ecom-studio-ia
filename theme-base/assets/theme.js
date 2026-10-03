@@ -174,11 +174,14 @@
         if (!v) { addBtn.disabled = true; addLabel.textContent = strings.unavailable; return; }
         idInput.value = v.id;
         addBtn.disabled = !v.available;
-        addLabel.textContent = v.available ? strings.addToCart : strings.soldOut;
+        var withPrice = !!$('[data-button-price]', wrap) || wrap.hasAttribute('data-price-in-button');
+        if (withPrice) wrap.setAttribute('data-price-in-button', '');
+        addLabel.textContent = v.available ? strings.addToCart + (withPrice && v.price != null ? ' – ' + formatMoney(v.price) : '') : strings.soldOut;
         var section = wrap.closest('[data-main-product], [data-featured-product]');
         var priceWrap = section && $('[data-price]', section);
         if (priceWrap && v.price != null) { var cur = priceWrap.querySelector('.es-price__current'); if (cur) cur.textContent = formatMoney(v.price); }
         if (v.featured_media && section) goToMedia(section, v.featured_media.id);
+        if (section) section.dispatchEvent(new CustomEvent('es:variant', { detail: v }));
         if (wrap.getAttribute('data-product-url') && history.replaceState && section && section.hasAttribute('data-main-product')) {
           history.replaceState({}, '', wrap.getAttribute('data-product-url') + '?variant=' + v.id);
         }
@@ -207,6 +210,58 @@
           .catch(function () { errorEl.textContent = strings.error; errorEl.hidden = false; })
           .finally(function () { addBtn.removeAttribute('aria-busy'); addBtn.disabled = false; });
       });
+    });
+  }
+
+  /* ---------- Lots (compose ton panier) et abonnement ---------- */
+  function initOffers(root) {
+    $$('[data-bundles]', root).forEach(function (box) {
+      var section = box.closest('[data-main-product]') || document;
+      var units = parseInt(box.getAttribute('data-units'), 10) || 0;
+      function pick(btn) {
+        $$('.es-bundle', box).forEach(function (b) { b.setAttribute('aria-checked', b === btn ? 'true' : 'false'); });
+        var q = $('input[name="quantity"]', section); if (q) q.value = btn.getAttribute('data-qty');
+      }
+      $$('.es-bundle', box).forEach(function (b) { b.addEventListener('click', function () { pick(b); }); });
+      var initial = $('.es-bundle[aria-checked="true"]', box); if (initial) pick(initial);
+      section.addEventListener('es:variant', function (e) {
+        var price = e.detail && e.detail.price; if (price == null) return;
+        $$('.es-bundle', box).forEach(function (b) {
+          var q = +b.getAttribute('data-qty'), d = +b.getAttribute('data-discount') || 0;
+          var full = price * q, total = Math.round(full * (100 - d) / 100);
+          var p = $('[data-bundle-price]', b); if (p) p.textContent = formatMoney(total);
+          var c = $('[data-bundle-compare]', b); if (c) c.textContent = formatMoney(full);
+          var u = $('[data-bundle-unit]', b); if (u && units) u.textContent = formatMoney(Math.round(total / (units * q)));
+        });
+      });
+    });
+    $$('[data-subscribe]', root).forEach(function (box) {
+      var section = box.closest('[data-main-product]') || document;
+      var form = $('[data-product-form]', section); if (!form) return;
+      function sync() {
+        var sel = $('input[type="radio"]:checked', box), val = sel ? sel.value : '';
+        var hidden = $('input[name="selling_plan"]', form);
+        if (val) { if (!hidden) { hidden = document.createElement('input'); hidden.type = 'hidden'; hidden.name = 'selling_plan'; form.appendChild(hidden); } hidden.value = val; }
+        else if (hidden) hidden.remove();
+      }
+      $$('input[type="radio"]', box).forEach(function (r) { r.addEventListener('change', sync); });
+      sync();
+    });
+  }
+
+  /* ---------- Livraison estimée (délais réels saisis par le marchand) ---------- */
+  function initEta(root) {
+    $$('[data-eta]', root).forEach(function (box) {
+      var min = parseInt(box.getAttribute('data-min'), 10) || 0, max = parseInt(box.getAttribute('data-max'), 10) || 0;
+      var business = box.getAttribute('data-business') === 'true';
+      function add(days) {
+        var d = new Date();
+        while (days > 0) { d.setDate(d.getDate() + 1); if (!business || (d.getDay() !== 0 && d.getDay() !== 6)) days--; }
+        return d;
+      }
+      var fmt = function (d) { return d.toLocaleDateString(document.documentElement.lang || 'fr', { weekday: 'short', day: 'numeric', month: 'short' }); };
+      var out = $('[data-eta-range]', box); if (!out || !max) return;
+      out.textContent = min && min !== max ? fmt(add(min)) + ' – ' + fmt(add(max)) : fmt(add(max));
     });
   }
 
@@ -471,6 +526,8 @@
     initMenu();
     initCart();
     initBuy(document);
+    initOffers(document);
+    initEta(document);
     initGallery();
     initStickyBuy();
     initStory();
@@ -484,5 +541,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
   /* Éditeur de thème Shopify : réinitialise les sections rechargées. */
-  document.addEventListener('shopify:section:load', function (e) { initNarrative(e.target); initWords(e.target); initCounters(e.target); initCompare(e.target); initGlow(e.target); initScrollEffects(); initReveal(e.target); initBuy(e.target); initStory(); initHGallery(); initParallax(); initVideos(); initGallery(); });
+  document.addEventListener('shopify:section:load', function (e) { initNarrative(e.target); initWords(e.target); initCounters(e.target); initCompare(e.target); initGlow(e.target); initScrollEffects(); initReveal(e.target); initBuy(e.target); initOffers(e.target); initEta(e.target); initStory(); initHGallery(); initParallax(); initVideos(); initGallery(); });
 })();
