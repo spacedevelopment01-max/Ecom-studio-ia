@@ -69,8 +69,8 @@ export function FilmPlayer({ src, poster, captions }: { src: string; poster: str
         {captions && <track kind="captions" src={captions} srcLang="fr" label="Français" />}
       </video>
       {!sound && (
-        <button onClick={withSound} className="btn-glow absolute bottom-4 left-4 inline-flex h-11 items-center gap-2 rounded-full bg-signal px-5 text-sm font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:bottom-5 sm:left-5 sm:h-12 sm:text-[15px]">
-          <span aria-hidden>▶</span> Regarder avec le son · 1 min
+        <button onClick={withSound} className="btn-glow absolute right-2.5 top-2.5 inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:right-4 sm:top-4 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm">
+          <span aria-hidden>▶</span> Avec le son<span className="hidden sm:inline"> · 1 min</span>
         </button>
       )}
     </div>
