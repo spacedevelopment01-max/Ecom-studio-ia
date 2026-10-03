@@ -34,6 +34,9 @@ const SUGGESTIONS = [
   "Change le header : logo centré et menu en dessous.",
   "Mets la photo de détail dans la première section.",
   "Ajoute une présentation animée du produit au défilement.",
+  "Ajoute des lots sur la fiche produit.",
+  "Ajoute la livraison estimée 2 à 4 jours.",
+  "Mets le prix dans le bouton d'ajout au panier.",
   "Refais cette section dans un style plus élégant.",
   "Reviens à la version précédente.",
 ];
