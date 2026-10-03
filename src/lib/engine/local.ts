@@ -219,7 +219,7 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
  * bouton, texte entre guillemets dans l'élément désigné, ajout ou
  * suppression de sections courantes, changement de direction.
  */
-export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string } | null): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string } | null): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|undo)/.test(m)) return { ops: [], reply: "Je reviens à la version précédente.", revert: true };
   const quoted = message.match(/[«"“]\s*([^»"”]+?)\s*[»"”]/)?.[1];
@@ -245,7 +245,7 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
     const target = selection.block ? s?.blocks?.[selection.block] : s;
     const key = target ? ["heading", "title", "text", "question", "label", "button_label", "heading_line1"].find((k) => k in target.settings) : undefined;
     if (key) {
-      const wantsButton = /bouton/.test(m) && target && "button_label" in target.settings;
+      const wantsButton = (/bouton/.test(m) || selection.kind === "Bouton") && target && "button_label" in target.settings;
       ops.push({ op: "set_setting", template: selection.template, section: selection.section, block: selection.block, key: wantsButton ? "button_label" : key, value: quoted });
       return { ops, reply: `Texte remplacé par « ${quoted} ».`, revert: false };
     }

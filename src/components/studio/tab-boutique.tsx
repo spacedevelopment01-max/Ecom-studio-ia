@@ -24,7 +24,23 @@ type ThemeData = {
   directions: DirectionCard[];
   library: { type: string; name: string }[];
 };
-type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string } | null;
+type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string } | null;
+
+/** Noms lisibles des sections, pour la désignation d'un élément dans l'aperçu. */
+const SECTION_NAMES: Record<string, string> = {
+  "announcement-bar": "Bandeau d'annonce", header: "En-tête", footer: "Pied de page", "hero-split": "Ouverture", "hero-fullbleed": "Ouverture", "hero-editorial": "Ouverture",
+  "main-product": "Fiche produit", "featured-product": "Produit en avant", "featured-collection": "Collection", "collection-list": "Collections", "features-grid": "Points forts",
+  "image-with-text": "Image et texte", "rich-text": "Texte", faq: "FAQ", newsletter: "Newsletter", marquee: "Texte défilant", "curved-marquee": "Texte défilant", stats: "Chiffres",
+  "scroll-story": "Présentation animée", "video-showcase": "Vidéo", "video-reels": "Vidéos", "cta-banner": "Appel à l'action", "before-after": "Avant / après", "gallery-mosaic": "Galerie",
+  "horizontal-gallery": "Galerie", "specs-list": "Caractéristiques", "stack-cards": "Cartes", "story-circles": "Stories", timeline: "Étapes", situations: "Situations",
+  "product-reviews": "Avis", "product-recommendations": "Recommandations", "main-collection": "Page collection", "main-cart": "Panier", "contact-form": "Contact",
+};
+const describeSelection = (s: NonNullable<Selection>) => {
+  const where = SECTION_NAMES[s.type ?? ""] ?? s.type ?? "Section";
+  const what = s.kind && s.kind !== "Section" ? `${s.kind} · ` : "";
+  const text = s.text ? ` « ${s.text.replace(/\s+/g, " ").slice(0, 34)}${s.text.length > 34 ? "…" : ""} »` : "";
+  return `${what}${where}${text}`;
+};
 
 const DESKTOP_W = 1280;
 const DEVICES = { desktop: { w: "100%", icon: Monitor, label: "Ordinateur" }, tablet: { w: "820px", icon: Tablet, label: "Tablette" }, mobile: { w: "390px", icon: Smartphone, label: "Téléphone" } } as const;
@@ -48,8 +64,13 @@ export default function TabBoutique() {
   const chatJobs = useActive(["shop.chat", "shop.build", "shop.direction", "shopify.push"]);
   const [view, setView] = useState<"chat" | "preview" | "structure">("chat");
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
+  // Sur téléphone, l'aperçu s'ouvre au format téléphone (lisible et désignable au doigt).
+  useEffect(() => {
+    if (window.innerWidth < 640) setDevice("mobile");
+  }, []);
   const [page, setPage] = useState("/");
   const [picking, setPicking] = useState(false);
+  const pickingRef = useRef(false);
   const [selection, setSelection] = useState<Selection>(null);
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<AssetView[]>([]);
@@ -92,9 +113,12 @@ export default function TabBoutique() {
         setPicking(false);
         setView("chat");
       }
+      if (d.type === "pick-cancel") setPicking(false);
+      if (d.type === "ready" && pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
       if (d.type === "scroll") scrollY.current = d.y;
       if (d.type === "loaded") {
         iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "scroll", y: scrollY.current }, "*");
+        if (pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
         const path = String(d.path).replace(/^\/preview\/[^/]+\/v\/[^/]+/, "") || "/";
         if (path !== page) setPage(path);
       }
@@ -103,6 +127,7 @@ export default function TabBoutique() {
     return () => window.removeEventListener("message", onMsg);
   }, [page]);
   useEffect(() => {
+    pickingRef.current = picking;
     iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: picking }, "*");
   }, [picking]);
   // Nouvelle version → rechargement de l'aperçu en conservant la position.
@@ -206,7 +231,7 @@ export default function TabBoutique() {
         )}
         {theme.messages.map((m) => (
           <div key={m.id} className={cx("max-w-[92%] rounded-2xl px-4 py-3 text-sm", m.role === "user" ? "ml-auto bg-ink text-paper" : "bg-card border border-line")}>
-            {m.selection && <p className={cx("mb-1.5 text-[11px]", m.role === "user" ? "text-paper/70" : "text-muted")}>↳ {m.selection.type ?? m.selection.section}{m.selection.block ? ` › ${m.selection.block}` : ""}{m.selection.text ? ` « ${String(m.selection.text).slice(0, 40)} »` : ""}</p>}
+            {m.selection && <p className={cx("mb-1.5 text-[11px]", m.role === "user" ? "text-paper/70" : "text-muted")}>↳ {describeSelection(m.selection)}</p>}
             <p className="whitespace-pre-wrap leading-relaxed">{m.content}</p>
             {m.attachments.length > 0 && <p className="mt-1.5 text-[11px] opacity-70">{m.attachments.length} pièce(s) jointe(s)</p>}
             {m.theme_version_id && <button onClick={() => setViewVersion(m.theme_version_id)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-signal underline underline-offset-2">Voir cette version</button>}
@@ -223,10 +248,15 @@ export default function TabBoutique() {
         {(selection || attachments.length > 0) && (
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {selection && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-signal-soft px-3 py-1 text-xs text-signal">
-                <Crosshair className="size-3.5" /> {selection.type ?? selection.section}{selection.block ? ` › ${selection.block}` : ""} {selection.tag ? `<${selection.tag}>` : ""}
-                <button onClick={() => setSelection(null)} aria-label="Retirer la désignation"><X className="size-3.5" /></button>
+              <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full bg-signal-soft px-3 py-1 text-xs text-signal">
+                <Crosshair className="size-3.5 shrink-0" /> <span className="min-w-0 truncate">{describeSelection(selection)}</span>
+                <button onClick={() => { setSelection(null); iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "unpick" }, "*"); }} aria-label="Retirer la désignation"><X className="size-3.5" /></button>
               </span>
+            )}
+            {selection && selection.kind !== "Section" && (
+              <button onClick={() => setSelection({ template: selection.template, section: selection.section, type: selection.type, kind: "Section" })} className="rounded-full border border-line px-3 py-1 text-xs hover:border-ink">
+                Toute la section
+              </button>
             )}
             {attachments.map((a) => (
               <span key={a.id} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card py-0.5 pl-0.5 pr-2 text-xs">

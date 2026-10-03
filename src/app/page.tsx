@@ -145,7 +145,7 @@ export default async function Home() {
             <div className="relative lg:col-span-6">
               <div data-sfx className="sfx-tilt reveal reveal-scale relative mx-auto max-w-[560px]" style={{ ["--d" as any]: 3 }}>
                 <div className="neon on overflow-hidden rounded-[2rem] border border-line bg-[#070B17] shadow-[0_40px_120px_-40px_var(--glow)]">
-                  <AutoVideo src="/explainers/photo.mp4" poster="/explainers/photo.jpg" label="Vidéo : d'une photo à une marque" className="aspect-square w-full object-cover" />
+                  <AutoVideo src="/explainers/hero.mp4" poster="/explainers/hero.jpg" label="Vidéo : trois produits réels, trois boutiques générées" className="aspect-square w-full object-cover" />
                 </div>
                 {d0 && (
                   <div data-sfx className="sfx-rise absolute -right-4 bottom-[14%] hidden w-[22%] sm:block lg:-right-12">
