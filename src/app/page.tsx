@@ -55,14 +55,14 @@ export default async function Home() {
   const cta = user ? "/studio" : "/inscription";
   const chapters = [
     { tag: "Analyse", title: "Une photo suffit pour démarrer.", text: "Le studio détoure votre produit au pixel près, mesure sa palette sur l'objet et dessine logo et charte. Pas encore de photo ? Ouvrez le studio quand même : vous l'ajouterez plus tard.", video: "/explainers/photo.mp4", poster: "/explainers/photo.jpg" },
-    { tag: "Boutique sur mesure", title: "Votre thème, créé de A à Z par l'IA.", text: "Couleurs et typographies de votre marque, mise en page pensée pour votre produit, sections inédites codées pour lui : un vrai thème Shopify Online Store 2.0, unique, que vous retouchez ensuite en discutant.", video: "/explainers/themes.mp4", poster: "/explainers/themes.jpg" },
+    { tag: "Boutique sur mesure", title: "Votre thème, créé de A à Z par l'IA.", text: "Couleurs et typographies de votre marque, mise en page pensée pour votre produit, sections inédites codées pour lui : un vrai thème unique, prêt pour Shopify, WooCommerce ou PrestaShop, que vous retouchez ensuite en discutant.", video: "/explainers/themes.mp4", poster: "/explainers/themes.jpg" },
     { tag: "Retouche", title: "Vous modifiez en discutant.", text: "Désignez un élément dans l'aperçu et demandez ce que vous voulez : seul cet élément change. Chaque modification crée une version que vous pouvez restaurer.", video: "/explainers/chat.mp4", poster: "/explainers/chat.jpg" },
     { tag: "Images et vidéos", title: "Chaque visuel au bon format.", text: "Packshots, scènes, publicités et vidéos montées en 1:1, 4:5, 9:16 et 16:9, toujours à partir des pixels réels de votre produit, avec des textes nets.", video: "/explainers/formats.mp4", poster: "/explainers/formats.jpg" },
     { tag: "Calendrier", title: "Vous validez, le studio publie.", text: "Des semaines de publications préparées pour chaque réseau. Rien ne part sans votre accord ; une fois vos comptes connectés, la publication programmée tourne même navigateur fermé.", video: "/explainers/cal.mp4", poster: "/explainers/cal.jpg" },
   ];
   const features: [any, string, string][] = [
     [MessageSquare, "Boutique par conversation", "Discutez à gauche, la boutique s'actualise à droite. Désignez une zone, joignez une image, demandez « modifie uniquement ce bouton »."],
-    [Palette, "Thème sur mesure par l'IA", "Identité, composition et sections codées pour votre produit. Online Store 2.0 complet, contrôlé avec Theme Check (l'outil officiel de Shopify), exporté en ZIP identique à l'aperçu."],
+    [Palette, "Thème sur mesure par l'IA", "Identité, composition et sections codées pour votre produit. Livré pour Shopify (Online Store 2.0 contrôlé avec Theme Check), WooCommerce ou PrestaShop, identique à l'aperçu."],
     [ImageIcon, "Images fidèles", "Packshots, détails, scènes, bannières, visuels sociaux et publicitaires, rangés et réutilisables partout."],
     [Film, "Vidéos abouties", "Typographie animée, révélation du produit, transitions, musique originale, sous-titres. MP4 en 9:16, 1:1, 4:5 et 16:9."],
     [CalendarDays, "Calendrier qui publie", "Jour, semaine, mois. Validation à l'unité ou en lot, règles d'automatisation, reprises sans doublon."],

@@ -191,7 +191,7 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
               <span className="size-2.5 rounded-full bg-line" />
               <span className="size-2.5 rounded-full bg-line" />
               <span className="size-2.5 rounded-full bg-line" />
-              <span className="ml-3 truncate text-xs text-muted">Aperçu du thème Shopify généré</span>
+              <span className="ml-3 truncate text-xs text-muted">Aperçu du thème généré</span>
             </div>
             <img src={d.shopDesktop} alt={`Page d'accueil de la boutique ${d.brand}`} className="aspect-[16/10] w-full object-cover object-top" loading="lazy" />
           </div>
