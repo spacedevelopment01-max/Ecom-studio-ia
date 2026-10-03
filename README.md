@@ -18,6 +18,10 @@ Le premier compte créé (ou celui de `ADMIN_EMAIL`) est administrateur : consol
 
 Autres commandes : `npm test` (tests vitest), `npm run typecheck`, `npx tsx scripts/theme-check.ts` (Shopify Theme Check sur les 8 directions), `npx tsx scripts/e2e-pipeline.ts <photo>` (pipeline complet sans navigateur), `CHROMIUM=… PHOTO=… npx tsx scripts/e2e-browser.ts` (parcours navigateur bureau + mobile), `RENDERS=… npx tsx scripts/build-demos.ts` (régénère les démonstrations de la page d'accueil).
 
+### Essayer sans rien installer (GitHub Codespaces, gratuit)
+
+Sur la page du dépôt : **Code › Codespaces › Create codespace on main**. L'installation se fait seule (5 minutes environ la première fois), puis le studio s'ouvre dans un onglet. Le quota gratuit de GitHub couvre environ 60 heures par mois ; arrêtez le codespace quand vous avez fini.
+
 ## Ce qui fonctionne sans aucune clé externe
 
 Le **moteur intégré** tourne entièrement sur le serveur :
