@@ -3,6 +3,7 @@
  * mises en scène (décor IA si disponible, sinon studio local), bannières,
  * visuels sociaux et publicitaires. Chaque fichier est rangé, nommé et lié.
  */
+import { renderProCreatives } from "../media/creative-html";
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { all, one } from "../db";
@@ -169,7 +170,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     return ids;
   });
 
-  const styles = opts.scenes ?? (["everyday", "window", "arch"] as SceneStyle[]);
+  const styles = opts.scenes ?? (["everyday", "arch", "studio"] as SceneStyle[]);
   const withAi = opts.withAi !== false && !!imageProviderAvailable();
   for (const [i, style] of styles.entries()) {
     await ctx.step(`scene:${style}`, async () => {
@@ -259,6 +260,23 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
         ["square", "bold", "images.ads", "ad"],
       ];
       const ids: string[] = [];
+      // Visuels de niveau agence (mise en page HTML) quand un navigateur est disponible.
+      const pro = await renderProCreatives(
+        { product: cutBuf, palette: pal, typo, brand: brandName, logo: null, headline, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: "Découvrir" },
+        [
+          { template: "signature", format: "portrait" },
+          { template: "editorial", format: "square" },
+          { template: "signature", format: "story" },
+          { template: "arguments", format: "square" },
+        ],
+      ).catch(() => null);
+      if (pro?.length) {
+        for (const [k, r] of pro.entries()) {
+          const role = k < 2 ? "social" : "ad";
+          ids.push(await save(r.jpg, `${base}-${role === "ad" ? "publicite" : "post"}-${r.label.replace(":", "x")}-${r.template}.jpg`, role, role === "ad" ? "images.ads" : "images.social", { recipe: `Visuel ${r.label} (${r.template})`, text: { headline }, format: r.label }));
+        }
+        return ids;
+      }
       for (const [fmt, layout, folder, role] of variants) {
         const r = await renderCreative({ product, palette: pal, typo, format: FORMATS[fmt], layout, headline, subline: sub, cta: role === "ad" ? "Découvrir" : undefined, brand: brandName, logo, seed: ids.length + 3 });
         ids.push(await save(r.jpg, `${base}-${role === "ad" ? "publicite" : "post"}-${FORMATS[fmt].label.replace(":", "x")}-${layout}.jpg`, role, folder, { recipe: `Visuel ${FORMATS[fmt].label} (${layout})`, text: { headline, sub }, safeArea: r.safe, minFontPx: r.minFontPx, format: FORMATS[fmt].label }));
@@ -268,6 +286,26 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   }
   ctx.progress(0.98, "Images prêtes");
   return { created };
+}
+
+/** Informations confirmées, très courtes, pour les pastilles des visuels (jamais d'allégation inventée). */
+function confirmedFacts(p: Project): string[] {
+  const out: string[] = [];
+  const cat = (p.product as any).category as string | undefined;
+  if (cat && cat.length <= 24) out.push(cat);
+  for (const f of p.product.facts) {
+    if (f.status === "unknown" || !f.value || f.key === "price") continue;
+    const v = f.value.replace(/\.$/, "").trim();
+    if (v.length <= 28) out.push(v);
+  }
+  for (const v of p.product.variants ?? []) if (v.values.length > 1) out.push(`${v.values.length} ${v.name.toLowerCase()}${/[sx]$/.test(v.name) ? "" : "s"} au choix`);
+  return [...new Set(out)].slice(0, 3);
+}
+
+/** Mot court pour le filigrane : dernier mot distinctif du nom (saveur, modèle), sinon la marque. */
+function keywordFor(p: Project): string {
+  const words = (p.product.name || "").split(/\s+/).filter((w) => w.length >= 3 && w.length <= 10);
+  return words.at(-1) ?? p.brand?.name ?? "";
 }
 
 /** Génère une image unique à la demande (studio Images). */

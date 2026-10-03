@@ -390,33 +390,12 @@ function everyday(ctx: SKRSContext2D, w: number, h: number, pal: Palette, seed: 
   ctx.fillRect(0, tableY - h * 0.002, w, h * 0.004);
   ctx.fillStyle = "rgba(255,248,236,0.35)";
   ctx.fillRect(0, tableY + h * 0.002, w, h * 0.002);
-  // Ombres posées sur le mur et la table (plus nettes près de la table).
-  const warmShade = createCanvas(w, h);
-  const ws = warmShade.getContext("2d");
-  ws.filter = `blur(${Math.round(w * 0.007)}px)`;
-  ws.drawImage(shade as any, 0, 0);
-  ws.filter = "none";
-  ws.globalCompositeOperation = "source-in";
-  ws.fillStyle = "rgb(120,86,56)";
-  ws.fillRect(0, 0, w, h);
-  ctx.save();
-  ctx.globalCompositeOperation = "multiply";
-  ctx.globalAlpha = 0.32;
-  ctx.drawImage(warmShade as any, 0, 0);
-  ctx.restore();
-  // Chaleur du soleil dans la tache de lumière.
-  ctx.save();
-  ctx.globalCompositeOperation = "soft-light";
-  const sun = createCanvas(w, h);
-  const su = sun.getContext("2d");
-  su.fillStyle = "rgba(255,214,150,0.9)";
-  su.fillRect(0, 0, w, h);
-  su.globalCompositeOperation = "destination-out";
-  su.filter = `blur(${Math.round(w * 0.007)}px)`;
-  su.drawImage(shade as any, 0, 0);
-  ctx.drawImage(sun as any, 0, 0);
-  ctx.restore();
-
+  // Lumière naturelle douce venant de la gauche (sans ombres projetées artificielles).
+  const soft = ctx.createLinearGradient(0, 0, w, 0);
+  soft.addColorStop(0, "rgba(255,236,205,0.22)");
+  soft.addColorStop(0.6, "rgba(255,236,205,0)");
+  ctx.fillStyle = soft;
+  ctx.fillRect(0, 0, w, h);
   // Vignette douce et chaleur générale.
   const vg = ctx.createRadialGradient(w * 0.45, h * 0.55, Math.min(w, h) * 0.35, w * 0.5, h * 0.5, Math.max(w, h) * 0.85);
   vg.addColorStop(0, "rgba(0,0,0,0)");
@@ -443,18 +422,6 @@ function lightProduct(ctx: SKRSContext2D, box: { x: number; y: number; w: number
   ctx.save();
   ctx.globalCompositeOperation = "soft-light";
   ctx.drawImage(L as any, 0, 0);
-  ctx.restore();
-  // Ombres de feuillage posées sur le produit (légères).
-  const S = createCanvas(w, h);
-  const s2 = S.getContext("2d");
-  s2.drawImage(product as any, box.x, box.y, box.w, box.h);
-  s2.globalCompositeOperation = "source-in";
-  s2.filter = `blur(${Math.round(w * 0.005)}px)`;
-  s2.drawImage(shade as any, 0, 0);
-  ctx.save();
-  ctx.globalCompositeOperation = "multiply";
-  ctx.globalAlpha = 0.16;
-  ctx.drawImage(S as any, 0, 0);
   ctx.restore();
 }
 

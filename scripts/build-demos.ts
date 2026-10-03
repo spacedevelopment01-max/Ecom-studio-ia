@@ -257,7 +257,8 @@ for (const p of PRODUCTS) {
   const files = (await api(ctx, `/api/projects/${pid}/files?q=`)).assets as any[];
   const all = (await api(ctx, `/api/projects/${pid}/files`)).assets as any[];
   const assets = files.length ? files : all;
-  const byRole = (r: string) => assets.filter((a) => a.role === r);
+  // Scènes dans l'ordre de création : la première (« vie quotidienne ») sert d'exemple principal.
+  const byRole = (r: string) => assets.filter((a) => a.role === r).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
   await sharp(photo).resize({ width: 900 }).jpeg({ quality: 84 }).toFile(path.join(dir, "photo.jpg"));
   const images: { src: string; label: string }[] = [];
   const pick: [string, string, number][] = [["cutout", "Détourage", 1], ["packshot", "Packshot", 1], ["detail", "Détail", 1], ["scene", "Scène", 2], ["social", "Visuel social", 1], ["ad", "Publicité", 1], ["banner", "Bannière", 1]];
