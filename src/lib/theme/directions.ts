@@ -339,6 +339,27 @@ const CHROME: Record<DirectionId, { shape: string; icons: string; menu: string; 
   gourmand: { shape: "bar", icons: "plain", menu: "fullscreen", footer: "card", ann: "marquee", card: "boxed" },
 };
 
+const CHROME_LABEL = {
+  shape: { floating: "En-tête flottant", pill: "En-tête pilule", bar: "En-tête barre", boxed: "En-tête encadré" } as Record<string, string>,
+  footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal" } as Record<string, string>,
+  ann: { rotate: "Bandeau rotatif", marquee: "Bandeau défilant", static: "Bandeau fixe" } as Record<string, string>,
+  card: { minimal: "Cartes épurées", boxed: "Cartes encadrées", overlay: "Cartes à texte sur image" } as Record<string, string>,
+};
+
+/** Directions présentées dans la galerie : description, aperçu et combinaison d'en-tête / pied de page. */
+export function directionCards() {
+  return DIRECTIONS.map((d) => ({
+    id: d.id,
+    name: d.name,
+    tagline: d.tagline,
+    description: d.description,
+    dark: DARK_DIRECTIONS.includes(d.id),
+    preview: `/demo/directions/${d.id}.jpg`,
+    chrome: [CHROME_LABEL.shape[CHROME[d.id].shape], CHROME_LABEL.footer[CHROME[d.id].footer], CHROME_LABEL.ann[CHROME[d.id].ann], CHROME_LABEL.card[CHROME[d.id].card]],
+  }));
+}
+export type DirectionCard = ReturnType<typeof directionCards>[number];
+
 export function buildSpec(input: BuildInput): ThemeSpec {
   const d = directionById(input.direction);
   const ids = new Ids();

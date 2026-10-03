@@ -36,10 +36,10 @@ export default function TabPublications() {
     reload();
   };
   return (
-    <div className="mx-auto grid max-w-6xl gap-6">
+    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6">
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
+        <div className="scrollbar-none flex min-w-0 max-w-full gap-1.5 overflow-x-auto">
           {FILTERS.map(([v, l]) => {
             const n = (data?.posts ?? []).filter((p) => !v || p.status === v).length;
             return <button key={v} onClick={() => (setFilter(v), setSel(new Set()))} className={cx("shrink-0 rounded-full border px-3.5 py-1.5 text-sm", filter === v ? "border-ink bg-ink text-paper" : "border-line bg-card")}>{l} <span className="opacity-60">{n}</span></button>;

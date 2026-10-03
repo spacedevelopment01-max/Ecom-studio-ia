@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createUser } from "@/lib/auth";
-import { claimNext, enqueue } from "@/lib/jobs";
+import { claimNext, enqueue, getJob, JobContext, JobPaused, pauseJob, resumeJob } from "@/lib/jobs";
+import { localBrand } from "@/lib/engine/local";
+import { emptyProduct } from "@/lib/project-types";
 import { scheduleTime } from "@/lib/engine/calendar";
 import { lintClaims } from "@/lib/ai/tasks";
 import { product } from "./fixtures";
@@ -30,5 +32,33 @@ describe("contrôle des allégations", () => {
   it("signale les promesses non confirmées", () => {
     const issues = lintClaims({ hero: "Le meilleur sérum, 100 % naturel, livraison offerte" }, { product } as any);
     expect(issues.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("pause et reprise", () => {
+  it("une tâche en pause n'est plus réclamée, s'arrête à son prochain point d'avancement et reprend sans perdre ses points de reprise", async () => {
+    const u = await createUser(`p${Date.now()}@test.fr`, "motdepasse-test", "P");
+    const j = enqueue({ userId: u.id, type: "test.pause", payload: {} });
+    const claimed = claimNext(["test.pause"])!;
+    const ctx = new JobContext(claimed);
+    ctx.save("etape1", 42);
+    pauseJob(j.id);
+    expect(() => ctx.progress(0.5)).toThrow(JobPaused);
+    expect(getJob(j.id)!.status).toBe("paused");
+    expect(getJob(j.id)!.attempts).toBe(0);
+    expect(claimNext(["test.pause"])).toBeNull();
+    resumeJob(j.id);
+    const again = claimNext(["test.pause"])!;
+    expect(again.id).toBe(j.id);
+    expect(new JobContext(again).checkpoint.etape1).toBe(42);
+  });
+});
+
+describe("marque locale", () => {
+  it("propose toujours un nom, quelle que soit la photo", () => {
+    for (let i = 0; i < 300; i++) {
+      const p = { ...emptyProduct(), sector: "hightech" as const, visual: { colors: [{ hex: `#${(i * 7919).toString(16).padStart(6, "0").slice(0, 6)}`, name: "x", share: 1 }] } };
+      expect(localBrand(p as any).brand.name).toBeTruthy();
+    }
   });
 });

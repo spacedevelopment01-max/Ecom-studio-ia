@@ -127,7 +127,7 @@ export function JobProgress({ job, className }: { job: JobView | null | undefine
   return (
     <div className={cx("rounded-2xl border border-line bg-card p-4", className)} role="status">
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="flex items-center gap-2 font-medium"><Spinner className="text-signal" /> {job.label || job.type}</span>
+        <span className="flex items-center gap-2 font-medium">{job.status === "paused" ? <span className="size-2 rounded-full bg-warn" aria-hidden /> : <Spinner className="text-signal" />} {job.label || job.type}</span>
         <span className="text-xs text-muted">{Math.round(job.progress * 100)} %</span>
       </div>
       <p className="mt-1 text-xs text-muted">{job.message}</p>

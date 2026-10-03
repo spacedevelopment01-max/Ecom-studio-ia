@@ -6,7 +6,7 @@ import { cx } from "./ui";
 /** Ajoute la classe « in » aux éléments .reveal visibles (une seule fois). */
 export function RevealObserver() {
   useEffect(() => {
-    const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+    const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal, .words"));
     if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       els.forEach((e) => e.classList.add("in"));
       return;
@@ -140,37 +140,204 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
   );
 }
 
-/** Présentation du parcours, synchronisée au défilement (sticky). */
-export function StepsScroller({ steps }: { steps: { title: string; text: string; image: string; tag: string }[] }) {
+/**
+ * Effets pilotés par le défilement, sans bibliothèque :
+ *  - [data-sfx] reçoit --p (0 → 1 pendant sa traversée de l'écran) ;
+ *  - [data-count] compte jusqu'à data-to quand il apparaît ;
+ *  - .spot suit le pointeur (--mx, --my).
+ */
+export function ScrollFX() {
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const sfx = Array.from(document.querySelectorAll<HTMLElement>("[data-sfx]"));
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = window.innerHeight;
+      for (const el of sfx) {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -200 || r.top > vh + 200) continue;
+        const p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
+        el.style.setProperty("--p", p.toFixed(3));
+      }
+    };
+    const onScroll = () => (raf ||= requestAnimationFrame(update));
+    if (!reduce) {
+      update();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    }
+    // Compteurs
+    const counters = Array.from(document.querySelectorAll<HTMLElement>("[data-count]"));
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          io.unobserve(e.target);
+          const el = e.target as HTMLElement;
+          const to = Number(el.dataset.to);
+          if (reduce) return void (el.textContent = el.dataset.to!);
+          const t0 = performance.now();
+          const tick = (t: number) => {
+            const k = Math.min(1, (t - t0) / 1400);
+            el.textContent = String(Math.round(to * (1 - Math.pow(1 - k, 3))));
+            if (k < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }),
+      { threshold: 0.6 },
+    );
+    counters.forEach((c) => io.observe(c));
+    // Projecteur
+    const onMove = (e: PointerEvent) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>(".spot");
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      el.style.setProperty("--my", `${e.clientY - r.top}px`);
+    };
+    document.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      document.removeEventListener("pointermove", onMove);
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+  return null;
+}
+
+export type Chapter = { title: string; text: string; video: string; poster: string; tag: string };
+
+/** Chapitres vidéo : la vidéo à gauche suit le paragraphe lu à droite (sur téléphone, chaque chapitre a sa vidéo). */
+export function VideoChapters({ chapters }: { chapters: Chapter[] }) {
   const [active, setActive] = useState(0);
   const refs = useRef<(HTMLElement | null)[]>([]);
+  const vids = useRef<(HTMLVideoElement | null)[]>([]);
   useEffect(() => {
     const io = new IntersectionObserver((entries) => entries.forEach((e) => e.isIntersecting && setActive(Number((e.target as HTMLElement).dataset.i))), { rootMargin: "-45% 0px -45% 0px" });
     refs.current.forEach((r) => r && io.observe(r));
     return () => io.disconnect();
   }, []);
+  useEffect(() => {
+    vids.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === active) {
+        v.currentTime = 0;
+        v.play().catch(() => {});
+      } else v.pause();
+    });
+  }, [active]);
   return (
-    <div className="grid gap-10 lg:grid-cols-2 lg:gap-20">
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-20">
       <div className="hidden lg:block">
         <div className="sticky top-24">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-line bg-paper-2">
-            {steps.map((s, i) => (
-              <img key={s.image + i} src={s.image} alt="" aria-hidden className={cx("absolute inset-0 size-full object-cover transition-all duration-700", i === active ? "scale-100 opacity-100" : "scale-105 opacity-0")} loading="lazy" />
+          <div className="neon on relative aspect-square overflow-hidden rounded-[2rem] border border-line bg-[#070B17] shadow-soft">
+            {chapters.map((c, i) => (
+              <video key={c.video} ref={(el) => void (vids.current[i] = el)} src={c.video} poster={c.poster} muted loop playsInline preload={i === 0 ? "auto" : "metadata"} aria-label={c.title} className={cx("absolute inset-0 size-full object-cover transition-all duration-700", i === active ? "scale-100 opacity-100" : "scale-[1.04] opacity-0")} />
             ))}
-            <span className="absolute bottom-4 left-4 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur">{steps[active]?.tag}</span>
+          </div>
+          <div className="mt-5 flex gap-1.5" aria-hidden>
+            {chapters.map((c, i) => <span key={c.tag} className={cx("h-1 flex-1 rounded-full transition-colors duration-500", i <= active ? "bg-signal" : "bg-line")} />)}
           </div>
         </div>
       </div>
       <ol className="grid">
-        {steps.map((s, i) => (
-          <li key={s.title} ref={(el) => void (refs.current[i] = el)} data-i={i} className={cx("border-t border-line py-10 transition-opacity duration-500 lg:min-h-[52vh] lg:py-16", i === active ? "opacity-100" : "lg:opacity-40")}>
-            <span className="font-display text-sm text-signal">{String(i + 1).padStart(2, "0")}</span>
-            <h3 className="mt-2 font-display text-3xl leading-tight sm:text-4xl">{s.title}</h3>
-            <p className="mt-3 max-w-lg text-[17px] leading-relaxed text-ink-2">{s.text}</p>
-            <img src={s.image} alt="" aria-hidden className="mt-6 aspect-[4/3] w-full rounded-3xl object-cover lg:hidden" loading="lazy" />
+        {chapters.map((c, i) => (
+          <li key={c.title} ref={(el) => void (refs.current[i] = el)} data-i={i} className={cx("border-t border-line py-10 transition-opacity duration-500 lg:flex lg:min-h-[70vh] lg:flex-col lg:justify-center lg:py-16", i === active ? "opacity-100" : "lg:opacity-35")}>
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-signal"><span className="font-display">{String(i + 1).padStart(2, "0")}</span> {c.tag}</span>
+            <h3 className="mt-3 font-display text-3xl font-semibold leading-tight sm:text-[2.6rem]">{c.title}</h3>
+            <p className="mt-4 max-w-lg text-[17px] leading-relaxed text-ink-2">{c.text}</p>
+            <div className="mt-6 overflow-hidden rounded-3xl border border-line bg-[#070B17] lg:hidden">
+              <AutoVideo src={c.video} poster={c.poster} label={c.title} className="aspect-square w-full object-cover" />
+            </div>
           </li>
         ))}
       </ol>
     </div>
+  );
+}
+
+export type ThemeShow = { id: string; name: string; tagline: string; description: string; preview: string; chrome: string[]; dark: boolean };
+
+/**
+ * Vitrine des thèmes : sur ordinateur, la section se fige et les thèmes défilent à l'horizontale
+ * au rythme du défilement vertical ; sur téléphone, carrousel tactile.
+ */
+export function ThemeShowcase({ themes, children }: { themes: ThemeShow[]; children: React.ReactNode }) {
+  const section = useRef<HTMLElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const bar = useRef<HTMLDivElement>(null);
+  const [pinned, setPinned] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)");
+    const apply = () => setPinned(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  useEffect(() => {
+    if (!pinned) {
+      if (track.current) track.current.style.transform = "";
+      return;
+    }
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const s = section.current, t = track.current;
+      if (!s || !t) return;
+      const r = s.getBoundingClientRect();
+      const range = s.offsetHeight - window.innerHeight;
+      const p = Math.min(1, Math.max(0, -r.top / range));
+      const dist = t.scrollWidth - t.clientWidth;
+      t.style.transform = `translate3d(${-p * dist}px,0,0)`;
+      bar.current?.style.setProperty("--p", p.toFixed(3));
+    };
+    const on = () => (raf ||= requestAnimationFrame(update));
+    update();
+    window.addEventListener("scroll", on, { passive: true });
+    window.addEventListener("resize", on);
+    return () => {
+      window.removeEventListener("scroll", on);
+      window.removeEventListener("resize", on);
+      cancelAnimationFrame(raf);
+    };
+  }, [pinned]);
+  return (
+    <section ref={section} id="themes" className="relative scroll-mt-16 bg-paper-2" style={pinned ? { height: `calc(${themes.length} * 34vh + 100vh)` } : undefined}>
+      <div className={cx("overflow-hidden py-24 sm:py-28", pinned && "sticky top-16 flex h-[calc(100dvh-4rem)] flex-col justify-center py-0 sm:py-0")}>
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">{children}</div>
+        <div ref={track} className={cx("mt-8 flex gap-5 px-4 will-change-transform sm:px-6 lg:px-[max(1.5rem,calc((100vw_-_80rem)/2_+_1.5rem))] scroll-px-4 sm:scroll-px-6 lg:scroll-px-[max(1.5rem,calc((100vw_-_80rem)/2_+_1.5rem))]", !pinned && "scrollbar-none snap-x snap-mandatory overflow-x-auto pb-4")}>
+          {themes.map((d, i) => (
+            <article key={d.id} className="neon spot w-[82vw] shrink-0 snap-start rounded-[1.75rem] border border-line bg-card p-2.5 shadow-soft sm:w-[440px] lg:w-[min(460px,33vw)]">
+              <div className="overflow-hidden rounded-[1.25rem] border border-line bg-paper">
+                <div className="flex items-center gap-1.5 border-b border-line px-3 py-2">
+                  <span className="size-2 rounded-full bg-line" /><span className="size-2 rounded-full bg-line" /><span className="size-2 rounded-full bg-line" />
+                  <span className="ml-2 truncate text-[11px] text-muted">{d.name.toLowerCase()}.myshopify.com</span>
+                </div>
+                <img src={d.preview} alt={`Boutique de démonstration, thème ${d.name}`} loading="lazy" className="aspect-[16/11] w-full object-cover object-top" />
+              </div>
+              <div className="px-2.5 pb-2 pt-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className="font-display text-2xl font-semibold">{d.name}</h3>
+                  <span className="text-xs text-muted">{String(i + 1).padStart(2, "0")} / {themes.length}</span>
+                </div>
+                <p className="serif-i text-lg text-signal">{d.tagline}</p>
+                <ul className="mt-3 flex flex-wrap gap-1.5">
+                  {d.chrome.map((c) => <li key={c} className="rounded-full border border-line bg-paper px-2.5 py-1 text-[11px] text-ink-2">{c}</li>)}
+                  {d.dark && <li className="rounded-full bg-ink px-2.5 py-1 text-[11px] text-paper">Version sombre</li>}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </div>
+        {pinned && (
+          <div className="mx-auto mt-6 w-full max-w-7xl px-6">
+            <div className="h-1 overflow-hidden rounded-full bg-line"><div ref={bar} className="sfx-progress h-full rounded-full bg-signal" /></div>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

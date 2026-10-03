@@ -16,7 +16,7 @@ Production : `npm run build` puis `npm start` (lance le site **et** le worker). 
 
 Le premier compte créé (ou celui de `ADMIN_EMAIL`) est administrateur : console sur `/admin`.
 
-Autres commandes : `npm test` (tests vitest), `npm run typecheck`, `npx tsx scripts/theme-check.ts` (Shopify Theme Check sur une direction ; boucle sur les 11 en CI), `npx tsx scripts/e2e-pipeline.ts <photo>` (pipeline complet sans navigateur), `CHROMIUM=… PHOTO=… npx tsx scripts/e2e-browser.ts` (parcours navigateur bureau + mobile), `npx tsx scripts/build-demos.ts` (régénère les démonstrations de la page d'accueil).
+Autres commandes : `npm test` (tests vitest), `npm run typecheck`, `npx tsx scripts/theme-check.ts` (Shopify Theme Check sur une direction ; boucle sur les 11 en CI), `npx tsx scripts/e2e-pipeline.ts <photo>` (pipeline complet sans navigateur), `CHROMIUM=… PHOTO=… npx tsx scripts/e2e-browser.ts` (parcours navigateur bureau + mobile), `npx tsx scripts/build-demos.ts` (régénère les démonstrations de la page d'accueil), `npx tsx scripts/build-explainers.ts` (régénère les cinq vidéos explicatives de l'accueil à partir des démonstrations).
 
 ### Essayer sans rien installer (GitHub Codespaces, gratuit)
 
@@ -30,6 +30,8 @@ Le **moteur intégré** tourne entièrement sur le serveur :
 - analyse prudente : rien n'est inventé, l'inconnu reste « [À compléter : …] » et seules les questions indispensables sont posées (prix, nom, livraison, retours) ; les réponses remplacent les marques à compléter partout (boutique, publications, textes) ;
 - marque : nom proposé (ou le vôtre), palette tirée du produit avec contrastes WCAG, typographies, logo vectoriel (SVG/PNG, version claire, monogramme, favicon), charte ;
 - **thème Shopify Online Store 2.0 réel** : 11 directions (dont Flux, Joaillerie, Gourmand), plus de 40 sections (héros immersifs, cartes néon, chiffres animés, avant/après, cercles façon stories, frise, cartes empilées, texte en courbe, vidéos verticales, vagues), accueil, fiche produit (variantes, prix, panier latéral AJAX, achat collant), collection, recherche, panier, pages Notre histoire / FAQ / Contact / Livraison et retours, politiques à compléter, 404, mot de passe, comptes clients, carte cadeau ; animations compatibles « réduire les animations » ; 0 erreur Shopify Theme Check ;
+- projet créable sans photo ni lien (l'entrée produit s'ajoute plus tard) ; pause et reprise des créations en cours, sans refaire les étapes terminées ;
+- galerie des 11 thèmes (bouton « Thèmes » de l'éditeur, page `/studio/themes`) ;
 - éditeur de boutique : discussion + aperçu côte à côte (pages, ordinateur/tablette/téléphone, désignation d'un élément), structure, verrous, versions et restauration. **L'aperçu, la version enregistrée et le ZIP exporté proviennent des mêmes fichiers** (empreinte affichée). Sans IA, l'éditeur comprend des commandes simples (couleur des boutons, texte entre guillemets, ajouter une FAQ, monter, supprimer, revenir en arrière, changer de direction) ;
 - exports WooCommerce (thème bloc installable), PrestaShop (thème enfant), Wix et Squarespace (kits : ces plateformes n'acceptent pas de thème importé — c'est indiqué) ;
 - images réelles : packshots, détails, scènes (studio, podium, arche, fenêtre, projecteur, aplats), bannières, visuels sociaux et publicités 1:1, 4:5, 9:16, 16:9, avec textes composés typographiquement et zones de sécurité ;

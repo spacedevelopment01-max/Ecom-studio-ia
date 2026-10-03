@@ -1,9 +1,11 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Crosshair, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Crosshair, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
+import { ThemeGallery, ThemeGrid } from "./theme-gallery";
+import type { DirectionCard } from "@/lib/theme/directions";
 
 type ThemeData = {
   current: null | {
@@ -19,7 +21,7 @@ type ThemeData = {
   };
   versions: { id: string; number: number; summary: string; author: string; created_at: number }[];
   messages: { id: string; role: string; content: string; attachments: string[]; selection: any; theme_version_id: string | null; job_id: string | null; created_at: number }[];
-  directions: { id: string; name: string; tagline: string }[];
+  directions: DirectionCard[];
   library: { type: string; name: string }[];
 };
 type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string } | null;
@@ -52,6 +54,11 @@ export default function TabBoutique() {
   const [sending, setSending] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  // Lien direct « …/boutique?themes » (depuis le Pilote) : ouvre la galerie.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("themes")) setGalleryOpen(true);
+  }, []);
   const [viewVersion, setViewVersion] = useState<string | null>(null);
   const iframe = useRef<HTMLIFrameElement>(null);
   // Mode « Ordinateur » : la page est rendue à 1280 px puis réduite, pour voir la vraie mise en page bureau.
@@ -164,6 +171,9 @@ export default function TabBoutique() {
         <Empty title="La boutique n'est pas encore composée" icon={<Store className="size-5" />} action={data?.brand ? <Button onClick={async () => { await api(`/api/projects/${id}/theme/build`, { body: {} }); reloadProject(); }}>Composer la boutique maintenant</Button> : undefined}>
           {data?.brand ? "La marque est prête : vous pouvez lancer la composition." : "Elle sera créée après la marque et les textes (voir le Pilote)."}
         </Empty>
+        <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">Les thèmes disponibles</h2>
+        <p className="mb-5 text-sm text-muted">Le studio choisit une direction selon votre produit ; vous pourrez en changer à tout moment avec le bouton « Thèmes » de l'éditeur.</p>
+        <ThemeGrid directions={theme.directions} />
       </div>
     );
 
@@ -322,6 +332,7 @@ export default function TabBoutique() {
         </div>
         <button onClick={() => setPicking(!picking)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", picking ? "border-signal bg-signal text-signal-ink" : "border-line bg-card")} aria-pressed={picking}><Crosshair className="size-3.5" /> {picking ? "Cliquez un élément" : "Désigner"}</button>
         <button onClick={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "reveal-all" }, "*")} className="hidden h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs sm:inline-flex" title="Afficher tous les éléments animés"><Sparkles className="size-3.5" /> Animations</button>
+        <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> Thèmes</button>
         <div className="ml-auto flex items-center gap-1.5">
           <Badge tone={viewVersion ? "warn" : "neutral"}>v{theme.versions.find((v) => v.id === versionId)?.number ?? cur.number}{viewVersion ? " (consultation)" : ""}</Badge>
           <button onClick={() => setHistoryOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title="Versions"><History className="size-4" /></button>
@@ -359,7 +370,7 @@ export default function TabBoutique() {
           <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)} className={cx("flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm", view === k ? "bg-ink text-paper" : "text-ink-2")}><I className="size-4" /> {l}</button>
         ))}
       </div>
-      <div className="grid h-[calc(100dvh-9.5rem)] lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_1fr] xl:grid-cols-[420px_1fr_280px]">
+      <div className="grid h-[calc(100dvh-9.5rem)] grid-cols-1 lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)_280px]">
         <section className={cx("min-h-0 border-r border-line bg-paper", view !== "chat" && "hidden lg:block")} aria-label="Discussion">{Chat}</section>
         <section className={cx("min-h-0", view !== "preview" && "hidden lg:block")} aria-label="Aperçu">{Preview}</section>
         <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? "hidden xl:block" : "")} aria-label="Structure">{Structure}</section>
@@ -384,7 +395,8 @@ export default function TabBoutique() {
           ))}
         </ul>
       </Modal>
-      <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} directions={theme.directions} currentDirection={cur.direction} />
+      <ThemeGallery open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
+      <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} />
     </div>
   );
 }
@@ -404,7 +416,7 @@ function pageTemplate(path: string, theme: ThemeData | null): string {
   return "404";
 }
 
-function ExportModal({ open, onClose, projectId, versionId, fingerprint, directions, currentDirection }: { open: boolean; onClose: () => void; projectId: string; versionId: string | null; fingerprint: string; directions: { id: string; name: string; tagline: string }[]; currentDirection: string }) {
+function ExportModal({ open, onClose, projectId, versionId, fingerprint }: { open: boolean; onClose: () => void; projectId: string; versionId: string | null; fingerprint: string }) {
   const toast = useToast();
   const { reload } = useProject();
   const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; linked: boolean }[]; publicUrl: boolean }>(open ? `/api/connections?project=${projectId}` : null);
@@ -444,14 +456,6 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, directi
         ) : (
           <p className="mt-1 text-xs text-muted">Connectez votre boutique dans l'espace Connexions pour installer directement le thème, le produit et les pages.</p>
         )}
-      </div>
-      <div className="mt-5">
-        <p className="text-sm font-medium">Changer de direction artistique</p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {directions.map((d) => (
-            <button key={d.id} disabled={d.id === currentDirection} onClick={async () => { await api(`/api/projects/${projectId}/theme/build`, { body: { direction: d.id } }); toast("ok", `Direction ${d.name} en cours d'application.`); reload(); onClose(); }} className={cx("rounded-full border px-3 py-1 text-xs", d.id === currentDirection ? "border-ink bg-ink text-paper" : "border-line hover:border-ink")}>{d.name}</button>
-          ))}
-        </div>
       </div>
     </Modal>
   );

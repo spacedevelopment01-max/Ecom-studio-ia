@@ -5,9 +5,9 @@
 export const PREVIEW_TOOLS = `
 <style id="es-preview-style">
   .es-pv-bar{position:fixed;left:12px;bottom:12px;z-index:2147483000;font:500 12px/1.3 system-ui,sans-serif;background:rgba(20,18,16,.86);color:#fff;padding:7px 11px;border-radius:999px;backdrop-filter:blur(8px);pointer-events:none}
-  .es-pv-hover{outline:2px dashed #FF4D2A!important;outline-offset:-2px!important;cursor:crosshair!important}
-  .es-pv-picked{outline:3px solid #FF4D2A!important;outline-offset:-3px!important}
-  .es-pv-label{position:fixed;z-index:2147483001;background:#FF4D2A;color:#fff;font:600 11px system-ui,sans-serif;padding:3px 8px;border-radius:6px;pointer-events:none}
+  .es-pv-hover{outline:2px dashed #2F5BEA!important;outline-offset:-2px!important;cursor:crosshair!important}
+  .es-pv-picked{outline:3px solid #2F5BEA!important;outline-offset:-3px!important}
+  .es-pv-label{position:fixed;z-index:2147483001;background:#2F5BEA;color:#fff;font:600 11px system-ui,sans-serif;padding:3px 8px;border-radius:6px;pointer-events:none}
 </style>
 <div class="es-pv-bar" aria-hidden="true">Aperçu · données de démonstration de la boutique · paiement désactivé</div>
 <script>

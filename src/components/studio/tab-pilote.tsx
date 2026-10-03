@@ -1,15 +1,17 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, ArrowRight, Check, Circle, Loader2, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Input, Progress, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { EngineNotice, SectionTitle } from "./common";
+import { StartCreation } from "./start-creation";
 
 function StepIcon({ status }: { status: string }) {
   if (status === "done") return <span className="grid size-7 place-items-center rounded-full bg-ok text-white"><Check className="size-4" /></span>;
   if (status === "running") return <span className="grid size-7 place-items-center rounded-full bg-signal text-signal-ink"><Loader2 className="size-4 animate-spin" /></span>;
   if (status === "failed") return <span className="grid size-7 place-items-center rounded-full bg-bad text-white"><X className="size-4" /></span>;
+  if (status === "paused") return <span className="grid size-7 place-items-center rounded-full bg-warn-soft text-warn"><Pause className="size-3.5" /></span>;
   if (status === "skipped") return <span className="grid size-7 place-items-center rounded-full bg-paper-2 text-muted"><SkipForward className="size-3.5" /></span>;
   return <span className="grid size-7 place-items-center rounded-full border border-line text-muted"><Circle className="size-2.5" /></span>;
 }
@@ -115,7 +117,20 @@ export default function TabPilote() {
   const pl = data.pipeline;
   const running = pl && (pl.job.status === "running" || pl.job.status === "queued");
   const awaiting = data.project.status === "awaiting_validation";
-  const failed = pl?.job.status === "failed" || data.project.status === "error";
+  const paused = pl?.job.status === "paused" || data.project.status === "paused";
+  const failed = !paused && (pl?.job.status === "failed" || data.project.status === "error");
+  async function pause(action: "pause" | "resume") {
+    setBusy(action);
+    try {
+      await api(`/api/projects/${id}/pause`, { body: { action } });
+      toast("ok", action === "pause" ? "Pause demandée : l'étape en cours s'arrête proprement, le travail fait est conservé." : "La création reprend là où elle s'était arrêtée.");
+      reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
   async function resume(from?: string) {
     setBusy(from ?? "resume");
     try {
@@ -132,17 +147,29 @@ export default function TabPilote() {
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what="l'analyse, la marque et les textes" />
-      <div className="grid gap-6 lg:grid-cols-[1.25fr_1fr]">
+      {!pl && <StartCreation />}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <Card className="p-5 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm text-muted">Avancement de la création</p>
               <p className="mt-1 font-display text-3xl font-semibold">{pl ? `${done} / ${pl.steps.length} étapes` : "Aucune création lancée"}</p>
             </div>
-            {running && <Button variant="ghost" size="sm" onClick={async () => { await api(`/api/jobs/${pl!.job.id}`, { body: { action: "cancel" } }); reload(); }}>Interrompre</Button>}
+            {running && (
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" icon={<Pause className="size-4" />} loading={busy === "pause"} onClick={() => pause("pause")}>Mettre en pause</Button>
+                <Button variant="ghost" size="sm" onClick={async () => { if (!confirm("Arrêter définitivement cette création ? (La pause permet de reprendre plus tard.)")) return; await api(`/api/jobs/${pl!.job.id}`, { body: { action: "cancel" } }); reload(); }}>Arrêter</Button>
+              </div>
+            )}
+            {paused && <Button size="sm" icon={<Play className="size-4" />} loading={busy === "resume"} onClick={() => pause("resume")}>Reprendre</Button>}
           </div>
           {pl && <Progress value={running ? pl.job.progress : done / pl.steps.length} className="mt-4" />}
           {running && <p className="mt-3 text-sm text-ink-2" role="status">{pl!.job.message}</p>}
+          {paused && (
+            <p className="mt-4 flex items-center gap-2 rounded-2xl bg-warn-soft p-4 text-sm text-warn" role="status">
+              <Pause className="size-4 shrink-0" /> Création en pause. Les étapes terminées sont conservées ; la reprise repart de l'étape interrompue.
+            </p>
+          )}
           {failed && (
             <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-bad-soft p-4 text-sm text-bad">
               <AlertTriangle className="size-5" />
@@ -201,9 +228,14 @@ export default function TabPilote() {
               <p className="text-sm text-muted">Boutique · version {data.theme.number}</p>
               <p className="mt-1 font-display text-xl">Direction « {data.theme.direction} »</p>
               <p className="mt-1 line-clamp-2 text-sm text-ink-2">{data.theme.summary}</p>
-              <Link href={`/studio/${id}/boutique`} className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper">
-                <Store className="size-4" /> Ouvrir l'éditeur <ArrowRight className="size-4" />
-              </Link>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href={`/studio/${id}/boutique`} className="inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper">
+                  <Store className="size-4" /> Ouvrir l'éditeur <ArrowRight className="size-4" />
+                </Link>
+                <Link href={`/studio/${id}/boutique?themes`} className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm font-medium hover:border-ink">
+                  <Palette className="size-4" /> Changer de thème
+                </Link>
+              </div>
             </Card>
           ) : (
             <Empty title="La boutique arrive" icon={<Store className="size-5" />}>Elle sera composée après la marque, les textes et les images.</Empty>

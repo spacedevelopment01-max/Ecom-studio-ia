@@ -49,8 +49,8 @@ export default function TabProduit() {
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what="l'analyse produit et l'extraction des faits" />
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <Card className="p-5 sm:p-7">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <Card className="min-w-0 p-5 sm:p-7">
           <SectionTitle title="Fiche produit" action={<Badge tone={p.analyzedBy === "ai" ? "info" : "neutral"}>{p.analyzedBy === "ai" ? "Analyse IA" : "Moteur local"}</Badge>}>
             Les faits « confirmés » sont utilisés tels quels ; les observations visuelles sont formulées avec prudence ; les inconnues restent « à compléter ».
           </SectionTitle>
@@ -59,40 +59,36 @@ export default function TabProduit() {
             <Field label="Prix TTC (€)" htmlFor="pprice" hint={p.price.status === "unknown" ? "Inconnu : nécessaire pour vendre." : undefined}><Input id="pprice" value={price} onChange={(e) => (setPrice(e.target.value), setDirty(true))} placeholder="À renseigner" inputMode="decimal" /></Field>
           </div>
           {p.summary && <p className="mt-5 rounded-2xl bg-paper-2 p-4 text-sm leading-relaxed text-ink-2">{p.summary}</p>}
-          <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[560px] text-sm">
-              <thead>
-                <tr className="text-left text-xs text-muted">
-                  <th className="pb-2 font-medium">Information</th>
-                  <th className="pb-2 font-medium">Valeur</th>
-                  <th className="pb-2 font-medium">Statut</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {facts.map((f, i) => (
-                  <tr key={i} className="border-t border-line align-top">
-                    <td className="py-2 pr-2"><Input value={f.label} onChange={(e) => edit(i, { label: e.target.value })} className="h-9 text-sm" aria-label="Information" /></td>
-                    <td className="py-2 pr-2"><Input value={f.value} onChange={(e) => edit(i, { value: e.target.value, status: e.target.value ? "confirmed" : "unknown" })} placeholder="Inconnu" className="h-9 text-sm" aria-label="Valeur" /><span className="mt-1 block text-[11px] text-muted">source : {SOURCE[f.source] ?? f.source}</span></td>
-                    <td className="py-2 pr-2">
-                      <Select value={f.status} onChange={(e) => edit(i, { status: e.target.value as Fact["status"] })} className="h-9 text-sm" aria-label="Statut">
-                        <option value="confirmed">Confirmé</option>
-                        <option value="inferred">Observé</option>
-                        <option value="unknown">Inconnu</option>
-                      </Select>
-                    </td>
-                    <td className="py-2"><button onClick={() => (setFacts(facts.filter((_, k) => k !== i)), setDirty(true))} className="grid size-9 place-items-center rounded-full hover:bg-paper-2" aria-label="Supprimer"><Trash2 className="size-4 text-muted" /></button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="mt-6">
+            <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_132px_36px] gap-2 pb-2 text-left text-xs font-medium text-muted sm:grid">
+              <span>Information</span>
+              <span>Valeur</span>
+              <span>Statut</span>
+            </div>
+            <ul className="grid">
+              {facts.map((f, i) => (
+                <li key={i} className="grid grid-cols-[minmax(0,1fr)_36px] gap-2 border-t border-line py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_132px_36px] sm:items-start">
+                  <Input value={f.label} onChange={(e) => edit(i, { label: e.target.value })} className="h-9 text-sm font-medium" aria-label="Information" placeholder="Information" />
+                  <button onClick={() => (setFacts(facts.filter((_, k) => k !== i)), setDirty(true))} className="grid size-9 place-items-center rounded-full hover:bg-paper-2 sm:order-last" aria-label="Supprimer"><Trash2 className="size-4 text-muted" /></button>
+                  <div className="col-span-2 min-w-0 sm:col-span-1">
+                    <Input value={f.value} onChange={(e) => edit(i, { value: e.target.value, status: e.target.value ? "confirmed" : "unknown" })} placeholder="Inconnu" className="h-9 text-sm" aria-label="Valeur" />
+                    <span className="mt-1 block text-[11px] text-muted">source : {SOURCE[f.source] ?? f.source}</span>
+                  </div>
+                  <Select value={f.status} onChange={(e) => edit(i, { status: e.target.value as Fact["status"] })} className="col-span-2 h-9 text-sm sm:col-span-1" aria-label="Statut">
+                    <option value="confirmed">Confirmé</option>
+                    <option value="inferred">Observé</option>
+                    <option value="unknown">Inconnu</option>
+                  </Select>
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" icon={<Plus className="size-4" />} onClick={() => (setFacts([...facts, { key: `custom_${Date.now()}`, label: "", value: "", status: "confirmed", source: "user" }]), setDirty(true))}>Ajouter une information</Button>
             <Button onClick={save} loading={busy} disabled={!dirty}>Enregistrer</Button>
           </div>
         </Card>
-        <div className="grid content-start gap-6">
+        <div className="grid min-w-0 content-start gap-6">
           <Card className="p-5">
             <h3 className="font-display text-lg font-semibold">Ce que montre la photo</h3>
             {p.visual.colors.length > 0 && (

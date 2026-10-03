@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { Bell, BookOpen, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Plug, Send, Settings, Store, Wallet, Shield, Loader2 } from "lucide-react";
+import { Bell, BookOpen, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Wallet, Shield, Loader2 } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { useProject } from "./project-context";
 
@@ -28,7 +28,8 @@ const STATUS: Record<string, { label: string; tone: any }> = {
   awaiting_validation: { label: "À valider", tone: "warn" },
   ready: { label: "Prêt", tone: "ok" },
   error: { label: "À reprendre", tone: "bad" },
-  draft: { label: "Brouillon", tone: "neutral" },
+  paused: { label: "En pause", tone: "warn" },
+  draft: { label: "À démarrer", tone: "neutral" },
 };
 
 function ProjectSwitcher({ current }: { current: string }) {
@@ -65,15 +66,26 @@ function ProjectSwitcher({ current }: { current: string }) {
 }
 
 function ActiveJobs() {
-  const { data } = useProject();
+  const { id, data, reload } = useProject();
   const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const active = data?.active ?? [];
   if (!active.length) return null;
+  const allPaused = active.every((j) => j.status === "paused");
+  const act = async (action: "pause" | "resume") => {
+    setBusy(true);
+    try {
+      await api(`/api/projects/${id}/pause`, { body: { action } });
+      reload();
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <div className="relative">
-      <button onClick={() => setOpen((v) => !v)} className="flex h-10 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm" aria-expanded={open}>
-        <Loader2 className="size-4 animate-spin text-signal" />
-        <span className="hidden sm:inline">{active.length} tâche{active.length > 1 ? "s" : ""}</span>
+      <button onClick={() => setOpen((v) => !v)} className="flex h-10 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm" aria-expanded={open} aria-label={allPaused ? "Tâches en pause" : "Tâches en cours"}>
+        {allPaused ? <Pause className="size-4 text-warn" /> : <Loader2 className="size-4 animate-spin text-signal" />}
+        <span className="hidden sm:inline">{allPaused ? "En pause" : `${active.length} tâche${active.length > 1 ? "s" : ""}`}</span>
       </button>
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border border-line bg-card p-3 shadow-soft">
@@ -81,13 +93,20 @@ function ActiveJobs() {
             <div key={j.id} className="border-b border-line py-2.5 last:border-0">
               <div className="flex items-center justify-between gap-2 text-sm">
                 <span className="font-medium">{j.label || j.type}</span>
-                <span className="text-xs text-muted">{Math.round(j.progress * 100)} %</span>
+                <span className="text-xs text-muted">{j.status === "paused" ? "En pause · " : ""}{Math.round(j.progress * 100)} %</span>
               </div>
               <p className="mt-0.5 truncate text-xs text-muted">{j.message}</p>
               <Progress value={j.progress} className="mt-2" />
             </div>
           ))}
-          <p className="mt-2 text-xs text-muted">Les tâches continuent même si vous fermez la page.</p>
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <p className="text-xs text-muted">{allPaused ? "Rien n'est perdu : la reprise repart de l'étape en cours." : "Les tâches continuent même si vous fermez la page."}</p>
+            {allPaused ? (
+              <button disabled={busy} onClick={() => act("resume")} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-paper"><Play className="size-3.5" /> Reprendre</button>
+            ) : (
+              <button disabled={busy} onClick={() => act("pause")} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-medium"><Pause className="size-3.5" /> Pause</button>
+            )}
+          </div>
         </div>
       )}
     </div>

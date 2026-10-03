@@ -12,7 +12,7 @@ import { sectorLabel } from "@/lib/project-types";
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const pipeline = one<Job>("SELECT * FROM jobs WHERE project_id = ? AND type = 'pipeline.run' ORDER BY created_at DESC LIMIT 1", p.id);
-  const active = all<Job>("SELECT * FROM jobs WHERE project_id = ? AND status IN ('queued','running') ORDER BY created_at DESC LIMIT 20", p.id);
+  const active = all<Job>("SELECT * FROM jobs WHERE project_id = ? AND status IN ('queued','running','paused') ORDER BY created_at DESC LIMIT 20", p.id);
   const counts = Object.fromEntries(all<{ role: string; n: number }>("SELECT role, COUNT(*) n FROM assets WHERE project_id = ? AND deleted_at IS NULL GROUP BY role", p.id).map((r) => [r.role, r.n]));
   const posts = Object.fromEntries(all<{ status: string; n: number }>("SELECT status, COUNT(*) n FROM posts WHERE project_id = ? GROUP BY status", p.id).map((r) => [r.status, r.n]));
   const theme = currentTheme(p.id);
