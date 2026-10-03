@@ -24,6 +24,8 @@ type DemoDef = {
   catalog?: CatalogDemo[];
   /** Produit réel : provenance affichée sur la page d'accueil. */
   source?: { supplier: string; url: string; note: string };
+  /** Blocs de fiche produit réglés comme le ferait le marchand (lots, livraison, autres saveurs…), insérés après le bloc « after ». */
+  pdp?: { type: string; after: string; settings: Record<string, unknown> }[];
   /** Variante (ex. coloris) : valeurs et photo de chaque valeur autre que celle de la photo principale. */
   variants?: { name: string; values: string[]; photos?: Record<string, string> };
 };
@@ -41,6 +43,12 @@ const REAL_DEMOS: DemoDef[] = [
       { name: "Thé glacé Fruits rouges", category: "Thés glacés", price: "2,40", description: "Thé glacé aux fruits rouges en canette de 33 cl.", photo: path.join(REAL, "boissons", "canette-fruits-rouges.png") },
     ],
     source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio." },
+    pdp: [
+      { type: "badges", after: "title", settings: { badge1: "🥫 Canette 33 cl", badge2: "♻️ Aluminium recyclable" } },
+      { type: "siblings", after: "badges", settings: { collection: "thes-glaces", heading: "Choisissez votre saveur" } },
+      { type: "bundles", after: "price", settings: { layout: "cards", heading: "Compose ton pack", units_per_pack: 1, unit_label: "canette", default_tier: "2", qty1: 6, label1: "Pack de 6", discount1: 0, qty2: 12, label2: "Pack de 12", discount2: 5, tag2: "-5 %", qty3: 24, label3: "Pack de 24", discount3: 10, tag3: "-10 %" } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 2, max_days: 4, business_days: true, label: "Livraison estimée" } },
+    ],
   },
   {
     id: "oreiller", sector: "Maison", direction: "clinique", category: "Sommeil",
@@ -48,6 +56,11 @@ const REAL_DEMOS: DemoDef[] = [
     description: "Oreiller ergonomique en forme de papillon. Deux côtés de hauteurs différentes (un côté bas, un côté haut), un creux central pour la tête et des ailes latérales pour dormir sur le côté. Housse respirante. Coloris : bleu ardoise ou vert sauge.",
     photo: path.join(REAL, "maison", "oreiller-bleu.jpg"),
     variants: { name: "Coloris", values: ["Bleu ardoise", "Vert sauge"], photos: { "Vert sauge": path.join(REAL, "maison", "oreiller-vert.jpg") } },
+    pdp: [
+      { type: "benefits", after: "price", settings: { emoji1: "🦋", title1: "Forme papillon", text1: "Un creux central pour la tête et des ailes latérales pour dormir sur le côté.", emoji2: "↕️", title2: "Deux hauteurs", text2: "Un côté bas, un côté haut : on tourne l'oreiller selon sa préférence.", emoji3: "🌬️", title3: "Housse respirante", text3: "", emoji4: "", title4: "" } },
+      { type: "bundles", after: "buy_buttons", settings: { layout: "rows", heading: "Pour toute la maison", qty1: 1, label1: "1 oreiller", discount1: 0, qty2: 2, label2: "2 oreillers", chip2: "Le duo", discount2: 10, tag2: "-10 %", qty3: 0, default_tier: "1" } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 6, business_days: true, label: "Livraison estimée" } },
+    ],
     source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
@@ -204,6 +217,22 @@ for (const p of PRODUCTS) {
   await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
   ov = await waitIdle(ctx, pid);
   firstProject ??= { pid };
+  // Fiche produit réglée comme le ferait le marchand (nouvelle version du thème).
+  if (p.pdp?.length) {
+    const { currentTheme, saveThemeVersion } = await import("../src/lib/projects");
+    const cur = currentTheme(pid)!;
+    const spec = structuredClone(cur.spec);
+    const mainId = spec.templates.product.order.find((id) => spec.templates.product.sections[id]?.type === "main-product")!;
+    const mp = spec.templates.product.sections[mainId];
+    for (const [n, b] of p.pdp.entries()) {
+      const id = `demo_${b.type}_${n}`;
+      mp.blocks![id] = { type: b.type, settings: b.settings } as any;
+      const order = mp.block_order!;
+      const after = order.find((x) => x.startsWith(`demo_${b.after}`)) ?? order.find((x) => mp.blocks![x].type === b.after);
+      order.splice(after ? order.indexOf(after) + 1 : order.length, 0, id);
+    }
+    saveThemeVersion(pid, spec, "Fiche produit : lots, livraison et autres réglages du marchand", "user");
+  }
 
   const files = (await api(ctx, `/api/projects/${pid}/files?q=`)).assets as any[];
   const all = (await api(ctx, `/api/projects/${pid}/files`)).assets as any[];
