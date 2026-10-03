@@ -1,0 +1,46 @@
+{%- comment -%} Chiffres clés : uniquement des faits vérifiés (contenance, nombre de pièces, délai confirmé…). {%- endcomment -%}
+<section class="es-section es-ambient es-stats color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+      <header class="es-section-head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+        {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+    <div class="es-stats__grid" style="--cols: {{ section.blocks.size | at_most: 4 }}">
+      {%- for block in section.blocks -%}
+        <div class="es-stat" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          <span class="es-stat__value{% if section.settings.accent_values %} es-stat__value--accent{% endif %}" data-count="{{ block.settings.value | escape }}">{{ block.settings.value }}</span>
+          <span class="es-stat__label">{{ block.settings.label }}</span>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Chiffres clés",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "accent_values", "label": "Chiffres en couleur d'accent", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "stat", "name": "Chiffre", "settings": [
+      { "type": "text", "id": "value", "label": "Valeur", "default": "30 ml", "info": "Un fait vérifiable : le nombre s'anime à l'apparition." },
+      { "type": "text", "id": "label", "label": "Libellé", "default": "Contenance" }
+    ] }
+  ],
+  "max_blocks": 4,
+  "presets": [{ "name": "Chiffres clés", "blocks": [{ "type": "stat" }, { "type": "stat" }, { "type": "stat" }] }]
+}
+{% endschema %}

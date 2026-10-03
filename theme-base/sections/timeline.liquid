@@ -1,0 +1,44 @@
+{%- comment -%} Frise d'étapes : la ligne se remplit et le texte s'allume au défilement. {%- endcomment -%}
+<section class="es-section es-timeline color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container es-timeline__inner">
+    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-timeline__heading" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+    {%- if section.settings.image != blank or section.settings.image_asset != blank -%}
+      <div class="es-timeline__media es-media-frame" data-scroll-zoom data-reveal="zoom">{% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 900px, 100vw', class: 'es-cover' %}</div>
+    {%- endif -%}
+    <ol class="es-timeline__list" data-timeline>
+      <span class="es-timeline__line" aria-hidden="true"><span class="es-timeline__fill"></span></span>
+      {%- for block in section.blocks -%}
+        <li class="es-timeline__step" data-timeline-step {{ block.shopify_attributes }}>
+          <span class="es-timeline__dot" aria-hidden="true"></span>
+          <h3 class="es-heading es-h3">{{ block.settings.title }}</h3>
+          <div class="es-rte">{{ block.settings.text }}</div>
+        </li>
+      {%- endfor -%}
+    </ol>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Frise d'étapes",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Chaque étape compte" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur" },
+    { "type": "image_picker", "id": "image", "label": "Image d'ouverture" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Une étape" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Ce qui se passe à cette étape, concrètement.</p>" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Frise d'étapes", "blocks": [{ "type": "step" }, { "type": "step" }, { "type": "step" }] }]
+}
+{% endschema %}

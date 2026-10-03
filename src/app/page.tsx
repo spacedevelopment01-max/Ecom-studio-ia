@@ -155,7 +155,7 @@ export default async function Home() {
             <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
               <div className="max-w-2xl">
                 <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Démonstrations</p>
-                <h2 className="reveal mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-semibold leading-[0.98]">Quatre produits, une seule photo chacun.</h2>
+                <h2 className="reveal mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-semibold leading-[0.98]">{(["Un", "Deux", "Trois", "Quatre", "Cinq", "Six", "Sept", "Huit", "Neuf", "Dix"][list.length - 1] ?? list.length)} produits, une seule photo chacun.</h2>
               </div>
               <p className="reveal max-w-md text-sm leading-relaxed text-muted">
                 Produits et marques <strong className="text-ink">fictifs</strong>, modélisés en 3D pour la démonstration. Tout le reste — détourage, logo, boutique, images, vidéos — a été produit par le studio lui-même, sans retouche manuelle, avec son moteur local (sans fournisseur d'IA externe).
@@ -194,7 +194,7 @@ export default async function Home() {
             <div className="mb-12 max-w-3xl">
               <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Galerie de directions</p>
               <h2 className="reveal mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-semibold leading-[0.98]">
-                Huit directions artistiques. <span className="serif-i font-normal">Pas</span> huit couleurs.
+                Onze directions artistiques. <span className="serif-i font-normal">Pas</span> onze couleurs.
               </h2>
               <p className="reveal mt-5 max-w-2xl text-lg text-paper/70">Chaque direction a sa composition, son rythme de sections, sa typographie et ses animations. Une base de départ — l'IA personnalise ensuite selon votre produit et vos demandes.</p>
             </div>

@@ -8,7 +8,7 @@ import { contrast, ensureContrast, isDark, mix, onColor, withLightness, hsl } fr
 import type { ShopCopy } from "./copy";
 import type { BlockInstance, GroupJson, SectionInstance, StoreProduct, TemplateJson, ThemeSpec } from "./spec";
 
-export type DirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan";
+export type DirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
 
 export type Direction = {
   id: DirectionId;
@@ -25,84 +25,120 @@ export const DIRECTIONS: Direction[] = [
   {
     id: "atelier",
     name: "Atelier",
-    tagline: "Éditorial raffiné",
-    description: "Grandes capitales serif, produit détouré qui flotte au-dessus du titre, filets fins et lenteur maîtrisée. Pour les objets qui se regardent de près.",
+    tagline: "Luxe éditorial",
+    description: "Ivoire lumineux, grand serif contrasté et mots en italique dorée, produit détouré qui flotte, cartes en verre laiteux et reflets sur les boutons. Pour les objets qui se regardent de près.",
     bestFor: ["beauté", "parfum", "bijoux", "maison haut de gamme"],
-    fonts: { heading: "cormorant_n4", body: "jost_n4" },
-    previewFonts: { heading: "Cormorant", body: "Jost" },
-    motion: "normal",
+    fonts: { heading: "playfair_display_n6", body: "inter_n4" },
+    previewFonts: { heading: "Playfair Display", body: "Inter" },
+    motion: "expressive",
   },
   {
     id: "clinique",
     name: "Clinique",
-    tagline: "Précis et lumineux",
-    description: "Grilles nettes, fiches techniques mises en avant, blanc lumineux et accents de couleur fonctionnels. Pour rassurer par la clarté.",
+    tagline: "Clarté des grandes marques tech",
+    description: "Blanc pur et gris perle, typographie serrée très grasse, produit présenté en grand, chiffres clés animés et sections qui s'allument au défilement. Pour rassurer par la précision.",
     bestFor: ["soin", "bien-être", "high-tech", "bébé"],
-    fonts: { heading: "dm_sans_n4", body: "dm_sans_n4" },
-    previewFonts: { heading: "DM Sans", body: "DM Sans" },
-    motion: "subtle",
+    fonts: { heading: "inter_n7", body: "inter_n4" },
+    previewFonts: { heading: "Inter", body: "Inter" },
+    motion: "expressive",
   },
   {
     id: "brut",
     name: "Brut",
-    tagline: "Contraste et capitales",
-    description: "Typographie massive en capitales, cadres épais, bandeau défilant géant et vidéo plein écran. Pour les marques qui assument.",
+    tagline: "Sombre et massif",
+    description: "Fond noir profond, capitales géantes, bandeau défilant ajouré, contours néon francs et cartes lumineuses. Pour les marques qui assument.",
     bestFor: ["streetwear", "accessoires", "gadgets", "boissons"],
-    fonts: { heading: "archivo_n7", body: "chivo_n4" },
-    previewFonts: { heading: "Archivo", body: "Chivo" },
+    fonts: { heading: "archivo_n8", body: "inter_n4" },
+    previewFonts: { heading: "Archivo", body: "Inter" },
     motion: "expressive",
   },
   {
     id: "terroir",
     name: "Terroir",
-    tagline: "Chaleureux et artisanal",
-    description: "Serif à empattements doux, tons de terre, grain discret et récit en alternance images et textes. Pour le fait-main et l'origine.",
+    tagline: "Chaleur moderne",
+    description: "Crème et tons de terre, serif généreux, grandes rondeurs, grain discret et récit qui se déroule au défilement. Pour le fait-main et l'origine, sans nostalgie.",
     bestFor: ["épicerie fine", "artisanat", "bougies", "céramique"],
-    fonts: { heading: "lora_n4", body: "work_sans_n4" },
+    fonts: { heading: "lora_n6", body: "work_sans_n4" },
     previewFonts: { heading: "Lora", body: "Work Sans" },
-    motion: "subtle",
+    motion: "normal",
   },
   {
     id: "nocturne",
     name: "Nocturne",
-    tagline: "Sombre et technologique",
-    description: "Fond profond, lueurs autour des visuels, verre dépoli et présentation du produit au défilement. Pour la tech et le premium nocturne.",
-    bestFor: ["high-tech", "audio", "gaming", "parfum"],
-    fonts: { heading: "space_grotesk_n4", body: "dm_sans_n4" },
-    previewFonts: { heading: "Space Grotesk", body: "DM Sans" },
-    motion: "normal",
+    tagline: "Nuit profonde et lueurs",
+    description: "Bleu nuit, en-tête de verre flottant, héros photo plein écran, titres serif lumineux, cartes numérotées à contour néon, boutons pilule à reflet et boutons flottants.",
+    bestFor: ["services premium", "high-tech", "piscine & jardin", "parfum"],
+    fonts: { heading: "lora_n6", body: "inter_n4" },
+    previewFonts: { heading: "Lora", body: "Inter" },
+    motion: "expressive",
   },
   {
     id: "pop",
     name: "Pop",
-    tagline: "Vif et arrondi",
-    description: "Couleurs franches, formes arrondies, cartes légèrement inclinées et animations rebondies. Pour les marques joyeuses et directes.",
+    tagline: "Vif et rebondi",
+    description: "Couleurs franches, dégradés, très grandes rondeurs, cartes légèrement inclinées et animations rebondies. Pour les marques joyeuses et directes.",
     bestFor: ["enfants", "animaux", "snacking", "papeterie"],
-    fonts: { heading: "montserrat_n7", body: "karla_n4" },
+    fonts: { heading: "montserrat_n8", body: "karla_n4" },
     previewFonts: { heading: "Montserrat", body: "Karla" },
     motion: "expressive",
   },
   {
     id: "galerie",
     name: "Galerie",
-    tagline: "Blanc d'exposition",
-    description: "Beaucoup d'air, mosaïque éditoriale, cartels en italique et défilement horizontal. Pour les pièces uniques et la décoration.",
+    tagline: "Silence d'exposition",
+    description: "Blanc d'exposition, serif fin, mosaïque éditoriale, cartels en italique et défilement horizontal. Le luxe par la retenue.",
     bestFor: ["décoration", "art", "mobilier", "mode"],
-    fonts: { heading: "libre_baskerville_n4", body: "karla_n4" },
-    previewFonts: { heading: "Libre Baskerville", body: "Karla" },
-    motion: "subtle",
+    fonts: { heading: "libre_baskerville_n4", body: "inter_n4" },
+    previewFonts: { heading: "Libre Baskerville", body: "Inter" },
+    motion: "normal",
   },
   {
     id: "elan",
     name: "Élan",
-    tagline: "Sportif et dynamique",
-    description: "Italiques rapides, coupes obliques, vidéo d'ouverture et bandeau incliné. Pour le sport, l'outdoor et la performance.",
+    tagline: "Énergie sportive",
+    description: "Anthracite et néon vif, italiques rapides, boutons obliques, bandeau incliné, chiffres qui défilent et vidéo d'ouverture. Pour le sport, l'outdoor et la performance.",
     bestFor: ["sport", "outdoor", "gourdes", "nutrition"],
-    fonts: { heading: "montserrat_n7", body: "work_sans_n4" },
-    previewFonts: { heading: "Montserrat", body: "Work Sans" },
+    fonts: { heading: "montserrat_n8", body: "inter_n4" },
+    previewFonts: { heading: "Montserrat", body: "Inter" },
+    motion: "expressive",
+  },
+  {
+    id: "flux",
+    name: "Flux",
+    tagline: "Sportswear premium",
+    description: "Noir et blanc, grotesque très grasse, en-tête encadré, boutons cadrés, cercles façon stories, cartes qui s'empilent, texte en courbe, vidéos verticales et frise d'étapes qui s'allume.",
+    bestFor: ["mode", "sport", "streetwear", "accessoires"],
+    fonts: { heading: "space_grotesk_n7", body: "space_grotesk_n4" },
+    previewFonts: { heading: "Space Grotesk", body: "Space Grotesk" },
+    motion: "expressive",
+  },
+  {
+    id: "joaillerie",
+    name: "Joaillerie",
+    tagline: "Luxe intime",
+    description: "Portrait plein écran, capitales espacées et mot d'accent en italique, cercles de collections, vidéos portées, gris perle et noir profond. Pour les bijoux et les accessoires précieux.",
+    bestFor: ["bijoux", "montres", "accessoires", "beauté"],
+    fonts: { heading: "montserrat_n6", body: "inter_n4" },
+    previewFonts: { heading: "Montserrat", body: "Inter" },
+    motion: "normal",
+  },
+  {
+    id: "gourmand",
+    name: "Gourmand",
+    tagline: "Joyeux et généreux",
+    description: "Crème et vert profond, serif très gras, boutons pilule colorés, vagues entre les sections, confettis, pastilles « sticker » et grande citation centrée. Pour les boissons, l'épicerie et le snacking.",
+    bestFor: ["boissons", "épicerie", "snacking", "enfants"],
+    fonts: { heading: "libre_baskerville_n7", body: "work_sans_n4" },
+    previewFonts: { heading: "Libre Baskerville", body: "Work Sans" },
     motion: "expressive",
   },
 ];
+
+/** Police d'accent (italique) commune : utilisée pour les mots mis en valeur. */
+export const ACCENT_FONT = "cormorant_i5";
+
+/** Directions sombres par défaut : utile à l'IA et à l'aperçu. */
+export const DARK_DIRECTIONS: DirectionId[] = ["brut", "nocturne", "elan"];
 
 export const directionById = (id: string) => DIRECTIONS.find((d) => d.id === id) ?? DIRECTIONS[0];
 
@@ -132,61 +168,89 @@ export function colorSchemes(direction: DirectionId, p: BrandPalette): Record<st
   let s1: Scheme, s2: Scheme, s3: Scheme, s4: Scheme;
   switch (direction) {
     case "nocturne": {
-      const bg = withLightness(deep, 0.07, 0.8);
-      s1 = scheme(bg, "#F2F2F0", withLightness(p.accent, 0.62, 1.1), 0.06);
-      s2 = scheme(withLightness(deep, 0.11, 0.8), "#F2F2F0", withLightness(p.accent, 0.62, 1.1), 0.06);
-      s3 = scheme("#F4F4F1", "#111111", p.accent);
-      s4 = scheme(withLightness(p.accent, 0.55, 1.1), "#0B0B0B", "#0B0B0B");
+      const bg = withLightness(deep, 0.075, 0.9);
+      const acc = withLightness(p.accent, 0.64, 1.15);
+      s1 = scheme(bg, "#EEF3F8", acc, 0.06);
+      s2 = scheme(withLightness(deep, 0.11, 0.9), "#EEF3F8", acc, 0.06);
+      s3 = scheme(withLightness(deep, 0.05, 0.9), "#EEF3F8", acc, 0.06);
+      s4 = scheme(acc, "#06121A", "#06121A");
       break;
     }
     case "brut": {
-      s1 = scheme("#FFFFFF", "#0A0A0A", "#0A0A0A");
-      s2 = scheme(withLightness(p.accent, 0.92, 0.9), "#0A0A0A", "#0A0A0A");
-      s3 = scheme("#0A0A0A", "#FFFFFF", withLightness(p.accent, 0.6, 1.2));
-      s4 = scheme(withLightness(p.accent, 0.6, 1.25), "#0A0A0A", "#0A0A0A");
-      break;
-    }
-    case "pop": {
-      s1 = scheme(withLightness(p.light, 0.97, 0.7), withLightness(deep, 0.14), p.primary);
-      s2 = scheme(withLightness(p.secondary, 0.9, 1.1), withLightness(deep, 0.14), p.primary);
-      s3 = scheme(withLightness(p.primary, 0.3, 1.1), "#FFFFFF", withLightness(p.accent, 0.7, 1.2));
-      s4 = scheme(withLightness(p.accent, 0.62, 1.2), "#111111", "#111111");
-      break;
-    }
-    case "galerie": {
-      s1 = scheme("#FFFFFF", "#161616", deep);
-      s2 = scheme("#F6F5F2", "#161616", deep);
-      s3 = scheme("#161616", "#F4F3EF", "#F4F3EF");
-      s4 = scheme(withLightness(p.primary, 0.9, 0.4), "#161616", "#161616");
-      break;
-    }
-    case "clinique": {
-      s1 = scheme("#FFFFFF", withLightness(deep, 0.14, 0.6), withLightness(p.primary, 0.42, 1));
-      s2 = scheme(withLightness(p.primary, 0.965, 0.5), withLightness(deep, 0.14, 0.6), withLightness(p.primary, 0.42, 1));
-      s3 = scheme(withLightness(p.primary, 0.2, 0.8), "#FFFFFF", withLightness(p.primary, 0.8, 0.8));
-      s4 = scheme(withLightness(p.primary, 0.42, 1), "#FFFFFF", "#FFFFFF");
-      break;
-    }
-    case "terroir": {
-      s1 = scheme(withLightness(p.light, 0.95, 0.9), withLightness(deep, 0.16, 0.9), withLightness(p.primary, 0.38, 1));
-      s2 = scheme(withLightness(p.secondary, 0.88, 0.8), withLightness(deep, 0.16, 0.9), withLightness(p.primary, 0.32, 1));
-      s3 = scheme(withLightness(p.primary, 0.2, 0.9), withLightness(p.light, 0.94, 0.8), withLightness(p.accent, 0.7, 1));
-      s4 = scheme(withLightness(p.accent, 0.55, 1), "#1A140F", "#1A140F");
+      const acc = withLightness(p.accent, 0.62, 1.4);
+      s1 = scheme("#0A0A0B", "#F5F5F2", acc, 0.06);
+      s2 = scheme("#141416", "#F5F5F2", acc, 0.06);
+      s3 = scheme("#F2F2EE", "#0A0A0B", "#0A0A0B");
+      s4 = scheme(acc, "#0A0A0B", "#0A0A0B");
       break;
     }
     case "elan": {
-      s1 = scheme("#FFFFFF", "#101010", withLightness(p.accent, 0.5, 1.2));
-      s2 = scheme("#F1F2F2", "#101010", withLightness(p.accent, 0.5, 1.2));
-      s3 = scheme(withLightness(deep, 0.1), "#FFFFFF", withLightness(p.accent, 0.6, 1.2));
-      s4 = scheme(withLightness(p.accent, 0.52, 1.25), onColor(withLightness(p.accent, 0.52, 1.25)), "#101010");
+      const acc = withLightness(p.accent, 0.58, 1.4);
+      s1 = scheme(withLightness(deep, 0.085, 0.35), "#F4F6F6", acc, 0.06);
+      s2 = scheme(withLightness(deep, 0.12, 0.35), "#F4F6F6", acc, 0.06);
+      s3 = scheme(withLightness(deep, 0.05, 0.35), "#F4F6F6", acc, 0.06);
+      s4 = scheme(acc, onColor(acc), onColor(acc));
+      break;
+    }
+    case "flux": {
+      const acc = withLightness(p.accent, 0.5, 1.5);
+      s1 = scheme("#FFFFFF", "#0D0D0D", acc);
+      s2 = scheme("#F2F2F2", "#0D0D0D", acc);
+      s3 = scheme("#0D0D0D", "#FFFFFF", withLightness(p.accent, 0.6, 1.5), 0.07);
+      s4 = scheme(acc, onColor(acc), onColor(acc));
+      break;
+    }
+    case "joaillerie": {
+      const acc = withLightness(p.primary, 0.4, 0.9);
+      s1 = scheme("#FFFFFF", "#262626", acc);
+      s2 = scheme("#F3F2F0", "#262626", acc);
+      s3 = scheme("#1A1A1C", "#F5F4F2", withLightness(p.accent, 0.75, 0.8), 0.07);
+      s4 = scheme("#333333", "#FFFFFF", "#FFFFFF", 0.07);
+      break;
+    }
+    case "gourmand": {
+      const green = withLightness(p.primary, 0.3, 0.9);
+      s1 = scheme("#FBF5EC", withLightness(p.primary, 0.17, 0.8), withLightness(p.primary, 0.2, 0.8));
+      s2 = scheme(withLightness(p.secondary, 0.86, 1.1), withLightness(p.primary, 0.17, 0.8), withLightness(p.primary, 0.2, 0.8));
+      s3 = scheme(green, "#FBF5EC", "#FFF27A", 0.07);
+      s4 = scheme(withLightness(p.accent, 0.82, 1.1), withLightness(p.primary, 0.17, 0.8), withLightness(p.primary, 0.2, 0.8));
+      break;
+    }
+    case "pop": {
+      s1 = scheme(withLightness(p.light, 0.975, 0.8), withLightness(deep, 0.14), withLightness(p.primary, 0.5, 1.3));
+      s2 = scheme(withLightness(p.secondary, 0.91, 1.2), withLightness(deep, 0.14), withLightness(p.primary, 0.45, 1.3));
+      s3 = scheme(withLightness(p.primary, 0.22, 1.1), "#FFFFFF", withLightness(p.accent, 0.68, 1.3));
+      s4 = scheme(withLightness(p.accent, 0.62, 1.3), "#111111", "#111111");
+      break;
+    }
+    case "galerie": {
+      s1 = scheme("#FFFFFF", "#141414", withLightness(p.primary, 0.32, 0.8));
+      s2 = scheme("#F6F5F2", "#141414", withLightness(p.primary, 0.32, 0.8));
+      s3 = scheme("#141414", "#F4F3EF", "#F4F3EF");
+      s4 = scheme(withLightness(p.primary, 0.9, 0.4), "#141414", "#141414");
+      break;
+    }
+    case "clinique": {
+      const acc = withLightness(p.primary, 0.45, 1.2);
+      s1 = scheme("#FFFFFF", "#1D1D1F", acc);
+      s2 = scheme("#F5F5F7", "#1D1D1F", acc);
+      s3 = scheme("#0B0B0D", "#F5F5F7", withLightness(p.primary, 0.66, 1.2), 0.07);
+      s4 = scheme(acc, "#FFFFFF", "#FFFFFF");
+      break;
+    }
+    case "terroir": {
+      s1 = scheme(withLightness(p.light, 0.955, 0.9), withLightness(deep, 0.15, 0.9), withLightness(p.primary, 0.4, 1.1));
+      s2 = scheme(withLightness(p.secondary, 0.9, 0.8), withLightness(deep, 0.15, 0.9), withLightness(p.primary, 0.36, 1.1));
+      s3 = scheme(withLightness(p.primary, 0.14, 0.7), withLightness(p.light, 0.94, 0.8), withLightness(p.accent, 0.7, 1.1));
+      s4 = scheme(withLightness(p.accent, 0.56, 1.1), "#1A140F", "#1A140F");
       break;
     }
     default: {
       // atelier
-      s1 = scheme(warmLight, withLightness(deep, 0.13, 0.7), withLightness(p.primary, 0.3, 0.9));
-      s2 = scheme(mix(warmLight, p.secondary, 0.22), withLightness(deep, 0.13, 0.7), withLightness(p.primary, 0.3, 0.9));
-      s3 = scheme(withLightness(deep, 0.12, 0.6), withLightness(p.light, 0.94, 0.5), withLightness(p.accent, 0.78, 0.8));
-      s4 = scheme(withLightness(p.accent, 0.8, 0.7), withLightness(deep, 0.13, 0.7), withLightness(deep, 0.13, 0.7));
+      s1 = scheme(warmLight, withLightness(deep, 0.12, 0.7), withLightness(p.primary, 0.36, 1));
+      s2 = scheme(mix(warmLight, p.secondary, 0.2), withLightness(deep, 0.12, 0.7), withLightness(p.primary, 0.34, 1));
+      s3 = scheme(withLightness(deep, 0.09, 0.6), withLightness(p.light, 0.95, 0.5), withLightness(p.accent, 0.74, 0.9), 0.06);
+      s4 = scheme(withLightness(p.accent, 0.82, 0.7), withLightness(deep, 0.12, 0.7), withLightness(deep, 0.12, 0.7));
     }
   }
   return { "scheme-1": { settings: s1 }, "scheme-2": { settings: s2 }, "scheme-3": { settings: s3 }, "scheme-4": { settings: s4 } };
@@ -239,7 +303,9 @@ export type ImageSlots = {
   banner?: string;
   video?: string; // MP4
   videoPoster?: string;
+  reels?: { video: string; poster?: string }[]; // vidéos verticales 9:16
   logo?: string;
+  logoLight?: string; // version claire du logo, pour les fonds sombres
   favicon?: string;
 };
 
@@ -257,6 +323,21 @@ export type BuildInput = {
 
 const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 const p = (html: string) => (/^\s*</.test(html) ? html : `<p>${html}</p>`);
+
+/** Combinaisons d'en-tête, pied de page, bandeau et cartes : chaque direction montre une autre possibilité. */
+const CHROME: Record<DirectionId, { shape: string; icons: string; menu: string; footer: string; ann: string; card: string }> = {
+  atelier: { shape: "floating", icons: "circles", menu: "fullscreen", footer: "wordmark", ann: "rotate", card: "minimal" },
+  clinique: { shape: "pill", icons: "plain", menu: "drawer", footer: "columns", ann: "static", card: "boxed" },
+  brut: { shape: "bar", icons: "plain", menu: "fullscreen", footer: "wordmark", ann: "marquee", card: "overlay" },
+  terroir: { shape: "floating", icons: "circles", menu: "drawer", footer: "card", ann: "rotate", card: "boxed" },
+  nocturne: { shape: "floating", icons: "circles", menu: "drawer", footer: "columns", ann: "marquee", card: "overlay" },
+  pop: { shape: "pill", icons: "circles", menu: "fullscreen", footer: "card", ann: "marquee", card: "boxed" },
+  galerie: { shape: "bar", icons: "plain", menu: "drawer", footer: "minimal", ann: "static", card: "minimal" },
+  elan: { shape: "bar", icons: "plain", menu: "fullscreen", footer: "wordmark", ann: "marquee", card: "overlay" },
+  flux: { shape: "boxed", icons: "plain", menu: "fullscreen", footer: "centered", ann: "static", card: "minimal" },
+  joaillerie: { shape: "boxed", icons: "plain", menu: "drawer", footer: "centered", ann: "rotate", card: "minimal" },
+  gourmand: { shape: "bar", icons: "plain", menu: "fullscreen", footer: "card", ann: "marquee", card: "boxed" },
+};
 
 export function buildSpec(input: BuildInput): ThemeSpec {
   const d = directionById(input.direction);
@@ -282,98 +363,205 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     .filter(Boolean)
     .map((a, i) => ({ type: "image", settings: { image_asset: a, caption: c.gallery.captions[i] ?? "" } }));
 
+  // Accroches : pastille de faits courts, fin de titre mise en valeur, second bouton.
+  const shortItems = c.marquee.map((x) => x.trim()).filter((x) => x && x.length <= 22 && !x.includes("["));
+  const badge = shortItems.length >= 2 ? shortItems.slice(0, 3).join(" • ") : "";
+  const splitAccent = (text: string): [string, string] => {
+    const words = text.trim().split(/\s+/);
+    if (words.length < 4 || text.includes("[")) return [text, ""];
+    const n = words.length >= 7 ? 3 : 2;
+    return [words.slice(0, -n).join(" "), words.slice(-n).join(" ")];
+  };
+  const [heroHead, heroAccent] = splitAccent(c.hero.heading);
+  const productUrl = "/products/" + input.product.handle;
+  const second = { button2_label: "Notre histoire", button2_link: "/pages/notre-histoire" };
+
   const heroSplit = (sch: 1 | 2, pos: "right" | "left", asset = im.hero ?? im.packshot): [string, Record<string, unknown>] => [
     "hero-split",
-    { eyebrow: c.hero.eyebrow, heading: c.hero.heading, text: p(c.hero.text), button_label: c.hero.cta, button_link: "/products/" + input.product.handle, image_asset: img(asset), image_position: pos, height: "large", parallax: true, color_scheme: scheme(sch), ...pad(64, 96) },
+    { badge, eyebrow: c.hero.eyebrow, heading: heroHead, heading_accent: heroAccent, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, ...second, image_asset: img(asset), image_position: pos, height: "large", parallax: true, color_scheme: scheme(sch), ...pad(72, 104) },
   ];
-  const heroFull = (sch: 1 | 3, align = "bottom-left"): [string, Record<string, unknown>] => [
+  const heroFull = (sch: 1 | 3, align = "bottom-left", font: "heading" | "body" = "body"): [string, Record<string, unknown>] => [
     "hero-fullbleed",
-    { eyebrow: c.hero.eyebrow, heading: c.hero.heading, text: p(c.hero.text), button_label: c.hero.cta, button_link: "/products/" + input.product.handle, image_asset: img(im.videoPoster ?? im.hero), video_asset: img(im.video), overlay: 30, height: "screen", align, parallax: true, show_scroll_cue: true, color_scheme: scheme(sch) },
+    { badge, eyebrow: "", heading: heroHead, heading_accent: heroAccent, heading_font: font, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, ...second, image_asset: img(im.banner ?? im.hero ?? im.scene1), video_asset: img(im.video), overlay: 25, height: "screen", align, parallax: true, show_scroll_cue: true, color_scheme: scheme(sch) },
   ];
   const heroEdito = (sch: 1 | 2): [string, Record<string, unknown>] => [
     "hero-editorial",
-    { eyebrow: c.hero.eyebrow, heading_line1: c.hero.line1, heading_line2: c.hero.line2, text: p(c.hero.text), button_label: c.hero.cta, button_link: "/products/" + input.product.handle, image_asset: img(im.cutout ?? im.packshot), image_alt: input.product.title, parallax: true, color_scheme: scheme(sch), ...pad(56, 96) },
+    { eyebrow: c.hero.eyebrow, heading_line1: c.hero.line1, heading_line2: c.hero.line2, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, image_asset: img(im.cutout ?? im.packshot), image_alt: input.product.title, parallax: true, color_scheme: scheme(sch), ...pad(56, 104) },
   ];
-  const story = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof storySteps] => ["scroll-story", { heading: c.story.heading, image_asset: img(im.packshot ?? im.hero), color_scheme: scheme(sch), ...pad(96) }, storySteps];
-  const feat = (sch: 1 | 2 | 3, style: string, cols = Math.min(4, Math.max(2, features.length))): [string, Record<string, unknown>, typeof features] => ["features-grid", { heading: c.features.heading, heading_align: "left", columns: cols > 4 ? 3 : cols, style, color_scheme: scheme(sch), ...pad(96) }, features];
-  const iwt = (sch: 1 | 2 | 3, layout: string, asset = im.scene1, reveal = "curtain"): [string, Record<string, unknown>] => ["image-with-text", { eyebrow: c.detail.eyebrow, heading: c.detail.heading, text: p(c.detail.text), image_asset: img(asset), layout, ratio: "portrait", reveal, parallax: layout === "overlap", color_scheme: scheme(sch), ...pad(96) }];
-  const statement = (sch: 1 | 2 | 3 | 4, style = "statement"): [string, Record<string, unknown>, { type: string; settings: Record<string, unknown> }[]] => [
+  const story = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof storySteps] => ["scroll-story", { heading: c.story.heading, image_asset: img(im.packshot ?? im.hero), color_scheme: scheme(sch), ...pad(104) }, storySteps];
+  const glowFeatures = features.map((f) => ({ ...f, settings: { ...f.settings, link_label: "Découvrir", link: productUrl } }));
+  const feat = (sch: 1 | 2 | 3, style = "glow", cols = Math.min(3, Math.max(2, features.length))): [string, Record<string, unknown>, typeof features] => [
+    "features-grid",
+    { eyebrow: "", heading: c.features.heading, heading_align: "left", columns: cols, style, link_label: "", color_scheme: scheme(sch), ...pad(104) },
+    style === "glow" ? glowFeatures : features,
+  ];
+  const iwt = (sch: 1 | 2 | 3 | 4, layout: string, asset = im.scene1, reveal = "zoom"): [string, Record<string, unknown>] => ["image-with-text", { eyebrow: c.detail.eyebrow, heading: c.detail.heading, text: p(c.detail.text), image_asset: img(asset), layout, ratio: "portrait", reveal, parallax: false, color_scheme: scheme(sch), ...pad(104) }];
+  const norm = (t: string) => t.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const statementDup = norm(c.statement.heading) === norm(c.hero.heading) || norm(c.statement.heading) === norm(heroHead + " " + heroAccent);
+  const statementRow = (sch: 1 | 2 | 3 | 4, style = "reveal", withButton = false): Row[] => (statementDup && !c.statement.text ? [] : [statement(sch, style, withButton)]);
+  const statement = (sch: 1 | 2 | 3 | 4, style = "reveal", withButton = false): [string, Record<string, unknown>, { type: string; settings: Record<string, unknown> }[]] => [
     "rich-text",
-    { align: "center", style, color_scheme: scheme(sch), ...pad(112) },
+    { align: style === "reveal" ? "left" : "center", style, color_scheme: scheme(sch), ...pad(120) },
     [
       ...(c.statement.eyebrow ? [{ type: "eyebrow", settings: { text: c.statement.eyebrow } }] : []),
-      { type: "heading", settings: { text: c.statement.heading, size: "h2" } },
+      { type: "heading", settings: { text: c.statement.heading, size: style === "statement" ? "h1" : "h2" } },
       ...(c.statement.text ? [{ type: "text", settings: { text: p(c.statement.text) } }] : []),
+      ...(withButton ? [{ type: "button", settings: { label: c.hero.cta, link: productUrl, secondary: false } }] : []),
     ],
   ];
-  const specList = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof specs] => ["specs-list", { heading: c.specs.heading, color_scheme: scheme(sch), ...pad(96) }, specs];
-  const faqSec = (sch: 1 | 2, limit = 5): [string, Record<string, unknown>, typeof faq] => ["faq", { heading: c.faq.heading, structured_data: true, color_scheme: scheme(sch), ...pad(96) }, faq.slice(0, limit)];
-  const marq = (sch: 1 | 3 | 4, size: string, reverse = false): [string, Record<string, unknown>] => ["marquee", { items: marquee, separator: d.id === "brut" ? "●" : d.id === "pop" ? "★" : "✦", size, speed: size === "huge" ? 40 : 30, reverse, color_scheme: scheme(sch) }];
-  const cta = (sch: 3 | 4, asset = im.banner ?? im.scene3 ?? im.hero): [string, Record<string, unknown>] => ["cta-banner", { heading: c.cta.heading, text: p(c.cta.text), button_label: c.cta.button, button_link: "/products/" + input.product.handle, image_asset: img(asset), overlay: 40, style: "center", parallax: true, color_scheme: scheme(sch), ...pad(144) }];
-  const newsletter = (sch: 1 | 2 | 4): [string, Record<string, unknown>] => ["newsletter", { heading: c.newsletter.heading, text: p(c.newsletter.text), button_label: "S'inscrire", legal: "Désinscription possible à tout moment.", color_scheme: scheme(sch), ...pad(96) }];
-  const hgallery = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof gallerySlides] => ["horizontal-gallery", { heading: c.gallery.heading, color_scheme: scheme(sch), ...pad(96) }, gallerySlides];
-  const mosaicSec = (sch: 1 | 2, layout = "editorial"): [string, Record<string, unknown>, typeof mosaic] => ["gallery-mosaic", { heading: c.gallery.heading, layout, color_scheme: scheme(sch), ...pad(96) }, mosaic];
-  const featured = (sch: 1 | 2): [string, Record<string, unknown>] => ["featured-product", { eyebrow: c.hero.eyebrow, text: p(c.product.short), image_asset: img(im.packshot), show_quantity: true, color_scheme: scheme(sch), ...pad(96) }];
+  // Chiffres clés : uniquement des caractéristiques confirmées et courtes.
+  const statItems = c.specs.items.filter((x) => x.value && x.value.length <= 14 && !x.value.includes("[") && /\d/.test(x.value)).slice(0, 3);
+  const stats = (sch: 1 | 2 | 3): Row[] =>
+    statItems.length >= 2 ? [["stats", { eyebrow: c.specs.heading, heading: "", accent_values: true, color_scheme: scheme(sch), ...pad(72) }, statItems.map((x) => ({ type: "stat", settings: { value: x.value, label: x.label } }))]] : [];
+  const specList = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof specs] => ["specs-list", { heading: c.specs.heading, color_scheme: scheme(sch), ...pad(104) }, specs];
+  const faqSec = (sch: 1 | 2, limit = 5): [string, Record<string, unknown>, typeof faq] => ["faq", { heading: c.faq.heading, style: "cards", structured_data: true, color_scheme: scheme(sch), ...pad(104) }, faq.slice(0, limit)];
+  const marq = (sch: 1 | 2 | 3 | 4, size: string, reverse = false): [string, Record<string, unknown>] => ["marquee", { items: marquee, separator: d.id === "brut" ? "●" : d.id === "pop" ? "★" : "✦", size, speed: size === "huge" ? 40 : 30, reverse, color_scheme: scheme(sch) }];
+  const cta = (sch: 1 | 3 | 4, asset = im.scene3 ?? im.scene2 ?? im.banner ?? im.hero): [string, Record<string, unknown>] => ["cta-banner", { heading: c.cta.heading, text: p(c.cta.text), button_label: c.cta.button, button_link: productUrl, image_asset: img(asset), overlay: 45, style: "center", parallax: true, color_scheme: scheme(sch), ...pad(152) }];
+  const newsletter = (sch: 1 | 2 | 3 | 4): [string, Record<string, unknown>] => ["newsletter", { heading: c.newsletter.heading, text: p(c.newsletter.text), button_label: "S'inscrire", legal: "Désinscription possible à tout moment.", color_scheme: scheme(sch), ...pad(104) }];
+  const hgallery = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof gallerySlides] => ["horizontal-gallery", { heading: c.gallery.heading, color_scheme: scheme(sch), ...pad(104) }, gallerySlides];
+  const mosaicSec = (sch: 1 | 2, layout = "editorial"): [string, Record<string, unknown>, typeof mosaic] => ["gallery-mosaic", { heading: c.gallery.heading, layout, color_scheme: scheme(sch), ...pad(104) }, mosaic];
+  const featured = (sch: 1 | 2): [string, Record<string, unknown>] => ["featured-product", { eyebrow: c.hero.eyebrow, text: p(c.product.short), image_asset: img(im.packshot), show_quantity: true, color_scheme: scheme(sch), ...pad(104) }];
   const video = (sch: 1 | 3, ratio = "16/9"): [string, Record<string, unknown>] => ["video-showcase", { heading: "", video_asset: img(im.video), poster_asset: img(im.videoPoster), ratio, width: "full", autoplay: true, controls: false, caption: "", color_scheme: scheme(sch), ...pad(0) }];
 
+
+  // Sections narratives (cercles, cartes empilées, frise, texte en courbe, vidéos verticales, vagues).
+  const circleItems = [
+    [im.packshot, "Le produit", productUrl],
+    [im.detail1, "Les détails", productUrl],
+    [im.scene1, "En situation", productUrl],
+    [im.scene2 ?? im.detail2, "Notre histoire", "/pages/notre-histoire"],
+    [im.detail2 ?? im.scene3, "Questions", "/pages/faq"],
+  ].filter((x) => x[0]) as [string, string, string][];
+  const circles = (sch: 1 | 2): Row[] => (circleItems.length >= 3 ? [["story-circles", { heading: "", color_scheme: scheme(sch), ...pad(56, 40) }, circleItems.map(([a, label, link]) => ({ type: "circle", settings: { image_asset: a, label, link } }))]] : []);
+  const stackImages = [im.detail1, im.scene1, im.detail2, im.scene2, im.packshot].filter(Boolean) as string[];
+  const stackCards = (sch: 1 | 2): Row[] =>
+    features.length >= 2 && stackImages.length >= 2
+      ? [["stack-cards", { heading: c.features.heading, heading_accent: "", color_scheme: scheme(sch), ...pad(104) }, c.features.items.slice(0, 4).map((f, i) => ({ type: "card", settings: { image_asset: stackImages[i % stackImages.length], eyebrow: "", title: f.title, text: p(f.text), button_label: "Découvrir", link: productUrl } }))]]
+      : [];
+  const timelineSec = (sch: 1 | 2): Row[] =>
+    c.story.steps.length >= 2 ? [["timeline", { heading: c.story.heading, heading_accent: "", image_asset: img(im.scene2 ?? im.scene1), color_scheme: scheme(sch), ...pad(104) }, c.story.steps.map((st) => ({ type: "step", settings: { title: st.title, text: p(st.text) } }))]] : [];
+  const curveText = shortItems.length ? shortItems.slice(0, 2).join(" ✦ ") : input.shopName;
+  const curve = (sch: 1 | 2 | 3 | 4): Row => ["curved-marquee", { text: curveText, separator: "✦", curve: 70, size: "large", color_scheme: scheme(sch), ...pad(24) }];
+  const reels = (sch: 1 | 2 | 3): Row[] =>
+    im.reels?.length ? [["video-reels", { heading: "En mouvement", heading_accent: "", color_scheme: scheme(sch), ...pad(88) }, im.reels.map((r) => ({ type: "reel", settings: { video_asset: r.video, poster_asset: r.poster ?? "", caption: "" } }))]] : [];
+  const wave = (from: 1 | 2 | 3 | 4, to: 1 | 2 | 3 | 4): Row => ["wave-divider", { from_scheme: scheme(from), color_scheme: scheme(to), amplitude: 40 }];
   const hasVideo = !!im.video;
   type Row = [string, Record<string, unknown>, { type: string; settings: Record<string, unknown> }[]?];
   let index: Row[];
   let gallery = "stack";
   let headerLayout = "logo-left";
-  let radius = { button: 0, card: 0 };
+  let radius = { button: 40, card: 28 };
   let buttonStyle = "solid";
   let headingCase = "none";
   let tracking = 0;
   let headingScale = 100;
+  let glow = 45;
+  let shine = true;
+  let darkTheme = false;
   switch (d.id) {
     case "atelier":
       headerLayout = "logo-center";
-      headingScale = 105;
-      index = [heroEdito(1), marq(3, "small"), iwt(1, "image-left", im.scene1, "curtain"), story(2), statement(1, "quote"), feat(1, "lines", 3), ...(hasVideo ? [video(3)] : []), specList(2), faqSec(1), newsletter(2)];
+      headingScale = 104;
+      glow = 35;
+      index = [heroEdito(1), ...stats(1), iwt(1, "image-left", im.scene1), feat(2), ...statementRow(1), story(2), hgallery(1), faqSec(2), newsletter(1)];
       break;
     case "clinique":
-      radius = { button: 8, card: 14 };
-      headingScale = 95;
-      tracking = -2;
+      headingScale = 100;
+      tracking = -4;
+      glow = 25;
+      shine = false;
       gallery = "carousel";
-      index = [heroSplit(2, "right", im.packshot ?? im.hero), feat(1, "cards", 3), specList(2), iwt(1, "overlap", im.scene1, "zoom"), story(1), faqSec(2), cta(4)];
+      index = [heroSplit(1, "right", im.packshot ?? im.hero), ...stats(2), feat(1), ...statementRow(2), story(1), specList(2), iwt(1, "overlap", im.scene1), faqSec(2), cta(3)];
       break;
     case "brut":
       headingCase = "uppercase";
-      tracking = -3;
-      headingScale = 110;
-      headerLayout = "logo-left";
+      tracking = -4;
+      headingScale = 112;
+      radius = { button: 14, card: 18 };
+      glow = 80;
+      darkTheme = true;
       gallery = "grid";
-      index = [heroFull(3), marq(4, "huge"), featured(1), feat(1, "lines", 3), mosaicSec(1), marq(3, "large", true), hgallery(2), cta(3)];
+      index = [heroFull(1, "bottom-left", "heading"), marq(4, "huge"), ...stackCards(1), ...reels(2), ...stats(2), mosaicSec(1), ...statementRow(2), featured(1), cta(4)];
       break;
     case "terroir":
-      radius = { button: 4, card: 8 };
       headerLayout = "split";
-      index = [heroSplit(1, "left", im.scene1 ?? im.hero), statement(2), iwt(1, "image-right", im.detail1, "curtain"), feat(1, "plain", 3), iwt(2, "image-left", im.scene2 ?? im.scene1, "zoom"), story(1), faqSec(2), newsletter(1)];
+      glow = 30;
+      index = [heroSplit(1, "left", im.scene1 ?? im.hero), ...statementRow(2), iwt(1, "image-right", im.detail1), feat(2), ...timelineSec(1), hgallery(2), faqSec(1), newsletter(2)];
       break;
     case "nocturne":
-      radius = { button: 999, card: 18 };
-      tracking = -3;
+      tracking = -2;
+      glow = 70;
+      darkTheme = true;
       gallery = "carousel";
-      index = [hasVideo ? heroFull(1, "center") : heroEdito(1), story(2), feat(1, "cards", 3), hgallery(1), specList(2), cta(3), faqSec(1)];
+      index = [heroFull(1, "bottom-left", "body"), ...statementRow(1), ...stats(1), feat(2), iwt(1, "image-right", im.scene1 ?? im.detail1), story(2), ...reels(1), hgallery(1), faqSec(2), cta(3)];
       break;
     case "pop":
-      radius = { button: 999, card: 24 };
-      headingScale = 105;
-      index = [heroSplit(2, "right", im.packshot ?? im.hero), marq(4, "large"), feat(1, "cards", 3), mosaicSec(1, "even"), featured(2), faqSec(1), newsletter(2)];
+      radius = { button: 40, card: 32 };
+      headingScale = 106;
+      glow = 55;
+      index = [heroSplit(2, "right", im.packshot ?? im.hero), ...circles(1), marq(4, "large"), feat(1), ...stats(2), mosaicSec(1, "even"), featured(2), faqSec(1), newsletter(2)];
       break;
     case "galerie":
       headerLayout = "minimal";
-      headingScale = 92;
-      index = [heroSplit(1, "left", im.hero ?? im.scene1), mosaicSec(1), statement(1, "quote"), hgallery(2), specList(1), newsletter(2)];
+      radius = { button: 40, card: 6 };
+      headingScale = 94;
+      glow = 15;
+      shine = false;
+      index = [heroSplit(1, "left", im.hero ?? im.scene1), mosaicSec(1), ...statementRow(1), hgallery(2), specList(1), newsletter(2)];
       break;
     case "elan":
       headingCase = "uppercase";
       headingScale = 108;
-      tracking = -2;
+      tracking = -3;
+      radius = { button: 10, card: 22 };
+      glow = 75;
+      darkTheme = true;
       gallery = "grid";
-      index = [hasVideo ? heroFull(3) : heroSplit(2, "right"), marq(4, "large"), feat(1, "lines", 3), story(2), featured(1), cta(3), faqSec(1)];
+      index = [heroFull(1, "bottom-left", "heading"), marq(4, "large"), ...stats(2), feat(1), curve(1), ...timelineSec(2), ...reels(1), featured(1), cta(3), faqSec(1)];
+      break;
+    case "flux":
+      headerLayout = "logo-center";
+      buttonStyle = "frame";
+      radius = { button: 0, card: 0 };
+      headingScale = 104;
+      tracking = -4;
+      glow = 0;
+      shine = false;
+      gallery = "grid";
+      index = [heroFull(3, "bottom-left", "heading"), ...circles(1), ...stackCards(1), curve(1), ...reels(1), ...timelineSec(1), featured(2), cta(3), faqSec(1)];
+      break;
+    case "joaillerie":
+      headerLayout = "logo-center";
+      buttonStyle = "frame";
+      headingCase = "uppercase";
+      radius = { button: 0, card: 0 };
+      tracking = 4;
+      headingScale = 92;
+      glow = 0;
+      shine = false;
+      index = [heroFull(3, "bottom-left", "heading"), ...circles(1), featured(2), ...statementRow(4, "statement", true), ...reels(1), iwt(1, "image-left", im.scene1), faqSec(2), newsletter(3)];
+      break;
+    case "gourmand":
+      headerLayout = "logo-center";
+      radius = { button: 40, card: 28 };
+      headingScale = 108;
+      glow = 0;
+      shine = false;
+      index = [
+        // Ouverture vidéo puis grande phrase centrée ; sans vidéo, héros produit puis phrase (si elle diffère).
+        ...(hasVideo ? [video(1, "16/9"), statement(3, "statement", true)] : [heroSplit(1, "right", im.packshot ?? im.hero), ...statementRow(3, "statement", true)]),
+        wave(3, 1),
+        hgallery(1),
+        ...reels(1),
+        ...stats(1),
+        wave(1, 4),
+        iwt(4, "image-right", im.scene1),
+        wave(4, 1),
+        feat(1, "cards"),
+        faqSec(1),
+        wave(1, 3),
+        newsletter(4),
+      ];
       break;
   }
 
@@ -407,7 +595,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       { type: "text", settings: { text: p(c.about.intro) } },
     ]],
     ...c.about.blocks.map((b, i): Row => ["image-with-text", { eyebrow: "", heading: b.heading, text: p(b.text), image_asset: img([im.scene1, im.detail1, im.scene2, im.detail2][i]), layout: i % 2 ? "image-right" : "image-left", ratio: "portrait", reveal: "curtain", parallax: false, color_scheme: i % 2 ? "scheme-2" : "scheme-1", ...pad(96) }]),
-    ...(c.about.values.length ? [["features-grid", { heading: "Ce qui nous guide", heading_align: "left", columns: Math.min(4, Math.max(2, c.about.values.length)), style: "lines", color_scheme: "scheme-1", ...pad(96) }, c.about.values.map((v) => ({ type: "feature", settings: { title: v.title, text: p(v.text), icon: "none" } }))] as Row] : []),
+    ...(c.about.values.length ? [["features-grid", { heading: "Ce qui nous guide", heading_align: "left", columns: Math.min(3, Math.max(2, c.about.values.length)), style: "glow", color_scheme: "scheme-2", ...pad(96) }, c.about.values.map((v) => ({ type: "feature", settings: { title: v.title, text: p(v.text), icon: "sparkle" } }))] as Row] : []),
     cta(3),
   ]);
 
@@ -420,7 +608,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     cart: tpl(ids, [["main-cart", { color_scheme: "scheme-1" }]]),
     page: tpl(ids, [["main-page", { width: "narrow", color_scheme: "scheme-1", ...pad(64, 96) }]]),
     "page.about": aboutTpl,
-    "page.faq": tpl(ids, [["faq", { heading: c.faq.heading, text: "", structured_data: true, color_scheme: "scheme-1", ...pad(96) }, faq], ["contact-form", { heading: "Une autre question ?", text: p(c.contact.text), color_scheme: "scheme-2", ...pad(96) }]]),
+    "page.faq": tpl(ids, [["faq", { heading: c.faq.heading, text: "", style: "cards", structured_data: true, color_scheme: "scheme-1", ...pad(96) }, faq], ["contact-form", { heading: "Une autre question ?", text: p(c.contact.text), color_scheme: "scheme-2", ...pad(96) }]]),
     "page.contact": tpl(ids, [["contact-form", { heading: c.contact.heading, text: p(c.contact.text), color_scheme: "scheme-1", ...pad(64, 120) }]]),
     "page.shipping": tpl(ids, [["main-page", { width: "narrow", color_scheme: "scheme-1", ...pad(64, 96) }], ["rich-text", { align: "left", style: "plain", color_scheme: "scheme-2", ...pad(64) }, [{ type: "heading", settings: { text: c.shipping.heading, size: "h3" } }, { type: "text", settings: { text: c.shipping.body_html } }]]]),
     "404": tpl(ids, [["main-404", { heading: "Cette page s'est égarée.", text: "Le lien est peut-être ancien. Le reste de la boutique vous attend.", color_scheme: "scheme-1" }]]),
@@ -429,19 +617,21 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     password: { ...tpl(ids, [["main-password", { heading: "Bientôt en ligne" }]]), layout: "password" },
   };
 
+  // Bandeau : annonces confirmées, sinon les expressions courtes de la marque (jamais d'offre inventée).
+  const annItems = c.announcement.length ? c.announcement : shortItems.slice(0, 3);
   const header: GroupJson = {
     type: "header",
     name: "Groupe en-tête",
     ...tpl(ids, [
-      ...(c.announcement.length ? [["announcement-bar", { color_scheme: "scheme-3" }, c.announcement.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
-      ["header", { menu: "main-menu", layout: headerLayout, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: true, color_scheme: "scheme-1" }],
+      ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
+      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: true, color_scheme: "scheme-1" }],
     ]),
   };
   const footer: GroupJson = {
     type: "footer",
     name: "Groupe pied de page",
     ...tpl(ids, [
-      ["footer", { show_wordmark: d.id !== "clinique", show_policies: true, show_payment: true, color_scheme: "scheme-3" }, [
+      ["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: true, show_payment: true, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, [
         { type: "text", settings: { heading: input.shopName, text: p(c.footer.about) } },
         { type: "links", settings: { heading: "Boutique", menu: "main-menu" } },
         { type: "links", settings: { heading: "Aide", menu: "footer" } },
@@ -451,12 +641,13 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   };
 
   const settings: Record<string, unknown> = {
-    logo_asset: img(im.logo),
+    logo_asset: img(darkTheme ? im.logoLight ?? im.logo : im.logo),
     logo_width: 150,
     favicon_asset: img(im.favicon),
     color_schemes: colorSchemes(d.id, input.palette),
     type_heading_font: input.fonts?.heading ?? d.fonts.heading,
     type_body_font: input.fonts?.body ?? d.fonts.body,
+    type_accent_font: ACCENT_FONT,
     heading_scale: headingScale,
     body_scale: 100,
     heading_case: headingCase,
@@ -466,12 +657,21 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     spacing_scale: d.id === "galerie" ? 110 : 100,
     style_preset: d.id,
     button_radius: Math.min(40, radius.button),
-    card_radius: Math.min(32, radius.card),
+    card_radius: Math.min(40, radius.card),
     button_style: buttonStyle,
-    button_uppercase: headingCase === "uppercase" || d.id === "atelier",
+    button_uppercase: buttonStyle !== "frame" && d.id !== "gourmand",
+    button_shine: shine,
+    glow_enabled: glow > 20,
+    glow_intensity: glow,
+    header_shape: CHROME[d.id].shape === "pill" ? "floating" : CHROME[d.id].shape,
+    card_style: CHROME[d.id].card,
     motion_enabled: true,
     motion_intensity: d.motion,
     motion_parallax: true,
+    fab_back_to_top: true,
+    fab_contact_link: "/pages/contact",
+    fab_contact_icon: "chat",
+    fab_contact_label: "Nous contacter",
     cart_type: "drawer",
     cart_show_note: false,
     cart_reassurance: "",

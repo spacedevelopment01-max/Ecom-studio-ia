@@ -1,6 +1,6 @@
 <section class="es-section es-newsletter color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container es-newsletter__inner">
-    <h2 class="es-heading es-h2" data-reveal="lines">{{ section.settings.heading }}</h2>
+    <h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>
     {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
     {%- form 'customer', class: 'es-newsletter-form', id: 'NewsletterSection' -%}
       <input type="hidden" name="contact[tags]" value="newsletter">

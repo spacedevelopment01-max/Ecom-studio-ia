@@ -1,6 +1,6 @@
 <section class="es-section es-clist color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container">
-    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-section-head" data-reveal="lines">{{ section.settings.heading }}</h2>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-section-head" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
     <div class="es-clist__grid" style="--cols: {{ section.settings.columns }}">
       {%- for block in section.blocks -%}
         {%- assign c = block.settings.collection -%}

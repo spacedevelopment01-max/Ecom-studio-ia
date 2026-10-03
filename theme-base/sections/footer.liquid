@@ -1,40 +1,98 @@
-<footer class="es-footer color-{{ section.settings.color_scheme }}">
+{%- liquid
+  assign style = section.settings.style
+  assign news_block = section.blocks | where: 'type', 'newsletter' | first
+-%}
+<footer class="es-footer es-footer--{{ style }} es-ambient color-{{ section.settings.color_scheme }}">
   <div class="es-container">
-    {%- if section.settings.show_wordmark -%}
+    {%- if style == 'card' and news_block -%}
+      <div class="es-footer__card es-glow" data-reveal="up">
+        <div>
+          <h2 class="es-heading es-h2">{{ news_block.settings.heading }}</h2>
+          {%- if news_block.settings.text != blank -%}<p class="es-lead">{{ news_block.settings.text }}</p>{%- endif -%}
+        </div>
+        {%- form 'customer', class: 'es-newsletter-form', id: 'FooterNewsletterCard' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <label class="visually-hidden" for="FooterEmailCard">{{ 'newsletter.label' | t }}</label>
+          <div class="es-inline-field">
+            <input id="FooterEmailCard" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ 'newsletter.label' | t }}">
+            <button type="submit" class="es-button">{{ 'newsletter.button' | t }}</button>
+          </div>
+          {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
+        {%- endform -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.show_wordmark and style != 'wordmark' and style != 'minimal' and style != 'centered' -%}
       <p class="es-footer__wordmark" data-reveal="mask">{{ shop.name }}</p>
     {%- endif -%}
-    <div class="es-footer__grid">
-      {%- for block in section.blocks -%}
-        <div class="es-footer__block es-footer__block--{{ block.type }}" {{ block.shopify_attributes }}>
-          {%- case block.type -%}
-            {%- when 'text' -%}
-              {%- if block.settings.heading != blank -%}<h2 class="es-footer__heading">{{ block.settings.heading }}</h2>{%- endif -%}
-              <div class="es-rte">{{ block.settings.text }}</div>
-            {%- when 'links' -%}
-              <h2 class="es-footer__heading">{{ block.settings.heading | default: linklists[block.settings.menu].title }}</h2>
-              <ul role="list" class="es-footer__links">
-                {%- for link in linklists[block.settings.menu].links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
-              </ul>
-            {%- when 'newsletter' -%}
-              <h2 class="es-footer__heading">{{ block.settings.heading }}</h2>
-              {%- if block.settings.text != blank -%}<p class="es-muted">{{ block.settings.text }}</p>{%- endif -%}
-              {%- form 'customer', class: 'es-newsletter-form', id: 'FooterNewsletter' -%}
-                <input type="hidden" name="contact[tags]" value="newsletter">
-                <label class="visually-hidden" for="FooterEmail">{{ 'newsletter.label' | t }}</label>
-                <div class="es-inline-field">
-                  <input id="FooterEmail" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ 'newsletter.label' | t }}">
-                  <button type="submit" class="es-button es-button--small">{{ 'newsletter.button' | t }}</button>
-                </div>
-                {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
-                {%- if form.errors -%}<p class="es-form-error" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
-              {%- endform -%}
-            {%- when 'social' -%}
-              <h2 class="es-footer__heading">{{ block.settings.heading }}</h2>
-              {% render 'social-icons' %}
-          {%- endcase -%}
-        </div>
-      {%- endfor -%}
-    </div>
+
+    {%- if style == 'centered' or style == 'minimal' -%}
+      <div class="es-footer__inline">
+        <a href="{{ routes.root_url }}" class="es-footer__brand">
+          {%- liquid
+            assign footer_logo = settings.logo_asset
+            if section.settings.logo_asset != blank
+              assign footer_logo = section.settings.logo_asset
+            endif
+          -%}
+          {%- if footer_logo != blank and style == 'centered' -%}<img src="{{ footer_logo | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 }}" loading="lazy">{%- else -%}{{ shop.name }}{%- endif -%}
+        </a>
+        <ul role="list" class="es-footer__inline-links">
+          {%- assign seen_links = '|' -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'links' -%}
+              {%- for link in linklists[block.settings.menu].links -%}
+                {%- assign link_key = '|' | append: link.url | append: '|' -%}
+                {%- unless seen_links contains link_key -%}
+                  {%- assign seen_links = seen_links | append: link.url | append: '|' -%}
+                  <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {%- endunless -%}
+              {%- endfor -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+        {% render 'social-icons' %}
+      </div>
+    {%- else -%}
+      <div class="es-footer__grid">
+        {%- for block in section.blocks -%}
+          {%- if style == 'card' and block.type == 'newsletter' -%}{%- continue -%}{%- endif -%}
+          <div class="es-footer__block es-footer__block--{{ block.type }}" {{ block.shopify_attributes }}>
+            {%- case block.type -%}
+              {%- when 'text' -%}
+                {%- if block.settings.heading != blank -%}<h2 class="es-footer__heading">{{ block.settings.heading }}</h2>{%- endif -%}
+                <div class="es-rte">{{ block.settings.text }}</div>
+              {%- when 'links' -%}
+                <h2 class="es-footer__heading">{{ block.settings.heading | default: linklists[block.settings.menu].title }}</h2>
+                <ul role="list" class="es-footer__links">
+                  {%- for link in linklists[block.settings.menu].links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+                </ul>
+              {%- when 'newsletter' -%}
+                <h2 class="es-footer__heading">{{ block.settings.heading }}</h2>
+                {%- if block.settings.text != blank -%}<p class="es-muted">{{ block.settings.text }}</p>{%- endif -%}
+                {%- form 'customer', class: 'es-newsletter-form', id: 'FooterNewsletter' -%}
+                  <input type="hidden" name="contact[tags]" value="newsletter">
+                  <label class="visually-hidden" for="FooterEmail">{{ 'newsletter.label' | t }}</label>
+                  <div class="es-inline-field">
+                    <input id="FooterEmail" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ 'newsletter.label' | t }}">
+                    <button type="submit" class="es-button es-button--small">{{ 'newsletter.button' | t }}</button>
+                  </div>
+                  {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
+                  {%- if form.errors -%}<p class="es-form-error" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+                {%- endform -%}
+              {%- when 'social' -%}
+                <h2 class="es-footer__heading">{{ block.settings.heading }}</h2>
+                {% render 'social-icons' %}
+            {%- endcase -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if style == 'wordmark' and section.settings.show_wordmark -%}
+      <p class="es-footer__wordmark es-footer__wordmark--bottom" data-reveal="mask">{{ shop.name }}</p>
+    {%- endif -%}
+
     <div class="es-footer__bottom">
       <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</p>
       {%- if section.settings.show_policies -%}
@@ -59,6 +117,17 @@
   "class": "es-footer-section",
   "max_blocks": 6,
   "settings": [
+    {
+      "type": "select", "id": "style", "label": "Style", "default": "columns",
+      "options": [
+        { "value": "columns", "label": "Colonnes" },
+        { "value": "wordmark", "label": "Colonnes et nom géant en bas" },
+        { "value": "card", "label": "Carte d'inscription puis colonnes" },
+        { "value": "centered", "label": "Centré (logo, liens, réseaux)" },
+        { "value": "minimal", "label": "Minimal sur une ligne" }
+      ]
+    },
+    { "type": "text", "id": "logo_asset", "label": "Logo du pied de page (fichier assets)", "info": "Style Centré : version du logo lisible sur le fond du pied de page. Vide : logo du thème." },
     { "type": "checkbox", "id": "show_wordmark", "label": "Grand nom de marque", "default": true },
     { "type": "checkbox", "id": "show_policies", "label": "Liens vers les politiques", "default": true },
     { "type": "checkbox", "id": "show_payment", "label": "Moyens de paiement", "default": true },

@@ -15,10 +15,14 @@ const OUT = path.join(process.cwd(), "public", "demo");
 const PASSWORD = "demo-studio-2026";
 
 const PRODUCTS = [
-  { id: "serum", sector: "Beauté", productName: "Sérum Éclat", brandName: "Maison Ondine", price: "34,90 €", description: "Sérum visage en flacon compte-gouttes en verre de 30 ml. Formule à la niacinamide et à l'acide hyaluronique. Texture légère, à appliquer matin et soir sur peau propre." },
-  { id: "bougie", sector: "Maison", productName: "Bougie Figuier & Bois fumé", brandName: "Atelier Braise", price: "29 €", description: "Bougie parfumée de 220 g dans un pot en verre teinté avec couvercle en bois. Notes de figue et de bois fumé. Cire végétale et mèche en coton." },
-  { id: "gourde", sector: "Sport", productName: "Gourde isotherme 750 ml", brandName: "Nordvik", price: "32 €", description: "Gourde en acier inoxydable à double paroi, 750 ml, bouchon vissé étanche. Garde les boissons froides ou chaudes. Sans BPA." },
-  { id: "tasse", sector: "Maison", productName: "Tasse en grès émaillé", brandName: "Terre & Feu", price: "24 €", description: "Tasse en grès émaillé de 300 ml, tournée à la main dans notre atelier. Passe au lave-vaisselle. Chaque pièce présente de légères variations d'émail." },
+  { id: "serum", sector: "Beauté", direction: "atelier", productName: "Sérum Éclat", brandName: "Maison Ondine", price: "34,90 €", description: "Sérum visage en flacon compte-gouttes en verre de 30 ml. Formule à la niacinamide et à l'acide hyaluronique. Texture légère, à appliquer matin et soir sur peau propre." },
+  { id: "drone", sector: "High-tech", direction: "nocturne", productName: "Drone Aeris X1", brandName: "Aeris", price: "499 €", description: "Drone de loisir quadrirotor avec caméra stabilisée sur nacelle. Châssis graphite, poids : 249 g. Autonomie : 31 minutes par batterie. Vidéo 4K à 30 images par seconde." },
+  { id: "soda", sector: "Boissons", direction: "gourmand", productName: "Pétale Framboise & Hibiscus", brandName: "Pétale", price: "2,90 €", description: "Soda pétillant à la framboise et à l'hibiscus en canette de 33 cl. 4 g de sucre pour 100 ml. Sans édulcorant." },
+  { id: "montre", sector: "High-tech", direction: "clinique", productName: "Montre connectée Pulso", brandName: "Pulso", price: "229 €", description: "Montre connectée à écran AMOLED de 1,8 pouce, boîtier en aluminium de 44 mm, bracelet en silicone. Étanche 5 ATM. Autonomie : 7 jours." },
+  { id: "the", sector: "Thé", direction: "joaillerie", productName: "Thé vert Sencha", brandName: "Kumo", price: "18 €", description: "Thé vert sencha en feuilles entières, boîte métal de 100 g. Infusion : 2 minutes à 75 °C." },
+  { id: "gourde", sector: "Sport", direction: "flux", productName: "Gourde isotherme 750 ml", brandName: "Nordvik", price: "32 €", description: "Gourde en acier inoxydable à double paroi, 750 ml, bouchon vissé étanche. Garde les boissons froides ou chaudes. Sans BPA." },
+  { id: "bougie", sector: "Maison", direction: "terroir", productName: "Bougie Figuier & Bois fumé", brandName: "Atelier Braise", price: "29 €", description: "Bougie parfumée de 220 g dans un pot en verre teinté avec couvercle en bois. Notes de figue et de bois fumé. Cire végétale et mèche en coton." },
+  { id: "tasse", sector: "Maison", direction: "galerie", productName: "Tasse en grès émaillé", brandName: "Terre & Feu", price: "24 €", description: "Tasse en grès émaillé de 300 ml, tournée à la main dans notre atelier. Passe au lave-vaisselle. Chaque pièce présente de légères variations d'émail." },
 ];
 
 async function api(ctx: BrowserContext, url: string, init?: { method?: string; body?: unknown }) {
@@ -53,14 +57,35 @@ async function shot(ctx: BrowserContext, url: string, dest: string, viewport: { 
   await page.setViewportSize(viewport);
   await page.goto(`${BASE}${url}`, { waitUntil: "networkidle" });
   await page.addStyleTag({ content: ".es-pv-bar{display:none!important}" });
+  await page.evaluate(async () => { for (let y = 0; y < 2400; y += 400) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } window.scrollTo(0, 0); });
   await page.waitForTimeout(1200);
-  const png = await page.screenshot({ clip: { x: 0, y: 0, width: viewport.width, height: clipH ?? viewport.height } });
+  // Capture plus haute que l'écran : page entière recadrée (le héros garde sa hauteur d'écran réelle).
+  const full = await page.screenshot({ fullPage: !!clipH && clipH > viewport.height });
+  const png = await sharp(full).extract({ left: 0, top: 0, width: viewport.width, height: Math.min(clipH ?? viewport.height, (await sharp(full).metadata()).height!) }).toBuffer();
   await sharp(png).resize({ width: Math.min(viewport.width, 1200) }).jpeg({ quality: 82, mozjpeg: true }).toFile(dest);
   await page.close();
 }
 
+const ONLY_DIRECTIONS = process.env.ONLY_DIRECTIONS; // identifiant d'un projet existant : ne refait que les vignettes
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const ctx = await browser.newContext({ reducedMotion: "reduce" });
+async function shootDirections(pid: string) {
+  const { DIRECTIONS } = await import("../src/lib/theme/directions");
+  fs.mkdirSync(path.join(OUT, "directions"), { recursive: true });
+  for (const d of DIRECTIONS) {
+    await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: d.id } });
+    await waitIdle(ctx, pid);
+    const theme = await api(ctx, `/api/projects/${pid}/theme`);
+    await shot(ctx, `/preview/${pid}/v/${theme.current.versionId}/`, path.join(OUT, "directions", `${d.id}.jpg`), { width: 1280, height: 860 }, 1600);
+    console.log(`  direction ${d.id} ✓`);
+  }
+}
+if (ONLY_DIRECTIONS) {
+  await api(ctx, "/api/auth/login", { body: { email: process.env.EMAIL, password: PASSWORD } });
+  await shootDirections(ONLY_DIRECTIONS);
+  await browser.close();
+  process.exit(0);
+}
 const email = `demo-${Date.now()}@ecom-studio.local`;
 await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: "Démonstrations" } });
 // Le compte de démonstration a besoin de plusieurs boutiques : activation manuelle locale.
@@ -68,7 +93,7 @@ const { db } = await import("../src/lib/db");
 const { syncAllowance, getSubscription } = await import("../src/lib/billing");
 const me = await api(ctx, "/api/me");
 getSubscription(me.user.id);
-db().prepare("UPDATE subscriptions SET status = 'manual', stores = 10 WHERE user_id = ?").run(me.user.id);
+db().prepare("UPDATE subscriptions SET status = 'manual', stores = 20 WHERE user_id = ?").run(me.user.id);
 syncAllowance(me.user.id);
 
 fs.rmSync(OUT, { recursive: true, force: true });
@@ -89,8 +114,11 @@ for (const p of PRODUCTS) {
   if (!res.ok()) throw new Error(JSON.stringify(created));
   const pid = created.id ?? created.project?.id;
   const t0 = Date.now();
-  const ov = await waitIdle(ctx, pid);
+  let ov = await waitIdle(ctx, pid);
   console.log(`  pipeline ${Math.round((Date.now() - t0) / 1000)} s`, ov.pipeline?.job?.status);
+  // Chaque démonstration montre une direction différente.
+  await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
+  ov = await waitIdle(ctx, pid);
   firstProject ??= { pid };
 
   const files = (await api(ctx, `/api/projects/${pid}/files?q=`)).assets as any[];
@@ -149,16 +177,8 @@ for (const p of PRODUCTS) {
   });
 }
 
-// Les 8 directions de boutique, appliquées au premier produit.
-const { DIRECTIONS } = await import("../src/lib/theme/directions");
-const pid = firstProject!.pid;
-for (const d of DIRECTIONS) {
-  await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: d.id } });
-  await waitIdle(ctx, pid);
-  const theme = await api(ctx, `/api/projects/${pid}/theme`);
-  await shot(ctx, `/preview/${pid}/v/${theme.current.versionId}/`, path.join(OUT, "directions", `${d.id}.jpg`), { width: 1280, height: 1600 });
-  console.log(`  direction ${d.id} ✓`);
-}
+// Toutes les directions de boutique, appliquées au premier produit.
+await shootDirections(firstProject!.pid);
 
 fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Produits, marques et contenus fictifs générés par E-COM STUDIO IA (moteur intégré) à partir de rendus 3D.", demos }, null, 2));
 console.log(`✓ ${demos.length} démonstrations → public/demo`);

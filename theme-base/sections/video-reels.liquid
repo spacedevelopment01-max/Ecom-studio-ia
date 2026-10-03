@@ -1,0 +1,45 @@
+{%- comment -%} Carrousel de vidéos verticales (format réseaux sociaux), son et pause par vidéo. {%- endcomment -%}
+<section class="es-section es-reels color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-reels>
+  {%- if section.settings.heading != blank -%}
+    <div class="es-container"><h2 class="es-heading es-h2 es-reels__heading" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2></div>
+  {%- endif -%}
+  <div class="es-reels__track" data-reels-track>
+    {%- for block in section.blocks -%}
+      <figure class="es-reels__item" data-reel {{ block.shopify_attributes }}>
+        <div class="es-reels__frame">
+          {% render 'es-video', video: block.settings.video, asset: block.settings.video_asset, poster: block.settings.poster, poster_asset: block.settings.poster_asset, class: 'es-cover', autoplay: false, alt: block.settings.caption %}
+          <button type="button" class="es-reels__btn es-reels__btn--sound" data-reel-sound aria-pressed="false" aria-label="Activer le son"><span class="es-reels__muted">{% render 'icon', name: 'mute' %}</span><span class="es-reels__unmuted">{% render 'icon', name: 'sound' %}</span></button>
+          <button type="button" class="es-reels__btn es-reels__btn--play" data-reel-play aria-label="{{ 'general.pause' | t }}"><span class="es-reels__pause" aria-hidden="true"></span></button>
+        </div>
+        {%- if block.settings.caption != blank -%}<figcaption class="es-reels__caption">{{ block.settings.caption }}</figcaption>{%- endif -%}
+      </figure>
+    {%- endfor -%}
+  </div>
+  {%- if section.blocks.size > 1 -%}<div class="es-container"><div class="es-progress" aria-hidden="true"><span class="es-progress__bar" data-reels-progress></span></div></div>{%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Vidéos verticales",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "reel", "name": "Vidéo", "settings": [
+      { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+      { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4 9:16)" },
+      { "type": "image_picker", "id": "poster", "label": "Image d'affiche" },
+      { "type": "text", "id": "poster_asset", "label": "Affiche fournie avec le thème" },
+      { "type": "text", "id": "caption", "label": "Légende" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Vidéos verticales", "blocks": [{ "type": "reel" }, { "type": "reel" }, { "type": "reel" }] }]
+}
+{% endschema %}

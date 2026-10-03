@@ -8,7 +8,8 @@
     "pause": "Mettre en pause",
     "play": "Lire",
     "error": "Une erreur est survenue. Réessayez.",
-    "image_placeholder": "Image à venir"
+    "image_placeholder": "Image à venir",
+    "back_to_top": "Revenir en haut de la page"
   },
   "accessibility": { "skip_to_text": "Aller au contenu" },
   "sections": {

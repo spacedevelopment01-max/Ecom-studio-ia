@@ -35,9 +35,9 @@ jobs:
       - name: Tests
         run: npm test
 
-      - name: Shopify Theme Check (8 directions)
+      - name: Shopify Theme Check (11 directions)
         run: |
-          for d in atelier clinique brut terroir nocturne pop galerie elan; do
+          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
             echo "::group::$d"
             npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-$d" "$d"
             echo "::endgroup::"

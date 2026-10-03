@@ -1,12 +1,28 @@
 {%- if section.blocks.size > 0 -%}
-<div class="es-announcement color-{{ section.settings.color_scheme }}" role="region" aria-label="{{ 'sections.announcement' | t }}">
-  <div class="es-announcement__track{% if section.blocks.size > 1 %} es-announcement__track--rotate{% endif %}" style="--count: {{ section.blocks.size }}">
-    {%- for block in section.blocks -%}
-      <p class="es-announcement__item" {{ block.shopify_attributes }}>
-        {%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{{ block.settings.text }}</a>{%- else -%}{{ block.settings.text }}{%- endif -%}
-      </p>
-    {%- endfor -%}
-  </div>
+<div class="es-announcement es-announcement--{{ section.settings.style }} color-{{ section.settings.color_scheme }}" role="region" aria-label="{{ 'sections.announcement' | t }}">
+  {%- if section.settings.style == 'marquee' -%}
+    <div class="es-announcement__marquee" aria-hidden="false">
+      {%- for i in (1..2) -%}
+        <div class="es-announcement__group"{% if i == 2 %} aria-hidden="true"{% endif %}>
+          {%- for block in section.blocks -%}
+            <span class="es-announcement__item"{% if i == 1 %} {{ block.shopify_attributes }}{% endif %}>
+              {%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}"{% if i == 2 %} tabindex="-1"{% endif %}>{{ block.settings.text }}</a>{%- else -%}{{ block.settings.text }}{%- endif -%}
+            </span>
+            <span class="es-announcement__sep" aria-hidden="true">✦</span>
+          {%- endfor -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- else -%}
+    <div class="es-announcement__track{% if section.blocks.size > 1 and section.settings.style == 'rotate' %} es-announcement__track--rotate{% endif %}" style="--count: {{ section.blocks.size }}">
+      {%- for block in section.blocks -%}
+        {%- if section.settings.style == 'static' and forloop.index > 1 -%}{%- break -%}{%- endif -%}
+        <p class="es-announcement__item" {{ block.shopify_attributes }}>
+          {%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{{ block.settings.text }}</a>{%- else -%}{{ block.settings.text }}{%- endif -%}
+        </p>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
 </div>
 {%- endif -%}
 
@@ -16,6 +32,7 @@
   "class": "es-announcement-section",
   "max_blocks": 4,
   "settings": [
+    { "type": "select", "id": "style", "label": "Style", "default": "rotate", "options": [ { "value": "rotate", "label": "Messages qui alternent" }, { "value": "marquee", "label": "Bandeau défilant" }, { "value": "static", "label": "Un seul message fixe" } ] },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" }
   ],
   "blocks": [

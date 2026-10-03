@@ -33,7 +33,7 @@ export function savedCopy(projectId: string): ShopCopy | null {
 export function collectImages(projectId: string): { slots: ImageSlots; files: Record<string, string>; gallery: string[] } {
   const files: Record<string, string> = {};
   const slots: ImageSlots = {};
-  const put = (slot: keyof ImageSlots, a: Asset | undefined, hint?: string) => {
+  const put = (slot: Exclude<keyof ImageSlots, "reels">, a: Asset | undefined, hint?: string) => {
     if (!a) return;
     const f = themeFileName(a, hint ?? slot);
     files[f] = a.id;
@@ -60,7 +60,20 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
     const poster = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video-poster' AND source_asset_id = ? LIMIT 1", projectId, video.id)[0];
     put("videoPoster", poster ?? pick("banner"), "video-affiche");
   }
+  // Vidéos verticales (9:16) pour la section « Vidéos verticales ».
+  const verticals = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND status != 'rejected' AND (json_extract(meta, '$.format') = '9:16') ORDER BY created_at DESC LIMIT 4", projectId);
+  if (verticals.length) {
+    slots.reels = verticals.map((v, i) => {
+      const vf = themeFileName(v, `reel-${i + 1}`);
+      files[vf] = v.id;
+      const poster = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video-poster' AND source_asset_id = ? LIMIT 1", projectId, v.id)[0];
+      let pf: string | undefined;
+      if (poster) { pf = themeFileName(poster, `reel-affiche-${i + 1}`); files[pf] = poster.id; }
+      return { video: vf, poster: pf };
+    });
+  }
   put("logo", pick("logo"), "logo");
+  put("logoLight", pick("logo-light"), "logo-clair");
   put("favicon", pick("favicon"), "favicon");
   // Galerie produit : packshots puis détails puis scènes.
   const gallery: string[] = [];
@@ -104,7 +117,8 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     direction,
     shopName: brand.name,
     palette: brand.palette,
-    fonts: opts.direction && opts.direction !== brand.direction ? undefined : brand.fonts,
+    // Les polices de la marque ne priment que si elles ont été choisies (IA ou client), pas recopiées d'une direction.
+    fonts: (opts.direction && opts.direction !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts,
     copy,
     images: slots,
     files,
@@ -118,7 +132,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       const design = await ctx.step(`design:${direction}`, () => aiDesignHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:design:${direction}` }, p, spec));
       const ops: ThemeOp[] = [];
       if (design.custom && /^es-custom-[a-z0-9-]{2,40}$/.test(design.custom.type)) ops.push({ op: "custom_section", type: design.custom.type, name: design.custom.name.slice(0, 25), liquid: design.custom.liquid });
-      const fresh: ThemeSpec = { ...spec, templates: { ...spec.templates, index: { sections: {}, order: [] } } };
+      const fresh: ThemeSpec = { ...spec, settings: { ...spec.settings, ...Object.fromEntries(Object.entries(design.globals ?? {}).filter(([, v]) => v !== undefined)) }, templates: { ...spec.templates, index: { sections: {}, order: [] } } };
       for (const s of design.index) ops.push({ op: "add_section", template: "index", type: s.type, settings: s.settings, blocks: s.blocks });
       const r = applyOps(fresh, ops);
       if (r.spec.templates.index.order.length >= 4 && !validateSpec(r.spec).length) {

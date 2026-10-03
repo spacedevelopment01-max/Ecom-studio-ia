@@ -1,4 +1,4 @@
-<section class="es-section es-hero-edito color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-hero-edito>
+<section class="es-section es-ambient es-hero-edito color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-hero-edito>
   <div class="es-container es-hero-edito__inner">
     {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow es-hero-edito__eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
     <h1 class="es-heading es-hero-edito__title" aria-label="{{ section.settings.heading_line1 | escape }} {{ section.settings.heading_line2 | escape }}">
@@ -11,7 +11,7 @@
     <div class="es-hero-edito__foot">
       {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up" style="--d: 2">{{ section.settings.text }}</div>{%- endif -%}
       {%- if section.settings.button_label != blank -%}
-        <a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button" data-reveal="up" style="--d: 3">{{ section.settings.button_label }}</a>
+        <a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button" data-reveal="up" style="--d: 3">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>
       {%- endif -%}
     </div>
   </div>

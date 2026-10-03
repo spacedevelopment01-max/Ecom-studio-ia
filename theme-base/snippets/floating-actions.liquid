@@ -1,0 +1,11 @@
+{%- comment -%} Boutons flottants : contact (si un lien est défini) et retour en haut. {%- endcomment -%}
+{%- if settings.fab_back_to_top or settings.fab_contact_link != blank -%}
+  <div class="es-fab" data-fab>
+    {%- if settings.fab_back_to_top -%}
+      <a href="#MainContent" class="es-fab__button es-fab__button--top" data-back-to-top aria-label="{{ 'general.back_to_top' | t }}">{% render 'icon', name: 'arrow-up' %}</a>
+    {%- endif -%}
+    {%- if settings.fab_contact_link != blank -%}
+      <a href="{{ settings.fab_contact_link }}" class="es-fab__button es-fab__button--contact" aria-label="{{ settings.fab_contact_label | default: 'Contact' | escape }}">{% render 'icon', name: settings.fab_contact_icon %}</a>
+    {%- endif -%}
+  </div>
+{%- endif -%}

@@ -231,6 +231,20 @@ export const SECTOR_DATA: SectorData[] = [
 
 export type PromptCategory = { id: string; label: string; group: "Analyse" | "Marque" | "Boutique" | "Images" | "Vidéos" | "Réseaux sociaux" | "Publicités"; target: "produit" | "marque" | "boutique" | "images" | "videos" | "social" | "publicites" | "calendrier" };
 
+/** Ambiance conseillée par secteur pour les boutiques (directions du studio). */
+const MOOD: Record<string, string> = {
+  beaute: "« Atelier » (ivoire lumineux, serif contrasté, italiques dorées) ou « Nocturne » pour un parfum du soir",
+  mode: "« Flux » (sportswear premium : noir et blanc, grotesque très grasse, en-tête encadré, cartes empilées, texte en courbe, vidéos verticales) ou « Brut »",
+  bijoux: "« Joaillerie » (portrait plein écran, capitales espacées et mot en italique, cercles de collections, vidéos portées) ou « Galerie »",
+  maison: "« Terroir » (crème et tons de terre, grandes rondeurs)",
+  hightech: "« Nocturne » (nuit profonde, verre, lueurs) ou « Clinique » (blanc pur, typographie serrée)",
+  sport: "« Élan » (anthracite et néon vif, italiques rapides)",
+  alimentation: "« Gourmand » (crème et vert profond, serif très gras, vagues, confettis, pastilles sticker) ou « Terroir »",
+  enfants: "« Pop » (couleurs franches, rebonds, très grandes rondeurs)",
+  animaux: "« Pop » (couleurs franches, rebonds)",
+  artisanat: "« Galerie » ou « Terroir »",
+};
+
 export const CATEGORIES: PromptCategory[] = [
   { id: "analyse", label: "Analyse produit", group: "Analyse", target: "produit" },
   { id: "positionnement", label: "Positionnement et promesse", group: "Marque", target: "marque" },
@@ -309,36 +323,36 @@ const MAKERS: Record<string, (s: SectorData) => Omit<LibraryPrompt, "id" | "sect
     checks: ["Contraste suffisant sur fond clair et sombre", "Lisible en monochrome", "Aucune référence à une marque existante"],
   }),
   boutique: (s) => ({
-    title: `Créer une boutique complète ${s.label.toLowerCase()}`,
-    context: `Produit : {{produit}}. Marque : {{marque}}. Médias disponibles : {{medias}}. Cible : {{cible}}.`,
-    objective: `Concevoir une boutique Shopify d'un produit qui convertit en répondant d'abord à : ${L(s.objections)}.`,
-    direction: `Rythme de l'accueil : accroche visuelle, détails réels (${L(s.details)}), usage (${pick(s.scenes, 0)}), informations clés (${L(s.shopFocus)}), FAQ, appel à l'action. Lumière et ambiance : ${s.light}.`,
-    deliverable: `Structure ordonnée des sections de l'accueil et de la fiche produit, avec titres, textes courts et images associées ; pages Histoire, FAQ, Contact, Livraison et retours.`,
-    checks: ["Aucun avis, note ou promotion inventés", `Informations « à compléter » visibles si inconnues (${L(s.trust)})`, "Bouton d'achat accessible à tout moment sur mobile"],
+    title: `Créer une boutique premium ${s.label.toLowerCase()}`,
+    context: `Produit : {{produit}}. Marque : {{marque}}. Palette : {{palette}}. Médias disponibles : {{medias}}. Cible : {{cible}}.`,
+    objective: `Concevoir une boutique Shopify au niveau des grandes marques (finition Apple, Aesop, Nike), qui convertit en répondant d'abord à : ${L(s.objections)}.`,
+    direction: `Direction conseillée : ${MOOD[s.id]}. En-tête en verre flottant aux coins arrondis, boutons flottants (contact, retour en haut). Héros immersif plein écran : pastille de faits courts, titre très grand dont la fin passe en italique colorée, deux boutons en pilule (principal lumineux avec reflet animé et flèche, secondaire en verre). Puis : texte d'engagement qui s'allume au défilement, cartes lumineuses numérotées (tuile d'icône en dégradé, lien « Découvrir → », contour néon au survol) sur les détails réels (${L(s.details)}), image d'usage (${pick(s.scenes, 0)}) qui se recadre au défilement, présentation du produit étape par étape, chiffres clés animés si des faits chiffrés sont confirmés, FAQ en cartes arrondies (${L(s.shopFocus)}), appel à l'action final sur image. Lumière : ${s.light}.`,
+    deliverable: `Structure ordonnée de l'accueil (8 à 10 sections) et de la fiche produit, avec titres courts, mots d'accent, textes de 1 à 2 phrases, images associées et réglages globaux (forme de l'en-tête, reflets, lueurs, arrondis, animations) ; pages Histoire, FAQ, Contact, Livraison et retours.`,
+    checks: ["Rendu actuel et premium sur téléphone comme sur ordinateur, aucun aspect de modèle générique", "Aucun avis, note, chiffre ou promotion inventés", `Informations « à compléter » visibles si inconnues (${L(s.trust)})`, "Animations douces et désactivées si l'utilisateur réduit les mouvements", "Bouton d'achat accessible à tout moment sur mobile"],
   }),
   accueil: (s) => ({
-    title: `Retoucher le héros et l'accueil (${s.label.toLowerCase()})`,
+    title: `Rendre l'accueil spectaculaire (${s.label.toLowerCase()})`,
     context: `Boutique actuelle de {{marque}}. Produit : {{produit}}. Images disponibles : {{medias}}.`,
-    objective: `Rendre l'ouverture de page plus forte en une seconde : on doit comprendre le produit et avoir envie de défiler.`,
-    direction: `Titre de 4 à 8 mots autour de « ${pick(s.hooks, 0)} » adapté au produit ; image principale : ${pick(s.scenes, 1)} ; bouton unique et clair. Conserver les sections déjà validées.`,
-    deliverable: `Modifications ciblées du héros (titre, texte, image, bouton) et, si utile, un bandeau défilant avec trois expressions courtes du vocabulaire du secteur (${L(s.vocabulary.slice(0, 4))}).`,
-    checks: ["Ne pas modifier les sections verrouillées", "Contraste du texte sur l'image ≥ 4,5:1", "Lisible sur un écran de 375 px"],
+    objective: `Une ouverture qui saisit en une seconde, comme une page de lancement de grande marque : on comprend le produit et on a envie de défiler.`,
+    direction: `Héros plein écran sur l'image la plus large (${pick(s.scenes, 1)}) avec voile dégradé dans la couleur de fond ; pastille de trois faits courts ; titre de 4 à 8 mots autour de « ${pick(s.hooks, 0)} », dont les deux derniers mots en italique colorée ; texte d'une phrase ; bouton principal lumineux à reflet et bouton secondaire en verre. Titres qui apparaissent mot à mot, léger zoom lent sur l'image. Si utile, bandeau défilant avec trois expressions du secteur (${L(s.vocabulary.slice(0, 4))}). Conserver les sections déjà validées.`,
+    deliverable: `Modifications ciblées du héros (pastille, titre et mot d'accent, texte, image, boutons) et de l'en-tête (verre flottant), sans toucher au reste.`,
+    checks: ["Ne pas modifier les sections verrouillées", "Contraste du texte sur l'image ≥ 4,5:1", "Lisible sur un écran de 375 px, image en haut et texte dessous sur téléphone"],
   }),
   fiche: (s) => ({
-    title: `Optimiser la fiche produit et le parcours d'achat (${s.label.toLowerCase()})`,
+    title: `Fiche produit premium et parcours d'achat (${s.label.toLowerCase()})`,
     context: `Fiche produit de {{produit}} chez {{marque}}. Faits confirmés : {{faits}}.`,
-    objective: `Lever les freins à l'achat propres au secteur : ${L(s.objections)}.`,
-    direction: `Ordre des blocs : titre, prix, accroche, variantes, ajout au panier, points forts vérifiés, onglets (${L(s.shopFocus)}), réassurance réelle uniquement. Barre d'achat qui suit le défilement sur mobile.`,
-    deliverable: `Textes des blocs, contenu des onglets, et liste des informations à fournir par le marchand pour compléter la fiche.`,
-    checks: ["Points forts tirés des faits confirmés", "Aucune urgence artificielle", `Pas de : ${pick(s.forbidden, 0)}`],
+    objective: `Une fiche aussi soignée que celle d'une grande marque, qui lève les freins propres au secteur : ${L(s.objections)}.`,
+    direction: `Galerie grand format qui défile au doigt sur mobile ; titre, prix, accroche, variantes en pastilles arrondies (la sélection s'illumine dans la couleur d'accent), ajout au panier lumineux, points forts vérifiés avec coches, onglets en cartes arrondies (${L(s.shopFocus)}), réassurance réelle uniquement. Barre d'achat en verre qui suit le défilement sur mobile, panier latéral fluide.`,
+    deliverable: `Textes des blocs, contenu des onglets, réglages de présentation et liste des informations à fournir par le marchand pour compléter la fiche.`,
+    checks: ["Points forts tirés des faits confirmés", "Aucune urgence artificielle", `Pas de : ${pick(s.forbidden, 0)}`, "Bouton d'achat visible sans défiler sur téléphone"],
   }),
   animation: (s) => ({
-    title: `Présentation animée du produit au défilement (${s.label.toLowerCase()})`,
+    title: `Séquence animée façon page de lancement (${s.label.toLowerCase()})`,
     context: `Boutique de {{marque}}. Produit : {{produit}}. Images de détail : {{medias}}.`,
-    objective: `Créer une section qui révèle le produit étape par étape pendant le défilement, sans gêner la lecture ni l'achat.`,
-    direction: `Image collante d'un côté, étapes de l'autre : ${L(s.details)}. Mouvements inspirés de : ${pick(s.motion, 0)}. Animations douces, désactivées si l'utilisateur préfère réduire les mouvements.`,
-    deliverable: `Une section (existante ou sur mesure) avec 3 à 4 étapes : titre court, texte de deux phrases, image associée.`,
-    checks: ["Respect de prefers-reduced-motion", "Aucun texte caché derrière l'image sur mobile", "Réglages modifiables dans l'éditeur Shopify"],
+    objective: `Créer une séquence qui révèle le produit pendant le défilement, comme les pages de lancement des grandes marques, sans gêner la lecture ni l'achat.`,
+    direction: `Image collante qui change à chaque étape avec un léger zoom, étapes de l'autre côté : ${L(s.details)}. Phrase d'engagement dont les mots s'allument un à un au défilement, chiffres qui défilent jusqu'à leur valeur (faits confirmés uniquement). Mouvements inspirés de : ${pick(s.motion, 0)}. Lueur douce dans la couleur d'accent autour du produit.`,
+    deliverable: `Une section (existante ou sur mesure) avec 3 à 4 étapes : titre court, texte de deux phrases, image associée ; réglages modifiables dans l'éditeur Shopify.`,
+    checks: ["Respect de prefers-reduced-motion", "Aucun texte caché derrière l'image sur mobile", "Fluide à 60 images par seconde (transformations et opacité uniquement)", "Réglages modifiables dans l'éditeur Shopify"],
   }),
   packshot: (s) => ({
     title: `Packshot e-commerce ${s.label.toLowerCase()}`,

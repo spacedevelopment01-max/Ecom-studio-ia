@@ -1,0 +1,46 @@
+{%- comment -%} Comparaison avant / après, avec curseur accessible au clavier. {%- endcomment -%}
+<section class="es-section es-ambient es-before-after color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    <header class="es-section-head">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+    </header>
+    <div class="es-compare" data-compare data-reveal="zoom" style="--ratio: {{ section.settings.ratio }}">
+      {% render 'es-image', image: section.settings.image_after, asset: section.settings.image_after_asset, alt: section.settings.label_after, sizes: '(min-width: 1320px) 1240px, 100vw', class: 'es-compare__img' %}
+      <div class="es-compare__before">
+        {% render 'es-image', image: section.settings.image_before, asset: section.settings.image_before_asset, alt: section.settings.label_before, sizes: '(min-width: 1320px) 1240px, 100vw', class: 'es-compare__img' %}
+      </div>
+      <span class="es-compare__label es-compare__label--before">{{ section.settings.label_before }}</span>
+      <span class="es-compare__label es-compare__label--after">{{ section.settings.label_after }}</span>
+      <span class="es-compare__line" aria-hidden="true"></span>
+      <input class="es-compare__range" type="range" min="0" max="100" value="50" aria-label="{{ section.settings.label_before | escape }} / {{ section.settings.label_after | escape }}">
+      <span class="es-compare__knob" aria-hidden="true">{% render 'icon', name: 'compare' %}</span>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Avant / après",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Résultat" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "La différence, en un geste." },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "image_before", "label": "Image « avant »" },
+    { "type": "text", "id": "image_before_asset", "label": "Image « avant » fournie avec le thème" },
+    { "type": "image_picker", "id": "image_after", "label": "Image « après »" },
+    { "type": "text", "id": "image_after_asset", "label": "Image « après » fournie avec le thème" },
+    { "type": "text", "id": "label_before", "label": "Étiquette gauche", "default": "Avant" },
+    { "type": "text", "id": "label_after", "label": "Étiquette droite", "default": "Après" },
+    { "type": "select", "id": "ratio", "label": "Format", "default": "4 / 3", "options": [ { "value": "16 / 9", "label": "Paysage" }, { "value": "4 / 3", "label": "Standard" }, { "value": "1 / 1", "label": "Carré" }, { "value": "4 / 5", "label": "Portrait" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Avant / après" }]
+}
+{% endschema %}

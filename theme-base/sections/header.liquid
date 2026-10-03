@@ -4,8 +4,12 @@
   if section.settings.transparent_on_home and request.page_type == 'index'
     assign transparent = true
   endif
+  assign shape = section.settings.shape
+  if shape == 'theme'
+    assign shape = settings.header_shape
+  endif
 -%}
-<header class="es-header es-header--{{ section.settings.layout }}{% if section.settings.sticky %} es-header--sticky{% endif %}{% if transparent %} es-header--transparent{% endif %} color-{{ section.settings.color_scheme }}" data-header>
+<header class="es-header es-header--{{ section.settings.layout }} es-header--shape-{{ shape }} es-header--icons-{{ section.settings.icons }}{% if section.settings.sticky %} es-header--sticky{% endif %}{% if transparent %} es-header--transparent{% endif %} color-{{ section.settings.color_scheme }}" data-header>
   <div class="es-header__inner es-container">
     <button class="es-header__burger es-icon-button" type="button" aria-controls="MobileMenu" aria-expanded="false" data-menu-open>
       {% render 'icon', name: 'menu' %}<span class="visually-hidden">{{ 'sections.header.menu' | t }}</span>
@@ -43,7 +47,7 @@
     </div>
   </div>
 
-  <div class="es-mobile-menu color-{{ section.settings.color_scheme }}" id="MobileMenu" hidden data-mobile-menu>
+  <div class="es-mobile-menu es-mobile-menu--{{ section.settings.mobile_menu }} color-{{ section.settings.color_scheme }}" id="MobileMenu" hidden data-mobile-menu>
     <div class="es-mobile-menu__head">
       <span class="es-header__wordmark">{{ shop.name }}</span>
       <button type="button" class="es-icon-button" data-menu-close aria-label="{{ 'general.close' | t }}">{% render 'icon', name: 'close' %}</button>
@@ -72,6 +76,18 @@
         { "value": "minimal", "label": "Minimal (menu dans le tiroir)" }
       ]
     },
+    {
+      "type": "select", "id": "shape", "label": "Forme", "default": "theme",
+      "options": [
+        { "value": "theme", "label": "Selon le style du thème" },
+        { "value": "floating", "label": "Verre flottant, coins arrondis" },
+        { "value": "boxed", "label": "Encadré blanc, à distance des bords" },
+        { "value": "pill", "label": "Pilule centrée" },
+        { "value": "bar", "label": "Barre classique" }
+      ]
+    },
+    { "type": "select", "id": "icons", "label": "Icônes", "default": "circles", "options": [ { "value": "circles", "label": "Dans des pastilles rondes" }, { "value": "plain", "label": "Simples" } ] },
+    { "type": "select", "id": "mobile_menu", "label": "Menu sur téléphone", "default": "fullscreen", "options": [ { "value": "fullscreen", "label": "Plein écran" }, { "value": "drawer", "label": "Tiroir latéral" } ] },
     { "type": "checkbox", "id": "sticky", "label": "Rester visible au défilement", "default": true },
     { "type": "checkbox", "id": "transparent_on_home", "label": "Transparent au-dessus de la première section de l'accueil", "default": false },
     { "type": "checkbox", "id": "show_search", "label": "Afficher la recherche", "default": true },
