@@ -3,7 +3,7 @@ import path from "node:path";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check, Camera, Link2, Type, Sparkles, Store, Image as ImageIcon, Film, CalendarDays, FolderTree, BookOpen, Plug, ShieldCheck, MessageSquare, Pause, Palette, Lock } from "lucide-react";
 import { Logo, ThemeToggle } from "@/components/ui";
-import { AutoVideo, BeforeAfter, DemoTabs, RevealObserver, ScrollFX, ThemeShowcase, VideoChapters, type Demo } from "@/components/landing-client";
+import { AutoVideo, BeforeAfter, FilmPlayer, DemoTabs, RevealObserver, ScrollFX, ThemeShowcase, VideoChapters, type Demo } from "@/components/landing-client";
 import { directionCards } from "@/lib/theme/directions";
 import { OFFER, monthlyAllowanceMicro, EUR } from "@/lib/billing";
 import { paymentsLive } from "@/lib/payments";
@@ -113,12 +113,12 @@ export default async function Home() {
           <div className="hero-glow absolute inset-0 -z-10" aria-hidden />
           <div className="bg-grid absolute inset-0 -z-10" aria-hidden />
           <div className="mx-auto grid max-w-7xl items-center gap-14 px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-12 lg:pb-28">
-            <div className="lg:col-span-6">
+            <div className="lg:col-span-5">
               <p className="reveal glass inline-flex items-center gap-2.5 rounded-full border border-line py-1.5 pl-1.5 pr-4 text-xs font-medium uppercase tracking-[.16em] text-signal">
                 <span className="grid size-7 place-items-center rounded-full bg-signal-soft"><Sparkles className="size-3.5" /></span>
                 Le studio e-commerce nouvelle génération
               </p>
-              <h1 className="words mt-7 font-display text-[clamp(3rem,8.2vw,6.4rem)] font-semibold leading-[0.93]">
+              <h1 className="words mt-7 font-display text-[clamp(3rem,7.6vw,5.4rem)] font-semibold leading-[0.93]">
                 <Words text="Une photo." />
                 <br />
                 <Words text="Une marque." d={2} />
@@ -142,16 +142,11 @@ export default async function Home() {
                 <li className="flex items-center gap-2"><Pause className="size-4 text-signal" aria-hidden /> Pause et reprise à tout moment</li>
               </ul>
             </div>
-            <div className="relative lg:col-span-6">
-              <div data-sfx className="sfx-tilt reveal reveal-scale relative mx-auto max-w-[560px]" style={{ ["--d" as any]: 3 }}>
+            <div className="relative lg:col-span-7">
+              <div data-sfx className="sfx-tilt reveal reveal-scale relative mx-auto max-w-[860px]" style={{ ["--d" as any]: 3 }}>
                 <div className="neon on overflow-hidden rounded-[2rem] border border-line bg-[#070B17] shadow-[0_40px_120px_-40px_var(--glow)]">
-                  <AutoVideo src="/explainers/hero.mp4" poster="/explainers/hero.jpg" label="Vidéo : trois produits réels, trois boutiques générées" className="aspect-square w-full object-cover" />
+                  <FilmPlayer src="/explainers/film.mp4" poster="/explainers/film.jpg" captions="/explainers/film.vtt" />
                 </div>
-                {d0 && (
-                  <div data-sfx className="sfx-rise absolute -right-4 bottom-[14%] hidden w-[22%] sm:block lg:-right-12">
-                    <img src={d0.shopMobile} alt="Boutique générée affichée sur téléphone" className="aspect-[9/17] w-full rounded-[1.3rem] border-[5px] border-[#0A1024] object-cover object-top shadow-soft" />
-                  </div>
-                )}
                 <ul className="mt-6 flex flex-wrap justify-center gap-2">
                   {["Thème Shopify OS 2.0", "Vidéos 9:16 · 1:1 · 4:5 · 16:9", "Palette mesurée sur le produit"].map((t, i) => (
                     <li key={t} className="floaty glass rounded-full border border-line px-4 py-2 text-xs font-medium text-ink-2 shadow-soft" style={{ animationDelay: `${-i * 2}s` }}>{t}</li>

@@ -38,6 +38,45 @@ export function AutoVideo({ src, poster, className, label }: { src: string; post
   return <video ref={ref} src={src} poster={poster} muted loop playsInline preload="none" aria-label={label} className={className} />;
 }
 
+/** Film de présentation : lu en silence (sous-titres incrustés) ; « avec le son » le relance depuis le début. */
+export function FilmPlayer({ src, poster, captions }: { src: string; poster: string; captions?: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [sound, setSound] = useState(false);
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      v.controls = true;
+      return;
+    }
+    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? v.play().catch(() => {}) : v.pause()), { threshold: 0.3 });
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+  const withSound = () => {
+    const v = ref.current;
+    if (!v) return;
+    v.muted = false;
+    v.loop = false;
+    v.currentTime = 0;
+    v.controls = true;
+    setSound(true);
+    v.play().catch(() => {});
+  };
+  return (
+    <div className="relative">
+      <video ref={ref} src={src} poster={poster} muted loop playsInline preload="metadata" aria-label="Film de présentation d'E-COM STUDIO IA (1 minute, voix off et sous-titres)" className="aspect-video w-full bg-[#070B17] object-cover">
+        {captions && <track kind="captions" src={captions} srcLang="fr" label="Français" />}
+      </video>
+      {!sound && (
+        <button onClick={withSound} className="btn-glow absolute bottom-4 left-4 inline-flex h-11 items-center gap-2 rounded-full bg-signal px-5 text-sm font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:bottom-5 sm:left-5 sm:h-12 sm:text-[15px]">
+          <span aria-hidden>▶</span> Regarder avec le son · 1 min
+        </button>
+      )}
+    </div>
+  );
+}
+
 /** Comparaison avant / après (photo d'origine ↔ création). */
 export function BeforeAfter({ before, after, beforeLabel, afterLabel }: { before: string; after: string; beforeLabel: string; afterLabel: string }) {
   const [pos, setPos] = useState(52);
