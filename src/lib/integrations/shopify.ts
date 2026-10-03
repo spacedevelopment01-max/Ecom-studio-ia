@@ -10,7 +10,7 @@ import { assetData, getAsset } from "../library";
 import { PermanentError, UserFacingError } from "../jobs";
 import { isPublicAppUrl, signMedia } from "../public-url";
 import { appUrl } from "../settings";
-import type { ThemeSpec } from "../theme/spec";
+import { storeProducts, type StoreProduct, type ThemeSpec } from "../theme/spec";
 import type { Connection } from "../social/publish";
 
 const version = () => getSetting("shopify.apiVersion") || "2025-07";
@@ -55,9 +55,9 @@ async function stagedUpload(c: Connection, filename: string, mime: string, data:
   return t.resourceUrl;
 }
 
-export async function pushProduct(c: Connection, spec: ThemeSpec): Promise<{ productId: string; handle: string }> {
-  const p = spec.store.product;
-  if (p.price === null) throw new UserFacingError("Renseignez le prix du produit avant de l'envoyer à Shopify.");
+export async function pushProduct(c: Connection, spec: ThemeSpec, product?: StoreProduct): Promise<{ productId: string; handle: string }> {
+  const p = product ?? spec.store.product;
+  if (p.price === null) throw new UserFacingError(`Renseignez le prix de « ${p.title} » avant de l'envoyer à Shopify.`);
   const files: { originalSource: string; contentType: "IMAGE"; alt: string }[] = [];
   for (const f of p.images.slice(0, 10)) {
     const a = getAsset(spec.files[f]);
@@ -82,6 +82,30 @@ export async function pushProduct(c: Connection, spec: ThemeSpec): Promise<{ pro
   const d = await gql(c, `mutation($input: ProductSetInput!){ productSet(synchronous: true, input: $input){ product{ id handle } userErrors{ field message } } }`, { input });
   userErrors(d, "productSet");
   return { productId: d.productSet.product.id, handle: d.productSet.product.handle };
+}
+
+/** Envoie tous les produits de la boutique (brouillons), puis crée les collections manuelles. */
+export async function pushCatalog(c: Connection, spec: ThemeSpec, onProgress?: (done: number, total: number) => void) {
+  const products = storeProducts(spec);
+  const missing = products.filter((p) => p.price === null).map((p) => p.title);
+  if (missing.length) throw new UserFacingError(`Renseignez le prix de : ${missing.join(", ")} avant l'envoi à Shopify.`);
+  const ids = new Map<string, string>();
+  for (const [i, p] of products.entries()) {
+    const r = await pushProduct(c, spec, p);
+    ids.set(p.handle, r.productId);
+    onProgress?.(i + 1, products.length);
+  }
+  const collections: string[] = [];
+  for (const col of spec.store.collections ?? []) {
+    const productIds = col.products.map((h) => ids.get(h)).filter(Boolean);
+    const d = await gql(c, `mutation($input: CollectionInput!){ collectionCreate(input: $input){ collection{ id handle } userErrors{ field message } } }`, {
+      input: { title: col.title, handle: col.handle, descriptionHtml: col.description ? `<p>${col.description}</p>` : "", products: productIds },
+    });
+    const errs = d?.collectionCreate?.userErrors ?? [];
+    if (errs.length && !errs.some((e: any) => /taken|already/i.test(e.message))) throw new Error(`Collection ${col.title} : ${errs.map((e: any) => e.message).join(" ; ")}`);
+    collections.push(col.handle);
+  }
+  return { products: [...ids.keys()], collections };
 }
 
 export async function pushPages(c: Connection, spec: ThemeSpec) {

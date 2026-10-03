@@ -1,7 +1,70 @@
 {
-  "generatedAt": "2026-10-03T02:49:26.883Z",
-  "note": "Produits, marques et contenus fictifs générés par E-COM STUDIO IA (moteur intégré) à partir de rendus 3D.",
+  "generatedAt": "2026-10-03T08:44:41.874Z",
+  "note": "Marques créées par E-COM STUDIO IA (moteur intégré). Les démonstrations « produit réel » partent de photos de fournisseurs ; les autres de rendus 3D.",
   "demos": [
+    {
+      "id": "verger",
+      "brand": "Verger",
+      "product": "Thé glacé Pêche",
+      "sector": "Boissons",
+      "direction": "gourmand",
+      "palette": [
+        "#955223",
+        "#E4D4C8",
+        "#CFC159",
+        "#F7F4F2",
+        "#1F1914"
+      ],
+      "photo": "/demo/verger/photo.jpg",
+      "logo": "/demo/verger/logo.svg",
+      "shopDesktop": "/demo/verger/boutique-bureau.jpg",
+      "shopMobile": "/demo/verger/boutique-mobile.jpg",
+      "productPage": "/demo/verger/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/verger/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/verger/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/verger/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/verger/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/verger/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/verger/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/verger/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/verger/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/verger/video.mp4",
+      "videoPoster": "/demo/verger/video-poster.jpg",
+      "shopVideo": "/demo/verger/video-boutique.mp4",
+      "storeType": "niche",
+      "products": 3,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio."
+      }
+    },
     {
       "id": "serum",
       "brand": "Maison Ondine",

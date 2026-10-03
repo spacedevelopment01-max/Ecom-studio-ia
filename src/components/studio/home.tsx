@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { ArrowRight, Camera, ImagePlus, Link2, Palette, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
+import { STORE_TYPES, type StoreType } from "@/lib/project-types";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
 
@@ -17,6 +18,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const [typed, setTyped] = useState(false);
+  const [storeType, setStoreType] = useState<StoreType>("mono");
   const hasInput = photos.length > 0 || typed;
   const input = useRef<HTMLInputElement>(null);
   const addFiles = (list: FileList | null) => {
@@ -59,6 +61,19 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
       }}
       className="grid gap-5"
     >
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium">Type de boutique</legend>
+        <input type="hidden" name="storeType" value={storeType} />
+        <div className="grid gap-2 sm:grid-cols-3">
+          {(Object.keys(STORE_TYPES) as StoreType[]).map((t) => (
+            <button key={t} type="button" aria-pressed={storeType === t} onClick={() => setStoreType(t)} className={cx("rounded-2xl border p-3 text-left transition", storeType === t ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
+              <span className="block text-sm font-semibold">{STORE_TYPES[t].label}</span>
+              <span className="mt-0.5 block text-xs text-muted">{STORE_TYPES[t].hint}</span>
+            </button>
+          ))}
+        </div>
+        {storeType !== "mono" && <p className="mt-2 text-xs text-muted">Commencez par votre produit phare : les autres produits s'ajoutent ensuite dans l'onglet Produit (photo, nom, prix), et la boutique se recompose avec ses collections.</p>}
+      </fieldset>
       <div role="tablist" aria-label="Point de départ" className="flex flex-wrap gap-2">
         {[
           ["photo", Camera, "Photo(s)"],

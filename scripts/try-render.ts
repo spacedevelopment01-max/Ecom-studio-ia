@@ -18,7 +18,7 @@ for (const dir of ["atelier","clinique","brut","terroir","nocturne","pop","galer
   for (const path of ["/", "/products/serum-eclat", "/collections/all", "/cart", "/pages/faq", "/pages/notre-histoire", "/pages/contact", "/pages/livraison-et-retours", "/search", "/nope", "/collections"]) {
     const t = Date.now();
     try {
-      const r = await renderPage({ spec, base: "/preview/p/v/x", files, cart: [{ variantIndex: 0, quantity: 2 }] }, path, new URLSearchParams("q=sérum"));
+      const r = await renderPage({ spec, base: "/preview/p/v/x", files, cart: [{ variantId: 1000, quantity: 2 }] }, path, new URLSearchParams("q=sérum"));
       if (dir === "atelier") fs.writeFileSync(`/tmp/claude-0/-home-user-Ecom-studio-ia/30a1ccd5-08f9-5162-80f0-38bf5e876ac5/scratchpad/render-${path.replace(/\W+/g,"_")}.html`, r.html);
       console.log(dir, path, r.status, r.template, r.html.length, Date.now()-t+"ms");
     } catch (e) { console.log("ERR", dir, path, (e as Error).message); }

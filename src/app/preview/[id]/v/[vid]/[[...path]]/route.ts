@@ -9,7 +9,8 @@ import { handle } from "@/lib/http";
 import { currentTheme, themeVersion } from "@/lib/projects";
 import { compileTheme, themeAssetBinary } from "@/lib/theme/compile";
 import { libraryLoader } from "@/lib/theme/loader";
-import { fontFilePath, renderNamedSections, renderPage, type PreviewCartLine } from "@/lib/theme/render";
+import { fontFilePath, renderNamedSections, renderPage, variantId, type PreviewCartLine } from "@/lib/theme/render";
+import { storeProducts } from "@/lib/theme/spec";
 import { PREVIEW_TOOLS } from "@/lib/theme/preview-tools";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
@@ -29,19 +30,33 @@ async function load(ctx: P) {
 const CART_COOKIE = (id: string) => `es_cart_${id}`;
 async function readCart(id: string): Promise<PreviewCartLine[]> {
   try {
-    return JSON.parse((await cookies()).get(CART_COOKIE(id))?.value ?? "[]");
+    const raw = JSON.parse((await cookies()).get(CART_COOKIE(id))?.value ?? "[]") as any[];
+    // Anciens paniers (un seul produit) : rang de variante → identifiant global.
+    return raw.map((l) => ({ variantId: Number(l.variantId ?? 1000 + Number(l.variantIndex ?? 0)), quantity: Number(l.quantity) || 0 }));
   } catch {
     return [];
   }
+}
+
+/** Toutes les variantes de la boutique, par identifiant global. */
+function variantTable(spec: ThemeSpec) {
+  const map = new Map<number, { title: string; price: number }>();
+  storeProducts(spec).forEach((p, pi) => {
+    const variants = p.variants.length ? p.variants : [{ title: "Default Title", options: ["Default Title"], price: p.price, available: true }];
+    variants.forEach((v, vi) => map.set(variantId(pi, vi), { title: v.title === "Default Title" ? p.title : `${p.title} - ${v.title}`, price: v.price ?? p.price ?? 0 }));
+  });
+  return map;
 }
 async function writeCart(id: string, cart: PreviewCartLine[]) {
   (await cookies()).set(CART_COOKIE(id), JSON.stringify(cart.filter((l) => l.quantity > 0).slice(0, 20)), { path: `/preview/${id}`, httpOnly: true, sameSite: "lax" });
 }
 
 function cartJson(spec: ThemeSpec, cart: PreviewCartLine[]) {
-  const p = spec.store.product;
-  const variants = p.variants.length ? p.variants : [{ title: "Default Title", options: ["Default Title"], price: p.price, available: true }];
-  const items = cart.filter((l) => variants[l.variantIndex]).map((l, i) => ({ key: `${1000 + l.variantIndex}:${i}`, id: 1000 + l.variantIndex, quantity: l.quantity, title: p.title, price: variants[l.variantIndex].price ?? 0, final_line_price: (variants[l.variantIndex].price ?? 0) * l.quantity }));
+  const table = variantTable(spec);
+  const items = cart.filter((l) => table.has(l.variantId)).map((l, i) => {
+    const v = table.get(l.variantId)!;
+    return { key: `${l.variantId}:${i}`, id: l.variantId, quantity: l.quantity, title: v.title, price: v.price, final_line_price: v.price * l.quantity };
+  });
   return { item_count: items.reduce((s, x) => s + x.quantity, 0), items, total_price: items.reduce((s, x) => s + x.final_line_price, 0), currency: "EUR" };
 }
 
@@ -89,18 +104,21 @@ export const POST = handle(async (req: Request, ctx: P) => {
   let cart = await readCart(id);
   const ct = req.headers.get("content-type") ?? "";
   const data: Record<string, any> = ct.includes("application/json") ? await req.json() : Object.fromEntries((await req.formData()).entries());
-  const variants = spec.store.product.variants.length || 1;
+  const table = variantTable(spec);
   if (path === "/cart/add" || path === "/cart/add.js") {
-    const vi = Math.max(0, Math.min(variants - 1, Number(data.id ?? data["items[0][id]"] ?? 1000) - 1000));
+    const requested = Number(data.id ?? data["items[0][id]"] ?? 1000);
+    const vid = table.has(requested) ? requested : 1000;
     const qty = Math.max(1, Math.min(99, Number(data.quantity ?? 1)));
-    const line = cart.find((l) => l.variantIndex === vi);
+    const line = cart.find((l) => l.variantId === vid);
     if (line) line.quantity += qty;
-    else cart.push({ variantIndex: vi, quantity: qty });
+    else cart.push({ variantId: vid, quantity: qty });
   } else if (path === "/cart/change" || path === "/cart/change.js") {
     const key = String(data.id ?? data.line ?? "");
     const qty = Math.max(0, Number(data.quantity ?? 0));
-    const vi = key.includes(":") ? Number(key.split(":")[0]) - 1000 : Number(key) - 1 >= 0 && !Number.isNaN(Number(key)) && Number(key) < 100 ? cart[Number(key) - 1]?.variantIndex : -1;
-    cart = cart.map((l) => (l.variantIndex === vi ? { ...l, quantity: qty } : l));
+    // Clé « variante:rang », identifiant de variante, ou numéro de ligne (1, 2, …).
+    const n = Number(key);
+    const vid = key.includes(":") ? Number(key.split(":")[0]) : n >= 1 && n < 100 ? cart[n - 1]?.variantId : n;
+    cart = cart.map((l) => (l.variantId === vid ? { ...l, quantity: qty } : l));
   } else if (path === "/cart/update" || path === "/cart/update.js") {
     const updates = Object.entries(data).filter(([k]) => k.startsWith("updates")).map(([, v]) => Number(v));
     cart = cart.map((l, i) => ({ ...l, quantity: updates[i] ?? l.quantity }));

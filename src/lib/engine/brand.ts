@@ -2,13 +2,18 @@
 import { all, one } from "../db";
 import { saveAsset, type Asset } from "../library";
 import { loadProject, saveBrand, saveStrategy, remember } from "../projects";
-import { logoSet, type LogoSpec } from "../media/logo";
+import type { LogoSpec } from "../media/logo";
+import { loadImage } from "@napi-rs/canvas";
+import { renderBrandBook } from "../media/brand-book";
+import { canvasFamily } from "../media/fonts";
+import { assetData, getAsset } from "../library";
+import { sectorLabel } from "../project-types";
+import { generateLogos, proposeTaglines } from "./identity";
 import { aiBrand, brandFromAi } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { localBrand } from "./local";
 import type { JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
-import { isDark, withLightness } from "../color";
 import type { Brand } from "../project-types";
 
 export async function buildBrand(ctx: JobContext, projectId: string, opts: { providedBrand?: string; guidance?: string } = {}) {
@@ -42,27 +47,50 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     logoSpec.name = opts.providedBrand;
   }
 
-  // Logo : celui du client est conservé ; sinon création d'un logo vectoriel.
+  // Signatures : la proposition retenue et d'autres pistes au choix (une signature validée est conservée).
+  const lines = proposeTaglines({ ...p, brand });
+  if (!keepValidated.includes("tagline") && !brand.tagline) brand.tagline = lines[0] ?? "";
+  brand.taglineAlternatives = lines.filter((x) => x !== brand.tagline).slice(0, 5);
+
+  // Logo : celui du client est conservé ; sinon trois propositions vectorielles, la plus adaptée appliquée.
   const clientLogo = one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo' AND origin = 'upload' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId);
-  if (clientLogo) {
-    brand.logo = { assetId: clientLogo.id, concept: "Logo fourni par le client", status: "provided" };
-  } else if (!keepValidated.includes("logo")) {
-    ctx.progress(0.6, "Création du logo vectoriel");
-    const color = isDark(brand.palette.dark) ? brand.palette.dark : withLightness(brand.palette.dark, 0.12);
-    const set = await logoSet({ ...logoSpec, name: brand.name, color }, "#FFFFFF");
-    const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { spec: logoSpec, concept: brand.logo.concept } };
-    const main = await saveAsset({ ...base, data: set.mainPng, name: "logo-principal.png", mime: "image/png", role: "logo", status: "review" });
-    await saveAsset({ ...base, data: Buffer.from(set.mainSvg), name: "logo-principal.svg", mime: "image/svg+xml", kind: "logo", role: "logo-svg", sourceAssetId: main.id });
-    await saveAsset({ ...base, data: set.lightPng, name: "logo-clair.png", mime: "image/png", role: "logo-light", sourceAssetId: main.id });
-    await saveAsset({ ...base, data: Buffer.from(set.lightSvg), name: "logo-clair.svg", mime: "image/svg+xml", kind: "logo", role: "logo-light-svg", sourceAssetId: main.id });
-    await saveAsset({ ...base, data: set.monoPng, name: "monogramme.png", mime: "image/png", role: "logo-mark", sourceAssetId: main.id });
-    await saveAsset({ ...base, data: Buffer.from(set.monoSvg), name: "monogramme.svg", mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id });
-    await saveAsset({ ...base, data: set.faviconPng, name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
-    brand.logo = { assetId: main.id, concept: brand.logo.concept, status: "proposed" };
-  }
+  if (clientLogo) brand.logo = { assetId: clientLogo.id, concept: "Logo fourni par le client", status: "provided" };
   saveBrand(projectId, brand);
+  if (!clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name } });
   await saveBrandGuide(projectId);
-  return brand;
+  ctx.progress(0.9, "Charte de marque (PDF)");
+  await saveBrandBook(projectId);
+  return loadProject(projectId).brand!;
+}
+
+/** Charte mise en page (PDF + planches), à partir du logo et des choix actuels. */
+export async function saveBrandBook(projectId: string) {
+  const p = loadProject(projectId);
+  const b = p.brand;
+  if (!b) return null;
+  const latest = (role: string) => all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role)[0];
+  const main = b.logo.assetId ? getAsset(b.logo.assetId) ?? latest("logo") : latest("logo");
+  const derived = (role: string) => (main ? all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND source_asset_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role, main.id)[0] : undefined) ?? latest(role);
+  const img = async (a?: Asset) => (a ? loadImage(assetData(a)) : null);
+  const d = directionById(b.direction);
+  const { pages, pdf } = renderBrandBook({
+    brand: b,
+    strategy: p.strategy,
+    headingFamily: canvasFamily(b.fonts.heading ?? d.fonts.heading, "Cormorant"),
+    bodyFamily: canvasFamily(b.fonts.body ?? d.fonts.body, "Jost"),
+    logo: await img(main),
+    logoLight: await img(derived("logo-light")),
+    logoWeb: await img(derived("logo-horizontal") ?? main),
+    mark: await img(derived("logo-mark")),
+    product: await img(latest("cutout")),
+    sectorLabel: sectorLabel(p.product.sector),
+    date: new Date(),
+  });
+  const batch = Date.now().toString(36);
+  const prev = latest("brand-book");
+  const book = await saveAsset({ projectId, userId: p.userId, data: pdf, name: `charte-${b.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`, mime: "application/pdf", kind: "document", role: "brand-book", folderKey: "brand.guide", origin: "generated", versionOf: prev ? prev.version_of ?? prev.id : null, meta: { pages: pages.length, batch } });
+  for (const [i, jpg] of pages.entries()) await saveAsset({ projectId, userId: p.userId, data: jpg, name: `charte-planche-${i + 1}.jpg`, mime: "image/jpeg", role: "brand-book-page", folderKey: "brand.guide", origin: "generated", sourceAssetId: book.id, meta: { page: i + 1, batch } });
+  return book;
 }
 
 /** Charte de marque au format Markdown (rangée dans « Charte & palette »). */

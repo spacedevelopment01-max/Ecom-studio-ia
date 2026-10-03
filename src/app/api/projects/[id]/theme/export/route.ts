@@ -6,6 +6,7 @@ import { exportThemeZip, themeFingerprint } from "@/lib/theme/compile";
 import { libraryLoader as loader } from "@/lib/theme/loader";
 import { exportKit, exportPrestaShop, exportWooCommerce } from "@/lib/theme/platforms";
 import { saveAsset } from "@/lib/library";
+import { shopifyProductsCsv, wooProductsCsv } from "@/lib/theme/catalog-export";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,12 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const platform = u.get("platform") ?? "shopify";
   const v = u.get("version") ? themeVersion(p.id, u.get("version")!) : currentTheme(p.id);
   if (!v) throw new HttpError(404, "Aucune boutique à exporter.");
+  if (platform === "shopify-csv" || platform === "woocommerce-csv") {
+    const csv = Buffer.from("\ufeff" + (platform === "shopify-csv" ? shopifyProductsCsv(v.spec) : wooProductsCsv(v.spec)), "utf8");
+    const fname = `${v.spec.store.shopName.replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase()}-produits-${platform === "shopify-csv" ? "shopify" : "woocommerce"}.csv`;
+    await saveAsset({ projectId: p.id, userId: user.id, data: csv, name: fname, mime: "text/csv", kind: "document", role: "theme-export", folderKey: "shop.exports", origin: "export", meta: { platform, themeVersion: v.version.number } });
+    return new Response(new Uint8Array(csv), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(fname)}` } });
+  }
   let zip: Buffer;
   let name: string;
   let note = "";

@@ -14,7 +14,35 @@ const RENDERS = process.env.RENDERS ?? path.join(process.cwd(), "scripts", "demo
 const OUT = path.join(process.cwd(), "public", "demo");
 const PASSWORD = "demo-studio-2026";
 
-const PRODUCTS = [
+type CatalogDemo = { name: string; category: string; price: string; description: string; features?: string[]; photo: string };
+type DemoDef = {
+  id: string; sector: string; direction: string; productName: string; brandName: string; price: string; description: string;
+  /** Photo d'entrée (sinon <RENDERS>/<id>-photo.png|jpg). */
+  photo?: string;
+  storeType?: "mono" | "multi" | "niche";
+  category?: string;
+  catalog?: CatalogDemo[];
+  /** Produit réel : provenance affichée sur la page d'accueil. */
+  source?: { supplier: string; url: string; note: string };
+};
+
+const REAL = path.join(process.cwd(), "scripts", "demo-products", "inputs");
+/** Démonstrations à partir de produits réels de fournisseurs (marque blanche ou ré-étiquetés). */
+const REAL_DEMOS: DemoDef[] = [
+  {
+    id: "verger", sector: "Boissons", direction: "gourmand", storeType: "niche", category: "Thés glacés",
+    productName: "Thé glacé Pêche", brandName: "Verger", price: "2,40 €",
+    description: "Thé glacé à la pêche en canette de 33 cl.",
+    photo: path.join(REAL, "boissons", "canette-peche.png"),
+    catalog: [
+      { name: "Thé glacé Citron", category: "Thés glacés", price: "2,40", description: "Thé glacé au citron en canette de 33 cl.", photo: path.join(REAL, "boissons", "canette-citron.png") },
+      { name: "Thé glacé Fruits rouges", category: "Thés glacés", price: "2,40", description: "Thé glacé aux fruits rouges en canette de 33 cl.", photo: path.join(REAL, "boissons", "canette-fruits-rouges.png") },
+    ],
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio." },
+  },
+];
+
+const PRODUCTS: DemoDef[] = process.env.ONLY ? REAL_DEMOS.filter((d) => process.env.ONLY!.split(",").includes(d.id)) : [
   { id: "serum", sector: "Beauté", direction: "atelier", productName: "Sérum Éclat", brandName: "Maison Ondine", price: "34,90 €", description: "Sérum visage en flacon compte-gouttes en verre de 30 ml. Formule à la niacinamide et à l'acide hyaluronique. Texture légère, à appliquer matin et soir sur peau propre." },
   { id: "drone", sector: "High-tech", direction: "nocturne", productName: "Drone Aeris X1", brandName: "Aeris", price: "499 €", description: "Drone de loisir quadrirotor avec caméra stabilisée sur nacelle. Châssis graphite, poids : 249 g. Autonomie : 31 minutes par batterie. Vidéo 4K à 30 images par seconde." },
   { id: "soda", sector: "Boissons", direction: "gourmand", productName: "Pétale Framboise & Hibiscus", brandName: "Pétale", price: "2,90 €", description: "Soda pétillant à la framboise et à l'hibiscus en canette de 33 cl. 4 g de sucre pour 100 ml. Sans édulcorant." },
@@ -96,8 +124,10 @@ getSubscription(me.user.id);
 db().prepare("UPDATE subscriptions SET status = 'manual', stores = 20 WHERE user_id = ?").run(me.user.id);
 syncAllowance(me.user.id);
 
-fs.rmSync(OUT, { recursive: true, force: true });
+// ONLY=<id,…> : régénère ces démonstrations seulement et les fusionne dans le manifeste existant.
+if (!process.env.ONLY) fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(path.join(OUT, "directions"), { recursive: true });
+const previous = process.env.ONLY && fs.existsSync(path.join(OUT, "manifest.json")) ? JSON.parse(fs.readFileSync(path.join(OUT, "manifest.json"), "utf8")).demos : [];
 const demos: any[] = [];
 let firstProject: { pid: string } | null = null;
 
@@ -105,10 +135,11 @@ for (const p of PRODUCTS) {
   console.log(`▶ ${p.id}`);
   const dir = path.join(OUT, p.id);
   fs.mkdirSync(dir, { recursive: true });
-  const photoFile = [".png", ".jpg"].map((x) => path.join(RENDERS, `${p.id}-photo${x}`)).find((f) => fs.existsSync(f))!;
-  const photo = fs.readFileSync(photoFile);
+  const photoFile = p.photo ?? [".png", ".jpg"].map((x) => path.join(RENDERS, `${p.id}-photo${x}`)).find((f) => fs.existsSync(f))!;
+  // Photo transparente (produit détouré) : posée sur un fond clair, comme une photo de fournisseur.
+  const photo = photoFile.endsWith(".png") ? await sharp(photoFile).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(photoFile);
   const res = await ctx.request.post(`${BASE}/api/projects`, {
-    multipart: { photos: { name: path.basename(photoFile), mimeType: photoFile.endsWith(".png") ? "image/png" : "image/jpeg", buffer: photo }, productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: "shopify" },
+    multipart: { photos: { name: path.basename(photoFile).replace(/\.png$/, ".jpg"), mimeType: "image/jpeg", buffer: photo }, productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: "shopify", storeType: p.storeType ?? "mono" },
   });
   const created = await res.json();
   if (!res.ok()) throw new Error(JSON.stringify(created));
@@ -116,6 +147,14 @@ for (const p of PRODUCTS) {
   const t0 = Date.now();
   let ov = await waitIdle(ctx, pid);
   console.log(`  pipeline ${Math.round((Date.now() - t0) / 1000)} s`, ov.pipeline?.job?.status);
+  // Catalogue (niche, multi) : les autres produits, avec leur photo réelle.
+  if (p.catalog?.length) {
+    for (const c of p.catalog) {
+      const buf = c.photo.endsWith(".png") ? await sharp(c.photo).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(c.photo);
+      const r = await ctx.request.post(`${BASE}/api/projects/${pid}/catalog`, { multipart: { name: c.name, category: c.category, price: c.price, description: c.description, features: (c.features ?? []).join("\n"), photo: { name: `${c.name}.jpg`, mimeType: "image/jpeg", buffer: buf } } });
+      if (!r.ok()) throw new Error(await r.text());
+    }
+  }
   // Chaque démonstration montre une direction différente.
   await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
   ov = await waitIdle(ctx, pid);
@@ -174,12 +213,16 @@ for (const p of PRODUCTS) {
     video: vertical ? `/demo/${p.id}/video.mp4` : "",
     videoPoster: poster ? `/demo/${p.id}/video-poster.jpg` : "",
     shopVideo: wide ? `/demo/${p.id}/video-boutique.mp4` : undefined,
+    storeType: p.storeType ?? "mono",
+    products: 1 + (p.catalog?.length ?? 0),
+    source: p.source ?? null,
   });
 }
 
-// Toutes les directions de boutique, appliquées au premier produit.
-await shootDirections(firstProject!.pid);
+// Toutes les directions de boutique, appliquées au premier produit (sauf régénération partielle).
+if (!process.env.ONLY) await shootDirections(firstProject!.pid);
 
-fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Produits, marques et contenus fictifs générés par E-COM STUDIO IA (moteur intégré) à partir de rendus 3D.", demos }, null, 2));
+const merged = process.env.ONLY ? [...demos, ...previous.filter((d: any) => !demos.some((x) => x.id === d.id))] : demos;
+fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Marques créées par E-COM STUDIO IA (moteur intégré). Les démonstrations « produit réel » partent de photos de fournisseurs ; les autres de rendus 3D.", demos: merged }, null, 2));
 console.log(`✓ ${demos.length} démonstrations → public/demo`);
 await browser.close();

@@ -33,6 +33,14 @@ export type StoreProduct = {
   tags: string[];
 };
 
+/** Collection de la boutique : liste ordonnée de produits (par identifiant « handle »). */
+export type StoreCollection = { handle: string; title: string; description: string; image?: string; products: string[] };
+
+/** Tous les produits de la boutique : le produit principal puis ceux du catalogue. */
+export function storeProducts(spec: { store: { product: StoreProduct; products?: StoreProduct[] } }): StoreProduct[] {
+  return [spec.store.product, ...(spec.store.products ?? []).filter((p) => p.handle !== spec.store.product.handle)];
+}
+
 export type StorePage = { handle: string; title: string; template_suffix: string; body_html: string };
 
 export type ThemeSpec = {
@@ -51,7 +59,11 @@ export type ThemeSpec = {
   /** Données de la boutique (produit, pages, menus). Séparées du thème ; utilisées par l'aperçu et l'import. */
   store: {
     shopName: string;
+    /** Produit principal (mono-produit) ou produit phare du catalogue. */
     product: StoreProduct;
+    /** Autres produits du catalogue (boutiques multi-produit et niche). */
+    products?: StoreProduct[];
+    collections?: StoreCollection[];
     pages: StorePage[];
     menus: Record<string, { title: string; links: { title: string; url: string }[] }>;
     policies: { handle: string; title: string; body_html: string }[];

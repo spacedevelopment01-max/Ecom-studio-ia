@@ -234,7 +234,7 @@ export default async function Home() {
                 </h2>
               </div>
               <p className="reveal max-w-md text-sm leading-relaxed text-muted">
-                Produits et marques <strong className="text-ink">fictifs</strong>, modélisés en 3D pour la démonstration. Tout le reste — détourage, logo, boutique, images, vidéos — a été produit par le studio lui-même, sans retouche manuelle, avec son moteur local (sans fournisseur d'IA externe).
+                Les marques sont <strong className="text-ink">créées par le studio</strong>. Chaque démonstration indique si elle part d'un produit réel de fournisseur (photo d'origine, marque et étiquettes refaites) ou d'un produit fictif modélisé en 3D. Détourage, logo, boutique, images et vidéos sont produits par le studio lui-même, avec son moteur local.
               </p>
             </div>
             {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">Les démonstrations s'affichent après génération (script « npm run demos »).</p>}

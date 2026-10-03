@@ -424,7 +424,9 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint }: { ope
   const q = versionId ? `&version=${versionId}` : "";
   const items = [
     ["shopify", "Shopify", "Thème Online Store 2.0 · ZIP installable (Boutique en ligne › Thèmes › Ajouter un thème › Importer)"],
+    ["shopify-csv", "Produits Shopify (CSV)", "Tous les produits de la boutique, au format d'import Shopify (Produits › Importer)"],
     ["woocommerce", "WooCommerce", "Thème de blocs WordPress installable (Apparence › Thèmes › Ajouter › Téléverser)"],
+    ["woocommerce-csv", "Produits WooCommerce (CSV)", "Tous les produits, au format d'import WooCommerce (Produits › Importer)"],
     ["prestashop", "PrestaShop", "Thème enfant du thème Classic, installable (Apparence › Thème et logo)"],
     ["wix", "Wix", "Kit de reprise : Wix n'accepte pas de thème importé"],
     ["squarespace", "Squarespace", "Kit de reprise : Squarespace n'accepte pas de thème importé"],
@@ -448,7 +450,7 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint }: { ope
           <>
             <p className="mt-1 text-xs text-muted">Boutique connectée : {shop.name}. Le thème est installé comme thème non publié ; la publication reste votre décision dans Shopify.{!conns?.publicUrl && " L'installation du thème nécessite une adresse publique du studio : en local, importez le ZIP."}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {[["product", "Produit"], ["pages", "Pages"], ["theme", "Thème"]].map(([p, l]) => (
+              {[["product", "Produits et collections"], ["pages", "Pages"], ["theme", "Thème"]].map(([p, l]) => (
                 <Button key={p} size="sm" variant="secondary" onClick={async () => { try { await api(`/api/projects/${projectId}/shopify`, { body: { parts: [p] } }); toast("ok", `Envoi « ${l} » lancé.`); reload(); } catch (e) { toast("bad", (e as Error).message); } }}>Envoyer : {l}</Button>
               ))}
             </div>

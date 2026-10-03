@@ -16,11 +16,178 @@ export type LogoSpec = {
   italic?: boolean;
   case: "upper" | "title" | "lower" | "asis";
   tracking: number; // en em (0 à 0,4)
-  layout: "wordmark" | "stacked" | "monogram" | "emblem";
+  layout: "wordmark" | "stacked" | "monogram" | "emblem" | "lockup" | "badge";
   emblem: "none" | "circle" | "arch" | "line" | "diamond";
   monogram?: string;
+  /** Symbole dessiné (lockup, badge) : une forme simple liée à l'univers du produit. */
+  symbol?: SymbolKind;
   color: string;
+  /** Couleur d'accent du symbole (sinon couleur du logo). */
+  accent?: string;
 };
+
+export type SymbolKind = "leaf" | "drop" | "hanger" | "orbit" | "bean" | "paw" | "arch" | "wave" | "facet" | "sun" | "cup" | "spark";
+export const SYMBOLS: SymbolKind[] = ["leaf", "drop", "hanger", "orbit", "bean", "paw", "arch", "wave", "facet", "sun", "cup", "spark"];
+
+/**
+ * Symboles au trait, construits sur une grille carrée (taille s, coin haut-gauche x, y).
+ * Volontairement simples : lisibles à 16 px comme en grand, sans détail superflu.
+ */
+export function drawSymbol(ctx: SKRSContext2D, kind: SymbolKind, x: number, y: number, s: number, color: string) {
+  const lw = Math.max(2, s * 0.065);
+  const cx = x + s / 2, cy = y + s / 2;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = lw;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  const stroke = () => ctx.stroke();
+  ctx.beginPath();
+  switch (kind) {
+    case "leaf": {
+      ctx.moveTo(x + s * 0.18, y + s * 0.82);
+      ctx.bezierCurveTo(x + s * 0.12, y + s * 0.35, x + s * 0.45, y + s * 0.1, x + s * 0.86, y + s * 0.14);
+      ctx.bezierCurveTo(x + s * 0.9, y + s * 0.55, x + s * 0.62, y + s * 0.88, x + s * 0.18, y + s * 0.82);
+      stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.18, y + s * 0.82);
+      ctx.bezierCurveTo(x + s * 0.4, y + s * 0.58, x + s * 0.6, y + s * 0.4, x + s * 0.8, y + s * 0.2);
+      stroke();
+      break;
+    }
+    case "drop": {
+      ctx.moveTo(cx, y + s * 0.08);
+      ctx.bezierCurveTo(x + s * 0.2, y + s * 0.45, x + s * 0.2, y + s * 0.62, x + s * 0.24, y + s * 0.7);
+      ctx.arc(cx, y + s * 0.62, s * 0.28, Math.PI * 0.84, Math.PI * 0.16, true);
+      ctx.bezierCurveTo(x + s * 0.8, y + s * 0.62, x + s * 0.8, y + s * 0.45, cx, y + s * 0.08);
+      stroke();
+      ctx.beginPath();
+      ctx.arc(cx, y + s * 0.62, s * 0.14, Math.PI * 0.95, Math.PI * 1.45);
+      stroke();
+      break;
+    }
+    case "hanger": {
+      ctx.arc(cx, y + s * 0.2, s * 0.1, Math.PI * 1.05, Math.PI * 0.45);
+      ctx.lineTo(cx, y + s * 0.42);
+      ctx.lineTo(x + s * 0.08, y + s * 0.78);
+      ctx.lineTo(x + s * 0.92, y + s * 0.78);
+      ctx.closePath();
+      stroke();
+      break;
+    }
+    case "orbit": {
+      ctx.arc(cx, cy, s * 0.24, 0, Math.PI * 2);
+      stroke();
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, s * 0.46, s * 0.12, -Math.PI / 7, Math.PI * 0.08, Math.PI * 0.92, true);
+      stroke();
+      ctx.beginPath();
+      ctx.arc(cx + s * 0.3, cy - s * 0.32, s * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case "bean": {
+      ctx.ellipse(cx, cy, s * 0.28, s * 0.4, Math.PI / 7, 0, Math.PI * 2);
+      stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - s * 0.06, y + s * 0.13);
+      ctx.bezierCurveTo(cx + s * 0.16, cy - s * 0.12, cx - s * 0.16, cy + s * 0.12, cx + s * 0.06, y + s * 0.87);
+      stroke();
+      break;
+    }
+    case "paw": {
+      ctx.ellipse(cx, y + s * 0.66, s * 0.2, s * 0.16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      for (const [dx, dy, r] of [[-0.28, 0.34, 0.085], [-0.1, 0.2, 0.09], [0.1, 0.2, 0.09], [0.28, 0.34, 0.085]]) {
+        ctx.beginPath();
+        ctx.ellipse(cx + s * dx, y + s * dy, s * r, s * r * 1.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    }
+    case "arch": {
+      ctx.moveTo(x + s * 0.14, y + s * 0.9);
+      ctx.lineTo(x + s * 0.14, y + s * 0.46);
+      ctx.arc(cx, y + s * 0.46, s * 0.36, Math.PI, 0);
+      ctx.lineTo(x + s * 0.86, y + s * 0.9);
+      stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.34, y + s * 0.9);
+      ctx.lineTo(x + s * 0.34, y + s * 0.56);
+      ctx.arc(cx, y + s * 0.56, s * 0.16, Math.PI, 0);
+      ctx.lineTo(x + s * 0.66, y + s * 0.9);
+      stroke();
+      break;
+    }
+    case "wave": {
+      for (const k of [0.38, 0.62]) {
+        ctx.beginPath();
+        ctx.moveTo(x + s * 0.06, y + s * k);
+        ctx.bezierCurveTo(x + s * 0.28, y + s * (k - 0.16), x + s * 0.4, y + s * (k + 0.16), cx, y + s * k);
+        ctx.bezierCurveTo(x + s * 0.6, y + s * (k - 0.16), x + s * 0.72, y + s * (k + 0.16), x + s * 0.94, y + s * k);
+        stroke();
+      }
+      break;
+    }
+    case "facet": {
+      ctx.moveTo(x + s * 0.24, y + s * 0.22);
+      ctx.lineTo(x + s * 0.76, y + s * 0.22);
+      ctx.lineTo(x + s * 0.94, y + s * 0.42);
+      ctx.lineTo(cx, y + s * 0.88);
+      ctx.lineTo(x + s * 0.06, y + s * 0.42);
+      ctx.closePath();
+      ctx.moveTo(x + s * 0.06, y + s * 0.42);
+      ctx.lineTo(x + s * 0.94, y + s * 0.42);
+      ctx.moveTo(x + s * 0.36, y + s * 0.22);
+      ctx.lineTo(x + s * 0.3, y + s * 0.42);
+      ctx.lineTo(cx, y + s * 0.88);
+      ctx.lineTo(x + s * 0.7, y + s * 0.42);
+      ctx.lineTo(x + s * 0.64, y + s * 0.22);
+      stroke();
+      break;
+    }
+    case "sun": {
+      ctx.arc(cx, cy, s * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * s * 0.29, cy + Math.sin(a) * s * 0.29);
+        ctx.lineTo(cx + Math.cos(a) * s * 0.43, cy + Math.sin(a) * s * 0.43);
+        stroke();
+      }
+      break;
+    }
+    case "cup": {
+      ctx.moveTo(x + s * 0.14, y + s * 0.46);
+      ctx.lineTo(x + s * 0.72, y + s * 0.46);
+      ctx.bezierCurveTo(x + s * 0.72, y + s * 0.78, x + s * 0.58, y + s * 0.88, x + s * 0.43, y + s * 0.88);
+      ctx.bezierCurveTo(x + s * 0.28, y + s * 0.88, x + s * 0.14, y + s * 0.78, x + s * 0.14, y + s * 0.46);
+      stroke();
+      ctx.beginPath();
+      ctx.arc(x + s * 0.78, y + s * 0.6, s * 0.1, -Math.PI / 2, Math.PI / 2);
+      stroke();
+      for (const dx of [0.32, 0.5]) {
+        ctx.beginPath();
+        ctx.moveTo(x + s * dx, y + s * 0.34);
+        ctx.bezierCurveTo(x + s * (dx - 0.07), y + s * 0.26, x + s * (dx + 0.07), y + s * 0.2, x + s * dx, y + s * 0.1);
+        stroke();
+      }
+      break;
+    }
+    case "spark": {
+      ctx.moveTo(cx, y + s * 0.06);
+      ctx.quadraticCurveTo(cx + s * 0.06, cy - s * 0.06, x + s * 0.94, cy);
+      ctx.quadraticCurveTo(cx + s * 0.06, cy + s * 0.06, cx, y + s * 0.94);
+      ctx.quadraticCurveTo(cx - s * 0.06, cy + s * 0.06, x + s * 0.06, cy);
+      ctx.quadraticCurveTo(cx - s * 0.06, cy - s * 0.06, cx, y + s * 0.06);
+      ctx.fill();
+      break;
+    }
+  }
+  ctx.restore();
+}
 
 function applyCase(s: string, c: LogoSpec["case"]) {
   if (c === "upper") return s.toLocaleUpperCase("fr-FR");
@@ -66,6 +233,56 @@ export function buildLogo(spec: LogoSpec) {
   const fam = spec.family;
   const wt = spec.weight;
 
+  // Symbole + logotype côte à côte (lockup horizontal).
+  if (spec.layout === "lockup") {
+    const size = 120;
+    const m = measure(name, fam, wt, size, spec.tracking, spec.italic);
+    const cap = m.ascent;
+    const sym = Math.round(cap * 1.9);
+    const gap = Math.round(size * 0.32);
+    const W = P + sym + gap + m.width + P;
+    const H = P + Math.max(sym, m.ascent + m.descent) + P;
+    const symY = P + (H - P * 2 - sym) / 2;
+    const base = P + (H - P * 2 - (m.ascent + m.descent)) / 2 + m.ascent;
+    return render(W, H, (ctx) => {
+      drawSymbol(ctx, spec.symbol ?? "spark", P, symY, sym, spec.accent ?? color);
+      text(ctx, name, P + sym + gap, base, fam, wt, size, spec.tracking, color, spec.italic);
+    });
+  }
+  // Emblème : symbole dans un cercle, nom et signature centrés dessous.
+  if (spec.layout === "badge") {
+    const ring = 300;
+    const nameSize = 78;
+    const words = name.split(/\s+/).filter(Boolean);
+    const lines = name.length > 14 && words.length > 1 ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")] : [name];
+    const ms = lines.map((l) => measure(l, fam, wt, nameSize, spec.tracking, spec.italic));
+    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase("fr-FR") : "";
+    const tagSize = 22;
+    const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.26) : null;
+    const W = Math.max(ring, ...ms.map((x) => x.width), tm?.width ?? 0) + P * 2;
+    const lineGap = nameSize * 1.04;
+    const H = P + ring + 44 + ms[0].ascent + lineGap * (lines.length - 1) + ms[ms.length - 1].descent + (tm ? tagSize * 2.6 : 0) + P;
+    return render(W, H, (ctx) => {
+      const ox = (W - ring) / 2;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(ox + ring / 2, P + ring / 2, ring / 2 - 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(ox + ring / 2, P + ring / 2, ring / 2 - 18, 0, Math.PI * 2);
+      ctx.stroke();
+      drawSymbol(ctx, spec.symbol ?? "spark", ox + ring * 0.27, P + ring * 0.27, ring * 0.46, spec.accent ?? color);
+      let y = P + ring + 44 + ms[0].ascent;
+      lines.forEach((l, i) => {
+        text(ctx, l, (W - ms[i].width) / 2, y, fam, wt, nameSize, spec.tracking, color, spec.italic);
+        if (i < lines.length - 1) y += lineGap;
+      });
+      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 2, "Jost", 500, tagSize, 0.26, color);
+    });
+  }
+
   if (spec.layout === "monogram" || spec.layout === "emblem") {
     const letters = (spec.monogram || name.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2)).toLocaleUpperCase("fr-FR");
     const box = 360;
@@ -95,7 +312,10 @@ export function buildLogo(spec: LogoSpec) {
       }
       ctx.stroke();
     };
-    const mono = (ctx: SKRSContext2D, ox: number) => text(ctx, letters, ox + (box - m.width) / 2, box / 2 + (m.ascent - m.descent) / 2, fam, wt, size, 0.02, color, spec.italic);
+    const mono = (ctx: SKRSContext2D, ox: number) =>
+      spec.symbol && spec.layout === "monogram" && spec.monogram === "@symbol"
+        ? drawSymbol(ctx, spec.symbol, ox + box * 0.25, box * 0.25, box * 0.5, spec.accent ?? color)
+        : text(ctx, letters, ox + (box - m.width) / 2, box / 2 + (m.ascent - m.descent) / 2, fam, wt, size, 0.02, color, spec.italic);
     if (spec.layout === "monogram") {
       return render(box, box, (ctx) => {
         frame(ctx, 0);
@@ -164,8 +384,10 @@ export async function logoPng(spec: LogoSpec, width: number): Promise<Buffer> {
 
 /** Ensemble livrable : logo principal (SVG + PNG), version claire, monogramme et favicon. */
 export async function logoSet(spec: LogoSpec, lightColor = "#FFFFFF") {
-  const monoSpec: LogoSpec = { ...spec, layout: "monogram", emblem: spec.emblem === "none" || spec.emblem === "line" ? "circle" : spec.emblem };
-  const lightSpec = { ...spec, color: lightColor };
+  // Avec un symbole, la marque réduite (monogramme, favicon) reprend le symbole plutôt que les initiales.
+  const withSymbol = !!spec.symbol && (spec.layout === "lockup" || spec.layout === "badge");
+  const monoSpec: LogoSpec = { ...spec, layout: "monogram", emblem: spec.emblem === "none" || spec.emblem === "line" ? "circle" : spec.emblem, ...(withSymbol ? { monogram: "@symbol" } : {}) };
+  const lightSpec = { ...spec, color: lightColor, accent: lightColor };
   return {
     mainSvg: buildLogo(spec).svg,
     mainPng: await logoPng(spec, 1200),

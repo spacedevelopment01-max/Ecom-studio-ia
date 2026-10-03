@@ -43,6 +43,16 @@ jobs:
             echo "::endgroup::"
           done
 
+      - name: Shopify Theme Check (boutiques multi-produit et niche)
+        run: |
+          for d in atelier brut gourmand flux; do
+            for t in multi niche; do
+              echo "::group::$d / $t"
+              npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-$d-$t" "$d" "$t"
+              echo "::endgroup::"
+            done
+          done
+
       - name: Build de production
         run: npm run build
 

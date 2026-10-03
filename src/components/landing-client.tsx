@@ -73,6 +73,9 @@ export type Demo = {
   video: string;
   videoPoster: string;
   shopVideo?: string;
+  storeType?: "mono" | "multi" | "niche";
+  products?: number;
+  source?: { supplier: string; url: string; note: string } | null;
 };
 
 export function DemoTabs({ demos }: { demos: Demo[] }) {
@@ -88,6 +91,11 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
           </button>
         ))}
       </div>
+      <p className="-mt-4 mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
+        <span className={cx("rounded-full px-2.5 py-0.5 text-xs font-medium", d.source ? "bg-signal-soft text-signal" : "bg-paper-2 text-muted")}>{d.source ? `Produit réel · ${d.source.supplier}` : "Produit fictif · rendu 3D"}</span>
+        {d.storeType && d.storeType !== "mono" && <span className="rounded-full bg-paper-2 px-2.5 py-0.5 text-xs">{d.storeType === "niche" ? "Boutique niche" : "Multi-produit"} · {d.products} produits</span>}
+        {d.source && <span>{d.source.note}</span>}
+      </p>
       <div role="tabpanel" className="grid gap-4 lg:grid-cols-12">
         <div className="grid gap-4 lg:col-span-3">
           <figure className="overflow-hidden rounded-3xl border border-line bg-card">

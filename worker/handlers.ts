@@ -16,7 +16,7 @@ import { localCopy } from "../src/lib/engine/local-copy";
 import { assetData, getAsset, saveAsset, listFolders, addUsage, type Asset } from "../src/lib/library";
 import { publishPost, alreadyPublished, connectionFor, markConnection, type PostRow } from "../src/lib/social/publish";
 import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
-import { pushPages, pushProduct, pushTheme, shopifyConnection } from "../src/lib/integrations/shopify";
+import { pushCatalog, pushPages, pushTheme, shopifyConnection } from "../src/lib/integrations/shopify";
 import { renderCreative, FORMATS } from "../src/lib/media/compose";
 import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engine/images";
 import { loadImage } from "@napi-rs/canvas";
@@ -251,7 +251,7 @@ export const handlers: Record<string, Handler> = {
     const cur = currentTheme(projectId);
     if (!cur) throw new PermanentError("Aucune boutique à installer.");
     const out: Record<string, unknown> = {};
-    if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.2, "Création du produit dans Shopify"), pushProduct(c, cur.spec)));
+    if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, "Création des produits dans Shopify"), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, `Produit ${d}/${t} envoyé`))));
     if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, "Création des pages"), pushPages(c, cur.spec)));
     if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, "Installation du thème (non publié)"), pushTheme(c, projectId, cur.version.id, cur.spec.name)));
     notify(ctx.job.user_id, projectId, "Envoi vers Shopify terminé", Object.keys(out).join(", "), "success");

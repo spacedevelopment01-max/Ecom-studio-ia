@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Drop, Hash, Liquid, Tokenizer, type Context, type Emitter, type TagToken, type TopLevelToken, type Template } from "liquidjs";
 import { compileTheme, type ThemeFiles } from "./compile";
-import { parseSchemaBlock, withDefaults, type SectionInstance, type ThemeSpec } from "./spec";
+import { parseSchemaBlock, storeProducts, withDefaults, type SectionInstance, type StoreProduct, type ThemeSpec } from "./spec";
 
 // ---------------------------------------------------------------- polices
 
@@ -80,7 +80,7 @@ class ColorDrop extends Drop {
 
 // ---------------------------------------------------------------- données
 
-export type PreviewCartLine = { variantIndex: number; quantity: number };
+export type PreviewCartLine = { variantId: number; quantity: number };
 export type PreviewOptions = {
   spec: ThemeSpec;
   base: string; // ex. /preview/<projet>/v/<version>
@@ -98,22 +98,20 @@ function money(cents: unknown) {
   return (n / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ /g, " ") + " €";
 }
 
-function buildStore(opts: PreviewOptions) {
-  const { spec, base } = opts;
-  const sp = spec.store.product;
+function productDrop(sp: StoreProduct, pi: number, base: string) {
   const media: ImageObj[] = sp.images.map((f, i) => ({
     src: `${base}/assets/${f}`,
     width: 1600,
     height: 2000,
     alt: sp.title,
-    id: `m${i + 1}`,
+    id: `m${pi + 1}-${i + 1}`,
     aspect_ratio: 0.8,
     media_type: "image",
   }));
   const withPreview = media.map((m) => ({ ...m, preview_image: m }));
   const url = `${base}/products/${sp.handle}`;
   const variants = (sp.variants.length ? sp.variants : [{ title: "Default Title", options: ["Default Title"], price: sp.price, available: true }]).map((v, i) => ({
-    id: 1000 + i,
+    id: variantId(pi, i),
     title: v.title,
     options: v.options,
     option1: v.options[0] ?? null,
@@ -123,24 +121,26 @@ function buildStore(opts: PreviewOptions) {
     compare_at_price: sp.compare_at_price,
     available: v.available,
     sku: v.sku ?? "",
-    url: `${url}?variant=${1000 + i}`,
+    url: `${url}?variant=${variantId(pi, i)}`,
     featured_media: withPreview[0] ?? null,
     unit_price_measurement: null,
   }));
   const hasOnlyDefault = variants.length === 1 && variants[0].title === "Default Title";
   const options = hasOnlyDefault ? ["Title"] : sp.options;
-  const product: any = {
-    id: 1,
+  const prices = variants.map((v) => v.price ?? 0);
+  return {
+    id: pi + 1,
     title: sp.title,
     handle: sp.handle,
     url,
     vendor: sp.vendor,
-    type: "",
+    type: sp.tags[0] ?? "",
     tags: sp.tags,
     description: sp.description_html,
     content: sp.description_html,
     price: variants[0].price,
-    price_min: variants[0].price,
+    price_min: Math.min(...prices),
+    price_max: Math.max(...prices),
     price_varies: new Set(variants.map((v) => v.price)).size > 1,
     compare_at_price: sp.compare_at_price,
     available: variants.some((v) => v.available),
@@ -157,48 +157,72 @@ function buildStore(opts: PreviewOptions) {
       return { name, position: i + 1, values, selected_value: (variants.find((v) => v.available) ?? variants[0]).options[i] };
     }),
   };
-  const products = [product];
-  const collection: any = {
-    id: 1,
-    title: "Tous les produits",
-    handle: "all",
-    url: `${base}/collections/all`,
-    description: "",
+}
+
+/** Identifiant de variante unique dans la boutique : 1000 × (rang du produit + 1) + rang de la variante. */
+export const variantId = (productIndex: number, variantIndex: number) => 1000 * (productIndex + 1) + variantIndex;
+
+const SORTS = [
+  { value: "manual", name: "En vedette" },
+  { value: "price-ascending", name: "Prix croissant" },
+  { value: "price-descending", name: "Prix décroissant" },
+  { value: "created-descending", name: "Nouveautés" },
+];
+
+function collectionDrop(handle: string, title: string, description: string, products: any[], base: string, image?: string) {
+  return {
+    id: handle,
+    title,
+    handle,
+    url: `${base}/collections/${handle}`,
+    description,
     products,
     products_count: products.length,
     all_products_count: products.length,
     filters: [],
-    sort_options: [
-      { value: "manual", name: "En vedette" },
-      { value: "price-ascending", name: "Prix croissant" },
-      { value: "price-descending", name: "Prix décroissant" },
-      { value: "created-descending", name: "Nouveautés" },
-    ],
+    sort_options: SORTS,
     sort_by: "manual",
     default_sort_by: "manual",
-    featured_image: withPreview[0] ?? null,
+    featured_image: image ? { src: `${base}/assets/${image}`, width: 1600, height: 2000, alt: title, aspect_ratio: 0.8 } : products[0]?.featured_image ?? null,
+    image: image ? { src: `${base}/assets/${image}`, width: 1600, height: 2000, alt: title, aspect_ratio: 0.8 } : products[0]?.featured_image ?? null,
   };
-  const collections: any = [collection];
-  collections.all = collection;
+}
+
+function buildStore(opts: PreviewOptions, current: { product?: string; collection?: string } = {}) {
+  const { spec, base } = opts;
+  const all = storeProducts(spec);
+  const products = all.map((sp, pi) => productDrop(sp, pi, base));
+  const byHandle = new Map(products.map((p) => [p.handle, p]));
+  const product: any = (current.product && byHandle.get(current.product)) || products[0];
+  const allCollection = collectionDrop("all", "Tous les produits", "", products, base);
+  const extra = (spec.store.collections ?? []).map((c) => collectionDrop(c.handle, c.title, c.description, c.products.map((h) => byHandle.get(h)).filter(Boolean), base, c.image));
+  const collections: any = [...extra, allCollection];
+  collections.all = allCollection;
+  for (const c of extra) collections[c.handle] = c;
+  const collection: any = (current.collection && collections[current.collection]) || allCollection;
 
   const linklists: Record<string, any> = {};
   for (const [handle, menu] of Object.entries(spec.store.menus)) {
     linklists[handle] = { title: menu.title, handle, links: menu.links.map((l) => ({ title: l.title, url: l.url.startsWith("/") ? base + (l.url === "/" ? "/" : l.url) : l.url, active: false })) };
   }
 
+  // Panier : chaque ligne référence une variante par son identifiant global.
+  const variantById = new Map<number, { v: any; p: any }>();
+  for (const p of products) for (const v of p.variants) variantById.set(v.id, { v, p });
   const lines = opts.cart
-    .filter((l) => variants[l.variantIndex] && l.quantity > 0)
-    .map((l, i) => {
-      const v = variants[l.variantIndex];
+    .map((l) => ({ l, hit: variantById.get(l.variantId) }))
+    .filter((x) => x.hit && x.l.quantity > 0)
+    .map(({ l, hit }, i) => {
+      const { v, p } = hit!;
       const price = v.price ?? 0;
       return {
         key: `${v.id}:${i}`,
         id: v.id,
         quantity: l.quantity,
-        title: hasOnlyDefault ? sp.title : `${sp.title} - ${v.title}`,
+        title: p.has_only_default_variant ? p.title : `${p.title} - ${v.title}`,
         url: v.url,
-        image: withPreview[0] ?? null,
-        product,
+        image: p.featured_image ?? null,
+        product: p,
         variant: v,
         price,
         final_price: price,
@@ -211,7 +235,7 @@ function buildStore(opts: PreviewOptions) {
     item_count: lines.reduce((s, l) => s + l.quantity, 0),
     items: lines,
     total_price: lines.reduce((s, l) => s + l.final_line_price, 0),
-    currency: { iso_code: sp.currency || "EUR" },
+    currency: { iso_code: spec.store.product.currency || "EUR" },
     note: "",
   };
 
@@ -243,15 +267,19 @@ function buildStore(opts: PreviewOptions) {
     account_addresses_url: `${base}/account/addresses`,
     product_recommendations_url: `${base}/recommendations/products`,
   };
-  return { product, products, collection, collections, linklists, cart, shop, routes, variants, policies };
+  // Réglages de type « produit » ou « collection » : l'éditeur Shopify stocke un handle, Liquid reçoit l'objet.
+  const resolve = (type: string, v: unknown) => (typeof v !== "string" || !v ? null : type === "collection" ? collections[v] ?? null : type === "product" ? byHandle.get(v) ?? null : v);
+  const recommendations = products.filter((p) => p.handle !== product.handle).slice(0, 8);
+  return { product, products, collection, collections, linklists, cart, shop, routes, policies, resolve, recommendations };
 }
 
-function wrapSettings(values: Record<string, unknown>, base: string, schemaTypes: Map<string, string>) {
+function wrapSettings(values: Record<string, unknown>, base: string, schemaTypes: Map<string, string>, resolve?: (type: string, v: unknown) => unknown) {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(values)) {
     const t = schemaTypes.get(k);
     if (t === "color" && typeof v === "string") out[k] = new ColorDrop(v);
     else if (t === "font_picker" && typeof v === "string") out[k] = new FontDrop(v, base);
+    else if ((t === "product" || t === "collection") && resolve) out[k] = resolve(t, v);
     else if (t === "image_picker" || t === "video" || t === "product" || t === "collection" || t === "page") out[k] = v ? v : null;
     else out[k] = v;
   }
@@ -539,9 +567,10 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
   }
   const schema = parseSchemaBlock(source) ?? { name: inst.type, settings: [], blocks: [] };
   const base = (ctx.getAll() as any).__base as string;
+  const resolve = (ctx.getAll() as any).__resolve as ((type: string, v: unknown) => unknown) | undefined;
   const types = new Map<string, string>();
   for (const s of schema.settings) if (s.id) types.set(s.id, s.type);
-  const settings = wrapSettings(withDefaults(schema.settings, inst.settings), base, types);
+  const settings = wrapSettings(withDefaults(schema.settings, inst.settings), base, types, resolve);
   const blocks = (inst.block_order ?? Object.keys(inst.blocks ?? {}))
     .map((bid) => ({ bid, b: inst.blocks?.[bid] }))
     .filter((x) => x.b && !x.b.disabled)
@@ -552,7 +581,7 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
       return {
         id: bid,
         type: b!.type,
-        settings: wrapSettings(withDefaults(bs?.settings, b!.settings), base, btypes),
+        settings: wrapSettings(withDefaults(bs?.settings, b!.settings), base, btypes, resolve),
         shopify_attributes: `data-es-block="${bid}"`,
       };
     });
@@ -574,10 +603,14 @@ export function routeFor(spec: ThemeSpec, pathname: string, search: URLSearchPar
   const p = pathname.replace(/\/+$/, "") || "/";
   if (p === "/") return { template: "index", status: 200 };
   let m = p.match(/^\/products\/([^/]+)$/);
-  if (m) return m[1] === spec.store.product.handle ? { template: "product", status: 200, handle: m[1] } : { template: "404", status: 404 };
+  if (m) return storeProducts(spec).some((x) => x.handle === m![1]) ? { template: "product", status: 200, handle: m[1] } : { template: "404", status: 404 };
   if (p === "/collections") return { template: "list-collections", status: 200 };
   m = p.match(/^\/collections\/([^/]+)(?:\/products\/([^/]+))?$/);
-  if (m) return m[2] ? routeFor(spec, `/products/${m[2]}`, search) : { template: "collection", status: 200, handle: m[1] };
+  if (m) {
+    if (m[2]) return routeFor(spec, `/products/${m[2]}`, search);
+    const known = m[1] === "all" || (spec.store.collections ?? []).some((c) => c.handle === m![1]);
+    return known ? { template: "collection", status: 200, handle: m[1] } : { template: "404", status: 404 };
+  }
   if (p === "/search") return { template: "search", status: 200, search: search.get("q") ?? "" };
   if (p === "/cart") return { template: "cart", status: 200 };
   m = p.match(/^\/pages\/([^/]+)$/);
@@ -597,9 +630,9 @@ export function routeFor(spec: ThemeSpec, pathname: string, search: URLSearchPar
 export async function renderPage(opts: PreviewOptions, pathname: string, search: URLSearchParams): Promise<RenderResult> {
   const files = opts.files ?? compileTheme(opts.spec);
   const engine = createEngine(files, opts.base);
-  const store = buildStore(opts);
   const route = routeFor(opts.spec, pathname, search);
   const tplKey = route.template;
+  const store = buildStore(opts, { product: tplKey === "product" ? route.handle : undefined, collection: tplKey === "collection" ? route.handle : undefined });
   const templateRaw = files.get(`templates/${tplKey}.json`);
   const template = templateRaw ? JSON.parse(stripComment(templateRaw)) : { sections: {}, order: [] };
 
@@ -636,6 +669,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const scope: Record<string, unknown> = {
     __base: opts.base,
     __collected: collected,
+    __resolve: store.resolve,
     settings: globalSettings,
     shop: store.shop,
     routes: store.routes,
@@ -648,13 +682,14 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     blog: { title: "Journal", articles: [], url: `${opts.base}/blogs/journal` },
     article: null,
     search: { performed: !!q, terms: q, results, results_count: results.length },
-    recommendations: { performed: false, products: [], products_count: 0 },
+    recommendations: { performed: store.recommendations.length > 0, products: store.recommendations, products_count: store.recommendations.length },
+    all_products: Object.fromEntries(store.products.map((p: any) => [p.handle, p])),
     customer: null,
     request: { page_type: tplKey.split(".")[0], locale: { iso_code: "fr" }, origin: "", design_mode: false, path: pathname, host: "apercu" },
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },
     canonical_url: `${opts.base}${pathname}`,
     page_title: pageTitle,
-    page_description: opts.spec.store.product.description_html.replace(/<[^>]+>/g, " ").slice(0, 160),
+    page_description: (tplKey === "product" ? store.product.description : opts.spec.store.product.description_html).replace(/<[^>]+>/g, " ").slice(0, 160),
     page_image: null,
     content_for_header: "",
     current_page: 1,
@@ -705,7 +740,7 @@ export async function renderNamedSections(opts: PreviewOptions, names: string[],
   const engine = createEngine(files, opts.base);
   const store = buildStore(opts);
   const out: Record<string, string> = {};
-  const scope: Record<string, unknown> = { __base: opts.base, __collected: { css: [], js: [] }, settings: {}, shop: store.shop, routes: store.routes, cart: store.cart, linklists: store.linklists };
+  const scope: Record<string, unknown> = { __base: opts.base, __collected: { css: [], js: [] }, __resolve: store.resolve, settings: {}, shop: store.shop, routes: store.routes, cart: store.cart, linklists: store.linklists };
   for (const name of names) {
     out[name] = await renderSectionStandalone(engine, files, scope, name, { type: name, settings: {} }, "static");
   }
