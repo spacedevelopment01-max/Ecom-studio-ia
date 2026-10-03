@@ -20,6 +20,7 @@ type ThemeData = {
     structure: { template: string; sections: { id: string; type: string; name: string; disabled: boolean; locked: boolean; heading: string }[] }[];
     pages: { handle: string; title: string; template_suffix: string }[];
     product: { handle: string; title: string; price: number | null };
+    motion?: { enabled: boolean; intensity: string; parallax: boolean };
   };
   versions: { id: string; number: number; summary: string; author: string; created_at: number }[];
   messages: { id: string; role: string; content: string; attachments: string[]; selection: any; theme_version_id: string | null; job_id: string | null; created_at: number }[];
@@ -390,7 +391,7 @@ export default function TabBoutique() {
           })}
         </div>
         <button onClick={() => setPicking(!picking)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", picking ? "border-signal bg-signal text-signal-ink" : "border-line bg-card")} aria-pressed={picking}><Crosshair className="size-3.5" /> {picking ? "Cliquez un élément" : "Désigner"}</button>
-        <button onClick={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "reveal-all" }, "*")} className="hidden h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs sm:inline-flex" title="Afficher tous les éléments animés"><Sparkles className="size-3.5" /> Animations</button>
+        <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />
 <button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: "En bas de la page" })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> Section</button>
                 <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> Thèmes</button>
         <div className="ml-auto flex items-center gap-1.5">
@@ -521,5 +522,53 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint }: { ope
         )}
       </div>
     </Modal>
+  );
+}
+
+/** Menu « Animations » : rejouer l'aperçu, activer ou non, intensité, parallaxe (réglages du thème, nouvelle version). */
+function AnimationsMenu({ motion, onReplay, onSet }: { motion?: { enabled: boolean; intensity: string; parallax: boolean }; onReplay: () => void; onSet: (key: string, value: unknown, label: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => !box.current?.contains(e.target as Node) && setOpen(false);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+  const m = motion ?? { enabled: true, intensity: "normal", parallax: true };
+  const chip = (on: boolean) => cx("rounded-full border px-2.5 py-1 text-xs", on ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink");
+  return (
+    <div ref={box} className="relative">
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", open ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")}><Sparkles className="size-3.5" /> Animations</button>
+      {open && (
+        <div className="absolute left-0 top-11 z-30 grid w-72 gap-3 rounded-2xl border border-line bg-card p-4 text-sm shadow-soft">
+          <Button size="sm" onClick={() => { onReplay(); setOpen(false); }} icon={<Sparkles className="size-3.5" />}>Rejouer les animations</Button>
+          <p className="-mt-1 text-[11px] text-muted">L'aperçu remonte et défile seul pour montrer chaque apparition.</p>
+          <div className="grid gap-1.5">
+            <p className="text-xs font-semibold">Animations au défilement</p>
+            <div className="flex gap-1.5">
+              <button className={chip(m.enabled)} onClick={() => !m.enabled && onSet("motion_enabled", true, "Animations au défilement activées")}>Activées</button>
+              <button className={chip(!m.enabled)} onClick={() => m.enabled && onSet("motion_enabled", false, "Animations au défilement désactivées")}>Désactivées</button>
+            </div>
+          </div>
+          <div className={cx("grid gap-1.5", !m.enabled && "pointer-events-none opacity-50")}>
+            <p className="text-xs font-semibold">Intensité</p>
+            <div className="flex flex-wrap gap-1.5">
+              {([["subtle", "Discrète"], ["normal", "Normale"], ["expressive", "Expressive"]] as const).map(([v, l]) => (
+                <button key={v} className={chip(m.intensity === v)} onClick={() => m.intensity !== v && onSet("motion_intensity", v, `Intensité des animations : ${l.toLowerCase()}`)}>{l}</button>
+              ))}
+            </div>
+          </div>
+          <div className={cx("grid gap-1.5", !m.enabled && "pointer-events-none opacity-50")}>
+            <p className="text-xs font-semibold">Effet de profondeur (parallaxe)</p>
+            <div className="flex gap-1.5">
+              <button className={chip(m.parallax)} onClick={() => !m.parallax && onSet("motion_parallax", true, "Parallaxe activée")}>Activé</button>
+              <button className={chip(!m.parallax)} onClick={() => m.parallax && onSet("motion_parallax", false, "Parallaxe désactivée")}>Désactivé</button>
+            </div>
+          </div>
+          <p className="text-[11px] text-muted">Chaque réglage crée une version restaurable. Les visiteurs qui ont demandé moins d'animations n'en voient jamais.</p>
+        </div>
+      )}
+    </div>
   );
 }
