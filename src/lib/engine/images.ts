@@ -38,6 +38,15 @@ export function palette(p: Project) {
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "produit";
 
+/** Ligne d'accroche courte pour les visuels (au plus ~60 caractères, coupée sur une virgule ou un mot). */
+export function shortLine(text: string, max = 60): string {
+  const first = text.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, "").trim();
+  if (first.length <= max) return first;
+  const clause = first.split(",")[0].trim();
+  if (clause.length >= 20 && clause.length <= max) return clause;
+  return first.slice(0, max).replace(/\s+\S*$/, "").replace(/[\s,;:–-]+$/, "");
+}
+
 /** Détoure les photos originales qui ne le sont pas encore. */
 export async function ensureCutouts(ctx: JobContext | null, project: Project): Promise<Asset[]> {
   const originals = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND kind = 'image' AND deleted_at IS NULL ORDER BY created_at", project.id);
@@ -192,7 +201,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     await ctx.step("social", async () => {
       ctx.progress(0.85, "Visuels réseaux sociaux et publicités");
       const headline = project.brand?.tagline || project.product.name || project.brand?.name || "Découvrir";
-      const sub = project.product.summary?.slice(0, 90) || "";
+      const sub = shortLine(project.product.summary ?? "");
       const brandName = project.brand?.name ?? project.name;
       const logoAsset = latestAsset(projectId, "logo");
       const logo = logoAsset ? await loadImage(assetData(logoAsset)) : null;
