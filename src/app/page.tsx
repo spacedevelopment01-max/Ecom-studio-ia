@@ -55,14 +55,14 @@ export default async function Home() {
   const cta = user ? "/studio" : "/inscription";
   const chapters = [
     { tag: "Analyse", title: "Une photo suffit pour démarrer.", text: "Le studio détoure votre produit au pixel près, mesure sa palette sur l'objet et dessine logo et charte. Pas encore de photo ? Ouvrez le studio quand même : vous l'ajouterez plus tard.", video: "/explainers/photo.mp4", poster: "/explainers/photo.jpg" },
-    { tag: "Boutique Shopify", title: "Onze thèmes, un vrai thème Shopify.", text: "Chaque direction est un thème Online Store 2.0 complet : accueil, fiche produit, panier, pages. En-têtes, pieds de page, bandeaux et cartes se règlent ensuite dans l'éditeur Shopify.", video: "/explainers/themes.mp4", poster: "/explainers/themes.jpg" },
+    { tag: "Boutique sur mesure", title: "Votre thème, créé de A à Z par l'IA.", text: "Couleurs et typographies de votre marque, mise en page pensée pour votre produit, sections inédites codées pour lui : un vrai thème Shopify Online Store 2.0, unique, que vous retouchez ensuite en discutant.", video: "/explainers/themes.mp4", poster: "/explainers/themes.jpg" },
     { tag: "Retouche", title: "Vous modifiez en discutant.", text: "Désignez un élément dans l'aperçu et demandez ce que vous voulez : seul cet élément change. Chaque modification crée une version que vous pouvez restaurer.", video: "/explainers/chat.mp4", poster: "/explainers/chat.jpg" },
     { tag: "Images et vidéos", title: "Chaque visuel au bon format.", text: "Packshots, scènes, publicités et vidéos montées en 1:1, 4:5, 9:16 et 16:9, toujours à partir des pixels réels de votre produit, avec des textes nets.", video: "/explainers/formats.mp4", poster: "/explainers/formats.jpg" },
     { tag: "Calendrier", title: "Vous validez, le studio publie.", text: "Des semaines de publications préparées pour chaque réseau. Rien ne part sans votre accord ; une fois vos comptes connectés, la publication programmée tourne même navigateur fermé.", video: "/explainers/cal.mp4", poster: "/explainers/cal.jpg" },
   ];
   const features: [any, string, string][] = [
     [MessageSquare, "Boutique par conversation", "Discutez à gauche, la boutique s'actualise à droite. Désignez une zone, joignez une image, demandez « modifie uniquement ce bouton »."],
-    [Palette, "Onze thèmes Shopify réels", "Online Store 2.0 complet, contrôlé avec Theme Check (l'outil officiel de Shopify), exporté en ZIP identique à l'aperçu."],
+    [Palette, "Thème sur mesure par l'IA", "Identité, composition et sections codées pour votre produit. Online Store 2.0 complet, contrôlé avec Theme Check (l'outil officiel de Shopify), exporté en ZIP identique à l'aperçu."],
     [ImageIcon, "Images fidèles", "Packshots, détails, scènes, bannières, visuels sociaux et publicitaires — rangés et réutilisables partout."],
     [Film, "Vidéos abouties", "Typographie animée, révélation du produit, transitions, musique originale, sous-titres. MP4 en 9:16, 1:1, 4:5 et 16:9."],
     [CalendarDays, "Calendrier qui publie", "Jour, semaine, mois. Validation à l'unité ou en lot, règles d'automatisation, reprises sans doublon."],
@@ -85,7 +85,7 @@ export default async function Home() {
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-ink-2 lg:flex" aria-label="Navigation principale">
             <a href="#video" className="hover:text-ink">En vidéo</a>
-            <a href="#themes" className="hover:text-ink">Thèmes</a>
+            <a href="#sur-mesure" className="hover:text-ink">Sur mesure</a>
             <a href="#demonstrations" className="hover:text-ink">Démonstrations</a>
             <a href="#studio" className="hover:text-ink">Le studio</a>
             <a href="#offre" className="hover:text-ink">Offre</a>
@@ -167,7 +167,7 @@ export default async function Home() {
           <div className="marquee flex w-max">
             {[0, 1].map((k) => (
               <div key={k} className="flex shrink-0 items-center gap-10 pr-10 font-display text-xl sm:text-2xl">
-                {["Analyse produit", "Direction de marque", "Logo vectoriel", "11 thèmes Shopify", "Packshots fidèles", "Vidéos 9:16 · 1:1 · 4:5 · 16:9", "Retouche en discutant", "Calendrier éditorial", "Pause et reprise"].map((t) => (
+                {["Analyse produit", "Direction de marque", "Logo vectoriel", "Thème sur mesure par l'IA", "Packshots fidèles", "Vidéos 9:16 · 1:1 · 4:5 · 16:9", "Retouche en discutant", "Calendrier éditorial", "Pause et reprise"].map((t) => (
                   <span key={t} className="flex items-center gap-10">
                     {t} <span className="text-[#7CC4FF]">✦</span>
                   </span>
@@ -192,7 +192,7 @@ export default async function Home() {
         <section className="border-y border-line bg-card">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-line lg:grid-cols-4">
             {[
-              [11, "thèmes Shopify complets"],
+              [1, "thème unique, composé pour votre marque"],
               [SECTIONS_COUNT, "sections modifiables dans l'éditeur"],
               [4, "formats vidéo par création"],
               [PROMPT_STATS.total, "prompts sectoriels"],
@@ -205,17 +205,47 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Sur mesure, de A à Z */}
+        <section id="sur-mesure" className="scroll-mt-20 py-24 sm:py-32">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="max-w-3xl">
+              <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Sur mesure</p>
+              <h2 className="words mt-4 font-display text-[clamp(2.3rem,5.2vw,4.4rem)] font-semibold leading-[0.96]">
+                <Words text="Un thème créé pour votre marque," /> <Words text="de A à Z." className="text-gradient" d={5} />
+              </h2>
+              <p className="reveal mt-5 text-[17px] leading-relaxed text-ink-2">Pas un modèle repeint : l'IA du studio conçoit votre boutique comme le ferait une agence, puis la vérifie elle-même avant de vous la montrer.</p>
+            </div>
+            <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                ["01", "Identité", "Logo, palette mesurée sur votre produit, typographies et ton éditorial : la marque d'abord, le thème ensuite."],
+                ["02", "Composition", "Les sections sont choisies et ordonnées pour raconter votre produit : ouverture, preuves, détails, usage, questions."],
+                ["03", "Sections inédites", "Quand rien n'existe pour votre idée, l'IA code une nouvelle section Shopify (animation, présentation, comparateur), réglable dans l'éditeur."],
+                ["04", "Relecture visuelle", "Le studio photographie la boutique sur ordinateur et téléphone, la note comme un directeur artistique et corrige ce qui se voit."],
+                ["05", "Retouches en discutant", "« Plus premium », « ce bouton en noir », « ajoute une section avis » : seul l'élément visé change, chaque version reste restaurable."],
+                ["06", "Prête pour Shopify", "Online Store 2.0, contrôlée avec Theme Check, exportée en ZIP identique à l'aperçu ou installée directement dans votre boutique."],
+              ].map(([n, t, d], i) => (
+                <li key={n} className="reveal rounded-3xl border border-line bg-card p-6" style={{ ["--d" as any]: i }}>
+                  <p className="font-display text-sm font-semibold text-signal">{n}</p>
+                  <h3 className="mt-3 font-display text-xl font-semibold">{t}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{d}</p>
+                </li>
+              ))}
+            </ol>
+            <p className="reveal mt-6 text-xs text-muted">Conception sur mesure avec l'IA du studio. Sans IA, le moteur intégré part de l'une des onze directions, aux couleurs et au logo de votre marque.</p>
+          </div>
+        </section>
+
         {/* Thèmes */}
         <ThemeShowcase themes={themes}>
           <div className="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-12">
             <div>
               <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Les thèmes</p>
               <h2 className="words mt-4 font-display text-[clamp(2.3rem,5.2vw,4.4rem)] font-semibold leading-[0.96]">
-                <Words text="Onze thèmes." /> <Words text="Onze univers." className="text-gradient" d={2} />
+                <Words text="Onze points de départ." /> <Words text="Ou aucun." className="text-gradient" d={3} />
               </h2>
             </div>
             <div>
-              <p className="reveal text-[17px] leading-relaxed text-ink-2">Chacun a sa composition, ses typographies, ses animations et sa combinaison d'en-tête, de pied de page et de bandeau. Quatre en-têtes, cinq pieds de page, trois bandeaux et trois styles de cartes se changent ensuite d'un clic dans l'éditeur Shopify.</p>
+              <p className="reveal text-[17px] leading-relaxed text-ink-2">L'IA peut partir de l'une de ces onze directions — chacune avec sa composition, ses typographies et ses animations — ou composer un thème entièrement nouveau pour votre produit. Dans tous les cas, tout reste modifiable : en discutant avec le studio, puis dans l'éditeur Shopify.</p>
               <Link href={user ? "/studio/themes" : "/inscription"} className="reveal mt-5 inline-flex h-11 items-center gap-2 rounded-full border border-line bg-card px-5 text-sm font-medium hover:border-ink">
                 Voir la galerie <ArrowUpRight className="size-4" />
               </Link>
