@@ -65,10 +65,14 @@ const REAL_DEMOS: DemoDef[] = [
   },
   {
     id: "drone", sector: "High-tech", direction: "nocturne", category: "Drones",
-    productName: "Drone pliable à caméra stabilisée", brandName: "Ostral", price: "149 €",
-    description: "Drone pliable avec caméra stabilisée. Selon la fiche du fournisseur : 246 g, retour au point de départ par GPS, maintien en vol par flux optique, évitement d'obstacles, moteurs sans balais, radiocommande avec écran intégré.",
-    photo: path.join(REAL, "hightech", "drone-vol.jpg"),
-    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Drone pliable en marque blanche d'un fournisseur ; le nom du modèle a été retiré de la photo, la marque et la boutique sont créées par le studio." },
+    productName: "Drone pliable à caméra stabilisée", brandName: "Ostral", price: "189 €",
+    description: "Drone pliable avec caméra stabilisée orientable. Selon la fiche du fournisseur : capteur 1 pouce, ouverture f/1.8, autonomie annoncée de 30 minutes, retour au point de départ par GPS, détection d'obstacles dans quatre directions, prise de vue verticale, radiocommande à écran pliable de 6,9 pouces.",
+    photo: path.join(REAL, "hightech", "drone-pliable.jpg"),
+    pdp: [
+      { type: "benefits", after: "price", settings: { emoji1: "📍", title1: "Retour au point de départ", text1: "Par GPS, selon la fiche du fournisseur.", emoji2: "🛰️", title2: "Détection d'obstacles", text2: "Dans quatre directions, selon la fiche du fournisseur.", emoji3: "🔋", title3: "30 minutes annoncées", text3: "Autonomie indiquée par le fournisseur, par batterie.", emoji4: "🎒", title4: "Pliable", text4: "Les bras se replient pour le transport." } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 7, business_days: true, label: "Livraison estimée" } },
+    ],
+    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Drone pliable en marque blanche d'un fournisseur ; les inscriptions du fabricant ont été retirées de la photo, la marque et la boutique sont créées par le studio." },
   },
   {
     id: "chat", sector: "Animaux", direction: "pop", storeType: "niche", category: "Toilettage",
