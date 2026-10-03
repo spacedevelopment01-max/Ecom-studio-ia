@@ -10,6 +10,7 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
       { href: "/#video", label: "Comment ça marche" },
       { href: "/#sur-mesure", label: "Thème sur mesure" },
       { href: "/#boutiques", label: "Plateformes" },
+      { href: "/#rangement", label: "Rangement des fichiers" },
       { href: "/#demonstrations", label: "Démonstrations" },
       { href: "/#offre", label: "Offre" },
     ],

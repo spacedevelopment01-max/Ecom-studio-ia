@@ -11,6 +11,8 @@ import { chromium } from "playwright";
 
 const FPS = 30;
 const DURATION = 10;
+/** Scènes plus longues que la durée par défaut (en secondes). */
+const DURATIONS: Record<string, number> = { chat: 18 };
 const SIZE = 960;
 const SCENES = process.env.ONLY ? process.env.ONLY.split(",") : ["hero", "photo", "themes", "chat", "formats", "cal"];
 const OUT = path.join(process.cwd(), "public", "explainers");
@@ -30,12 +32,13 @@ for (const s of SCENES) {
   const file = path.join(OUT, `${s}.mp4`);
   const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "slow", "-crf", "26", "-movflags", "+faststart", file], { stdio: ["pipe", "inherit", "inherit"] });
   const done = new Promise<void>((res, rej) => ff.on("close", (c) => (c ? rej(new Error(`ffmpeg ${c}`)) : res())));
-  for (let f = 0; f < FPS * DURATION; f++) {
+  const dur = DURATIONS[s] ?? DURATION;
+  for (let f = 0; f < FPS * dur; f++) {
     const ms = (f / FPS) * 1000;
     await page.evaluate((t) => document.getAnimations().forEach((a) => (a.currentTime = t)), ms);
     const buf = await page.screenshot({ type: "jpeg", quality: 92 });
     if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
-    if (f === FPS * DURATION - 1) fs.writeFileSync(path.join(OUT, `${s}.jpg`), await page.screenshot({ type: "jpeg", quality: 80 }));
+    if (f === FPS * dur - 1) fs.writeFileSync(path.join(OUT, `${s}.jpg`), await page.screenshot({ type: "jpeg", quality: 80 }));
   }
   ff.stdin.end();
   await done;
