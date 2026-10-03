@@ -3,6 +3,7 @@ import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { remember, saveBrand } from "@/lib/projects";
 import { saveBrandGuide } from "@/lib/engine/brand";
+import { generateLogos, hasClientLogo } from "@/lib/engine/identity";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { HttpError } from "@/lib/auth";
 import { DIRECTIONS } from "@/lib/theme/directions";
@@ -39,8 +40,11 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   brand.validated = [...new Set([...(brand.validated ?? []), ...(b.validate ?? [])])].filter((x: string) => !(b.unvalidate ?? []).includes(x));
   if (b.validate?.includes("logo")) brand.logo = { ...brand.logo, status: "validated" };
   saveBrand(p.id, brand);
+  // Le logo suit le nom, la signature et la palette (sauf logo fourni par le client).
+  const touchesLogo = (b.name !== undefined && b.name !== p.brand.name) || (b.tagline !== undefined && b.tagline !== p.brand.tagline) || (b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette));
+  if (touchesLogo && !hasClientLogo(p.id)) await generateLogos(null, p.id);
   await saveBrandGuide(p.id);
-  return ok({ brand });
+  return ok({ brand, logoUpdated: touchesLogo });
 });
 
 /** Nouvelle proposition de marque (les éléments validés sont conservés). */

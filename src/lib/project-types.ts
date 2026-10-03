@@ -71,7 +71,9 @@ export type Brand = {
   tone: { voice: string; do: string[]; dont: string[] };
   palette: BrandPalette;
   fonts: { heading: string; body: string };
-  logo: { assetId?: string; markAssetId?: string; concept: string; status: "proposed" | "validated" | "provided" };
+  logo: { assetId?: string; markAssetId?: string; concept: string; status: "proposed" | "validated" | "provided"; proposal?: "logotype" | "symbole" | "embleme" };
+  /** Autres signatures proposées (au choix du client). */
+  taglineAlternatives?: string[];
   story: string;
   values: { title: string; text: string }[];
   direction: DirectionId;

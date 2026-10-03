@@ -73,7 +73,10 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
       return { video: vf, poster: pf };
     });
   }
-  put("logo", pick("logo"), "logo");
+  // Le site prend la version horizontale du logo quand elle existe (l'emblème rond reste pour les étiquettes).
+  const logo = pick("logo");
+  const horizontal = logo ? all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo-horizontal' AND source_asset_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, logo.id)[0] : undefined;
+  put("logo", horizontal ?? logo, "logo");
   put("logoLight", pick("logo-light"), "logo-clair");
   put("favicon", pick("favicon"), "favicon");
   // Galerie produit : packshots puis détails puis scènes.

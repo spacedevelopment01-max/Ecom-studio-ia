@@ -18,7 +18,23 @@ export default function TabMarque() {
   const [regen, setRegen] = useState(false);
   const [guidance, setGuidance] = useState("");
   const active = useActive("brand.build");
-  const { data: logos, reload: reloadLogos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=logo,logo-svg,logo-light,logo-light-svg,logo-mark,logo-mark-svg,favicon,brand-guide`);
+  const { data: logos, reload: reloadLogos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=logo,logo-svg,logo-light,logo-light-svg,logo-mark,logo-mark-svg,logo-horizontal,logo-horizontal-svg,favicon,brand-guide,brand-book`);
+  const { data: ident, reload: reloadIdent } = useApi<{ proposals: { id: string; key: string; label: string; concept: string; url: string }[]; current: string | null; provided: boolean; taglines: string[] }>(`/api/projects/${id}/brand/logo`);
+  const [choosing, setChoosing] = useState<string | null>(null);
+  const chooseLogo = async (b: { choice?: string; regenerate?: boolean }) => {
+    setChoosing(b.choice ?? "regenerate");
+    try {
+      await api(`/api/projects/${id}/brand/logo`, { body: b });
+      toast("ok", b.regenerate ? "Nouvelles propositions de logo prêtes." : "Logo appliqué : déclinaisons créées et boutique mise à jour (nouvelle version).");
+      reloadIdent();
+      reloadLogos();
+      reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setChoosing(null);
+    }
+  };
   useEffect(() => {
     if (data?.brand && !dirty) setB(data.brand);
   }, [data?.brand, dirty]);
@@ -72,6 +88,12 @@ export default function TabMarque() {
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between"><label htmlFor="btag" className="text-sm font-medium">Signature</label><V k="tagline" /></div>
               <Input id="btag" value={b.tagline} onChange={(e) => set({ tagline: e.target.value })} placeholder="Une phrase courte, sans promesse invérifiable" />
+              {(ident?.taglines.length ?? 0) > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <span className="text-xs text-muted">Autres signatures :</span>
+                  {ident!.taglines.map((t) => <button key={t} onClick={() => set({ tagline: t })} className="rounded-full border border-line px-2.5 py-0.5 text-xs hover:border-ink">{t}</button>)}
+                </div>
+              )}
             </div>
             <Field label="Positionnement" htmlFor="bpos"><Textarea id="bpos" rows={3} value={b.positioning} onChange={(e) => set({ positioning: e.target.value })} /></Field>
             <Field label="Cible" htmlFor="baud"><Textarea id="baud" rows={2} value={b.audience} onChange={(e) => set({ audience: e.target.value })} /></Field>
@@ -101,14 +123,36 @@ export default function TabMarque() {
           <Card className="p-5">
             <div className="flex items-center justify-between"><h3 className="font-display text-lg font-semibold">Logo</h3><V k="logo" /></div>
             <p className="mt-1 text-xs text-muted">{b.logo.concept}</p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            {!ident?.provided && (ident?.proposals.length ?? 0) > 0 && (
+              <div className="mt-4">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">Trois propositions</p>
+                <div className="grid gap-2">
+                  {ident!.proposals.map((pr) => {
+                    const on = ident!.current === pr.key;
+                    return (
+                      <div key={pr.id} className={cx("rounded-2xl border p-2", on ? "border-signal ring-2 ring-signal/30" : "border-line")}>
+                        <div className="flex h-24 items-center justify-center overflow-hidden rounded-xl bg-white p-3"><img src={pr.url} alt={`Proposition ${pr.label}`} className="h-full w-full object-contain" /></div>
+                        <div className="mt-2 flex items-start justify-between gap-2 px-1">
+                          <p className="min-w-0 text-xs"><span className="font-semibold">{pr.label}</span> <span className="text-muted">— {pr.concept}</span></p>
+                          <Button size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || validated.has("logo")} loading={choosing === pr.key} onClick={() => chooseLogo({ choice: pr.key })}>{on ? "Choisi" : "Choisir"}</Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button size="sm" variant="ghost" className="mt-2" icon={<Sparkles className="size-4" />} loading={choosing === "regenerate"} disabled={validated.has("logo")} onClick={() => chooseLogo({ regenerate: true })}>Recréer les propositions</Button>
+                {validated.has("logo") && <p className="mt-1 text-[11px] text-muted">Logo validé : déverrouillez-le pour en changer.</p>}
+              </div>
+            )}
+            <p className="mb-2 mt-5 text-xs font-medium uppercase tracking-wider text-muted">Déclinaisons</p>
+            <div className="grid grid-cols-2 gap-2">
               {byRole("logo") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo")!.url} alt="Logo principal" className="max-h-20 object-contain" /></div>}
               {byRole("logo-light") && <div className="grid place-items-center rounded-2xl bg-[#141210] p-4"><img src={byRole("logo-light")!.url} alt="Logo clair" className="max-h-20 object-contain" /></div>}
               {byRole("logo-mark") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo-mark")!.url} alt="Monogramme" className="max-h-20 object-contain" /></div>}
               {byRole("favicon") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("favicon")!.url} alt="Favicon" className="size-12 object-contain" /></div>}
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              {["logo-svg", "logo", "logo-light-svg", "logo-mark-svg", "favicon"].map((r) => byRole(r) && (
+              {["logo-svg", "logo", "logo-horizontal-svg", "logo-light-svg", "logo-mark-svg", "favicon"].map((r) => byRole(r) && (
                 <a key={r} href={byRole(r)!.downloadUrl} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink"><Download className="size-3.5" /> {byRole(r)!.name}</a>
               ))}
             </div>
@@ -125,9 +169,7 @@ export default function TabMarque() {
             </div>
             <p className="mt-3 text-xs text-muted">Enregistrez puis appliquez la direction depuis l'espace Boutique (une nouvelle version est créée, l'ancienne reste restaurable).</p>
           </Card>
-          {byRole("brand-guide") && (
-            <a href={byRole("brand-guide")!.downloadUrl} className="inline-flex items-center justify-center gap-2 rounded-full border border-line bg-card px-4 py-3 text-sm hover:border-ink"><Download className="size-4" /> Télécharger la charte (Markdown)</a>
-          )}
+          <BrandBook />
         </div>
       </div>
       {data.strategy && (
@@ -161,5 +203,55 @@ export default function TabMarque() {
         </Button>
       </Modal>
     </div>
+  );
+}
+
+/** Charte de marque mise en page : planches, PDF, régénération. */
+function BrandBook() {
+  const { id } = useProject();
+  const toast = useToast();
+  const { data, reload } = useApi<{ book: { pdf: string; pages: string[]; createdAt: number } | null }>(`/api/projects/${id}/brand/book`);
+  const [i, setI] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const book = data?.book;
+  const refresh = async () => {
+    setBusy(true);
+    try {
+      await api(`/api/projects/${id}/brand/book`, { body: {} });
+      toast("ok", "Charte mise à jour avec vos derniers choix.");
+      setI(0);
+      reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Card className="p-5">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-display text-lg font-semibold">Charte de marque</h3>
+        {book && <span className="text-xs text-muted">{book.pages.length} planches</span>}
+      </div>
+      <p className="mt-1 text-xs text-muted">Logo et usages, couleurs (HEX, RVB, CMJN, contrastes), typographies, ton, applications.</p>
+      {book ? (
+        <>
+          <div className="relative mt-3 overflow-hidden rounded-2xl border border-line bg-paper-2">
+            <img src={book.pages[i]} alt={`Planche ${i + 1}`} className="aspect-[1.414] w-full object-contain" />
+            <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-2">
+              <button onClick={() => setI((i + book.pages.length - 1) % book.pages.length)} className="grid size-8 place-items-center rounded-full bg-card/90 text-sm shadow-soft" aria-label="Planche précédente">‹</button>
+              <span className="rounded-full bg-card/90 px-2.5 py-1 text-xs">{i + 1} / {book.pages.length}</span>
+              <button onClick={() => setI((i + 1) % book.pages.length)} className="grid size-8 place-items-center rounded-full bg-card/90 text-sm shadow-soft" aria-label="Planche suivante">›</button>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href={book.pdf} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-paper"><Download className="size-4" /> PDF</a>
+            <Button size="sm" variant="secondary" loading={busy} onClick={refresh}>Mettre à jour</Button>
+          </div>
+        </>
+      ) : (
+        <Button size="sm" className="mt-3" loading={busy} onClick={refresh}>Créer la charte</Button>
+      )}
+    </Card>
   );
 }
