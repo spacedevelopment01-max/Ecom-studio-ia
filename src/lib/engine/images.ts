@@ -267,7 +267,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           { template: "signature", format: "portrait" },
           { template: "editorial", format: "square" },
           { template: "signature", format: "story" },
-          { template: "arguments", format: "square" },
+          { template: confirmedFacts(project).length >= 3 ? "arguments" : "editorial", format: confirmedFacts(project).length >= 3 ? "square" : "story" },
         ],
       ).catch(() => null);
       if (pro?.length) {
@@ -299,6 +299,8 @@ function confirmedFacts(p: Project): string[] {
     if (v.length <= 28) out.push(v);
   }
   for (const v of p.product.variants ?? []) if (v.values.length > 1) out.push(`${v.values.length} ${v.name.toLowerCase()}${/[sx]$/.test(v.name) ? "" : "s"} au choix`);
+  // Peu d'informations confirmées : le nom du produit sert de repère (jamais d'argument inventé).
+  if (out.length < 2 && p.product.name && p.product.name.length <= 28) out.unshift(p.product.name);
   return [...new Set(out)].slice(0, 3);
 }
 

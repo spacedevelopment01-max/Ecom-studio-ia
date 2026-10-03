@@ -379,7 +379,7 @@ function everyday(ctx: SKRSContext2D, w: number, h: number, pal: Palette, seed: 
   for (let i = 0; i < 260; i++) {
     const y0 = tableY + (h - tableY) * Math.pow(r(), 0.7);
     const d = (y0 - tableY) / (h - tableY);
-    ctx.fillStyle = `rgba(120,98,74,${0.12 + r() * 0.15})`;
+    ctx.fillStyle = `rgba(120,98,74,${0.04 + r() * 0.06})`;
     ctx.beginPath();
     ctx.ellipse(w * r(), y0, w * (0.002 + r() * 0.006) * (0.5 + d), h * 0.0012 * (0.5 + d), 0, 0, Math.PI * 2);
     ctx.fill();
