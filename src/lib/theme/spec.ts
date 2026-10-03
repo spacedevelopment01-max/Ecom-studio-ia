@@ -7,6 +7,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import type { ImportedTheme } from "./import";
+import { importedArchive, importedSchema, importedSectionTypes } from "./imported";
 
 export type BlockInstance = { type: string; settings: Record<string, unknown>; disabled?: boolean };
 export type SectionInstance = {
@@ -57,6 +59,8 @@ export type ThemeSpec = {
   files: Record<string, string>;
   /** Éléments validés par le client, protégés des modifications non ciblées. */
   locks: string[];
+  /** Thème du client importé (ZIP Shopify) : ses fichiers remplacent le thème de base du studio. */
+  imported?: ImportedTheme;
   /** Données de la boutique (produit, pages, menus). Séparées du thème ; utilisées par l'aperçu et l'import. */
   store: {
     shopName: string;
@@ -136,9 +140,10 @@ export function baseSectionSource(type: string): string | null {
   return fs.existsSync(f) ? fs.readFileSync(f, "utf8") : null;
 }
 
-export function sectionSchema(spec: Pick<ThemeSpec, "customSections"> | null, type: string): SectionSchema | null {
+export function sectionSchema(spec: (Pick<ThemeSpec, "customSections"> & { imported?: ImportedTheme }) | null, type: string): SectionSchema | null {
   const custom = spec?.customSections?.[type];
   if (custom) return parseSchemaBlock(custom.liquid);
+  if (spec?.imported) return importedSchema(spec.imported, type);
   const f = path.join(THEME_BASE, "sections", `${type}.liquid`);
   if (!fs.existsSync(f)) return null;
   const mtime = fs.statSync(f).mtimeMs;
@@ -149,13 +154,19 @@ export function sectionSchema(spec: Pick<ThemeSpec, "customSections"> | null, ty
   return schema;
 }
 
-export function settingsSchema(): { name: string; settings?: SettingSchema[] }[] {
+/** Types de sections disponibles : celles du thème importé, sinon celles du thème de base du studio. */
+export function availableSectionTypes(spec: { imported?: ImportedTheme } | null): string[] {
+  return spec?.imported ? importedSectionTypes(spec.imported) : baseSectionTypes();
+}
+
+export function settingsSchema(spec?: { imported?: ImportedTheme } | null): { name: string; settings?: SettingSchema[] }[] {
+  if (spec?.imported) return importedArchive(spec.imported).settings;
   return JSON.parse(fs.readFileSync(path.join(THEME_BASE, "config", "settings_schema.json"), "utf8"));
 }
 
-export function globalSettingDefaults(): Record<string, unknown> {
+export function globalSettingDefaults(spec?: { imported?: ImportedTheme } | null): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  for (const group of settingsSchema()) {
+  for (const group of settingsSchema(spec)) {
     for (const s of group.settings ?? []) if (s.id && s.default !== undefined) out[s.id] = s.default;
   }
   return out;

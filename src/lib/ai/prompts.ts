@@ -2,7 +2,7 @@
  * Instructions spécialisées par tâche. Elles partagent une charte commune de
  * véracité et de traitement des sources externes.
  */
-import { baseSectionTypes, sectionSchema, settingsSchema, type ThemeSpec } from "../theme/spec";
+import { availableSectionTypes, sectionSchema, settingsSchema, type ThemeSpec } from "../theme/spec";
 import { DIRECTIONS } from "../theme/directions";
 import { FONT_HANDLES } from "../theme/render";
 
@@ -164,7 +164,7 @@ Pour une « PHOTO EN SITUATION », décris une vraie scène de la vie de tous le
 
 /** Catalogue des sections et réglages, transmis aux tâches de conception et de retouche. */
 export function sectionCatalog(spec: ThemeSpec | null, types?: string[]): string {
-  const list = types ?? [...baseSectionTypes(), ...Object.keys(spec?.customSections ?? {})];
+  const list = types ?? [...availableSectionTypes(spec), ...Object.keys(spec?.customSections ?? {})];
   const skip = new Set(["main-blog", "main-article", "main-password", "cart-drawer"]);
   const lines: string[] = [];
   for (const t of list) {
@@ -187,8 +187,8 @@ export function sectionCatalog(spec: ThemeSpec | null, types?: string[]): string
   return lines.join("\n");
 }
 
-export function globalSettingsCatalog(): string {
-  return settingsSchema()
+export function globalSettingsCatalog(spec?: ThemeSpec | null): string {
+  return settingsSchema(spec)
     .flatMap((g) => g.settings ?? [])
     .filter((s) => s.id && s.type !== "color_scheme_group" && s.type !== "image_picker")
     .map((s) => `${s.id}:${s.type}${s.options ? `[${s.options.map((o) => o.value).join("|")}]` : ""}${s.type === "range" ? `[${s.min}-${s.max}]` : ""}`)

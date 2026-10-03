@@ -5,6 +5,7 @@
  * autre rendu, il exécute le thème exporté avec les données de la boutique.
  */
 import fs from "node:fs";
+import { importedSectionSchema, schemaTranslator } from "./import";
 import path from "node:path";
 import { Drop, Hash, Liquid, Tokenizer, type Context, type Emitter, type TagToken, type TopLevelToken, type Template } from "liquidjs";
 import { compileTheme, type ThemeFiles } from "./compile";
@@ -290,11 +291,19 @@ function wrapSettings(values: Record<string, unknown>, base: string, schemaTypes
 
 export type RenderResult = { html: string; status: number; template: string };
 
-const LOCALE = (files: ThemeFiles) => JSON.parse(files.get("locales/fr.default.json") || "{}");
+/** Traductions du thème : français d'abord, puis la langue par défaut du thème (thèmes importés). */
+const LOCALE = (files: ThemeFiles) => {
+  const key = ["locales/fr.default.json", "locales/fr.json", "locales/fr-FR.json", "locales/en.default.json"].find((k) => files.has(k)) ?? [...files.keys()].find((k) => /^locales\/[a-z-]+\.default\.json$/.test(k));
+  try {
+    return key ? JSON.parse(stripComment(files.get(key)!)) : {};
+  } catch {
+    return {};
+  }
+};
 
 function translate(locale: any, key: string, vars: Record<string, unknown>) {
   let v: any = key.split(".").reduce((o, k) => (o && typeof o === "object" ? o[k] : undefined), locale);
-  if (v && typeof v === "object" && "count" in vars) v = Number(vars.count) === 1 ? v.one : v.other;
+  if (v && typeof v === "object") v = "count" in vars ? (Number(vars.count) === 1 ? v.one : v.other) : (v.other ?? v.one);
   if (typeof v !== "string") return key;
   return v.replace(/\{\{\s*(\w+)\s*\}\}/g, (_: string, name: string) => String(vars[name] ?? ""));
 }
@@ -344,6 +353,18 @@ export function createEngine(files: ThemeFiles, base: string) {
   });
 
   // ----- balises Shopify
+  // {% doc %} … {% enddoc %} (documentation des extraits, thèmes Shopify récents) : ignoré au rendu.
+  liquid.registerTag("doc", {
+    parse(_token: TagToken, remain: TopLevelToken[]) {
+      while (remain.length) {
+        const t = remain.shift() as any;
+        if (t.name === "enddoc") return;
+      }
+    },
+    render() {
+      return "";
+    },
+  } as any);
   liquid.registerTag("schema", {
     parse(_token: TagToken, remain: TopLevelToken[]) {
       while (remain.length) {
@@ -547,6 +568,31 @@ export function createEngine(files: ThemeFiles, base: string) {
   f("media_tag", () => "");
   f("structured_data", () => "");
   f("color_modify", (c: unknown) => c);
+  // Filtres Shopify courants des thèmes importés (Dawn et dérivés).
+  const hexOf = (c: unknown) => (c instanceof ColorDrop ? c : new ColorDrop(String(c ?? "#000000")));
+  const toHex = (r: number, g: number, b: number) => "#" + [r, g, b].map((x) => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, "0")).join("");
+  f("color_brightness", (c: unknown) => { const d = hexOf(c); return Math.round((d.red * 299 + d.green * 587 + d.blue * 114) / 1000); });
+  f("color_mix", (a: unknown, b: unknown, w: unknown) => { const x = hexOf(a), y = hexOf(b), k = Number(w ?? 50) / 100; return toHex(x.red * k + y.red * (1 - k), x.green * k + y.green * (1 - k), x.blue * k + y.blue * (1 - k)); });
+  f("color_lighten", (c: unknown, n: unknown) => { const d = hexOf(c), k = Number(n ?? 0) / 100; return toHex(d.red + (255 - d.red) * k, d.green + (255 - d.green) * k, d.blue + (255 - d.blue) * k); });
+  f("color_darken", (c: unknown, n: unknown) => { const d = hexOf(c), k = 1 - Number(n ?? 0) / 100; return toHex(d.red * k, d.green * k, d.blue * k); });
+  for (const n of ["color_saturate", "color_desaturate", "color_to_hex"]) f(n, (c: unknown) => hexOf(c).hex);
+  f("color_to_hsl", (c: unknown) => { const d = hexOf(c); const r = d.red / 255, g = d.green / 255, b = d.blue / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); const l = (mx + mn) / 2; let h = 0, s2 = 0; if (mx !== mn) { const dd = mx - mn; s2 = l > 0.5 ? dd / (2 - mx - mn) : dd / (mx + mn); h = mx === r ? (g - b) / dd + (g < b ? 6 : 0) : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h *= 60; } return `hsl(${Math.round(h)}, ${Math.round(s2 * 100)}%, ${Math.round(l * 100)}%)`; });
+  f("inline_asset_content", (name: string) => files.get(`assets/${name}`) ?? "");
+  f("payment_terms", () => "");
+  f("item_count_for_variant", (cart: any, vid: unknown) => (cart?.items ?? []).filter((i: any) => String(i.id) === String(vid)).reduce((n: number, i: any) => n + Number(i.quantity || 0), 0));
+  f("weight_with_unit", (w: unknown) => (w ? `${Number(w) / 1000} kg` : ""));
+  f("unit_price_with_measurement", () => "");
+  f("highlight", (s: unknown) => s);
+  f("pluralize", (n: unknown, one: string, many: string) => (Number(n) === 1 ? one : many));
+  f("link_to_tag", (tag: unknown) => `<a href="#">${tag}</a>`);
+  f("customer_login_link", (t: unknown) => `<a href="/account/login">${t}</a>`);
+  f("metafield_tag", () => "");
+  f("metafield_text", () => "");
+  f("preload_tag", () => "");
+  f("global_asset_url", (n: string) => `${base}/assets/${n}`);
+  f("file_url", (n: string) => `${base}/assets/${n}`);
+  f("file_img_url", (n: string) => `${base}/assets/${n}`);
+  f("asset_img_url", (n: string) => `${base}/assets/${n}`);
   f("color_to_rgb", (c: unknown) => {
     const d = c instanceof ColorDrop ? c : new ColorDrop(String(c));
     return `rgb(${d.red}, ${d.green}, ${d.blue})`;
@@ -559,13 +605,21 @@ function stripComment(s: string) {
   return s.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, "");
 }
 
+/** Schéma d'une section, valeurs par défaut « t:… » traduites avec les fichiers de langue du thème (comme Shopify). */
+const translators = new WeakMap<ThemeFiles, (v: unknown) => unknown>();
+function sectionSchemaOf(files: ThemeFiles, source: string) {
+  let tr = translators.get(files);
+  if (!tr) translators.set(files, (tr = schemaTranslator(files)));
+  return importedSectionSchema(source, tr);
+}
+
 function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files: ThemeFiles, id: string, inst: SectionInstance, where: string): Generator<any, void, any> {
   const source = files.get(`sections/${inst.type}.liquid`);
   if (!source) {
     emitter.write(`<!-- section introuvable : ${inst.type} -->`);
     return;
   }
-  const schema = parseSchemaBlock(source) ?? { name: inst.type, settings: [], blocks: [] };
+  const schema = sectionSchemaOf(files, source) ?? { name: inst.type, settings: [], blocks: [] };
   const base = (ctx.getAll() as any).__base as string;
   const resolve = (ctx.getAll() as any).__resolve as ((type: string, v: unknown) => unknown) | undefined;
   const types = new Map<string, string>();
@@ -589,8 +643,14 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
   const tpl = engine.parse(source, `sections/${inst.type}.liquid`);
   const cls = (source.match(/"class"\s*:\s*"([^"]+)"/) ?? [])[1] ?? "";
   emitter.write(`<div id="shopify-section-${sectionId}" class="shopify-section ${cls}" data-es-section="${where}:${id}" data-es-type="${inst.type}">`);
-  ctx.push({ section: { id: sectionId, settings, blocks, location: where } });
+  const sectionDrop = { id: sectionId, settings, blocks, location: where };
+  ctx.push({ section: sectionDrop });
+  // Comme sur Shopify, « section » (et les objets globaux) restent visibles dans les extraits {% render %}.
+  const g = ctx.globals as Record<string, unknown>;
+  const prevSection = g.section;
+  g.section = sectionDrop;
   yield engine.renderer.renderTemplates(tpl, ctx, emitter);
+  g.section = prevSection;
   ctx.pop();
   emitter.write(`</div>`);
 }
@@ -691,7 +751,8 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     page_title: pageTitle,
     page_description: (tplKey === "product" ? store.product.description : opts.spec.store.product.description_html).replace(/<[^>]+>/g, " ").slice(0, 160),
     page_image: null,
-    content_for_header: "",
+    // Objet global attendu par les scripts des thèmes Shopify (Dawn : global.js, cart, animations).
+    content_for_header: `<script>window.Shopify=window.Shopify||{designMode:false,locale:"fr",country:"FR",currency:{active:"EUR",rate:"1.0"},routes:{root:"${opts.base}/"},shop:"apercu",theme:{name:"aperçu"}};</script>`,
     current_page: 1,
     current_tags: null,
     additional_checkout_buttons: false,
@@ -700,7 +761,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   };
 
   // Contenu de la page : sections du gabarit JSON.
-  const ctxRender = async (source: string, file: string, extra: Record<string, unknown> = {}) => engine.parseAndRender(source, { ...scope, ...extra });
+  const ctxRender = async (source: string, file: string, extra: Record<string, unknown> = {}) => engine.parseAndRender(source, { ...scope, ...extra }, { globals: { ...scope, ...extra } } as any);
   const parts: string[] = [];
   for (const id of template.order as string[]) {
     const inst = template.sections[id];
@@ -715,12 +776,18 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   if (collected.css.length) html = html.replace("</head>", `<style data-section-styles>${collected.css.join("\n")}</style></head>`);
   if (collected.js.length) html = html.replace("</body>", `<script>${collected.js.join("\n")}</script></body>`);
   html = rewriteLinks(html, opts.base);
+  // Sources dynamiques des réglages (« {{ product.vendor }} » saisi dans l'éditeur Shopify) : résolues pour l'aperçu.
+  html = html.replace(/\{\{\s*((?:product|shop|collection|page)(?:\.[a-z_]+)+)\s*\}\}/g, (all: string, path: string) => {
+    let v: any = scope;
+    for (const k of path.split(".")) v = v?.[k];
+    return v == null || typeof v === "object" ? all : String(v);
+  });
   return { html, status: route.status, template: tplKey };
 }
 
 export async function renderSectionStandalone(engine: Liquid, files: ThemeFiles, scope: Record<string, unknown>, id: string, inst: SectionInstance, where: string): Promise<string> {
   const ctxModule = await import("liquidjs");
-  const ctx = new ctxModule.Context(scope, engine.options as any);
+  const ctx = new ctxModule.Context(scope, engine.options as any, { globals: { ...scope } } as any);
   const chunks: string[] = [];
   const emitter: any = {
     buffer: "",

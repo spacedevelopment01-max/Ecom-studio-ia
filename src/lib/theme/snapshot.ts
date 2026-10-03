@@ -6,7 +6,7 @@
  */
 import fs from "node:fs";
 import sharp from "sharp";
-import { compileTheme, themeAssetBinary } from "./compile";
+import { compileTheme, importedBinary, themeAssetBinary } from "./compile";
 import { libraryLoader } from "./loader";
 import { fontFilePath, renderPage } from "./render";
 import type { ThemeSpec } from "./spec";
@@ -54,7 +54,7 @@ export async function themeContext(browser: import("playwright").Browser, spec: 
     const segs = url.pathname.slice(BASE.length).split("/").filter(Boolean).map(decodeURIComponent);
     if (segs[0] === "assets") {
       const name = segs.slice(1).join("/");
-      const bin = spec.files[name] ? await themeAssetBinary(spec, name, libraryLoader) : null;
+      const bin = spec.files[name] ? await themeAssetBinary(spec, name, libraryLoader) : importedBinary(spec, name);
       if (bin) return route.fulfill({ status: 200, contentType: bin.mime, body: bin.data });
       const text = files.get(`assets/${name}`);
       return text === undefined ? route.fulfill({ status: 404, body: "" }) : route.fulfill({ status: 200, contentType: MIME[name.split(".").pop() ?? ""] ?? "text/plain", body: text });

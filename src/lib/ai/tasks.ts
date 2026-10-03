@@ -338,8 +338,10 @@ export function themeReference(spec: ThemeSpec, withOps = false): string {
   return [
     "<reference_theme>",
     `Catalogue des sections :\n${sectionCatalog(spec)}`,
-    `Réglages généraux disponibles (set_global) : ${globalSettingsCatalog()}`,
-    "Schémas de couleurs : scheme-1 (fond principal), scheme-2 (surface douce), scheme-3 (contraste sombre), scheme-4 (accent).",
+    `Réglages généraux disponibles (set_global) : ${globalSettingsCatalog(spec)}`,
+    spec.imported
+      ? `Thème importé par le client (« ${spec.imported.name} ») : n'utilise que ses propres sections et réglages listés ci-dessus ; conserve son style, améliore sans le dénaturer.`
+      : "Schémas de couleurs : scheme-1 (fond principal), scheme-2 (surface douce), scheme-3 (contraste sombre), scheme-4 (accent).",
     withOps ? OPS_HELP : "",
     "</reference_theme>",
   ].filter(Boolean).join("\n");

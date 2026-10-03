@@ -11,7 +11,7 @@ import type { Brand, Fact, ProductProfile, SectorId, Strategy } from "../project
 import { DIRECTIONS, type DirectionId } from "../theme/directions";
 import type { ThemeOp } from "../theme/ops";
 import type { ThemeSpec } from "../theme/spec";
-import { containerOf } from "../theme/spec";
+import { availableSectionTypes, containerOf, sectionSchema } from "../theme/spec";
 import { canvasFamily } from "../media/fonts";
 
 const SECTOR_WORDS: [SectorId, RegExp][] = [
@@ -308,20 +308,37 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   // Fiche produit qui convertit : blocs ajoutés au produit, uniquement avec les informations données.
   const pdp = productPageCommand(spec, message, m);
   if (pdp) return pdp;
-  const adds: [RegExp, string][] = [
-    [/faq|questions/, "faq"],
-    [/vidéo|video/, "video-showcase"],
-    [/défil|scroll|animation/, "scroll-story"],
-    [/newsletter|e-mail|inscription/, "newsletter"],
-    [/bandeau|marquee/, "marquee"],
-    [/caractéristique|spécification/, "specs-list"],
-    [/galerie|mosaïque/, "gallery-mosaic"],
+  // Types candidats : ceux du thème du studio, puis leurs équivalents dans les thèmes importés (Dawn et dérivés).
+  const adds: [RegExp, string[]][] = [
+    [/faq|questions/, ["faq", "collapsible-content"]],
+    [/vidéo|video/, ["video-showcase", "video"]],
+    [/défil|scroll|animation/, ["scroll-story", "multirow", "image-with-text"]],
+    [/newsletter|e-mail|inscription/, ["newsletter", "email-signup"]],
+    [/bandeau|marquee/, ["marquee", "scrolling-text", "announcement-bar"]],
+    [/caractéristique|spécification/, ["specs-list", "multicolumn"]],
+    [/galerie|mosaïque/, ["gallery-mosaic", "collage", "multicolumn"]],
+    [/image avec (du )?texte|image et texte/, ["image-with-text"]],
+    [/texte|paragraphe/, ["rich-text"]],
   ];
   if (/ajoute|ajouter|insère/.test(m)) {
     const hit = adds.find(([re]) => re.test(m));
     if (hit) {
-      ops.push({ op: "add_section", template: selection?.template ?? "index", type: hit[1], position: selection ? { after: selection.section } : undefined });
+      const available = new Set(availableSectionTypes(spec));
+      const type = hit[1].find((t) => available.has(t));
+      if (!type) return { ops: [], reply: "Votre thème ne propose pas de section de ce genre. Ouvrez « + Section » pour voir celles qu'il contient.", revert: false };
+      ops.push({ op: "add_section", template: selection?.template ?? "index", type, position: selection ? { after: selection.section } : undefined });
       return { ops, reply: "Section ajoutée avec un contenu de départ à personnaliser.", revert: false };
+    }
+  }
+  // « Masque / affiche la section … » : section de la page désignée par son nom.
+  if (/(masque|cache|affiche|réaffiche|montre)/.test(m)) {
+    const page = selection?.template ?? "index";
+    const c = containerOf(spec, page);
+    const found = selection ? { id: selection.section } : c?.order.map((id) => ({ id, name: (sectionSchema(spec, c.sections[id]?.type ?? "")?.name ?? "").toLowerCase() })).find((x) => x.name && m.includes(x.name));
+    if (found && c?.sections[found.id]) {
+      const hide = /(masque|cache)/.test(m);
+      ops.push({ op: "toggle_section", template: page, section: found.id, disabled: hide });
+      return { ops, reply: hide ? "Section masquée (elle reste dans la page, réaffichable)." : "Section réaffichée.", revert: false };
     }
   }
   if (selection && /(supprime|retire|enlève)/.test(m)) {

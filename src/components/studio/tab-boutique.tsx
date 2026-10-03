@@ -4,11 +4,13 @@ import { ArrowDown, ArrowUp, Crosshair, Palette, Download, Eye, EyeOff, External
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
+import { ThemeImportModal } from "./theme-import";
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import { ThemeGallery, ThemeGrid } from "./theme-gallery";
 import { SectionLibrary, type LibraryItem } from "./section-library";
 import { SortableList } from "./sortable";
 import type { DirectionCard } from "@/lib/theme/directions";
+import type { ImportReport } from "@/lib/theme/import";
 
 type ThemeData = {
   current: null | {
@@ -22,6 +24,7 @@ type ThemeData = {
     pages: { handle: string; title: string; template_suffix: string }[];
     product: { handle: string; title: string; price: number | null };
     motion?: { enabled: boolean; intensity: string; parallax: boolean };
+    imported?: { name: string; report: ImportReport };
   };
   versions: { id: string; number: number; summary: string; author: string; created_at: number }[];
   messages: { id: string; role: string; content: string; attachments: string[]; selection: any; theme_version_id: string | null; job_id: string | null; created_at: number }[];
@@ -84,6 +87,7 @@ export default function TabBoutique() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState<null | "upload" | "report">(null);
   const [libTarget, setLibTarget] = useState<{ template: string; index?: number; label: string } | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
   // Lien direct « …/boutique?themes » (depuis le Pilote) : ouvre la galerie.
@@ -219,8 +223,9 @@ export default function TabBoutique() {
     return (
       <div className="mx-auto max-w-3xl">
         {cost.dialog}
+        <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} />
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
-        <Empty title="La boutique n'est pas encore composée" icon={<Store className="size-5" />} action={data?.brand ? <Button onClick={async () => { if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {} }); reloadProject(); }}>Composer la boutique maintenant</Button> : undefined}>
+        <Empty title="La boutique n'est pas encore composée" icon={<Store className="size-5" />} action={<div className="flex flex-wrap justify-center gap-2">{data?.brand && <Button onClick={async () => { if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {} }); reloadProject(); }}>Composer la boutique maintenant</Button>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>Importer mon thème Shopify</Button></div>}>
           {data?.brand ? "La marque est prête : vous pouvez lancer la composition." : "Elle sera créée après la marque et les textes (voir le Pilote)."}
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">Les thèmes disponibles</h2>
@@ -394,9 +399,11 @@ export default function TabBoutique() {
           })}
         </div>
         <button onClick={() => setPicking(!picking)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", picking ? "border-signal bg-signal text-signal-ink" : "border-line bg-card")} aria-pressed={picking}><Crosshair className="size-3.5" /> {picking ? "Cliquez un élément" : "Désigner"}</button>
-        <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />
+        {cur.motion && <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />}
 <button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: "En bas de la page" })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> Section</button>
                 <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> Thèmes</button>
+                <button onClick={() => setImportOpen("upload")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" title="Importer le thème de votre boutique Shopify"><Upload className="size-3.5" /> Importer mon thème</button>
+                {cur.imported && <button onClick={() => setImportOpen("report")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-signal/40 bg-signal-soft px-3 text-xs text-signal" title="Analyse de votre thème importé"><Layers className="size-3.5" /> {cur.imported.name} · analyse</button>}
         <div className="ml-auto flex items-center gap-1.5">
           <Badge tone={viewVersion ? "warn" : "neutral"}>v{theme.versions.find((v) => v.id === versionId)?.number ?? cur.number}{viewVersion ? " (consultation)" : ""}</Badge>
           <button onClick={() => setHistoryOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title="Versions"><History className="size-4" /></button>
@@ -459,6 +466,7 @@ export default function TabBoutique() {
           ))}
         </ul>
       </Modal>
+      <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} />
       <ThemeGallery open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} />

@@ -15,6 +15,7 @@ import {
   parseSchemaBlock,
   sectionSchema,
   settingsSchema,
+  withDefaults,
   type SectionInstance,
   type ThemeSpec,
 } from "./spec";
@@ -143,7 +144,7 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             reject("les réglages généraux sont verrouillés");
             break;
           }
-          const def = settingsSchema().flatMap((g) => g.settings ?? []).find((s) => s.id === op.key);
+          const def = settingsSchema(spec).flatMap((g) => g.settings ?? []).find((s) => s.id === op.key);
           if (!def || def.type === "color_scheme_group") {
             reject(`réglage général inconnu « ${op.key} »`);
             break;
@@ -185,6 +186,10 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           }
           let key = op.key;
           let value: unknown = op.op === "set_setting" ? op.value : null;
+          if (op.op === "use_media" && spec.imported) {
+            reject("thème importé : ses images sont hébergées par Shopify. Importez l'image dans Shopify (Contenu › Fichiers) puis choisissez-la dans l'éditeur de thème Shopify");
+            break;
+          }
           if (op.op === "use_media") {
             const file = ctx.mediaFile?.(op.assetId);
             if (!file) {
@@ -231,7 +236,8 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           }
           const v = validateSettings(spec, op.type, null, op.settings);
           const sid = newId(c, op.type);
-          const inst: SectionInstance = { type: op.type, settings: v.settings };
+          // Thème importé : valeurs par défaut écrites (traduites), comme le fait l'éditeur Shopify à l'ajout.
+          const inst: SectionInstance = { type: op.type, settings: spec.imported ? withDefaults(schema.settings, v.settings) : v.settings };
           const errors = [...v.errors];
           // Sans blocs précisés : ceux du préréglage de la section (comme l'éditeur Shopify).
           const presetBlocks = ((schema.presets?.[0] as { blocks?: { type: string; settings?: Record<string, unknown> }[] } | undefined)?.blocks ?? []).filter((b) => !b.type.startsWith("@"));
@@ -247,7 +253,7 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
               const bv = validateSettings(spec, op.type, b.type, b.settings);
               errors.push(...bv.errors);
               const bid = newBlockId(inst, b.type);
-              inst.blocks[bid] = { type: b.type, settings: bv.settings };
+              inst.blocks[bid] = { type: b.type, settings: spec.imported ? withDefaults(schema.blocks.find((x) => x.type === b.type)?.settings, bv.settings) : bv.settings };
               inst.block_order.push(bid);
             }
           }
@@ -434,7 +440,8 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
 /** Contrôles structurels avant enregistrement d'une version. */
 export function validateSpec(spec: ThemeSpec): string[] {
   const problems: string[] = [];
-  for (const key of ["index", "product", "collection", "cart", "search", "404", "page", "list-collections"]) {
+  // Thème importé : ses pages peuvent être des gabarits Liquid (conservés tels quels), seuls les JSON sont dans le spec.
+  for (const key of spec.imported ? [] : ["index", "product", "collection", "cart", "search", "404", "page", "list-collections"]) {
     if (!spec.templates[key]) problems.push(`gabarit obligatoire manquant : ${key}`);
   }
   for (const [where, c] of [...Object.entries(spec.templates), ...Object.entries(spec.groups).map(([g, j]) => [`group:${g}`, j] as const)]) {
@@ -447,6 +454,8 @@ export function validateSpec(spec: ThemeSpec): string[] {
       if (!sectionSchema(spec, s.type)) problems.push(`${where} : type de section inconnu ${s.type}`);
     }
   }
+  // Thème importé : ses propres règles s'appliquent (sections et polices propres au thème du client).
+  if (spec.imported) return problems;
   if (!spec.templates.product?.order.some((id) => spec.templates.product.sections[id]?.type === "main-product")) problems.push("la fiche produit doit contenir la section Produit");
   const defaults = globalSettingDefaults();
   for (const k of ["type_heading_font", "type_body_font"]) if (!spec.settings[k] && !defaults[k]) problems.push(`police manquante : ${k}`);
