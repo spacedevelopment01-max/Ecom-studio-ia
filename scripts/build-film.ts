@@ -72,7 +72,7 @@ for (let f = 0; f < Math.round(FPS * TOTAL); f++) {
   await page.evaluate((t) => (window as any).seek(t), f / FPS);
   const buf = await page.screenshot({ type: "jpeg", quality: 90 });
   if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
-  if (f === Math.round(FPS * (timeline[SILENT ? 4 : 3].start + 3))) fs.writeFileSync(path.join(OUT, `${NAME}.jpg`), await page.screenshot({ type: "jpeg", quality: 82 }));
+  if (f === Math.round(FPS * ((SILENT ? timeline.find((x) => x.id === "t4")! : timeline[3]).start + 3))) fs.writeFileSync(path.join(OUT, `${NAME}.jpg`), await page.screenshot({ type: "jpeg", quality: 82 }));
   if (f % 150 === 0) console.log(`  image ${f}/${FPS * TOTAL}`);
 }
 ff.stdin.end();

@@ -86,6 +86,7 @@ export default async function Home() {
           <nav className="hidden items-center gap-7 text-sm text-ink-2 lg:flex" aria-label="Navigation principale">
             <a href="#video" className="hover:text-ink">En vidéo</a>
             <a href="#sur-mesure" className="hover:text-ink">Sur mesure</a>
+            <a href="#boutiques" className="hover:text-ink">Plateformes</a>
             <a href="#demonstrations" className="hover:text-ink">Démonstrations</a>
             <a href="#studio" className="hover:text-ink">Le studio</a>
             <a href="#offre" className="hover:text-ink">Offre</a>
@@ -126,7 +127,7 @@ export default async function Home() {
                 <Words text="Une boutique qui vend." className="text-gradient pb-1" d={4} />
               </h1>
               <p className="reveal mt-7 max-w-xl text-lg leading-relaxed text-ink-2 sm:text-xl" style={{ ["--d" as any]: 6 }}>
-                Déposez la photo de votre produit, collez un lien, ou commencez sans rien. L'IA construit la marque, le thème Shopify, les images, les vidéos et vos publications. Vous gardez la main à chaque étape.
+                Déposez la photo de votre produit, collez un lien, ou commencez sans rien. L'IA construit la marque, la boutique (Shopify, WooCommerce, PrestaShop…), les images, les vidéos et vos publications. Vous gardez la main à chaque étape.
               </p>
               <div className="reveal mt-9 flex flex-wrap items-center gap-3" style={{ ["--d" as any]: 7 }}>
                 <Link href={cta} className="btn-glow inline-flex h-14 items-center gap-2.5 rounded-full bg-signal px-7 text-[15px] font-semibold text-signal-ink transition hover:-translate-y-0.5">
@@ -147,13 +148,13 @@ export default async function Home() {
                 <div className="neon on overflow-hidden rounded-[2rem] border border-line bg-[#070B17] shadow-[0_40px_120px_-40px_var(--glow)]">
                   <FilmPlayer
                     films={[
-                      { label: "Comment ça marche · 50 s", src: "/explainers/film-court.mp4", poster: "/explainers/film-court.jpg", description: "Film explicatif sans voix : de la photo à la publication en 6 étapes" },
+                      { label: "Comment ça marche · 1 min", src: "/explainers/film-court.mp4", poster: "/explainers/film-court.jpg", description: "Film explicatif sans voix : de la photo à la publication en 7 étapes" },
                       { label: "Version commentée · 1 min", src: "/explainers/film.mp4", poster: "/explainers/film.jpg", captions: "/explainers/film.vtt", description: "Film de présentation commenté (voix off et sous-titres)" },
                     ]}
                   />
                 </div>
                 <ul className="mt-6 flex flex-wrap justify-center gap-2">
-                  {["Thème Shopify OS 2.0", "Vidéos 9:16 · 1:1 · 4:5 · 16:9", "Palette mesurée sur le produit"].map((t, i) => (
+                  {["Monoproduit, multiproduits ou niche", "Shopify · WooCommerce · PrestaShop", "Vidéos 9:16 · 1:1 · 4:5 · 16:9"].map((t, i) => (
                     <li key={t} className="floaty glass rounded-full border border-line px-4 py-2 text-xs font-medium text-ink-2 shadow-soft" style={{ animationDelay: `${-i * 2}s` }}>{t}</li>
                   ))}
                 </ul>
@@ -219,10 +220,10 @@ export default async function Home() {
               {[
                 ["01", "Identité", "Logo, palette mesurée sur votre produit, typographies et ton éditorial : la marque d'abord, le thème ensuite."],
                 ["02", "Composition", "Les sections sont choisies et ordonnées pour raconter votre produit : ouverture, preuves, détails, usage, questions."],
-                ["03", "Sections inédites", "Quand rien n'existe pour votre idée, l'IA code une nouvelle section Shopify (animation, présentation, comparateur), réglable dans l'éditeur."],
+                ["03", "Sections inédites", "Quand rien n'existe pour votre idée, l'IA code une nouvelle section (animation, présentation, comparateur), réglable dans l'éditeur."],
                 ["04", "Relecture visuelle", "Le studio photographie la boutique sur ordinateur et téléphone, la note comme un directeur artistique et corrige ce qui se voit."],
                 ["05", "Retouches en discutant", "« Plus premium », « ce bouton en noir », « ajoute une section avis » : seul l'élément visé change, chaque version reste restaurable."],
-                ["06", "Prête pour Shopify", "Online Store 2.0, contrôlée avec Theme Check, exportée en ZIP identique à l'aperçu ou installée directement dans votre boutique."],
+                ["06", "Prête pour votre plateforme", "Shopify (Online Store 2.0 contrôlé avec Theme Check, installé directement ou en ZIP), WooCommerce et PrestaShop (thèmes installables), kit de reprise pour Wix et Squarespace."],
               ].map(([n, t, d], i) => (
                 <li key={n} className="reveal rounded-3xl border border-line bg-card p-6" style={{ ["--d" as any]: i }}>
                   <p className="font-display text-sm font-semibold text-signal">{n}</p>
@@ -232,6 +233,58 @@ export default async function Home() {
               ))}
             </ol>
             <p className="reveal mt-6 text-xs text-muted">Conception sur mesure avec l'IA du studio. Sans IA, le moteur intégré part de l'une des onze directions, aux couleurs et au logo de votre marque.</p>
+          </div>
+        </section>
+
+        {/* Types de boutique et plateformes */}
+        <section id="boutiques" className="scroll-mt-20 border-y border-line bg-card py-24 sm:py-32">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="max-w-3xl">
+              <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Toutes les boutiques</p>
+              <h2 className="words mt-4 font-display text-[clamp(2.3rem,5.2vw,4.4rem)] font-semibold leading-[0.96]">
+                <Words text="Un produit, un catalogue" /> <Words text="ou une niche." className="text-gradient" d={4} />
+              </h2>
+              <p className="reveal mt-5 text-[17px] leading-relaxed text-ink-2">Vous choisissez le type de boutique en créant le projet : le studio adapte la marque, la mise en page, les collections et la navigation.</p>
+            </div>
+            <div className="mt-12 grid gap-5 md:grid-cols-3">
+              {[
+                ["Monoproduit", "Un produit phare mis en scène sur toute la boutique.", "/demo/drone/boutique-bureau.jpg", "Ostral · drone pliable"],
+                ["Multiproduits", "Un catalogue, des collections, une fiche pour chaque article.", "/demo/tribunes/boutique-bureau.jpg", "Les Tribunes · t-shirts"],
+                ["Niche", "Plusieurs produits d'un même univers, pour une communauté précise.", "/demo/chat/boutique-bureau.jpg", "Ronron · accessoires pour chat"],
+              ].map(([t, d, img, cap], i) => (
+                <figure key={t} className="reveal overflow-hidden rounded-3xl border border-line bg-paper" style={{ ["--d" as any]: i }}>
+                  <img src={img} alt={`Boutique ${t.toLowerCase()} générée : ${cap}`} loading="lazy" className="aspect-[16/10] w-full object-cover object-top" />
+                  <figcaption className="p-5">
+                    <h3 className="font-display text-xl font-semibold">{t}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted">{d}</p>
+                    <p className="mt-3 text-xs text-ink-2">Démonstration : {cap}</p>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+
+            <div className="mt-20 grid gap-10 lg:grid-cols-12">
+              <div className="lg:col-span-4">
+                <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">Plateformes</p>
+                <h3 className="words mt-4 font-display text-[clamp(2rem,4vw,3.2rem)] font-semibold leading-[1]">
+                  <Words text="Pas seulement" /> <Words text="Shopify." className="text-gradient" d={2} />
+                </h3>
+                <p className="reveal mt-5 text-[17px] leading-relaxed text-ink-2">La même boutique, livrée pour la plateforme de votre choix. Rien n'est promis au-delà de ce que chaque plateforme accepte.</p>
+              </div>
+              <ul className="grid gap-4 sm:grid-cols-2 lg:col-span-8">
+                {[
+                  ["Shopify", "Thème Online Store 2.0 complet, contrôlé avec Theme Check, installé directement dans votre boutique ou exporté en ZIP. Catalogue en CSV."],
+                  ["WooCommerce", "Thème de blocs WordPress à téléverser (Apparence › Thèmes), avec vos couleurs, typographies, images et textes. Catalogue en CSV."],
+                  ["PrestaShop", "Thème enfant du thème Classic (versions 1.7 et 8), installable depuis l'administration, aux couleurs de votre marque."],
+                  ["Wix et Squarespace", "Ces plateformes n'acceptent pas de thème importé : le studio fournit un kit de reprise (images, charte, textes, catalogue CSV et guide pas à pas)."],
+                ].map(([t, d], i) => (
+                  <li key={t} className="reveal rounded-3xl border border-line bg-paper p-6" style={{ ["--d" as any]: i }}>
+                    <p className="flex items-center gap-2 font-display text-lg font-semibold"><Store className="size-4 text-signal" aria-hidden /> {t}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted">{d}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 
