@@ -154,7 +154,7 @@ export type ProductPlacement = { cx: number; baseY: number; height: number; maxW
  * Dessine le produit avec ombre de contact et ombre portée. Retourne le
  * cadre occupé (utile pour placer les textes sans chevauchement).
  */
-export function drawProduct(ctx: SKRSContext2D, product: Image, p: ProductPlacement, opts: { shadow?: "soft" | "hard" | "none"; reflection?: boolean; shadowColor?: string; lightFrom?: "left" | "right" } = {}) {
+export function drawProduct(ctx: SKRSContext2D, product: Image, p: ProductPlacement, opts: { shadow?: "soft" | "hard" | "none" | "natural"; reflection?: boolean; shadowColor?: string; lightFrom?: "left" | "right" } = {}) {
   let ph = p.height;
   let pw = (product.width / product.height) * ph;
   if (p.maxWidth && pw > p.maxWidth) {
@@ -164,7 +164,25 @@ export function drawProduct(ctx: SKRSContext2D, product: Image, p: ProductPlacem
   const x = p.cx - pw / 2;
   const y = p.baseY - ph;
   const sc = opts.shadowColor ?? "rgba(20,14,10,";
-  if (opts.shadow !== "none") {
+  if (opts.shadow === "natural") {
+    // Lumière douce d'intérieur : pas d'ombre projetée, seulement l'occlusion au contact et un halo très doux.
+    const halo = createCanvas(Math.ceil(pw * 2), Math.ceil(pw * 0.6));
+    const hc = halo.getContext("2d");
+    hc.filter = `blur(${Math.round(pw * 0.06)}px)`;
+    hc.fillStyle = `${sc}0.22)`;
+    hc.beginPath();
+    hc.ellipse(pw, pw * 0.3, pw * 0.42, Math.min(pw * 0.07, ph * 0.05), 0, 0, Math.PI * 2);
+    hc.fill();
+    ctx.drawImage(halo as any, p.cx - pw, p.baseY - pw * 0.3);
+    const tight = createCanvas(Math.ceil(pw * 1.6), Math.ceil(pw * 0.3));
+    const tc = tight.getContext("2d");
+    tc.filter = `blur(${Math.max(2, Math.round(pw * 0.012))}px)`;
+    tc.fillStyle = `${sc}0.55)`;
+    tc.beginPath();
+    tc.ellipse(pw * 0.8, pw * 0.15, pw * (pw > ph * 1.3 ? 0.3 : 0.44), Math.min(pw * 0.022, ph * 0.014), 0, 0, Math.PI * 2);
+    tc.fill();
+    ctx.drawImage(tight as any, p.cx - pw * 0.8, p.baseY - pw * 0.15);
+  } else if (opts.shadow !== "none") {
     // Ombre portée (silhouette déformée et floutée).
     const dir = opts.lightFrom === "right" ? -1 : 1;
     const sil = createCanvas(Math.ceil(pw), Math.ceil(ph));
@@ -368,13 +386,6 @@ function everyday(ctx: SKRSContext2D, w: number, h: number, pal: Palette, seed: 
   ctx.clip();
   ctx.globalCompositeOperation = "multiply";
   ctx.filter = `blur(${Math.round(h * 0.002)}px)`;
-  for (let i = 0; i < 18; i++) {
-    const y0 = tableY + (h - tableY) * r();
-    ctx.fillStyle = `rgba(160,135,105,${0.08 + r() * 0.1})`;
-    ctx.beginPath();
-    ctx.ellipse(w * r(), y0, w * (0.2 + r() * 0.5), h * (0.002 + r() * 0.004), 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
   ctx.filter = "none";
   for (let i = 0; i < 260; i++) {
     const y0 = tableY + (h - tableY) * Math.pow(r(), 0.7);
@@ -452,7 +463,7 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
   const scale = s.productScale ?? (s.style === "everyday" ? 0.46 : 0.62);
   const cx = w * (0.5 + (s.offsetX ?? 0));
   let baseY = h * 0.8;
-  let shadow: "soft" | "hard" = "soft";
+  let shadow: "soft" | "hard" | "natural" = "soft";
   let shadowColor = "rgba(20,14,10,";
   let everydayShade: Canvas | null = null;
   const ph = h / w > 1.6 ? h * scale : Math.min(h * scale, w * scale * 1.15);
@@ -529,7 +540,7 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
         const e = everyday(ctx, w, h, pal, s.seed ?? 5);
         baseY = e.baseY;
         everydayShade = e.shade;
-        shadow = "hard";
+        shadow = "natural";
         shadowColor = "rgba(46,28,12,";
         break;
       }

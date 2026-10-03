@@ -90,7 +90,7 @@ export function FilmPlayer({ films }: { films: Film[] }) {
           {film.captions && <track kind="captions" src={film.captions} srcLang="fr" label="Français" />}
         </video>
         {!sound && (
-          <button onClick={withSound} className="btn-glow absolute right-2.5 top-2.5 inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:right-4 sm:top-4 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm">
+          <button onClick={withSound} style={{ position: "absolute" }} className="btn-glow !absolute right-2.5 top-2.5 z-10 inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:right-4 sm:top-4 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm">
             <span aria-hidden>▶</span> Avec le son
           </button>
         )}
@@ -191,7 +191,7 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
               <span className="size-2.5 rounded-full bg-line" />
               <span className="size-2.5 rounded-full bg-line" />
               <span className="size-2.5 rounded-full bg-line" />
-              <span className="ml-3 truncate text-xs text-muted">Aperçu du thème Shopify généré</span>
+              <span className="ml-3 truncate text-xs text-muted">Aperçu du thème généré</span>
             </div>
             <img src={d.shopDesktop} alt={`Page d'accueil de la boutique ${d.brand}`} className="aspect-[16/10] w-full object-cover object-top" loading="lazy" />
           </div>
