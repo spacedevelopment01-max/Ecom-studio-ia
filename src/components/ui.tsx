@@ -236,7 +236,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
       <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className={cx("max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl border border-line bg-card p-5 shadow-soft sm:rounded-3xl sm:p-7", wide ? "sm:max-w-4xl" : "sm:max-w-lg")}>
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2 className="font-display text-2xl">{title}</h2>
-          <button onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-paper-2" aria-label="Fermer">
+          <button type="button" onClick={() => closeRef.current()} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-paper-2" aria-label="Fermer">
             <X className="size-5" />
           </button>
         </div>

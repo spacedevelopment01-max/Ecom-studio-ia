@@ -65,7 +65,30 @@ describe("essai gratuit et crédits épuisés", () => {
     creditTopup(free.id, 20, "pay_essai");
     expect(await runForUser(free.id, async () => llmConfigured())).toBe(true);
     expect(await runForUser(free.id, async () => imageProviderAvailable())).not.toBe(null);
+    // Le client peut choisir le moteur local même avec des crédits : aucune IA, aucun crédit consommé.
+    const { setAiMode } = await import("@/lib/ai/access");
+    setAiMode(free.id, "local");
+    expect(await runForUser(free.id, async () => llmConfigured())).toBe(false);
+    expect(await runForUser(free.id, async () => imageProviderAvailable())).toBe(null);
+    setAiMode(free.id, "ai");
+    expect(await runForUser(free.id, async () => llmConfigured())).toBe(true);
     setSetting("provider.anthropic.apiKey", null, true);
     setSetting("provider.google.apiKey", null, true);
+  });
+});
+
+describe("avertissement avant une action IA gourmande", () => {
+  it("estime la part des crédits et classe l'action (légère, gourmande, insuffisante)", async () => {
+    const { estimateFor, estimateMicro } = await import("@/lib/ai/estimate");
+    const u = await createUser(`estim${Date.now()}@test.fr`, "motdepasse-test", "Estimation");
+    creditTopup(u.id, 40, "pay_estim"); // 20 € de crédits IA
+    expect(estimateMicro("ugc", { beats: 3 })).toBeGreaterThan(estimateMicro("image"));
+    expect(estimateMicro("ugc", { beats: 5 })).toBeGreaterThan(estimateMicro("ugc", { beats: 2 }));
+    const ugc = estimateFor(u.id, "ugc", { beats: 3 });
+    expect(["heavy", "very-heavy"]).toContain(ugc.level);
+    expect(ugc.pctOfAvailable).toBeGreaterThan(25);
+    expect(estimateFor(u.id, "ugc", { beats: 5 }).leftAfterPct).toBeLessThan(ugc.leftAfterPct);
+    const poor = await createUser(`pauvre${Date.now()}@test.fr`, "motdepasse-test", "Sans crédit");
+    expect(estimateFor(poor.id, "ugc", { beats: 3 }).level).toBe("insufficient");
   });
 });

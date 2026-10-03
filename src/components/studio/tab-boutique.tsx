@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Crosshair, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
+import { useCostConfirm } from "./cost-confirm";
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import { ThemeGallery, ThemeGrid } from "./theme-gallery";
 import { SectionLibrary, type LibraryItem } from "./section-library";
@@ -64,6 +65,7 @@ export default function TabBoutique() {
   const { id, data, reload: reloadProject } = useProject();
   const toast = useToast();
   const { data: theme, reload } = useApi<ThemeData>(`/api/projects/${id}/theme`);
+  const cost = useCostConfirm();
   const chatJobs = useActive(["shop.chat", "shop.build", "shop.direction", "shopify.push"]);
   const [view, setView] = useState<"chat" | "preview" | "structure">("chat");
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
@@ -216,8 +218,9 @@ export default function TabBoutique() {
   if (!theme.current)
     return (
       <div className="mx-auto max-w-3xl">
+        {cost.dialog}
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
-        <Empty title="La boutique n'est pas encore composée" icon={<Store className="size-5" />} action={data?.brand ? <Button onClick={async () => { await api(`/api/projects/${id}/theme/build`, { body: {} }); reloadProject(); }}>Composer la boutique maintenant</Button> : undefined}>
+        <Empty title="La boutique n'est pas encore composée" icon={<Store className="size-5" />} action={data?.brand ? <Button onClick={async () => { if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {} }); reloadProject(); }}>Composer la boutique maintenant</Button> : undefined}>
           {data?.brand ? "La marque est prête : vous pouvez lancer la composition." : "Elle sera créée après la marque et les textes (voir le Pilote)."}
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">Les thèmes disponibles</h2>

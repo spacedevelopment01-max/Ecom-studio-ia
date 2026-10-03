@@ -149,23 +149,40 @@ function Notifications() {
   );
 }
 
+/** Choix du moteur (local gratuit ou IA avec crédits) et jauge des crédits, en haut du studio. */
 export function CreditPill() {
-  const { data } = useProject();
+  const { data, reload } = useProject();
+  const [busy, setBusy] = useState(false);
   const c = data?.credits;
-  if (!c) return null;
-  if (c.empty)
-    return (
-      <Link href="/studio/compte" className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-3 text-xs md:flex" title="Aucun crédit de création : le moteur intégré est utilisé">
-        <Wallet className="size-4" /> Moteur intégré
-      </Link>
-    );
+  if (!c || !data) return null;
+  const configured = data.ai.llm || data.ai.image;
+  const mode = data.ai.mode ?? "ai";
+  const canAi = configured && data.ai.credits !== false;
+  const set = async (m: "ai" | "local") => {
+    if (m === mode || busy) return;
+    setBusy(true);
+    try {
+      await api("/api/me/ai-mode", { body: { mode: m } });
+      reload();
+    } finally {
+      setBusy(false);
+    }
+  };
   const left = Math.max(0, 1 - c.usedPct);
   return (
-    <Link href="/studio/compte" className={cx("hidden h-10 items-center gap-2 rounded-full border px-3 text-xs md:flex", c.paused ? "border-bad bg-bad-soft text-bad" : c.alert ? "border-warn bg-warn-soft text-warn" : "border-line bg-card")} title="Crédits de création">
-      <Wallet className="size-4" />
-      <span className="w-16"><Progress value={left} /></span>
-      <span>{Math.round(left * 100)} %</span>
-    </Link>
+    <div className="flex items-center gap-1.5">
+      <div className="flex h-10 items-center rounded-full border border-line bg-card p-0.5 text-xs" role="group" aria-label="Moteur de création">
+        <button onClick={() => set("local")} aria-pressed={mode === "local" || !canAi} title="Moteur local : gratuit, ne consomme aucun crédit" className={cx("h-8 rounded-full px-2.5 sm:px-3", mode === "local" || !canAi ? "bg-ink text-paper" : "text-muted hover:text-ink")}>Local</button>
+        <button onClick={() => (canAi ? set("ai") : (window.location.href = "/studio/compte"))} aria-pressed={mode === "ai" && canAi} title={canAi ? "IA : résultats bien meilleurs, consomme vos crédits de création" : configured ? "Crédits épuisés ou essai gratuit : passez à l'abonnement" : "IA non connectée sur cette installation"} className={cx("h-8 rounded-full px-2.5 sm:px-3", mode === "ai" && canAi ? "bg-signal text-signal-ink" : "text-muted hover:text-ink", !configured && "opacity-50")} disabled={!configured}>IA</button>
+      </div>
+      {!c.empty && (
+        <Link href="/studio/compte" className={cx("hidden h-10 items-center gap-2 rounded-full border px-3 text-xs md:flex", c.paused ? "border-bad bg-bad-soft text-bad" : c.alert ? "border-warn bg-warn-soft text-warn" : "border-line bg-card")} title="Crédits de création restants">
+          <Wallet className="size-4" />
+          <span className="w-14"><Progress value={left} /></span>
+          <span>{Math.round(left * 100)} %</span>
+        </Link>
+      )}
+    </div>
   );
 }
 
