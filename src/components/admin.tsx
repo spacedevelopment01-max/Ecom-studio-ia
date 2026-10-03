@@ -24,11 +24,12 @@ type Overview = {
 };
 
 const SECTIONS = [
+  ["bord", "Tableau de bord"],
+  ["clients", "Clients"],
   ["ia", "Fournisseurs IA"],
   ["routes", "Modèles et tarifs"],
   ["connexions", "Connexions OAuth"],
   ["paiements", "Paiements"],
-  ["clients", "Clients"],
   ["conso", "Consommation"],
   ["sante", "Erreurs et tâches"],
 ] as const;
@@ -38,7 +39,8 @@ const euro = (n: number) => n.toLocaleString("fr-FR", { style: "currency", curre
 export function AdminConsole() {
   const toast = useToast();
   const { data, reload } = useApi<Overview>("/api/admin/overview");
-  const [tab, setTab] = useState<(typeof SECTIONS)[number][0]>("ia");
+  const [tab, setTab] = useState<(typeof SECTIONS)[number][0]>("bord");
+  const { data: dash, reload: reloadDash } = useApi<Dashboard>("/api/admin/dashboard");
   const set = async (pairs: { key: string; value: string | null }[], msg = "Enregistré.") => {
     try {
       await api("/api/admin/settings", { body: { set: pairs } });
@@ -63,7 +65,7 @@ export function AdminConsole() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/studio" className="inline-flex items-center gap-2 text-sm"><ArrowLeft className="size-4" /> <Logo compact /> <span className="font-medium">Administration</span></Link>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} onClick={reload}>Actualiser</Button>
+            <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} onClick={() => { reload(); reloadDash(); }}>Actualiser</Button>
             <ThemeToggle />
           </div>
         </div>
@@ -75,13 +77,14 @@ export function AdminConsole() {
           ))}
         </nav>
         {!data ? <div className="skeleton h-72 rounded-3xl" /> : (
-          <div className="grid gap-5">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
             <PricingAlert data={data} post={post} onOpen={() => setTab("routes")} />
             {tab === "ia" && <AiProviders data={data} set={set} />}
             {tab === "routes" && <Routes data={data} post={post} />}
             {tab === "connexions" && <OAuthApps data={data} set={set} />}
             {tab === "paiements" && <Payments data={data} set={set} />}
-            {tab === "clients" && <Clients data={data} reload={reload} />}
+            {tab === "bord" && (dash ? <DashboardView d={dash} onClients={() => setTab("clients")} /> : <div className="skeleton h-72 rounded-3xl" />)}
+            {tab === "clients" && (dash ? <Clients d={dash} reload={() => { reload(); reloadDash(); }} /> : <div className="skeleton h-72 rounded-3xl" />)}
             {tab === "conso" && <Usage data={data} />}
             {tab === "sante" && <Health data={data} reload={reload} />}
           </div>
@@ -302,8 +305,142 @@ function Payments({ data, set }: { data: Overview; set: SetFn }) {
   );
 }
 
-function Clients({ data, reload }: { data: Overview; reload: () => void }) {
+type ClientRow = { id: string; email: string; name: string; role: string; createdAt: number; subscription: string; stores: number; monthlyEur: number; projects: number; lastActive: number | null; jobs30: number; aiCost30Eur: number; usedPct: number; availableEur: number; paidEur: number; segment: "abonne" | "offert" | "essai" | "sans" | "impaye" | "resilie" };
+type Dashboard = {
+  accounts: { total: number; new7: number; new30: number; active30: number };
+  plans: Record<ClientRow["segment"], number>;
+  conversionPct: number;
+  mrrEur: number;
+  storesBilled: number;
+  usage: { subscribers: number; using: number; notUsing: number; avgUsedPct: number; nearLimit: number };
+  money30: { paidEur: number; payments: number; subscriptionEur: number; subscriptionCount: number; topupEur: number; topupCount: number; revenueHtEur: number; aiCostEur: number; stripeFeesEur: number; marginEur: number };
+  months: { label: string; subscriptionEur: number; topupEur: number; payments: number }[];
+  lastPayments: { id: string; email: string; kind: string; amountEur: number; status: string; at: number }[];
+  atRisk: { email: string; lastActive: number | null }[];
+  nearLimit: { email: string; usedPct: number }[];
+  clients: ClientRow[];
+};
+
+const SEGMENTS: { id: ClientRow["segment"]; label: string; short: string; tone: "ok" | "info" | "neutral" | "warn" | "bad" }[] = [
+  { id: "abonne", label: "Abonnés payants", short: "Abonné", tone: "ok" },
+  { id: "offert", label: "Abonnements offerts", short: "Offert", tone: "info" },
+  { id: "essai", label: "En essai", short: "Essai", tone: "neutral" },
+  { id: "sans", label: "Sans abonnement", short: "Sans abonnement", tone: "neutral" },
+  { id: "impaye", label: "Paiement en échec", short: "Impayé", tone: "warn" },
+  { id: "resilie", label: "Résiliés", short: "Résilié", tone: "bad" },
+];
+const segLabel = (s: ClientRow["segment"]) => SEGMENTS.find((x) => x.id === s)!;
+const eur2 = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
+const ago = (t: number | null) => {
+  if (!t) return "jamais";
+  const d = Math.floor((Date.now() - t) / 86400_000);
+  return d <= 0 ? "aujourd'hui" : d === 1 ? "hier" : `il y a ${d} j`;
+};
+
+function Tile({ label, value, hint, accent }: { label: string; value: string; hint?: string; accent?: boolean }) {
+  return (
+    <Card className={cx("p-4 sm:p-5", accent && "border-signal/40")}>
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-1 font-display text-2xl font-semibold tabular-nums sm:text-3xl">{value}</p>
+      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+    </Card>
+  );
+}
+
+function DashboardView({ d, onClients }: { d: Dashboard; onClients: () => void }) {
+  const m = d.money30;
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <Tile accent label="Abonnés payants" value={String(d.plans.abonne)} hint={`${d.storesBilled} boutique${d.storesBilled > 1 ? "s" : ""} facturée${d.storesBilled > 1 ? "s" : ""}`} />
+        <Tile accent label="Revenu mensuel récurrent" value={eur2(d.mrrEur)} hint="TTC, abonnements payants en cours" />
+        <Tile label="Comptes inscrits" value={String(d.accounts.total)} hint={`+${d.accounts.new7} en 7 j · +${d.accounts.new30} en 30 j`} />
+        <Tile label="Conversion en abonnés" value={`${Math.round(d.conversionPct)} %`} hint="abonnés payants / comptes inscrits" />
+      </div>
+
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="font-display text-lg font-semibold">Répartition des comptes</p>
+          <Button size="sm" variant="secondary" onClick={onClients}>Voir les clients</Button>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {SEGMENTS.map((s) => (
+            <div key={s.id} className="rounded-2xl border border-line p-3">
+              <Badge tone={s.tone}>{s.label}</Badge>
+              <p className="mt-2 font-display text-2xl font-semibold tabular-nums">{d.plans[s.id]}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
+        <Card className="p-5">
+          <p className="font-display text-lg font-semibold">Utilisation du forfait</p>
+          <p className="text-xs text-muted">Abonnés payants et offerts, sur les 30 derniers jours.</p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">L'utilisent</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.using}<span className="text-base text-muted"> / {d.usage.subscribers}</span></p></div>
+            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">Ne l'utilisent pas</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.notUsing}</p></div>
+            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">Crédits utilisés en moyenne</p><p className="font-display text-2xl font-semibold tabular-nums">{Math.round(d.usage.avgUsedPct)} %</p></div>
+            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">Proches de la limite (80 %+)</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.nearLimit}</p></div>
+          </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-xs font-semibold text-ink-2">Risque de départ (aucune création en 30 j)</p>
+              <ul className="mt-1.5 grid gap-1 text-sm">{d.atRisk.length ? d.atRisk.map((r) => <li key={r.email} className="flex justify-between gap-2"><span className="truncate">{r.email}</span><span className="shrink-0 text-xs text-muted">{ago(r.lastActive)}</span></li>) : <li className="text-muted">Aucun</li>}</ul>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-ink-2">À relancer pour une recharge</p>
+              <ul className="mt-1.5 grid gap-1 text-sm">{d.nearLimit.length ? d.nearLimit.map((r) => <li key={r.email} className="flex justify-between gap-2"><span className="truncate">{r.email}</span><span className="shrink-0 text-xs text-muted">{Math.round(r.usedPct)} %</span></li>) : <li className="text-muted">Aucun</li>}</ul>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-5">
+          <p className="font-display text-lg font-semibold">Argent des 30 derniers jours</p>
+          <p className="text-xs text-muted">Paiements encaissés via Stripe. Marge estimée : HT moins coût IA et frais Stripe estimés (hors serveur, cotisations et impôts).</p>
+          <dl className="mt-4 grid gap-2 text-sm">
+            <div className="flex justify-between gap-3"><dt>Paiements reçus</dt><dd className="tabular-nums">{m.payments} · <strong>{eur2(m.paidEur)}</strong> TTC</dd></div>
+            <div className="flex justify-between gap-3 text-ink-2"><dt>dont abonnements</dt><dd className="tabular-nums">{m.subscriptionCount} · {eur2(m.subscriptionEur)}</dd></div>
+            <div className="flex justify-between gap-3 text-ink-2"><dt>dont recharges</dt><dd className="tabular-nums">{m.topupCount} · {eur2(m.topupEur)}</dd></div>
+            <div className="flex justify-between gap-3 border-t border-line pt-2"><dt>Chiffre d'affaires HT</dt><dd className="tabular-nums">{eur2(m.revenueHtEur)}</dd></div>
+            <div className="flex justify-between gap-3 text-ink-2"><dt>Coût IA réel</dt><dd className="tabular-nums">− {eur2(m.aiCostEur)}</dd></div>
+            <div className="flex justify-between gap-3 text-ink-2"><dt>Frais Stripe estimés</dt><dd className="tabular-nums">− {eur2(m.stripeFeesEur)}</dd></div>
+            <div className="flex justify-between gap-3 border-t border-line pt-2 text-base"><dt className="font-semibold">Marge estimée</dt><dd className={cx("font-semibold tabular-nums", m.marginEur < 0 && "text-bad")}>{eur2(m.marginEur)}</dd></div>
+          </dl>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
+        <Card className="overflow-x-auto p-5">
+          <p className="font-display text-lg font-semibold">Encaissements par mois</p>
+          <table className="mt-3 w-full text-sm">
+            <thead className="text-left text-xs text-muted"><tr><th className="py-1.5">Mois</th><th className="hidden text-right sm:table-cell">Paiements</th><th className="text-right">Abonnements</th><th className="text-right">Recharges</th><th className="text-right">Total TTC</th></tr></thead>
+            <tbody className="divide-y divide-line">
+              {d.months.map((x) => (
+                <tr key={x.label}><td className="py-1.5 pr-2 capitalize">{x.label}</td><td className="hidden text-right tabular-nums sm:table-cell">{x.payments}</td><td className="text-right tabular-nums">{eur2(x.subscriptionEur)}</td><td className="text-right tabular-nums">{eur2(x.topupEur)}</td><td className="text-right font-semibold tabular-nums">{eur2(x.subscriptionEur + x.topupEur)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+        <Card className="overflow-x-auto p-5">
+          <p className="font-display text-lg font-semibold">Derniers paiements</p>
+          <table className="mt-3 w-full text-sm">
+            <tbody className="divide-y divide-line">
+              {d.lastPayments.length ? d.lastPayments.map((p) => (
+                <tr key={p.id}><td className="py-1.5 pr-2"><span className="block truncate">{p.email}</span><span className="text-xs text-muted">{p.kind === "subscription" ? "Abonnement" : "Recharge"} · {formatDate(p.at)}</span></td><td className="text-right tabular-nums">{eur2(p.amountEur)}</td><td className="pl-2 text-right"><Badge tone={p.status === "paid" ? "ok" : "warn"}>{p.status === "paid" ? "payé" : p.status}</Badge></td></tr>
+              )) : <tr><td className="py-2 text-muted">Aucun paiement pour l'instant.</td></tr>}
+            </tbody>
+          </table>
+        </Card>
+      </div>
+    </>
+  );
+}
+
+function Clients({ d, reload }: { d: Dashboard; reload: () => void }) {
   const toast = useToast();
+  const [seg, setSeg] = useState<"tous" | "inactifs" | "limite" | ClientRow["segment"]>("tous");
+  const [q, setQ] = useState("");
   const act = async (uid: string, b: Record<string, unknown>) => {
     try {
       await api(`/api/admin/users/${uid}`, { body: b });
@@ -313,24 +450,52 @@ function Clients({ data, reload }: { data: Overview; reload: () => void }) {
       toast("bad", (e as Error).message);
     }
   };
+  const subscribed = (c: ClientRow) => c.segment === "abonne" || c.segment === "offert";
+  const list = d.clients.filter((c) => {
+    if (q && !`${c.email} ${c.name}`.toLowerCase().includes(q.toLowerCase())) return false;
+    if (seg === "tous") return true;
+    if (seg === "inactifs") return subscribed(c) && c.jobs30 === 0;
+    if (seg === "limite") return subscribed(c) && c.usedPct >= 0.8;
+    return c.segment === seg;
+  });
+  const filters: [typeof seg, string, number][] = [
+    ["tous", "Tous", d.clients.length],
+    ...SEGMENTS.map((s) => [s.id, s.label, d.clients.filter((c) => c.segment === s.id).length] as [typeof seg, string, number]),
+    ["inactifs", "Abonnés inactifs (30 j)", d.clients.filter((c) => subscribed(c) && c.jobs30 === 0).length],
+    ["limite", "Proches de la limite", d.clients.filter((c) => subscribed(c) && c.usedPct >= 0.8).length],
+  ];
   return (
-    <Card className="overflow-x-auto p-5">
-      <table className="w-full min-w-[860px] text-sm">
-        <thead className="text-left text-xs text-muted"><tr><th className="py-2">Client</th><th>Abonnement</th><th>Boutiques</th><th>Projets</th><th>Enveloppe</th><th>Actions</th></tr></thead>
-        <tbody className="divide-y divide-line">
-          {data.users.map((u) => (
-            <tr key={u.id}>
-              <td className="py-2.5 pr-2">{u.name}<span className="block text-xs text-muted">{u.email} {u.role === "admin" && "· admin"}</span></td>
-              <td className="pr-2"><Select value={u.subscription} onChange={(e) => act(u.id, { subscription: e.target.value })} aria-label="Abonnement">{["none", "trial", "manual", "active", "past_due", "canceled"].map((s) => <option key={s} value={s} disabled={s === "active" || s === "past_due"}>{s}</option>)}</Select></td>
-              <td className="pr-2"><Input type="number" min={1} max={50} defaultValue={u.stores} onBlur={(e) => Number(e.target.value) !== u.stores && act(u.id, { stores: Number(e.target.value) })} className="w-20" aria-label="Boutiques" /></td>
-              <td className="pr-2">{u.projects}</td>
-              <td className="pr-2 tabular-nums">{euro(u.availableEur)}<span className="block text-xs text-muted">{Math.round(u.usedPct * 100)} % utilisés</span></td>
-              <td><Button size="sm" variant="ghost" icon={<KeyRound className="size-3.5" />} onClick={() => { const v = prompt("Crédit IA à ajouter (en €, négatif pour retirer) :", "10"); if (v && !isNaN(Number(v))) act(u.id, { creditEur: Number(v), note: "Crédit ajouté par l'administration" }); }}>Créditer</Button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <p className="mt-3 text-xs text-muted">« manual » active l'abonnement sans paiement en ligne (enveloppe IA mensuelle comprise). « active » et « past_due » sont pilotés par Stripe.</p>
+    <Card className="p-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un e-mail ou un nom" aria-label="Rechercher" className="max-w-xs" />
+        <a href="/api/admin/clients.csv" className="ml-auto inline-flex h-9 items-center rounded-full border border-line px-4 text-sm hover:border-ink">Exporter en CSV (Excel)</a>
+      </div>
+      <div className="scrollbar-none -mx-1 mt-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
+        {filters.map(([k, l, n]) => (
+          <button key={k} onClick={() => setSeg(k)} className={cx("shrink-0 rounded-full border px-3 py-1.5 text-xs", seg === k ? "border-ink bg-ink text-paper" : "border-line bg-card")}>{l} · {n}</button>
+        ))}
+      </div>
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full min-w-[980px] text-sm">
+          <thead className="text-left text-xs text-muted"><tr><th className="py-2">Client</th><th>Statut</th><th>Abonnement</th><th>Boutiques</th><th>Activité</th><th>Forfait</th><th>Payé</th><th>Actions</th></tr></thead>
+          <tbody className="divide-y divide-line">
+            {list.map((u) => (
+              <tr key={u.id}>
+                <td className="py-2.5 pr-2">{u.name || "—"}<span className="block text-xs text-muted">{u.email} {u.role === "admin" && "· admin"}</span><span className="block text-[11px] text-muted">inscrit {ago(u.createdAt)} · {u.projects} projet{u.projects > 1 ? "s" : ""}</span></td>
+                <td className="pr-2"><Badge tone={segLabel(u.segment).tone}>{segLabel(u.segment).short}</Badge>{u.monthlyEur > 0 && <span className="mt-1 block text-xs text-muted">{eur2(u.monthlyEur)} / mois</span>}</td>
+                <td className="pr-2"><Select value={u.subscription} onChange={(e) => act(u.id, { subscription: e.target.value })} aria-label="Abonnement">{[["none", "Sans abonnement"], ["trial", "Essai"], ["manual", "Offert (manuel)"], ["active", "Payant (Stripe)"], ["past_due", "Impayé (Stripe)"], ["canceled", "Résilié"]].map(([v, l]) => <option key={v} value={v} disabled={v === "active" || v === "past_due"}>{l}</option>)}</Select></td>
+                <td className="pr-2"><Input type="number" min={1} max={50} defaultValue={u.stores} onBlur={(e) => Number(e.target.value) !== u.stores && act(u.id, { stores: Number(e.target.value) })} className="w-20" aria-label="Boutiques" /></td>
+                <td className="pr-2 text-xs">{ago(u.lastActive)}<span className="block text-muted">{u.jobs30} création{u.jobs30 > 1 ? "s" : ""} en 30 j</span></td>
+                <td className="pr-2 tabular-nums">{Math.round(u.usedPct * 100)} %<span className="block text-xs text-muted">reste {eur2(u.availableEur)} · IA {eur2(u.aiCost30Eur)}</span></td>
+                <td className="pr-2 tabular-nums">{eur2(u.paidEur)}</td>
+                <td><Button size="sm" variant="ghost" icon={<KeyRound className="size-3.5" />} onClick={() => { const v = prompt("Crédit IA à ajouter (en €, négatif pour retirer) :", "10"); if (v && !isNaN(Number(v))) act(u.id, { creditEur: Number(v), note: "Crédit ajouté par l'administration" }); }}>Créditer</Button></td>
+              </tr>
+            ))}
+            {!list.length && <tr><td colSpan={8} className="py-6 text-center text-muted">Aucun client dans cette catégorie.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-xs text-muted">« Offert (manuel) » active l'abonnement sans paiement en ligne (crédits IA compris). « Payant » et « Impayé » sont pilotés par Stripe. « Payé » : total encaissé depuis l'inscription.</p>
     </Card>
   );
 }
