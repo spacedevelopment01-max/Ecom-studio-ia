@@ -115,3 +115,16 @@ describe("référence de thème pour l'IA", () => {
     expect(themeReference(sampleSpec("atelier"))).not.toContain("Opérations :");
   });
 });
+
+describe("textes sans IA", () => {
+  it("le bandeau ne reprend que des informations confirmées, jamais de promesse générique", async () => {
+    const { factMarquee } = await import("@/lib/engine/local-copy");
+    const items = factMarquee(
+      { name: "Thé glacé Pêche", category: "Thés glacés", variants: [{ name: "Goût", values: ["Pêche", "Citron"] }], facts: [{ key: "capacity", label: "Contenance", value: "33 cl.", status: "confirmed", source: "user" }, { key: "origin", label: "Origine", value: "", status: "unknown", source: "ai" }] } as any,
+      { name: "Verger", tagline: "Le goût des bonnes choses." },
+    );
+    expect(items).toContain("Contenance : 33 cl");
+    expect(items).toContain("2 goûts au choix");
+    expect(items.join(" ")).not.toMatch(/origine|fait pour durer|prise en main/i);
+  });
+});

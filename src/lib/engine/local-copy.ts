@@ -11,19 +11,42 @@ import type { Brand, Fact, ProductProfile, SectorId } from "../project-types";
 type SectorVoice = { eyebrow: string; marquee: string[]; usageTitle: string; careTitle: string; aboutHeading: string; values: { title: string; text: string }[] };
 
 const VOICES: Record<SectorId, SectorVoice> = {
-  beaute: { eyebrow: "Soin", marquee: ["Gestes simples", "Formule détaillée", "Rituel quotidien"], usageTitle: "Utilisation", careTitle: "Composition", aboutHeading: "Une marque de soin, sans détour", values: [{ title: "Transparence", text: "La composition complète est indiquée sur chaque produit." }, { title: "Simplicité", text: "Des gestes clairs, expliqués pas à pas." }] },
+  beaute: { eyebrow: "Soin", marquee: ["Gestes simples", "Formule détaillée", "Rituel quotidien"], usageTitle: "Utilisation", careTitle: "Composition", aboutHeading: "Une marque de soin, sans détour", values: [{ title: "Transparence", text: "La composition est indiquée sur la fiche dès qu'elle est connue." }, { title: "Simplicité", text: "Des gestes clairs, expliqués pas à pas." }] },
   mode: { eyebrow: "Collection", marquee: ["Coupe étudiée", "Matières choisies", "À porter longtemps"], usageTitle: "Taille et coupe", careTitle: "Entretien", aboutHeading: "Des pièces pensées pour durer", values: [{ title: "Choix des matières", text: "Chaque matière est décrite précisément." }, { title: "Entretien", text: "Des conseils pour garder la pièce longtemps." }] },
   bijoux: { eyebrow: "Bijou", marquee: ["Détails précis", "Finitions soignées", "À offrir ou à garder"], usageTitle: "Dimensions", careTitle: "Matériaux et entretien", aboutHeading: "Des bijoux à regarder de près", values: [{ title: "Précision", text: "Matériaux et dimensions indiqués sans approximation." }, { title: "Écrin", text: "Une présentation pensée pour offrir." }] },
   maison: { eyebrow: "Maison", marquee: ["Objet du quotidien", "Lignes simples", "Fait pour durer"], usageTitle: "Dimensions", careTitle: "Matières et entretien", aboutHeading: "Des objets qui trouvent leur place", values: [{ title: "Usage", text: "Des objets pensés pour servir chaque jour." }, { title: "Matières", text: "Des matières décrites telles qu'elles sont." }] },
-  hightech: { eyebrow: "Technologie", marquee: ["Fiche technique complète", "Prise en main rapide", "Compatibilités indiquées"], usageTitle: "Prise en main", careTitle: "Caractéristiques techniques", aboutHeading: "La technologie, expliquée clairement", values: [{ title: "Clarté", text: "Chaque caractéristique est indiquée précisément." }, { title: "Support", text: "Une équipe joignable pour vos questions." }] },
+  hightech: { eyebrow: "Technologie", marquee: ["Fiche technique complète", "Prise en main rapide", "Compatibilités indiquées"], usageTitle: "Prise en main", careTitle: "Caractéristiques techniques", aboutHeading: "La technologie, expliquée clairement", values: [{ title: "Clarté", text: "Chaque caractéristique est indiquée précisément." }, { title: "Usage", text: "Des explications pour bien démarrer." }] },
   sport: { eyebrow: "Performance", marquee: ["Pensé pour bouger", "Prêt pour l'extérieur", "Facile à emporter"], usageTitle: "Utilisation", careTitle: "Caractéristiques", aboutHeading: "Du matériel pour sortir plus souvent", values: [{ title: "Terrain", text: "Des produits décrits pour l'usage réel." }, { title: "Durabilité", text: "Des conseils d'entretien pour durer." }] },
-  alimentation: { eyebrow: "Épicerie", marquee: ["Ingrédients listés", "Origine indiquée", "À partager"], usageTitle: "Dégustation", careTitle: "Ingrédients et allergènes", aboutHeading: "Le goût, et rien à cacher", values: [{ title: "Ingrédients", text: "La liste complète figure sur chaque produit." }, { title: "Origine", text: "La provenance est précisée lorsqu'elle est connue." }] },
-  enfants: { eyebrow: "Enfants", marquee: ["Pensé pour les petits", "Pratique pour les parents", "Informations claires"], usageTitle: "Âge et usage", careTitle: "Matériaux et sécurité", aboutHeading: "Des produits choisis pour les familles", values: [{ title: "Clarté", text: "Âges et usages indiqués précisément." }, { title: "Écoute", text: "Une équipe disponible pour les parents." }] },
+  alimentation: { eyebrow: "Épicerie", marquee: ["Ingrédients listés", "Origine indiquée", "À partager"], usageTitle: "Dégustation", careTitle: "Ingrédients et allergènes", aboutHeading: "Le goût, et rien à cacher", values: [{ title: "Ingrédients", text: "La composition est indiquée sur la fiche dès qu'elle est connue." }, { title: "Origine", text: "La provenance est précisée lorsqu'elle est connue." }] },
+  enfants: { eyebrow: "Enfants", marquee: ["Pensé pour les petits", "Pratique pour les parents", "Informations claires"], usageTitle: "Âge et usage", careTitle: "Matériaux et sécurité", aboutHeading: "Des produits choisis pour les familles", values: [{ title: "Clarté", text: "Âges et usages indiqués précisément." }, { title: "Usage", text: "Des conseils d'utilisation simples." }] },
   animaux: { eyebrow: "Compagnons", marquee: ["Pensé pour eux", "Facile au quotidien", "Tailles détaillées"], usageTitle: "Utilisation", careTitle: "Composition et entretien", aboutHeading: "Pour le quotidien avec eux", values: [{ title: "Usage", text: "Des produits décrits selon l'animal et sa taille." }, { title: "Entretien", text: "Des conseils simples et précis." }] },
   artisanat: { eyebrow: "Atelier", marquee: ["Fait avec soin", "Petites séries", "Détails visibles"], usageTitle: "Dimensions", careTitle: "Matières et fabrication", aboutHeading: "Le geste, la matière, le temps", values: [{ title: "Savoir-faire", text: "Les étapes de fabrication sont décrites." }, { title: "Matières", text: "Des matières nommées et expliquées." }] },
 };
 
 const known = (f: Fact) => f.status !== "unknown" && f.value.trim() !== "";
+
+/**
+ * Expressions courtes du bandeau et du texte défilant : uniquement des informations confirmées du produit
+ * (contenance, coloris, matière…), jamais de promesse générique (« fait pour durer », « origine indiquée »).
+ */
+export function factMarquee(product: ProductProfile, brand: Pick<Brand, "name" | "tagline">): string[] {
+  const out: string[] = [];
+  const add = (t: string | undefined) => {
+    const v = t?.replace(/\s+/g, " ").trim().replace(/[.;,]+$/, "");
+    if (v && v.length <= 32 && !out.some((x) => x.toLowerCase() === v.toLowerCase())) out.push(v);
+  };
+  for (const v of product.variants) if (v.values.length > 1) add(`${v.values.length} ${v.name.toLowerCase()}${/s$/i.test(v.name) ? "" : "s"} au choix`);
+  for (const f of product.facts.filter((f) => f.status === "confirmed" && f.value.trim() && !["price", "name", "summary", "shipping", "returns"].includes(f.key))) {
+    const v = f.value.trim().replace(/[.;,]+$/, "");
+    if (v.length <= 18) add(`${f.label.split("/")[0].trim()} : ${v}`);
+    else add(v);
+    if (out.length >= 4) break;
+  }
+  if (product.category) add(product.category);
+  if (out.length < 2 && brand.tagline) add(brand.tagline.replace(/\.$/, ""));
+  if (out.length < 2 && product.name) add(product.name);
+  return out.slice(0, 4);
+}
 
 export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "tagline" | "story" | "values">): ShopCopy {
   const sector = (product.sector ?? "maison") as SectorId;
@@ -82,7 +105,7 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
         { q: `Comment utiliser ${name} ?`, a: fact("usage") ?? UNKNOWN("mode d'emploi") },
       ],
     },
-    marquee: v.marquee,
+    marquee: factMarquee(product, brand),
     gallery: { heading: "En images", captions: [] },
     cta: { heading: `Adopter ${name}`, text: "", button: "Commander" },
     newsletter: { heading: "Restons en contact", text: "Nouveautés et coulisses, sans excès." },
