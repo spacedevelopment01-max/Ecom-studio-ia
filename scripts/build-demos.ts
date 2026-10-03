@@ -1,7 +1,7 @@
 /**
  * Génère les démonstrations de la page d'accueil avec le vrai studio
- * (serveur + worker lancés) : produits et marques FICTIFS, rendus 3D en entrée.
- *   BASE=http://localhost:3000 tsx scripts/build-demos.ts   (entrées : scripts/demo-renders/inputs)
+ * (serveur + worker lancés) à partir de produits réels de fournisseurs (scripts/demo-products/inputs).
+ *   BASE=http://localhost:3000 ONLY=verger,oreiller,drone,chat,tribunes tsx scripts/build-demos.ts
  * Sortie : public/demo/<id>/…, public/demo/directions/<direction>.jpg, public/demo/manifest.json
  */
 import fs from "node:fs";
@@ -303,6 +303,6 @@ if (!process.env.ONLY) await shootDirections(firstProject!.pid);
 // DROP=<id,…> : démonstrations retirées (produits 3D remplacés par des produits réels).
 const drop = (process.env.DROP ?? "").split(",").filter(Boolean);
 const merged = (process.env.ONLY ? [...demos, ...previous.filter((d: any) => !demos.some((x) => x.id === d.id))] : demos).filter((d: any) => !drop.includes(d.id));
-fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Marques créées par E-COM STUDIO IA (moteur intégré). Les démonstrations « produit réel » partent de photos de fournisseurs ; les autres de rendus 3D.", demos: merged }, null, 2));
+fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).", demos: merged }, null, 2));
 console.log(`✓ ${demos.length} démonstrations → public/demo`);
 await browser.close();

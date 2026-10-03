@@ -1,7 +1,196 @@
 {
-  "generatedAt": "2026-10-03T12:15:54.473Z",
-  "note": "Marques créées par E-COM STUDIO IA (moteur intégré). Les démonstrations « produit réel » partent de photos de fournisseurs ; les autres de rendus 3D.",
+  "generatedAt": "2026-10-03T12:33:54.166Z",
+  "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (marques d'origine retirées).",
   "demos": [
+    {
+      "id": "oreiller",
+      "brand": "Somnéa",
+      "product": "Oreiller ergonomique Papillon",
+      "sector": "Maison",
+      "direction": "clinique",
+      "palette": [
+        "#454A73",
+        "#D3D4D9",
+        "#8B74B4",
+        "#F2F3F7",
+        "#14151F"
+      ],
+      "photo": "/demo/oreiller/photo.jpg",
+      "logo": "/demo/oreiller/logo.svg",
+      "shopDesktop": "/demo/oreiller/boutique-bureau.jpg",
+      "shopMobile": "/demo/oreiller/boutique-mobile.jpg",
+      "productPage": "/demo/oreiller/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/oreiller/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/oreiller/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/oreiller/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/oreiller/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/oreiller/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/oreiller/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/oreiller/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/oreiller/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/oreiller/video.mp4",
+      "videoPoster": "/demo/oreiller/video-poster.jpg",
+      "shopVideo": "/demo/oreiller/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio."
+      }
+    },
+    {
+      "id": "verger",
+      "brand": "Verger",
+      "product": "Thé glacé Pêche",
+      "sector": "Boissons",
+      "direction": "gourmand",
+      "palette": [
+        "#955223",
+        "#E4D4C8",
+        "#CFC159",
+        "#F7F4F2",
+        "#1F1914"
+      ],
+      "photo": "/demo/verger/photo.jpg",
+      "logo": "/demo/verger/logo.svg",
+      "shopDesktop": "/demo/verger/boutique-bureau.jpg",
+      "shopMobile": "/demo/verger/boutique-mobile.jpg",
+      "productPage": "/demo/verger/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/verger/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/verger/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/verger/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/verger/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/verger/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/verger/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/verger/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/verger/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/verger/video.mp4",
+      "videoPoster": "/demo/verger/video-poster.jpg",
+      "shopVideo": "/demo/verger/video-boutique.mp4",
+      "storeType": "niche",
+      "products": 3,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio."
+      }
+    },
+    {
+      "id": "drone",
+      "brand": "Ostral",
+      "product": "Drone pliable à caméra stabilisée",
+      "sector": "High-tech",
+      "direction": "nocturne",
+      "palette": [
+        "#455773",
+        "#D4D6D8",
+        "#7874B4",
+        "#F2F4F7",
+        "#14181F"
+      ],
+      "photo": "/demo/drone/photo.jpg",
+      "logo": "/demo/drone/logo.svg",
+      "shopDesktop": "/demo/drone/boutique-bureau.jpg",
+      "shopMobile": "/demo/drone/boutique-mobile.jpg",
+      "productPage": "/demo/drone/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/drone/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/drone/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/drone/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/drone/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/drone/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/drone/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/drone/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/drone/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/drone/video.mp4",
+      "videoPoster": "/demo/drone/video-poster.jpg",
+      "shopVideo": "/demo/drone/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://fr.aliexpress.com/",
+        "note": "Drone pliable en marque blanche d'un fournisseur ; les inscriptions du fabricant ont été retirées de la photo, la marque et la boutique sont créées par le studio."
+      }
+    },
     {
       "id": "chat",
       "brand": "Ronron",
@@ -127,475 +316,6 @@
         "url": "https://fr.aliexpress.com/",
         "note": "T-shirts de supporter d'un fournisseur (visuels du fournisseur) : la marque et la boutique sont créées par le studio. Les modèles reprenant l'écusson officiel de la fédération ont été écartés."
       }
-    },
-    {
-      "id": "oreiller",
-      "brand": "Somnéa",
-      "product": "Oreiller ergonomique Papillon",
-      "sector": "Maison",
-      "direction": "clinique",
-      "palette": [
-        "#454A73",
-        "#D3D4D9",
-        "#8B74B4",
-        "#F2F3F7",
-        "#14151F"
-      ],
-      "photo": "/demo/oreiller/photo.jpg",
-      "logo": "/demo/oreiller/logo.svg",
-      "shopDesktop": "/demo/oreiller/boutique-bureau.jpg",
-      "shopMobile": "/demo/oreiller/boutique-mobile.jpg",
-      "productPage": "/demo/oreiller/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/oreiller/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/oreiller/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/oreiller/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/oreiller/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/oreiller/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/oreiller/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/oreiller/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/oreiller/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/oreiller/video.mp4",
-      "videoPoster": "/demo/oreiller/video-poster.jpg",
-      "shopVideo": "/demo/oreiller/video-boutique.mp4",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio."
-      }
-    },
-    {
-      "id": "drone",
-      "brand": "Ostral",
-      "product": "Drone pliable à caméra stabilisée",
-      "sector": "High-tech",
-      "direction": "nocturne",
-      "palette": [
-        "#3F5078",
-        "#CFD3DE",
-        "#7E72B5",
-        "#F2F4F7",
-        "#14171F"
-      ],
-      "photo": "/demo/drone/photo.jpg",
-      "logo": "/demo/drone/logo.svg",
-      "shopDesktop": "/demo/drone/boutique-bureau.jpg",
-      "shopMobile": "/demo/drone/boutique-mobile.jpg",
-      "productPage": "/demo/drone/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/drone/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/drone/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/drone/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/drone/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/drone/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/drone/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/drone/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/drone/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/drone/video.mp4",
-      "videoPoster": "/demo/drone/video-poster.jpg",
-      "shopVideo": "/demo/drone/video-boutique.mp4",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Drone pliable en marque blanche d'un fournisseur ; le nom du modèle a été retiré de la photo, la marque et la boutique sont créées par le studio."
-      }
-    },
-    {
-      "id": "verger",
-      "brand": "Verger",
-      "product": "Thé glacé Pêche",
-      "sector": "Boissons",
-      "direction": "gourmand",
-      "palette": [
-        "#955223",
-        "#E4D4C8",
-        "#CFC159",
-        "#F7F4F2",
-        "#1F1914"
-      ],
-      "photo": "/demo/verger/photo.jpg",
-      "logo": "/demo/verger/logo.svg",
-      "shopDesktop": "/demo/verger/boutique-bureau.jpg",
-      "shopMobile": "/demo/verger/boutique-mobile.jpg",
-      "productPage": "/demo/verger/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/verger/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/verger/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/verger/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/verger/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/verger/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/verger/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/verger/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/verger/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/verger/video.mp4",
-      "videoPoster": "/demo/verger/video-poster.jpg",
-      "shopVideo": "/demo/verger/video-boutique.mp4",
-      "storeType": "niche",
-      "products": 3,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio."
-      }
-    },
-    {
-      "id": "serum",
-      "brand": "Maison Ondine",
-      "product": "Sérum Éclat",
-      "sector": "Beauté",
-      "direction": "atelier",
-      "palette": [
-        "#7F5739",
-        "#E0D5CD",
-        "#BDB46B",
-        "#F7F4F2",
-        "#1F1914"
-      ],
-      "photo": "/demo/serum/photo.jpg",
-      "logo": "/demo/serum/logo.svg",
-      "shopDesktop": "/demo/serum/boutique-bureau.jpg",
-      "shopMobile": "/demo/serum/boutique-mobile.jpg",
-      "productPage": "/demo/serum/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/serum/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/serum/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/serum/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/serum/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/serum/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/serum/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/serum/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/serum/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/serum/video.mp4",
-      "videoPoster": "/demo/serum/video-poster.jpg",
-      "shopVideo": "/demo/serum/video-boutique.mp4"
-    },
-    {
-      "id": "montre",
-      "brand": "Pulso",
-      "product": "Montre connectée Pulso",
-      "sector": "High-tech",
-      "direction": "clinique",
-      "palette": [
-        "#815437",
-        "#E0D4CC",
-        "#BFB369",
-        "#F7F4F2",
-        "#1F1814"
-      ],
-      "photo": "/demo/montre/photo.jpg",
-      "logo": "/demo/montre/logo.svg",
-      "shopDesktop": "/demo/montre/boutique-bureau.jpg",
-      "shopMobile": "/demo/montre/boutique-mobile.jpg",
-      "productPage": "/demo/montre/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/montre/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/montre/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/montre/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/montre/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/montre/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/montre/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/montre/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/montre/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/montre/video.mp4",
-      "videoPoster": "/demo/montre/video-poster.jpg",
-      "shopVideo": "/demo/montre/video-boutique.mp4"
-    },
-    {
-      "id": "the",
-      "brand": "Kumo",
-      "product": "Thé vert Sencha",
-      "sector": "Thé",
-      "direction": "joaillerie",
-      "palette": [
-        "#766041",
-        "#DDD7CF",
-        "#B2B474",
-        "#F7F5F2",
-        "#1F1A14"
-      ],
-      "photo": "/demo/the/photo.jpg",
-      "logo": "/demo/the/logo.svg",
-      "shopDesktop": "/demo/the/boutique-bureau.jpg",
-      "shopMobile": "/demo/the/boutique-mobile.jpg",
-      "productPage": "/demo/the/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/the/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/the/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/the/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/the/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/the/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/the/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/the/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/the/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/the/video.mp4",
-      "videoPoster": "/demo/the/video-poster.jpg",
-      "shopVideo": "/demo/the/video-boutique.mp4"
-    },
-    {
-      "id": "gourde",
-      "brand": "Nordvik",
-      "product": "Gourde isotherme 750 ml",
-      "sector": "Sport",
-      "direction": "flux",
-      "palette": [
-        "#736045",
-        "#DBD7D2",
-        "#B1B474",
-        "#F7F5F2",
-        "#1F1A14"
-      ],
-      "photo": "/demo/gourde/photo.jpg",
-      "logo": "/demo/gourde/logo.svg",
-      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
-      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
-      "productPage": "/demo/gourde/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/gourde/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/gourde/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/gourde/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/gourde/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/gourde/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/gourde/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/gourde/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/gourde/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/gourde/video.mp4",
-      "videoPoster": "/demo/gourde/video-poster.jpg",
-      "shopVideo": "/demo/gourde/video-boutique.mp4"
-    },
-    {
-      "id": "tasse",
-      "brand": "Terre & Feu",
-      "product": "Tasse en grès émaillé",
-      "sector": "Maison",
-      "direction": "galerie",
-      "palette": [
-        "#735B45",
-        "#DAD6D3",
-        "#B4B074",
-        "#F7F5F2",
-        "#1F1914"
-      ],
-      "photo": "/demo/tasse/photo.jpg",
-      "logo": "/demo/tasse/logo.svg",
-      "shopDesktop": "/demo/tasse/boutique-bureau.jpg",
-      "shopMobile": "/demo/tasse/boutique-mobile.jpg",
-      "productPage": "/demo/tasse/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/tasse/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/tasse/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/tasse/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/tasse/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tasse/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tasse/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/tasse/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/tasse/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/tasse/video.mp4",
-      "videoPoster": "/demo/tasse/video-poster.jpg",
-      "shopVideo": "/demo/tasse/video-boutique.mp4"
     }
   ]
 }

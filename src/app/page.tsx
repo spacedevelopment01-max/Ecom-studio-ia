@@ -234,7 +234,7 @@ export default async function Home() {
                 </h2>
               </div>
               <p className="reveal max-w-md text-sm leading-relaxed text-muted">
-                Les marques sont <strong className="text-ink">créées par le studio</strong>. Chaque démonstration indique si elle part d'un produit réel de fournisseur (photo d'origine, marque et étiquettes refaites) ou d'un produit fictif modélisé en 3D. Détourage, logo, boutique, images et vidéos sont produits par le studio lui-même, avec son moteur local.
+                Les marques sont <strong className="text-ink">créées par le studio</strong>. Chaque démonstration part d'un vrai produit vendu en marque blanche par un fournisseur : photo d'origine retouchée, inscriptions du fabricant retirées, marque et étiquettes refaites. Détourage, logo, boutique, images et vidéos sont produits par le studio lui-même, avec son moteur local.
               </p>
             </div>
             {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">Les démonstrations s'affichent après génération (script « npm run demos »).</p>}
@@ -418,7 +418,7 @@ export default async function Home() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-10 text-sm text-muted sm:px-6">
           <Logo />
-          <p>Démonstrations : produits et marques fictifs. © {new Date().getFullYear()} E-COM STUDIO IA</p>
+          <p>Démonstrations : produits réels de fournisseurs, marques créées par le studio. © {new Date().getFullYear()} E-COM STUDIO IA</p>
         </div>
       </footer>
     </div>
