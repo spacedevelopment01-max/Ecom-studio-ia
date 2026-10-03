@@ -157,6 +157,7 @@ export default function TabProduit() {
               Réanalyser tout le projet
             </Button>
           </Card>
+          <LifestyleCard />
           <VariantsCard />
         </div>
       </div>
@@ -240,6 +241,53 @@ function VariantsCard() {
           }
         }}
       />
+    </Card>
+  );
+}
+
+/** Photos du produit en situation (vie de tous les jours) : elles ouvrent la boutique et enrichissent la galerie. */
+function LifestyleCard() {
+  const { id } = useProject();
+  const toast = useToast();
+  const input = useRef<HTMLInputElement>(null);
+  const { data, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=lifestyle`);
+  return (
+    <Card className="p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-display text-lg font-semibold">Photos en situation</h3>
+        <Button size="sm" variant="secondary" icon={<ImagePlus className="size-4" />} onClick={() => input.current?.click()}>Ajouter</Button>
+      </div>
+      <p className="mt-1 text-xs text-muted">Le produit utilisé dans la vie de tous les jours. La première ouvre la boutique (héros) dans tous les thèmes ; les autres rejoignent la galerie.</p>
+      <input
+        ref={input}
+        type="file"
+        multiple
+        accept="image/*"
+        className="hidden"
+        onChange={async (e) => {
+          const fd = new FormData();
+          Array.from(e.target.files ?? []).forEach((f) => fd.append("files", f));
+          e.target.value = "";
+          fd.append("role", "lifestyle");
+          try {
+            await api(`/api/projects/${id}/files`, { form: fd });
+            toast("ok", "Photos ajoutées : reconstruisez la boutique pour les voir en ouverture.");
+            reload();
+          } catch (err) {
+            toast("bad", (err as Error).message);
+          }
+        }}
+      />
+      {(data?.assets ?? []).length > 0 && (
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {data!.assets.map((a, i) => (
+            <figure key={a.id} className="overflow-hidden rounded-xl border border-line">
+              <AssetThumb a={a} className="aspect-square w-full" />
+              <figcaption className="truncate px-1.5 py-1 text-[10px] text-muted">{i === 0 ? "Héros" : "Galerie"}</figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }

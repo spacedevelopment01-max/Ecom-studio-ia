@@ -24,6 +24,8 @@ type DemoDef = {
   catalog?: CatalogDemo[];
   /** Produit réel : provenance affichée sur la page d'accueil. */
   source?: { supplier: string; url: string; note: string };
+  /** Photos du produit en situation (vie de tous les jours) : héros de la boutique. */
+  lifestyle?: string[];
   /** Blocs de fiche produit réglés comme le ferait le marchand (lots, livraison, autres saveurs…), insérés après le bloc « after ». */
   pdp?: { type: string; after: string; settings: Record<string, unknown> }[];
   /** Variante (ex. coloris) : valeurs et photo de chaque valeur autre que celle de la photo principale. */
@@ -55,6 +57,7 @@ const REAL_DEMOS: DemoDef[] = [
     productName: "Oreiller ergonomique Papillon", brandName: "Somnéa", price: "39,90 €",
     description: "Oreiller ergonomique en forme de papillon. Deux côtés de hauteurs différentes (un côté bas, un côté haut), un creux central pour la tête et des ailes latérales pour dormir sur le côté. Housse respirante. Coloris : bleu ardoise ou vert sauge.",
     photo: path.join(REAL, "maison", "oreiller-bleu.jpg"),
+    lifestyle: [path.join(REAL, "situations", "oreiller-sommeil.jpg")],
     variants: { name: "Coloris", values: ["Bleu ardoise", "Vert sauge"], photos: { "Vert sauge": path.join(REAL, "maison", "oreiller-vert.jpg") } },
     pdp: [
       { type: "benefits", after: "price", settings: { emoji1: "🦋", title1: "Forme papillon", text1: "Un creux central pour la tête et des ailes latérales pour dormir sur le côté.", emoji2: "↕️", title2: "Deux hauteurs", text2: "Un côté bas, un côté haut : on tourne l'oreiller selon sa préférence.", emoji3: "🌬️", title3: "Housse respirante", text3: "", emoji4: "", title4: "" } },
@@ -68,6 +71,7 @@ const REAL_DEMOS: DemoDef[] = [
     productName: "Drone pliable à caméra stabilisée", brandName: "Ostral", price: "189 €",
     description: "Drone pliable avec caméra stabilisée orientable. Selon la fiche du fournisseur : capteur 1 pouce, ouverture f/1.8, autonomie annoncée de 30 minutes, retour au point de départ par GPS, détection d'obstacles dans quatre directions, prise de vue verticale, radiocommande à écran pliable de 6,9 pouces.",
     photo: path.join(REAL, "hightech", "drone-pliable.jpg"),
+    lifestyle: [path.join(REAL, "situations", "drone-montagne.jpg")],
     pdp: [
       { type: "benefits", after: "price", settings: { emoji1: "📍", title1: "Retour au point de départ", text1: "Par GPS, selon la fiche du fournisseur.", emoji2: "🛰️", title2: "Détection d'obstacles", text2: "Dans quatre directions, selon la fiche du fournisseur.", emoji3: "🔋", title3: "30 minutes annoncées", text3: "Autonomie indiquée par le fournisseur, par batterie.", emoji4: "🎒", title4: "Pliable", text4: "Les bras se replient pour le transport." } },
       { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 7, business_days: true, label: "Livraison estimée" } },
@@ -79,6 +83,7 @@ const REAL_DEMOS: DemoDef[] = [
     productName: "Gant anti-poils", brandName: "Ronron", price: "12,90 €",
     description: "Gant double face pour retirer les poils de chat des canapés, vêtements et coussins. Dos en maille avec dragonne, face en tissu qui accroche les poils. Dimensions : 20 × 15 cm.",
     photo: path.join(REAL, "animaux", "gant-anti-poils.jpg"),
+    lifestyle: [path.join(REAL, "situations", "gant-canape.jpg"), path.join(REAL, "situations", "protege-canape-chat.jpg")],
     catalog: [
       { name: "Protège-canapé anti-griffures", category: "Maison", price: "19,90", description: "Revêtement en rouleau à découper puis coller sur les zones griffées (canapé, mur, porte) : le chat y fait ses griffes sans abîmer le meuble.", features: ["Se découpe aux ciseaux", "Dos adhésif"], photo: path.join(REAL, "animaux", "protege-canape.jpg") },
     ],
@@ -208,6 +213,11 @@ for (const p of PRODUCTS) {
       const r = await ctx.request.post(`${BASE}/api/projects/${pid}/catalog`, { multipart: { name: c.name, category: c.category, price: c.price, description: c.description, features: (c.features ?? []).join("\n"), photo: { name: `${c.name}.jpg`, mimeType: "image/jpeg", buffer: buf } } });
       if (!r.ok()) throw new Error(await r.text());
     }
+  }
+  // Photos en situation (héros de la boutique).
+  for (const file of p.lifestyle ?? []) {
+    const r = await ctx.request.post(`${BASE}/api/projects/${pid}/files`, { multipart: { role: "lifestyle", files: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
+    if (!r.ok()) throw new Error(await r.text());
   }
   // Variante (coloris…) : valeurs du produit, puis photo de chaque valeur.
   if (p.variants) {

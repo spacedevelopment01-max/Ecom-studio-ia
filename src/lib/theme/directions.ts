@@ -292,6 +292,9 @@ function tpl(ids: Ids, sections: [string, Record<string, unknown>, { type: strin
 }
 
 export type ImageSlots = {
+  /** Photo du produit en situation, dans la vie de tous les jours (fournie par le marchand) : ouvre la boutique. */
+  lifestyle?: string;
+  lifestyle2?: string;
   hero?: string; // image large, scène ou bannière
   cutout?: string; // produit détouré (PNG)
   packshot?: string;
@@ -403,13 +406,14 @@ export function buildSpec(input: BuildInput): ThemeSpec {
 
   const heroSplit = (sch: 1 | 2, pos: "right" | "left", asset = im.hero ?? im.packshot): [string, Record<string, unknown>] => [
     "hero-split",
-    { badge, eyebrow: c.hero.eyebrow, heading: heroHead, heading_accent: heroAccent, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, ...second, image_asset: img(asset), image_position: pos, height: "large", parallax: true, color_scheme: scheme(sch), ...pad(72, 104) },
+    { badge, eyebrow: c.hero.eyebrow, heading: heroHead, heading_accent: heroAccent, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, ...second, image_asset: img(im.lifestyle ?? asset), image_position: pos, height: "large", parallax: true, color_scheme: scheme(sch), ...pad(72, 104) },
   ];
   const heroFull = (sch: 1 | 3, align = "bottom-left", font: "heading" | "body" = "body"): [string, Record<string, unknown>] => [
     "hero-fullbleed",
-    { badge, eyebrow: "", heading: heroHead, heading_accent: heroAccent, heading_font: font, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, ...second, image_asset: img(im.banner ?? im.hero ?? im.scene1), video_asset: img(im.video), overlay: 25, height: "screen", align, parallax: true, show_scroll_cue: true, color_scheme: scheme(sch) },
+    { badge, eyebrow: "", heading: heroHead, heading_accent: heroAccent, heading_font: font, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, ...second, image_asset: img(im.lifestyle ?? im.banner ?? im.hero ?? im.scene1), video_asset: im.lifestyle ? "" : img(im.video), overlay: 25, height: "screen", align, parallax: true, show_scroll_cue: true, color_scheme: scheme(sch) },
   ];
-  const heroEdito = (sch: 1 | 2): [string, Record<string, unknown>] => [
+  // Photo en situation disponible : l'ouverture la montre en grand (le détourage flottant de l'éditorial ne suffit plus).
+  const heroEdito = (sch: 1 | 2): [string, Record<string, unknown>] => im.lifestyle ? heroSplit(sch, "right") : [
     "hero-editorial",
     { eyebrow: c.hero.eyebrow, heading_line1: c.hero.line1, heading_line2: c.hero.line2, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, image_asset: img(im.cutout ?? im.packshot), image_alt: input.product.title, parallax: true, color_scheme: scheme(sch), ...pad(56, 104) },
   ];
@@ -574,7 +578,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       shine = false;
       index = [
         // Ouverture vidéo puis grande phrase centrée ; sans vidéo, héros produit puis phrase (si elle diffère).
-        ...(hasVideo ? [video(1, "16/9"), statement(3, "statement", true)] : [heroSplit(1, "right", im.packshot ?? im.hero), ...statementRow(3, "statement", true)]),
+        ...(hasVideo && !im.lifestyle ? [video(1, "16/9"), statement(3, "statement", true)] : [heroSplit(1, "right", im.packshot ?? im.hero), ...statementRow(3, "statement", true)]),
         wave(3, 1),
         hgallery(1),
         ...reels(1),
