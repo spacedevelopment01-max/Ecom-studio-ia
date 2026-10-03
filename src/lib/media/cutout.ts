@@ -17,7 +17,81 @@ async function modelCutout(input: Buffer): Promise<Buffer> {
   }
   const png = await sharp(input, { failOn: "none" }).rotate().resize(2048, 2048, { fit: "inside", withoutEnlargement: true }).png().toBuffer();
   const out = await removeBg!(new Blob([new Uint8Array(png)], { type: "image/png" }), { model: "medium", output: { format: "image/png", quality: 1 } });
-  return Buffer.from(await out.arrayBuffer());
+  return fillInteriorHoles(Buffer.from(await out.arrayBuffer()), png);
+}
+
+/**
+ * Rebouche les « trous » que le modèle découpe à tort à l'intérieur du produit (languette colorée,
+ * étiquette, reflet…) : une zone transparente qui ne touche pas le bord de l'image et dont la couleur
+ * d'origine diffère du fond est rendue opaque avec ses vrais pixels. Les vrais jours (anse d'une tasse,
+ * fond visible à travers) gardent la couleur du fond et restent transparents.
+ */
+export async function fillInteriorHoles(cut: Buffer, original: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(cut).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  const src = await sharp(original).resize(w, h, { fit: "fill" }).removeAlpha().raw().toBuffer();
+  const N = w * h;
+  const transparent = (p: number) => data[p * 4 + 3] < 128;
+  // Fond relié au bord.
+  const outside = new Uint8Array(N);
+  const stack: number[] = [];
+  for (let x = 0; x < w; x++) stack.push(x, (h - 1) * w + x);
+  for (let y = 0; y < h; y++) stack.push(y * w, y * w + w - 1);
+  const bg = [0, 0, 0];
+  let bgN = 0;
+  while (stack.length) {
+    const p = stack.pop()!;
+    if (outside[p] || !transparent(p)) continue;
+    outside[p] = 1;
+    if (bgN < 200000) { bg[0] += src[p * 3]; bg[1] += src[p * 3 + 1]; bg[2] += src[p * 3 + 2]; bgN++; }
+    const x = p % w;
+    if (x > 0) stack.push(p - 1);
+    if (x < w - 1) stack.push(p + 1);
+    if (p >= w) stack.push(p - w);
+    if (p < N - w) stack.push(p + w);
+  }
+  if (!bgN) return cut;
+  const bgc = bg.map((v) => v / bgN);
+  // Composantes transparentes intérieures.
+  const seen = new Uint8Array(N);
+  let changed = false;
+  for (let start = 0; start < N; start++) {
+    if (seen[start] || outside[start] || !transparent(start)) continue;
+    const comp: number[] = [];
+    const st = [start];
+    let sr = 0, sg = 0, sb = 0;
+    while (st.length) {
+      const p = st.pop()!;
+      if (seen[p] || outside[p] || !transparent(p)) continue;
+      seen[p] = 1;
+      comp.push(p);
+      sr += src[p * 3]; sg += src[p * 3 + 1]; sb += src[p * 3 + 2];
+      const x = p % w;
+      if (x > 0) st.push(p - 1);
+      if (x < w - 1) st.push(p + 1);
+      if (p >= w) st.push(p - w);
+      if (p < N - w) st.push(p + w);
+    }
+    const n = comp.length;
+    const dist = Math.abs(sr / n - bgc[0]) + Math.abs(sg / n - bgc[1]) + Math.abs(sb / n - bgc[2]);
+    if (dist < 75) continue; // couleur du fond : vrai jour, on le garde
+    // Le trou et son liseré semi-transparent (2 px) reprennent les vrais pixels, opaques.
+    for (const p of comp) {
+      const x = p % w, y = (p / w) | 0;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+        const xx = x + dx, yy = y + dy;
+        if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+        const q = yy * w + xx;
+        if (outside[q] || data[q * 4 + 3] === 255) continue;
+        data[q * 4] = src[q * 3];
+        data[q * 4 + 1] = src[q * 3 + 1];
+        data[q * 4 + 2] = src[q * 3 + 2];
+        data[q * 4 + 3] = 255;
+      }
+    }
+    changed = true;
+  }
+  return changed ? sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer() : cut;
 }
 
 /** Secours : fond uni détecté depuis les bords (photos sur fond neutre). */
