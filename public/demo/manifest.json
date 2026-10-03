@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T01:57:52.833Z",
+  "generatedAt": "2026-10-03T02:49:26.883Z",
   "note": "Produits, marques et contenus fictifs générés par E-COM STUDIO IA (moteur intégré) à partir de rendus 3D.",
   "demos": [
     {
@@ -59,6 +59,286 @@
       "shopVideo": "/demo/serum/video-boutique.mp4"
     },
     {
+      "id": "drone",
+      "brand": "Aeris",
+      "product": "Drone Aeris X1",
+      "sector": "High-tech",
+      "direction": "nocturne",
+      "palette": [
+        "#735945",
+        "#DAD6D2",
+        "#B4AD74",
+        "#F7F4F2",
+        "#1F1914"
+      ],
+      "photo": "/demo/drone/photo.jpg",
+      "logo": "/demo/drone/logo.svg",
+      "shopDesktop": "/demo/drone/boutique-bureau.jpg",
+      "shopMobile": "/demo/drone/boutique-mobile.jpg",
+      "productPage": "/demo/drone/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/drone/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/drone/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/drone/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/drone/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/drone/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/drone/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/drone/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/drone/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/drone/video.mp4",
+      "videoPoster": "/demo/drone/video-poster.jpg",
+      "shopVideo": "/demo/drone/video-boutique.mp4"
+    },
+    {
+      "id": "soda",
+      "brand": "Pétale",
+      "product": "Pétale Framboise & Hibiscus",
+      "sector": "Boissons",
+      "direction": "gourmand",
+      "palette": [
+        "#90282C",
+        "#E4C8C9",
+        "#CF8C59",
+        "#F7F2F2",
+        "#1F1414"
+      ],
+      "photo": "/demo/soda/photo.jpg",
+      "logo": "/demo/soda/logo.svg",
+      "shopDesktop": "/demo/soda/boutique-bureau.jpg",
+      "shopMobile": "/demo/soda/boutique-mobile.jpg",
+      "productPage": "/demo/soda/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/soda/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/soda/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/soda/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/soda/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/soda/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/soda/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/soda/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/soda/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/soda/video.mp4",
+      "videoPoster": "/demo/soda/video-poster.jpg",
+      "shopVideo": "/demo/soda/video-boutique.mp4"
+    },
+    {
+      "id": "montre",
+      "brand": "Pulso",
+      "product": "Montre connectée Pulso",
+      "sector": "High-tech",
+      "direction": "clinique",
+      "palette": [
+        "#815437",
+        "#E0D4CC",
+        "#BFB369",
+        "#F7F4F2",
+        "#1F1814"
+      ],
+      "photo": "/demo/montre/photo.jpg",
+      "logo": "/demo/montre/logo.svg",
+      "shopDesktop": "/demo/montre/boutique-bureau.jpg",
+      "shopMobile": "/demo/montre/boutique-mobile.jpg",
+      "productPage": "/demo/montre/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/montre/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/montre/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/montre/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/montre/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/montre/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/montre/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/montre/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/montre/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/montre/video.mp4",
+      "videoPoster": "/demo/montre/video-poster.jpg",
+      "shopVideo": "/demo/montre/video-boutique.mp4"
+    },
+    {
+      "id": "the",
+      "brand": "Kumo",
+      "product": "Thé vert Sencha",
+      "sector": "Thé",
+      "direction": "joaillerie",
+      "palette": [
+        "#766041",
+        "#DDD7CF",
+        "#B2B474",
+        "#F7F5F2",
+        "#1F1A14"
+      ],
+      "photo": "/demo/the/photo.jpg",
+      "logo": "/demo/the/logo.svg",
+      "shopDesktop": "/demo/the/boutique-bureau.jpg",
+      "shopMobile": "/demo/the/boutique-mobile.jpg",
+      "productPage": "/demo/the/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/the/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/the/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/the/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/the/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/the/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/the/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/the/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/the/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/the/video.mp4",
+      "videoPoster": "/demo/the/video-poster.jpg",
+      "shopVideo": "/demo/the/video-boutique.mp4"
+    },
+    {
+      "id": "gourde",
+      "brand": "Nordvik",
+      "product": "Gourde isotherme 750 ml",
+      "sector": "Sport",
+      "direction": "flux",
+      "palette": [
+        "#736045",
+        "#DBD7D2",
+        "#B1B474",
+        "#F7F5F2",
+        "#1F1A14"
+      ],
+      "photo": "/demo/gourde/photo.jpg",
+      "logo": "/demo/gourde/logo.svg",
+      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
+      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
+      "productPage": "/demo/gourde/fiche-produit.jpg",
+      "images": [
+        {
+          "src": "/demo/gourde/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/gourde/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/gourde/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/gourde/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/gourde/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/gourde/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/gourde/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/gourde/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/gourde/video.mp4",
+      "videoPoster": "/demo/gourde/video-poster.jpg",
+      "shopVideo": "/demo/gourde/video-boutique.mp4"
+    },
+    {
       "id": "bougie",
       "brand": "Atelier Braise",
       "product": "Bougie Figuier & Bois fumé",
@@ -115,67 +395,11 @@
       "shopVideo": "/demo/bougie/video-boutique.mp4"
     },
     {
-      "id": "gourde",
-      "brand": "Nordvik",
-      "product": "Gourde isotherme 750 ml",
-      "sector": "Sport",
-      "direction": "elan",
-      "palette": [
-        "#736045",
-        "#DBD7D2",
-        "#B1B474",
-        "#F7F5F2",
-        "#1F1A14"
-      ],
-      "photo": "/demo/gourde/photo.jpg",
-      "logo": "/demo/gourde/logo.svg",
-      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
-      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
-      "productPage": "/demo/gourde/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/gourde/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/gourde/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/gourde/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/gourde/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/gourde/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/gourde/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/gourde/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/gourde/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/gourde/video.mp4",
-      "videoPoster": "/demo/gourde/video-poster.jpg",
-      "shopVideo": "/demo/gourde/video-boutique.mp4"
-    },
-    {
       "id": "tasse",
       "brand": "Terre & Feu",
       "product": "Tasse en grès émaillé",
       "sector": "Maison",
-      "direction": "terroir",
+      "direction": "galerie",
       "palette": [
         "#735B45",
         "#DAD6D3",
