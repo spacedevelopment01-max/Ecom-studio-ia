@@ -138,8 +138,12 @@ a { color: inherit; }
 @media (max-width: 989px) {
   .es-header__nav { display: none; }
   .es-header__burger { display: inline-grid; }
-  .es-header__inner, .es-header--logo-center .es-header__inner, .es-header--split .es-header__inner { grid-template-columns: 44px 1fr auto; grid-template-areas: none; }
-  .es-header__logo { justify-self: center; }
+  .es-header__inner, .es-header--logo-center .es-header__inner, .es-header--split .es-header__inner { grid-template-columns: 1fr minmax(0, auto) 1fr; grid-template-areas: "burger logo icons"; gap: 8px; }
+  .es-header__burger { grid-area: burger; justify-self: start; }
+  .es-header__logo { grid-area: logo; justify-self: center; min-width: 0; max-width: 100%; }
+  .es-header__logo-img { max-width: min(var(--logo-width), 46vw); max-height: 48px; }
+  .es-header__wordmark { font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .es-header__icons { grid-area: icons; }
   .es-hide-mobile { display: none; }
 }
 .es-mobile-menu { position: fixed; inset: 0; z-index: 100; padding: 20px var(--gutter) 40px; display: flex; flex-direction: column; gap: 32px; overflow-y: auto; }

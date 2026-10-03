@@ -1,7 +1,7 @@
 /**
  * Génère les démonstrations de la page d'accueil avec le vrai studio
  * (serveur + worker lancés) : produits et marques FICTIFS, rendus 3D en entrée.
- *   BASE=http://localhost:3000 RENDERS=dossier/des/rendus tsx scripts/build-demos.ts
+ *   BASE=http://localhost:3000 tsx scripts/build-demos.ts   (entrées : scripts/demo-renders/inputs)
  * Sortie : public/demo/<id>/…, public/demo/directions/<direction>.jpg, public/demo/manifest.json
  */
 import fs from "node:fs";
@@ -10,7 +10,7 @@ import sharp from "sharp";
 import { chromium, type BrowserContext } from "playwright";
 
 const BASE = process.env.BASE ?? "http://localhost:3000";
-const RENDERS = process.env.RENDERS!;
+const RENDERS = process.env.RENDERS ?? path.join(process.cwd(), "scripts", "demo-renders", "inputs");
 const OUT = path.join(process.cwd(), "public", "demo");
 const PASSWORD = "demo-studio-2026";
 
@@ -80,9 +80,10 @@ for (const p of PRODUCTS) {
   console.log(`▶ ${p.id}`);
   const dir = path.join(OUT, p.id);
   fs.mkdirSync(dir, { recursive: true });
-  const photo = fs.readFileSync(path.join(RENDERS, `${p.id}-photo.png`));
+  const photoFile = [".png", ".jpg"].map((x) => path.join(RENDERS, `${p.id}-photo${x}`)).find((f) => fs.existsSync(f))!;
+  const photo = fs.readFileSync(photoFile);
   const res = await ctx.request.post(`${BASE}/api/projects`, {
-    multipart: { photos: { name: `${p.id}.png`, mimeType: "image/png", buffer: photo }, productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: "shopify" },
+    multipart: { photos: { name: path.basename(photoFile), mimeType: photoFile.endsWith(".png") ? "image/png" : "image/jpeg", buffer: photo }, productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: "shopify" },
   });
   const created = await res.json();
   if (!res.ok()) throw new Error(JSON.stringify(created));

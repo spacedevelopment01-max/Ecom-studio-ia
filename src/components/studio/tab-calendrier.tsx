@@ -189,7 +189,7 @@ export default function TabCalendrier() {
           <button onClick={() => setCursor(today)} className="h-10 rounded-full border border-line bg-card px-4 text-sm">Aujourd'hui</button>
           <button onClick={() => step(1)} className="grid size-10 place-items-center rounded-full border border-line bg-card" aria-label="Suivant"><ChevronRight className="size-4" /></button>
         </div>
-        <h2 className="font-display text-2xl font-semibold capitalize">{mode === "day" ? format(cursor, "EEEE d MMMM yyyy", { locale: fr }) : mode === "week" ? `Semaine du ${format(range[0], "d MMMM", { locale: fr })}` : format(cursor, "MMMM yyyy", { locale: fr })}</h2>
+        <h2 className="font-display text-2xl font-semibold first-letter:uppercase">{mode === "day" ? format(cursor, "EEEE d MMMM yyyy", { locale: fr }) : mode === "week" ? `Semaine du ${format(range[0], "d MMMM", { locale: fr })}` : format(cursor, "MMMM yyyy", { locale: fr })}</h2>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <div className="flex rounded-full border border-line bg-card p-0.5" role="group" aria-label="Vue">
             {(["day", "week", "month"] as ViewMode[]).map((m) => <button key={m} onClick={() => setMode(m)} className={cx("rounded-full px-3 py-1.5 text-sm", mode === m && "bg-ink text-paper")} aria-pressed={mode === m}>{m === "day" ? "Jour" : m === "week" ? "Semaine" : "Mois"}</button>)}

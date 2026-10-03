@@ -255,6 +255,7 @@ export type BuildInput = {
   social?: Partial<Record<"instagram" | "tiktok" | "facebook" | "youtube" | "pinterest", string>>;
 };
 
+const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 const p = (html: string) => (/^\s*</.test(html) ? html : `<p>${html}</p>`);
 
 export function buildSpec(input: BuildInput): ThemeSpec {
@@ -384,7 +385,8 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     { type: "text", settings: { text: p(c.product.short) } },
     { type: "buy_buttons", settings: { picker: "buttons", show_quantity: true, show_dynamic_checkout: true } },
     ...(c.product.highlights.length ? [{ type: "highlights", settings: { items: c.product.highlights.join("\n") } }] : []),
-    { type: "description", settings: {} },
+    // La description n'est affichée que si elle apporte plus que l'accroche courte.
+    ...(stripTags(input.product.description_html) !== stripTags(c.product.short) ? [{ type: "description", settings: {} }] : []),
     ...productTabs,
     ...(c.product.reassurance.length
       ? [{ type: "reassurance", settings: { item1: c.product.reassurance[0] ?? "", icon1: "truck", item2: c.product.reassurance[1] ?? "", icon2: "return", item3: c.product.reassurance[2] ?? "", icon3: "shield" } }]

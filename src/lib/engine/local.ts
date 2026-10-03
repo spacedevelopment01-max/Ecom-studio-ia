@@ -79,7 +79,7 @@ export function localAnalysis(input: { name?: string; brand?: string; descriptio
     if (!facts.some((f) => f.key === k[0])) facts.push({ key: k[0], label: k[1], value: "", status: "unknown", source: "ai" });
   }
   const price = input.price ?? input.link?.product?.price ?? null;
-  const colorLine = input.colors.slice(0, 3).map((c) => c.name).join(", ");
+  const colorLine = [...new Set(input.colors.slice(0, 4).map((c) => c.name))].slice(0, 3).join(", ");
   const questions = [
     ...(price === null ? [{ id: "price", question: "Quel est le prix de vente (TTC) ?", why: "Indispensable pour vendre ; il n'est pas déductible d'une photo.", required: true, factKey: "price" }] : []),
     ...(!name ? [{ id: "name", question: "Quel est le nom du produit ?", why: "Il apparaît partout : fiche, publicités, publications.", required: true, factKey: "name" }] : []),
