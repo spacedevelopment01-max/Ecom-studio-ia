@@ -90,7 +90,7 @@ export function FilmPlayer({ films }: { films: Film[] }) {
           {film.captions && <track kind="captions" src={film.captions} srcLang="fr" label="Français" />}
         </video>
         {!sound && (
-          <button onClick={withSound} className="btn-glow !absolute right-2.5 top-2.5 z-10 inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:right-4 sm:top-4 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm">
+          <button onClick={withSound} style={{ position: "absolute" }} className="btn-glow !absolute right-2.5 top-2.5 z-10 inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:right-4 sm:top-4 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm">
             <span aria-hidden>▶</span> Avec le son
           </button>
         )}
