@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<!--
+  Courtes vidéos explicatives de la page d'accueil.
+  Chaque scène est une animation CSS de 10 s, rendue image par image par scripts/build-explainers.ts.
+  Toutes les images viennent des démonstrations réellement produites par le studio (public/demo).
+-->
+<style>
+  @font-face { font-family: "Bricolage"; src: url("../../public/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+  @font-face { font-family: "Inter"; src: url("../../public/fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
+  @font-face { font-family: "Instrument"; src: url("../../public/fonts/instrument-italic.woff2") format("woff2"); font-style: italic; }
+  :root { --bg: #070B17; --card: #111830; --line: rgba(255,255,255,.1); --ink: #EEF2FB; --muted: #8A94AE; --blue: #3D6EF0; --sky: #7CC4FF; --e: cubic-bezier(.16,1,.3,1); }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 960px; height: 960px; overflow: hidden; background: var(--bg); color: var(--ink); font-family: Inter, sans-serif; }
+  .stage { position: relative; width: 960px; height: 960px; overflow: hidden;
+    background: radial-gradient(700px 520px at 85% -10%, rgba(61,110,240,.38), transparent 60%), radial-gradient(600px 500px at -10% 110%, rgba(124,196,255,.18), transparent 60%), var(--bg); }
+  .stage::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(circle at 50% 40%, #000, transparent 75%); }
+  .scene { display: none; position: absolute; inset: 0; }
+  .scene.on { display: block; }
+  .tag { position: absolute; left: 56px; top: 52px; display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.05); font-size: 17px; letter-spacing: .14em; text-transform: uppercase; color: #BFD3FF; }
+  .tag i { width: 8px; height: 8px; border-radius: 50%; background: var(--sky); box-shadow: 0 0 12px var(--sky); }
+  .brand { position: absolute; right: 56px; top: 56px; font: 600 20px Bricolage, sans-serif; letter-spacing: -.02em; opacity: .85; }
+  .brand em { font-family: Instrument, serif; color: var(--sky); font-weight: 400; }
+  .caps { position: absolute; left: 56px; right: 56px; bottom: 56px; height: 140px; }
+  .cap { position: absolute; left: 0; bottom: 0; font: 650 54px/1.02 Bricolage, sans-serif; letter-spacing: -.035em; }
+  .cap b { font-weight: 650; background: linear-gradient(90deg, var(--blue), var(--sky)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .cap small { display: block; margin-top: 12px; font: 400 22px Inter, sans-serif; letter-spacing: 0; color: var(--muted); }
+
+  /* Briques d'animation : --t = début, --o = sortie */
+  .in { animation: in .8s var(--e) both; animation-delay: var(--t, 0s); }
+  .io { animation: in .7s var(--e) both, out .45s ease-in both; animation-delay: var(--t, 0s), var(--o, 99s); }
+  .pop { animation: pop .6s cubic-bezier(.34,1.56,.64,1) both; animation-delay: var(--t, 0s); }
+  @keyframes in { from { opacity: 0; transform: translateY(34px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
+  @keyframes out { to { opacity: 0; transform: translateY(-24px); filter: blur(6px); } }
+  @keyframes pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+  .card { border-radius: 28px; overflow: hidden; border: 1px solid var(--line); background: var(--card); box-shadow: 0 40px 80px -40px rgba(0,0,0,.8); }
+  .glow { box-shadow: 0 0 0 1px rgba(124,196,255,.35), 0 0 40px rgba(61,110,240,.45), 0 40px 80px -40px rgba(0,0,0,.8); }
+
+  /* 1 · Photo → marque */
+  #photo .ph { position: absolute; left: 120px; top: 170px; width: 360px; height: 450px; animation: in .9s var(--e) both, ph-move 1s var(--e) 2.8s both; }
+  @keyframes ph-move { to { transform: translateX(-56px) scale(.82) rotate(-4deg); opacity: .75; } }
+  #photo .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #photo .scan { position: absolute; left: 0; right: 0; height: 120px; top: -120px; background: linear-gradient(180deg, transparent, rgba(124,196,255,.35) 85%, #BFE2FF 100%); animation: scan 1.5s ease-in-out 1s both; }
+  @keyframes scan { from { top: -120px; opacity: 1; } 90% { opacity: 1; } to { top: 450px; opacity: 0; } }
+  #photo .cut { position: absolute; left: 420px; top: 140px; width: 400px; height: 500px; --t: 3.1s;
+    background: conic-gradient(#1A2340 25%, #141B33 0 50%, #1A2340 0 75%, #141B33 0) 0 0 / 28px 28px; }
+  #photo .cut img { position: absolute; inset: 6% 8%; width: 84%; height: 88%; object-fit: contain; filter: drop-shadow(0 30px 30px rgba(0,0,0,.5)); }
+  #photo .chips { position: absolute; left: 440px; top: 668px; display: flex; gap: 14px; }
+  #photo .chip { width: 62px; height: 62px; border-radius: 50%; border: 3px solid rgba(255,255,255,.85); }
+  #photo .logo { position: absolute; left: 112px; top: 560px; width: 270px; padding: 26px 22px; background: #F7F4F2; border-radius: 22px; --t: 6.3s; }
+  #photo .logo img { width: 100%; height: 70px; object-fit: contain; display: block; }
+
+  /* 2 · Thèmes */
+  #themes .browser { position: absolute; left: 70px; top: 150px; width: 820px; height: 560px; --t: .2s; }
+  #themes .bar { height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 18px; background: #0C1222; border-bottom: 1px solid var(--line); }
+  #themes .bar span { width: 11px; height: 11px; border-radius: 50%; background: #2A3456; }
+  #themes .bar p { margin-left: 14px; font-size: 15px; color: var(--muted); }
+  #themes .view { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; overflow: hidden; background: #0C1222; }
+  #themes .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; animation: wipe 1s var(--e) both, drift 2.6s linear both; animation-delay: var(--t), var(--t); }
+  @keyframes wipe { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes drift { from { transform: scale(1.08); } to { transform: scale(1); } }
+  #themes .name { position: absolute; left: 22px; bottom: 22px; padding: 10px 18px; border-radius: 999px; background: rgba(7,11,23,.78); backdrop-filter: blur(8px); font: 600 22px Bricolage, sans-serif; border: 1px solid rgba(255,255,255,.18); }
+  #themes .name em { font: 400 16px Inter, sans-serif; color: #BFD3FF; margin-left: 8px; font-style: normal; }
+  #themes .opts { position: absolute; left: 70px; top: 730px; display: flex; gap: 10px; flex-wrap: wrap; width: 820px; }
+  #themes .opt { padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(124,196,255,.35); background: rgba(61,110,240,.14); font-size: 16px; color: #D6E4FF; }
+  #themes .caps { height: 110px; }
+  #themes .cap { font-size: 46px; }
+
+  /* 3 · Retouche par conversation */
+  #chat .panel { position: absolute; left: 56px; top: 150px; width: 380px; height: 590px; padding: 22px; --t: .1s; }
+  #chat .panel h4 { font: 600 18px Bricolage, sans-serif; color: var(--muted); margin-bottom: 18px; }
+  #chat .msg { max-width: 300px; padding: 14px 18px; border-radius: 20px; font-size: 19px; line-height: 1.35; margin-bottom: 14px; }
+  #chat .me { margin-left: auto; background: var(--blue); color: #fff; border-bottom-right-radius: 6px; --t: .9s; }
+  #chat .ai { background: #1A2340; border-bottom-left-radius: 6px; --t: 4.6s; }
+  #chat .pin { display: inline-flex; gap: 8px; align-items: center; padding: 7px 12px; border-radius: 999px; background: rgba(124,196,255,.14); border: 1px solid rgba(124,196,255,.4); font-size: 15px; color: #CFE3FF; margin: 0 0 14px auto; --t: .5s; }
+  #chat .row { display: flex; }
+  #chat .dots { display: flex; gap: 6px; padding: 18px; width: 86px; background: #1A2340; border-radius: 20px; --t: 3.2s; --o: 4.5s; position: absolute; top: 250px; left: 22px; }
+  #chat .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); animation: blink 1s infinite; }
+  #chat .dots i:nth-child(2) { animation-delay: .2s; } #chat .dots i:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 50% { opacity: .25; } }
+  #chat .ver { font-size: 14px; color: var(--sky); margin-top: 6px; display: block; }
+  #chat .shop { position: absolute; left: 470px; top: 150px; width: 434px; height: 590px; background: #FFF6EE; color: #2B1416; --t: .3s; }
+  #chat .shop header { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; font: 700 26px Bricolage, sans-serif; letter-spacing: -.03em; color: #90282C; }
+  #chat .shop header span { width: 26px; height: 3px; background: #2B1416; box-shadow: 0 -8px 0 #2B1416; }
+  #chat .shop .im { margin: 0 22px; height: 300px; border-radius: 20px; overflow: hidden; background: #F3E1D6; }
+  #chat .shop .im img { width: 100%; height: 100%; object-fit: cover; }
+  #chat .shop h5 { margin: 22px 22px 6px; font: 700 34px/1 Bricolage, sans-serif; letter-spacing: -.04em; }
+  #chat .shop p { margin: 0 22px; font-size: 16px; color: #6E4A4C; }
+  #chat .btn { position: relative; display: inline-block; margin: 22px; padding: 16px 30px; border-radius: 999px; font: 600 18px Inter, sans-serif; color: #fff; background: #E8607A; animation: tob .6s ease 5.3s both; }
+  @keyframes tob { to { background: #111111; } }
+  #chat .ring { position: absolute; inset: -9px; border: 2.5px dashed var(--blue); border-radius: 999px; animation: in .5s var(--e) 1.9s both, out .4s ease 6.4s both; }
+  #chat .ring b { position: absolute; top: -34px; left: 0; padding: 4px 10px; border-radius: 8px; background: var(--blue); color: #fff; font: 600 13px Inter, sans-serif; white-space: nowrap; }
+
+  /* 4 · Formats */
+  #formats .f { position: absolute; }
+  #formats .f img { width: 100%; height: 100%; object-fit: cover; display: block; animation: kb 8s ease-out both; animation-delay: var(--t); }
+  @keyframes kb { from { transform: scale(1.12); } to { transform: scale(1); } }
+  #formats .f span { position: absolute; left: 12px; top: 12px; padding: 5px 11px; border-radius: 999px; background: rgba(7,11,23,.72); font: 600 15px Inter, sans-serif; }
+  #formats .play { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; margin: -35px; border-radius: 50%; background: rgba(255,255,255,.92); --t: 5.6s; }
+  #formats .play::after { content: ""; position: absolute; left: 27px; top: 21px; border-left: 22px solid #070B17; border-block: 14px solid transparent; }
+
+  /* 5 · Calendrier */
+  #cal .grid { position: absolute; left: 56px; top: 150px; width: 848px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  #cal .day { height: 560px; border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.03); padding: 12px; }
+  #cal .day h6 { font: 600 16px Inter, sans-serif; color: var(--muted); margin-bottom: 12px; }
+  #cal .post { border-radius: 14px; background: var(--card); border: 1px solid var(--line); overflow: hidden; margin-bottom: 12px; }
+  #cal .post img { width: 100%; height: 96px; object-fit: cover; display: block; }
+  #cal .post div { padding: 8px 10px; font-size: 13px; color: #C5CDE0; position: relative; height: 62px; }
+  #cal .st { position: absolute; left: 10px; bottom: 9px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  #cal .wait { background: #3A2A0B; color: #F7C46A; animation: out .3s ease both; animation-delay: var(--o); }
+  #cal .ok { background: #0F2E22; color: #5FD39C; animation: pop .5s cubic-bezier(.34,1.56,.64,1) both; animation-delay: var(--o); }
+  #cal .all { position: absolute; right: 56px; top: 92px; padding: 10px 20px; border-radius: 999px; background: var(--blue); font: 600 17px Inter, sans-serif; --t: 4.6s; animation: in .7s var(--e) both, press .4s ease 5.6s both; animation-delay: var(--t), 5.6s; }
+  @keyframes press { 50% { transform: scale(.92); box-shadow: 0 0 0 10px rgba(61,110,240,.3); } }
+  #cal .caps { height: 110px; }
+  #cal .cap { font-size: 46px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="brand">E-COM STUDIO <em>ia</em></div>
+
+  <!-- 1 · Une photo suffit -->
+  <section class="scene" id="photo">
+    <div class="tag in"><i></i>01 · Analyse du produit</div>
+    <div class="ph card"><img src="../../public/demo/serum/photo.jpg" alt=""><div class="scan"></div></div>
+    <div class="cut card glow in"><img src="../../public/demo/serum/cutout-1.webp" alt=""></div>
+    <div class="chips">
+      <i class="chip pop" style="background:#7F5739;--t:4.5s"></i><i class="chip pop" style="background:#E0D5CD;--t:4.7s"></i><i class="chip pop" style="background:#BDB46B;--t:4.9s"></i><i class="chip pop" style="background:#F7F4F2;--t:5.1s"></i><i class="chip pop" style="background:#1F1914;--t:5.3s"></i>
+    </div>
+    <div class="logo in"><img src="../../public/demo/serum/logo.svg" alt=""></div>
+    <div class="caps">
+      <p class="cap io" style="--t:.3s;--o:2.7s">Une <b>photo</b> suffit.<small>Ou un lien de fiche produit, ou trois lignes.</small></p>
+      <p class="cap io" style="--t:3s;--o:4.3s">Détourée <b>au pixel près</b>.<small>Le produit reste le vôtre : forme, étiquette, couleurs.</small></p>
+      <p class="cap io" style="--t:4.5s;--o:6.1s">Palette <b>mesurée</b> sur l'objet.<small>Contrastes vérifiés pour la lecture.</small></p>
+      <p class="cap in" style="--t:6.4s">Logo et <b>charte</b> prêts.<small>Nom proposé, typographies, ton éditorial.</small></p>
+    </div>
+  </section>
+
+  <!-- 2 · Onze thèmes -->
+  <section class="scene" id="themes">
+    <div class="tag in"><i></i>02 · Boutique Shopify</div>
+    <div class="browser card glow in">
+      <div class="bar"><span></span><span></span><span></span><p>Aperçu du thème généré</p></div>
+      <div class="view">
+        <img class="shot" style="--t:.4s" src="../../public/demo/directions/atelier.jpg" alt="">
+        <img class="shot" style="--t:1.9s" src="../../public/demo/directions/nocturne.jpg" alt="">
+        <img class="shot" style="--t:3.4s" src="../../public/demo/directions/flux.jpg" alt="">
+        <img class="shot" style="--t:4.9s" src="../../public/demo/directions/gourmand.jpg" alt="">
+        <img class="shot" style="--t:6.4s" src="../../public/demo/directions/joaillerie.jpg" alt="">
+        <img class="shot" style="--t:7.9s" src="../../public/demo/directions/pop.jpg" alt="">
+        <p class="name io" style="--t:.8s;--o:1.8s">Atelier<em>en-tête flottant</em></p>
+        <p class="name io" style="--t:2.3s;--o:3.3s">Nocturne<em>sombre, néon</em></p>
+        <p class="name io" style="--t:3.8s;--o:4.8s">Flux<em>en-tête encadré</em></p>
+        <p class="name io" style="--t:5.3s;--o:6.3s">Gourmand<em>bandeau défilant</em></p>
+        <p class="name io" style="--t:6.8s;--o:7.8s">Joaillerie<em>pied centré</em></p>
+        <p class="name in" style="--t:8.3s">Pop<em>en-tête pilule</em></p>
+      </div>
+    </div>
+    <div class="opts">
+      <span class="opt pop" style="--t:1.2s">En-tête : 4 formes</span><span class="opt pop" style="--t:1.4s">Pied de page : 5 styles</span><span class="opt pop" style="--t:1.6s">Bandeau : 3 styles</span><span class="opt pop" style="--t:1.8s">Cartes : 3 styles</span>
+    </div>
+    <div class="caps"><p class="cap in" style="--t:.5s"><b>Onze directions</b>, un vrai thème.<small>Online Store 2.0 · tout se règle dans l'éditeur Shopify.</small></p></div>
+  </section>
+
+  <!-- 3 · Retouche en discutant -->
+  <section class="scene" id="chat">
+    <div class="tag in"><i></i>03 · Retouche en discutant</div>
+    <div class="panel card in">
+      <h4>Discussion</h4>
+      <div class="row"><span class="pin in">◎ Bouton du héros</span></div>
+      <p class="msg me in">Mets ce bouton en noir</p>
+      <div class="dots io"><i></i><i></i><i></i></div>
+      <p class="msg ai in">C'est fait : seul ce bouton a changé.<span class="ver">Nouvelle version · restaurable</span></p>
+    </div>
+    <div class="shop card in">
+      <header>pétale<span></span></header>
+      <div class="im"><img src="../../public/demo/soda/packshot-1.jpg" alt=""></div>
+      <h5>Framboise &amp; hibiscus</h5>
+      <p>Soda pétillant · 33 cl</p>
+      <span class="btn">Découvrir<i class="ring"><b>Élément désigné</b></i></span>
+    </div>
+    <div class="caps" style="height:110px"><p class="cap in" style="--t:6.6s;font-size:46px">Modifiez <b>en discutant</b>.<small>Désignez un élément : seul lui change, chaque version reste restaurable.</small></p></div>
+  </section>
+
+  <!-- 4 · Images et vidéos -->
+  <section class="scene" id="formats">
+    <div class="tag in"><i></i>04 · Images et vidéos</div>
+    <div class="f card in" style="left:56px;top:150px;width:330px;height:330px;--t:.3s"><img src="../../public/demo/drone/social-1.jpg" alt=""><span>1:1</span></div>
+    <div class="f card in" style="left:56px;top:500px;width:330px;height:240px;--t:1.6s"><img src="../../public/demo/the/scene-1.jpg" alt=""><span>Scène</span></div>
+    <div class="f card in" style="left:406px;top:150px;width:240px;height:300px;--t:.8s"><img src="../../public/demo/soda/ad-1.jpg" alt=""><span>4:5</span></div>
+    <div class="f card glow in" style="left:666px;top:150px;width:238px;height:423px;--t:1.2s"><img src="../../public/demo/montre/video-poster.jpg" alt=""><span>9:16 · MP4</span><i class="play pop"></i></div>
+    <div class="f card in" style="left:406px;top:470px;width:240px;height:270px;--t:2s"><img src="../../public/demo/gourde/detail-1.jpg" alt=""><span>Détail</span></div>
+    <div class="f card in" style="left:666px;top:593px;width:238px;height:147px;--t:2.4s"><img src="../../public/demo/bougie/banner-1.jpg" alt=""><span>16:9</span></div>
+    <div class="caps" style="height:110px"><p class="cap in" style="--t:3s;font-size:46px">Visuels <b>aux bons formats</b>.<small>Packshots, scènes, publicités et vidéos montées.</small></p></div>
+  </section>
+
+  <!-- 5 · Calendrier -->
+  <section class="scene" id="cal">
+    <div class="tag in"><i></i>05 · Calendrier</div>
+    <span class="all">Tout valider</span>
+    <div class="grid">
+      <div class="day in" style="--t:.2s"><h6>Lun.</h6>
+        <div class="post in" style="--t:.9s"><img src="../../public/demo/serum/social-1.jpg" alt=""><div>Instagram · 09:00<span class="st wait" style="--o:5.9s">À valider</span><span class="st ok" style="--o:5.9s">Programmé</span></div></div>
+        <div class="post in" style="--t:2.3s"><img src="../../public/demo/serum/scene-2.jpg" alt=""><div>Pinterest · 18:30<span class="st wait" style="--o:6.4s">À valider</span><span class="st ok" style="--o:6.4s">Programmé</span></div></div></div>
+      <div class="day in" style="--t:.3s"><h6>Mar.</h6>
+        <div class="post in" style="--t:1.2s"><img src="../../public/demo/drone/scene-1.jpg" alt=""><div>TikTok · 12:00<span class="st wait" style="--o:6s">À valider</span><span class="st ok" style="--o:6s">Programmé</span></div></div></div>
+      <div class="day in" style="--t:.4s"><h6>Mer.</h6>
+        <div class="post in" style="--t:1.5s"><img src="../../public/demo/soda/social-1.jpg" alt=""><div>Instagram · 09:00<span class="st wait" style="--o:6.1s">À valider</span><span class="st ok" style="--o:6.1s">Programmé</span></div></div>
+        <div class="post in" style="--t:2.6s"><img src="../../public/demo/soda/scene-1.jpg" alt=""><div>Facebook · 18:30<span class="st wait" style="--o:6.5s">À valider</span><span class="st ok" style="--o:6.5s">Programmé</span></div></div></div>
+      <div class="day in" style="--t:.5s"><h6>Jeu.</h6>
+        <div class="post in" style="--t:1.8s"><img src="../../public/demo/montre/scene-2.jpg" alt=""><div>YouTube · 17:00<span class="st wait" style="--o:6.2s">À valider</span><span class="st ok" style="--o:6.2s">Programmé</span></div></div></div>
+      <div class="day in" style="--t:.6s"><h6>Ven.</h6>
+        <div class="post in" style="--t:2.1s"><img src="../../public/demo/the/social-1.jpg" alt=""><div>Instagram · 09:00<span class="st wait" style="--o:6.3s">À valider</span><span class="st ok" style="--o:6.3s">Programmé</span></div></div>
+        <div class="post in" style="--t:2.9s"><img src="../../public/demo/the/scene-2.jpg" alt=""><div>Pinterest · 20:00<span class="st wait" style="--o:6.6s">À valider</span><span class="st ok" style="--o:6.6s">Programmé</span></div></div></div>
+    </div>
+    <div class="caps"><p class="cap in" style="--t:3.4s">Vous <b>validez</b>, il publie.<small>Rien ne part sans votre accord.</small></p></div>
+  </section>
+</div>
+<script>
+  const s = new URLSearchParams(location.search).get("s") || "photo";
+  document.getElementById(s).classList.add("on");
+</script>
+</body>
+</html>
