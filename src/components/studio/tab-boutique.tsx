@@ -1,10 +1,12 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Crosshair, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Crosshair, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import { ThemeGallery, ThemeGrid } from "./theme-gallery";
+import { SectionLibrary, type LibraryItem } from "./section-library";
+import { SortableList } from "./sortable";
 import type { DirectionCard } from "@/lib/theme/directions";
 
 type ThemeData = {
@@ -22,7 +24,7 @@ type ThemeData = {
   versions: { id: string; number: number; summary: string; author: string; created_at: number }[];
   messages: { id: string; role: string; content: string; attachments: string[]; selection: any; theme_version_id: string | null; job_id: string | null; created_at: number }[];
   directions: DirectionCard[];
-  library: { type: string; name: string }[];
+  library: LibraryItem[];
 };
 type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string } | null;
 
@@ -79,6 +81,8 @@ export default function TabBoutique() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [libTarget, setLibTarget] = useState<{ template: string; index?: number; label: string } | null>(null);
+  const [adding, setAdding] = useState<string | null>(null);
   // Lien direct « …/boutique?themes » (depuis le Pilote) : ouvre la galerie.
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("themes")) setGalleryOpen(true);
@@ -188,6 +192,22 @@ export default function TabBoutique() {
       reloadProject();
     } catch (e) {
       toast("bad", (e as Error).message);
+    }
+  }
+
+  async function addSection(type: string) {
+    if (!libTarget) return;
+    setAdding(type);
+    try {
+      await api(`/api/projects/${id}/theme/sections`, { body: { type, template: libTarget.template, index: libTarget.index } });
+      toast("ok", "Section ajoutée : retouchez-la en discutant ou désignez-la dans l'aperçu.");
+      setLibTarget(null);
+      reload();
+      reloadProject();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setAdding(null);
     }
   }
 
@@ -314,40 +334,46 @@ export default function TabBoutique() {
 
   const Structure = (
     <div className="h-full overflow-y-auto p-4">
-      {cur.structure.filter((t) => ["group:header", pageTemplate(page, theme), "group:footer"].includes(t.template)).map((t) => (
-        <div key={t.template} className="mb-5">
-          <p className="mb-2 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t.template === "group:header" ? "En-tête" : t.template === "group:footer" ? "Pied de page" : `Gabarit « ${t.template} »`}</p>
-          <ul className="grid gap-1.5">
-            {t.sections.map((s, i) => (
-              <li key={s.id} className={cx("flex items-center gap-2 rounded-xl border border-line bg-card p-2 text-sm", s.disabled && "opacity-50")}>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{s.name}</p>
-                  {s.heading && <p className="truncate text-xs text-muted">{s.heading}</p>}
+      <p className="mb-4 text-xs leading-relaxed text-muted">Glissez les sections par la poignée pour les réordonner. Le « + » entre deux sections en ajoute une à cet endroit.</p>
+      {cur.structure.filter((t) => ["group:header", pageTemplate(page, theme), "group:footer"].includes(t.template)).map((t) => {
+        const isPage = !t.template.startsWith("group:");
+        const insert = (index: number) => setLibTarget({ template: t.template, index, label: index === 0 ? "En haut de la page" : `Après « ${t.sections[index - 1]?.name ?? ""} »` });
+        return (
+          <div key={t.template} className="mb-5">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t.template === "group:header" ? "En-tête" : t.template === "group:footer" ? "Pied de page" : `Page « ${pages.find((p) => pageTemplate(p.path, theme) === t.template)?.label ?? t.template} »`}</p>
+            <SortableList
+              items={t.sections}
+              onMove={(from, to) => ops([{ op: "move_section", template: t.template, section: t.sections[from].id, position: { index: to } }], `${t.sections[from].name} déplacée`)}
+              render={(s, i, handle, dragging) => (
+                <div>
+                  <div className={cx("flex items-center gap-1.5 rounded-xl border bg-card p-1.5 pr-2 text-sm", dragging ? "border-signal shadow-soft" : "border-line", s.disabled && "opacity-50")}>
+                    {handle}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{theme.library.find((l) => l.type === s.type)?.name ?? s.name}</p>
+                      {s.heading && <p className="truncate text-xs text-muted">{s.heading}</p>}
+                    </div>
+                    <button onClick={() => ops([{ op: "move_section", template: t.template, section: s.id, position: { index: Math.max(0, i - 1) } }], `${s.name} remontée`)} disabled={i === 0} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:grid" aria-label="Monter"><ArrowUp className="size-3.5" /></button>
+                    <button onClick={() => ops([{ op: "move_section", template: t.template, section: s.id, position: { index: i + 1 } }], `${s.name} descendue`)} disabled={i === t.sections.length - 1} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:grid" aria-label="Descendre"><ArrowDown className="size-3.5" /></button>
+                    <button onClick={() => ops([{ op: "toggle_section", template: t.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? "affichée" : "masquée"}`)} className="grid size-7 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? "Afficher" : "Masquer"}>{s.disabled ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</button>
+                    <button onClick={() => ops([{ op: "lock", template: t.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? "déverrouillée" : "validée"}`)} className={cx("grid size-7 place-items-center rounded-full hover:bg-paper-2", s.locked && "text-ok")} aria-label={s.locked ? "Déverrouiller" : "Valider et verrouiller"} title={s.locked ? "Validée : protégée des modifications non ciblées" : "Valider cette section"}>{s.locked ? <Lock className="size-3.5" /> : <Unlock className="size-3.5" />}</button>
+                    {isPage && <button onClick={() => { if (confirm(`Supprimer la section « ${s.name} » ? Vous pourrez revenir à la version précédente.`)) ops([{ op: "remove_section", template: t.template, section: s.id }], `${s.name} supprimée`); }} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-bad" aria-label="Supprimer la section"><Trash2 className="size-3.5" /></button>}
+                  </div>
+                  {isPage && !dragging && (
+                    <button onClick={() => insert(i + 1)} className="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100" aria-label={`Ajouter une section après « ${s.name} »`}>
+                      <span className="h-px flex-1 bg-current opacity-30" /><Plus className="size-3.5" /><span className="h-px flex-1 bg-current opacity-30" />
+                    </button>
+                  )}
                 </div>
-                <button onClick={() => ops([{ op: "move_section", template: t.template, section: s.id, position: { index: Math.max(0, i - 1) } }], `${s.name} remontée`)} disabled={i === 0} className="grid size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30" aria-label="Monter"><ArrowUp className="size-3.5" /></button>
-                <button onClick={() => ops([{ op: "move_section", template: t.template, section: s.id, position: { index: i + 1 } }], `${s.name} descendue`)} disabled={i === t.sections.length - 1} className="grid size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30" aria-label="Descendre"><ArrowDown className="size-3.5" /></button>
-                <button onClick={() => ops([{ op: "toggle_section", template: t.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? "affichée" : "masquée"}`)} className="grid size-7 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? "Afficher" : "Masquer"}>{s.disabled ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</button>
-                <button onClick={() => ops([{ op: "lock", template: t.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? "déverrouillée" : "validée"}`)} className={cx("grid size-7 place-items-center rounded-full hover:bg-paper-2", s.locked && "text-ok")} aria-label={s.locked ? "Déverrouiller" : "Valider et verrouiller"} title={s.locked ? "Validée : protégée des modifications non ciblées" : "Valider cette section"}>{s.locked ? <Lock className="size-3.5" /> : <Unlock className="size-3.5" />}</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-      <div className="rounded-2xl border border-dashed border-line p-3">
-        <p className="mb-2 text-xs text-muted">Ajouter une section à cette page</p>
-        <Select
-          onChange={(e) => {
-            if (!e.target.value) return;
-            ops([{ op: "add_section", template: pageTemplate(page, theme), type: e.target.value }], "Section ajoutée");
-            e.target.value = "";
-          }}
-          defaultValue=""
-          aria-label="Ajouter une section"
-        >
-          <option value="">Choisir…</option>
-          {theme.library.filter((l) => !l.type.startsWith("main-") && !["header", "footer", "announcement-bar", "cart-drawer", "product-recommendations"].includes(l.type)).map((l) => <option key={l.type} value={l.type}>{l.name}</option>)}
-        </Select>
-      </div>
+              )}
+            />
+            {isPage && (
+              <button onClick={() => setLibTarget({ template: t.template, label: "En bas de la page" })} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-signal/50 bg-signal-soft/40 py-3 text-sm font-medium text-signal hover:border-signal">
+                <Plus className="size-4" /> Ajouter une section
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -365,7 +391,8 @@ export default function TabBoutique() {
         </div>
         <button onClick={() => setPicking(!picking)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", picking ? "border-signal bg-signal text-signal-ink" : "border-line bg-card")} aria-pressed={picking}><Crosshair className="size-3.5" /> {picking ? "Cliquez un élément" : "Désigner"}</button>
         <button onClick={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "reveal-all" }, "*")} className="hidden h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs sm:inline-flex" title="Afficher tous les éléments animés"><Sparkles className="size-3.5" /> Animations</button>
-        <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> Thèmes</button>
+<button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: "En bas de la page" })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> Section</button>
+                <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> Thèmes</button>
         <div className="ml-auto flex items-center gap-1.5">
           <Badge tone={viewVersion ? "warn" : "neutral"}>v{theme.versions.find((v) => v.id === versionId)?.number ?? cur.number}{viewVersion ? " (consultation)" : ""}</Badge>
           <button onClick={() => setHistoryOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title="Versions"><History className="size-4" /></button>
@@ -428,6 +455,7 @@ export default function TabBoutique() {
           ))}
         </ul>
       </Modal>
+      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} />
       <ThemeGallery open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} />
     </div>

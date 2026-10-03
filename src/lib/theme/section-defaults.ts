@@ -1,0 +1,67 @@
+/**
+ * Section ajoutée depuis la bibliothèque : remplie d'emblée avec les médias du projet
+ * (photo détourée, photos en situation, scènes, vidéos) au lieu d'emplacements vides.
+ * Seuls les champs vides sont complétés ; les textes restent ceux du préréglage, à personnaliser.
+ */
+import { sectionSchema, type ThemeSpec } from "./spec";
+
+type Blocks = { type: string; settings?: Record<string, unknown> }[];
+
+/** Sections dont les blocs portent des images (galeries, cartes) : on les illustre aussi. */
+const BLOCK_IMAGES = new Set(["gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations"]);
+
+export function mediaPools(spec: ThemeSpec) {
+  const files = Object.keys(spec.files);
+  const pick = (re: RegExp) => files.filter((f) => re.test(f) && !/galerie|favicon|logo/.test(f));
+  const cutout = pick(/detoure/);
+  const life = pick(/en-situation|lifestyle/);
+  const scenes = pick(/scene|hero/).filter((f) => /\.(jpe?g|png|webp)$/.test(f));
+  const details = pick(/detail|packshot/);
+  return {
+    cutout,
+    photos: [...life, ...scenes, ...details].filter((f, i, a) => a.indexOf(f) === i),
+    life: life.length ? life : scenes,
+    videos: pick(/^es-video-[^a]|^es-reel-[^a]/).filter((f) => f.endsWith(".mp4")),
+    posters: pick(/affiche/),
+  };
+}
+
+export function withProjectMedia(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks): { settings: Record<string, unknown>; blocks?: Blocks } {
+  const schema = sectionSchema(spec, type);
+  if (!schema) return { settings, blocks };
+  const p = mediaPools(spec);
+  let n = 0;
+  const nextPhoto = () => p.photos.length ? p.photos[n++ % p.photos.length] : undefined;
+  const out = { ...settings };
+  const has = (id: string) => schema.settings.some((s) => s.id === id);
+  const empty = (id: string) => has(id) && !out[id];
+  if (type === "routine-steps") {
+    if (empty("image_asset") && p.cutout[0]) out.image_asset = p.cutout[0];
+  } else if (type === "before-after") {
+    if (empty("image_before_asset")) out.image_before_asset = p.cutout[0] ?? nextPhoto();
+    if (empty("image_after_asset")) out.image_after_asset = p.life[0] ?? nextPhoto();
+  } else if (empty("image_asset")) {
+    const v = type.startsWith("hero") || type === "image-with-text" || type === "cta-banner" ? p.life[0] ?? nextPhoto() : nextPhoto();
+    if (v) out.image_asset = v;
+  }
+  if (empty("video_asset") && p.videos[0]) out.video_asset = p.videos[0];
+  if (empty("poster_asset") && p.posters[0]) out.poster_asset = p.posters[0];
+
+  const preset = ((schema.presets?.[0] as { blocks?: Blocks } | undefined)?.blocks ?? []).filter((b) => !b.type.startsWith("@"));
+  let outBlocks = blocks ?? preset.map((b) => ({ type: b.type, settings: { ...(b.settings ?? {}) } }));
+  if (BLOCK_IMAGES.has(type) || type === "video-reels") {
+    let v = 0;
+    outBlocks = outBlocks.map((b) => {
+      const bs = schema.blocks.find((x) => x.type === b.type)?.settings ?? [];
+      const s = { ...(b.settings ?? {}) };
+      if (bs.some((x) => x.id === "image_asset") && !s.image_asset) {
+        const img = type === "routine-steps" ? p.cutout[0] ?? nextPhoto() : nextPhoto();
+        if (img) s.image_asset = img;
+      }
+      if (bs.some((x) => x.id === "video_asset") && !s.video_asset && p.videos.length) s.video_asset = p.videos[v++ % p.videos.length];
+      if (bs.some((x) => x.id === "poster_asset") && !s.poster_asset && p.posters.length) s.poster_asset = p.posters[(v - 1 + p.posters.length) % p.posters.length];
+      return { type: b.type, settings: s };
+    });
+  }
+  return { settings: out, blocks: outBlocks.length ? outBlocks : blocks };
+}

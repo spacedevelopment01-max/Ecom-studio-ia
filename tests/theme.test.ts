@@ -167,3 +167,20 @@ describe("accroche du héros", () => {
     expect(heroLead("Court et clair.")).toBe("Court et clair.");
   });
 });
+
+describe("bibliothèque de sections", () => {
+  it("une section ajoutée reprend les blocs de son préréglage et les médias du projet", async () => {
+    const { withProjectMedia } = await import("@/lib/theme/section-defaults");
+    const spec = sampleSpec();
+    spec.files["es-produit-detoure-x1.png"] = { kind: "asset", assetId: "a1" } as any;
+    const filled = withProjectMedia(spec, "routine-steps");
+    expect(filled.settings.image_asset).toBe("es-produit-detoure-x1.png");
+    expect(filled.blocks?.length).toBe(3);
+    const res = applyOps(spec, [{ op: "add_section", template: "index", type: "routine-steps", settings: filled.settings as any, blocks: filled.blocks as any } as any]);
+    expect(res.rejected).toHaveLength(0);
+    expect(validateSpec(res.spec)).toEqual([]);
+    const plain = applyOps(spec, [{ op: "add_section", template: "index", type: "faq" } as any]);
+    const id = plain.spec.templates.index.order.at(-1)!;
+    expect(Object.keys(plain.spec.templates.index.sections[id].blocks ?? {}).length).toBeGreaterThan(0);
+  });
+});

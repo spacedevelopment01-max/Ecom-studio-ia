@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import { addable, SECTION_LIBRARY } from "@/lib/theme/section-library";
 import { all } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { currentTheme, listThemeVersions } from "@/lib/projects";
@@ -25,6 +28,9 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     versions: listThemeVersions(p.id),
     messages,
     directions: directionCards(),
-    library: baseSectionTypes().map((t) => ({ type: t, name: sectionSchema(null, t)?.name ?? t })),
+    library: baseSectionTypes().filter(addable).map((t) => {
+      const e = SECTION_LIBRARY.find((x) => x.type === t);
+      return { type: t, name: e?.name ?? sectionSchema(null, t)?.name ?? t, category: e?.category ?? "Avancé", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null };
+    }),
   });
 });

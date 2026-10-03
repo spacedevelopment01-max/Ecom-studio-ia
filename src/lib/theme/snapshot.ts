@@ -44,6 +44,32 @@ async function sheets(shot: Buffer, width: number, colHeight: number, perSheet: 
   return out;
 }
 
+/** Contexte de navigateur qui sert la boutique rendue depuis la spécification (pages, médias, polices). */
+export async function themeContext(browser: import("playwright").Browser, spec: ThemeSpec, viewport: { width: number; height: number }, mobile = false) {
+  const files = compileTheme(spec);
+  const context = await browser.newContext({ viewport, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile, reducedMotion: "reduce" });
+  await context.route("**/*", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.origin !== ORIGIN || !url.pathname.startsWith(BASE)) return route.abort();
+    const segs = url.pathname.slice(BASE.length).split("/").filter(Boolean).map(decodeURIComponent);
+    if (segs[0] === "assets") {
+      const name = segs.slice(1).join("/");
+      const bin = spec.files[name] ? await themeAssetBinary(spec, name, libraryLoader) : null;
+      if (bin) return route.fulfill({ status: 200, contentType: bin.mime, body: bin.data });
+      const text = files.get(`assets/${name}`);
+      return text === undefined ? route.fulfill({ status: 404, body: "" }) : route.fulfill({ status: 200, contentType: MIME[name.split(".").pop() ?? ""] ?? "text/plain", body: text });
+    }
+    if (segs[0] === "__fonts") {
+      const f = fontFilePath(segs[1] ?? "");
+      return f ? route.fulfill({ status: 200, contentType: "font/ttf", body: fs.readFileSync(f) }) : route.fulfill({ status: 404, body: "" });
+    }
+    if (segs.join("/") === "cart.js") return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ item_count: 0, items: [], total_price: 0, currency: "EUR" }) });
+    const r = await renderPage({ spec, base: BASE, files, cart: [] }, "/" + segs.join("/"), url.searchParams);
+    return route.fulfill({ status: r.status, contentType: "text/html; charset=utf-8", body: r.html });
+  });
+  return { context, url: (pathname: string) => `${ORIGIN}${BASE}${pathname}` };
+}
+
 export async function snapshotTheme(spec: ThemeSpec, pathname = "/"): Promise<{ desktop: Buffer[]; mobile: Buffer[] } | null> {
   const executablePath = chromiumPath();
   if (!executablePath) return null;
@@ -53,32 +79,12 @@ export async function snapshotTheme(spec: ThemeSpec, pathname = "/"): Promise<{ 
   } catch {
     return null;
   }
-  const files = compileTheme(spec);
   const browser = await chromium.launch({ executablePath, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
   try {
     const shoot = async (width: number, height: number, mobile: boolean) => {
-      const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile, reducedMotion: "reduce" });
-      await context.route("**/*", async (route) => {
-        const url = new URL(route.request().url());
-        if (url.origin !== ORIGIN || !url.pathname.startsWith(BASE)) return route.abort();
-        const segs = url.pathname.slice(BASE.length).split("/").filter(Boolean).map(decodeURIComponent);
-        if (segs[0] === "assets") {
-          const name = segs.slice(1).join("/");
-          const bin = spec.files[name] ? await themeAssetBinary(spec, name, libraryLoader) : null;
-          if (bin) return route.fulfill({ status: 200, contentType: bin.mime, body: bin.data });
-          const text = files.get(`assets/${name}`);
-          return text === undefined ? route.fulfill({ status: 404, body: "" }) : route.fulfill({ status: 200, contentType: MIME[name.split(".").pop() ?? ""] ?? "text/plain", body: text });
-        }
-        if (segs[0] === "__fonts") {
-          const f = fontFilePath(segs[1] ?? "");
-          return f ? route.fulfill({ status: 200, contentType: "font/ttf", body: fs.readFileSync(f) }) : route.fulfill({ status: 404, body: "" });
-        }
-        if (segs.join("/") === "cart.js") return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ item_count: 0, items: [], total_price: 0, currency: "EUR" }) });
-        const r = await renderPage({ spec, base: BASE, files, cart: [] }, "/" + segs.join("/"), url.searchParams);
-        return route.fulfill({ status: r.status, contentType: "text/html; charset=utf-8", body: r.html });
-      });
+      const { context, url } = await themeContext(browser, spec, { width, height }, mobile);
       const page = await context.newPage();
-      await page.goto(`${ORIGIN}${BASE}${pathname}`, { waitUntil: "load", timeout: 60_000 });
+      await page.goto(url(pathname), { waitUntil: "load", timeout: 60_000 });
       // Défilement complet : images paresseuses chargées, éléments révélés au défilement affichés.
       await page.evaluate(async () => {
         for (let y = 0; y < document.documentElement.scrollHeight; y += Math.round(innerHeight * 0.8)) {
