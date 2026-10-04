@@ -357,7 +357,7 @@ export function ThemeShowcase({ themes, children }: { themes: ThemeShow[]; child
   const [pinned, setPinned] = useState(false);
   const t = useT();
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)");
+    const mq = window.matchMedia("(min-width: 1024px) and (min-height: 700px) and (prefers-reduced-motion: no-preference)");
     const apply = () => setPinned(mq.matches);
     apply();
     mq.addEventListener("change", apply);
@@ -392,11 +392,11 @@ export function ThemeShowcase({ themes, children }: { themes: ThemeShow[]; child
   }, [pinned]);
   return (
     <section ref={section} id="themes" className="relative scroll-mt-16 bg-paper-2" style={pinned ? { height: `calc(${themes.length} * 34vh + 100vh)` } : undefined}>
-      <div className={cx("overflow-hidden py-24 sm:py-28", pinned && "sticky top-16 flex h-[calc(100dvh-4rem)] flex-col justify-center py-0 sm:py-0")}>
+      <div className={cx("overflow-hidden", pinned ? "sticky top-16 flex h-[calc(100dvh-4rem)] flex-col py-4 [justify-content:safe_center]" : "py-24 sm:py-28")}>
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">{children}</div>
         <div ref={track} className={cx("mt-8 flex gap-5 px-4 will-change-transform sm:px-6 lg:px-[max(1.5rem,calc((100vw_-_80rem)/2_+_1.5rem))] scroll-px-4 sm:scroll-px-6 lg:scroll-px-[max(1.5rem,calc((100vw_-_80rem)/2_+_1.5rem))]", !pinned && "scrollbar-none snap-x snap-mandatory overflow-x-auto pb-4")}>
           {themes.map((d, i) => (
-            <article key={d.id} className="neon spot w-[82vw] shrink-0 snap-start rounded-[1.75rem] border border-line bg-card p-2.5 shadow-soft sm:w-[440px] lg:w-[min(460px,33vw)]">
+            <article key={d.id} className="neon spot w-[82vw] shrink-0 snap-start rounded-[1.75rem] border border-line bg-card p-2.5 shadow-soft sm:w-[440px] lg:w-[min(460px,33vw,calc((100dvh-37rem)*1.45))]">
               <div className="overflow-hidden rounded-[1.25rem] border border-line bg-paper">
                 <div className="flex items-center gap-1.5 border-b border-line px-3 py-2">
                   <span className="size-2 rounded-full bg-line" /><span className="size-2 rounded-full bg-line" /><span className="size-2 rounded-full bg-line" />
