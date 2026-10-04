@@ -19,6 +19,7 @@ export function Footer() {
           <Link className="hover:text-orange" href="/#tarifs">Tarifs</Link>
           <Link className="hover:text-orange" href="/orientation">Trouver France Services</Link>
           <Link className="hover:text-orange" href="/exemples/caf-justificatifs">Voir un exemple</Link>
+          <Link className="hover:text-orange" href="/demonstrations">Démonstrations vidéo</Link>
         </nav>
         <nav aria-label="Mentions" className="grid content-start gap-2 text-[0.95rem]">
           <Link className="hover:text-orange" href="/mentions-legales">Mentions légales</Link>

@@ -17,6 +17,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { ScrollStory } from "@/components/scroll-story";
+import { ExplainerFilm } from "@/components/explainer-film";
 import { ProNotice } from "@/components/ui";
 
 const ORGANISMES = ["Impôts", "CAF", "CPAM", "Amendes", "Banque", "Assurance", "URSSAF", "Mairie", "Énergie"];
@@ -160,6 +161,23 @@ export default function Home() {
             <p className="mt-2 text-white/80">Démission, résiliation, réclamation, réparations… Préparez votre courrier avec quelques questions.</p>
           </div>
           <Link href="/courriers" className="btn btn-primary mt-6 w-full shrink-0 md:mt-0 md:w-auto">Rédiger un courrier</Link>
+        </div>
+      </section>
+
+      {/* ───── Film d'explication ───── */}
+      <section id="film" className="overflow-hidden border-y border-line bg-[radial-gradient(70%_60%_at_50%_40%,rgba(251,146,60,0.14),transparent_70%)] py-20" aria-labelledby="titre-film">
+        <div className="container-page">
+          <div className="reveal mx-auto max-w-2xl text-center">
+            <p className="eyebrow">En images</p>
+            <h2 id="titre-film" className="font-display mt-3 text-[2.1rem] font-semibold md:text-[2.7rem]">Ce que vous pouvez faire, en six petits films.</h2>
+            <p className="mt-3 text-muted">Exemples fictifs. Touchez un chapitre pour le revoir, ou mettez en pause.</p>
+          </div>
+          <div className="mt-12">
+            <ExplainerFilm />
+          </div>
+          <p className="mt-10 text-center">
+            <Link href="/demonstrations" className="btn btn-outline">Voir les vidéos du site en fonctionnement</Link>
+          </p>
         </div>
       </section>
 

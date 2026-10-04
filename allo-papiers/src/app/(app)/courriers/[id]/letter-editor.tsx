@@ -71,6 +71,7 @@ export function LetterEditor({
   const [attach, setAttach] = useState<string[]>([]);
   const first = useRef(true);
   const dirtyRef = useRef(false);
+  const saving$ = useRef<Promise<void> | null>(null);
 
   const parsed = courrierAddress ? parseCourrierAddress(courrierAddress.text) : null;
   const conflict = Boolean(parsed?.postalCode && recipient.postalCode && parsed.postalCode !== recipient.postalCode);
@@ -97,7 +98,16 @@ export function LetterEditor({
     return () => removeEventListener("beforeunload", warn);
   }, [dirty]);
 
-  async function save() {
+  function save(): Promise<void> {
+    // Un seul enregistrement à la fois : la relecture attend toujours la fin de l'enregistrement en cours.
+    const run = (saving$.current ?? Promise.resolve()).catch(() => {}).then(() => doSave());
+    saving$.current = run.finally(() => {
+      if (saving$.current === run) saving$.current = null;
+    });
+    return run;
+  }
+
+  async function doSave() {
     if (!dirtyRef.current) return; // rien à enregistrer (évite d'annuler une relecture déjà confirmée)
     dirtyRef.current = false;
     setSaving(true);
@@ -117,7 +127,7 @@ export function LetterEditor({
     if (!v) return setReviewed(false);
     setReviewed(true);
     try {
-      if (dirty) await save();
+      await save(); // termine tout enregistrement en cours ou en attente avant de marquer la relecture
       await api(`/api/letters/${initial.id}/review`, { method: "POST" });
     } catch (e) {
       setReviewed(false);
