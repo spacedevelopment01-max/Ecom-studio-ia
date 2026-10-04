@@ -235,6 +235,16 @@ export default function TabBoutique() {
     }
   }
 
+  /** Clic sur une section de la structure : l'aperçu défile jusqu'à elle et la surligne. */
+  const [focused, setFocused] = useState<string | null>(null);
+  function focusSection(sectionId: string, hidden?: boolean) {
+    setFocused(sectionId);
+    if (hidden) return toast("info", t("Cette section est masquée : réaffichez-la (icône œil) pour la voir dans l'aperçu.", "This section is hidden: show it again (eye icon) to see it in the preview."));
+    setView("preview");
+    // Sur téléphone l'aperçu vient de s'afficher : on laisse le temps au cadre d'être visible.
+    setTimeout(() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "focus", section: sectionId }, "*"), 60);
+  }
+
   async function addSection(type: string) {
     if (!libTarget) return;
     setAdding(type);
@@ -390,14 +400,14 @@ export default function TabBoutique() {
               onMove={(from, to) => ops([{ op: "move_section", template: tp.template, section: tp.sections[from].id, position: { index: to } }], t(`${tp.sections[from].name} déplacée`, `${tp.sections[from].name} moved`))}
               render={(s, i, handle, dragging) => (
                 <div>
-                  <div className={cx("flex items-center gap-1.5 rounded-xl border bg-card p-1.5 pr-2 text-sm", dragging ? "border-signal shadow-soft" : "border-line", s.disabled && "opacity-50")}>
+                  <div className={cx("group flex items-center gap-1 rounded-xl border bg-card p-1.5 pr-1.5 text-sm", dragging ? "border-signal shadow-soft" : "border-line", s.disabled && "opacity-50")}>
                     {handle}
-                    <div className="min-w-0 flex-1">
+                    <button type="button" onClick={() => focusSection(s.id, s.disabled)} className={cx("min-w-0 flex-1 rounded-lg px-1 py-0.5 text-left hover:bg-paper-2", focused === s.id && "bg-signal-soft/60")} title={t("Voir cette section dans l'aperçu", "Show this section in the preview")}>
                       <p className="truncate font-medium">{theme.library.find((l) => l.type === s.type)?.name ?? s.name}</p>
                       {s.heading && <p className="truncate text-xs text-muted">{s.heading}</p>}
-                    </div>
-                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`))} disabled={i === 0} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:grid" aria-label={t("Monter", "Move up")}><ArrowUp className="size-3.5" /></button>
-                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`))} disabled={i === tp.sections.length - 1} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:grid" aria-label={t("Descendre", "Move down")}><ArrowDown className="size-3.5" /></button>
+                    </button>
+                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`))} disabled={i === 0} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Monter", "Move up")}><ArrowUp className="size-3.5" /></button>
+                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`))} disabled={i === tp.sections.length - 1} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Descendre", "Move down")}><ArrowDown className="size-3.5" /></button>
                     <button onClick={() => ops([{ op: "toggle_section", template: tp.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? t("affichée", "shown") : t("masquée", "hidden")}`)} className="grid size-7 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? t("Afficher", "Show") : t("Masquer", "Hide")}>{s.disabled ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</button>
                     <button onClick={() => ops([{ op: "lock", template: tp.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? t("déverrouillée", "unlocked") : t("validée", "approved")}`)} className={cx("grid size-7 place-items-center rounded-full hover:bg-paper-2", s.locked && "text-ok")} aria-label={s.locked ? t("Déverrouiller", "Unlock") : t("Valider et verrouiller", "Approve and lock")} title={s.locked ? t("Validée : protégée des modifications non ciblées", "Approved: protected from non-targeted changes") : t("Valider cette section", "Approve this section")}>{s.locked ? <Lock className="size-3.5" /> : <Unlock className="size-3.5" />}</button>
                     {isPage && <button onClick={() => { if (confirm(t(`Supprimer la section « ${s.name} » ? Vous pourrez revenir à la version précédente.`, `Delete the “${s.name}” section? You can go back to the previous version.`))) ops([{ op: "remove_section", template: tp.template, section: s.id }], t(`${s.name} supprimée`, `${s.name} deleted`)); }} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-bad" aria-label={t("Supprimer la section", "Delete section")}><Trash2 className="size-3.5" /></button>}
@@ -476,7 +486,7 @@ export default function TabBoutique() {
           <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)} className={cx("flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm", view === k ? "bg-ink text-paper" : "text-ink-2")}><I className="size-4" /> {l}</button>
         ))}
       </div>
-      <div className="grid h-[calc(100dvh-9.5rem)] grid-cols-1 lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)_280px]">
+      <div className="grid h-[calc(100dvh-9.5rem)] grid-cols-1 lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]">
         <section className={cx("min-h-0 border-r border-line bg-paper", view !== "chat" && "hidden lg:block")} aria-label={t("Discussion", "Chat")}>{Chat}</section>
         <section className={cx("min-h-0", view !== "preview" && "hidden lg:block")} aria-label={t("Aperçu", "Preview")}>{Preview}</section>
         <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? "hidden xl:block" : "")} aria-label={t("Structure", "Structure")}>{Structure}</section>

@@ -12,6 +12,8 @@ export const previewTools = (lang: Lang) => {
   .es-pv-bar{position:fixed;left:12px;bottom:12px;z-index:2147483000;font:500 12px/1.3 system-ui,sans-serif;background:rgba(20,18,16,.86);color:#fff;padding:7px 11px;border-radius:999px;backdrop-filter:blur(8px);pointer-events:none}
   .es-pv-hover{outline:2px dashed #2F5BEA!important;outline-offset:-2px!important;cursor:crosshair!important}
   .es-pv-picked{outline:3px solid #2F5BEA!important;outline-offset:-3px!important}
+  .es-pv-focus{outline:3px solid #2F5BEA!important;outline-offset:-3px!important;transition:outline-color .6s}
+  .es-pv-focus-out{outline-color:transparent!important}
   .es-pv-label{position:fixed;z-index:2147483001;background:#2F5BEA;color:#fff;font:600 11px system-ui,sans-serif;padding:3px 8px;border-radius:6px;pointer-events:none}
 </style>
 <div class="es-pv-bar" aria-hidden="true">${t("Aperçu · données de démonstration de la boutique · paiement désactivé", "Preview · store demo data · checkout disabled")}</div>
@@ -55,7 +57,21 @@ export const previewTools = (lang: Lang) => {
     if(d.type==='scroll'){ window.scrollTo(0, d.y||0); }
     if(d.type==='reveal-all'){ document.querySelectorAll('[data-reveal]').forEach(function(x){x.classList.add('is-in')}); }
     if(d.type==='replay'){ replay(); }
+    if(d.type==='focus'){ focusSection(String(d.section||'')); }
   });
+  /* Section choisie dans la structure du studio : défilement jusqu'à elle et surlignage bref. */
+  var focusTimer=0;
+  function focusSection(id){
+    var el=null; document.querySelectorAll('[data-es-section]').forEach(function(x){ var v=x.getAttribute('data-es-section')||''; if(!el && v.slice(v.lastIndexOf(':')+1)===id) el=x; });
+    if(!el){ post({type:'focus-missing', section:id}); return; }
+    el.querySelectorAll('[data-reveal]').forEach(function(x){x.classList.add('is-in')});
+    var hdr=document.querySelector('.shopify-section-group-header-group, header'); var off=(hdr && getComputedStyle(hdr).position!=='static' && hdr.getBoundingClientRect().height<200) ? hdr.getBoundingClientRect().height : 0;
+    if(el.closest('.shopify-section-group-header-group')) off=0;
+    window.scrollTo({top:Math.max(0, el.getBoundingClientRect().top+window.scrollY-off), behavior:'smooth'});
+    document.querySelectorAll('.es-pv-focus').forEach(function(x){x.classList.remove('es-pv-focus','es-pv-focus-out')});
+    el.classList.add('es-pv-focus'); clearTimeout(focusTimer);
+    focusTimer=setTimeout(function(){ el.classList.add('es-pv-focus-out'); setTimeout(function(){ el.classList.remove('es-pv-focus','es-pv-focus-out'); },700); },1800);
+  }
   /* Rejoue les apparitions : retour en haut, éléments masqués, puis défilement lent de toute la page. */
   var replaying=0;
   function replay(){
