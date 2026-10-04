@@ -32,6 +32,11 @@ export function UgcPanel() {
   const ugc = !!data?.ai.ugc && data?.ai.credits !== false && !localMode;
   const noCredits = !!data?.ai.ugc && data?.ai.credits === false;
   const voice = !!data?.ai.ugcVoice;
+  // Entreprise de services : « présentation face caméra » de l'activité, sans produit en main.
+  const services = data?.business === "services";
+  useEffect(() => {
+    if (services) setO((x) => (x.setting === "salon" && x.angle === "presentation" ? { ...x, setting: "activite" } : x));
+  }, [services]);
   useEffect(() => () => void (poll.current && clearInterval(poll.current)), []);
 
   const set = <K extends keyof Options>(k: K, v: Options[K]) => setO((x) => ({ ...x, [k]: v }));
@@ -79,7 +84,7 @@ export function UgcPanel() {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
       {cost.dialog}
-      <p className="text-xs text-muted">{t("Une personne générée par IA présente votre produit réel face caméra, filmée comme au téléphone : décor, gestes, voix et sous-titres. Vous relisez le script avant de lancer la génération.", "An AI-generated person presents your real product to camera, filmed as if on a phone: setting, gestures, voice and subtitles. You review the script before starting generation.")}</p>
+      <p className="text-xs text-muted">{services ? t("Une personne générée par IA présente votre activité et vos prestations face caméra, à la troisième personne : elle ne se dit ni cliente, ni le professionnel. Vous relisez le script avant de lancer la génération.", "An AI-generated person presents your business and services to camera, in the third person: they never claim to be a customer or the professional. You review the script before starting generation.") : t("Une personne générée par IA présente votre produit réel face caméra, filmée comme au téléphone : décor, gestes, voix et sous-titres. Vous relisez le script avant de lancer la génération.", "An AI-generated person presents your real product to camera, filmed as if on a phone: setting, gestures, voice and subtitles. You review the script before starting generation.")}</p>
       {noCredits && (
         <p className="rounded-2xl border border-info/30 bg-info-soft p-3 text-xs text-info">
           {t("La vidéo UGC est créée par l'IA : elle est disponible avec l'abonnement (vos crédits de création sont épuisés ou vous êtes en essai gratuit). Vous pouvez déjà écrire et préparer le script.", "UGC videos are created by AI: they're available with a subscription (your creation credits are used up or you're on the free trial). You can already write and prepare the script.")} <a href="/studio/compte" className="font-semibold underline">{t("Passer à l'abonnement", "Upgrade to a subscription")}</a>
@@ -122,6 +127,7 @@ export function UgcPanel() {
         </Field>
         <Field label={t("Décor", "Setting")} htmlFor="uset">
           <Select id="uset" value={o.setting} onChange={(e) => set("setting", e.target.value)}>
+            {services && <option value="activite">{t("Lieu typique de l'activité", "Typical place for the business")}</option>}
             <option value="salon">{t("Salon", "Living room")}</option>
             <option value="cuisine">{t("Cuisine", "Kitchen")}</option>
             <option value="salle-de-bain">{t("Salle de bain", "Bathroom")}</option>
@@ -139,15 +145,15 @@ export function UgcPanel() {
           </Select>
         </Field>
       </div>
-      <Field label={t("Angle", "Angle")} htmlFor="uangle">
+      {!services && <Field label={t("Angle", "Angle")} htmlFor="uangle">
         <Select id="uangle" value={o.angle} onChange={(e) => set("angle", e.target.value)}>
           <option value="presentation">{t("Présentation face caméra", "Talking to camera")}</option>
           <option value="deballage">{t("Déballage", "Unboxing")}</option>
           <option value="demonstration">{t("Démonstration en situation", "In-context demo")}</option>
           <option value="probleme">{t("Situation du quotidien puis le produit", "Everyday situation, then the product")}</option>
         </Select>
-      </Field>
-      <Field label={t("Consigne (facultatif)", "Instructions (optional)")} htmlFor="ubrief"><Input id="ubrief" value={o.brief} onChange={(e) => set("brief", e.target.value)} placeholder={t("Ex. insister sur le format nomade", "E.g. emphasize the portable size")} /></Field>
+      </Field>}
+      <Field label={t("Consigne (facultatif)", "Instructions (optional)")} htmlFor="ubrief"><Input id="ubrief" value={o.brief} onChange={(e) => set("brief", e.target.value)} placeholder={services ? t("Ex. mettre en avant la première consultation", "E.g. highlight the first consultation") : t("Ex. insister sur le format nomade", "E.g. emphasize the portable size")} /></Field>
       <Field label={t("Adresse affichée à la fin (facultatif)", "Address shown at the end (optional)")} htmlFor="uurl"><Input id="uurl" value={o.url} onChange={(e) => set("url", e.target.value)} placeholder={t("ma-marque.fr", "my-brand.com")} /></Field>
       <ContentLangPicker {...cl} />
       <Button variant={script ? "secondary" : "primary"} onClick={write} loading={writing} icon={<Wand2 className="size-4" />}>{script ? t("Réécrire le script", "Rewrite the script") : t("Écrire le script", "Write the script")}</Button>
@@ -158,7 +164,7 @@ export function UgcPanel() {
             <p className="text-sm font-semibold">Script · {script.beats.length} {t("plan", "shot")}{script.beats.length > 1 ? "s" : ""}</p>
             <div className="flex gap-1">
               <button type="button" aria-label={t("Retirer un plan", "Remove a shot")} disabled={script.beats.length <= 1} onClick={() => setScript({ ...script, beats: script.beats.slice(0, -1) })} className="grid size-7 place-items-center rounded-full border border-line bg-card disabled:opacity-40"><Minus className="size-3.5" /></button>
-              <button type="button" aria-label={t("Ajouter un plan", "Add a shot")} disabled={script.beats.length >= 5} onClick={() => setScript({ ...script, beats: [...script.beats, { line: "", caption: "", action: script.beats[script.beats.length - 1]?.action ?? "holds the product toward the phone camera" }] })} className="grid size-7 place-items-center rounded-full border border-line bg-card disabled:opacity-40"><Plus className="size-3.5" /></button>
+              <button type="button" aria-label={t("Ajouter un plan", "Add a shot")} disabled={script.beats.length >= 5} onClick={() => setScript({ ...script, beats: [...script.beats, { line: "", caption: "", action: script.beats[script.beats.length - 1]?.action ?? (services ? "talks to the phone camera with a friendly gesture" : "holds the product toward the phone camera") }] })} className="grid size-7 place-items-center rounded-full border border-line bg-card disabled:opacity-40"><Plus className="size-3.5" /></button>
             </div>
           </div>
           {script.concept && <p className="text-xs text-muted">{script.concept}</p>}
@@ -182,10 +188,10 @@ export function UgcPanel() {
           {issues.length > 0 && <ul className="grid gap-1 text-xs text-bad">{issues.map((x) => <li key={x}>{x}</li>)}</ul>}
           <p className="flex gap-2 text-[11px] leading-relaxed text-muted">
             <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-signal" />
-            {t("La personne est générée par IA : elle montre et présente le produit, sans faux témoignage, et la mention « Vidéo générée par IA » est incrustée, comme l'exigent les règles des réseaux sociaux. Pensez aussi à activer l'étiquette « contenu IA » en publiant.", "The person is AI-generated: they show and present the product, with no fake testimonial, and the \"AI-generated video\" label is burned in, as social network rules require. Remember to also turn on the \"AI content\" label when posting.")}
+            {services ? t("La personne est générée par IA : elle présente l'activité sans faux témoignage, sans se dire cliente ni se faire passer pour vous, et la mention « Vidéo générée par IA » est incrustée. Pensez aussi à activer l'étiquette « contenu IA » en publiant.", "The person is AI-generated: they present the business with no fake testimonial, without claiming to be a customer or pretending to be you, and the \"AI-generated video\" label is burned in. Remember to also turn on the \"AI content\" label when posting.") : t("La personne est générée par IA : elle montre et présente le produit, sans faux témoignage, et la mention « Vidéo générée par IA » est incrustée, comme l'exigent les règles des réseaux sociaux. Pensez aussi à activer l'étiquette « contenu IA » en publiant.", "The person is AI-generated: they show and present the product, with no fake testimonial, and the \"AI-generated video\" label is burned in, as social network rules require. Remember to also turn on the \"AI content\" label when posting.")}
           </p>
           {ugc && !voice && <p className="text-[11px] text-warn">{t("Fournisseur vidéo sans voix (fal.ai) : la vidéo sera sous-titrée, sans voix. Google Veo ajoute la voix et le son.", "Video provider without voice (fal.ai): the video will be subtitled, with no voice. Google Veo adds voice and sound.")}</p>}
-          <Button onClick={generate} loading={sending} disabled={!ugc || issues.length > 0} icon={<Clapperboard className="size-4" />}>{t("Générer la vidéo UGC", "Generate the UGC video")}</Button>
+          <Button onClick={generate} loading={sending} disabled={!ugc || issues.length > 0} icon={<Clapperboard className="size-4" />}>{services ? t("Générer la présentation", "Generate the presentation") : t("Générer la vidéo UGC", "Generate the UGC video")}</Button>
           <p className="flex items-center gap-1.5 text-[11px] text-muted"><Sparkles className="size-3" /> {t("Génération longue (quelques minutes par plan) et coûteuse en crédits de création.", "Long generation (a few minutes per shot) and credit-intensive.")}</p>
         </div>
       )}

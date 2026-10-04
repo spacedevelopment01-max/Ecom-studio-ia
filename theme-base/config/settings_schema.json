@@ -479,6 +479,10 @@
           {
             "value": "page",
             "label": "Page panier"
+          },
+          {
+            "value": "none",
+            "label": "Aucun (site vitrine ou de services)"
           }
         ]
       },

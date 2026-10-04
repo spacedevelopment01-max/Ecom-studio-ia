@@ -9,7 +9,7 @@
  * - Aperçu de la bibliothèque (`ctx.sample`) : exemples réalistes adaptés au secteur du produit,
  *   chacun marqué « Exemple ».
  */
-import { SECTORS } from "../project-types";
+import { SECTORS, type ProductSectorId } from "../project-types";
 import type { ContentContext, CopyFn } from "./section-content";
 import { exampleTag, todo, tr } from "./section-content";
 import type { SectionSchema, ThemeSpec } from "./spec";
@@ -49,10 +49,10 @@ function rewriteBlocks(base: Base, type: string, items: Record<string, unknown>[
   return items.map((s, i) => ({ type, settings: { ...(src[i]?.settings ?? {}), ...s } }));
 }
 
-type Sector = (typeof SECTORS)[number]["id"] | "other";
+type Sector = ProductSectorId | "other";
 function sectorOf(ctx: ContentContext): Sector {
   const s = SECTORS.find((x) => x.label === ctx.product.sector || x.labelEn === ctx.product.sector);
-  return s ? s.id : "other";
+  return s && s.kind === "products" ? s.id : "other";
 }
 
 const productName = (ctx: ContentContext) => clean(ctx.product.name) || ctx.shopName;

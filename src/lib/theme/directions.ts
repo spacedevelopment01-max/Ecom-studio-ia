@@ -8,6 +8,8 @@ import { contrast, ensureContrast, isDark, mix, onColor, withLightness, hsl } fr
 import type { ShopCopy } from "./copy";
 import { pick, type Lang } from "../i18n";
 import type { BlockInstance, GroupJson, SectionInstance, StoreCollection, StoreProduct, TemplateJson, ThemeSpec } from "./spec";
+import type { ServiceProfile } from "../project-types";
+import { servicesPlan } from "./services-site";
 
 export type DirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
 
@@ -344,6 +346,14 @@ export type BuildInput = {
   collections?: StoreCollection[];
   /** Langue de la boutique (textes ajoutés par la composition). Défaut : français. */
   language?: Lang;
+  /**
+   * Site d'une entreprise de services : prestations, méthode, réalisations, équipe, infos pratiques et
+   * prise de contact ; aucun panier, fiche produit ni livraison visibles.
+   */
+  business?: "products" | "services";
+  services?: ServiceProfile;
+  /** Conditions de prestation (HTML, espaces réservés honnêtes) pour la page « Conditions générales » d'un site de services. */
+  servicesTermsHtml?: string;
 };
 
 const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -404,8 +414,10 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const reviewsAnchor = t("avis", "reviews");
   const todo = t("<p>[À compléter dans Shopify : Paramètres › Politiques]</p>", "<p>[To complete in Shopify: Settings › Policies]</p>");
   const ids = new Ids();
-  const c = input.copy;
   const im = input.images;
+  // Entreprise de services : plan du site (appel à l'action, pages, sections) et textes sans vocabulaire de vente.
+  const svc = input.business === "services" && input.services ? servicesPlan({ lang, shopName: input.shopName, services: input.services, copy: input.copy, images: im, termsHtml: input.servicesTermsHtml }) : null;
+  const c = svc ? svc.copy : input.copy;
   const scheme = (n: 1 | 2 | 3 | 4) => `scheme-${n}`;
   const pad = (top: number, bottom = top) => ({ padding_top: top, padding_bottom: bottom });
   const img = (asset?: string) => asset ?? "";
@@ -416,7 +428,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   }));
   const features = c.features.items.map((f) => ({ type: "feature", settings: { title: f.title, text: p(f.text), icon: f.icon } }));
   const specs = c.specs.items.map((s) => ({ type: "spec", settings: { label: s.label, value: s.value } }));
-  const faq = c.faq.items.map((f) => ({ type: "question", settings: { question: f.q, answer: p(f.a) } }));
+  const faq = svc ? svc.faqBlocks(8) : c.faq.items.map((f) => ({ type: "question", settings: { question: f.q, answer: p(f.a) } }));
   const marquee = c.marquee.join("\n");
   const gallerySlides = [im.scene1, im.detail1, im.scene2, im.detail2, im.scene3]
     .filter(Boolean)
@@ -435,8 +447,9 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     return [words.slice(0, -n).join(" "), words.slice(-n).join(" ")];
   };
   const [heroHead, heroAccent] = splitAccent(c.hero.heading);
-  const productUrl = "/products/" + input.product.handle;
-  const second = { button2_label: t("Notre histoire", "Our story"), button2_link: `/pages/${storyHandle}` };
+  // Services : les boutons mènent à la prise de contact (rendez-vous, devis, appel), le second aux prestations.
+  const productUrl = svc ? svc.cta.url : "/products/" + input.product.handle;
+  const second = svc ? { button2_label: t("Nos prestations", "Our services"), button2_link: svc.urls.services } : { button2_label: t("Notre histoire", "Our story"), button2_link: `/pages/${storyHandle}` };
 
   const heroSplit = (sch: 1 | 2, pos: "right" | "left", asset = im.hero ?? im.packshot): [string, Record<string, unknown>] => [
     "hero-split",
@@ -651,6 +664,30 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     }
   }
 
+  // Entreprise de services : accueil propre à chaque direction (même caractère graphique, autres sections).
+  if (svc) {
+    const R = svc.R;
+    const why = (sch: 1 | 2 | 3, style = "glow"): Row[] => (features.length >= 2 ? [feat(sch, style)] : []);
+    const svcHero = (sch: 1 | 2, pos: "right" | "left"): Row => heroSplit(sch, pos, im.lifestyle ?? im.hero ?? im.scene1 ?? im.banner);
+    const svcMarq = (sch: 1 | 2 | 3 | 4, size: string): Row[] => (c.marquee.length >= 2 ? [marq(sch, size)] : []);
+    const recipes: Record<DirectionId, Row[]> = {
+      atelier: [svcHero(1, "right"), R.servicesList(1, "cards", { withImages: true }), ...why(2), R.method(1, "howto-v"), R.portfolio(2, "editorial"), R.team(1, "portraits"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      clinique: [svcHero(1, "right"), ...R.trust(2), R.servicesList(1, "list"), ...why(2, "cards"), R.method(1, "howto-h"), R.team(2, "cards"), R.testimonials(1), R.portfolio(2, "grid"), R.practical(1), faqSec(2), cta(3)],
+      brut: [heroFull(1, "bottom-left", "heading"), ...svcMarq(4, "huge"), R.servicesList(1, "cards"), R.method(2, "timeline"), R.portfolio(1, "grid"), R.team(2, "plain"), R.testimonials(1), R.practical(2), faqSec(1), cta(4)],
+      terroir: [svcHero(1, "left"), ...statementRow(2), R.servicesList(1, "cards", { withImages: true }), R.method(2, "timeline"), R.portfolio(1, "editorial"), R.team(2, "cards"), R.testimonials(1), R.practical(2), faqSec(1), cta(3)],
+      nocturne: [heroFull(1, "bottom-left", "body"), ...R.trust(2), R.servicesList(1, "cards"), ...why(2), R.method(1, "howto-h"), R.portfolio(2, "grid"), R.team(1, "portraits"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      pop: [svcHero(2, "right"), ...svcMarq(4, "large"), R.servicesList(1, "cards"), ...why(2, "cards"), R.method(1, "howto-h"), R.portfolio(2, "grid"), R.team(1, "portraits"), R.testimonials(2), R.practical(1), faqSec(2), cta(4)],
+      galerie: [svcHero(1, "left"), R.portfolio(1, "editorial"), R.servicesList(2, "list"), ...statementRow(1), R.method(2, "timeline"), R.team(1, "plain"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      elan: [heroFull(1, "bottom-left", "heading"), ...svcMarq(4, "large"), R.servicesList(1, "cards"), R.method(2, "howto-h"), ...why(1), R.portfolio(2, "grid"), R.team(1, "cards"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      flux: [heroFull(3, "bottom-left", "heading"), curve(1), R.servicesList(1, "list"), R.method(2, "timeline"), R.portfolio(1, "grid"), R.team(2, "plain"), R.testimonials(1), R.practical(2), faqSec(1), cta(3)],
+      joaillerie: [heroFull(3, "bottom-left", "heading"), R.servicesList(1, "list"), ...statementRow(4, "statement", true), R.portfolio(1, "editorial"), R.method(2, "howto-v"), R.team(1, "portraits"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      gourmand: [svcHero(1, "right"), ...statementRow(3, "statement", true), wave(3, 1), R.servicesList(1, "cards", { withImages: true }), wave(1, 4), R.method(4, "howto-h"), wave(4, 1), R.portfolio(1, "grid"), R.team(2, "portraits"), R.testimonials(1), R.practical(2), faqSec(1), wave(1, 3), cta(3)],
+    };
+    index = recipes[d.id];
+    // Vague d'ouverture sans phrase centrée (phrase identique au titre) : la vague n'a plus rien à relier.
+    if (index[1]?.[0] === "wave-divider") index.splice(1, 1);
+  }
+
   // Catalogue : les textes rédigés pour le produit principal ne s'affichent que sur sa fiche.
   const only = isCatalog ? { product_handle: input.product.handle } : {};
   const productTabs = c.product.tabs.map((tab) => ({ type: "collapsible", settings: { heading: tab.heading, content: p(tab.content_html), open: false, ...(/livraison|retour|shipping|deliver|return/i.test(tab.heading) ? {} : only) } }));
@@ -709,21 +746,54 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     password: { ...tpl(ids, [["main-password", { heading: t("Bientôt en ligne", "Opening soon") }]]), layout: "password" },
   };
 
+  // Entreprise de services : pages Prestations, À propos, Contact / Rendez-vous, FAQ et mentions légales.
+  // La fiche produit reste présente (exigée par Shopify) mais n'est reliée à aucune page du site.
+  if (svc) {
+    const R = svc.R;
+    templates.product = tpl(ids, [["main-product", { gallery_layout: gallery, sticky_bar: false, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96 }, [{ type: "title", settings: {} }, { type: "price", settings: {} }, { type: "description", settings: {} }, { type: "buy_buttons", settings: { picker: "buttons", show_quantity: false, show_dynamic_checkout: false } }]]]);
+    delete templates["page.shipping"];
+    const aboutBlocks = c.about.blocks;
+    templates["page.services"] = tpl(ids, [
+      R.servicesList(1, "list", { eyebrow: t("Prestations", "Services"), heading: t("Nos prestations", "Our services") }),
+      ...R.pricing(2),
+      R.method(1, "howto-h"),
+      ["faq", { heading: t("Bon à savoir", "Good to know"), style: "lines", structured_data: false, color_scheme: "scheme-2", ...pad(96) }, svc.faqBlocks(6).slice(3, 6)],
+      cta(3),
+    ]);
+    templates["page.about"] = tpl(ids, [
+      ["about", { eyebrow: t("À propos", "About"), heading: c.about.heading, heading_accent: "", image_asset: img(im.lifestyle ?? im.scene1 ?? im.hero), lead: p(c.about.intro), ...(aboutBlocks[0] ? { why_title: aboutBlocks[0].heading, why_text: p(aboutBlocks[0].text) } : {}), ...(aboutBlocks[1] ? { commit_title: aboutBlocks[1].heading, commit_text: p(aboutBlocks[1].text) } : {}), values_title: t("Ce qui nous guide", "What guides us"), button_label: t("Découvrir nos prestations", "Discover our services"), button_link: svc.urls.services, color_scheme: "scheme-1", ...pad(120, 104) }, c.about.values.slice(0, 4).map((v, i) => ({ type: "value", settings: { icon: ["sparkle", "heart", "shield", "leaf"][i], title: v.title, text: p(v.text) } }))],
+      R.team(2, "cards", 3),
+      R.method(1, "timeline"),
+      cta(3),
+    ]);
+    templates["page.contact"] = tpl(ids, [R.booking(1), R.practical(2, false), ...(svc.bookingUrl ? [R.contactForm(1)] : [])]);
+    templates["page.faq"] = tpl(ids, [R.faq(1, 8), R.contactForm(2, t("Une autre question ?", "Still have a question?"))]);
+    templates["page.legal"] = tpl(ids, [R.legal()]);
+    templates["404"] = tpl(ids, [["main-404", { heading: t("Cette page s'est égarée.", "This page has wandered off."), text: t("Le lien est peut-être ancien. Le reste du site vous attend.", "The link may be out of date. The rest of the site is waiting for you."), color_scheme: "scheme-1" }]]);
+  }
+
   // Bandeau : annonces confirmées, sinon les expressions courtes de la marque (jamais d'offre inventée).
-  const annItems = c.announcement.length ? c.announcement : shortItems.slice(0, 3);
+  const annItems = svc ? svc.announcements : c.announcement.length ? c.announcement : shortItems.slice(0, 3);
   const header: GroupJson = {
     type: "header",
     name: t("Groupe en-tête", "Header group"),
     ...tpl(ids, [
       ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
-      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: true, color_scheme: "scheme-1" }],
+      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc, color_scheme: "scheme-1", ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }],
     ]),
   };
   const footer: GroupJson = {
     type: "footer",
     name: t("Groupe pied de page", "Footer group"),
     ...tpl(ids, [
-      ["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: true, show_payment: true, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, [
+      ["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: !svc, show_payment: !svc, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, svc
+        ? [
+            { type: "text", settings: { heading: input.shopName, text: p(c.footer.about) } },
+            { type: "links", settings: { heading: t("Le site", "Site"), menu: "main-menu" } },
+            svc.footerContact,
+            { type: "links", settings: { heading: t("Informations", "Information"), menu: "footer" } },
+          ]
+        : [
         { type: "text", settings: { heading: input.shopName, text: p(c.footer.about) } },
         { type: "links", settings: { heading: t("Boutique", "Shop"), menu: "main-menu" } },
         { type: "links", settings: { heading: t("Aide", "Help"), menu: "footer" } },
@@ -761,10 +831,11 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     motion_intensity: d.motion,
     motion_parallax: true,
     fab_back_to_top: true,
-    fab_contact_link: "/pages/contact",
-    fab_contact_icon: "chat",
-    fab_contact_label: t("Nous contacter", "Contact us"),
-    cart_type: "drawer",
+    fab_contact_link: svc ? svc.cta.url : "/pages/contact",
+    fab_contact_icon: svc?.mode === "call" ? "phone" : "chat",
+    fab_contact_label: svc ? svc.cta.label : t("Nous contacter", "Contact us"),
+    // Site de services : aucun panier (ni tiroir, ni page).
+    cart_type: svc ? "none" : "drawer",
     cart_show_note: false,
     cart_reassurance: "",
     social_instagram: input.social?.instagram ?? "",
@@ -789,13 +860,14 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       shopName: input.shopName,
       product: input.product,
       ...(isCatalog ? { products: catalogProducts, collections: input.collections ?? [] } : {}),
-      pages: [
+      ...(svc ? { business: "services" as const } : {}),
+      pages: svc ? svc.pages : [
         { handle: storyHandle, title: t("Notre histoire", "Our story"), template_suffix: "about", body_html: "" },
         { handle: "faq", title: t("Questions fréquentes", "Frequently asked questions"), template_suffix: "faq", body_html: "" },
         { handle: "contact", title: "Contact", template_suffix: "contact", body_html: "" },
         { handle: shippingHandle, title: t("Livraison et retours", "Shipping and returns"), template_suffix: "shipping", body_html: t("<p>Les conditions détaillées figurent ci-dessous.</p>", "<p>Full details are below.</p>") },
       ],
-      menus: {
+      menus: svc ? svc.menus : {
         "main-menu": {
           title: t("Menu principal", "Main menu"),
           links: [
@@ -816,7 +888,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
           ],
         },
       },
-      policies: [
+      policies: svc ? svc.policies : [
         { handle: "terms-of-service", title: t("Conditions générales de vente", "Terms of service"), body_html: todo },
         { handle: "privacy-policy", title: t("Politique de confidentialité", "Privacy policy"), body_html: todo },
         { handle: "refund-policy", title: t("Politique de remboursement", "Refund policy"), body_html: todo },

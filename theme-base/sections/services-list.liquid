@@ -1,0 +1,169 @@
+{%- comment -%}
+  Prestations : cartes (ou liste détaillée) avec description, prix et durée facultatifs et un bouton par prestation.
+  Les prix et durées ne s'affichent que s'ils sont renseignés par le marchand.
+{%- endcomment -%}
+{%- liquid
+  assign count = section.blocks | size
+  assign cols = section.settings.columns
+  if count < cols
+    assign cols = count | at_least: 1
+  endif
+-%}
+<section class="es-section es-svc es-svc--{{ section.settings.layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --cols: {{ cols }};">
+  <div class="es-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.text != blank -%}
+      <header class="es-svc__head{% if section.settings.layout == 'list' %} es-svc__head--split{% endif %}">
+        <div>
+          {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+          {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+        </div>
+        {%- if section.settings.text != blank -%}<div class="es-rte es-lead es-svc__intro" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+
+    <ul class="es-svc__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign label = block.settings.button_label | default: section.settings.button_label
+          assign link = block.settings.button_link | default: section.settings.button_link
+          assign has_media = false
+          if block.settings.image != blank or block.settings.image_asset != blank
+            assign has_media = true
+          endif
+          assign num = forloop.index | prepend: '0' | slice: -2, 2
+        -%}
+        <li class="es-svc__item es-glow{% if block.settings.highlight %} es-svc__item--featured{% endif %}{% if has_media %} es-svc__item--media{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 | modulo: 4 }}" {{ block.shopify_attributes }}>
+          {%- if has_media and section.settings.layout == 'cards' -%}
+            <div class="es-svc__media">
+              {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 33vw, 100vw', class: 'es-cover' %}
+            </div>
+          {%- endif -%}
+          <div class="es-svc__body">
+            <div class="es-svc__top">
+              {%- if section.settings.layout == 'list' -%}
+                <span class="es-svc__num" aria-hidden="true">{{ num }}</span>
+              {%- elsif block.settings.icon != 'none' and has_media == false -%}
+                <span class="es-svc__icon" aria-hidden="true">{% render 'icon', name: block.settings.icon %}</span>
+              {%- endif -%}
+              {%- if block.settings.highlight -%}<span class="es-svc__flag">{{ block.settings.highlight_label | default: section.settings.highlight_label }}</span>{%- endif -%}
+            </div>
+            <h3 class="es-heading es-h4 es-svc__title">{{ block.settings.title }}</h3>
+            {%- if block.settings.text != blank -%}<div class="es-rte es-svc__text">{{ block.settings.text }}</div>{%- endif -%}
+            {%- if block.settings.price != blank or block.settings.duration != blank -%}
+              <p class="es-svc__meta">
+                {%- if block.settings.price != blank -%}<span class="es-svc__price">{{ block.settings.price }}</span>{%- endif -%}
+                {%- if block.settings.duration != blank -%}<span class="es-svc__duration">{% render 'icon', name: 'clock' %}{{ block.settings.duration }}</span>{%- endif -%}
+              </p>
+            {%- endif -%}
+          </div>
+          {%- if label != blank -%}
+            <div class="es-svc__action">
+              <a class="es-link-arrow es-svc__link" href="{{ link | default: routes.root_url }}"{% if link contains '://' %} target="_blank" rel="noopener"{% endif %}>
+                <span>{{ label }}</span><span class="visually-hidden"> — {{ block.settings.title }}</span>{% render 'icon', name: 'arrow' %}
+              </a>
+            </div>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    {%- if section.settings.note != blank -%}<p class="es-svc__note es-muted" data-reveal="up">{{ section.settings.note }}</p>{%- endif -%}
+    {%- if section.settings.footer_label != blank -%}
+      <div class="es-actions es-actions--center"><a class="es-button" href="{{ section.settings.footer_link | default: routes.root_url }}">{{ section.settings.footer_label }}</a></div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-svc__head { max-width: 760px; margin-bottom: clamp(28px, 4.4vw, 56px); }
+.es-svc__head--split { max-width: none; display: grid; gap: 16px 64px; align-items: end; }
+@media (min-width: 990px) { .es-svc__head--split { grid-template-columns: 1.1fr .9fr; } }
+.es-svc__head .es-heading { margin-bottom: .3em; }
+.es-svc__intro { margin: 0; }
+.es-svc__list { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(14px, 2vw, 24px); }
+@media (min-width: 750px) { .es-svc--cards .es-svc__list { grid-template-columns: repeat(min(var(--cols), 2), minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .es-svc--cards .es-svc__list { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); } }
+.es-svc__item { position: relative; display: flex; flex-direction: column; border-radius: var(--radius-card); background: var(--c-surface); border: 1px solid rgba(var(--c-text-rgb), .08); overflow: hidden; transition: transform .6s var(--ease-out), box-shadow .6s var(--ease-out), border-color .4s; }
+.es-svc--cards .es-svc__item:hover { transform: translateY(-4px); box-shadow: 0 30px 60px -36px rgba(0, 0, 0, .35); border-color: rgba(var(--c-accent-rgb), .35); }
+.es-svc__item--featured { border-color: rgba(var(--c-accent-rgb), .55); box-shadow: 0 0 0 1px rgba(var(--c-accent-rgb), .35) inset; }
+.es-svc__media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: rgba(var(--c-text-rgb), .05); }
+.es-svc__media .es-cover, .es-svc__media .es-placeholder { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease-out); }
+.es-svc__item:hover .es-svc__media .es-cover { transform: scale(1.05); }
+.es-svc__body { display: flex; flex-direction: column; gap: 10px; padding: clamp(20px, 2.4vw, 32px); flex: 1; }
+.es-svc__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 0; }
+.es-svc__top:empty { display: none; }
+.es-svc__icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: rgba(var(--c-accent-rgb), .14); color: var(--c-accent); }
+.es-svc__icon .es-icon { width: 24px; height: 24px; }
+.es-svc__flag { margin-left: auto; padding: 5px 12px; border-radius: 999px; background: var(--c-accent); color: var(--c-accent-text); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); }
+.es-svc__title { margin: 0; font-size: clamp(1.2rem, 1.7vw, 1.5rem); }
+.es-svc__text { color: color-mix(in srgb, var(--c-text) 76%, var(--c-bg)); font-size: max(.98rem, 15px); line-height: 1.6; }
+.es-svc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: auto 0 0; padding-top: 12px; }
+.es-svc__price { font-family: var(--font-heading); font-size: 1.35rem; line-height: 1; color: var(--c-text); }
+.es-svc__duration { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: rgba(var(--c-text-rgb), .06); font-size: .84rem; color: var(--c-muted); }
+.es-svc__duration .es-icon { width: 14px; height: 14px; }
+.es-svc__action { padding: 0 clamp(20px, 2.4vw, 32px) clamp(20px, 2.4vw, 28px); }
+.es-svc__link { display: inline-flex; align-items: center; gap: 10px; font-weight: var(--font-body-weight-bold); text-decoration: none; font-size: .95rem; padding: 8px 0; border-bottom: 1px solid rgba(var(--c-text-rgb), .2); transition: border-color .3s, gap .4s var(--ease-out); }
+.es-svc__link .es-icon { width: 16px; height: 16px; transition: transform .4s var(--ease-out); }
+.es-svc__link:hover { border-color: var(--c-accent); gap: 14px; }
+.es-svc__note { margin: 24px 0 0; font-size: .9rem; text-align: center; }
+/* Liste détaillée : une ligne par prestation */
+.es-svc--list .es-svc__list { gap: 0; border-top: 1px solid var(--c-border); }
+.es-svc--list .es-svc__item { flex-direction: row; flex-wrap: wrap; align-items: center; background: transparent; border: 0; border-bottom: 1px solid var(--c-border); border-radius: 0; box-shadow: none; padding: clamp(20px, 3vw, 34px) 0; gap: 12px 32px; }
+.es-svc--list .es-svc__item--featured { box-shadow: none; }
+.es-svc--list .es-svc__item::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(var(--c-accent-rgb), .1), transparent 70%); opacity: 0; transition: opacity .5s; pointer-events: none; }
+.es-svc--list .es-svc__item:hover::before { opacity: 1; }
+.es-svc--list .es-svc__body { padding: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: clamp(16px, 3vw, 40px); flex: 1 1 420px; }
+.es-svc--list .es-svc__top { grid-row: span 3; align-self: start; }
+.es-svc--list .es-svc__num { font-family: var(--font-heading); font-size: clamp(1.4rem, 2.4vw, 2rem); color: var(--c-accent); line-height: 1; min-width: 2.2ch; }
+.es-svc--list .es-svc__flag { position: static; }
+.es-svc--list .es-svc__title { font-size: clamp(1.3rem, 2.2vw, 1.9rem); }
+.es-svc--list .es-svc__text { max-width: 62ch; }
+.es-svc--list .es-svc__meta { grid-column: 2; margin: 0; padding-top: 4px; }
+.es-svc--list .es-svc__action { padding: 0; margin-left: auto; }
+@media (max-width: 749px) {
+  .es-svc--list .es-svc__action { margin-left: calc(2.2ch + 16px); }
+  .es-svc--list .es-svc__body { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .es-svc__item, .es-svc__media .es-cover { transition: none; } .es-svc--cards .es-svc__item:hover { transform: none; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Prestations",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Prestations" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Ce que nous faisons pour vous" },
+    { "type": "richtext", "id": "text", "label": "Introduction" },
+    { "type": "select", "id": "layout", "label": "Mise en page", "default": "cards", "options": [{ "value": "cards", "label": "Cartes" }, { "value": "list", "label": "Liste détaillée" }] },
+    { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes (cartes)", "default": 3 },
+    { "type": "text", "id": "button_label", "label": "Bouton de chaque prestation", "default": "Prendre rendez-vous", "info": "Texte utilisé quand une prestation n'a pas son propre bouton." },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton de chaque prestation" },
+    { "type": "text", "id": "highlight_label", "label": "Étiquette de la prestation mise en avant", "default": "La plus demandée" },
+    { "type": "text", "id": "note", "label": "Note sous les prestations", "info": "Facultatif. Ex. « Tarifs TTC », uniquement si c'est exact." },
+    { "type": "text", "id": "footer_label", "label": "Bouton sous la liste (facultatif)" },
+    { "type": "url", "id": "footer_link", "label": "Lien du bouton sous la liste" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "service", "name": "Prestation", "settings": [
+      { "type": "text", "id": "title", "label": "Nom de la prestation", "default": "[À compléter : nom de la prestation]" },
+      { "type": "richtext", "id": "text", "label": "Description", "default": "<p>[À compléter : ce que comprend la prestation, pour qui, comment elle se déroule.]</p>" },
+      { "type": "text", "id": "price", "label": "Prix (facultatif)", "info": "Uniquement votre vrai tarif. Ex. « 60 € », « à partir de 45 € », « sur devis »." },
+      { "type": "text", "id": "duration", "label": "Durée (facultatif)", "info": "Ex. « 45 min »." },
+      { "type": "select", "id": "icon", "label": "Icône", "default": "sparkle", "options": [{ "value": "none", "label": "Aucune" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "hand", "label": "Main" }, { "value": "heart", "label": "Cœur" }, { "value": "leaf", "label": "Feuille" }, { "value": "shield", "label": "Bouclier" }, { "value": "check", "label": "Coche" }, { "value": "clock", "label": "Horloge" }, { "value": "star", "label": "Étoile" }, { "value": "bolt", "label": "Éclair" }, { "value": "globe", "label": "Globe" }, { "value": "chat", "label": "Message" }, { "value": "drop", "label": "Goutte" }] },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "checkbox", "id": "highlight", "label": "Mettre en avant", "default": false },
+      { "type": "text", "id": "highlight_label", "label": "Étiquette (facultatif)" },
+      { "type": "text", "id": "button_label", "label": "Bouton (facultatif)" },
+      { "type": "url", "id": "button_link", "label": "Lien du bouton" }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Prestations", "blocks": [{ "type": "service" }, { "type": "service" }, { "type": "service" }] }]
+}
+{% endschema %}

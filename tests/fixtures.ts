@@ -2,6 +2,8 @@ import { buildSpec } from "@/lib/theme/directions";
 import { localCopy } from "@/lib/engine/local-copy";
 import { emptyProduct } from "@/lib/project-types";
 import type { DirectionId } from "@/lib/theme/directions";
+import { runWithLang } from "@/lib/i18n-server";
+import { serviceTermsHtml } from "@/lib/engine/services-text";
 
 export const product = {
   ...emptyProduct(),
@@ -35,5 +37,39 @@ export function sampleSpec(direction: DirectionId = "atelier", storeType: "mono"
     files: {},
     product: { title: "Sérum Éclat", handle: "serum-eclat", vendor: "Maison Ondine", description_html: "<p>Desc</p>", price: 3490, compare_at_price: null, currency: "EUR", options: ["Contenance"], variants: [{ title: "30 ml", options: ["30 ml"], price: 3490, available: true }, { title: "50 ml", options: ["50 ml"], price: 4990, available: true }], images: ["es-packshot.jpg"], tags: [] },
     ...(storeType === "mono" ? {} : { storeType, ...catalogSample }),
+  });
+}
+
+/** Entreprise de services (cabinet de kinésithérapie) : prestations, coordonnées et prise de rendez-vous. */
+export const serviceProfile = {
+  services: [
+    { name: "Séance de kinésithérapie", description: "Bilan, rééducation et conseils adaptés à votre situation.", price: "50 €", duration: "45 min" },
+    { name: "Rééducation sportive", description: "Reprise progressive après une blessure.", price: "60 €", duration: "1 h" },
+    { name: "Massage bien-être", description: "Détente musculaire en fin de semaine.", price: "", duration: "30 min" },
+  ],
+  area: "Lyon 6e et alentours",
+  address: "12 rue Vendôme\n69006 Lyon",
+  phone: "04 72 00 00 00",
+  email: "contact@cabinet-ondine.fr",
+  hours: "Lundi – vendredi : 8 h – 19 h\nSamedi : 9 h – 12 h",
+  bookingUrl: "https://calendly.com/cabinet-ondine/seance",
+  contactMode: "booking" as const,
+};
+export const serviceProduct = { ...emptyProduct(), name: "Cabinet Ondine", sector: "sante" as const, summary: "Cabinet de kinésithérapie à Lyon.", facts: [] };
+
+export function serviceSpec(direction: DirectionId = "atelier", lang: "fr" | "en" = "fr", services: typeof serviceProfile | (Omit<typeof serviceProfile, "contactMode"> & { contactMode: "booking" | "quote" | "call" | "form" }) = serviceProfile) {
+  const copy = runWithLang({ content: lang }, () => localCopy(serviceProduct, { name: "Cabinet Ondine", tagline: "Bouger mieux, durablement.", story: "", values: [] }, { business: "services", services }));
+  return buildSpec({
+    direction,
+    shopName: "Cabinet Ondine",
+    palette: { primary: "#2F5D62", secondary: "#DCE8E4", accent: "#E0A458", light: "#F4F7F5", dark: "#14201F" },
+    copy,
+    images: { hero: "es-hero.jpg", scene1: "es-scene-1.jpg", scene2: "es-scene-2.jpg" },
+    files: {},
+    product: { title: "Cabinet Ondine", handle: "cabinet-ondine", vendor: "Cabinet Ondine", description_html: "", price: null, compare_at_price: null, currency: "EUR", options: [], variants: [], images: [], tags: [] },
+    language: lang,
+    business: "services",
+    services,
+    servicesTermsHtml: runWithLang({ content: lang }, () => serviceTermsHtml(services)),
   });
 }

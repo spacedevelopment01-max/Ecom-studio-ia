@@ -132,11 +132,37 @@
     "announcement": "Announcement",
     "header": {
       "menu": "Menu",
-      "navigation": "Main navigation"
+      "navigation": "Main navigation",
+      "call": "Call"
     },
     "reviews": {
       "app_hint": "Add your reviews app block here: only genuine customer reviews will be shown.",
       "testimonials_hint": "Add real reviews from your customers (\"Review\" block): nothing is shown until there are some."
+    },
+    "booking": {
+      "open_new_tab": "Open the calendar in a new tab",
+      "via": "Secure booking via {{ provider }}",
+      "request": "Request",
+      "service": "Service",
+      "choose": "Choose a service",
+      "preferred": "Preferred time",
+      "preferred_placeholder": "E.g. Tuesday late afternoon"
+    },
+    "practical_info": {
+      "hours": "Opening hours",
+      "where": "Address",
+      "area": "Service area",
+      "directions": "Get directions",
+      "contact": "Get in touch",
+      "map_notice": "The map is provided by {{ provider }} and only loads when you ask for it.",
+      "show_map": "Show the map",
+      "map": "Map"
+    },
+    "portfolio": {
+      "filter": "Filter projects",
+      "all": "All",
+      "compare": "Compare before and after",
+      "see_project": "View project"
     }
   },
   "newsletter": {

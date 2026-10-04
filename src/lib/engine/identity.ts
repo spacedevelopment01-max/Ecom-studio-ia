@@ -12,6 +12,7 @@ import { directionById } from "../theme/directions";
 import { isDark, withLightness } from "../color";
 import type { JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
+import { serviceSymbol, serviceTaglines } from "./services-text";
 
 export type LogoProposal = { key: "logotype" | "symbole" | "embleme"; label: string; concept: string; spec: Omit<LogoSpec, "color"> };
 
@@ -38,6 +39,7 @@ export function symbolFor(p: Project): SymbolKind {
     const m = new RegExp(re.source, re.flags.replace("g", "")).exec(text);
     if (m && (!best || m.index < best.at)) best = { sym, at: m.index };
   }
+  if (!best && p.business === "services") return serviceSymbol(p.product);
   return best?.sym ?? SECTOR_SYMBOL[p.product.sector ?? ""] ?? "spark";
 }
 
@@ -70,7 +72,7 @@ export function logoProposals(p: Project, base?: Omit<LogoSpec, "color">): LogoP
       spec: { ...word, name: brand.name },
     },
     { key: "symbole", label: L("Symbole + nom", "Symbol + name"), concept: C(`Symbole « ${SYMBOL_LABEL[symbol]} » au trait et nom en ${heavy ? family : sans} : lisible en petit, reconnaissable en icône.`, `Line-drawn "${SYMBOL_LABEL_EN[symbol]}" symbol with the name in ${heavy ? family : sans}: legible at small sizes, recognizable as an icon.`), spec: { name: brand.name, family: heavy ? family : sans, weight: heavy ? 800 : 500, case: "upper", tracking: 0.08, layout: "lockup", emblem: "none", symbol } },
-    { key: "embleme", label: L("Emblème", "Emblem"), concept: C(`Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur étiquettes et emballages.`, `Round emblem ("${SYMBOL_LABEL_EN[symbol]}" symbol) with the name and tagline: a seal-like badge, ideal for labels and packaging.`), spec: { name: brand.name, tagline: brand.tagline, family, weight: heavy ? 800 : 500, case: word.case, tracking: 0.06, layout: "badge", emblem: "circle", symbol } },
+    { key: "embleme", label: L("Emblème", "Emblem"), concept: p.business === "services" ? C(`Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur cartes de visite, devis, vitrine ou véhicule.`, `Round emblem ("${SYMBOL_LABEL_EN[symbol]}" symbol) with the name and tagline: a seal-like badge, ideal for business cards, quotes, storefronts or vehicles.`) : C(`Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur étiquettes et emballages.`, `Round emblem ("${SYMBOL_LABEL_EN[symbol]}" symbol) with the name and tagline: a seal-like badge, ideal for labels and packaging.`), spec: { name: brand.name, tagline: brand.tagline, family, weight: heavy ? 800 : 500, case: word.case, tracking: 0.06, layout: "badge", emblem: "circle", symbol } },
   ];
 }
 
@@ -215,6 +217,8 @@ const KEYWORD_LINES_EN: [RegExp, string[]][] = [
 
 /** Signatures proposées : courtes, sans promesse invérifiable ; la liste des goûts ou gammes réelle quand elle existe. */
 export function proposeTaglines(p: Project): string[] {
+  // Entreprise de services : signatures du métier (et métier + zone quand ils sont connus), sans promesse.
+  if (p.business === "services") return serviceTaglines(p.product, p.services, p.brand?.name).filter((x) => x.length <= 70).slice(0, 6);
   const text = `${p.product.name} ${p.product.category} ${p.product.summary} ${p.catalog.map((c) => `${c.name} ${c.category}`).join(" ")}`;
   const en = C(false, true);
   const sectorLines = en ? SECTOR_LINES_EN : SECTOR_LINES_FR;

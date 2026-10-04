@@ -12,7 +12,7 @@ import { intlLocale } from "@/lib/i18n";
 
 export type LibraryItem = { type: string; name: string; category: string; description: string; keywords: string; preview: string | null };
 
-const ORDER = ["Votre thème", "Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Avancé"];
+const ORDER = ["Votre thème", "Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Services", "Avancé"];
 /** Libellés anglais des catégories (les clés restent celles du serveur). */
 const CATEGORY_EN: Record<string, string> = {
   Toutes: "All",
@@ -25,6 +25,7 @@ const CATEGORY_EN: Record<string, string> = {
   Collections: "Collections",
   Textes: "Text",
   Conversion: "Conversion",
+  Services: "Services",
   Avancé: "Advanced",
 };
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");

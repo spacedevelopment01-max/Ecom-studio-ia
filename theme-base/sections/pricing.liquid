@@ -1,0 +1,106 @@
+{%- comment -%}
+  Tarifs : formules en colonnes, une formule mise en avant. Les prix sont uniquement ceux saisis par le marchand ;
+  sans prix, la carte affiche « sur demande » (texte modifiable) plutôt qu'un montant inventé.
+{%- endcomment -%}
+{%- assign count = section.blocks | size -%}
+<section class="es-section es-pricing color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --n: {{ count | at_least: 1 }};">
+  <div class="es-container">
+    <header class="es-pricing__head">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+    </header>
+    <ul class="es-pricing__grid" role="list">
+      {%- for block in section.blocks -%}
+        <li class="es-pricing__plan es-glow{% if block.settings.featured %} es-pricing__plan--featured is-lit{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          {%- if block.settings.featured and block.settings.badge != blank -%}<span class="es-pricing__badge">{{ block.settings.badge }}</span>{%- endif -%}
+          <h3 class="es-pricing__name">{{ block.settings.name }}</h3>
+          {%- if block.settings.description != blank -%}<p class="es-pricing__desc">{{ block.settings.description }}</p>{%- endif -%}
+          <p class="es-pricing__price">
+            {%- if block.settings.price != blank -%}
+              <span class="es-pricing__amount">{{ block.settings.price }}</span>
+              {%- if block.settings.period != blank -%}<span class="es-pricing__period">{{ block.settings.period }}</span>{%- endif -%}
+            {%- else -%}
+              <span class="es-pricing__amount es-pricing__amount--text">{{ section.settings.no_price_label }}</span>
+            {%- endif -%}
+          </p>
+          {%- assign lines = block.settings.features | newline_to_br | split: '<br />' -%}
+          {%- if block.settings.features != blank -%}
+            <ul class="es-pricing__features" role="list">
+              {%- for line in lines -%}
+                {%- assign l = line | strip -%}
+                {%- if l != blank -%}<li>{% render 'icon', name: 'check' %}<span>{{ l }}</span></li>{%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+          {%- assign label = block.settings.button_label | default: section.settings.button_label -%}
+          {%- assign link = block.settings.button_link | default: section.settings.button_link -%}
+          {%- if label != blank -%}
+            <a class="es-button{% unless block.settings.featured %} es-button--secondary{% endunless %} es-button--full es-pricing__cta" href="{{ link | default: routes.root_url }}"{% if link contains '://' %} target="_blank" rel="noopener"{% endif %}>{{ label }}<span class="visually-hidden"> — {{ block.settings.name }}</span></a>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if section.settings.note != blank -%}<p class="es-pricing__note es-muted" data-reveal="up">{{ section.settings.note }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-pricing__head { text-align: center; max-width: 720px; margin: 0 auto clamp(32px, 5vw, 64px); }
+.es-pricing__head .es-lead { margin-inline: auto; }
+.es-pricing__grid { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: clamp(16px, 2vw, 24px); align-items: stretch; max-width: calc(min(var(--n), 4) * 380px); }
+@media (min-width: 750px) { .es-pricing__grid { grid-template-columns: repeat(min(var(--n), 2), minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .es-pricing__grid { grid-template-columns: repeat(min(var(--n), 4), minmax(0, 1fr)); } }
+.es-pricing__plan { position: relative; display: flex; flex-direction: column; gap: 14px; padding: clamp(26px, 3vw, 40px); border-radius: var(--radius-card); background: var(--c-surface); border: 1px solid rgba(var(--c-text-rgb), .1); transition: transform .6s var(--ease-out), box-shadow .6s var(--ease-out); }
+.es-pricing__plan:hover { transform: translateY(-4px); box-shadow: 0 30px 60px -38px rgba(0, 0, 0, .4); }
+.es-pricing__plan--featured { background: color-mix(in srgb, var(--c-accent) 9%, var(--c-surface)); border-color: rgba(var(--c-accent-rgb), .6); box-shadow: 0 34px 70px -40px rgba(var(--c-accent-rgb), .7); }
+@media (min-width: 1100px) { .es-pricing__plan--featured { transform: translateY(-12px); } .es-pricing__plan--featured:hover { transform: translateY(-16px); } }
+.es-pricing__badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); padding: 6px 14px; border-radius: 999px; background: var(--c-accent); color: var(--c-accent-text); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); white-space: nowrap; }
+.es-pricing__name { margin: 0; font-family: var(--font-heading); font-size: clamp(1.3rem, 1.8vw, 1.6rem); font-weight: var(--font-heading-weight); text-transform: var(--heading-case); letter-spacing: var(--heading-tracking); }
+.es-pricing__desc { margin: 0; color: var(--c-muted); font-size: .96rem; }
+.es-pricing__price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; padding-bottom: 18px; border-bottom: 1px solid var(--c-border); }
+.es-pricing__amount { font-family: var(--font-heading); font-size: clamp(2.2rem, 3.4vw, 3rem); line-height: 1; letter-spacing: -.01em; }
+.es-pricing__amount--text { font-size: clamp(1.4rem, 2vw, 1.7rem); }
+.es-pricing__period { color: var(--c-muted); font-size: .95rem; }
+.es-pricing__features { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 10px; flex: 1; align-content: start; }
+.es-pricing__features li { display: flex; gap: 10px; align-items: flex-start; font-size: .97rem; }
+.es-pricing__features .es-icon { width: 18px; height: 18px; flex: none; margin-top: 3px; color: var(--c-accent); }
+.es-pricing__cta { margin-top: auto; }
+.es-pricing__note { text-align: center; margin: 28px auto 0; font-size: .9rem; max-width: 64ch; }
+@media (prefers-reduced-motion: reduce) { .es-pricing__plan { transition: none; } .es-pricing__plan:hover, .es-pricing__plan--featured { transform: none !important; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Tarifs",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Tarifs" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Des formules claires" },
+    { "type": "richtext", "id": "text", "label": "Introduction" },
+    { "type": "text", "id": "button_label", "label": "Bouton de chaque formule", "default": "Choisir cette formule" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "no_price_label", "label": "Texte sans prix", "default": "Sur demande" },
+    { "type": "text", "id": "note", "label": "Note sous les tarifs", "info": "Ex. « Tarifs TTC, déplacement compris dans la zone indiquée », uniquement si c'est exact." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "plan", "name": "Formule", "settings": [
+      { "type": "text", "id": "name", "label": "Nom de la formule", "default": "[À compléter : nom de la formule]" },
+      { "type": "text", "id": "description", "label": "Pour qui", "default": "[À compléter : à qui s'adresse cette formule]" },
+      { "type": "text", "id": "price", "label": "Prix", "info": "Votre vrai tarif uniquement. Vide : « Sur demande »." },
+      { "type": "text", "id": "period", "label": "Unité (facultatif)", "info": "Ex. « / séance », « / mois »." },
+      { "type": "textarea", "id": "features", "label": "Ce qui est inclus (une ligne par élément)", "default": "[À compléter : élément inclus]\n[À compléter : élément inclus]" },
+      { "type": "checkbox", "id": "featured", "label": "Formule mise en avant", "default": false },
+      { "type": "text", "id": "badge", "label": "Étiquette de mise en avant", "default": "Recommandée" },
+      { "type": "text", "id": "button_label", "label": "Bouton (facultatif)" },
+      { "type": "url", "id": "button_link", "label": "Lien du bouton" }
+    ] }
+  ],
+  "max_blocks": 4,
+  "presets": [{ "name": "Tarifs", "blocks": [{ "type": "plan" }, { "type": "plan", "settings": { "featured": true } }, { "type": "plan" }] }]
+}
+{% endschema %}

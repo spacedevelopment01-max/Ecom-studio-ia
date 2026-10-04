@@ -8,17 +8,17 @@
 import { all, id, json, now, one, run } from "../db";
 import { enqueue, JobContext, JobPaused, type Job } from "../jobs";
 import { assetData, saveAsset, type Asset } from "../library";
-import { loadProject, saveProduct, setStatus, remember, notify } from "../projects";
+import { loadProject, saveProduct, saveServices, setStatus, remember, notify } from "../projects";
 import { importLink, fetchImage } from "./import-link";
 import { ensureCutouts, generateImageSet } from "./images";
-import { localAnalysis, factsFromDescription } from "./local";
+import { localAnalysis, factsFromDescription, localServiceAnalysis, mergeServiceProfile } from "./local";
 import { buildBrand } from "./brand";
 import { localCopy } from "./local-copy";
 import { buildShop } from "./shop";
 import { produceVideo } from "./videos";
-import { aiAnalyzeProduct, aiShopCopyChecked } from "../ai/tasks";
+import { aiAnalyzeProduct, aiAnalyzeService, aiShopCopyChecked } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
-import type { ProductProfile } from "../project-types";
+import { emptyProduct, type BusinessType, type ProductProfile } from "../project-types";
 import { C, L } from "../i18n-server";
 
 export const STEPS = [
@@ -33,6 +33,18 @@ export const STEPS = [
   { id: "calendar", label: "Calendrier", detail: "7 jours de publications préparées à valider", en: { label: "Calendar", detail: "7 days of posts ready for your approval" } },
   { id: "organize", label: "Rangement", detail: "Dossiers, noms et liens des fichiers", en: { label: "Organizing", detail: "Folders, file names and links" } },
 ] as const;
+
+/** Libellés des étapes pour le site d'une entreprise de services (mêmes étapes, vocabulaire de l'activité). */
+const SERVICE_STEPS: Partial<Record<(typeof STEPS)[number]["id"], { label: string; detail: string; en: { label: string; detail: string } }>> = {
+  sources: { label: "Lecture des sources", detail: "Description de l'activité, site actuel, photos", en: { label: "Reading sources", detail: "Business description, current website, photos" } },
+  cutout: { label: "Photos de l'activité", detail: "Utilisées telles quelles : pas de détourage pour un site de services", en: { label: "Business photos", detail: "Used as they are: no cutout for a services website" } },
+  analysis: { label: "Analyse de l'activité", detail: "Métier, prestations, zone, coordonnées ; faits confirmés et manques", en: { label: "Business analysis", detail: "Trade, services, area, contact details; confirmed facts and gaps" } },
+  copy: { label: "Rédaction", detail: "Textes du site, contrôle qualité", en: { label: "Copywriting", detail: "Website copy, quality check" } },
+  images: { label: "Images", detail: "Visuels de l'activité, bannières, visuels sociaux", en: { label: "Images", detail: "Business visuals, banners, social visuals" } },
+  video: { label: "Vidéos", detail: "Vidéo courte pour les réseaux et vidéo de présentation", en: { label: "Videos", detail: "Short social video and presentation video" } },
+  shop: { label: "Site", detail: "Site complet de l'activité, aperçu, versions", en: { label: "Website", detail: "Complete business website, preview, versions" } },
+};
+const stepInfo = (id: (typeof STEPS)[number]["id"], business: BusinessType = "products") => (business === "services" && SERVICE_STEPS[id]) || STEPS.find((s) => s.id === id)!;
 export type StepId = (typeof STEPS)[number]["id"];
 
 /** Contexte limité à une étape : avancement global et points de reprise préfixés. */
@@ -58,7 +70,7 @@ export type PipelinePayload = {
   projectId: string;
   from?: StepId;
   mode: "autopilot" | "guided";
-  input: { link?: string; description?: string; productName?: string; brandName?: string; price?: string };
+  input: { link?: string; description?: string; productName?: string; brandName?: string; price?: string; businessType?: BusinessType };
 };
 
 function parsePrice(s?: string): number | null {
@@ -73,16 +85,19 @@ export async function runPipeline(ctx: JobContext) {
   setStatus(projectId, "creating");
   const startIndex = payload.from ? STEPS.findIndex((s) => s.id === payload.from) : 0;
   const total = STEPS.length;
+  const business = loadProject(projectId).business;
   try {
     for (let i = Math.max(0, startIndex); i < total; i++) {
       const step = STEPS[i];
       const done = (ctx.checkpoint.__steps ?? {})[step.id]?.status;
       if (done === "done" || done === "skipped") continue;
       markStep(ctx, step.id, "running");
-      ctx.progress(i / total, `${L(step.label, step.en.label)}…`);
+      const info = stepInfo(step.id, business);
+      ctx.progress(i / total, `${L(info.label, info.en.label)}…`);
       const sc = new StepContext(ctx, i / total, (i + 1) / total, step.id);
       const note = await runStep(step.id, sc, payload);
-      markStep(ctx, step.id, note === "skipped" ? "skipped" : "done", note && note !== "skipped" ? note : undefined);
+      if (note && typeof note === "object") markStep(ctx, step.id, "skipped", note.skipped);
+      else markStep(ctx, step.id, note === "skipped" ? "skipped" : "done", note && note !== "skipped" ? note : undefined);
       if (step.id === "brand" && payload.mode === "guided") {
         setStatus(projectId, "awaiting_validation");
         const p = loadProject(projectId);
@@ -92,7 +107,7 @@ export async function runPipeline(ctx: JobContext) {
     }
     setStatus(projectId, "ready");
     const p = loadProject(projectId);
-    notify(p.userId, projectId, L("Votre projet est prêt", "Your project is ready"), L("Boutique, images, vidéos et calendrier sont disponibles dans le studio.", "Your store, images, videos and calendar are available in the studio."), "success");
+    notify(p.userId, projectId, L("Votre projet est prêt", "Your project is ready"), p.business === "services" ? L("Site, images, vidéos et calendrier sont disponibles dans le studio.", "Your website, images, videos and calendar are available in the studio.") : L("Boutique, images, vidéos et calendrier sont disponibles dans le studio.", "Your store, images, videos and calendar are available in the studio."), "success");
     return { done: true };
   } catch (e) {
     const cur = Object.entries((ctx.checkpoint.__steps ?? {}) as Record<string, any>).find(([, v]) => v.status === "running")?.[0];
@@ -108,12 +123,35 @@ export async function runPipeline(ctx: JobContext) {
   }
 }
 
-async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload): Promise<string | void> {
+/** Étape d'un moteur de contenus pour un site de services : une impossibilité (pas de photo exploitable…) est signalée sans arrêter la création. */
+async function serviceContent(fn: () => Promise<string>): Promise<string | { skipped: string }> {
+  try {
+    return await fn();
+  } catch (e) {
+    if (e instanceof JobPaused) throw e;
+    return { skipped: L(`Non créé pour l'instant : ${(e as Error).message}`, `Not created for now: ${(e as Error).message}`) };
+  }
+}
+
+async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload): Promise<string | void | { skipped: string }> {
   const projectId = payload.projectId;
   const p = loadProject(projectId);
   const inp = payload.input;
+  const services = p.business === "services";
   switch (step) {
     case "sources": {
+      if (inp.link && services) {
+        // Site actuel d'une entreprise de services : seul le texte sert (présentation, prestations, coordonnées).
+        const imported = await ctx.step("link", async () => {
+          ctx.progress(0.2, L("Lecture du site actuel", "Reading the current website"));
+          const r = await importLink(inp.link!);
+          const sources = [...json<any[]>(loadProject(projectId).row.sources_json, []).filter((x) => !(x.type === "link" && (x.ref === inp.link || x.ref === r.url))), { type: "link", ref: r.url, note: r.title }];
+          run("UPDATE projects SET sources_json = ? WHERE id = ?", JSON.stringify(sources), projectId);
+          return { url: r.url, title: r.title, description: r.description, text: r.text.slice(0, 15000), product: null, platform: r.platform, photos: 0 };
+        });
+        remember(projectId, { kind: "artifact", key: "link_import", value: JSON.stringify(imported), source: "link", status: "confirmed" });
+        return L(`Site lu : ${imported.title || imported.url}`, `Website read: ${imported.title || imported.url}`);
+      }
       if (inp.link) {
         const imported = await ctx.step("link", async () => {
           ctx.progress(0.2, L("Lecture du lien importé", "Reading the imported link"));
@@ -133,14 +171,20 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         remember(projectId, { kind: "artifact", key: "link_import", value: JSON.stringify(imported), source: "link", status: "confirmed" });
         return L(`Lien lu : ${imported.title || imported.url}${imported.photos ? ` (${imported.photos} photo(s) importée(s))` : ""}`, `Link read: ${imported.title || imported.url}${imported.photos ? ` (${imported.photos} photo(s) imported)` : ""}`);
       }
+      if (services) return inp.description ? L("Description de l'activité enregistrée", "Business description saved") : L("Photos reçues", "Photos received");
       return inp.description ? L("Description enregistrée", "Description saved") : L("Photos reçues", "Photos received");
     }
     case "cutout": {
+      if (services) {
+        const n = one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin = 'upload' AND deleted_at IS NULL", projectId)?.n ?? 0;
+        return { skipped: n ? L(`${n} photo(s) de l'activité gardée(s) telles quelles`, `${n} business photo(s) kept as they are`) : L("Aucune photo fournie : vous pourrez en ajouter dans l'onglet Activité", "No photo provided: you can add some in the Business tab") };
+      }
       const cut = await ensureCutouts(ctx, p);
       if (!cut.length) return "skipped";
       return L(`${cut.length} détourage(s) réalisé(s) localement`, `${cut.length} cutout(s) done locally`);
     }
     case "analysis": {
+      if (services) return analyzeService(ctx, payload);
       const cutouts = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL ORDER BY created_at", projectId);
       const colors = cutouts.length ? json<any>(cutouts[0].meta, {}).colors ?? [] : [];
       const link = json<any>(one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'link_import'", projectId)?.value, null);
@@ -204,16 +248,29 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         remember(projectId, { kind: "artifact", key: "shop_copy", value: JSON.stringify(r.copy), source: "ai", status: "confirmed" });
         return r.qc.remaining.length ? L(`Textes rédigés ; ${r.qc.remaining.length} point(s) à vérifier par vous`, `Copy written; ${r.qc.remaining.length} point(s) for you to check`) : L("Textes rédigés et contrôlés", "Copy written and checked");
       }
-      remember(projectId, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(fresh.product, fresh.brand!)), source: "local", status: "confirmed" });
+      remember(projectId, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(fresh.product, fresh.brand!, fresh)), source: "local", status: "confirmed" });
       return L("Textes de base assemblés (moteur local) — à enrichir", "Base copy assembled (local engine) — to be enriched");
     }
     case "images": {
+      if (services) {
+        return serviceContent(async () => {
+          const r = await generateImageSet(ctx, projectId);
+          return L(`${r.created.length} image(s) créée(s)`, `${r.created.length} image(s) created`);
+        });
+      }
       const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
       if (!has) return "skipped";
       const r = await generateImageSet(ctx, projectId);
       return L(`${r.created.length} image(s) créée(s)`, `${r.created.length} image(s) created`);
     }
     case "video": {
+      if (services) {
+        return serviceContent(async () => {
+          const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", goal: C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") })).assetId);
+          const b = await ctx.step("v169", async () => (await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", goal: C("vidéo de présentation de l'activité pour le site", "business presentation video for the website"), music: "none" })).assetId);
+          return L(`2 vidéos rendues (${[a, b].length})`, `2 videos rendered (${[a, b].length})`);
+        });
+      }
       const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
       if (!has) return "skipped";
       const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })).assetId);
@@ -222,7 +279,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
     }
     case "shop": {
       const r = await buildShop(ctx, projectId);
-      return L(`Version ${r.number} du thème enregistrée`, `Theme version ${r.number} saved`);
+      return services ? L(`Version ${r.number} du site enregistrée`, `Website version ${r.number} saved`) : L(`Version ${r.number} du thème enregistrée`, `Theme version ${r.number} saved`);
     }
     case "calendar": {
       const planId = await ctx.step("plan", async () => {
@@ -231,7 +288,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         const conns = all<{ id: string; provider: string }>("SELECT c.id, c.provider FROM connections c JOIN project_connections pc ON pc.connection_id = c.id WHERE pc.project_id = ? AND c.provider IN ('instagram','facebook','tiktok','youtube','pinterest')", projectId);
         const networks = conns.length ? conns.map((c) => ({ network: c.provider, connectionId: c.id })) : [{ network: "instagram" }, { network: "facebook" }, { network: "pinterest" }];
         const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
-        const params = { startDate: tomorrow, days: 7, perDay: 1, slots: ["11:30"], timezone: fresh.settings.timezone, networks, goals: C("faire découvrir le produit et amener vers la boutique", "introduce the product and drive traffic to the store"), tone: "", mix: { photo: 70, video: 20, text: 10 }, approval: "manual" as const };
+        const params = { startDate: tomorrow, days: 7, perDay: 1, slots: ["11:30"], timezone: fresh.settings.timezone, networks, goals: fresh.business === "services" ? C("faire connaître l'activité et ses prestations, amener vers une prise de contact", "promote the business and its services, drive people to get in touch") : C("faire découvrir le produit et amener vers la boutique", "introduce the product and drive traffic to the store"), tone: "", mix: { photo: 70, video: 20, text: 10 }, approval: "manual" as const };
         run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", pid, projectId, JSON.stringify(params), "planning", now());
         const job = enqueue({ userId: p.userId, projectId, type: "calendar.plan", label: L("Calendrier de 7 jours", "7-day calendar"), payload: { projectId, planId: pid, params }, parentId: ctx.job.id, idempotencyKey: `pipeline-plan:${ctx.job.id}` });
         run("UPDATE content_plans SET job_id = ? WHERE id = ?", job.id, pid);
@@ -261,8 +318,81 @@ class StepScope extends JobContext {
   }
 }
 
-export function pipelineState(job: Job | undefined) {
+export function pipelineState(job: Job | undefined, business: BusinessType = "products") {
   const cp = json<Record<string, any>>(job?.checkpoint, {});
   const steps = (cp.__steps ?? {}) as Record<string, { status: string; at: number; note?: string }>;
-  return STEPS.map(({ en, ...s }) => ({ ...s, label: L(s.label, en.label), detail: L(s.detail, en.detail), status: steps[s.id]?.status ?? "pending", note: steps[s.id]?.note, at: steps[s.id]?.at }));
+  return STEPS.map((s) => {
+    const i = stepInfo(s.id, business);
+    return { id: s.id, label: L(i.label, i.en.label), detail: L(i.detail, i.en.detail), status: steps[s.id]?.status ?? "pending", note: steps[s.id]?.note, at: steps[s.id]?.at };
+  });
+}
+
+/**
+ * Analyse d'une entreprise de services : profil de l'activité (nom, métier, résumé, faits)
+ * et offre complétée (prestations, zone, coordonnées) à partir de la description et du site actuel.
+ * Ce que le client a saisi prime ; rien n'est inventé (les manques restent vides, à compléter dans l'onglet Activité).
+ */
+async function analyzeService(ctx: JobContext, payload: PipelinePayload): Promise<string> {
+  const projectId = payload.projectId;
+  const p = loadProject(projectId);
+  const inp = payload.input;
+  const link = json<any>(one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'link_import'", projectId)?.value, null);
+  const local = localServiceAnalysis({ name: inp.productName, brand: inp.brandName, description: inp.description, link, services: p.services });
+  let product: ProductProfile = local.product;
+  let offer = local.services;
+  if (llmConfigured()) {
+    const photos = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin = 'upload' AND kind = 'image' AND deleted_at IS NULL ORDER BY created_at LIMIT 4", projectId);
+    const r = await ctx.step("ai", () =>
+      aiAnalyzeService(
+        { userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:analysis` },
+        {
+          photos: photos.map((o, i) => ({ data: assetData(o), label: `photo ${i + 1}` })),
+          link: link ? { url: link.url, text: link.text, data: { title: link.title, description: link.description } } : null,
+          description: inp.description,
+          providedName: inp.productName,
+          providedBrand: inp.brandName,
+          known: p.services,
+        },
+      ),
+    );
+    // Les faits écrits par le client priment sur ceux de l'analyse.
+    const facts = [...local.product.facts, ...r.facts.filter((f) => !local.product.facts.some((u) => u.key === f.key))];
+    product = {
+      ...emptyProduct(),
+      name: inp.productName || r.name || local.product.name,
+      nameStatus: inp.productName ? "provided" : r.nameStatus,
+      category: r.category || local.product.category,
+      sector: r.sector ?? local.product.sector,
+      summary: r.summary || local.product.summary,
+      facts,
+      questions: r.questions.filter((q) => !/price|shipping|returns/i.test(q.factKey)),
+      claimsToAvoid: r.claimsToAvoid,
+      analyzedBy: "ai",
+    };
+    offer = mergeServiceProfile(p.services, {
+      services: r.services.map((x) => ({ name: x.name, description: x.description, ...(x.price ? { price: x.price } : {}), ...(x.duration ? { duration: x.duration } : {}) })),
+      area: r.area,
+      address: r.address,
+      phone: r.phone,
+      email: r.email,
+      hours: r.hours,
+      bookingUrl: /^https?:\/\//i.test(r.bookingUrl) ? r.bookingUrl : "",
+      ...(r.contactMode !== "unknown" ? { contactMode: r.contactMode } : {}),
+    });
+    // Ce que le moteur local a lu mot pour mot complète encore les manques.
+    offer = mergeServiceProfile(offer, local.services);
+  }
+  saveProduct(projectId, product);
+  saveServices(projectId, offer);
+  if (product.name) run("UPDATE projects SET name = CASE WHEN name LIKE 'Nouveau projet%' OR name LIKE 'New project%' THEN ? ELSE name END WHERE id = ?", inp.brandName || product.name, projectId);
+  const missing = [
+    !offer.services.length && L("prestations", "services"),
+    !offer.area && !offer.address && L("zone ou adresse", "area or address"),
+    !offer.phone && !offer.email && L("téléphone ou e-mail", "phone or email"),
+    !offer.hours && L("horaires", "hours"),
+  ].filter(Boolean) as string[];
+  return L(
+    `${offer.services.length} prestation(s), ${product.facts.length} information(s) établie(s)${missing.length ? ` ; à compléter : ${missing.join(", ")}` : ""} — ${product.analyzedBy === "ai" ? "analyse IA" : "moteur local"}`,
+    `${offer.services.length} service(s), ${product.facts.length} fact(s) established${missing.length ? `; to complete: ${missing.join(", ")}` : ""} — ${product.analyzedBy === "ai" ? "AI analysis" : "local engine"}`,
+  );
 }

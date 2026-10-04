@@ -61,6 +61,16 @@ jobs:
             done
           done
 
+      - name: Shopify Theme Check (sites de services, 11 directions, FR et EN)
+        run: |
+          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
+            for l in fr en; do
+              echo "::group::$d / services ($l)"
+              BUSINESS=services LANG_THEME=$l npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-services-$l-$d" "$d"
+              echo "::endgroup::"
+            done
+          done
+
       - name: Build de production
         run: npm run build
 

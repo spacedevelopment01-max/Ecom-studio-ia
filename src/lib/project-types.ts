@@ -3,19 +3,38 @@ import { z } from "zod";
 import type { BrandPalette, DirectionId } from "./theme/directions";
 
 export const SECTORS = [
-  { id: "beaute", label: "Beauté & cosmétique", labelEn: "Beauty & cosmetics" },
-  { id: "mode", label: "Mode & accessoires", labelEn: "Fashion & accessories" },
-  { id: "bijoux", label: "Bijoux & montres", labelEn: "Jewelry & watches" },
-  { id: "maison", label: "Maison & décoration", labelEn: "Home & decor" },
-  { id: "hightech", label: "High-tech & gadgets", labelEn: "Tech & gadgets" },
-  { id: "sport", label: "Sport & plein air", labelEn: "Sports & outdoors" },
-  { id: "alimentation", label: "Alimentation & boissons", labelEn: "Food & drinks" },
-  { id: "enfants", label: "Bébé & enfants", labelEn: "Baby & kids" },
-  { id: "animaux", label: "Animaux", labelEn: "Pets" },
-  { id: "artisanat", label: "Artisanat & papeterie", labelEn: "Crafts & stationery" },
+  { id: "beaute", label: "Beauté & cosmétique", labelEn: "Beauty & cosmetics", kind: "products" },
+  { id: "mode", label: "Mode & accessoires", labelEn: "Fashion & accessories", kind: "products" },
+  { id: "bijoux", label: "Bijoux & montres", labelEn: "Jewelry & watches", kind: "products" },
+  { id: "maison", label: "Maison & décoration", labelEn: "Home & decor", kind: "products" },
+  { id: "hightech", label: "High-tech & gadgets", labelEn: "Tech & gadgets", kind: "products" },
+  { id: "sport", label: "Sport & plein air", labelEn: "Sports & outdoors", kind: "products" },
+  { id: "alimentation", label: "Alimentation & boissons", labelEn: "Food & drinks", kind: "products" },
+  { id: "enfants", label: "Bébé & enfants", labelEn: "Baby & kids", kind: "products" },
+  { id: "animaux", label: "Animaux", labelEn: "Pets", kind: "products" },
+  { id: "artisanat", label: "Artisanat & papeterie", labelEn: "Crafts & stationery", kind: "products" },
+  // Entreprises de services (project.business === "services").
+  { id: "batiment", label: "Artisan & bâtiment", labelEn: "Trades & home improvement", kind: "services" },
+  { id: "bienetre", label: "Beauté & bien-être (salon, institut)", labelEn: "Beauty & wellness (salon, spa)", kind: "services" },
+  { id: "sante", label: "Santé & paramédical", labelEn: "Health & allied health", kind: "services" },
+  { id: "coaching", label: "Sport & coaching", labelEn: "Fitness & coaching", kind: "services" },
+  { id: "conseil", label: "Conseil, juridique & comptable", labelEn: "Consulting, legal & accounting", kind: "services" },
+  { id: "restauration", label: "Restauration & traiteur", labelEn: "Restaurants & catering", kind: "services" },
+  { id: "immobilier", label: "Immobilier", labelEn: "Real estate", kind: "services" },
+  { id: "formation", label: "Formation & enseignement", labelEn: "Training & tutoring", kind: "services" },
+  { id: "evenementiel", label: "Événementiel & photographie", labelEn: "Events & photography", kind: "services" },
+  { id: "domicile", label: "Services à la personne", labelEn: "Home & personal care services", kind: "services" },
+  { id: "agence", label: "Agence & services numériques", labelEn: "Agencies & digital services", kind: "services" },
 ] as const;
 export type SectorId = (typeof SECTORS)[number]["id"];
+/** Secteurs d'une boutique de produits / d'une entreprise de services. */
+export type ProductSectorId = Extract<(typeof SECTORS)[number], { kind: "products" }>["id"];
+export type ServiceSectorId = Extract<(typeof SECTORS)[number], { kind: "services" }>["id"];
 export const SECTOR_IDS = SECTORS.map((s) => s.id) as [SectorId, ...SectorId[]];
+export const PRODUCT_SECTOR_IDS = SECTORS.filter((s) => s.kind === "products").map((s) => s.id) as ProductSectorId[];
+export const SERVICE_SECTOR_IDS = SECTORS.filter((s) => s.kind === "services").map((s) => s.id) as ServiceSectorId[];
+/** Le secteur est-il celui d'une entreprise de services ? */
+export const isServiceSector = (id?: string | null): id is ServiceSectorId => !!id && (SERVICE_SECTOR_IDS as string[]).includes(id);
 /** Libellé du secteur dans la langue demandée (français par défaut). Fichier partagé navigateur/serveur : la langue est un paramètre. */
 export const sectorLabel = (id?: string | null, lang: "fr" | "en" = "fr") => {
   const s = SECTORS.find((x) => x.id === id);

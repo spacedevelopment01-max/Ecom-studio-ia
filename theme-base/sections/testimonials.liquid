@@ -16,8 +16,9 @@
             {%- if stars > 0 -%}<p class="es-testi__stars" aria-label="{{ 'products.product.rating_of' | t: rating: stars, max: 5 | escape }}">{%- for i in (1..5) -%}<span{% if i > stars %} class="is-off"{% endif %}>★</span>{%- endfor -%}</p>{%- endif -%}
             <span class="es-testi__mark" aria-hidden="true">&ldquo;</span>
             <blockquote class="es-testi__quote">{{ block.settings.quote }}</blockquote>
+            {%- assign author_first = block.settings.author | strip | slice: 0 -%}
             <figcaption class="es-testi__who">
-              {%- if block.settings.image != blank or block.settings.image_asset != blank -%}<span class="es-testi__avatar">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.author, sizes: '48px', class: 'es-cover' %}</span>{%- elsif block.settings.author != blank -%}<span class="es-testi__avatar es-testi__avatar--initial" aria-hidden="true">{{ block.settings.author | strip | slice: 0 | upcase }}</span>{%- endif -%}
+              {%- if block.settings.image != blank or block.settings.image_asset != blank -%}<span class="es-testi__avatar">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.author, sizes: '48px', class: 'es-cover' %}</span>{%- elsif block.settings.author != blank and author_first != '[' -%}<span class="es-testi__avatar es-testi__avatar--initial" aria-hidden="true">{{ block.settings.author | strip | slice: 0 | upcase }}</span>{%- endif -%}
               {%- assign who = block.settings.author | split: ' · ' -%}<span><b>{{ who.first }}{% if who.size > 1 %} <span class="es-testi__tag">{{ who.last }}</span>{% endif %}</b>{%- if block.settings.detail != blank -%}<small>{{ block.settings.detail }}</small>{%- endif -%}</span>
             </figcaption>
           </figure>

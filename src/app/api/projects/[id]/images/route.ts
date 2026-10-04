@@ -7,7 +7,8 @@ import { L } from "@/lib/i18n-server";
 
 const Req = z.object({
   mode: z.enum(["set", "single"]),
-  kind: z.enum(["packshot", "scene", "social", "ad", "banner"]).optional(),
+  // Entreprise de services : annonce de prestation, carrousel de conseils, citation, infos pratiques, rendez-vous, ambiance.
+  kind: z.enum(["packshot", "scene", "social", "ad", "banner", "service", "tips", "quote", "info", "booking", "ambiance"]).optional(),
   style: z.enum(SCENE_STYLES.map((s) => s.id) as [string, ...string[]]).optional(),
   format: z.enum(Object.keys(FORMATS) as [string, ...string[]]).optional(),
   layout: z.enum(["editorial", "bold", "minimal", "centered", "split"]).optional(),
@@ -16,6 +17,9 @@ const Req = z.object({
   cta: z.string().max(40).optional(),
   useAi: z.boolean().optional(),
   sourceCutoutId: z.string().optional(),
+  serviceIndex: z.number().int().min(0).max(50).optional(),
+  items: z.array(z.string().max(300)).max(6).optional(),
+  usePhoto: z.boolean().optional(),
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
@@ -24,6 +28,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const job =
     b.mode === "set"
       ? enqueue({ userId: user.id, projectId: p.id, type: "images.generate", label: L("Jeu d'images complet", "Full image set"), payload: { projectId: p.id, options: { withAi: b.useAi } } })
-      : enqueue({ userId: user.id, projectId: p.id, type: "image.single", label: L(`Image ${b.kind ?? "scene"}`, `Image: ${b.kind ?? "scene"}`), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId } } });
+      : enqueue({ userId: user.id, projectId: p.id, type: "image.single", label: L(`Image ${b.kind ?? "scene"}`, `Image: ${b.kind ?? "scene"}`), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto } } });
   return ok({ jobId: job.id });
 });

@@ -8,6 +8,20 @@
   if shape == 'theme'
     assign shape = settings.header_shape
   endif
+  assign phone_href = section.settings.phone | remove: ' ' | remove: '.' | remove: '-' | remove: '(' | remove: ')'
+  comment
+    Bouton d'action (site de services) : lien saisi, sinon appel du numéro de téléphone.
+  endcomment
+  assign cta_href = section.settings.cta_link
+  assign cta_external = false
+  if cta_href == blank and section.settings.phone != blank
+    assign cta_href = 'tel:' | append: phone_href
+  elsif cta_href == blank
+    assign cta_href = routes.root_url
+  endif
+  if cta_href contains '://'
+    assign cta_external = true
+  endif
 -%}
 <header class="es-header es-header--{{ section.settings.layout }} es-header--shape-{{ shape }} es-header--icons-{{ section.settings.icons }}{% if section.settings.sticky %} es-header--sticky{% endif %}{% if transparent %} es-header--transparent{% endif %} color-{{ section.settings.color_scheme }}" data-header>
   <div class="es-header__inner es-container">
@@ -40,10 +54,18 @@
       {%- if shop.customer_accounts_enabled -%}
         <a href="{{ routes.account_url }}" class="es-icon-button es-hide-mobile" aria-label="{{ 'customer.account' | t }}">{% render 'icon', name: 'account' %}</a>
       {%- endif -%}
-      <a href="{{ routes.cart_url }}" class="es-icon-button es-cart-link" data-cart-open aria-label="{{ 'cart.title' | t }}">
-        {% render 'icon', name: 'cart' %}
-        <span class="es-cart-count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
-      </a>
+      {%- if section.settings.phone != blank -%}
+        <a href="tel:{{ phone_href }}" class="es-icon-button es-header__phone{% if section.settings.cta_label != blank %} es-header__phone--compact{% endif %}" aria-label="{{ 'sections.header.call' | t }} {{ section.settings.phone | escape }}">{% render 'icon', name: 'phone' %}<span class="es-header__phone-number">{{ section.settings.phone }}</span></a>
+      {%- endif -%}
+      {%- if section.settings.show_cart -%}
+        <a href="{{ routes.cart_url }}" class="es-icon-button es-cart-link" data-cart-open aria-label="{{ 'cart.title' | t }}">
+          {% render 'icon', name: 'cart' %}
+          <span class="es-cart-count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+        </a>
+      {%- endif -%}
+      {%- if section.settings.cta_label != blank -%}
+        <a href="{{ cta_href }}" class="es-button es-button--small es-header__cta"{% if cta_external %} target="_blank" rel="noopener"{% endif %}>{% render 'icon', name: section.settings.cta_icon %}<span>{{ section.settings.cta_label }}</span></a>
+      {%- endif -%}
     </div>
   </div>
 
@@ -57,9 +79,35 @@
         <li style="--i: {{ forloop.index }}"><a href="{{ link.url }}">{{ link.title }}</a></li>
       {%- endfor -%}
     </ul>
+    {%- if section.settings.cta_label != blank -%}
+      <a href="{{ cta_href }}" class="es-button es-button--full es-mobile-menu__cta"{% if cta_external %} target="_blank" rel="noopener"{% endif %}>{% render 'icon', name: section.settings.cta_icon %}<span>{{ section.settings.cta_label }}</span></a>
+    {%- endif -%}
+    {%- if section.settings.phone != blank -%}
+      <a href="tel:{{ phone_href }}" class="es-mobile-menu__phone">{% render 'icon', name: 'phone' %}<span>{{ section.settings.phone }}</span></a>
+    {%- endif -%}
     {% render 'social-icons' %}
   </div>
 </header>
+
+{% stylesheet %}
+.es-header__cta { min-height: 44px; padding: .55em 1.25em; gap: 8px; white-space: nowrap; margin-left: 10px; }
+.es-header__cta .es-icon { width: 16px; height: 16px; flex: none; }
+.es-header__cta:hover .es-icon { transform: none; }
+.es-header__phone { display: inline-flex; align-items: center; border-radius: 999px; width: auto; gap: 8px; padding-inline: 10px; text-decoration: none; font-size: .9rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.es-header__phone .es-icon { flex: none; }
+.es-header__phone--compact .es-header__phone-number { display: none; }
+.es-mobile-menu__cta { margin-top: auto; }
+.es-mobile-menu__cta .es-icon { width: 18px; height: 18px; }
+.es-mobile-menu__phone { display: inline-flex; align-items: center; gap: 10px; font-size: 1.15rem; text-decoration: none; font-variant-numeric: tabular-nums; }
+.es-mobile-menu__phone .es-icon { width: 20px; height: 20px; color: var(--c-accent); }
+@media (min-width: 1200px) { .es-header__phone--compact .es-header__phone-number { display: inline; } }
+@media (max-width: 989px) {
+  .es-header__cta { padding: 0; width: 44px; min-width: 44px; margin-left: 4px; border-radius: 50%; justify-content: center; }
+  .es-header__cta span { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .es-header__phone .es-header__phone-number { display: none; }
+  .es-header__phone { padding-inline: 0; width: 44px; justify-content: center; }
+}
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -91,6 +139,12 @@
     { "type": "checkbox", "id": "sticky", "label": "Rester visible au défilement", "default": true },
     { "type": "checkbox", "id": "transparent_on_home", "label": "Transparent au-dessus de la première section de l'accueil", "default": false },
     { "type": "checkbox", "id": "show_search", "label": "Afficher la recherche", "default": true },
+    { "type": "checkbox", "id": "show_cart", "label": "Afficher le panier", "default": true, "info": "Décochez pour un site vitrine ou de services, sans vente en ligne." },
+    { "type": "header", "content": "Bouton d'action" },
+    { "type": "text", "id": "cta_label", "label": "Texte du bouton", "info": "Ex. « Prendre rendez-vous », « Demander un devis ». Laissez vide pour ne pas l'afficher." },
+    { "type": "url", "id": "cta_link", "label": "Lien du bouton", "info": "Vide : appelle le numéro de téléphone ci-dessous." },
+    { "type": "select", "id": "cta_icon", "label": "Icône du bouton", "default": "clock", "options": [{ "value": "clock", "label": "Horloge" }, { "value": "phone", "label": "Téléphone" }, { "value": "mail", "label": "E-mail" }, { "value": "chat", "label": "Message" }, { "value": "arrow", "label": "Flèche" }] },
+    { "type": "text", "id": "phone", "label": "Téléphone affiché", "info": "Facultatif. Numéro cliquable pour appeler depuis un téléphone." },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
   ],
   "enabled_on": { "groups": ["header"] }

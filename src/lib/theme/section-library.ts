@@ -6,12 +6,18 @@
  */
 import type { Lang } from "../i18n";
 
-export type SectionCategory = "Ouverture" | "Produit" | "Preuves" | "Animations" | "Images et vidéos" | "Collections" | "Textes" | "Conversion" | "Avancé";
+export type SectionCategory = "Ouverture" | "Produit" | "Preuves" | "Animations" | "Images et vidéos" | "Collections" | "Textes" | "Conversion" | "Services" | "Avancé";
 
 export type LibraryEntry = { type: string; name: string; category: SectionCategory; description: string; keywords?: string };
 
 /** Noms, descriptions et mots-clés anglais (la catégorie reste la clé française, traduite par l'interface). */
 const SECTION_LIBRARY_EN: Record<string, { name: string; description: string; keywords: string }> = {
+  "services-list": { name: "Services", description: "Your services as cards or a detailed list: description, optional price and duration, and a button on each. Ideal at the top of a services website's home page.", keywords: "services offer list prices duration appointment" },
+  pricing: { name: "Pricing", description: "Plans side by side with one highlighted, using only the prices you enter. Ideal for packages, memberships or session bundles.", keywords: "pricing plans packages rates" },
+  booking: { name: "Appointment booking", description: "Booking block: your Calendly, Cal.com, Planity or Doctolib link as a button or embedded calendar, otherwise a Shopify request form. Ideal for the Book or Contact page.", keywords: "booking appointment calendly planity doctolib schedule" },
+  "practical-info": { name: "Practical info", description: "Opening hours, address with an optional map loaded on request, service area, tap-to-call phone and email. Ideal at the bottom of the home page or on the Contact page.", keywords: "hours address map area phone email location" },
+  team: { name: "Team", description: "Portraits, roles and short bios, with initials when there is no photo yet. Ideal on the About page or the home page of a practice, salon or agency.", keywords: "team staff people portraits about" },
+  portfolio: { name: "Portfolio", description: "Captioned project gallery with category filters; add a \"before\" photo to get a before / after slider. Ideal for trades, renovation, photographers and agencies.", keywords: "portfolio projects work gallery before after" },
   "hero-fullbleed": { name: "Main banner", description: "Full-screen image or video with your signature headline and a button. Ideal at the very top of the home page for a strong first impression.", keywords: "hero home full screen banner" },
   "hero-split": { name: "Split banner", description: "Product name, short pitch and a buy button on one side, a large photo on the other. Ideal for opening on a single hero product.", keywords: "hero split banner" },
   "hero-editorial": { name: "Editorial banner", description: "Huge two-line headline with the cut-out product floating just below, magazine style. Ideal for a refined, brand-led opening.", keywords: "hero magazine editorial" },
@@ -96,6 +102,12 @@ export function libraryEntry(type: string, lang: Lang): LibraryEntry | undefined
 }
 
 export const SECTION_LIBRARY: LibraryEntry[] = [
+  { type: "services-list", name: "Prestations", category: "Services", description: "Vos prestations en cartes ou en liste détaillée : description, prix et durée facultatifs, et un bouton pour chacune. Idéal en haut de l'accueil d'un site de services.", keywords: "prestations services offre tarifs durée rendez-vous" },
+  { type: "pricing", name: "Tarifs", category: "Services", description: "Formules en colonnes avec une formule mise en avant, uniquement avec les prix que vous saisissez. Idéal pour des forfaits, abonnements ou cartes de séances.", keywords: "tarifs prix formules forfaits abonnement" },
+  { type: "booking", name: "Prise de rendez-vous", category: "Services", description: "Bloc rendez-vous : votre lien Calendly, Cal.com, Planity ou Doctolib en bouton ou en agenda intégré, sinon un formulaire de demande Shopify. Idéal pour la page Rendez-vous ou Contact.", keywords: "rendez-vous réservation calendly planity doctolib agenda" },
+  { type: "practical-info", name: "Infos pratiques", category: "Services", description: "Horaires, adresse avec carte facultative chargée à la demande, zone d'intervention, téléphone cliquable et e-mail. Idéal en bas de l'accueil ou sur la page Contact.", keywords: "horaires adresse carte plan zone téléphone e-mail accès" },
+  { type: "team", name: "Équipe", category: "Services", description: "Portraits, rôles et courte présentation, avec les initiales tant qu'il n'y a pas de photo. Idéal sur la page À propos ou l'accueil d'un cabinet, d'un salon ou d'une agence.", keywords: "équipe portraits collaborateurs à propos" },
+  { type: "portfolio", name: "Réalisations", category: "Services", description: "Galerie de projets légendés, filtrable par catégorie ; ajoutez une photo « avant » pour un curseur avant / après. Idéal pour artisans, rénovation, photographes et agences.", keywords: "réalisations projets portfolio galerie avant après chantier" },
   { type: "hero-fullbleed", name: "Bannière principale", category: "Ouverture", description: "Image ou vidéo plein écran avec votre signature en grand titre et un bouton. Idéal tout en haut de l'accueil pour une première impression forte.", keywords: "héros hero accueil plein écran" },
   { type: "hero-split", name: "Bannière divisée", category: "Ouverture", description: "Nom du produit, accroche et bouton d'achat d'un côté, grande photo de l'autre. Idéal pour ouvrir sur un produit phare.", keywords: "héros hero split" },
   { type: "hero-editorial", name: "Bannière éditoriale", category: "Ouverture", description: "Très grand titre sur deux lignes, le produit détouré posé juste dessous, style magazine. Idéal pour une ouverture élégante qui met la marque en avant.", keywords: "héros hero magazine" },
@@ -172,7 +184,7 @@ export const SECTION_LIBRARY: LibraryEntry[] = [
   { type: "scroll-steps", name: "Étapes au défilement", category: "Animations", description: "Étapes épinglées à l'écran : à chaque défilement, le numéro, le texte et la photo changent. Idéal pour un « comment ça marche » de la commande à la livraison.", keywords: "étapes défilement épinglé sticky comment ça marche processus" },
 ];
 
-export const SECTION_CATEGORIES: SectionCategory[] = ["Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Avancé"];
+export const SECTION_CATEGORIES: SectionCategory[] = ["Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Services", "Avancé"];
 
 /** Sections qui ne s'ajoutent pas depuis la bibliothèque (structure de page, gabarits). */
 export const NOT_ADDABLE = new Set(["header", "footer", "announcement-bar", "cart-drawer"]);

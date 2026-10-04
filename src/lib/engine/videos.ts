@@ -2,6 +2,8 @@
  * Production vidéo : découpage (IA ou local) → plans générés facultatifs
  * (contrôlés) → motion design → MP4 + affiche + sous-titres SRT, rangés et
  * réutilisables dans la boutique, les publications et les campagnes.
+ * Entreprise de services : présentation de l'activité (photos réelles ou typographie animée),
+ * prestations, zone et horaires, appel à prendre rendez-vous — sans produit.
  */
 import { execFile } from "node:child_process";
 import fs from "node:fs";
@@ -21,6 +23,7 @@ import { videoProviderAvailable, veoClip, falClip } from "../ai/media-providers"
 import type { JobContext } from "../jobs";
 import { logoPng } from "../media/logo";
 import { C, L } from "../i18n-server";
+import { activityPhotos, isServices, localServiceVideoPlan } from "./service-media";
 
 const exec = promisify(execFile);
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
@@ -29,14 +32,16 @@ export type VideoRequest = { format: VideoFormat; goal?: string; useAiClip?: boo
 
 export async function produceVideo(ctx: JobContext, projectId: string, req: VideoRequest) {
   let project = loadProject(projectId);
+  const services = isServices(project);
   const cutouts = await ensureCutouts(ctx, project);
-  if (!cutouts.length) throw new Error(L("Importez une photo du produit pour créer une vidéo.", "Upload a product photo to create a video."));
+  if (!cutouts.length && !services) throw new Error(L("Importez une photo du produit pour créer une vidéo.", "Upload a product photo to create a video."));
   project = loadProject(projectId);
   const brand = project.brand;
   if (!brand) throw new Error(L("Définissez la marque avant de produire une vidéo.", "Set up the brand before producing a video."));
   // Photos en situation d'abord (celles du marchand avant les générées) : elles ouvrent les vidéos.
+  // Services : photos réelles de l'activité (réalisations, équipe, lieu), puis ambiances générées.
   const life = assetsByRole(projectId, "lifestyle", 6).filter((a) => a.status !== "rejected").sort((x, y) => Number(y.origin === "upload") - Number(x.origin === "upload")).slice(0, 2);
-  const imgs: Asset[] = [...life, ...assetsByRole(projectId, "detail", 2), ...assetsByRole(projectId, "scene", 3)].filter((a) => a.status !== "rejected");
+  const imgs: Asset[] = services ? activityPhotos(projectId).slice(0, 4) : [...life, ...assetsByRole(projectId, "detail", 2), ...assetsByRole(projectId, "scene", 3)].filter((a) => a.status !== "rejected");
   const descriptions = imgs.map((a) => C(`${a.role === "lifestyle" ? "produit en situation" : a.role} : ${a.name}`, `${a.role === "lifestyle" ? "lifestyle shot" : a.role}: ${a.name}`));
 
   // 1. Plans générés (facultatif, coûteux) : à partir d'une scène réelle.
@@ -46,7 +51,9 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
     const clipFile = await ctx.step("ai-clip", async () => {
       ctx.progress(0.1, L("Génération d'un plan vidéo d'ambiance", "Generating a mood video shot"));
       const scene = imgs.find((a) => a.role === "scene") ?? imgs[0];
-      const prompt = `Slow cinematic push-in on the product set, soft light shift, subtle depth of field, ${brand.palette.secondary} tones`;
+      const prompt = services
+        ? `Slow cinematic push-in on this real photo of the business, soft light shift, subtle depth of field. Keep every person, object and place exactly as they are; add no people, no text, no logo.`
+        : `Slow cinematic push-in on the product set, soft light shift, subtle depth of field, ${brand.palette.secondary} tones`;
       const buf = provider === "google"
         ? await veoClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip` }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m))
         : await falClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip` }, { image: assetData(scene), prompt }, (m) => ctx.progress(0.15, m));
@@ -63,7 +70,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       await exec("ffmpeg", ["-y", "-i", src, "-t", "4", "-vf", `fps=30,scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h}`, "-q:v", "3", path.join(dir, "f%04d.jpg")]);
       const frames = fs.readdirSync(dir).filter((f) => f.endsWith(".jpg")).sort().map((f) => path.join(dir, f));
       let ok = frames.length > 20;
-      if (ok && llmConfigured()) {
+      if (ok && llmConfigured() && !services) {
         const ref = assetData(cutouts[0]);
         for (const idx of [0, Math.floor(frames.length / 2), frames.length - 1]) {
           const r = await aiQcImage({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clipqc:${idx}` }, ref, fs.readFileSync(frames[idx]));
@@ -80,24 +87,33 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   // 2. Découpage.
   const plan: VideoSpec = req.plan ?? (await ctx.step(`plan:${req.format}`, async () => {
     ctx.progress(0.3, L("Écriture du découpage", "Writing the shot list"));
+    // Services : découpage écrit à partir de l'offre réelle (prestations, horaires, zone, contact).
+    if (services) {
+      const sp = localServiceVideoPlan(project, req.format, imgs.length, req.url, { short: req.target === "ads" });
+      if (clipDirs.length) sp.scenes.splice(1, 0, { kind: "clip", duration: 3, clip: 0 });
+      return sp;
+    }
     if (llmConfigured()) {
       const r = await aiVideoPlan({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:plan` }, project, { format: req.format, goal: req.goal ?? C("publicité courte qui donne envie d'acheter", "short ad that makes people want to buy"), images: descriptions, clips: clipDirs.length, url: req.url });
       return { format: req.format, scenes: r.scenes, transition: r.transition, music: req.music ?? r.music, captions: true } as VideoSpec;
     }
-    return localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url);
+    return localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url, project);
   }));
   plan.format = req.format;
   if (req.music) plan.music = req.music;
   // Bornes de sécurité (lecture sur téléphone) et références d'images valides.
   plan.scenes = plan.scenes
     .map((s) => ({ ...s, duration: Math.max(1.6, Math.min(6, s.duration)) }))
-    .filter((s) => (s.kind === "detail" || s.kind === "scene" || s.kind === "hook" || s.kind === "split" ? s.image < imgs.length : s.kind === "clip" ? s.clip < clipDirs.length : true));
+    .filter((s) => (s.kind === "detail" || s.kind === "scene" || s.kind === "hook" || s.kind === "split" ? s.image < imgs.length : s.kind === "clip" ? s.clip < clipDirs.length : true))
+    // Sans produit, les plans qui le montrent n'ont rien à révéler.
+    .filter((s) => !services || !["reveal", "callouts", "spotlight", "split"].includes(s.kind));
   const issues = checkVideoSpec(plan);
 
   // 3. Rendu.
   ctx.progress(0.4, L("Rendu du motion design", "Rendering the motion design"));
-  const product = await loadImage(assetData(cutouts[0]));
-  const images = await Promise.all(imgs.map((a) => loadImage(assetData(a))));
+  const product = cutouts[0] ? await loadImage(assetData(cutouts[0])) : null;
+  // Photos du client : orientation EXIF appliquée et taille raisonnable avant le rendu image par image.
+  const images = await Promise.all(imgs.map(async (a) => loadImage(services ? await sharp(assetData(a)).rotate().resize(2200, 2200, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: 90 }).toBuffer() : assetData(a))));
   const logoAsset = latestAsset(projectId, "logo-light") ?? null;
   const logo = logoAsset
     ? await loadImage(assetData(logoAsset))
@@ -116,7 +132,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
 
   ctx.progress(0.93, L("Rangement de la vidéo", "Filing the video"));
   const folder = req.target === "shop" ? "videos.shop" : req.target === "social" ? "videos.social" : "videos.ads";
-  const name = `${slug(project.product.name || brand.name)}-${req.format.replace(":", "x")}-${Date.now().toString(36)}`;
+  const name = `${slug(project.product.name || brand.name)}-${services ? `${C("presentation", "presentation")}-` : ""}${req.format.replace(":", "x")}-${Date.now().toString(36)}`;
   const video = await saveAsset({
     projectId,
     userId: project.userId,
@@ -126,8 +142,8 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
     role: "video",
     folderKey: folder,
     origin: "generated",
-    sourceAssetId: cutouts[0].id,
-    meta: { format: req.format, plan, technical, issues, method: clipDirs.length ? L("Motion design + plan généré", "Motion design + generated shot") : L("Motion design à partir des photos réelles", "Motion design from the real photos"), delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : L(", sans son", ", no audio")}` },
+    sourceAssetId: cutouts[0]?.id ?? imgs[0]?.id ?? null,
+    meta: { format: req.format, plan, technical, issues, ...(services ? { business: "services" } : {}), method: clipDirs.length ? L("Motion design + plan généré", "Motion design + generated shot") : services ? (imgs.length ? L("Motion design : présentation de l'activité à partir de vos photos", "Motion design: business presentation from your photos") : L("Motion design : typographie animée à la marque (sans photo)", "Motion design: animated brand typography (no photo)")) : L("Motion design à partir des photos réelles", "Motion design from the real photos"), delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : L(", sans son", ", no audio")}` },
     status: "review",
   });
   const posterFrame = path.join(dir, "poster.jpg");

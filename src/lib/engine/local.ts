@@ -7,7 +7,8 @@ import { hsl, hslToHex, mix, withLightness, contrast } from "../color";
 import { CANVAS_FONTS } from "../media/fonts";
 import type { LogoSpec } from "../media/logo";
 import type { VideoSpec } from "../media/video";
-import type { Brand, Fact, ProductProfile, SectorId, Strategy } from "../project-types";
+import { emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type Fact, type ProductProfile, type ProductSectorId, type SectorId, type ServiceItem, type ServiceProfile, type ServiceSectorId, type Strategy } from "../project-types";
+import { contactCta, isServicesBusiness, serviceDirection, serviceNames, serviceShowcase, serviceTaglines, type BusinessInfo } from "./services-text";
 import { DIRECTIONS, type DirectionId } from "../theme/directions";
 import type { ThemeOp } from "../theme/ops";
 import type { ThemeSpec } from "../theme/spec";
@@ -15,7 +16,7 @@ import { availableSectionTypes, containerOf, sectionSchema } from "../theme/spec
 import { canvasFamily } from "../media/fonts";
 import { C, L, uiLang } from "../i18n-server";
 
-const SECTOR_WORDS: [SectorId, RegExp][] = [
+const SECTOR_WORDS: [ProductSectorId, RegExp][] = [
   // Mots français puis anglais : la description peut être rédigée dans l'une ou l'autre langue.
   ["beaute", /sérum|serum|crème|creme|soin|visage|peau|cosm|parfum|maquill|shampo|lotion|baume|huile|skin ?care|\bskin\b|\bface\b|moisturi[sz]|\bcream\b|beauty|make-?up|perfume|fragrance|\bbalm\b/i],
   ["bijoux", /bijou|bague|collier|bracelet|boucle|montre|pendentif|or |argent|jewel|\brings?\b|necklace|earring|\bwatch(es)?\b|pendant|\bgold\b|\bsilver\b/i],
@@ -29,10 +30,29 @@ const SECTOR_WORDS: [SectorId, RegExp][] = [
   ["artisanat", /carnet|papeterie|céramique|fait main|artisan|tissage|bois tourné|poterie|notebook|stationery|ceramic|hand-?made|handcrafted|weaving|pottery/i],
 ];
 
-/** Secteur probable : le mot-clé cité en premier l'emporte (« bougie parfumée » → maison). */
-export function guessSector(text: string): SectorId | null {
+/** Métiers des entreprises de services (français puis anglais). */
+const SERVICE_SECTOR_WORDS: [ServiceSectorId, RegExp][] = [
+  ["batiment", /plomb|électricien|electricien|électricité|chauffag|chaudière|maçon|maconn|menuis|charpent|couvreur|toiture|carreleur|carrelage|peintre en bâtiment|peinture (intérieure|extérieure)|rénovation|serrurier|serrurerie|vitrier|paysagiste|élagage|terrassement|plâtrier|plaquiste|isolation|climatisation|dépannage|artisan du bâtiment|travaux|plumb|electrician|heating|boiler|\bhvac\b|carpenter|joiner|roofer|roofing|\btiler\b|tiling|bricklay|\bmason|locksmith|handyman|renovation|remodel|landscap|contractor|builder|glazier/i],
+  ["bienetre", /coiff|barbier|esthéticienne|esthétique|institut de beauté|onglerie|manucure|prothésiste ongulaire|massage|\bspa\b|maquilleuse|épilation|soins? du visage|extension de cils|réhaussement|salon de beauté|hair ?salon|hairdress|hairstylist|barber|\bnails?\b|manicure|pedicure|beautician|beauty salon|beauty therapist|lash|\bbrows?\b|waxing|facials?\b/i],
+  ["sante", /kiné|ostéo|infirmi|orthophon|podolog|pédicure-podologue|diététic|nutritionn|psycholog|psychothérap|sage-femme|dentiste|médecin|cabinet médical|ergothérap|psychomotric|sophrolog|naturopath|physio|osteopath|\bnurse|speech therap|podiatr|dietitian|nutritionist|psychotherap|counsell?or|dentist|doctor|chiropract|midwife|occupational therap|acupunct/i],
+  ["coaching", /coach|préparat(eur|rice) physique|salle de sport|cours de (yoga|pilates|boxe|fitness)|professeur de (yoga|pilates)|yoga|pilates|fitness|crossfit|remise en forme|musculation|entraîneur|personal trainer|\btrainer\b|\bgym\b|boxing|bootcamp/i],
+  ["conseil", /avocat|notaire|expert-comptable|expert comptable|comptab|juriste|consultant|cabinet de conseil|conseil en|conseill(er|ère) en|fiscal|gestion de patrimoine|courtier|assurance|lawyer|attorney|solicitor|notary|accountant|accounting|bookkeep|tax advis|consulting|financial advis|\bbroker|insurance/i],
+  ["restauration", /restaurant|bistro|brasserie|traiteur|pizzeria|crêperie|food ?truck|chef à domicile|table d'hôtes?|salon de thé|\bbar à|caterer|catering|eatery|\bdiner\b|private chef|tea ?room|\bcafé-restaurant/i],
+  ["immobilier", /immobili|mandataire|gestion locative|location saisonnière|syndic|diagnostiqueur|diagnostic immobilier|home staging|real estate|realtor|estate agent|property manag|letting agent|conveyanc/i],
+  ["formation", /formation|formateur|formatrice|cours particuliers|soutien scolaire|professeur|prof de|enseign|auto-école|école de (musique|danse|langues?|dessin|cuisine)|cours de (musique|langues?|piano|guitare|dessin|cuisine|chant|danse|anglais|français|maths)|tutor|tutoring|teacher|lessons|training course|driving school|language school/i],
+  ["evenementiel", /photograph|vidéaste|videaste|mariage|événementiel|evenementiel|organisat(eur|rice|ion) d'événements|\bdj\b|animat(eur|rice|ion) (de soirée|d'événements)|décorat(eur|rice) (événementiel|de mariage)|wedding|event planner|event planning|videographer|events? (company|agency)/i],
+  ["domicile", /aide à domicile|ménage|repassage|garde d'enfants|baby-?sitt|nounou|aide aux seniors|auxiliaire de vie|jardinage à domicile|pet-?sitt|promeneur de chiens|conciergerie|déménag|services à la personne|cleaning|cleaner|housekeep|childcare|\bnanny|babysit|elderly care|caregiver|home care|dog walk|concierge|\bmovers?\b|removals/i],
+  ["agence", /agence (web|digitale|de communication|marketing|créative|de design)|développeur|developpeur|web ?design|graphiste|community manager|rédact(eur|rice) web|traduct(eur|rice)|référencement|\bseo\b|marketing digital|web agency|digital agency|creative agency|\bdeveloper|graphic designer|copywriter|translator|social media manager|branding agency|marketing agency/i],
+];
+
+/**
+ * Secteur probable : le mot-clé cité en premier l'emporte (« bougie parfumée » → maison).
+ * `business` : « services » cherche parmi les métiers de services ; par défaut, parmi les secteurs de produits.
+ */
+export function guessSector(text: string, business: BusinessType = "products"): SectorId | null {
   let best: { s: SectorId; at: number; len: number } | null = null;
-  for (const [s, re] of SECTOR_WORDS) {
+  const words: [SectorId, RegExp][] = business === "services" ? SERVICE_SECTOR_WORDS : SECTOR_WORDS;
+  for (const [s, re] of words) {
     const m = re.exec(text);
     if (m && (!best || m.index < best.at || (m.index === best.at && m[0].length > best.len))) best = { s, at: m.index, len: m[0].length };
   }
@@ -50,6 +70,17 @@ export const SECTOR_DIRECTION: Record<SectorId, DirectionId> = {
   enfants: "pop",
   animaux: "pop",
   artisanat: "galerie",
+  batiment: serviceDirection({ sector: "batiment" }),
+  bienetre: serviceDirection({ sector: "bienetre" }),
+  sante: serviceDirection({ sector: "sante" }),
+  coaching: serviceDirection({ sector: "coaching" }),
+  conseil: serviceDirection({ sector: "conseil" }),
+  restauration: serviceDirection({ sector: "restauration" }),
+  immobilier: serviceDirection({ sector: "immobilier" }),
+  formation: serviceDirection({ sector: "formation" }),
+  evenementiel: serviceDirection({ sector: "evenementiel" }),
+  domicile: serviceDirection({ sector: "domicile" }),
+  agence: serviceDirection({ sector: "agence" }),
 };
 
 /** Faits extraits d'une description libre (formes simples « clé : valeur »). */
@@ -108,6 +139,145 @@ export function localAnalysis(input: { name?: string; brand?: string; descriptio
     claimsToAvoid: [],
     sources: [],
     analyzedBy: "local",
+  };
+}
+
+// ---------------------------------------------------------------- activité de services
+
+/** Métiers reconnus : catégorie affichée et secteur visuel le plus proche (null : aucun secteur produit adapté). */
+const SERVICE_KINDS: { re: RegExp; fr: string; en: string; sector: SectorId | null }[] = [
+  { re: /plomb|chauffagiste|chauffage|sanitaire|plumb|heating engineer|boiler/i, fr: "Plomberie et chauffage", en: "Plumbing and heating", sector: "batiment" },
+  { re: /électricien|electricien|électricité générale|electrician/i, fr: "Électricité", en: "Electrical services", sector: "batiment" },
+  { re: /serrur|locksmith/i, fr: "Serrurerie", en: "Locksmith", sector: "batiment" },
+  { re: /menuisi|ébéniste|charpent|carpenter|joiner|cabinetmaker/i, fr: "Menuiserie", en: "Carpentry", sector: "batiment" },
+  { re: /peintre en bâtiment|peinture intérieure|peintre décorateur|house painter|painter and decorator/i, fr: "Peinture et décoration", en: "Painting and decorating", sector: "batiment" },
+  { re: /maçon|rénovation|bâtiment|carreleur|plaquiste|couvreur|builder|renovation|roofer|tiler/i, fr: "Bâtiment et rénovation", en: "Building and renovation", sector: "batiment" },
+  { re: /paysagis|jardinier|jardinage|élagage|landscap|gardener|gardening/i, fr: "Paysagisme et jardin", en: "Landscaping and gardening", sector: "batiment" },
+  { re: /ménage|nettoyage|conciergerie|cleaning|housekeep/i, fr: "Nettoyage et entretien", en: "Cleaning services", sector: "domicile" },
+  { re: /coiff|barbier|barber|hairdress|hair salon/i, fr: "Coiffure", en: "Hairdressing", sector: "bienetre" },
+  { re: /esthéticienne|institut de beauté|onglerie|manucure|massage|\bspa\b|beauty salon|beautician|nail salon/i, fr: "Beauté et bien-être", en: "Beauty and wellness", sector: "bienetre" },
+  { re: /kiné|ostéopathe|physio|infirmi|sage-femme|dentiste|médecin|psychologue|orthophon|diététicien|osteopath|nurse|dentist|psychologist|dietitian|therapist/i, fr: "Santé et soins", en: "Health care", sector: "sante" },
+  { re: /avocat|notaire|juriste|lawyer|attorney|solicitor/i, fr: "Conseil juridique", en: "Legal services", sector: "conseil" },
+  { re: /comptab|fiscalit|accountant|bookkeep/i, fr: "Comptabilité et gestion", en: "Accounting", sector: "conseil" },
+  { re: /coach sportif|coaching sportif|préparateur physique|personal trainer|yoga|pilates|fitness/i, fr: "Coaching sportif et bien-être", en: "Fitness coaching", sector: "coaching" },
+  { re: /coach|accompagnement|développement personnel|mentor/i, fr: "Coaching et accompagnement", en: "Coaching", sector: "coaching" },
+  { re: /restaurant|bistrot|brasserie|traiteur|pizzeria|boulangerie|pâtisserie|salon de thé|caterer|catering|bakery/i, fr: "Restauration", en: "Food and dining", sector: "restauration" },
+  { re: /photographe|vidéaste|photographer|videographer/i, fr: "Photographie et vidéo", en: "Photography and video", sector: "evenementiel" },
+  { re: /agence|\bweb\b|marketing|graphiste|développeur|agency|developer|graphic designer|\bseo\b/i, fr: "Agence et services numériques", en: "Agency and digital services", sector: "agence" },
+  { re: /informatique|it support|computer repair/i, fr: "Services informatiques", en: "IT services", sector: "agence" },
+  { re: /professeur|cours particuliers?|soutien scolaire|formateur|formation|tutor|lessons|teacher/i, fr: "Cours et formation", en: "Lessons and training", sector: "formation" },
+  { re: /garde d'enfants|crèche|nounou|baby-?sitt|childcare|nanny/i, fr: "Garde d'enfants", en: "Childcare", sector: "domicile" },
+  { re: /toilett|vétérinaire|pet ?sitt|éducateur canin|dog walk|groomer|\bvet\b/i, fr: "Services pour animaux", en: "Pet services", sector: "domicile" },
+  { re: /couturi|retouches?|tailleur|tailor|seamstress|alterations/i, fr: "Couture et retouches", en: "Tailoring", sector: "domicile" },
+  { re: /immobili|real estate|estate agent|realtor/i, fr: "Immobilier", en: "Real estate", sector: "immobilier" },
+  { re: /wedding planner|organisat(?:eur|rice) d'événements|événementiel|\bdj\b|event planner/i, fr: "Événementiel", en: "Events", sector: "evenementiel" },
+  { re: /aide à domicile|services à la personne|auxiliaire de vie|home care|caregiver/i, fr: "Services à la personne", en: "Home care services", sector: "domicile" },
+  { re: /\bgarage\b|mécanicien|carrosserie|mechanic|car repair/i, fr: "Garage et automobile", en: "Car services", sector: null },
+];
+
+/** Début d'un intitulé de prestation (un service rendu, pas un argument). */
+const SERVICE_START = /^(dépannages?|installations?|entretiens?|réparations?|rénovations?|poses?|création|conception|conseils?|accompagnements?|coachings?|séances?|cours|consultations?|soins?|coupes?|colorations?|brushings?|massages?|nettoyages?|remplacements?|mise aux normes|diagnostics?|audits?|formations?|livraisons?|menus?|repas|shootings?|reportages?|tournages?|gardes?|toilettages?|tailles?|élagages?|tontes?|débouchages?|ramonages?|maintenances?|programmes?|suivis?|recherche de fuites?|désembouages?|bilans?|ateliers?|rédaction|refonte|développement|gestion|traitements?|épilations?|manucures?|repairs?|installations?|servicing|maintenance|consultations?|lessons?|sessions?|treatments?|haircuts?|cleaning|design|coaching|workshops?|photo shoots?|catering|emergency)\b/i;
+
+const cap = (s: string) => (s ? s.charAt(0).toLocaleUpperCase("fr-FR") + s.slice(1) : s);
+const clean = (s: string) => s.replace(/\s+/g, " ").replace(/^[\s\-–—•*·:]+|[\s.;:]+$/g, "").trim();
+
+/** Coordonnées écrites en toutes lettres dans un texte (jamais devinées). */
+export function contactsFromText(text: string): { phone: string; email: string; bookingUrl: string; hours: string } {
+  const phone = text.match(/(?:\+33\s?|\b0)[1-9](?:[\s.-]?\d{2}){4}\b/)?.[0] ?? text.match(/\+\d{1,3}[\s.-]?\(?\d{1,4}\)?(?:[\s.-]?\d{2,4}){2,4}/)?.[0] ?? "";
+  const email = text.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}/i)?.[0] ?? "";
+  const bookingUrl = text.match(/https?:\/\/[^\s"'<>]*(?:calendly|planity|doctolib|treatwell|booksy|setmore|simplybook|acuityscheduling|resalib|zenchef|thefork|lafourchette|cal\.com)[^\s"'<>]*/i)?.[0] ?? "";
+  const hours = clean(text.match(/(?:horaires?(?: d'ouverture)?|heures d'ouverture|opening hours|hours)\s*:\s*(.{3,160}?)(?=\.\s|\.?$|\n|\s(?:Tél|Tel|Phone|RDV|E-?mail)\b)/im)?.[1] ?? "");
+  return { phone: phone.trim(), email, bookingUrl, hours };
+}
+
+/**
+ * Analyse locale d'une activité de services : profil (nom, métier, résumé, faits)
+ * et offre (prestations, zone, coordonnées), uniquement à partir de ce que le client
+ * a écrit ou de ce que dit son site actuel. Rien n'est inventé : les manques restent vides.
+ */
+export function localServiceAnalysis(input: { name?: string; brand?: string; description?: string; link?: { url?: string; title: string; description: string; text?: string } | null; services: ServiceProfile }): { product: ProductProfile; services: ServiceProfile } {
+  const desc = (input.description ?? "").trim();
+  const linkText = [input.link?.description, input.link?.text?.slice(0, 15000)].filter(Boolean).join("\n");
+  // Métier : le mot-clé cité en premier l'emporte.
+  let kind: (typeof SERVICE_KINDS)[number] | null = null;
+  let at = Infinity;
+  for (const k of SERVICE_KINDS) {
+    const m = k.re.exec(`${input.name ?? ""} ${desc} ${input.link?.title ?? ""}`);
+    if (m && m.index < at) (kind = k), (at = m.index);
+  }
+  // Segments de la description : « Plombier chauffagiste à Lyon, dépannage 7j/7, installation de chaudières, devis gratuit ».
+  const lines = desc.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  const bullets = lines.filter((l) => /^[-–•*·]\s*/.test(l)).map(clean);
+  const segments = lines.filter((l) => !/^[-–•*·]\s*/.test(l)).flatMap((l) => l.split(/[,;]|\.\s+|\s+[–—-]\s+/)).map(clean).filter(Boolean);
+  const headline = segments[0] ?? "";
+  const facts: Fact[] = [];
+  const fact = (key: string, fr: string, en: string, value: string) => !facts.some((f) => f.key === key) && facts.push({ key, label: C(fr, en), value, status: "confirmed", source: "description" });
+  // Prestations citées par le client (puces, ou segments qui commencent par un service).
+  const found: ServiceItem[] = [];
+  for (const seg of [...bullets, ...segments.slice(1)]) {
+    if (seg.length < 3 || seg.length > 120) continue;
+    if (!bullets.includes(seg) && !SERVICE_START.test(seg)) continue;
+    if (/devis|quote|estimate/i.test(seg) && !SERVICE_START.test(seg)) continue;
+    const name = cap(seg);
+    if (!found.some((f) => f.name.toLowerCase() === name.toLowerCase())) found.push({ name, description: "" });
+  }
+  if (/devis (?:gratuit|offert)|free (?:quote|estimate)/i.test(desc)) fact("free_quote", "Devis", "Quote", C("Gratuit", "Free"));
+  const avail = desc.match(/7\s?j(?:ours)?\s?\/\s?7|24\s?h\s?\/\s?24|24\/7|7 days a week/i)?.[0];
+  if (avail) fact("availability", "Disponibilité", "Availability", avail.replace(/\s/g, ""));
+  const exp = desc.match(/depuis\s+(?:19|20)\d{2}|\d{1,2}\s+ans d'expérience|since\s+(?:19|20)\d{2}|\d{1,2}\s+years? of experience/i)?.[0];
+  if (exp) fact("experience", "Expérience", "Experience", exp);
+  const cred = desc.match(/(?:certifié|certifiée|qualifié|qualifiée|diplômé|diplômée|agréé|agréée|label|RGE|Qualibat|certified|qualified|licensed|accredited)[^,.;\n]{0,80}/i)?.[0];
+  if (cred) fact("credentials", "Qualifications (indiquées par vous)", "Qualifications (as stated by you)", clean(cred));
+  // Zone : nom propre après « à », « sur », « in »… (« Plombier à Lyon » → Lyon).
+  const areaM = desc.match(/(?:^|[\s,(])(?:à|sur|autour de|dans (?:le|la|les|l')?|in|around|across)\s+((?:[A-ZÀ-Ý][\p{L}'’-]+)(?:[\s-](?:[A-ZÀ-Ý][\p{L}'’-]+|et|sur|en|de|du|la|le|les|and)){0,4})/u);
+  let area = areaM ? areaM[1].replace(/\s+(?:et|sur|en|de|du|la|le|les|and)$/u, "").trim() : "";
+  if (/^(?:Domicile|Distance|Home)$/i.test(area)) area = "";
+  const fromDesc = contactsFromText(desc);
+  const fromLink = input.link ? contactsFromText(linkText) : { phone: "", email: "", bookingUrl: "", hours: "" };
+  const u = input.services;
+  const services: ServiceProfile = {
+    ...emptyServiceProfile(),
+    ...u,
+    services: u.services.length ? u.services : found,
+    area: u.area || area,
+    phone: u.phone || fromDesc.phone || fromLink.phone,
+    email: u.email || fromDesc.email || fromLink.email,
+    hours: u.hours || fromDesc.hours || fromLink.hours,
+    bookingUrl: u.bookingUrl || fromDesc.bookingUrl || fromLink.bookingUrl,
+    contactMode: u.contactMode !== "form" ? u.contactMode : u.bookingUrl || fromDesc.bookingUrl ? "booking" : facts.some((f) => f.key === "free_quote") || /devis|quote/i.test(desc) ? "quote" : u.contactMode,
+  };
+  const linkName = input.link?.title ? clean(input.link.title.split(/\s[|–—-]\s|\s·\s/)[0]) : "";
+  const name = input.name?.trim() || (headline && headline.length <= 70 ? cap(headline) : "") || linkName || input.brand?.trim() || "";
+  const firstSentence = desc ? desc.split(/\n|(?<=\.)\s/)[0].slice(0, 260) : "";
+  const summary = firstSentence || clean(input.link?.description ?? "").slice(0, 260);
+  if (input.link?.description && !desc) facts.push({ key: "site_description", label: C("Présentation (site actuel)", "Overview (current website)"), value: clean(input.link.description).slice(0, 400), status: "confirmed", source: "link" });
+  const product: ProductProfile = {
+    ...emptyProduct(),
+    name,
+    nameStatus: input.name ? "provided" : name ? "detected" : "unknown",
+    category: kind ? C(kind.fr, kind.en) : "",
+    sector: kind?.sector ?? null,
+    summary,
+    facts,
+    questions: [],
+    claimsToAvoid: kind && /santé|health/i.test(kind.fr + kind.en) ? [C("Promesses de guérison ou de résultat médical", "Promises of cure or medical results")] : [],
+    analyzedBy: "local",
+  };
+  return { product, services };
+}
+
+/** Fusion de l'offre : ce que le client a saisi prime toujours sur ce qui a été trouvé. */
+export function mergeServiceProfile(user: ServiceProfile, found: Partial<ServiceProfile>): ServiceProfile {
+  const pickS = (a: string, b?: string) => (a?.trim() ? a : (b ?? "").trim());
+  return {
+    services: user.services.length ? user.services : (found.services ?? []).filter((x) => x.name?.trim()),
+    area: pickS(user.area, found.area),
+    address: pickS(user.address, found.address),
+    phone: pickS(user.phone, found.phone),
+    email: pickS(user.email, found.email),
+    hours: pickS(user.hours, found.hours),
+    bookingUrl: pickS(user.bookingUrl, found.bookingUrl),
+    contactMode: user.contactMode !== "form" ? user.contactMode : found.contactMode ?? user.contactMode,
   };
 }
 
@@ -192,12 +362,27 @@ function proposeNames(sector: string, seed: string): string[] {
   return out;
 }
 
-export function localBrand(p: ProductProfile, providedBrand?: string): { brand: Brand; strategy: Strategy; logoSpec: Omit<LogoSpec, "color"> } {
+/**
+ * Marque et stratégie locales. `biz` (le projet, ou { business, services }) : pour une entreprise de services,
+ * noms, signature, ton, angles, piliers et messages clés parlent de prestations et de rendez-vous.
+ */
+export function localBrand(p: ProductProfile, providedBrand?: string, biz?: BusinessInfo | null): { brand: Brand; strategy: Strategy; logoSpec: Omit<LogoSpec, "color"> } {
+  const services = isServicesBusiness(biz);
   const sector = (p.sector ?? "maison") as SectorId;
-  const direction = SECTOR_DIRECTION[sector];
+  const direction = services ? serviceDirection(p) : SECTOR_DIRECTION[sector] ?? SECTOR_DIRECTION.maison;
   const d = DIRECTIONS.find((x) => x.id === direction)!;
-  const proposals = proposeNames(sector, p.visual.colors.map((c) => c.hex).join("") + (p.name ?? ""));
+  const seed = p.visual.colors.map((c) => c.hex).join("") + (p.name ?? "");
+  const proposals = services ? serviceNames(p, seed) : proposeNames(sector, seed);
   const name = providedBrand?.trim() || proposals[0] || C(NAME_WORDS_FR, NAME_WORDS_EN).maison[0];
+  if (services) {
+    const out = localServiceBrand(p, biz, name, providedBrand, proposals);
+    const logoFamily = canvasFamily(d.fonts.heading, "Cormorant");
+    return {
+      brand: { ...out.brand, palette: paletteFromColors(p.visual.colors.length ? p.visual.colors : [{ hex: "#3F5B6B", share: 1 }]), fonts: d.fonts, direction, logo: { concept: C(`Logotype typographique en ${logoFamily}`, `Typographic wordmark in ${logoFamily}`), status: "proposed" } },
+      strategy: out.strategy,
+      logoSpec: { name, family: CANVAS_FONTS[logoFamily] ? logoFamily : "Cormorant", weight: d.id === "brut" || d.id === "elan" || d.id === "pop" ? 800 : 500, case: d.id === "terroir" || d.id === "pop" || d.id === "gourmand" ? "title" : "upper", tracking: d.id === "atelier" || d.id === "galerie" || d.id === "joaillerie" ? 0.18 : 0.04, layout: name.length > 12 && name.includes(" ") ? "stacked" : "wordmark", emblem: d.id === "elan" ? "line" : "none" },
+    };
+  }
   const palette = paletteFromColors(p.visual.colors.length ? p.visual.colors : [{ hex: "#7A6552", share: 1 }]);
   const logoFamily = canvasFamily(d.fonts.heading, "Cormorant");
   return {
@@ -244,11 +429,61 @@ export function localBrand(p: ProductProfile, providedBrand?: string): { brand: 
   };
 }
 
+/** Marque et stratégie d'une entreprise de services (sans palette, polices ni logo, ajoutés par localBrand). */
+function localServiceBrand(p: ProductProfile, biz: BusinessInfo, name: string, providedBrand: string | undefined, proposals: string[]): { brand: Omit<Brand, "palette" | "fonts" | "direction" | "logo">; strategy: Strategy } {
+  const profile = biz.services;
+  const offer = (profile?.services ?? []).filter((x) => x.name.trim());
+  const cta = contactCta(profile?.contactMode);
+  const showcase = serviceShowcase(p);
+  const angles: Strategy["angles"] = [
+    ...offer.slice(0, 2).map((x) => ({ title: x.name, idea: x.description?.trim() || C("Présenter cette prestation : pour qui, comment elle se déroule, ce qu'il faut prévoir.", "Present this service: who it's for, how it works, what to plan for.") })),
+    C({ title: "Le savoir-faire en action", idea: "Montrer le vrai travail : gestes, outils, coulisses d'une prestation." }, { title: "Skills in action", idea: "Show the real work: techniques, tools, behind the scenes of a job." }),
+    showcase
+      ? C({ title: "Avant / après", idea: "Uniquement de vraies réalisations, photographiées avec l'accord des clients." }, { title: "Before and after", idea: "Real projects only, photographed with the clients' consent." })
+      : C({ title: "Comment se passe un rendez-vous", idea: "Expliquer simplement le déroulé, du premier contact à la fin de la prestation." }, { title: "What an appointment looks like", idea: "Explain the process simply, from first contact to the end of the service." }),
+    C({ title: "Conseils d'expert", idea: "Partager des conseils utiles du métier, sans promesse de résultat." }, { title: "Expert tips", idea: "Share useful tips from the trade, without promising results." }),
+    C({ title: "L'équipe", idea: "Présenter les personnes qui accueillent ou interviennent, avec leur accord." }, { title: "Meet the team", idea: "Introduce the people clients will meet, with their consent." }),
+    C({ title: "Prise de rendez-vous", idea: `Rappeler simplement comment réserver (« ${cta} »), la zone et les horaires.` }, { title: "Easy booking", idea: `Remind people how to get in touch ("${cta}"), the area covered and the opening hours.` }),
+  ];
+  const keyMessages = [
+    offer.length ? C(`Prestations : ${offer.slice(0, 4).map((x) => x.name).join(", ")}`, `Services: ${offer.slice(0, 4).map((x) => x.name).join(", ")}`) : "",
+    profile?.area?.trim() ? C(`Zone d'intervention : ${profile.area.trim()}`, `Service area: ${profile.area.trim()}`) : profile?.address?.trim() ? C(`Adresse : ${profile.address.trim()}`, `Address: ${profile.address.trim()}`) : "",
+    profile?.hours?.trim() ? C(`Horaires : ${profile.hours.trim()}`, `Opening hours: ${profile.hours.trim()}`) : "",
+    cta,
+  ].filter(Boolean);
+  return {
+    brand: {
+      name,
+      nameStatus: providedBrand ? "provided" : "proposed",
+      alternatives: providedBrand ? [] : proposals.filter((x) => x !== name).slice(0, 4),
+      tagline: serviceTaglines(p, profile)[0] ?? "",
+      positioning: C("[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]", "[To define with you: which clients, which services, which area, what sets you apart]"),
+      audience: C("[À compléter : clients visés]", "[To complete: target clients]"),
+      personality: [],
+      tone: C(
+        { voice: "Professionnel, rassurant et accessible", do: ["Expliquer simplement chaque prestation", "Donner les informations pratiques (zone, horaires, contact)", "Montrer le vrai travail"], dont: ["Inventer des tarifs, des délais ou des avis", "Promettre un résultat", "Jargon sans explication"] },
+        { voice: "Professional, reassuring and approachable", do: ["Explain each service simply", "Give the practical details (area, hours, contact)", "Show the real work"], dont: ["Making up rates, timelines or reviews", "Promising results", "Unexplained jargon"] },
+      ),
+      story: "",
+      values: [],
+      validated: [],
+      generatedBy: "local",
+    },
+    strategy: {
+      audience: [],
+      angles,
+      pillars: C(["Savoir-faire", showcase ? "Réalisations" : "Déroulé", "Conseils", "Coulisses", "Prise de rendez-vous"], ["Expertise", showcase ? "Our work" : "How it works", "Tips", "Behind the scenes", "Booking"]),
+      keyMessages,
+      generatedBy: "local",
+    },
+  };
+}
+
 /**
  * Découpage sans IA : une structure différente selon le produit (secteur, photos disponibles),
  * pour que deux boutiques n'aient jamais la même vidéo. Seules les informations confirmées sont montrées.
  */
-export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpec["format"], imageRoles: string[], url?: string): VideoSpec {
+export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpec["format"], imageRoles: string[], url?: string, biz?: BusinessInfo | null): VideoSpec {
   const facts = p.facts.filter((f) => f.status !== "unknown" && f.value && f.value.length < 60).slice(0, 3).map((f) => f.value.replace(/\.$/, ""));
   const name = p.name || brand.name;
   const line = brand.tagline || name;
@@ -260,7 +495,8 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
   // Variation stable par produit : deux produits d'un même secteur n'ont pas le même montage.
   const seed = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   const pick = <T,>(xs: T[]) => xs[seed % xs.length];
-  const end: VideoSpec["scenes"][number] = { kind: "end", duration: 3, headline: name, cta: C("Découvrir", "Discover"), url };
+  // Entreprise de services : la fin invite à prendre rendez-vous, demander un devis ou appeler.
+  const end: VideoSpec["scenes"][number] = { kind: "end", duration: 3, headline: name, cta: isServicesBusiness(biz) ? contactCta(biz.services?.contactMode) : C("Découvrir", "Discover"), url };
   const factScene = (): VideoSpec["scenes"] => facts.length >= 2 ? [pick<VideoSpec["scenes"][number]>([{ kind: "callouts", duration: 3.4, items: facts, heading: C("En détail", "In detail") }, { kind: "words", duration: Math.min(5.4, 1.8 * facts.length), items: facts }])] : [];
   const scenes: VideoSpec["scenes"] = [];
   let transition: VideoSpec["transition"] = "panel";
@@ -312,6 +548,19 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
   return { format, scenes, transition, music, captions: true };
 }
 
+/** Sections demandées par une entreprise de services (types du studio, puis équivalents courants des thèmes importés). */
+const SERVICE_ADDS: [RegExp, string[]][] = [
+  [/tarifs?|grille|\brates\b|pricing|price list|\bprices\b/, ["pricing", "services-list", "multicolumn"]],
+  [/prestations?|nos services|\bservices?\b/, ["services-list", "service-list", "features-grid", "multicolumn"]],
+  [/rendez-vous|\brdv\b|réserv|prise de contact|devis|booking|appointment|book now|\bquote\b/, ["booking", "booking-cta", "cta-banner", "contact-form"]],
+  [/infos? pratiques?|horaires|zone d'intervention|adresse|accès|plan d'accès|opening hours|\bhours\b|service area|\bmap\b|address/, ["practical-info", "map", "specs-list", "multicolumn"]],
+  [/avant ?\/? ?après|before ?(and|&|\/) ?after/, ["before-after", "portfolio", "gallery-mosaic"]],
+  [/réalisations?|portfolio|chantiers?|our work|projects/, ["portfolio", "before-after", "gallery-mosaic", "editorial-gallery", "collage"]],
+  [/équipe|praticien|\bteam\b|staff|practitioners?/, ["team", "expert-endorsements", "about", "multicolumn"]],
+  [/déroulé|étapes|comment ça (se passe|marche)|process|how it works|steps/, ["timeline", "scroll-steps", "how-to", "multirow"]],
+  [/formulaire|contact form|\bcontact\b/, ["contact-form"]],
+];
+
 /** Synonymes courants pour retrouver une section par son nom, en français comme en anglais. */
 const SECTION_SYNONYMS: string[][] = [
   ["newsletter", "inscription", "diffusion", "e-mail", "email", "signup", "sign-up", "abonnement"],
@@ -357,7 +606,8 @@ function buttonColorTargets(spec: ThemeSpec): { key: string; schemes: string[] }
  * Les demandes sont comprises en français comme en anglais, quelle que soit la langue :
  * la réponse suit la langue de l'interface (L), les textes ajoutés au thème celle des contenus (C).
  */
-export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string } | null): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string } | null, business: BusinessType = "products"): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+  const services = business === "services";
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|\bundo\b|go back|revert|previous version|roll ?back)/.test(m)) return { ops: [], reply: L("Je reviens à la version précédente.", "Going back to the previous version."), revert: true };
   const quoted = message.match(/[«"“]\s*([^»"”]+?)\s*[»"”]/)?.[1];
@@ -394,13 +644,15 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
       return { ops, reply: L(`Texte remplacé par « ${quoted} ».`, `Text replaced with "${quoted}".`), revert: false };
     }
   }
-  // Fiche produit qui convertit : blocs ajoutés au produit, uniquement avec les informations données.
-  const pdp = productPageCommand(spec, message, m);
+  // Fiche produit qui convertit : blocs ajoutés au produit, uniquement avec les informations données (boutiques de produits).
+  const pdp = services ? null : productPageCommand(spec, message, m);
   if (pdp) return pdp;
   // Types candidats : ceux du thème du studio, puis leurs équivalents dans les thèmes importés (Dawn et dérivés).
   const adds: [RegExp, string[]][] = [
     [/faq|questions/, ["faq", "collapsible-content"]],
     [/vidéo|video/, ["video-showcase", "video"]],
+    // Entreprises de services : prestations, tarifs, rendez-vous, infos pratiques, réalisations, équipe, déroulé.
+    ...(services ? SERVICE_ADDS : []),
     [/défil|scroll|animation/, ["scroll-story", "multirow", "image-with-text"]],
     [/newsletter|e-?mail|inscription|sign-?up/, ["newsletter", "email-signup"]],
     [/bandeau|marquee|banner|ticker/, ["marquee", "scrolling-text", "announcement-bar"]],
@@ -466,6 +718,15 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
     ops.push({ op: "move_section", template: selection.template, section: selection.section, position: { index: i + 1 } });
     return { ops, reply: L("Section descendue.", "Section moved down."), revert: false };
   }
+  if (services)
+    return {
+      ops: [],
+      revert: false,
+      reply: L(
+        "Le moteur local comprend des commandes simples : couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une section prestations, prise de rendez-vous, infos pratiques (zone, horaires), réalisations, équipe, déroulé, FAQ ou formulaire de contact ; masquer, supprimer, monter, revenir en arrière, changer de direction. Les retouches libres nécessitent l'IA, à activer dans l'administration.",
+        "The local engine understands simple commands: button color, text in quotes on the selected element, adding a services, booking, practical information (area, hours), our work, team, process, FAQ or contact form section; hiding, removing, moving up, going back, changing direction. Free-form edits require AI, which can be enabled in the admin area.",
+      ),
+    };
   return {
     ops: [],
     revert: false,

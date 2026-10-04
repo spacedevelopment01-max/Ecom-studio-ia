@@ -15,6 +15,7 @@ import { brandTypo, ensureCutouts, latestAsset, palette, assetsByRole } from "./
 import { enqueue, type JobContext } from "../jobs";
 import { C, L, uiLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
+import { contactCta, deName, howToBook, serviceShowcase, unknownText } from "./services-text";
 
 export type PlanParams = {
   startDate: string; // AAAA-MM-JJ (dans le fuseau choisi)
@@ -49,6 +50,7 @@ const ANGLES = [
 
 /** Plan local (sans IA) : angles variés, textes sobres fondés sur les faits connus. */
 export function localPlan(p: Project, params: PlanParams): PostDraft[] {
+  if (p.business === "services") return localServicePlan(p, params);
   const facts = p.product.facts.filter((f) => f.status !== "unknown" && f.value && f.value.length < 90);
   const name = p.product.name || p.brand?.name || C("notre produit", "our product");
   const more = params.link ? C("\nÀ découvrir sur la boutique.", "\nDiscover it in our store.") : "";
@@ -76,6 +78,127 @@ export function localPlan(p: Project, params: PlanParams): PostDraft[] {
         caption,
         hashtags: [p.brand?.name, p.product.category, p.product.name].filter(Boolean).map((t) => String(t).replace(/\s+/g, "")).slice(0, 4),
         visual: { kind: wantsVideo ? "video" : (a.kind as any), headline: (fact?.value ?? p.brand?.tagline ?? name).slice(0, 40), subline: "", layout: a.layout as any },
+      });
+      k++;
+    }
+  }
+  return posts;
+}
+
+/**
+ * Plan local d'une entreprise de services : coulisses, réalisations (avant / après) ou déroulé d'un rendez-vous,
+ * conseils d'expert, présentation de l'équipe, focus sur une prestation, rappel de prise de rendez-vous.
+ * Les informations manquantes restent en espaces réservés ; aucun tarif, délai, avis ni résultat n'est inventé.
+ */
+function localServicePlan(p: Project, params: PlanParams): PostDraft[] {
+  const profile = p.services;
+  const offer = (profile?.services ?? []).filter((x) => x.name.trim());
+  const brand = p.brand?.name || p.product.name || p.name || C("notre équipe", "our team");
+  const activity = p.product.name || brand;
+  const cta = contactCta(profile?.contactMode);
+  const book = howToBook(profile);
+  const where = profile?.area?.trim() || profile?.address?.trim() || "";
+  const hours = profile?.hours?.trim() || "";
+  const more = params.link ? C(`\n${cta} : ${params.link}`, `\n${cta}: ${params.link}`) : "";
+  const showcase = serviceShowcase(p.product);
+  type Angle = { fr: string; en: string; kind: PostDraft["visual"]["kind"]; layout: PostDraft["visual"]["layout"]; caption: (i: number) => string; headline: (i: number) => string };
+  const service = (i: number) => offer[i % Math.max(1, offer.length)];
+  const angles: Angle[] = [
+    {
+      fr: "Focus prestation",
+      en: "Service spotlight",
+      kind: "creative",
+      layout: "editorial",
+      caption: (i) => {
+        const x = service(i);
+        if (!x) return C(`Ce que nous faisons, en clair : ${unknownText("prestation à présenter", "service to present")}.`, `What we do, in plain words: ${unknownText("prestation à présenter", "service to present")}.`) + more;
+        const extra = [x.duration?.trim(), x.price?.trim()].filter(Boolean).join(" · ");
+        return `${x.name}${extra ? ` (${extra})` : ""}${C(" : ", ": ")}${x.description?.trim() || unknownText(`ce que comprend « ${x.name} »`, `what "${x.name}" includes`)}` + more;
+      },
+      headline: (i) => service(i)?.name ?? activity,
+    },
+    {
+      fr: "Coulisses",
+      en: "Behind the scenes",
+      kind: "scene",
+      layout: "split",
+      caption: () => C(`Dans les coulisses ${deName(brand)} : ${unknownText("ce que montre la photo (préparation, outils, lieu)", "what the photo shows (preparation, tools, place)")}.`, `Behind the scenes at ${brand}: ${unknownText("ce que montre la photo (préparation, outils, lieu)", "what the photo shows (preparation, tools, place)")}.`),
+      headline: () => C("Dans les coulisses", "Behind the scenes"),
+    },
+    showcase
+      ? {
+          fr: "Avant / après",
+          en: "Before and after",
+          kind: "scene",
+          layout: "editorial",
+          caption: () => C(`Avant, après : une réalisation ${deName(brand)}. ${unknownText("nature et lieu de la réalisation, avec l'accord du client", "what was done and where, with the client's consent")}`, `Before and after: a project by ${brand}. ${unknownText("nature et lieu de la réalisation, avec l'accord du client", "what was done and where, with the client's consent")}`) + more,
+          headline: () => C("Avant / après", "Before / after"),
+        }
+      : {
+          fr: "Comment se passe un rendez-vous",
+          en: "What an appointment looks like",
+          kind: "creative",
+          layout: "centered",
+          caption: () => C(`Premier rendez-vous chez ${brand} ? Voici comment ça se passe. ${unknownText("étapes du rendez-vous", "steps of the appointment")}\n${book}`, `First appointment with ${brand}? Here's how it works. ${unknownText("étapes du rendez-vous", "steps of the appointment")}\n${book}`),
+          headline: () => C("Comment ça se passe", "How it works"),
+        },
+    {
+      fr: "Conseil d'expert",
+      en: "Expert tip",
+      kind: "creative",
+      layout: "bold",
+      caption: () => C(`Le conseil ${deName(brand)} : ${unknownText("un conseil concret de votre métier", "a practical tip from your trade")}.`, `A tip from ${brand}: ${unknownText("un conseil concret de votre métier", "a practical tip from your trade")}.`),
+      headline: () => C("Le conseil du pro", "Pro tip"),
+    },
+    {
+      fr: "Présentation de l'équipe",
+      en: "Meet the team",
+      kind: "scene",
+      layout: "split",
+      caption: () => C(`Derrière ${brand}, il y a ${unknownText("prénom et rôle des personnes présentées, avec leur accord", "first name and role of the people shown, with their consent")}.`, `Behind ${brand}: ${unknownText("prénom et rôle des personnes présentées, avec leur accord", "first name and role of the people shown, with their consent")}.`),
+      headline: () => C("L'équipe", "The team"),
+    },
+    {
+      fr: "Prise de rendez-vous",
+      en: "Book your appointment",
+      kind: "creative",
+      layout: "centered",
+      caption: () => [book, where ? C(`Où : ${where}.`, `Where: ${where}.`) : "", hours ? C(`Horaires : ${hours}.`, `Hours: ${hours}.`) : ""].filter(Boolean).join("\n") + (params.link ? `\n${params.link}` : ""),
+      headline: () => cta,
+    },
+    {
+      fr: "Question à la communauté",
+      en: "Ask the community",
+      kind: "creative",
+      layout: "centered",
+      caption: () => C(`Une question sur ${offer[0] ? `« ${offer[0].name} »` : "nos prestations"} ? Posez-la en commentaire.`, `Got a question about ${offer[0] ? `"${offer[0].name}"` : "our services"}? Ask it in the comments.`),
+      headline: () => C("Vos questions", "Your questions"),
+    },
+  ];
+  // Mots-clés courts : marque, métier (premier mot), ville, et métier + ville.
+  const word = (t?: string) => (t ?? "").trim().split(/[\s,(/]+/)[0] ?? "";
+  const trade = word(p.product.category);
+  const city = [word(profile?.area), ...(profile?.address ?? "").split(",").reverse().map((x) => x.replace(/\d+/g, "").trim())].find((x) => x && /\p{L}{3}/u.test(x)) ?? "";
+  const tags = [p.brand?.name, trade, city, trade && city ? `${trade}${city}` : ""].filter(Boolean).map((t) => String(t).replace(/[^\p{L}\p{N}]+/gu, "")).filter((t) => t.length > 1);
+  const posts: PostDraft[] = [];
+  let k = 0;
+  for (let day = 0; day < params.days; day++) {
+    for (let slot = 0; slot < params.perDay; slot++) {
+      const net = params.networks[(day * params.perDay + slot) % params.networks.length].network as PostDraft["network"];
+      const a = angles[k % angles.length];
+      const wantsVideo = net === "tiktok" || net === "youtube" || (k % 100) / 100 < params.mix.video / 100;
+      const angle = C<string>(a.fr, a.en);
+      const headline = a.headline(k).slice(0, 40);
+      posts.push({
+        day,
+        slot,
+        network: net,
+        format: wantsVideo ? (net === "youtube" ? "short" : "reel") : net === "pinterest" ? "pin" : "image",
+        angle,
+        title: C(`${brand} : ${angle.toLowerCase()}`, `${brand}: ${angle.toLowerCase()}`),
+        caption: a.caption(k),
+        hashtags: [...new Set(tags)].slice(0, 4),
+        visual: { kind: wantsVideo ? "video" : a.kind, headline, subline: where && a.kind === "creative" ? where.slice(0, 40) : "", layout: a.layout },
       });
       k++;
     }

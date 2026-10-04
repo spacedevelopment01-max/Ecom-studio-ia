@@ -2,10 +2,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Bell, BookOpen, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Wallet, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Wallet, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
+import { missingActivity } from "./services-editor";
 
 export const TABS = [
   { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass, group: "Création", groupEn: "Create" },
@@ -23,8 +24,11 @@ export const TABS = [
 ] as const;
 export type TabId = (typeof TABS)[number]["id"];
 const GROUPS = [["Création", "Create"], ["Diffusion", "Publish"], ["Ressources", "Resources"]] as const;
-/** Libellé d'un onglet dans la langue de l'interface. */
-export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en") => (lang === "en" ? t.labelEn : t.label);
+/** Libellé d'un onglet dans la langue de l'interface ; pour un site de services, « Produit » devient « Activité » et « Boutique » « Site ». */
+export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en", business?: "products" | "services") =>
+  t.id === "produit" && business === "services" ? (lang === "en" ? "Business" : "Activité") : t.id === "boutique" && business === "services" ? (lang === "en" ? "Website" : "Site") : lang === "en" ? t.labelEn : t.label;
+/** Icône d'un onglet (l'onglet Activité d'un projet de services a la sienne). */
+const tabIcon = (t: (typeof TABS)[number], business?: "products" | "services") => (t.id === "produit" && business === "services" ? Briefcase : t.icon);
 
 const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
   queued: { label: "En file", labelEn: "Queued", tone: "neutral" },
@@ -62,7 +66,7 @@ function ProjectSwitcher({ current }: { current: string }) {
             </Link>
           ))}
           <Link href="/studio" className="mt-1 flex items-center gap-2 rounded-xl p-2 text-sm font-medium text-signal hover:bg-paper-2">
-            <LayoutGrid className="size-4" /> {t("Toutes mes boutiques", "All my stores")}
+            <LayoutGrid className="size-4" /> {t("Tous mes projets", "All my projects")}
           </Link>
         </div>
       )}
@@ -244,7 +248,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   toggleFoldRef.current = toggleFold;
   const badge = (id: TabId) => {
     if (!data) return null;
-    if (id === "produit") return data.product.questions.filter((q) => !q.answer).length || null;
+    if (id === "produit") return (data.business === "services" ? missingActivity(data.services).length : 0) + data.product.questions.filter((q) => !q.answer).length || null;
     if (id === "publications") return data.posts.review || null;
     if (id === "pilote" && data.project.status === "awaiting_validation") return "!";
     return null;
@@ -262,7 +266,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           </button>
         </div>
         {folded ? (
-          <Link href="/studio" title={`${data?.brand?.name ?? data?.project.name ?? ""} · ${t("toutes mes boutiques", "all my stores")}`} className="mx-auto grid size-11 place-items-center overflow-hidden rounded-xl border border-line bg-paper-2 hover:border-ink">
+          <Link href="/studio" title={`${data?.brand?.name ?? data?.project.name ?? ""} · ${t("tous mes projets", "all my projects")}`} className="mx-auto grid size-11 place-items-center overflow-hidden rounded-xl border border-line bg-paper-2 hover:border-ink">
             {data?.coverUrl ? <img src={data.coverUrl} alt="" className="size-full object-cover" /> : <Store className="size-4" />}
           </Link>
         ) : (
@@ -273,9 +277,9 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             <div key={g} className="mb-4">
               {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(g, gEn)}</p>}
               {TABS.filter((x) => x.group === g).map((x) => {
-                const Icon = x.icon;
+                const Icon = tabIcon(x, data?.business);
                 const b = badge(x.id);
-                const label = tabLabel(x, lang);
+                const label = tabLabel(x, lang, data?.business);
                 return (
                   <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
                     <Icon className="size-4 shrink-0" />
@@ -297,9 +301,9 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
       <div className="min-w-0">
         <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
           <div className="flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6">
-            <Link href="/studio" className="shrink-0 lg:hidden" aria-label={t("Mes boutiques", "My stores")}><Logo compact /></Link>
+            <Link href="/studio" className="shrink-0 lg:hidden" aria-label={t("Mes projets", "My projects")}><Logo compact /></Link>
             <div className="min-w-0 flex-1">
-              <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{(() => { const cur = TABS.find((x) => x.id === tab); return cur ? tabLabel(cur, lang) : null; })()}</h1>
+              <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{(() => { const cur = TABS.find((x) => x.id === tab); return cur ? tabLabel(cur, lang, data?.business) : null; })()}</h1>
               <p className="truncate text-xs text-muted">{data?.brand?.name ?? data?.project.name}</p>
             </div>
             <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span>
@@ -313,11 +317,11 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           {/* Onglets (téléphone et tablette) */}
           <nav className="scrollbar-none flex gap-1.5 overflow-x-auto px-4 pb-3 lg:hidden" aria-label={t("Espaces du projet", "Project spaces")}>
             {TABS.map((x) => {
-              const Icon = x.icon;
+              const Icon = tabIcon(x, data?.business);
               const b = badge(x.id);
               return (
                 <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} className={cx("flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px]", tab === x.id ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2")}>
-                  <Icon className="size-3.5" /> {tabLabel(x, lang)}
+                  <Icon className="size-3.5" /> {tabLabel(x, lang, data?.business)}
                   {b !== null && <span className="grid min-w-4 place-items-center rounded-full bg-signal px-1 text-[10px] font-bold text-signal-ink">{b}</span>}
                 </Link>
               );

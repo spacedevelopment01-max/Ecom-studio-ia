@@ -9,11 +9,13 @@ import { COPY as PROOF } from "./section-copy-proof";
 import { COPY as PRODUCT } from "./section-copy-product";
 import { COPY as MEDIA } from "./section-copy-media";
 import { COPY as STORY } from "./section-copy-story";
+import { COPY as SERVICES, SERVICE_COPY } from "./section-copy-services";
 
-const ALL: Record<string, CopyFn> = { ...HERO, ...PROOF, ...PRODUCT, ...MEDIA, ...STORY };
+const ALL: Record<string, CopyFn> = { ...HERO, ...PROOF, ...PRODUCT, ...MEDIA, ...STORY, ...SERVICES };
 
 export function applySectionCopy(type: string, schema: SectionSchema, ctx: ContentContext, base: { settings: Record<string, unknown>; blocks?: { type: string; settings?: Record<string, unknown> }[] }) {
-  const fn = ALL[type];
+  // Entreprise de services : rédaction propre aux services pour les sections génériques (ouverture, FAQ, avis…).
+  const fn = (ctx.business === "services" ? SERVICE_COPY[type] : undefined) ?? ALL[type];
   if (!fn) return { ...base, samples: false };
   try {
     const r = fn(ctx, base, schema);

@@ -77,6 +77,8 @@ export type ThemeSpec = {
     /** Autres produits du catalogue (boutiques multi-produit et niche). */
     products?: StoreProduct[];
     collections?: StoreCollection[];
+    /** Site d'une entreprise de services : pas de produit à vendre (exports et envoi à Shopify sans produits). */
+    business?: "products" | "services";
     pages: StorePage[];
     menus: Record<string, { title: string; links: { title: string; url: string }[] }>;
     policies: { handle: string; title: string; body_html: string }[];
