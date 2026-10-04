@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Moon, Sun, X, Loader2, Check, AlertTriangle, Info } from "lucide-react";
+import { currentLang } from "./i18n";
+import { CONTENT_LANG_HEADER, intlLocale, type Lang } from "@/lib/i18n";
 
 export function cx(...c: (string | false | null | undefined)[]) {
   return c.filter(Boolean).join(" ");
@@ -10,10 +12,14 @@ export function cx(...c: (string | false | null | undefined)[]) {
 
 // ---------------------------------------------------------------- données
 
-export async function api<T = any>(url: string, opts: { method?: string; body?: unknown; form?: FormData } = {}): Promise<T> {
+/** Appel d'API du studio. `lang` : langue des contenus créés par cette action (sinon celle du projet). */
+export async function api<T = any>(url: string, opts: { method?: string; body?: unknown; form?: FormData; lang?: Lang } = {}): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (!opts.form && opts.body !== undefined) headers["Content-Type"] = "application/json";
+  if (opts.lang) headers[CONTENT_LANG_HEADER] = opts.lang;
   const r = await fetch(url, {
     method: opts.method ?? (opts.body || opts.form ? "POST" : "GET"),
-    headers: opts.form ? undefined : opts.body !== undefined ? { "Content-Type": "application/json" } : undefined,
+    headers,
     body: opts.form ?? (opts.body !== undefined ? JSON.stringify(opts.body) : undefined),
   });
   const text = await r.text();
@@ -23,7 +29,7 @@ export async function api<T = any>(url: string, opts: { method?: string; body?: 
   } catch {
     data = { error: text };
   }
-  if (!r.ok) throw new Error(data?.error ?? `Erreur ${r.status}`);
+  if (!r.ok) throw new Error(data?.error ?? `${currentLang() === "en" ? "Error" : "Erreur"} ${r.status}`);
   return data as T;
 }
 
@@ -285,10 +291,11 @@ export function Logo({ className, compact }: { className?: string; compact?: boo
 }
 
 export function formatDate(ms: number, opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }, tz?: string) {
-  return new Intl.DateTimeFormat("fr-FR", { ...opts, timeZone: tz }).format(new Date(ms));
+  return new Intl.DateTimeFormat(intlLocale(currentLang()), { ...opts, timeZone: tz }).format(new Date(ms));
 }
 export function formatBytes(n: number) {
-  if (n < 1024) return `${n} o`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} Ko`;
-  return `${(n / 1024 / 1024).toFixed(1)} Mo`;
+  const [b, k, m] = currentLang() === "en" ? ["B", "KB", "MB"] : ["o", "Ko", "Mo"];
+  if (n < 1024) return `${n} ${b}`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} ${k}`;
+  return `${(n / 1024 / 1024).toFixed(1)} ${m}`;
 }

@@ -54,6 +54,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
           timezone: z.string().optional(),
           autopublish: z.object({ enabled: z.boolean(), networks: z.array(z.string()), requireApprovalFor: z.array(z.string()) }).optional(),
           socialLinks: z.record(z.string(), z.string()).optional(),
+          language: z.enum(["fr", "en"]).optional(),
         })
         .optional(),
     }),

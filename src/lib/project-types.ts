@@ -117,6 +117,8 @@ export type ProjectSettings = {
   timezone: string;
   autopublish: { enabled: boolean; networks: string[]; requireApprovalFor: string[] };
   socialLinks?: Partial<Record<"instagram" | "tiktok" | "facebook" | "youtube" | "pinterest", string>>;
+  /** Langue des contenus créés pour ce projet (boutique, images, vidéos, publications…). Français par défaut. */
+  language?: "fr" | "en";
 };
 
 export const emptyProduct = (): ProductProfile => ({

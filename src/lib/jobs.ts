@@ -10,6 +10,7 @@
  */
 import os from "node:os";
 import { all, id, json, now, one, run, tx } from "./db";
+import { contentLang, hasLangContext } from "./i18n-server";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked" | "paused";
 
@@ -53,6 +54,10 @@ export type EnqueueInput = {
 };
 
 export function enqueue(input: EnqueueInput): Job {
+  // La langue des contenus voyage avec la tâche (et ses sous-tâches) : choisie pour l'action ou celle du projet.
+  if (input.projectId && hasLangContext() && !(input.payload && typeof input.payload === "object" && "lang" in (input.payload as object))) {
+    input = { ...input, payload: { ...((input.payload as object) ?? {}), lang: contentLang() } };
+  }
   if (input.idempotencyKey) {
     const existing = one<Job>("SELECT * FROM jobs WHERE idempotency_key = ?", input.idempotencyKey);
     if (existing) return existing;
