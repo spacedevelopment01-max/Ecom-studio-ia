@@ -89,6 +89,29 @@ export function TutorialPlayer({ id, business, onPick, onClose }: { id: Tutorial
     return () => { alive = false; };
   }, [id, L]);
   const current = timing ? timing.steps.reduce((acc, s, i) => (now >= s ? i : acc), -1) : -1;
+  // La liste des étapes suit la vidéo : l'étape en cours reste visible dans sa colonne (sans faire défiler la fenêtre).
+  const list = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const box = list.current;
+    const el = box?.querySelector<HTMLElement>(`[data-step="${current}"]`);
+    if (!box || !el) return;
+    if (box.scrollHeight > box.clientHeight + 1) {
+      // Ordinateur : la colonne des étapes défile seule, à côté de la vidéo.
+      const top = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+      if (top < box.scrollTop + 24 || top + el.offsetHeight > box.scrollTop + box.clientHeight - 24) box.scrollTo({ top: Math.max(0, top - box.clientHeight / 3), behavior: "smooth" });
+      return;
+    }
+    // Téléphone : la vidéo reste en haut ; la fenêtre suit l'étape en cours si l'on suivait déjà les étapes (étape précédente visible).
+    const dlg = box.closest<HTMLElement>("[role=dialog]");
+    const sticky = dlg?.querySelector<HTMLElement>("[data-tuto-video]");
+    if (!dlg || !sticky) return;
+    const floor = sticky.getBoundingClientRect().bottom + 8;
+    const ceil = dlg.getBoundingClientRect().bottom - 8;
+    const prev = box.querySelector<HTMLElement>(`[data-step="${current - 1}"]`)?.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    const following = !prev || (prev.bottom > floor && prev.top < ceil);
+    if (following && (r.top < floor || r.bottom > ceil)) dlg.scrollBy({ top: r.top - floor, behavior: "smooth" });
+  }, [current]);
   const seek = (i: number) => {
     const v = video.current;
     if (!v || !timing) return;
@@ -100,8 +123,10 @@ export function TutorialPlayer({ id, business, onPick, onClose }: { id: Tutorial
   return (
     <Modal open onClose={onClose} title={`${t("Tutoriel", "Tutorial")} · ${def.title[L]}`} xl>
       <p className="-mt-2 mb-4 text-sm text-muted">{def.summary[L]}</p>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0">
+      {/* Vidéo et étapes côte à côte, toujours visibles ensemble : la colonne des étapes a la hauteur de la vidéo et défile seule
+          (elle suit l'étape en cours) ; sur téléphone, la vidéo reste en haut pendant qu'on fait défiler les étapes. */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6">
+        <div data-tuto-video className="sticky -top-5 z-10 -mx-5 min-w-0 bg-card px-5 pb-2 sm:-top-7 sm:-mx-7 sm:px-7 lg:static lg:mx-0 lg:px-0 lg:pb-0">
           {unplayable && !missing ? (
             <div className="grid aspect-[16/10] place-items-center rounded-2xl border border-dashed border-line bg-paper-2 p-6 text-center text-sm text-muted">
               <p>{t("Ce navigateur ne lit pas la vidéo ici.", "This browser can't play the video here.")} <a href={tutorialFile(id, L, "mp4")} target="_blank" rel="noreferrer" className="font-medium text-signal underline underline-offset-4">{t("Ouvrir la vidéo", "Open the video")}</a></p>
@@ -109,16 +134,17 @@ export function TutorialPlayer({ id, business, onPick, onClose }: { id: Tutorial
           ) : missing ? (
             <div className="grid aspect-[16/10] place-items-center rounded-2xl border border-dashed border-line bg-paper-2 p-6 text-center text-sm text-muted">{t("La vidéo de cet onglet arrive bientôt. En attendant, suivez les étapes écrites ci-contre.", "The video for this tab is coming soon. Meanwhile, follow the written steps alongside.")}</div>
           ) : (
-            <video key={`${id}-${L}`} ref={video} src={tutorialFile(id, L, "mp4")} poster={tutorialFile(id, L, "jpg")} controls autoPlay playsInline preload="metadata" onTimeUpdate={(e) => setNow(e.currentTarget.currentTime)} onError={() => setUnplayable(true)} className="aspect-[16/10] w-full rounded-2xl border border-line bg-[#0A1024]">
+            <video key={`${id}-${L}`} ref={video} src={tutorialFile(id, L, "mp4")} poster={tutorialFile(id, L, "jpg")} controls autoPlay playsInline preload="metadata" onTimeUpdate={(e) => setNow(e.currentTarget.currentTime)} onError={() => setUnplayable(true)} className="aspect-[16/10] max-h-[45dvh] w-full rounded-2xl border border-line bg-[#0A1024] object-contain lg:max-h-[calc(92dvh-12rem)]">
               {t("Votre navigateur ne lit pas cette vidéo.", "Your browser can't play this video.")}
             </video>
           )}
         </div>
-        <div className="min-w-0">
+        <div className="relative min-w-0">
+          <div ref={list} className="flex flex-col lg:absolute lg:inset-0 lg:overflow-y-auto lg:pr-1">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[.14em] text-muted">{t("Les étapes", "Steps")}</p>
-          <ol className="grid gap-1.5">
+          <ol className="grid gap-1.5 pb-1">
             {def.steps.map((s, i) => (
-              <li key={i}>
+              <li key={i} data-step={i}>
                 <button type="button" onClick={() => seek(i)} disabled={!timing} className={cx("flex w-full gap-3 rounded-xl border p-2.5 text-left text-sm transition", current === i ? "border-signal bg-signal-soft" : "border-transparent hover:bg-paper-2", !timing && "cursor-default")}>
                   <span className={cx("grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold", current === i ? "bg-signal text-signal-ink" : "bg-paper-2 text-ink-2")}>{i + 1}</span>
                   <span className="min-w-0 flex-1 leading-snug">{s[L]}</span>
@@ -127,6 +153,7 @@ export function TutorialPlayer({ id, business, onPick, onClose }: { id: Tutorial
               </li>
             ))}
           </ol>
+          </div>
         </div>
       </div>
       {def.faq?.length ? (
