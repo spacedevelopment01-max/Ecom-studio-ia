@@ -21,6 +21,7 @@ import { pushCatalog, pushPages, pushTheme, shopifyConnection } from "../src/lib
 import { renderCreative, FORMATS } from "../src/lib/media/compose";
 import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engine/images";
 import { loadImage } from "@napi-rs/canvas";
+import { L } from "../src/lib/i18n-server";
 
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
@@ -65,10 +66,10 @@ export const handlers: Record<string, Handler> = {
     const { projectId, messageId, message, selection, attachments, page } = ctx.payload;
     const p = loadProject(projectId);
     const cur = currentTheme(projectId);
-    if (!cur) throw new UserFacingError("Créez d'abord la boutique.");
+    if (!cur) throw new UserFacingError(L("Créez d'abord la boutique.", "Create the store first."));
     const history = all<{ role: string; content: string }>("SELECT role, content FROM chat_messages WHERE project_id = ? AND thread = 'shop' AND id != ? ORDER BY created_at DESC LIMIT 10", projectId, messageId).reverse();
     const atts = (attachments as string[]).map((aid) => getAsset(aid)).filter((a): a is Asset => !!a && a.project_id === projectId);
-    ctx.progress(0.1, "Lecture de la demande");
+    ctx.progress(0.1, L("Lecture de la demande", "Reading the request"));
     let reply: string;
     let ops: ThemeOp[] = [];
     let revert = false;
@@ -96,18 +97,18 @@ export const handlers: Record<string, Handler> = {
       revert = r.revert;
       switchTo = r.direction;
     }
-    ctx.progress(0.7, "Application des modifications");
+    ctx.progress(0.7, L("Application des modifications", "Applying the changes"));
     let versionId: string | null = null;
     let applied: string[] = [];
     let rejected: { reason: string }[] = [];
     if (revert) {
       const versions = listThemeVersions(projectId);
       const prev = versions.find((v) => v.id === cur.version.parent_id) ?? versions[1];
-      if (!prev) reply = "Il n'y a pas de version précédente.";
+      if (!prev) reply = L("Il n'y a pas de version précédente.", "There is no previous version.");
       else {
         const old = themeVersion(projectId, prev.id)!;
-        versionId = saveThemeVersion(projectId, old.spec, `Retour à la version ${prev.number}`, "user").id;
-        applied = [`Version ${prev.number} restaurée`];
+        versionId = saveThemeVersion(projectId, old.spec, L(`Retour à la version ${prev.number}`, `Back to version ${prev.number}`), "user").id;
+        applied = [L(`Version ${prev.number} restaurée`, `Version ${prev.number} restored`)];
       }
     } else if (switchTo) {
       const r = await switchDirection(ctx, projectId, switchTo as any);
@@ -127,7 +128,7 @@ export const handlers: Record<string, Handler> = {
       // Auto-correction : l'IA reçoit les motifs exacts des refus et propose des opérations corrigées (une passe).
       if (mode === "ai" && refused.length) {
         try {
-          ctx.progress(0.8, "Correction des opérations refusées");
+          ctx.progress(0.8, L("Correction des opérations refusées", "Fixing the rejected operations"));
           const fix = await ctx.step("repair", () => aiRepairOps({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:repair` }, p, next, { request: message, page: page || "index", rejected: refused }));
           if (fix.ops.length) {
             const again = applyOps(next, fix.ops, { targeted, mediaFile });
@@ -145,13 +146,13 @@ export const handlers: Record<string, Handler> = {
       }
       rejected = refused.map((x) => ({ reason: x.reason }));
       const problems = validateSpec(next);
-      if (problems.length) throw new PermanentError(`La modification rendrait le thème invalide : ${problems.join(" ; ")}`);
+      if (problems.length) throw new PermanentError(L(`La modification rendrait le thème invalide : ${problems.join(" ; ")}`, `This change would make the theme invalid: ${problems.join("; ")}`));
       if (applied.length) {
         versionId = saveThemeVersion(projectId, next, `${message.slice(0, 120)}`, mode === "ai" ? "ai" : "user", { applied, rejected: refused.map((x) => x.reason) }).id;
-        for (const op of ops) if (op.op === "use_media") addUsage(op.assetId, "theme_section", `${op.template}:${op.section}`, "Section de boutique");
+        for (const op of ops) if (op.op === "use_media") addUsage(op.assetId, "theme_section", `${op.template}:${op.section}`, L("Section de boutique", "Store section"));
       }
     }
-    const note = [reply, applied.length ? `\n\nModifié : ${applied.join(" ; ")}.` : "", rejected.length ? `\n\nNon appliqué : ${rejected.map((r) => r.reason).join(" ; ")}.` : ""].join("");
+    const note = [reply, applied.length ? L(`\n\nModifié : ${applied.join(" ; ")}.`, `\n\nChanged: ${applied.join("; ")}.`) : "", rejected.length ? L(`\n\nNon appliqué : ${rejected.map((r) => r.reason).join(" ; ")}.`, `\n\nNot applied: ${rejected.map((r) => r.reason).join("; ")}.`) : ""].join("");
     run("INSERT INTO chat_messages (id, project_id, thread, role, content, theme_version_id, job_id, created_at) VALUES (?,?,?,?,?,?,?,?)", `${messageId}-r`, projectId, "shop", "assistant", note.trim(), versionId, ctx.job.id, now());
     return { versionId, applied, rejected, mode };
   },
@@ -162,11 +163,11 @@ export const handlers: Record<string, Handler> = {
   "post.regenerate": async (ctx) => {
     const { postId, instruction, part } = ctx.payload;
     const post = one<any>("SELECT * FROM posts WHERE id = ?", postId);
-    if (!post) throw new PermanentError("Publication introuvable.");
-    if (["published", "publishing"].includes(post.status)) throw new UserFacingError("Une publication déjà envoyée ne peut pas être régénérée.");
+    if (!post) throw new PermanentError(L("Publication introuvable.", "Post not found."));
+    if (["published", "publishing"].includes(post.status)) throw new UserFacingError(L("Une publication déjà envoyée ne peut pas être régénérée.", "A post that has already been sent cannot be regenerated."));
     const p = loadProject(post.project_id);
     if (part !== "media") {
-      if (!llmConfigured()) throw new UserFacingError("La réécriture des légendes nécessite l'IA : elle est disponible avec l'abonnement et l'IA connectée.");
+      if (!llmConfigured()) throw new UserFacingError(L("La réécriture des légendes nécessite l'IA : elle est disponible avec l'abonnement et l'IA connectée.", "Rewriting captions requires AI: it is available with a subscription and a connected AI provider."));
       const r = await aiRewritePost({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:rewrite` }, p, post, instruction ?? "");
       run("UPDATE posts SET title = ?, caption = ?, hashtags = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", r.title, r.caption, r.hashtags.join(" "), now(), postId);
     }
@@ -178,9 +179,9 @@ export const handlers: Record<string, Handler> = {
         const logoA = latestAsset(p.id, "logo");
         const layouts = ["editorial", "bold", "minimal", "centered", "split"] as const;
         const r = await renderCreative({ product: await loadImage(assetData(cut)), palette: palette(p), typo: brandTypo(p), format: FORMATS[fmt.image], layout: layouts[Math.floor(Math.random() * layouts.length)], headline: instruction || visual.headline || p.product.name, brand: p.brand?.name ?? p.name, logo: logoA ? await loadImage(assetData(logoA)) : null, seed: Date.now() % 997 });
-        const a = await saveAsset({ projectId: p.id, userId: p.userId, data: r.jpg, name: `publication-${post.network}-regeneree-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", meta: { post: postId, recipe: "Visuel régénéré" } });
+        const a = await saveAsset({ projectId: p.id, userId: p.userId, data: r.jpg, name: L(`publication-${post.network}-regeneree-${Date.now().toString(36)}.jpg`, `post-${post.network}-regenerated-${Date.now().toString(36)}.jpg`), mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", meta: { post: postId, recipe: L("Visuel régénéré", "Regenerated visual") } });
         run("UPDATE posts SET media = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", JSON.stringify([a.id]), now(), postId);
-        addUsage(a.id, "post", postId, "Publication");
+        addUsage(a.id, "post", postId, L("Publication", "Post"));
       }
     }
     return { ok: true };
@@ -197,13 +198,13 @@ export const handlers: Record<string, Handler> = {
     const post = one<PostRow & { user_id: string }>("SELECT p.*, pr.user_id FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId)!;
     const c = connectionFor(post.connection_id, post.user_id);
     try {
-      if (!c) throw new PermanentError("Aucun compte connecté pour cette publication. Choisissez un compte puis reprogrammez.");
+      if (!c) throw new PermanentError(L("Aucun compte connecté pour cette publication. Choisissez un compte puis reprogrammez.", "No account connected for this post. Choose an account, then reschedule."));
       const existing = await alreadyPublished(post, c);
       if (existing) {
         run("UPDATE posts SET status = 'published', remote_id = ?, published_at = ?, error = NULL, updated_at = ? WHERE id = ?", existing, now(), now(), postId);
         return { remoteId: existing, deduplicated: true };
       }
-      ctx.progress(0.3, `Envoi vers ${c.provider}`);
+      ctx.progress(0.3, L(`Envoi vers ${c.provider}`, `Sending to ${c.provider}`));
       const r = await publishPost(post, c);
       run("UPDATE posts SET status = 'published', remote_id = ?, remote_url = ?, published_at = ?, error = ?, updated_at = ? WHERE id = ?", r.remoteId, r.url ?? null, now(), r.note ?? null, now(), postId);
       return r;
@@ -211,7 +212,7 @@ export const handlers: Record<string, Handler> = {
       if (e?.reconnect && c) markConnection(c, "expired", e.message);
       const permanent = e instanceof PermanentError || ctx.job.attempts >= ctx.job.max_attempts;
       run("UPDATE posts SET status = ?, error = ?, updated_at = ? WHERE id = ?", permanent ? "failed" : "scheduled", String(e?.message ?? e).slice(0, 1000), now(), postId);
-      if (permanent) notify(post.user_id, post.project_id, "Une publication a échoué", `${post.network} : ${String(e?.message ?? e).slice(0, 200)}`, "error");
+      if (permanent) notify(post.user_id, post.project_id, L("Une publication a échoué", "A post failed"), L(`${post.network} : ${String(e?.message ?? e).slice(0, 200)}`, `${post.network}: ${String(e?.message ?? e).slice(0, 200)}`), "error");
       throw e;
     }
   },
@@ -259,26 +260,26 @@ export const handlers: Record<string, Handler> = {
 
   "canva.send": async (ctx) => {
     const a = getAsset(ctx.payload.assetId);
-    if (!a) throw new PermanentError("Média introuvable.");
+    if (!a) throw new PermanentError(L("Média introuvable.", "Media not found."));
     return sendToCanva(ctx.job.user_id, a);
   },
   "canva.import": async (ctx) => {
     const a = getAsset(ctx.payload.assetId);
-    if (!a) throw new PermanentError("Média introuvable.");
+    if (!a) throw new PermanentError(L("Média introuvable.", "Media not found."));
     return { assets: await importFromCanva(ctx.job.user_id, a, ctx.payload.format ?? "png") };
   },
 
   "shopify.push": async (ctx) => {
     const { projectId, parts } = ctx.payload as { projectId: string; parts: ("theme" | "product" | "pages")[] };
     const c = shopifyConnection(ctx.job.user_id, projectId);
-    if (!c) throw new PermanentError("Connectez votre boutique Shopify dans l'onglet Connexions.");
+    if (!c) throw new PermanentError(L("Connectez votre boutique Shopify dans l'onglet Connexions.", "Connect your Shopify store in the Connections tab."));
     const cur = currentTheme(projectId);
-    if (!cur) throw new PermanentError("Aucune boutique à installer.");
+    if (!cur) throw new PermanentError(L("Aucune boutique à installer.", "No store to install."));
     const out: Record<string, unknown> = {};
-    if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, "Création des produits dans Shopify"), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, `Produit ${d}/${t} envoyé`))));
-    if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, "Création des pages"), pushPages(c, cur.spec)));
-    if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, "Installation du thème (non publié)"), pushTheme(c, projectId, cur.version.id, cur.spec.name)));
-    notify(ctx.job.user_id, projectId, "Envoi vers Shopify terminé", Object.keys(out).join(", "), "success");
+    if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
+    if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, L("Création des pages", "Creating the pages")), pushPages(c, cur.spec)));
+    if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, L("Installation du thème (non publié)", "Installing the theme (unpublished)")), pushTheme(c, projectId, cur.version.id, cur.spec.name)));
+    notify(ctx.job.user_id, projectId, L("Envoi vers Shopify terminé", "Sending to Shopify complete"), Object.keys(out).join(", "), "success");
     return out;
   },
 };

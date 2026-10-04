@@ -3,7 +3,7 @@
     {%- if section.blocks.size > 0 -%}
       {%- for block in section.blocks -%}{% render block %}{%- endfor -%}
     {%- elsif request.design_mode -%}
-      <p class="es-reviews__hint">Ajoutez ici le bloc d'une application installée sur votre boutique.</p>
+      <p class="es-reviews__hint">{{ 'general.app_block_hint' | t }}</p>
     {%- endif -%}
   </div>
 </section>

@@ -10,6 +10,7 @@ import { promisify } from "node:util";
 import sharp from "sharp";
 import { all, id, json, now, one, run, tx } from "./db";
 import { EXT_BY_MIME, kindFromMime, putFile, readFile, storagePath, tmpDir } from "./storage";
+import { L } from "./i18n-server";
 
 const exec = promisify(execFile);
 
@@ -42,40 +43,53 @@ export type Asset = {
 export type Folder = { id: string; project_id: string; parent_id: string | null; name: string; system_key: string | null; created_at: number };
 
 /** Arborescence initiale. Les clés système servent au rangement automatique. */
-export const DEFAULT_TREE: { key: string; name: string; children?: { key: string; name: string }[] }[] = [
-  { key: "product", name: "01 · Produit", children: [
-    { key: "product.originals", name: "Photos originales" },
-    { key: "product.cutouts", name: "Détourages" },
-    { key: "product.catalog", name: "Catalogue (autres produits)" },
+export const DEFAULT_TREE: { key: string; name: string; en: string; children?: { key: string; name: string; en: string }[] }[] = [
+  { key: "product", name: "01 · Produit", en: "01 · Product", children: [
+    { key: "product.originals", name: "Photos originales", en: "Original photos" },
+    { key: "product.cutouts", name: "Détourages", en: "Cutouts" },
+    { key: "product.catalog", name: "Catalogue (autres produits)", en: "Catalog (other products)" },
   ] },
-  { key: "brand", name: "02 · Marque", children: [
-    { key: "brand.logos", name: "Logos" },
-    { key: "brand.guide", name: "Charte & palette" },
+  { key: "brand", name: "02 · Marque", en: "02 · Brand", children: [
+    { key: "brand.logos", name: "Logos", en: "Logos" },
+    { key: "brand.guide", name: "Charte & palette", en: "Guidelines & palette" },
   ] },
-  { key: "images", name: "03 · Images", children: [
-    { key: "images.packshots", name: "Packshots" },
-    { key: "images.details", name: "Détails produit" },
-    { key: "images.scenes", name: "Scènes & usages" },
-    { key: "images.banners", name: "Bannières boutique" },
-    { key: "images.social", name: "Réseaux sociaux" },
-    { key: "images.ads", name: "Publicités" },
+  { key: "images", name: "03 · Images", en: "03 · Images", children: [
+    { key: "images.packshots", name: "Packshots", en: "Packshots" },
+    { key: "images.details", name: "Détails produit", en: "Product details" },
+    { key: "images.scenes", name: "Scènes & usages", en: "Scenes & use cases" },
+    { key: "images.banners", name: "Bannières boutique", en: "Store banners" },
+    { key: "images.social", name: "Réseaux sociaux", en: "Social media" },
+    { key: "images.ads", name: "Publicités", en: "Ads" },
   ] },
-  { key: "videos", name: "04 · Vidéos", children: [
-    { key: "videos.ads", name: "Publicités" },
-    { key: "videos.social", name: "Réseaux sociaux" },
-    { key: "videos.shop", name: "Boutique" },
+  { key: "videos", name: "04 · Vidéos", en: "04 · Videos", children: [
+    { key: "videos.ads", name: "Publicités", en: "Ads" },
+    { key: "videos.social", name: "Réseaux sociaux", en: "Social media" },
+    { key: "videos.shop", name: "Boutique", en: "Store" },
   ] },
-  { key: "shop", name: "05 · Boutique", children: [{ key: "shop.exports", name: "Exports de thèmes" }] },
-  { key: "content", name: "06 · Contenus", children: [
-    { key: "content.texts", name: "Textes" },
-    { key: "content.calendar", name: "Calendrier" },
+  { key: "shop", name: "05 · Boutique", en: "05 · Store", children: [{ key: "shop.exports", name: "Exports de thèmes", en: "Theme exports" }] },
+  { key: "content", name: "06 · Contenus", en: "06 · Content", children: [
+    { key: "content.texts", name: "Textes", en: "Copy" },
+    { key: "content.calendar", name: "Calendrier", en: "Calendar" },
   ] },
-  { key: "docs", name: "07 · Documents" },
-  { key: "imports", name: "08 · Imports externes", children: [
-    { key: "imports.canva", name: "Canva" },
-    { key: "imports.capcut", name: "CapCut" },
+  { key: "docs", name: "07 · Documents", en: "07 · Documents" },
+  { key: "imports", name: "08 · Imports externes", en: "08 · External imports", children: [
+    { key: "imports.canva", name: "Canva", en: "Canva" },
+    { key: "imports.capcut", name: "CapCut", en: "CapCut" },
   ] },
 ];
+
+/** Noms par défaut des dossiers système (français et anglais), par clé. */
+const DEFAULT_NAMES = new Map<string, { fr: string; en: string }>(DEFAULT_TREE.flatMap((t) => [t, ...(t.children ?? [])]).map((f) => [f.key, { fr: f.name, en: f.en }]));
+
+/**
+ * Nom affiché d'un dossier : un dossier système dont le nom n'a pas été modifié par la personne
+ * s'affiche dans la langue de l'interface ; un nom personnalisé reste tel quel.
+ */
+export function folderDisplayName(f: Pick<Folder, "name" | "system_key">): string {
+  const d = f.system_key ? DEFAULT_NAMES.get(f.system_key) : undefined;
+  if (!d || (f.name !== d.fr && f.name !== d.en)) return f.name;
+  return L(d.fr, d.en);
+}
 
 /** Crée l'arborescence par défaut ; les dossiers ajoutés dans une version ultérieure sont créés s'ils manquent. */
 export function ensureFolders(projectId: string) {
@@ -104,11 +118,13 @@ export function folderByKey(projectId: string, key: string): string | null {
 
 export function listFolders(projectId: string): Folder[] {
   ensureFolders(projectId);
-  return all<Folder>("SELECT * FROM folders WHERE project_id = ? ORDER BY name COLLATE NOCASE", projectId);
+  return all<Folder>("SELECT * FROM folders WHERE project_id = ?", projectId)
+    .map((f) => ({ ...f, name: folderDisplayName(f) }))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 }
 
 export function createFolder(projectId: string, name: string, parentId: string | null): Folder {
-  if (parentId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", parentId, projectId)) throw new Error("Dossier parent introuvable.");
+  if (parentId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", parentId, projectId)) throw new Error(L("Dossier parent introuvable.", "Parent folder not found."));
   const fid = id();
   run("INSERT INTO folders (id, project_id, parent_id, name, system_key, created_at) VALUES (?,?,?,?,?,?)", fid, projectId, parentId, name.slice(0, 120), null, now());
   return one<Folder>("SELECT * FROM folders WHERE id = ?", fid)!;
@@ -232,7 +248,7 @@ export function getAsset(assetId: string): Asset | undefined {
 
 export function projectAsset(projectId: string, assetId: string): Asset {
   const a = one<Asset>("SELECT * FROM assets WHERE id = ? AND project_id = ?", assetId, projectId);
-  if (!a) throw new Error("Média introuvable dans ce projet.");
+  if (!a) throw new Error(L("Média introuvable dans ce projet.", "Media not found in this project."));
   return a;
 }
 

@@ -7,6 +7,11 @@
 import { createCanvas, loadImage, type Canvas, type Image, type SKRSContext2D } from "@napi-rs/canvas";
 import { contrast, ensureContrast, hsl, isDark, mix, onColor, withLightness } from "../color";
 import { ensureFonts, font } from "./fonts";
+import { contentLang } from "../i18n-server";
+import { intlLocale } from "../i18n";
+
+/** Capitales selon la langue des contenus (même rendu qu'avant en français). */
+const upper = (s: string) => s.toLocaleUpperCase(intlLocale(contentLang()));
 
 export type Palette = { primary: string; secondary: string; accent: string; light: string; dark: string };
 export type Typo = { heading: string; body: string; headingWeight?: number; uppercase?: boolean };
@@ -439,15 +444,15 @@ function lightProduct(ctx: SKRSContext2D, box: { x: number; y: number; w: number
 // ---------------------------------------------------------------- recettes
 
 export type SceneStyle = "studio" | "podium" | "arch" | "window" | "spotlight" | "split" | "color" | "everyday";
-export const SCENE_STYLES: { id: SceneStyle; label: string }[] = [
-  { id: "studio", label: "Studio doux" },
-  { id: "podium", label: "Podium" },
-  { id: "arch", label: "Arche" },
-  { id: "window", label: "Lumière de fenêtre" },
-  { id: "spotlight", label: "Projecteur sombre" },
-  { id: "split", label: "Aplats de couleur" },
-  { id: "color", label: "Fond de marque" },
-  { id: "everyday", label: "Vie quotidienne" },
+export const SCENE_STYLES: { id: SceneStyle; label: string; en: string }[] = [
+  { id: "studio", label: "Studio doux", en: "Soft studio" },
+  { id: "podium", label: "Podium", en: "Podium" },
+  { id: "arch", label: "Arche", en: "Arch" },
+  { id: "window", label: "Lumière de fenêtre", en: "Window light" },
+  { id: "spotlight", label: "Projecteur sombre", en: "Dark spotlight" },
+  { id: "split", label: "Aplats de couleur", en: "Color blocks" },
+  { id: "color", label: "Fond de marque", en: "Brand background" },
+  { id: "everyday", label: "Vie quotidienne", en: "Everyday life" },
 ];
 
 export type SceneInput = { product: Image; palette: Palette; style: SceneStyle; format: Format; productScale?: number; offsetX?: number; seed?: number; background?: Image | null; baseYRatio?: number };
@@ -627,7 +632,7 @@ export async function renderCreative(input: CreativeInput): Promise<{ jpg: Buffe
   const headFam = input.typo.heading;
   const bodyFam = input.typo.body;
   const hw = input.typo.headingWeight ?? 600;
-  const headline = input.typo.uppercase ? input.headline.toUpperCase() : input.headline;
+  const headline = input.typo.uppercase ? upper(input.headline) : input.headline;
   let minFont = 999;
 
   let textBox: { x: number; y: number; w: number; h: number; align: CanvasTextAlign };
@@ -646,7 +651,7 @@ export async function renderCreative(input: CreativeInput): Promise<{ jpg: Buffe
   (ctx as any).letterSpacing = `${Math.round(eyebrowSize * 0.18)}px`;
   ctx.textAlign = textBox.align;
   ctx.textBaseline = "top";
-  ctx.fillText((input.badge || input.brand).toUpperCase(), ax, textBox.y);
+  ctx.fillText(upper(input.badge || input.brand), ax, textBox.y);
   (ctx as any).letterSpacing = "0px";
   minFont = Math.min(minFont, eyebrowSize);
 

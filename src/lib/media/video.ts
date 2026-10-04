@@ -13,6 +13,11 @@ import { ensureContrast, hsl, isDark, mix, onColor, withLightness } from "../col
 import { font, ensureFonts } from "./fonts";
 import { wrapLines } from "./compose";
 import type { Palette, Typo } from "./compose";
+import { contentLang, L } from "../i18n-server";
+import { intlLocale } from "../i18n";
+
+/** Capitales selon la langue des contenus (« fr-FR » en français, comme avant). */
+const upper = (s: string) => s.toLocaleUpperCase(intlLocale(contentLang()));
 
 export type VideoFormat = "9:16" | "1:1" | "4:5" | "16:9";
 export const VIDEO_SIZES: Record<VideoFormat, { w: number; h: number }> = {
@@ -126,7 +131,7 @@ function drawSweep(ctx: Ctx, mask: Canvas, x: number, y: number, progress: numbe
 
 /** Texte révélé ligne par ligne, mot par mot, depuis un masque. */
 function kinetic(ctx: Ctx, text: string, opts: { x: number; y: number; maxW: number; size: number; family: string; weight: number; color: string; t: number; align?: "left" | "center"; lh?: number; uppercase?: boolean; italic?: boolean }) {
-  const s = opts.uppercase ? text.toLocaleUpperCase("fr-FR") : text;
+  const s = opts.uppercase ? upper(text) : text;
   ctx.font = font(opts.family, opts.weight, opts.size, opts.italic);
   const lines = wrapLines(ctx, s, opts.maxW);
   const lh = opts.size * (opts.lh ?? 1.08);
@@ -395,7 +400,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       }
       const hs = Math.round(headSize * 0.95);
       ctx.font = font(typo.heading, headW, hs);
-      const n = Math.min(3, wrapLines(ctx, typo.uppercase ? scene.headline.toLocaleUpperCase("fr-FR") : scene.headline, W - safe.side * 2).length);
+      const n = Math.min(3, wrapLines(ctx, typo.uppercase ? upper(scene.headline) : scene.headline, W - safe.side * 2).length);
       kinetic(ctx, scene.headline, { x: safe.side, y: H - safe.bottom - n * hs * 1.08, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.35, uppercase: typo.uppercase });
       break;
     }
@@ -480,7 +485,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       const it = items[i] ?? "";
       const size = Math.round(headSize * (it.length > 28 ? 0.85 : 1.1));
       ctx.font = font(typo.heading, headW, size);
-      const n = wrapLines(ctx, typo.uppercase ? it.toLocaleUpperCase("fr-FR") : it, W - safe.side * 2).length;
+      const n = wrapLines(ctx, typo.uppercase ? upper(it) : it, W - safe.side * 2).length;
       kinetic(ctx, it, { x: W / 2, y: H / 2 - (n * size * 1.08) / 2 - size * 0.1, maxW: W - safe.side * 2, size, family: typo.heading, weight: headW, color, t: local - i * per - 0.05, align: "center", uppercase: typo.uppercase });
       ctx.globalAlpha = 0.7;
       ctx.font = font(typo.body, 600, Math.round(bodySize * 0.75));
@@ -694,7 +699,7 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
   ff.stderr.on("data", (d) => (stderr = (stderr + d.toString()).slice(-4000)));
   const done = new Promise<void>((resolve, reject) => {
     ff.on("error", reject);
-    ff.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`Encodage vidéo impossible (ffmpeg ${code}) : ${stderr.slice(-400)}`))));
+    ff.on("close", (code) => (code === 0 ? resolve() : reject(new Error(L(`Encodage vidéo impossible (ffmpeg ${code}) : ${stderr.slice(-400)}`, `Video encoding failed (ffmpeg ${code}): ${stderr.slice(-400)}`)))));
   });
 
   const canvas = createCanvas(P.W, P.H);
@@ -740,9 +745,9 @@ export function sceneText(s: VideoScene): string | undefined {
 export function checkVideoSpec(spec: VideoSpec): string[] {
   const issues: string[] = [];
   const total = spec.scenes.reduce((s, x) => s + x.duration, 0);
-  if (total < 5) issues.push("Vidéo trop courte (moins de 5 s).");
-  if (total > 60) issues.push("Vidéo de plus de 60 s : trop longue pour une publicité courte.");
-  if (!spec.scenes.some((s) => s.kind === "end")) issues.push("Aucun écran final avec appel à l'action.");
-  for (const s of spec.scenes) if (s.duration < 1.2) issues.push(`Plan « ${s.kind} » trop court pour être lu (${s.duration} s).`);
+  if (total < 5) issues.push(L("Vidéo trop courte (moins de 5 s).", "Video too short (under 5 s)."));
+  if (total > 60) issues.push(L("Vidéo de plus de 60 s : trop longue pour une publicité courte.", "Video over 60 s: too long for a short ad."));
+  if (!spec.scenes.some((s) => s.kind === "end")) issues.push(L("Aucun écran final avec appel à l'action.", "No end screen with a call to action."));
+  for (const s of spec.scenes) if (s.duration < 1.2) issues.push(L(`Plan « ${s.kind} » trop court pour être lu (${s.duration} s).`, `"${s.kind}" shot too short to read (${s.duration} s).`));
   return issues;
 }

@@ -11,6 +11,7 @@ import { canvasFamily, CANVAS_FONTS } from "../media/fonts";
 import { directionById } from "../theme/directions";
 import { isDark, withLightness } from "../color";
 import type { JobContext } from "../jobs";
+import { C, L } from "../i18n-server";
 
 export type LogoProposal = { key: "logotype" | "symbole" | "embleme"; label: string; concept: string; spec: Omit<LogoSpec, "color"> };
 
@@ -19,13 +20,13 @@ const SECTOR_SYMBOL: Record<string, SymbolKind> = {
   alimentation: "sun", enfants: "sun", animaux: "paw", artisanat: "spark",
 };
 const KEYWORD_SYMBOL: [RegExp, SymbolKind][] = [
-  [/\bth[ée]s?\b|matcha|infusion|tisane/i, "leaf"],
-  [/caf[ée]|espresso|barista|mousseur/i, "bean"],
-  [/v[êe]tement|t-?shirt|sweat|hoodie|robe|pantalon|veste|textile|\blin\b|coton/i, "hanger"],
-  [/plante|botani|v[ée]g[ée]tal|bio\b/i, "leaf"],
-  [/\bchats?\b|chien|animal|animaux/i, "paw"],
-  [/lampe|lumi[èe]re|bougie/i, "sun"],
-  [/tasse|mug|th[ée]i[èe]re/i, "cup"],
+  [/\bth[ée]s?\b|\bteas?\b|matcha|infusion|tisane|herbal/i, "leaf"],
+  [/caf[ée]|coffee|espresso|barista|mousseur|frother/i, "bean"],
+  [/v[êe]tement|clothing|apparel|t-?shirt|sweat|hoodie|robe|\bdress|pantalon|trousers|\bpants\b|veste|jacket|textile|\blin\b|linen|coton|cotton/i, "hanger"],
+  [/plante|\bplants?\b|botani|v[ée]g[ée]tal|bio\b|organic/i, "leaf"],
+  [/\bchats?\b|\bcats?\b|chien|\bdogs?\b|animal|animaux|\bpets?\b/i, "paw"],
+  [/lampe|\blamps?\b|lumi[èe]re|bougie|candle/i, "sun"],
+  [/tasse|\bcups?\b|mug|th[ée]i[èe]re|teapot/i, "cup"],
 ];
 
 /** Symbole cohérent avec l'univers : d'abord les mots du produit, puis le secteur. */
@@ -59,14 +60,25 @@ export function logoProposals(p: Project, base?: Omit<LogoSpec, "color">): LogoP
   };
   const sans = CANVAS_FONTS[body] && CANVAS_FONTS[body].kind !== "serif" ? body : "Jost";
   return [
-    { key: "logotype", label: "Logotype", concept: `Logotype typographique en ${word.family}, ${word.case === "upper" ? "capitales" : "minuscules"}${word.tracking >= 0.15 ? " espacées" : ""} : la marque par son nom seul.`, spec: { ...word, name: brand.name } },
-    { key: "symbole", label: "Symbole + nom", concept: `Symbole « ${SYMBOL_LABEL[symbol]} » au trait et nom en ${heavy ? family : sans} : lisible en petit, reconnaissable en icône.`, spec: { name: brand.name, family: heavy ? family : sans, weight: heavy ? 800 : 500, case: "upper", tracking: 0.08, layout: "lockup", emblem: "none", symbol } },
-    { key: "embleme", label: "Emblème", concept: `Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur étiquettes et emballages.`, spec: { name: brand.name, tagline: brand.tagline, family, weight: heavy ? 800 : 500, case: word.case, tracking: 0.06, layout: "badge", emblem: "circle", symbol } },
+    {
+      key: "logotype",
+      label: L("Logotype", "Wordmark"),
+      concept: C(
+        `Logotype typographique en ${word.family}, ${word.case === "upper" ? "capitales" : "minuscules"}${word.tracking >= 0.15 ? " espacées" : ""} : la marque par son nom seul.`,
+        `Typographic wordmark in ${word.family}, ${word.tracking >= 0.15 ? "widely spaced " : ""}${word.case === "upper" ? "uppercase" : "lowercase"}: the brand, by its name alone.`,
+      ),
+      spec: { ...word, name: brand.name },
+    },
+    { key: "symbole", label: L("Symbole + nom", "Symbol + name"), concept: C(`Symbole « ${SYMBOL_LABEL[symbol]} » au trait et nom en ${heavy ? family : sans} : lisible en petit, reconnaissable en icône.`, `Line-drawn "${SYMBOL_LABEL_EN[symbol]}" symbol with the name in ${heavy ? family : sans}: legible at small sizes, recognizable as an icon.`), spec: { name: brand.name, family: heavy ? family : sans, weight: heavy ? 800 : 500, case: "upper", tracking: 0.08, layout: "lockup", emblem: "none", symbol } },
+    { key: "embleme", label: L("Emblème", "Emblem"), concept: C(`Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur étiquettes et emballages.`, `Round emblem ("${SYMBOL_LABEL_EN[symbol]}" symbol) with the name and tagline: a seal-like badge, ideal for labels and packaging.`), spec: { name: brand.name, tagline: brand.tagline, family, weight: heavy ? 800 : 500, case: word.case, tracking: 0.06, layout: "badge", emblem: "circle", symbol } },
   ];
 }
 
 export const SYMBOL_LABEL: Record<SymbolKind, string> = {
   leaf: "feuille", drop: "goutte", hanger: "cintre", orbit: "orbite", bean: "grain", paw: "patte", arch: "arche", wave: "vague", facet: "facette", sun: "soleil", cup: "tasse", spark: "étoile",
+};
+export const SYMBOL_LABEL_EN: Record<SymbolKind, string> = {
+  leaf: "leaf", drop: "drop", hanger: "hanger", orbit: "orbit", bean: "bean", paw: "paw", arch: "arch", wave: "wave", facet: "facet", sun: "sun", cup: "cup", spark: "star",
 };
 
 /** Proposition retenue par défaut selon la direction de la boutique. */
@@ -90,13 +102,13 @@ function logoColors(p: Project) {
  */
 export async function generateLogos(ctx: JobContext | null, projectId: string, opts: { base?: Omit<LogoSpec, "color">; choice?: LogoProposal["key"] } = {}) {
   const p = loadProject(projectId);
-  if (!p.brand) throw new Error("La marque doit exister avant le logo.");
+  if (!p.brand) throw new Error(L("La marque doit exister avant le logo.", "The brand must exist before the logo."));
   // Sans base fournie, le logotype garde le dessin de la proposition précédente (police, casse, interlettrage).
   const prevWord = latestProposals(projectId).find((x) => x.info.key === "logotype")?.info.spec;
   const proposals = logoProposals(p, opts.base ?? (prevWord ? { ...prevWord, name: p.brand.name } : undefined));
   const { color, accent } = logoColors(p);
   const common = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const };
-  ctx?.progress(0.6, "Propositions de logo");
+  ctx?.progress(0.6, L("Propositions de logo", "Logo proposals"));
   const batch = Date.now().toString(36);
   for (const pr of proposals) {
     const png = await logoPng({ ...pr.spec, color, accent }, 900);
@@ -111,7 +123,7 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   const p = loadProject(projectId);
   const brand = p.brand!;
   const { color, accent } = logoColors(p);
-  ctx?.progress(0.75, "Déclinaisons du logo");
+  ctx?.progress(0.75, L("Déclinaisons du logo", "Logo variations"));
   const spec: LogoSpec = { ...pr.spec, name: brand.name, ...(pr.spec.layout === "badge" ? { tagline: brand.tagline } : {}), color, accent };
   const set = await logoSet(spec, "#FFFFFF");
   // Un emblème rond sert sur les étiquettes et emballages ; le site utilise la version horizontale.
@@ -145,7 +157,7 @@ export function swapThemeLogos(projectId: string, ids: { logo: string; light: st
       changed = true;
     }
   }
-  return changed ? saveThemeVersion(projectId, spec, "Logo mis à jour", "system") : null;
+  return changed ? saveThemeVersion(projectId, spec, L("Logo mis à jour", "Logo updated"), "system") : null;
 }
 
 /** Dernières propositions enregistrées (une par clé). */
@@ -163,7 +175,7 @@ export const hasClientLogo = (projectId: string) => !!one("SELECT 1 FROM assets 
 
 // ---------------------------------------------------------------- signatures
 
-const SECTOR_LINES: Record<string, string[]> = {
+const SECTOR_LINES_FR: Record<string, string[]> = {
   beaute: ["Le soin, simplement.", "Des gestes simples, chaque jour.", "L'essentiel, sans détour.", "Prendre soin, tout naturellement."],
   mode: ["L'allure, simplement.", "Des pièces à vivre au quotidien.", "S'habiller sans compliquer.", "Le style qui vous ressemble."],
   bijoux: ["Des détails qui comptent.", "Briller sans en faire trop.", "À porter, à offrir, à garder."],
@@ -175,25 +187,48 @@ const SECTOR_LINES: Record<string, string[]> = {
   animaux: ["Pour nos compagnons.", "Le quotidien de votre animal, en mieux.", "Pensé pour eux, choisi par vous."],
   artisanat: ["Fait avec soin.", "Le geste et la matière."],
 };
-const KEYWORD_LINES: [RegExp, string[]][] = [
+const KEYWORD_LINES_FR: [RegExp, string[]][] = [
   [/th[ée] glac|boisson|canette|soda|limonade/i, ["La fraîcheur en canette.", "Un moment de fraîcheur, à toute heure."]],
   [/\bth[ée]s?\b|infusion|matcha/i, ["Le thé, prenez le temps.", "Une tasse, un moment."]],
   [/caf[ée]|espresso/i, ["Le café comme à la maison… parce que c'est la maison.", "Votre café, votre rituel."]],
   [/v[êe]tement|t-?shirt|sweat|hoodie|robe/i, ["Des basiques bien faits.", "L'essentiel du vestiaire."]],
 ];
 
+const SECTOR_LINES_EN: Record<string, string[]> = {
+  beaute: ["Skincare, simplified.", "Simple steps, every day.", "Just the essentials.", "Self-care, naturally."],
+  mode: ["Effortless style.", "Pieces for everyday life.", "Getting dressed, made easy.", "Style that feels like you."],
+  bijoux: ["The details that matter.", "Shine without trying too hard.", "To wear, to give, to keep."],
+  maison: ["Objects to live with.", "Home, made softer.", "Home, simply better."],
+  hightech: ["Tech, without the fuss.", "Built to be used.", "Easy from day one."],
+  sport: ["Made to move.", "Movement, every day.", "Geared up to get out."],
+  alimentation: ["A taste for good things.", "Simply savor it.", "A moment for yourself."],
+  enfants: ["Growing up gently.", "For little ones, with care."],
+  animaux: ["For our companions.", "Your pet's everyday, made better.", "Made for them, chosen by you."],
+  artisanat: ["Made with care.", "Craft and material."],
+};
+const KEYWORD_LINES_EN: [RegExp, string[]][] = [
+  [/th[ée] glac|iced tea|boisson|drink|beverage|canette|\bcans?\b|soda|limonade|lemonade/i, ["Refreshment in a can.", "A refreshing moment, any time."]],
+  [/\bth[ée]s?\b|\bteas?\b|infusion|matcha/i, ["Tea: take your time.", "One cup, one moment."]],
+  [/caf[ée]|coffee|espresso/i, ["Coffee-shop coffee, right at home.", "Your coffee, your ritual."]],
+  [/v[êe]tement|clothing|apparel|t-?shirt|sweat|hoodie|robe|\bdress/i, ["Basics, done right.", "Wardrobe essentials."]],
+];
+
 /** Signatures proposées : courtes, sans promesse invérifiable ; la liste des goûts ou gammes réelle quand elle existe. */
 export function proposeTaglines(p: Project): string[] {
   const text = `${p.product.name} ${p.product.category} ${p.product.summary} ${p.catalog.map((c) => `${c.name} ${c.category}`).join(" ")}`;
+  const en = C(false, true);
+  const sectorLines = en ? SECTOR_LINES_EN : SECTOR_LINES_FR;
   const out: string[] = [];
-  for (const [re, lines] of KEYWORD_LINES) if (re.test(text)) out.push(...lines);
-  out.push(...(SECTOR_LINES[p.product.sector ?? ""] ?? SECTOR_LINES.maison));
+  for (const [re, lines] of en ? KEYWORD_LINES_EN : KEYWORD_LINES_FR) if (re.test(text)) out.push(...lines);
+  out.push(...(sectorLines[p.product.sector ?? ""] ?? sectorLines.maison));
   // Gamme réelle : variantes du produit ou catégories du catalogue.
   const range = p.product.variants[0]?.values?.length ? p.product.variants[0].values : [...new Set(p.catalog.map((c) => c.category).filter(Boolean))];
   if (range.length >= 2 && range.length <= 4) {
-    const list = range.map((x) => x.toLocaleLowerCase("fr-FR"));
-    out.push(`${list.slice(0, -1).join(", ")} ou ${list[list.length - 1]} : à vous de choisir.`.replace(/^./, (c) => c.toLocaleUpperCase("fr-FR")));
+    const loc = en ? "en-US" : "fr-FR";
+    const list = range.map((x) => x.toLocaleLowerCase(loc));
+    const line = en ? `${list.slice(0, -1).join(", ")} or ${list[list.length - 1]}: your choice.` : `${list.slice(0, -1).join(", ")} ou ${list[list.length - 1]} : à vous de choisir.`;
+    out.push(line.replace(/^./, (c) => c.toLocaleUpperCase(loc)));
   }
-  if (p.brand?.name) out.push(`${p.brand.name}, au quotidien.`);
+  if (p.brand?.name) out.push(en ? `${p.brand.name}, every day.` : `${p.brand.name}, au quotidien.`);
   return [...new Set(out)].filter((x) => x.length <= 70).slice(0, 6);
 }

@@ -9,14 +9,30 @@
     "play": "Lire",
     "error": "Une erreur est survenue. Réessayez.",
     "image_placeholder": "Image à venir",
-    "back_to_top": "Revenir en haut de la page"
+    "back_to_top": "Revenir en haut de la page",
+    "app_block_hint": "Ajoutez ici le bloc d'une application installée sur votre boutique.",
+    "unmute": "Activer le son",
+    "mute": "Couper le son"
   },
-  "accessibility": { "skip_to_text": "Aller au contenu" },
+  "accessibility": {
+    "skip_to_text": "Aller au contenu"
+  },
   "sections": {
     "announcement": "Annonce",
-    "header": { "menu": "Menu", "navigation": "Navigation principale" }
+    "header": {
+      "menu": "Menu",
+      "navigation": "Navigation principale"
+    },
+    "reviews": {
+      "app_hint": "Ajoutez ici le bloc de votre application d'avis : seuls de vrais avis clients s'afficheront.",
+      "testimonials_hint": "Ajoutez de vrais avis de vos clients (bloc « Avis ») : rien ne s'affiche tant qu'il n'y en a pas."
+    }
   },
-  "newsletter": { "label": "Votre adresse e-mail", "button": "S'inscrire", "success": "Merci, votre inscription est enregistrée." },
+  "newsletter": {
+    "label": "Votre adresse e-mail",
+    "button": "S'inscrire",
+    "success": "Merci, votre inscription est enregistrée."
+  },
   "products": {
     "product": {
       "add_to_cart": "Ajouter au panier",
@@ -32,6 +48,21 @@
         "regular_price": "Prix habituel",
         "sale_price": "Prix réduit",
         "from_price_html": "À partir de {{ price }}"
+      },
+      "placeholder_title": "Votre produit",
+      "placeholder_card": "Produit",
+      "reviews_count": {
+        "one": "{{ count }} avis",
+        "other": "{{ count }} avis"
+      },
+      "rating_of": "Note de {{ rating }} sur {{ max }}",
+      "eta": {
+        "ordered": "Commandé",
+        "today": "Aujourd'hui",
+        "within": {
+          "one": "Sous {{ count }} jour",
+          "other": "Sous {{ count }} jours"
+        }
       }
     }
   },
@@ -42,14 +73,20 @@
     "from": "De",
     "to": "à",
     "empty": "Aucun produit ne correspond pour le moment.",
-    "product_count": { "one": "{{ count }} produit", "other": "{{ count }} produits" }
+    "product_count": {
+      "one": "{{ count }} produit",
+      "other": "{{ count }} produits"
+    }
   },
   "search": {
     "title": "Recherche",
     "label": "Rechercher dans la boutique",
     "placeholder": "Que cherchez-vous ?",
     "submit": "Rechercher",
-    "results_count": { "one": "{{ count }} résultat pour « {{ terms }} »", "other": "{{ count }} résultats pour « {{ terms }} »" },
+    "results_count": {
+      "one": "{{ count }} résultat pour « {{ terms }} »",
+      "other": "{{ count }} résultats pour « {{ terms }} »"
+    },
     "no_results": "Aucun résultat pour « {{ terms }} »."
   },
   "cart": {
@@ -76,14 +113,62 @@
   "customer": {
     "account": "Mon compte",
     "logout": "Se déconnecter",
-    "login": { "title": "Connexion", "password": "Mot de passe", "submit": "Se connecter", "forgot": "Mot de passe oublié ?" },
-    "recover": { "title": "Réinitialiser le mot de passe", "submit": "Envoyer", "success": "Un e-mail de réinitialisation vous a été envoyé." },
-    "register": { "title": "Créer un compte", "first_name": "Prénom", "last_name": "Nom", "submit": "Créer mon compte" },
-    "activate": { "title": "Activer votre compte", "confirm": "Confirmer le mot de passe", "submit": "Activer" },
-    "reset": { "title": "Nouveau mot de passe", "submit": "Enregistrer" },
-    "orders": { "title": "Commandes", "order": "Commande", "date": "Date", "status": "Statut", "total": "Total", "none": "Aucune commande pour le moment.", "product": "Produit", "billing": "Adresse de facturation", "shipping": "Adresse de livraison" },
-    "addresses": { "title": "Adresses", "manage": "Gérer les adresses", "add": "Ajouter une adresse", "update": "Mettre à jour", "address1": "Adresse", "city": "Ville", "zip": "Code postal", "country": "Pays", "default": "Adresse par défaut" }
+    "login": {
+      "title": "Connexion",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "forgot": "Mot de passe oublié ?"
+    },
+    "recover": {
+      "title": "Réinitialiser le mot de passe",
+      "submit": "Envoyer",
+      "success": "Un e-mail de réinitialisation vous a été envoyé."
+    },
+    "register": {
+      "title": "Créer un compte",
+      "first_name": "Prénom",
+      "last_name": "Nom",
+      "submit": "Créer mon compte"
+    },
+    "activate": {
+      "title": "Activer votre compte",
+      "confirm": "Confirmer le mot de passe",
+      "submit": "Activer"
+    },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "submit": "Enregistrer"
+    },
+    "orders": {
+      "title": "Commandes",
+      "order": "Commande",
+      "date": "Date",
+      "status": "Statut",
+      "total": "Total",
+      "none": "Aucune commande pour le moment.",
+      "product": "Produit",
+      "billing": "Adresse de facturation",
+      "shipping": "Adresse de livraison"
+    },
+    "addresses": {
+      "title": "Adresses",
+      "manage": "Gérer les adresses",
+      "add": "Ajouter une adresse",
+      "update": "Mettre à jour",
+      "address1": "Adresse",
+      "city": "Ville",
+      "zip": "Code postal",
+      "country": "Pays",
+      "default": "Adresse par défaut"
+    }
   },
-  "password": { "owner": "Accès propriétaire", "label": "Mot de passe", "enter": "Entrer" },
-  "gift_card": { "title": "Carte cadeau", "expired": "Cette carte cadeau a expiré." }
+  "password": {
+    "owner": "Accès propriétaire",
+    "label": "Mot de passe",
+    "enter": "Entrer"
+  },
+  "gift_card": {
+    "title": "Carte cadeau",
+    "expired": "Cette carte cadeau a expiré."
+  }
 }

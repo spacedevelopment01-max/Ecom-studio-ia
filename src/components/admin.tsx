@@ -3,6 +3,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Activity, ArrowLeft, CheckCircle2, Copy, KeyRound, RefreshCw, XCircle } from "lucide-react";
 import { api, Badge, Button, Card, cx, formatDate, Input, Logo, Select, ThemeToggle, useApi, useToast } from "./ui";
+import { LangSwitch, useLang, useT } from "./i18n";
+import { intlLocale, type Lang } from "@/lib/i18n";
 
 type Overview = {
   appUrl: string;
@@ -24,24 +26,27 @@ type Overview = {
 };
 
 const SECTIONS = [
-  ["bord", "Tableau de bord"],
-  ["clients", "Clients"],
-  ["ia", "Fournisseurs IA"],
-  ["routes", "Modèles et tarifs"],
-  ["connexions", "Connexions OAuth"],
-  ["paiements", "Paiements"],
-  ["conso", "Consommation"],
-  ["sante", "Erreurs et tâches"],
+  ["bord", "Tableau de bord", "Dashboard"],
+  ["clients", "Clients", "Customers"],
+  ["ia", "Fournisseurs IA", "AI providers"],
+  ["routes", "Modèles et tarifs", "Models and pricing"],
+  ["connexions", "Connexions OAuth", "OAuth connections"],
+  ["paiements", "Paiements", "Payments"],
+  ["conso", "Consommation", "Usage"],
+  ["sante", "Erreurs et tâches", "Errors and tasks"],
 ] as const;
 
-const euro = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 4 });
+const euro = (lang: Lang, n: number) => n.toLocaleString(intlLocale(lang), { style: "currency", currency: "EUR", maximumFractionDigits: 4 });
+const num = (lang: Lang, n: number | null | undefined) => n?.toLocaleString(intlLocale(lang));
+const pctTxt = (lang: Lang, n: number) => (lang === "en" ? `${n}%` : `${n} %`);
 
 export function AdminConsole() {
+  const t = useT();
   const toast = useToast();
   const { data, reload } = useApi<Overview>("/api/admin/overview");
   const [tab, setTab] = useState<(typeof SECTIONS)[number][0]>("bord");
   const { data: dash, reload: reloadDash } = useApi<Dashboard>("/api/admin/dashboard");
-  const set = async (pairs: { key: string; value: string | null }[], msg = "Enregistré.") => {
+  const set = async (pairs: { key: string; value: string | null }[], msg = t("Enregistré.", "Saved.")) => {
     try {
       await api("/api/admin/settings", { body: { set: pairs } });
       toast("ok", msg);
@@ -50,7 +55,7 @@ export function AdminConsole() {
       toast("bad", (e as Error).message);
     }
   };
-  const post = async (b: Record<string, unknown>, msg = "Enregistré.") => {
+  const post = async (b: Record<string, unknown>, msg = t("Enregistré.", "Saved.")) => {
     try {
       await api("/api/admin/settings", { body: b });
       toast("ok", msg);
@@ -63,17 +68,18 @@ export function AdminConsole() {
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-          <Link href="/studio" className="inline-flex items-center gap-2 text-sm"><ArrowLeft className="size-4" /> <Logo compact /> <span className="font-medium">Administration</span></Link>
+          <Link href="/studio" className="inline-flex items-center gap-2 text-sm"><ArrowLeft className="size-4" /> <Logo compact /> <span className="font-medium">{t("Administration", "Admin")}</span></Link>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} onClick={() => { reload(); reloadDash(); }}>Actualiser</Button>
+            <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} onClick={() => { reload(); reloadDash(); }} aria-label={t("Actualiser", "Refresh")}><span className="hidden sm:inline">{t("Actualiser", "Refresh")}</span></Button>
+            <LangSwitch />
             <ThemeToggle />
           </div>
         </div>
       </header>
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         <nav className="scrollbar-none -mx-4 flex gap-1.5 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0">
-          {SECTIONS.map(([k, l]) => (
-            <button key={k} onClick={() => setTab(k)} className={cx("shrink-0 rounded-full border px-4 py-2 text-sm", tab === k ? "border-ink bg-ink text-paper" : "border-line bg-card")}>{l}</button>
+          {SECTIONS.map(([k, l, lEn]) => (
+            <button key={k} onClick={() => setTab(k)} className={cx("shrink-0 rounded-full border px-4 py-2 text-sm", tab === k ? "border-ink bg-ink text-paper" : "border-line bg-card")}>{t(l, lEn)}</button>
           ))}
         </nav>
         {!data ? <div className="skeleton h-72 rounded-3xl" /> : (
@@ -97,19 +103,21 @@ export function AdminConsole() {
 type SetFn = (pairs: { key: string; value: string | null }[], msg?: string) => Promise<void>;
 
 function SecretRow({ label, masked, onSave, placeholder }: { label: string; masked: string; onSave: (v: string) => void; placeholder?: string }) {
+  const t = useT();
   const [v, setV] = useState("");
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (v.trim()) { onSave(v.trim()); setV(""); } }} className="grid gap-1.5">
-      <label className="text-xs font-medium text-ink-2">{label} {masked && <span className="font-mono text-muted">· actuelle : {masked}</span>}</label>
+      <label className="text-xs font-medium text-ink-2">{label} {masked && <span className="font-mono text-muted">{t("· actuelle : ", "· current: ")}{masked}</span>}</label>
       <div className="flex gap-2">
-        <Input type="password" autoComplete="off" value={v} onChange={(e) => setV(e.target.value)} placeholder={placeholder ?? (masked ? "Remplacer…" : "Coller la valeur")} />
-        <Button type="submit" variant="secondary" disabled={!v.trim()}>Enregistrer</Button>
+        <Input type="password" autoComplete="off" value={v} onChange={(e) => setV(e.target.value)} placeholder={placeholder ?? (masked ? t("Remplacer…", "Replace…") : t("Coller la valeur", "Paste the value"))} />
+        <Button type="submit" variant="secondary" disabled={!v.trim()}>{t("Enregistrer", "Save")}</Button>
       </div>
     </form>
   );
 }
 
 function AiProviders({ data, set }: { data: Overview; set: SetFn }) {
+  const t = useT();
   const toast = useToast();
   const [testing, setTesting] = useState<string | null>(null);
   const [result, setResult] = useState<Record<string, { ok: boolean; message: string }>>({});
@@ -125,7 +133,7 @@ function AiProviders({ data, set }: { data: Overview; set: SetFn }) {
   };
   return (
     <>
-      <Card className="p-5 text-sm text-ink-2">Les clés sont chiffrées en base (AES-256-GCM avec APP_SECRET) et ne sont jamais renvoyées au navigateur. Les clients n'ont jamais de clé à fournir. Sans clé, le studio fonctionne avec son moteur intégré (sans IA externe) et l'indique clairement aux clients.</Card>
+      <Card className="p-5 text-sm text-ink-2">{t("Les clés sont chiffrées en base (AES-256-GCM avec APP_SECRET) et ne sont jamais renvoyées au navigateur. Les clients n'ont jamais de clé à fournir. Sans clé, le studio fonctionne avec son moteur intégré (sans IA externe) et l'indique clairement aux clients.", "Keys are encrypted in the database (AES-256-GCM with APP_SECRET) and are never sent back to the browser. Customers never have to provide a key. Without a key, the studio runs on its built-in engine (no external AI) and tells customers so clearly.")}</Card>
       <div className="grid gap-4 md:grid-cols-2">
         {data.providers.map((p) => (
           <Card key={p.id} className="grid gap-3 p-5">
@@ -134,14 +142,14 @@ function AiProviders({ data, set }: { data: Overview; set: SetFn }) {
                 <p className="font-display text-lg font-semibold">{p.name}</p>
                 <p className="text-xs text-muted">{p.role}</p>
               </div>
-              {p.configured ? (p.disabled ? <Badge tone="warn">Désactivé</Badge> : <Badge tone="ok" dot>Clé enregistrée</Badge>) : <Badge>Aucune clé</Badge>}
+              {p.configured ? (p.disabled ? <Badge tone="warn">{t("Désactivé", "Disabled")}</Badge> : <Badge tone="ok" dot>{t("Clé enregistrée", "Key saved")}</Badge>) : <Badge>{t("Aucune clé", "No key")}</Badge>}
             </div>
-            <SecretRow label={p.keyHelp} masked={p.keyMasked} onSave={(v) => set([{ key: `provider.${p.id}.apiKey`, value: v }], "Clé enregistrée (chiffrée).")} />
+            <SecretRow label={p.keyHelp} masked={p.keyMasked} onSave={(v) => set([{ key: `provider.${p.id}.apiKey`, value: v }], t("Clé enregistrée (chiffrée).", "Key saved (encrypted)."))} />
             <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" icon={<Activity className="size-4" />} disabled={!p.configured} loading={testing === p.id} onClick={() => test(p.id)}>Tester réellement</Button>
-              {p.configured && <Button size="sm" variant="ghost" onClick={() => set([{ key: `provider.${p.id}.disabled`, value: p.disabled ? null : "1" }])}>{p.disabled ? "Réactiver" : "Désactiver"}</Button>}
-              {p.configured && <Button size="sm" variant="ghost" onClick={() => confirm("Supprimer cette clé ?") && set([{ key: `provider.${p.id}.apiKey`, value: null }], "Clé supprimée.")}>Supprimer</Button>}
-              <a href={p.docs} target="_blank" rel="noreferrer" className="text-xs underline">Documentation</a>
+              <Button size="sm" icon={<Activity className="size-4" />} disabled={!p.configured} loading={testing === p.id} onClick={() => test(p.id)}>{t("Tester réellement", "Run a live test")}</Button>
+              {p.configured && <Button size="sm" variant="ghost" onClick={() => set([{ key: `provider.${p.id}.disabled`, value: p.disabled ? null : "1" }])}>{p.disabled ? t("Réactiver", "Re-enable") : t("Désactiver", "Disable")}</Button>}
+              {p.configured && <Button size="sm" variant="ghost" onClick={() => confirm(t("Supprimer cette clé ?", "Delete this key?")) && set([{ key: `provider.${p.id}.apiKey`, value: null }], t("Clé supprimée.", "Key deleted."))}>{t("Supprimer", "Delete")}</Button>}
+              <a href={p.docs} target="_blank" rel="noreferrer" className="text-xs underline">{t("Documentation", "Documentation")}</a>
             </div>
             {result[p.id] && (
               <p className={cx("flex gap-2 rounded-xl p-2.5 text-xs", result[p.id].ok ? "bg-ok-soft text-ok" : "bg-bad-soft text-bad")}>
@@ -152,26 +160,28 @@ function AiProviders({ data, set }: { data: Overview; set: SetFn }) {
         ))}
       </div>
       <Card className="grid gap-3 p-5">
-        <p className="font-display text-lg font-semibold">Adresse publique du studio</p>
-        <p className="text-sm text-ink-2">Utilisée pour les retours OAuth, les médias publiés (Instagram, TikTok, Pinterest récupèrent les fichiers par URL) et l'installation du thème Shopify. Doit être en HTTPS et accessible depuis Internet. Actuelle : <span className="font-mono">{data.appUrl}</span></p>
-        <UrlRow initial={data.appUrl} onSave={(v) => set([{ key: "app.url", value: v }], "Adresse enregistrée.")} />
+        <p className="font-display text-lg font-semibold">{t("Adresse publique du studio", "Studio public URL")}</p>
+        <p className="text-sm text-ink-2">{t("Utilisée pour les retours OAuth, les médias publiés (Instagram, TikTok, Pinterest récupèrent les fichiers par URL) et l'installation du thème Shopify. Doit être en HTTPS et accessible depuis Internet. Actuelle : ", "Used for OAuth callbacks, published media (Instagram, TikTok and Pinterest fetch files by URL) and Shopify theme installation. Must use HTTPS and be reachable from the internet. Current: ")}<span className="font-mono">{data.appUrl}</span></p>
+        <UrlRow initial={data.appUrl} onSave={(v) => set([{ key: "app.url", value: v }], t("Adresse enregistrée.", "URL saved."))} />
       </Card>
     </>
   );
 }
 
 function UrlRow({ initial, onSave }: { initial: string; onSave: (v: string) => void }) {
+  const t = useT();
   const [v, setV] = useState(initial);
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSave(v.trim().replace(/\/$/, "")); }} className="flex gap-2">
-      <Input value={v} onChange={(e) => setV(e.target.value)} placeholder="https://studio.exemple.fr" aria-label="Adresse publique" />
-      <Button type="submit" variant="secondary">Enregistrer</Button>
+      <Input value={v} onChange={(e) => setV(e.target.value)} placeholder={t("https://studio.exemple.fr", "https://studio.example.com")} aria-label={t("Adresse publique", "Public URL")} />
+      <Button type="submit" variant="secondary">{t("Enregistrer", "Save")}</Button>
     </form>
   );
 }
 
 /** Rentabilité : tarif manquant (génération refusée) et tarifs à revérifier. */
 function PricingAlert({ data, post, onOpen }: { data: Overview; post: (b: Record<string, unknown>, msg?: string) => Promise<void>; onOpen: () => void }) {
+  const t = useT();
   const { checkedAt, reviewDays, missing } = data.pricing;
   const age = checkedAt ? Math.floor((Date.now() - checkedAt) / 86400_000) : null;
   const stale = age === null || age > reviewDays;
@@ -180,20 +190,20 @@ function PricingAlert({ data, post, onOpen }: { data: Overview; post: (b: Record
     <div className="grid gap-3">
       {missing.length > 0 && (
         <div className="rounded-2xl border border-bad/30 bg-bad-soft p-4 text-sm text-bad">
-          <p className="font-semibold">Tarif manquant : ces générations sont refusées pour protéger votre marge.</p>
+          <p className="font-semibold">{t("Tarif manquant : ces générations sont refusées pour protéger votre marge.", "Missing price: these generations are blocked to protect your margin.")}</p>
           <ul className="mt-1.5 list-disc pl-5">{missing.map((m) => <li key={m.task}>{m.label} · <span className="font-mono text-xs">{m.key}</span></li>)}</ul>
-          <Button size="sm" variant="secondary" className="mt-3" onClick={onOpen}>Renseigner les tarifs</Button>
+          <Button size="sm" variant="secondary" className="mt-3" onClick={onOpen}>{t("Renseigner les tarifs", "Enter prices")}</Button>
         </div>
       )}
       {stale && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warn/30 bg-warn-soft p-4 text-sm text-warn">
           <p>
-            <span className="font-semibold">{age === null ? "Tarifs des fournisseurs jamais confirmés." : `Tarifs vérifiés il y a ${age} jours.`}</span>{" "}
-            Si un fournisseur a augmenté ses prix, les crédits des clients sous-estiment la dépense réelle. Comparez avec les pages officielles (OpenAI, Google, Anthropic, fal.ai) et le taux USD → EUR, tous les {reviewDays} jours.
+            <span className="font-semibold">{age === null ? t("Tarifs des fournisseurs jamais confirmés.", "Provider prices have never been confirmed.") : t(`Tarifs vérifiés il y a ${age} jours.`, `Prices checked ${age} days ago.`)}</span>{" "}
+            {t(`Si un fournisseur a augmenté ses prix, les crédits des clients sous-estiment la dépense réelle. Comparez avec les pages officielles (OpenAI, Google, Anthropic, fal.ai) et le taux USD → EUR, tous les ${reviewDays} jours.`, `If a provider has raised its prices, customer credits underestimate the actual spend. Compare with the official pricing pages (OpenAI, Google, Anthropic, fal.ai) and the USD → EUR rate every ${reviewDays} days.`)}
           </p>
           <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={onOpen}>Voir les tarifs</Button>
-            <Button size="sm" onClick={() => post({ pricesChecked: true }, "Tarifs marqués comme vérifiés.")}>J'ai vérifié les tarifs</Button>
+            <Button size="sm" variant="secondary" onClick={onOpen}>{t("Voir les tarifs", "View prices")}</Button>
+            <Button size="sm" onClick={() => post({ pricesChecked: true }, t("Tarifs marqués comme vérifiés.", "Prices marked as checked."))}>{t("J'ai vérifié les tarifs", "I've checked the prices")}</Button>
           </div>
         </div>
       )}
@@ -202,6 +212,7 @@ function PricingAlert({ data, post, onOpen }: { data: Overview; post: (b: Record
 }
 
 function Routes({ data, post }: { data: Overview; post: (b: Record<string, unknown>, msg?: string) => Promise<void> }) {
+  const t = useT();
   const [edit, setEdit] = useState<Record<string, { provider: string; model: string; effort?: string }>>({});
   const [priceKey, setPriceKey] = useState("");
   const [priceJson, setPriceJson] = useState("");
@@ -210,21 +221,21 @@ function Routes({ data, post }: { data: Overview; post: (b: Record<string, unkno
   return (
     <>
       <Card className="overflow-x-auto p-5">
-        <p className="font-display text-lg font-semibold">Routage des tâches</p>
-        <p className="mb-4 text-sm text-ink-2">Chaque tâche utilise le fournisseur et le modèle indiqués. Les identifiants de modèles doivent correspondre exactement à ceux du fournisseur.</p>
+        <p className="font-display text-lg font-semibold">{t("Routage des tâches", "Task routing")}</p>
+        <p className="mb-4 text-sm text-ink-2">{t("Chaque tâche utilise le fournisseur et le modèle indiqués. Les identifiants de modèles doivent correspondre exactement à ceux du fournisseur.", "Each task uses the provider and model shown. Model IDs must match the provider's exactly.")}</p>
         <table className="w-full min-w-[720px] text-sm">
-          <thead className="text-left text-xs text-muted"><tr><th className="py-2">Tâche</th><th>Fournisseur</th><th>Modèle</th><th>Effort</th><th>Tarif</th><th /></tr></thead>
+          <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Tâche", "Task")}</th><th>{t("Fournisseur", "Provider")}</th><th>{t("Modèle", "Model")}</th><th>{t("Effort", "Effort")}</th><th>{t("Tarif", "Price")}</th><th /></tr></thead>
           <tbody className="divide-y divide-line">
-            {data.tasks.map((t) => {
-              const r = edit[t.id] ?? t.route;
+            {data.tasks.map((k) => {
+              const r = edit[k.id] ?? k.route;
               return (
-                <tr key={t.id}>
-                  <td className="py-2 pr-2">{t.label}<span className="block text-[11px] text-muted">{t.kind}</span></td>
-                  <td className="pr-2"><Select value={r.provider} onChange={(e) => setEdit({ ...edit, [t.id]: { ...r, provider: e.target.value } })} aria-label="Fournisseur">{data.providers.map((p) => <option key={p.id} value={p.id}>{p.id}</option>)}</Select></td>
-                  <td className="pr-2"><Input value={r.model} onChange={(e) => setEdit({ ...edit, [t.id]: { ...r, model: e.target.value } })} aria-label="Modèle" className="font-mono text-xs" /></td>
-                  <td className="pr-2">{r.provider === "anthropic" ? <Select value={r.effort ?? ""} onChange={(e) => setEdit({ ...edit, [t.id]: { ...r, effort: e.target.value || undefined } })} aria-label="Effort"><option value="">défaut</option>{["low", "medium", "high", "xhigh", "max"].map((x) => <option key={x}>{x}</option>)}</Select> : <span className="text-muted">—</span>}</td>
-                  <td className="pr-2 text-xs">{t.price ? <Badge tone="ok">défini</Badge> : <Badge tone="warn">manquant</Badge>}</td>
-                  <td>{edit[t.id] && <Button size="sm" onClick={async () => { await post({ route: { task: t.id, ...edit[t.id] } }, "Routage enregistré."); const n = { ...edit }; delete n[t.id]; setEdit(n); }}>OK</Button>}</td>
+                <tr key={k.id}>
+                  <td className="py-2 pr-2">{k.label}<span className="block text-[11px] text-muted">{k.kind}</span></td>
+                  <td className="pr-2"><Select value={r.provider} onChange={(e) => setEdit({ ...edit, [k.id]: { ...r, provider: e.target.value } })} aria-label={t("Fournisseur", "Provider")}>{data.providers.map((p) => <option key={p.id} value={p.id}>{p.id}</option>)}</Select></td>
+                  <td className="pr-2"><Input value={r.model} onChange={(e) => setEdit({ ...edit, [k.id]: { ...r, model: e.target.value } })} aria-label={t("Modèle", "Model")} className="font-mono text-xs" /></td>
+                  <td className="pr-2">{r.provider === "anthropic" ? <Select value={r.effort ?? ""} onChange={(e) => setEdit({ ...edit, [k.id]: { ...r, effort: e.target.value || undefined } })} aria-label={t("Effort", "Effort")}><option value="">{t("défaut", "default")}</option>{["low", "medium", "high", "xhigh", "max"].map((x) => <option key={x}>{x}</option>)}</Select> : <span className="text-muted">—</span>}</td>
+                  <td className="pr-2 text-xs">{k.price ? <Badge tone="ok">{t("défini", "set")}</Badge> : <Badge tone="warn">{t("manquant", "missing")}</Badge>}</td>
+                  <td>{edit[k.id] && <Button size="sm" onClick={async () => { await post({ route: { task: k.id, ...edit[k.id] } }, t("Routage enregistré.", "Routing saved.")); const n = { ...edit }; delete n[k.id]; setEdit(n); }}>OK</Button>}</td>
                 </tr>
               );
             })}
@@ -232,25 +243,25 @@ function Routes({ data, post }: { data: Overview; post: (b: Record<string, unkno
         </table>
       </Card>
       <Card className="grid gap-4 p-5">
-        <p className="font-display text-lg font-semibold">Tarifs des fournisseurs (USD)</p>
-        <p className="text-sm text-ink-2">Coûts internes, jamais affichés aux clients. Les images et vidéos sont comptées à l'unité (image, seconde de vidéo) lorsque le fournisseur facture ainsi : aucun jeton n'est inventé. Vérifiez ces tarifs sur les pages officielles.</p>
+        <p className="font-display text-lg font-semibold">{t("Tarifs des fournisseurs (USD)", "Provider prices (USD)")}</p>
+        <p className="text-sm text-ink-2">{t("Coûts internes, jamais affichés aux clients. Les images et vidéos sont comptées à l'unité (image, seconde de vidéo) lorsque le fournisseur facture ainsi : aucun jeton n'est inventé. Vérifiez ces tarifs sur les pages officielles.", "Internal costs, never shown to customers. Images and videos are counted per unit (image, second of video) when the provider bills that way: no tokens are made up. Check these prices on the official pages.")}</p>
         <div className="grid gap-1 font-mono text-xs">
           {Object.entries(data.prices).map(([k, v]) => (
             <button key={k} onClick={() => { setPriceKey(k); setPriceJson(JSON.stringify(v)); }} className="flex justify-between gap-3 rounded-lg px-2 py-1 text-left hover:bg-paper-2"><span>{k}</span><span className="text-muted">{JSON.stringify(v)}</span></button>
           ))}
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); try { post({ price: { key: priceKey, value: JSON.parse(priceJson) } }, "Tarif enregistré."); } catch { alert("JSON invalide"); } }} className="grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
-          <Input value={priceKey} onChange={(e) => setPriceKey(e.target.value)} placeholder="fournisseur:modèle" aria-label="Clé du tarif" className="font-mono text-xs" />
-          <Input value={priceJson} onChange={(e) => setPriceJson(e.target.value)} placeholder='{"unit":"tokens","inputPerM":3,"outputPerM":15}' aria-label="Tarif JSON" className="font-mono text-xs" />
-          <Button type="submit" variant="secondary">Enregistrer</Button>
+        <form onSubmit={(e) => { e.preventDefault(); try { post({ price: { key: priceKey, value: JSON.parse(priceJson) } }, t("Tarif enregistré.", "Price saved.")); } catch { alert(t("JSON invalide", "Invalid JSON")); } }} className="grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
+          <Input value={priceKey} onChange={(e) => setPriceKey(e.target.value)} placeholder={t("fournisseur:modèle", "provider:model")} aria-label={t("Clé du tarif", "Price key")} className="font-mono text-xs" />
+          <Input value={priceJson} onChange={(e) => setPriceJson(e.target.value)} placeholder='{"unit":"tokens","inputPerM":3,"outputPerM":15}' aria-label={t("Tarif JSON", "Price JSON")} className="font-mono text-xs" />
+          <Button type="submit" variant="secondary">{t("Enregistrer", "Save")}</Button>
         </form>
         <div className="grid gap-3 sm:grid-cols-2">
-          <form onSubmit={(e) => { e.preventDefault(); post({ usdToEur: Number(fx) }, "Taux enregistré."); }} className="flex items-end gap-2">
-            <label className="grid flex-1 gap-1 text-xs font-medium text-ink-2">Taux USD → EUR<Input value={fx} onChange={(e) => setFx(e.target.value)} inputMode="decimal" /></label>
+          <form onSubmit={(e) => { e.preventDefault(); post({ usdToEur: Number(fx) }, t("Taux enregistré.", "Rate saved.")); }} className="flex items-end gap-2">
+            <label className="grid flex-1 gap-1 text-xs font-medium text-ink-2">{t("Taux USD → EUR", "USD → EUR rate")}<Input value={fx} onChange={(e) => setFx(e.target.value)} inputMode="decimal" /></label>
             <Button type="submit" variant="secondary">OK</Button>
           </form>
-          <form onSubmit={(e) => { e.preventDefault(); post({ markup: Number(markup) }, "Coefficient enregistré."); }} className="flex items-end gap-2">
-            <label className="grid flex-1 gap-1 text-xs font-medium text-ink-2">Coefficient appliqué au coût (débit de l'enveloppe, 1 au minimum)<Input value={markup} onChange={(e) => setMarkup(e.target.value)} inputMode="decimal" /></label>
+          <form onSubmit={(e) => { e.preventDefault(); post({ markup: Number(markup) }, t("Coefficient enregistré.", "Multiplier saved.")); }} className="flex items-end gap-2">
+            <label className="grid flex-1 gap-1 text-xs font-medium text-ink-2">{t("Coefficient appliqué au coût (débit de l'enveloppe, 1 au minimum)", "Multiplier applied to cost (charged to the allowance, minimum 1)")}<Input value={markup} onChange={(e) => setMarkup(e.target.value)} inputMode="decimal" /></label>
             <Button type="submit" variant="secondary">OK</Button>
           </form>
         </div>
@@ -260,28 +271,30 @@ function Routes({ data, post }: { data: Overview; post: (b: Record<string, unkno
 }
 
 function CopyLine({ value }: { value: string }) {
+  const t = useT();
   const toast = useToast();
   return (
-    <button onClick={() => { navigator.clipboard.writeText(value); toast("ok", "Copié."); }} className="flex w-full items-center justify-between gap-2 rounded-xl bg-paper-2 px-3 py-2 text-left font-mono text-[11px]">
+    <button onClick={() => { navigator.clipboard.writeText(value); toast("ok", t("Copié.", "Copied.")); }} className="flex w-full items-center justify-between gap-2 rounded-xl bg-paper-2 px-3 py-2 text-left font-mono text-[11px]">
       <span className="truncate">{value}</span><Copy className="size-3.5 shrink-0" />
     </button>
   );
 }
 
 function OAuthApps({ data, set }: { data: Overview; set: SetFn }) {
+  const t = useT();
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {data.oauth.map((o) => (
         <Card key={o.key} className="grid gap-3 p-5">
           <div className="flex items-start justify-between gap-2">
             <p className="font-display text-lg font-semibold">{o.label}</p>
-            {o.configured ? <Badge tone="ok" dot>Configuré</Badge> : <Badge tone="warn" dot>À configurer</Badge>}
+            {o.configured ? <Badge tone="ok" dot>{t("Configuré", "Configured")}</Badge> : <Badge tone="warn" dot>{t("À configurer", "To configure")}</Badge>}
           </div>
           <p className="text-xs text-muted">{o.needs}</p>
-          <div className="grid gap-1"><span className="text-xs font-medium text-ink-2">Adresse de retour à déclarer chez le fournisseur</span><CopyLine value={o.redirectUri} /></div>
+          <div className="grid gap-1"><span className="text-xs font-medium text-ink-2">{t("Adresse de retour à déclarer chez le fournisseur", "Redirect URI to register with the provider")}</span><CopyLine value={o.redirectUri} /></div>
           <SecretRow label="Client ID / App ID / Client key" masked={o.clientIdMasked} onSave={(v) => set([{ key: `oauth.${o.key}.clientId`, value: v }])} />
-          <SecretRow label="Client secret" masked={o.configured ? "••••" : ""} onSave={(v) => set([{ key: `oauth.${o.key}.clientSecret`, value: v }], "Secret enregistré (chiffré).")} />
-          <a href={o.docs} target="_blank" rel="noreferrer" className="text-xs underline">Documentation officielle</a>
+          <SecretRow label="Client secret" masked={o.configured ? "••••" : ""} onSave={(v) => set([{ key: `oauth.${o.key}.clientSecret`, value: v }], t("Secret enregistré (chiffré).", "Secret saved (encrypted)."))} />
+          <a href={o.docs} target="_blank" rel="noreferrer" className="text-xs underline">{t("Documentation officielle", "Official documentation")}</a>
         </Card>
       ))}
     </div>
@@ -289,18 +302,19 @@ function OAuthApps({ data, set }: { data: Overview; set: SetFn }) {
 }
 
 function Payments({ data, set }: { data: Overview; set: SetFn }) {
+  const t = useT();
   const s = data.stripe;
   return (
     <Card className="grid gap-4 p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="font-display text-lg font-semibold">Stripe</p>
-        {s.live ? <Badge tone="ok" dot>Actif et vérifié</Badge> : <Badge tone="warn" dot>Non actif</Badge>}
+        {s.live ? <Badge tone="ok" dot>{t("Actif et vérifié", "Active and verified")}</Badge> : <Badge tone="warn" dot>{t("Non actif", "Inactive")}</Badge>}
       </div>
-      <p className="text-sm text-ink-2">Les paiements ne sont annoncés comme actifs aux clients qu'une fois la clé secrète et le secret du webhook enregistrés <strong>et</strong> un premier événement signé reçu de Stripe (preuve que la chaîne fonctionne). Abonnement : 49,90 € TTC/mois + 40 €/boutique supplémentaire ; recharges par multiples de 10 €.</p>
-      <div className="grid gap-1"><span className="text-xs font-medium text-ink-2">Adresse du webhook (événements : checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, invoice.paid)</span><CopyLine value={s.webhookUrl} /></div>
-      <SecretRow label="Clé secrète (sk_live_… ou sk_test_…)" masked={s.secretMasked} onSave={(v) => set([{ key: "stripe.secretKey", value: v }], "Clé Stripe enregistrée (chiffrée).")} />
-      <SecretRow label="Secret de signature du webhook (whsec_…)" masked={s.webhookConfigured ? "••••" : ""} onSave={(v) => set([{ key: "stripe.webhookSecret", value: v }], "Secret enregistré.")} />
-      <p className="text-xs text-muted">{s.verifiedAt ? `Dernier événement signé vérifié : ${s.verifiedAt}` : "Aucun événement Stripe vérifié pour l'instant. Envoyez un événement de test depuis le tableau de bord Stripe."}</p>
+      <p className="text-sm text-ink-2">{t(<>Les paiements ne sont annoncés comme actifs aux clients qu'une fois la clé secrète et le secret du webhook enregistrés <strong>et</strong> un premier événement signé reçu de Stripe (preuve que la chaîne fonctionne). Abonnement : 49,90 € TTC/mois + 40 €/boutique supplémentaire ; recharges par multiples de 10 €.</>, <>Payments are shown to customers as active only once the secret key and the webhook secret are saved <strong>and</strong> a first signed event has been received from Stripe (proof that the whole chain works). Subscription: €49.90 incl. tax/month + €40 per additional store; top-ups in multiples of €10.</>)}</p>
+      <div className="grid gap-1"><span className="text-xs font-medium text-ink-2">{t("Adresse du webhook (événements : checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, invoice.paid)", "Webhook URL (events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, invoice.paid)")}</span><CopyLine value={s.webhookUrl} /></div>
+      <SecretRow label={t("Clé secrète (sk_live_… ou sk_test_…)", "Secret key (sk_live_… or sk_test_…)")} masked={s.secretMasked} onSave={(v) => set([{ key: "stripe.secretKey", value: v }], t("Clé Stripe enregistrée (chiffrée).", "Stripe key saved (encrypted)."))} />
+      <SecretRow label={t("Secret de signature du webhook (whsec_…)", "Webhook signing secret (whsec_…)")} masked={s.webhookConfigured ? "••••" : ""} onSave={(v) => set([{ key: "stripe.webhookSecret", value: v }], t("Secret enregistré.", "Secret saved."))} />
+      <p className="text-xs text-muted">{s.verifiedAt ? t(`Dernier événement signé vérifié : ${s.verifiedAt}`, `Last verified signed event: ${s.verifiedAt}`) : t("Aucun événement Stripe vérifié pour l'instant. Envoyez un événement de test depuis le tableau de bord Stripe.", "No Stripe event verified yet. Send a test event from the Stripe dashboard.")}</p>
     </Card>
   );
 }
@@ -321,19 +335,20 @@ type Dashboard = {
   clients: ClientRow[];
 };
 
-const SEGMENTS: { id: ClientRow["segment"]; label: string; short: string; tone: "ok" | "info" | "neutral" | "warn" | "bad" }[] = [
-  { id: "abonne", label: "Abonnés payants", short: "Abonné", tone: "ok" },
-  { id: "offert", label: "Abonnements offerts", short: "Offert", tone: "info" },
-  { id: "essai", label: "En essai", short: "Essai", tone: "neutral" },
-  { id: "sans", label: "Sans abonnement", short: "Sans abonnement", tone: "neutral" },
-  { id: "impaye", label: "Paiement en échec", short: "Impayé", tone: "warn" },
-  { id: "resilie", label: "Résiliés", short: "Résilié", tone: "bad" },
+const SEGMENTS: { id: ClientRow["segment"]; label: string; labelEn: string; short: string; shortEn: string; tone: "ok" | "info" | "neutral" | "warn" | "bad" }[] = [
+  { id: "abonne", label: "Abonnés payants", labelEn: "Paying subscribers", short: "Abonné", shortEn: "Subscriber", tone: "ok" },
+  { id: "offert", label: "Abonnements offerts", labelEn: "Complimentary subscriptions", short: "Offert", shortEn: "Complimentary", tone: "info" },
+  { id: "essai", label: "En essai", labelEn: "On trial", short: "Essai", shortEn: "Trial", tone: "neutral" },
+  { id: "sans", label: "Sans abonnement", labelEn: "No subscription", short: "Sans abonnement", shortEn: "No subscription", tone: "neutral" },
+  { id: "impaye", label: "Paiement en échec", labelEn: "Payment failed", short: "Impayé", shortEn: "Unpaid", tone: "warn" },
+  { id: "resilie", label: "Résiliés", labelEn: "Canceled", short: "Résilié", shortEn: "Canceled", tone: "bad" },
 ];
 const segLabel = (s: ClientRow["segment"]) => SEGMENTS.find((x) => x.id === s)!;
-const eur2 = (n: number) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
-const ago = (t: number | null) => {
-  if (!t) return "jamais";
+const money2 = (lang: Lang, n: number) => n.toLocaleString(intlLocale(lang), { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
+const agoTxt = (lang: Lang, t: number | null) => {
+  if (!t) return lang === "en" ? "never" : "jamais";
   const d = Math.floor((Date.now() - t) / 86400_000);
+  if (lang === "en") return d <= 0 ? "today" : d === 1 ? "yesterday" : `${d} d ago`;
   return d <= 0 ? "aujourd'hui" : d === 1 ? "hier" : `il y a ${d} j`;
 };
 
@@ -348,25 +363,29 @@ function Tile({ label, value, hint, accent }: { label: string; value: string; hi
 }
 
 function DashboardView({ d, onClients }: { d: Dashboard; onClients: () => void }) {
+  const t = useT();
+  const { lang } = useLang();
+  const eur2 = (n: number) => money2(lang, n);
+  const ago = (x: number | null) => agoTxt(lang, x);
   const m = d.money30;
   return (
     <>
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Tile accent label="Abonnés payants" value={String(d.plans.abonne)} hint={`${d.storesBilled} boutique${d.storesBilled > 1 ? "s" : ""} facturée${d.storesBilled > 1 ? "s" : ""}`} />
-        <Tile accent label="Revenu mensuel récurrent" value={eur2(d.mrrEur)} hint="TTC, abonnements payants en cours" />
-        <Tile label="Comptes inscrits" value={String(d.accounts.total)} hint={`+${d.accounts.new7} en 7 j · +${d.accounts.new30} en 30 j`} />
-        <Tile label="Conversion en abonnés" value={`${Math.round(d.conversionPct)} %`} hint="abonnés payants / comptes inscrits" />
+        <Tile accent label={t("Abonnés payants", "Paying subscribers")} value={num(lang, d.plans.abonne) ?? "0"} hint={t(`${d.storesBilled} boutique${d.storesBilled > 1 ? "s" : ""} facturée${d.storesBilled > 1 ? "s" : ""}`, `${d.storesBilled} store${d.storesBilled > 1 ? "s" : ""} billed`)} />
+        <Tile accent label={t("Revenu mensuel récurrent", "Monthly recurring revenue")} value={eur2(d.mrrEur)} hint={t("TTC, abonnements payants en cours", "Incl. tax, current paid subscriptions")} />
+        <Tile label={t("Comptes inscrits", "Registered accounts")} value={num(lang, d.accounts.total) ?? "0"} hint={t(`+${d.accounts.new7} en 7 j · +${d.accounts.new30} en 30 j`, `+${d.accounts.new7} in 7 d · +${d.accounts.new30} in 30 d`)} />
+        <Tile label={t("Conversion en abonnés", "Conversion to subscribers")} value={pctTxt(lang, Math.round(d.conversionPct))} hint={t("abonnés payants / comptes inscrits", "paying subscribers / registered accounts")} />
       </div>
 
       <Card className="p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-display text-lg font-semibold">Répartition des comptes</p>
-          <Button size="sm" variant="secondary" onClick={onClients}>Voir les clients</Button>
+          <p className="font-display text-lg font-semibold">{t("Répartition des comptes", "Account breakdown")}</p>
+          <Button size="sm" variant="secondary" onClick={onClients}>{t("Voir les clients", "View customers")}</Button>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {SEGMENTS.map((s) => (
             <div key={s.id} className="rounded-2xl border border-line p-3">
-              <Badge tone={s.tone}>{s.label}</Badge>
+              <Badge tone={s.tone}>{t(s.label, s.labelEn)}</Badge>
               <p className="mt-2 font-display text-2xl font-semibold tabular-nums">{d.plans[s.id]}</p>
             </div>
           ))}
@@ -375,46 +394,46 @@ function DashboardView({ d, onClients }: { d: Dashboard; onClients: () => void }
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
         <Card className="p-5">
-          <p className="font-display text-lg font-semibold">Utilisation du forfait</p>
-          <p className="text-xs text-muted">Abonnés payants et offerts, sur les 30 derniers jours.</p>
+          <p className="font-display text-lg font-semibold">{t("Utilisation du forfait", "Plan usage")}</p>
+          <p className="text-xs text-muted">{t("Abonnés payants et offerts, sur les 30 derniers jours.", "Paying and complimentary subscribers, over the last 30 days.")}</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">L'utilisent</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.using}<span className="text-base text-muted"> / {d.usage.subscribers}</span></p></div>
-            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">Ne l'utilisent pas</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.notUsing}</p></div>
-            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">Crédits utilisés en moyenne</p><p className="font-display text-2xl font-semibold tabular-nums">{Math.round(d.usage.avgUsedPct)} %</p></div>
-            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">Proches de la limite (80 %+)</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.nearLimit}</p></div>
+            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">{t("L'utilisent", "Using it")}</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.using}<span className="text-base text-muted"> / {d.usage.subscribers}</span></p></div>
+            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">{t("Ne l'utilisent pas", "Not using it")}</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.notUsing}</p></div>
+            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">{t("Crédits utilisés en moyenne", "Average credits used")}</p><p className="font-display text-2xl font-semibold tabular-nums">{pctTxt(lang, Math.round(d.usage.avgUsedPct))}</p></div>
+            <div className="rounded-2xl bg-paper-2 p-3"><p className="text-xs text-muted">{t("Proches de la limite (80 %+)", "Close to the limit (80%+)")}</p><p className="font-display text-2xl font-semibold tabular-nums">{d.usage.nearLimit}</p></div>
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-xs font-semibold text-ink-2">Risque de départ (aucune création en 30 j)</p>
-              <ul className="mt-1.5 grid gap-1 text-sm">{d.atRisk.length ? d.atRisk.map((r) => <li key={r.email} className="flex justify-between gap-2"><span className="truncate">{r.email}</span><span className="shrink-0 text-xs text-muted">{ago(r.lastActive)}</span></li>) : <li className="text-muted">Aucun</li>}</ul>
+              <p className="text-xs font-semibold text-ink-2">{t("Risque de départ (aucune création en 30 j)", "Churn risk (no creation in 30 d)")}</p>
+              <ul className="mt-1.5 grid gap-1 text-sm">{d.atRisk.length ? d.atRisk.map((r) => <li key={r.email} className="flex justify-between gap-2"><span className="truncate">{r.email}</span><span className="shrink-0 text-xs text-muted">{ago(r.lastActive)}</span></li>) : <li className="text-muted">{t("Aucun", "None")}</li>}</ul>
             </div>
             <div>
-              <p className="text-xs font-semibold text-ink-2">À relancer pour une recharge</p>
-              <ul className="mt-1.5 grid gap-1 text-sm">{d.nearLimit.length ? d.nearLimit.map((r) => <li key={r.email} className="flex justify-between gap-2"><span className="truncate">{r.email}</span><span className="shrink-0 text-xs text-muted">{Math.round(r.usedPct)} %</span></li>) : <li className="text-muted">Aucun</li>}</ul>
+              <p className="text-xs font-semibold text-ink-2">{t("À relancer pour une recharge", "To follow up for a top-up")}</p>
+              <ul className="mt-1.5 grid gap-1 text-sm">{d.nearLimit.length ? d.nearLimit.map((r) => <li key={r.email} className="flex justify-between gap-2"><span className="truncate">{r.email}</span><span className="shrink-0 text-xs text-muted">{pctTxt(lang, Math.round(r.usedPct))}</span></li>) : <li className="text-muted">{t("Aucun", "None")}</li>}</ul>
             </div>
           </div>
         </Card>
 
         <Card className="p-5">
-          <p className="font-display text-lg font-semibold">Argent des 30 derniers jours</p>
-          <p className="text-xs text-muted">Paiements encaissés via Stripe. Marge estimée : HT moins coût IA et frais Stripe estimés (hors serveur, cotisations et impôts).</p>
+          <p className="font-display text-lg font-semibold">{t("Argent des 30 derniers jours", "Money over the last 30 days")}</p>
+          <p className="text-xs text-muted">{t("Paiements encaissés via Stripe. Marge estimée : HT moins coût IA et frais Stripe estimés (hors serveur, cotisations et impôts).", "Payments collected through Stripe. Estimated margin: revenue excl. tax minus AI cost and estimated Stripe fees (excluding hosting, social charges and taxes).")}</p>
           <dl className="mt-4 grid gap-2 text-sm">
-            <div className="flex justify-between gap-3"><dt>Paiements reçus</dt><dd className="tabular-nums">{m.payments} · <strong>{eur2(m.paidEur)}</strong> TTC</dd></div>
-            <div className="flex justify-between gap-3 text-ink-2"><dt>dont abonnements</dt><dd className="tabular-nums">{m.subscriptionCount} · {eur2(m.subscriptionEur)}</dd></div>
-            <div className="flex justify-between gap-3 text-ink-2"><dt>dont recharges</dt><dd className="tabular-nums">{m.topupCount} · {eur2(m.topupEur)}</dd></div>
-            <div className="flex justify-between gap-3 border-t border-line pt-2"><dt>Chiffre d'affaires HT</dt><dd className="tabular-nums">{eur2(m.revenueHtEur)}</dd></div>
-            <div className="flex justify-between gap-3 text-ink-2"><dt>Coût IA réel</dt><dd className="tabular-nums">− {eur2(m.aiCostEur)}</dd></div>
-            <div className="flex justify-between gap-3 text-ink-2"><dt>Frais Stripe estimés</dt><dd className="tabular-nums">− {eur2(m.stripeFeesEur)}</dd></div>
-            <div className="flex justify-between gap-3 border-t border-line pt-2 text-base"><dt className="font-semibold">Marge estimée</dt><dd className={cx("font-semibold tabular-nums", m.marginEur < 0 && "text-bad")}>{eur2(m.marginEur)}</dd></div>
+            <div className="flex justify-between gap-3"><dt>{t("Paiements reçus", "Payments received")}</dt><dd className="tabular-nums">{m.payments} · <strong>{eur2(m.paidEur)}</strong> {t("TTC", "incl. tax")}</dd></div>
+            <div className="flex justify-between gap-3 text-ink-2"><dt>{t("dont abonnements", "of which subscriptions")}</dt><dd className="tabular-nums">{m.subscriptionCount} · {eur2(m.subscriptionEur)}</dd></div>
+            <div className="flex justify-between gap-3 text-ink-2"><dt>{t("dont recharges", "of which top-ups")}</dt><dd className="tabular-nums">{m.topupCount} · {eur2(m.topupEur)}</dd></div>
+            <div className="flex justify-between gap-3 border-t border-line pt-2"><dt>{t("Chiffre d'affaires HT", "Revenue excl. tax")}</dt><dd className="tabular-nums">{eur2(m.revenueHtEur)}</dd></div>
+            <div className="flex justify-between gap-3 text-ink-2"><dt>{t("Coût IA réel", "Actual AI cost")}</dt><dd className="tabular-nums">− {eur2(m.aiCostEur)}</dd></div>
+            <div className="flex justify-between gap-3 text-ink-2"><dt>{t("Frais Stripe estimés", "Estimated Stripe fees")}</dt><dd className="tabular-nums">− {eur2(m.stripeFeesEur)}</dd></div>
+            <div className="flex justify-between gap-3 border-t border-line pt-2 text-base"><dt className="font-semibold">{t("Marge estimée", "Estimated margin")}</dt><dd className={cx("font-semibold tabular-nums", m.marginEur < 0 && "text-bad")}>{eur2(m.marginEur)}</dd></div>
           </dl>
         </Card>
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
         <Card className="overflow-x-auto p-5">
-          <p className="font-display text-lg font-semibold">Encaissements par mois</p>
+          <p className="font-display text-lg font-semibold">{t("Encaissements par mois", "Collections by month")}</p>
           <table className="mt-3 w-full text-sm">
-            <thead className="text-left text-xs text-muted"><tr><th className="py-1.5">Mois</th><th className="hidden text-right sm:table-cell">Paiements</th><th className="text-right">Abonnements</th><th className="text-right">Recharges</th><th className="text-right">Total TTC</th></tr></thead>
+            <thead className="text-left text-xs text-muted"><tr><th className="py-1.5">{t("Mois", "Month")}</th><th className="hidden text-right sm:table-cell">{t("Paiements", "Payments")}</th><th className="text-right">{t("Abonnements", "Subscriptions")}</th><th className="text-right">{t("Recharges", "Top-ups")}</th><th className="text-right">{t("Total TTC", "Total incl. tax")}</th></tr></thead>
             <tbody className="divide-y divide-line">
               {d.months.map((x) => (
                 <tr key={x.label}><td className="py-1.5 pr-2 capitalize">{x.label}</td><td className="hidden text-right tabular-nums sm:table-cell">{x.payments}</td><td className="text-right tabular-nums">{eur2(x.subscriptionEur)}</td><td className="text-right tabular-nums">{eur2(x.topupEur)}</td><td className="text-right font-semibold tabular-nums">{eur2(x.subscriptionEur + x.topupEur)}</td></tr>
@@ -423,12 +442,12 @@ function DashboardView({ d, onClients }: { d: Dashboard; onClients: () => void }
           </table>
         </Card>
         <Card className="overflow-x-auto p-5">
-          <p className="font-display text-lg font-semibold">Derniers paiements</p>
+          <p className="font-display text-lg font-semibold">{t("Derniers paiements", "Latest payments")}</p>
           <table className="mt-3 w-full text-sm">
             <tbody className="divide-y divide-line">
               {d.lastPayments.length ? d.lastPayments.map((p) => (
-                <tr key={p.id}><td className="py-1.5 pr-2"><span className="block truncate">{p.email}</span><span className="text-xs text-muted">{p.kind === "subscription" ? "Abonnement" : "Recharge"} · {formatDate(p.at)}</span></td><td className="text-right tabular-nums">{eur2(p.amountEur)}</td><td className="pl-2 text-right"><Badge tone={p.status === "paid" ? "ok" : "warn"}>{p.status === "paid" ? "payé" : p.status}</Badge></td></tr>
-              )) : <tr><td className="py-2 text-muted">Aucun paiement pour l'instant.</td></tr>}
+                <tr key={p.id}><td className="py-1.5 pr-2"><span className="block truncate">{p.email}</span><span className="text-xs text-muted">{p.kind === "subscription" ? t("Abonnement", "Subscription") : t("Recharge", "Top-up")} · {formatDate(p.at)}</span></td><td className="text-right tabular-nums">{eur2(p.amountEur)}</td><td className="pl-2 text-right"><Badge tone={p.status === "paid" ? "ok" : "warn"}>{p.status === "paid" ? t("payé", "paid") : p.status}</Badge></td></tr>
+              )) : <tr><td className="py-2 text-muted">{t("Aucun paiement pour l'instant.", "No payments yet.")}</td></tr>}
             </tbody>
           </table>
         </Card>
@@ -438,13 +457,17 @@ function DashboardView({ d, onClients }: { d: Dashboard; onClients: () => void }
 }
 
 function Clients({ d, reload }: { d: Dashboard; reload: () => void }) {
+  const t = useT();
+  const { lang } = useLang();
+  const eur2 = (n: number) => money2(lang, n);
+  const ago = (x: number | null) => agoTxt(lang, x);
   const toast = useToast();
   const [seg, setSeg] = useState<"tous" | "inactifs" | "limite" | ClientRow["segment"]>("tous");
   const [q, setQ] = useState("");
   const act = async (uid: string, b: Record<string, unknown>) => {
     try {
       await api(`/api/admin/users/${uid}`, { body: b });
-      toast("ok", "Compte mis à jour.");
+      toast("ok", t("Compte mis à jour.", "Account updated."));
       reload();
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -459,16 +482,16 @@ function Clients({ d, reload }: { d: Dashboard; reload: () => void }) {
     return c.segment === seg;
   });
   const filters: [typeof seg, string, number][] = [
-    ["tous", "Tous", d.clients.length],
-    ...SEGMENTS.map((s) => [s.id, s.label, d.clients.filter((c) => c.segment === s.id).length] as [typeof seg, string, number]),
-    ["inactifs", "Abonnés inactifs (30 j)", d.clients.filter((c) => subscribed(c) && c.jobs30 === 0).length],
-    ["limite", "Proches de la limite", d.clients.filter((c) => subscribed(c) && c.usedPct >= 0.8).length],
+    ["tous", t("Tous", "All"), d.clients.length],
+    ...SEGMENTS.map((s) => [s.id, t(s.label, s.labelEn), d.clients.filter((c) => c.segment === s.id).length] as [typeof seg, string, number]),
+    ["inactifs", t("Abonnés inactifs (30 j)", "Inactive subscribers (30 d)"), d.clients.filter((c) => subscribed(c) && c.jobs30 === 0).length],
+    ["limite", t("Proches de la limite", "Close to the limit"), d.clients.filter((c) => subscribed(c) && c.usedPct >= 0.8).length],
   ];
   return (
     <Card className="p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un e-mail ou un nom" aria-label="Rechercher" className="max-w-xs" />
-        <a href="/api/admin/clients.csv" className="ml-auto inline-flex h-9 items-center rounded-full border border-line px-4 text-sm hover:border-ink">Exporter en CSV (Excel)</a>
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Rechercher un e-mail ou un nom", "Search by email or name")} aria-label={t("Rechercher", "Search")} className="max-w-xs" />
+        <a href="/api/admin/clients.csv" className="ml-auto inline-flex h-9 items-center rounded-full border border-line px-4 text-sm hover:border-ink">{t("Exporter en CSV (Excel)", "Export to CSV (Excel)")}</a>
       </div>
       <div className="scrollbar-none -mx-1 mt-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
         {filters.map(([k, l, n]) => (
@@ -477,54 +500,56 @@ function Clients({ d, reload }: { d: Dashboard; reload: () => void }) {
       </div>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[980px] text-sm">
-          <thead className="text-left text-xs text-muted"><tr><th className="py-2">Client</th><th>Statut</th><th>Abonnement</th><th>Boutiques</th><th>Activité</th><th>Forfait</th><th>Payé</th><th>Actions</th></tr></thead>
+          <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Client", "Customer")}</th><th>{t("Statut", "Status")}</th><th>{t("Abonnement", "Subscription")}</th><th>{t("Boutiques", "Stores")}</th><th>{t("Activité", "Activity")}</th><th>{t("Forfait", "Plan")}</th><th>{t("Payé", "Paid")}</th><th>{t("Actions", "Actions")}</th></tr></thead>
           <tbody className="divide-y divide-line">
             {list.map((u) => (
               <tr key={u.id}>
-                <td className="py-2.5 pr-2">{u.name || "—"}<span className="block text-xs text-muted">{u.email} {u.role === "admin" && "· admin"}</span><span className="block text-[11px] text-muted">inscrit {ago(u.createdAt)} · {u.projects} projet{u.projects > 1 ? "s" : ""}</span></td>
-                <td className="pr-2"><Badge tone={segLabel(u.segment).tone}>{segLabel(u.segment).short}</Badge>{u.monthlyEur > 0 && <span className="mt-1 block text-xs text-muted">{eur2(u.monthlyEur)} / mois</span>}</td>
-                <td className="pr-2"><Select value={u.subscription} onChange={(e) => act(u.id, { subscription: e.target.value })} aria-label="Abonnement">{[["none", "Sans abonnement"], ["trial", "Essai"], ["manual", "Offert (manuel)"], ["active", "Payant (Stripe)"], ["past_due", "Impayé (Stripe)"], ["canceled", "Résilié"]].map(([v, l]) => <option key={v} value={v} disabled={v === "active" || v === "past_due"}>{l}</option>)}</Select></td>
-                <td className="pr-2"><Input type="number" min={1} max={50} defaultValue={u.stores} onBlur={(e) => Number(e.target.value) !== u.stores && act(u.id, { stores: Number(e.target.value) })} className="w-20" aria-label="Boutiques" /></td>
-                <td className="pr-2 text-xs">{ago(u.lastActive)}<span className="block text-muted">{u.jobs30} création{u.jobs30 > 1 ? "s" : ""} en 30 j</span></td>
-                <td className="pr-2 tabular-nums">{Math.round(u.usedPct * 100)} %<span className="block text-xs text-muted">reste {eur2(u.availableEur)} · IA {eur2(u.aiCost30Eur)}</span></td>
+                <td className="py-2.5 pr-2">{u.name || "—"}<span className="block text-xs text-muted">{u.email} {u.role === "admin" && "· admin"}</span><span className="block text-[11px] text-muted">{t(`inscrit ${ago(u.createdAt)} · ${u.projects} projet${u.projects > 1 ? "s" : ""}`, `signed up ${ago(u.createdAt)} · ${u.projects} project${u.projects > 1 ? "s" : ""}`)}</span></td>
+                <td className="pr-2"><Badge tone={segLabel(u.segment).tone}>{t(segLabel(u.segment).short, segLabel(u.segment).shortEn)}</Badge>{u.monthlyEur > 0 && <span className="mt-1 block text-xs text-muted">{eur2(u.monthlyEur)} {t("/ mois", "/ month")}</span>}</td>
+                <td className="pr-2"><Select value={u.subscription} onChange={(e) => act(u.id, { subscription: e.target.value })} aria-label={t("Abonnement", "Subscription")}>{[["none", t("Sans abonnement", "No subscription")], ["trial", t("Essai", "Trial")], ["manual", t("Offert (manuel)", "Complimentary (manual)")], ["active", t("Payant (Stripe)", "Paid (Stripe)")], ["past_due", t("Impayé (Stripe)", "Unpaid (Stripe)")], ["canceled", t("Résilié", "Canceled")]].map(([v, l]) => <option key={v} value={v} disabled={v === "active" || v === "past_due"}>{l}</option>)}</Select></td>
+                <td className="pr-2"><Input type="number" min={1} max={50} defaultValue={u.stores} onBlur={(e) => Number(e.target.value) !== u.stores && act(u.id, { stores: Number(e.target.value) })} className="w-20" aria-label={t("Boutiques", "Stores")} /></td>
+                <td className="pr-2 text-xs">{ago(u.lastActive)}<span className="block text-muted">{t(`${u.jobs30} création${u.jobs30 > 1 ? "s" : ""} en 30 j`, `${u.jobs30} creation${u.jobs30 > 1 ? "s" : ""} in 30 d`)}</span></td>
+                <td className="pr-2 tabular-nums">{pctTxt(lang, Math.round(u.usedPct * 100))}<span className="block text-xs text-muted">{t(`reste ${eur2(u.availableEur)} · IA ${eur2(u.aiCost30Eur)}`, `${eur2(u.availableEur)} left · AI ${eur2(u.aiCost30Eur)}`)}</span></td>
                 <td className="pr-2 tabular-nums">{eur2(u.paidEur)}</td>
-                <td><Button size="sm" variant="ghost" icon={<KeyRound className="size-3.5" />} onClick={() => { const v = prompt("Crédit IA à ajouter (en €, négatif pour retirer) :", "10"); if (v && !isNaN(Number(v))) act(u.id, { creditEur: Number(v), note: "Crédit ajouté par l'administration" }); }}>Créditer</Button></td>
+                <td><Button size="sm" variant="ghost" icon={<KeyRound className="size-3.5" />} onClick={() => { const v = prompt(t("Crédit IA à ajouter (en €, négatif pour retirer) :", "AI credit to add (in €, negative to remove):"), "10"); if (v && !isNaN(Number(v))) act(u.id, { creditEur: Number(v), note: t("Crédit ajouté par l'administration", "Credit added by the admin") }); }}>{t("Créditer", "Add credit")}</Button></td>
               </tr>
             ))}
-            {!list.length && <tr><td colSpan={8} className="py-6 text-center text-muted">Aucun client dans cette catégorie.</td></tr>}
+            {!list.length && <tr><td colSpan={8} className="py-6 text-center text-muted">{t("Aucun client dans cette catégorie.", "No customers in this category.")}</td></tr>}
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-xs text-muted">« Offert (manuel) » active l'abonnement sans paiement en ligne (crédits IA compris). « Payant » et « Impayé » sont pilotés par Stripe. « Payé » : total encaissé depuis l'inscription.</p>
+      <p className="mt-3 text-xs text-muted">{t("« Offert (manuel) » active l'abonnement sans paiement en ligne (crédits IA compris). « Payant » et « Impayé » sont pilotés par Stripe. « Payé » : total encaissé depuis l'inscription.", "\u201cComplimentary (manual)\u201d activates the subscription without online payment (AI credits included). \u201cPaid\u201d and \u201cUnpaid\u201d are managed by Stripe. \u201cPaid\u201d column: total collected since sign-up.")}</p>
     </Card>
   );
 }
 
 function Usage({ data }: { data: Overview }) {
+  const t = useT();
+  const { lang } = useLang();
   const cost = data.usage.reduce((s, u) => s + u.costEur, 0);
   const billed = data.usage.reduce((s, u) => s + u.billedEur, 0);
   const rev = data.revenue.reduce((s, r) => s + r.cents, 0) / 100;
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="p-5"><p className="text-xs text-muted">Coût fournisseurs (30 j)</p><p className="mt-1 font-display text-3xl font-semibold">{euro(cost)}</p></Card>
-        <Card className="p-5"><p className="text-xs text-muted">Débité des enveloppes (30 j)</p><p className="mt-1 font-display text-3xl font-semibold">{euro(billed)}</p></Card>
-        <Card className="p-5"><p className="text-xs text-muted">Encaissements Stripe (30 j)</p><p className="mt-1 font-display text-3xl font-semibold">{euro(rev)}</p></Card>
+        <Card className="p-5"><p className="text-xs text-muted">{t("Coût fournisseurs (30 j)", "Provider cost (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, cost)}</p></Card>
+        <Card className="p-5"><p className="text-xs text-muted">{t("Débité des enveloppes (30 j)", "Charged to allowances (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, billed)}</p></Card>
+        <Card className="p-5"><p className="text-xs text-muted">{t("Encaissements Stripe (30 j)", "Stripe collections (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, rev)}</p></Card>
       </div>
       <Card className="overflow-x-auto p-5">
         <table className="w-full min-w-[720px] text-sm">
-          <thead className="text-left text-xs text-muted"><tr><th className="py-2">Fournisseur / modèle</th><th>Unité</th><th>Appels</th><th>Entrée</th><th>Sortie / quantité</th><th>Coût</th><th>Débité</th></tr></thead>
+          <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Fournisseur / modèle", "Provider / model")}</th><th>{t("Unité", "Unit")}</th><th>{t("Appels", "Calls")}</th><th>{t("Entrée", "Input")}</th><th>{t("Sortie / quantité", "Output / quantity")}</th><th>{t("Coût", "Cost")}</th><th>{t("Débité", "Charged")}</th></tr></thead>
           <tbody className="divide-y divide-line">
-            {data.usage.length === 0 && <tr><td colSpan={7} className="py-4 text-muted">Aucune consommation sur 30 jours.</td></tr>}
+            {data.usage.length === 0 && <tr><td colSpan={7} className="py-4 text-muted">{t("Aucune consommation sur 30 jours.", "No usage over the last 30 days.")}</td></tr>}
             {data.usage.map((u, i) => (
               <tr key={i}>
                 <td className="py-2 font-mono text-xs">{u.provider}:{u.model}</td>
-                <td>{u.unit}{u.est ? <Badge tone="warn" className="ml-1">estimé</Badge> : null}</td>
-                <td>{u.calls}</td>
-                <td className="tabular-nums">{u.inp?.toLocaleString("fr-FR") ?? "—"}</td>
-                <td className="tabular-nums">{(u.unit === "tokens" ? u.out : u.q)?.toLocaleString("fr-FR") ?? "—"}</td>
-                <td className="tabular-nums">{euro(u.costEur)}</td>
-                <td className="tabular-nums">{euro(u.billedEur)}</td>
+                <td>{u.unit}{u.est ? <Badge tone="warn" className="ml-1">{t("estimé", "estimated")}</Badge> : null}</td>
+                <td>{num(lang, u.calls)}</td>
+                <td className="tabular-nums">{num(lang, u.inp) ?? "—"}</td>
+                <td className="tabular-nums">{num(lang, u.unit === "tokens" ? u.out : u.q) ?? "—"}</td>
+                <td className="tabular-nums">{euro(lang, u.costEur)}</td>
+                <td className="tabular-nums">{euro(lang, u.billedEur)}</td>
               </tr>
             ))}
           </tbody>
@@ -535,37 +560,38 @@ function Usage({ data }: { data: Overview }) {
 }
 
 function Health({ data, reload }: { data: Overview; reload: () => void }) {
+  const t = useT();
   const toast = useToast();
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="p-5">
-          <p className="text-xs text-muted">Processus de tâches (worker)</p>
+          <p className="text-xs text-muted">{t("Processus de tâches (worker)", "Task process (worker)")}</p>
           {data.worker ? (
-            <p className="mt-1 flex items-center gap-2 font-medium">{data.worker.alive ? <Badge tone="ok" dot>En marche</Badge> : <Badge tone="bad" dot>Arrêté</Badge>} dernier signal {formatDate(data.worker.lastBeat, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
-          ) : <p className="mt-1"><Badge tone="bad" dot>Jamais démarré</Badge> <span className="text-sm">lancez « npm run worker »</span></p>}
+            <p className="mt-1 flex items-center gap-2 font-medium">{data.worker.alive ? <Badge tone="ok" dot>{t("En marche", "Running")}</Badge> : <Badge tone="bad" dot>{t("Arrêté", "Stopped")}</Badge>} {t("dernier signal", "last heartbeat")} {formatDate(data.worker.lastBeat, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+          ) : <p className="mt-1"><Badge tone="bad" dot>{t("Jamais démarré", "Never started")}</Badge> <span className="text-sm">{t("lancez « npm run worker »", "run \u201cnpm run worker\u201d")}</span></p>}
         </Card>
         <Card className="p-5">
-          <p className="text-xs text-muted">File de tâches</p>
-          <div className="mt-2 flex flex-wrap gap-2">{data.queue.map((q) => <Badge key={q.status} tone={q.status === "failed" ? "bad" : q.status === "running" ? "info" : "neutral"}>{q.status} : {q.n}</Badge>)}</div>
+          <p className="text-xs text-muted">{t("File de tâches", "Task queue")}</p>
+          <div className="mt-2 flex flex-wrap gap-2">{data.queue.map((q) => <Badge key={q.status} tone={q.status === "failed" ? "bad" : q.status === "running" ? "info" : "neutral"}>{q.status}{t(" : ", ": ")}{q.n}</Badge>)}</div>
         </Card>
       </div>
       <Card className="p-5">
-        <p className="font-display text-lg font-semibold">Tâches en échec</p>
+        <p className="font-display text-lg font-semibold">{t("Tâches en échec", "Failed tasks")}</p>
         <ul className="mt-2 divide-y divide-line text-sm">
-          {data.failedJobs.length === 0 && <li className="py-2 text-muted">Aucune.</li>}
+          {data.failedJobs.length === 0 && <li className="py-2 text-muted">{t("Aucune.", "None.")}</li>}
           {data.failedJobs.map((j) => (
             <li key={j.id} className="flex items-start justify-between gap-3 py-2">
-              <span className="min-w-0"><span className="font-mono text-xs">{j.type}</span> · {j.attempts} essai(s)<span className="block break-words text-xs text-bad">{j.error}</span></span>
-              <Button size="sm" variant="ghost" onClick={async () => { try { await api(`/api/jobs/${j.id}`, { body: { action: "retry" } }); toast("ok", "Relancée."); reload(); } catch (e) { toast("bad", (e as Error).message); } }}>Relancer</Button>
+              <span className="min-w-0"><span className="font-mono text-xs">{j.type}</span> · {t(`${j.attempts} essai(s)`, `${j.attempts} attempt${j.attempts > 1 ? "s" : ""}`)}<span className="block break-words text-xs text-bad">{j.error}</span></span>
+              <Button size="sm" variant="ghost" onClick={async () => { try { await api(`/api/jobs/${j.id}`, { body: { action: "retry" } }); toast("ok", t("Relancée.", "Retried.")); reload(); } catch (e) { toast("bad", (e as Error).message); } }}>{t("Relancer", "Retry")}</Button>
             </li>
           ))}
         </ul>
       </Card>
       <Card className="p-5">
-        <p className="font-display text-lg font-semibold">Journal d'erreurs</p>
+        <p className="font-display text-lg font-semibold">{t("Journal d'erreurs", "Error log")}</p>
         <ul className="mt-2 divide-y divide-line text-sm">
-          {data.errors.length === 0 && <li className="py-2 text-muted">Aucune erreur.</li>}
+          {data.errors.length === 0 && <li className="py-2 text-muted">{t("Aucune erreur.", "No errors.")}</li>}
           {data.errors.map((e) => (
             <li key={e.id} className="py-2"><span className="font-mono text-xs">{e.scope}</span> <span className="text-xs text-muted">{formatDate(e.created_at)}</span><span className="block break-words text-xs">{e.message}</span></li>
           ))}

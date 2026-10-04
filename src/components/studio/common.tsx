@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Check, Search, Film, FileText } from "lucide-react";
 import { Badge, Button, cx, formatBytes, Input, Modal, Progress, Spinner, useApi } from "../ui";
 import { useProject, type JobView } from "./project-context";
+import { currentLang, useLang, useT } from "../i18n";
+import { pick, type Lang } from "@/lib/i18n";
 
 export type AssetView = {
   id: string;
@@ -30,41 +32,56 @@ export type AssetView = {
   usages?: { target_type: string; target_id: string; label: string }[];
 };
 
-export const ROLE_LABEL: Record<string, string> = {
-  original: "Photo originale",
-  cutout: "Détourage",
-  packshot: "Packshot",
-  detail: "Détail",
-  scene: "Scène",
-  banner: "Bannière",
-  social: "Visuel social",
-  ad: "Publicité",
-  logo: "Logo",
-  "logo-light": "Logo clair",
-  "logo-mark": "Monogramme",
-  "logo-svg": "Logo SVG",
-  favicon: "Favicon",
-  video: "Vidéo",
-  "video-poster": "Affiche vidéo",
-  clip: "Plan généré",
-  subtitles: "Sous-titres",
-  "brand-guide": "Charte",
-  "theme-export": "Export de thème",
+const ROLE_LABELS: Record<string, [string, string]> = {
+  original: ["Photo originale", "Original photo"],
+  cutout: ["Détourage", "Cutout"],
+  packshot: ["Packshot", "Packshot"],
+  detail: ["Détail", "Detail"],
+  scene: ["Scène", "Scene"],
+  banner: ["Bannière", "Banner"],
+  social: ["Visuel social", "Social visual"],
+  ad: ["Publicité", "Ad"],
+  logo: ["Logo", "Logo"],
+  "logo-light": ["Logo clair", "Light logo"],
+  "logo-mark": ["Monogramme", "Monogram"],
+  "logo-svg": ["Logo SVG", "SVG logo"],
+  favicon: ["Favicon", "Favicon"],
+  video: ["Vidéo", "Video"],
+  "video-poster": ["Affiche vidéo", "Video poster"],
+  clip: ["Plan généré", "Generated shot"],
+  subtitles: ["Sous-titres", "Subtitles"],
+  "brand-guide": ["Charte", "Brand guide"],
+  "theme-export": ["Export de thème", "Theme export"],
 };
 
-export const ASSET_STATUS: Record<string, { label: string; tone: any }> = {
-  ready: { label: "Prêt", tone: "neutral" },
-  review: { label: "À valider", tone: "warn" },
-  approved: { label: "Validé", tone: "ok" },
-  rejected: { label: "Écarté", tone: "bad" },
+/** Libellé d'un rôle de média dans la langue demandée (undefined si rôle inconnu). */
+export const roleLabel = (role: string | null | undefined, lang: Lang = currentLang()) => {
+  const l = ROLE_LABELS[role ?? ""];
+  return l ? pick(lang, l[0], l[1]) : undefined;
+};
+
+/** Libellés des rôles de médias, lus dans la langue courante de l'interface (`ROLE_LABEL[role]`). */
+export const ROLE_LABEL: Record<string, string> = new Proxy({} as Record<string, string>, {
+  get: (_, k) => (typeof k === "string" ? roleLabel(k) : undefined),
+  has: (_, k) => typeof k === "string" && k in ROLE_LABELS,
+  ownKeys: () => Object.keys(ROLE_LABELS),
+  getOwnPropertyDescriptor: (_, k) => (typeof k === "string" && k in ROLE_LABELS ? { enumerable: true, configurable: true, value: roleLabel(k) } : undefined),
+});
+
+export const ASSET_STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
+  ready: { label: "Prêt", labelEn: "Ready", tone: "neutral" },
+  review: { label: "À valider", labelEn: "To review", tone: "warn" },
+  approved: { label: "Validé", labelEn: "Approved", tone: "ok" },
+  rejected: { label: "Écarté", labelEn: "Rejected", tone: "bad" },
 };
 
 export function AssetThumb({ a, className }: { a: AssetView; className?: string }) {
+  const t = useT();
   if (a.kind === "video") {
     return (
       <div className={cx("relative overflow-hidden bg-ink", className)}>
         {a.thumbUrl ? <img src={a.thumbUrl} alt={a.name} className="size-full object-cover" loading="lazy" /> : <Film className="absolute inset-0 m-auto size-6 text-paper" />}
-        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">{a.meta?.format ?? "vidéo"}{a.duration ? ` · ${a.duration.toFixed(0)} s` : ""}</span>
+        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">{a.meta?.format ?? t("vidéo", "video")}{a.duration ? ` · ${a.duration.toFixed(0)} s` : ""}</span>
       </div>
     );
   }
@@ -84,7 +101,9 @@ export function AssetThumb({ a, className }: { a: AssetView; className?: string 
 }
 
 /** Sélecteur de médias de la bibliothèque, utilisable depuis tous les espaces. */
-export function MediaPicker({ open, onClose, onPick, multiple, kinds, title = "Choisir dans la bibliothèque" }: { open: boolean; onClose: () => void; onPick: (a: AssetView[]) => void; multiple?: boolean; kinds?: ("image" | "video" | "logo")[]; title?: string }) {
+export function MediaPicker({ open, onClose, onPick, multiple, kinds, title }: { open: boolean; onClose: () => void; onPick: (a: AssetView[]) => void; multiple?: boolean; kinds?: ("image" | "video" | "logo")[]; title?: string }) {
+  const t = useT();
+  const { lang } = useLang();
   const { id } = useProject();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<AssetView[]>([]);
@@ -92,10 +111,10 @@ export function MediaPicker({ open, onClose, onPick, multiple, kinds, title = "C
   const list = (data?.assets ?? []).filter((a) => !kinds || kinds.includes(a.kind as any)).filter((a) => a.status !== "rejected");
   const toggle = (a: AssetView) => (multiple ? setSel((s) => (s.some((x) => x.id === a.id) ? s.filter((x) => x.id !== a.id) : [...s, a])) : setSel([a]));
   return (
-    <Modal open={open} onClose={onClose} title={title} wide>
+    <Modal open={open} onClose={onClose} title={title ?? t("Choisir dans la bibliothèque", "Choose from the library")} wide>
       <div className="relative mb-4">
         <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher (nom, type, recette…)" className="pl-10" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Rechercher (nom, type, recette…)", "Search (name, type, recipe…)")} className="pl-10" />
       </div>
       {loading && !data ? (
         <div className="grid place-items-center py-16"><Spinner /></div>
@@ -106,29 +125,30 @@ export function MediaPicker({ open, onClose, onPick, multiple, kinds, title = "C
             return (
               <button key={a.id} onClick={() => toggle(a)} className={cx("relative overflow-hidden rounded-2xl border-2 text-left transition", on ? "border-signal" : "border-transparent hover:border-line")} aria-pressed={on}>
                 <AssetThumb a={a} className="aspect-square w-full" />
-                <span className="block truncate px-1.5 py-1 text-[11px] text-muted">{ROLE_LABEL[a.role ?? ""] ?? a.name}</span>
+                <span className="block truncate px-1.5 py-1 text-[11px] text-muted">{roleLabel(a.role, lang) ?? a.name}</span>
                 {on && <span className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-signal text-signal-ink"><Check className="size-3.5" /></span>}
               </button>
             );
           })}
-          {!list.length && <p className="col-span-full py-10 text-center text-sm text-muted">Aucun média correspondant.</p>}
+          {!list.length && <p className="col-span-full py-10 text-center text-sm text-muted">{t("Aucun média correspondant.", "No matching media.")}</p>}
         </div>
       )}
       <div className="mt-5 flex justify-end gap-2">
-        <Button variant="ghost" onClick={onClose}>Annuler</Button>
-        <Button disabled={!sel.length} onClick={() => (onPick(sel), setSel([]), onClose())}>Utiliser {sel.length > 1 ? `${sel.length} médias` : "ce média"}</Button>
+        <Button variant="ghost" onClick={onClose}>{t("Annuler", "Cancel")}</Button>
+        <Button disabled={!sel.length} onClick={() => (onPick(sel), setSel([]), onClose())}>{sel.length > 1 ? t(`Utiliser ${sel.length} médias`, `Use ${sel.length} media`) : t("Utiliser ce média", "Use this media")}</Button>
       </div>
     </Modal>
   );
 }
 
 export function JobProgress({ job, className }: { job: JobView | null | undefined; className?: string }) {
+  const t = useT();
   if (!job) return null;
   return (
     <div className={cx("rounded-2xl border border-line bg-card p-4", className)} role="status">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="flex items-center gap-2 font-medium">{job.status === "paused" ? <span className="size-2 rounded-full bg-warn" aria-hidden /> : <Spinner className="text-signal" />} {job.label || job.type}</span>
-        <span className="text-xs text-muted">{Math.round(job.progress * 100)} %</span>
+        <span className="text-xs text-muted">{t(`${Math.round(job.progress * 100)} %`, `${Math.round(job.progress * 100)}%`)}</span>
       </div>
       <p className="mt-1 text-xs text-muted">{job.message}</p>
       <Progress value={job.progress} className="mt-3" />
@@ -156,6 +176,7 @@ export function SectionTitle({ title, children, action }: { title: string; child
 }
 
 export function EngineNotice({ what }: { what: string }) {
+  const t = useT();
   const { data } = useProject();
   if (!data) return null;
   const configured = data.ai.llm;
@@ -163,22 +184,23 @@ export function EngineNotice({ what }: { what: string }) {
   if (configured && data.ai.credits !== false && !chosenLocal) return null;
   return (
     <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
-      <strong>Version sans IA (moteur local).</strong>{" "}
+      <strong>{t("Version sans IA (moteur local).", "Non-AI version (local engine).")}</strong>{" "}
       {chosenLocal
-        ? <>Vous avez choisi le mode local (en haut du studio) : {what} sont produits sans IA et sans consommer vos crédits.</>
+        ? t(<>Vous avez choisi le mode local (en haut du studio) : {what} sont produits sans IA et sans consommer vos crédits.</>, <>You chose local mode (at the top of the studio): {what} are produced without AI and without using your credits.</>)
         : configured
-        ? <>Vos crédits de création sont épuisés ou vous êtes en essai gratuit : {what} sont produits par le moteur local, sans invention.</>
-        : <>Aucun fournisseur d'IA n'est connecté sur cette installation : {what} sont produits par le moteur local (détourage, compositions, motion design, textes de base sans invention).</>}{" "}
-      <strong>Les résultats avec l'IA connectée sont bien meilleurs</strong> : marque et textes écrits pour votre produit, thème composé sur mesure, retouches comprises en langage naturel, photos réalistes et vidéos UGC.
-      {configured && !chosenLocal && <> <a href="/studio/compte" className="font-semibold underline">Passer à l'abonnement</a></>}
-      {chosenLocal && <> Repassez sur « IA » en haut du studio quand vous le souhaitez.</>}
+        ? t(<>Vos crédits de création sont épuisés ou vous êtes en essai gratuit : {what} sont produits par le moteur local, sans invention.</>, <>Your creation credits are used up or you are on a free trial: {what} are produced by the local engine, with nothing made up.</>)
+        : t(<>Aucun fournisseur d'IA n'est connecté sur cette installation : {what} sont produits par le moteur local (détourage, compositions, motion design, textes de base sans invention).</>, <>No AI provider is connected on this installation: {what} are produced by the local engine (cutouts, compositions, motion design, basic copy with nothing made up).</>)}{" "}
+      {t(<><strong>Les résultats avec l'IA connectée sont bien meilleurs</strong> : marque et textes écrits pour votre produit, thème composé sur mesure, retouches comprises en langage naturel, photos réalistes et vidéos UGC.</>, <><strong>Results with AI connected are far better</strong>: a brand and copy written for your product, a custom-built theme, edits understood in plain language, realistic photos and UGC videos.</>)}
+      {configured && !chosenLocal && <> <a href="/studio/compte" className="font-semibold underline">{t("Passer à l'abonnement", "Upgrade to a subscription")}</a></>}
+      {chosenLocal && <> {t("Repassez sur « IA » en haut du studio quand vous le souhaitez.", "Switch back to “AI” at the top of the studio whenever you like.")}</>}
     </div>
   );
 }
 
 export function StatusBadge({ status }: { status: string }) {
+  const { lang } = useLang();
   const s = ASSET_STATUS[status] ?? ASSET_STATUS.ready;
-  return <Badge tone={s.tone}>{s.label}</Badge>;
+  return <Badge tone={s.tone}>{lang === "en" ? s.labelEn : s.label}</Badge>;
 }
 
 export { formatBytes };

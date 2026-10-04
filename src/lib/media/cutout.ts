@@ -5,6 +5,7 @@
  */
 import sharp from "sharp";
 import { colorName, rgbToHex } from "../color";
+import { contentLang, L } from "../i18n-server";
 
 export type Cutout = { png: Buffer; width: number; height: number; bbox: { x: number; y: number; w: number; h: number }; sourceW: number; sourceH: number; method: "model" | "flood" };
 
@@ -156,7 +157,7 @@ export async function cutoutProduct(input: Buffer): Promise<Cutout> {
       }
     }
   }
-  if (maxX <= minX || maxY <= minY) throw new Error("Aucun produit détecté sur la photo : essayez une photo où le produit est net et bien visible.");
+  if (maxX <= minX || maxY <= minY) throw new Error(L("Aucun produit détecté sur la photo : essayez une photo où le produit est net et bien visible.", "No product detected in the photo: try a photo where the product is sharp and clearly visible."));
   // Marge sur les côtés et en haut seulement : la base du produit touche le bas
   // de l'image pour que les compositions le posent réellement sur le sol.
   const pad = Math.round(Math.max(maxX - minX, maxY - minY) * 0.02);
@@ -196,7 +197,7 @@ export async function extractPalette(png: Buffer, k = 5): Promise<{ hex: string;
     .map((c, j) => ({ hex: rgbToHex(c), share: counts[j] / px.length }))
     .filter((c) => c.share > 0.03)
     .sort((a, b) => b.share - a.share)
-    .map((c) => ({ ...c, name: colorName(c.hex), share: Math.round(c.share * 100) / 100 }));
+    .map((c) => ({ ...c, name: colorName(c.hex, contentLang()), share: Math.round(c.share * 100) / 100 }));
 }
 
 /**

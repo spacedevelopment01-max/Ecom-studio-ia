@@ -4,35 +4,40 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Bell, BookOpen, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Wallet, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
+import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 
 export const TABS = [
-  { id: "pilote", label: "Pilote", icon: Compass, group: "Création" },
-  { id: "produit", label: "Produit", icon: Package, group: "Création" },
-  { id: "marque", label: "Marque", icon: Palette, group: "Création" },
-  { id: "boutique", label: "Boutique", icon: Store, group: "Création" },
-  { id: "images", label: "Images", icon: ImageIcon, group: "Création" },
-  { id: "videos", label: "Vidéos", icon: Film, group: "Création" },
-  { id: "prompts", label: "Prompts", icon: BookOpen, group: "Création" },
-  { id: "publications", label: "Publications", icon: Send, group: "Diffusion" },
-  { id: "calendrier", label: "Calendrier", icon: CalendarDays, group: "Diffusion" },
-  { id: "publicites", label: "Publicités", icon: Megaphone, group: "Diffusion" },
-  { id: "fichiers", label: "Fichiers", icon: FolderTree, group: "Ressources" },
-  { id: "connexions", label: "Connexions", icon: Plug, group: "Ressources" },
+  { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass, group: "Création", groupEn: "Create" },
+  { id: "produit", label: "Produit", labelEn: "Product", icon: Package, group: "Création", groupEn: "Create" },
+  { id: "marque", label: "Marque", labelEn: "Brand", icon: Palette, group: "Création", groupEn: "Create" },
+  { id: "boutique", label: "Boutique", labelEn: "Store", icon: Store, group: "Création", groupEn: "Create" },
+  { id: "images", label: "Images", labelEn: "Images", icon: ImageIcon, group: "Création", groupEn: "Create" },
+  { id: "videos", label: "Vidéos", labelEn: "Videos", icon: Film, group: "Création", groupEn: "Create" },
+  { id: "prompts", label: "Prompts", labelEn: "Prompts", icon: BookOpen, group: "Création", groupEn: "Create" },
+  { id: "publications", label: "Publications", labelEn: "Posts", icon: Send, group: "Diffusion", groupEn: "Publish" },
+  { id: "calendrier", label: "Calendrier", labelEn: "Calendar", icon: CalendarDays, group: "Diffusion", groupEn: "Publish" },
+  { id: "publicites", label: "Publicités", labelEn: "Ads", icon: Megaphone, group: "Diffusion", groupEn: "Publish" },
+  { id: "fichiers", label: "Fichiers", labelEn: "Files", icon: FolderTree, group: "Ressources", groupEn: "Resources" },
+  { id: "connexions", label: "Connexions", labelEn: "Connections", icon: Plug, group: "Ressources", groupEn: "Resources" },
 ] as const;
 export type TabId = (typeof TABS)[number]["id"];
+const GROUPS = [["Création", "Create"], ["Diffusion", "Publish"], ["Ressources", "Resources"]] as const;
+/** Libellé d'un onglet dans la langue de l'interface. */
+export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en") => (lang === "en" ? t.labelEn : t.label);
 
-const STATUS: Record<string, { label: string; tone: any }> = {
-  queued: { label: "En file", tone: "neutral" },
-  creating: { label: "Création en cours", tone: "info" },
-  awaiting_validation: { label: "À valider", tone: "warn" },
-  ready: { label: "Prêt", tone: "ok" },
-  error: { label: "À reprendre", tone: "bad" },
-  paused: { label: "En pause", tone: "warn" },
-  draft: { label: "À démarrer", tone: "neutral" },
+const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
+  queued: { label: "En file", labelEn: "Queued", tone: "neutral" },
+  creating: { label: "Création en cours", labelEn: "Creating", tone: "info" },
+  awaiting_validation: { label: "À valider", labelEn: "To review", tone: "warn" },
+  ready: { label: "Prêt", labelEn: "Ready", tone: "ok" },
+  error: { label: "À reprendre", labelEn: "Needs attention", tone: "bad" },
+  paused: { label: "En pause", labelEn: "Paused", tone: "warn" },
+  draft: { label: "À démarrer", labelEn: "Not started", tone: "neutral" },
 };
 
 function ProjectSwitcher({ current }: { current: string }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const { data } = useApi<{ projects: { id: string; name: string; status: string; cover: string | null }[] }>(open ? "/api/projects" : null);
   const { data: p } = useProject();
@@ -57,7 +62,7 @@ function ProjectSwitcher({ current }: { current: string }) {
             </Link>
           ))}
           <Link href="/studio" className="mt-1 flex items-center gap-2 rounded-xl p-2 text-sm font-medium text-signal hover:bg-paper-2">
-            <LayoutGrid className="size-4" /> Toutes mes boutiques
+            <LayoutGrid className="size-4" /> {t("Toutes mes boutiques", "All my stores")}
           </Link>
         </div>
       )}
@@ -66,6 +71,7 @@ function ProjectSwitcher({ current }: { current: string }) {
 }
 
 function ActiveJobs() {
+  const t = useT();
   const { id, data, reload } = useProject();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -83,9 +89,9 @@ function ActiveJobs() {
   };
   return (
     <div className="relative">
-      <button onClick={() => setOpen((v) => !v)} className="flex h-10 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm" aria-expanded={open} aria-label={allPaused ? "Tâches en pause" : "Tâches en cours"}>
+      <button onClick={() => setOpen((v) => !v)} className="flex h-10 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm" aria-expanded={open} aria-label={allPaused ? t("Tâches en pause", "Paused tasks") : t("Tâches en cours", "Tasks in progress")}>
         {allPaused ? <Pause className="size-4 text-warn" /> : <Loader2 className="size-4 animate-spin text-signal" />}
-        <span className="hidden sm:inline">{allPaused ? "En pause" : `${active.length} tâche${active.length > 1 ? "s" : ""}`}</span>
+        <span className="hidden sm:inline">{allPaused ? t("En pause", "Paused") : t(`${active.length} tâche${active.length > 1 ? "s" : ""}`, `${active.length} task${active.length > 1 ? "s" : ""}`)}</span>
       </button>
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border border-line bg-card p-3 shadow-soft">
@@ -93,16 +99,16 @@ function ActiveJobs() {
             <div key={j.id} className="border-b border-line py-2.5 last:border-0">
               <div className="flex items-center justify-between gap-2 text-sm">
                 <span className="font-medium">{j.label || j.type}</span>
-                <span className="text-xs text-muted">{j.status === "paused" ? "En pause · " : ""}{Math.round(j.progress * 100)} %</span>
+                <span className="text-xs text-muted">{j.status === "paused" ? t("En pause · ", "Paused · ") : ""}{t(`${Math.round(j.progress * 100)} %`, `${Math.round(j.progress * 100)}%`)}</span>
               </div>
               <p className="mt-0.5 truncate text-xs text-muted">{j.message}</p>
               <Progress value={j.progress} className="mt-2" />
             </div>
           ))}
           <div className="mt-2 flex items-center justify-between gap-2">
-            <p className="text-xs text-muted">{allPaused ? "Rien n'est perdu : la reprise repart de l'étape en cours." : "Les tâches continuent même si vous fermez la page."}</p>
+            <p className="text-xs text-muted">{allPaused ? t("Rien n'est perdu : la reprise repart de l'étape en cours.", "Nothing is lost: resuming picks up from the current step.") : t("Les tâches continuent même si vous fermez la page.", "Tasks keep running even if you close the page.")}</p>
             {allPaused ? (
-              <button disabled={busy} onClick={() => act("resume")} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-paper"><Play className="size-3.5" /> Reprendre</button>
+              <button disabled={busy} onClick={() => act("resume")} className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-paper"><Play className="size-3.5" /> {t("Reprendre", "Resume")}</button>
             ) : (
               <button disabled={busy} onClick={() => act("pause")} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-medium"><Pause className="size-3.5" /> Pause</button>
             )}
@@ -114,6 +120,7 @@ function ActiveJobs() {
 }
 
 function Notifications() {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const { data, reload } = useApi<{ items: { id: string; title: string; body: string; level: string; read_at: number | null; created_at: number }[] }>("/api/notifications", { poll: 30000 });
   const unread = (data?.items ?? []).filter((n) => !n.read_at).length;
@@ -128,14 +135,14 @@ function Notifications() {
           }
         }}
         className="relative grid size-10 place-items-center rounded-full border border-line bg-card"
-        aria-label={`Notifications${unread ? ` (${unread} non lues)` : ""}`}
+        aria-label={`Notifications${unread ? t(` (${unread} non lues)`, ` (${unread} unread)`) : ""}`}
       >
         <Bell className="size-4" />
         {unread > 0 && <span className="absolute -right-0.5 -top-0.5 grid size-5 place-items-center rounded-full bg-signal text-[10px] font-bold text-signal-ink">{unread}</span>}
       </button>
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 max-h-96 w-80 overflow-y-auto rounded-2xl border border-line bg-card p-2 shadow-soft">
-          {(data?.items ?? []).length === 0 && <p className="p-3 text-sm text-muted">Aucune notification.</p>}
+          {(data?.items ?? []).length === 0 && <p className="p-3 text-sm text-muted">{t("Aucune notification.", "No notifications.")}</p>}
           {(data?.items ?? []).map((n) => (
             <div key={n.id} className="rounded-xl p-3 hover:bg-paper-2">
               <p className="text-sm font-medium">{n.title}</p>
@@ -149,8 +156,20 @@ function Notifications() {
   );
 }
 
+/** Sélecteur de langue compact pour l'en-tête sur téléphone (un seul bouton : bascule FR ↔ EN). */
+function MobileLangToggle() {
+  const { lang, setLang } = useLang();
+  const next = lang === "en" ? "fr" : "en";
+  return (
+    <button type="button" onClick={() => setLang(next)} lang={next} className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-card text-xs font-semibold sm:hidden" aria-label={lang === "en" ? "Passer en français" : "Switch to English"} title={lang === "en" ? "Français" : "English"}>
+      {next.toUpperCase()}
+    </button>
+  );
+}
+
 /** Choix du moteur (local gratuit ou IA avec crédits) et jauge des crédits, en haut du studio. */
 export function CreditPill() {
+  const t = useT();
   const { data, reload } = useProject();
   const [busy, setBusy] = useState(false);
   const c = data?.credits;
@@ -171,15 +190,15 @@ export function CreditPill() {
   const left = Math.max(0, 1 - c.usedPct);
   return (
     <div className="flex items-center gap-1.5">
-      <div className="flex h-10 items-center rounded-full border border-line bg-card p-0.5 text-xs" role="group" aria-label="Moteur de création">
-        <button onClick={() => set("local")} aria-pressed={mode === "local" || !canAi} title="Moteur local : gratuit, ne consomme aucun crédit" className={cx("h-8 rounded-full px-2.5 sm:px-3", mode === "local" || !canAi ? "bg-ink text-paper" : "text-muted hover:text-ink")}>Local</button>
-        <button onClick={() => (canAi ? set("ai") : (window.location.href = "/studio/compte"))} aria-pressed={mode === "ai" && canAi} title={canAi ? "IA : résultats bien meilleurs, consomme vos crédits de création" : configured ? "Crédits épuisés ou essai gratuit : passez à l'abonnement" : "IA non connectée sur cette installation"} className={cx("h-8 rounded-full px-2.5 sm:px-3", mode === "ai" && canAi ? "bg-signal text-signal-ink" : "text-muted hover:text-ink", !configured && "opacity-50")} disabled={!configured}>IA</button>
+      <div className="flex h-10 items-center rounded-full border border-line bg-card p-0.5 text-xs" role="group" aria-label={t("Moteur de création", "Creation engine")}>
+        <button onClick={() => set("local")} aria-pressed={mode === "local" || !canAi} title={t("Moteur local : gratuit, ne consomme aucun crédit", "Local engine: free, uses no credits")} className={cx("h-8 rounded-full px-2.5 sm:px-3", mode === "local" || !canAi ? "bg-ink text-paper" : "text-muted hover:text-ink")}>{t("Local", "Local")}</button>
+        <button onClick={() => (canAi ? set("ai") : (window.location.href = "/studio/compte"))} aria-pressed={mode === "ai" && canAi} title={canAi ? t("IA : résultats bien meilleurs, consomme vos crédits de création", "AI: much better results, uses your creation credits") : configured ? t("Crédits épuisés ou essai gratuit : passez à l'abonnement", "Credits used up or free trial: upgrade to a subscription") : t("IA non connectée sur cette installation", "AI is not connected on this installation")} className={cx("h-8 rounded-full px-2.5 sm:px-3", mode === "ai" && canAi ? "bg-signal text-signal-ink" : "text-muted hover:text-ink", !configured && "opacity-50")} disabled={!configured}>{t("IA", "AI")}</button>
       </div>
       {!c.empty && (
-        <Link href="/studio/compte" className={cx("hidden h-10 items-center gap-2 rounded-full border px-3 text-xs md:flex", c.paused ? "border-bad bg-bad-soft text-bad" : c.alert ? "border-warn bg-warn-soft text-warn" : "border-line bg-card")} title="Crédits de création restants">
+        <Link href="/studio/compte" className={cx("hidden h-10 items-center gap-2 rounded-full border px-3 text-xs md:flex", c.paused ? "border-bad bg-bad-soft text-bad" : c.alert ? "border-warn bg-warn-soft text-warn" : "border-line bg-card")} title={t("Crédits de création restants", "Creation credits left")}>
           <Wallet className="size-4" />
           <span className="w-14"><Progress value={left} /></span>
-          <span>{Math.round(left * 100)} %</span>
+          <span>{t(`${Math.round(left * 100)} %`, `${Math.round(left * 100)}%`)}</span>
         </Link>
       )}
     </div>
@@ -187,6 +206,8 @@ export function CreditPill() {
 }
 
 export function StudioShell({ projectId, children }: { projectId: string; children: ReactNode }) {
+  const t = useT();
+  const { lang } = useLang();
   const pathname = usePathname();
   const router = useRouter();
   const tab = (pathname.split("/")[3] ?? "pilote") as TabId;
@@ -210,8 +231,8 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   useEffect(() => {
     // Raccourcis clavier Alt+1…9 pour changer d'onglet.
     const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (e.key === "[" && !e.altKey && !e.ctrlKey && !e.metaKey && !(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)))) return toggleFoldRef.current();
+      const el = e.target as HTMLElement | null;
+      if (e.key === "[" && !e.altKey && !e.ctrlKey && !e.metaKey && !(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)))) return toggleFoldRef.current();
       if (!e.altKey) return;
       const n = Number(e.key);
       if (n >= 1 && n <= 9) router.push(`/studio/${projectId}/${TABS[n - 1].id}`);
@@ -233,32 +254,33 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
       {/* Barre latérale (ordinateur), repliable pour agrandir l'espace de travail */}
       <aside className={cx("sticky top-0 hidden h-dvh flex-col gap-5 overflow-hidden border-r border-line bg-paper py-5 lg:flex", folded ? "px-2.5" : "px-4")}>
         <div className={cx("flex items-center gap-2", folded ? "flex-col" : "justify-between px-2")}>
-          <Link href="/" aria-label="Accueil E-COM STUDIO IA">
+          <Link href="/" aria-label={t("Accueil E-COM STUDIO IA", "E-COM STUDIO IA home")}>
             <Logo compact={folded} />
           </Link>
-          <button type="button" onClick={toggleFold} className="grid size-9 shrink-0 place-items-center rounded-full text-muted transition hover:bg-paper-2 hover:text-ink" aria-label={folded ? "Déplier le menu" : "Replier le menu"} aria-expanded={!folded} title={folded ? "Déplier le menu ([)" : "Replier le menu ([)"}>
+          <button type="button" onClick={toggleFold} className="grid size-9 shrink-0 place-items-center rounded-full text-muted transition hover:bg-paper-2 hover:text-ink" aria-label={folded ? t("Déplier le menu", "Expand menu") : t("Replier le menu", "Collapse menu")} aria-expanded={!folded} title={folded ? t("Déplier le menu ([)", "Expand menu ([)") : t("Replier le menu ([)", "Collapse menu ([)")}>
             {folded ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
           </button>
         </div>
         {folded ? (
-          <Link href="/studio" title={`${data?.brand?.name ?? data?.project.name ?? ""} · toutes mes boutiques`} className="mx-auto grid size-11 place-items-center overflow-hidden rounded-xl border border-line bg-paper-2 hover:border-ink">
+          <Link href="/studio" title={`${data?.brand?.name ?? data?.project.name ?? ""} · ${t("toutes mes boutiques", "all my stores")}`} className="mx-auto grid size-11 place-items-center overflow-hidden rounded-xl border border-line bg-paper-2 hover:border-ink">
             {data?.coverUrl ? <img src={data.coverUrl} alt="" className="size-full object-cover" /> : <Store className="size-4" />}
           </Link>
         ) : (
           <ProjectSwitcher current={projectId} />
         )}
-        <nav className="-mx-1 flex-1 overflow-y-auto overflow-x-hidden px-1" aria-label="Espaces du projet">
-          {["Création", "Diffusion", "Ressources"].map((g) => (
+        <nav className="-mx-1 flex-1 overflow-y-auto overflow-x-hidden px-1" aria-label={t("Espaces du projet", "Project spaces")}>
+          {GROUPS.map(([g, gEn]) => (
             <div key={g} className="mb-4">
-              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{g}</p>}
-              {TABS.filter((t) => t.group === g).map((t) => {
-                const Icon = t.icon;
-                const b = badge(t.id);
+              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(g, gEn)}</p>}
+              {TABS.filter((x) => x.group === g).map((x) => {
+                const Icon = x.icon;
+                const b = badge(x.id);
+                const label = tabLabel(x, lang);
                 return (
-                  <Link key={t.id} href={`/studio/${projectId}/${t.id}`} aria-current={tab === t.id ? "page" : undefined} aria-label={folded ? t.label : undefined} title={folded ? t.label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition", folded ? "justify-center px-0" : "px-3", tab === t.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
+                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
                     <Icon className="size-4 shrink-0" />
-                    {!folded && <span className="flex-1">{t.label}</span>}
-                    {b !== null && (folded ? <span className="absolute right-2 top-1.5 size-2 rounded-full bg-signal" aria-hidden /> : <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", tab === t.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>)}
+                    {!folded && <span className="flex-1">{label}</span>}
+                    {b !== null && (folded ? <span className="absolute right-2 top-1.5 size-2 rounded-full bg-signal" aria-hidden /> : <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", tab === x.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>)}
                   </Link>
                 );
               })}
@@ -266,34 +288,36 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           ))}
         </nav>
         <div className="grid gap-1 border-t border-line pt-3 text-sm">
-          <Link href="/studio/compte" title={folded ? "Compte et crédits" : undefined} aria-label={folded ? "Compte et crédits" : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && " Compte et crédits"}</Link>
-          {me?.user.role === "admin" && <Link href="/admin" title={folded ? "Administration" : undefined} aria-label={folded ? "Administration" : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && " Administration"}</Link>}
-          <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? "Déconnexion" : undefined} aria-label={folded ? "Déconnexion" : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && " Déconnexion"}</button>
+          <Link href="/studio/compte" title={folded ? t("Compte et crédits", "Account and credits") : undefined} aria-label={folded ? t("Compte et crédits", "Account and credits") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Compte et crédits", "Account and credits")}`}</Link>
+          {me?.user.role === "admin" && <Link href="/admin" title={folded ? t("Administration", "Admin") : undefined} aria-label={folded ? t("Administration", "Admin") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && ` ${t("Administration", "Admin")}`}</Link>}
+          <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? t("Déconnexion", "Log out") : undefined} aria-label={folded ? t("Déconnexion", "Log out") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && ` ${t("Déconnexion", "Log out")}`}</button>
         </div>
       </aside>
 
       <div className="min-w-0">
         <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
-          <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
-            <Link href="/studio" className="lg:hidden" aria-label="Mes boutiques"><Logo compact /></Link>
+          <div className="flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6">
+            <Link href="/studio" className="shrink-0 lg:hidden" aria-label={t("Mes boutiques", "My stores")}><Logo compact /></Link>
             <div className="min-w-0 flex-1">
-              <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{TABS.find((t) => t.id === tab)?.label}</h1>
+              <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{(() => { const cur = TABS.find((x) => x.id === tab); return cur ? tabLabel(cur, lang) : null; })()}</h1>
               <p className="truncate text-xs text-muted">{data?.brand?.name ?? data?.project.name}</p>
             </div>
-            <Badge tone={status.tone} dot className="hidden sm:inline-flex">{status.label}</Badge>
+            <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span>
             <ActiveJobs />
             <CreditPill />
             <Notifications />
-            <ThemeToggle />
+            <div className="hidden shrink-0 sm:flex"><LangSwitch /></div>
+            <MobileLangToggle />
+            <ThemeToggle className="shrink-0" />
           </div>
           {/* Onglets (téléphone et tablette) */}
-          <nav className="scrollbar-none flex gap-1.5 overflow-x-auto px-4 pb-3 lg:hidden" aria-label="Espaces du projet">
-            {TABS.map((t) => {
-              const Icon = t.icon;
-              const b = badge(t.id);
+          <nav className="scrollbar-none flex gap-1.5 overflow-x-auto px-4 pb-3 lg:hidden" aria-label={t("Espaces du projet", "Project spaces")}>
+            {TABS.map((x) => {
+              const Icon = x.icon;
+              const b = badge(x.id);
               return (
-                <Link key={t.id} href={`/studio/${projectId}/${t.id}`} aria-current={tab === t.id ? "page" : undefined} className={cx("flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px]", tab === t.id ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2")}>
-                  <Icon className="size-3.5" /> {t.label}
+                <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} className={cx("flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px]", tab === x.id ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2")}>
+                  <Icon className="size-3.5" /> {tabLabel(x, lang)}
                   {b !== null && <span className="grid min-w-4 place-items-center rounded-full bg-signal px-1 text-[10px] font-bold text-signal-ink">{b}</span>}
                 </Link>
               );

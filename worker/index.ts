@@ -37,7 +37,7 @@ async function runOne() {
     try {
       // Sans crédits de création, les étapes IA basculent sur le moteur local (voir src/lib/ai/access.ts).
       const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => handlers[job.type](ctx)));
-      completeJob(job.id, result);
+      runWithLang({ ui: userLang(job.user_id) }, () => completeJob(job.id, result));
       console.log(`[worker] ✓ ${job.type} ${job.id} en ${((Date.now() - started) / 1000).toFixed(1)} s`);
     } catch (e) {
       if (e instanceof JobCancelled) {
@@ -49,7 +49,7 @@ async function runOne() {
       } else {
         const fresh = getJob(job.id) ?? job;
         if (fresh.status === "paused") return releaseJob(job.id);
-        failJob(fresh, e);
+        runWithLang({ ui: userLang(job.user_id) }, () => failJob(fresh, e));
         logError(`job:${job.type}`, e, { userId: job.user_id, projectId: job.project_id ?? undefined, details: { jobId: job.id } });
         console.error(`[worker] ✗ ${job.type} ${job.id} :`, (e as Error).message);
       }

@@ -10,7 +10,8 @@
  */
 import os from "node:os";
 import { all, id, json, now, one, run, tx } from "./db";
-import { contentLang, hasLangContext } from "./i18n-server";
+import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
+import { pick } from "./i18n";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked" | "paused";
 
@@ -109,7 +110,7 @@ export function claimNext(types?: string[]): Job | null {
       if (deps.length) {
         const states = all<{ status: string }>(`SELECT status FROM jobs WHERE id IN (${deps.map(() => "?").join(",")})`, ...deps);
         if (states.some((s) => s.status === "failed" || s.status === "cancelled")) {
-          run("UPDATE jobs SET status='blocked', message=?, updated_at=? WHERE id=?", "Une étape préalable a échoué.", t, j.id);
+          run("UPDATE jobs SET status='blocked', message=?, updated_at=? WHERE id=?", pick(userLang(j.user_id), "Une étape préalable a échoué.", "A previous step failed."), t, j.id);
           continue;
         }
         if (states.length < deps.length || states.some((s) => s.status !== "done")) continue;
@@ -120,7 +121,7 @@ export function claimNext(types?: string[]): Job | null {
         WORKER_ID,
         t + LEASE_MS,
         t,
-        recovered ? "Reprise après interruption…" : j.message || "Démarrage…",
+        recovered ? pick(userLang(j.user_id), "Reprise après interruption…", "Resuming after an interruption…") : j.message || pick(userLang(j.user_id), "Démarrage…", "Starting…"),
         j.id,
       );
       return getJob(j.id)!;
@@ -145,8 +146,8 @@ export class JobContext {
   /** Met à jour l'avancement et prolonge le bail. Lève JobCancelled si annulée. */
   progress(p: number, message?: string) {
     const row = one<{ status: string; locked_by: string | null }>("SELECT status, locked_by FROM jobs WHERE id = ?", this.job.id);
-    if (row?.status === "cancelled") throw new JobCancelled("Tâche annulée.");
-    if (row?.status === "paused") throw new JobPaused("Tâche mise en pause.");
+    if (row?.status === "cancelled") throw new JobCancelled(L("Tâche annulée.", "Task canceled."));
+    if (row?.status === "paused") throw new JobPaused(L("Tâche mise en pause.", "Task paused."));
     // Pause puis reprise pendant que ce worker travaillait encore : il garde la main (aucun autre ne la prend
     // tant que le bail court) et poursuit, sans refaire ni repayer ce qui est en cours.
     if (row?.status === "queued" && row.locked_by === WORKER_ID) run("UPDATE jobs SET status='running' WHERE id=?", this.job.id);
@@ -183,7 +184,7 @@ export function completeJob(jid: string, result: unknown) {
   run(
     "UPDATE jobs SET status='done', progress=1, result=?, error=NULL, locked_by=NULL, locked_until=NULL, message=?, finished_at=?, updated_at=? WHERE id=? AND (status IN ('running','paused') OR (status='queued' AND locked_by=?))",
     JSON.stringify(result ?? null),
-    "Terminé",
+    L("Terminé", "Done"),
     now(),
     now(),
     jid,
@@ -209,7 +210,7 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
     run(
       "UPDATE jobs SET status='queued', error=?, message=?, run_at=?, locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=?",
       message.slice(0, 4000),
-      `Nouvelle tentative dans ${Math.round(delay / 1000)} s : ${message.slice(0, 200)}`,
+      L(`Nouvelle tentative dans ${Math.round(delay / 1000)} s : ${message.slice(0, 200)}`, `Retrying in ${Math.round(delay / 1000)} s: ${message.slice(0, 200)}`),
       now() + delay,
       now(),
       job.id,
@@ -218,9 +219,10 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
 }
 
 export function cancelJob(jid: string) {
-  run("UPDATE jobs SET status='cancelled', message='Annulée', finished_at=?, updated_at=? WHERE id=? AND status IN ('queued','running','blocked')", now(), now(), jid);
+  const cancelled = L("Annulée", "Canceled");
+  run("UPDATE jobs SET status='cancelled', message=?, finished_at=?, updated_at=? WHERE id=? AND status IN ('queued','running','blocked')", cancelled, now(), now(), jid);
   // Les sous-tâches en attente sont annulées aussi.
-  run("UPDATE jobs SET status='cancelled', message='Annulée', finished_at=?, updated_at=? WHERE parent_id=? AND status IN ('queued','blocked')", now(), now(), jid);
+  run("UPDATE jobs SET status='cancelled', message=?, finished_at=?, updated_at=? WHERE parent_id=? AND status IN ('queued','blocked')", cancelled, now(), now(), jid);
 }
 
 /**
@@ -231,20 +233,22 @@ export function pauseJob(jid: string) {
   const t = now();
   // L'essai consommé par une tâche interrompue volontairement n'est pas compté. Le bail du worker est
   // conservé : tant qu'il n'a pas rendu la main, une reprise rapide ne peut pas lancer un second worker.
-  run("UPDATE jobs SET status='paused', message='En pause', attempts=MAX(0, attempts-1), updated_at=? WHERE id=? AND status='running'", t, jid);
-  run("UPDATE jobs SET status='paused', message='En pause', updated_at=? WHERE (id=? OR parent_id=?) AND status IN ('queued','blocked')", t, jid, jid);
+  const paused = L("En pause", "Paused");
+  run("UPDATE jobs SET status='paused', message=?, attempts=MAX(0, attempts-1), updated_at=? WHERE id=? AND status='running'", paused, t, jid);
+  run("UPDATE jobs SET status='paused', message=?, updated_at=? WHERE (id=? OR parent_id=?) AND status IN ('queued','blocked')", paused, t, jid, jid);
 }
 
 /** Reprise après une pause : repart du dernier point de reprise. */
 export function resumeJob(jid: string) {
-  run("UPDATE jobs SET status='queued', run_at=?, message='Reprise…', updated_at=? WHERE (id=? OR parent_id=?) AND status='paused'", now(), now(), jid, jid);
+  run("UPDATE jobs SET status='queued', run_at=?, message=?, updated_at=? WHERE (id=? OR parent_id=?) AND status='paused'", now(), L("Reprise…", "Resuming…"), now(), jid, jid);
 }
 
 /** Relance manuelle : repart du dernier point de reprise. */
 export function retryJob(jid: string) {
   run(
-    "UPDATE jobs SET status='queued', run_at=?, attempts=0, error=NULL, message='Relance demandée', updated_at=? WHERE id=? AND status IN ('failed','cancelled','blocked')",
+    "UPDATE jobs SET status='queued', run_at=?, attempts=0, error=NULL, message=?, updated_at=? WHERE id=? AND status IN ('failed','cancelled','blocked')",
     now(),
+    L("Relance demandée", "Retry requested"),
     now(),
     jid,
   );

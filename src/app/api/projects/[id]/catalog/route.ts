@@ -8,6 +8,7 @@ import { saveCatalog } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { catalogMedia, upsertCatalogItem } from "@/lib/engine/catalog";
 import type { CatalogItem, StoreType } from "@/lib/project-types";
+import { L } from "@/lib/i18n-server";
 
 export const runtime = "nodejs";
 const MAX = 25 * 1024 * 1024;
@@ -15,7 +16,7 @@ const cents = (s: unknown) => {
   const t = String(s ?? "").replace(/\s|€/g, "").replace(",", ".");
   if (!t) return null;
   const n = Math.round(Number(t) * 100);
-  if (!Number.isFinite(n) || n < 0) throw new HttpError(400, "Prix illisible.");
+  if (!Number.isFinite(n) || n < 0) throw new HttpError(400, L("Prix illisible.", "Unreadable price."));
   return n;
 };
 
@@ -32,16 +33,16 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 /** Ajout d'un produit (formulaire avec photo). */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  if (p.catalog.length >= 40) throw new HttpError(400, "Le catalogue est limité à 40 produits par boutique.");
+  if (p.catalog.length >= 40) throw new HttpError(400, L("Le catalogue est limité à 40 produits par boutique.", "The catalog is limited to 40 products per store."));
   const form = await req.formData();
   const get = (k: string) => (typeof form.get(k) === "string" ? String(form.get(k)).trim() : "");
   const name = get("name");
-  if (!name) throw new HttpError(400, "Donnez un nom au produit.");
+  if (!name) throw new HttpError(400, L("Donnez un nom au produit.", "Give the product a name."));
   const photo = form.get("photo");
   let originalAssetId: string | null = null;
   if (photo && typeof photo !== "string" && photo.size > 0) {
-    if (photo.size > MAX) throw new HttpError(413, "La photo dépasse 25 Mo.");
-    if (!/^image\/(jpeg|png|webp|avif)$/.test(photo.type)) throw new HttpError(415, "Format non pris en charge (JPEG, PNG, WebP, AVIF).");
+    if (photo.size > MAX) throw new HttpError(413, L("La photo dépasse 25 Mo.", "The photo exceeds 25 MB."));
+    if (!/^image\/(jpeg|png|webp|avif)$/.test(photo.type)) throw new HttpError(415, L("Format non pris en charge (JPEG, PNG, WebP, AVIF).", "Unsupported format (JPEG, PNG, WebP, AVIF)."));
     const a = await saveAsset({ projectId: p.id, userId: user.id, data: Buffer.from(await photo.arrayBuffer()), name: photo.name || `${name}.jpg`, mime: photo.type, role: "catalog-original", folderKey: "product.catalog", origin: "upload", meta: { product: name } });
     originalAssetId = a.id;
   }
@@ -77,15 +78,15 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   let catalog = p.catalog;
   if (b.item) {
     const { key, ...patch } = b.item;
-    if (!catalog.some((i) => i.key === key)) throw new HttpError(404, "Produit introuvable.");
+    if (!catalog.some((i) => i.key === key)) throw new HttpError(404, L("Produit introuvable.", "Product not found."));
     catalog = catalog.map((i) => (i.key === key ? { ...i, ...patch } : i));
   }
   if (b.remove) catalog = catalog.filter((i) => i.key !== b.remove);
   saveCatalog(p.id, catalog, b.storeType as StoreType | undefined);
   let jobId: string | null = null;
   if (b.rebuild) {
-    if (!p.brand) throw new HttpError(409, "La boutique sera composée après la marque (voir le Pilote).");
-    jobId = enqueue({ userId: user.id, projectId: p.id, type: "shop.build", label: "Boutique mise à jour avec le catalogue", payload: { projectId: p.id, useAi: false } }).id;
+    if (!p.brand) throw new HttpError(409, L("La boutique sera composée après la marque (voir le Pilote).", "The store will be built after the brand (see the Pilot)."));
+    jobId = enqueue({ userId: user.id, projectId: p.id, type: "shop.build", label: L("Boutique mise à jour avec le catalogue", "Store updated with the catalog"), payload: { projectId: p.id, useAi: false } }).id;
   }
   return ok({ storeType: b.storeType ?? p.storeType, items: catalog.map((i) => view(p.id, i)), jobId });
 });

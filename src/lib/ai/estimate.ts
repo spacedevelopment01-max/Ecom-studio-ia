@@ -6,16 +6,17 @@
 import { balance, EUR } from "../billing";
 import { getJsonSetting } from "../settings";
 import { priceFor, routeFor, usdToEur, type TaskId } from "./config";
+import { L } from "../i18n-server";
 
 export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc";
 
-const ACTIONS: Record<CostAction, string> = {
-  pipeline: "Création complète (marque, boutique, images, vidéo, calendrier)",
-  theme: "Composition du thème sur mesure",
-  images: "Jeu d'images complet avec décors IA",
-  image: "Image avec décor IA",
-  "video-clip": "Vidéo avec plan filmé généré par IA",
-  ugc: "Vidéo UGC générée par IA",
+const ACTIONS: Record<CostAction, { fr: string; en: string }> = {
+  pipeline: { fr: "Création complète (marque, boutique, images, vidéo, calendrier)", en: "Full creation (brand, store, images, video, calendar)" },
+  theme: { fr: "Composition du thème sur mesure", en: "Custom theme design" },
+  images: { fr: "Jeu d'images complet avec décors IA", en: "Full image set with AI backgrounds" },
+  image: { fr: "Image avec décor IA", en: "Image with AI background" },
+  "video-clip": { fr: "Vidéo avec plan filmé généré par IA", en: "Video with an AI-generated shot" },
+  ugc: { fr: "Vidéo UGC générée par IA", en: "AI-generated UGC video" },
 };
 
 function usd(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }): number {
@@ -79,5 +80,5 @@ export function estimateFor(userId: string, action: CostAction, opts: { beats?: 
   const pctOfAvailable = b.available > 0 ? Math.min(999, (cost / b.available) * 100) : 999;
   const leftAfterPct = b.capacity > 0 ? Math.max(0, ((b.available - cost) / b.capacity) * 100) : 0;
   const level = cost > b.available ? "insufficient" : pctOfAvailable >= 25 ? "very-heavy" : pctOfAvailable >= 5 ? "heavy" : "light";
-  return { action, label: ACTIONS[action], pctOfAvailable, leftAfterPct, level } as const;
+  return { action, label: L(ACTIONS[action].fr, ACTIONS[action].en), pctOfAvailable, leftAfterPct, level } as const;
 }

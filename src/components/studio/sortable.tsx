@@ -6,8 +6,10 @@
 import { useRef, useState, type ReactNode } from "react";
 import { GripVertical } from "lucide-react";
 import { cx } from "../ui";
+import { useT } from "../i18n";
 
 export function SortableList<T extends { id: string }>({ items, onMove, render, gap = 6 }: { items: T[]; onMove: (from: number, to: number) => void; render: (item: T, index: number, handle: ReactNode, dragging: boolean) => ReactNode; gap?: number }) {
+  const t = useT();
   const list = useRef<HTMLUListElement>(null);
   const [drag, setDrag] = useState<{ from: number; to: number; dy: number; h: number } | null>(null);
   const state = useRef<{ from: number; to: number; startY: number; mids: number[]; h: number } | null>(null);
@@ -51,7 +53,7 @@ export function SortableList<T extends { id: string }>({ items, onMove, render, 
         }
         const isDragged = drag?.from === i;
         const handle = (
-          <button type="button" onPointerDown={start(i)} onPointerMove={move} onPointerUp={end} onPointerCancel={end} className="grid size-7 shrink-0 cursor-grab touch-none place-items-center rounded-full text-muted hover:bg-paper-2 active:cursor-grabbing" aria-label="Glisser pour déplacer" title="Glisser pour déplacer">
+          <button type="button" onPointerDown={start(i)} onPointerMove={move} onPointerUp={end} onPointerCancel={end} className="grid size-7 shrink-0 cursor-grab touch-none place-items-center rounded-full text-muted hover:bg-paper-2 active:cursor-grabbing" aria-label={t("Glisser pour déplacer", "Drag to move")} title={t("Glisser pour déplacer", "Drag to move")}>
             <GripVertical className="size-4" />
           </button>
         );

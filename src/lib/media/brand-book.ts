@@ -8,6 +8,8 @@ import { contrast, hexToRgb, isDark, mix, onColor } from "../color";
 import { font } from "./fonts";
 import { jpegPagesToPdf } from "./pdf";
 import type { Brand, Strategy } from "../project-types";
+import { C, contentLang } from "../i18n-server";
+import { intlLocale } from "../i18n";
 
 export type BookInput = {
   brand: Brand;
@@ -24,7 +26,13 @@ export type BookInput = {
 };
 
 const W = 1754, H = 1240, M = 110;
-const PAL_LABEL: Record<string, string> = { primary: "Principale", secondary: "Secondaire", accent: "Accent", light: "Clair", dark: "Sombre" };
+const PAL_LABEL: Record<string, { fr: string; en: string }> = {
+  primary: { fr: "Principale", en: "Primary" },
+  secondary: { fr: "Secondaire", en: "Secondary" },
+  accent: { fr: "Accent", en: "Accent" },
+  light: { fr: "Clair", en: "Light" },
+  dark: { fr: "Sombre", en: "Dark" },
+};
 
 function wrap(ctx: SKRSContext2D, text: string, maxW: number): string[] {
   const out: string[] = [];
@@ -78,6 +86,9 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   const HF = inp.headingFamily, BF = inp.bodyFamily;
   const total = 10;
   const canvases: Canvas[] = [];
+  // Langue des contenus : toute la charte (titres, explications, dates) suit la langue du projet.
+  const locale = intlLocale(contentLang());
+  const BOOK = C("Charte de marque", "Brand guidelines");
 
   const page = (bg = paper) => {
     const c = createCanvas(W, H);
@@ -106,11 +117,11 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     return yy;
   };
   const head = (ctx: SKRSContext2D, n: number, kicker: string, title: string, color = ink) => {
-    text(ctx, `${String(n).padStart(2, "0")} — ${kicker.toLocaleUpperCase("fr-FR")}`, M, M + 10, font(BF, 600, 20), accent);
+    text(ctx, `${String(n).padStart(2, "0")} — ${kicker.toLocaleUpperCase(locale)}`, M, M + 10, font(BF, 600, 20), accent);
     text(ctx, title, M, M + 96, font(HF, 600, 72), color);
     // Pied de planche
     text(ctx, b.name, M, H - 60, font(BF, 500, 18), mix(color, paper, 0.45));
-    text(ctx, `Charte de marque · ${n} / ${total}`, W - M, H - 60, font(BF, 500, 18), mix(color, paper, 0.45), "right");
+    text(ctx, `${BOOK} · ${n} / ${total}`, W - M, H - 60, font(BF, 500, 18), mix(color, paper, 0.45), "right");
   };
   const card = (ctx: SKRSContext2D, x: number, y: number, w: number, h: number, fill: string, stroke?: string) => {
     ctx.fillStyle = fill;
@@ -123,7 +134,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
       ctx.stroke();
     }
   };
-  const label = (ctx: SKRSContext2D, s: string, x: number, y: number, color = mix(ink, paper, 0.4)) => text(ctx, s.toLocaleUpperCase("fr-FR"), x, y, font(BF, 600, 17), color);
+  const label = (ctx: SKRSContext2D, s: string, x: number, y: number, color = mix(ink, paper, 0.4)) => text(ctx, s.toLocaleUpperCase(locale), x, y, font(BF, 600, 17), color);
 
   // 1 · Couverture
   {
@@ -135,31 +146,31 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     });
     contain(ctx, inp.logo, W / 2 - 430, 300, 860, 400);
     if (b.tagline && b.logo.proposal !== "embleme") text(ctx, b.tagline, W / 2, 800, font(HF, 500, 44, true), ink, "center");
-    text(ctx, "CHARTE DE MARQUE", W / 2, 940, font(BF, 600, 24), accent, "center");
-    text(ctx, `${inp.sectorLabel} · ${inp.date.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}`, W / 2, 985, font(BF, 400, 22), mix(ink, paper, 0.4), "center");
+    text(ctx, BOOK.toLocaleUpperCase(locale), W / 2, 940, font(BF, 600, 24), accent, "center");
+    text(ctx, `${inp.sectorLabel} · ${inp.date.toLocaleDateString(locale, { month: "long", year: "numeric" })}`, W / 2, 985, font(BF, 400, 22), mix(ink, paper, 0.4), "center");
   }
 
   // 2 · Identité
   {
     const ctx = page();
-    head(ctx, 2, "Identité", "Qui nous sommes");
+    head(ctx, 2, C("Identité", "Identity"), C("Qui nous sommes", "Who we are"));
     const col = (W - M * 2 - 60) / 2;
     let y = 330;
-    label(ctx, "Positionnement", M, y);
-    y = para(ctx, b.positioning || "[À définir]", M, y + 44, col, 28);
+    label(ctx, C("Positionnement", "Positioning"), M, y);
+    y = para(ctx, b.positioning || C("[À définir]", "[To be defined]"), M, y + 44, col, 28);
     y += 30;
-    label(ctx, "Cible", M, y);
-    para(ctx, b.audience || "[À définir]", M, y + 44, col, 28);
+    label(ctx, C("Cible", "Audience"), M, y);
+    para(ctx, b.audience || C("[À définir]", "[To be defined]"), M, y + 44, col, 28);
     let y2 = 330;
     const x2 = M + col + 60;
-    label(ctx, "Personnalité", x2, y2);
-    y2 = para(ctx, b.personality.length ? b.personality.join(" · ") : "[À définir avec vous]", x2, y2 + 44, col, 28);
+    label(ctx, C("Personnalité", "Personality"), x2, y2);
+    y2 = para(ctx, b.personality.length ? b.personality.join(" · ") : C("[À définir avec vous]", "[To be defined with you]"), x2, y2 + 44, col, 28);
     y2 += 30;
-    label(ctx, "Histoire", x2, y2);
-    y2 = para(ctx, b.story || "[À écrire à partir de faits réels : origine, fabrication, fondateurs]", x2, y2 + 44, col, 26);
+    label(ctx, C("Histoire", "Story"), x2, y2);
+    y2 = para(ctx, b.story || C("[À écrire à partir de faits réels : origine, fabrication, fondateurs]", "[To write from real facts: origin, how it's made, founders]"), x2, y2 + 44, col, 26);
     if (b.values.length) {
       y2 += 30;
-      label(ctx, "Valeurs", x2, y2);
+      label(ctx, C("Valeurs", "Values"), x2, y2);
       para(ctx, b.values.map((v) => `${v.title} — ${v.text}`).join("\n"), x2, y2 + 44, col, 24);
     }
   }
@@ -167,17 +178,17 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   // 3 · Logo et déclinaisons
   {
     const ctx = page();
-    head(ctx, 3, "Logo", "Le logo et ses versions");
+    head(ctx, 3, "Logo", C("Le logo et ses versions", "The logo and its versions"));
     para(ctx, b.logo.concept, M, 300, W - M * 2, 26, mix(ink, paper, 0.25));
     const cw = (W - M * 2 - 40) / 2;
     card(ctx, M, 380, cw, 440, "#FFFFFF", mix(ink, paper, 0.85));
     contain(ctx, inp.logo, M + 60, 430, cw - 120, 340);
-    label(ctx, "Version principale", M, 860);
+    label(ctx, C("Version principale", "Primary version"), M, 860);
     card(ctx, M + cw + 40, 380, cw, 440, ink);
     contain(ctx, inp.logoLight, M + cw + 100, 430, cw - 120, 340);
-    label(ctx, "Version claire (fonds sombres)", M + cw + 40, 860);
+    label(ctx, C("Version claire (fonds sombres)", "Light version (dark backgrounds)"), M + cw + 40, 860);
     const sw = (W - M * 2 - 80) / 3;
-    const minis: [Image | Canvas | null, string, string][] = [[inp.logoWeb, "Version horizontale (site, en-tête)", "#FFFFFF"], [inp.mark, "Marque réduite (réseaux, favicon)", "#FFFFFF"], [tint(inp.mark, onColor(accent)), "Marque réduite sur couleur", accent]];
+    const minis: [Image | Canvas | null, string, string][] = [[inp.logoWeb, C("Version horizontale (site, en-tête)", "Horizontal version (website, header)"), "#FFFFFF"], [inp.mark, C("Marque réduite (réseaux, favicon)", "Brand mark (social, favicon)"), "#FFFFFF"], [tint(inp.mark, onColor(accent)), C("Marque réduite sur couleur", "Brand mark on color"), accent]];
     minis.forEach(([img, l, bg], i) => {
       const x = M + i * (sw + 40);
       card(ctx, x, 900, sw, 170, bg, bg === "#FFFFFF" ? mix(ink, paper, 0.85) : undefined);
@@ -189,7 +200,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   // 4 · Zone de protection et taille minimale
   {
     const ctx = page();
-    head(ctx, 4, "Logo", "Respiration et taille minimale");
+    head(ctx, 4, "Logo", C("Respiration et taille minimale", "Clear space and minimum size"));
     const lw = 760, lh = 340, lx = M + 60, ly = 420;
     if (inp.logo) {
       const s = Math.min(lw / inp.logo.width, lh / inp.logo.height);
@@ -207,17 +218,17 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
       text(ctx, "x", x + dw + pad / 2, y + dh / 2, font(HF, 600, 34, true), accent, "center");
     }
     const tx = M + 980;
-    label(ctx, "Zone de protection", tx, 440);
-    para(ctx, "Aucun texte, aucune image ni aucun bord ne pénètre dans le cadre pointillé. Sa marge « x » vaut le quart de la plus petite dimension du logo.", tx, 484, 560, 26);
-    label(ctx, "Taille minimale", tx, 720);
-    para(ctx, "Imprimé : 25 mm de large.\nÉcran : 120 px de large.\nEn dessous, utilisez la marque réduite.", tx, 764, 560, 26);
+    label(ctx, C("Zone de protection", "Clear space"), tx, 440);
+    para(ctx, C("Aucun texte, aucune image ni aucun bord ne pénètre dans le cadre pointillé. Sa marge « x » vaut le quart de la plus petite dimension du logo.", "No text, image or edge may enter the dotted frame. Its margin \"x\" equals a quarter of the logo's smallest dimension."), tx, 484, 560, 26);
+    label(ctx, C("Taille minimale", "Minimum size"), tx, 720);
+    para(ctx, C("Imprimé : 25 mm de large.\nÉcran : 120 px de large.\nEn dessous, utilisez la marque réduite.", "Print: 25 mm wide.\nScreen: 120 px wide.\nBelow that, use the brand mark."), tx, 764, 560, 26);
   }
 
   // 5 · Usages à éviter
   {
     const ctx = page();
-    head(ctx, 5, "Logo", "Usages à éviter");
-    const items = ["Déformer les proportions", "Changer les couleurs", "Poser sur un fond chargé", "Incliner ou faire pivoter"];
+    head(ctx, 5, "Logo", C("Usages à éviter", "What to avoid"));
+    const items = C(["Déformer les proportions", "Changer les couleurs", "Poser sur un fond chargé", "Incliner ou faire pivoter"], ["Distorting the proportions", "Changing the colors", "Placing it on a busy background", "Tilting or rotating it"]);
     const cw = (W - M * 2 - 3 * 36) / 4;
     items.forEach((t, i) => {
       const x = M + i * (cw + 36), y = 380;
@@ -260,7 +271,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   // 6 · Couleurs
   {
     const ctx = page();
-    head(ctx, 6, "Couleurs", "La palette");
+    head(ctx, 6, C("Couleurs", "Colors"), C("La palette", "The palette"));
     const keys = ["primary", "secondary", "accent", "light", "dark"] as const;
     const cw = (W - M * 2 - 4 * 28) / 5;
     keys.forEach((k, i) => {
@@ -268,17 +279,17 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
       const x = M + i * (cw + 28), y = 320;
       card(ctx, x, y, cw, 360, hex, k === "light" ? mix(ink, paper, 0.8) : undefined);
       const on = onColor(hex);
-      text(ctx, PAL_LABEL[k], x + 26, y + 56, font(BF, 600, 26), on);
+      text(ctx, C(PAL_LABEL[k].fr, PAL_LABEL[k].en), x + 26, y + 56, font(BF, 600, 26), on);
       text(ctx, hex.toUpperCase(), x + 26, y + 320, font(BF, 500, 24), on);
       const [r, g, bb] = hexToRgb(hex);
-      label(ctx, "RVB", x, y + 410);
+      label(ctx, C("RVB", "RGB"), x, y + 410);
       text(ctx, `${r} · ${g} · ${bb}`, x, y + 444, font(BF, 500, 22));
-      label(ctx, "CMJN (indicatif)", x, y + 490);
+      label(ctx, C("CMJN (indicatif)", "CMYK (approximate)"), x, y + 490);
       text(ctx, cmyk(hex), x, y + 524, font(BF, 500, 22));
-      label(ctx, "Contraste", x, y + 570);
+      label(ctx, C("Contraste", "Contrast"), x, y + 570);
       const cw1 = contrast(hex, "#FFFFFF"), cw2 = contrast(hex, ink);
-      text(ctx, `blanc ${cw1.toFixed(1)} ${cw1 >= 4.5 ? "AA" : cw1 >= 3 ? "AA gros" : "—"}`, x, y + 604, font(BF, 500, 20));
-      text(ctx, `sombre ${cw2.toFixed(1)} ${cw2 >= 4.5 ? "AA" : cw2 >= 3 ? "AA gros" : "—"}`, x, y + 636, font(BF, 500, 20));
+      text(ctx, `${C("blanc", "white")} ${cw1.toFixed(1)} ${cw1 >= 4.5 ? "AA" : cw1 >= 3 ? C("AA gros", "AA large") : "—"}`, x, y + 604, font(BF, 500, 20));
+      text(ctx, `${C("sombre", "dark")} ${cw2.toFixed(1)} ${cw2 >= 4.5 ? "AA" : cw2 >= 3 ? C("AA gros", "AA large") : "—"}`, x, y + 636, font(BF, 500, 20));
     });
     // Proportions conseillées
     const y = 1020, bw = W - M * 2;
@@ -291,44 +302,44 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     }
     ctx.strokeStyle = mix(ink, paper, 0.8);
     ctx.strokeRect(M, y, bw, 50);
-    label(ctx, "Proportions conseillées : 60 % clair · 30 % principale · 10 % accent", M, y + 90);
+    label(ctx, C("Proportions conseillées : 60 % clair · 30 % principale · 10 % accent", "Recommended proportions: 60% light · 30% primary · 10% accent"), M, y + 90);
   }
 
   // 7 · Typographies
   {
     const ctx = page();
-    head(ctx, 7, "Typographies", "Deux familles, des rôles clairs");
+    head(ctx, 7, C("Typographies", "Typography"), C("Deux familles, des rôles clairs", "Two families, clear roles"));
     const cw = (W - M * 2 - 80) / 2;
-    label(ctx, `Titres — ${HF}`, M, 330);
+    label(ctx, `${C("Titres", "Headings")} — ${HF}`, M, 330);
     text(ctx, "Aa", M, 560, font(HF, 600, 220));
     para(ctx, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 € & ! ?", M, 640, cw, 30, ink, 1.45);
     text(ctx, b.tagline || b.name, M, 900, font(HF, 600, 54));
     const x2 = M + cw + 80;
-    label(ctx, `Texte — ${BF}`, x2, 330);
+    label(ctx, `${C("Texte", "Body")} — ${BF}`, x2, 330);
     text(ctx, "Aa", x2, 560, font(BF, 500, 220));
     para(ctx, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 € & ! ?", x2, 640, cw, 30, ink, 1.45);
-    para(ctx, b.positioning && !b.positioning.startsWith("[") ? b.positioning : "Le texte courant reste sobre et lisible : 16 px minimum à l'écran, interlignage généreux, une seule idée par paragraphe.", x2, 880, cw, 24, mix(ink, paper, 0.2));
-    label(ctx, "Hiérarchie : titre 1 · titre 2 · texte · légende — jamais plus de deux familles", M, 1080);
+    para(ctx, b.positioning && !b.positioning.startsWith("[") ? b.positioning : C("Le texte courant reste sobre et lisible : 16 px minimum à l'écran, interlignage généreux, une seule idée par paragraphe.", "Body text stays simple and readable: 16 px minimum on screen, generous line spacing, one idea per paragraph."), x2, 880, cw, 24, mix(ink, paper, 0.2));
+    label(ctx, C("Hiérarchie : titre 1 · titre 2 · texte · légende — jamais plus de deux familles", "Hierarchy: heading 1 · heading 2 · body · caption — never more than two families"), M, 1080);
   }
 
   // 8 · Ton de voix
   {
     const ctx = page();
-    head(ctx, 8, "Ton", "Notre façon de parler");
-    label(ctx, "Voix", M, 330);
+    head(ctx, 8, C("Ton", "Tone"), C("Notre façon de parler", "How we speak"));
+    label(ctx, C("Voix", "Voice"), M, 330);
     para(ctx, b.tone.voice, M, 380, W - M * 2, 34, ink, 1.4, 500);
     const cw = (W - M * 2 - 60) / 2;
     card(ctx, M, 460, cw, 330, mix(paper, "#FFFFFF", 0.6));
-    label(ctx, "À faire", M + 36, 510, "#1F7A4D");
+    label(ctx, C("À faire", "Do"), M + 36, 510, "#1F7A4D");
     para(ctx, b.tone.do.map((x) => `✓  ${x}`).join("\n"), M + 36, 560, cw - 72, 26);
     card(ctx, M + cw + 60, 460, cw, 330, mix(paper, "#FFFFFF", 0.6));
-    label(ctx, "À éviter", M + cw + 96, 510, "#B42318");
+    label(ctx, C("À éviter", "Don't"), M + cw + 96, 510, "#B42318");
     para(ctx, b.tone.dont.map((x) => `✕  ${x}`).join("\n"), M + cw + 96, 560, cw - 72, 26);
-    label(ctx, "Signature et pistes", M, 860);
+    label(ctx, C("Signature et pistes", "Tagline and alternatives"), M, 860);
     const lines = [b.tagline, ...(b.taglineAlternatives ?? [])].filter(Boolean).slice(0, 4);
-    para(ctx, lines.map((l, i) => (i === 0 ? `« ${l} »  (retenue)` : `« ${l} »`)).join("\n"), M, 910, cw, 28);
+    para(ctx, lines.map((l, i) => (i === 0 ? C(`« ${l} »  (retenue)`, `"${l}"  (chosen)`) : C(`« ${l} »`, `"${l}"`))).join("\n"), M, 910, cw, 28);
     if (inp.strategy?.keyMessages.length) {
-      label(ctx, "Messages clés", M + cw + 60, 860);
+      label(ctx, C("Messages clés", "Key messages"), M + cw + 60, 860);
       para(ctx, inp.strategy.keyMessages.slice(0, 4).map((m) => `— ${m}`).join("\n"), M + cw + 60, 910, cw, 24);
     }
   }
@@ -336,7 +347,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   // 9 · Applications : papeterie et numérique
   {
     const ctx = page();
-    head(ctx, 9, "Applications", "Papeterie et numérique");
+    head(ctx, 9, "Applications", C("Papeterie et numérique", "Stationery and digital"));
     // Carte de visite recto / verso (85 × 55 mm)
     const cw = 520, ch = 336;
     const shadow = (fn: () => void) => {
@@ -351,12 +362,12 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     contain(ctx, inp.logoWeb ?? inp.logo, M + 60, 400, cw - 120, ch - 120);
     shadow(() => card(ctx, M + 70, 720, cw, ch, accent));
     contain(ctx, tint(inp.mark, onColor(accent)), M + 70 + 30, 760, 140, 140);
-    text(ctx, "Prénom Nom", M + 70 + 40, 960, font(HF, 600, 32), onColor(accent));
-    text(ctx, "contact@votre-domaine.fr", M + 70 + 40, 1000, font(BF, 400, 22), onColor(accent));
-    label(ctx, "Carte de visite", M, 315);
+    text(ctx, C("Prénom Nom", "First Last"), M + 70 + 40, 960, font(HF, 600, 32), onColor(accent));
+    text(ctx, C("contact@votre-domaine.fr", "contact@your-domain.com"), M + 70 + 40, 1000, font(BF, 400, 22), onColor(accent));
+    label(ctx, C("Carte de visite", "Business card"), M, 315);
     // Avatar réseaux
     const ax = M + 760;
-    label(ctx, "Avatar réseaux sociaux", ax, 315);
+    label(ctx, C("Avatar réseaux sociaux", "Social media avatar"), ax, 315);
     ctx.fillStyle = "#FFFFFF";
     ctx.beginPath();
     ctx.arc(ax + 130, 470, 130, 0, Math.PI * 2);
@@ -366,25 +377,25 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     ctx.stroke();
     contain(ctx, inp.mark, ax + 50, 390, 160, 160);
     // En-tête e-mail
-    label(ctx, "En-tête d'e-mail", ax, 690);
+    label(ctx, C("En-tête d'e-mail", "Email header"), ax, 690);
     shadow(() => card(ctx, ax, 710, 780, 380, "#FFFFFF"));
     ctx.fillStyle = paper;
     ctx.fillRect(ax + 20, 730, 740, 110);
     contain(ctx, inp.logoWeb ?? inp.logo, ax + 220, 745, 340, 80);
-    para(ctx, `Bonjour,\nMerci pour votre commande chez ${b.name}.`, ax + 50, 900, 680, 24, ink);
+    para(ctx, C(`Bonjour,\nMerci pour votre commande chez ${b.name}.`, `Hello,\nThank you for your order from ${b.name}.`), ax + 50, 900, 680, 24, ink);
     ctx.fillStyle = accent;
     ctx.beginPath();
     ctx.roundRect(ax + 50, 990, 260, 60, 30);
     ctx.fill();
-    text(ctx, "Suivre ma commande", ax + 180, 1029, font(BF, 600, 20), onColor(accent), "center");
+    text(ctx, C("Suivre ma commande", "Track my order"), ax + 180, 1029, font(BF, 600, 20), onColor(accent), "center");
   }
 
   // 10 · Applications : produit et emballage
   {
     const ctx = page();
-    head(ctx, 10, "Applications", "Étiquette, sac et réseaux");
+    head(ctx, 10, "Applications", C("Étiquette, sac et réseaux", "Label, bag and social"));
     // Étiquette ronde
-    label(ctx, "Étiquette / sticker", M, 315);
+    label(ctx, C("Étiquette / sticker", "Label / sticker"), M, 315);
     ctx.fillStyle = paper === pal.light ? "#FFFFFF" : paper;
     ctx.beginPath();
     ctx.arc(M + 220, 560, 220, 0, Math.PI * 2);
@@ -395,7 +406,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     contain(ctx, inp.logo, M + 60, 430, 320, 260);
     // Sac shopping
     const sx = M + 560;
-    label(ctx, "Sac", sx, 315);
+    label(ctx, C("Sac", "Bag"), sx, 315);
     ctx.fillStyle = mix(pal.secondary, "#FFFFFF", 0.2);
     ctx.beginPath();
     ctx.moveTo(sx + 40, 420);
@@ -412,17 +423,17 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     contain(ctx, inp.logo, sx + 90, 600, 240, 220);
     // Publication 1:1
     const px = M + 1080;
-    label(ctx, "Publication 1:1", px, 315);
+    label(ctx, C("Publication 1:1", "1:1 post"), px, 315);
     const ps = 450;
     card(ctx, px, 340, ps, ps, pal.secondary);
     contain(ctx, inp.product, px + 60, 380, ps - 120, ps - 160);
     ctx.fillStyle = ink;
     ctx.fillRect(px, 340 + ps - 90, ps, 90);
     text(ctx, b.tagline || b.name, px + ps / 2, 340 + ps - 34, font(HF, 600, 30), onColor(ink), "center");
-    para(ctx, "Les visuels du studio reprennent ces règles automatiquement : couleurs, typographies, marges et logo.", px, 880, ps, 22, mix(ink, paper, 0.3));
+    para(ctx, C("Les visuels du studio reprennent ces règles automatiquement : couleurs, typographies, marges et logo.", "The studio's visuals apply these rules automatically: colors, typefaces, margins and logo."), px, 880, ps, 22, mix(ink, paper, 0.3));
   }
 
   const pages = canvases.map((c) => c.toBuffer("image/jpeg", 88));
-  const pdf = jpegPagesToPdf(pages.map((jpeg) => ({ jpeg, width: W, height: H })), 842, 595, `Charte de marque — ${b.name}`);
+  const pdf = jpegPagesToPdf(pages.map((jpeg) => ({ jpeg, width: W, height: H })), 842, 595, `${BOOK} — ${b.name}`);
   return { pages, pdf };
 }

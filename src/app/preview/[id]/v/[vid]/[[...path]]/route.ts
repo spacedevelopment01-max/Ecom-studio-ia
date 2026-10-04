@@ -11,7 +11,8 @@ import { compileTheme, importedBinary, themeAssetBinary } from "@/lib/theme/comp
 import { libraryLoader } from "@/lib/theme/loader";
 import { fontFilePath, renderNamedSections, renderPage, variantId, type PreviewCartLine } from "@/lib/theme/render";
 import { storeProducts } from "@/lib/theme/spec";
-import { PREVIEW_TOOLS } from "@/lib/theme/preview-tools";
+import { previewTools } from "@/lib/theme/preview-tools";
+import { L, uiLang } from "@/lib/i18n-server";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
 export const runtime = "nodejs";
@@ -23,7 +24,7 @@ async function load(ctx: P) {
   const { id, vid, path } = await ctx.params;
   ownedProject(user, id);
   const v = vid === "current" ? currentTheme(id) : themeVersion(id, vid);
-  if (!v) throw new HttpError(404, "Version de boutique introuvable.");
+  if (!v) throw new HttpError(404, L("Version de boutique introuvable.", "Store version not found."));
   return { id, vid, spec: v.spec as ThemeSpec, segs: path ?? [], base: `/preview/${id}/v/${vid}` };
 }
 
@@ -83,7 +84,7 @@ export const GET = handle(async (req: Request, ctx: P) => {
     }
     const text = compileTheme(spec).get(`assets/${name}`);
     if (text !== undefined) return new Response(text, { headers: { "Content-Type": name.endsWith(".css") ? "text/css; charset=utf-8" : name.endsWith(".js") ? "application/javascript; charset=utf-8" : name.endsWith(".svg") ? "image/svg+xml" : name.endsWith(".json") ? "application/json" : "text/plain", "Cache-Control": "no-cache" } });
-    return new Response("Fichier introuvable", { status: 404 });
+    return new Response(L("Fichier introuvable", "File not found"), { status: 404 });
   }
   if (segs[0] === "__fonts") {
     const f = fontFilePath(segs[1] ?? "");
@@ -94,7 +95,7 @@ export const GET = handle(async (req: Request, ctx: P) => {
   if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return Response.json(cartJson(spec, cart));
   if (url.searchParams.get("sections")) return Response.json(await sectionsFor(spec, base, cart, url.searchParams.get("sections")));
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
-  const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${PREVIEW_TOOLS}</body>`);
+  const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang())}</body>`);
   return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN" } });
 });
 
@@ -123,7 +124,7 @@ export const POST = handle(async (req: Request, ctx: P) => {
     const updates = Object.entries(data).filter(([k]) => k.startsWith("updates")).map(([, v]) => Number(v));
     cart = cart.map((l, i) => ({ ...l, quantity: updates[i] ?? l.quantity }));
   } else {
-    return new Response("Action d'aperçu non prise en charge", { status: 404 });
+    return new Response(L("Action d'aperçu non prise en charge", "Preview action not supported"), { status: 404 });
   }
   await writeCart(id, cart);
   const sections = await sectionsFor({ ...spec }, base, cart, data.sections ?? null);

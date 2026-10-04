@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { id, now, one, run } from "./db";
 import { randomToken, sha256 } from "./secrets";
+import { L } from "./i18n-server";
 
 export const SESSION_COOKIE = "ecs_session";
 const SESSION_DAYS = 30;
@@ -17,9 +18,9 @@ export class HttpError extends Error {
 
 export async function createUser(email: string, password: string, name: string): Promise<User> {
   email = email.trim().toLowerCase();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new HttpError(400, "Adresse e-mail invalide.");
-  if (password.length < 8) throw new HttpError(400, "Le mot de passe doit contenir au moins 8 caractères.");
-  if (one("SELECT 1 FROM users WHERE email = ?", email)) throw new HttpError(409, "Un compte existe déjà avec cette adresse.");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new HttpError(400, L("Adresse e-mail invalide.", "Invalid email address."));
+  if (password.length < 8) throw new HttpError(400, L("Le mot de passe doit contenir au moins 8 caractères.", "Password must be at least 8 characters long."));
+  if (one("SELECT 1 FROM users WHERE email = ?", email)) throw new HttpError(409, L("Un compte existe déjà avec cette adresse.", "An account already exists with this email address."));
   const hasAdmin = one("SELECT 1 FROM users WHERE role = 'admin'");
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
   // Administration réservée au propriétaire : avec ADMIN_EMAIL, seul ce compte est administrateur ;
@@ -93,13 +94,13 @@ export async function currentUser(): Promise<User | null> {
 
 export async function requireUser(): Promise<User> {
   const u = await currentUser();
-  if (!u) throw new HttpError(401, "Connexion requise.");
+  if (!u) throw new HttpError(401, L("Connexion requise.", "Sign-in required."));
   return u;
 }
 
 export async function requireAdmin(): Promise<User> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new HttpError(403, "Accès réservé à l'administration.");
+  if (u.role !== "admin") throw new HttpError(403, L("Accès réservé à l'administration.", "Access restricted to administrators."));
   return u;
 }
 
@@ -128,6 +129,6 @@ export type ProjectRow = {
 /** Isolation stricte : un projet n'est accessible qu'à son propriétaire. */
 export function ownedProject(user: User, projectId: string): ProjectRow {
   const p = one<ProjectRow>("SELECT * FROM projects WHERE id = ? AND user_id = ?", projectId, user.id);
-  if (!p) throw new HttpError(404, "Projet introuvable.");
+  if (!p) throw new HttpError(404, L("Projet introuvable.", "Project not found."));
   return p;
 }

@@ -14,6 +14,8 @@ import { assertCanSpend, EUR, recordUsage } from "../billing";
 import { currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
 import { priceFor, providerKey, requirePrice, routeFor, usdToEur, type TaskId } from "./config";
+import { contentLang, L, uiLang } from "../i18n-server";
+import { languageDirective } from "./prompts";
 
 export type LlmImage = { data: Buffer; label?: string };
 
@@ -38,7 +40,7 @@ export type LlmCall = {
 let cached: { key: string; client: Anthropic } | null = null;
 function client(): Anthropic {
   const key = providerKey("anthropic");
-  if (!key) throw new UserFacingError("Aucun fournisseur d'IA de langage n'est configuré. L'administration doit renseigner la clé Anthropic.");
+  if (!key) throw new UserFacingError(L("Aucun fournisseur d'IA de langage n'est configuré. L'administration doit renseigner la clé Anthropic.", "No language AI provider is configured. An administrator needs to add the Anthropic key."));
   if (cached?.key !== key) cached = { key, client: new Anthropic({ apiKey: key, maxRetries: 3, timeout: 10 * 60_000 }) };
   return cached.client;
 }
@@ -72,11 +74,20 @@ async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[
   return content;
 }
 
+/**
+ * Message système complet : consigne de langue de sortie en tête (langue des contenus et de l'interface
+ * de l'exécution en cours), puis instructions de la tâche. Le texte ne dépend que de ces deux langues et
+ * de la tâche : le préfixe mis en cache reste identique d'un appel à l'autre pour une même combinaison.
+ */
+export function systemText(call: Pick<LlmCall, "system">): string {
+  return `${languageDirective(contentLang(), uiLang())}\n\n${call.system}`;
+}
+
 function estimateMicro(call: LlmCall, model: string) {
   // Sans tarif « jetons » connu, l'appel est refusé (sinon il serait compté 0 € hors enveloppe).
   const p = requirePrice("anthropic", model);
-  if (p.unit !== "tokens") throw new UserFacingError(`Tarif « jetons » attendu pour anthropic:${model} : corrigez-le dans l'administration.`);
-  const inTok = (call.system.length + (call.context?.length ?? 0) + (call.reference?.length ?? 0) + call.prompt.length) / 3.2 + (call.images?.length ?? 0) * 1600;
+  if (p.unit !== "tokens") throw new UserFacingError(L(`Tarif « jetons » attendu pour anthropic:${model} : corrigez-le dans l'administration.`, `A per-token price is expected for anthropic:${model}. Fix it in the admin settings.`));
+  const inTok = (systemText(call).length + (call.context?.length ?? 0) + (call.reference?.length ?? 0) + call.prompt.length) / 3.2 + (call.images?.length ?? 0) * 1600;
   const outTok = Math.min(call.maxTokens ?? 16000, 6000);
   return Math.round(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * EUR);
 }
@@ -106,13 +117,13 @@ type RawResult = { text: string; stop: string | null; model: string };
 
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = ""): Promise<RawResult> {
   const route = routeFor(call.task);
-  if (route.provider !== "anthropic") throw new PermanentError(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`);
+  if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
   assertCanSpend(call.userId, estimateMicro(call, route.model));
   const isHaiku = route.model.startsWith("claude-haiku");
   const params: any = {
     model: route.model,
     max_tokens: call.maxTokens ?? 32000,
-    system: [{ type: "text", text: call.system, cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: systemText(call), cache_control: { type: "ephemeral" } }],
     messages,
   };
   if (!isHaiku) {
@@ -128,13 +139,13 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     const stream = isHaiku ? client().messages.stream(params) : client().beta.messages.stream(params);
     msg = (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
   } catch (e) {
-    if (e instanceof Anthropic.AuthenticationError) throw new PermanentError("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.");
-    if (e instanceof Anthropic.BadRequestError) throw new PermanentError(`Requête refusée par le fournisseur : ${e.message}`);
-    if (e instanceof Anthropic.NotFoundError) throw new PermanentError(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`);
+    if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
+    if (e instanceof Anthropic.BadRequestError) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
     throw e; // 429 / 5xx / réseau : la file de tâches réessaie.
   }
   account(call, msg.model || route.model, msg.usage, suffix);
-  if (msg.stop_reason === "refusal") throw new UserFacingError("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.");
+  if (msg.stop_reason === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
   const text = msg.content.filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text").map((b) => b.text).join("");
   return { text, stop: msg.stop_reason, model: msg.model };
 }
@@ -172,7 +183,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     messages.push({ role: "assistant", content: r.text || "{}" });
     messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue || "JSON illisible"}). Renvoie l'objet complet corrigé, uniquement le JSON.` });
   }
-  throw new PermanentError(`Réponse IA inexploitable après correction : ${last.slice(0, 200)}`);
+  throw new PermanentError(L(`Réponse IA inexploitable après correction : ${last.slice(0, 200)}`, `Unusable AI response after correction: ${last.slice(0, 200)}`));
 }
 
 export function extractJson(text: string): unknown {

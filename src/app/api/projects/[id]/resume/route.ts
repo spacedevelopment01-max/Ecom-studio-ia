@@ -5,6 +5,7 @@ import { one, json } from "@/lib/db";
 import { STEPS } from "@/lib/engine/pipeline";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { setStatus } from "@/lib/projects";
+import { L } from "@/lib/i18n-server";
 
 /** Reprise ou relance du pilote à partir d'une étape (les étapes antérieures sont conservées). */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
@@ -13,6 +14,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const last = one<{ payload: string }>("SELECT payload FROM jobs WHERE project_id = ? AND type = 'pipeline.run' ORDER BY created_at DESC LIMIT 1", p.id);
   const prev = json<any>(last?.payload, { input: {} });
   setStatus(p.id, "queued");
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "pipeline.run", label: "Suite de la création", payload: { projectId: p.id, mode: b.mode ?? "autopilot", from: b.from ?? "copy", input: prev.input ?? {} }, maxAttempts: 2 });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "pipeline.run", label: L("Suite de la création", "Continuing the creation"), payload: { projectId: p.id, mode: b.mode ?? "autopilot", from: b.from ?? "copy", input: prev.input ?? {} }, maxAttempts: 2 });
   return ok({ jobId: job.id });
 });

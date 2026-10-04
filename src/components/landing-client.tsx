@@ -2,6 +2,7 @@
 /** Îlots interactifs de la page d'accueil. */
 import { useEffect, useRef, useState } from "react";
 import { cx } from "./ui";
+import { useLang, useT } from "./i18n";
 
 /** Ajoute la classe « in » aux éléments .reveal visibles (une seule fois). */
 export function RevealObserver() {
@@ -38,7 +39,8 @@ export function AutoVideo({ src, poster, className, label }: { src: string; post
   return <video ref={ref} src={src} poster={poster} muted loop playsInline preload="none" aria-label={label} className={className} />;
 }
 
-type Film = { label: string; src: string; poster: string; captions?: string; description: string };
+/** `captions` : sous-titres français ; `captionsEn` : sous-titres anglais (piste affichée par défaut selon la langue). */
+type Film = { label: string; src: string; poster: string; captions?: string; captionsEn?: string; description: string };
 
 /** Films de présentation : lus en silence ; « avec le son » relance le film choisi depuis le début. */
 export function FilmPlayer({ films }: { films: Film[] }) {
@@ -46,6 +48,8 @@ export function FilmPlayer({ films }: { films: Film[] }) {
   const [i, setI] = useState(0);
   const [sound, setSound] = useState(false);
   const film = films[i];
+  const { lang } = useLang();
+  const t = useT();
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
@@ -87,16 +91,17 @@ export function FilmPlayer({ films }: { films: Film[] }) {
     <div>
       <div className="relative">
         <video ref={ref} src={film.src} poster={film.poster} muted={!sound} loop={!sound} autoPlay playsInline preload="metadata" aria-label={film.description} className="aspect-video w-full bg-[#070B17] object-cover">
-          {film.captions && <track kind="captions" src={film.captions} srcLang="fr" label="Français" />}
+          {film.captions && <track key={`fr-${lang}`} kind="captions" src={film.captions} srcLang="fr" label="Français" default={lang === "fr"} />}
+          {film.captionsEn && <track key={`en-${lang}`} kind="captions" src={film.captionsEn} srcLang="en" label="English" default={lang === "en"} />}
         </video>
         {!sound && (
           <button onClick={withSound} style={{ position: "absolute" }} className="btn-glow !absolute right-2.5 top-2.5 z-10 inline-flex h-8 items-center gap-1.5 rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink shadow-soft transition hover:-translate-y-0.5 sm:right-4 sm:top-4 sm:h-10 sm:gap-2 sm:px-4 sm:text-sm">
-            <span aria-hidden>▶</span> Avec le son
+            <span aria-hidden>▶</span> {t("Avec le son", "With sound")}
           </button>
         )}
       </div>
       {films.length > 1 && (
-        <div className="flex gap-1 border-t border-white/10 bg-[#0A1024] p-1.5" role="tablist" aria-label="Choisir le film">
+        <div className="flex gap-1 border-t border-white/10 bg-[#0A1024] p-1.5" role="tablist" aria-label={t("Choisir le film", "Choose a film")}>
           {films.map((f, k) => (
             <button key={f.src} role="tab" aria-selected={k === i} onClick={() => choose(k)} className={cx("flex-1 rounded-full px-3 py-2 text-xs font-medium transition sm:text-sm", k === i ? "bg-white text-[#0A1024]" : "text-white/70 hover:text-white")}>
               {f.label}
@@ -111,6 +116,7 @@ export function FilmPlayer({ films }: { films: Film[] }) {
 /** Comparaison avant / après (photo d'origine ↔ création). */
 export function BeforeAfter({ before, after, beforeLabel, afterLabel, aspect = "4 / 5" }: { before: string; after: string; beforeLabel: string; afterLabel: string; aspect?: string }) {
   const [pos, setPos] = useState(52);
+  const t = useT();
   return (
     <div className="relative w-full select-none overflow-hidden rounded-3xl bg-paper-2" style={{ aspectRatio: aspect }}>
       <img src={after} alt={afterLabel} className="absolute inset-0 size-full object-cover" loading="lazy" />
@@ -123,7 +129,7 @@ export function BeforeAfter({ before, after, beforeLabel, afterLabel, aspect = "
       </div>
       <span className="absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1 text-xs text-white backdrop-blur">{beforeLabel}</span>
       <span className="absolute right-3 top-3 rounded-full bg-black/55 px-3 py-1 text-xs text-white backdrop-blur">{afterLabel}</span>
-      <input type="range" min={0} max={100} value={pos} onChange={(e) => setPos(Number(e.target.value))} aria-label="Comparer la photo d'origine et la création" className="absolute inset-0 size-full cursor-ew-resize opacity-0" />
+      <input type="range" min={0} max={100} value={pos} onChange={(e) => setPos(Number(e.target.value))} aria-label={t("Comparer la photo d'origine et la création", "Compare the original photo and the creation")} className="absolute inset-0 size-full cursor-ew-resize opacity-0" />
     </div>
   );
 }
@@ -150,11 +156,12 @@ export type Demo = {
 
 export function DemoTabs({ demos }: { demos: Demo[] }) {
   const [i, setI] = useState(0);
+  const t = useT();
   const d = demos[i];
   if (!d) return null;
   return (
     <div>
-      <div role="tablist" aria-label="Démonstrations" className="scrollbar-none -mx-4 mb-8 flex gap-2 overflow-x-auto px-4">
+      <div role="tablist" aria-label={t("Démonstrations", "Demos")} className="scrollbar-none -mx-4 mb-8 flex gap-2 overflow-x-auto px-4">
         {demos.map((x, k) => (
           <button key={x.id} role="tab" aria-selected={k === i} onClick={() => setI(k)} className={cx("shrink-0 rounded-full border px-4 py-2 text-sm transition", k === i ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")}>
             {x.brand} <span className="opacity-60">· {x.sector}</span>
@@ -162,27 +169,27 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
         ))}
       </div>
       <p className="-mt-4 mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
-        <span className={cx("rounded-full px-2.5 py-0.5 text-xs font-medium", d.source ? "bg-signal-soft text-signal" : "bg-paper-2 text-muted")}>{d.source ? `Produit réel · ${d.source.supplier}` : "Produit fictif · rendu 3D"}</span>
-        {d.storeType && d.storeType !== "mono" && <span className="rounded-full bg-paper-2 px-2.5 py-0.5 text-xs">{d.storeType === "niche" ? "Boutique niche" : "Multi-produit"} · {d.products} produits</span>}
+        <span className={cx("rounded-full px-2.5 py-0.5 text-xs font-medium", d.source ? "bg-signal-soft text-signal" : "bg-paper-2 text-muted")}>{d.source ? t(`Produit réel · ${d.source.supplier}`, `Real product · ${d.source.supplier}`) : t("Produit fictif · rendu 3D", "Fictional product · 3D render")}</span>
+        {d.storeType && d.storeType !== "mono" && <span className="rounded-full bg-paper-2 px-2.5 py-0.5 text-xs">{d.storeType === "niche" ? t("Boutique niche", "Niche store") : t("Multi-produit", "Multi-product")} · {d.products} {t("produits", "products")}</span>}
         {d.source && <span>{d.source.note}</span>}
       </p>
       <div role="tabpanel" className="grid gap-4 lg:grid-cols-12">
         <div className="grid gap-4 lg:col-span-3">
           <figure className="overflow-hidden rounded-3xl border border-line bg-card">
-            <img src={d.photo} alt={`Photo d'entrée : ${d.product}`} className="aspect-[4/5] w-full object-cover" loading="lazy" />
+            <img src={d.photo} alt={t(`Photo d'entrée : ${d.product}`, `Input photo: ${d.product}`)} className="aspect-[4/5] w-full object-cover" loading="lazy" />
             <figcaption className="flex items-center justify-between px-4 py-3 text-xs text-muted">
-              <span>Entrée : une seule photo</span>
+              <span>{t("Entrée : une seule photo", "Input: a single photo")}</span>
               <span className="rounded-full bg-paper-2 px-2 py-0.5">1/1</span>
             </figcaption>
           </figure>
           <div className="rounded-3xl border border-line bg-card p-5">
-            <img src={d.logo} alt={`Logo ${d.brand}`} className="mx-auto h-16 w-auto object-contain dark:invert" loading="lazy" />
+            <img src={d.logo} alt={t(`Logo ${d.brand}`, `${d.brand} logo`)} className="mx-auto h-16 w-auto object-contain dark:invert" loading="lazy" />
             <div className="mt-4 flex overflow-hidden rounded-full">
               {d.palette.map((c) => (
                 <span key={c} className="h-7 flex-1" style={{ background: c }} title={c} />
               ))}
             </div>
-            <p className="mt-3 text-xs text-muted">Direction « {d.direction} » · palette mesurée sur le produit</p>
+            <p className="mt-3 text-xs text-muted">{t(`Direction « ${d.direction} » · palette mesurée sur le produit`, `“${d.direction}” direction · palette measured on the product`)}</p>
           </div>
         </div>
         <div className="grid gap-4 lg:col-span-6">
@@ -191,9 +198,9 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
               <span className="size-2.5 rounded-full bg-line" />
               <span className="size-2.5 rounded-full bg-line" />
               <span className="size-2.5 rounded-full bg-line" />
-              <span className="ml-3 truncate text-xs text-muted">Aperçu du thème généré</span>
+              <span className="ml-3 truncate text-xs text-muted">{t("Aperçu du thème généré", "Generated theme preview")}</span>
             </div>
-            <img src={d.shopDesktop} alt={`Page d'accueil de la boutique ${d.brand}`} className="aspect-[16/10] w-full object-cover object-top" loading="lazy" />
+            <img src={d.shopDesktop} alt={t(`Page d'accueil de la boutique ${d.brand}`, `${d.brand} store home page`)} className="aspect-[16/10] w-full object-cover object-top" loading="lazy" />
           </div>
           <div className="grid grid-cols-3 gap-4">
             {d.images.slice(0, 3).map((im) => (
@@ -206,11 +213,11 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
         </div>
         <div className="grid grid-cols-2 gap-4 lg:col-span-3 lg:grid-cols-1">
           <div className="relative mx-auto w-full max-w-[260px] overflow-hidden rounded-[2rem] border-[6px] border-ink bg-ink">
-            <AutoVideo src={d.video} poster={d.videoPoster} label={`Publicité vidéo 9:16 pour ${d.brand}`} className="aspect-[9/16] w-full object-cover" />
-            <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">Vidéo 9:16 · MP4</span>
+            <AutoVideo src={d.video} poster={d.videoPoster} label={t(`Publicité vidéo 9:16 pour ${d.brand}`, `9:16 video ad for ${d.brand}`)} className="aspect-[9/16] w-full object-cover" />
+            <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">{t("Vidéo 9:16 · MP4", "9:16 video · MP4")}</span>
           </div>
           <div className="relative mx-auto w-full max-w-[200px] overflow-hidden rounded-[1.6rem] border-[5px] border-ink bg-ink lg:hidden">
-            <img src={d.shopMobile} alt={`Boutique ${d.brand} sur téléphone`} className="aspect-[9/19] w-full object-cover object-top" loading="lazy" />
+            <img src={d.shopMobile} alt={t(`Boutique ${d.brand} sur téléphone`, `${d.brand} store on mobile`)} className="aspect-[9/19] w-full object-cover object-top" loading="lazy" />
           </div>
         </div>
       </div>
@@ -348,6 +355,7 @@ export function ThemeShowcase({ themes, children }: { themes: ThemeShow[]; child
   const track = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLDivElement>(null);
   const [pinned, setPinned] = useState(false);
+  const t = useT();
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)");
     const apply = () => setPinned(mq.matches);
@@ -394,7 +402,7 @@ export function ThemeShowcase({ themes, children }: { themes: ThemeShow[]; child
                   <span className="size-2 rounded-full bg-line" /><span className="size-2 rounded-full bg-line" /><span className="size-2 rounded-full bg-line" />
                   <span className="ml-2 truncate text-[11px] text-muted">{d.name.toLowerCase()}.myshopify.com</span>
                 </div>
-                <img src={d.preview} alt={`Boutique de démonstration, thème ${d.name}`} loading="lazy" className="aspect-[16/11] w-full object-cover object-top" />
+                <img src={d.preview} alt={t(`Boutique de démonstration, thème ${d.name}`, `Demo store, ${d.name} theme`)} loading="lazy" className="aspect-[16/11] w-full object-cover object-top" />
               </div>
               <div className="px-2.5 pb-2 pt-4">
                 <div className="flex items-baseline justify-between gap-3">
@@ -404,7 +412,7 @@ export function ThemeShowcase({ themes, children }: { themes: ThemeShow[]; child
                 <p className="serif-i text-lg text-signal">{d.tagline}</p>
                 <ul className="mt-3 flex flex-wrap gap-1.5">
                   {d.chrome.map((c) => <li key={c} className="rounded-full border border-line bg-paper px-2.5 py-1 text-[11px] text-ink-2">{c}</li>)}
-                  {d.dark && <li className="rounded-full bg-ink px-2.5 py-1 text-[11px] text-paper">Version sombre</li>}
+                  {d.dark && <li className="rounded-full bg-ink px-2.5 py-1 text-[11px] text-paper">{t("Version sombre", "Dark version")}</li>}
                 </ul>
               </div>
             </article>

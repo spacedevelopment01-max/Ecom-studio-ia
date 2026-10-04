@@ -3,6 +3,7 @@ import { all, id, json, now, one, run, tx } from "./db";
 import type { ProjectRow } from "./auth";
 import { emptyProduct, type Brand, type CatalogItem, type ProductProfile, type ProjectSettings, type StoreType, type Strategy } from "./project-types";
 import type { ThemeSpec } from "./theme/spec";
+import { L } from "./i18n-server";
 
 export type Project = {
   row: ProjectRow;
@@ -28,7 +29,7 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
 
 export function loadProject(projectId: string): Project {
   const row = one<ProjectRow>("SELECT * FROM projects WHERE id = ?", projectId);
-  if (!row) throw new Error("Projet introuvable.");
+  if (!row) throw new Error(L("Projet introuvable.", "Project not found."));
   const brand = json<Brand | null>(row.brand_json, null);
   const strategy = json<Strategy | null>(row.strategy_json, null);
   return {

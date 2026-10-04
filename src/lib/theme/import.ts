@@ -8,6 +8,8 @@
  */
 import { unzipSync, strFromU8 } from "fflate";
 import type { GroupJson, SectionSchema, SettingSchema, TemplateJson } from "./spec";
+import type { Lang } from "../i18n";
+import { L, uiLang } from "../i18n-server";
 
 export type ImportedTheme = {
   /** Nom du thème (theme_info) ou du fichier. */
@@ -61,15 +63,15 @@ export type ThemeArchive = { root: string; text: Map<string, string>; binary: Ma
 
 /** Ouvre le ZIP et repère la racine du thème (dossier contenant layout/theme.liquid). */
 export function openThemeZip(zip: Uint8Array): ThemeArchive {
-  if (zip.length > MAX_ZIP) throw new Error("Le fichier dépasse 60 Mo : exportez le thème depuis Shopify sans médias volumineux.");
+  if (zip.length > MAX_ZIP) throw new Error(L("Le fichier dépasse 60 Mo : exportez le thème depuis Shopify sans médias volumineux.", "The file is larger than 60 MB: export the theme from Shopify without large media files."));
   let entries: Record<string, Uint8Array>;
   try {
     entries = unzipSync(zip);
   } catch {
-    throw new Error("Ce fichier n'est pas un ZIP lisible. Dans Shopify : Boutique en ligne › Thèmes › … › Télécharger le fichier du thème.");
+    throw new Error(L("Ce fichier n'est pas un ZIP lisible. Dans Shopify : Boutique en ligne › Thèmes › … › Télécharger le fichier du thème.", "This file isn't a readable ZIP. In Shopify: Online Store › Themes › … › Download theme file."));
   }
   const layout = Object.keys(entries).find((p) => /(^|\/)layout\/theme\.liquid$/.test(p) && !p.includes("__MACOSX"));
-  if (!layout) throw new Error("Aucun fichier layout/theme.liquid : ce ZIP ne contient pas un thème Shopify.");
+  if (!layout) throw new Error(L("Aucun fichier layout/theme.liquid : ce ZIP ne contient pas un thème Shopify.", "No layout/theme.liquid file: this ZIP doesn't contain a Shopify theme."));
   const root = layout.slice(0, layout.length - "layout/theme.liquid".length);
   const text = new Map<string, string>();
   const binary = new Map<string, Uint8Array>();
@@ -83,10 +85,11 @@ export function openThemeZip(zip: Uint8Array): ThemeArchive {
   return { root, text, binary };
 }
 
-/** Traduction des clés « t:… » des schémas avec les fichiers locales/*.schema.json du thème (français d'abord). */
-export function schemaTranslator(text: Map<string, string>) {
+/** Traduction des clés « t:… » des schémas avec les fichiers locales/*.schema.json du thème (langue demandée d'abord). */
+export function schemaTranslator(text: Map<string, string>, lang: Lang = "fr") {
   const pick = (re: RegExp) => [...text.keys()].find((k) => re.test(k));
-  const sources = [pick(/^locales\/fr(-FR)?\.schema\.json$/), pick(/^locales\/fr(-FR)?\.default\.schema\.json$/), pick(/^locales\/en\.default\.schema\.json$/), pick(/^locales\/[a-z-]+\.default\.schema\.json$/)]
+  const own = (l: Lang) => [pick(new RegExp(`^locales/${l}(-[A-Za-z]+)?\\.schema\\.json$`)), pick(new RegExp(`^locales/${l}(-[A-Za-z]+)?\\.default\\.schema\\.json$`))];
+  const sources = [...own(lang), ...own(lang === "fr" ? "en" : "fr"), pick(/^locales\/[a-z-]+\.default\.schema\.json$/)]
     .filter(Boolean)
     .map((k) => {
       try {
@@ -131,13 +134,13 @@ export function importedSectionSchema(liquid: string, tr: (v: unknown) => unknow
   };
 }
 
-const PAGE_LABELS: Record<string, string> = { index: "Accueil", product: "Fiche produit", collection: "Collection", "list-collections": "Liste des collections", cart: "Panier", search: "Recherche", page: "Page", blog: "Blog", article: "Article", "404": "Page introuvable", password: "Mot de passe", "customers/account": "Compte client" };
-const pageLabel = (t: string) => PAGE_LABELS[t] ?? (t.startsWith("page.") ? `Page « ${t.slice(5)} »` : t.startsWith("product.") ? `Fiche produit « ${t.slice(8)} »` : t);
+const PAGE_LABELS: Record<string, [string, string]> = { index: ["Accueil", "Home"], product: ["Fiche produit", "Product page"], collection: ["Collection", "Collection"], "list-collections": ["Liste des collections", "Collections list"], cart: ["Panier", "Cart"], search: ["Recherche", "Search"], page: ["Page", "Page"], blog: ["Blog", "Blog"], article: ["Article", "Article"], "404": ["Page introuvable", "Page not found"], password: ["Mot de passe", "Password"], "customers/account": ["Compte client", "Customer account"] };
+const pageLabel = (t: string) => (PAGE_LABELS[t] ? L(...PAGE_LABELS[t]) : t.startsWith("page.") ? L(`Page « ${t.slice(5)} »`, `"${t.slice(5)}" page`) : t.startsWith("product.") ? L(`Fiche produit « ${t.slice(8)} »`, `"${t.slice(8)}" product page`) : t);
 
 /** Découpe le thème : gabarits, groupes, réglages, sections disponibles, et rapport d'analyse. */
 export function decomposeTheme(arc: ThemeArchive, fileName: string) {
   const { text, binary } = arc;
-  const tr = schemaTranslator(text);
+  const tr = schemaTranslator(text, uiLang());
   const warnings: string[] = [];
 
   // Réglages et informations du thème.
@@ -145,7 +148,7 @@ export function decomposeTheme(arc: ThemeArchive, fileName: string) {
   try {
     schemaGroups = parseThemeJson(text.get("config/settings_schema.json") ?? "[]");
   } catch {
-    warnings.push("config/settings_schema.json illisible : les réglages généraux ne pourront pas être modifiés dans le studio.");
+    warnings.push(L("config/settings_schema.json illisible : les réglages généraux ne pourront pas être modifiés dans le studio.", "config/settings_schema.json is unreadable: the theme settings can't be edited in the studio."));
   }
   const info = schemaGroups.find((g) => g.name === "theme_info") ?? {};
   let settings: Record<string, unknown> = {};
@@ -155,7 +158,7 @@ export function decomposeTheme(arc: ThemeArchive, fileName: string) {
     presets = data.presets ?? {};
     settings = typeof data.current === "string" ? ((presets as any)[data.current] ?? {}) : (data.current ?? {});
   } catch {
-    warnings.push("config/settings_data.json illisible : les réglages par défaut du thème sont utilisés.");
+    warnings.push(L("config/settings_data.json illisible : les réglages par défaut du thème sont utilisés.", "config/settings_data.json is unreadable: the theme's default settings are used."));
   }
 
   // Sections disponibles.
@@ -164,10 +167,10 @@ export function decomposeTheme(arc: ThemeArchive, fileName: string) {
     const m = p.match(/^sections\/([^/]+)\.liquid$/);
     if (!m) continue;
     const schema = importedSectionSchema(src, tr);
-    if (!schema && /\{%-?\s*schema/.test(src)) warnings.push(`sections/${m[1]}.liquid : schéma JSON invalide, section non modifiable dans le studio.`);
+    if (!schema && /\{%-?\s*schema/.test(src)) warnings.push(L(`sections/${m[1]}.liquid : schéma JSON invalide, section non modifiable dans le studio.`, `sections/${m[1]}.liquid: invalid JSON schema, this section can't be edited in the studio.`));
     sections.push({ type: m[1], name: schema?.name ?? m[1], settings: schema?.settings.filter((s) => s.id).length ?? 0, blocks: (schema?.blocks ?? []).map((b) => b.type), addable: !!schema?.presets?.length, groups: schema?.enabled_on?.groups ?? [] });
   }
-  sections.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  sections.sort((a, b) => a.name.localeCompare(b.name, L("fr", "en")));
   const nameOf = (type: string) => sections.find((s) => s.type === type)?.name ?? type;
 
   // Gabarits JSON (pages modifiables section par section).
@@ -180,13 +183,13 @@ export function decomposeTheme(arc: ThemeArchive, fileName: string) {
       if (!j || typeof j.sections !== "object") continue;
       templates[m[1]] = { sections: normalizeSections(j.sections), order: Array.isArray(j.order) ? j.order : Object.keys(j.sections), ...(j.layout !== undefined ? { layout: j.layout } : {}), ...(j.wrapper ? { wrapper: j.wrapper } : {}) };
     } catch {
-      warnings.push(`templates/${m[1]}.json illisible : page ignorée.`);
+      warnings.push(L(`templates/${m[1]}.json illisible : page ignorée.`, `templates/${m[1]}.json is unreadable: page skipped.`));
     }
   }
   const liquidTemplates = [...text.keys()].filter((p) => /^templates\/.+\.liquid$/.test(p));
-  if (!Object.keys(templates).length) warnings.push("Aucun gabarit JSON : thème d'ancienne génération (avant Online Store 2.0). Les pages ne se découpent pas en sections modifiables ; le studio peut le prévisualiser et l'exporter, mais pas le réorganiser.");
-  else if (liquidTemplates.length) warnings.push(`${liquidTemplates.length} gabarit(s) Liquid (${liquidTemplates.map((p) => p.slice(10)).slice(0, 4).join(", ")}…) : conservés tels quels, non découpés en sections.`);
-  if (!templates.index) warnings.push("Pas de gabarit d'accueil JSON (templates/index.json).");
+  if (!Object.keys(templates).length) warnings.push(L("Aucun gabarit JSON : thème d'ancienne génération (avant Online Store 2.0). Les pages ne se découpent pas en sections modifiables ; le studio peut le prévisualiser et l'exporter, mais pas le réorganiser.", "No JSON templates: this is an older-generation theme (pre-Online Store 2.0). Its pages aren't split into editable sections; the studio can preview and export it, but not rearrange it."));
+  else if (liquidTemplates.length) warnings.push(L(`${liquidTemplates.length} gabarit(s) Liquid (${liquidTemplates.map((p) => p.slice(10)).slice(0, 4).join(", ")}…) : conservés tels quels, non découpés en sections.`, `${liquidTemplates.length} Liquid template(s) (${liquidTemplates.map((p) => p.slice(10)).slice(0, 4).join(", ")}…): kept as is, not split into sections.`));
+  if (!templates.index) warnings.push(L("Pas de gabarit d'accueil JSON (templates/index.json).", "No JSON home page template (templates/index.json)."));
 
   // Groupes de sections : en-tête et pied de page.
   const groups: Partial<Record<"header" | "footer", GroupJson>> = {};
@@ -197,18 +200,18 @@ export function decomposeTheme(arc: ThemeArchive, fileName: string) {
       const j = parseThemeJson(raw);
       groups[g] = { type: g, name: String(tr(j.name) ?? g), sections: normalizeSections(j.sections), order: j.order ?? Object.keys(j.sections ?? {}) };
     } catch {
-      warnings.push(`sections/${g}-group.json illisible.`);
+      warnings.push(L(`sections/${g}-group.json illisible.`, `sections/${g}-group.json is unreadable.`));
     }
   }
 
   // Points d'attention.
   const appBlocks = [...text.entries()].filter(([p, s]) => p.startsWith("sections/") && /"type"\s*:\s*"@app"/.test(s)).length;
-  if (appBlocks) warnings.push(`${appBlocks} section(s) acceptent des blocs d'applications : ces blocs s'affichent seulement sur la boutique Shopify réelle.`);
+  if (appBlocks) warnings.push(L(`${appBlocks} section(s) acceptent des blocs d'applications : ces blocs s'affichent seulement sur la boutique Shopify réelle.`, `${appBlocks} section(s) accept app blocks: these blocks only appear on the live Shopify store.`));
   const themeBlocks = [...text.keys()].filter((p) => p.startsWith("blocks/")).length;
-  if (themeBlocks) warnings.push(`${themeBlocks} bloc(s) de thème (dossier blocks/) : conservés à l'export, aperçu simplifié dans le studio.`);
+  if (themeBlocks) warnings.push(L(`${themeBlocks} bloc(s) de thème (dossier blocks/) : conservés à l'export, aperçu simplifié dans le studio.`, `${themeBlocks} theme block(s) (blocks/ folder): kept in the export, simplified preview in the studio.`));
   const usedUnknown = new Set<string>();
   for (const t of Object.values(templates)) for (const s of Object.values(t.sections)) if (s?.type && !s.type.startsWith("apps") && !text.has(`sections/${s.type}.liquid`)) usedUnknown.add(s.type);
-  if (usedUnknown.size) warnings.push(`Section(s) utilisée(s) mais absente(s) du ZIP : ${[...usedUnknown].join(", ")}.`);
+  if (usedUnknown.size) warnings.push(L(`Section(s) utilisée(s) mais absente(s) du ZIP : ${[...usedUnknown].join(", ")}.`, `Section(s) used but missing from the ZIP: ${[...usedUnknown].join(", ")}.`));
 
   const order = ["index", "product", "collection", "list-collections", "cart", "search", "page", "blog", "article", "404"];
   const pages = Object.entries(templates)

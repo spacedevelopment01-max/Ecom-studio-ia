@@ -8,7 +8,7 @@
       {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-reviews__heading">{{ section.settings.heading }}</h2>{%- endif -%}
       {%- for block in section.blocks -%}{% render block %}{%- endfor -%}
     {%- elsif request.design_mode -%}
-      <p class="es-reviews__hint">Ajoutez ici le bloc de votre application d'avis : seuls de vrais avis clients s'afficheront.</p>
+      <p class="es-reviews__hint">{{ 'sections.reviews.app_hint' | t }}</p>
     {%- endif -%}
   </div>
 </section>

@@ -2,12 +2,13 @@ import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/auth";
 import { cancelJob, getJob, pauseJob, publicJob, resumeJob, retryJob } from "@/lib/jobs";
+import { L } from "@/lib/i18n-server";
 
 async function jobOf(ctx: { params: Promise<{ jid: string }> }) {
   const user = await requireUser();
   const { jid } = await ctx.params;
   const j = getJob(jid);
-  if (!j || (j.user_id !== user.id && user.role !== "admin")) throw new HttpError(404, "Tâche introuvable.");
+  if (!j || (j.user_id !== user.id && user.role !== "admin")) throw new HttpError(404, L("Tâche introuvable.", "Task not found."));
   return j;
 }
 

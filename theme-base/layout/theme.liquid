@@ -98,7 +98,9 @@
         soldOut: {{ 'products.product.sold_out' | t | json }},
         unavailable: {{ 'products.product.unavailable' | t | json }},
         added: {{ 'products.product.added' | t | json }},
-        error: {{ 'general.error' | t | json }}
+        error: {{ 'general.error' | t | json }},
+        unmute: {{ 'general.unmute' | t | json }},
+        mute: {{ 'general.mute' | t | json }}
       };
       window.themeSettings = { moneyFormat: {{ shop.money_format | json }}, cartType: {{ settings.cart_type | json }}, motion: {{ settings.motion_enabled | json }}, parallax: {{ settings.motion_parallax | json }} };
     </script>

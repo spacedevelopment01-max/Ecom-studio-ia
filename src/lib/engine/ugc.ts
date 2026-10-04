@@ -25,18 +25,21 @@ import { imageProviderAvailable, ugcFrame, veoClip, falClip, videoProviderAvaila
 import { brandTypo, confirmedFacts, ensureCutouts, palette } from "./images";
 import { FONT_DIR, font } from "../media/fonts";
 import { cleanUgcScript, ugcIssues } from "../ugc-rules";
+import { C, L, contentLang, uiLang } from "../i18n-server";
 
 export { cleanUgcScript, ugcIssues };
 
 const exec = promisify(execFile);
-const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "produit";
+const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
 
 export type UgcFormat = "9:16" | "16:9";
 export const UGC_SIZES: Record<UgcFormat, { w: number; h: number }> = { "9:16": { w: 1080, h: 1920 }, "16:9": { w: 1920, h: 1080 } };
 /** Durée d'un plan généré (Veo 3 : 8 s). */
 export const UGC_BEAT_SECONDS = 8;
 const END_SECONDS = 2.5;
-export const AI_LABEL = "Vidéo générée par IA";
+/** Mention incrustée pendant toute la vidéo (personne de synthèse réaliste), dans la langue des contenus. */
+export const AI_LABELS = { fr: "Vidéo générée par IA", en: "AI-generated video" };
+export const aiLabel = () => C(AI_LABELS.fr, AI_LABELS.en);
 
 /** Choix proposés dans le studio : libellé français → description pour les modèles (anglais). */
 export const UGC_PRESENTERS: Record<string, string> = {
@@ -64,11 +67,11 @@ export const UGC_TONES: Record<string, { fr: string; en: string }> = {
   naturel: { fr: "naturel, comme à une amie", en: "relaxed, conversational" },
   expert: { fr: "posé et précis", en: "calm, confident" },
 };
-export const UGC_ANGLES: Record<string, { fr: string; actions: string[] }> = {
-  deballage: { fr: "déballage : on découvre le produit", actions: ["opens a package and lifts the product toward the phone camera", "turns the product slowly in their hands to show every side", "points at a detail of the product, close to the lens", "holds the product next to their face and smiles at the camera", "places the product on the table in front of the camera"] },
-  demonstration: { fr: "démonstration : on montre le produit en usage", actions: ["holds the product up to the phone camera at chest height", "uses the product naturally in the room", "shows a close-up of the product in their hands", "uses the product again, relaxed and natural", "holds the product toward the camera and nods"] },
-  presentation: { fr: "présentation rapide face caméra", actions: ["holds the product beside their face, talking to the phone camera", "tilts the product to show its label to the camera", "points at the product with one finger", "holds the product with both hands toward the lens", "puts the product down and gestures toward it"] },
-  probleme: { fr: "situation du quotidien puis le produit qui répond", actions: ["looks at the camera with a slightly puzzled expression, then picks up the product", "shows the product in their hands in the everyday situation", "uses the product naturally in the room", "shows a close-up of the product in their hands", "holds the product toward the camera and smiles"] },
+export const UGC_ANGLES: Record<string, { fr: string; en: string; actions: string[] }> = {
+  deballage: { fr: "déballage : on découvre le produit", en: "unboxing: discovering the product", actions: ["opens a package and lifts the product toward the phone camera", "turns the product slowly in their hands to show every side", "points at a detail of the product, close to the lens", "holds the product next to their face and smiles at the camera", "places the product on the table in front of the camera"] },
+  demonstration: { fr: "démonstration : on montre le produit en usage", en: "demo: showing the product in use", actions: ["holds the product up to the phone camera at chest height", "uses the product naturally in the room", "shows a close-up of the product in their hands", "uses the product again, relaxed and natural", "holds the product toward the camera and nods"] },
+  presentation: { fr: "présentation rapide face caméra", en: "quick on-camera presentation", actions: ["holds the product beside their face, talking to the phone camera", "tilts the product to show its label to the camera", "points at the product with one finger", "holds the product with both hands toward the lens", "puts the product down and gestures toward it"] },
+  probleme: { fr: "situation du quotidien puis le produit qui répond", en: "everyday situation, then the product that answers it", actions: ["looks at the camera with a slightly puzzled expression, then picks up the product", "shows the product in their hands in the everyday situation", "uses the product naturally in the room", "shows a close-up of the product in their hands", "holds the product toward the camera and smiles"] },
 };
 
 export type UgcOptions = {
@@ -86,21 +89,24 @@ export type { UgcScript };
 
 const pick = <T,>(map: Record<string, T>, k: string, d: string) => map[k] ?? map[d];
 
-/** Script sans IA : présentation à partir des seuls faits confirmés. */
+/** Script sans IA : présentation à partir des seuls faits confirmés (langue des contenus). */
 export function localUgcScript(p: Project, o: UgcOptions): UgcScript {
   const n = Math.max(1, Math.min(5, o.beats));
-  const name = p.product.name || p.brand?.name || "ce produit";
+  const name = p.product.name || p.brand?.name || C("ce produit", "this product");
   const facts = confirmedFacts(p).filter((f) => !name.toLowerCase().startsWith(f.toLowerCase()));
   const angle = pick(UGC_ANGLES, o.angle, "presentation");
+  const lower = (f: string) => `${f.charAt(0).toLowerCase()}${f.slice(1)}`;
   const lines: string[] = [];
-  lines.push(o.angle === "deballage" ? `On l'ouvre ensemble ? Voici ${name}, je vous montre tout de près.` : `Regardez bien ça : voici ${name}, je vous le montre en quelques secondes.`);
-  const middles = facts.map((f, i) => (i === 0 ? `Premier détail à voir : ${f.charAt(0).toLowerCase()}${f.slice(1)}.` : `Et regardez ici : ${f.charAt(0).toLowerCase()}${f.slice(1)}.`));
-  middles.push(`Regardez la forme, les finitions, la taille dans la main : tout est là.`);
+  lines.push(o.angle === "deballage"
+    ? C(`On l'ouvre ensemble ? Voici ${name}, je vous montre tout de près.`, `Let's open it together. Here's ${name}, up close.`)
+    : C(`Regardez bien ça : voici ${name}, je vous le montre en quelques secondes.`, `Take a look at this: here's ${name}, a quick tour in a few seconds.`));
+  const middles = facts.map((f, i) => (i === 0 ? C(`Premier détail à voir : ${lower(f)}.`, `First thing to notice: ${lower(f)}.`) : C(`Et regardez ici : ${lower(f)}.`, `And look right here: ${lower(f)}.`)));
+  middles.push(C(`Regardez la forme, les finitions, la taille dans la main : tout est là.`, `Check out the shape, the finish, how it sits in the hand: it's all right here.`));
   for (let i = 1; i < n - 1; i++) lines.push(middles[(i - 1) % middles.length]);
-  if (n > 1) lines.push(o.url ? `Pour le découvrir, tout est sur ${o.url}.` : `Le lien pour le découvrir est juste en dessous de la vidéo.`);
+  if (n > 1) lines.push(o.url ? C(`Pour le découvrir, tout est sur ${o.url}.`, `Want to see more? It's all on ${o.url}.`) : C(`Le lien pour le découvrir est juste en dessous de la vidéo.`, `The link to check it out is right below this video.`));
   const caption = (l: string) => (l.length <= 64 ? l : `${l.slice(0, 61).replace(/\s+\S*$/, "")}…`);
   return {
-    concept: `${angle.fr}, ${n} plan${n > 1 ? "s" : ""} face caméra`,
+    concept: C(`${angle.fr}, ${n} plan${n > 1 ? "s" : ""} face caméra`, `${angle.en}, ${n} on-camera shot${n > 1 ? "s" : ""}`),
     persona: `${pick(UGC_PRESENTERS, o.presenter, "auto")} ${pick(UGC_AGES, o.age, "25-35")}, casual everyday outfit`,
     setting: pick(UGC_SETTINGS, o.setting, "salon"),
     beats: lines.slice(0, n).map((line, i) => ({ line, caption: caption(line), action: i === n - 1 && n > 1 ? angle.actions[4] : angle.actions[i % 4] })),
@@ -111,12 +117,12 @@ export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcO
   const p = loadProject(projectId);
   if (llmConfigured()) {
     const presenter = `${pick(UGC_PRESENTERS, o.presenter, "auto")} ${pick(UGC_AGES, o.age, "25-35")}`;
-    const r = await aiUgcScript({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ugc` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, "salon"), tone: pick(UGC_TONES, o.tone, "naturel").fr, angle: pick(UGC_ANGLES, o.angle, "presentation").fr, url: o.url, brief: o.brief });
+    const r = await aiUgcScript({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ugc` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, "salon"), tone: C(pick(UGC_TONES, o.tone, "naturel").fr, pick(UGC_TONES, o.tone, "naturel").en), angle: C(pick(UGC_ANGLES, o.angle, "presentation").fr, pick(UGC_ANGLES, o.angle, "presentation").en), url: o.url, brief: o.brief });
     const script = cleanUgcScript({ ...r, beats: r.beats.slice(0, o.beats) });
-    return { script, issues: ugcIssues(script), engine: "ia" };
+    return { script, issues: ugcIssues(script, contentLang(), uiLang()), engine: "ia" };
   }
   const script = localUgcScript(p, o);
-  return { script, issues: ugcIssues(script), engine: "local" };
+  return { script, issues: ugcIssues(script, contentLang(), uiLang()), engine: "local" };
 }
 
 /** Prompt du plan animé : action, réplique (voix générée par Veo 3) et rendu « filmé au téléphone ». */
@@ -125,7 +131,7 @@ export function beatPrompt(script: UgcScript, i: number, o: UgcOptions, withVoic
   const tone = pick(UGC_TONES, o.tone, "naturel").en;
   return [
     `Vertical smartphone UGC video. ${script.persona}, in ${script.setting}, ${b.action}.`,
-    withVoice ? `The person looks into the phone camera and says in French, in a ${tone} voice, with natural lip sync: "${b.line}"` : `The person talks naturally to the phone camera.`,
+    withVoice ? `The person looks into the phone camera and says in ${C("French", "English")}, in a ${tone} voice, with natural lip sync: "${b.line}"` : `The person talks naturally to the phone camera.`,
     `Handheld phone footage with slight natural movement, realistic hands and face, ambient room sound only, no music, no subtitles, no text on screen. The product keeps exactly the same shape, label and colors as in the first frame.`,
   ].join(" ");
 }
@@ -169,7 +175,7 @@ export function ugcSrt(cues: { start: number; end: number; text: string }[]) {
   return cues.map((c, i) => `${i + 1}\n${srtTime(c.start)} --> ${srtTime(c.end)}\n${c.text}\n`).join("\n");
 }
 
-function ugcAss(cues: { start: number; end: number; text: string }[], total: number, size: { w: number; h: number }, accent: string) {
+function ugcAss(cues: { start: number; end: number; text: string }[], total: number, size: { w: number; h: number }, accent: string, label: string) {
   const vertical = size.h > size.w;
   const fs = vertical ? 72 : 56;
   const bgr = (hex: string) => hex.replace("#", "").match(/../g)!.reverse().join("").toUpperCase();
@@ -186,7 +192,7 @@ Style: Label,Inter,${vertical ? 30 : 26},&H00FFFFFF,&H00FFFFFF,&H00${bgr(accent)
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 1,${assTime(0)},${assTime(total)},Label,,0,0,0,,${AI_LABEL}
+Dialogue: 1,${assTime(0)},${assTime(total)},Label,,0,0,0,,${assText(label)}
 ${cues.map((c) => `Dialogue: 0,${assTime(c.start)},${assTime(c.end)},Cap,,0,0,0,,${assText(c.text)}`).join("\n")}
 `;
 }
@@ -248,7 +254,7 @@ async function duration(file: string) {
  * Assemble les plans générés : recadrage au format, piste son homogène (silence si le plan n'en a pas),
  * carte de fin, sous-titres et mention IA incrustés. Retourne les durées réelles et les sous-titres.
  */
-export async function assembleUgc(input: { clips: string[]; captions: string[]; endCard: Buffer; format: UgcFormat; accent: string; out: string; dir: string }) {
+export async function assembleUgc(input: { clips: string[]; captions: string[]; endCard: Buffer; format: UgcFormat; accent: string; out: string; dir: string; label?: string }) {
   const size = UGC_SIZES[input.format];
   const vf = `scale=${size.w}:${size.h}:force_original_aspect_ratio=increase,crop=${size.w}:${size.h},fps=30,setsar=1`;
   const segs: string[] = [];
@@ -273,7 +279,7 @@ export async function assembleUgc(input: { clips: string[]; captions: string[]; 
   const total = await duration(joined);
   const cues = ugcCues(input.captions, durations);
   const ass = path.join(input.dir, "subs.ass");
-  fs.writeFileSync(ass, ugcAss(cues, total, size, input.accent));
+  fs.writeFileSync(ass, ugcAss(cues, total, size, input.accent, input.label ?? aiLabel()));
   const esc = (p: string) => p.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
   await exec("ffmpeg", ["-y", "-loglevel", "error", "-i", joined, "-vf", `subtitles='${esc(ass)}':fontsdir='${esc(FONT_DIR)}'`, "-c:v", "libx264", "-preset", "slow", "-crf", "21", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", input.out]);
   return { durations, total: await duration(input.out), cues };
@@ -284,18 +290,18 @@ export async function assembleUgc(input: { clips: string[]; captions: string[]; 
 export async function produceUgc(ctx: JobContext, projectId: string, req: { options: UgcOptions; script: UgcScript }) {
   let project = loadProject(projectId);
   const brand = project.brand;
-  if (!brand) throw new UserFacingError("Définissez la marque avant de produire une vidéo UGC.");
-  if (aiMode(project.userId) === "local") throw new UserFacingError("La vidéo UGC est créée par l'IA : passez en mode « IA » (en haut du studio) pour la générer avec vos crédits.");
-  if (!hasAiCredits(project.userId)) throw new UserFacingError("La vidéo UGC est créée par l'IA : elle est disponible avec l'abonnement (crédits de création). Vos crédits sont épuisés ou vous êtes en essai gratuit.");
+  if (!brand) throw new UserFacingError(L("Définissez la marque avant de produire une vidéo UGC.", "Set up the brand before producing a UGC video."));
+  if (aiMode(project.userId) === "local") throw new UserFacingError(L("La vidéo UGC est créée par l'IA : passez en mode « IA » (en haut du studio) pour la générer avec vos crédits.", "UGC videos are created by AI: switch to \"AI\" mode (at the top of the studio) to generate one with your credits."));
+  if (!hasAiCredits(project.userId)) throw new UserFacingError(L("La vidéo UGC est créée par l'IA : elle est disponible avec l'abonnement (crédits de création). Vos crédits sont épuisés ou vous êtes en essai gratuit.", "UGC videos are created by AI and come with a subscription (creation credits). You are out of credits or on the free trial."));
   const video = videoProviderAvailable();
-  if (!video) throw new UserFacingError("Aucun fournisseur vidéo configuré (Google Veo ou fal.ai) : la vidéo UGC ne peut pas être générée.");
-  if (!imageProviderAvailable()) throw new UserFacingError("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.");
+  if (!video) throw new UserFacingError(L("Aucun fournisseur vidéo configuré (Google Veo ou fal.ai) : la vidéo UGC ne peut pas être générée.", "No video provider configured (Google Veo or fal.ai): the UGC video can't be generated."));
+  if (!imageProviderAvailable()) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.", "No image provider configured (Google Gemini or OpenAI): the person in the video can't be created."));
   const script = cleanUgcScript(req.script);
-  const issues = ugcIssues(script);
+  const issues = ugcIssues(script, contentLang(), uiLang());
   if (issues.length) throw new UserFacingError(issues.join(" "));
   const o = req.options;
   const cutouts = await ensureCutouts(ctx, project);
-  if (!cutouts.length) throw new UserFacingError("Importez une photo du produit : la vidéo UGC montre le produit réel.");
+  if (!cutouts.length) throw new UserFacingError(L("Importez une photo du produit : la vidéo UGC montre le produit réel.", "Upload a product photo: the UGC video shows the real product."));
   project = loadProject(projectId);
   const product = assetData(cutouts[0]);
   const base = { userId: project.userId, projectId, jobId: ctx.job.id };
@@ -307,7 +313,7 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
   const frameIds: string[] = [];
   for (let i = 0; i < n; i++) {
     const fid = await ctx.step(`frame:${i}`, async () => {
-      ctx.progress(0.05 + (i / n) * 0.25, `Création de la personne et du décor (plan ${i + 1}/${n})`);
+      ctx.progress(0.05 + (i / n) * 0.25, L(`Création de la personne et du décor (plan ${i + 1}/${n})`, `Creating the person and the set (shot ${i + 1}/${n})`));
       const persona = frameIds[0] ? assetData(getAsset(frameIds[0])!) : undefined;
       let best: { buf: Buffer; score: number } | null = null;
       for (let attempt = 0; attempt < 2; attempt++) {
@@ -321,32 +327,32 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
         if (!best || score > best.score) best = { buf, score };
         if (qc.sameProduct && qc.score >= 7) break;
       }
-      const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(best!.buf).jpeg({ quality: 92 }).toBuffer(), name: `${slug(project.product.name || brand.name)}-ugc-plan-${i + 1}.jpg`, mime: "image/jpeg", role: "ugc-frame", folderKey: "videos.social", origin: "generated", sourceAssetId: cutouts[0].id, meta: { recipe: "Image d'ouverture d'un plan UGC : personne et décor générés, produit réel en référence", aiGenerated: true, qcScore: best!.score }, status: "review" });
+      const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(best!.buf).jpeg({ quality: 92 }).toBuffer(), name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.jpg`, mime: "image/jpeg", role: "ugc-frame", folderKey: "videos.social", origin: "generated", sourceAssetId: cutouts[0].id, meta: { recipe: L("Image d'ouverture d'un plan UGC : personne et décor générés, produit réel en référence", "Opening frame of a UGC shot: generated person and set, real product as reference"), aiGenerated: true, qcScore: best!.score }, status: "review" });
       return { id: a.id, score: best!.score };
     });
     frameIds.push(fid.id);
-    if (fid.score < 7) notes.push(`Plan ${i + 1} : vérifiez que le produit est fidèle (contrôle ${fid.score}/10).`);
+    if (fid.score < 7) notes.push(L(`Plan ${i + 1} : vérifiez que le produit est fidèle (contrôle ${fid.score}/10).`, `Shot ${i + 1}: check that the product is accurate (check score ${fid.score}/10).`));
   }
 
   // 2. Plans animés.
   const clipIds: string[] = [];
   for (let i = 0; i < n; i++) {
     const cid = await ctx.step(`clip:${i}`, async () => {
-      ctx.progress(0.3 + (i / n) * 0.5, `Tournage du plan ${i + 1}/${n}${withVoice ? " (image, voix et son)" : ""}`);
+      ctx.progress(0.3 + (i / n) * 0.5, L(`Tournage du plan ${i + 1}/${n}${withVoice ? " (image, voix et son)" : ""}`, `Shooting shot ${i + 1}/${n}${withVoice ? " (picture, voice and sound)" : ""}`));
       const frame = assetData(getAsset(frameIds[i])!);
       const prompt = beatPrompt(script, i, o, withVoice);
       const usage = { ...base, usageKey: `${ctx.job.id}:clip:${i}` };
       const buf = video === "google"
-        ? await veoClip(usage, { image: frame, prompt, aspect: o.format, people: true }, (m) => ctx.progress(0.3 + (i / n) * 0.5, `Plan ${i + 1}/${n} : ${m}`))
-        : await falClip(usage, { image: frame, prompt, seconds: 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, `Plan ${i + 1}/${n} : ${m}`));
-      const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name || brand.name)}-ugc-plan-${i + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.social", origin: "generated", sourceAssetId: frameIds[i], meta: { provider: video, recipe: withVoice ? "Plan UGC généré (image, voix et son)" : "Plan UGC généré (image, sans voix)", aiGenerated: true, line: script.beats[i].line }, status: "review" });
+        ? await veoClip(usage, { image: frame, prompt, aspect: o.format, people: true }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)))
+        : await falClip(usage, { image: frame, prompt, seconds: 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
+      const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.social", origin: "generated", sourceAssetId: frameIds[i], meta: { provider: video, recipe: withVoice ? L("Plan UGC généré (image, voix et son)", "Generated UGC shot (picture, voice and sound)") : L("Plan UGC généré (image, sans voix)", "Generated UGC shot (picture, no voice)"), aiGenerated: true, line: script.beats[i].line }, status: "review" });
       return a.id;
     });
     clipIds.push(cid);
   }
 
   // 3. Montage.
-  ctx.progress(0.85, "Montage, sous-titres et carte de fin");
+  ctx.progress(0.85, L("Montage, sous-titres et carte de fin", "Editing, subtitles and end card"));
   const dir = tmpDir("ugc");
   const clips = clipIds.map((id, i) => {
     const f = path.join(dir, `clip-${i}.mp4`);
@@ -354,18 +360,18 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
     return f;
   });
   const colors = palette(project);
-  const endCard = await ugcEndCard(UGC_SIZES[o.format], { product, brand: brand.name, cta: o.url ? o.url : "Lien en description", colors: { dark: colors.dark, light: colors.light, accent: colors.accent }, heading: brandTypo(project).heading });
+  const endCard = await ugcEndCard(UGC_SIZES[o.format], { product, brand: brand.name, cta: o.url ? o.url : C("Lien en description", "Link in description"), colors: { dark: colors.dark, light: colors.light, accent: colors.accent }, heading: brandTypo(project).heading });
   const out = path.join(dir, "ugc.mp4");
-  const r = await assembleUgc({ clips, captions: script.beats.map((b) => b.caption || b.line), endCard, format: o.format, accent: colors.accent, out, dir });
+  const r = await assembleUgc({ clips, captions: script.beats.map((b) => b.caption || b.line), endCard, format: o.format, accent: colors.accent, out, dir, label: aiLabel() });
 
   const { stdout } = await exec("ffprobe", ["-v", "error", "-print_format", "json", "-show_streams", "-show_format", out]);
   const probe = JSON.parse(stdout);
   const v = probe.streams.find((s: any) => s.codec_type === "video");
   const audio = probe.streams.find((s: any) => s.codec_type === "audio");
   const technical = { codec: v?.codec_name, pixFmt: v?.pix_fmt, width: v?.width, height: v?.height, duration: Number(probe.format?.duration), audio: audio?.codec_name ?? null, sizeBytes: Number(probe.format?.size) };
-  if (technical.codec !== "h264" || technical.pixFmt !== "yuv420p") throw new Error("Le fichier vidéo produit n'est pas au format attendu (H.264 yuv420p).");
+  if (technical.codec !== "h264" || technical.pixFmt !== "yuv420p") throw new Error(L("Le fichier vidéo produit n'est pas au format attendu (H.264 yuv420p).", "The rendered video file is not in the expected format (H.264 yuv420p)."));
 
-  ctx.progress(0.95, "Rangement de la vidéo");
+  ctx.progress(0.95, L("Rangement de la vidéo", "Filing the video"));
   const name = `${slug(project.product.name || brand.name)}-ugc-${o.format.replace(":", "x")}-${Date.now().toString(36)}`;
   const asset = await saveAsset({
     projectId,
@@ -385,16 +391,16 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       technical,
       issues: notes,
       aiGenerated: true,
-      aiLabel: AI_LABEL,
-      method: withVoice ? "Vidéo UGC générée par IA : personne, voix et décor générés, produit réel en référence" : "Vidéo UGC générée par IA : personne et décor générés, produit réel en référence (sans voix, sous-titrée)",
-      delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? ", son AAC" : ""}`,
+      aiLabel: aiLabel(),
+      method: withVoice ? L("Vidéo UGC générée par IA : personne, voix et décor générés, produit réel en référence", "AI-generated UGC video: generated person, voice and set, real product as reference") : L("Vidéo UGC générée par IA : personne et décor générés, produit réel en référence (sans voix, sous-titrée)", "AI-generated UGC video: generated person and set, real product as reference (no voice, subtitled)"),
+      delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : ""}`,
     },
     status: "review",
   });
   const poster = path.join(dir, "poster.jpg");
   await exec("ffmpeg", ["-y", "-loglevel", "error", "-ss", "1.2", "-i", out, "-frames:v", "1", "-q:v", "2", poster]);
-  await saveAsset({ projectId, userId: project.userId, data: await sharp(poster).jpeg({ quality: 88 }).toBuffer(), name: `${name}-affiche.jpg`, mime: "image/jpeg", role: "video-poster", folderKey: "videos.social", origin: "generated", sourceAssetId: asset.id, meta: { recipe: "Image d'affiche extraite de la vidéo UGC" } });
-  await saveAsset({ projectId, userId: project.userId, data: Buffer.from(ugcSrt(r.cues), "utf8"), name: `${name}.srt`, mime: "application/x-subrip", kind: "text", role: "subtitles", folderKey: "videos.social", origin: "generated", sourceAssetId: asset.id, meta: { recipe: "Sous-titres de la vidéo UGC (SRT)" } });
+  await saveAsset({ projectId, userId: project.userId, data: await sharp(poster).jpeg({ quality: 88 }).toBuffer(), name: `${name}-${C("affiche", "poster")}.jpg`, mime: "image/jpeg", role: "video-poster", folderKey: "videos.social", origin: "generated", sourceAssetId: asset.id, meta: { recipe: L("Image d'affiche extraite de la vidéo UGC", "Poster frame taken from the UGC video") } });
+  await saveAsset({ projectId, userId: project.userId, data: Buffer.from(ugcSrt(r.cues), "utf8"), name: `${name}.srt`, mime: "application/x-subrip", kind: "text", role: "subtitles", folderKey: "videos.social", origin: "generated", sourceAssetId: asset.id, meta: { recipe: L("Sous-titres de la vidéo UGC (SRT)", "UGC video subtitles (SRT)") } });
   fs.rmSync(dir, { recursive: true, force: true });
   return { assetId: asset.id, technical, issues: notes };
 }

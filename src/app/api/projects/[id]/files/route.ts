@@ -4,6 +4,7 @@ import { HttpError } from "@/lib/auth";
 import { listFolders, publicAssetSummary, saveAsset, usagesOf, type Asset } from "@/lib/library";
 import { kindFromMime, mimeFromName } from "@/lib/storage";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
+import { L } from "@/lib/i18n-server";
 
 export const runtime = "nodejs";
 
@@ -50,15 +51,15 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const form = await req.formData();
   const folderId = (form.get("folderId") as string) || null;
-  if (folderId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", folderId, p.id)) throw new HttpError(404, "Dossier introuvable.");
+  if (folderId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", folderId, p.id)) throw new HttpError(404, L("Dossier introuvable.", "Folder not found."));
   const role = (form.get("role") as string) || null;
   const files = form.getAll("files").filter((f): f is File => typeof f !== "string" && f.size > 0);
-  if (!files.length) throw new HttpError(400, "Aucun fichier reçu.");
+  if (!files.length) throw new HttpError(400, L("Aucun fichier reçu.", "No file received."));
   const out = [];
   for (const f of files.slice(0, 30)) {
-    if (f.size > MAX) throw new HttpError(413, `« ${f.name} » dépasse 200 Mo.`);
+    if (f.size > MAX) throw new HttpError(413, L(`« ${f.name} » dépasse 200 Mo.`, `"${f.name}" exceeds 200 MB.`));
     const mime = f.type || mimeFromName(f.name);
-    if (/html|javascript|x-msdownload|x-sh/.test(mime)) throw new HttpError(415, `Type de fichier refusé pour « ${f.name} ».`);
+    if (/html|javascript|x-msdownload|x-sh/.test(mime)) throw new HttpError(415, L(`Type de fichier refusé pour « ${f.name} ».`, `File type not allowed for "${f.name}".`));
     const a = await saveAsset({
       projectId: p.id,
       userId: user.id,

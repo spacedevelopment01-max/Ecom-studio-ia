@@ -2,12 +2,13 @@ import { z } from "zod";
 import { json, now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
+import { L } from "@/lib/i18n-server";
 
 async function connOf(ctx: { params: Promise<{ cid: string }> }) {
   const user = await requireUser();
   const { cid } = await ctx.params;
   const c = one<any>("SELECT * FROM connections WHERE id = ? AND user_id = ?", cid, user.id);
-  if (!c) throw new HttpError(404, "Connexion introuvable.");
+  if (!c) throw new HttpError(404, L("Connexion introuvable.", "Connection not found."));
   return { user, c };
 }
 
@@ -30,7 +31,7 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ cid: s
 /** Déconnexion : le jeton est effacé ; les publications programmées sur ce compte repassent en validation. */
 export const DELETE = handle(async (_req: Request, ctx: { params: Promise<{ cid: string }> }) => {
   const { c } = await connOf(ctx);
-  run("UPDATE posts SET status = 'review', connection_id = NULL, error = 'Compte déconnecté' WHERE connection_id = ? AND status = 'scheduled'", c.id);
+  run("UPDATE posts SET status = 'review', connection_id = NULL, error = ? WHERE connection_id = ? AND status = 'scheduled'", L("Compte déconnecté", "Account disconnected"), c.id);
   run("DELETE FROM connections WHERE id = ?", c.id);
   return ok();
 });

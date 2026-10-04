@@ -7,7 +7,7 @@
       <div class="es-inline-field" data-reveal="up">
         <label class="visually-hidden" for="NewsletterEmail-{{ section.id }}">{{ 'newsletter.label' | t }}</label>
         <input id="NewsletterEmail-{{ section.id }}" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ 'newsletter.label' | t }}">
-        <button type="submit" class="es-button">{{ section.settings.button_label | default: 'S’inscrire' }}</button>
+        <button type="submit" class="es-button">{%- if section.settings.button_label != blank -%}{{ section.settings.button_label }}{%- else -%}{{ 'newsletter.button' | t }}{%- endif -%}</button>
       </div>
       {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
       {%- if form.errors -%}<p class="es-form-error" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}

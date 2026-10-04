@@ -3,13 +3,32 @@
 import { useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { cx, Modal } from "../ui";
+import { useLang, useT } from "../i18n";
+import { intlLocale } from "@/lib/i18n";
 
 export type LibraryItem = { type: string; name: string; category: string; description: string; keywords: string; preview: string | null };
 
 const ORDER = ["Votre thème", "Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Avancé"];
+/** Libellés anglais des catégories (les clés restent celles du serveur). */
+const CATEGORY_EN: Record<string, string> = {
+  Toutes: "All",
+  "Votre thème": "Your theme",
+  Ouverture: "Hero",
+  Produit: "Product",
+  Preuves: "Social proof",
+  Animations: "Animations",
+  "Images et vidéos": "Images and videos",
+  Collections: "Collections",
+  Textes: "Text",
+  Conversion: "Conversion",
+  Avancé: "Advanced",
+};
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 export function SectionLibrary({ open, onClose, items, onPick, where, busy }: { open: boolean; onClose: () => void; items: LibraryItem[]; onPick: (type: string) => void; where: string; busy?: string | null }) {
+  const t = useT();
+  const { lang } = useLang();
+  const catLabel = (c: string) => t(c, CATEGORY_EN[c] ?? c);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("Toutes");
   const cats = useMemo(() => ["Toutes", ...ORDER.filter((c) => items.some((i) => i.category === c))], [items]);
@@ -18,18 +37,18 @@ export function SectionLibrary({ open, onClose, items, onPick, where, busy }: { 
     return items
       .filter((i) => cat === "Toutes" || i.category === cat)
       .filter((i) => words.every((w) => norm(`${i.name} ${i.description} ${i.keywords} ${i.category}`).includes(w)))
-      .sort((a, b) => ORDER.indexOf(a.category) - ORDER.indexOf(b.category) || a.name.localeCompare(b.name, "fr"));
-  }, [items, q, cat]);
+      .sort((a, b) => ORDER.indexOf(a.category) - ORDER.indexOf(b.category) || a.name.localeCompare(b.name, intlLocale(lang)));
+  }, [items, q, cat, lang]);
   return (
-    <Modal open={open} onClose={onClose} title="Ajouter une section" wide>
-      <p className="-mt-2 mb-4 text-sm text-muted">{where}. La section arrive remplie avec les photos et vidéos de votre projet ; vous la retouchez ensuite en discutant ou dans l'éditeur.</p>
+    <Modal open={open} onClose={onClose} title={t("Ajouter une section", "Add a section")} wide>
+      <p className="-mt-2 mb-4 text-sm text-muted">{where}. {t("La section arrive remplie avec les photos et vidéos de votre projet ; vous la retouchez ensuite en discutant ou dans l'éditeur.", "The section comes filled with your project's photos and videos; you can then refine it in the chat or in the editor.")}</p>
       <label className="flex h-11 items-center gap-2 rounded-full border border-line bg-paper px-4 focus-within:border-ink">
         <Search className="size-4 text-muted" aria-hidden />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher des sections (avis, vidéo, étapes…)" className="min-w-0 flex-1 bg-transparent text-sm outline-none" aria-label="Rechercher des sections" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Rechercher des sections (avis, vidéo, étapes…)", "Search sections (reviews, video, steps…)")} className="min-w-0 flex-1 bg-transparent text-sm outline-none" aria-label={t("Rechercher des sections", "Search sections")} />
       </label>
-      <div className="-mx-1 mt-3 flex gap-1.5 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Catégories">
+      <div className="-mx-1 mt-3 flex gap-1.5 overflow-x-auto px-1 pb-1" role="tablist" aria-label={t("Catégories", "Categories")}>
         {cats.map((c) => (
-          <button key={c} role="tab" aria-selected={cat === c} onClick={() => setCat(c)} className={cx("shrink-0 rounded-full border px-3 py-1.5 text-xs", cat === c ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")}>{c}</button>
+          <button key={c} role="tab" aria-selected={cat === c} onClick={() => setCat(c)} className={cx("shrink-0 rounded-full border px-3 py-1.5 text-xs", cat === c ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")}>{catLabel(c)}</button>
         ))}
       </div>
       <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -37,9 +56,9 @@ export function SectionLibrary({ open, onClose, items, onPick, where, busy }: { 
           <li key={i.type}>
             <button onClick={() => onPick(i.type)} disabled={!!busy} className="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-line bg-paper text-left transition hover:-translate-y-0.5 hover:border-ink disabled:opacity-60">
               <span className="relative block aspect-[16/9] w-full overflow-hidden bg-paper-2">
-                {i.preview ? <img src={i.preview} alt="" loading="lazy" className="size-full object-cover object-top" /> : <span className="grid size-full place-items-center text-xs text-muted">Aperçu indisponible</span>}
+                {i.preview ? <img src={i.preview} alt="" loading="lazy" className="size-full object-cover object-top" /> : <span className="grid size-full place-items-center text-xs text-muted">{t("Aperçu indisponible", "Preview unavailable")}</span>}
                 <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-signal px-2.5 py-1 text-[11px] font-semibold text-signal-ink opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
-                  <Plus className="size-3" /> {busy === i.type ? "Ajout…" : "Ajouter"}
+                  <Plus className="size-3" /> {busy === i.type ? t("Ajout…", "Adding…") : t("Ajouter", "Add")}
                 </span>
               </span>
               <span className="block p-3">
@@ -49,7 +68,7 @@ export function SectionLibrary({ open, onClose, items, onPick, where, busy }: { 
             </button>
           </li>
         ))}
-        {!shown.length && <li className="col-span-full py-8 text-center text-sm text-muted">Aucune section ne correspond. Décrivez-la dans la discussion : l'IA peut en créer une sur mesure.</li>}
+        {!shown.length && <li className="col-span-full py-8 text-center text-sm text-muted">{t("Aucune section ne correspond. Décrivez-la dans la discussion : l'IA peut en créer une sur mesure.", "No section matches. Describe it in the chat: the AI can create a custom one.")}</li>}
       </ul>
     </Modal>
   );

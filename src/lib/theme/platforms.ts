@@ -9,7 +9,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { zipSync, strToU8 } from "fflate";
-import { storeProducts, type ThemeSpec, type SectionInstance } from "./spec";
+import { storeProducts, themeLang, type ThemeSpec, type SectionInstance } from "./spec";
+import { pick, type Lang } from "../i18n";
+import { L } from "../i18n-server";
 import { themeAssetBinary, type AssetLoader } from "./compile";
 import { FONT_FILES } from "./render";
 
@@ -45,11 +47,12 @@ async function collectMedia(spec: ThemeSpec, load: AssetLoader) {
 
 // ---------------------------------------------------------------- WooCommerce
 
-function wpBlocksForSection(s: SectionInstance, img: (f: string) => string): string {
+function wpBlocksForSection(s: SectionInstance, img: (f: string) => string, lang: Lang = "fr"): string {
+  const shopUrl = pick(lang, "/boutique/", "/shop/");
   const st = s.settings as Record<string, any>;
   const h = (t: unknown, lvl = 2) => (t ? `<!-- wp:heading {"level":${lvl}} -->\n<h${lvl} class="wp-block-heading">${esc(t)}</h${lvl}>\n<!-- /wp:heading -->\n` : "");
   const p = (t: unknown) => (strip(t) ? `<!-- wp:paragraph -->\n<p>${esc(strip(t))}</p>\n<!-- /wp:paragraph -->\n` : "");
-  const btn = (label: unknown, url = "/boutique/") => (label ? `<!-- wp:buttons -->\n<div class="wp-block-buttons"><!-- wp:button -->\n<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${esc(url)}">${esc(label)}</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons -->\n` : "");
+  const btn = (label: unknown, url = shopUrl) => (label ? `<!-- wp:buttons -->\n<div class="wp-block-buttons"><!-- wp:button -->\n<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${esc(url)}">${esc(label)}</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons -->\n` : "");
   const image = (f: unknown) => (f ? `<!-- wp:image {"sizeSlug":"large"} -->\n<figure class="wp-block-image size-large"><img src="${img(String(f))}" alt=""/></figure>\n<!-- /wp:image -->\n` : "");
   const group = (inner: string, cls = "") => `<!-- wp:group {"layout":{"type":"constrained"},"className":"es-${cls}"} -->\n<div class="wp-block-group es-${cls}">${inner}</div>\n<!-- /wp:group -->\n`;
   switch (s.type) {
@@ -70,7 +73,7 @@ function wpBlocksForSection(s: SectionInstance, img: (f: string) => string): str
     case "faq":
       return group(`${h(st.heading)}${blocksOf(s).map((b) => `<!-- wp:details -->\n<details class="wp-block-details"><summary>${esc(b.settings.question)}</summary><!-- wp:paragraph -->\n<p>${esc(strip(b.settings.answer))}</p>\n<!-- /wp:paragraph --></details>\n<!-- /wp:details -->`).join("\n")}`, "faq");
     case "rich-text":
-      return group(blocksOf(s).map((b) => (b.type === "heading" ? h(b.settings.text) : b.type === "text" ? p(b.settings.text) : b.type === "eyebrow" ? p(b.settings.text) : b.type === "button" ? btn(b.settings.label, b.settings.link || "/boutique/") : "")).join(""), "richtext");
+      return group(blocksOf(s).map((b) => (b.type === "heading" ? h(b.settings.text) : b.type === "text" ? p(b.settings.text) : b.type === "eyebrow" ? p(b.settings.text) : b.type === "button" ? btn(b.settings.label, b.settings.link || shopUrl) : "")).join(""), "richtext");
     case "gallery-mosaic":
     case "horizontal-gallery":
       return group(`${h(st.heading)}<!-- wp:gallery {"linkTo":"none"} -->\n<figure class="wp-block-gallery has-nested-images columns-default is-cropped">${blocksOf(s).map((b) => image(b.settings.image_asset)).join("")}</figure>\n<!-- /wp:gallery -->\n`, "gallery");
@@ -86,6 +89,9 @@ function wpBlocksForSection(s: SectionInstance, img: (f: string) => string): str
 }
 
 export async function exportWooCommerce(spec: ThemeSpec, load: AssetLoader) {
+  // Fichiers du thème : textes dans la langue de la boutique.
+  const lang = themeLang(spec);
+  const t = (fr: string, en: string) => pick(lang, fr, en);
   const sc = schemes(spec);
   const s1 = sc["scheme-1"], s3 = sc["scheme-3"];
   const hf = fontFamily(spec.settings.type_heading_font), bf = fontFamily(spec.settings.type_body_font);
@@ -103,12 +109,12 @@ export async function exportWooCommerce(spec: ThemeSpec, load: AssetLoader) {
       layout: { contentSize: "760px", wideSize: `${spec.settings.page_width ?? 1320}px` },
       color: {
         palette: [
-          { slug: "base", name: "Fond", color: s1.background },
+          { slug: "base", name: t("Fond", "Background"), color: s1.background },
           { slug: "surface", name: "Surface", color: s1.surface },
-          { slug: "contrast", name: "Texte", color: s1.text },
+          { slug: "contrast", name: t("Texte", "Text"), color: s1.text },
           { slug: "accent", name: "Accent", color: s1.accent },
-          { slug: "accent-text", name: "Texte sur accent", color: s1.accent_text },
-          { slug: "inverse", name: "Fond sombre", color: s3.background },
+          { slug: "accent-text", name: t("Texte sur accent", "Text on accent"), color: s1.accent_text },
+          { slug: "inverse", name: t("Fond sombre", "Dark background"), color: s3.background },
         ],
       },
       typography: {
@@ -129,8 +135,8 @@ export async function exportWooCommerce(spec: ThemeSpec, load: AssetLoader) {
       spacing: { blockGap: "1.5rem" },
     },
     templateParts: [
-      { name: "header", title: "En-tête", area: "header" },
-      { name: "footer", title: "Pied de page", area: "footer" },
+      { name: "header", title: t("En-tête", "Header"), area: "header" },
+      { name: "footer", title: t("Pied de page", "Footer"), area: "footer" },
     ],
   };
   files["theme.json"] = strToU8(JSON.stringify(theme, null, 2));
@@ -138,7 +144,7 @@ export async function exportWooCommerce(spec: ThemeSpec, load: AssetLoader) {
 Theme Name: ${spec.store.shopName}
 Theme URI: https://ecom-studio-ia.local/
 Author: E-COM STUDIO IA
-Description: Thème de blocs généré par E-COM STUDIO IA pour ${spec.store.shopName} (direction ${spec.direction}). Compatible WooCommerce.
+Description: ${t(`Thème de blocs généré par E-COM STUDIO IA pour ${spec.store.shopName} (direction ${spec.direction}). Compatible WooCommerce.`, `Block theme generated by E-COM STUDIO IA for ${spec.store.shopName} (${spec.direction} direction). WooCommerce compatible.`)}
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -155,7 +161,7 @@ Text Domain: ${themeSlug}
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 `);
   files["functions.php"] = strToU8(`<?php
-/** Thème ${spec.store.shopName} — généré par E-COM STUDIO IA. */
+/** ${t(`Thème ${spec.store.shopName} — généré par E-COM STUDIO IA.`, `${spec.store.shopName} theme — generated by E-COM STUDIO IA.`)} */
 add_action( 'after_setup_theme', function () {
 	add_theme_support( 'woocommerce' );
 	add_theme_support( 'wc-product-gallery-zoom' );
@@ -167,10 +173,10 @@ add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style( '${themeSlug}', get_stylesheet_uri(), array(), '1.0.0' );
 } );
 `);
-  const home = homeBlocks(spec).map(({ s }) => wpBlocksForSection(s, img)).join("\n");
+  const home = homeBlocks(spec).map(({ s }) => wpBlocksForSection(s, img, lang)).join("\n");
   files["patterns/accueil.php"] = strToU8(`<?php
 /**
- * Title: Accueil ${spec.store.shopName}
+ * Title: ${t("Accueil", "Home")} ${spec.store.shopName}
  * Slug: ${themeSlug}/accueil
  * Categories: featured
  */
@@ -191,7 +197,7 @@ ${home}`);
 <!-- /wp:group -->
 <!-- wp:template-part {"slug":"footer","area":"footer"} /-->`);
   files["templates/archive-product.html"] = strToU8(`<!-- wp:template-part {"slug":"header","area":"header"} /-->\n<!-- wp:group {"tagName":"main","layout":{"type":"constrained","wideSize":"1200px"}} -->\n<main class="wp-block-group"><!-- wp:query-title {"type":"archive"} /--><!-- wp:woocommerce/product-collection {"query":{"perPage":12,"woocommerceAttributes":[],"woocommerceStockStatus":["instock","outofstock","onbackorder"],"isProductCollectionBlock":true},"displayLayout":{"type":"flex","columns":3}} /--></main>\n<!-- /wp:group -->\n<!-- wp:template-part {"slug":"footer","area":"footer"} /-->`);
-  files["templates/404.html"] = strToU8(`<!-- wp:template-part {"slug":"header","area":"header"} /-->\n<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->\n<main class="wp-block-group"><!-- wp:heading {"level":1} -->\n<h1 class="wp-block-heading">Cette page s'est égarée.</h1>\n<!-- /wp:heading --><!-- wp:search {"label":"Rechercher","buttonText":"Rechercher"} /--></main>\n<!-- /wp:group -->\n<!-- wp:template-part {"slug":"footer","area":"footer"} /-->`);
+  files["templates/404.html"] = strToU8(`<!-- wp:template-part {"slug":"header","area":"header"} /-->\n<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->\n<main class="wp-block-group"><!-- wp:heading {"level":1} -->\n<h1 class="wp-block-heading">${t("Cette page s'est égarée.", "This page has wandered off.")}</h1>\n<!-- /wp:heading --><!-- wp:search {"label":"${t("Rechercher", "Search")}","buttonText":"${t("Rechercher", "Search")}"} /--></main>\n<!-- /wp:group -->\n<!-- wp:template-part {"slug":"footer","area":"footer"} /-->`);
   // Les parties de gabarit sont en HTML pur : le logo se règle via le bloc « Logo du site » (fichier fourni dans assets/images).
   const logo = `<!-- wp:site-logo {"width":${spec.settings.logo_width ?? 150}} /--><!-- wp:site-title /-->`;
   files["parts/header.html"] = strToU8(`<!-- wp:group {"layout":{"type":"flex","justifyContent":"space-between"},"style":{"spacing":{"padding":{"top":"1rem","bottom":"1rem","left":"1.5rem","right":"1.5rem"}}}} -->\n<div class="wp-block-group" style="padding:1rem 1.5rem">${logo}<!-- wp:navigation /--><!-- wp:woocommerce/mini-cart /--></div>\n<!-- /wp:group -->`);
@@ -212,6 +218,7 @@ ${home}`);
 // ---------------------------------------------------------------- PrestaShop
 
 export async function exportPrestaShop(spec: ThemeSpec, load: AssetLoader) {
+  const t = (fr: string, en: string) => pick(themeLang(spec), fr, en);
   const sc = schemes(spec);
   const s1 = sc["scheme-1"], s2 = sc["scheme-2"], s3 = sc["scheme-3"];
   const hf = fontFamily(spec.settings.type_heading_font), bf = fontFamily(spec.settings.type_body_font);
@@ -230,8 +237,8 @@ meta:
     to: ~
   available_layouts:
     layout-full-width:
-      name: Pleine largeur
-      description: Sans colonne latérale
+      name: ${t("Pleine largeur", "Full width")}
+      description: ${t("Sans colonne latérale", "No sidebar")}
 assets:
   use_parent_assets: true
   css:
@@ -250,7 +257,7 @@ theme_settings:
     index: layout-full-width
 `);
   const ff = (fam: typeof hf) => Object.entries(fam.files).map(([w, f]) => `@font-face{font-family:"${fam.family}";font-weight:${w};font-display:swap;src:url("../fonts/${f}") format("truetype")}`).join("\n");
-  files["assets/css/es-theme.css"] = strToU8(`/* Thème enfant ${spec.store.shopName} — E-COM STUDIO IA */
+  files["assets/css/es-theme.css"] = strToU8(`/* ${t("Thème enfant", "Child theme")} ${spec.store.shopName} — E-COM STUDIO IA */
 ${ff(hf)}
 ${ff(bf)}
 :root{--es-bg:${s1.background};--es-surface:${s1.surface};--es-text:${s1.text};--es-muted:${s1.muted};--es-accent:${s1.accent};--es-accent-text:${s1.accent_text};--es-border:${s1.border};--es-dark:${s3.background}}
@@ -311,7 +318,7 @@ ${html}
     const sharp = (await import("sharp")).default;
     files["preview.png"] = new Uint8Array(await sharp(shot[1]).resize(800, 600, { fit: "cover" }).png().toBuffer());
   }
-  return { zip: Buffer.from(zipSync(files, { level: 6 })), name: `${name}-prestashop-theme-enfant.zip`, kind: "theme" as const };
+  return { zip: Buffer.from(zipSync(files, { level: 6 })), name: `${name}-prestashop-${t("theme-enfant", "child-theme")}.zip`, kind: "theme" as const };
 }
 
 // ---------------------------------------------------------------- Wix / Squarespace (kits)
@@ -322,7 +329,11 @@ export async function exportKit(spec: ThemeSpec, load: AssetLoader, platform: "w
   const media = await collectMedia(spec, load);
   const files: Record<string, Uint8Array> = {};
   for (const [f, data] of Object.entries(media)) files[`medias/${f}`] = new Uint8Array(data);
-  for (const fam of [hf, bf]) for (const f of new Set(Object.values(fam.files))) files[`polices/${f}`] = new Uint8Array(fs.readFileSync(path.join(process.cwd(), "assets", "fonts", f)));
+  const fontsDir = L("polices", "fonts");
+  const textsFile = L("textes-des-pages.md", "page-texts.md");
+  const csvFile = L("produits.csv", "products.csv");
+  for (const fam of [hf, bf]) for (const f of new Set(Object.values(fam.files))) files[`${fontsDir}/${f}`] = new Uint8Array(fs.readFileSync(path.join(process.cwd(), "assets", "fonts", f)));
+  const sep = L(" :", ":");
   const textPage = (key: string, title: string) => {
     const t = spec.templates[key];
     if (!t) return "";
@@ -331,14 +342,14 @@ export async function exportKit(spec: ThemeSpec, load: AssetLoader, platform: "w
       const s = t.sections[id];
       if (!s || s.disabled) continue;
       const st = s.settings as Record<string, any>;
-      lines.push(`\n### Section : ${s.type}`);
-      for (const k of ["eyebrow", "heading", "heading_line1", "heading_line2", "text", "button_label", "caption"]) if (st[k]) lines.push(`- ${k} : ${strip(st[k])}`);
-      if (st.image_asset) lines.push(`- image : medias/${st.image_asset}`);
-      for (const b of blocksOf(s)) lines.push(`  - ${Object.entries(b.settings).filter(([, v]) => typeof v === "string" && v).map(([k, v]) => `${k} : ${strip(v)}`).join(" · ")}`);
+      lines.push(L(`\n### Section : ${s.type}`, `\n### Section: ${s.type}`));
+      for (const k of ["eyebrow", "heading", "heading_line1", "heading_line2", "text", "button_label", "caption"]) if (st[k]) lines.push(`- ${k}${sep} ${strip(st[k])}`);
+      if (st.image_asset) lines.push(`- image${sep} medias/${st.image_asset}`);
+      for (const b of blocksOf(s)) lines.push(`  - ${Object.entries(b.settings).filter(([, v]) => typeof v === "string" && v).map(([k, v]) => `${k}${sep} ${strip(v)}`).join(" · ")}`);
     }
     return lines.join("\n");
   };
-  const guide =
+  const guideFr =
     platform === "wix"
       ? `1. Dans l'éditeur Wix, créez un site vierge (ou un modèle Wix Stores sobre).
 2. Thème du site › Couleurs : reportez la palette ci-dessous ; Thème du site › Texte : importez les polices du dossier « polices » (Ajouter des polices › Importer).
@@ -352,9 +363,27 @@ export async function exportKit(spec: ThemeSpec, load: AssetLoader, platform: "w
 4. Commerce › Produits › Importer : utilisez « produits.csv » (adaptez les colonnes au modèle d'import Squarespace).
 5. Reconstituez les pages avec « textes-des-pages.md ».
 6. Utilisez les animations de section natives avec parcimonie.`;
-  files["GUIDE.md"] = strToU8(`# Kit de création ${platform === "wix" ? "Wix" : "Squarespace"} — ${spec.store.shopName}
+  const guideEn =
+    platform === "wix"
+      ? `1. In the Wix editor, create a blank site (or a simple Wix Stores template).
+2. Site Design › Colors: copy the palette below; Site Design › Text: upload the fonts from the "${fontsDir}" folder (Add Fonts › Upload).
+3. Media: upload the "medias" folder to the Media Manager.
+4. Wix Stores › Products › Import: use "${csvFile}" (check the columns against the Wix CSV template, then add the images).
+5. Rebuild the pages using the texts in "${textsFile}" (home, product, story, FAQ, contact, shipping).
+6. Animations: Wix offers native scroll-in effects (Animation › Entrance); keep them subtle and check the reduced-motion option.`
+      : `1. In Squarespace, choose a clean Commerce template.
+2. Site Styles › Colors: create a palette with the colors below; Fonts: pick the families listed (or the closest available; Squarespace allows custom fonts via CSS on eligible plans).
+3. Upload the media from the "medias" folder to the image library.
+4. Commerce › Products › Import: use "${csvFile}" (adapt the columns to the Squarespace import template).
+5. Rebuild the pages using "${textsFile}".
+6. Use the native section animations sparingly.`;
+  const guide = L(guideFr, guideEn);
+  const pf = platform === "wix" ? "Wix" : "Squarespace";
+  files["GUIDE.md"] = strToU8(
+    L(
+      `# Kit de création ${pf} — ${spec.store.shopName}
 
-${platform === "wix" ? "Wix" : "Squarespace"} n'accepte pas l'import d'un thème externe : ce kit n'est pas un thème installable.
+${pf} n'accepte pas l'import d'un thème externe : ce kit n'est pas un thème installable.
 Il rassemble tout ce qu'il faut pour reproduire fidèlement la boutique conçue dans le studio, dans l'éditeur de la plateforme.
 
 ## Étapes
@@ -366,11 +395,28 @@ ${Object.entries(sc).map(([k, v]) => `- ${k} : fond ${v.background} · texte ${v
 ## Typographies
 - Titres : ${hf.family}
 - Texte : ${bf.family}
-`);
-  files["textes-des-pages.md"] = strToU8([textPage("index", "Accueil"), textPage("product", "Fiche produit"), textPage("page.about", "Notre histoire"), textPage("page.faq", "FAQ"), textPage("page.contact", "Contact"), textPage("page.shipping", "Livraison et retours")].join("\n\n"));
+`,
+      `# ${pf} build kit — ${spec.store.shopName}
+
+${pf} doesn't accept importing an external theme: this kit isn't an installable theme.
+It gathers everything you need to faithfully recreate the store designed in the studio, in the platform's editor.
+
+## Steps
+${guide}
+
+## Palette
+${Object.entries(sc).map(([k, v]) => `- ${k}: background ${v.background} · text ${v.text} · accent ${v.accent} · text on accent ${v.accent_text}`).join("\n")}
+
+## Typography
+- Headings: ${hf.family}
+- Body: ${bf.family}
+`,
+    ),
+  );
+  files[textsFile] = strToU8([textPage("index", L("Accueil", "Home")), textPage("product", L("Fiche produit", "Product page")), textPage("page.about", L("Notre histoire", "Our story")), textPage("page.faq", "FAQ"), textPage("page.contact", "Contact"), textPage("page.shipping", L("Livraison et retours", "Shipping and returns"))].join("\n\n"));
   const csvEsc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  files["produits.csv"] = strToU8(
-    ["Nom,Description,Prix,Variante,SKU,Images"]
+  files[csvFile] = strToU8(
+    [L("Nom,Description,Prix,Variante,SKU,Images", "Name,Description,Price,Variant,SKU,Images")]
       .concat(storeProducts(spec).flatMap((p) => (p.variants.length ? p.variants : [{ title: "", options: [""], price: p.price, available: true }]).map((v) => [p.title, strip(p.description_html), (v.price ?? p.price) != null ? ((v.price ?? p.price)! / 100).toFixed(2) : "", v.title === "Default Title" ? "" : v.title, (v as any).sku ?? "", p.images.map((f) => `medias/${f}`).join(" ")].map(csvEsc).join(","))))
       .join("\n"),
   );
@@ -378,9 +424,9 @@ ${Object.entries(sc).map(([k, v]) => `- ${k} : fond ${v.background} · texte ${v
 }
 
 export const PLATFORMS = [
-  { id: "shopify", label: "Shopify", delivery: "Thème Online Store 2.0 installable (ZIP), modifiable dans l'éditeur de thème", installable: true },
-  { id: "woocommerce", label: "WooCommerce", delivery: "Thème de blocs WordPress installable (Apparence › Thèmes › Téléverser)", installable: true },
-  { id: "prestashop", label: "PrestaShop", delivery: "Thème enfant du thème Classic, installable (Apparence › Thème et logo)", installable: true },
-  { id: "wix", label: "Wix", delivery: "Kit de reprise : Wix n'accepte pas de thème importé", installable: false },
-  { id: "squarespace", label: "Squarespace", delivery: "Kit de reprise : Squarespace n'accepte pas de thème importé", installable: false },
+  { id: "shopify", label: "Shopify", delivery: { fr: "Thème Online Store 2.0 installable (ZIP), modifiable dans l'éditeur de thème", en: "Installable Online Store 2.0 theme (ZIP), editable in the theme editor" }, installable: true },
+  { id: "woocommerce", label: "WooCommerce", delivery: { fr: "Thème de blocs WordPress installable (Apparence › Thèmes › Téléverser)", en: "Installable WordPress block theme (Appearance › Themes › Upload)" }, installable: true },
+  { id: "prestashop", label: "PrestaShop", delivery: { fr: "Thème enfant du thème Classic, installable (Apparence › Thème et logo)", en: "Installable child theme of the Classic theme (Design › Theme & Logo)" }, installable: true },
+  { id: "wix", label: "Wix", delivery: { fr: "Kit de reprise : Wix n'accepte pas de thème importé", en: "Rebuild kit: Wix doesn't accept imported themes" }, installable: false },
+  { id: "squarespace", label: "Squarespace", delivery: { fr: "Kit de reprise : Squarespace n'accepte pas de thème importé", en: "Rebuild kit: Squarespace doesn't accept imported themes" }, installable: false },
 ] as const;

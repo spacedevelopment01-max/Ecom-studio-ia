@@ -6,6 +6,7 @@
  */
 import { contrast, ensureContrast, isDark, mix, onColor, withLightness, hsl } from "../color";
 import type { ShopCopy } from "./copy";
+import { pick, type Lang } from "../i18n";
 import type { BlockInstance, GroupJson, SectionInstance, StoreCollection, StoreProduct, TemplateJson, ThemeSpec } from "./spec";
 
 export type DirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
@@ -133,6 +134,21 @@ export const DIRECTIONS: Direction[] = [
     motion: "expressive",
   },
 ];
+
+/** Présentation des directions en anglais (le français est dans DIRECTIONS). */
+export const DIRECTIONS_EN: Record<DirectionId, { tagline: string; description: string; bestFor: string[] }> = {
+  atelier: { tagline: "Editorial luxury", description: "Luminous ivory, a large high-contrast serif with words in golden italics, a floating cut-out product, frosted-glass cards and shine on the buttons. For objects meant to be admired up close.", bestFor: ["beauty", "fragrance", "jewelry", "luxury home"] },
+  clinique: { tagline: "Big-tech clarity", description: "Pure white and pearl gray, tight extra-bold type, the product shown large, animated key figures and sections that light up as you scroll. Reassurance through precision.", bestFor: ["skincare", "wellness", "tech", "baby"] },
+  brut: { tagline: "Dark and bold", description: "Deep black background, giant capitals, an outlined scrolling banner, sharp neon outlines and glowing cards. For brands that own it.", bestFor: ["streetwear", "accessories", "gadgets", "drinks"] },
+  terroir: { tagline: "Modern warmth", description: "Cream and earth tones, a generous serif, big rounded corners, subtle grain and a story that unfolds as you scroll. For handmade goods and provenance, without nostalgia.", bestFor: ["fine foods", "crafts", "candles", "ceramics"] },
+  nocturne: { tagline: "Deep night and glow", description: "Midnight blue, a floating glass header, a full-screen photo hero, luminous serif headings, numbered cards with neon outlines, glossy pill buttons and floating buttons.", bestFor: ["premium services", "tech", "pool & garden", "fragrance"] },
+  pop: { tagline: "Bright and bouncy", description: "Bold colors, gradients, extra-round corners, slightly tilted cards and bouncy animations. For cheerful, straightforward brands.", bestFor: ["kids", "pets", "snacks", "stationery"] },
+  galerie: { tagline: "Gallery quiet", description: "Gallery white, a fine serif, an editorial mosaic, italic captions and horizontal scrolling. Luxury through restraint.", bestFor: ["home decor", "art", "furniture", "fashion"] },
+  elan: { tagline: "Athletic energy", description: "Charcoal and bright neon, fast italics, slanted buttons, a tilted banner, counting figures and an opening video. For sport, outdoor and performance.", bestFor: ["sport", "outdoor", "water bottles", "nutrition"] },
+  flux: { tagline: "Premium sportswear", description: "Black and white, an extra-bold grotesque, a framed header, boxed buttons, story-style circles, stacking cards, curved text, vertical videos and a step timeline that lights up.", bestFor: ["fashion", "sport", "streetwear", "accessories"] },
+  joaillerie: { tagline: "Intimate luxury", description: "Full-screen portrait, spaced capitals with an italic accent word, collection circles, worn-product videos, pearl gray and deep black. For jewelry and precious accessories.", bestFor: ["jewelry", "watches", "accessories", "beauty"] },
+  gourmand: { tagline: "Joyful and generous", description: "Cream and deep green, an extra-bold serif, colorful pill buttons, waves between sections, confetti, \"sticker\" badges and a big centered quote. For drinks, groceries and snacks.", bestFor: ["drinks", "groceries", "snacks", "kids"] },
+};
 
 /** Police d'accent (italique) commune : utilisée pour les mots mis en valeur. */
 export const ACCENT_FONT = "cormorant_i5";
@@ -326,6 +342,8 @@ export type BuildInput = {
   storeType?: "mono" | "multi" | "niche";
   products?: StoreProduct[];
   collections?: StoreCollection[];
+  /** Langue de la boutique (textes ajoutés par la composition). Défaut : français. */
+  language?: Lang;
 };
 
 const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -347,28 +365,44 @@ const CHROME: Record<DirectionId, { shape: string; icons: string; menu: string; 
 };
 
 const CHROME_LABEL = {
-  shape: { floating: "En-tête flottant", pill: "En-tête pilule", bar: "En-tête barre", boxed: "En-tête encadré" } as Record<string, string>,
-  footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal" } as Record<string, string>,
-  ann: { rotate: "Bandeau rotatif", marquee: "Bandeau défilant", static: "Bandeau fixe" } as Record<string, string>,
-  card: { minimal: "Cartes épurées", boxed: "Cartes encadrées", overlay: "Cartes à texte sur image" } as Record<string, string>,
+  fr: {
+    shape: { floating: "En-tête flottant", pill: "En-tête pilule", bar: "En-tête barre", boxed: "En-tête encadré" } as Record<string, string>,
+    footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal" } as Record<string, string>,
+    ann: { rotate: "Bandeau rotatif", marquee: "Bandeau défilant", static: "Bandeau fixe" } as Record<string, string>,
+    card: { minimal: "Cartes épurées", boxed: "Cartes encadrées", overlay: "Cartes à texte sur image" } as Record<string, string>,
+  },
+  en: {
+    shape: { floating: "Floating header", pill: "Pill header", bar: "Bar header", boxed: "Boxed header" } as Record<string, string>,
+    footer: { columns: "Column footer", wordmark: "Giant-name footer", card: "Footer with sign-up card", centered: "Centered footer", minimal: "Minimal footer" } as Record<string, string>,
+    ann: { rotate: "Rotating banner", marquee: "Scrolling banner", static: "Static banner" } as Record<string, string>,
+    card: { minimal: "Minimal cards", boxed: "Boxed cards", overlay: "Text-over-image cards" } as Record<string, string>,
+  },
 };
 
-/** Directions présentées dans la galerie : description, aperçu et combinaison d'en-tête / pied de page. */
-export function directionCards() {
+/** Directions présentées dans la galerie : description, aperçu et combinaison d'en-tête / pied de page (langue de l'interface). */
+export function directionCards(lang: Lang = "fr") {
+  const cl = CHROME_LABEL[lang];
   return DIRECTIONS.map((d) => ({
     id: d.id,
     name: d.name,
-    tagline: d.tagline,
-    description: d.description,
+    tagline: pick(lang, d.tagline, DIRECTIONS_EN[d.id].tagline),
+    description: pick(lang, d.description, DIRECTIONS_EN[d.id].description),
     dark: DARK_DIRECTIONS.includes(d.id),
     preview: `/demo/directions/${d.id}.jpg`,
-    chrome: [CHROME_LABEL.shape[CHROME[d.id].shape], CHROME_LABEL.footer[CHROME[d.id].footer], CHROME_LABEL.ann[CHROME[d.id].ann], CHROME_LABEL.card[CHROME[d.id].card]],
+    chrome: [cl.shape[CHROME[d.id].shape], cl.footer[CHROME[d.id].footer], cl.ann[CHROME[d.id].ann], cl.card[CHROME[d.id].card]],
   }));
 }
 export type DirectionCard = ReturnType<typeof directionCards>[number];
 
 export function buildSpec(input: BuildInput): ThemeSpec {
   const d = directionById(input.direction);
+  const lang: Lang = input.language ?? "fr";
+  const t = (fr: string, en: string) => pick(lang, fr, en);
+  // Pages de la boutique : adresses dans la langue de la boutique.
+  const storyHandle = t("notre-histoire", "our-story");
+  const shippingHandle = t("livraison-et-retours", "shipping-and-returns");
+  const reviewsAnchor = t("avis", "reviews");
+  const todo = t("<p>[À compléter dans Shopify : Paramètres › Politiques]</p>", "<p>[To complete in Shopify: Settings › Policies]</p>");
   const ids = new Ids();
   const c = input.copy;
   const im = input.images;
@@ -402,7 +436,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   };
   const [heroHead, heroAccent] = splitAccent(c.hero.heading);
   const productUrl = "/products/" + input.product.handle;
-  const second = { button2_label: "Notre histoire", button2_link: "/pages/notre-histoire" };
+  const second = { button2_label: t("Notre histoire", "Our story"), button2_link: `/pages/${storyHandle}` };
 
   const heroSplit = (sch: 1 | 2, pos: "right" | "left", asset = im.hero ?? im.packshot): [string, Record<string, unknown>] => [
     "hero-split",
@@ -418,7 +452,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     { eyebrow: c.hero.eyebrow, heading_line1: c.hero.line1, heading_line2: c.hero.line2, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, image_asset: img(im.cutout ?? im.packshot), image_alt: input.product.title, parallax: true, color_scheme: scheme(sch), ...pad(56, 104) },
   ];
   const story = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof storySteps] => ["scroll-story", { heading: c.story.heading, image_asset: img(im.packshot ?? im.hero), color_scheme: scheme(sch), ...pad(104) }, storySteps];
-  const glowFeatures = features.map((f) => ({ ...f, settings: { ...f.settings, link_label: "Découvrir", link: productUrl } }));
+  const glowFeatures = features.map((f) => ({ ...f, settings: { ...f.settings, link_label: t("Découvrir", "Discover"), link: productUrl } }));
   const feat = (sch: 1 | 2 | 3, style = "glow", cols = Math.min(3, Math.max(2, features.length))): [string, Record<string, unknown>, typeof features] => [
     "features-grid",
     { eyebrow: "", heading: c.features.heading, heading_align: "left", columns: cols, style, link_label: "", color_scheme: scheme(sch), ...pad(104) },
@@ -446,7 +480,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const faqSec = (sch: 1 | 2, limit = 5): [string, Record<string, unknown>, typeof faq] => ["faq", { heading: c.faq.heading, style: "cards", structured_data: true, color_scheme: scheme(sch), ...pad(104) }, faq.slice(0, limit)];
   const marq = (sch: 1 | 2 | 3 | 4, size: string, reverse = false): [string, Record<string, unknown>] => ["marquee", { items: marquee, separator: d.id === "brut" ? "●" : d.id === "pop" ? "★" : "✦", size, speed: size === "huge" ? 40 : 30, reverse, color_scheme: scheme(sch) }];
   const cta = (sch: 1 | 3 | 4, asset = im.scene3 ?? im.scene2 ?? im.banner ?? im.hero): [string, Record<string, unknown>] => ["cta-banner", { heading: c.cta.heading, text: p(c.cta.text), button_label: c.cta.button, button_link: productUrl, image_asset: img(asset), overlay: 45, style: "center", parallax: true, color_scheme: scheme(sch), ...pad(152) }];
-  const newsletter = (sch: 1 | 2 | 3 | 4): [string, Record<string, unknown>] => ["newsletter", { heading: c.newsletter.heading, text: p(c.newsletter.text), button_label: "S'inscrire", legal: "Désinscription possible à tout moment.", color_scheme: scheme(sch), ...pad(104) }];
+  const newsletter = (sch: 1 | 2 | 3 | 4): [string, Record<string, unknown>] => ["newsletter", { heading: c.newsletter.heading, text: p(c.newsletter.text), button_label: t("S'inscrire", "Subscribe"), legal: t("Désinscription possible à tout moment.", "Unsubscribe at any time."), color_scheme: scheme(sch), ...pad(104) }];
   const hgallery = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof gallerySlides] => ["horizontal-gallery", { heading: c.gallery.heading, color_scheme: scheme(sch), ...pad(104) }, gallerySlides];
   const mosaicSec = (sch: 1 | 2, layout = "editorial"): [string, Record<string, unknown>, typeof mosaic] => ["gallery-mosaic", { heading: c.gallery.heading, layout, color_scheme: scheme(sch), ...pad(104) }, mosaic];
   const featured = (sch: 1 | 2): [string, Record<string, unknown>] => ["featured-product", { eyebrow: c.hero.eyebrow, text: p(c.product.short), image_asset: img(im.packshot), show_quantity: true, color_scheme: scheme(sch), ...pad(104) }];
@@ -455,24 +489,24 @@ export function buildSpec(input: BuildInput): ThemeSpec {
 
   // Sections narratives (cercles, cartes empilées, frise, texte en courbe, vidéos verticales, vagues).
   const circleItems = [
-    [im.packshot, "Le produit", productUrl],
-    [im.detail1, "Les détails", productUrl],
-    [im.scene1, "En situation", productUrl],
-    [im.scene2 ?? im.detail2, "Notre histoire", "/pages/notre-histoire"],
-    [im.detail2 ?? im.scene3, "Questions", "/pages/faq"],
+    [im.packshot, t("Le produit", "The product"), productUrl],
+    [im.detail1, t("Les détails", "The details"), productUrl],
+    [im.scene1, t("En situation", "In use"), productUrl],
+    [im.scene2 ?? im.detail2, t("Notre histoire", "Our story"), `/pages/${storyHandle}`],
+    [im.detail2 ?? im.scene3, t("Questions", "Questions"), "/pages/faq"],
   ].filter((x) => x[0]) as [string, string, string][];
   const circles = (sch: 1 | 2): Row[] => (circleItems.length >= 3 ? [["story-circles", { heading: "", color_scheme: scheme(sch), ...pad(56, 40) }, circleItems.map(([a, label, link]) => ({ type: "circle", settings: { image_asset: a, label, link } }))]] : []);
   const stackImages = [im.detail1, im.scene1, im.detail2, im.scene2, im.packshot].filter(Boolean) as string[];
   const stackCards = (sch: 1 | 2): Row[] =>
     features.length >= 2 && stackImages.length >= 2
-      ? [["stack-cards", { heading: c.features.heading, heading_accent: "", color_scheme: scheme(sch), ...pad(104) }, c.features.items.slice(0, 4).map((f, i) => ({ type: "card", settings: { image_asset: stackImages[i % stackImages.length], eyebrow: "", title: f.title, text: p(f.text), button_label: "Découvrir", link: productUrl } }))]]
+      ? [["stack-cards", { heading: c.features.heading, heading_accent: "", color_scheme: scheme(sch), ...pad(104) }, c.features.items.slice(0, 4).map((f, i) => ({ type: "card", settings: { image_asset: stackImages[i % stackImages.length], eyebrow: "", title: f.title, text: p(f.text), button_label: t("Découvrir", "Discover"), link: productUrl } }))]]
       : [];
   const timelineSec = (sch: 1 | 2): Row[] =>
     c.story.steps.length >= 2 ? [["timeline", { heading: c.story.heading, heading_accent: "", image_asset: img(im.scene2 ?? im.scene1), color_scheme: scheme(sch), ...pad(104) }, c.story.steps.map((st) => ({ type: "step", settings: { title: st.title, text: p(st.text) } }))]] : [];
   const curveText = shortItems.length ? shortItems.slice(0, 2).join(" ✦ ") : input.shopName;
   const curve = (sch: 1 | 2 | 3 | 4): Row => ["curved-marquee", { text: curveText, separator: "✦", curve: 70, size: "large", color_scheme: scheme(sch), ...pad(24) }];
   const reels = (sch: 1 | 2 | 3): Row[] =>
-    im.reels?.length ? [["video-reels", { heading: "En mouvement", heading_accent: "", color_scheme: scheme(sch), ...pad(88) }, im.reels.map((r) => ({ type: "reel", settings: { video_asset: r.video, poster_asset: r.poster ?? "", caption: "" } }))]] : [];
+    im.reels?.length ? [["video-reels", { heading: t("En mouvement", "In motion"), heading_accent: "", color_scheme: scheme(sch), ...pad(88) }, im.reels.map((r) => ({ type: "reel", settings: { video_asset: r.video, poster_asset: r.poster ?? "", caption: "" } }))]] : [];
   const wave = (from: 1 | 2 | 3 | 4, to: 1 | 2 | 3 | 4): Row => ["wave-divider", { from_scheme: scheme(from), color_scheme: scheme(to), amplitude: 40 }];
   const hasVideo = !!im.video;
   type Row = [string, Record<string, unknown>, { type: string; settings: Record<string, unknown> }[]?];
@@ -606,12 +640,12 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     if (multi) {
       for (const r of index) if (/^hero-|^cta-banner$/.test(r[0]) && r[1].button_link === productUrl) r[1] = { ...r[1], button_link: "/collections/all" };
     }
-    const grid: Row = ["featured-collection", { heading: multi ? "Les incontournables" : "La sélection", collection: "all", limit: Math.min(8, total), columns: total >= 4 ? 4 : 3, ratio: "portrait", color_scheme: scheme(1), ...pad(96) }];
+    const grid: Row = ["featured-collection", { heading: multi ? t("Les incontournables", "The essentials") : t("La sélection", "The selection"), collection: "all", limit: Math.min(8, total), columns: total >= 4 ? 4 : 3, ratio: "portrait", color_scheme: scheme(1), ...pad(96) }];
     const at = Math.max(1, index.findIndex((r, i) => i >= 1 && !["rich-text", "wave-divider", "marquee", "curved-marquee"].includes(r[0])));
     index.splice(at === -1 ? index.length : at, 0, grid);
     const cols = input.collections ?? [];
     if (cols.length >= 2) {
-      const clist: Row = ["collection-list", { heading: multi ? "Explorer par univers" : "Explorer la collection", columns: Math.min(4, cols.length), color_scheme: scheme(1), ...pad(96) }, cols.slice(0, 8).map((col) => ({ type: "collection", settings: { collection: col.handle, title: col.title, image_asset: col.image ?? "" } }))];
+      const clist: Row = ["collection-list", { heading: multi ? t("Explorer par univers", "Shop by category") : t("Explorer la collection", "Explore the collection"), columns: Math.min(4, cols.length), color_scheme: scheme(1), ...pad(96) }, cols.slice(0, 8).map((col) => ({ type: "collection", settings: { collection: col.handle, title: col.title, image_asset: col.image ?? "" } }))];
       const end = index.findIndex((r) => ["faq", "newsletter", "cta-banner"].includes(r[0]));
       index.splice(end === -1 ? index.length : end, 0, clist);
     }
@@ -619,12 +653,12 @@ export function buildSpec(input: BuildInput): ThemeSpec {
 
   // Catalogue : les textes rédigés pour le produit principal ne s'affichent que sur sa fiche.
   const only = isCatalog ? { product_handle: input.product.handle } : {};
-  const productTabs = c.product.tabs.map((t) => ({ type: "collapsible", settings: { heading: t.heading, content: p(t.content_html), open: false, ...(/livraison|retour/i.test(t.heading) ? {} : only) } }));
+  const productTabs = c.product.tabs.map((tab) => ({ type: "collapsible", settings: { heading: tab.heading, content: p(tab.content_html), open: false, ...(/livraison|retour|shipping|deliver|return/i.test(tab.heading) ? {} : only) } }));
   const productBlocks = [
     { type: "eyebrow", settings: { text: input.shopName } },
     { type: "title", settings: {} },
     // Note réelle de l'application d'avis : invisible tant qu'il n'y a pas d'avis.
-    { type: "rating", settings: { anchor: "avis" } },
+    { type: "rating", settings: { anchor: reviewsAnchor } },
     { type: "price", settings: {} },
     { type: "text", settings: { text: p(c.product.short), ...only } },
     { type: "buy_buttons", settings: { picker: "buttons", show_quantity: true, show_dynamic_checkout: true } },
@@ -639,21 +673,21 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   ];
   const productTpl = tpl(ids, [
     ["main-product", { gallery_layout: gallery, sticky_bar: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96 }, productBlocks],
-    ["product-reviews", { heading: "Avis des clients", anchor: "avis", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 }],
+    ["product-reviews", { heading: t("Avis des clients", "Customer reviews"), anchor: reviewsAnchor, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 }],
     story(2),
     ...(specs.length ? [specList(1)] : []),
     faqSec(2, 4),
-    ["product-recommendations", { heading: "Vous aimerez aussi", limit: 4, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 96 }],
+    ["product-recommendations", { heading: t("Vous aimerez aussi", "You may also like"), limit: 4, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 96 }],
   ]);
 
   const aboutTpl = tpl(ids, [
     ["rich-text", { align: "center", style: "statement", color_scheme: "scheme-1", ...pad(120, 64) }, [
-      { type: "eyebrow", settings: { text: "Notre histoire" } },
+      { type: "eyebrow", settings: { text: t("Notre histoire", "Our story") } },
       { type: "heading", settings: { text: c.about.heading, size: "h1" } },
       { type: "text", settings: { text: p(c.about.intro) } },
     ]],
     ...c.about.blocks.map((b, i): Row => ["image-with-text", { eyebrow: "", heading: b.heading, text: p(b.text), image_asset: img([im.scene1, im.detail1, im.scene2, im.detail2][i]), layout: i % 2 ? "image-right" : "image-left", ratio: "portrait", reveal: "curtain", parallax: false, color_scheme: i % 2 ? "scheme-2" : "scheme-1", ...pad(96) }]),
-    ...(c.about.values.length ? [["features-grid", { heading: "Ce qui nous guide", heading_align: "left", columns: Math.min(3, Math.max(2, c.about.values.length)), style: "glow", color_scheme: "scheme-2", ...pad(96) }, c.about.values.map((v) => ({ type: "feature", settings: { title: v.title, text: p(v.text), icon: "sparkle" } }))] as Row] : []),
+    ...(c.about.values.length ? [["features-grid", { heading: t("Ce qui nous guide", "What guides us"), heading_align: "left", columns: Math.min(3, Math.max(2, c.about.values.length)), style: "glow", color_scheme: "scheme-2", ...pad(96) }, c.about.values.map((v) => ({ type: "feature", settings: { title: v.title, text: p(v.text), icon: "sparkle" } }))] as Row] : []),
     cta(3),
   ]);
 
@@ -661,25 +695,25 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     index: tpl(ids, index),
     product: productTpl,
     collection: tpl(ids, [["main-collection", { per_page: 16, columns: 3, enable_filters: true, enable_sorting: true, color_scheme: "scheme-1" }]]),
-    "list-collections": tpl(ids, [["main-list-collections", { heading: "Catalogue", color_scheme: "scheme-1" }]]),
+    "list-collections": tpl(ids, [["main-list-collections", { heading: t("Catalogue", "Catalog"), color_scheme: "scheme-1" }]]),
     search: tpl(ids, [["main-search", { color_scheme: "scheme-1" }]]),
     cart: tpl(ids, [["main-cart", { color_scheme: "scheme-1" }]]),
     page: tpl(ids, [["main-page", { width: "narrow", color_scheme: "scheme-1", ...pad(64, 96) }]]),
     "page.about": aboutTpl,
-    "page.faq": tpl(ids, [["faq", { heading: c.faq.heading, text: "", style: "cards", structured_data: true, color_scheme: "scheme-1", ...pad(96) }, faq], ["contact-form", { heading: "Une autre question ?", text: p(c.contact.text), color_scheme: "scheme-2", ...pad(96) }]]),
+    "page.faq": tpl(ids, [["faq", { heading: c.faq.heading, text: "", style: "cards", structured_data: true, color_scheme: "scheme-1", ...pad(96) }, faq], ["contact-form", { heading: t("Une autre question ?", "Still have a question?"), text: p(c.contact.text), color_scheme: "scheme-2", ...pad(96) }]]),
     "page.contact": tpl(ids, [["contact-form", { heading: c.contact.heading, text: p(c.contact.text), color_scheme: "scheme-1", ...pad(64, 120) }]]),
     "page.shipping": tpl(ids, [["main-page", { width: "narrow", color_scheme: "scheme-1", ...pad(64, 96) }], ["rich-text", { align: "left", style: "plain", color_scheme: "scheme-2", ...pad(64) }, [{ type: "heading", settings: { text: c.shipping.heading, size: "h3" } }, { type: "text", settings: { text: c.shipping.body_html } }]]]),
-    "404": tpl(ids, [["main-404", { heading: "Cette page s'est égarée.", text: "Le lien est peut-être ancien. Le reste de la boutique vous attend.", color_scheme: "scheme-1" }]]),
+    "404": tpl(ids, [["main-404", { heading: t("Cette page s'est égarée.", "This page has wandered off."), text: t("Le lien est peut-être ancien. Le reste de la boutique vous attend.", "The link may be out of date. The rest of the store is waiting for you."), color_scheme: "scheme-1" }]]),
     blog: tpl(ids, [["main-blog", { color_scheme: "scheme-1" }]]),
     article: tpl(ids, [["main-article", { color_scheme: "scheme-1" }]]),
-    password: { ...tpl(ids, [["main-password", { heading: "Bientôt en ligne" }]]), layout: "password" },
+    password: { ...tpl(ids, [["main-password", { heading: t("Bientôt en ligne", "Opening soon") }]]), layout: "password" },
   };
 
   // Bandeau : annonces confirmées, sinon les expressions courtes de la marque (jamais d'offre inventée).
   const annItems = c.announcement.length ? c.announcement : shortItems.slice(0, 3);
   const header: GroupJson = {
     type: "header",
-    name: "Groupe en-tête",
+    name: t("Groupe en-tête", "Header group"),
     ...tpl(ids, [
       ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
       ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: true, color_scheme: "scheme-1" }],
@@ -687,13 +721,13 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   };
   const footer: GroupJson = {
     type: "footer",
-    name: "Groupe pied de page",
+    name: t("Groupe pied de page", "Footer group"),
     ...tpl(ids, [
       ["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: true, show_payment: true, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, [
         { type: "text", settings: { heading: input.shopName, text: p(c.footer.about) } },
-        { type: "links", settings: { heading: "Boutique", menu: "main-menu" } },
-        { type: "links", settings: { heading: "Aide", menu: "footer" } },
-        { type: "newsletter", settings: { heading: "Restons en contact", text: c.footer.newsletter } },
+        { type: "links", settings: { heading: t("Boutique", "Shop"), menu: "main-menu" } },
+        { type: "links", settings: { heading: t("Aide", "Help"), menu: "footer" } },
+        { type: "newsletter", settings: { heading: t("Restons en contact", "Let's stay in touch"), text: c.footer.newsletter } },
       ]],
     ]),
   };
@@ -729,7 +763,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     fab_back_to_top: true,
     fab_contact_link: "/pages/contact",
     fab_contact_icon: "chat",
-    fab_contact_label: "Nous contacter",
+    fab_contact_label: t("Nous contacter", "Contact us"),
     cart_type: "drawer",
     cart_show_note: false,
     cart_reassurance: "",
@@ -744,6 +778,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     v: 1,
     name: `${input.shopName} · ${d.name}`,
     direction: d.id,
+    language: lang,
     settings,
     groups: { header, footer },
     templates,
@@ -755,37 +790,37 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       product: input.product,
       ...(isCatalog ? { products: catalogProducts, collections: input.collections ?? [] } : {}),
       pages: [
-        { handle: "notre-histoire", title: "Notre histoire", template_suffix: "about", body_html: "" },
-        { handle: "faq", title: "Questions fréquentes", template_suffix: "faq", body_html: "" },
+        { handle: storyHandle, title: t("Notre histoire", "Our story"), template_suffix: "about", body_html: "" },
+        { handle: "faq", title: t("Questions fréquentes", "Frequently asked questions"), template_suffix: "faq", body_html: "" },
         { handle: "contact", title: "Contact", template_suffix: "contact", body_html: "" },
-        { handle: "livraison-et-retours", title: "Livraison et retours", template_suffix: "shipping", body_html: "<p>Les conditions détaillées figurent ci-dessous.</p>" },
+        { handle: shippingHandle, title: t("Livraison et retours", "Shipping and returns"), template_suffix: "shipping", body_html: t("<p>Les conditions détaillées figurent ci-dessous.</p>", "<p>Full details are below.</p>") },
       ],
       menus: {
         "main-menu": {
-          title: "Menu principal",
+          title: t("Menu principal", "Main menu"),
           links: [
-            { title: "Accueil", url: "/" },
-            { title: "Boutique", url: "/collections/all" },
+            { title: t("Accueil", "Home"), url: "/" },
+            { title: t("Boutique", "Shop"), url: "/collections/all" },
             ...(isCatalog ? (input.collections ?? []).slice(0, 3).map((col) => ({ title: col.title, url: `/collections/${col.handle}` })) : []),
-            { title: "Notre histoire", url: "/pages/notre-histoire" },
+            { title: t("Notre histoire", "Our story"), url: `/pages/${storyHandle}` },
             { title: "FAQ", url: "/pages/faq" },
             { title: "Contact", url: "/pages/contact" },
           ],
         },
         footer: {
-          title: "Pied de page",
+          title: t("Pied de page", "Footer"),
           links: [
-            { title: "Livraison et retours", url: "/pages/livraison-et-retours" },
+            { title: t("Livraison et retours", "Shipping and returns"), url: `/pages/${shippingHandle}` },
             { title: "Contact", url: "/pages/contact" },
-            { title: "Recherche", url: "/search" },
+            { title: t("Recherche", "Search"), url: "/search" },
           ],
         },
       },
       policies: [
-        { handle: "terms-of-service", title: "Conditions générales de vente", body_html: "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>" },
-        { handle: "privacy-policy", title: "Politique de confidentialité", body_html: "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>" },
-        { handle: "refund-policy", title: "Politique de remboursement", body_html: "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>" },
-        { handle: "legal-notice", title: "Mentions légales", body_html: "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>" },
+        { handle: "terms-of-service", title: t("Conditions générales de vente", "Terms of service"), body_html: todo },
+        { handle: "privacy-policy", title: t("Politique de confidentialité", "Privacy policy"), body_html: todo },
+        { handle: "refund-policy", title: t("Politique de remboursement", "Refund policy"), body_html: todo },
+        { handle: "legal-notice", title: t("Mentions légales", "Legal notice"), body_html: todo },
       ],
     },
   };

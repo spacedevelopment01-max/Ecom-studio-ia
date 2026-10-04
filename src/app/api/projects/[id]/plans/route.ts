@@ -4,6 +4,7 @@ import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { HttpError } from "@/lib/auth";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
+import { L } from "@/lib/i18n-server";
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
@@ -33,13 +34,13 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   try {
     new Intl.DateTimeFormat("fr-FR", { timeZone: b.timezone });
   } catch {
-    throw new HttpError(400, "Fuseau horaire inconnu.");
+    throw new HttpError(400, L("Fuseau horaire inconnu.", "Unknown time zone."));
   }
-  for (const n of b.networks) if (n.connectionId && !one("SELECT 1 FROM connections WHERE id = ? AND user_id = ?", n.connectionId, user.id)) throw new HttpError(400, "Compte social inconnu.");
-  if (b.days * b.perDay > 150) throw new HttpError(400, "150 publications au maximum par plan.");
+  for (const n of b.networks) if (n.connectionId && !one("SELECT 1 FROM connections WHERE id = ? AND user_id = ?", n.connectionId, user.id)) throw new HttpError(400, L("Compte social inconnu.", "Unknown social account."));
+  if (b.days * b.perDay > 150) throw new HttpError(400, L("150 publications au maximum par plan.", "150 posts maximum per plan."));
   const pid = id();
   run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", pid, p.id, JSON.stringify(b), "planning", now());
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "calendar.plan", label: `Calendrier de ${b.days} jour(s)`, payload: { projectId: p.id, planId: pid, params: b } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "calendar.plan", label: L(`Calendrier de ${b.days} jour(s)`, `${b.days}-day calendar`), payload: { projectId: p.id, planId: pid, params: b } });
   run("UPDATE content_plans SET job_id = ? WHERE id = ?", job.id, pid);
   return ok({ planId: pid, jobId: job.id });
 });

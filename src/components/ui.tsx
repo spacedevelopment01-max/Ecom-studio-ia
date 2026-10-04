@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Moon, Sun, X, Loader2, Check, AlertTriangle, Info } from "lucide-react";
-import { currentLang } from "./i18n";
+import { currentLang, useT } from "./i18n";
 import { CONTENT_LANG_HEADER, intlLocale, type Lang } from "@/lib/i18n";
 
 export function cx(...c: (string | false | null | undefined)[]) {
@@ -203,7 +203,8 @@ export function Progress({ value, className }: { value: number; className?: stri
 }
 
 export function Spinner({ className }: { className?: string }) {
-  return <Loader2 className={cx("size-4 animate-spin", className)} aria-label="Chargement" />;
+  const t = useT();
+  return <Loader2 className={cx("size-4 animate-spin", className)} aria-label={t("Chargement", "Loading")} />;
 }
 
 export function Empty({ icon, title, children, action }: { icon?: ReactNode; title: string; children?: ReactNode; action?: ReactNode }) {
@@ -218,6 +219,7 @@ export function Empty({ icon, title, children, action }: { icon?: ReactNode; tit
 }
 
 export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean }) {
+  const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   // onClose change à chaque rendu du parent (actualisation automatique du studio) : on garde la dernière
   // version dans une ref pour que l'ouverture (focus, défilement) ne soit faite qu'une fois.
@@ -242,7 +244,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
       <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className={cx("max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl border border-line bg-card p-5 shadow-soft sm:rounded-3xl sm:p-7", wide ? "sm:max-w-4xl" : "sm:max-w-lg")}>
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2 className="font-display text-2xl">{title}</h2>
-          <button type="button" onClick={() => closeRef.current()} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-paper-2" aria-label="Fermer">
+          <button type="button" onClick={() => closeRef.current()} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-paper-2" aria-label={t("Fermer", "Close")}>
             <X className="size-5" />
           </button>
         </div>
@@ -253,6 +255,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
 }
 
 export function ThemeToggle({ className }: { className?: string }) {
+  const t = useT();
   const [mode, setMode] = useState<"light" | "dark" | null>(null);
   useEffect(() => {
     const t = document.documentElement.dataset.theme as any;
@@ -267,7 +270,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     setMode(next);
   };
   return (
-    <button onClick={toggle} className={cx("grid size-10 place-items-center rounded-full border border-line bg-card text-ink transition hover:border-ink", className)} aria-label={mode === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}>
+    <button onClick={toggle} className={cx("grid size-10 place-items-center rounded-full border border-line bg-card text-ink transition hover:border-ink", className)} aria-label={mode === "dark" ? t("Passer en mode clair", "Switch to light mode") : t("Passer en mode sombre", "Switch to dark mode")}>
       {mode === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
     </button>
   );
