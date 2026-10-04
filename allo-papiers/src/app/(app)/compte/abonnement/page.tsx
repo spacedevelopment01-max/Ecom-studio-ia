@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/auth";
+import { requirePageSession } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { usage } from "@/lib/quota";
 import { integrationStatus } from "@/lib/env";
@@ -9,7 +9,7 @@ export const metadata = { title: "Abonnement" };
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ retour?: string }> }) {
   const { retour } = await searchParams;
-  const { user } = await requireSession();
+  const { user } = await requirePageSession();
   const [sub] = await sql()<{ status: string; current_period_end: Date | null; cancel_at_period_end: boolean }[]>`
     select status, current_period_end, cancel_at_period_end from subscriptions where user_id = ${user.id}`;
   const u = await usage(user.id);

@@ -15,8 +15,8 @@ export function Logo({ compact = false }: { compact?: boolean }) {
     <span className="flex items-center gap-2.5">
       <LogoMark size={compact ? 34 : 40} />
       <span className="flex flex-col leading-none">
-        <span className="font-display text-[1.3rem] font-semibold tracking-tight text-navy">Allô Papiers</span>
-        {!compact && <span className="mt-1 hidden text-[0.8rem] text-muted sm:block">La paperasse en mode simplifié</span>}
+        <span className="font-display whitespace-nowrap text-[1.3rem] font-semibold tracking-tight text-navy">Allô Papiers</span>
+        {!compact && <span className="mt-1 hidden whitespace-nowrap text-[0.8rem] text-muted sm:block lg:hidden xl:block">La paperasse en mode simplifié</span>}
       </span>
     </span>
   );

@@ -21,7 +21,7 @@ export function toWinAnsi(s: string): string {
     .replace(/[   ]/g, " ")
     .replace(/[•●]/g, "-")
     .replace(/\t/g, "    ")
-    .replace(/[^\n\x20-\x7E -ÿŒœŠšŸŽž€†‡‰ƒ]/g, "?");
+    .replace(/[^\n\x20-\x7E -ÿŒœŠšŸŽž€†‡‰ƒ]/gu, "?");
 }
 
 class Writer {

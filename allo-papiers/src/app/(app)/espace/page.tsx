@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BellRing, Camera, CalendarClock, FolderOpen, PenLine, ShieldCheck, Sparkles } from "lucide-react";
-import { requireSession, userHasPasskey } from "@/lib/auth";
+import { requirePageSession, userHasPasskey } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { usage } from "@/lib/quota";
 import { aiMode } from "@/lib/ai/provider";
@@ -11,7 +11,7 @@ export const metadata = { title: "Mon espace" };
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ bienvenue?: string }> }) {
   const { bienvenue } = await searchParams;
-  const { user } = await requireSession();
+  const { user } = await requirePageSession();
   const u = await usage(user.id);
   const today = parisDate();
   const urgent = await sql()<{ id: string; title: string; urgency: "vert" | "orange" | "rouge"; deadline: string | null }[]>`

@@ -69,20 +69,20 @@ export function Header({ connected }: { connected: boolean }) {
         <Link href={connected ? "/espace" : "/"} aria-label="Allô Papiers, accueil" className="shrink-0">
           <Logo compact={scrolled} />
         </Link>
-        <nav aria-label="Navigation principale" className="hidden items-center gap-1 lg:flex">
+        <nav aria-label="Navigation principale" className="hidden items-center gap-0.5 lg:flex">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className={`rounded-xl px-3 py-2 font-medium transition-colors hover:bg-sand ${isActive(l.href) ? "text-orange" : "text-navy"}`} aria-current={isActive(l.href) ? "page" : undefined}>
+            <Link key={l.href} href={l.href} className={`whitespace-nowrap rounded-xl px-2.5 py-2 font-medium transition-colors hover:bg-sand ${isActive(l.href) ? "text-orange" : "text-navy"}`} aria-current={isActive(l.href) ? "page" : undefined}>
               {l.label}
             </Link>
           ))}
         </nav>
         <div className="flex items-center gap-2">
           {connected ? (
-            <Link href="/nouveau" className="btn btn-primary hidden !min-h-11 !px-4 sm:inline-flex">Nouveau document</Link>
+            <Link href="/nouveau" className="btn btn-primary hidden !min-h-11 whitespace-nowrap !px-4 sm:inline-flex">Nouveau document</Link>
           ) : (
             <>
-              <Link href="/connexion" className="btn btn-ghost hidden sm:inline-flex">Se connecter</Link>
-              <Link href="/nouveau" className="btn btn-primary hidden !min-h-11 !px-4 sm:inline-flex">Comprendre un document</Link>
+              <Link href="/connexion" className="btn btn-ghost hidden whitespace-nowrap sm:inline-flex">Se connecter</Link>
+              <Link href="/nouveau" className="btn btn-primary hidden !min-h-11 whitespace-nowrap !px-4 sm:inline-flex">Comprendre un document</Link>
             </>
           )}
           <button type="button" className="btn btn-ghost !min-h-12 !px-2.5 lg:hidden" aria-expanded={open} aria-controls="menu-mobile" aria-label={open ? "Fermer le menu" : "Ouvrir le menu"} onClick={() => setOpen((v) => !v)}>

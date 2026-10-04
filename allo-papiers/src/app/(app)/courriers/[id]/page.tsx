@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireSession } from "@/lib/auth";
+import { requirePageSession } from "@/lib/auth";
 import { getLetter } from "@/lib/letters/service";
 import { getTemplate } from "@/lib/letters/catalog";
 import { latestAnalysis } from "@/lib/documents";
@@ -11,7 +11,7 @@ export const metadata = { title: "Mon courrier" };
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { user } = await requireSession();
+  const { user } = await requirePageSession();
   let letter;
   try {
     letter = await getLetter(user.id, id);

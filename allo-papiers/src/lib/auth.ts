@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { sql } from "./db";
 import { keyedHash, randomToken } from "./crypto";
 import { env } from "./env";
@@ -216,4 +217,13 @@ export async function revokeSession(userId: string, sessionId: string) {
 export async function userHasPasskey(userId: string): Promise<boolean> {
   const [r] = await sql()<{ n: number }[]>`select count(*)::int as n from webauthn_credentials where user_id = ${userId}`;
   return r.n > 0;
+}
+
+/** Pour les pages : redirige (connexion ou déverrouillage) au lieu de lever une erreur. */
+export async function requirePageSession() {
+  const s = await getSession();
+  const path = (await headers()).get("x-pathname") ?? "/espace";
+  if (!s) redirect(`/connexion?suite=${encodeURIComponent(path)}`);
+  if (s.session.locked) redirect(`/deverrouiller?suite=${encodeURIComponent(path)}`);
+  return s;
 }

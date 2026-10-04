@@ -9,8 +9,10 @@ export function CancelRecovery() {
   const [state, setState] = useState<"idle" | "ok" | "error">("idle");
   const [msg, setMsg] = useState("");
   useEffect(() => {
-    setToken(location.hash.slice(1));
-    history.replaceState(null, "", location.pathname);
+    const w = window as unknown as { __apCancel?: string };
+    w.__apCancel ??= location.hash.slice(1);
+    setToken(w.__apCancel || null);
+    if (location.hash) history.replaceState(null, "", location.pathname);
   }, []);
   async function cancel() {
     try {

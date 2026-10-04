@@ -64,7 +64,7 @@ export async function checkAndCompress(file: File): Promise<{ blob: Blob; report
   }
   const sharpness = lapSq / n - (lap / n) ** 2;
   if (mean < 70) warnings.push("Photo sombre : allumez la lumière ou approchez-vous d'une fenêtre.");
-  if (mean > 235) warnings.push("Photo très claire : évitez le flash et les reflets.");
+  if (mean > 248 && contrast < 30) warnings.push("Photo très claire : évitez le flash et les reflets.");
   if (contrast < 25) warnings.push("Contraste faible : le texte se distingue mal du fond.");
   if (sharpness < 60) warnings.push("Photo floue : tenez le téléphone immobile et touchez l'écran pour faire la mise au point.");
 

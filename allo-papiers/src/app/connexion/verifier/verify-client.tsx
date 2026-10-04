@@ -12,9 +12,11 @@ export function VerifyClient() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = location.hash.slice(1);
-    setToken(t || "");
-    if (t) history.replaceState(null, "", location.pathname);
+    // Lu une seule fois (l'effet peut s'exécuter deux fois en développement), puis retiré de l'adresse.
+    const w = window as unknown as { __apMagic?: string };
+    w.__apMagic ??= location.hash.slice(1);
+    setToken(w.__apMagic || "");
+    if (location.hash) history.replaceState(null, "", location.pathname);
   }, []);
 
   async function confirm() {

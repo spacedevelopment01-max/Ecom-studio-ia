@@ -17,5 +17,5 @@
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "scripts/demo-renders"]
+  "exclude": ["node_modules", "scripts/demo-renders", "allo-papiers"]
 }

@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { requireSession } from "@/lib/auth";
+import { requirePageSession } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { AccountSettings } from "./account-settings";
 
 export const metadata = { title: "Mon compte" };
 
 export default async function Page() {
-  const { user } = await requireSession();
+  const { user } = await requirePageSession();
   const sends = await sql()<{ id: string; status: string; provider_mode: string; created_at: Date; tracking_number: string | null; tracking_is_fictive: boolean }[]>`
     select id, status, provider_mode, created_at, tracking_number, tracking_is_fictive from send_requests where user_id = ${user.id} order by created_at desc limit 20`;
   return (

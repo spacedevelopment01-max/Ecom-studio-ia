@@ -25,6 +25,8 @@ export function NewDocument() {
   const [consent, setConsent] = useState(false);
   const cameraRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
+  // Référence immédiate (et non l'état React) : toutes les pages d'un même import vont dans le MÊME document.
+  const docRef = useRef<Promise<string> | null>(null);
 
   useEffect(() => {
     api<Usage>("/api/account/usage").then(setUsage).catch((e) => setError(e instanceof ApiError ? e.message : "Chargement impossible."));
@@ -39,19 +41,26 @@ export function NewDocument() {
   const totalPages = pages.reduce((s, p) => s + p.pages, 0);
   const remaining = usage ? Math.max(0, usage.limits.document - usage.used.document) : 0;
 
-  async function ensureDoc(): Promise<string> {
-    if (docId) return docId;
-    const r = await api<{ id: string }>("/api/documents", { method: "POST", json: { parcours } });
-    setDocId(r.id);
-    return r.id;
+  function ensureDoc(): Promise<string> {
+    docRef.current ??= api<{ id: string }>("/api/documents", { method: "POST", json: { parcours } })
+      .then((r) => {
+        setDocId(r.id);
+        return r.id;
+      })
+      .catch((e) => {
+        docRef.current = null;
+        throw e;
+      });
+    return docRef.current;
   }
 
   async function addFiles(list: FileList | null) {
     if (!list || list.length === 0) return;
     setError(null);
     const files = Array.from(list);
+    let count = totalPages;
     for (const file of files) {
-      if (totalPages + 1 > DOCUMENT_RULES.maxPages) {
+      if (count + 1 > DOCUMENT_RULES.maxPages) {
         setError(`Un document compte au maximum ${DOCUMENT_RULES.maxPages} pages.`);
         break;
       }
@@ -76,6 +85,7 @@ export function NewDocument() {
         const fd = new FormData();
         fd.append("file", blob, file.name);
         const r = await api<{ id: string; mime: string; pages: number }>(`/api/documents/${id}/files`, { method: "POST", body: fd });
+        count += r.pages;
         setPages((p) => [...p, { id: r.id, mime: r.mime, pages: r.pages, preview, name: file.name, warnings }]);
       } catch (e) {
         setError(e instanceof ApiError ? e.message : "Envoi impossible. Vérifiez votre connexion et réessayez.");

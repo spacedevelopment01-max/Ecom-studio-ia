@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireSession, isElevated } from "@/lib/auth";
+import { requirePageSession, isElevated } from "@/lib/auth";
 import { getDocument, latestAnalysis, listFiles } from "@/lib/documents";
 import { sql } from "@/lib/db";
 import { HttpError } from "@/lib/http";
@@ -9,7 +9,7 @@ export const metadata = { title: "Résultat" };
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { user, session } = await requireSession();
+  const { user, session } = await requirePageSession();
   let doc;
   try {
     doc = await getDocument(user.id, id);

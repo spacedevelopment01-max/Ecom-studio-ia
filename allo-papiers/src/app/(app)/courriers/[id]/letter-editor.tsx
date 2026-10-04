@@ -70,6 +70,7 @@ export function LetterEditor({
   const [instruction, setInstruction] = useState("");
   const [attach, setAttach] = useState<string[]>([]);
   const first = useRef(true);
+  const dirtyRef = useRef(false);
 
   const parsed = courrierAddress ? parseCourrierAddress(courrierAddress.text) : null;
   const conflict = Boolean(parsed?.postalCode && recipient.postalCode && parsed.postalCode !== recipient.postalCode);
@@ -81,6 +82,7 @@ export function LetterEditor({
       return;
     }
     setDirty(true);
+    dirtyRef.current = true;
     setReviewed(false);
     const t = setTimeout(() => void save(), 1200);
     return () => clearTimeout(t);
@@ -96,12 +98,15 @@ export function LetterEditor({
   }, [dirty]);
 
   async function save() {
+    if (!dirtyRef.current) return; // rien à enregistrer (évite d'annuler une relecture déjà confirmée)
+    dirtyRef.current = false;
     setSaving(true);
     setError(null);
     try {
       await api(`/api/letters/${initial.id}`, { method: "PATCH", json: { title, body, sender, recipient: { ...recipient, conflict } } });
       setDirty(false);
     } catch (e) {
+      dirtyRef.current = true;
       setError(e instanceof ApiError ? e.message : "Enregistrement impossible. Vos modifications restent affichées : réessayez.");
     } finally {
       setSaving(false);
@@ -110,11 +115,12 @@ export function LetterEditor({
 
   async function markReviewed(v: boolean) {
     if (!v) return setReviewed(false);
-    if (dirty) await save();
+    setReviewed(true);
     try {
+      if (dirty) await save();
       await api(`/api/letters/${initial.id}/review`, { method: "POST" });
-      setReviewed(true);
     } catch (e) {
+      setReviewed(false);
       setError(e instanceof ApiError ? e.message : "Impossible d'enregistrer la relecture.");
     }
   }
@@ -255,7 +261,7 @@ export function LetterEditor({
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <button className="btn btn-outline" onClick={copy}><ClipboardCopy className="h-5 w-5" aria-hidden /> Copier</button>
           <a className={`btn btn-primary ${reviewed ? "" : "pointer-events-none opacity-50"}`} aria-disabled={!reviewed} href={reviewed ? `/api/letters/${initial.id}/pdf` : undefined}><FileDown className="h-5 w-5" aria-hidden /> PDF</a>
-          <button className="btn btn-outline" onClick={() => void save()} disabled={saving}><Save className="h-5 w-5" aria-hidden /> Enregistrer</button>
+          <button className="btn btn-outline" onClick={() => { dirtyRef.current = true; void save(); }} disabled={saving}><Save className="h-5 w-5" aria-hidden /> Enregistrer</button>
         </div>
         {!reviewed && <p className="mt-2 text-sm text-muted">Le PDF et l'envoi sont disponibles après relecture.</p>}
       </section>
