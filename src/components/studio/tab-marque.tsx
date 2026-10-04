@@ -6,7 +6,7 @@ import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
 import type { Brand } from "@/lib/project-types";
 import { DIRECTIONS } from "@/lib/theme/directions";
-import { useT } from "../i18n";
+import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 
 const PALETTE_LABEL: Record<string, { fr: string; en: string }> = {
@@ -35,6 +35,7 @@ export default function TabMarque() {
   const { id, data, reload } = useProject();
   const toast = useToast();
   const t = useT();
+  const { lang } = useLang();
   const cl = useContentLang();
   const [b, setB] = useState<Brand | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -186,7 +187,7 @@ export default function TabMarque() {
             <div className="mt-3 grid grid-cols-2 gap-2">
               {DIRECTIONS.map((d) => (
                 <button key={d.id} onClick={() => set({ direction: d.id })} className={cx("overflow-hidden rounded-2xl border text-left transition", b.direction === d.id ? "border-signal ring-2 ring-signal" : "border-line hover:border-ink")} aria-pressed={b.direction === d.id}>
-                  <img src={`/demo/directions/${d.id}.jpg`} alt="" className="aspect-[4/3] w-full object-cover object-top" loading="lazy" />
+                  <img src={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} alt="" className="aspect-[4/3] w-full object-cover object-top" loading="lazy" />
                   <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTION_TAGLINE_EN[d.id] ?? d.tagline)}</span></span>
                 </button>
               ))}

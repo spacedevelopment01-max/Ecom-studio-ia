@@ -30,10 +30,10 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/** Démonstrations : public/demo (français) ou public/demo-en (projets créés en anglais, LANG=en npm run demos). */
-function demos(dir: "demo" | "demo-en" = "demo"): Demo[] {
+/** Démonstrations : manifest.json (français) ou manifest.en.json (projets créés en anglais, fichiers « .en » à côté des français). */
+function demos(file: "manifest.json" | "manifest.en.json" = "manifest.json"): Demo[] {
   try {
-    return JSON.parse(fs.readFileSync(path.join(process.cwd(), "public", dir, "manifest.json"), "utf8")).demos;
+    return JSON.parse(fs.readFileSync(path.join(process.cwd(), "public", "demo", file), "utf8")).demos;
   } catch {
     return [];
   }
@@ -44,7 +44,7 @@ const eur = (n: number, lang: Lang) =>
     ? "€" + n.toLocaleString(intlLocale(lang), { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })
     : n.toLocaleString(intlLocale(lang), { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }) + " €";
 
-/** Repli si public/demo-en n'est pas généré : textes des démonstrations françaises traduits pour l'interface anglaise. */
+/** Repli si public/demo/manifest.en.json n'est pas généré : textes des démonstrations françaises traduits pour l'interface anglaise. */
 const DEMO_EN: Record<string, { product?: string; note?: string }> = {
   verger: { product: "Peach iced tea", note: "A supplier's 33 cl can of iced tea, relabeled: the brand and the three flavors are created by the studio." },
   oreiller: { product: "Papillon ergonomic pillow", note: "A white-label ergonomic pillow from a supplier, in two colors: the brand, the visuals and the store are created by the studio." },
@@ -100,16 +100,10 @@ export default async function Home() {
     const en = src.replace(/(\.\w+)$/, ".en$1");
     return fs.existsSync(path.join(process.cwd(), "public", en)) ? en : src;
   };
-  // Interface anglaise : démonstrations produites en anglais (boutique, visuels, vidéos), sinon repli sur les françaises.
-  const rawEn = lang === "en" ? demos("demo-en") : [];
-  const raw = rawEn.length ? rawEn : demos();
-  const list = rawEn.length ? rawEn : raw.map((d) => localizeDemo(d, lang));
-  // Médias de démonstration hors manifeste (types de boutique, directions) : version anglaise quand elle existe.
-  const DM = (src: string) => {
-    if (!rawEn.length || !src.startsWith("/demo/")) return src;
-    const en = src.replace(/^\/demo\//, "/demo-en/");
-    return fs.existsSync(path.join(process.cwd(), "public", en)) ? en : src;
-  };
+  // Interface anglaise : démonstration produite en anglais (manifest.en.json) quand elle existe, sinon la française aux textes traduits.
+  const rawEn = lang === "en" ? demos("manifest.en.json") : [];
+  const raw = demos().map((d) => rawEn.find((x) => x.id === d.id) ?? d);
+  const list = raw.map((d) => (rawEn.includes(d) ? d : localizeDemo(d, lang)));
   const d0 = list[0];
   // Avant / après : le drone (photo fournisseur sur fond de ciel) puis composé dans un décor du quotidien,
   // au même cadrage que la photo d'origine (public/demo/drone/avant-apres.jpg, produit réel détouré).
@@ -117,7 +111,7 @@ export default async function Home() {
   const baAfter = ba?.id === "drone" ? M("/demo/drone/avant-apres.jpg") : (raw.find((d) => d.id === ba?.id) ?? ba)?.images.find((x) => /scène|scene/i.test(x.label))?.src ?? ba?.photo;
   const user = await currentUser();
   const live = paymentsLive();
-  const themes = directionCards(lang).map((c) => ({ ...c, preview: DM(c.preview) }));
+  const themes = directionCards(lang).map((c) => ({ ...c, preview: M(c.preview) }));
   const cta = user ? "/studio" : "/inscription";
   const chapters = [
     { tag: T("Analyse", "Analysis"), title: T("Une photo suffit pour démarrer.", "One photo is all it takes."), text: T("Le studio détoure votre produit au pixel près, mesure sa palette sur l'objet et dessine logo et charte. Pas encore de photo ? Ouvrez le studio quand même : vous l'ajouterez plus tard.", "The studio cuts out your product with pixel precision, measures its palette on the object itself and designs your logo and brand guidelines. No photo yet? Open the studio anyway: you can add one later."), video: M("/explainers/photo.mp4"), poster: M("/explainers/photo.jpg") },
@@ -316,9 +310,9 @@ export default async function Home() {
             </div>
             <div className="mt-12 grid gap-5 md:grid-cols-3">
               {[
-                [T("Monoproduit", "Single-product"), T("Un produit phare mis en scène sur toute la boutique.", "One hero product showcased across the whole store."), DM("/demo/drone/boutique-bureau.jpg"), T("Ostral · drone pliable", "Ostral · foldable drone")],
-                [T("Multiproduits", "Multi-product"), T("Un catalogue, des collections, une fiche pour chaque article.", "A catalog, collections, a page for every item."), DM("/demo/tribunes/boutique-bureau.jpg"), T("Les Tribunes · t-shirts", "Les Tribunes · T-shirts")],
-                ["Niche", T("Plusieurs produits d'un même univers, pour une communauté précise.", "Several products from the same world, for a specific community."), DM("/demo/chat/boutique-bureau.jpg"), T("Ronron · accessoires pour chat", "Ronron · cat accessories")],
+                [T("Monoproduit", "Single-product"), T("Un produit phare mis en scène sur toute la boutique.", "One hero product showcased across the whole store."), M("/demo/drone/boutique-bureau.jpg"), T("Ostral · drone pliable", "Ostral · foldable drone")],
+                [T("Multiproduits", "Multi-product"), T("Un catalogue, des collections, une fiche pour chaque article.", "A catalog, collections, a page for every item."), M("/demo/tribunes/boutique-bureau.jpg"), T("Les Tribunes · t-shirts", "Les Tribunes · T-shirts")],
+                ["Niche", T("Plusieurs produits d'un même univers, pour une communauté précise.", "Several products from the same world, for a specific community."), M("/demo/chat/boutique-bureau.jpg"), T("Ronron · accessoires pour chat", "Ronron · cat accessories")],
               ].map(([t, d, img, cap], i) => (
                 <figure key={t} className="reveal overflow-hidden rounded-3xl border border-line bg-paper" style={{ ["--d" as any]: i }}>
                   <img src={img} alt={T(`Boutique ${t.toLowerCase()} générée : ${cap}`, `Generated ${t.toLowerCase()} store: ${cap}`)} loading="lazy" className="aspect-[16/10] w-full object-cover object-top" />

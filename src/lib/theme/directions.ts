@@ -388,7 +388,7 @@ export function directionCards(lang: Lang = "fr") {
     tagline: pick(lang, d.tagline, DIRECTIONS_EN[d.id].tagline),
     description: pick(lang, d.description, DIRECTIONS_EN[d.id].description),
     dark: DARK_DIRECTIONS.includes(d.id),
-    preview: `/demo/directions/${d.id}.jpg`,
+    preview: `/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`,
     chrome: [cl.shape[CHROME[d.id].shape], cl.footer[CHROME[d.id].footer], cl.ann[CHROME[d.id].ann], cl.card[CHROME[d.id].card]],
   }));
 }

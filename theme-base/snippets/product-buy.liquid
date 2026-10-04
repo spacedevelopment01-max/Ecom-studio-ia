@@ -11,7 +11,7 @@
     {%- for option in product.options_with_values -%}
       {%- assign option_index = forloop.index0 -%}
       <fieldset class="es-option es-option--{{ picker | default: 'buttons' }}">
-        <legend class="es-option__label">{{ option.name }} : <span data-option-value="{{ forloop.index0 }}">{{ option.selected_value }}</span></legend>
+        <legend class="es-option__label">{{ option.name }}{% if request.locale.iso_code contains 'fr' %}&nbsp;:{% else %}:{% endif %} <span data-option-value="{{ forloop.index0 }}">{{ option.selected_value }}</span></legend>
         {%- if picker == 'dropdown' -%}
           <select class="es-select" data-option-index="{{ forloop.index0 }}" aria-label="{{ option.name }}">
             {%- for value in option.values -%}<option value="{{ value | escape }}"{% if option.selected_value == value %} selected{% endif %}>{{ value }}</option>{%- endfor -%}

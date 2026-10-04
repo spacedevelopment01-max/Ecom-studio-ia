@@ -25,6 +25,13 @@ export function LangProvider({ initial, children }: { initial: Lang; children: R
       setState(l);
       document.cookie = `${LANG_COOKIE}=${l}; path=/; max-age=31536000; samesite=lax`;
       document.documentElement.lang = l;
+      // Vitrine statique (GitHub Pages) : chaque langue est une page publiée (/… et /en/…).
+      const staticBase = process.env.NEXT_PUBLIC_STATIC_PAGES;
+      if (staticBase) {
+        const rest = window.location.pathname.slice(staticBase.length).replace(/^\/en(?=\/|$)/, "") || "/";
+        window.location.href = `${staticBase}${l === "en" ? "/en" : ""}${rest}${window.location.hash}`;
+        return;
+      }
       fetch("/api/me/lang", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lang: l }) }).catch(() => {});
       router.refresh();
     },
