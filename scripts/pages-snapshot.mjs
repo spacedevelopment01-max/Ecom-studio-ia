@@ -27,12 +27,12 @@ try {
   for (let i = 0; i < 60 && !html; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     try {
-      const res = await fetch(`http://127.0.0.1:${PORT}${BASE}`);
+      const res = await fetch(`http://127.0.0.1:${PORT}${BASE}`, { headers: { cookie: "ecs-lang=fr" } });
       if (res.ok) html = await res.text();
     } catch {}
   }
   for (const p of PAGES) {
-    const res = await fetch(`http://127.0.0.1:${PORT}${BASE}/${p}`);
+    const res = await fetch(`http://127.0.0.1:${PORT}${BASE}/${p}`, { headers: { cookie: "ecs-lang=fr" } });
     if (!res.ok) throw new Error(`Page ${p} : ${res.status}`);
     pages[p] = await res.text();
   }

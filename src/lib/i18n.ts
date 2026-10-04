@@ -29,6 +29,8 @@ export function langFromAcceptLanguage(h: string | null | undefined): Lang {
   const first = h.split(",")[0]?.trim().toLowerCase() ?? "";
   if (first.startsWith("fr")) return "fr";
   if (first.startsWith("en")) return "en";
+  // Aucune langue précise (« * ») : français, la langue d'origine du studio.
+  if (!/[a-z]{2}/i.test(first)) return "fr";
   return /\bfr\b/.test(h.toLowerCase()) ? "fr" : "en";
 }
 
