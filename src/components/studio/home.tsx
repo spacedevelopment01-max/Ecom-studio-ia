@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowRight, Briefcase, Camera, ImagePlus, Link2, Palette, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
+import { ArrowRight, Briefcase, Camera, Globe, ImagePlus, Link2, Palette, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
 import { STORE_TYPES, storeTypeInfo, type BusinessType, type ServiceItem, type ServiceProfile, type StoreType } from "@/lib/project-types";
 import { LANGS } from "@/lib/i18n";
@@ -20,6 +20,11 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   const toast = useToast();
   const router = useRouter();
   const [business, setBusiness] = useState<BusinessType>(initialBusiness);
+  // « J'ai déjà mon site et mon logo » : le studio lit le site ; plateforme et type d'activité sont détectés.
+  const [existing, setExisting] = useState(false);
+  const [siteUrl, setSiteUrl] = useState("");
+  const [owner, setOwner] = useState(false);
+  const [siteErr, setSiteErr] = useState<{ url?: string; owner?: string }>({});
   const [platform, setPlatform] = useState<PlatformId>(isPlatform(initialPlatform) ? initialPlatform : recommendedPlatform(initialBusiness));
   const [platformTouched, setPlatformTouched] = useState(isPlatform(initialPlatform));
   const [photos, setPhotos] = useState<File[]>([]);
@@ -42,14 +47,26 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
     setPhotos(next);
     if (next.length) setMode("photo");
   };
-  function chooseBusiness(b: BusinessType) {
+  function chooseBusiness(b: BusinessType | "site") {
+    setExisting(b === "site");
+    setSiteErr({});
+    if (b === "site") return;
     setBusiness(b);
     setNeedDesc(false);
     if (!platformTouched) setPlatform(recommendedPlatform(b));
   }
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (svc && !typed) {
+    if (existing) {
+      const err: { url?: string; owner?: string } = {};
+      if (!/^(https?:\/\/)?[^\s/]+\.[^\s]+$/i.test(siteUrl.trim())) err.url = t("Indiquez l'adresse de votre site, par exemple www.mon-site.fr.", "Enter your website address, for example www.my-site.com.");
+      if (!owner) err.owner = t("Cochez cette case pour continuer.", "Tick this box to continue.");
+      setSiteErr(err);
+      if (err.url || err.owner) {
+        (e.currentTarget.elements.namedItem(err.url ? "siteUrl" : "siteOwnership") as HTMLInputElement | null)?.focus();
+        return;
+      }
+    } else if (svc && !typed) {
       // Site de services : la description de l'activité (ou le site actuel) est indispensable.
       setNeedDesc(true);
       (e.currentTarget.elements.namedItem("description") as HTMLTextAreaElement | null)?.focus();
@@ -57,9 +74,9 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
     }
     const fd = new FormData(e.currentTarget);
     fd.delete("photos");
-    photos.forEach((p) => fd.append("photos", p));
-    if (svc) fd.set("services", JSON.stringify(cleanServices(services)));
-    if (hasInput && !(await cost.confirm("pipeline"))) return;
+    if (!existing) photos.forEach((p) => fd.append("photos", p));
+    if (svc && !existing) fd.set("services", JSON.stringify(cleanServices(services)));
+    if ((hasInput || existing) && !(await cost.confirm("pipeline"))) return;
     setBusy(true);
     try {
       if (projectId) {
@@ -135,23 +152,32 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
     >
       {cost.dialog}
       <input type="hidden" name="businessType" value={business} />
+      {existing && <input type="hidden" name="existingSite" value="1" />}
       <fieldset>
         <legend className="mb-2.5 font-display text-xl font-semibold">{t("Que voulez-vous créer ?", "What do you want to create?")}</legend>
         <div role="radiogroup" aria-label={t("Que voulez-vous créer ?", "What do you want to create?")} className="grid gap-2.5 sm:grid-cols-2">
           {([
             ["products", Store, t("Une boutique", "An online store"), t("Je vends des produits.", "I sell products.")],
             ["services", Briefcase, t("Le site de mon entreprise de services", "My services business website"), t("Artisan, coach, salon, cabinet, agence, restaurant, photographe, professeur…", "Tradesperson, coach, salon, practice, agency, restaurant, photographer, tutor…")],
-          ] as const).map(([id, Icon, label, hint]) => (
-            <button key={id} type="button" role="radio" aria-checked={business === id} onClick={() => chooseBusiness(id)} className={cx("flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal", business === id ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
-              <span className={cx("grid size-10 shrink-0 place-items-center rounded-xl", business === id ? "bg-signal text-signal-ink" : "bg-paper-2")}><Icon className="size-5" aria-hidden /></span>
-              <span className="min-w-0">
-                <span className="block text-[15px] font-semibold leading-tight">{label}</span>
-                <span className="mt-1 block text-xs text-muted">{hint}</span>
-              </span>
-            </button>
-          ))}
+            ["site", Globe, t("J'ai déjà mon site et mon logo", "I already have my website and logo"), t("Le studio récupère votre site, votre logo et vos produits, et vous utilisez tout le reste : images, vidéos, publications, publicités, calendrier.", "The studio retrieves your website, your logo and your products, and you use everything else: images, videos, posts, ads, calendar.")],
+          ] as const).map(([id, Icon, label, hint]) => {
+            const on = id === "site" ? existing : !existing && business === id;
+            return (
+              <button key={id} type="button" role="radio" aria-checked={on} onClick={() => chooseBusiness(id)} className={cx("flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal", id === "site" && "sm:col-span-2", on ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
+                <span className={cx("grid size-10 shrink-0 place-items-center rounded-xl", on ? "bg-signal text-signal-ink" : "bg-paper-2")}><Icon className="size-5" aria-hidden /></span>
+                <span className="min-w-0">
+                  <span className="block text-[15px] font-semibold leading-tight">{label}</span>
+                  <span className="mt-1 block text-xs text-muted">{hint}</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </fieldset>
+      {existing ? (
+        <ExistingSiteFields url={siteUrl} onUrl={(v) => (setSiteUrl(v), siteErr.url && setSiteErr({ ...siteErr, url: undefined }))} owner={owner} onOwner={(v) => (setOwner(v), v && setSiteErr({ ...siteErr, owner: undefined }))} errors={siteErr} showLanguage={!projectId} />
+      ) : (
+      <>
       {!svc && (
         <fieldset>
           <legend className="mb-2 text-sm font-medium">{t("Type de boutique", "Store type")}</legend>
@@ -243,12 +269,14 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           </Field>
         </>
       )}
+      </>
+      )}
       <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="justify-self-start text-sm font-medium text-ink-2 underline underline-offset-4">
-        {more ? t("Moins d'options", "Fewer options") : svc ? t("Mode de travail…", "Workflow…") : t("Nom, marque, prix, logo, mode de travail…", "Name, brand, price, logo, workflow…")}
+        {more ? t("Moins d'options", "Fewer options") : svc || existing ? t("Mode de travail…", "Workflow…") : t("Nom, marque, prix, logo, mode de travail…", "Name, brand, price, logo, workflow…")}
       </button>
       {more && (
         <div className="grid gap-4 sm:grid-cols-2">
-          {!svc && (
+          {!svc && !existing && (
             <>
               <Field label={t("Nom du produit", "Product name")} htmlFor="productName"><Input id="productName" name="productName" /></Field>
               <Field label={t("Nom de marque (si vous en avez un)", "Brand name (if you have one)")} htmlFor="brandName"><Input id="brandName" name="brandName" /></Field>
@@ -265,12 +293,12 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
         </div>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" variant="signal" size="lg" loading={busy} disabled={!svc && !!projectId && !hasInput && !existingPhotos}>
-          {hasInput || projectId || svc ? t("Lancer la création", "Start creating") : t("Ouvrir le studio", "Open the studio")} <ArrowRight className="size-4" />
+        <Button type="submit" variant="signal" size="lg" loading={busy} disabled={!existing && !svc && !!projectId && !hasInput && !existingPhotos}>
+          {existing ? t("Récupérer mon site", "Retrieve my website") : hasInput || projectId || svc ? t("Lancer la création", "Start creating") : t("Ouvrir le studio", "Open the studio")} <ArrowRight className="size-4" />
         </Button>
-        {!svc && !!projectId && !hasInput && existingPhotos > 0 && <p className="text-sm text-muted">{t(`${existingPhotos} photo(s) déjà ajoutée(s) dans l'onglet Produit seront utilisées.`, `${existingPhotos} photo${existingPhotos > 1 ? "s" : ""} already added in the Product tab will be used.`)}</p>}
-        {!svc && !projectId && !hasInput && <p className="text-sm text-muted">{t("Pas encore de photo ? Le projet est créé vide : vous ajouterez le produit plus tard.", "No photo yet? The project is created empty: you can add the product later.")}</p>}
-        {svc && !hasInput && <p className="text-sm text-muted">{t("Quelques lignes sur votre activité suffisent pour démarrer.", "A few lines about your business are enough to get started.")}</p>}
+        {!existing && !svc && !!projectId && !hasInput && existingPhotos > 0 && <p className="text-sm text-muted">{t(`${existingPhotos} photo(s) déjà ajoutée(s) dans l'onglet Produit seront utilisées.`, `${existingPhotos} photo${existingPhotos > 1 ? "s" : ""} already added in the Product tab will be used.`)}</p>}
+        {!existing && !svc && !projectId && !hasInput && <p className="text-sm text-muted">{t("Pas encore de photo ? Le projet est créé vide : vous ajouterez le produit plus tard.", "No photo yet? The project is created empty: you can add the product later.")}</p>}
+        {!existing && svc && !hasInput && <p className="text-sm text-muted">{t("Quelques lignes sur votre activité suffisent pour démarrer.", "A few lines about your business are enough to get started.")}</p>}
       </div>
     </form>
   );
@@ -296,6 +324,46 @@ function LogoInput() {
       <span className="inline-flex items-center gap-1.5 rounded-lg bg-paper-2 px-2.5 py-1 text-xs font-medium"><ImagePlus className="size-3.5" aria-hidden /> {t("Choisir un fichier", "Choose a file")}</span>
       <span className="min-w-0 truncate text-muted">{name || t("Aucun fichier choisi", "No file chosen")}</span>
     </label>
+  );
+}
+
+/** Plateformes avec lesquelles le studio travaille : le site du client y est conservé tel quel. */
+const KEPT_LABELS = "Shopify, WordPress / WooCommerce, PrestaShop, Wix, Squarespace";
+
+/** Champs de « J'ai déjà mon site et mon logo » : adresse, accord, logo facultatif, langue ; ce qui va se passer. */
+function ExistingSiteFields({ url, onUrl, owner, onOwner, errors, showLanguage }: { url: string; onUrl: (v: string) => void; owner: boolean; onOwner: (v: boolean) => void; errors: { url?: string; owner?: string }; showLanguage: boolean }) {
+  const t = useT();
+  const { lang } = useLang();
+  return (
+    <div className="grid gap-5">
+      <Field label={t("Adresse de votre site", "Your website address")} htmlFor="siteUrl" error={errors.url ?? null} hint={t("La page d'accueil suffit : le studio lit aussi les pages du menu.", "The home page is enough: the studio also reads the pages in your menu.")}>
+        <Input id="siteUrl" name="siteUrl" inputMode="url" autoComplete="url" required aria-required="true" aria-invalid={!!errors.url || undefined} placeholder="https://www.mon-site.fr" value={url} onChange={(e) => onUrl(e.target.value)} maxLength={500} />
+      </Field>
+      <div>
+        <label className={cx("flex items-start gap-3 rounded-2xl border p-3.5 text-sm", errors.owner ? "border-bad" : "border-line bg-card")}>
+          <input type="checkbox" name="siteOwnership" value="1" checked={owner} onChange={(e) => onOwner(e.target.checked)} required aria-required="true" aria-invalid={!!errors.owner || undefined} aria-describedby={errors.owner ? "siteOwnership-err" : undefined} className="mt-0.5 size-4 shrink-0 accent-[var(--color-signal)]" />
+          <span>{t("Je confirme que ce site m'appartient ou que je suis autorisé à l'utiliser.", "I confirm that this website belongs to me or that I am authorized to use it.")}</span>
+        </label>
+        {errors.owner && <p id="siteOwnership-err" role="alert" className="mt-1.5 text-xs text-bad">{errors.owner}</p>}
+      </div>
+      <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("Sinon, le studio reprend celui de votre site, tel quel.", "Otherwise, the studio takes the one on your website, exactly as it is.")}><LogoInput /></Field>
+      {showLanguage && (
+        <Field label={t("Langue des contenus", "Content language")} htmlFor="language" hint={t("Langue des images, vidéos, publications et publicités créées par le studio. Les textes de votre site ne sont pas traduits.", "Language of the images, videos, posts and ads made by the studio. Your website's text is not translated.")}>
+          <Select id="language" name="language" defaultValue={lang} key={lang}>
+            {LANGS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+          </Select>
+        </Field>
+      )}
+      <div className="rounded-2xl bg-paper-2 p-4 text-sm text-ink-2">
+        <p className="font-medium text-ink">{t("Ce qui va se passer", "What happens next")}</p>
+        <ul className="mt-2 grid gap-1.5 text-[13px] leading-relaxed">
+          <li>{t("Le studio lit votre site : la plateforme sur laquelle il est fait, votre logo, vos pages, vos produits, vos couleurs et vos polices. Vous n'avez rien à choisir.", "The studio reads your website: the platform it is built on, your logo, your pages, your products, your colors and your fonts. You don't need to choose anything.")}</li>
+          <li>{t(`Fait avec ${KEPT_LABELS} : votre site est conservé tel quel. Le studio travaille pour lui sans le modifier.`, `Built with ${KEPT_LABELS}: your website is kept as it is. The studio works for it without changing it.`)}</li>
+          <li>{t("Fait avec une autre plateforme, ou sur mesure : il est reproduit à l'identique sur Shopify (boutique) ou WordPress (site de services) — mêmes pages, menu, textes, images, logo et couleurs. Le code de votre ancien thème n'est pas copié.", "Built with another platform, or custom-made: it is reproduced as is on Shopify (store) or WordPress (services website) — same pages, menu, text, images, logo and colors. Your old theme's code is not copied.")}</li>
+          <li>{t("Votre marque reste la vôtre : aucun nouveau nom ni nouveau logo. Ce qui manque sur votre site reste à compléter ; rien n'est inventé.", "Your brand stays yours: no new name or logo. Anything missing from your website stays to be completed; nothing is made up.")}</li>
+        </ul>
+      </div>
+    </div>
   );
 }
 

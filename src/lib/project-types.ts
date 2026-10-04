@@ -168,6 +168,41 @@ export type ProjectSettings = {
   socialLinks?: Partial<Record<"instagram" | "tiktok" | "facebook" | "youtube" | "pinterest", string>>;
   /** Langue des contenus créés pour ce projet (boutique, images, vidéos, publications…). Français par défaut. */
   language?: "fr" | "en";
+  /** « J'ai déjà mon site et mon logo » : résumé de la lecture du site du client (le détail est dans la mémoire, artefact « site_import »). */
+  existingSite?: ExistingSiteSummary;
+};
+
+/** Résumé du site existant du client, affiché dans le studio (Pilote, Boutique, Marque). Tout vient du site lui-même. */
+export type ExistingSiteSummary = {
+  url: string;
+  /** pending : lecture à venir ; read : site lu ; failed : lecture impossible (error). */
+  status: "pending" | "read" | "failed";
+  finalUrl?: string;
+  /** Plateforme reconnue (shopify, wix, webflow, custom…) et son nom lisible. */
+  platform?: string;
+  platformLabel?: string;
+  evidence?: string[];
+  /** keep : site conservé tel quel ; reproduce : reproduit à l'identique sur la plateforme conseillée (target). */
+  decision?: "keep" | "reproduce";
+  target?: string;
+  business?: BusinessType;
+  name?: string;
+  pages?: number;
+  products?: number;
+  images?: number;
+  logoAssetId?: string;
+  /** Logo envoyé par le client (sinon repris du site). */
+  logoProvided?: boolean;
+  colors?: string[];
+  palette?: BrandPalette;
+  fonts?: string[];
+  warnings?: string[];
+  /** Reproduction : ce qui est fidèle et ce qui est approché. */
+  notes?: string[];
+  readAt?: number;
+  error?: string;
+  /** Le client a demandé au studio de créer un nouveau site malgré tout. */
+  newSiteRequested?: boolean;
 };
 
 export const emptyProduct = (): ProductProfile => ({

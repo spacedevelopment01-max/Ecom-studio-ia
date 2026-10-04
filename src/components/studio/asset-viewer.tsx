@@ -75,7 +75,7 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
             <div><dt className="text-muted">{t("Dimensions", "Dimensions")}</dt><dd>{a.width && a.height ? `${a.width} × ${a.height}` : t("Inconnues", "Unknown")}</dd></div>
             <div><dt className="text-muted">{t("Poids", "Size")}</dt><dd>{formatBytes(a.size)}</dd></div>
             {a.duration && <div><dt className="text-muted">{t("Durée", "Duration")}</dt><dd>{a.duration.toFixed(1)} s</dd></div>}
-            <div><dt className="text-muted">{t("Origine", "Source")}</dt><dd>{a.origin === "upload" ? t("Importé", "Uploaded") : a.origin === "generated" ? t("Créé par le studio", "Created by the studio") : a.origin}</dd></div>
+            <div><dt className="text-muted">{t("Origine", "Source")}</dt><dd>{a.origin === "upload" ? t("Importé", "Uploaded") : a.origin === "generated" ? t("Créé par le studio", "Created by the studio") : a.origin === "site" ? t("Repris de votre site", "Taken from your website") : a.origin}</dd></div>
             <div className="col-span-2"><dt className="text-muted">{t("Créé le", "Created on")}</dt><dd>{formatDate(a.createdAt)}</dd></div>
             {a.meta?.recipe && <div className="col-span-2"><dt className="text-muted">{t("Recette", "Recipe")}</dt><dd>{a.meta.recipe}{a.meta.provider ? ` · ${a.meta.provider}` : ""}</dd></div>}
             {a.meta?.delivered && <div className="col-span-2"><dt className="text-muted">{t("Fichier livré", "Delivered file")}</dt><dd>{a.meta.delivered}</dd></div>}

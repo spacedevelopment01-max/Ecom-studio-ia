@@ -15,6 +15,7 @@ import { useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId } from "./platform-picker";
 import type { BusinessType } from "@/lib/project-types";
+import { KeptSiteCard, ReproductionBanner, SiteReading } from "./existing-site";
 
 type TFn = <T>(fr: T, en: T) => T;
 
@@ -277,10 +278,15 @@ export default function TabBoutique() {
   }
 
   if (!theme) return <div className="grid place-items-center py-24"><Spinner /></div>;
+  // « J'ai déjà mon site et mon logo » : site en cours de lecture, conservé tel quel, ou reproduit.
+  const site = data?.settings.existingSite;
+  if (site && site.status !== "read" && !theme.current) return <div className="mx-auto max-w-3xl"><SiteReading site={site} /></div>;
+  if (site?.status === "read" && site.decision === "keep" && !site.newSiteRequested && !theme.current) return <KeptSiteCard site={site} onChanged={reload} />;
   if (!theme.current)
     return (
       <div className="mx-auto max-w-3xl">
         {cost.dialog}
+        {site?.status === "read" && site.decision === "reproduce" && <div className="mb-6"><ReproductionBanner site={site} /></div>}
         <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} />
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
         <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={async () => { if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {}, lang: cl.lang }); reloadProject(); }}>{isServices ? t("Composer le site maintenant", "Build the website now") : t("Composer la boutique maintenant", "Build the store now")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
@@ -307,6 +313,13 @@ export default function TabBoutique() {
   const Chat = (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex-1 space-y-3 overflow-y-auto p-4" aria-live="polite">
+        {site?.status === "read" && site.decision === "reproduce" && <ReproductionBanner site={site} />}
+        {site?.status === "read" && site.decision === "keep" && (
+          <div className="rounded-2xl border border-line bg-paper-2 p-3.5 text-[13px] text-ink-2">
+            <p>{t(`Votre site actuel (${site.platformLabel}) reste tel quel : ce que vous modifiez ici est une version à part, publiée seulement si vous le décidez.`, `Your current website (${site.platformLabel}) stays as it is: what you edit here is a separate version, published only if you decide so.`)}</p>
+            <a href={site.finalUrl ?? site.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 font-medium text-signal underline underline-offset-2"><ExternalLink className="size-3.5" aria-hidden /> {t("Ouvrir mon site", "Open my website")}</a>
+          </div>
+        )}
         {theme.messages.length === 0 && (
           <div className="rounded-2xl bg-paper-2 p-4 text-sm text-ink-2">
             <p className="font-medium text-ink">{t("Décrivez ce que vous voulez changer.", "Describe what you want to change.")}</p>

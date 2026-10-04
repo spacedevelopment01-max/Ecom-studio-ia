@@ -1,8 +1,8 @@
 import { HttpError } from "@/lib/auth";
 import { one, run } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
-import { hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
-import { saveServices } from "@/lib/projects";
+import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
+import { saveServices, saveSettings } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
 
@@ -16,6 +16,14 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   }
   const form = await req.formData();
   const { input, files, logo } = readStartForm(form);
+  // « J'ai déjà mon site et mon logo » : le site est lu par le pilote (type d'activité et plateforme fixés ensuite).
+  const site = existingSiteFromInput(input);
+  if (site) {
+    saveSettings(p.id, { ...p.settings, existingSite: { url: site.url, status: "pending" } });
+    await saveStartFiles(p.id, user.id, [], logo);
+    const job = launchPipeline(p.id, user.id, input, 0);
+    return ok({ jobId: job.id });
+  }
   // Le type de projet choisi au démarrage (boutique ou services) remplace celui de la création.
   const business = form.get("businessType") ? input.businessType : p.business;
   const existing = business === "services" ? 0 : one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND role = 'original' AND deleted_at IS NULL", p.id)!.n;

@@ -13,6 +13,7 @@ import { generateLogos, proposeTaglines } from "./identity";
 import { aiBrand, brandFromAi } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { localBrand } from "./local";
+import { applySiteIdentity, loadSiteImport } from "./existing-site";
 import type { JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 import type { Brand } from "../project-types";
@@ -22,6 +23,8 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   let brand: Brand;
   let logoSpec: Omit<LogoSpec, "color">;
   const keepValidated = p.brand?.validated ?? [];
+  // « J'ai déjà mon site et mon logo » : l'identité vient du site (nom, logo, palette, polices) ; seuls le ton et la stratégie sont déduits.
+  const site = p.settings.existingSite?.status === "read" ? loadSiteImport(projectId) : null;
   if (llmConfigured()) {
     ctx.progress(0.1, L("Direction de marque (IA)", "Brand direction (AI)"));
     const r = await ctx.step("brand-ai", () => aiBrand({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand` }, p, opts.guidance));
@@ -29,7 +32,7 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     brand = out.brand;
     saveStrategy(projectId, out.strategy);
     logoSpec = { name: r.name, family: r.logo.family, weight: r.logo.weight, italic: r.logo.italic, case: r.logo.case, tracking: r.logo.tracking, layout: r.logo.layout, emblem: r.logo.emblem };
-    remember(projectId, { kind: "decision", key: "direction_boutique", value: `${directionById(r.direction).name} — ${r.directionReason}`, status: "inferred", source: "ai", scope: "shop" });
+    if (!site) remember(projectId, { kind: "decision", key: "direction_boutique", value: `${directionById(r.direction).name} — ${r.directionReason}`, status: "inferred", source: "ai", scope: "shop" });
   } else {
     ctx.progress(0.1, L("Direction de marque (moteur local)", "Brand direction (local engine)"));
     const out = localBrand(p.product, opts.providedBrand || p.brand?.name, p);
@@ -37,10 +40,11 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     saveStrategy(projectId, out.strategy);
     logoSpec = out.logoSpec;
   }
+  if (site) brand = applySiteIdentity(projectId, brand, site);
   // Les éléments déjà validés par le client sont conservés.
   if (p.brand && keepValidated.length) {
     for (const k of keepValidated) (brand as any)[k] = (p.brand as any)[k];
-    brand.validated = keepValidated;
+    brand.validated = [...new Set([...keepValidated, ...(site ? brand.validated : [])])];
   }
   if (opts.providedBrand) {
     brand.name = opts.providedBrand;
@@ -50,14 +54,16 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
 
   // Signatures : la proposition retenue et d'autres pistes au choix (une signature validée est conservée).
   const lines = proposeTaglines({ ...p, brand });
-  if (!keepValidated.includes("tagline") && !brand.tagline) brand.tagline = lines[0] ?? "";
+  // Site existant : seule la signature du site est reprise ; les pistes restent de simples propositions.
+  if (!keepValidated.includes("tagline") && !brand.tagline && !site) brand.tagline = lines[0] ?? "";
   brand.taglineAlternatives = lines.filter((x) => x !== brand.tagline).slice(0, 5);
 
   // Logo : celui du client est conservé ; sinon trois propositions vectorielles, la plus adaptée appliquée.
   const clientLogo = one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo' AND origin = 'upload' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId);
-  if (clientLogo) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
+  if (clientLogo && !site) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
   saveBrand(projectId, brand);
-  if (!clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name } });
+  // Site existant : jamais de logo généré (celui du site ou du client est conservé).
+  if (!site && !clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name } });
   await saveBrandGuide(projectId);
   ctx.progress(0.9, L("Charte de marque (PDF)", "Brand guidelines (PDF)"));
   await saveBrandBook(projectId);

@@ -32,6 +32,11 @@ export const StartInput = z.object({
   hours: z.string().max(400).optional(),
   bookingUrl: z.string().max(500).optional(),
   contactMode: z.enum(["booking", "quote", "call", "form"]).optional(),
+  /** « J'ai déjà mon site et mon logo » : le studio lit le site du client (plateforme et type d'activité détectés). */
+  existingSite: z.enum(["1", "true", "0", "false", ""]).optional().transform((v) => v === "1" || v === "true"),
+  siteUrl: z.string().max(500).optional(),
+  /** Le client confirme que le site lui appartient ou qu'il est autorisé à l'utiliser. */
+  siteOwnership: z.string().max(10).optional(),
 });
 export type StartInput = z.infer<typeof StartInput>;
 
@@ -42,7 +47,27 @@ export function readStartForm(form: FormData) {
   return { input, files, logo: logo && typeof logo !== "string" && logo.size > 0 ? logo : null };
 }
 
+/**
+ * Site existant : adresse normalisée (https:// ajouté si absent), et accord du client obligatoire.
+ * La lecture réseau elle-même passe ensuite par safeFetch (anti-SSRF) dans le pilote.
+ */
+export function existingSiteFromInput(input: StartInput): { url: string } | null {
+  if (!input.existingSite) return null;
+  const raw = (input.siteUrl ?? "").trim();
+  if (!raw) throw new HttpError(400, L("Indiquez l'adresse de votre site.", "Enter your website address."));
+  let url: URL;
+  try {
+    url = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`);
+  } catch {
+    throw new HttpError(400, L("Adresse du site invalide.", "Invalid website address."));
+  }
+  if (!/^https?:$/.test(url.protocol) || (!url.hostname.includes(".") && url.hostname !== "localhost")) throw new HttpError(400, L("Adresse du site invalide (elle doit commencer par https://).", "Invalid website address (it must start with https://)."));
+  if (!input.siteOwnership || !["1", "true", "on", "yes"].includes(input.siteOwnership)) throw new HttpError(400, L("Confirmez que ce site vous appartient ou que vous êtes autorisé à l'utiliser.", "Confirm that this website belongs to you or that you are authorized to use it."));
+  return { url: url.toString() };
+}
+
 export const hasProductInput = (input: StartInput, files: File[]) =>
+  !!input.existingSite ||
   // Services : la description de l'activité (ou le site existant) est indispensable ; les photos seules ne suffisent pas.
   (input.businessType !== "services" && files.length > 0) || !!input.link || !!(input.description && input.description.trim().length > 10);
 
@@ -94,9 +119,10 @@ export async function saveStartFiles(projectId: string, userId: string, files: F
 /** Lance le pilote complet sur un projet (photos déjà enregistrées comme originaux). */
 export function launchPipeline(projectId: string, userId: string, input: StartInput, photoCount: number) {
   const prev = json<{ type: string; ref: string }[]>(one<{ sources_json: string }>("SELECT sources_json FROM projects WHERE id = ?", projectId)?.sources_json, []);
-  const sources = [...prev, ...(photoCount ? [{ type: "photo", ref: `${photoCount} photo(s)` }] : []), ...(input.link ? [{ type: "link", ref: input.link }] : []), ...(input.description ? [{ type: "description", ref: L("description du client", "customer description") }] : [])];
+  const site = input.existingSite && input.siteUrl ? existingSiteFromInput(input) : null;
+  const sources = [...prev, ...(site ? [{ type: "link", ref: site.url, note: L("votre site actuel", "your current website") }] : []), ...(photoCount ? [{ type: "photo", ref: `${photoCount} photo(s)` }] : []), ...(input.link ? [{ type: "link", ref: input.link }] : []), ...(input.description ? [{ type: "description", ref: L("description du client", "customer description") }] : [])];
   run("UPDATE projects SET sources_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(sources), now(), projectId);
   if (input.productName || input.brandName) run("UPDATE projects SET name = ? WHERE id = ?", input.productName || input.brandName, projectId);
   setStatus(projectId, "queued");
-  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, input: { link: input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price, businessType: input.businessType } }, maxAttempts: 2 });
+  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, input: { link: site ? undefined : input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price, businessType: input.businessType, ...(site ? { existingSite: true, siteUrl: site.url } : {}) } }, maxAttempts: 2 });
 }

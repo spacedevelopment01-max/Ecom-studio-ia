@@ -6,7 +6,7 @@
  * marque avant la suite (mode guidé).
  */
 import { all, id, json, now, one, run } from "../db";
-import { enqueue, JobContext, JobPaused, type Job } from "../jobs";
+import { enqueue, JobCancelled, JobContext, JobPaused, type Job } from "../jobs";
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, saveProduct, saveServices, setStatus, remember, notify } from "../projects";
 import { importLink, fetchImage } from "./import-link";
@@ -15,6 +15,8 @@ import { localAnalysis, factsFromDescription, localServiceAnalysis, mergeService
 import { buildBrand } from "./brand";
 import { localCopy } from "./local-copy";
 import { buildShop } from "./shop";
+import { importExistingSite, loadSiteImport, saveReproductionNotes, siteKept } from "./existing-site";
+import { buildReproducedShop, platformName } from "./site-reproduce";
 import { produceVideo } from "./videos";
 import { aiAnalyzeProduct, aiAnalyzeService, aiShopCopyChecked } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
@@ -44,7 +46,17 @@ const SERVICE_STEPS: Partial<Record<(typeof STEPS)[number]["id"], { label: strin
   video: { label: "Vidéos", detail: "Vidéo courte pour les réseaux et vidéo de présentation", en: { label: "Videos", detail: "Short social video and presentation video" } },
   shop: { label: "Site", detail: "Site complet de l'activité, aperçu, versions", en: { label: "Website", detail: "Complete business website, preview, versions" } },
 };
-const stepInfo = (id: (typeof STEPS)[number]["id"], business: BusinessType = "products") => (business === "services" && SERVICE_STEPS[id]) || STEPS.find((s) => s.id === id)!;
+/** Libellés des étapes quand le client part de son site existant (« J'ai déjà mon site et mon logo »). */
+const SITE_STEPS: Partial<Record<(typeof STEPS)[number]["id"], { label: string; detail: string; en: { label: string; detail: string } }>> = {
+  sources: { label: "Lecture de votre site", detail: "Plateforme, logo, pages, produits, couleurs, polices, coordonnées", en: { label: "Reading your website", detail: "Platform, logo, pages, products, colors, fonts, contact details" } },
+  brand: { label: "Votre marque", detail: "Nom, logo, couleurs et polices repris de votre site ; ton et messages", en: { label: "Your brand", detail: "Name, logo, colors and fonts taken from your website; tone and messages" } },
+};
+const SITE_SHOP = {
+  keep: { label: "Votre site", detail: "Conservé tel quel sur sa plateforme", en: { label: "Your website", detail: "Kept as is on its platform" } },
+  reproduce: { label: "Reproduction de votre site", detail: "Mêmes pages, menu, textes, images, logo et couleurs", en: { label: "Reproducing your website", detail: "Same pages, menu, text, images, logo and colors" } },
+};
+const stepInfo = (id: (typeof STEPS)[number]["id"], business: BusinessType = "products", site?: { decision?: "keep" | "reproduce" } | null) =>
+  (site && id === "shop" && site.decision && SITE_SHOP[site.decision]) || (site && SITE_STEPS[id]) || (business === "services" && SERVICE_STEPS[id]) || STEPS.find((s) => s.id === id)!;
 export type StepId = (typeof STEPS)[number]["id"];
 
 /** Contexte limité à une étape : avancement global et points de reprise préfixés. */
@@ -70,7 +82,7 @@ export type PipelinePayload = {
   projectId: string;
   from?: StepId;
   mode: "autopilot" | "guided";
-  input: { link?: string; description?: string; productName?: string; brandName?: string; price?: string; businessType?: BusinessType };
+  input: { link?: string; description?: string; productName?: string; brandName?: string; price?: string; businessType?: BusinessType; /** « J'ai déjà mon site et mon logo » : adresse du site du client. */ existingSite?: boolean; siteUrl?: string };
 };
 
 function parsePrice(s?: string): number | null {
@@ -85,14 +97,15 @@ export async function runPipeline(ctx: JobContext) {
   setStatus(projectId, "creating");
   const startIndex = payload.from ? STEPS.findIndex((s) => s.id === payload.from) : 0;
   const total = STEPS.length;
-  const business = loadProject(projectId).business;
   try {
     for (let i = Math.max(0, startIndex); i < total; i++) {
       const step = STEPS[i];
       const done = (ctx.checkpoint.__steps ?? {})[step.id]?.status;
       if (done === "done" || done === "skipped") continue;
       markStep(ctx, step.id, "running");
-      const info = stepInfo(step.id, business);
+      // Le type d'activité peut être fixé en cours de route (lecture du site existant du client).
+      const cur = loadProject(projectId);
+      const info = stepInfo(step.id, cur.business, cur.settings.existingSite);
       ctx.progress(i / total, `${L(info.label, info.en.label)}…`);
       const sc = new StepContext(ctx, i / total, (i + 1) / total, step.id);
       const note = await runStep(step.id, sc, payload);
@@ -140,6 +153,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
   const services = p.business === "services";
   switch (step) {
     case "sources": {
+      if (inp.existingSite && inp.siteUrl) return importExistingSite(ctx, projectId, inp.siteUrl);
       if (inp.link && services) {
         // Site actuel d'une entreprise de services : seul le texte sert (présentation, prestations, coordonnées).
         const imported = await ctx.step("link", async () => {
@@ -176,10 +190,17 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
     }
     case "cutout": {
       if (services) {
-        const n = one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin = 'upload' AND deleted_at IS NULL", projectId)?.n ?? 0;
+        const n = one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin IN ('upload','site') AND deleted_at IS NULL", projectId)?.n ?? 0;
         return { skipped: n ? L(`${n} photo(s) de l'activité gardée(s) telles quelles`, `${n} business photo(s) kept as they are`) : L("Aucune photo fournie : vous pourrez en ajouter dans l'onglet Activité", "No photo provided: you can add some in the Business tab") };
       }
-      const cut = await ensureCutouts(ctx, p);
+      let cut;
+      try {
+        cut = await ensureCutouts(ctx, p);
+      } catch (e) {
+        // Site existant : les photos du site ne se prêtent pas toujours au détourage ; le reste du studio continue avec elles.
+        if (e instanceof JobPaused || e instanceof JobCancelled || !p.settings.existingSite) throw e;
+        return { skipped: L(`Détourage impossible sur les photos de votre site (${(e as Error).message}) : ajoutez une photo nette du produit dans l'onglet Produit pour les visuels détourés.`, `Cutout not possible on your website's photos (${(e as Error).message}): add a clear product photo in the Product tab for cutout visuals.`) };
+      }
       if (!cut.length) return "skipped";
       return L(`${cut.length} détourage(s) réalisé(s) localement`, `${cut.length} cutout(s) done locally`);
     }
@@ -278,6 +299,16 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return L(`2 vidéos rendues (${[a, b].length})`, `2 videos rendered (${[a, b].length})`);
     }
     case "shop": {
+      const site = loadSiteImport(projectId);
+      if (site && p.settings.existingSite) {
+        // Site conservé tel quel : aucun thème n'est créé (le client peut en demander un depuis l'onglet Boutique).
+        if (siteKept(projectId)) return { skipped: L(`Votre site ${platformName(site.platform)} est conservé tel quel`, `Your ${platformName(site.platform)} website is kept as is`) };
+        if (site.decision === "reproduce" && !p.settings.existingSite.newSiteRequested) {
+          const r = await ctx.step("reproduce", () => buildReproducedShop(ctx, projectId, site));
+          saveReproductionNotes(projectId, r.versionId);
+          return L(`Votre site reproduit à l'identique (version ${r.number})`, `Your website reproduced as is (version ${r.number})`);
+        }
+      }
       const r = await buildShop(ctx, projectId);
       return services ? L(`Version ${r.number} du site enregistrée`, `Website version ${r.number} saved`) : L(`Version ${r.number} du thème enregistrée`, `Theme version ${r.number} saved`);
     }
@@ -318,11 +349,11 @@ class StepScope extends JobContext {
   }
 }
 
-export function pipelineState(job: Job | undefined, business: BusinessType = "products") {
+export function pipelineState(job: Job | undefined, business: BusinessType = "products", site?: { decision?: "keep" | "reproduce" } | null) {
   const cp = json<Record<string, any>>(job?.checkpoint, {});
   const steps = (cp.__steps ?? {}) as Record<string, { status: string; at: number; note?: string }>;
   return STEPS.map((s) => {
-    const i = stepInfo(s.id, business);
+    const i = stepInfo(s.id, business, site);
     return { id: s.id, label: L(i.label, i.en.label), detail: L(i.detail, i.en.detail), status: steps[s.id]?.status ?? "pending", note: steps[s.id]?.note, at: steps[s.id]?.at };
   });
 }
@@ -341,7 +372,7 @@ async function analyzeService(ctx: JobContext, payload: PipelinePayload): Promis
   let product: ProductProfile = local.product;
   let offer = local.services;
   if (llmConfigured()) {
-    const photos = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin = 'upload' AND kind = 'image' AND deleted_at IS NULL ORDER BY created_at LIMIT 4", projectId);
+    const photos = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin IN ('upload','site') AND kind = 'image' AND deleted_at IS NULL ORDER BY (origin = 'upload') DESC, created_at LIMIT 4", projectId);
     const r = await ctx.step("ai", () =>
       aiAnalyzeService(
         { userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:analysis` },

@@ -75,6 +75,7 @@ export const DEFAULT_TREE: { key: string; name: string; en: string; children?: {
   { key: "imports", name: "08 · Imports externes", en: "08 · External imports", children: [
     { key: "imports.canva", name: "Canva", en: "Canva" },
     { key: "imports.capcut", name: "CapCut", en: "CapCut" },
+    { key: "imports.site", name: "Mon site actuel", en: "My current website" },
   ] },
 ];
 
@@ -151,7 +152,8 @@ export type SaveAssetInput = {
   kind?: string;
   folderKey?: string;
   folderId?: string | null;
-  origin: "upload" | "generated" | "import" | "export" | "link";
+  /** « site » : repris du site existant du client (meta.source = adresse d'origine). */
+  origin: "upload" | "generated" | "import" | "export" | "link" | "site";
   meta?: Record<string, unknown>;
   sourceAssetId?: string | null;
   versionOf?: string | null;

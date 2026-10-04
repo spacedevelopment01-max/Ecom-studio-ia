@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS assets (
   duration REAL,
   storage_key TEXT NOT NULL,
   thumb_key TEXT,
-  origin TEXT NOT NULL,         -- upload | generated | import | export | link
+  origin TEXT NOT NULL,         -- upload | generated | import | export | link | site
   meta TEXT NOT NULL DEFAULT '{}',
   source_asset_id TEXT,         -- média dont celui-ci dérive (l'original est préservé)
   version_of TEXT,              -- première version de la lignée
