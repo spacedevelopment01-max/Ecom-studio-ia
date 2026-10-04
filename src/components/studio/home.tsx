@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
-import { ArrowRight, Briefcase, Camera, Globe, ImagePlus, Link2, Palette, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, Briefcase, Camera, Film, Globe, ImagePlus, Link2, Palette, Plus, Settings, Shield, Sparkles, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
 import { STORE_TYPES, storeTypeInfo, type BusinessType, type ServiceItem, type ServiceProfile, type StoreType } from "@/lib/project-types";
 import { LANGS } from "@/lib/i18n";
@@ -30,6 +30,21 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   const [photos, setPhotos] = useState<File[]>([]);
   const [mode, setMode] = useState<"photo" | "link" | "text">("photo");
   const [more, setMore] = useState(false);
+  // Vidéos de la création complète : choix annoncé dès le départ (les plans filmés par l'IA consomment beaucoup de crédits).
+  const [videos, setVideos] = useState<"ai" | "edited" | "none">("ai");
+  const [videoEst, setVideoEst] = useState<Partial<Record<"ai" | "edited" | "none", { pct: number; ai: boolean; videoAi: boolean }>>>({});
+  useEffect(() => {
+    let alive = true;
+    for (const v of ["ai", "edited", "none"] as const)
+      api<{ pctOfAvailable: number; ai: boolean; videoAi?: boolean }>(`/api/estimate?action=pipeline&videos=${v}`)
+        .then((r) => alive && setVideoEst((m) => ({ ...m, [v]: { pct: r.pctOfAvailable, ai: r.ai, videoAi: !!r.videoAi } })))
+        .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  const videoAi = videoEst.ai?.videoAi ?? true;
+  useEffect(() => {
+    if (videoEst.ai && !videoEst.ai.videoAi && videos === "ai") setVideos("edited");
+  }, [videoEst.ai, videos]);
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const [typed, setTyped] = useState(false);
@@ -76,7 +91,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
     fd.delete("photos");
     if (!existing) photos.forEach((p) => fd.append("photos", p));
     if (svc && !existing) fd.set("services", JSON.stringify(cleanServices(services)));
-    if ((hasInput || existing) && !(await cost.confirm("pipeline"))) return;
+    if ((hasInput || existing) && !(await cost.confirm("pipeline", { videos }))) return;
     setBusy(true);
     try {
       if (projectId) {
@@ -271,6 +286,28 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
       )}
       </>
       )}
+      <fieldset className="grid gap-2">
+        <legend className="mb-1">
+          <span className="block font-display text-xl font-semibold">{t("Vidéos de la création", "Videos in the creation")}</span>
+          <span className="mt-0.5 block text-xs text-muted">{t("Les plans filmés par l'IA donnent le meilleur rendu, mais ce sont eux qui consomment le plus de crédits. Vous pourrez toujours en créer plus tard dans l'onglet Vidéos.", "AI-filmed shots give the best result, but they use the most credits. You can always create videos later in the Videos tab.")}</span>
+        </legend>
+        <input type="hidden" name="videos" value={videos} />
+        <div role="radiogroup" aria-label={t("Vidéos de la création", "Videos in the creation")} className="grid gap-2">
+          {([
+            ["ai", Sparkles, t("Avec plans filmés par l'IA", "With AI-filmed shots"), t("Meilleur rendu : chaque vidéo contient un plan tourné par l'IA à partir de votre produit. Consomme beaucoup de crédits.", "Best result: each video includes a shot filmed by AI from your product. Uses a lot of credits."), !videoAi],
+            ["edited", Film, t("Montées à partir de vos images", "Edited from your images"), t("Animation, textes et musique à partir des photos : bon rendu, presque rien en crédits.", "Animation, captions and music from the photos: good result, almost no credits."), false],
+            ["none", X, t("Pas de vidéo pour l'instant", "No video for now"), t("Vous les créerez plus tard, quand vous voudrez, dans l'onglet Vidéos.", "You'll create them later, whenever you like, in the Videos tab."), false],
+          ] as const).map(([id, Icon, label, hint, disabled]) => (
+            <button key={id} type="button" role="radio" aria-checked={videos === id} disabled={disabled} onClick={() => setVideos(id)} className={cx("flex items-start gap-3 rounded-2xl border-2 p-3.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50", videos === id ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
+              <span className={cx("grid size-9 shrink-0 place-items-center rounded-xl", videos === id ? "bg-signal text-signal-ink" : "bg-paper-2")}><Icon className="size-4" aria-hidden /></span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold leading-tight">{label}</span>
+                <span className="mt-1 block text-xs text-muted">{hint}</span>
+                {disabled ? <span className="mt-1.5 block text-xs font-medium text-warn">{t("Indisponible en mode local ou sans crédits.", "Unavailable in local mode or without credits.")}</span> : videoEst[id]?.ai ? <span className="mt-1.5 block text-xs font-medium text-ink-2">{t(`≈ ${Math.max(1, Math.round(videoEst[id]!.pct))} % de vos crédits restants pour toute la création`, `≈ ${Math.max(1, Math.round(videoEst[id]!.pct))}% of your remaining credits for the whole creation`)}</span> : null}</span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
       <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="justify-self-start text-sm font-medium text-ink-2 underline underline-offset-4">
         {more ? t("Moins d'options", "Fewer options") : svc || existing ? t("Mode de travail…", "Workflow…") : t("Nom, marque, prix, logo, mode de travail…", "Name, brand, price, logo, workflow…")}
       </button>

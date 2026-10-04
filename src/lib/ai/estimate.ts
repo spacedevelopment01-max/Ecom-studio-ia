@@ -33,7 +33,8 @@ function usd(task: TaskId, units: { input?: number; output?: number; images?: nu
 }
 
 /** Coût estimé en micro-euros débités de l'enveloppe (coefficient de l'administration compris). */
-export function estimateMicro(action: CostAction, opts: { beats?: number } = {}): number {
+export type VideoChoice = "ai" | "edited" | "none";
+export function estimateMicro(action: CostAction, opts: { beats?: number; videos?: VideoChoice } = {}): number {
   const qc = (n: number) => n * usd("quality_control", { input: 4000, output: 600 });
   const brief = (n: number) => n * usd("video_direction", { input: 3000, output: 400 });
   const images = (n: number) => usd("image_generation", { images: n }) + brief(n) + qc(n);
@@ -69,7 +70,7 @@ export function estimateMicro(action: CostAction, opts: { beats?: number } = {})
         images(5) +
         usd("social_planning", { input: 20000, output: 8000 }) +
         // Deux vidéos (publicité 9:16, vidéo de boutique 16:9), chacune avec un plan filmé par l'IA et son contrôle de fidélité.
-        2 * (usd("video_direction", { input: 8000, output: 3000 }) + clip() + qc(3));
+        (opts.videos === "none" ? 0 : 2 * (usd("video_direction", { input: 8000, output: 3000 }) + (opts.videos === "edited" ? 0 : clip() + qc(3))));
       break;
   }
   const markup = getJsonSetting<number>("billing.markup", 1);
@@ -77,11 +78,15 @@ export function estimateMicro(action: CostAction, opts: { beats?: number } = {})
   return Math.round(total * 1.2 * usdToEur() * markup * EUR);
 }
 
-export function estimateFor(userId: string, action: CostAction, opts: { beats?: number } = {}) {
+export function estimateFor(userId: string, action: CostAction, opts: { beats?: number; videos?: VideoChoice } = {}) {
   const cost = estimateMicro(action, opts);
   const b = balance(userId);
   const pctOfAvailable = b.available > 0 ? Math.min(999, (cost / b.available) * 100) : 999;
   const leftAfterPct = b.capacity > 0 ? Math.max(0, ((b.available - cost) / b.capacity) * 100) : 0;
   const level = cost > b.available ? "insufficient" : pctOfAvailable >= 25 ? "very-heavy" : pctOfAvailable >= 5 ? "heavy" : "light";
-  return { action, label: L(ACTIONS[action].fr, ACTIONS[action].en), pctOfAvailable, leftAfterPct, level } as const;
+  const label =
+    action === "pipeline" && opts.videos === "edited" ? L("Création complète (marque, boutique, images, vidéos montées à partir des images, calendrier)", "Full creation (brand, store, images, videos edited from the images, calendar)")
+    : action === "pipeline" && opts.videos === "none" ? L("Création complète sans vidéo (marque, boutique, images, calendrier)", "Full creation without video (brand, store, images, calendar)")
+    : L(ACTIONS[action].fr, ACTIONS[action].en);
+  return { action, label, pctOfAvailable, leftAfterPct, level } as const;
 }

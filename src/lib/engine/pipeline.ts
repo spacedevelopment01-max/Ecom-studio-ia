@@ -84,7 +84,7 @@ export type PipelinePayload = {
   projectId: string;
   from?: StepId;
   mode: "autopilot" | "guided";
-  input: { link?: string; description?: string; productName?: string; brandName?: string; price?: string; businessType?: BusinessType; /** « J'ai déjà mon site et mon logo » : adresse du site du client. */ existingSite?: boolean; siteUrl?: string };
+  input: { link?: string; description?: string; productName?: string; brandName?: string; price?: string; businessType?: BusinessType; /** Vidéos choisies au lancement (par défaut : avec plans IA). */ videos?: "ai" | "edited" | "none"; /** « J'ai déjà mon site et mon logo » : adresse du site du client. */ existingSite?: boolean; siteUrl?: string };
 };
 
 function parsePrice(s?: string): number | null {
@@ -287,17 +287,18 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return L(`${r.created.length} image(s) créée(s)`, `${r.created.length} image(s) created`);
     }
     case "video": {
+      if (inp.videos === "none") return { skipped: L("Vidéos non demandées au lancement : créez-les quand vous voulez dans l'onglet Vidéos", "Videos not requested at launch: create them whenever you like in the Videos tab") };
       if (services) {
         return serviceContent(async () => {
-          const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: true, goal: C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") })).assetId);
-          const b = await ctx.step("v169", async () => (await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: true, goal: C("vidéo de présentation de l'activité pour le site", "business presentation video for the website"), music: "none" })).assetId);
+          const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") })).assetId);
+          const b = await ctx.step("v169", async () => (await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo de présentation de l'activité pour le site", "business presentation video for the website"), music: "none" })).assetId);
           return L(`2 vidéos rendues (${[a, b].length})`, `2 videos rendered (${[a, b].length})`);
         });
       }
       const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
       if (!has) return p.settings.existingSite ? { skipped: NO_CUTOUT_SITE() } : "skipped";
-      const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: true, goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })).assetId);
-      const b = await ctx.step("v169", async () => (await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: true, goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })).assetId);
+      const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })).assetId);
+      const b = await ctx.step("v169", async () => (await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })).assetId);
       return L(`2 vidéos rendues (${[a, b].length})`, `2 videos rendered (${[a, b].length})`);
     }
     case "shop": {

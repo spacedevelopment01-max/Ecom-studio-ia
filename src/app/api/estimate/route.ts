@@ -16,5 +16,7 @@ export const GET = handle(async (req: Request) => {
   const av = aiAvailability();
   const configured = action === "video-clip" || action === "ugc" ? av.video : action === "images" || action === "image" ? av.image : av.llm || av.image;
   // ai : l'IA sera réellement utilisée (mode IA choisi, crédits disponibles, fournisseur connecté).
-  return ok({ ...estimateFor(u.id, action, { beats: Number(q.get("beats")) || undefined }), ai: configured && aiActiveFor(u.id) });
+  const v = q.get("videos");
+  const videos = v === "ai" || v === "edited" || v === "none" ? v : undefined;
+  return ok({ ...estimateFor(u.id, action, { beats: Number(q.get("beats")) || undefined, videos }), ai: configured && aiActiveFor(u.id), videoAi: av.video && aiActiveFor(u.id) });
 });

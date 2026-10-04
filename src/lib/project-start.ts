@@ -32,6 +32,8 @@ export const StartInput = z.object({
   hours: z.string().max(400).optional(),
   bookingUrl: z.string().max(500).optional(),
   contactMode: z.enum(["booking", "quote", "call", "form"]).optional(),
+  /** Vidéos de la création complète : avec plans filmés par l'IA (gourmand), montées à partir des images, ou aucune. */
+  videos: z.enum(["ai", "edited", "none"]).default("ai"),
   /** « J'ai déjà mon site et mon logo » : le studio lit le site du client (plateforme et type d'activité détectés). */
   existingSite: z.enum(["1", "true", "0", "false", ""]).optional().transform((v) => v === "1" || v === "true"),
   siteUrl: z.string().max(500).optional(),
@@ -124,5 +126,5 @@ export function launchPipeline(projectId: string, userId: string, input: StartIn
   run("UPDATE projects SET sources_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(sources), now(), projectId);
   if (input.productName || input.brandName) run("UPDATE projects SET name = ? WHERE id = ?", input.productName || input.brandName, projectId);
   setStatus(projectId, "queued");
-  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, input: { link: site ? undefined : input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price, businessType: input.businessType, ...(site ? { existingSite: true, siteUrl: site.url } : {}) } }, maxAttempts: 2 });
+  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, input: { link: site ? undefined : input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price, businessType: input.businessType, videos: input.videos, ...(site ? { existingSite: true, siteUrl: site.url } : {}) } }, maxAttempts: 2 });
 }
