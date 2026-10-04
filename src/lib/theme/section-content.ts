@@ -27,6 +27,9 @@ export type ContentContext = {
   strategy: { angles: { title: string; idea: string }[]; pillars: string[]; keyMessages: string[]; needs: string[] } | null;
   collections: { title: string; handle: string }[];
   products: { title: string; handle: string }[];
+  /** Boutique de produits ou site d'entreprise de services (et son offre). */
+  business: "products" | "services";
+  services: import("../project-types").ServiceProfile;
 };
 
 /** Contexte de rédaction pour un projet et son thème. */
@@ -52,6 +55,8 @@ export function contentContext(project: Project, spec: ThemeSpec, sample: boolea
     },
     strategy: s ? { angles: s.angles ?? [], pillars: s.pillars ?? [], keyMessages: s.keyMessages ?? [], needs: (s.audience ?? []).flatMap((a) => a.needs ?? []) } : null,
     collections: (spec.store.collections ?? []).map((c: any) => ({ title: String(c.title ?? ""), handle: String(c.handle ?? "") })).filter((c) => c.title),
+    business: project.business,
+    services: project.services,
     products: ((spec.store as any).products ?? [spec.store.product]).map((p: any) => ({ title: String(p.title ?? ""), handle: String(p.handle ?? "") })).filter((p: any) => p.title),
   };
 }

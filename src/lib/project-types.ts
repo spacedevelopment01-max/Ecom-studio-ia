@@ -93,6 +93,30 @@ export type Strategy = {
   generatedBy: "ai" | "local";
 };
 
+/**
+ * Nature du projet : une boutique qui vend des produits, ou le site d'une entreprise de services
+ * (artisan, coach, salon, cabinet, agence, restaurant…). Pour les services, `product` décrit
+ * l'activité (nom, résumé, secteur, faits confirmés) et `services` détaille l'offre.
+ */
+export type BusinessType = "products" | "services";
+export type ServiceItem = { name: string; description: string; price?: string; duration?: string };
+export type ServiceProfile = {
+  /** Prestations proposées (texte fourni par le client ; prix et durées seulement s'il les donne). */
+  services: ServiceItem[];
+  /** Zone d'intervention ou adresse d'accueil. */
+  area: string;
+  address: string;
+  phone: string;
+  email: string;
+  /** Horaires, en texte libre (« Lun–Ven 9 h–18 h »). */
+  hours: string;
+  /** Lien de prise de rendez-vous (Calendly, Planity, Doctolib…), facultatif. */
+  bookingUrl: string;
+  /** Comment le client contacte ou réserve : appel, formulaire, rendez-vous en ligne, devis. */
+  contactMode: "booking" | "quote" | "call" | "form";
+};
+export const emptyServiceProfile = (): ServiceProfile => ({ services: [], area: "", address: "", phone: "", email: "", hours: "", bookingUrl: "", contactMode: "form" });
+
 /** Type de boutique : un produit phare, un catalogue varié, ou une niche (plusieurs produits d'un même univers). */
 export type StoreType = "mono" | "multi" | "niche";
 export const STORE_TYPES: Record<StoreType, { label: string; hint: string; en: { label: string; hint: string } }> = {
