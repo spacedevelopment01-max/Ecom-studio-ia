@@ -14,7 +14,7 @@ fs.mkdirSync(OUT, { recursive: true });
 const shot = (p: Page, name: string, full = false) => p.screenshot({ path: path.join(OUT, `${name}.png`), fullPage: full });
 const errors: string[] = [];
 
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? undefined });
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const desk = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await desk.newPage();
 page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
