@@ -50,7 +50,7 @@ export default function TabFichiers() {
       toast("bad", (e as Error).message);
     }
   };
-  const Tree = ({ pid, depth }: { pid: string | null; depth: number }) => (
+  const Tree = (pid: string | null, depth: number): React.ReactNode => (
     <ul className={cx(depth > 0 && "ml-3 border-l border-line pl-2")}>
       {children(pid).map((f) => (
         <li key={f.id}>
@@ -71,7 +71,7 @@ export default function TabFichiers() {
               {f.count > 0 && <span className="ml-auto text-[11px] opacity-60">{f.count}</span>}
             </button>
           </div>
-          {children(f.id).length > 0 && <Tree pid={f.id} depth={depth + 1} />}
+          {children(f.id).length > 0 && Tree(f.id, depth + 1)}
         </li>
       ))}
     </ul>
@@ -81,7 +81,7 @@ export default function TabFichiers() {
     <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[260px_1fr]" onDragOver={(e) => { if (e.dataTransfer.types.includes("Files")) { e.preventDefault(); setDrag(true); } }} onDragLeave={() => setDrag(false)} onDrop={(e) => { if (e.dataTransfer.files.length) { e.preventDefault(); setDrag(false); upload(e.dataTransfer.files); } }}>
       <Card className="h-max p-3 lg:sticky lg:top-24">
         <button onClick={() => (setFolder(null), setQ(""), setTrash(false))} className={cx("mb-1 flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm", !folder && !q && !trash ? "bg-ink text-paper" : "hover:bg-paper-2")}><Folder className="size-4" /> Racine <span className="ml-auto text-[11px] opacity-60">{data?.rootCount ?? ""}</span></button>
-        <Tree pid={null} depth={0} />
+        {Tree(null, 0)}
         <div className="mt-3 grid gap-1 border-t border-line pt-3">
           <button
             onClick={async () => {

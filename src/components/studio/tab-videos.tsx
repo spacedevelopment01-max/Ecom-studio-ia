@@ -6,6 +6,7 @@ import { useProject } from "./project-context";
 import { EngineNotice, JobProgress, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 import { UgcPanel } from "./ugc-panel";
+import { useCostConfirm } from "./cost-confirm";
 
 const SCENE_LABEL: Record<string, string> = { title: "Accroche", reveal: "Révélation", callouts: "Points clés", detail: "Détail", scene: "Scène", clip: "Plan généré", end: "Fin + appel", hook: "Produit en action", spotlight: "Projecteur", split: "Écran partagé", words: "Phrases chocs" };
 
@@ -14,6 +15,7 @@ export default function TabVideos() {
   const toast = useToast();
   const active = useActive(["video.render", "video.ugc"]);
   const [mode, setMode] = useState<"motion" | "ugc">("motion");
+  const cost = useCostConfirm();
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=video,subtitles`);
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [form, setForm] = useState({ format: "9:16", goal: "", music: "calm", useAiClip: false, target: "ads", url: "" });
@@ -32,6 +34,7 @@ export default function TabVideos() {
   const videos = (list?.assets ?? []).filter((a) => a.kind === "video");
   const subs = (list?.assets ?? []).filter((a) => a.role === "subtitles");
   const create = async () => {
+    if (form.useAiClip && data?.ai.video && !(await cost.confirm("video-clip"))) return;
     try {
       await api(`/api/projects/${id}/videos`, { body: { ...form, goal: form.goal || undefined, url: form.url || undefined } });
       toast("ok", "Vidéo en production. Le rendu continue même si vous quittez la page.");
@@ -41,6 +44,7 @@ export default function TabVideos() {
   };
   return (
     <div className="mx-auto grid max-w-7xl gap-6">
+      {cost.dialog}
       <EngineNotice what="le découpage des vidéos" />
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="grid gap-6 lg:grid-cols-[340px_1fr]">

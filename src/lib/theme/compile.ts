@@ -10,6 +10,7 @@ import sharp from "sharp";
 import { zipSync, strToU8 } from "fflate";
 import { DATA_DIR } from "../db";
 import { THEME_BASE, type ThemeSpec } from "./spec";
+import { importedArchive } from "./imported";
 
 export type ThemeFiles = Map<string, string>; // chemin → contenu texte (assets binaires exclus)
 
@@ -47,16 +48,29 @@ function cleanTemplate(t: { sections: Record<string, any>; order: string[]; layo
 
 /** Fichiers texte du thème (sans les médias binaires du dossier assets). */
 export function compileTheme(spec: ThemeSpec): ThemeFiles {
-  const files = new Map(baseFiles());
+  // Thème importé : ses propres fichiers servent de base (les gabarits JSON et réglages viennent du spec).
+  const imp = spec.imported;
+  const files = imp ? new Map([...importedArchive(imp).arc.text].filter(([p]) => !/^templates\/.+\.json$/.test(p))) : new Map(baseFiles());
   for (const [type, s] of Object.entries(spec.customSections ?? {})) files.set(`sections/${type}.liquid`, s.liquid);
   for (const [key, t] of Object.entries(spec.templates)) {
     files.set(`templates/${key}.json`, HEADER + JSON.stringify(cleanTemplate(t), null, 2));
   }
   for (const [g, json] of Object.entries(spec.groups)) {
+    if (imp && !imp.groups.includes(g as "header" | "footer")) continue;
     files.set(`sections/${g}-group.json`, HEADER + JSON.stringify({ type: json.type, name: json.name, sections: json.sections, order: json.order.filter((id) => json.sections[id]) }, null, 2));
   }
-  files.set("config/settings_data.json", HEADER + JSON.stringify({ current: spec.settings, presets: {} }, null, 2));
+  files.set("config/settings_data.json", HEADER + JSON.stringify({ current: spec.settings, presets: imp?.presets ?? {} }, null, 2));
   return files;
+}
+
+/** Fichier binaire du thème importé (images, polices du dossier assets), servi tel quel. */
+export function importedBinary(spec: ThemeSpec, filename: string): { data: Buffer; mime: string } | null {
+  if (!spec.imported) return null;
+  const bin = importedArchive(spec.imported).arc.binary.get(`assets/${filename}`);
+  if (!bin) return null;
+  const ext = filename.split(".").pop()!.toLowerCase();
+  const mime: Record<string, string> = { webp: "image/webp", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", svg: "image/svg+xml", ico: "image/x-icon", woff: "font/woff", woff2: "font/woff2", ttf: "font/ttf", otf: "font/otf", eot: "application/vnd.ms-fontobject", mp4: "video/mp4", webm: "video/webm", json: "application/json" };
+  return { data: Buffer.from(bin), mime: mime[ext] ?? "application/octet-stream" };
 }
 
 // ---------------------------------------------------------------- médias du thème
@@ -100,8 +114,12 @@ export async function exportThemeZip(spec: ThemeSpec, load: AssetLoader): Promis
   const text = compileTheme(spec);
   const entries: Record<string, Uint8Array> = {};
   for (const [p, content] of text) entries[p] = strToU8(content);
+  if (spec.imported) for (const [p, data] of importedArchive(spec.imported).arc.binary) entries[p] = data;
   const skipped: string[] = [];
+  // Thème importé : les médias de démonstration du studio ne sont exportés que s'ils sont utilisés par une section.
+  const used = spec.imported ? JSON.stringify([spec.templates, spec.groups, spec.settings, spec.customSections]) : "";
   for (const filename of Object.keys(spec.files)) {
+    if (spec.imported && !used.includes(filename)) continue;
     const bin = await themeAssetBinary(spec, filename, load);
     if (!bin) {
       skipped.push(filename);
@@ -123,5 +141,6 @@ export function themeFingerprint(spec: ThemeSpec): string {
   const text = compileTheme(spec);
   for (const p of [...text.keys()].sort()) h.update(p).update("\0").update(text.get(p)!).update("\0");
   for (const f of Object.keys(spec.files).sort()) h.update(`asset:${f}=${spec.files[f]}`);
+  if (spec.imported) h.update(`imported:${spec.imported.archive}`);
   return h.digest("hex").slice(0, 16);
 }

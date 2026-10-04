@@ -30,3 +30,18 @@ describe("tableau de bord de l'administration", () => {
     expect(d.atRisk.some((r) => r.email === c.email)).toBe(true);
   });
 });
+
+describe("administration réservée au propriétaire", () => {
+  it("avec ADMIN_EMAIL, seul ce compte devient administrateur", async () => {
+    const t = Date.now();
+    process.env.ADMIN_EMAIL = `proprio${t}@test.fr`;
+    try {
+      const client = await createUser(`client${t}@test.fr`, "motdepasse-test", "Client");
+      const owner = await createUser(`PROPRIO${t}@test.fr`, "motdepasse-test", "Propriétaire");
+      expect(client.role).toBe("client");
+      expect(owner.role).toBe("admin");
+    } finally {
+      delete process.env.ADMIN_EMAIL;
+    }
+  });
+});

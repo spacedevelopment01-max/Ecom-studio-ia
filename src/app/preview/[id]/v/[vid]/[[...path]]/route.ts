@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
 import { handle } from "@/lib/http";
 import { currentTheme, themeVersion } from "@/lib/projects";
-import { compileTheme, themeAssetBinary } from "@/lib/theme/compile";
+import { compileTheme, importedBinary, themeAssetBinary } from "@/lib/theme/compile";
 import { libraryLoader } from "@/lib/theme/loader";
 import { fontFilePath, renderNamedSections, renderPage, variantId, type PreviewCartLine } from "@/lib/theme/render";
 import { storeProducts } from "@/lib/theme/spec";
@@ -71,7 +71,7 @@ export const GET = handle(async (req: Request, ctx: P) => {
   const path = "/" + segs.join("/");
   if (segs[0] === "assets") {
     const name = segs.slice(1).join("/");
-    const bin = spec.files[name] ? await themeAssetBinary(spec, name, libraryLoader) : null;
+    const bin = spec.files[name] ? await themeAssetBinary(spec, name, libraryLoader) : importedBinary(spec, name);
     if (bin) {
       let data = bin.data;
       const w = Number(url.searchParams.get("width"));
@@ -82,7 +82,7 @@ export const GET = handle(async (req: Request, ctx: P) => {
       return new Response(new Uint8Array(data), { headers: { "Content-Type": bin.mime, "Cache-Control": "private, max-age=600" } });
     }
     const text = compileTheme(spec).get(`assets/${name}`);
-    if (text !== undefined) return new Response(text, { headers: { "Content-Type": name.endsWith(".css") ? "text/css; charset=utf-8" : name.endsWith(".js") ? "application/javascript; charset=utf-8" : "text/plain", "Cache-Control": "no-cache" } });
+    if (text !== undefined) return new Response(text, { headers: { "Content-Type": name.endsWith(".css") ? "text/css; charset=utf-8" : name.endsWith(".js") ? "application/javascript; charset=utf-8" : name.endsWith(".svg") ? "image/svg+xml" : name.endsWith(".json") ? "application/json" : "text/plain", "Cache-Control": "no-cache" } });
     return new Response("Fichier introuvable", { status: 404 });
   }
   if (segs[0] === "__fonts") {

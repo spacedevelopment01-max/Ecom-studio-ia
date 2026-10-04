@@ -6,7 +6,7 @@ import { cx, Modal } from "../ui";
 
 export type LibraryItem = { type: string; name: string; category: string; description: string; keywords: string; preview: string | null };
 
-const ORDER = ["Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Avancé"];
+const ORDER = ["Votre thème", "Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Avancé"];
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 export function SectionLibrary({ open, onClose, items, onPick, where, busy }: { open: boolean; onClose: () => void; items: LibraryItem[]; onPick: (type: string) => void; where: string; busy?: string | null }) {

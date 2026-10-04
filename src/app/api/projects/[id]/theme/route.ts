@@ -5,7 +5,7 @@ import { all } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { currentTheme, listThemeVersions } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { containerOf, sectionSchema, baseSectionTypes } from "@/lib/theme/spec";
+import { containerOf, sectionSchema, baseSectionTypes, availableSectionTypes } from "@/lib/theme/spec";
 import { directionCards } from "@/lib/theme/directions";
 import { themeFingerprint } from "@/lib/theme/compile";
 
@@ -20,15 +20,21 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     const c = containerOf(cur.spec, t)!;
     return {
       template: t,
-      sections: c.order.filter((id) => c.sections[id]).map((id) => ({ id, type: c.sections[id].type, name: sectionSchema(cur.spec, c.sections[id].type)?.name ?? c.sections[id].type, disabled: !!c.sections[id].disabled, locked: cur.spec.locks.includes(`${t}:${id}`), heading: String(c.sections[id].settings.heading ?? c.sections[id].settings.heading_line1 ?? "").slice(0, 80) })),
+      sections: c.order.filter((id) => c.sections[id]).map((id) => ({ id, type: c.sections[id].type, name: sectionSchema(cur.spec, c.sections[id].type)?.name ?? c.sections[id].type, disabled: !!c.sections[id].disabled, locked: cur.spec.locks.includes(`${t}:${id}`), heading: String(c.sections[id].settings?.heading ?? c.sections[id].settings?.heading_line1 ?? "").slice(0, 80) })),
     };
   });
   return ok({
-    current: { versionId: cur.version.id, number: cur.version.number, direction: cur.spec.direction, name: cur.spec.name, summary: cur.version.summary, fingerprint: themeFingerprint(cur.spec), structure, pages: cur.spec.store.pages, product: { handle: cur.spec.store.product.handle, title: cur.spec.store.product.title, price: cur.spec.store.product.price }, motion: { enabled: cur.spec.settings.motion_enabled !== false, intensity: String(cur.spec.settings.motion_intensity ?? "normal"), parallax: cur.spec.settings.motion_parallax !== false } },
+    current: { versionId: cur.version.id, number: cur.version.number, direction: cur.spec.direction, name: cur.spec.name, summary: cur.version.summary, fingerprint: themeFingerprint(cur.spec), structure, pages: cur.spec.store.pages, product: { handle: cur.spec.store.product.handle, title: cur.spec.store.product.title, price: cur.spec.store.product.price }, motion: cur.spec.imported ? undefined : { enabled: cur.spec.settings.motion_enabled !== false, intensity: String(cur.spec.settings.motion_intensity ?? "normal"), parallax: cur.spec.settings.motion_parallax !== false }, imported: cur.spec.imported ? { name: cur.spec.imported.name, report: cur.spec.imported.report } : undefined },
     versions: listThemeVersions(p.id),
     messages,
     directions: directionCards(),
-    library: baseSectionTypes().filter(addable).map((t) => {
+    // Thème importé : ses propres sections ajoutables (celles qui ont un préréglage, comme dans l'éditeur Shopify).
+    library: cur.spec.imported
+      ? availableSectionTypes(cur.spec)
+          .map((t) => ({ t, schema: sectionSchema(cur.spec, t) }))
+          .filter(({ schema }) => schema?.presets?.length && !schema.enabled_on?.groups?.length)
+          .map(({ t, schema }) => ({ type: t, name: String((schema!.presets![0] as { name?: string }).name ?? schema!.name), category: "Votre thème", description: `Section de votre thème${schema!.blocks.length ? ` · ${schema!.blocks.filter((b) => !b.type.startsWith("@")).length} type(s) de blocs` : ""}`, keywords: t.replace(/-/g, " "), preview: null }))
+      : baseSectionTypes().filter(addable).map((t) => {
       const e = SECTION_LIBRARY.find((x) => x.type === t);
       return { type: t, name: e?.name ?? sectionSchema(null, t)?.name ?? t, category: e?.category ?? "Avancé", description: e?.description ?? "", keywords: e?.keywords ?? "", preview: fs.existsSync(path.join(process.cwd(), "public", "sections", `${t}.jpg`)) ? `/sections/${t}.jpg` : null };
     }),

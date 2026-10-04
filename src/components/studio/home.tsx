@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { ArrowRight, Camera, ImagePlus, Link2, Palette, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
 import { STORE_TYPES, type StoreType } from "@/lib/project-types";
+import { useCostConfirm } from "./cost-confirm";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
 
@@ -21,6 +22,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
   const [storeType, setStoreType] = useState<StoreType>("mono");
   const hasInput = photos.length > 0 || typed;
   const input = useRef<HTMLInputElement>(null);
+  const cost = useCostConfirm();
   const addFiles = (list: FileList | null) => {
     if (!list) return;
     const next = [...photos, ...Array.from(list).filter((f) => f.type.startsWith("image/"))].slice(0, 8);
@@ -32,6 +34,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
     const fd = new FormData(e.currentTarget);
     fd.delete("photos");
     photos.forEach((p) => fd.append("photos", p));
+    if (hasInput && !(await cost.confirm("pipeline"))) return;
     setBusy(true);
     try {
       if (projectId) {
@@ -61,6 +64,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
       }}
       className="grid gap-5"
     >
+      {cost.dialog}
       <fieldset>
         <legend className="mb-2 text-sm font-medium">Type de boutique</legend>
         <input type="hidden" name="storeType" value={storeType} />

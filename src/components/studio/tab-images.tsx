@@ -5,6 +5,7 @@ import { api, Badge, Button, Card, cx, Empty, Field, Input, Select, Toggle, useA
 import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, JobProgress, ROLE_LABEL, SectionTitle, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
+import { useCostConfirm } from "./cost-confirm";
 
 const GROUPS = [
   { id: "all", label: "Tout", roles: "packshot,detail,scene,lifestyle,banner,social,ad,cutout" },
@@ -45,6 +46,7 @@ export default function TabImages() {
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [form, setForm] = useState({ kind: "scene", style: "window", format: "product", layout: "editorial", headline: "", subline: "", cta: "", useAi: false });
   const active = useActive(["images.generate", "image.single"]);
+  const cost = useCostConfirm();
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${GROUPS.find((g) => g.id === group)!.roles}`);
   useEffect(() => {
     if (!active.length) reload();
@@ -60,6 +62,7 @@ export default function TabImages() {
     } catch {}
   }, [id, toast]);
   const create = async (mode: "set" | "single") => {
+    if (form.useAi && data?.ai.image && !(await cost.confirm(mode === "set" ? "images" : "image"))) return;
     try {
       await api(`/api/projects/${id}/images`, { body: { mode, ...form, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined } });
       toast("ok", mode === "set" ? "Jeu d'images complet en préparation." : "Image en préparation.");
@@ -70,6 +73,7 @@ export default function TabImages() {
   const textual = form.kind === "social" || form.kind === "ad";
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6">
+      {cost.dialog}
       <EngineNotice what="les décors (studio, podium, arche, lumière de fenêtre…)" />
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">

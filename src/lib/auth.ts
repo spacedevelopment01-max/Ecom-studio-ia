@@ -22,8 +22,9 @@ export async function createUser(email: string, password: string, name: string):
   if (one("SELECT 1 FROM users WHERE email = ?", email)) throw new HttpError(409, "Un compte existe déjà avec cette adresse.");
   const hasAdmin = one("SELECT 1 FROM users WHERE role = 'admin'");
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-  // Le premier compte d'une installation (ou ADMIN_EMAIL) administre la plateforme.
-  const role = !hasAdmin || (adminEmail && adminEmail === email) ? "admin" : "client";
+  // Administration réservée au propriétaire : avec ADMIN_EMAIL, seul ce compte est administrateur ;
+  // sans ADMIN_EMAIL, uniquement le tout premier compte de l'installation. Aucun autre moyen de le devenir.
+  const role = adminEmail ? (adminEmail === email ? "admin" : "client") : !hasAdmin ? "admin" : "client";
   const uid = id();
   run(
     "INSERT INTO users (id, email, name, password_hash, role, created_at) VALUES (?,?,?,?,?,?)",

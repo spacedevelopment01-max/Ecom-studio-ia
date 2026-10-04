@@ -173,8 +173,8 @@ export default function TabCalendrier() {
   };
   const step = (n: number) => setCursor(mode === "month" ? addMonths(cursor, n) : addDays(cursor, n * (mode === "week" ? 7 : 1)));
   const today = toZonedTime(new Date(), tz);
-  const Chip = ({ p }: { p: PostView }) => (
-    <button draggable={!["published", "publishing"].includes(p.status)} onDragStart={(e) => e.dataTransfer.setData("text/post", p.id)} onClick={() => setOpenPost(p)} className={cx("flex w-full items-center gap-1.5 truncate rounded-lg border px-1.5 py-1 text-left text-[11px]", p.status === "failed" ? "border-bad/40 bg-bad-soft" : p.status === "published" ? "border-line bg-paper-2 opacity-70" : p.status === "scheduled" ? "border-ok/40 bg-ok-soft" : "border-line bg-card")} title={`${NETWORKS[p.network]?.label} · ${POST_STATUS[p.status]?.label}`}>
+  const Chip = (p: PostView) => (
+    <button key={p.id} draggable={!["published", "publishing"].includes(p.status)} onDragStart={(e) => e.dataTransfer.setData("text/post", p.id)} onClick={() => setOpenPost(p)} className={cx("flex w-full items-center gap-1.5 truncate rounded-lg border px-1.5 py-1 text-left text-[11px]", p.status === "failed" ? "border-bad/40 bg-bad-soft" : p.status === "published" ? "border-line bg-paper-2 opacity-70" : p.status === "scheduled" ? "border-ok/40 bg-ok-soft" : "border-line bg-card")} title={`${NETWORKS[p.network]?.label} · ${POST_STATUS[p.status]?.label}`}>
       <NetworkDot network={p.network} />
       <span className="shrink-0 tabular-nums text-muted">{formatInTimeZone(new Date(p.scheduledAt!), tz, "HH:mm")}</span>
       <span className="truncate">{p.title || p.caption}</span>
@@ -211,7 +211,7 @@ export default function TabCalendrier() {
                 <div key={d.toISOString()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => move(e.dataTransfer.getData("text/post"), d)} className={cx("min-h-28 border-b border-r border-line p-1.5 sm:min-h-32", !isSameMonth(d, cursor) && "bg-paper-2/50")}>
                   <button onClick={() => (setCursor(d), setMode("day"))} className={cx("mb-1 grid size-7 place-items-center rounded-full text-xs", isSameDay(d, today) ? "bg-signal font-bold text-signal-ink" : "text-muted hover:bg-paper-2")}>{format(d, "d")}</button>
                   <div className="grid gap-1">
-                    {list.slice(0, 3).map((p) => <Chip key={p.id} p={p} />)}
+                    {list.slice(0, 3).map((p) => Chip(p))}
                     {list.length > 3 && <button onClick={() => (setCursor(d), setMode("day"))} className="text-left text-[11px] text-muted">+ {list.length - 3} autre(s)</button>}
                   </div>
                 </div>
@@ -225,7 +225,7 @@ export default function TabCalendrier() {
           {days.map((d) => (
             <Card key={d.toISOString()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => move(e.dataTransfer.getData("text/post"), d)} className={cx("min-h-48 p-2", isSameDay(d, today) && "border-signal")}>
               <p className="mb-2 text-xs font-medium capitalize">{format(d, "EEE d", { locale: fr })}</p>
-              <div className="grid gap-1.5">{postsOn(d).map((p) => <Chip key={p.id} p={p} />)}</div>
+              <div className="grid gap-1.5">{postsOn(d).map((p) => Chip(p))}</div>
             </Card>
           ))}
         </div>
