@@ -1,0 +1,15 @@
+# we use Shopify as our ecommerce platform
+User-agent: *
+Disallow: /admin
+Disallow: /cart
+Disallow: /orders
+Disallow: /checkout
+Disallow: /account
+Disallow: /collections/*sort_by*
+Disallow: /pages/espace-pro
+Disallow: /search
+
+User-agent: Googlebot-Image
+Disallow: /
+
+Sitemap: /sitemap.xml

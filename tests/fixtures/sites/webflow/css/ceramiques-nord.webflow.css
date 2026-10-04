@@ -1,0 +1,10 @@
+:root { --sable: #F4EFE8; --encre: #1E1B18; --rouille: #B4532A; --sapin: #26413C; }
+body { background-color: var(--sable); color: var(--encre); font-family: "Work Sans", sans-serif; font-size: 16px; line-height: 1.6; }
+h1, h2, h3 { font-family: Fraunces, Georgia, serif; font-weight: 600; color: var(--encre); }
+a { color: var(--sapin); }
+.button { background-color: var(--rouille); color: #fff; border-radius: 999px; padding: 12px 28px; }
+.button.secondary { background-color: var(--sapin); }
+.navbar { background-color: var(--sable); }
+.footer { background-color: var(--sapin); color: #F4EFE8; }
+.product-price { color: var(--rouille); }
+@media screen and (max-width: 767px) { .hero-heading { font-size: 40px; } }

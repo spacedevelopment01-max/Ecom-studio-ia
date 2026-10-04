@@ -1,0 +1,19 @@
+/*
+Theme Name: Astra Child – Lin & Fil
+Template: astra
+*/
+:root {
+  --wp--preset--color--primary: #2F5D50;
+  --wp--preset--color--secondary: #C9A227;
+  --wp--preset--color--base: #FAF8F3;
+  --wp--preset--color--contrast: #22262A;
+  --wp--preset--font-family--heading: "Lora", Georgia, serif;
+  --wp--preset--font-family--body: "Nunito Sans", sans-serif;
+}
+body { background-color: var(--wp--preset--color--base); color: var(--wp--preset--color--contrast); font-family: var(--wp--preset--font-family--body); }
+h1, h2, h3, .entry-title { font-family: var(--wp--preset--font-family--heading); color: #22262A; }
+a { color: #2F5D50; }
+a:hover { color: #C9A227; }
+.wp-block-button__link, .woocommerce a.button, .woocommerce button.button { background-color: var(--wp--preset--color--primary); color: #ffffff; border-radius: 2px; }
+.site-footer { background: #22262A; color: #FAF8F3; }
+.onsale { background-color: #C9A227; }

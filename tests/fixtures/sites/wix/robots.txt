@@ -1,0 +1,6 @@
+# by wix.com
+User-agent: *
+Allow: /
+Disallow: *?lightbox=
+
+Sitemap: /sitemap.xml

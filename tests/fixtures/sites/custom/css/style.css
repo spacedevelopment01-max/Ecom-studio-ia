@@ -1,0 +1,18 @@
+/* Feuille de style faite main — Durand Plomberie */
+@font-face { font-family: "Manrope"; src: url("../fonts/manrope.woff2") format("woff2"); font-weight: 400 800; }
+@font-face { font-family: "Bitter"; src: url("../fonts/bitter.woff2") format("woff2"); font-weight: 700; }
+:root {
+  --color-primary: #0b5394;
+  --color-accent: #f6b26b;
+  --color-bg: #fdfdfb;
+  --color-text: #1c1c1c;
+}
+html { font-size: 100%; }
+body { margin: 0; font-family: Manrope, Arial, sans-serif; background: var(--color-bg); color: var(--color-text); }
+h1, h2, h3 { font-family: "Bitter", Georgia, serif; color: var(--color-primary); }
+a { color: var(--color-primary); }
+.btn { display: inline-block; background: var(--color-primary); color: #fff; padding: .8em 1.4em; border-radius: 6px; }
+.btn:hover { background: #08406f; }
+.hero { background-size: cover; color: #fff; min-height: 60vh; }
+.zone { background: var(--color-accent); }
+footer.bottom { background: #10263d; color: #e6edf3; }

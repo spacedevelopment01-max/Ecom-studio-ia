@@ -1,0 +1,15 @@
+{"products":[
+ {"id":8012345601,"title":"Bougie Ambre & Vanille","handle":"bougie-ambre","body_html":"<p>Notes chaudes d'ambre et de vanille de Madagascar.</p>\n<p>Cire de colza, mèche en coton, verre recyclé.</p>","published_at":"2024-03-01T10:00:00+01:00","vendor":"Maison Ambre","product_type":"Bougies","tags":["best-seller","hiver"],
+  "variants":[{"id":4401,"title":"180 g","option1":"180 g","option2":null,"option3":null,"sku":"AMB-180","available":true,"price":"29.00","compare_at_price":"35.00","position":1},
+              {"id":4402,"title":"320 g","option1":"320 g","option2":null,"option3":null,"sku":"AMB-320","available":true,"price":"45.00","compare_at_price":null,"position":2}],
+  "images":[{"id":1,"src":"/cdn/shop/files/bougie-ambre.jpg?v=1712","width":16,"height":16},{"id":2,"src":"/cdn/shop/files/bougie-ambre-2.jpg?v=1712","width":16,"height":16}],
+  "options":[{"name":"Format","position":1,"values":["180 g","320 g"]}]},
+ {"id":8012345602,"title":"Bougie Figue Noire","handle":"bougie-figue","body_html":"<p>Figue gourmande, feuille de figuier et bois de cèdre.</p>","vendor":"Maison Ambre","product_type":"Bougies","tags":[],
+  "variants":[{"id":4403,"title":"Default Title","option1":"Default Title","option2":null,"option3":null,"sku":"FIG-180","available":true,"price":"29.00","compare_at_price":null,"position":1}],
+  "images":[{"id":3,"src":"/cdn/shop/files/bougie-figue.jpg?v=1712","width":16,"height":16}],
+  "options":[{"name":"Title","position":1,"values":["Default Title"]}]},
+ {"id":8012345603,"title":"Diffuseur Cèdre","handle":"diffuseur-cedre","body_html":"<p>Diffuseur à bâtonnets de rotin, 100 ml, environ trois mois de parfum.</p>","vendor":"Maison Ambre","product_type":"Diffuseurs","tags":[],
+  "variants":[{"id":4404,"title":"Default Title","option1":"Default Title","option2":null,"option3":null,"sku":"CED-100","available":true,"price":"39.90","compare_at_price":null,"position":1}],
+  "images":[{"id":4,"src":"/cdn/shop/files/diffuseur-cedre.jpg?v=1712","width":16,"height":16}],
+  "options":[{"name":"Title","position":1,"values":["Default Title"]}]}
+]}
