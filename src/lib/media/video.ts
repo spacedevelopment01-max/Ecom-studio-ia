@@ -821,6 +821,11 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
     ff.on("close", (code) => (code === 0 ? resolve() : reject(new Error(L(`Encodage vidéo impossible (ffmpeg ${code}) : ${stderr.slice(-400)}`, `Video encoding failed (ffmpeg ${code}): ${stderr.slice(-400)}`)))));
   });
 
+  // ffmpeg absent ou arrêté : on échoue tout de suite au lieu d'attendre indéfiniment que le tube se vide.
+  let ffError: unknown = null;
+  done.catch((e) => (ffError = e));
+  ff.stdin.on("error", () => {});
+
   const canvas = createCanvas(P.W, P.H);
   const ctx = canvas.getContext("2d");
   const TR = 0.5; // durée de transition (s)
@@ -838,7 +843,8 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
       if (d >= 0 && d <= TR) drawTransition(ctx, spec.transition, d / TR, P);
     }
     const buf = canvas.data();
-    if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
+    if (ffError) throw ffError;
+    if (!ff.stdin.write(buf)) await Promise.race([new Promise((r) => ff.stdin.once("drain", r)), done.catch(() => {})]);
     if (onProgress && i % 15 === 0) onProgress(i / frames);
   }
   ff.stdin.end();
