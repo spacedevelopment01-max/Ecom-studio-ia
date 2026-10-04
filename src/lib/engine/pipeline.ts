@@ -57,6 +57,8 @@ const SITE_SHOP = {
 };
 const stepInfo = (id: (typeof STEPS)[number]["id"], business: BusinessType = "products", site?: { decision?: "keep" | "reproduce" } | null) =>
   (site && id === "shop" && site.decision && SITE_SHOP[site.decision]) || (site && SITE_STEPS[id]) || (business === "services" && SERVICE_STEPS[id]) || STEPS.find((s) => s.id === id)!;
+/** Site existant sans photo détourée : explication affichée à la place d'une étape vide. */
+const NO_CUTOUT_SITE = () => L("En attente d'une photo nette du produit (onglet Produit) : les visuels et vidéos se créent ensuite.", "Waiting for a clear product photo (Product tab): visuals and videos are created next.");
 export type StepId = (typeof STEPS)[number]["id"];
 
 /** Contexte limité à une étape : avancement global et points de reprise préfixés. */
@@ -280,7 +282,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         });
       }
       const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
-      if (!has) return "skipped";
+      if (!has) return p.settings.existingSite ? { skipped: NO_CUTOUT_SITE() } : "skipped";
       const r = await generateImageSet(ctx, projectId);
       return L(`${r.created.length} image(s) créée(s)`, `${r.created.length} image(s) created`);
     }
@@ -293,7 +295,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         });
       }
       const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
-      if (!has) return "skipped";
+      if (!has) return p.settings.existingSite ? { skipped: NO_CUTOUT_SITE() } : "skipped";
       const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })).assetId);
       const b = await ctx.step("v169", async () => (await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })).assetId);
       return L(`2 vidéos rendues (${[a, b].length})`, `2 videos rendered (${[a, b].length})`);

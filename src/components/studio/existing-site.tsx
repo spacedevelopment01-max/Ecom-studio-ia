@@ -88,7 +88,7 @@ export function KeptSiteCard({ site, onChanged }: { site: ExistingSiteSummary; o
       {cost.dialog}
       <Card className="overflow-hidden">
         <div className="flex flex-wrap items-start gap-4 border-b border-line p-5 sm:p-6">
-          <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl border border-line bg-white p-2">
+          <div className="grid h-16 w-28 shrink-0 place-items-center overflow-hidden rounded-2xl border border-line bg-white p-2 sm:w-36">
             {site.logoAssetId ? <img src={`/api/files/${site.logoAssetId}`} alt={t("Votre logo", "Your logo")} className="max-h-full max-w-full object-contain" /> : <Globe className="size-6 text-muted" aria-hidden />}
           </div>
           <div className="min-w-0 flex-1">

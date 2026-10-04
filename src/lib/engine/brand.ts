@@ -56,7 +56,8 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   const lines = proposeTaglines({ ...p, brand });
   // Site existant : seule la signature du site est reprise ; les pistes restent de simples propositions.
   if (!keepValidated.includes("tagline") && !brand.tagline && !site) brand.tagline = lines[0] ?? "";
-  brand.taglineAlternatives = lines.filter((x) => x !== brand.tagline).slice(0, 5);
+  // Site existant : aucune autre signature proposée (la marque du client n'est pas réinventée).
+  brand.taglineAlternatives = site ? [] : lines.filter((x) => x !== brand.tagline).slice(0, 5);
 
   // Logo : celui du client est conservé ; sinon trois propositions vectorielles, la plus adaptée appliquée.
   const clientLogo = one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo' AND origin = 'upload' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId);

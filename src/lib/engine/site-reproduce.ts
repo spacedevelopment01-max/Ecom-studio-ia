@@ -78,9 +78,11 @@ const SHOPIFY_FONT_WEIGHTS: Record<string, number[]> = Object.fromEntries(Object
 /** Polices disponibles dans le studio, par famille lue sur le site (ou par style le plus proche). */
 const FONT_MATCH: [RegExp, string][] = [
   [/playfair/i, "playfair_display"],
+  // Serifs d'affichage sans équivalent exact : la serif d'affichage la plus proche.
+  [/fraunces|recoleta|canela|young serif|gloock|instrument serif|dm serif display|abril/i, "playfair_display"],
   [/libre baskerville|baskerville/i, "libre_baskerville"],
   [/cormorant|garamond|caslon|bodoni|didot/i, "cormorant"],
-  [/lora|merriweather|georgia|times|pt serif|noto serif|source serif|crimson|spectral|dm serif|abril|prata|cardo/i, "lora"],
+  [/lora|merriweather|georgia|times|pt serif|noto serif|source serif|crimson|spectral|dm serif|abril|prata|cardo|literata|newsreader|bitter|roboto slab|zilla slab|arvo|rockwell|alegreya|vollkorn|eb garamond/i, "lora"],
   [/\binter\b|roboto|helvetica|arial|open sans|lato|source sans|noto sans|system-ui|apple-system|segoe|ibm plex sans|figtree|public sans/i, "inter"],
   [/montserrat|poppins|raleway|outfit|urbanist|lexend/i, "montserrat"],
   [/dm sans|nunito|quicksand|mulish|plus jakarta|manrope/i, "dm_sans"],

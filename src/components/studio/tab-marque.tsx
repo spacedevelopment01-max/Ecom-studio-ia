@@ -98,7 +98,7 @@ export default function TabMarque() {
       {active[0] && <JobProgress job={active[0]} />}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <Card className="p-5 sm:p-7">
-          <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2"><Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button><Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
+          <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2">{site?.status !== "read" && <Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button>}<Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
             {site?.status === "read" ? (
               <>
                 <FromSiteBadge site={site} className="mb-1.5" />
@@ -122,7 +122,7 @@ export default function TabMarque() {
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between"><label htmlFor="btag" className="text-sm font-medium">{t("Signature", "Tagline")}</label>{V("tagline")}</div>
               <Input id="btag" value={b.tagline} onChange={(e) => set({ tagline: e.target.value })} placeholder={t("Une phrase courte, sans promesse invérifiable", "A short line, with no unverifiable promise")} />
-              {(ident?.taglines.length ?? 0) > 0 && (
+              {site?.status !== "read" && (ident?.taglines.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <span className="text-xs text-muted">{t("Autres signatures :", "Other taglines:")}</span>
                   {ident!.taglines.map((tl) => <button key={tl} onClick={() => set({ tagline: tl })} className="rounded-full border border-line px-2.5 py-0.5 text-xs hover:border-ink">{tl}</button>)}

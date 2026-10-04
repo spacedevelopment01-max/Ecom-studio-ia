@@ -337,7 +337,7 @@ function ExistingSiteFields({ url, onUrl, owner, onOwner, errors, showLanguage }
   return (
     <div className="grid gap-5">
       <Field label={t("Adresse de votre site", "Your website address")} htmlFor="siteUrl" error={errors.url ?? null} hint={t("La page d'accueil suffit : le studio lit aussi les pages du menu.", "The home page is enough: the studio also reads the pages in your menu.")}>
-        <Input id="siteUrl" name="siteUrl" inputMode="url" autoComplete="url" required aria-required="true" aria-invalid={!!errors.url || undefined} placeholder="https://www.mon-site.fr" value={url} onChange={(e) => onUrl(e.target.value)} maxLength={500} />
+        <Input id="siteUrl" name="siteUrl" className="scroll-mt-28" inputMode="url" autoComplete="url" required aria-required="true" aria-invalid={!!errors.url || undefined} placeholder="https://www.mon-site.fr" value={url} onChange={(e) => onUrl(e.target.value)} maxLength={500} />
       </Field>
       <div>
         <label className={cx("flex items-start gap-3 rounded-2xl border p-3.5 text-sm", errors.owner ? "border-bad" : "border-line bg-card")}>
