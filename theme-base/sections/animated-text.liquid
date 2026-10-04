@@ -1,0 +1,200 @@
+{%- comment -%}
+  Texte animé premium : grand texte typographique, au choix mots qui apparaissent, dégradé qui se déplace,
+  surlignage au fil du défilement ou mot qui change en boucle.
+{%- endcomment -%}
+{%- liquid
+  assign style = section.settings.style
+  assign words = section.settings.words | split: ','
+  assign first_word = words | first | strip
+-%}
+<section class="es-section es-atext es-atext--{{ style }} es-atext--{{ section.settings.size }} es-atext--{{ section.settings.align }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-atext="{{ style }}">
+  <div class="es-container es-atext__inner">
+    {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow es-atext__eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+    <h2 class="es-heading es-atext__title" data-atext-title>
+      {%- if section.settings.text_start != blank -%}<span class="es-atext__part">{{ section.settings.text_start }}</span> {% endif -%}
+      {%- if style == 'rotate' and words.size > 1 -%}
+        <span class="es-atext__rotator" data-atext-rotator aria-hidden="true">
+          {%- for w in words -%}<span class="es-atext__word es-accent es-atext__grad{% if forloop.first %} is-active{% endif %}" data-atext-word>{{ w | strip }}</span>{%- endfor -%}
+        </span>
+        <span class="visually-hidden">{{ words | join: ', ' }}</span>
+      {%- elsif first_word != blank -%}
+        <em class="es-atext__accent{% if style == 'rotate' %} es-atext__grad{% endif %}" data-atext-accent>{{ first_word }}</em>
+      {%- endif -%}
+      {%- if section.settings.text_end != blank -%} <span class="es-atext__part">{{ section.settings.text_end }}</span>{%- endif -%}
+    </h2>
+    {%- if section.settings.caption != blank or section.settings.button_label != blank -%}
+      <div class="es-atext__foot" data-reveal="up" style="--d: 2">
+        {%- if section.settings.caption != blank -%}<div class="es-rte es-atext__caption">{{ section.settings.caption }}</div>{%- endif -%}
+        {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-link-arrow">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-atext { overflow: hidden; }
+.es-atext__inner { max-width: min(var(--page-width, 1200px), 1240px); }
+.es-atext--center .es-atext__inner { text-align: center; }
+.es-atext--center .es-atext__foot { justify-items: center; margin-inline: auto; }
+.es-atext__title { margin: 0; line-height: 1.02; letter-spacing: -.025em; text-wrap: balance; }
+.es-atext--m .es-atext__title { font-size: calc(clamp(2rem, 5vw, 4rem) * var(--heading-scale, 1)); }
+.es-atext--l .es-atext__title { font-size: calc(clamp(2.4rem, 7vw, 6rem) * var(--heading-scale, 1)); }
+.es-atext--xl .es-atext__title { font-size: calc(clamp(2.7rem, 9.4vw, 8.6rem) * var(--heading-scale, 1)); line-height: .98; }
+.es-atext__foot { display: grid; gap: 18px; max-width: 54ch; margin-top: clamp(22px, 3.4vw, 40px); }
+.es-atext__caption { color: var(--c-muted); font-size: 1.06rem; }
+
+/* Dégradé qui se déplace (mot mis en valeur, mot qui change, ou tout le texte) */
+.es-atext__grad, .es-atext--gradient .es-atext__title {
+  background-image: linear-gradient(100deg, var(--c-accent) 0%, color-mix(in srgb, var(--c-accent) 55%, var(--c-text)) 25%, var(--c-accent) 50%, color-mix(in srgb, var(--c-accent) 75%, var(--c-bg)) 75%, var(--c-accent) 100%);
+  background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  animation: es-at-grad 7s linear infinite;
+}
+.es-atext--gradient .es-atext__title { background-image: linear-gradient(100deg, var(--c-text) 0%, var(--c-text) 18%, var(--c-accent) 34%, color-mix(in srgb, var(--c-accent) 50%, var(--c-bg)) 46%, var(--c-text) 62%, var(--c-text) 100%); background-size: 250% 100%; animation-duration: 9s; }
+.es-atext--gradient .es-atext__accent { color: inherit; -webkit-text-fill-color: transparent; }
+@keyframes es-at-grad { from { background-position: 0% 50%; } to { background-position: -200% 50%; } }
+
+/* Mot qui change en boucle : mots empilés dans la même cellule, largeur ajustée au mot affiché */
+.es-atext__rotator { display: inline-grid; justify-items: start; vertical-align: baseline; clip-path: inset(-.05em -.3em -.28em -.3em); transition: width .6s var(--ease-out); white-space: nowrap; }
+.es-atext__word { grid-area: 1 / 1; white-space: nowrap; padding-right: .06em; transform: translateY(110%); opacity: 0; transition: transform .8s var(--ease-out), opacity .5s var(--ease-out); }
+.es-atext__word.is-active { transform: none; opacity: 1; }
+.es-atext__word.is-out { transform: translateY(-110%); opacity: 0; }
+
+/* Mots qui apparaissent */
+.es-atext__m { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .1em; margin-bottom: -.1em; }
+.es-atext__w { display: inline-block; }
+.es-atext.is-split.es-atext--words .es-atext__w { transform: translateY(110%) rotate(4deg); opacity: 0; transition: transform 1s var(--ease-out), opacity .8s var(--ease-out); transition-delay: calc(var(--wi, 0) * 70ms); }
+.es-atext.is-split.es-atext--words.is-in .es-atext__w { transform: none; opacity: 1; }
+
+/* Surlignage au défilement */
+.es-atext.is-split.es-atext--highlight .es-atext__w { opacity: .16; transition: opacity .35s linear; }
+.es-atext.is-split.es-atext--highlight .es-atext__w.is-lit { opacity: 1; }
+.es-atext--highlight .es-atext__accent { color: inherit; padding: 0 .08em; background: linear-gradient(rgba(var(--c-accent-rgb), .32), rgba(var(--c-accent-rgb), .32)) no-repeat 0 88% / var(--hl, 0%) 42%; transition: background-size .5s var(--ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  .es-atext__grad, .es-atext--gradient .es-atext__title { animation: none; }
+  .es-atext.is-split .es-atext__w { opacity: 1 !important; transform: none !important; }
+  .es-atext--highlight .es-atext__accent { --hl: 100%; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.__esAText) return;
+  window.__esAText = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  var lit = [];
+
+  function split(el) {
+    var wi = 0;
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function (n) {
+      if (!n.nodeValue.trim()) return;
+      var frag = document.createDocumentFragment();
+      n.nodeValue.split(/(\s+)/).forEach(function (part) {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+        var m = document.createElement('span'); m.className = 'es-atext__m';
+        var w = document.createElement('span'); w.className = 'es-atext__w'; w.style.setProperty('--wi', wi++); w.textContent = part;
+        m.appendChild(w); frag.appendChild(m);
+      });
+      n.parentNode.replaceChild(frag, n);
+    });
+  }
+
+  function rotator(section, r) {
+    var words = Array.prototype.slice.call(r.querySelectorAll('[data-atext-word]'));
+    var i = 0, timer = 0, visible = false;
+    function fit() { r.style.width = Math.ceil(words[i].getBoundingClientRect().width) + 'px'; }
+    function step() {
+      var prev = words[i];
+      i = (i + 1) % words.length;
+      words.forEach(function (w) { w.classList.remove('is-out'); });
+      prev.classList.remove('is-active'); prev.classList.add('is-out');
+      words[i].classList.add('is-active');
+      fit();
+    }
+    function run() { clearInterval(timer); if (visible && !reduce) timer = setInterval(step, 2600); }
+    fit();
+    window.addEventListener('resize', fit);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; run(); }, { threshold: 0.2 }).observe(section);
+    else { visible = true; run(); }
+  }
+
+  function onScroll() {
+    var vh = window.innerHeight;
+    lit.forEach(function (b) {
+      var r = b.title.getBoundingClientRect();
+      if (r.bottom < -vh || r.top > vh * 2) return;
+      var p = Math.min(1, Math.max(0, (vh * 0.88 - r.top) / (vh * 0.62 + r.height * 0.4)));
+      var n = Math.round(p * b.words.length);
+      b.words.forEach(function (w, j) { w.classList.toggle('is-lit', j < n); });
+      if (b.accent) b.accent.style.setProperty('--hl', (b.accentLit() ? 100 : 0) + '%');
+    });
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function () { if (ticking) return; ticking = true; requestAnimationFrame(function () { onScroll(); ticking = false; }); }, { passive: true });
+
+  function init(section) {
+    if (section.__at) return;
+    section.__at = true;
+    var style = section.getAttribute('data-atext');
+    var title = section.querySelector('[data-atext-title]');
+    if (style === 'rotate') { var r = section.querySelector('[data-atext-rotator]'); if (r) rotator(section, r); return; }
+    if (style !== 'words' && style !== 'highlight') return;
+    if (reduce) return;
+    split(title);
+    section.classList.add('is-split');
+    if (style === 'words') {
+      if (!('IntersectionObserver' in window)) { section.classList.add('is-in'); return; }
+      var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { section.classList.add('is-in'); io.disconnect(); } }, { threshold: 0.25 });
+      io.observe(section);
+    } else {
+      var words = Array.prototype.slice.call(title.querySelectorAll('.es-atext__w'));
+      var accent = title.querySelector('[data-atext-accent]');
+      var accentWords = accent ? Array.prototype.slice.call(accent.querySelectorAll('.es-atext__w')) : [];
+      lit.push({ title: title, words: words, accent: accent, accentLit: function () { return accentWords.length && accentWords[accentWords.length - 1].classList.contains('is-lit'); } });
+      onScroll();
+    }
+  }
+  function boot(root) { Array.prototype.forEach.call((root || document).querySelectorAll('[data-atext]'), init); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); });
+  else boot();
+  document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Texte animé premium",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "style", "label": "Animation", "default": "rotate", "options": [
+      { "value": "rotate", "label": "Mot qui change en boucle" },
+      { "value": "words", "label": "Mots qui apparaissent" },
+      { "value": "gradient", "label": "Dégradé qui se déplace" },
+      { "value": "highlight", "label": "Surlignage au défilement" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "En quelques mots" },
+    { "type": "text", "id": "text_start", "label": "Début du texte", "default": "Pensé pour" },
+    { "type": "text", "id": "words", "label": "Mot mis en valeur", "default": "votre quotidien, vos envies, vous", "info": "Animation « Mot qui change en boucle » : plusieurs mots séparés par des virgules. Sinon, seul le premier est utilisé." },
+    { "type": "text", "id": "text_end", "label": "Fin du texte" },
+    { "type": "richtext", "id": "caption", "label": "Texte d'accompagnement", "default": "<p>[À compléter : une phrase qui résume votre marque.]</p>" },
+    { "type": "text", "id": "button_label", "label": "Lien", "default": "Découvrir la boutique" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "size", "label": "Taille du grand texte", "default": "l", "options": [
+      { "value": "m", "label": "Moyenne" }, { "value": "l", "label": "Grande" }, { "value": "xl", "label": "Très grande" }
+    ] },
+    { "type": "select", "id": "align", "label": "Alignement", "default": "center", "options": [
+      { "value": "left", "label": "Gauche" }, { "value": "center", "label": "Centré" }
+    ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 120 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 120 }
+  ],
+  "presets": [{ "name": "Texte animé premium" }]
+}
+{% endschema %}

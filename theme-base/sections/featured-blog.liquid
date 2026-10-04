@@ -1,0 +1,137 @@
+{%- comment -%}
+  Blog en vedette premium : derniers articles d'un blog de la boutique, en cartes éditoriales
+  (image, date, temps de lecture estimé, extrait). Aucun article n'est inventé : si le blog est vide,
+  un état vide sobre s'affiche (et rien du tout hors de l'éditeur si l'option est désactivée).
+{%- endcomment -%}
+{%- liquid
+  assign b = section.settings.blog
+  if b == blank
+    assign b = blogs.news
+  endif
+  assign limit = section.settings.limit
+  assign has_articles = false
+  if b != blank and b.articles_count > 0
+    assign has_articles = true
+  endif
+  assign shown = limit
+  if has_articles and b.articles_count < limit
+    assign shown = b.articles_count
+  endif
+-%}
+{%- if has_articles or section.settings.show_empty or request.design_mode -%}
+<section class="es-section es-fblog es-fblog--{{ section.settings.layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    <header class="es-section-head es-section-head--split es-fblog__head">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+      </div>
+      {%- if has_articles and section.settings.show_view_all -%}
+        <a class="es-link-arrow" href="{{ b.url }}" data-reveal="up">{{ 'sections.featured_blog.view_all' | t }} {% render 'icon', name: 'arrow' %}</a>
+      {%- endif -%}
+    </header>
+    {%- if has_articles -%}
+      <div class="es-fblog__grid" style="--rows: {{ shown | minus: 1 | at_least: 1 }}; --span: {{ shown | at_least: 2 }};">
+        {%- for article in b.articles limit: limit -%}
+          {%- liquid
+            assign words = article.content | strip_html | split: ' ' | size
+            assign minutes = words | plus: 199 | divided_by: 200 | floor | at_least: 1
+          -%}
+          <article class="es-fblog__card{% if forloop.first and section.settings.layout == 'editorial' %} es-fblog__card--lead{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 }}">
+            <a href="{{ article.url }}" class="es-fblog__link">
+              {%- if section.settings.show_image -%}
+                <div class="es-fblog__media es-media-frame">
+                  {%- if article.image -%}
+                    {{ article.image | image_url: width: 1200 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 40vw, 85vw', widths: '400, 600, 800, 1200', class: 'es-cover', alt: article.image.alt | default: article.title }}
+                  {%- else -%}
+                    {{ 'image' | placeholder_svg_tag: 'es-placeholder__svg' }}
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+              <div class="es-fblog__body">
+                <p class="es-fblog__meta">
+                  {%- if section.settings.show_date -%}{{ article.published_at | time_tag: format: 'date' }}{%- endif -%}
+                  {%- if section.settings.show_date and section.settings.show_reading_time -%}<span aria-hidden="true">·</span>{%- endif -%}
+                  {%- if section.settings.show_reading_time -%}<span>{{ 'sections.featured_blog.reading_time' | t: count: minutes }}</span>{%- endif -%}
+                </p>
+                <h3 class="es-heading es-h4 es-fblog__title">{{ article.title | escape }}</h3>
+                {%- if section.settings.show_excerpt -%}
+                  <p class="es-fblog__excerpt es-muted">{{ article.excerpt_or_content | strip_html | truncatewords: 26 }}</p>
+                {%- endif -%}
+                <span class="es-fblog__more">{{ 'sections.featured_blog.read_more' | t }} {% render 'icon', name: 'arrow' %}</span>
+              </div>
+            </a>
+          </article>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <div class="es-fblog__empty">
+        {% render 'icon', name: 'sparkle' %}
+        <p>{{ 'sections.featured_blog.empty' | t }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% stylesheet %}
+.es-fblog__head { align-items: flex-end; }
+.es-fblog__head .es-heading { margin-bottom: 0; }
+.es-fblog__grid { display: grid; gap: clamp(18px, 2.4vw, 34px); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.es-fblog__card { min-width: 0; }
+.es-fblog__link { display: flex; flex-direction: column; gap: 18px; height: 100%; color: inherit; text-decoration: none; }
+.es-fblog__media { aspect-ratio: 3 / 2; }
+.es-fblog__media img { transition: transform 1.2s var(--ease-out); }
+.es-fblog__link:hover .es-fblog__media img { transform: scale(1.05); }
+.es-fblog__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--c-muted); }
+.es-fblog__title { margin: 0 0 10px; background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size .6s var(--ease-out); display: inline; }
+.es-fblog__link:hover .es-fblog__title { background-size: 100% 1px; }
+.es-fblog__excerpt { margin: 12px 0 0; font-size: .95rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.es-fblog__more { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; font-size: .86rem; font-weight: var(--font-body-weight-bold); }
+.es-fblog__more .es-icon { width: 16px; height: 16px; transition: transform .4s var(--ease-out); }
+.es-fblog__link:hover .es-fblog__more .es-icon { transform: translateX(4px); }
+.es-fblog__empty { display: grid; justify-items: center; gap: 10px; padding: clamp(36px, 6vw, 64px) 24px; border: 1px dashed var(--c-border); border-radius: var(--radius-card); color: var(--c-muted); text-align: center; }
+.es-fblog__empty .es-icon { width: 28px; height: 28px; }
+.es-fblog__empty p { margin: 0; max-width: 46ch; }
+@media (min-width: 990px) {
+  .es-fblog--editorial .es-fblog__grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-rows: repeat(var(--rows), auto) 1fr; }
+  .es-fblog--editorial .es-fblog__card--lead { grid-row: span var(--span); }
+  .es-fblog--editorial .es-fblog__card--lead .es-fblog__media { aspect-ratio: 5 / 4; }
+  .es-fblog--editorial .es-fblog__card--lead .es-fblog__title { font-size: calc(clamp(1.5rem, 2.4vw, 2.2rem) * var(--heading-scale)); }
+  .es-fblog--editorial .es-fblog__card:not(.es-fblog__card--lead) .es-fblog__link { flex-direction: row; align-items: center; gap: 22px; }
+  .es-fblog--editorial .es-fblog__card:not(.es-fblog__card--lead) .es-fblog__media { flex: 0 0 40%; aspect-ratio: 1; }
+  .es-fblog--editorial .es-fblog__card:not(.es-fblog__card--lead) .es-fblog__excerpt { -webkit-line-clamp: 2; }
+}
+@media (max-width: 749px) { .es-fblog__head { flex-direction: column; align-items: flex-start; } }
+@media (max-width: 989px) {
+  .es-fblog__grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+  .es-fblog__grid::-webkit-scrollbar { display: none; }
+  .es-fblog__card { flex: none; width: min(80vw, 380px); scroll-snap-align: start; }
+}
+@media (prefers-reduced-motion: reduce) { .es-fblog__media img, .es-fblog__title, .es-fblog__more .es-icon { transition: none; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Blog en vedette premium",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Le journal" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Nos derniers articles" },
+    { "type": "blog", "id": "blog", "label": "Blog", "info": "Seuls les articles publiés dans ce blog s'affichent : aucun article d'exemple n'apparaît sur votre boutique." },
+    { "type": "range", "id": "limit", "min": 2, "max": 6, "step": 1, "label": "Nombre d'articles", "default": 3 },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "editorial", "options": [{ "value": "editorial", "label": "Éditoriale (premier article en grand)" }, { "value": "grid", "label": "Grille régulière" }] },
+    { "type": "checkbox", "id": "show_image", "label": "Afficher l'image", "default": true },
+    { "type": "checkbox", "id": "show_date", "label": "Afficher la date", "default": true },
+    { "type": "checkbox", "id": "show_reading_time", "label": "Afficher le temps de lecture", "default": true },
+    { "type": "checkbox", "id": "show_excerpt", "label": "Afficher l'extrait", "default": true },
+    { "type": "checkbox", "id": "show_view_all", "label": "Afficher le lien vers le blog", "default": true },
+    { "type": "checkbox", "id": "show_empty", "label": "Afficher un message si le blog est vide", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 88 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 88 }
+  ],
+  "presets": [{ "name": "Blog en vedette premium" }]
+}
+{% endschema %}

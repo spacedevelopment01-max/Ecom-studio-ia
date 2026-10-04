@@ -1,0 +1,230 @@
+{%- comment -%}
+  Tableau comparatif « nous / alternatives » : colonnes et lignes en blocs, coches, croix ou texte,
+  colonne mise en avant. Contenus saisis par le marchand : ne comparez que des points vérifiables.
+{%- endcomment -%}
+{%- liquid
+  assign cols = section.blocks | where: 'type', 'column'
+  assign rows = section.blocks | where: 'type', 'row'
+  assign ncols = cols.size
+  assign hl = ','
+  for col in cols
+    if col.settings.highlight
+      assign hl = hl | append: forloop.index | append: ','
+    endif
+  endfor
+-%}
+<section class="es-section es-ctable color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    <div class="es-ctable__head">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-muted es-ctable__intro" data-reveal="up" style="--d: 1">{{ section.settings.text }}</div>{%- endif -%}
+    </div>
+
+    {%- if ncols > 0 -%}
+      <div class="es-ctable__frame" data-reveal="up" data-ctable style="--d: 2">
+        <div class="es-ctable__scroll" data-ctable-scroll tabindex="0" role="region" aria-label="{{ section.settings.heading | append: ' ' | append: section.settings.heading_accent | strip | default: section.settings.criteria_label | escape }}">
+          <table class="es-ctable__table" style="--cols: {{ ncols }};">
+            <caption class="visually-hidden">{{ section.settings.heading }} {{ section.settings.heading_accent }}</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="es-ctable__corner">{{ section.settings.criteria_label }}</th>
+                {%- for col in cols -%}
+                  {%- assign tag = ',' | append: forloop.index | append: ',' -%}
+                  <th scope="col" class="es-ctable__col{% if hl contains tag %} is-hl{% endif %}" {{ col.shopify_attributes }}>
+                    {%- if hl contains tag and section.settings.badge != blank -%}<span class="es-ctable__badge">{{ section.settings.badge }}</span>{%- endif -%}
+                    {%- if col.settings.image != blank or col.settings.image_asset != blank -%}
+                      <span class="es-ctable__thumb">{% render 'es-image', image: col.settings.image, asset: col.settings.image_asset, alt: '', sizes: '96px', class: 'es-ctable__thumb-img', width: 192, height: 192 %}</span>
+                    {%- endif -%}
+                    <span class="es-ctable__name">{{ col.settings.label | default: shop.name }}</span>
+                    {%- if col.settings.subtitle != blank -%}<span class="es-ctable__sub">{{ col.settings.subtitle }}</span>{%- endif -%}
+                  </th>
+                {%- endfor -%}
+              </tr>
+            </thead>
+            <tbody>
+              {%- for row in rows -%}
+                {%- assign r = forloop.index0 -%}
+                <tr {{ row.shopify_attributes }}>
+                  <th scope="row" class="es-ctable__crit">
+                    <span>{{ row.settings.label }}</span>
+                    {%- if row.settings.note != blank -%}<small>{{ row.settings.note }}</small>{%- endif -%}
+                  </th>
+                  {%- for col in cols -%}
+                    {%- liquid
+                      assign tag = ',' | append: forloop.index | append: ','
+                      assign key = 'v' | append: forloop.index
+                      assign raw = row.settings[key] | strip
+                      assign v = raw | downcase
+                      assign kind = 'text'
+                      if v == blank
+                        assign kind = 'empty'
+                      elsif v == 'oui' or v == 'yes' or v == '✓' or v == 'check' or v == 'true'
+                        assign kind = 'yes'
+                      elsif v == 'non' or v == 'no' or v == '✗' or v == 'x' or v == 'false'
+                        assign kind = 'no'
+                      elsif v == 'partiel' or v == 'partiellement' or v == 'partial' or v == 'partly' or v == '~'
+                        assign kind = 'partial'
+                      endif
+                    -%}
+                    <td class="es-ctable__cell es-ctable__cell--{{ kind }}{% if hl contains tag %} is-hl{% endif %}{% if forloop.first %} is-first{% endif %}" style="--r: {{ r }}; --c: {{ forloop.index0 }};">
+                      {%- case kind -%}
+                        {%- when 'yes' -%}<span class="es-ctable__icon es-ctable__icon--yes" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="visually-hidden">{{ 'sections.comparison.yes' | t }}</span>
+                        {%- when 'no' -%}<span class="es-ctable__icon es-ctable__icon--no" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="visually-hidden">{{ 'sections.comparison.no' | t }}</span>
+                        {%- when 'partial' -%}<span class="es-ctable__icon es-ctable__icon--partial" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="visually-hidden">{{ 'sections.comparison.partial' | t }}</span>
+                        {%- when 'empty' -%}<span class="es-ctable__dash" aria-hidden="true">—</span>
+                        {%- else -%}<span class="es-ctable__text">{{ raw }}</span>
+                      {%- endcase -%}
+                    </td>
+                  {%- endfor -%}
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+        <p class="es-ctable__swipe" aria-hidden="true"><span>{{ 'sections.comparison.swipe' | t }}</span> {% render 'icon', name: 'arrow' %}</p>
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.note != blank or section.settings.button_label != blank -%}
+      <div class="es-ctable__foot">
+        {%- if section.settings.note != blank -%}<p class="es-ctable__note es-muted es-small">{{ section.settings.note }}</p>{%- endif -%}
+        {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-ctable__head { text-align: center; max-width: 760px; margin: 0 auto clamp(28px, 4.5vw, 56px); }
+.es-ctable__head .es-heading { margin-bottom: .35em; }
+.es-ctable__intro { max-width: 56ch; margin-inline: auto; }
+.es-ctable__frame { position: relative; max-width: 1040px; margin-inline: auto; }
+.es-ctable__scroll { overflow-x: auto; padding-top: 18px; scrollbar-width: thin; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+.es-ctable__scroll:focus-visible { outline-offset: 6px; border-radius: 8px; }
+.es-ctable__table { width: 100%; min-width: calc(150px + var(--cols) * 128px); border-collapse: separate; border-spacing: 0; table-layout: fixed; font-size: .98rem; }
+.es-ctable__table th, .es-ctable__table td { padding: 18px 14px; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--c-border); }
+.es-ctable__corner, .es-ctable__crit { position: sticky; left: 0; z-index: 2; text-align: left !important; background: var(--c-bg); width: 30%; }
+.es-ctable__corner { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; color: var(--c-muted); font-weight: var(--font-body-weight-bold); vertical-align: bottom !important; }
+.es-ctable__crit { font-weight: var(--font-body-weight-bold); line-height: 1.35; }
+.es-ctable__crit small { display: block; margin-top: 4px; font-weight: 400; font-size: .82rem; color: var(--c-muted); }
+.es-ctable__col { position: relative; vertical-align: bottom !important; scroll-snap-align: center; font-weight: var(--font-body-weight-bold); }
+.es-ctable__col .es-ctable__name { display: block; font-family: var(--font-heading); font-size: 1.08rem; line-height: 1.2; }
+.es-ctable__sub { display: block; margin-top: 4px; font-weight: 400; font-size: .82rem; color: var(--c-muted); }
+.es-ctable__thumb { display: block; width: 72px; height: 72px; margin: 0 auto 10px; border-radius: 50%; overflow: hidden; background: var(--c-surface); }
+.es-ctable__thumb-img { width: 100%; height: 100%; object-fit: contain; }
+.es-ctable__badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 5px 12px; border-radius: var(--radius-pill, 999px); background: var(--c-accent); color: var(--c-accent-text); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); box-shadow: 0 10px 24px -12px rgba(var(--c-accent-rgb), .8); }
+.es-ctable .is-hl { background: rgba(var(--c-accent-rgb), .08); border-left: 1.5px solid rgba(var(--c-accent-rgb), .55); border-right: 1.5px solid rgba(var(--c-accent-rgb), .55); }
+thead .es-ctable__col.is-hl { border-top: 1.5px solid rgba(var(--c-accent-rgb), .55); border-radius: var(--radius-card, 16px) var(--radius-card, 16px) 0 0; padding-top: 26px; }
+tbody tr:last-child .is-hl { border-bottom: 1.5px solid rgba(var(--c-accent-rgb), .55); border-radius: 0 0 var(--radius-card, 16px) var(--radius-card, 16px); }
+tbody tr:last-child th, tbody tr:last-child td:not(.is-hl) { border-bottom: 0; }
+.es-ctable__icon { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; }
+.es-ctable__icon--yes { background: var(--c-accent); color: var(--c-accent-text); }
+.es-ctable__icon--no { background: rgba(var(--c-text-rgb), .08); color: var(--c-muted); }
+.es-ctable__icon--partial { background: rgba(var(--c-accent-rgb), .16); color: var(--c-accent); }
+.es-ctable__text { font-size: .92rem; line-height: 1.4; }
+.es-ctable__cell.is-hl .es-ctable__text { font-weight: var(--font-body-weight-bold); }
+.es-ctable__dash { color: var(--c-muted); }
+.es-ctable tbody tr { transition: background .25s; }
+.es-ctable tbody tr:hover td:not(.is-hl), .es-ctable tbody tr:hover th { background-color: color-mix(in srgb, var(--c-text) 3%, var(--c-bg)); }
+.motion-ready .es-ctable__frame .es-ctable__icon { transform: scale(0); transition: transform .6s var(--ease-out); transition-delay: calc(300ms + var(--r, 0) * 90ms + var(--c, 0) * 60ms); }
+.motion-ready .es-ctable__frame.is-in .es-ctable__icon { transform: none; }
+.es-ctable__swipe { display: none; align-items: center; justify-content: flex-end; gap: 6px; margin: 10px 0 0; font-size: .8rem; color: var(--c-muted); }
+.es-ctable__swipe .es-icon { width: 16px; height: 16px; animation: es-ct-nudge 1.6s var(--ease-in-out, ease-in-out) infinite; }
+@keyframes es-ct-nudge { 50% { transform: translateX(5px); } }
+.es-ctable__frame.is-scrollable .es-ctable__swipe { display: flex; }
+.es-ctable__frame.is-scrollable::after { content: ""; position: absolute; top: 18px; right: 0; bottom: 34px; width: 36px; pointer-events: none; background: linear-gradient(to left, var(--c-bg), transparent); transition: opacity .3s; }
+.es-ctable__frame.is-end::after { opacity: 0; }
+.es-ctable__frame.is-scrolled .es-ctable__crit, .es-ctable__frame.is-scrolled .es-ctable__corner { box-shadow: 10px 0 18px -14px rgba(0,0,0,.35); }
+.es-ctable__foot { display: grid; justify-items: center; gap: 22px; margin-top: clamp(24px, 4vw, 44px); text-align: center; }
+.es-ctable__note { margin: 0; max-width: 60ch; }
+@media (max-width: 749px) {
+  .es-ctable__table { font-size: .9rem; min-width: calc(128px + var(--cols) * 112px); }
+  .es-ctable__table th, .es-ctable__table td { padding: 14px 10px; }
+  .es-ctable__corner, .es-ctable__crit { width: 128px; }
+  .es-ctable__thumb { width: 52px; height: 52px; }
+  .es-ctable__col .es-ctable__name { font-size: .95rem; }
+  .es-ctable__badge { font-size: .58rem; letter-spacing: .08em; padding: 4px 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es-ctable__swipe .es-icon { animation: none; }
+  .motion-ready .es-ctable__frame .es-ctable__icon { transform: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.__esCTable) return;
+  window.__esCTable = true;
+  function init(frame) {
+    if (frame.__ct) return;
+    frame.__ct = true;
+    var sc = frame.querySelector('[data-ctable-scroll]');
+    if (!sc) return;
+    function update() {
+      var max = sc.scrollWidth - sc.clientWidth;
+      frame.classList.toggle('is-scrollable', max > 4);
+      frame.classList.toggle('is-scrolled', sc.scrollLeft > 4);
+      frame.classList.toggle('is-end', sc.scrollLeft >= max - 4);
+    }
+    sc.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+  function boot(root) { Array.prototype.forEach.call((root || document).querySelectorAll('[data-ctable]'), init); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); });
+  else boot();
+  document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Tableau comparatif",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Comparatif" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Comparez," },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "en toute clarté." },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Les points qui comptent, côte à côte.</p>" },
+    { "type": "text", "id": "criteria_label", "label": "Intitulé de la colonne des critères", "default": "Critères" },
+    { "type": "text", "id": "badge", "label": "Pastille de la colonne mise en avant", "default": "Notre choix" },
+    { "type": "text", "id": "note", "label": "Note sous le tableau", "default": "[À compléter : source et date de la comparaison]", "info": "Ne comparez que des points vérifiables. Ne nommez pas une marque concurrente sans pouvoir le prouver." },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir le produit" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "column", "name": "Colonne", "limit": 4, "settings": [
+      { "type": "text", "id": "label", "label": "Intitulé", "info": "Vide : nom de la boutique. Préférez des intitulés génériques (« Option classique ») à des marques." },
+      { "type": "text", "id": "subtitle", "label": "Sous-titre" },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "checkbox", "id": "highlight", "label": "Colonne mise en avant", "default": false }
+    ] },
+    { "type": "row", "name": "Ligne", "settings": [
+      { "type": "text", "id": "label", "label": "Critère", "default": "[À compléter : critère vérifiable]" },
+      { "type": "text", "id": "note", "label": "Précision" },
+      { "type": "paragraph", "content": "Pour chaque colonne : « oui » affiche une coche, « non » une croix, « partiel » un trait ; tout autre texte s'affiche tel quel." },
+      { "type": "text", "id": "v1", "label": "Colonne 1", "default": "oui" },
+      { "type": "text", "id": "v2", "label": "Colonne 2", "default": "non" },
+      { "type": "text", "id": "v3", "label": "Colonne 3" },
+      { "type": "text", "id": "v4", "label": "Colonne 4" }
+    ] }
+  ],
+  "max_blocks": 24,
+  "presets": [{ "name": "Tableau comparatif", "blocks": [
+    { "type": "column", "settings": { "highlight": true } },
+    { "type": "column", "settings": { "label": "Option classique" } },
+    { "type": "column", "settings": { "label": "Autres alternatives" } },
+    { "type": "row", "settings": { "label": "[À compléter : matière ou composition]", "v1": "oui", "v2": "partiel", "v3": "non" } },
+    { "type": "row", "settings": { "label": "[À compléter : fabrication]", "v1": "oui", "v2": "non", "v3": "partiel" } },
+    { "type": "row", "settings": { "label": "[À compléter : entretien]", "v1": "oui", "v2": "oui", "v3": "non" } },
+    { "type": "row", "settings": { "label": "[À compléter : garantie]", "v1": "oui", "v2": "non", "v3": "non" } },
+    { "type": "row", "settings": { "label": "[À compléter : prix]", "v1": "[À compléter]", "v2": "[À compléter]", "v3": "[À compléter]" } }
+  ] }]
+}
+{% endschema %}

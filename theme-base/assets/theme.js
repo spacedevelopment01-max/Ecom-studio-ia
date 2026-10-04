@@ -42,10 +42,17 @@
     doc.classList.add('motion-ready');
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+        if (e.isIntersecting) { (e.target._esReveal || [e.target]).forEach(function (el) { el.classList.add('is-in'); }); io.unobserve(e.target); }
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-    items.forEach(function (el) { if (!el.classList.contains('is-in')) io.observe(el); });
+    // Rideau et masque : l'élément est entièrement découpé (clip-path) au départ, ce que Chrome compte comme invisible ;
+    // on observe donc son parent.
+    items.forEach(function (el) {
+      if (el.classList.contains('is-in')) return;
+      var t = /^(curtain|mask)$/.test(el.getAttribute('data-reveal')) && el.parentElement ? el.parentElement : el;
+      if (t !== el) (t._esReveal = t._esReveal || (t.hasAttribute('data-reveal') ? [t] : [])).push(el);
+      io.observe(t);
+    });
   }
 
   /* ---------- Parallaxe (rAF, désactivée si mouvement réduit) ---------- */

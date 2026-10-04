@@ -1,0 +1,193 @@
+{%- comment -%}
+  Vidéo immersive : la vidéo part d'une carte arrondie et s'agrandit jusqu'au plein écran au fil du défilement,
+  avec texte en surimpression, son et pause. Sans animation (mouvement réduit) : vidéo plein écran fixe.
+{%- endcomment -%}
+<section class="es-immv es-immv--{{ section.settings.length }} es-immv--text-{{ section.settings.text_position }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --overlay: {{ section.settings.overlay | divided_by: 100.0 }}; --p: 0;" data-immv>
+  <div class="es-immv__track">
+    <div class="es-immv__pin">
+      <div class="es-immv__frame" data-immv-frame>
+        <div class="es-immv__media" data-immv-media>
+          {%- liquid
+            assign poster_url = ''
+            if section.settings.poster != blank
+              assign poster_url = section.settings.poster | image_url: width: 1920
+            elsif section.settings.poster_asset != blank
+              assign poster_url = section.settings.poster_asset | asset_url
+            endif
+          -%}
+          {%- if section.settings.video != blank -%}
+            {{ section.settings.video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, class: 'es-immv__video', image_size: '1920x' }}
+          {%- elsif section.settings.video_asset != blank -%}
+            <video class="es-immv__video" src="{{ section.settings.video_asset | asset_url }}"{% if poster_url != blank %} poster="{{ poster_url }}"{% endif %} autoplay muted loop playsinline preload="metadata" aria-label="{{ section.settings.heading | escape }}"></video>
+          {%- elsif poster_url != blank -%}
+            <img class="es-immv__video" src="{{ poster_url }}" alt="{{ section.settings.heading | escape }}" width="1920" height="1080" loading="lazy">
+          {%- else -%}
+            <div class="es-placeholder es-immv__video">{{ 'lifestyle-2' | placeholder_svg_tag: 'es-placeholder__svg' }}</div>
+          {%- endif -%}
+        </div>
+        <div class="es-immv__shade" aria-hidden="true"></div>
+        <div class="es-immv__content">
+          <div class="es-immv__text">
+            {%- if section.settings.eyebrow != blank -%}<p class="es-immv__eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+            {%- if section.settings.heading != blank -%}<h2 class="es-heading es-immv__title">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+            {%- if section.settings.text != blank -%}<div class="es-rte es-immv__desc">{{ section.settings.text }}</div>{%- endif -%}
+            {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button es-immv__cta">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+          </div>
+        </div>
+        {%- if section.settings.video != blank or section.settings.video_asset != blank -%}
+          <div class="es-immv__controls">
+            {%- if section.settings.show_sound -%}
+              <button type="button" class="es-immv__btn" data-immv-sound aria-pressed="false" aria-label="{{ 'general.unmute' | t }}" data-label-mute="{{ 'general.mute' | t }}" data-label-unmute="{{ 'general.unmute' | t }}"><span class="es-immv__muted">{% render 'icon', name: 'mute' %}</span><span class="es-immv__unmuted">{% render 'icon', name: 'sound' %}</span></button>
+            {%- endif -%}
+            <button type="button" class="es-immv__btn" data-immv-play aria-label="{{ 'general.pause' | t }}" data-label-pause="{{ 'general.pause' | t }}" data-label-play="{{ 'general.play' | t }}"><span class="es-immv__pause" aria-hidden="true"></span></button>
+          </div>
+        {%- endif -%}
+      </div>
+      {%- if section.settings.scroll_hint != blank -%}<p class="es-immv__hint" aria-hidden="true"><span></span>{{ section.settings.scroll_hint }}</p>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-immv { position: relative; padding-top: calc(var(--pt, 0px) * var(--space-scale, 1)); padding-bottom: calc(var(--pb, 0px) * var(--space-scale, 1)); }
+.es-immv__track { position: relative; height: 220vh; }
+.es-immv--short .es-immv__track { height: 165vh; }
+.es-immv--long .es-immv__track { height: 300vh; }
+.es-immv__pin { position: sticky; top: 0; height: 100vh; height: 100svh; display: grid; place-items: center; overflow: hidden; }
+.es-immv__frame {
+  --ix: max(16px, calc(50vw - 560px)); --iy: 13vh; --q: calc(1 - var(--p));
+  position: absolute; inset: 0; overflow: hidden; color: #fff; background: #0b0b0c;
+  clip-path: inset(calc(var(--iy) * var(--q)) calc(var(--ix) * var(--q)) round calc(var(--radius-card, 20px) * var(--q) + 6px * var(--q)));
+  will-change: clip-path;
+}
+.es-immv__media { position: absolute; inset: 0; transform: scale(calc(1.14 - .14 * var(--p))); transform-origin: 50% 50%; will-change: transform; }
+.es-immv__video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.es-immv__shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0, calc(var(--overlay) + .25)) 0%, rgba(0,0,0, var(--overlay)) 45%, rgba(0,0,0, calc(var(--overlay) * .5)) 100%); pointer-events: none; }
+.es-immv__content { position: absolute; inset: 0; display: grid; place-items: center; padding: calc(13vh + 28px) max(32px, calc(50vw - 520px)); text-align: center; }
+.es-immv--text-bottom .es-immv__content { place-items: end start; text-align: left; padding-bottom: calc(13vh * (1 - var(--p)) + 56px); padding-inline: max(32px, calc((50vw - 560px) * (1 - var(--p)) + 40px)); }
+.es-immv__text { max-width: 760px; display: grid; justify-items: center; gap: 0; transform: translateY(calc(26px * (1 - var(--p)))) scale(calc(.94 + .06 * var(--p))); }
+.es-immv--text-bottom .es-immv__text { justify-items: start; transform: translateY(calc(26px * (1 - var(--p)))); }
+.es-immv__eyebrow { margin: 0 0 1rem; font-size: .76rem; letter-spacing: .3em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); opacity: .9; }
+.es-immv__title { color: #fff; margin: 0; font-size: calc(clamp(2.3rem, 6.4vw, 5.6rem) * var(--heading-scale, 1)); line-height: 1; text-shadow: 0 2px 30px rgba(0,0,0,.25); }
+.es-immv .es-immv__title em { color: color-mix(in srgb, var(--c-accent) 30%, #fff); }
+.es-immv__desc { margin-top: 1.2rem; max-width: 50ch; font-size: 1.06rem; opacity: calc(.55 + .45 * var(--p)); }
+.es-immv__cta { margin-top: 1.8rem; --b-bg: #fff; --b-fg: #111; }
+.es-immv__controls { position: absolute; right: calc(var(--ix) * (1 - var(--p)) + 18px); bottom: calc(var(--iy) * (1 - var(--p)) + 18px); display: flex; gap: 8px; z-index: 2; }
+.es-immv__btn { width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.28); display: grid; place-items: center; background: rgba(0,0,0,.35); color: #fff; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); cursor: pointer; transition: background .25s; }
+.es-immv__btn:hover { background: rgba(0,0,0,.55); }
+.es-immv__btn .es-icon { width: 20px; height: 20px; }
+.es-immv__unmuted, .es-immv__btn[aria-pressed="true"] .es-immv__muted { display: none; }
+.es-immv__btn[aria-pressed="true"] .es-immv__unmuted { display: block; }
+.es-immv__pause { width: 12px; height: 14px; border-inline: 4px solid #fff; }
+.es-immv__btn.is-paused .es-immv__pause { width: 0; height: 0; border: 0; border-left: 13px solid #fff; border-block: 8px solid transparent; margin-left: 4px; }
+.es-immv__hint { position: absolute; left: 0; right: 0; bottom: calc(13vh * (1 - var(--p)) - 44px); margin: 0; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: .74rem; letter-spacing: .24em; text-transform: uppercase; color: var(--c-muted); opacity: calc(1 - var(--p) * 3); }
+.es-immv__hint span { width: 1px; height: 26px; background: currentColor; transform-origin: top; animation: es-immv-hint 1.8s var(--ease-in-out, ease-in-out) infinite; }
+@keyframes es-immv-hint { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+@media (max-width: 749px) {
+  .es-immv__frame { --ix: 16px; --iy: 16vh; }
+  .es-immv__content { padding: calc(16vh + 20px) 28px; }
+  .es-immv__hint { bottom: calc(16vh * (1 - var(--p)) - 40px); }
+}
+.es-immv.is-static .es-immv__track { height: auto; }
+.es-immv.is-static .es-immv__pin { position: relative; height: 88vh; height: 88svh; }
+.es-immv.is-static { --p: 1 !important; }
+.es-immv.is-static .es-immv__hint { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .es-immv__track { height: auto !important; }
+  .es-immv__pin { position: relative; height: 88vh; }
+  .es-immv { --p: 1 !important; }
+  .es-immv__hint { display: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.__esImmv) return;
+  window.__esImmv = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  var items = [];
+  function update() {
+    var vh = window.innerHeight;
+    items.forEach(function (it) {
+      var r = it.track.getBoundingClientRect();
+      if (r.bottom < -vh || r.top > vh * 2) return;
+      // 0 quand la section atteint le haut de l'écran, 1 aux deux tiers du parcours épinglé.
+      var span = Math.max(1, (r.height - vh) * 0.68);
+      var p = Math.min(1, Math.max(0, -r.top / span));
+      p = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      it.el.style.setProperty('--p', p.toFixed(4));
+    });
+  }
+  var ticking = false;
+  function onScroll() { if (ticking) return; ticking = true; requestAnimationFrame(function () { update(); ticking = false; }); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+
+  function init(section) {
+    if (section.__immv) return;
+    section.__immv = true;
+    var video = section.querySelector('video');
+    var sound = section.querySelector('[data-immv-sound]');
+    var play = section.querySelector('[data-immv-play]');
+    var userPaused = false;
+    if (video) {
+      video.muted = true;
+      if ('IntersectionObserver' in window) new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) { if (!userPaused) video.play().catch(function () {}); } else video.pause();
+      }, { threshold: 0.15 }).observe(section.querySelector('[data-immv-frame]'));
+      if (sound) sound.addEventListener('click', function () {
+        video.muted = !video.muted;
+        if (!video.muted && video.paused) { video.play().catch(function () {}); userPaused = false; play && play.classList.remove('is-paused'); }
+        sound.setAttribute('aria-pressed', String(!video.muted));
+        sound.setAttribute('aria-label', video.muted ? sound.dataset.labelUnmute : sound.dataset.labelMute);
+      });
+      if (play) play.addEventListener('click', function () {
+        if (video.paused) { video.play().catch(function () {}); userPaused = false; } else { video.pause(); userPaused = true; }
+        play.classList.toggle('is-paused', userPaused);
+        play.setAttribute('aria-label', userPaused ? play.dataset.labelPlay : play.dataset.labelPause);
+      });
+      if (reduce) { video.removeAttribute('autoplay'); video.pause(); userPaused = true; if (play) { play.classList.add('is-paused'); play.setAttribute('aria-label', play.dataset.labelPlay); } }
+    }
+    if (reduce) { section.classList.add('is-static'); return; }
+    items.push({ el: section, track: section.querySelector('.es-immv__track') });
+    update();
+  }
+  function boot(root) { Array.prototype.forEach.call((root || document).querySelectorAll('[data-immv]'), init); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); });
+  else boot();
+  document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Vidéo immersive",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+    { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4)" },
+    { "type": "image_picker", "id": "poster", "label": "Image d'attente" },
+    { "type": "text", "id": "poster_asset", "label": "Image d'attente fournie avec le thème" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "En mouvement" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Entrez dans" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "les détails." },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : ce que montre la vidéo, en une phrase.]</p>" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "text_position", "label": "Position du texte", "default": "center", "options": [
+      { "value": "center", "label": "Centré" }, { "value": "bottom", "label": "En bas à gauche" }
+    ] },
+    { "type": "range", "id": "overlay", "min": 0, "max": 80, "step": 5, "unit": "%", "label": "Assombrissement de la vidéo", "default": 30 },
+    { "type": "select", "id": "length", "label": "Durée de l'effet au défilement", "default": "medium", "options": [
+      { "value": "short", "label": "Courte" }, { "value": "medium", "label": "Moyenne" }, { "value": "long", "label": "Longue" }
+    ] },
+    { "type": "checkbox", "id": "show_sound", "label": "Bouton pour activer le son", "default": true },
+    { "type": "text", "id": "scroll_hint", "label": "Invitation à défiler", "default": "Faites défiler" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 0 }
+  ],
+  "presets": [{ "name": "Vidéo immersive" }]
+}
+{% endschema %}

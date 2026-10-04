@@ -46,6 +46,7 @@ const SECTION_NAMES: Record<string, string> = {
   "scroll-story": "Présentation animée", "video-showcase": "Vidéo", "video-reels": "Vidéos", "cta-banner": "Appel à l'action", "before-after": "Avant / après", "gallery-mosaic": "Galerie",
   "horizontal-gallery": "Galerie", "specs-list": "Caractéristiques", "stack-cards": "Cartes", "story-circles": "Stories", timeline: "Étapes", situations: "Situations",
   "product-reviews": "Avis", "product-recommendations": "Recommandations", "main-collection": "Page collection", "main-cart": "Panier", "contact-form": "Contact",
+  "immersive-reviews": "Avis", "video-carousel": "Vidéos", "featured-blog": "Blog", countdown: "Compte à rebours", "alternating-content": "Contenus alternés",
 };
 const SECTION_NAMES_EN: Record<string, string> = {
   "announcement-bar": "Announcement bar", header: "Header", footer: "Footer", "hero-split": "Hero", "hero-fullbleed": "Hero", "hero-editorial": "Hero",
@@ -54,6 +55,7 @@ const SECTION_NAMES_EN: Record<string, string> = {
   "scroll-story": "Animated showcase", "video-showcase": "Video", "video-reels": "Videos", "cta-banner": "Call to action", "before-after": "Before / after", "gallery-mosaic": "Gallery",
   "horizontal-gallery": "Gallery", "specs-list": "Specifications", "stack-cards": "Cards", "story-circles": "Stories", timeline: "Steps", situations: "Use cases",
   "product-reviews": "Reviews", "product-recommendations": "Recommendations", "main-collection": "Collection page", "main-cart": "Cart", "contact-form": "Contact",
+  "immersive-reviews": "Reviews", "video-carousel": "Videos", "featured-blog": "Blog", countdown: "Countdown", "alternating-content": "Alternating content",
 };
 const describeSelection = (s: NonNullable<Selection>, t: TFn) => {
   const where = t(SECTION_NAMES[s.type ?? ""], SECTION_NAMES_EN[s.type ?? ""]) ?? s.type ?? "Section";
@@ -214,6 +216,20 @@ export default function TabBoutique() {
       await api(`/api/projects/${id}/theme/ops`, { body: { ops: list, summary } });
       reload();
       reloadProject();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    }
+  }
+
+  /** « Générer » : l'IA crée une section sur mesure à l'endroit choisi ; le résultat arrive dans la discussion. */
+  async function generateSection(description: string) {
+    if (!libTarget) return;
+    if (!(await cost.confirm("theme", { localOk: false }))) return;
+    try {
+      await api(`/api/projects/${id}/theme/chat`, { body: { message: description, page: libTarget.template, generate: { template: libTarget.template, index: libTarget.index } }, lang: cl.lang });
+      toast("ok", t("Création de la section en cours : elle apparaîtra dans l'aperçu dans un instant (suivi dans la discussion).", "Creating the section: it will appear in the preview shortly (progress in the chat)."));
+      setLibTarget(null);
+      reload();
     } catch (e) {
       toast("bad", (e as Error).message);
     }
@@ -486,7 +502,7 @@ export default function TabBoutique() {
         </ul>
       </Modal>
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
-      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} />
+      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} />
       <ThemeGallery open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} />
     </div>

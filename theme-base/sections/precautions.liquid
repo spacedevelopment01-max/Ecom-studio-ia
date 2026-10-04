@@ -1,0 +1,112 @@
+{%- comment -%}
+  Précautions d'emploi et avertissements, présentés de façon lisible et rassurante.
+  Contenu strictement fourni par le marchand (notice, emballage) : aucune mention médicale ou réglementaire n'est inventée.
+{%- endcomment -%}
+<section class="es-section es-prec color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    <div class="es-prec__panel es-prec__panel--{{ section.settings.style }}">
+      <div class="es-prec__intro">
+        <span class="es-prec__seal" data-reveal="up" aria-hidden="true">{% render 'es-glyph', name: 'shield' %}</span>
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h3" data-reveal="up">{{ section.settings.heading }}</h2>{%- endif -%}
+        {%- if section.settings.text != blank -%}<div class="es-rte es-prec__text" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+        {%- if section.settings.notice_label != blank -%}
+          <p class="es-prec__notice" data-reveal="up">
+            {%- if section.settings.notice_url != blank -%}
+              <a class="es-link-arrow" href="{{ section.settings.notice_url }}" target="_blank" rel="noopener">{% render 'es-glyph', name: 'book' %}<span>{{ section.settings.notice_label }}</span>{% render 'icon', name: 'arrow' %}</a>
+            {%- else -%}
+              <span class="es-prec__notice-missing">{% render 'es-glyph', name: 'book' %}<span>{{ section.settings.notice_label }}</span></span>
+            {%- endif -%}
+          </p>
+        {%- endif -%}
+      </div>
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="es-prec__list" role="list">
+          {%- for block in section.blocks -%}
+            <li class="es-prec__item es-prec__item--{{ block.settings.level }}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+              <span class="es-prec__icon">{% render 'es-glyph', name: block.settings.icon %}</span>
+              <div class="es-prec__body">
+                <h3 class="es-prec__title">{{ block.settings.title }}</h3>
+                {%- if block.settings.text != blank -%}<div class="es-prec__desc">{{ block.settings.text }}</div>{%- endif -%}
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+    {%- if section.settings.help_text != blank -%}
+      <p class="es-prec__help es-small" data-reveal="up">{% render 'es-glyph', name: 'chat' %}<span>{{ section.settings.help_text }}</span>{%- if section.settings.help_label != blank -%} <a href="{{ section.settings.help_link | default: '/pages/contact' }}">{{ section.settings.help_label }}</a>{%- endif -%}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-prec__panel { display: grid; gap: clamp(28px, 4vw, 64px); padding: clamp(28px, 5vw, 64px); border-radius: calc(var(--radius-card) + 8px);
+  background: linear-gradient(160deg, rgba(var(--c-accent-rgb), .07), rgba(var(--c-text-rgb), .025) 55%); border: 1px solid rgba(var(--c-text-rgb), .1); }
+.es-prec__panel--plain { background: none; border: 0; padding: 0; }
+@media (min-width: 990px) { .es-prec__panel { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; } .es-prec__intro { position: sticky; top: calc(var(--header-h, 72px) + 24px); } }
+.es-prec__seal { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 18px; margin-bottom: 22px; color: var(--c-accent); background: var(--c-bg); border: 1px solid rgba(var(--c-accent-rgb), .25); box-shadow: 0 16px 34px -20px rgba(var(--c-accent-rgb), .8); }
+.es-prec__seal .es-icon { width: 28px; height: 28px; }
+.es-prec__text { color: color-mix(in srgb, var(--c-text) 80%, var(--c-bg)); max-width: 46ch; }
+.es-prec__notice { margin: 24px 0 0; }
+.es-prec__notice .es-link-arrow { gap: .6em; }
+.es-prec__notice .es-glyph { width: 18px; height: 18px; }
+.es-prec__notice-missing { display: inline-flex; align-items: center; gap: .6em; color: var(--c-muted); font-size: .86rem; }
+.es-prec__notice-missing .es-icon { width: 18px; height: 18px; }
+.es-prec__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.es-prec__item { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; padding: 20px 22px; border-radius: var(--radius-card); background: var(--c-bg); border: 1px solid rgba(var(--c-text-rgb), .09);
+  box-shadow: 0 18px 40px -36px rgba(0,0,0,.45); transition: border-color .4s, transform .5s var(--ease-out); }
+.es-prec__item:hover { border-color: rgba(var(--c-accent-rgb), .35); transform: translateX(4px); }
+.es-prec__icon { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--c-accent); background: rgba(var(--c-accent-rgb), .1); }
+.es-prec__icon .es-icon { width: 22px; height: 22px; }
+.es-prec__item--important .es-prec__icon { color: var(--c-accent-text); background: var(--c-accent); }
+.es-prec__item--important .es-prec__icon::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1px solid rgba(var(--c-accent-rgb), .45); }
+.es-prec__title { margin: 2px 0 4px; font-size: 1rem; font-weight: var(--font-body-weight-bold); line-height: 1.35; letter-spacing: -.005em; }
+.es-prec__desc { color: var(--c-muted); font-size: .93rem; line-height: 1.6; }
+.es-prec__desc p { margin: 0; }
+.es-prec__help { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 8px; margin: 24px 0 0; color: var(--c-muted); text-align: center; }
+.es-prec__help .es-icon { width: 18px; height: 18px; color: var(--c-accent); }
+.es-prec__help a { color: var(--c-text); font-weight: var(--font-body-weight-bold); text-underline-offset: 3px; }
+@media (min-width: 750px) { .es-prec__panel--grid .es-prec__list { grid-template-columns: 1fr 1fr; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Précautions",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Recopiez uniquement les précautions qui figurent sur la notice ou l'emballage de votre produit. N'ajoutez aucune mention médicale ou réglementaire non vérifiée." },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Bon à savoir" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Précautions d'emploi" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : une phrase d'introduction, par exemple « Pour profiter de votre produit en toute sérénité, voici les recommandations de la notice ».]</p>" },
+    { "type": "text", "id": "notice_label", "label": "Texte du lien vers la notice", "default": "Lire la notice complète" },
+    { "type": "url", "id": "notice_url", "label": "Lien vers la notice", "info": "Téléversez la notice (PDF) dans Contenu › Fichiers, puis collez son lien ici." },
+    { "type": "select", "id": "style", "label": "Présentation", "default": "list", "options": [{ "value": "list", "label": "Liste" }, { "value": "grid", "label": "Grille sur deux colonnes" }, { "value": "plain", "label": "Sans encadré" }] },
+    { "type": "text", "id": "help_text", "label": "Phrase d'aide", "default": "Une question sur l'utilisation ?" },
+    { "type": "text", "id": "help_label", "label": "Texte du lien d'aide", "default": "Écrivez-nous" },
+    { "type": "url", "id": "help_link", "label": "Lien d'aide" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Précaution", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "info", "options": [
+        { "value": "info", "label": "Information" }, { "value": "alert", "label": "Attention" }, { "value": "child", "label": "Enfant" }, { "value": "eye", "label": "Œil" }, { "value": "sun", "label": "Soleil" }, { "value": "thermometer", "label": "Température" }, { "value": "drop", "label": "Goutte" }, { "value": "hand", "label": "Main" }, { "value": "ban", "label": "Interdit" }, { "value": "book", "label": "Notice" }, { "value": "package", "label": "Colis" }, { "value": "recycle", "label": "Recyclage" }
+      ] },
+      { "type": "select", "id": "level", "label": "Importance", "default": "normal", "options": [{ "value": "normal", "label": "Normale" }, { "value": "important", "label": "Importante (mise en avant)" }] },
+      { "type": "text", "id": "title", "label": "Titre", "default": "[À compléter : précaution]" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : recopiez exactement la mention de la notice.]</p>" }
+    ] }
+  ],
+  "max_blocks": 10,
+  "presets": [{ "name": "Précautions", "blocks": [
+    { "type": "item", "settings": { "icon": "book", "title": "[À compléter : ex. Avant la première utilisation]" } },
+    { "type": "item", "settings": { "icon": "child", "level": "important", "title": "[À compléter : ex. Tenir hors de portée des enfants]" } },
+    { "type": "item", "settings": { "icon": "thermometer", "title": "[À compléter : ex. Conservation]" } },
+    { "type": "item", "settings": { "icon": "recycle", "title": "[À compléter : ex. Entretien et recyclage]" } }
+  ] }]
+}
+{% endschema %}

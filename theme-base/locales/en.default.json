@@ -18,6 +18,117 @@
     "skip_to_text": "Skip to content"
   },
   "sections": {
+    "comparison": {
+      "yes": "Yes",
+      "no": "No",
+      "partial": "Partly",
+      "swipe": "Swipe to compare"
+    },
+    "experts": {
+      "verified": "Verified professional",
+      "photo_placeholder": "Professional's photo",
+      "proof": "See the source",
+      "hint": "Add the real professionals who recommend your product, with their written consent (\"Professional\" block)."
+    },
+    "story": {
+      "chapter": "Chapter"
+    },
+    "logo_list": {
+      "placeholder": "Your partner logo"
+    },
+    "how_to": {
+      "step": "Step {{ n }}"
+    },
+    "customer_wall": {
+      "open": "Enlarge media {{ n }}",
+      "brand": "Brand photo",
+      "customer": "Customer photo"
+    },
+    "featured_offer": {
+      "code_label": "Promo code",
+      "code_placeholder": "[To complete: promo code]",
+      "copy": "Copy",
+      "copied": "Code copied"
+    },
+    "legal_page": {
+      "toc": "Contents",
+      "updated": "Last updated:",
+      "print": "Print",
+      "title_placeholder": "[To complete: page title]"
+    },
+    "product_360": {
+      "label": "360° product view",
+      "hint": "Drag to rotate",
+      "left": "Rotate left",
+      "right": "Rotate right",
+      "view_n": "View {{ n }} of {{ total }}"
+    },
+    "featured_product": {
+      "zoom": "Zoom image",
+      "save": "Save {{ percent }}%"
+    },
+    "carousel": {
+      "carousel": "Carousel",
+      "slide": "Slide",
+      "slide_of": "{{ index }} of {{ count }}",
+      "go_to": "Show slide {{ index }}"
+    },
+    "immersive_reviews": {
+      "label": "Customer reviews",
+      "verified": "Verified purchase"
+    },
+    "video_carousel": {
+      "label": "Videos"
+    },
+    "featured_blog": {
+      "view_all": "View all articles",
+      "read_more": "Read article",
+      "reading_time": {
+        "one": "{{ count }} min read",
+        "other": "{{ count }} min read"
+      },
+      "empty": "No articles published yet. Your articles will appear here as soon as they are published in the selected blog."
+    },
+    "countdown": {
+      "label": "Time remaining",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds",
+      "missing_date": "[To complete: real end date of your offer]"
+    },
+    "collection_list": {
+      "products_count": {
+        "one": "{{ count }} product",
+        "other": "{{ count }} products"
+      }
+    },
+    "slideshow": {
+      "carousel": "Slideshow",
+      "slide": "Slide",
+      "slide_of": "{{ n }} of {{ total }}",
+      "go_to": "Go to slide {{ n }}",
+      "previous": "Previous slide",
+      "next": "Next slide"
+    },
+    "media_gallery": {
+      "open": "Enlarge media {{ n }}",
+      "dialog": "Media viewer",
+      "close": "Close the viewer",
+      "previous": "Previous media",
+      "next": "Next media",
+      "video": "Video"
+    },
+    "social_gallery": {
+      "open_post": "View the post",
+      "new_tab": "opens in a new tab",
+      "hint": "Add your own photos or videos (\"Post\" block): nothing is shown until you do."
+    },
+    "faq": {
+      "search_label": "Search the questions",
+      "no_results": "No question matches your search.",
+      "results": "Questions shown: {{ count }}"
+    },
     "announcement": "Announcement",
     "header": {
       "menu": "Menu",

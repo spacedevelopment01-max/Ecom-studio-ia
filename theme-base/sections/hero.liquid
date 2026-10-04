@@ -1,0 +1,88 @@
+{%- comment -%} Hero : bannière d'ouverture simple et propre — image ou vidéo, titre, texte, bouton. {%- endcomment -%}
+<section class="es-hero es-hero--{{ section.settings.height }} es-hero--{{ section.settings.align }} es-hero--text-{{ section.settings.text_color }} color-{{ section.settings.color_scheme }}" style="--overlay: {{ section.settings.overlay | divided_by: 100.0 }};" data-es-autoplay-media>
+  <div class="es-hero__media">
+    {% render 'es-section-media', image: section.settings.image, asset: section.settings.image_asset, video: section.settings.video, video_asset: section.settings.video_asset, alt: section.settings.image_alt, sizes: '100vw', loading: 'eager', fetchpriority: 'high' %}
+  </div>
+  <div class="es-hero__content es-container">
+    <div class="es-hero__box">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow es-hero__eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h1 class="es-heading es-hero__title" data-reveal="words">{{ section.settings.heading }}</h1>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-hero__text" data-reveal="up" style="--d: 2">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.settings.button_label != blank -%}
+        <div class="es-actions" data-reveal="up" style="--d: 3"><a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a></div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-hero { position: relative; display: grid; overflow: hidden; color: #fff; background: #111; min-height: clamp(480px, 70svh, 780px); }
+.es-hero--small { min-height: clamp(380px, 52svh, 560px); }
+.es-hero--large { min-height: clamp(560px, 86svh, 960px); }
+.es-hero--screen { min-height: 100svh; }
+.es-hero--text-dark { color: #141414; }
+.es-hero__media { position: absolute; inset: 0; }
+.es-hero__media > * { position: absolute; inset: 0; }
+.es-hero__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0, var(--overlay))), rgba(0,0,0, calc(var(--overlay) * .5)); }
+.es-hero--text-dark .es-hero__media::after { background: linear-gradient(180deg, rgba(255,255,255,0) 35%, rgba(255,255,255, var(--overlay))), rgba(255,255,255, calc(var(--overlay) * .5)); }
+.es-hero__media .es-smedia__video { opacity: 0; transition: opacity .8s ease; }
+.es-hero__media .es-smedia__video.is-playing, .es-hero__media .es-smedia__video:only-child { opacity: 1; }
+.es-hero__content { position: relative; z-index: 2; display: flex; align-items: flex-end; padding-block: clamp(96px, 14vh, 150px) clamp(48px, 8vh, 88px); }
+.es-hero--center .es-hero__content { align-items: center; justify-content: center; text-align: center; }
+.es-hero--center .es-actions { justify-content: center; }
+.es-hero__box { max-width: 760px; }
+.es-hero--center .es-hero__box { margin-inline: auto; }
+.es-hero__eyebrow { color: inherit; opacity: .85; }
+.es-hero__title { color: inherit; font-size: calc(clamp(2.5rem, 6.6vw, 5.6rem) * var(--heading-scale)); line-height: 1; }
+.es-hero__text { font-size: 1.12em; max-width: 54ch; opacity: .9; }
+.es-hero--center .es-hero__text { margin-inline: auto; }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.EsVisibleMedia) return;
+  window.EsVisibleMedia = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  function init(ctx) {
+    if (reduce || !('IntersectionObserver' in window)) return;
+    Array.prototype.forEach.call((ctx || document).querySelectorAll('[data-es-autoplay-media] .es-smedia__video'), function (v) {
+      if (v._esObs) return;
+      v._esObs = new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) { var p = v.play(); v.classList.add('is-playing'); if (p && p.catch) p.catch(function () { v.classList.remove('is-playing'); }); }
+        else v.pause();
+      }, { threshold: 0.1 });
+      v._esObs.observe(v);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(); }); else init();
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Hero",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Un titre clair pour votre produit" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : ce que votre produit apporte, en une phrase vraie.]</p>" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "header", "content": "Média" },
+    { "type": "image_picker", "id": "image", "label": "Image (ou affiche de la vidéo)" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description de l'image (accessibilité)" },
+    { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+    { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4)" },
+    { "type": "header", "content": "Affichage" },
+    { "type": "select", "id": "height", "label": "Hauteur", "default": "medium", "options": [ { "value": "small", "label": "Petite" }, { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" }, { "value": "screen", "label": "Plein écran" } ] },
+    { "type": "select", "id": "align", "label": "Position du texte", "default": "bottom-left", "options": [ { "value": "bottom-left", "label": "En bas à gauche" }, { "value": "center", "label": "Au centre" } ] },
+    { "type": "select", "id": "text_color", "label": "Couleur du texte", "default": "light", "options": [ { "value": "light", "label": "Clair (sur image sombre)" }, { "value": "dark", "label": "Foncé (sur image claire)" } ] },
+    { "type": "range", "id": "overlay", "min": 0, "max": 80, "step": 5, "unit": "%", "label": "Voile sur l'image", "default": 30 },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" }
+  ],
+  "presets": [{ "name": "Hero" }]
+}
+{% endschema %}

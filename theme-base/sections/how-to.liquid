@@ -1,0 +1,174 @@
+{%- comment -%}
+  Mode d'emploi : étapes numérotées (image ou vidéo, titre, texte), frise qui se remplit au défilement.
+  Les consignes viennent du marchand (notice réelle) : textes de départ = espaces réservés explicites.
+{%- endcomment -%}
+{%- assign steps = section.blocks | size -%}
+<section class="es-section es-howto es-howto--{{ section.settings.layout }} es-howto--{{ section.settings.media_ratio }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --n: {{ steps | at_least: 1 }};" data-howto>
+  <div class="es-container">
+    <header class="es-howto__head">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+    </header>
+    <ol class="es-howto__list" role="list" data-howto-list>
+      <li class="es-howto__rail" aria-hidden="true"><span class="es-howto__fill"></span></li>
+      {%- for block in section.blocks -%}
+        {%- assign num = forloop.index | prepend: '0' | slice: -2, 2 -%}
+        <li class="es-howto__step{% if forloop.first %} is-lit{% endif %}" data-howto-step style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          <span class="es-howto__node" aria-hidden="true"><span>{{ num }}</span></span>
+          {%- assign has_media = false -%}
+          {%- if block.settings.video != blank or block.settings.video_asset != blank or block.settings.image != blank or block.settings.image_asset != blank -%}{%- assign has_media = true -%}{%- endif -%}
+          {%- if has_media -%}
+            <div class="es-howto__media">
+              {%- if block.settings.video != blank or block.settings.video_asset != blank -%}
+                {% render 'es-video', video: block.settings.video, asset: block.settings.video_asset, poster: block.settings.image, poster_asset: block.settings.image_asset, class: 'es-cover', autoplay: true, alt: block.settings.title %}
+              {%- else -%}
+                {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 40vw, 100vw', class: 'es-cover' %}
+              {%- endif -%}
+              <span class="es-howto__badge" aria-hidden="true">{{ num }}</span>
+            </div>
+          {%- endif -%}
+          <div class="es-howto__body">
+            <p class="es-howto__kicker"><span>{{ 'sections.how_to.step' | t: n: forloop.index }}</span>{%- if block.settings.duration != blank -%}<span class="es-howto__time">{% render 'icon', name: 'clock' %}{{ block.settings.duration }}</span>{%- endif -%}</p>
+            <h3 class="es-heading es-h4 es-howto__title">{{ block.settings.title }}</h3>
+            {%- if block.settings.text != blank -%}<div class="es-rte">{{ block.settings.text }}</div>{%- endif -%}
+            {%- if block.settings.tip != blank -%}<p class="es-howto__tip">{% render 'icon', name: 'sparkle' %}<span>{{ block.settings.tip }}</span></p>{%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ol>
+    {%- if section.settings.button_label != blank -%}
+      <div class="es-actions es-actions--center"><a class="es-button" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">{{ section.settings.button_label }}</a></div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-howto__head { text-align: center; max-width: 760px; margin: 0 auto clamp(32px, 5vw, 64px); }
+.es-howto__head .es-lead { margin-inline: auto; }
+.es-howto__list { --p: 0; list-style: none; margin: 0; padding: 0; position: relative; display: grid; gap: clamp(28px, 5vw, 72px); }
+.es-howto__rail { position: absolute; width: 2px; background: rgba(var(--c-text-rgb), .12); border-radius: 2px; overflow: hidden; }
+.es-howto__fill { position: absolute; inset: 0; background: linear-gradient(var(--c-accent), var(--c-text)); transform-origin: top; transform: scaleY(var(--p)); transition: transform .15s linear; }
+.es-howto__step { position: relative; display: grid; gap: 18px 0; }
+.es-howto__node { position: absolute; z-index: 1; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--c-bg); border: 2px solid rgba(var(--c-text-rgb), .2); font-weight: 700; font-size: .85rem; font-variant-numeric: tabular-nums; transition: background .5s var(--ease-out), color .5s, border-color .5s, transform .6s var(--ease-out), box-shadow .6s; }
+.es-howto__step.is-lit .es-howto__node { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-text); transform: scale(1.08); box-shadow: 0 0 0 7px rgba(var(--c-accent-rgb), .16); }
+.es-howto__media { position: relative; overflow: hidden; border-radius: var(--radius-card); background: var(--c-surface); aspect-ratio: 3 / 2; }
+.es-howto--square .es-howto__media { aspect-ratio: 1; }
+.es-howto--portrait .es-howto__media { aspect-ratio: 4 / 5; }
+.es-howto__media .es-cover { position: absolute; inset: 0; transition: transform 1.4s var(--ease-out), filter 1s; }
+.es-howto__media .es-placeholder { position: absolute; inset: 0; min-height: 0; }
+.es-howto__badge { position: absolute; left: 14px; top: 10px; font-family: var(--font-heading); font-size: clamp(2.6rem, 6vw, 4.4rem); line-height: 1; color: #fff; text-shadow: 0 6px 30px rgba(0, 0, 0, .35); opacity: .92; pointer-events: none; }
+.es-howto__kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 .6rem; font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); color: var(--c-muted); }
+.es-howto__time { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(var(--c-accent-rgb), .12); color: var(--c-text); letter-spacing: .04em; text-transform: none; font-size: .78rem; }
+.es-howto__time .es-icon { width: 14px; height: 14px; }
+.es-howto__title { margin-bottom: .5em; }
+.es-howto__tip { display: flex; gap: 10px; align-items: flex-start; margin: 1rem 0 0; padding: 12px 14px; border-radius: 12px; background: rgba(var(--c-text-rgb), .04); border-left: 3px solid var(--c-accent); font-size: .92rem; }
+.es-howto__tip .es-icon { width: 18px; height: 18px; color: var(--c-accent); margin-top: 2px; }
+.motion-ready .es-howto__step .es-howto__body, .motion-ready .es-howto__step .es-howto__media { opacity: .5; transform: translateY(14px); transition: opacity .8s var(--ease-out), transform .9s var(--ease-out); }
+.motion-ready .es-howto__step.is-lit .es-howto__body, .motion-ready .es-howto__step.is-lit .es-howto__media { opacity: 1; transform: none; }
+.motion-ready .es-howto__step:not(.is-lit) .es-howto__media .es-cover { filter: saturate(.6); transform: scale(1.04); }
+
+/* Vertical (et mobile) : rail à gauche */
+.es-howto__list { padding-left: 64px; }
+.es-howto__rail { left: 21px; top: 22px; bottom: 22px; }
+.es-howto__node { left: -64px; top: 0; }
+@media (min-width: 990px) {
+  .es-howto--vertical .es-howto__list { padding-left: 0; max-width: 1080px; margin-inline: auto; }
+  .es-howto--vertical .es-howto__rail { left: 50%; transform: translateX(-50%); }
+  .es-howto--vertical .es-howto__step { grid-template-columns: 1fr 1fr; column-gap: 120px; align-items: center; }
+  .es-howto--vertical .es-howto__node { left: 50%; top: 50%; margin: -22px 0 0 -22px; }
+  .es-howto--vertical .es-howto__step.is-lit .es-howto__node { transform: scale(1.12); }
+  .es-howto--vertical .es-howto__step:nth-of-type(odd) .es-howto__media { order: 2; }
+  .es-howto--vertical .es-howto__step:nth-of-type(odd) .es-howto__body { text-align: right; }
+  .es-howto--vertical .es-howto__step:nth-of-type(odd) .es-howto__kicker { justify-content: flex-end; }
+  .es-howto--vertical .es-howto__step:nth-of-type(odd) .es-howto__tip { text-align: left; }
+  .es-howto--vertical .es-howto__step:not(:has(.es-howto__media)) .es-howto__body { grid-column: 1 / -1; text-align: center; }
+}
+/* Horizontal : frise en haut, étapes en colonnes */
+@media (min-width: 750px) {
+  .es-howto--horizontal .es-howto__list { padding-left: 0; padding-top: 74px; grid-template-columns: repeat(min(var(--n), 4), minmax(0, 1fr)); gap: clamp(20px, 2.6vw, 36px); }
+  .es-howto--horizontal .es-howto__rail { top: 21px; bottom: auto; height: 2px; width: auto; left: calc(100% / (min(var(--n), 4) * 2)); right: calc(100% / (min(var(--n), 4) * 2)); }
+  .es-howto--horizontal .es-howto__fill { background: linear-gradient(90deg, var(--c-accent), var(--c-text)); transform-origin: left; transform: scaleX(var(--p)); }
+  .es-howto--horizontal .es-howto__step { align-content: start; }
+  .es-howto--horizontal .es-howto__node { left: 50%; top: -74px; margin-left: -22px; }
+  .es-howto--horizontal .es-howto__body { text-align: center; }
+  .es-howto--horizontal .es-howto__kicker { justify-content: center; }
+  .es-howto--horizontal .es-howto__tip { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es-howto__fill { transition: none; }
+  .es-howto__node, .es-howto__media .es-cover { transition: none; }
+  .motion-ready .es-howto__step .es-howto__body, .motion-ready .es-howto__step .es-howto__media { opacity: 1; transform: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esHowTo) return; window.esHowTo = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  var items = [], ticking = false;
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight;
+    items.forEach(function (it) {
+      var r = it.list.getBoundingClientRect();
+      var horizontal = it.section.classList.contains('es-howto--horizontal') && window.innerWidth >= 750;
+      var p = reduce ? 1 : Math.min(1, Math.max(0, (vh * (horizontal ? 0.85 : 0.62) - r.top) / Math.max(1, horizontal ? r.height * 0.8 : r.height)));
+      it.list.style.setProperty('--p', p.toFixed(3));
+      var n = it.steps.length;
+      it.steps.forEach(function (s, i) {
+        var lit = reduce || (horizontal ? (i + 0.35) / n <= p : s.getBoundingClientRect().top < vh * 0.7);
+        s.classList.toggle('is-lit', lit || i === 0 && p > 0);
+      });
+    });
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  function init(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-howto]'), function (s) {
+      if (s._es) return; s._es = true;
+      var list = s.querySelector('[data-howto-list]'); if (!list) return;
+      items.push({ section: s, list: list, steps: Array.prototype.slice.call(s.querySelectorAll('[data-howto-step]')) });
+    });
+    update();
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { items = items.filter(function (it) { return document.contains(it.section); }); init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Mode d'emploi",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Mode d'emploi" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Comment l'utiliser" },
+    { "type": "richtext", "id": "text", "label": "Introduction" },
+    { "type": "select", "id": "layout", "label": "Mise en page", "default": "vertical", "options": [{ "value": "vertical", "label": "Verticale (étapes alternées)" }, { "value": "horizontal", "label": "Horizontale (étapes en colonnes)" }] },
+    { "type": "select", "id": "media_ratio", "label": "Format des images", "default": "landscape", "options": [{ "value": "landscape", "label": "Paysage" }, { "value": "square", "label": "Carré" }, { "value": "portrait", "label": "Portrait" }] },
+    { "type": "text", "id": "button_label", "label": "Bouton (facultatif)" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape", "settings": [
+      { "type": "paragraph", "content": "Reprenez les consignes réelles de la notice du produit." },
+      { "type": "text", "id": "title", "label": "Titre", "default": "[À compléter : titre de l'étape]" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : décrivez ce geste avec les consignes réelles du produit (quantité, durée, précautions).]</p>" },
+      { "type": "text", "id": "duration", "label": "Durée (facultatif)", "info": "Ex. « 2 min », uniquement si la notice l'indique." },
+      { "type": "text", "id": "tip", "label": "Conseil (facultatif)" },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)", "info": "Remplace l'image, lue en boucle sans le son." },
+      { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Mode d'emploi", "blocks": [{ "type": "step" }, { "type": "step" }, { "type": "step" }] }]
+}
+{% endschema %}

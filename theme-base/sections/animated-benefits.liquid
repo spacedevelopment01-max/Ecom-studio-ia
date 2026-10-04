@@ -1,0 +1,193 @@
+{%- comment -%}
+  Bénéfices produit révélés au défilement : visuel fixe, trait qui se dessine, compteur d'étape,
+  apparition échelonnée. Chiffres facultatifs : uniquement des faits vérifiés.
+{%- endcomment -%}
+{%- assign count = section.blocks.size -%}
+<section class="es-section es-abn es-ambient color-{{ section.settings.color_scheme }} es-abn--{{ section.settings.layout }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --n: {{ count | at_least: 1 }};" data-abn>
+  <div class="es-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+      <header class="es-section-head es-abn__head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+        {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+
+    <div class="es-abn__grid">
+      {%- if section.settings.layout == 'split' -%}
+        <div class="es-abn__aside">
+          <div class="es-abn__stage">
+            <span class="es-abn__orbit es-abn__orbit--1" aria-hidden="true"></span>
+            <span class="es-abn__orbit es-abn__orbit--2" aria-hidden="true"><i></i></span>
+            <div class="es-abn__visual">
+              {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 40vw, 80vw', class: 'es-abn__img' %}
+            </div>
+            {%- if count > 0 -%}
+              <p class="es-abn__counter" aria-hidden="true"><span data-abn-current>01</span><small>/ {{ count | prepend: '0' | slice: -2, 2 }}</small></p>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+
+      <ol class="es-abn__list" role="list" data-abn-list>
+        <li class="es-abn__rail" aria-hidden="true"><i data-abn-fill></i></li>
+        {%- for block in section.blocks -%}
+          <li class="es-abn__item{% if forloop.first %} is-active{% endif %}" data-abn-item="{{ forloop.index0 }}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            <span class="es-abn__node">{% render 'es-glyph', name: block.settings.icon %}</span>
+            <div class="es-abn__body">
+              <p class="es-abn__index">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</p>
+              <h3 class="es-abn__title">{{ block.settings.title }}</h3>
+              <span class="es-abn__stroke" aria-hidden="true"></span>
+              {%- if block.settings.text != blank -%}<div class="es-abn__text">{{ block.settings.text }}</div>{%- endif -%}
+              {%- if block.settings.value != blank -%}
+                <p class="es-abn__value"><b data-count="{{ block.settings.value | escape }}">{{ block.settings.value }}</b>{%- if block.settings.value_label != blank -%}<span>{{ block.settings.value_label }}</span>{%- endif -%}</p>
+              {%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </div>
+    {%- if section.settings.source != blank -%}<p class="es-abn__source es-small es-muted" data-reveal="up">{{ section.settings.source }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-abn__head { max-width: 780px; }
+.es-abn__grid { display: grid; gap: clamp(32px, 6vw, 100px); align-items: start; }
+@media (min-width: 990px) { .es-abn--split .es-abn__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
+.es-abn__aside { position: relative; }
+@media (min-width: 990px) { .es-abn__aside { position: sticky; top: calc(var(--header-h, 72px) + 32px); } }
+.es-abn__stage { position: relative; aspect-ratio: 1; max-width: 560px; margin-inline: auto; display: grid; place-items: center; }
+.es-abn__stage::before { content: ""; position: absolute; inset: 12%; border-radius: 50%; background: radial-gradient(circle at 50% 45%, rgba(var(--c-accent-rgb), calc(.18 + var(--glow) * .25)), rgba(var(--c-accent-rgb), 0) 70%); filter: blur(6px); }
+.es-abn__orbit { position: absolute; border-radius: 50%; border: 1px solid rgba(var(--c-text-rgb), .12); pointer-events: none; }
+.es-abn__orbit--1 { inset: 4%; }
+.es-abn__orbit--2 { inset: 16%; border-style: dashed; border-color: rgba(var(--c-accent-rgb), .35); animation: es-abn-spin 40s linear infinite; }
+.es-abn__orbit--2 i { position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--c-accent); box-shadow: 0 0 18px rgba(var(--c-accent-rgb), .9); }
+.es-abn__visual { position: relative; width: 74%; height: 74%; display: grid; place-items: center; }
+.es-abn__img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 40px 40px rgba(0,0,0,.22)); animation: es-abn-float 7s var(--ease-in-out) infinite alternate; }
+.es-abn__visual .es-placeholder { border-radius: 50%; min-height: 0; }
+.es-abn__counter { position: absolute; left: 0; top: 2%; z-index: 2; margin: 0; font-family: var(--font-heading); font-size: clamp(2rem, 3.6vw, 3rem); line-height: 1; font-variant-numeric: tabular-nums; color: var(--c-accent); }
+.es-abn__counter small { font-size: .38em; color: var(--c-muted); margin-left: 6px; }
+@keyframes es-abn-spin { to { transform: rotate(360deg); } }
+@keyframes es-abn-float { from { transform: translateY(-2%) rotate(-1deg); } to { transform: translateY(2%) rotate(1deg); } }
+
+.es-abn__list { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(28px, 5vh, 56px); }
+.es-abn__rail { position: absolute; left: 27px; top: 28px; bottom: 28px; width: 2px; background: rgba(var(--c-text-rgb), .12); border-radius: 2px; overflow: hidden; }
+.es-abn__rail i { position: absolute; inset: 0 0 auto; height: calc(var(--p, 0) * 100%); background: linear-gradient(180deg, rgba(var(--c-accent-rgb), .4), var(--c-accent)); box-shadow: 0 0 14px rgba(var(--c-accent-rgb), .8); transition: height .25s linear; }
+.es-abn__item { position: relative; display: grid; grid-template-columns: 56px 1fr; gap: clamp(18px, 2.4vw, 32px); align-items: start; }
+.es-abn__node { position: relative; z-index: 1; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; color: var(--c-muted); background: var(--c-bg); border: 1px solid rgba(var(--c-text-rgb), .16);
+  transition: color .5s, background .5s, border-color .5s, box-shadow .6s var(--ease-out), transform .6s var(--ease-out); }
+.es-abn__node .es-icon { width: 24px; height: 24px; }
+.es-abn__item.is-active .es-abn__node, .es-abn__item.is-past .es-abn__node { color: var(--c-accent-text); border-color: transparent;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 70%, #fff), var(--c-accent) 60%, color-mix(in srgb, var(--c-accent) 80%, #000)); box-shadow: 0 14px 30px -12px rgba(var(--c-accent-rgb), .9); }
+.es-abn__item.is-active .es-abn__node { transform: scale(1.08); }
+.es-abn__index { margin: 4px 0 6px; font-size: .74rem; letter-spacing: .22em; font-weight: var(--font-body-weight-bold); color: var(--c-accent); }
+.es-abn__title { margin: 0; font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: calc(clamp(1.4rem, 2.4vw, 2rem) * var(--heading-scale)); line-height: 1.15; letter-spacing: var(--heading-tracking); }
+.es-abn__stroke { display: block; height: 2px; width: 64px; margin: 16px 0 14px; background: var(--c-accent); border-radius: 2px; transform-origin: left; transform: scaleX(.25); transition: transform 1s var(--ease-out) .2s; }
+.es-abn__item.is-active .es-abn__stroke, .es-abn__item.is-past .es-abn__stroke { transform: none; }
+.es-abn__text { color: var(--c-muted); max-width: 48ch; line-height: 1.65; }
+.es-abn__text p { margin: 0; }
+.es-abn__item:not(.is-active):not(.is-past) .es-abn__body { opacity: .55; }
+.es-abn__body { transition: opacity .6s var(--ease-out); }
+.es-abn__value { display: flex; align-items: baseline; gap: 10px; margin: 16px 0 0; }
+.es-abn__value b { font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1; letter-spacing: -.03em; color: var(--c-accent); font-variant-numeric: tabular-nums; }
+.es-abn__value span { font-size: .9rem; color: var(--c-muted); }
+.es-abn__source { margin: 32px 0 0; }
+
+/* Variante en grille */
+.es-abn--grid .es-abn__list { grid-template-columns: 1fr; gap: clamp(14px, 2vw, 24px); }
+@media (min-width: 750px) { .es-abn--grid .es-abn__list { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .es-abn--grid .es-abn__list { grid-template-columns: repeat(min(var(--n), 4), 1fr); } }
+.es-abn--grid .es-abn__rail { display: none; }
+.es-abn--grid .es-abn__item { grid-template-columns: 1fr; padding: clamp(26px, 3vw, 36px); border-radius: var(--radius-card); background: linear-gradient(180deg, rgba(var(--c-text-rgb), .05), rgba(var(--c-text-rgb), .015)); border: 1px solid rgba(var(--c-text-rgb), .1); }
+.es-abn--grid .es-abn__item .es-abn__body { opacity: 1; }
+.es-abn--grid .es-abn__item.is-in .es-abn__node { color: var(--c-accent-text); border-color: transparent; background: var(--c-accent); }
+.es-abn--grid .es-abn__item.is-in .es-abn__stroke { transform: none; }
+.es-abn--grid .es-abn__title { font-size: calc(1.35rem * var(--heading-scale)); }
+
+@media (max-width: 989px) {
+  .es-abn__stage { max-width: 420px; }
+}
+@media (max-width: 749px) {
+  .es-abn__stage { max-width: 320px; }
+  .es-abn__counter { font-size: 2.2rem; }
+  .es-abn__item { grid-template-columns: 48px 1fr; }
+  .es-abn__node { width: 48px; height: 48px; }
+  .es-abn__rail { left: 23px; }
+}
+@media (prefers-reduced-motion: reduce) { .es-abn__orbit--2, .es-abn__img { animation: none; } .es-abn__item .es-abn__body { opacity: 1 !important; } .es-abn__stroke { transform: none; } }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  var items = [];
+  function setup(root) {
+    (root || document).querySelectorAll('[data-abn]').forEach(function (s) {
+      if (s._esAbn) return; s._esAbn = true;
+      items.push({ s: s, list: s.querySelector('[data-abn-list]'), fill: s.querySelector('[data-abn-fill]'), steps: Array.prototype.slice.call(s.querySelectorAll('[data-abn-item]')), cur: s.querySelector('[data-abn-current]'), last: -1 });
+    });
+    update();
+  }
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight;
+    items.forEach(function (it) {
+      if (!it.list || !it.list.isConnected) return;
+      var r = it.list.getBoundingClientRect();
+      if (r.bottom < -vh || r.top > vh * 2) return;
+      var p = Math.min(1, Math.max(0, (vh * .6 - r.top) / Math.max(1, r.height)));
+      if (it.fill) it.fill.parentNode.style.setProperty('--p', p.toFixed(3));
+      var active = 0;
+      it.steps.forEach(function (st, i) { if (st.getBoundingClientRect().top < vh * .6) active = i; });
+      if (active === it.last) return; it.last = active;
+      it.steps.forEach(function (st, i) { st.classList.toggle('is-active', i === active); st.classList.toggle('is-past', i < active); });
+      if (it.cur) it.cur.textContent = ('0' + (active + 1)).slice(-2);
+    });
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setup(); }); else setup();
+  document.addEventListener('shopify:section:load', function (e) { setup(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Bénéfices animés",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Pourquoi vous allez l'adorer" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Tout ce qu'il change," },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "au quotidien." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "layout", "label": "Présentation", "default": "split", "options": [{ "value": "split", "label": "Visuel fixe et trait animé" }, { "value": "grid", "label": "Grille de cartes" }] },
+    { "type": "image_picker", "id": "image", "label": "Visuel (idéalement le produit détouré)" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "source", "label": "Source des chiffres", "info": "Indispensable si un bénéfice affiche un chiffre issu d'un test ou d'une étude." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "benefit", "name": "Bénéfice", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "sparkle", "options": [
+        { "value": "sparkle", "label": "Étincelle" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "heart", "label": "Cœur" }, { "value": "shield", "label": "Bouclier" }, { "value": "hand", "label": "Main" }, { "value": "clock", "label": "Horloge" }, { "value": "bolt", "label": "Éclair" }, { "value": "sun", "label": "Soleil" }, { "value": "smile", "label": "Sourire" }, { "value": "star", "label": "Étoile" }, { "value": "award", "label": "Médaille" }, { "value": "recycle", "label": "Recyclage" }, { "value": "check", "label": "Coche" }
+      ] },
+      { "type": "text", "id": "title", "label": "Titre", "default": "[À compléter : bénéfice]" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : décrivez ce bénéfice en une ou deux phrases, d'après les caractéristiques confirmées du produit.]</p>" },
+      { "type": "text", "id": "value", "label": "Chiffre (facultatif)", "info": "Un fait vérifiable, ex. « 3 réglages » : le nombre s'anime à l'apparition." },
+      { "type": "text", "id": "value_label", "label": "Libellé du chiffre" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Bénéfices animés", "blocks": [
+    { "type": "benefit", "settings": { "icon": "sparkle", "title": "[À compléter : ex. Résultat visible]" } },
+    { "type": "benefit", "settings": { "icon": "clock", "title": "[À compléter : ex. Gain de temps]" } },
+    { "type": "benefit", "settings": { "icon": "hand", "title": "[À compléter : ex. Simple à utiliser]" } },
+    { "type": "benefit", "settings": { "icon": "heart", "title": "[À compléter : ex. Confort au quotidien]" } }
+  ] }]
+}
+{% endschema %}

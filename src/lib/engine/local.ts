@@ -13,7 +13,7 @@ import type { ThemeOp } from "../theme/ops";
 import type { ThemeSpec } from "../theme/spec";
 import { availableSectionTypes, containerOf, sectionSchema } from "../theme/spec";
 import { canvasFamily } from "../media/fonts";
-import { C, L } from "../i18n-server";
+import { C, L, uiLang } from "../i18n-server";
 
 const SECTOR_WORDS: [SectorId, RegExp][] = [
   // Mots français puis anglais : la description peut être rédigée dans l'une ou l'autre langue.
@@ -312,6 +312,44 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
   return { format, scenes, transition, music, captions: true };
 }
 
+/** Synonymes courants pour retrouver une section par son nom, en français comme en anglais. */
+const SECTION_SYNONYMS: string[][] = [
+  ["newsletter", "inscription", "diffusion", "e-mail", "email", "signup", "sign-up", "abonnement"],
+  ["faq", "questions", "collapsible", "réductible", "accordéon", "accordion"],
+  ["avis", "témoignage", "témoignages", "review", "reviews", "testimonial", "testimonials"],
+  ["bandeau", "annonce", "announcement", "marquee", "défilant", "scrolling"],
+  ["vidéo", "video"],
+  ["galerie", "gallery", "collage", "mosaïque", "mosaic"],
+  ["collection", "collections", "produits", "products"],
+  ["diaporama", "slideshow", "carrousel", "carousel"],
+  ["image avec texte", "image with text"],
+  ["texte enrichi", "rich text"],
+];
+
+/** La demande désigne-t-elle cette section (nom français ou anglais, type technique, synonyme) ? */
+function sectionMatches(spec: ThemeSpec, type: string, m: string): boolean {
+  const names = [type.replace(/[-_]/g, " "), sectionSchema(spec, type, "fr")?.name ?? "", sectionSchema(spec, type, "en")?.name ?? ""].map((x) => x.toLowerCase()).filter(Boolean);
+  if (names.some((n) => n.length > 2 && m.includes(n))) return true;
+  return SECTION_SYNONYMS.some((group) => group.some((w) => m.includes(w)) && group.some((w) => names.some((n) => n.includes(w))));
+}
+
+/**
+ * Réglage de couleur des boutons dans les schémas de couleurs : « accent » pour nos thèmes,
+ * « button » pour Dawn et la plupart des thèmes Shopify, etc. Appliqué aux schémas qui partagent
+ * la couleur de bouton du premier (les schémas sombres gardent la leur).
+ */
+function buttonColorTargets(spec: ThemeSpec): { key: string; schemes: string[] } {
+  const schemes = (spec.settings.color_schemes ?? {}) as Record<string, { settings?: Record<string, unknown> }>;
+  const ids = Object.keys(schemes);
+  if (!spec.imported) return { key: "accent", schemes: ids.filter((x) => x === "scheme-1" || x === "scheme-2") };
+  if (!ids.length) return { key: "", schemes: [] };
+  const first = schemes[ids[0]].settings ?? {};
+  const key = ["button", "button_background", "primary_button_background", "button_bg", "accent", "accent_1", "primary"].find((k) => typeof first[k] === "string");
+  if (!key) return { key: "", schemes: [] };
+  const ref = String(first[key]).toLowerCase();
+  return { key, schemes: ids.filter((x) => String(schemes[x].settings?.[key] ?? "").toLowerCase() === ref) };
+}
+
 /**
  * Commandes simples comprises sans IA (mode local) : annuler, couleur du
  * bouton, texte entre guillemets dans l'élément désigné, ajout ou
@@ -336,8 +374,9 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   const dir = DIRECTIONS.find((d) => m.includes(d.name.toLowerCase()) || m.includes(d.id));
   if (dir && /(style|direction|thème|theme|passe|switch|apply)/.test(m)) return { ops: [], reply: L(`J'applique la direction ${dir.name} en conservant vos textes et images.`, `Applying the ${dir.name} direction while keeping your copy and images.`), revert: false, direction: dir.id };
   if (color && /(bouton|button|accent|cta)/.test(m)) {
-    ops.push({ op: "set_scheme_color", scheme: "scheme-1", key: "accent", value: color });
-    ops.push({ op: "set_scheme_color", scheme: "scheme-2", key: "accent", value: color });
+    const target = buttonColorTargets(spec);
+    if (!target.schemes.length) return { ops: [], reply: L("Je ne trouve pas le réglage de couleur des boutons de ce thème : changez-la dans l'éditeur de thème Shopify (Paramètres du thème › Couleurs).", "I can't find this theme's button color setting: change it in the Shopify theme editor (Theme settings › Colors)."), revert: false };
+    for (const sc of target.schemes) ops.push({ op: "set_scheme_color", scheme: sc, key: target.key, value: color });
     return { ops, reply: L(`Couleur des boutons : ${color}.`, `Button color: ${color}.`), revert: false };
   }
   if (color && /(fond|arrière|background)/.test(m)) {
@@ -382,13 +421,33 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   }
   // « Masque / affiche la section … » : section de la page désignée par son nom.
   if (/(masque|cache|affiche|réaffiche|montre|\bhide\b|\bshow\b|unhide)/.test(m)) {
-    const page = selection?.template ?? "index";
+    // Section désignée dans l'aperçu, sinon reconnue par son nom (français ou anglais), son type ou un synonyme courant,
+    // sur la page désignée puis dans l'en-tête et le pied de page.
+    const pages = selection ? [selection.template] : ["index", "group:header", "group:footer"];
+    let page = pages[0];
+    let found: { id: string } | undefined = selection ? { id: selection.section } : undefined;
+    for (const t of selection ? [] : pages) {
+      const c = containerOf(spec, t);
+      const hit = c?.order.find((id) => c.sections[id] && sectionMatches(spec, c.sections[id].type, m));
+      if (hit) {
+        found = { id: hit };
+        page = t;
+        break;
+      }
+    }
     const c = containerOf(spec, page);
-    const found = selection ? { id: selection.section } : c?.order.map((id) => ({ id, name: (sectionSchema(spec, c.sections[id]?.type ?? "")?.name ?? "").toLowerCase() })).find((x) => x.name && m.includes(x.name));
     if (found && c?.sections[found.id]) {
       const hide = /(masque|cache|\bhide\b)/.test(m);
       ops.push({ op: "toggle_section", template: page, section: found.id, disabled: hide });
       return { ops, reply: hide ? L("Section masquée (elle reste dans la page, réaffichable).", "Section hidden (it stays on the page and can be shown again).") : L("Section réaffichée.", "Section shown again."), revert: false };
+    }
+    // Section introuvable : on dit lesquelles existent plutôt qu'un message générique.
+    if (/(section|bloc|block|bandeau|newsletter|faq|avis|review|galerie|gallery|vidéo|video|collection)/.test(m)) {
+      const names = pages.flatMap((t) => {
+        const ct = containerOf(spec, t);
+        return ct ? ct.order.filter((id) => ct.sections[id]).map((id) => sectionSchema(spec, ct.sections[id].type, uiLang())?.name ?? ct.sections[id].type) : [];
+      });
+      return { ops: [], reply: L(`Je ne trouve pas cette section sur la page. Sections présentes : ${names.join(", ")}. Désignez-la dans l'aperçu ou reprenez son nom.`, `I can't find that section on this page. Sections present: ${names.join(", ")}. Select it in the preview or use its name.`), revert: false };
     }
   }
   if (selection && /(supprime|retire|enlève|remove|delete)/.test(m)) {

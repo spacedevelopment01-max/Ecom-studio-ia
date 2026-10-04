@@ -1,0 +1,165 @@
+{%- comment -%}
+  Menu visuel en cercles façon stories : chaque cercle mène à une collection, une page ou un lien.
+  Défilement horizontal avec flèches, anneau animé (immobile si le mouvement est réduit).
+{%- endcomment -%}
+<section class="es-section es-vmenu es-vmenu--{{ section.settings.ring }} es-vmenu--{{ section.settings.size }}{% if section.settings.align == 'left' %} es-vmenu--left{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-visual-menu>
+  <div class="es-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+      <header class="es-vmenu__head">
+        <div>
+          {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+          {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h3" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+        </div>
+      </header>
+    {%- endif -%}
+    <nav class="es-vmenu__nav" aria-label="{{ section.settings.heading | default: section.settings.eyebrow | escape }}">
+      <button type="button" class="es-vmenu__arrow es-vmenu__arrow--prev" data-vmenu-prev aria-label="{{ 'general.previous' | t | escape }}" hidden>{% render 'icon', name: 'arrow-left' %}</button>
+      <ul class="es-vmenu__track" role="list" data-vmenu-track>
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign c = block.settings.collection
+            assign label = block.settings.label | default: c.title
+            assign url = block.settings.link
+            if url == blank and c != blank
+              assign url = c.url
+            endif
+            if url == blank
+              assign url = routes.all_products_collection_url
+            endif
+            if label == blank
+              assign label = 'collections.view_all' | t
+            endif
+          -%}
+          <li class="es-vmenu__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            <a href="{{ url }}" class="es-vmenu__link">
+              <span class="es-vmenu__ring" aria-hidden="true">
+                <span class="es-vmenu__img">
+                  {%- if block.settings.image != blank or block.settings.image_asset != blank -%}
+                    {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: '', sizes: '180px', class: 'es-cover' %}
+                  {%- elsif c.featured_image != blank -%}
+                    {{ c.featured_image | image_url: width: 360 | image_tag: loading: 'lazy', alt: '', class: 'es-cover', widths: '180, 360' }}
+                  {%- else -%}
+                    {% render 'es-image', alt: '', class: 'es-cover' %}
+                  {%- endif -%}
+                </span>
+              </span>
+              {%- if block.settings.badge != blank -%}<span class="es-vmenu__badge">{{ block.settings.badge }}</span>{%- endif -%}
+              <span class="es-vmenu__label">{{ label }}</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <button type="button" class="es-vmenu__arrow es-vmenu__arrow--next" data-vmenu-next aria-label="{{ 'general.next' | t | escape }}" hidden>{% render 'icon', name: 'arrow' %}</button>
+    </nav>
+  </div>
+</section>
+
+{% stylesheet %}
+@property --es-vm-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.es-vmenu__head { display: flex; justify-content: center; text-align: center; margin-bottom: clamp(20px, 3vw, 36px); }
+.es-vmenu--left .es-vmenu__head { justify-content: flex-start; text-align: left; }
+.es-vmenu__head .es-heading { margin: 0; }
+.es-vmenu__nav { position: relative; }
+.es-vmenu__track { --size: clamp(84px, 22vw, 124px); list-style: none; margin: 0 calc(var(--gutter) * -1); padding: 6px var(--gutter) 10px; display: flex; gap: clamp(14px, 2.6vw, 30px); overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none; overscroll-behavior-x: contain; }
+.es-vmenu--small .es-vmenu__track { --size: clamp(68px, 18vw, 96px); }
+.es-vmenu--large .es-vmenu__track { --size: clamp(104px, 28vw, 156px); }
+.es-vmenu__track::-webkit-scrollbar { display: none; }
+@media (min-width: 990px) { .es-vmenu:not(.es-vmenu--left) .es-vmenu__track { justify-content: safe center; } }
+.es-vmenu__item { flex: none; scroll-snap-align: start; }
+.es-vmenu__link { position: relative; display: grid; justify-items: center; gap: 10px; width: var(--size); text-decoration: none; color: inherit; border-radius: 12px; }
+.es-vmenu__ring { position: relative; display: block; width: 100%; aspect-ratio: 1; border-radius: 50%; padding: 4px; isolation: isolate; transition: transform .5s var(--ease-out); }
+.es-vmenu__ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; z-index: -2; background: conic-gradient(from var(--es-vm-a), var(--c-accent), color-mix(in srgb, var(--c-accent) 35%, var(--c-text)), color-mix(in srgb, var(--c-accent) 45%, #fff), var(--c-accent)); animation: es-vm-spin 6s linear infinite; animation-delay: calc(var(--i, 0) * -.7s); }
+.es-vmenu__ring::after { content: ""; position: absolute; inset: 2.5px; border-radius: 50%; background: var(--c-bg); z-index: -1; }
+.es-vmenu__img { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: var(--c-surface); }
+.es-vmenu__img .es-placeholder { min-height: 0; }
+.es-vmenu__img img { transition: transform .9s var(--ease-out); }
+.es-vmenu__label { font-size: .92rem; line-height: 1.25; text-align: center; font-weight: var(--font-body-weight-bold); max-width: 100%; overflow-wrap: anywhere; }
+.es-vmenu__badge { position: absolute; top: calc(var(--size) - 18px); left: 50%; transform: translateX(-50%); padding: 3px 9px; border-radius: 999px; background: var(--c-accent); color: var(--c-accent-text); font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 0 3px var(--c-bg); }
+.es-vmenu__link:hover .es-vmenu__ring, .es-vmenu__link:focus-visible .es-vmenu__ring { transform: translateY(-4px) scale(1.03); }
+.es-vmenu__link:hover .es-vmenu__ring::before { animation-duration: 2.2s; }
+.es-vmenu__link:hover .es-vmenu__img img { transform: scale(1.1); }
+.es-vmenu--accent .es-vmenu__ring::before { background: var(--c-accent); animation: none; }
+.es-vmenu--thin .es-vmenu__ring { padding: 5px; }
+.es-vmenu--thin .es-vmenu__ring::before { background: rgba(var(--c-text-rgb), .35); animation: none; }
+.es-vmenu--thin .es-vmenu__ring::after { inset: 1px; }
+.es-vmenu--thin .es-vmenu__link:hover .es-vmenu__ring::before { background: var(--c-accent); }
+@keyframes es-vm-spin { to { --es-vm-a: 360deg; } }
+.es-vmenu__arrow { position: absolute; top: calc(var(--size, 124px) / 2 - 16px); z-index: 2; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-text); cursor: pointer; box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .4); transition: opacity .3s, transform .3s var(--ease-out); }
+.es-vmenu__arrow .es-icon { width: 18px; height: 18px; }
+.es-vmenu__arrow:hover { transform: scale(1.06); }
+.es-vmenu__arrow[disabled] { opacity: 0; pointer-events: none; }
+.es-vmenu__arrow--prev { left: -8px; }
+.es-vmenu__arrow--next { right: -8px; }
+@media (max-width: 749px) { .es-vmenu__arrow { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .es-vmenu__ring::before { animation: none; }
+  .es-vmenu__ring, .es-vmenu__img img { transition: none; }
+  .es-vmenu__link:hover .es-vmenu__ring, .es-vmenu__link:hover .es-vmenu__img img { transform: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esVisualMenu) return; window.esVisualMenu = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function init(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-visual-menu]'), function (s) {
+      if (s._es) return; s._es = true;
+      var track = s.querySelector('[data-vmenu-track]'), prev = s.querySelector('[data-vmenu-prev]'), next = s.querySelector('[data-vmenu-next]');
+      if (!track || !prev || !next) return;
+      var nav = track.parentNode;
+      function sync() {
+        var item = track.querySelector('.es-vmenu__ring'); if (item) nav.style.setProperty('--size', item.offsetWidth + 'px');
+        var max = track.scrollWidth - track.clientWidth - 2, over = max > 4;
+        prev.hidden = next.hidden = !over;
+        prev.disabled = track.scrollLeft <= 2; next.disabled = track.scrollLeft >= max;
+      }
+      function go(dir) { track.scrollBy({ left: dir * track.clientWidth * 0.7, behavior: reduce ? 'auto' : 'smooth' }); }
+      prev.addEventListener('click', function () { go(-1); });
+      next.addEventListener('click', function () { go(1); });
+      track.addEventListener('scroll', function () { requestAnimationFrame(sync); }, { passive: true });
+      window.addEventListener('resize', sync);
+      sync();
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Menu visuel stories",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Explorer la boutique" },
+    { "type": "select", "id": "ring", "label": "Anneau", "default": "gradient", "options": [{ "value": "gradient", "label": "Dégradé animé" }, { "value": "accent", "label": "Couleur d'accent" }, { "value": "thin", "label": "Trait fin" }] },
+    { "type": "select", "id": "size", "label": "Taille des cercles", "default": "medium", "options": [{ "value": "small", "label": "Petite" }, { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" }] },
+    { "type": "select", "id": "align", "label": "Alignement", "default": "center", "options": [{ "value": "center", "label": "Centré" }, { "value": "left", "label": "À gauche" }] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 40 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Cercle", "settings": [
+      { "type": "collection", "id": "collection", "label": "Collection" },
+      { "type": "url", "id": "link", "label": "Lien (remplace la collection)", "info": "Page, produit ou lien externe." },
+      { "type": "text", "id": "label", "label": "Libellé", "info": "Vide : titre de la collection." },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "badge", "label": "Pastille (facultatif)", "info": "Ex. « Nouveau ». Uniquement si c'est vrai." }
+    ] }
+  ],
+  "max_blocks": 14,
+  "presets": [{ "name": "Menu visuel stories", "blocks": [
+    { "type": "item", "settings": { "label": "Nouveautés" } },
+    { "type": "item", "settings": { "label": "Notre sélection" } },
+    { "type": "item", "settings": { "label": "L'univers" } },
+    { "type": "item", "settings": { "label": "En situation" } },
+    { "type": "item", "settings": { "label": "Idées cadeaux" } },
+    { "type": "item", "settings": { "label": "Tout voir" } }
+  ] }]
+}
+{% endschema %}

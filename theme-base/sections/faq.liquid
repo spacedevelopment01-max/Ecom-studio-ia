@@ -1,16 +1,47 @@
-<section class="es-section es-faq es-faq--{{ section.settings.style }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+{%- comment -%}
+  FAQ premium : accordéon animé, recherche dans les questions (optionnelle), une ou deux colonnes,
+  lien de contact ; données structurées FAQPage pour les moteurs de recherche.
+  Réglages historiques conservés (heading, text, style, structured_data, color_scheme, marges).
+{%- endcomment -%}
+{%- liquid
+  assign layout = section.settings.layout | default: 'side'
+  if section.settings.columns == '2'
+    assign layout = 'stacked'
+  endif
+-%}
+<section class="es-section es-faq es-faq--{{ section.settings.style }} es-faq--{{ layout }} es-faq--cols-{{ section.settings.columns | default: '1' }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-es-faq{% if section.settings.open_first %} data-open-first{% endif %}>
   <div class="es-container es-faq__grid">
     <header class="es-faq__head">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
       <h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>
       {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.settings.search and section.blocks.size > 0 -%}
+        <div class="es-faq__search" data-reveal="up" role="search">
+          <label class="visually-hidden" for="FaqSearch-{{ section.id }}">{{ 'sections.faq.search_label' | t }}</label>
+          <svg class="es-faq__search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input id="FaqSearch-{{ section.id }}" type="search" class="es-faq__input" placeholder="{{ section.settings.search_placeholder | escape }}" autocomplete="off" data-faq-search aria-controls="FaqList-{{ section.id }}">
+          <p class="visually-hidden" aria-live="polite" data-faq-status data-template="{{ 'sections.faq.results' | t: count: '__n__' | escape }}"></p>
+        </div>
+      {%- endif -%}
+      {%- if section.settings.button_label != blank -%}
+        <div class="es-faq__contact" data-reveal="up">
+          {%- if section.settings.contact_text != blank -%}<p class="es-faq__contact-text">{{ section.settings.contact_text }}</p>{%- endif -%}
+          <a href="{{ section.settings.button_link | default: routes.root_url }}" class="es-button es-button--secondary es-button--small">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>
+        </div>
+      {%- endif -%}
     </header>
-    <div class="es-faq__list">
+    <div class="es-faq__list" id="FaqList-{{ section.id }}">
       {%- for block in section.blocks -%}
-        <details class="es-accordion" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
-          <summary><span>{{ block.settings.question }}</span>{% render 'icon', name: 'plus' %}</summary>
-          <div class="es-rte es-accordion__body">{{ block.settings.answer }}</div>
+        <details class="es-accordion es-faq__item" data-reveal="up" style="--i: {{ forloop.index0 }}" data-faq-item{% if forloop.first and section.settings.open_first %} open{% endif %} {{ block.shopify_attributes }}>
+          <summary>
+            {%- if section.settings.style == 'numbered' -%}<span class="es-faq__num" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>{%- endif -%}
+            <span class="es-faq__q">{{ block.settings.question }}</span>
+            <span class="es-faq__icon" aria-hidden="true"><i></i><i></i></span>
+          </summary>
+          <div class="es-faq__panel" data-faq-panel><div class="es-rte es-accordion__body">{{ block.settings.answer }}</div></div>
         </details>
       {%- endfor -%}
+      {%- if section.settings.search -%}<p class="es-faq__empty" data-faq-empty hidden>{{ 'sections.faq.no_results' | t }}</p>{%- endif -%}
     </div>
   </div>
   {%- if section.settings.structured_data and section.blocks.size > 0 -%}
@@ -22,15 +53,126 @@
   {%- endif -%}
 </section>
 
+{% stylesheet %}
+.es-faq--stacked .es-faq__grid { grid-template-columns: none; gap: clamp(28px, 4vw, 56px); }
+.es-faq--stacked .es-faq__head { text-align: center; max-width: 720px; margin-inline: auto; }
+.es-faq--stacked .es-faq__head .es-rte { margin-inline: auto; }
+.es-faq--stacked .es-faq__list { width: 100%; max-width: 880px; margin-inline: auto; }
+.es-faq--stacked.es-faq--cols-2 .es-faq__list { max-width: none; }
+@media (min-width: 990px) {
+  .es-faq--side .es-faq__head { position: sticky; top: calc(var(--header-h) + 32px); align-self: start; }
+  .es-faq--cols-2 .es-faq__list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; align-items: start; }
+}
+.es-faq__item summary { min-height: 64px; }
+.es-faq__q { flex: 1; text-wrap: pretty; }
+.es-faq__num { flex: none; min-width: 2.2em; font-variant-numeric: tabular-nums; font-size: .82rem; letter-spacing: .08em; color: var(--c-accent); }
+.es-faq__icon { position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(var(--c-text-rgb), .16); transition: background .35s, border-color .35s, transform .5s var(--ease-out); }
+.es-faq__icon i { position: absolute; left: 50%; top: 50%; width: 12px; height: 1.6px; margin: -.8px 0 0 -6px; background: currentColor; border-radius: 2px; transition: transform .45s var(--ease-out), opacity .3s; }
+.es-faq__icon i + i { transform: rotate(90deg); }
+.es-faq__item[open] .es-faq__icon { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-text); transform: rotate(180deg); }
+.es-faq__item[open] .es-faq__icon i + i { transform: rotate(0deg); opacity: 0; }
+.es-faq__item summary:hover .es-faq__icon { border-color: var(--c-accent); }
+.es-faq__panel { overflow: hidden; }
+.es-faq .es-accordion[open] .es-accordion__body { animation: none; }
+.es-faq__item.is-animating .es-accordion__body, .es-faq__item[open] .es-accordion__body { opacity: 1; transform: none; }
+.es-faq__item .es-accordion__body { transition: opacity .45s var(--ease-out), transform .55s var(--ease-out); }
+.es-faq__item.is-closing .es-accordion__body { opacity: 0; transform: translateY(-6px); }
+.es-faq__item.is-opening .es-accordion__body { opacity: 0; transform: translateY(8px); }
+.es-faq--cards .es-faq__item { transition: background .35s, border-color .35s, box-shadow .45s var(--ease-out); }
+.es-faq--cards .es-faq__item[open] { background: rgba(var(--c-text-rgb), .05); border-color: rgba(var(--c-accent-rgb), .45); box-shadow: 0 24px 50px -36px rgba(var(--c-accent-rgb), .7); }
+.es-faq--numbered .es-faq__item { border-bottom: 1px solid rgba(var(--c-text-rgb), .12); }
+.es-faq--numbered .es-faq__item summary { font-size: 1.12rem; }
+.es-faq--numbered .es-accordion__body { padding-left: 2.6em; }
+.es-faq__search { position: relative; margin-top: 1.6rem; max-width: 460px; }
+.es-faq--stacked .es-faq__search { margin-inline: auto; }
+.es-faq__search-icon { position: absolute; left: 18px; top: 50%; width: 20px; height: 20px; transform: translateY(-50%); color: var(--c-muted); pointer-events: none; }
+.es-faq__input { width: 100%; min-height: 52px; padding: 12px 18px 12px 48px; border-radius: var(--radius-pill, 99px); border: 1px solid rgba(var(--c-text-rgb), .16); background: rgba(var(--c-text-rgb), .03); font-size: 1rem; transition: border-color .3s, box-shadow .3s; }
+.es-faq__input:focus { outline: none; border-color: var(--c-accent); box-shadow: 0 0 0 4px rgba(var(--c-accent-rgb), .18); }
+.es-faq__item[hidden] { display: none; }
+.es-faq__empty { padding: 24px 0; color: var(--c-muted); }
+.es-faq__contact { margin-top: 1.8rem; display: grid; gap: 10px; justify-items: start; }
+.es-faq--stacked .es-faq__contact { justify-items: center; }
+.es-faq__contact-text { margin: 0; font-weight: var(--font-body-weight-bold); }
+mark.es-faq__hl { background: rgba(var(--c-accent-rgb), .22); color: inherit; border-radius: 3px; padding: 0 .1em; }
+@media (prefers-reduced-motion: reduce) {
+  .es-faq__icon, .es-faq__icon i, .es-faq__item .es-accordion__body { transition: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.EsFaq) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  function animate(item, open) {
+    var panel = item.querySelector('[data-faq-panel]');
+    if (reduce || !panel || !panel.animate) { item.open = open; return; }
+    if (item._anim) item._anim.cancel();
+    var start = panel.offsetHeight;
+    if (open) item.open = true;
+    var end = open ? panel.scrollHeight : 0;
+    if (!open) start = panel.scrollHeight;
+    item.classList.add(open ? 'is-opening' : 'is-closing');
+    requestAnimationFrame(function () { item.classList.remove('is-opening'); });
+    item._anim = panel.animate([{ height: (open ? 0 : start) + 'px' }, { height: end + 'px' }], { duration: open ? 480 : 360, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+    item._anim.onfinish = function () { item._anim = null; item.classList.remove('is-closing'); if (!open) item.open = false; };
+    item._anim.oncancel = function () { item.classList.remove('is-closing', 'is-opening'); };
+  }
+  function init(root) {
+    if (!root || root._esFaq) return;
+    root._esFaq = true;
+    var items = Array.prototype.slice.call(root.querySelectorAll('[data-faq-item]'));
+    items.forEach(function (item) {
+      var summary = item.querySelector('summary');
+      summary.addEventListener('click', function (e) { e.preventDefault(); animate(item, !item.open || item.classList.contains('is-closing')); });
+    });
+    var input = root.querySelector('[data-faq-search]');
+    if (!input) return;
+    var empty = root.querySelector('[data-faq-empty]');
+    var status = root.querySelector('[data-faq-status]');
+    var texts = items.map(function (item) { return norm(item.textContent); });
+    var t;
+    input.addEventListener('input', function () {
+      clearTimeout(t);
+      t = setTimeout(function () {
+        var q = norm(input.value.trim());
+        var shown = 0;
+        items.forEach(function (item, i) {
+          var ok = !q || q.split(/\s+/).every(function (w) { return texts[i].indexOf(w) !== -1; });
+          item.hidden = !ok;
+          if (ok) shown++;
+        });
+        if (empty) empty.hidden = shown > 0;
+        if (status) status.textContent = q ? status.getAttribute('data-template').replace('__n__', shown) : '';
+      }, 120);
+    });
+  }
+  function initAll(ctx) { Array.prototype.forEach.call((ctx || document).querySelectorAll('[data-es-faq]'), init); }
+  window.EsFaq = { init: initAll };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { initAll(); }); else initAll();
+  document.addEventListener('shopify:section:load', function (e) { initAll(e.target); });
+  document.addEventListener('shopify:block:select', function (e) { if (e.target.matches && e.target.matches('[data-faq-item]')) e.target.open = true; });
+})();
+{% endjavascript %}
+
 {% schema %}
 {
-  "name": "Questions fréquentes",
+  "name": "FAQ premium",
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Questions fréquentes" },
     { "type": "richtext", "id": "text", "label": "Texte" },
-    { "type": "select", "id": "style", "label": "Style", "default": "cards", "options": [ { "value": "cards", "label": "Cartes arrondies" }, { "value": "lines", "label": "Filets" } ] },
+    { "type": "select", "id": "style", "label": "Style", "default": "cards", "options": [ { "value": "cards", "label": "Cartes arrondies" }, { "value": "lines", "label": "Filets" }, { "value": "numbered", "label": "Numérotées" } ] },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "side", "options": [ { "value": "side", "label": "Titre à gauche, questions à droite" }, { "value": "stacked", "label": "Titre centré au-dessus" } ] },
+    { "type": "select", "id": "columns", "label": "Colonnes de questions", "default": "1", "options": [ { "value": "1", "label": "Une colonne" }, { "value": "2", "label": "Deux colonnes (ordinateur)" } ], "info": "Avec deux colonnes, le titre passe au-dessus." },
+    { "type": "checkbox", "id": "open_first", "label": "Première question ouverte", "default": false },
+    { "type": "checkbox", "id": "search", "label": "Recherche dans les questions", "default": false },
+    { "type": "text", "id": "search_placeholder", "label": "Texte du champ de recherche", "default": "Rechercher une question…" },
+    { "type": "text", "id": "contact_text", "label": "Phrase avant le lien de contact", "info": "Ex. « Une autre question ? »" },
+    { "type": "text", "id": "button_label", "label": "Bouton de contact" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton de contact" },
     { "type": "checkbox", "id": "structured_data", "label": "Données structurées pour les moteurs de recherche", "default": true },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
@@ -42,6 +184,11 @@
       { "type": "richtext", "id": "answer", "label": "Réponse", "default": "<p>Une réponse exacte et vérifiée.</p>" }
     ] }
   ],
-  "presets": [{ "name": "Questions fréquentes", "blocks": [{ "type": "question" }, { "type": "question" }, { "type": "question" }] }]
+  "presets": [{ "name": "FAQ premium", "settings": { "search": true, "open_first": true }, "blocks": [
+    { "type": "question", "settings": { "question": "Quels sont les délais de livraison ?", "answer": "<p>[À compléter : vos délais de livraison réels.]</p>" } },
+    { "type": "question", "settings": { "question": "Puis-je retourner ma commande ?", "answer": "<p>[À compléter : votre politique de retour.]</p>" } },
+    { "type": "question", "settings": { "question": "Comment utiliser le produit ?", "answer": "<p>[À compléter : le mode d'emploi.]</p>" } },
+    { "type": "question", "settings": { "question": "Comment contacter le service client ?", "answer": "<p>[À compléter : vos moyens de contact et horaires.]</p>" } }
+  ] }]
 }
 {% endschema %}

@@ -1,0 +1,200 @@
+{%- comment -%}
+  Scène visuelle flottante : le produit détouré flotte au-dessus d'une scène (photo ou dégradé),
+  des éléments décoratifs se déplacent en profondeur avec la souris et le défilement. Titre, texte et bouton.
+{%- endcomment -%}
+<section class="es-section es-fscene es-fscene--{{ section.settings.layout }} es-fscene--decor-{{ section.settings.decor }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --overlay: {{ section.settings.overlay | divided_by: 100.0 }}; --depth: {{ section.settings.intensity | divided_by: 100.0 }}; --blur: {{ section.settings.bg_blur }}px;" data-fscene>
+  {%- if section.settings.show_background -%}
+    <div class="es-fscene__bg" aria-hidden="true" data-depth="-0.25">
+      {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: '', sizes: '100vw', class: 'es-cover' %}
+    </div>
+  {%- endif -%}
+  <div class="es-fscene__veil" aria-hidden="true"></div>
+  <div class="es-fscene__decor" aria-hidden="true">
+    <span class="es-fscene__orb es-fscene__orb--1" data-depth="0.6"></span>
+    <span class="es-fscene__orb es-fscene__orb--2" data-depth="-0.45"></span>
+    <span class="es-fscene__orb es-fscene__orb--3" data-depth="0.9"></span>
+    <span class="es-fscene__ring es-fscene__ring--1" data-depth="0.3"></span>
+    <span class="es-fscene__ring es-fscene__ring--2" data-depth="-0.7"></span>
+    <span class="es-fscene__spark es-fscene__spark--1" data-depth="1.2">{% render 'es-glyph', name: 'sparkle' %}</span>
+    <span class="es-fscene__spark es-fscene__spark--2" data-depth="-1">{% render 'es-glyph', name: 'sparkle' %}</span>
+    <span class="es-fscene__dots" data-depth="0.5"></span>
+  </div>
+
+  <div class="es-container es-fscene__inner">
+    <div class="es-fscene__content">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-fscene__title" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.settings.button_label != blank -%}
+        <div class="es-actions" data-reveal="up" style="--i: 2"><a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a></div>
+      {%- endif -%}
+    </div>
+
+    <div class="es-fscene__stage">
+      <span class="es-fscene__halo" aria-hidden="true" data-depth="0.2"></span>
+      <div class="es-fscene__product" data-depth="0.45">
+        <div class="es-fscene__float">
+          {% render 'es-image', image: section.settings.product_image, asset: section.settings.product_asset, alt: section.settings.product_alt, sizes: '(min-width: 990px) 40vw, 80vw', class: 'es-fscene__img', width: 1200, height: 1200 %}
+        </div>
+      </div>
+      <span class="es-fscene__shadow" aria-hidden="true"></span>
+      {%- for block in section.blocks -%}
+        <p class="es-fscene__chip" style="--x: {{ block.settings.x }}%; --y: {{ block.settings.y }}%; --i: {{ forloop.index0 }}" data-depth="{% cycle '0.8', '-0.6', '1', '-0.9' %}" {{ block.shopify_attributes }}>
+          {% render 'es-glyph', name: block.settings.icon %}<span>{{ block.settings.text }}</span>
+        </p>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-fscene { position: relative; overflow: hidden; isolation: isolate; min-height: min(92vh, 880px); display: flex; align-items: center; }
+.es-fscene__bg { position: absolute; inset: -6%; z-index: -3; }
+.es-fscene__bg img, .es-fscene__bg .es-placeholder { width: 100%; height: 100%; object-fit: cover; filter: blur(var(--blur, 0px)) saturate(1.1); transform: scale(1.04); }
+.es-fscene__veil { position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 70% 55%, rgba(var(--c-accent-rgb), calc(var(--glow) * .35)), transparent 70%),
+    linear-gradient(90deg, rgba(var(--c-bg-rgb), calc(var(--overlay) + .15)) 0%, rgba(var(--c-bg-rgb), var(--overlay)) 45%, rgba(var(--c-bg-rgb), calc(var(--overlay) * .85)) 100%); }
+.es-fscene--center .es-fscene__veil { background: radial-gradient(ellipse 60% 55% at 50% 60%, rgba(var(--c-accent-rgb), calc(var(--glow) * .35)), transparent 70%), rgba(var(--c-bg-rgb), var(--overlay)); }
+.es-fscene__decor { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.es-fscene__decor > *, .es-fscene [data-depth] { will-change: transform; }
+.es-fscene__orb { position: absolute; border-radius: 50%; filter: blur(2px); background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.55), rgba(var(--c-accent-rgb), .55) 45%, rgba(var(--c-accent-rgb), 0) 72%); }
+.es-fscene__orb--1 { width: clamp(90px, 12vw, 180px); aspect-ratio: 1; top: 12%; right: 8%; }
+.es-fscene__orb--2 { width: clamp(50px, 6vw, 90px); aspect-ratio: 1; bottom: 14%; left: 46%; opacity: .8; }
+.es-fscene__orb--3 { width: clamp(28px, 3vw, 46px); aspect-ratio: 1; top: 22%; left: 52%; opacity: .9; }
+.es-fscene__ring { position: absolute; border-radius: 50%; border: 1px solid rgba(var(--c-text-rgb), .16); }
+.es-fscene__ring--1 { width: clamp(320px, 44vw, 640px); aspect-ratio: 1; right: -6%; top: 50%; margin-top: calc(clamp(320px, 44vw, 640px) / -2); }
+.es-fscene__ring--2 { width: clamp(180px, 22vw, 340px); aspect-ratio: 1; right: 14%; top: 50%; margin-top: calc(clamp(180px, 22vw, 340px) / -2); border-style: dashed; border-color: rgba(var(--c-accent-rgb), .4); }
+.es-fscene__spark { position: absolute; color: var(--c-accent); }
+.es-fscene__spark .es-icon { width: 100%; height: 100%; }
+.es-fscene__spark--1 { width: 34px; height: 34px; top: 18%; right: 34%; }
+.es-fscene__spark--2 { width: 22px; height: 22px; bottom: 22%; right: 10%; }
+.es-fscene__dots { position: absolute; width: 150px; height: 110px; bottom: 10%; right: 30%; opacity: .45; background-image: radial-gradient(rgba(var(--c-text-rgb), .6) 1.4px, transparent 1.6px); background-size: 16px 16px; -webkit-mask-image: radial-gradient(circle, #000 40%, transparent 72%); mask-image: radial-gradient(circle, #000 40%, transparent 72%); }
+.es-fscene--decor-minimal .es-fscene__orb--3, .es-fscene--decor-minimal .es-fscene__dots, .es-fscene--decor-minimal .es-fscene__spark--2, .es-fscene--decor-minimal .es-fscene__ring--2 { display: none; }
+.es-fscene--decor-none .es-fscene__decor { display: none; }
+
+.es-fscene__inner { position: relative; display: grid; gap: clamp(24px, 4vw, 64px); align-items: center; }
+@media (min-width: 990px) { .es-fscene--split .es-fscene__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
+.es-fscene--center .es-fscene__inner { text-align: center; justify-items: center; }
+.es-fscene--center .es-fscene__content { order: 2; max-width: 760px; }
+.es-fscene--center .es-actions { justify-content: center; }
+.es-fscene--center .es-lead { margin-inline: auto; }
+.es-fscene__title { font-size: calc(clamp(2.4rem, 5.6vw, 5rem) * var(--heading-scale)); line-height: 1; margin-bottom: .4em; }
+.es-fscene__stage { position: relative; width: 100%; max-width: 620px; aspect-ratio: 1; margin-inline: auto; display: grid; place-items: center; }
+.es-fscene__halo { position: absolute; inset: 14%; border-radius: 50%; background: radial-gradient(circle, rgba(var(--c-accent-rgb), calc(.2 + var(--glow) * .3)) 0%, rgba(var(--c-accent-rgb), 0) 68%); }
+.es-fscene__product { position: relative; z-index: 1; width: 78%; height: 78%; }
+.motion-ready .es-fscene__img { animation: es-fscene-in 1.4s var(--ease-out) both; }
+@keyframes es-fscene-in { from { opacity: 0; transform: translateY(40px) scale(.94); } }
+.es-fscene__float { width: 100%; height: 100%; animation: es-fscene-float 6.5s var(--ease-in-out) infinite alternate; }
+.es-fscene__img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 50px 50px rgba(0,0,0,.3)) drop-shadow(0 0 40px rgba(var(--c-accent-rgb), calc(var(--glow) * .3))); }
+.es-fscene__float .es-placeholder { background: transparent; min-height: 0; }
+.es-fscene__shadow { position: absolute; left: 26%; right: 26%; bottom: 6%; height: 7%; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.4), transparent 70%); filter: blur(6px); animation: es-fscene-shadow 6.5s var(--ease-in-out) infinite alternate; }
+.es-fscene__chip { position: absolute; z-index: 2; left: var(--x); top: var(--y); margin: 0; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px 10px 12px; border-radius: 999px; font-size: .82rem; font-weight: var(--font-body-weight-bold); white-space: nowrap; transform: translate(-50%, -50%);
+  background: rgba(var(--c-bg-rgb), .72); color: var(--c-text); border: 1px solid rgba(var(--c-text-rgb), .12); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 18px 40px -18px rgba(0,0,0,.45); }
+.es-fscene__chip .es-icon { width: 18px; height: 18px; color: var(--c-accent); }
+.es-fscene__chip > * { pointer-events: none; }
+@keyframes es-fscene-float { from { transform: translateY(-3%) rotate(-1.5deg); } to { transform: translateY(3%) rotate(1.5deg); } }
+@keyframes es-fscene-shadow { from { transform: scaleX(.86); opacity: .7; } to { transform: scaleX(1.06); opacity: 1; } }
+.motion-ready .es-fscene__chip { animation: es-fscene-bob 5s var(--ease-in-out) infinite alternate; animation-delay: calc(var(--i) * -1.7s); }
+@keyframes es-fscene-bob { from { margin-top: -6px; } to { margin-top: 6px; } }
+@media (max-width: 749px) {
+  .es-fscene { min-height: 0; }
+  .es-fscene__stage { max-width: 380px; }
+  .es-fscene__chip { font-size: .7rem; padding: 7px 12px 7px 9px; left: clamp(28%, var(--x), 72%); top: clamp(8%, var(--y), 92%); }
+  .es-fscene__orb--1 { top: auto; bottom: 30%; right: -6%; }
+  .es-fscene__orb--3, .es-fscene__spark--1 { display: none; }
+  .es-fscene__ring--1 { right: -30%; }
+  .es-fscene__veil { background: radial-gradient(ellipse 80% 50% at 50% 75%, rgba(var(--c-accent-rgb), calc(var(--glow) * .35)), transparent 70%), rgba(var(--c-bg-rgb), calc(var(--overlay) + .1)); }
+}
+@media (prefers-reduced-motion: reduce) { .es-fscene__float, .es-fscene__shadow, .es-fscene__chip { animation: none !important; } }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cfg = window.themeSettings || {};
+  if (reduce || cfg.motion === false || cfg.parallax === false) return;
+  var scenes = [];
+  function setup(root) {
+    (root || document).querySelectorAll('[data-fscene]').forEach(function (s) {
+      if (s._esFscene) return; s._esFscene = true;
+      var sc = { s: s, layers: Array.prototype.slice.call(s.querySelectorAll('[data-depth]')).map(function (el) { return { el: el, d: parseFloat(el.getAttribute('data-depth')) || 0 }; }), mx: 0, my: 0, tx: 0, ty: 0, k: parseFloat(getComputedStyle(s).getPropertyValue('--depth')) || .6 };
+      if (window.matchMedia('(hover: hover)').matches) {
+        s.addEventListener('pointermove', function (e) { var r = s.getBoundingClientRect(); sc.tx = (e.clientX - r.left) / r.width - .5; sc.ty = (e.clientY - r.top) / r.height - .5; kick(); });
+        s.addEventListener('pointerleave', function () { sc.tx = 0; sc.ty = 0; kick(); });
+      }
+      scenes.push(sc);
+    });
+    kick();
+  }
+  var running = false;
+  function kick() { if (!running) { running = true; requestAnimationFrame(frame); } }
+  function frame() {
+    var vh = window.innerHeight, again = false;
+    scenes.forEach(function (sc) {
+      if (!sc.s.isConnected) return;
+      var r = sc.s.getBoundingClientRect(); if (r.bottom < 0 || r.top > vh) return;
+      sc.mx += (sc.tx - sc.mx) * .08; sc.my += (sc.ty - sc.my) * .08;
+      if (Math.abs(sc.tx - sc.mx) > .001 || Math.abs(sc.ty - sc.my) > .001) again = true;
+      var sp = (r.top + r.height / 2 - vh / 2) / vh;
+      sc.layers.forEach(function (l) {
+        var x = -sc.mx * l.d * 40 * sc.k, y = (-sc.my * l.d * 40 - sp * l.d * 70) * sc.k;
+        var base = l.el.classList.contains('es-fscene__chip') ? 'translate(-50%, -50%) ' : '';
+        l.el.style.transform = base + 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
+      });
+    });
+    running = false;
+    if (again) kick();
+  }
+  window.addEventListener('scroll', kick, { passive: true });
+  window.addEventListener('resize', kick);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setup(); }); else setup();
+  document.addEventListener('shopify:section:load', function (e) { setup(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Scène visuelle flottante",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Nouveau regard" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Le produit," },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "sous toutes ses lumières." },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : une ou deux phrases pour présenter le produit et donner envie de le découvrir.]</p>" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "header", "content": "Produit" },
+    { "type": "image_picker", "id": "product_image", "label": "Produit détouré (PNG transparent)" },
+    { "type": "text", "id": "product_asset", "label": "Produit détouré fourni avec le thème" },
+    { "type": "text", "id": "product_alt", "label": "Description de l'image (accessibilité)" },
+    { "type": "header", "content": "Scène" },
+    { "type": "checkbox", "id": "show_background", "label": "Photo de fond", "default": true },
+    { "type": "image_picker", "id": "image", "label": "Image de fond" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "range", "id": "overlay", "min": 0, "max": 95, "step": 5, "unit": "%", "label": "Voile sur la photo", "default": 75 },
+    { "type": "range", "id": "bg_blur", "min": 0, "max": 24, "step": 2, "unit": "px", "label": "Flou de la photo", "default": 10 },
+    { "type": "select", "id": "layout", "label": "Mise en page", "default": "split", "options": [{ "value": "split", "label": "Texte à gauche, produit à droite" }, { "value": "center", "label": "Produit au centre, texte dessous" }] },
+    { "type": "select", "id": "decor", "label": "Éléments décoratifs", "default": "full", "options": [{ "value": "full", "label": "Complets" }, { "value": "minimal", "label": "Discrets" }, { "value": "none", "label": "Aucun" }] },
+    { "type": "range", "id": "intensity", "min": 0, "max": 100, "step": 10, "unit": "%", "label": "Intensité de la profondeur", "default": 60 },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "chip", "name": "Étiquette flottante", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "sparkle", "options": [
+        { "value": "sparkle", "label": "Étincelle" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "heart", "label": "Cœur" }, { "value": "shield", "label": "Bouclier" }, { "value": "hand", "label": "Main" }, { "value": "bolt", "label": "Éclair" }, { "value": "star", "label": "Étoile" }, { "value": "check", "label": "Coche" }
+      ] },
+      { "type": "text", "id": "text", "label": "Texte", "default": "[À compléter : atout]" },
+      { "type": "range", "id": "x", "min": 0, "max": 100, "step": 1, "unit": "%", "label": "Position horizontale", "default": 20 },
+      { "type": "range", "id": "y", "min": 0, "max": 100, "step": 1, "unit": "%", "label": "Position verticale", "default": 30 }
+    ] }
+  ],
+  "max_blocks": 4,
+  "presets": [{ "name": "Scène visuelle flottante", "blocks": [
+    { "type": "chip", "settings": { "icon": "sparkle", "text": "[À compléter : atout n°1]", "x": 18, "y": 26 } },
+    { "type": "chip", "settings": { "icon": "check", "text": "[À compléter : atout n°2]", "x": 82, "y": 70 } }
+  ] }]
+}
+{% endschema %}

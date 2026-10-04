@@ -1,0 +1,130 @@
+{%- comment -%}
+  Visuel éditorial : grande image en mise en page magazine, cartel (légende façon musée), texte décalé,
+  détail zoomé en médaillon, folio et mention verticale.
+{%- endcomment -%}
+<section class="es-section es-edito es-edito--{{ section.settings.layout }}{% if section.settings.dropcap %} es-edito--dropcap{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --zoom: {{ section.settings.detail_zoom | divided_by: 100.0 }}; --fx: {{ section.settings.detail_x }}%; --fy: {{ section.settings.detail_y }}%;">
+  <div class="es-container es-edito__grid">
+    <div class="es-edito__visual">
+      {%- if section.settings.folio != blank -%}<span class="es-edito__folio" aria-hidden="true">{{ section.settings.folio }}</span>{%- endif -%}
+      <figure class="es-edito__figure" data-reveal="curtain">
+        <div class="es-edito__img">
+          {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 58vw, 100vw', class: 'es-cover' %}
+        </div>
+      </figure>
+      {%- if section.settings.detail_image != blank or section.settings.detail_asset != blank -%}
+        <figure class="es-edito__detail">
+          <div class="es-edito__lens">
+            {% render 'es-image', image: section.settings.detail_image, asset: section.settings.detail_asset, alt: section.settings.detail_label, sizes: '320px', class: 'es-edito__lens-img' %}
+          </div>
+          {%- if section.settings.detail_label != blank -%}<figcaption class="es-edito__detail-label"><i aria-hidden="true"></i>{{ section.settings.detail_label }}</figcaption>{%- endif -%}
+        </figure>
+      {%- endif -%}
+      {%- if section.settings.cartel_text != blank or section.settings.cartel_title != blank -%}
+        <aside class="es-edito__cartel" data-reveal="up" style="--d: 3">
+          <p class="es-edito__cartel-title">{{ section.settings.cartel_title | default: shop.name }}</p>
+          {%- if section.settings.cartel_text != blank -%}<p class="es-edito__cartel-text">{{ section.settings.cartel_text }}</p>{%- endif -%}
+          {%- if section.settings.cartel_meta != blank -%}<p class="es-edito__cartel-meta">{{ section.settings.cartel_meta }}</p>{%- endif -%}
+        </aside>
+      {%- endif -%}
+    </div>
+    <div class="es-edito__copy">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-edito__title" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+      <div class="es-edito__body" data-reveal="up" style="--d: 1">
+        {%- if section.settings.text != blank -%}<div class="es-rte es-edito__text">{{ section.settings.text }}</div>{%- endif -%}
+        {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-link-arrow es-edito__link">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+    </div>
+    <p class="es-edito__vertical" aria-hidden="true">{{ section.settings.vertical | default: shop.name }}</p>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-edito { overflow: hidden; }
+.es-edito__grid { position: relative; display: grid; gap: clamp(28px, 5vw, 64px); align-items: start; }
+@media (min-width: 990px) {
+  .es-edito__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0 clamp(16px, 2vw, 28px); }
+  .es-edito__visual { grid-column: 1 / span 7; }
+  .es-edito__copy { grid-column: 9 / span 4; padding-top: clamp(80px, 14vw, 200px); }
+  .es-edito--image-right .es-edito__visual { grid-column: 6 / span 7; order: 2; }
+  .es-edito--image-right .es-edito__copy { grid-column: 1 / span 4; order: 1; }
+}
+.es-edito__visual { position: relative; }
+.es-edito__folio { position: absolute; z-index: 2; top: -.42em; left: -.06em; font-family: var(--font-heading); font-size: clamp(4.5rem, 12vw, 10rem); line-height: 1; letter-spacing: -.05em; color: var(--c-accent); mix-blend-mode: normal; pointer-events: none; }
+.es-edito--image-right .es-edito__folio { left: auto; right: -.06em; }
+.es-edito__figure { margin: 0; }
+.es-edito__img { aspect-ratio: 4 / 5; overflow: hidden; border-radius: calc(var(--radius-card, 16px) * .5); background: var(--c-surface); }
+.es-edito__img img { transition: transform 1.6s var(--ease-out); }
+.es-edito__visual:hover .es-edito__img img { transform: scale(1.03); }
+.es-edito__detail { position: absolute; z-index: 3; margin: 0; top: 14%; right: -9%; width: clamp(130px, 17vw, 230px); display: grid; justify-items: center; gap: 12px; }
+.es-edito--image-right .es-edito__detail { right: auto; left: -9%; }
+.es-edito__lens { width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; border: 6px solid var(--c-bg); box-shadow: 0 30px 60px -28px rgba(0,0,0,.45); background: var(--c-surface); }
+.es-edito__lens-img { width: 100%; height: 100%; object-fit: cover; transform: scale(var(--zoom, 1.8)); transform-origin: var(--fx, 50%) var(--fy, 50%); transition: transform 1.2s var(--ease-out); }
+.es-edito__detail:hover .es-edito__lens-img { transform: scale(calc(var(--zoom, 1.8) * 1.12)); }
+.es-edito__detail-label { display: inline-flex; align-items: center; gap: 10px; font-size: .72rem; letter-spacing: .24em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); }
+.es-edito__detail-label i { width: 26px; height: 1px; background: currentColor; }
+.es-edito__cartel { position: absolute; z-index: 3; right: -6%; bottom: 7%; width: min(300px, 72%); padding: 18px 20px 16px; background: var(--c-bg); color: var(--c-text); border: 1px solid var(--c-border); box-shadow: 0 24px 50px -30px rgba(0,0,0,.4); }
+.es-edito--image-right .es-edito__cartel { right: auto; left: -6%; }
+.es-edito__cartel-title { margin: 0 0 10px; padding-bottom: 10px; border-bottom: 1px solid var(--c-border); font-family: var(--font-heading); font-style: italic; font-size: 1.12rem; line-height: 1.25; }
+.es-edito__cartel-text { margin: 0; font-size: .84rem; line-height: 1.55; color: color-mix(in srgb, var(--c-text) 80%, var(--c-bg)); }
+.es-edito__cartel-meta { margin: 10px 0 0; font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--c-muted); }
+.es-edito__title { font-size: calc(clamp(2.2rem, 4.6vw, 4.2rem) * var(--heading-scale, 1)); line-height: 1.02; margin-bottom: .5em; }
+.es-edito__body { display: grid; gap: 24px; padding-left: clamp(0px, 3vw, 44px); border-left: 1px solid var(--c-border); }
+.es-edito__text { font-size: 1.04rem; line-height: 1.75; color: color-mix(in srgb, var(--c-text) 84%, var(--c-bg)); }
+.es-edito--dropcap .es-edito__text > p:first-child::first-letter { float: left; font-family: var(--font-heading); font-size: 3.6em; line-height: .82; padding: .06em .1em 0 0; color: var(--c-accent); }
+.es-edito__vertical { position: absolute; top: 0; right: calc(var(--gutter, 24px) * -0.1); margin: 0; writing-mode: vertical-rl; font-size: .7rem; letter-spacing: .4em; text-transform: uppercase; color: var(--c-muted); }
+.es-edito--image-right .es-edito__vertical { right: auto; left: calc(var(--gutter, 24px) * -0.1); transform: rotate(180deg); }
+@media (max-width: 989px) {
+  .es-edito__visual { margin-right: 18px; }
+  .es-edito--image-right .es-edito__visual { margin-right: 0; margin-left: 18px; }
+  .es-edito__detail { width: clamp(108px, 30vw, 170px); top: 34%; bottom: auto; right: -14px; }
+  .es-edito--image-right .es-edito__detail { left: -14px; }
+  .es-edito__cartel { position: relative; right: auto !important; left: auto !important; bottom: auto; width: auto; max-width: 78%; margin-top: -40px; margin-left: 18px; }
+  .es-edito__folio { font-size: clamp(3.6rem, 18vw, 6rem); }
+  .es-edito__vertical { display: none; }
+  .es-edito__body { padding-left: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es-edito__img img, .es-edito__lens-img { transition: none; }
+}
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Visuel éditorial",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Grande image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [
+      { "value": "image-left", "label": "Image à gauche" }, { "value": "image-right", "label": "Image à droite" }
+    ] },
+    { "type": "text", "id": "folio", "label": "Folio (numéro en grand)", "default": "01" },
+    { "type": "text", "id": "vertical", "label": "Mention verticale", "info": "Vide : nom de la boutique." },
+    { "type": "header", "content": "Cartel (légende de l'image)" },
+    { "type": "text", "id": "cartel_title", "label": "Titre du cartel", "info": "Vide : nom de la boutique." },
+    { "type": "textarea", "id": "cartel_text", "label": "Texte du cartel", "default": "[À compléter : matière, finition, dimensions]" },
+    { "type": "text", "id": "cartel_meta", "label": "Mention du cartel", "default": "[À compléter : crédit photo]" },
+    { "type": "header", "content": "Détail zoomé" },
+    { "type": "image_picker", "id": "detail_image", "label": "Image du détail" },
+    { "type": "text", "id": "detail_asset", "label": "Image du détail fournie avec le thème" },
+    { "type": "range", "id": "detail_zoom", "min": 100, "max": 300, "step": 10, "unit": "%", "label": "Zoom", "default": 170 },
+    { "type": "range", "id": "detail_x", "min": 0, "max": 100, "step": 5, "unit": "%", "label": "Point zoomé (horizontal)", "default": 50 },
+    { "type": "range", "id": "detail_y", "min": 0, "max": 100, "step": 5, "unit": "%", "label": "Point zoomé (vertical)", "default": 45 },
+    { "type": "text", "id": "detail_label", "label": "Légende du détail", "default": "De près" },
+    { "type": "header", "content": "Texte" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Éditorial" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "L'art du" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "détail." },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : l'histoire de cette pièce, sa matière et la façon de la porter ou de l'utiliser.]</p>" },
+    { "type": "checkbox", "id": "dropcap", "label": "Lettrine (première lettre en grand)", "default": false },
+    { "type": "text", "id": "button_label", "label": "Lien", "default": "Découvrir" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 120 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 120 }
+  ],
+  "presets": [{ "name": "Visuel éditorial" }]
+}
+{% endschema %}

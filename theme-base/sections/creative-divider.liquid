@@ -1,0 +1,125 @@
+{%- comment -%}
+  Séparateur créatif entre deux sections : vague, diagonale, courbe, zigzag ou fin bandeau de texte défilant.
+  Le haut prend la couleur de fond de la section précédente, la forme celle de la section suivante.
+{%- endcomment -%}
+{%- liquid
+  assign shape = section.settings.shape
+  assign from = section.settings.from_scheme
+  assign to = section.settings.color_scheme
+-%}
+<div class="es-divider es-divider--{{ shape }} color-{{ from }}{% if section.settings.animate %} es-divider--animate{% endif %}{% if section.settings.flip %} es-divider--flip{% endif %}" style="--h: {{ section.settings.height }}px; --speed: {{ section.settings.speed }}s;" data-divider>
+  {%- if shape == 'marquee' -%}
+    <div class="es-divider__half color-{{ to }}" aria-hidden="true"></div>
+    <div class="es-divider__band color-{{ to }}{% if section.settings.tilt %} es-divider__band--tilt{% endif %}">
+      <div class="es-divider__marquee">
+        {%- for copy in (1..2) -%}
+          <p class="es-divider__run"{% if forloop.last %} aria-hidden="true"{% endif %}>
+            {%- for i in (1..6) -%}<span>{{ section.settings.text }}</span><i aria-hidden="true">✦</i>{%- endfor -%}
+          </p>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- else -%}
+    <div class="es-divider__shape color-{{ to }}" aria-hidden="true">
+      {%- case shape -%}
+        {%- when 'wave' -%}
+          <svg class="es-divider__svg es-divider__svg--loop es-divider__back" viewBox="0 0 2880 120" preserveAspectRatio="none" focusable="false"><path d="M0,58 C240,8 480,8 720,58 S1200,108 1440,58 S1920,8 2160,58 S2640,108 2880,58 L2880,120 L0,120 Z"/></svg>
+          <svg class="es-divider__svg es-divider__svg--loop es-divider__front" viewBox="0 0 2880 120" preserveAspectRatio="none" focusable="false"><path d="M0,72 C120,34 240,34 360,72 S600,110 720,72 S960,34 1080,72 S1320,110 1440,72 S1680,34 1800,72 S2040,110 2160,72 S2400,34 2520,72 S2760,110 2880,72 L2880,120 L0,120 Z"/></svg>
+        {%- when 'zigzag' -%}
+          {%- capture zz -%}M0,120 L0,70{%- for i in (1..72) -%}{%- assign m = i | modulo: 2 -%} L{{ i | times: 40 }},{% if m == 1 %}22{% else %}70{% endif %}{%- endfor -%} L2880,120 Z{%- endcapture -%}
+          <svg class="es-divider__svg es-divider__svg--loop es-divider__back" viewBox="0 0 2880 120" preserveAspectRatio="none" focusable="false"><path d="{{ zz }}" transform="translate(0 -12)"/></svg>
+          <svg class="es-divider__svg es-divider__svg--loop es-divider__front" viewBox="0 0 2880 120" preserveAspectRatio="none" focusable="false"><path d="{{ zz }}" transform="translate(0 10)"/></svg>
+        {%- when 'diagonal' -%}
+          <svg class="es-divider__svg es-divider__back es-divider__tilt" viewBox="0 0 1440 120" preserveAspectRatio="none" focusable="false"><path d="M0,120 L1440,6 L1440,120 Z"/></svg>
+          <svg class="es-divider__svg es-divider__front" viewBox="0 0 1440 120" preserveAspectRatio="none" focusable="false"><path d="M0,120 L1440,24 L1440,120 Z"/>{% if section.settings.accent_line %}<path class="es-divider__line" d="M0,120 L1440,24" pathLength="1"/>{% endif %}</svg>
+        {%- else -%}
+          <svg class="es-divider__svg es-divider__back es-divider__breathe" viewBox="0 0 1440 120" preserveAspectRatio="none" focusable="false"><path d="M0,0 Q720,150 1440,0 L1440,120 L0,120 Z"/></svg>
+          <svg class="es-divider__svg es-divider__front" viewBox="0 0 1440 120" preserveAspectRatio="none" focusable="false"><path d="M0,24 Q720,150 1440,24 L1440,120 L0,120 Z"/>{% if section.settings.accent_line %}<path class="es-divider__line" d="M0,24 Q720,150 1440,24" pathLength="1"/>{% endif %}</svg>
+      {%- endcase -%}
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+.es-divider { position: relative; line-height: 0; background: var(--c-bg); overflow: hidden; }
+.es-divider__shape { position: relative; height: var(--h, 96px); color: var(--c-bg); background: transparent !important; }
+.es-divider--flip .es-divider__shape { transform: scaleX(-1); }
+@media (max-width: 749px) { .es-divider__shape { height: calc(var(--h, 96px) * .55); } .es-divider__svg--loop { width: 400%; } }
+.es-divider__svg { position: absolute; left: 0; bottom: -1px; width: 100%; height: calc(100% + 1px); fill: currentColor; display: block; overflow: visible; max-width: none; }
+.es-divider__svg--loop { width: 200%; }
+.es-divider__back { opacity: .38; }
+.es-divider__line { fill: none; stroke: var(--c-accent); stroke-width: 3px; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.es-divider--animate .es-divider__front.es-divider__svg--loop { animation: es-divider-slide var(--speed, 24s) linear infinite; }
+.es-divider--animate .es-divider__back.es-divider__svg--loop { animation: es-divider-slide calc(var(--speed, 24s) * 1.7) linear infinite reverse; }
+.es-divider--animate .es-divider__breathe { transform-origin: 50% 100%; animation: es-divider-breathe 7s var(--ease-in-out, ease-in-out) infinite alternate; }
+.es-divider--animate .es-divider__tilt { transform-origin: 100% 100%; animation: es-divider-tilt 8s var(--ease-in-out, ease-in-out) infinite alternate; }
+.es-divider--animate .es-divider__line { stroke-dashoffset: 1; transition: stroke-dashoffset 1.6s var(--ease-out); }
+.es-divider--animate.is-in .es-divider__line { stroke-dashoffset: 0; }
+@keyframes es-divider-slide { to { transform: translateX(-50%); } }
+@keyframes es-divider-breathe { from { transform: scaleY(.82); } to { transform: scaleY(1.08); } }
+@keyframes es-divider-tilt { from { transform: scaleY(.7); } to { transform: scaleY(1.1); } }
+
+.es-divider--marquee { padding: calc(var(--h, 96px) * .25) 0; }
+.es-divider__half { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: var(--c-bg); }
+.es-divider__band { position: relative; z-index: 1; background: var(--c-accent) !important; color: var(--c-accent-text); overflow: hidden; border-block: 1px solid rgba(var(--c-bg-rgb), .2); }
+.es-divider__band--tilt { transform: rotate(-1.6deg) scale(1.04); }
+.es-divider__marquee { display: flex; width: max-content; }
+.es-divider--animate .es-divider__marquee { animation: es-divider-slide var(--speed, 24s) linear infinite; }
+.es-divider__run { display: flex; align-items: center; gap: clamp(18px, 3vw, 36px); margin: 0; padding: 12px clamp(9px, 1.5vw, 18px); line-height: 1.2; white-space: nowrap; font-size: clamp(.78rem, 1.3vw, .92rem); font-weight: var(--font-body-weight-bold); letter-spacing: .24em; text-transform: uppercase; }
+.es-divider__run i { font-style: normal; opacity: .7; font-size: .8em; }
+.es-divider__band:hover .es-divider__marquee { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .es-divider--animate .es-divider__svg, .es-divider--animate .es-divider__marquee { animation: none !important; }
+  .es-divider--animate .es-divider__line { stroke-dashoffset: 0; transition: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.__esDivider) return;
+  window.__esDivider = true;
+  function boot(root) {
+    var els = Array.prototype.slice.call((root || document).querySelectorAll('[data-divider]'));
+    if (!('IntersectionObserver' in window)) { els.forEach(function (el) { el.classList.add('is-in'); }); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        // Animation en pause hors de l'écran (économie de batterie).
+        Array.prototype.forEach.call(e.target.querySelectorAll('.es-divider__svg, .es-divider__marquee'), function (x) { x.style.animationPlayState = e.isIntersecting ? '' : 'paused'; });
+        if (e.isIntersecting) e.target.classList.add('is-in');
+      });
+    }, { threshold: 0.1 });
+    els.forEach(function (el) { io.observe(el); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); });
+  else boot();
+  document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Séparateur créatif",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "shape", "label": "Forme", "default": "wave", "options": [
+      { "value": "wave", "label": "Vague" },
+      { "value": "diagonal", "label": "Diagonale" },
+      { "value": "curve", "label": "Courbe" },
+      { "value": "zigzag", "label": "Zigzag" },
+      { "value": "marquee", "label": "Texte défilant fin" }
+    ] },
+    { "type": "color_scheme", "id": "from_scheme", "label": "Couleur au-dessus (section précédente)", "default": "scheme-1" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleur de la forme (section suivante)", "default": "scheme-3" },
+    { "type": "range", "id": "height", "min": 32, "max": 200, "step": 8, "unit": "px", "label": "Hauteur", "default": 112 },
+    { "type": "checkbox", "id": "flip", "label": "Retourner horizontalement", "default": false },
+    { "type": "checkbox", "id": "accent_line", "label": "Liseré de couleur d'accent (diagonale, courbe)", "default": true },
+    { "type": "checkbox", "id": "animate", "label": "Animation légère", "default": true },
+    { "type": "range", "id": "speed", "min": 10, "max": 60, "step": 2, "unit": "s", "label": "Durée d'un cycle d'animation", "default": 26 },
+    { "type": "header", "content": "Texte défilant fin" },
+    { "type": "text", "id": "text", "label": "Texte du bandeau", "default": "Découvrez la suite" },
+    { "type": "checkbox", "id": "tilt", "label": "Bandeau légèrement incliné", "default": true }
+  ],
+  "presets": [{ "name": "Séparateur créatif" }]
+}
+{% endschema %}

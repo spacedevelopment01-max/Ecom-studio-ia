@@ -1,0 +1,294 @@
+{%- comment -%}
+  Hero premium — ajout libre : tout le contenu est fait de blocs que le marchand ajoute et ordonne
+  (surtitre, titre avec mot d'accent, texte, boutons, badge, note réelle, logos, caractéristiques, liste…).
+  Média image ou vidéo en fond ou sur le côté ; alignements réglables.
+  Honnêteté : note, logos et caractéristiques ne s'affichent que s'ils sont renseignés par le marchand.
+{%- endcomment -%}
+{%- liquid
+  assign layout = section.settings.media_layout
+  assign is_bg = false
+  if layout == 'background'
+    assign is_bg = true
+  endif
+-%}
+<section class="es-hf es-hf--{{ layout }} es-hf--{{ section.settings.height }} es-hf--h-{{ section.settings.align_x }} es-hf--v-{{ section.settings.align_y }} es-hf--w-{{ section.settings.content_width }}{% if is_bg %} es-hf--text-{{ section.settings.text_color }}{% if section.settings.glass %} es-hf--glass{% endif %}{% endif %}{% if section.settings.media_first_mobile %} es-hf--media-first{% endif %} color-{{ section.settings.color_scheme }}" style="--overlay: {{ section.settings.overlay | divided_by: 100.0 }};" data-es-autoplay-media>
+  <div class="es-hf__media">
+    {% render 'es-section-media', image: section.settings.image, asset: section.settings.image_asset, video: section.settings.video, video_asset: section.settings.video_asset, alt: section.settings.image_alt, sizes: '(min-width: 990px) 60vw, 100vw', loading: 'eager', fetchpriority: 'high' %}
+  </div>
+  <div class="es-hf__content{% if is_bg %} es-container{% endif %}">
+    <div class="es-hf__box">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when '@app' -%}
+            {% render block %}
+          {%- when 'eyebrow' -%}
+            <p class="es-hf__eyebrow es-hf__eyebrow--{{ block.settings.style }}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>{{ block.settings.text }}</p>
+          {%- when 'heading' -%}
+            {%- capture title -%}{{ block.settings.heading }}{% if block.settings.accent != blank %} <span class="es-accent">{{ block.settings.accent }}</span>{% endif %}{%- endcapture -%}
+            {%- if block.settings.tag == 'h1' -%}
+              <h1 class="es-heading es-hf__title es-hf__title--{{ block.settings.size }}" data-reveal="words" {{ block.shopify_attributes }}>{{ title }}</h1>
+            {%- else -%}
+              <h2 class="es-heading es-hf__title es-hf__title--{{ block.settings.size }}" data-reveal="words" {{ block.shopify_attributes }}>{{ title }}</h2>
+            {%- endif -%}
+          {%- when 'text' -%}
+            <div class="es-rte es-hf__text es-hf__text--{{ block.settings.size }}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+          {%- when 'buttons' -%}
+            {%- if block.settings.label != blank or block.settings.label_2 != blank -%}
+              <div class="es-actions es-hf__actions" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+                {%- if block.settings.label != blank -%}<a href="{{ block.settings.link | default: routes.all_products_collection_url }}" class="es-button">{{ block.settings.label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+                {%- if block.settings.label_2 != blank -%}<a href="{{ block.settings.link_2 | default: routes.root_url }}" class="es-button es-button--secondary">{{ block.settings.label_2 }}</a>{%- endif -%}
+              </div>
+            {%- endif -%}
+          {%- when 'badge' -%}
+            {%- if block.settings.text != blank -%}<p class="es-hf__badge" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>{% render 'icon', name: block.settings.icon %}<span>{{ block.settings.text }}</span></p>{%- endif -%}
+          {%- when 'rating' -%}
+            {%- assign stars = block.settings.stars | times: 1.0 -%}
+            <div class="es-hf__rating" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+              {%- if stars > 0 -%}
+                <span class="es-hf__stars" style="--r: {{ stars | divided_by: 5.0 | times: 100 }}%;" role="img" aria-label="{{ 'products.product.rating_of' | t: rating: stars, max: 5 | escape }}"><span aria-hidden="true">★★★★★</span><span class="es-hf__stars-on" aria-hidden="true">★★★★★</span></span>
+              {%- endif -%}
+              {%- if block.settings.text != blank -%}<span class="es-hf__rating-text">{{ block.settings.text }}</span>{%- endif -%}
+            </div>
+          {%- when 'logos' -%}
+            {%- liquid
+              assign has_logo = false
+              if block.settings.logo_1 != blank or block.settings.logo_2 != blank or block.settings.logo_3 != blank or block.settings.logo_4 != blank
+                assign has_logo = true
+              endif
+            -%}
+            {%- if has_logo -%}
+              <div class="es-hf__logos" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+                {%- if block.settings.label != blank -%}<p class="es-hf__logos-label">{{ block.settings.label }}</p>{%- endif -%}
+                <ul class="es-hf__logo-list" role="list">
+                  {%- for i in (1..4) -%}
+                    {%- assign key = 'logo_' | append: i -%}
+                    {%- assign logo = block.settings[key] -%}
+                    {%- if logo != blank -%}<li>{{ logo | image_url: width: 320 | image_tag: loading: 'lazy', sizes: '160px', alt: logo.alt, class: 'es-hf__logo' }}</li>{%- endif -%}
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- elsif request.design_mode -%}
+              <p class="es-hf__hint" {{ block.shopify_attributes }}>{{ block.settings.label }}</p>
+            {%- endif -%}
+          {%- when 'features' -%}
+            <ul class="es-hf__features" role="list" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+              {%- for i in (1..3) -%}
+                {%- assign vk = 'value_' | append: i -%}
+                {%- assign lk = 'label_' | append: i -%}
+                {%- if block.settings[vk] != blank -%}<li><b>{{ block.settings[vk] }}</b><span>{{ block.settings[lk] }}</span></li>{%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- when 'checklist' -%}
+            {%- assign lines = block.settings.lines | newline_to_br | split: '<br />' -%}
+            <ul class="es-hf__checks" role="list" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+              {%- for line in lines -%}{%- assign l = line | strip -%}{%- if l != blank -%}<li>{% render 'icon', name: 'check' %}<span>{{ l }}</span></li>{%- endif -%}{%- endfor -%}
+            </ul>
+          {%- when 'spacer' -%}
+            <div class="es-hf__spacer" style="height: {{ block.settings.height }}px;" aria-hidden="true" {{ block.shopify_attributes }}></div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-hf { position: relative; display: grid; overflow: hidden; isolation: isolate; }
+.es-hf__box { display: flex; flex-direction: column; align-items: flex-start; gap: 0; max-width: 640px; }
+.es-hf--w-narrow .es-hf__box { max-width: 520px; }
+.es-hf--w-wide .es-hf__box { max-width: 860px; }
+.es-hf--h-center .es-hf__box { align-items: center; text-align: center; margin-inline: auto; }
+.es-hf--h-right .es-hf__box { align-items: flex-end; text-align: right; margin-left: auto; }
+.es-hf--h-center .es-actions { justify-content: center; }
+.es-hf--h-right .es-actions { justify-content: flex-end; }
+/* Fond plein cadre */
+.es-hf--background { min-height: clamp(520px, 78svh, 900px); color: #fff; background: #111; }
+.es-hf--background.es-hf--text-dark { color: #141414; background: #eee; }
+.es-hf--background.es-hf--medium { min-height: clamp(460px, 64svh, 720px); }
+.es-hf--background.es-hf--screen { min-height: 100svh; }
+.es-hf--background .es-hf__media { position: absolute; inset: 0; }
+.es-hf--background .es-hf__media > * { position: absolute; inset: 0; }
+.es-hf--background .es-hf__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(0,0,0, calc(var(--overlay) + .2)) 0%, rgba(0,0,0, var(--overlay)) 45%, rgba(0,0,0, calc(var(--overlay) * .3)) 100%); }
+.es-hf--background.es-hf--h-center .es-hf__media::after { background: rgba(0,0,0, var(--overlay)); }
+.es-hf--background.es-hf--text-dark .es-hf__media::after { background: linear-gradient(100deg, rgba(255,255,255, calc(var(--overlay) + .2)) 0%, rgba(255,255,255, var(--overlay)) 45%, rgba(255,255,255, calc(var(--overlay) * .3)) 100%); }
+.es-hf--background .es-hf__content { position: relative; z-index: 2; display: flex; padding-block: clamp(88px, 12vh, 140px) clamp(56px, 9vh, 100px); }
+.es-hf--background.es-hf--v-top .es-hf__content { align-items: flex-start; }
+.es-hf--background.es-hf--v-center .es-hf__content { align-items: center; }
+.es-hf--background.es-hf--v-bottom .es-hf__content { align-items: flex-end; }
+.es-hf--background .es-hf__box { width: 100%; }
+.es-hf--glass .es-hf__box { padding: clamp(24px, 4vw, 48px); border-radius: calc(var(--radius-card) + 6px); background: rgba(20, 20, 24, .32); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); }
+.es-hf--glass.es-hf--text-dark .es-hf__box { background: rgba(255,255,255,.55); border-color: rgba(0,0,0,.08); }
+.es-hf--background .es-button--secondary { --b-fg: currentColor; }
+.es-hf--background .es-hf__eyebrow--plain { color: inherit; opacity: .85; }
+/* Média sur le côté */
+.es-hf--left, .es-hf--right { background: var(--c-bg); color: var(--c-text); }
+.es-hf--left .es-hf__media, .es-hf--right .es-hf__media { position: relative; min-height: 62vw; overflow: hidden; }
+.es-hf--left .es-hf__media > *, .es-hf--right .es-hf__media > * { position: absolute; inset: 0; }
+.es-hf--left .es-hf__content, .es-hf--right .es-hf__content { display: flex; padding: clamp(40px, 7vw, 96px) var(--gutter); }
+.es-hf--left .es-hf__content { order: 2; }
+.es-hf--right:not(.es-hf--media-first) .es-hf__media { order: 2; }
+@media (min-width: 990px) {
+  .es-hf--left, .es-hf--right { grid-template-columns: 1fr 1fr; min-height: clamp(560px, 82svh, 920px); }
+  .es-hf--left.es-hf--medium, .es-hf--right.es-hf--medium { min-height: clamp(480px, 66svh, 760px); }
+  .es-hf--left.es-hf--screen, .es-hf--right.es-hf--screen { min-height: 100svh; }
+  .es-hf--right .es-hf__media { order: 2; }
+  .es-hf--left .es-hf__media, .es-hf--right .es-hf__media { min-height: 0; }
+  .es-hf--left .es-hf__content, .es-hf--right .es-hf__content { padding: clamp(56px, 6vw, 112px); }
+  .es-hf--v-top .es-hf__content { align-items: flex-start; }
+  .es-hf--v-center .es-hf__content { align-items: center; }
+  .es-hf--v-bottom .es-hf__content { align-items: flex-end; }
+}
+.es-hf__media .es-smedia__video { opacity: 0; transition: opacity .8s ease; }
+.es-hf__media .es-smedia__video.is-playing, .es-hf__media .es-smedia__video:only-child { opacity: 1; }
+/* Blocs */
+.es-hf__box > * { margin-top: 0; margin-bottom: 0; }
+.es-hf__box > * + * { margin-top: 18px; }
+.es-hf__box > .es-hf__badge + *, .es-hf__box > .es-hf__eyebrow + * { margin-top: 22px; }
+.es-hf__eyebrow { text-transform: uppercase; letter-spacing: .2em; font-size: .76rem; font-weight: var(--font-body-weight-bold); color: var(--c-accent); }
+.es-hf__eyebrow--pill { display: inline-flex; padding: .55em 1.1em; border-radius: var(--radius-pill, 99px); border: 1px solid color-mix(in srgb, currentColor 35%, transparent); background: color-mix(in srgb, currentColor 8%, transparent); color: inherit; letter-spacing: .14em; }
+.es-hf__title { color: inherit; margin: 0; }
+.es-hf__title--small { font-size: calc(clamp(2rem, 4vw, 3.2rem) * var(--heading-scale)); }
+.es-hf__title--medium { font-size: calc(clamp(2.3rem, 4.8vw, 4rem) * var(--heading-scale)); line-height: 1; }
+.es-hf__title--large { font-size: calc(clamp(2.6rem, 6.2vw, 5.4rem) * var(--heading-scale)); line-height: .97; }
+.es-hf__title--xl { font-size: calc(clamp(3rem, 9vw, 8rem) * var(--heading-scale)); line-height: .92; }
+.es-hf__text { max-width: 56ch; opacity: .88; }
+.es-hf__text--large { font-size: 1.18em; }
+.es-hf__text--small { font-size: .94em; }
+.es-hf__box > .es-hf__actions { margin-top: 26px; }
+.es-hf__badge { display: inline-flex; align-items: center; gap: .55em; padding: .5em 1em .5em .7em; border-radius: var(--radius-pill, 99px); font-size: .86rem; font-weight: var(--font-body-weight-bold);
+  background: rgba(var(--c-accent-rgb), .16); border: 1px solid rgba(var(--c-accent-rgb), .45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.es-hf__badge .es-icon { width: 17px; height: 17px; color: var(--c-accent); }
+.es-hf__rating { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; font-size: .92rem; }
+.es-hf__stars { position: relative; display: inline-block; font-size: 1.15rem; letter-spacing: .1em; line-height: 1; color: color-mix(in srgb, currentColor 28%, transparent); }
+.es-hf__stars-on { position: absolute; inset: 0; width: var(--r, 0%); overflow: hidden; white-space: nowrap; color: #f5b301; }
+.es-hf__rating-text { opacity: .85; }
+.es-hf__logos { display: grid; gap: 10px; }
+.es-hf__logos-label { margin: 0; font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; opacity: .7; }
+.es-hf__logo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
+.es-hf--h-center .es-hf__logo-list { justify-content: center; }
+.es-hf__logo { height: 28px; width: auto; max-width: 130px; object-fit: contain; filter: grayscale(1); opacity: .75; }
+.es-hf--background:not(.es-hf--text-dark) .es-hf__logo { filter: grayscale(1) brightness(0) invert(1); }
+.es-hf__hint { font-size: .8rem; padding: 10px 14px; border: 1px dashed currentColor; border-radius: 10px; opacity: .75; }
+.es-hf__features { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 14px clamp(20px, 3vw, 40px); }
+.es-hf__box > .es-hf__features { margin-top: 30px; padding-top: 22px; border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+.es-hf__features li { display: grid; gap: 2px; }
+.es-hf__features b { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: clamp(1.3rem, 2.4vw, 1.9rem); line-height: 1.1; }
+.es-hf__features span { font-size: .82rem; opacity: .75; }
+.es-hf__checks { list-style: none; padding: 0; display: grid; gap: 8px; }
+.es-hf__checks li { display: flex; align-items: center; gap: 10px; }
+.es-hf__checks .es-icon { width: 18px; height: 18px; color: var(--c-accent); flex: none; }
+.es-hf__box > .es-hf__spacer { margin: 0; }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.EsVisibleMedia) return;
+  window.EsVisibleMedia = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  function init(ctx) {
+    if (reduce || !('IntersectionObserver' in window)) return;
+    Array.prototype.forEach.call((ctx || document).querySelectorAll('[data-es-autoplay-media] .es-smedia__video'), function (v) {
+      if (v._esObs) return;
+      v._esObs = new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) { var p = v.play(); v.classList.add('is-playing'); if (p && p.catch) p.catch(function () { v.classList.remove('is-playing'); }); }
+        else v.pause();
+      }, { threshold: 0.1 });
+      v._esObs.observe(v);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(); }); else init();
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Hero premium ajout libre",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "header", "content": "Média" },
+    { "type": "select", "id": "media_layout", "label": "Place du média", "default": "background", "options": [ { "value": "background", "label": "En fond" }, { "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" } ] },
+    { "type": "image_picker", "id": "image", "label": "Image (ou affiche de la vidéo)" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description de l'image (accessibilité)" },
+    { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+    { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4)" },
+    { "type": "checkbox", "id": "media_first_mobile", "label": "Média au-dessus du texte sur mobile", "default": true },
+    { "type": "header", "content": "Mise en page" },
+    { "type": "select", "id": "height", "label": "Hauteur", "default": "large", "options": [ { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" }, { "value": "screen", "label": "Plein écran" } ] },
+    { "type": "select", "id": "align_x", "label": "Alignement horizontal", "default": "left", "options": [ { "value": "left", "label": "À gauche" }, { "value": "center", "label": "Au centre" }, { "value": "right", "label": "À droite" } ] },
+    { "type": "select", "id": "align_y", "label": "Alignement vertical", "default": "center", "options": [ { "value": "top", "label": "En haut" }, { "value": "center", "label": "Au milieu" }, { "value": "bottom", "label": "En bas" } ] },
+    { "type": "select", "id": "content_width", "label": "Largeur du contenu", "default": "normal", "options": [ { "value": "narrow", "label": "Étroite" }, { "value": "normal", "label": "Normale" }, { "value": "wide", "label": "Large" } ] },
+    { "type": "header", "content": "Média en fond" },
+    { "type": "select", "id": "text_color", "label": "Couleur du texte", "default": "light", "options": [ { "value": "light", "label": "Clair (sur image sombre)" }, { "value": "dark", "label": "Foncé (sur image claire)" } ] },
+    { "type": "range", "id": "overlay", "min": 0, "max": 80, "step": 5, "unit": "%", "label": "Voile sur l'image", "default": 30 },
+    { "type": "checkbox", "id": "glass", "label": "Panneau en verre dépoli derrière le texte", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
+  ],
+  "blocks": [
+    { "type": "eyebrow", "name": "Surtitre", "settings": [
+      { "type": "text", "id": "text", "label": "Texte", "default": "Nouveau" },
+      { "type": "select", "id": "style", "label": "Style", "default": "plain", "options": [ { "value": "plain", "label": "Texte simple" }, { "value": "pill", "label": "Pastille" } ] }
+    ] },
+    { "type": "heading", "name": "Titre", "settings": [
+      { "type": "text", "id": "heading", "label": "Titre", "default": "Une ouverture qui vous ressemble," },
+      { "type": "text", "id": "accent", "label": "Mot ou fin de titre mis en valeur", "default": "bloc par bloc" },
+      { "type": "select", "id": "size", "label": "Taille", "default": "medium", "options": [ { "value": "small", "label": "Petite" }, { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" }, { "value": "xl", "label": "Très grande" } ] },
+      { "type": "select", "id": "tag", "label": "Niveau du titre (référencement)", "default": "h1", "options": [ { "value": "h1", "label": "Titre principal de la page (H1)" }, { "value": "h2", "label": "Sous-titre (H2)" } ] }
+    ] },
+    { "type": "text", "name": "Texte", "settings": [
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : ce que votre produit apporte, en une ou deux phrases vraies.]</p>" },
+      { "type": "select", "id": "size", "label": "Taille", "default": "large", "options": [ { "value": "small", "label": "Petite" }, { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" } ] }
+    ] },
+    { "type": "buttons", "name": "Boutons", "settings": [
+      { "type": "text", "id": "label", "label": "Bouton", "default": "Découvrir" },
+      { "type": "url", "id": "link", "label": "Lien du bouton" },
+      { "type": "text", "id": "label_2", "label": "Second bouton", "default": "En savoir plus" },
+      { "type": "url", "id": "link_2", "label": "Lien du second bouton" }
+    ] },
+    { "type": "badge", "name": "Badge", "settings": [
+      { "type": "paragraph", "content": "Faits vérifiés uniquement." },
+      { "type": "text", "id": "text", "label": "Texte", "default": "[À compléter : un fait vérifié, ex. fabriqué en France]" },
+      { "type": "select", "id": "icon", "label": "Icône", "default": "check", "options": [ { "value": "check", "label": "Coche" }, { "value": "star", "label": "Étoile" }, { "value": "leaf", "label": "Feuille" }, { "value": "truck", "label": "Livraison" }, { "value": "shield", "label": "Bouclier" }, { "value": "sparkle", "label": "Éclat" }, { "value": "heart", "label": "Cœur" }, { "value": "clock", "label": "Horloge" }, { "value": "gift", "label": "Cadeau" } ] }
+    ] },
+    { "type": "rating", "name": "Note clients", "settings": [
+      { "type": "paragraph", "content": "Uniquement votre note moyenne réelle, vérifiable (application d'avis, avis collectés)." },
+      { "type": "range", "id": "stars", "min": 0, "max": 5, "step": 0.1, "label": "Note moyenne réelle (0 = étoiles masquées)", "default": 0 },
+      { "type": "text", "id": "text", "label": "Texte", "default": "[À compléter : note réelle et nombre d'avis]" }
+    ] },
+    { "type": "logos", "name": "Logos", "settings": [
+      { "type": "paragraph", "content": "Uniquement des marques, médias ou partenaires qui ont réellement parlé de vous ou travaillé avec vous." },
+      { "type": "text", "id": "label", "label": "Libellé", "default": "[À compléter : ex. Ils parlent de nous]" },
+      { "type": "image_picker", "id": "logo_1", "label": "Logo 1" },
+      { "type": "image_picker", "id": "logo_2", "label": "Logo 2" },
+      { "type": "image_picker", "id": "logo_3", "label": "Logo 3" },
+      { "type": "image_picker", "id": "logo_4", "label": "Logo 4" }
+    ] },
+    { "type": "features", "name": "Caractéristiques", "settings": [
+      { "type": "paragraph", "content": "Valeurs exactes uniquement (contenance, autonomie, matière…)." },
+      { "type": "text", "id": "value_1", "label": "Valeur 1", "default": "[À compléter]" },
+      { "type": "text", "id": "label_1", "label": "Libellé 1", "default": "Caractéristique" },
+      { "type": "text", "id": "value_2", "label": "Valeur 2", "default": "[À compléter]" },
+      { "type": "text", "id": "label_2", "label": "Libellé 2", "default": "Caractéristique" },
+      { "type": "text", "id": "value_3", "label": "Valeur 3" },
+      { "type": "text", "id": "label_3", "label": "Libellé 3" }
+    ] },
+    { "type": "checklist", "name": "Liste à puces", "settings": [
+      { "type": "textarea", "id": "lines", "label": "Lignes (une par ligne)", "default": "[À compléter : premier atout]\n[À compléter : deuxième atout]" }
+    ] },
+    { "type": "spacer", "name": "Espace", "settings": [
+      { "type": "range", "id": "height", "min": 0, "max": 80, "step": 4, "unit": "px", "label": "Hauteur", "default": 16 }
+    ] },
+    { "type": "@app" }
+  ],
+  "max_blocks": 14,
+  "presets": [{ "name": "Hero premium ajout libre", "blocks": [
+    { "type": "badge" },
+    { "type": "heading" },
+    { "type": "text" },
+    { "type": "buttons" },
+    { "type": "rating" },
+    { "type": "features" }
+  ] }]
+}
+{% endschema %}

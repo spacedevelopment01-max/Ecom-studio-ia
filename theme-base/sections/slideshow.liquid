@@ -1,0 +1,336 @@
+{%- comment -%}
+  Diaporama premium : diapositives plein cadre (image ou vidéo), texte et boutons, transition en fondu ou glissée,
+  lecture automatique réglable (pause au survol, au focus, hors écran, bouton pause), pagination, flèches,
+  balayage tactile et clavier. Sans lecture automatique ni transition si l'acheteur a demandé moins d'animations.
+{%- endcomment -%}
+{%- liquid
+  assign count = section.blocks.size
+  assign label = section.settings.label
+  if label == blank
+    assign label = 'sections.slideshow.carousel' | t
+  endif
+-%}
+<section class="es-ss es-ss--{{ section.settings.height }} es-ss--{{ section.settings.transition }} es-ss--text-{{ section.settings.text_color }} es-ss--pag-{{ section.settings.pagination }}{% if section.settings.zoom %} es-ss--zoom{% endif %} color-{{ section.settings.color_scheme }}" style="--overlay: {{ section.settings.overlay | divided_by: 100.0 }}; --ss-speed: {{ section.settings.autoplay_speed }}s;" role="region" aria-roledescription="{{ 'sections.slideshow.carousel' | t }}" aria-label="{{ label | escape }}" data-es-slideshow data-autoplay="{% if section.settings.autoplay and count > 1 %}true{% else %}false{% endif %}" data-speed="{{ section.settings.autoplay_speed }}" data-hover-pause="{{ section.settings.pause_on_hover }}">
+  <div class="es-ss__viewport" data-ss-viewport aria-live="polite">
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign loading = 'lazy'
+        assign priority = nil
+        if forloop.first
+          assign loading = 'eager'
+          assign priority = 'high'
+        endif
+      -%}
+      <div class="es-ss__slide es-ss__slide--{{ block.settings.position }}{% if forloop.first %} is-active{% endif %}" role="group" aria-roledescription="{{ 'sections.slideshow.slide' | t }}" aria-label="{{ 'sections.slideshow.slide_of' | t: n: forloop.index, total: count }}" data-ss-slide{% unless forloop.first %} aria-hidden="true" inert{% endunless %} {{ block.shopify_attributes }}>
+        <div class="es-ss__media">
+          {% render 'es-section-media', image: block.settings.image, asset: block.settings.image_asset, video: block.settings.video, video_asset: block.settings.video_asset, alt: block.settings.image_alt, sizes: '100vw', loading: loading, fetchpriority: priority %}
+        </div>
+        <div class="es-ss__content es-container">
+          <div class="es-ss__box">
+            {%- if block.settings.eyebrow != blank -%}<p class="es-eyebrow es-ss__eyebrow">{{ block.settings.eyebrow }}</p>{%- endif -%}
+            {%- if block.settings.heading != blank -%}
+              <h2 class="es-heading es-ss__title es-ss__title--{{ block.settings.heading_size }}">
+                {{- block.settings.heading -}}
+                {%- if block.settings.heading_accent != blank %} <span class="es-accent">{{ block.settings.heading_accent }}</span>{% endif -%}
+              </h2>
+            {%- endif -%}
+            {%- if block.settings.text != blank -%}<div class="es-rte es-ss__text">{{ block.settings.text }}</div>{%- endif -%}
+            {%- if block.settings.button_label != blank or block.settings.button2_label != blank -%}
+              <div class="es-actions es-ss__actions">
+                {%- if block.settings.button_label != blank -%}<a href="{{ block.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ block.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+                {%- if block.settings.button2_label != blank -%}<a href="{{ block.settings.button2_link | default: routes.root_url }}" class="es-button es-button--secondary">{{ block.settings.button2_label }}</a>{%- endif -%}
+              </div>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+
+  {%- if count > 1 -%}
+    <div class="es-ss__controls es-container">
+      <div class="es-ss__pagination" role="group" aria-label="{{ 'general.pagination' | t }}">
+        {%- for block in section.blocks -%}
+          <button type="button" class="es-ss__dot{% if forloop.first %} is-active{% endif %}" data-ss-go="{{ forloop.index0 }}" aria-label="{{ 'sections.slideshow.go_to' | t: n: forloop.index }}"{% if forloop.first %} aria-current="true"{% endif %}>
+            {%- if section.settings.pagination == 'numbers' -%}<span class="es-ss__num" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>{%- endif -%}
+            <span class="es-ss__bar" aria-hidden="true"><i></i></span>
+          </button>
+        {%- endfor -%}
+      </div>
+      <div class="es-ss__buttons">
+        {%- if section.settings.autoplay -%}
+          <button type="button" class="es-ss__btn es-ss__btn--play" data-ss-toggle data-label-pause="{{ 'general.pause' | t | escape }}" data-label-play="{{ 'general.play' | t | escape }}" aria-label="{{ 'general.pause' | t | escape }}">
+            <svg class="es-ss__ico-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg>
+            <svg class="es-ss__ico-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+          </button>
+        {%- endif -%}
+        {%- if section.settings.show_arrows -%}
+          <button type="button" class="es-ss__btn" data-ss-prev aria-label="{{ 'sections.slideshow.previous' | t | escape }}">{% render 'icon', name: 'arrow-left' %}</button>
+          <button type="button" class="es-ss__btn" data-ss-next aria-label="{{ 'sections.slideshow.next' | t | escape }}">{% render 'icon', name: 'arrow' %}</button>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+.es-ss { --ss-dur: .9s; position: relative; display: grid; overflow: hidden; isolation: isolate; color: #fff; background: #111; }
+.es-ss--text-dark { color: #141414; }
+.es-ss__viewport { position: relative; display: grid; min-height: 72svh; touch-action: pan-y; }
+.es-ss--medium .es-ss__viewport { min-height: clamp(520px, 72svh, 820px); }
+.es-ss--large .es-ss__viewport { min-height: clamp(560px, 86svh, 980px); }
+.es-ss--screen .es-ss__viewport { min-height: 100svh; }
+.es-ss--wide .es-ss__viewport { min-height: 0; aspect-ratio: 16 / 9; }
+@media (max-width: 749px) { .es-ss--wide .es-ss__viewport { aspect-ratio: auto; min-height: 78svh; } .es-ss--medium .es-ss__viewport { min-height: 78svh; } }
+.es-ss__slide { grid-area: 1 / 1; position: relative; display: grid; opacity: 0; visibility: hidden; transform: translate3d(var(--x, 0), 0, 0);
+  transition: opacity var(--ss-dur) var(--ease-out), transform var(--ss-dur) var(--ease-out), visibility 0s linear var(--ss-dur); }
+.es-ss__slide.is-active { opacity: 1; visibility: visible; transform: none; z-index: 2; transition-delay: 0s; }
+.es-ss__slide.is-leaving { visibility: visible; z-index: 1; }
+.es-ss--slide .es-ss__slide { opacity: 1; --x: 100%; }
+.es-ss--slide .es-ss__slide.is-leaving { transition-delay: 0s; }
+.es-ss__slide.no-trans { transition: none !important; }
+.es-ss__media { position: absolute; inset: 0; overflow: hidden; background: #1a1a1a; }
+.es-ss__media::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0, var(--overlay))), rgba(0,0,0, calc(var(--overlay) * .45)); }
+.es-ss--text-dark .es-ss__media::after { background: linear-gradient(180deg, rgba(255,255,255,0) 30%, rgba(255,255,255, var(--overlay))), rgba(255,255,255, calc(var(--overlay) * .45)); }
+.es-ss__media > * { position: absolute; inset: 0; }
+.es-ss__media .es-smedia__video { opacity: 0; transition: opacity .6s ease; }
+.es-ss__media .es-smedia__video.is-playing, .es-ss__media .es-smedia__video:only-child { opacity: 1; }
+.es-ss--zoom .es-ss__media img, .es-ss--zoom .es-ss__media video { transform: scale(1.08); transition: transform 7s cubic-bezier(.2,.6,.2,1); }
+.es-ss--zoom .is-active .es-ss__media img, .es-ss--zoom .is-active .es-ss__media video { transform: scale(1); }
+.es-ss__content { position: relative; z-index: 2; display: flex; padding-block: clamp(88px, 12vh, 140px) clamp(112px, 14vh, 150px); }
+.es-ss__slide--bottom-left .es-ss__content { align-items: flex-end; }
+.es-ss__slide--middle-left .es-ss__content { align-items: center; }
+.es-ss__slide--center .es-ss__content { align-items: center; justify-content: center; text-align: center; }
+.es-ss__slide--bottom-center .es-ss__content { align-items: flex-end; justify-content: center; text-align: center; }
+.es-ss__slide--bottom-right .es-ss__content { align-items: flex-end; justify-content: flex-end; }
+.es-ss__box { max-width: 760px; }
+.es-ss__slide--center .es-actions, .es-ss__slide--bottom-center .es-actions { justify-content: center; }
+.es-ss__eyebrow { color: inherit; opacity: .85; }
+.es-ss__title { color: inherit; }
+.es-ss__title--large { font-size: calc(clamp(2.6rem, 7.4vw, 6.4rem) * var(--heading-scale)); line-height: .98; }
+.es-ss__title--medium { font-size: calc(clamp(2.1rem, 5vw, 4.2rem) * var(--heading-scale)); }
+.es-ss__title--small { font-size: calc(clamp(1.7rem, 3.4vw, 2.8rem) * var(--heading-scale)); }
+.es-ss__text { font-size: 1.1em; max-width: 52ch; opacity: .9; }
+.es-ss__slide--center .es-ss__text, .es-ss__slide--bottom-center .es-ss__text { margin-inline: auto; }
+.es-ss .es-button--secondary { --b-fg: currentColor; }
+.es-ss__box > * { opacity: 0; transform: translateY(26px); transition: opacity .8s var(--ease-out), transform .9s var(--ease-out); }
+.es-ss__slide.is-active .es-ss__box > * { opacity: 1; transform: none; }
+.es-ss__slide.is-active .es-ss__box > :nth-child(1) { transition-delay: .25s; }
+.es-ss__slide.is-active .es-ss__box > :nth-child(2) { transition-delay: .35s; }
+.es-ss__slide.is-active .es-ss__box > :nth-child(3) { transition-delay: .47s; }
+.es-ss__slide.is-active .es-ss__box > :nth-child(4) { transition-delay: .6s; }
+.es-ss__controls { position: absolute; z-index: 3; left: 0; right: 0; bottom: clamp(20px, 4vh, 40px); margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; pointer-events: none; }
+.es-ss__controls > * { pointer-events: auto; }
+.es-ss__pagination { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.es-ss__dot { appearance: none; border: 0; background: none; color: inherit; padding: 12px 0; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font: inherit; }
+.es-ss__bar { position: relative; display: block; width: clamp(34px, 6vw, 64px); height: 2px; background: currentColor; opacity: .35; overflow: hidden; border-radius: 2px; transition: opacity .3s; }
+.es-ss__bar i { position: absolute; inset: 0; background: currentColor; transform: scaleX(0); transform-origin: left; }
+.es-ss__dot.is-active .es-ss__bar { opacity: 1; background: color-mix(in srgb, currentColor 35%, transparent); }
+.es-ss__dot.is-active .es-ss__bar i { transform: scaleX(1); }
+.es-ss.is-autoplay .es-ss__dot.is-active .es-ss__bar i { transform: scaleX(0); animation: es-ss-fill var(--ss-speed) linear forwards; }
+.es-ss.is-paused .es-ss__dot.is-active .es-ss__bar i { animation-play-state: paused; }
+@keyframes es-ss-fill { to { transform: scaleX(1); } }
+.es-ss__dot:hover .es-ss__bar { opacity: .8; }
+.es-ss--pag-dots .es-ss__bar { width: 8px; height: 8px; border-radius: 99px; transition: width .5s var(--ease-out), opacity .3s; }
+.es-ss--pag-dots .es-ss__dot.is-active .es-ss__bar { width: 34px; }
+.es-ss__num { font-size: .8rem; font-weight: var(--font-body-weight-bold); letter-spacing: .08em; opacity: .55; transition: opacity .3s; font-variant-numeric: tabular-nums; }
+.es-ss--pag-numbers .es-ss__bar { width: 0; transition: width .5s var(--ease-out), opacity .3s; }
+.es-ss--pag-numbers .es-ss__dot.is-active .es-ss__bar { width: clamp(34px, 6vw, 64px); }
+.es-ss__dot.is-active .es-ss__num { opacity: 1; }
+.es-ss__buttons { display: flex; gap: 8px; }
+.es-ss__btn { width: 48px; height: 48px; border-radius: 50%; display: inline-grid; place-items: center; cursor: pointer; color: inherit;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent); background: color-mix(in srgb, currentColor 8%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background .3s, transform .35s var(--ease-out), border-color .3s; }
+.es-ss__btn:hover { background: color-mix(in srgb, currentColor 18%, transparent); border-color: currentColor; transform: translateY(-2px); }
+.es-ss__btn .es-icon, .es-ss__btn svg { width: 20px; height: 20px; }
+.es-ss__ico-play { display: none; }
+.es-ss.is-paused .es-ss__ico-play { display: block; }
+.es-ss.is-paused .es-ss__ico-pause { display: none; }
+.es-ss :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+@media (max-width: 749px) {
+  .es-ss__btn { width: 42px; height: 42px; }
+  .es-ss__content { padding-bottom: 104px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es-ss__slide, .es-ss__box > *, .es-ss--zoom .es-ss__media img, .es-ss--zoom .es-ss__media video { transition: none !important; transform: none !important; }
+  .es-ss__box > * { opacity: 1; }
+  .es-ss__bar, .es-ss__bar i { animation: none !important; transition: none !important; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.EsSlideshow) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  function init(root) {
+    if (!root || root._esSs) return;
+    var slides = Array.prototype.slice.call(root.querySelectorAll('[data-ss-slide]'));
+    var dots = Array.prototype.slice.call(root.querySelectorAll('[data-ss-go]'));
+    var viewport = root.querySelector('[data-ss-viewport]');
+    var toggle = root.querySelector('[data-ss-toggle]');
+    var api = { go: go, pause: function () { userPause(true); }, play: function () { userPause(false); } };
+    root._esSs = api;
+    var index = 0, timer = null, remaining = 0, started = 0;
+    var speed = (parseFloat(root.getAttribute('data-speed')) || 6) * 1000;
+    var autoplay = root.getAttribute('data-autoplay') === 'true' && !reduce && slides.length > 1;
+    var holds = { user: false, hover: false, focus: false, offscreen: false, hidden: false, editor: false };
+    function videos(slide) { return Array.prototype.slice.call(slide.querySelectorAll('video')); }
+    function syncVideos() {
+      slides.forEach(function (s, i) {
+        videos(s).forEach(function (v) {
+          if (i === index && !reduce && !holds.offscreen && !holds.hidden) {
+            var p = v.play(); v.classList.add('is-playing');
+            if (p && p.catch) p.catch(function () { v.classList.remove('is-playing'); });
+          } else { v.pause(); if (i !== index) v.classList.remove('is-playing'); }
+        });
+      });
+    }
+    function held() { return holds.user || holds.hover || holds.focus || holds.offscreen || holds.hidden || holds.editor; }
+    function schedule(fresh) {
+      clearTimeout(timer); timer = null;
+      if (!autoplay) return;
+      if (fresh) remaining = speed;
+      root.classList.toggle('is-paused', held());
+      if (held()) return;
+      started = Date.now();
+      timer = setTimeout(function () { go(index + 1, 1, true); }, remaining);
+    }
+    function hold(key, on) {
+      if (holds[key] === on) return;
+      if (on && timer) { remaining = Math.max(0, remaining - (Date.now() - started)); }
+      holds[key] = on;
+      if (key === 'offscreen' || key === 'hidden') syncVideos();
+      schedule(false);
+    }
+    function restartBar() {
+      var bar = dots[index] && dots[index].querySelector('.es-ss__bar i');
+      if (!bar) return;
+      bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = '';
+    }
+    function go(n, dir, auto) {
+      var count = slides.length;
+      if (!count) return;
+      var next = (n + count) % count;
+      if (next === index) { schedule(true); return; }
+      dir = dir || (next > index ? 1 : -1);
+      var prev = slides[index], cur = slides[next];
+      cur.classList.add('no-trans');
+      cur.style.setProperty('--x', (dir * 100) + '%');
+      void cur.offsetWidth;
+      cur.classList.remove('no-trans');
+      prev.style.setProperty('--x', (-dir * 100) + '%');
+      prev.classList.remove('is-active'); prev.classList.add('is-leaving');
+      prev.setAttribute('aria-hidden', 'true'); prev.inert = true;
+      clearTimeout(prev._leave);
+      prev._leave = setTimeout(function () { prev.classList.remove('is-leaving'); prev.style.removeProperty('--x'); }, reduce ? 0 : 950);
+      cur.classList.remove('is-leaving');
+      cur.classList.add('is-active'); cur.removeAttribute('aria-hidden'); cur.inert = false;
+      index = next;
+      dots.forEach(function (d, i) { d.classList.toggle('is-active', i === index); if (i === index) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
+      if (viewport) viewport.setAttribute('aria-live', auto && autoplay && !holds.user ? 'off' : 'polite');
+      restartBar();
+      syncVideos();
+      schedule(true);
+    }
+    function userPause(on) {
+      hold('user', on);
+      if (toggle) toggle.setAttribute('aria-label', toggle.getAttribute(on ? 'data-label-play' : 'data-label-pause'));
+    }
+    dots.forEach(function (d) { d.addEventListener('click', function () { go(parseInt(d.getAttribute('data-ss-go'), 10)); }); });
+    var prevBtn = root.querySelector('[data-ss-prev]'), nextBtn = root.querySelector('[data-ss-next]');
+    if (prevBtn) prevBtn.addEventListener('click', function () { go(index - 1, -1); });
+    if (nextBtn) nextBtn.addEventListener('click', function () { go(index + 1, 1); });
+    if (toggle) toggle.addEventListener('click', function () { userPause(!holds.user); });
+    root.addEventListener('keydown', function (e) {
+      if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+      if (e.key === 'ArrowRight') { go(index + 1, 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { go(index - 1, -1); e.preventDefault(); }
+    });
+    if (root.getAttribute('data-hover-pause') === 'true') {
+      root.addEventListener('mouseenter', function () { hold('hover', true); });
+      root.addEventListener('mouseleave', function () { hold('hover', false); });
+    }
+    root.addEventListener('focusin', function () { hold('focus', true); });
+    root.addEventListener('focusout', function (e) { if (!root.contains(e.relatedTarget)) hold('focus', false); });
+    var x0 = null, y0 = 0;
+    if (viewport && slides.length > 1) {
+      viewport.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') return; x0 = e.clientX; y0 = e.clientY; }, { passive: true });
+      viewport.addEventListener('pointerup', function (e) {
+        if (x0 === null) return;
+        var dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) go(index + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+      }, { passive: true });
+      viewport.addEventListener('pointercancel', function () { x0 = null; });
+    }
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { hold('offscreen', !es[0].isIntersecting); }, { threshold: 0.15 }).observe(root);
+    document.addEventListener('visibilitychange', function () { hold('hidden', document.hidden); });
+    if (autoplay) root.classList.add('is-autoplay');
+    syncVideos();
+    schedule(true);
+    api.hold = hold;
+  }
+  function initAll(ctx) { Array.prototype.forEach.call((ctx || document).querySelectorAll('[data-es-slideshow]'), init); }
+  window.EsSlideshow = { init: initAll };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { initAll(); }); else initAll();
+  document.addEventListener('shopify:section:load', function (e) { initAll(e.target); });
+  document.addEventListener('shopify:block:select', function (e) {
+    var slide = e.target.closest && e.target.closest('[data-ss-slide]');
+    var root = slide && slide.closest('[data-es-slideshow]');
+    if (!root || !root._esSs) return;
+    root._esSs.hold('editor', true);
+    root._esSs.go(Array.prototype.indexOf.call(root.querySelectorAll('[data-ss-slide]'), slide));
+  });
+  document.addEventListener('shopify:block:deselect', function (e) {
+    var root = e.target.closest && e.target.closest('[data-es-slideshow]');
+    if (root && root._esSs) root._esSs.hold('editor', false);
+  });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Diaporama premium",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "label", "label": "Nom du diaporama (lecteurs d'écran)", "info": "Ex. « Nouveautés ». Non affiché à l'écran." },
+    { "type": "header", "content": "Lecture" },
+    { "type": "select", "id": "transition", "label": "Transition", "default": "fade", "options": [ { "value": "fade", "label": "Fondu" }, { "value": "slide", "label": "Glissé" } ] },
+    { "type": "checkbox", "id": "autoplay", "label": "Lecture automatique", "default": true, "info": "Désactivée pour les visiteurs qui ont demandé moins d'animations. Un bouton pause est toujours affiché." },
+    { "type": "range", "id": "autoplay_speed", "min": 3, "max": 12, "step": 1, "unit": "s", "label": "Durée de chaque diapositive", "default": 6 },
+    { "type": "checkbox", "id": "pause_on_hover", "label": "Pause au survol", "default": true },
+    { "type": "checkbox", "id": "zoom", "label": "Zoom lent sur l'image active", "default": true },
+    { "type": "header", "content": "Affichage" },
+    { "type": "select", "id": "height", "label": "Hauteur", "default": "large", "options": [ { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" }, { "value": "screen", "label": "Plein écran" }, { "value": "wide", "label": "Format 16:9" } ] },
+    { "type": "select", "id": "pagination", "label": "Pagination", "default": "bars", "options": [ { "value": "bars", "label": "Barres de progression" }, { "value": "dots", "label": "Points" }, { "value": "numbers", "label": "Numéros" } ] },
+    { "type": "checkbox", "id": "show_arrows", "label": "Flèches", "default": true },
+    { "type": "select", "id": "text_color", "label": "Couleur du texte", "default": "light", "options": [ { "value": "light", "label": "Clair (sur image sombre)" }, { "value": "dark", "label": "Foncé (sur image claire)" } ] },
+    { "type": "range", "id": "overlay", "min": 0, "max": 80, "step": 5, "unit": "%", "label": "Voile sur l'image", "default": 30 },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" }
+  ],
+  "blocks": [
+    { "type": "slide", "name": "Diapositive", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image (ou affiche de la vidéo)" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "image_alt", "label": "Description de l'image (accessibilité)" },
+      { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+      { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4)" },
+      { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+      { "type": "text", "id": "heading", "label": "Titre", "default": "Un titre fort pour cette diapositive" },
+      { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur" },
+      { "type": "select", "id": "heading_size", "label": "Taille du titre", "default": "large", "options": [ { "value": "small", "label": "Petite" }, { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" } ] },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : une phrase vraie sur votre produit ou votre offre.]</p>" },
+      { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
+      { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+      { "type": "text", "id": "button2_label", "label": "Second bouton" },
+      { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+      { "type": "select", "id": "position", "label": "Position du texte", "default": "bottom-left", "options": [ { "value": "bottom-left", "label": "En bas à gauche" }, { "value": "middle-left", "label": "Au milieu à gauche" }, { "value": "center", "label": "Au centre" }, { "value": "bottom-center", "label": "En bas au centre" }, { "value": "bottom-right", "label": "En bas à droite" } ] }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Diaporama premium", "blocks": [
+    { "type": "slide" },
+    { "type": "slide", "settings": { "heading": "Une deuxième diapositive", "position": "middle-left" } },
+    { "type": "slide", "settings": { "heading": "Une troisième diapositive", "position": "center" } }
+  ] }]
+}
+{% endschema %}

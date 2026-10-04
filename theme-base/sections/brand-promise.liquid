@@ -1,0 +1,140 @@
+{%- comment -%}
+  Grande promesse de marque : titre fort avec mot d'accent, texte, 3 à 4 engagements illustrés, image d'ambiance.
+  Les engagements doivent être réels et tenus : les textes de départ sont des espaces réservés.
+{%- endcomment -%}
+{%- assign img_right = false -%}
+{%- if section.settings.layout == 'image-right' -%}{%- assign img_right = true -%}{%- endif -%}
+<section class="es-section es-promise es-ambient color-{{ section.settings.color_scheme }}{% if img_right %} es-promise--right{% endif %}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container es-promise__grid">
+    <div class="es-promise__visual">
+      <div class="es-promise__frame">
+        <div class="es-promise__reveal" data-reveal="curtain"{% if section.settings.parallax %} data-scroll-zoom{% endif %}>
+          {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 45vw, 92vw', class: 'es-cover' %}
+        </div>
+      </div>
+      {%- if section.settings.badge_text != blank -%}
+        {%- capture ring_text -%}{{ section.settings.badge_text | escape }} · {{ section.settings.badge_text | escape }} · {%- endcapture -%}
+        <div class="es-promise__seal" aria-hidden="true">
+          <svg viewBox="0 0 120 120"><defs><path id="es-promise-ring-{{ section.id }}" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0"/></defs><text><textPath href="#es-promise-ring-{{ section.id }}" textLength="285">{{ ring_text }}</textPath></text></svg>
+          <span class="es-promise__seal-core">{% render 'es-glyph', name: section.settings.badge_icon %}</span>
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="es-promise__content">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="es-heading es-promise__title" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="es-promise__list" role="list">
+          {%- for block in section.blocks -%}
+            <li class="es-promise__item" data-reveal="up" style="--i: {{ forloop.index0 | plus: 2 }}" {{ block.shopify_attributes }}>
+              <span class="es-promise__icon">{% render 'es-glyph', name: block.settings.icon %}</span>
+              <div>
+                <h3 class="es-promise__item-title">{{ block.settings.title }}</h3>
+                {%- if block.settings.text != blank -%}<div class="es-promise__item-text">{{ block.settings.text }}</div>{%- endif -%}
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if section.settings.signature != blank or section.settings.button_label != blank -%}
+        <div class="es-promise__foot" data-reveal="up" style="--i: 6">
+          {%- if section.settings.signature != blank -%}<p class="es-signature es-promise__signature">{{ section.settings.signature }}</p>{%- endif -%}
+          {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-promise__grid { display: grid; gap: clamp(36px, 6vw, 96px); align-items: center; }
+@media (min-width: 990px) {
+  .es-promise__grid { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); }
+  .es-promise--right .es-promise__visual { order: 2; }
+}
+.es-promise__visual { position: relative; }
+.es-promise__frame { position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-card); overflow: hidden; background: var(--c-surface);
+  box-shadow: 0 60px 120px -70px rgba(var(--c-accent-rgb), calc(var(--glow) * 1.2)), 0 40px 80px -60px rgba(0,0,0,.5); }
+.es-promise__reveal { position: absolute; inset: 0; }
+.es-promise__frame img, .es-promise__frame .es-placeholder { width: 100%; height: 100%; object-fit: cover; }
+.es-promise__frame::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(200deg, transparent 55%, rgba(var(--c-bg-rgb), .35)); }
+.es-promise__seal { position: absolute; right: clamp(-28px, -2vw, -12px); bottom: clamp(24px, 6vw, 64px); width: clamp(112px, 12vw, 148px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(var(--c-bg-rgb), .86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(var(--c-text-rgb), .1); box-shadow: 0 24px 50px -24px rgba(0,0,0,.45); }
+.es-promise--right .es-promise__seal { right: auto; left: clamp(-28px, -2vw, -12px); }
+.es-promise__seal > svg { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); animation: es-promise-spin 26s linear infinite; }
+.es-promise__seal text { font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; fill: currentColor; font-weight: 600; }
+.es-promise__seal-core { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: var(--c-accent-text);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 70%, #fff), var(--c-accent) 60%, color-mix(in srgb, var(--c-accent) 80%, #000)); box-shadow: 0 10px 24px -10px rgba(var(--c-accent-rgb), .9); }
+.es-promise__seal-core .es-icon { width: 22px; height: 22px; }
+@keyframes es-promise-spin { to { transform: rotate(360deg); } }
+.es-promise__title { font-size: calc(clamp(2.3rem, 5.4vw, 4.6rem) * var(--heading-scale)); line-height: 1.02; margin-bottom: .4em; }
+.es-promise__title em { display: inline; }
+.es-promise__list { list-style: none; margin: clamp(28px, 4vw, 44px) 0 0; padding: 0; display: grid; gap: 0; border-top: 1px solid rgba(var(--c-text-rgb), .12); }
+@media (min-width: 750px) { .es-promise__list { grid-template-columns: 1fr 1fr; column-gap: clamp(24px, 3vw, 40px); } }
+.es-promise__item { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; padding: 22px 0; border-bottom: 1px solid rgba(var(--c-text-rgb), .12); }
+.es-promise__icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; color: var(--c-accent); background: rgba(var(--c-accent-rgb), .1); border: 1px solid rgba(var(--c-accent-rgb), .22); transition: transform .5s var(--ease-out), background .4s, color .4s; }
+.es-promise__icon .es-icon { width: 24px; height: 24px; }
+.es-promise__item:hover .es-promise__icon { transform: rotate(-6deg) scale(1.06); background: var(--c-accent); color: var(--c-accent-text); }
+.es-promise__item-title { margin: 2px 0 6px; font-size: 1.04rem; font-weight: var(--font-body-weight-bold); letter-spacing: -.01em; line-height: 1.3; }
+.es-promise__item-text { color: var(--c-muted); font-size: .93rem; line-height: 1.55; }
+.es-promise__item-text p { margin: 0; }
+.es-promise__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px 28px; margin-top: clamp(26px, 3.4vw, 40px); }
+.es-promise__signature { margin: 0; color: var(--c-accent); font-size: 1.5rem; }
+@media (max-width: 749px) {
+  .es-promise__frame { aspect-ratio: 4 / 4.4; }
+  .es-promise__seal { right: 10px; bottom: -36px; }
+  .es-promise--right .es-promise__seal { left: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .es-promise__seal > svg { animation: none; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Promesse",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Notre promesse" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Une promesse simple," },
+    { "type": "text", "id": "heading_accent", "label": "Mot ou fin du titre mis en valeur", "default": "tenue jusqu'au bout." },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : votre promesse en deux ou trois phrases — ce que vous garantissez réellement à chaque client, et pourquoi c'est important pour vous.]</p>" },
+    { "type": "image_picker", "id": "image", "label": "Image d'ambiance" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "select", "id": "layout", "label": "Position de l'image", "default": "image-left", "options": [{ "value": "image-left", "label": "Image à gauche" }, { "value": "image-right", "label": "Image à droite" }] },
+    { "type": "checkbox", "id": "parallax", "label": "Zoom doux au défilement", "default": true },
+    { "type": "text", "id": "badge_text", "label": "Texte du sceau tournant", "default": "Notre promesse", "info": "Laissez vide pour masquer le sceau." },
+    { "type": "select", "id": "badge_icon", "label": "Icône du sceau", "default": "heart", "options": [
+      { "value": "heart", "label": "Cœur" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "leaf", "label": "Feuille" }, { "value": "shield", "label": "Bouclier" }, { "value": "star", "label": "Étoile" }, { "value": "award", "label": "Médaille" }, { "value": "check", "label": "Coche" }
+    ] },
+    { "type": "text", "id": "signature", "label": "Signature", "info": "Par exemple le prénom de la fondatrice ou du fondateur." },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "commitment", "name": "Engagement", "settings": [
+      { "type": "paragraph", "content": "Un engagement réel, que vous tenez pour chaque commande." },
+      { "type": "select", "id": "icon", "label": "Icône", "default": "sparkle", "options": [
+        { "value": "sparkle", "label": "Étincelle" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "heart", "label": "Cœur" }, { "value": "shield", "label": "Bouclier" }, { "value": "hand", "label": "Main" }, { "value": "award", "label": "Médaille" }, { "value": "recycle", "label": "Recyclage" }, { "value": "package", "label": "Colis" }, { "value": "globe", "label": "Globe" }, { "value": "smile", "label": "Sourire" }, { "value": "clock", "label": "Horloge" }, { "value": "star", "label": "Étoile" }, { "value": "check", "label": "Coche" }
+      ] },
+      { "type": "text", "id": "title", "label": "Titre", "default": "[À compléter : engagement]" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : ce que vous faites concrètement pour le tenir.]</p>" }
+    ] }
+  ],
+  "max_blocks": 4,
+  "presets": [{ "name": "Promesse", "blocks": [
+    { "type": "commitment", "settings": { "icon": "hand", "title": "[À compléter : ex. Fabrication soignée]" } },
+    { "type": "commitment", "settings": { "icon": "leaf", "title": "[À compléter : ex. Matières choisies]" } },
+    { "type": "commitment", "settings": { "icon": "smile", "title": "[À compléter : ex. Satisfaction suivie]" } },
+    { "type": "commitment", "settings": { "icon": "heart", "title": "[À compléter : ex. Une équipe à l'écoute]" } }
+  ] }]
+}
+{% endschema %}

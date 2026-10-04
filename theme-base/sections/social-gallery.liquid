@@ -1,0 +1,162 @@
+{%- comment -%}
+  Galerie sociale premium : grille façon réseaux sociaux avec les photos et vidéos fournies par le marchand
+  (aucune intégration automatique, aucun contenu inventé). Pseudo et lien vers la publication optionnels,
+  survol avec icône du réseau, lien « Suivez-nous » vers le compte. Sans publication, rien ne s'affiche
+  sur la boutique (rappel dans l'éditeur uniquement).
+{%- endcomment -%}
+{%- liquid
+  assign network = section.settings.network
+  assign account_url = section.settings.account_url
+-%}
+<section class="es-section es-sg es-sg--{{ section.settings.ratio }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --sg-cols: {{ section.settings.columns }}; --sg-cols-m: {{ section.settings.columns_mobile }}; --sg-gap: {{ section.settings.gap }}px;" data-es-social-gallery>
+  <div class="es-container">
+    {%- if section.blocks.size > 0 -%}
+      <header class="es-sg__head">
+        <div class="es-sg__intro">
+          {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+          {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+          {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+        </div>
+        {%- if section.settings.handle != blank or section.settings.button_label != blank -%}
+          <div class="es-sg__account" data-reveal="up">
+            {%- if section.settings.handle != blank -%}
+              <p class="es-sg__handle"><span class="es-sg__net">{% render 'icon', name: network %}</span>{{ section.settings.handle }}</p>
+            {%- endif -%}
+            {%- if section.settings.button_label != blank and account_url != blank -%}
+              <a href="{{ account_url }}" class="es-button" target="_blank" rel="noopener">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}<span class="visually-hidden"> ({{ 'sections.social_gallery.new_tab' | t }})</span></a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </header>
+      <ul class="es-sg__grid" role="list">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign href = block.settings.link | default: account_url
+            assign label = block.settings.caption | default: block.settings.author
+            assign tag = 'div'
+            if href != blank
+              assign tag = 'a'
+            endif
+          -%}
+          <li class="es-sg__cell" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            <{{ tag }} class="es-sg__post"{% if href != blank %} href="{{ href }}" target="_blank" rel="noopener"{% endif %} data-sg-post>
+              {% render 'es-section-media', image: block.settings.image, asset: block.settings.image_asset, video: block.settings.video, video_asset: block.settings.video_asset, alt: label, sizes: '(min-width: 990px) 20vw, 50vw' %}
+              {%- if block.settings.video != blank or block.settings.video_asset != blank -%}
+                <span class="es-sg__type" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span>
+              {%- endif -%}
+              <span class="es-sg__overlay">
+                <span class="es-sg__icon" aria-hidden="true">{% render 'icon', name: network %}</span>
+                {%- if block.settings.author != blank -%}<span class="es-sg__author">{{ block.settings.author }}</span>{%- endif -%}
+                {%- if block.settings.caption != blank -%}<span class="es-sg__caption">{{ block.settings.caption }}</span>{%- endif -%}
+              </span>
+              {%- if href != blank -%}<span class="visually-hidden">{{ 'sections.social_gallery.open_post' | t }} ({{ 'sections.social_gallery.new_tab' | t }})</span>{%- endif -%}
+            </{{ tag }}>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- elsif request.design_mode -%}
+      <p class="es-reviews__hint">{{ 'sections.social_gallery.hint' | t }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-sg__head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px 40px; margin-bottom: clamp(24px, 4vw, 48px); }
+.es-sg__intro { max-width: 640px; }
+.es-sg__intro .es-h2 { margin-bottom: .25em; }
+.es-sg__account { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; }
+.es-sg__handle { display: inline-flex; align-items: center; gap: 10px; margin: 0; font-weight: var(--font-body-weight-bold); font-size: 1.05rem; }
+.es-sg__net { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: #fff; background: linear-gradient(135deg, var(--c-accent), color-mix(in srgb, var(--c-accent) 55%, #000)); }
+.es-sg__net .es-icon { width: 20px; height: 20px; }
+.es-sg__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sg-gap, 8px); grid-template-columns: repeat(var(--sg-cols-m, 2), minmax(0, 1fr)); }
+@media (min-width: 750px) { .es-sg__grid { grid-template-columns: repeat(min(var(--sg-cols, 4), 4), minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .es-sg__grid { grid-template-columns: repeat(var(--sg-cols, 5), minmax(0, 1fr)); } }
+.es-sg__post { position: relative; display: block; overflow: hidden; aspect-ratio: 1; border-radius: calc(var(--radius-card) * .6); background: var(--c-surface); color: #fff; text-decoration: none; isolation: isolate; }
+.es-sg--portrait .es-sg__post { aspect-ratio: 4 / 5; }
+.es-sg--story .es-sg__post { aspect-ratio: 9 / 16; }
+.es-sg__post > img, .es-sg__post > video, .es-sg__post > .es-placeholder { position: absolute; inset: 0; transition: transform 1s var(--ease-out), filter .6s; }
+.es-sg__post .es-smedia__video { opacity: 0; }
+.es-sg__post .es-smedia__video.is-playing, .es-sg__post .es-smedia__video:only-child { opacity: 1; }
+.es-sg__post:hover > img, .es-sg__post:hover > video, .es-sg__post:focus-visible > img { transform: scale(1.07); }
+.es-sg__type { position: absolute; z-index: 2; top: 10px; right: 10px; width: 26px; height: 26px; display: grid; place-items: center; filter: drop-shadow(0 1px 6px rgba(0,0,0,.5)); }
+.es-sg__type svg { width: 20px; height: 20px; }
+.es-sg__overlay { position: absolute; z-index: 1; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; text-align: center;
+  background: rgba(var(--c-accent-rgb), .0); backdrop-filter: blur(0); opacity: 0; transition: opacity .4s var(--ease-out), background .4s; }
+.es-sg__post:hover .es-sg__overlay, .es-sg__post:focus-visible .es-sg__overlay { opacity: 1; background: rgba(0, 0, 0, .45); }
+.es-sg__icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.4); transform: scale(.7) rotate(-12deg); transition: transform .5s var(--ease-out); }
+.es-sg__post:hover .es-sg__icon, .es-sg__post:focus-visible .es-sg__icon { transform: none; }
+.es-sg__icon .es-icon { width: 22px; height: 22px; }
+.es-sg__author { font-weight: var(--font-body-weight-bold); font-size: .92rem; }
+.es-sg__caption { font-size: .82rem; line-height: 1.35; opacity: .9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.es-sg__post:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+@media (hover: none) { .es-sg__overlay { opacity: 1; background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,.5)); justify-content: flex-end; } .es-sg__icon, .es-sg__caption { display: none; } }
+@media (prefers-reduced-motion: reduce) { .es-sg__post > img, .es-sg__post > video, .es-sg__icon, .es-sg__overlay { transition: none; transform: none !important; } }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.EsSocialGallery) return;
+  window.EsSocialGallery = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  var canHover = window.matchMedia('(hover: hover)').matches;
+  function play(v) { var p = v.play(); v.classList.add('is-playing'); if (p && p.catch) p.catch(function () { v.classList.remove('is-playing'); }); }
+  function init(ctx) {
+    if (reduce) return;
+    Array.prototype.forEach.call((ctx || document).querySelectorAll('[data-es-social-gallery] [data-sg-post]'), function (post) {
+      var v = post.querySelector('video.es-smedia__video');
+      if (!v || post._esSg) return;
+      post._esSg = true;
+      if (canHover) {
+        post.addEventListener('mouseenter', function () { play(v); });
+        post.addEventListener('focus', function () { play(v); });
+        post.addEventListener('mouseleave', function () { v.pause(); });
+        post.addEventListener('blur', function () { v.pause(); });
+      } else if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (es) { if (es[0].isIntersecting) play(v); else v.pause(); }, { threshold: 0.6 }).observe(post);
+      }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(); }); else init();
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Galerie sociale premium",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Uniquement vos propres publications, ou celles de clients avec leur accord. Aucune publication n'est importée automatiquement." },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Sur les réseaux" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Suivez-nous" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "network", "label": "Réseau social", "default": "instagram", "options": [ { "value": "instagram", "label": "Instagram" }, { "value": "tiktok", "label": "TikTok" }, { "value": "facebook", "label": "Facebook" }, { "value": "pinterest", "label": "Pinterest" }, { "value": "youtube", "label": "YouTube" } ] },
+    { "type": "text", "id": "handle", "label": "Nom du compte", "default": "[À compléter : @votrecompte]" },
+    { "type": "url", "id": "account_url", "label": "Lien vers le compte" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Suivez-nous", "info": "Affiché si le lien vers le compte est renseigné." },
+    { "type": "select", "id": "ratio", "label": "Format des vignettes", "default": "square", "options": [ { "value": "square", "label": "Carré" }, { "value": "portrait", "label": "Portrait (4:5)" }, { "value": "story", "label": "Vertical (9:16)" } ] },
+    { "type": "select", "id": "columns", "label": "Colonnes (ordinateur)", "default": "5", "options": [ { "value": "3", "label": "3" }, { "value": "4", "label": "4" }, { "value": "5", "label": "5" }, { "value": "6", "label": "6" } ] },
+    { "type": "select", "id": "columns_mobile", "label": "Colonnes (mobile)", "default": "2", "options": [ { "value": "2", "label": "2" }, { "value": "3", "label": "3" } ] },
+    { "type": "range", "id": "gap", "min": 0, "max": 24, "step": 2, "unit": "px", "label": "Espace entre les vignettes", "default": 8 },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "post", "name": "Publication", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image (ou affiche de la vidéo)" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+      { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4)" },
+      { "type": "text", "id": "author", "label": "Pseudo (facultatif)", "info": "Uniquement avec l'accord de la personne." },
+      { "type": "text", "id": "caption", "label": "Légende (et description du média)" },
+      { "type": "url", "id": "link", "label": "Lien vers la publication (facultatif)" }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Galerie sociale premium", "blocks": [
+    { "type": "post" }, { "type": "post" }, { "type": "post" }, { "type": "post" }, { "type": "post" }
+  ] }]
+}
+{% endschema %}

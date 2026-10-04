@@ -1,0 +1,205 @@
+{%- comment -%}
+  Page légale lisible (CGV, mentions légales, confidentialité…) : sommaire automatique tiré des titres, ancres,
+  date de mise à jour, barre de lecture. Contenu : la page Shopify affichée, sinon les parties saisies ici.
+  Aucun texte juridique n'est fourni : espaces réservés explicites.
+{%- endcomment -%}
+{%- liquid
+  assign use_page = false
+  if section.settings.source == 'page' and page != blank and page.content != blank
+    assign use_page = true
+  endif
+  assign title = section.settings.heading
+  if title == blank and page != blank
+    assign title = page.title
+  endif
+  if title == blank
+    assign title = 'sections.legal_page.title_placeholder' | t
+  endif
+-%}
+<section class="es-section es-legal color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-legal>
+  <div class="es-legal__progress" aria-hidden="true"><span data-legal-bar></span></div>
+  <div class="es-container">
+    <header class="es-legal__head">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if title != blank -%}<h1 class="es-heading es-h2 es-legal__title">{{ title }}</h1>{%- endif -%}
+      <div class="es-legal__meta">
+        {%- if section.settings.updated != blank -%}<p class="es-legal__date">{% render 'icon', name: 'clock' %}<span>{{ 'sections.legal_page.updated' | t }} {{ section.settings.updated }}</span></p>{%- endif -%}
+        {%- if section.settings.show_print -%}<button type="button" class="es-legal__print" data-legal-print>{{ 'sections.legal_page.print' | t }}</button>{%- endif -%}
+      </div>
+      {%- if section.settings.intro != blank -%}<div class="es-rte es-legal__intro">{{ section.settings.intro }}</div>{%- endif -%}
+    </header>
+    <div class="es-legal__layout{% unless section.settings.show_toc %} es-legal__layout--solo{% endunless %}">
+      {%- if section.settings.show_toc -%}
+        <nav class="es-legal__toc" aria-labelledby="LegalToc-{{ section.id }}" data-legal-toc>
+          <details class="es-legal__details" open data-legal-details>
+            <summary id="LegalToc-{{ section.id }}">{{ 'sections.legal_page.toc' | t }}</summary>
+            <ol class="es-legal__toclist" data-legal-toclist>
+              {%- unless use_page -%}
+                {%- for block in section.blocks -%}
+                  <li><a href="#{{ section.id }}-part-{{ forloop.index }}">{{ block.settings.title }}</a></li>
+                {%- endfor -%}
+              {%- endunless -%}
+            </ol>
+          </details>
+        </nav>
+      {%- endif -%}
+      <article class="es-legal__body es-rte" data-legal-body>
+        {%- if use_page -%}
+          {{ page.content }}
+        {%- else -%}
+          {%- for block in section.blocks -%}
+            <section class="es-legal__part" aria-labelledby="{{ section.id }}-part-{{ forloop.index }}" {{ block.shopify_attributes }}>
+              <h2 id="{{ section.id }}-part-{{ forloop.index }}">{{ block.settings.title }}</h2>
+              {{ block.settings.text }}
+            </section>
+          {%- endfor -%}
+        {%- endif -%}
+        <p class="es-legal__top"><a href="#LegalTop-{{ section.id }}" data-legal-top>{% render 'icon', name: 'arrow-up' %}{{ 'general.back_to_top' | t }}</a></p>
+      </article>
+    </div>
+  </div>
+  <span id="LegalTop-{{ section.id }}" class="es-legal__anchor"></span>
+</section>
+
+{% stylesheet %}
+.es-legal { position: relative; }
+.es-legal__anchor { position: absolute; top: 0; }
+.es-legal__progress { position: sticky; top: 0; z-index: 5; height: 3px; margin-bottom: -3px; }
+.es-legal__progress span { display: block; height: 100%; width: 100%; background: var(--c-accent); transform-origin: left; transform: scaleX(var(--p, 0)); }
+.es-legal__head { max-width: 860px; margin: 0 auto clamp(28px, 5vw, 56px); padding-bottom: clamp(20px, 3vw, 32px); border-bottom: 1px solid var(--c-border); }
+.es-legal__title { margin-bottom: .3em; }
+.es-legal__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
+.es-legal__date { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: .88rem; color: var(--c-muted); }
+.es-legal__date .es-icon { width: 16px; height: 16px; }
+.es-legal__print { min-height: 40px; padding: 0 16px; border: 1px solid var(--c-border); border-radius: 999px; background: none; color: inherit; font-size: .84rem; cursor: pointer; }
+.es-legal__print:hover { background: rgba(var(--c-text-rgb), .05); }
+.es-legal__intro { margin-top: 1.2rem; font-size: 1.05rem; }
+.es-legal__layout { display: grid; gap: 24px; max-width: 1160px; margin-inline: auto; }
+.es-legal__layout--solo { max-width: 760px; }
+@media (min-width: 990px) { .es-legal__layout:not(.es-legal__layout--solo) { grid-template-columns: 280px minmax(0, 720px); gap: 64px; justify-content: center; } }
+.es-legal__toc { align-self: start; }
+@media (min-width: 990px) { .es-legal__toc { position: sticky; top: calc(var(--header-h, 72px) + 24px); max-height: calc(100vh - var(--header-h, 72px) - 48px); overflow: auto; } }
+.es-legal__details { border: 1px solid var(--c-border); border-radius: var(--radius-card); padding: 6px 18px; background: rgba(var(--c-text-rgb), .02); }
+.es-legal__details summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 46px; font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; }
+.es-legal__details summary::-webkit-details-marker { display: none; }
+.es-legal__details summary::after { content: ""; width: 8px; height: 8px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-3px); transition: transform .3s; }
+.es-legal__details[open] summary::after { transform: rotate(-135deg); }
+.es-legal__toclist { list-style: none; counter-reset: toc; margin: 0 0 12px; padding: 0; display: grid; gap: 2px; }
+.es-legal__toclist li { counter-increment: toc; }
+.es-legal__toclist li.is-sub { padding-left: 18px; font-size: .92em; }
+.es-legal__toclist a { display: flex; gap: 10px; padding: 7px 10px; border-radius: 8px; text-decoration: none; font-size: .9rem; line-height: 1.35; color: var(--c-muted); border-left: 2px solid transparent; transition: background .25s, color .25s, border-color .25s; }
+.es-legal__toclist li:not(.is-sub) > a::before { content: counter(toc, decimal-leading-zero); font-variant-numeric: tabular-nums; font-size: .78rem; opacity: .7; padding-top: 1px; }
+.es-legal__toclist a:hover { color: var(--c-text); background: rgba(var(--c-text-rgb), .04); }
+.es-legal__toclist a[aria-current="true"] { color: var(--c-text); border-left-color: var(--c-accent); background: rgba(var(--c-accent-rgb), .08); font-weight: 600; }
+.es-legal__body { font-size: 1.02rem; line-height: 1.75; max-width: 72ch; }
+.es-legal__body h2 { font-family: var(--font-heading); font-size: calc(1.5rem * var(--heading-scale, 1)); line-height: 1.2; margin: 2.4em 0 .7em; scroll-margin-top: calc(var(--header-h, 72px) + 24px); }
+.es-legal__body h3 { font-size: 1.12rem; margin: 1.8em 0 .5em; scroll-margin-top: calc(var(--header-h, 72px) + 24px); }
+.es-legal__body > :first-child, .es-legal__part:first-child > h2 { margin-top: 0; }
+.es-legal__body ul, .es-legal__body ol { padding-left: 1.3em; }
+.es-legal__body a { color: inherit; text-decoration-color: var(--c-accent); text-underline-offset: 3px; }
+.es-legal__body table { width: 100%; border-collapse: collapse; font-size: .92rem; display: block; overflow-x: auto; }
+.es-legal__body th, .es-legal__body td { border: 1px solid var(--c-border); padding: 8px 10px; text-align: left; }
+.es-legal__part + .es-legal__part { border-top: 1px solid var(--c-border); margin-top: 2em; }
+.es-legal__part + .es-legal__part > h2 { margin-top: 1.6em; }
+.es-legal__top { margin-top: 3em; font-size: .88rem; }
+.es-legal__top a { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--c-muted); }
+.es-legal__top .es-icon { width: 16px; height: 16px; }
+@media print {
+  .es-legal__progress, .es-legal__toc, .es-legal__print, .es-legal__top { display: none !important; }
+  .es-legal__layout { display: block; }
+  .es-legal__body { max-width: none; font-size: 11pt; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esLegalPage) return; window.esLegalPage = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function slug(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'partie'; }
+  function init(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-legal]'), function (s) {
+      if (s._es) return; s._es = true;
+      var body = s.querySelector('[data-legal-body]'), list = s.querySelector('[data-legal-toclist]'), bar = s.querySelector('[data-legal-bar]');
+      var details = s.querySelector('[data-legal-details]');
+      var heads = Array.prototype.slice.call(body.querySelectorAll('h2, h3'));
+      var used = {};
+      heads.forEach(function (h) {
+        if (!h.id) { var id = slug(h.textContent), k = id, n = 2; while (used[k] || document.getElementById(k)) k = id + '-' + n++; h.id = k; }
+        used[h.id] = true;
+      });
+      if (list && !list.children.length) {
+        heads.forEach(function (h) {
+          var li = document.createElement('li'); if (h.tagName === 'H3') li.className = 'is-sub';
+          var a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.textContent.trim();
+          li.appendChild(a); list.appendChild(li);
+        });
+      }
+      var toc = s.querySelector('[data-legal-toc]');
+      if (toc && !list.children.length) toc.hidden = true;
+      if (details && window.innerWidth < 990) details.open = false;
+      var links = list ? Array.prototype.slice.call(list.querySelectorAll('a')) : [];
+      links.forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          var t = document.getElementById(a.getAttribute('href').slice(1)); if (!t) return;
+          e.preventDefault(); t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+          history.replaceState && history.replaceState(null, '', '#' + t.id);
+          t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true });
+          if (details && window.innerWidth < 990) details.open = false;
+        });
+      });
+      var top = s.querySelector('[data-legal-top]');
+      top && top.addEventListener('click', function (e) { e.preventDefault(); s.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); });
+      var pr = s.querySelector('[data-legal-print]'); pr && pr.addEventListener('click', function () { window.print(); });
+      var ticking = false;
+      function update() {
+        ticking = false;
+        var r = body.getBoundingClientRect(), vh = window.innerHeight;
+        var p = Math.min(1, Math.max(0, (vh * 0.3 - r.top) / Math.max(1, r.height - vh * 0.5)));
+        if (bar) bar.style.setProperty('--p', p.toFixed(3));
+        var current = null;
+        heads.forEach(function (h) { if (h.getBoundingClientRect().top < vh * 0.3) current = h; });
+        links.forEach(function (a) { a.setAttribute('aria-current', current && a.getAttribute('href') === '#' + current.id ? 'true' : 'false'); });
+      }
+      window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+      update();
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Page légale",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Aucun texte juridique n'est fourni : utilisez des textes validés pour votre activité (Shopify › Paramètres › Politiques, ou un professionnel du droit)." },
+    { "type": "select", "id": "source", "label": "Contenu", "default": "page", "options": [{ "value": "page", "label": "Contenu de la page Shopify (à défaut, les parties)" }, { "value": "blocks", "label": "Parties saisies ici" }], "info": "Sur un modèle de page, le texte de la page s'affiche et ses titres forment le sommaire." },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Informations légales" },
+    { "type": "text", "id": "heading", "label": "Titre", "info": "Vide : titre de la page Shopify." },
+    { "type": "text", "id": "updated", "label": "Date de mise à jour", "default": "[À compléter : date]" },
+    { "type": "richtext", "id": "intro", "label": "Introduction (facultatif)" },
+    { "type": "checkbox", "id": "show_toc", "label": "Sommaire automatique", "default": true },
+    { "type": "checkbox", "id": "show_print", "label": "Bouton « Imprimer »", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "part", "name": "Partie", "settings": [
+      { "type": "text", "id": "title", "label": "Titre de la partie", "default": "[À compléter : titre de la partie]" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : texte validé de cette partie. Aucun texte juridique n'est fourni par défaut.]</p>" }
+    ] }
+  ],
+  "max_blocks": 30,
+  "presets": [{ "name": "Page légale", "blocks": [
+    { "type": "part", "settings": { "title": "[À compléter : Article 1 — Objet]" } },
+    { "type": "part", "settings": { "title": "[À compléter : Article 2 — Commandes]" } },
+    { "type": "part", "settings": { "title": "[À compléter : Article 3 — Prix et paiement]" } },
+    { "type": "part", "settings": { "title": "[À compléter : Article 4 — Livraison]" } },
+    { "type": "part", "settings": { "title": "[À compléter : Article 5 — Rétractation et retours]" } }
+  ] }]
+}
+{% endschema %}

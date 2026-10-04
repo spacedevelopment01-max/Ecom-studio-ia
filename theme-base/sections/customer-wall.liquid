@@ -1,0 +1,204 @@
+{%- comment -%}
+  Mur d'images : photos ou vidéos fournies par le marchand, en maçonnerie, agrandies dans une visionneuse.
+  Chaque média est étiqueté : photo de la marque, ou photo client publiée avec l'accord du client.
+{%- endcomment -%}
+<section class="es-section es-cwall es-cwall--{{ section.settings.rhythm }}{% if section.settings.captions == 'hover' %} es-cwall--hover{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --cols: {{ section.settings.columns }};" data-cwall>
+  <div class="es-container">
+    <header class="es-cwall__head">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+        {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      </div>
+      {%- if section.settings.button_label != blank -%}<a class="es-button es-button--secondary es-button--small" href="{{ section.settings.button_link | default: '#' }}" data-reveal="up">{{ section.settings.button_label }}</a>{%- endif -%}
+    </header>
+    <ul class="es-cwall__grid" role="list">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign is_video = false
+          if block.settings.video != blank or block.settings.video_asset != blank
+            assign is_video = true
+          endif
+          assign full = ''
+          if block.settings.image != blank
+            assign full = block.settings.image | image_url: width: 2000
+          elsif block.settings.image_asset != blank
+            assign full = block.settings.image_asset | asset_url
+          endif
+          assign who = block.settings.author | strip
+        -%}
+        <li class="es-cwall__item es-cwall__item--{{ block.settings.format }}" data-reveal="up" style="--i: {{ forloop.index0 | modulo: 6 }}" data-cwall-item {{ block.shopify_attributes }}>
+          <button type="button" class="es-cwall__open" data-cwall-open="{{ forloop.index0 }}" data-full="{{ full }}" aria-label="{{ 'sections.customer_wall.open' | t: n: forloop.index | escape }}{% if block.settings.caption != blank %} : {{ block.settings.caption | escape }}{% endif %}">
+            <span class="es-cwall__media" data-cwall-media>
+              {%- if is_video -%}
+                {% render 'es-video', video: block.settings.video, asset: block.settings.video_asset, poster: block.settings.image, poster_asset: block.settings.image_asset, class: 'es-cover', autoplay: true, alt: block.settings.caption %}
+              {%- else -%}
+                {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.caption, sizes: '(min-width: 990px) 25vw, 50vw', class: 'es-cover' %}
+              {%- endif -%}
+            </span>
+            {%- if is_video -%}<span class="es-cwall__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span>{%- endif -%}
+            {%- if section.settings.show_tags -%}
+              <span class="es-cwall__tag">{%- if block.settings.kind == 'customer' -%}{{ 'sections.customer_wall.customer' | t }}{%- else -%}{{ 'sections.customer_wall.brand' | t }}{%- endif -%}</span>
+            {%- endif -%}
+            {%- if who != blank or block.settings.caption != blank -%}
+              <span class="es-cwall__cap" data-cwall-caption>
+                {%- if who != blank -%}<b>{{ who }}</b>{%- endif -%}
+                {%- if block.settings.caption != blank -%}<span>{{ block.settings.caption }}</span>{%- endif -%}
+              </span>
+            {%- endif -%}
+          </button>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+  <dialog class="es-cwall__dialog" data-cwall-dialog aria-label="{{ section.settings.heading | default: section.settings.eyebrow | escape }}">
+    <div class="es-cwall__box">
+      <figure class="es-cwall__stage" data-cwall-stage></figure>
+      <p class="es-cwall__lbcap" data-cwall-lbcap></p>
+      <p class="es-cwall__count" data-cwall-count aria-live="polite"></p>
+      <button type="button" class="es-cwall__nav es-cwall__nav--prev" data-cwall-prev aria-label="{{ 'general.previous' | t | escape }}">{% render 'icon', name: 'arrow-left' %}</button>
+      <button type="button" class="es-cwall__nav es-cwall__nav--next" data-cwall-next aria-label="{{ 'general.next' | t | escape }}">{% render 'icon', name: 'arrow' %}</button>
+      <button type="button" class="es-cwall__close" data-cwall-close aria-label="{{ 'general.close' | t | escape }}">{% render 'icon', name: 'close' %}</button>
+    </div>
+  </dialog>
+</section>
+
+{% stylesheet %}
+.es-cwall__head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 32px; margin-bottom: clamp(24px, 4vw, 48px); }
+.es-cwall__head > div { max-width: 640px; }
+.es-cwall__head .es-heading { margin-bottom: .25em; }
+.es-cwall__grid { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 10px; }
+@media (min-width: 750px) { .es-cwall__grid { columns: min(3, var(--cols)); column-gap: 14px; } }
+@media (min-width: 990px) { .es-cwall__grid { columns: var(--cols); column-gap: 16px; } }
+.es-cwall__item { break-inside: avoid; margin-bottom: 10px; }
+@media (min-width: 750px) { .es-cwall__item { margin-bottom: 14px; } }
+@media (min-width: 990px) { .es-cwall__item { margin-bottom: 16px; } }
+.es-cwall__open { position: relative; display: block; width: 100%; padding: 0; border: 0; background: var(--c-surface); color: #fff; cursor: zoom-in; border-radius: var(--radius-card); overflow: hidden; text-align: left; isolation: isolate; }
+.es-cwall__media { display: block; position: relative; }
+.es-cwall__media .es-cover { display: block; width: 100%; height: auto; transition: transform 1.1s var(--ease-out), filter .6s; }
+.es-cwall__media .es-placeholder { min-height: 200px; }
+/* Rythme éditorial : formats alternés */
+.es-cwall--varied .es-cwall__item--auto:nth-child(6n+1) .es-cwall__media, .es-cwall__item--portrait .es-cwall__media { aspect-ratio: 4 / 5; }
+.es-cwall--varied .es-cwall__item--auto:nth-child(6n+2) .es-cwall__media, .es-cwall__item--square .es-cwall__media { aspect-ratio: 1; }
+.es-cwall--varied .es-cwall__item--auto:nth-child(6n+3) .es-cwall__media, .es-cwall__item--tall .es-cwall__media { aspect-ratio: 9 / 16; }
+.es-cwall--varied .es-cwall__item--auto:nth-child(6n+4) .es-cwall__media, .es-cwall__item--landscape .es-cwall__media { aspect-ratio: 4 / 3; }
+.es-cwall--varied .es-cwall__item--auto:nth-child(6n+5) .es-cwall__media { aspect-ratio: 3 / 4; }
+.es-cwall--varied .es-cwall__item--auto:nth-child(6n) .es-cwall__media { aspect-ratio: 1; }
+.es-cwall--varied .es-cwall__media .es-cover, .es-cwall__item:not(.es-cwall__item--auto) .es-cwall__media .es-cover { position: absolute; inset: 0; height: 100%; object-fit: cover; }
+.es-cwall__open::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, .55), transparent 45%); opacity: .9; transition: opacity .5s; z-index: 0; pointer-events: none; }
+.es-cwall__open:hover .es-cwall__media .es-cover { transform: scale(1.05); }
+.es-cwall__tag { position: absolute; top: 10px; left: 10px; z-index: 1; padding: 4px 9px; border-radius: 999px; background: rgba(255, 255, 255, .88); color: #111; font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.es-cwall__play { position: absolute; top: 10px; right: 10px; z-index: 1; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: rgba(0, 0, 0, .45); color: #fff; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.es-cwall__cap { position: absolute; left: 12px; right: 12px; bottom: 10px; z-index: 1; display: grid; gap: 2px; font-size: .82rem; line-height: 1.3; text-shadow: 0 1px 8px rgba(0, 0, 0, .4); transition: opacity .4s, transform .5s var(--ease-out); }
+.es-cwall__cap b { font-size: .86rem; }
+.es-cwall:not(.es-cwall--hover) .es-cwall__open:not(:has(.es-cwall__cap))::after { opacity: .35; }
+.es-cwall--hover .es-cwall__open::after, .es-cwall--hover .es-cwall__cap { opacity: 0; }
+.es-cwall--hover .es-cwall__cap { transform: translateY(8px); }
+.es-cwall--hover .es-cwall__open:hover::after, .es-cwall--hover .es-cwall__open:focus-visible::after, .es-cwall--hover .es-cwall__open:hover .es-cwall__cap, .es-cwall--hover .es-cwall__open:focus-visible .es-cwall__cap { opacity: 1; transform: none; }
+@media (hover: none) { .es-cwall--hover .es-cwall__open::after, .es-cwall--hover .es-cwall__cap { opacity: 1; transform: none; } }
+/* Visionneuse */
+.es-cwall__dialog { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(10, 10, 12, .94); color: #fff; }
+.es-cwall__dialog::backdrop { background: rgba(10, 10, 12, .7); }
+.es-cwall__dialog[open] { animation: es-cwall-in .35s var(--ease-out); }
+@keyframes es-cwall-in { from { opacity: 0; } }
+.es-cwall__box { position: relative; width: 100%; height: 100%; display: grid; grid-template-rows: 1fr auto; place-items: center; padding: 56px 16px 20px; box-sizing: border-box; }
+.es-cwall__stage { margin: 0; width: 100%; height: 100%; min-height: 0; display: grid; place-items: center; overflow: hidden; }
+.es-cwall__stage img, .es-cwall__stage video { max-width: min(100%, 1400px); max-height: calc(100dvh - 150px); width: auto; height: auto; object-fit: contain; border-radius: 10px; animation: es-cwall-zoom .45s var(--ease-out); }
+@keyframes es-cwall-zoom { from { opacity: 0; transform: scale(.96); } }
+.es-cwall__lbcap { margin: 14px 0 0; text-align: center; font-size: .92rem; max-width: 680px; }
+.es-cwall__lbcap:empty { display: none; }
+.es-cwall__count { position: absolute; top: 18px; left: 20px; margin: 0; font-size: .82rem; opacity: .75; font-variant-numeric: tabular-nums; }
+.es-cwall__close, .es-cwall__nav { position: absolute; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .08); color: #fff; cursor: pointer; transition: background .3s; }
+.es-cwall__close:hover, .es-cwall__nav:hover { background: rgba(255, 255, 255, .2); }
+.es-cwall__close { top: 8px; right: 12px; }
+.es-cwall__nav { top: 50%; margin-top: -23px; }
+.es-cwall__nav--prev { left: 12px; }
+.es-cwall__nav--next { right: 12px; }
+@media (max-width: 749px) { .es-cwall__nav { top: auto; bottom: 14px; margin: 0; } .es-cwall__box { padding-bottom: 76px; } }
+@media (prefers-reduced-motion: reduce) {
+  .es-cwall__media .es-cover, .es-cwall__cap { transition: none; }
+  .es-cwall__open:hover .es-cwall__media .es-cover { transform: none; }
+  .es-cwall__dialog[open], .es-cwall__stage img, .es-cwall__stage video { animation: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esCustomerWall) return; window.esCustomerWall = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function init(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-cwall]'), function (s) {
+      if (s._es) return; s._es = true;
+      var dlg = s.querySelector('[data-cwall-dialog]'); if (!dlg || typeof dlg.showModal !== 'function') return;
+      var stage = dlg.querySelector('[data-cwall-stage]'), cap = dlg.querySelector('[data-cwall-lbcap]'), count = dlg.querySelector('[data-cwall-count]');
+      var openers = Array.prototype.slice.call(s.querySelectorAll('[data-cwall-open]'));
+      var cur = 0, last = null;
+      function show(i) {
+        cur = (i + openers.length) % openers.length;
+        var b = openers[cur], src = b.querySelector('video, img'), el;
+        stage.innerHTML = '';
+        if (src && src.tagName === 'VIDEO') {
+          el = src.cloneNode(true); el.controls = true; el.muted = true; el.loop = true; el.playsInline = true; el.removeAttribute('class');
+          stage.appendChild(el); if (!reduce) el.play().catch(function () {});
+        } else if (src) {
+          el = document.createElement('img'); el.src = b.getAttribute('data-full') || src.currentSrc || src.src; el.alt = src.alt || '';
+          stage.appendChild(el);
+        }
+        var c = b.querySelector('[data-cwall-caption]');
+        cap.textContent = c ? c.textContent.replace(/\s+/g, ' ').trim() : '';
+        count.textContent = (cur + 1) + ' / ' + openers.length;
+      }
+      openers.forEach(function (b, i) {
+        b.addEventListener('click', function () { last = b; show(i); dlg.showModal(); });
+      });
+      dlg.querySelector('[data-cwall-prev]').addEventListener('click', function () { show(cur - 1); });
+      dlg.querySelector('[data-cwall-next]').addEventListener('click', function () { show(cur + 1); });
+      dlg.querySelector('[data-cwall-close]').addEventListener('click', function () { dlg.close(); });
+      dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.classList.contains('es-cwall__box') || e.target === stage) dlg.close(); });
+      dlg.addEventListener('keydown', function (e) { if (e.key === 'ArrowLeft') show(cur - 1); if (e.key === 'ArrowRight') show(cur + 1); });
+      dlg.addEventListener('close', function () { stage.innerHTML = ''; if (last) last.focus(); });
+      var hidden = openers.length < 2;
+      dlg.querySelector('[data-cwall-prev]').hidden = hidden; dlg.querySelector('[data-cwall-next]').hidden = hidden;
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Mur d'images clients",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Ne publiez des photos ou vidéos de clients qu'avec leur accord écrit, et indiquez pour chacune s'il s'agit d'une photo client ou d'une photo de la marque." },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Galerie" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "En images" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Envoyez-nous vos photos : avec votre accord, elles pourront rejoindre ce mur.</p>" },
+    { "type": "text", "id": "button_label", "label": "Bouton (facultatif)", "info": "Ex. lien vers votre compte Instagram." },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "range", "id": "columns", "min": 2, "max": 5, "step": 1, "label": "Colonnes (ordinateur)", "default": 4 },
+    { "type": "select", "id": "rhythm", "label": "Formats", "default": "varied", "options": [{ "value": "varied", "label": "Alternés (rythme éditorial)" }, { "value": "natural", "label": "Formats d'origine" }] },
+    { "type": "select", "id": "captions", "label": "Légendes", "default": "always", "options": [{ "value": "always", "label": "Toujours visibles" }, { "value": "hover", "label": "Au survol" }] },
+    { "type": "checkbox", "id": "show_tags", "label": "Étiquette « Photo client » ou « Photo de la marque »", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "media", "name": "Photo ou vidéo", "settings": [
+      { "type": "select", "id": "kind", "label": "Origine", "default": "brand", "options": [{ "value": "brand", "label": "Photo de la marque" }, { "value": "customer", "label": "Photo client (avec son accord)" }] },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+      { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème" },
+      { "type": "text", "id": "author", "label": "Prénom ou pseudo (facultatif)", "info": "Uniquement si la personne accepte d'être citée." },
+      { "type": "text", "id": "caption", "label": "Légende (facultatif)" },
+      { "type": "select", "id": "format", "label": "Format", "default": "auto", "options": [{ "value": "auto", "label": "Automatique" }, { "value": "portrait", "label": "Portrait" }, { "value": "square", "label": "Carré" }, { "value": "tall", "label": "Vertical (9:16)" }, { "value": "landscape", "label": "Paysage" }] }
+    ] }
+  ],
+  "max_blocks": 24,
+  "presets": [{ "name": "Mur d'images clients", "blocks": [{ "type": "media" }, { "type": "media" }, { "type": "media" }, { "type": "media" }, { "type": "media" }, { "type": "media" }, { "type": "media" }, { "type": "media" }] }]
+}
+{% endschema %}

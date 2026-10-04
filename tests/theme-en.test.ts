@@ -135,9 +135,9 @@ describe("boutique en anglais", () => {
     expect(blocks.length).toBeGreaterThan(0);
     for (const s of deepStrings(blocks.map((b) => b.settings))) expect(french(s), s).toBe(false);
     // Interface en français : nom de la section en français ; en anglais : en anglais.
-    expect(sectionSchema(spec, "faq", "fr")?.name).toBe("Questions fréquentes");
-    expect(sectionSchema(spec, "faq", "en")?.name).toBe("FAQ");
-    expect(sectionSchema(spec, "faq")?.name).toBe("FAQ");
+    expect(sectionSchema(spec, "faq", "fr")?.name).toBe("FAQ premium");
+    expect(sectionSchema(spec, "faq", "en")?.name).toBe("Premium FAQ");
+    expect(sectionSchema(spec, "faq")?.name).toBe("Premium FAQ");
   });
 
   it("les thèmes existants sans langue restent en français", () => {
@@ -146,7 +146,7 @@ describe("boutique en anglais", () => {
     const files = compileTheme(spec);
     expect(files.has("locales/fr.default.json")).toBe(true);
     expect(files.has("locales/en.json")).toBe(true);
-    expect(files.get("sections/faq.liquid")).toContain('"name": "Questions fréquentes"');
+    expect(files.get("sections/faq.liquid")).toContain('"name": "FAQ premium"');
     // Le détecteur de français fonctionne bien sur ces mêmes fichiers.
     expect(french("Questions fréquentes")).toBe(true);
     expect(french("Ajoutez ici le bloc")).toBe(true);

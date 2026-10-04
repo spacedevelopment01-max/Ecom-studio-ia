@@ -1,0 +1,265 @@
+{%- comment -%}
+  Vue éclatée animée : au fil du défilement, les points de détail placés sur l'image du produit s'écartent
+  et leurs légendes se déploient, reliées par des traits ; des calques (pièces détachées) peuvent s'écarter aussi.
+  Points positionnés par le marchand (position horizontale / verticale en %).
+{%- endcomment -%}
+{%- liquid
+  assign points = section.blocks | where: 'type', 'point'
+  assign layers = section.blocks | where: 'type', 'layer'
+-%}
+<section class="es-xview color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --n: {{ points.size }};" data-xview>
+  <div class="es-xview__track">
+    <div class="es-xview__pin">
+      <div class="es-container es-xview__inner">
+        <header class="es-xview__head">
+          {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+          {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-xview__title">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+          {%- if section.settings.text != blank -%}<p class="es-xview__intro es-muted">{{ section.settings.text }}</p>{%- endif -%}
+        </header>
+        <div class="es-xview__stage">
+          <span class="es-xview__glow" aria-hidden="true"></span>
+          <span class="es-xview__ring es-xview__ring--1" aria-hidden="true"></span>
+          <span class="es-xview__ring es-xview__ring--2" aria-hidden="true"></span>
+          <div class="es-xview__box" data-xview-box>
+            {%- for layer in layers -%}
+              {%- liquid
+                assign lx = 0
+                assign ly = 0
+                case layer.settings.direction
+                  when 'up'
+                    assign ly = -1
+                  when 'down'
+                    assign ly = 1
+                  when 'left'
+                    assign lx = -1
+                  when 'right'
+                    assign lx = 1
+                endcase
+              -%}
+              <div class="es-xview__layer" style="--lx: {{ lx }}; --ly: {{ ly }}; --dist: {{ layer.settings.distance }}%; z-index: {{ layer.settings.depth }};" {{ layer.shopify_attributes }}>
+                {% render 'es-image', image: layer.settings.image, asset: layer.settings.image_asset, alt: '', sizes: '(min-width: 750px) 40vw, 80vw', class: 'es-xview__img' %}
+              </div>
+            {%- endfor -%}
+            <div class="es-xview__main">
+              {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 750px) 40vw, 80vw', class: 'es-xview__img' %}
+            </div>
+            {%- for block in points -%}
+              {%- liquid
+                assign side = block.settings.side
+                if side == 'auto'
+                  if block.settings.x < 50
+                    assign side = 'left'
+                  else
+                    assign side = 'right'
+                  endif
+                endif
+              -%}
+              <div class="es-xview__point es-xview__point--{{ side }}" style="--x: {{ block.settings.x }}; --y: {{ block.settings.y }}; --off: {{ block.settings.offset }}; --i: {{ forloop.index0 }};" data-xview-point data-side="{{ side }}" {{ block.shopify_attributes }}>
+                <span class="es-xview__dot" aria-hidden="true"><b>{{ forloop.index }}</b></span>
+                <span class="es-xview__line" aria-hidden="true"></span>
+                <div class="es-xview__label">
+                  <span class="es-xview__num" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+                  <strong>{{ block.settings.title }}</strong>
+                  {%- if block.settings.text != blank -%}<span class="es-xview__text">{{ block.settings.text }}</span>{%- endif -%}
+                </div>
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+        {%- if points.size > 0 -%}
+          <ol class="es-xview__list" role="list">
+            {%- for block in points -%}
+              <li><span class="es-xview__num" aria-hidden="true">{{ forloop.index }}</span><div><strong>{{ block.settings.title }}</strong>{%- if block.settings.text != blank -%}<span class="es-xview__text">{{ block.settings.text }}</span>{%- endif -%}</div></li>
+            {%- endfor -%}
+          </ol>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-xview { --o: 1; padding-top: calc(var(--pt, 0px) * var(--space-scale, 1)); padding-bottom: calc(var(--pb, 0px) * var(--space-scale, 1)); overflow: clip; }
+.es-xview__track { position: relative; padding-block: 56px; }
+.es-xview__inner { display: grid; gap: clamp(16px, 3vh, 36px); justify-items: center; }
+.es-xview__head { text-align: center; max-width: 720px; }
+.es-xview__head .es-eyebrow { margin-bottom: .8rem; }
+.es-xview__title { margin-bottom: .25em; }
+.es-xview__intro { margin: 0; }
+.es-xview__stage { position: relative; width: 100%; display: grid; place-items: center; padding: 24px 0; }
+.es-xview__glow { position: absolute; width: min(80vw, 760px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--c-accent-rgb), .2), rgba(var(--c-accent-rgb), .06) 55%, transparent); pointer-events: none; }
+.es-xview__ring { position: absolute; aspect-ratio: 1; border-radius: 50%; border: 1px dashed rgba(var(--c-text-rgb), .16); pointer-events: none; }
+.es-xview__ring--1 { width: min(62vw, 520px); }
+.es-xview__ring--2 { width: min(86vw, 740px); border-style: solid; border-color: rgba(var(--c-text-rgb), .07); }
+.es-xview__box { position: relative; width: min(78vw, 420px); aspect-ratio: 1; }
+.es-xview__main, .es-xview__layer { position: absolute; inset: 0; }
+.es-xview__img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 30px 40px rgba(0,0,0,.18)); }
+.es-xview__main { z-index: 5; transform: scale(calc(1.04 - .08 * var(--o, 1))); transition: transform .2s linear; }
+.es-xview__layer { transform: translate(calc(var(--lx) * var(--dist) * var(--o, 1)), calc(var(--ly) * var(--dist) * var(--o, 1))); }
+.es-xview__point { position: absolute; inset: 0; z-index: 8; pointer-events: none; --pi: clamp(0, var(--po, 1), 1); }
+.es-xview__dot { position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; display: grid; place-items: center; background: var(--c-accent); color: var(--c-accent-text); font-size: .75rem; font-weight: 700; box-shadow: 0 0 0 6px rgba(var(--c-accent-rgb), .22), 0 8px 20px -6px rgba(0,0,0,.35); }
+.es-xview__dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid var(--c-accent); animation: es-xv-ping 2.4s var(--ease-out) infinite; animation-delay: calc(var(--i) * .3s); }
+@keyframes es-xv-ping { from { transform: scale(.8); opacity: .9; } to { transform: scale(2); opacity: 0; } }
+.es-xview__line, .es-xview__label { display: none; }
+.es-xview__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; width: 100%; counter-reset: none; }
+.es-xview__list li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--c-border); border-radius: var(--radius-card, 14px); background: var(--c-bg); }
+.es-xview__list .es-xview__num { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--c-accent); color: var(--c-accent-text); font-size: .74rem; font-weight: 700; }
+.es-xview__list strong { display: block; }
+.es-xview__text { display: block; font-size: .88rem; line-height: 1.45; color: var(--c-muted); margin-top: 2px; }
+
+@media (min-width: 750px) {
+  .es-xview__track { height: 230vh; padding-block: 0; }
+  .es-xview__pin { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; align-items: center; overflow: hidden; }
+  .es-xview__box { width: min(40vw, calc(100vh - 330px), 500px); min-width: 260px; }
+  .es-xview__stage { padding: 0; }
+  .es-xview__list { display: none; }
+  .es-xview__dot { width: 22px; height: 22px; margin: -11px 0 0 -11px; font-size: 0; }
+  .es-xview__dot b { display: none; }
+  .es-xview__line { display: block; position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); height: 1.5px; width: calc(var(--len, 0px) * var(--pi)); background: var(--c-text); transform-origin: 0 50%; transform: rotate(var(--ang, 0deg)); opacity: calc(var(--pi) * 4); }
+  .es-xview__label { display: grid; gap: 4px; position: absolute; width: clamp(170px, 17vw, 240px); left: calc(var(--x) * 1% + var(--dx, 0px) * var(--pi)); top: calc(var(--y) * 1% + var(--dy, 0px) * var(--pi)); transform: translate(0, -50%) scale(calc(.85 + .15 * var(--pi))); opacity: calc(var(--pi) * 1.6 - .3); padding: 14px 16px; border-radius: calc(var(--radius-card, 14px) * .8); background: color-mix(in srgb, var(--c-bg) 88%, transparent); border: 1px solid var(--c-border); box-shadow: 0 20px 40px -26px rgba(0,0,0,.35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .es-xview__point--left .es-xview__label { transform: translate(-100%, -50%) scale(calc(.85 + .15 * var(--pi))); text-align: right; transform-origin: 100% 50%; }
+  .es-xview__point--right .es-xview__label { transform-origin: 0 50%; }
+  .es-xview__label strong { font-family: var(--font-heading); font-size: 1.08rem; line-height: 1.2; }
+  .es-xview__label .es-xview__num { font-size: .7rem; letter-spacing: .2em; color: var(--c-accent); font-weight: 700; }
+  .es-xview__label .es-xview__text { margin: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es-xview__track { height: auto !important; }
+  .es-xview__pin { position: relative !important; height: auto !important; padding-block: 64px; }
+  .es-xview__dot::after { animation: none; }
+  .es-xview__point { --po: 1 !important; }
+  .es-xview { --o: 1 !important; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.__esXView) return;
+  window.__esXView = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  var desk = window.matchMedia('(min-width: 750px)');
+  var items = [];
+
+  function geometry(it) {
+    var W = it.box.offsetWidth, H = it.box.offsetHeight, gap = Math.max(28, W * 0.12);
+    it.points.forEach(function (p) {
+      var cs = getComputedStyle(p);
+      var x = parseFloat(cs.getPropertyValue('--x')) / 100 * W;
+      var y = parseFloat(cs.getPropertyValue('--y')) / 100 * H;
+      var off = parseFloat(cs.getPropertyValue('--off')) / 100 * H || 0;
+      var left = p.getAttribute('data-side') === 'left';
+      var tx = left ? -gap : W + gap;
+      var ty = Math.min(H - 10, Math.max(10, y + off));
+      var dx = tx - x, dy = ty - y;
+      p.style.setProperty('--dx', dx.toFixed(1) + 'px');
+      p.style.setProperty('--dy', dy.toFixed(1) + 'px');
+      p.style.setProperty('--len', Math.hypot(dx, dy).toFixed(1) + 'px');
+      p.style.setProperty('--ang', (Math.atan2(dy, dx) * 180 / Math.PI).toFixed(2) + 'deg');
+    });
+  }
+  function apply(it, P) {
+    var n = it.points.length || 1;
+    it.el.style.setProperty('--o', P.toFixed(3));
+    it.points.forEach(function (p, i) {
+      var start = (i / n) * 0.45;
+      var v = Math.min(1, Math.max(0, (P - start) / 0.4));
+      v = 1 - Math.pow(1 - v, 3);
+      p.style.setProperty('--po', v.toFixed(3));
+    });
+  }
+  function update() {
+    var vh = window.innerHeight;
+    items.forEach(function (it) {
+      if (!desk.matches) { apply(it, it.intro); return; }
+      var r = it.track.getBoundingClientRect();
+      if (r.bottom < -vh || r.top > vh * 2) return;
+      var span = Math.max(1, r.height - vh * 0.75);
+      var P = Math.min(1, Math.max(0, (vh * 0.25 - r.top) / span));
+      apply(it, Math.max(P, it.intro));
+    });
+  }
+  var ticking = false;
+  function onScroll() { if (ticking) return; ticking = true; requestAnimationFrame(function () { update(); ticking = false; }); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function () { items.forEach(geometry); onScroll(); });
+
+  function init(section) {
+    if (section.__xv) return;
+    section.__xv = true;
+    var it = { el: section, track: section.querySelector('.es-xview__track'), box: section.querySelector('[data-xview-box]'), points: Array.prototype.slice.call(section.querySelectorAll('[data-xview-point]')), intro: 0 };
+    if (!it.box) return;
+    geometry(it);
+    Array.prototype.forEach.call(it.box.querySelectorAll('img'), function (img) { if (!img.complete) img.addEventListener('load', function () { geometry(it); }); });
+    if (reduce) { apply(it, 1); return; }
+    items.push(it);
+    // Section déjà à l'écran à l'arrivée (haut de page, aperçu) ou petit écran : la vue s'éclate d'elle-même.
+    function intro() {
+      var t0 = performance.now();
+      (function step(t) {
+        it.intro = Math.min(1, (t - t0) / 1800);
+        update();
+        if (it.intro < 1) requestAnimationFrame(step);
+      })(t0);
+    }
+    var r = section.getBoundingClientRect();
+    if (!desk.matches || r.top < window.innerHeight * 0.3) {
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { io.disconnect(); setTimeout(intro, 350); } }, { threshold: 0.25 });
+        io.observe(it.box);
+      } else it.intro = 1;
+    }
+    update();
+  }
+  function boot(root) { Array.prototype.forEach.call((root || document).querySelectorAll('[data-xview]'), init); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); });
+  else boot();
+  document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Vue éclatée animée",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Vue éclatée" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Chaque détail," },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "à sa place." },
+    { "type": "text", "id": "text", "label": "Texte", "default": "Faites défiler pour explorer le produit." },
+    { "type": "image_picker", "id": "image", "label": "Image du produit (fond transparent de préférence)" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 0 }
+  ],
+  "blocks": [
+    { "type": "point", "name": "Point de détail", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Détail" },
+      { "type": "text", "id": "text", "label": "Texte", "default": "[À compléter : caractéristique confirmée]", "info": "Uniquement des caractéristiques confirmées du produit." },
+      { "type": "range", "id": "x", "min": 0, "max": 100, "step": 1, "unit": "%", "label": "Position horizontale sur l'image", "default": 50 },
+      { "type": "range", "id": "y", "min": 0, "max": 100, "step": 1, "unit": "%", "label": "Position verticale sur l'image", "default": 50 },
+      { "type": "select", "id": "side", "label": "Côté de la légende", "default": "auto", "options": [
+        { "value": "auto", "label": "Automatique" }, { "value": "left", "label": "Gauche" }, { "value": "right", "label": "Droite" }
+      ] },
+      { "type": "range", "id": "offset", "min": -40, "max": 40, "step": 2, "unit": "%", "label": "Décalage vertical de la légende", "default": 0 }
+    ] },
+    { "type": "layer", "name": "Calque", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image du calque (fond transparent)" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "select", "id": "direction", "label": "Direction de l'écartement", "default": "up", "options": [
+        { "value": "up", "label": "Vers le haut" }, { "value": "down", "label": "Vers le bas" }, { "value": "left", "label": "Vers la gauche" }, { "value": "right", "label": "Vers la droite" }
+      ] },
+      { "type": "range", "id": "distance", "min": 0, "max": 40, "step": 2, "unit": "%", "label": "Distance", "default": 16 },
+      { "type": "range", "id": "depth", "min": 1, "max": 9, "step": 1, "label": "Profondeur (1 : derrière, 9 : devant)", "default": 6 }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Vue éclatée animée", "blocks": [
+    { "type": "point", "settings": { "title": "Matière", "x": 50, "y": 22, "side": "right", "offset": -6 } },
+    { "type": "point", "settings": { "title": "Finitions", "x": 28, "y": 40, "side": "left", "offset": -8 } },
+    { "type": "point", "settings": { "title": "Conception", "x": 66, "y": 58, "side": "right", "offset": 8 } },
+    { "type": "point", "settings": { "title": "Détail", "x": 40, "y": 78, "side": "left", "offset": 6 } }
+  ] }]
+}
+{% endschema %}

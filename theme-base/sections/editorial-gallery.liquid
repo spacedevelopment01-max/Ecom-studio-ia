@@ -1,0 +1,150 @@
+{%- comment -%}
+  Galerie éditoriale : composition asymétrique façon magazine (grandes et petites images décalées),
+  légendes en italique type cartel, citation optionnelle, parallaxe légère (theme.js, désactivée si
+  l'acheteur a demandé moins d'animations).
+{%- endcomment -%}
+{%- liquid
+  assign sizes_auto = 'large,small,medium,large,medium,small' | split: ','
+  assign sides_auto = 'left,right,left,right,center,right' | split: ','
+  assign speeds = '0.04,-0.03,0.05,-0.03,0.04,-0.04' | split: ','
+  assign n = 0
+-%}
+<section class="es-section es-eg color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.settings.heading != blank or section.settings.eyebrow != blank -%}
+      <header class="es-eg__head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+        {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+    <div class="es-eg__grid">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign k = forloop.index0 | modulo: 6
+          assign size = block.settings.size
+          if size == 'auto' or size == blank
+            assign size = sizes_auto[k]
+          endif
+          assign side = block.settings.position
+          if side == 'auto' or side == blank
+            assign side = sides_auto[k]
+          endif
+        -%}
+        {%- if block.type == 'quote' -%}
+          <blockquote class="es-eg__item es-eg__quote es-eg--{{ size }} es-eg--{{ side }}" data-reveal="up" {{ block.shopify_attributes }}>
+            <p class="es-heading">{{ block.settings.quote }}</p>
+            {%- if block.settings.attribution != blank -%}<footer class="es-eg__attr">{{ block.settings.attribution }}</footer>{%- endif -%}
+          </blockquote>
+        {%- else -%}
+          {%- assign n = n | plus: 1 -%}
+          <figure class="es-eg__item es-eg--{{ size }} es-eg--{{ side }} es-eg__ratio--{{ block.settings.ratio }}" data-reveal="up" style="--i: {{ k }}" {{ block.shopify_attributes }}>
+            <div class="es-eg__frame">
+              <div class="es-eg__inner"{% if section.settings.parallax %} data-parallax="{{ speeds[k] }}"{% endif %}>
+                {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.caption, sizes: '(min-width: 990px) 60vw, 100vw', class: 'es-cover' %}
+              </div>
+            </div>
+            {%- if block.settings.caption != blank or section.settings.show_numbers -%}
+              <figcaption class="es-eg__cap">
+                {%- if section.settings.show_numbers -%}<span class="es-eg__num">{{ section.settings.number_prefix }} {% if n < 10 %}0{% endif %}{{ n }}</span>{%- endif -%}
+                {%- if block.settings.caption != blank -%}<em class="es-eg__title">{{ block.settings.caption }}</em>{%- endif -%}
+                {%- if block.settings.detail != blank -%}<small class="es-eg__detail">{{ block.settings.detail }}</small>{%- endif -%}
+              </figcaption>
+            {%- endif -%}
+          </figure>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-eg__head { max-width: 760px; margin-bottom: clamp(36px, 6vw, 88px); }
+.es-eg__grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: 16px; row-gap: clamp(36px, 7vw, 72px); align-items: start; }
+.es-eg__item { margin: 0; min-width: 0; }
+.es-eg--large { grid-column: 1 / -1; }
+.es-eg--medium { grid-column: span 5; }
+.es-eg--small { grid-column: span 4; }
+.es-eg--right.es-eg--medium { grid-column: 2 / -1; }
+.es-eg--right.es-eg--small { grid-column: 3 / -1; }
+.es-eg--center.es-eg--small { grid-column: 2 / span 4; }
+@media (min-width: 750px) {
+  .es-eg__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2.4vw, 36px); row-gap: clamp(48px, 6vw, 96px); }
+  .es-eg--large { grid-column: span 7; }
+  .es-eg--medium { grid-column: span 5; }
+  .es-eg--small { grid-column: span 4; }
+  .es-eg--left.es-eg--large { grid-column: 1 / span 7; }
+  .es-eg--left.es-eg--medium { grid-column: 1 / span 5; }
+  .es-eg--left.es-eg--small { grid-column: 1 / span 4; }
+  .es-eg--right.es-eg--large { grid-column: 6 / span 7; }
+  .es-eg--right.es-eg--medium { grid-column: 8 / span 5; }
+  .es-eg--right.es-eg--small { grid-column: 9 / span 4; }
+  .es-eg--center.es-eg--large { grid-column: 3 / span 8; }
+  .es-eg--center.es-eg--medium { grid-column: 4 / span 6; }
+  .es-eg--center.es-eg--small { grid-column: 5 / span 4; }
+  .es-eg--right.es-eg--small, .es-eg--right.es-eg--medium { margin-top: clamp(40px, 12vw, 200px); }
+  .es-eg--right.es-eg--large { margin-top: clamp(24px, 5vw, 80px); }
+}
+.es-eg__frame { position: relative; overflow: hidden; aspect-ratio: 4 / 5; border-radius: calc(var(--radius-card) * .5); background: var(--c-surface); }
+.es-eg--large .es-eg__frame { aspect-ratio: 4 / 3; }
+.es-eg__ratio--portrait .es-eg__frame { aspect-ratio: 4 / 5; }
+.es-eg__ratio--landscape .es-eg__frame { aspect-ratio: 3 / 2; }
+.es-eg__ratio--square .es-eg__frame { aspect-ratio: 1; }
+.es-eg__ratio--tall .es-eg__frame { aspect-ratio: 2 / 3; }
+.es-eg__inner { position: absolute; inset: -10% 0; will-change: transform; }
+.es-eg__inner > * { position: absolute; inset: 0; }
+.es-eg__cap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(var(--c-text-rgb), .14); font-size: .92rem; line-height: 1.4; }
+.es-eg__num { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.es-eg__title { font-family: var(--font-accent, var(--font-heading)); font-style: italic; font-size: 1.08em; }
+.es-eg__detail { flex-basis: 100%; color: var(--c-muted); font-size: .82rem; }
+.es-eg__quote { align-self: center; padding: clamp(8px, 3vw, 40px) 0; border: 0; }
+.es-eg__quote p { margin: 0; font-style: italic; font-size: calc(clamp(1.5rem, 3vw, 2.6rem) * var(--heading-scale)); line-height: 1.15; text-transform: none; }
+.es-eg__quote p::before { content: "“"; display: block; font-size: 2.2em; line-height: .6; color: var(--c-accent); margin-bottom: .1em; }
+.es-eg__attr { margin-top: 14px; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; color: var(--c-muted); }
+@media (prefers-reduced-motion: reduce) { .es-eg__inner { transform: none !important; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Galerie éditoriale",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Carnet" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Notre univers," },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "en images" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "show_numbers", "label": "Numéroter les images", "default": true },
+    { "type": "text", "id": "number_prefix", "label": "Préfixe de numérotation", "default": "Fig." },
+    { "type": "checkbox", "id": "parallax", "label": "Parallaxe légère", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "image", "name": "Image", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "caption", "label": "Légende (et description de l'image)", "default": "[À compléter : ce que montre l'image]" },
+      { "type": "text", "id": "detail", "label": "Précision (lieu, matière, saison…)" },
+      { "type": "select", "id": "size", "label": "Taille", "default": "auto", "options": [ { "value": "auto", "label": "Automatique (composition)" }, { "value": "large", "label": "Grande" }, { "value": "medium", "label": "Moyenne" }, { "value": "small", "label": "Petite" } ] },
+      { "type": "select", "id": "position", "label": "Position", "default": "auto", "options": [ { "value": "auto", "label": "Automatique (composition)" }, { "value": "left", "label": "À gauche" }, { "value": "center", "label": "Au centre" }, { "value": "right", "label": "À droite" } ] },
+      { "type": "select", "id": "ratio", "label": "Format", "default": "auto", "options": [ { "value": "auto", "label": "Automatique" }, { "value": "portrait", "label": "Portrait (4:5)" }, { "value": "tall", "label": "Haut (2:3)" }, { "value": "square", "label": "Carré" }, { "value": "landscape", "label": "Paysage (3:2)" } ] }
+    ] },
+    { "type": "quote", "name": "Citation", "settings": [
+      { "type": "textarea", "id": "quote", "label": "Texte", "default": "[À compléter : une phrase qui résume votre univers.]" },
+      { "type": "text", "id": "attribution", "label": "Signature (facultative)" },
+      { "type": "select", "id": "size", "label": "Taille", "default": "auto", "options": [ { "value": "auto", "label": "Automatique (composition)" }, { "value": "large", "label": "Grande" }, { "value": "medium", "label": "Moyenne" }, { "value": "small", "label": "Petite" } ] },
+      { "type": "select", "id": "position", "label": "Position", "default": "auto", "options": [ { "value": "auto", "label": "Automatique (composition)" }, { "value": "left", "label": "À gauche" }, { "value": "center", "label": "Au centre" }, { "value": "right", "label": "À droite" } ] }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Galerie éditoriale", "blocks": [
+    { "type": "image" },
+    { "type": "image" },
+    { "type": "image" },
+    { "type": "image" },
+    { "type": "quote", "settings": { "size": "medium", "position": "center" } }
+  ] }]
+}
+{% endschema %}

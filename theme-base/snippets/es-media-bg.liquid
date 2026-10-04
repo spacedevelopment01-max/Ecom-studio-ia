@@ -1,0 +1,33 @@
+{%- comment -%}
+  Média plein cadre d'une carte ou d'une diapositive : image (qui sert aussi d'affiche), puis vidéo par ordre de priorité :
+  vidéo hébergée par Shopify, vidéo YouTube / Vimeo (URL), fichier MP4 fourni avec le thème.
+  Les vidéos sont muettes et en boucle ; theme.js ne lance que celle de la diapositive active et jamais si
+  l'acheteur a demandé moins d'animations (l'image reste alors affichée).
+  Paramètres : image, asset, video, video_url, video_asset, alt, sizes, loading
+{%- endcomment -%}
+{%- liquid
+  assign has_img = false
+  if image != blank or asset != blank
+    assign has_img = true
+  endif
+  assign poster_url = ''
+  if image != blank
+    assign poster_url = image | image_url: width: 1600
+  elsif asset != blank
+    assign poster_url = asset | asset_url
+  endif
+-%}
+{%- if has_img -%}
+  {% render 'es-image', image: image, asset: asset, alt: alt, sizes: sizes, class: 'es-cover es-mbg__img', loading: loading %}
+{%- endif -%}
+{%- if video != blank -%}
+  {{ video | video_tag: muted: true, loop: true, playsinline: true, preload: 'metadata', class: 'es-cover es-mbg__video', image_size: '1600x' }}
+{%- elsif video_url != blank and video_url.type == 'youtube' -%}
+  <iframe class="es-cover es-mbg__embed" data-src="https://www.youtube-nocookie.com/embed/{{ video_url.id }}?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist={{ video_url.id }}&amp;controls=0&amp;playsinline=1&amp;rel=0&amp;modestbranding=1" title="{{ alt | escape }}" allow="autoplay; encrypted-media; picture-in-picture" tabindex="-1"></iframe>
+{%- elsif video_url != blank and video_url.type == 'vimeo' -%}
+  <iframe class="es-cover es-mbg__embed" data-src="https://player.vimeo.com/video/{{ video_url.id }}?background=1&amp;autoplay=1&amp;muted=1&amp;loop=1&amp;dnt=1" title="{{ alt | escape }}" allow="autoplay; picture-in-picture" tabindex="-1"></iframe>
+{%- elsif video_asset != blank -%}
+  <video class="es-cover es-mbg__video" src="{{ video_asset | asset_url }}"{% if poster_url != blank %} poster="{{ poster_url }}"{% endif %} muted loop playsinline preload="metadata" aria-label="{{ alt | escape }}"></video>
+{%- elsif has_img == false -%}
+  <div class="es-placeholder es-cover" role="img" aria-label="{{ 'general.image_placeholder' | t }}">{{ 'lifestyle-1' | placeholder_svg_tag: 'es-placeholder__svg' }}</div>
+{%- endif -%}
