@@ -587,6 +587,8 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
   f("color_to_hsl", (c: unknown) => { const d = hexOf(c); const r = d.red / 255, g = d.green / 255, b = d.blue / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); const l = (mx + mn) / 2; let h = 0, s2 = 0; if (mx !== mn) { const dd = mx - mn; s2 = l > 0.5 ? dd / (2 - mx - mn) : dd / (mx + mn); h = mx === r ? (g - b) / dd + (g < b ? 6 : 0) : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h *= 60; } return `hsl(${Math.round(h)}, ${Math.round(s2 * 100)}%, ${Math.round(l * 100)}%)`; });
   f("inline_asset_content", (name: string) => files.get(`assets/${name}`) ?? "");
   f("payment_terms", () => "");
+  // Données d'événement Shopify (analytics) : JSON minimal, inutile dans l'aperçu.
+  f("standard_event_data", (v: any, kind?: string) => JSON.stringify({ event: kind ?? "view", id: v?.id ?? null }));
   f("item_count_for_variant", (cart: any, vid: unknown) => (cart?.items ?? []).filter((i: any) => String(i.id) === String(vid)).reduce((n: number, i: any) => n + Number(i.quantity || 0), 0));
   f("weight_with_unit", (w: unknown) => (w ? `${Number(w) / 1000} kg` : ""));
   f("unit_price_with_measurement", () => "");

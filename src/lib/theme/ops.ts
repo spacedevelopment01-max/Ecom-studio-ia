@@ -25,10 +25,12 @@ const Position = z.object({ after: z.string().optional(), before: z.string().opt
 const Value = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 const Settings = z.record(z.string(), Value);
 
+const SCHEME_KEYS = ["background", "surface", "text", "muted", "accent", "accent_text", "border"];
+
 export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("set_setting"), template: z.string(), section: z.string(), block: z.string().optional(), key: z.string(), value: Value }),
   z.object({ op: z.literal("set_global"), key: z.string(), value: Value }),
-  z.object({ op: z.literal("set_scheme_color"), scheme: z.enum(["scheme-1", "scheme-2", "scheme-3", "scheme-4"]), key: z.enum(["background", "surface", "text", "muted", "accent", "accent_text", "border"]), value: z.string() }),
+  z.object({ op: z.literal("set_scheme_color"), scheme: z.string().regex(/^[\w-]{1,40}$/), key: z.string().regex(/^[a-z0-9_]{1,40}$/), value: z.string() }),
   z.object({ op: z.literal("add_section"), template: z.string(), type: z.string(), settings: Settings.optional(), blocks: z.array(z.object({ type: z.string(), settings: Settings.optional() })).optional(), position: Position }),
   z.object({ op: z.literal("remove_section"), template: z.string(), section: z.string() }),
   z.object({ op: z.literal("move_section"), template: z.string(), section: z.string(), position: z.object({ after: z.string().optional(), before: z.string().optional(), index: z.number().int().optional() }) }),
@@ -167,6 +169,12 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           const schemes = (spec.settings.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
           if (!schemes[op.scheme]) {
             reject(L(`schéma ${op.scheme} absent`, `scheme ${op.scheme} is missing`));
+            break;
+          }
+          // Nos thèmes : clés connues. Thème importé : seulement les couleurs que ses schémas définissent déjà.
+          const known = spec.imported ? typeof schemes[op.scheme].settings[op.key] === "string" : SCHEME_KEYS.includes(op.key);
+          if (!known) {
+            reject(L(`couleur « ${op.key} » inconnue dans ce thème`, `color “${op.key}” is unknown in this theme`));
             break;
           }
           schemes[op.scheme].settings[op.key] = op.value.toUpperCase();
