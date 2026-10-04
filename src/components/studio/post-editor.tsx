@@ -133,7 +133,7 @@ export function PostEditor({ post, onClose, onChanged }: { post: PostView | null
               <NetworkDot network={f.network} /> <span className="font-medium">{project?.brand?.name ?? t("Votre compte", "Your account")}</span>
             </div>
             {f.media[0] ? (
-              f.media[0].kind === "video" ? <video src={f.media[0].url} controls playsInline className="aspect-[9/16] w-full bg-black object-cover" /> : <img src={f.media[0].thumbUrl ?? f.media[0].url} alt="" className="w-full" />
+              f.media[0].kind === "video" ? <video src={f.media[0].url} poster={f.media[0].thumbUrl ?? undefined} controls playsInline preload="metadata" className="aspect-[9/16] w-full bg-black object-cover" /> : <img src={f.media[0].thumbUrl ?? f.media[0].url} alt="" className="w-full" />
             ) : (
               <div className="grid aspect-square place-items-center bg-paper-2 text-xs text-muted">{t("Sans média", "No media")}</div>
             )}

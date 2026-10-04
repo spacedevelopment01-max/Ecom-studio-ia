@@ -39,18 +39,23 @@ export function useApi<T = any>(url: string | null, opts: { poll?: number } = {}
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!!url);
   const alive = useRef(true);
+  // Adresse en cours : une réponse arrivée après un changement d'adresse (onglet, filtre) est ignorée,
+  // sinon elle écraserait les données de la nouvelle adresse.
+  const current = useRef(url);
+  current.current = url;
   const load = useCallback(async () => {
     if (!url) return;
+    const fresh = () => alive.current && current.current === url;
     try {
       const d = await api<T>(url);
-      if (alive.current) {
+      if (fresh()) {
         setData(d);
         setError(null);
       }
     } catch (e) {
-      if (alive.current) setError((e as Error).message);
+      if (fresh()) setError((e as Error).message);
     } finally {
-      if (alive.current) setLoading(false);
+      if (fresh()) setLoading(false);
     }
   }, [url]);
   useEffect(() => {

@@ -15,6 +15,11 @@ import { brandTypo, ensureCutouts, latestAsset, palette, assetsByRole } from "./
 import { enqueue, type JobContext } from "../jobs";
 import { C, L, uiLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
+
+/** Format vidéo accepté par chaque réseau (mêmes valeurs que les formats proposés dans l'éditeur de publication). */
+export function videoFormat(net: string) {
+  return net === "youtube" ? "short" : net === "instagram" ? "reel" : net === "pinterest" ? "pin" : "video";
+}
 import { contactCta, deName, howToBook, serviceShowcase, unknownText } from "./services-text";
 
 export type PlanParams = {
@@ -72,7 +77,7 @@ export function localPlan(p: Project, params: PlanParams): PostDraft[] {
         day,
         slot,
         network: net,
-        format: wantsVideo ? (net === "youtube" ? "short" : "reel") : net === "pinterest" ? "pin" : "image",
+        format: wantsVideo ? videoFormat(net) : net === "pinterest" ? "pin" : "image",
         angle,
         title: a.kind === "packshot" ? name : C(`${name} : ${angle.toLowerCase()}`, `${name}: ${angle.toLowerCase()}`),
         caption,
@@ -193,7 +198,7 @@ function localServicePlan(p: Project, params: PlanParams): PostDraft[] {
         day,
         slot,
         network: net,
-        format: wantsVideo ? (net === "youtube" ? "short" : "reel") : net === "pinterest" ? "pin" : "image",
+        format: wantsVideo ? videoFormat(net) : net === "pinterest" ? "pin" : "image",
         angle,
         title: C(`${brand} : ${angle.toLowerCase()}`, `${brand}: ${angle.toLowerCase()}`),
         caption: a.caption(k),
