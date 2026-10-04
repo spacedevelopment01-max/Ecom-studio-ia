@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
-import { Bell, BookOpen, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Wallet, Shield, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Bell, BookOpen, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Wallet, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { useProject } from "./project-context";
 
@@ -193,9 +193,25 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   const { data } = useProject();
   const status = STATUS[data?.project.status ?? "draft"] ?? STATUS.draft;
   const { data: me } = useApi<{ user: { role: string; email: string } }>("/api/me");
+  // Menu latéral replié ou déplié (ordinateur), mémorisé sur cet appareil.
+  const [folded, setFolded] = useState(false);
+  useEffect(() => {
+    try {
+      setFolded(localStorage.getItem("ecs-sidebar") === "folded");
+    } catch {}
+  }, []);
+  const toggleFold = () =>
+    setFolded((v) => {
+      try {
+        localStorage.setItem("ecs-sidebar", v ? "open" : "folded");
+      } catch {}
+      return !v;
+    });
   useEffect(() => {
     // Raccourcis clavier Alt+1…9 pour changer d'onglet.
     const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (e.key === "[" && !e.altKey && !e.ctrlKey && !e.metaKey && !(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)))) return toggleFoldRef.current();
       if (!e.altKey) return;
       const n = Number(e.key);
       if (n >= 1 && n <= 9) router.push(`/studio/${projectId}/${TABS[n - 1].id}`);
@@ -203,6 +219,8 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [projectId, router]);
+  const toggleFoldRef = useRef(toggleFold);
+  toggleFoldRef.current = toggleFold;
   const badge = (id: TabId) => {
     if (!data) return null;
     if (id === "produit") return data.product.questions.filter((q) => !q.answer).length || null;
@@ -211,25 +229,36 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
     return null;
   };
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[272px_1fr]">
-      {/* Barre latérale (ordinateur) */}
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-5 border-r border-line bg-paper px-4 py-5 lg:flex">
-        <Link href="/" className="px-2" aria-label="Accueil E-COM STUDIO IA">
-          <Logo />
-        </Link>
-        <ProjectSwitcher current={projectId} />
-        <nav className="-mx-1 flex-1 overflow-y-auto px-1" aria-label="Espaces du projet">
+    <div className={cx("min-h-dvh lg:grid lg:transition-[grid-template-columns] lg:duration-300", folded ? "lg:grid-cols-[76px_1fr]" : "lg:grid-cols-[272px_1fr]")}>
+      {/* Barre latérale (ordinateur), repliable pour agrandir l'espace de travail */}
+      <aside className={cx("sticky top-0 hidden h-dvh flex-col gap-5 overflow-hidden border-r border-line bg-paper py-5 lg:flex", folded ? "px-2.5" : "px-4")}>
+        <div className={cx("flex items-center gap-2", folded ? "flex-col" : "justify-between px-2")}>
+          <Link href="/" aria-label="Accueil E-COM STUDIO IA">
+            <Logo compact={folded} />
+          </Link>
+          <button type="button" onClick={toggleFold} className="grid size-9 shrink-0 place-items-center rounded-full text-muted transition hover:bg-paper-2 hover:text-ink" aria-label={folded ? "Déplier le menu" : "Replier le menu"} aria-expanded={!folded} title={folded ? "Déplier le menu ([)" : "Replier le menu ([)"}>
+            {folded ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+          </button>
+        </div>
+        {folded ? (
+          <Link href="/studio" title={`${data?.brand?.name ?? data?.project.name ?? ""} · toutes mes boutiques`} className="mx-auto grid size-11 place-items-center overflow-hidden rounded-xl border border-line bg-paper-2 hover:border-ink">
+            {data?.coverUrl ? <img src={data.coverUrl} alt="" className="size-full object-cover" /> : <Store className="size-4" />}
+          </Link>
+        ) : (
+          <ProjectSwitcher current={projectId} />
+        )}
+        <nav className="-mx-1 flex-1 overflow-y-auto overflow-x-hidden px-1" aria-label="Espaces du projet">
           {["Création", "Diffusion", "Ressources"].map((g) => (
             <div key={g} className="mb-4">
-              <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{g}</p>
+              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{g}</p>}
               {TABS.filter((t) => t.group === g).map((t) => {
                 const Icon = t.icon;
                 const b = badge(t.id);
                 return (
-                  <Link key={t.id} href={`/studio/${projectId}/${t.id}`} aria-current={tab === t.id ? "page" : undefined} className={cx("mb-0.5 flex items-center gap-3 rounded-xl px-3 py-2 text-[14px] transition", tab === t.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
-                    <Icon className="size-4" />
-                    <span className="flex-1">{t.label}</span>
-                    {b !== null && <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", tab === t.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>}
+                  <Link key={t.id} href={`/studio/${projectId}/${t.id}`} aria-current={tab === t.id ? "page" : undefined} aria-label={folded ? t.label : undefined} title={folded ? t.label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition", folded ? "justify-center px-0" : "px-3", tab === t.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
+                    <Icon className="size-4 shrink-0" />
+                    {!folded && <span className="flex-1">{t.label}</span>}
+                    {b !== null && (folded ? <span className="absolute right-2 top-1.5 size-2 rounded-full bg-signal" aria-hidden /> : <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", tab === t.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>)}
                   </Link>
                 );
               })}
@@ -237,9 +266,9 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           ))}
         </nav>
         <div className="grid gap-1 border-t border-line pt-3 text-sm">
-          <Link href="/studio/compte" className="flex items-center gap-3 rounded-xl px-3 py-2 text-ink-2 hover:bg-paper-2"><Settings className="size-4" /> Compte et crédits</Link>
-          {me?.user.role === "admin" && <Link href="/admin" className="flex items-center gap-3 rounded-xl px-3 py-2 text-ink-2 hover:bg-paper-2"><Shield className="size-4" /> Administration</Link>}
-          <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} className="flex items-center gap-3 rounded-xl px-3 py-2 text-left text-ink-2 hover:bg-paper-2"><LogOut className="size-4" /> Déconnexion</button>
+          <Link href="/studio/compte" title={folded ? "Compte et crédits" : undefined} aria-label={folded ? "Compte et crédits" : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && " Compte et crédits"}</Link>
+          {me?.user.role === "admin" && <Link href="/admin" title={folded ? "Administration" : undefined} aria-label={folded ? "Administration" : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && " Administration"}</Link>}
+          <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? "Déconnexion" : undefined} aria-label={folded ? "Déconnexion" : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && " Déconnexion"}</button>
         </div>
       </aside>
 
