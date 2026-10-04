@@ -158,7 +158,7 @@ export function localServiceUgcScript(p: Project, o: UgcOptions): UgcScript {
 /** Répliques interdites pour une activité de services : se dire client(e) ou se faire passer pour le professionnel. */
 const SERVICE_CLAIMS = [
   /\b(j'ai fait appel|je suis (client|cliente|allée?|passée?)|j'y (vais|suis allée?)|ils m'ont|elle m'a|il m'a|on m'a (aidé|soigné|coiffé))/i,
-  /\b(mon|ma) (coach|kiné|avocat|avocate|coiffeur|coiffeuse|artisan|comptable|photographe|professeur|prof|esthéticienne)\b/i,
+  /\b(mon|ma) (coach|kiné|avocat|avocate|coiffeur|coiffeuse|artisan|comptable|photographe|professeur|prof|esthéticienne)(?=[\s.,;:!?]|$)/i,
   /\b(je m'appelle|je suis (le|la|votre) (gérant|gérante|fondateur|fondatrice|praticien|praticienne|coach|kiné|avocat|avocate|artisan))/i,
   /\b(i hired|i booked|i went to|i('m| am) a (client|customer)|they helped me|my (coach|lawyer|accountant|hairdresser|therapist|plumber|photographer|teacher))\b/i,
   /\b(my name is|i('m| am) (the|your) (owner|founder|coach|therapist|lawyer|plumber))\b/i,
