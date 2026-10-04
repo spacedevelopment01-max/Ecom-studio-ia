@@ -79,13 +79,12 @@ export function TutorialPlayer({ id, business, onPick, onClose }: { id: Tutorial
   const def = TUTORIALS[id];
   const video = useRef<HTMLVideoElement>(null);
   const [timing, setTiming] = useState<TutorialTiming | null>(null);
-  const [missing, setMissing] = useState(false);
   const [unplayable, setUnplayable] = useState(false);
   const [now, setNow] = useState(0);
   useEffect(() => {
-    setTiming(null); setMissing(false); setUnplayable(false); setNow(0);
+    setTiming(null); setUnplayable(false); setNow(0);
     let alive = true;
-    fetch(tutorialFile(id, L, "json")).then((r) => (r.ok ? r.json() : Promise.reject())).then((j) => alive && setTiming(j)).catch(() => alive && setMissing(true));
+    fetch(tutorialFile(id, L, "json")).then((r) => (r.ok ? r.json() : Promise.reject())).then((j) => alive && setTiming(j)).catch(() => {}); // sans minutage : la vidéo reste lisible, seules les étapes ne sont plus cliquables
     return () => { alive = false; };
   }, [id, L]);
   const current = timing ? timing.steps.reduce((acc, s, i) => (now >= s ? i : acc), -1) : -1;
@@ -127,12 +126,13 @@ export function TutorialPlayer({ id, business, onPick, onClose }: { id: Tutorial
           (elle suit l'étape en cours) ; sur téléphone, la vidéo reste en haut pendant qu'on fait défiler les étapes. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6">
         <div data-tuto-video className="sticky -top-5 z-10 -mx-5 min-w-0 bg-card px-5 pb-2 sm:-top-7 sm:-mx-7 sm:px-7 lg:static lg:mx-0 lg:px-0 lg:pb-0">
-          {unplayable && !missing ? (
+          {unplayable ? (
             <div className="grid aspect-[16/10] place-items-center rounded-2xl border border-dashed border-line bg-paper-2 p-6 text-center text-sm text-muted">
-              <p>{t("Ce navigateur ne lit pas la vidéo ici.", "This browser can't play the video here.")} <a href={tutorialFile(id, L, "mp4")} target="_blank" rel="noreferrer" className="font-medium text-signal underline underline-offset-4">{t("Ouvrir la vidéo", "Open the video")}</a></p>
+              <p>
+                {t("La vidéo n'a pas pu être chargée. Un bloqueur de publicités ou de contenus peut l'empêcher : autorisez ce site, ou ", "The video couldn't be loaded. An ad or content blocker may be preventing it: allow this site, or ")}
+                <a href={tutorialFile(id, L, "mp4")} target="_blank" rel="noreferrer" className="font-medium text-signal underline underline-offset-4">{t("ouvrez la vidéo dans un onglet", "open the video in a new tab")}</a>.
+              </p>
             </div>
-          ) : missing ? (
-            <div className="grid aspect-[16/10] place-items-center rounded-2xl border border-dashed border-line bg-paper-2 p-6 text-center text-sm text-muted">{t("La vidéo de cet onglet arrive bientôt. En attendant, suivez les étapes écrites ci-contre.", "The video for this tab is coming soon. Meanwhile, follow the written steps alongside.")}</div>
           ) : (
             <video key={`${id}-${L}`} ref={video} src={tutorialFile(id, L, "mp4")} poster={tutorialFile(id, L, "jpg")} controls autoPlay playsInline preload="metadata" onTimeUpdate={(e) => setNow(e.currentTarget.currentTime)} onError={() => setUnplayable(true)} className="aspect-[16/10] max-h-[45dvh] w-full rounded-2xl border border-line bg-[#0A1024] object-contain lg:max-h-[calc(92dvh-12rem)]">
               {t("Votre navigateur ne lit pas cette vidéo.", "Your browser can't play this video.")}
