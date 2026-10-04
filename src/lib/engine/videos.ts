@@ -48,6 +48,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   const clipDirs: string[][] = [];
   const provider = req.useAiClip ? videoProviderAvailable() : null;
   if (provider && imgs.length) {
+    // Un plan généré qui échoue (fournisseur indisponible, crédits insuffisants) ne bloque pas la vidéo : elle est montée sans lui.
     const clipFile = await ctx.step("ai-clip", async () => {
       ctx.progress(0.1, L("Génération d'un plan vidéo d'ambiance", "Generating a mood video shot"));
       const scene = imgs.find((a) => a.role === "scene") ?? imgs[0];
@@ -59,9 +60,12 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
         : await falClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip` }, { image: assetData(scene), prompt }, (m) => ctx.progress(0.15, m));
       const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name)}-${C("plan-genere", "generated-shot")}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: scene.id, meta: { provider, recipe: L("Plan d'ambiance généré (image vers vidéo)", "Generated mood shot (image to video)") }, status: "review" });
       return a.id;
+    }).catch((e) => {
+      ctx.progress(0.2, L(`Plan généré par IA indisponible (${(e as Error).message}) : vidéo montée à partir des images`, `AI-generated shot unavailable (${(e as Error).message}): video edited from the images`));
+      return null;
     });
     // Extraction des images du plan + contrôle de fidélité sur 3 images.
-    const clipAsset = (await import("../library")).getAsset(clipFile);
+    const clipAsset = clipFile ? (await import("../library")).getAsset(clipFile) : null;
     if (clipAsset) {
       const dir = tmpDir("clip");
       const src = path.join(dir, "in.mp4");
