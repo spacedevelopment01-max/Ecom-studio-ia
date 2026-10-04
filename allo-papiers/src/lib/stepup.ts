@@ -235,7 +235,7 @@ export async function requestVaultRecovery(user: User) {
 Par sécurité, elle ne sera utilisable que dans ${VAULT_RECOVERY_HOURS} heures. Vous pourrez alors ouvrir le coffre avec un code reçu par email, et vos anciennes clés d'accès seront supprimées.
 
 Si ce n'est pas vous, annulez immédiatement la demande :
-${env.appUrl}/compte/securite/annuler-recuperation#${cancelToken}`,
+${env.appUrl}/annuler-recuperation#${cancelToken}`,
   });
 }
 

@@ -1,12 +1,12 @@
-import { HttpError, json, route } from "@/lib/http";
-import { requireSession } from "@/lib/auth";
+import { clientIp, HttpError, json, route } from "@/lib/http";
+import { keyedHash } from "@/lib/crypto";
 import { ORGANISM_PIVOTS, searchOffices, ANNUAIRE_SITE } from "@/lib/annuaire";
 import { rateLimit } from "@/lib/rate-limit";
 
 /** Recherche dans l'annuaire officiel. La position n'est utilisée que pour cette recherche et n'est pas conservée. */
 export const GET = route(async (req) => {
-  const { user } = await requireSession();
-  await rateLimit(`annuaire:${user.id}`, 60, 3600);
+  // Accessible sans compte (orientation), limité par adresse IP (empreinte, jamais l'IP en clair).
+  await rateLimit(`annuaire:${keyedHash(clientIp(req)).slice(0, 16)}`, 60, 3600);
   const url = new URL(req.url);
   const kind = url.searchParams.get("type") ?? "france_services";
   if (!(kind in ORGANISM_PIVOTS)) throw new HttpError(400, "type", "Type d'organisme inconnu.");

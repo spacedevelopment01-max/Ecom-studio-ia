@@ -30,7 +30,7 @@ export async function startLocalPostgres(dir: string, port: number, persistent =
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const dir = path.join(process.cwd(), ".data", "postgres");
+  const dir = process.env.LOCAL_PG_DIR ?? path.join(process.cwd(), ".data", "postgres");
   startLocalPostgres(dir, 54329).then(({ url }) => {
     console.log(`PostgreSQL local prêt.\nDATABASE_URL=${url}\n(Ctrl+C pour arrêter)`);
   });
