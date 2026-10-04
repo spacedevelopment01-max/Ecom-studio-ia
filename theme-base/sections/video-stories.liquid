@@ -1,0 +1,374 @@
+{%- comment -%}
+  Stories vidéo produit : cercles façon « stories » qui ouvrent un lecteur vidéo vertical plein écran
+  (barres de progression, passage automatique à la suivante, son, pause, clavier, glisser pour naviguer ou fermer).
+{%- endcomment -%}
+<section class="es-section es-vstories color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-vstories>
+  <div class="es-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.hint != blank -%}
+      <div class="es-vstories__head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+        {%- if section.settings.hint != blank -%}<p class="es-vstories__hint es-muted" data-reveal="up" style="--d: 1"><span class="es-vstories__live" aria-hidden="true"></span>{{ section.settings.hint }}</p>{%- endif -%}
+      </div>
+    {%- endif -%}
+    <ul class="es-vstories__track es-vstories__track--{{ section.settings.size }}" role="list">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign v_src = ''
+          assign v_poster = ''
+          if block.settings.video != blank
+            for s in block.settings.video.sources
+              if s.mime_type == 'video/mp4'
+                assign v_src = s.url
+              endif
+            endfor
+            assign v_poster = block.settings.video.preview_image | image_url: width: 1080
+          elsif block.settings.video_asset != blank
+            assign v_src = block.settings.video_asset | asset_url
+          endif
+          if block.settings.poster != blank
+            assign v_poster = block.settings.poster | image_url: width: 1080
+          elsif v_poster == blank and block.settings.poster_asset != blank
+            assign v_poster = block.settings.poster_asset | asset_url
+          endif
+          assign v_thumb = v_poster
+          if block.settings.image != blank
+            assign v_thumb = block.settings.image | image_url: width: 320
+          elsif block.settings.image_asset != blank
+            assign v_thumb = block.settings.image_asset | asset_url
+          endif
+          assign v_label = block.settings.label | default: section.settings.heading | default: shop.name
+        -%}
+        <li class="es-vstories__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          <button type="button" class="es-vstories__open" aria-haspopup="dialog"
+            data-vs-open="{{ forloop.index0 }}"
+            data-src="{{ v_src }}" data-poster="{{ v_poster }}" data-thumb="{{ v_thumb }}"
+            data-label="{{ v_label | escape }}" data-caption="{{ block.settings.caption | escape }}"
+            data-link="{{ block.settings.link }}" data-link-label="{{ block.settings.link_label | escape }}">
+            <span class="es-vstories__ring">
+              <span class="es-vstories__img">
+                {%- if v_thumb != blank -%}
+                  <img src="{{ v_thumb }}" alt="" width="320" height="320" loading="lazy" decoding="async" class="es-cover">
+                {%- else -%}
+                  <span class="es-placeholder es-cover">{{ 'lifestyle-1' | placeholder_svg_tag: 'es-placeholder__svg' }}</span>
+                {%- endif -%}
+              </span>
+              <span class="es-vstories__badge" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span>
+            </span>
+            <span class="es-vstories__label">{{ v_label }}</span>
+            <span class="visually-hidden">{{ 'general.play' | t }}</span>
+          </button>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+
+  <div class="es-vstories__player" data-vs-player role="dialog" aria-modal="true" aria-label="{{ section.settings.heading | default: shop.name | escape }}" hidden>
+    <div class="es-vstories__backdrop" data-vs-close></div>
+    <button type="button" class="es-vstories__arrow es-vstories__arrow--prev" data-vs-prev aria-label="{{ 'general.previous' | t }}">{% render 'icon', name: 'arrow-left' %}</button>
+    <div class="es-vstories__stage" data-vs-stage>
+      <video class="es-vstories__video" data-vs-video playsinline muted preload="metadata"></video>
+      <img class="es-vstories__still" data-vs-still alt="" width="1080" height="1920" hidden>
+      <div class="es-vstories__shade" aria-hidden="true"></div>
+      <div class="es-vstories__bars" aria-hidden="true">
+        {%- for block in section.blocks -%}<span><i data-vs-bar></i></span>{%- endfor -%}
+      </div>
+      <div class="es-vstories__top">
+        <p class="es-vstories__who"><img data-vs-thumb alt="" width="36" height="36"><b data-vs-label></b></p>
+        <button type="button" class="es-vstories__btn" data-vs-pause aria-label="{{ 'general.pause' | t }}" data-label-pause="{{ 'general.pause' | t }}" data-label-play="{{ 'general.play' | t }}"><span class="es-vstories__pause" aria-hidden="true"></span></button>
+        <button type="button" class="es-vstories__btn" data-vs-sound aria-pressed="false" aria-label="{{ 'general.unmute' | t }}" data-label-mute="{{ 'general.mute' | t }}" data-label-unmute="{{ 'general.unmute' | t }}"><span class="es-vstories__muted">{% render 'icon', name: 'mute' %}</span><span class="es-vstories__unmuted">{% render 'icon', name: 'sound' %}</span></button>
+        <button type="button" class="es-vstories__btn" data-vs-close aria-label="{{ 'general.close' | t }}">{% render 'icon', name: 'close' %}</button>
+      </div>
+      <button type="button" class="es-vstories__zone es-vstories__zone--prev" data-vs-prev tabindex="-1" aria-hidden="true"></button>
+      <button type="button" class="es-vstories__zone es-vstories__zone--next" data-vs-next tabindex="-1" aria-hidden="true"></button>
+      <div class="es-vstories__bottom">
+        <p class="es-vstories__caption" data-vs-caption aria-live="polite"></p>
+        <a class="es-button es-button--small es-vstories__cta" data-vs-link href="#" hidden></a>
+      </div>
+    </div>
+    <button type="button" class="es-vstories__arrow es-vstories__arrow--next" data-vs-next aria-label="{{ 'general.next' | t }}">{% render 'icon', name: 'arrow' %}</button>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-vstories__head { text-align: center; max-width: 760px; margin: 0 auto clamp(26px, 4vw, 48px); }
+.es-vstories__head .es-heading { margin-bottom: .3em; }
+.es-vstories__hint { display: inline-flex; align-items: center; gap: .6em; margin: 0; font-size: .92rem; }
+.es-vstories__live { width: 8px; height: 8px; border-radius: 50%; background: var(--c-accent); box-shadow: 0 0 0 0 rgba(var(--c-accent-rgb), .5); animation: es-vs-pulse 2.2s infinite; }
+@keyframes es-vs-pulse { 0% { box-shadow: 0 0 0 0 rgba(var(--c-accent-rgb), .55); } 70%, 100% { box-shadow: 0 0 0 10px rgba(var(--c-accent-rgb), 0); } }
+.es-vstories__track { list-style: none; margin: 0; padding: 6px 4px 10px; display: flex; gap: clamp(14px, 2.6vw, 34px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.es-vstories__track::-webkit-scrollbar { display: none; }
+@media (min-width: 750px) { .es-vstories__track { justify-content: center; flex-wrap: wrap; overflow: visible; } }
+.es-vstories__item { flex: none; scroll-snap-align: start; }
+.es-vstories__open { --size: clamp(84px, 22vw, 124px); display: grid; justify-items: center; gap: 12px; width: var(--size); padding: 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; }
+.es-vstories__track--large .es-vstories__open { --size: clamp(100px, 27vw, 156px); }
+.es-vstories__ring { position: relative; display: block; width: 100%; aspect-ratio: 1; border-radius: 50%; padding: 4px; background: conic-gradient(from var(--es-angle, 0deg), var(--c-accent), color-mix(in srgb, var(--c-accent) 35%, var(--c-text)), rgba(var(--c-accent-rgb), .35), var(--c-accent)); animation: es-vs-spin 7s linear infinite; transition: transform .5s var(--ease-out), filter .4s; }
+@keyframes es-vs-spin { to { --es-angle: 360deg; } }
+.es-vstories__img { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid var(--c-bg); background: var(--c-surface); }
+.es-vstories__img img { transition: transform .9s var(--ease-out); }
+.es-vstories__badge { position: absolute; right: 2%; bottom: 2%; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--c-accent); color: var(--c-accent-text); border: 2px solid var(--c-bg); padding-left: 2px; transition: transform .4s var(--ease-out); }
+.es-vstories__label { font-size: .92rem; font-weight: var(--font-body-weight-bold); text-align: center; line-height: 1.3; max-width: 100%; }
+.es-vstories__open:hover .es-vstories__ring { transform: translateY(-4px) scale(1.03); }
+.es-vstories__open:hover .es-vstories__img img { transform: scale(1.1); }
+.es-vstories__open:hover .es-vstories__badge { transform: scale(1.12); }
+.es-vstories__item.is-seen .es-vstories__ring { background: rgba(var(--c-text-rgb), .22); animation: none; }
+
+.es-vstories__player { position: fixed; inset: 0; z-index: 400; display: flex; align-items: center; justify-content: center; gap: 24px; color: #fff; opacity: 0; transition: opacity .35s var(--ease-out); }
+.es-vstories__player.is-open { opacity: 1; }
+.es-vstories__backdrop { position: absolute; inset: 0; background: rgba(8, 8, 10, .88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.es-vstories__stage { position: relative; height: min(92vh, 860px); aspect-ratio: 9 / 16; max-width: 100vw; border-radius: 18px; overflow: hidden; background: #000; box-shadow: 0 40px 120px -30px rgba(0,0,0,.8); transform: scale(.94) translateY(var(--drag, 0px)); transition: transform .45s var(--ease-out); touch-action: none; user-select: none; -webkit-user-select: none; }
+.es-vstories__player.is-open .es-vstories__stage { transform: scale(1) translateY(var(--drag, 0px)); }
+.es-vstories__player.is-dragging .es-vstories__stage { transition: none; }
+.es-vstories__video, .es-vstories__still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.es-vstories__shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 22%, transparent 62%, rgba(0,0,0,.65)); }
+.es-vstories__bars { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 4px; z-index: 3; }
+.es-vstories__bars span { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,.35); overflow: hidden; }
+.es-vstories__bars i { display: block; height: 100%; width: 100%; background: #fff; transform: scaleX(0); transform-origin: left; }
+.es-vstories__top { position: absolute; top: 24px; left: 12px; right: 6px; z-index: 3; display: flex; align-items: center; gap: 2px; }
+.es-vstories__who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; margin: 0; font-size: .9rem; }
+.es-vstories__who img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.85); }
+.es-vstories__who img[src=""], .es-vstories__who img:not([src]) { display: none; }
+.es-vstories__who b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.es-vstories__btn { width: 44px; height: 44px; border: 0; border-radius: 50%; display: grid; place-items: center; background: transparent; color: #fff; cursor: pointer; }
+.es-vstories__btn:hover { background: rgba(255,255,255,.14); }
+.es-vstories__btn .es-icon { width: 22px; height: 22px; }
+.es-vstories__unmuted, .es-vstories__btn[aria-pressed="true"] .es-vstories__muted { display: none; }
+.es-vstories__btn[aria-pressed="true"] .es-vstories__unmuted { display: block; }
+.es-vstories__pause { width: 12px; height: 14px; border-inline: 4px solid #fff; }
+.es-vstories__btn.is-paused .es-vstories__pause { width: 0; height: 0; border: 0; border-left: 13px solid #fff; border-block: 8px solid transparent; margin-left: 4px; }
+.es-vstories__zone { position: absolute; top: 80px; bottom: 110px; width: 34%; z-index: 2; border: 0; background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.es-vstories__zone--prev { left: 0; }
+.es-vstories__zone--next { right: 0; width: 66%; }
+.es-vstories__bottom { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 18px 18px 22px; display: grid; gap: 12px; justify-items: start; }
+.es-vstories__caption { margin: 0; font-size: 1rem; line-height: 1.45; text-shadow: 0 1px 12px rgba(0,0,0,.45); }
+.es-vstories__caption:empty { display: none; }
+.es-vstories__cta { --b-bg: #fff; --b-fg: #111; }
+.es-vstories__cta[hidden] { display: none; }
+.es-vstories__arrow { position: relative; z-index: 2; width: 52px; height: 52px; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.08); color: #fff; display: grid; place-items: center; cursor: pointer; transition: background .25s, opacity .25s; }
+.es-vstories__arrow:hover { background: rgba(255,255,255,.2); }
+.es-vstories__arrow[disabled] { opacity: .25; cursor: default; }
+@media (max-width: 749px) {
+  .es-vstories__arrow { display: none; }
+  .es-vstories__stage { height: 100%; width: 100%; aspect-ratio: auto; border-radius: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es-vstories__ring, .es-vstories__live { animation: none; }
+  .es-vstories__stage, .es-vstories__player { transition: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.__esVStories) return;
+  window.__esVStories = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var STILL_MS = 5000;
+
+  function init(section) {
+    if (section.__vs) return;
+    section.__vs = true;
+    var opens = Array.prototype.slice.call(section.querySelectorAll('[data-vs-open]'));
+    var player = section.querySelector('[data-vs-player]');
+    if (!player || !opens.length) return;
+    var stage = player.querySelector('[data-vs-stage]');
+    var video = player.querySelector('[data-vs-video]');
+    var still = player.querySelector('[data-vs-still]');
+    var bars = Array.prototype.slice.call(player.querySelectorAll('[data-vs-bar]'));
+    var pauseBtn = player.querySelector('[data-vs-pause]');
+    var soundBtn = player.querySelector('[data-vs-sound]');
+    var label = player.querySelector('[data-vs-label]');
+    var thumb = player.querySelector('[data-vs-thumb]');
+    var caption = player.querySelector('[data-vs-caption]');
+    var link = player.querySelector('[data-vs-link]');
+    var arrows = player.querySelectorAll('.es-vstories__arrow');
+    var cur = -1, opener = null, paused = false, muted = true, raf = 0, stillStart = 0, stillElapsed = 0, home = player.parentNode;
+
+    function story(i) { return opens[i].dataset; }
+    function setBars() {
+      bars.forEach(function (b, j) { b.style.transform = 'scaleX(' + (j < cur ? 1 : 0) + ')'; });
+    }
+    function progress() {
+      var p = 0;
+      if (!still.hidden) {
+        var el = stillElapsed + (paused ? 0 : performance.now() - stillStart);
+        p = el / STILL_MS;
+        if (p >= 1) { next(); return; }
+      } else if (video.duration) p = video.currentTime / video.duration;
+      if (bars[cur]) bars[cur].style.transform = 'scaleX(' + Math.min(1, p).toFixed(4) + ')';
+      raf = requestAnimationFrame(progress);
+    }
+    function setPaused(v) {
+      paused = v;
+      pauseBtn.classList.toggle('is-paused', v);
+      pauseBtn.setAttribute('aria-label', v ? pauseBtn.dataset.labelPlay : pauseBtn.dataset.labelPause);
+      if (!still.hidden) {
+        if (v) stillElapsed += performance.now() - stillStart; else stillStart = performance.now();
+      } else if (v) video.pause();
+      else video.play().catch(function () {});
+    }
+    function load(i) {
+      cur = i;
+      var d = story(i);
+      setBars();
+      label.textContent = d.label || '';
+      if (d.thumb) thumb.setAttribute('src', d.thumb); else thumb.removeAttribute('src');
+      caption.textContent = d.caption || '';
+      if (d.link && d.linkLabel) { link.href = d.link; link.textContent = d.linkLabel; link.hidden = false; } else link.hidden = true;
+      arrows[0].disabled = i === 0;
+      arrows[1].disabled = i === opens.length - 1;
+      opens[i].closest('.es-vstories__item').classList.add('is-seen');
+      cancelAnimationFrame(raf);
+      if (d.src) {
+        still.hidden = true;
+        video.hidden = false;
+        video.poster = d.poster || '';
+        video.src = d.src;
+        video.muted = muted;
+        video.currentTime = 0;
+        paused = false;
+        setPaused(false);
+      } else {
+        video.pause();
+        video.removeAttribute('src');
+        video.hidden = true;
+        still.src = d.poster || d.thumb || '';
+        still.hidden = false;
+        stillElapsed = 0;
+        stillStart = performance.now();
+        setPaused(false);
+      }
+      raf = requestAnimationFrame(progress);
+    }
+    function next() { if (cur < opens.length - 1) load(cur + 1); else close(); }
+    function prev() {
+      if (still.hidden && video.currentTime > 2.5) { video.currentTime = 0; return; }
+      if (cur > 0) load(cur - 1); else { if (still.hidden) video.currentTime = 0; else { stillElapsed = 0; stillStart = performance.now(); } }
+    }
+    function open(i, btn) {
+      opener = btn;
+      document.body.appendChild(player);
+      player.hidden = false;
+      document.documentElement.style.overflow = 'hidden';
+      requestAnimationFrame(function () { player.classList.add('is-open'); });
+      load(i);
+      player.querySelector('[data-vs-close].es-vstories__btn').focus();
+      document.addEventListener('keydown', onKey);
+    }
+    function close() {
+      cancelAnimationFrame(raf);
+      video.pause();
+      player.classList.remove('is-open');
+      document.removeEventListener('keydown', onKey);
+      document.documentElement.style.overflow = '';
+      setTimeout(function () {
+        player.hidden = true;
+        video.removeAttribute('src');
+        video.load();
+        if (home && player.parentNode !== home) home.appendChild(player);
+      }, reduce ? 0 : 320);
+      if (opener) opener.focus();
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+      else if ((e.key === ' ' || e.key === 'k') && !(e.target.closest && e.target.closest('button, a'))) { e.preventDefault(); setPaused(!paused); }
+      else if (e.key === 'm') soundBtn.click();
+      else if (e.key === 'Tab') {
+        var f = Array.prototype.slice.call(player.querySelectorAll('button:not([tabindex="-1"]):not([disabled]), a[href]:not([hidden])')).filter(function (x) { return x.offsetParent !== null; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+
+    opens.forEach(function (b, i) { b.addEventListener('click', function () { open(i, b); }); });
+    Array.prototype.forEach.call(player.querySelectorAll('[data-vs-close]'), function (b) { b.addEventListener('click', close); });
+    Array.prototype.forEach.call(player.querySelectorAll('[data-vs-next]'), function (b) { b.addEventListener('click', function () { if (!suppress) next(); }); });
+    Array.prototype.forEach.call(player.querySelectorAll('[data-vs-prev]'), function (b) { b.addEventListener('click', function () { if (!suppress) prev(); }); });
+    pauseBtn.addEventListener('click', function () { setPaused(!paused); });
+    soundBtn.addEventListener('click', function () {
+      muted = !muted;
+      video.muted = muted;
+      soundBtn.setAttribute('aria-pressed', String(!muted));
+      soundBtn.setAttribute('aria-label', muted ? soundBtn.dataset.labelUnmute : soundBtn.dataset.labelMute);
+    });
+    video.addEventListener('ended', next);
+
+    // Glisser : gauche / droite pour changer de story, vers le bas pour fermer ; appui long pour mettre en pause.
+    var sx = 0, sy = 0, down = false, holdTimer = 0, held = false, suppress = false;
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('.es-vstories__top, .es-vstories__bottom a')) return;
+      down = true; sx = e.clientX; sy = e.clientY; held = false; suppress = false;
+      holdTimer = setTimeout(function () { held = true; if (!paused) { setPaused(true); held = 'paused'; } }, 260);
+    });
+    stage.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) clearTimeout(holdTimer);
+      if (dy > 0 && dy > Math.abs(dx)) { player.classList.add('is-dragging'); stage.style.setProperty('--drag', dy * 0.6 + 'px'); }
+    });
+    function end(e) {
+      if (!down) return;
+      down = false;
+      clearTimeout(holdTimer);
+      player.classList.remove('is-dragging');
+      stage.style.removeProperty('--drag');
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (held === 'paused') { setPaused(false); suppress = true; }
+      else if (dy > 90 && dy > Math.abs(dx)) { suppress = true; close(); }
+      else if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { suppress = true; if (dx < 0) next(); else prev(); }
+      setTimeout(function () { suppress = false; }, 0);
+    }
+    stage.addEventListener('pointerup', end);
+    stage.addEventListener('pointercancel', end);
+  }
+
+  function boot(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-vstories]'), init);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); });
+  else boot();
+  document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Stories vidéo produit",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "En vidéo" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Le produit," },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "en mouvement." },
+    { "type": "text", "id": "hint", "label": "Indication", "default": "Touchez une story pour la regarder" },
+    { "type": "select", "id": "size", "label": "Taille des cercles", "default": "large", "options": [ { "value": "medium", "label": "Moyenne" }, { "value": "large", "label": "Grande" } ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 64 }
+  ],
+  "blocks": [
+    { "type": "story", "name": "Story", "settings": [
+      { "type": "text", "id": "label", "label": "Libellé", "default": "À découvrir" },
+      { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+      { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4 9:16)" },
+      { "type": "image_picker", "id": "poster", "label": "Image d'affiche" },
+      { "type": "text", "id": "poster_asset", "label": "Affiche fournie avec le thème" },
+      { "type": "image_picker", "id": "image", "label": "Image du cercle" },
+      { "type": "text", "id": "image_asset", "label": "Image du cercle fournie avec le thème" },
+      { "type": "text", "id": "caption", "label": "Légende dans la vidéo" },
+      { "type": "text", "id": "link_label", "label": "Texte du lien" },
+      { "type": "url", "id": "link", "label": "Lien" }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Stories vidéo produit", "blocks": [
+    { "type": "story", "settings": { "label": "À découvrir" } },
+    { "type": "story", "settings": { "label": "En mouvement" } },
+    { "type": "story", "settings": { "label": "De près" } },
+    { "type": "story", "settings": { "label": "En situation" } }
+  ] }]
+}
+{% endschema %}

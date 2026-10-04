@@ -1,0 +1,31 @@
+{%- comment -%}
+  Média plein cadre (diaporama, bannières, jour / nuit, galeries) : image, puis vidéo par-dessus si elle existe
+  (vidéo hébergée par Shopify, sinon fichier MP4 fourni avec le thème). La vidéo est muette, en boucle,
+  sans lecture automatique : le script de la section la lance (diapositive active, survol, visibilité) et jamais
+  si l'acheteur a demandé moins d'animations — l'image ou l'affiche reste alors affichée.
+  Paramètres : image, asset, video, video_asset, alt, sizes, loading, fetchpriority, class
+{%- endcomment -%}
+{%- liquid
+  assign has_img = false
+  if image != blank or asset != blank
+    assign has_img = true
+  endif
+  assign poster_url = ''
+  if image != blank
+    assign poster_url = image | image_url: width: 1600
+  elsif asset != blank
+    assign poster_url = asset | asset_url
+  endif
+  assign media_class = 'es-cover es-smedia__img ' | append: class
+  assign video_class = 'es-cover es-smedia__video ' | append: class
+-%}
+{%- if has_img -%}
+  {% render 'es-image', image: image, asset: asset, alt: alt, sizes: sizes, class: media_class, loading: loading, fetchpriority: fetchpriority %}
+{%- endif -%}
+{%- if video != blank -%}
+  {{ video | video_tag: muted: true, loop: true, playsinline: true, preload: 'metadata', class: video_class, image_size: '1600x' }}
+{%- elsif video_asset != blank -%}
+  <video class="{{ video_class }}" src="{{ video_asset | asset_url }}"{% if poster_url != blank %} poster="{{ poster_url }}"{% endif %} muted loop playsinline preload="metadata"{% if alt != blank %} aria-label="{{ alt | escape }}"{% else %} aria-hidden="true"{% endif %}></video>
+{%- elsif has_img == false -%}
+  <div class="es-placeholder es-cover {{ class }}" role="img" aria-label="{{ 'general.image_placeholder' | t }}">{{ 'lifestyle-1' | placeholder_svg_tag: 'es-placeholder__svg' }}</div>
+{%- endif -%}

@@ -32,6 +32,8 @@ const SAMPLES: Record<string, { settings?: Record<string, unknown>; blocks?: { t
     blocks: [{ type: "step", settings: { eyebrow: "Dépliez", title: "Bras dépliés, prêt à partir.", text: "<p>Les bras se replient pour le transport.</p>", image_asset: cut, label: "Bras pliables", label_x: 22, label_y: 30 } }, { type: "step" }, { type: "step" }],
   },
   testimonials: { blocks: [1, 2, 3].map(() => ({ type: "review", settings: { quote: "Votre client décrit ici son expérience, avec ses mots.", author: "Prénom", detail: "Ville", rating: "5" } })) },
+  "immersive-reviews": { settings: { height: "medium" }, blocks: [1, 2, 3].map(() => ({ type: "review", settings: { quote: "Votre client décrit ici son expérience, avec ses mots.", author: "Prénom", detail: "Ville", rating: "5", verified: true } })) },
+  countdown: { settings: { end_date: "2026-12-31", end_time: "23:59", text: "<p>Votre offre réelle et ses conditions.</p>" } },
   "trust-bar": { blocks: [["shield", "Paiement sécurisé"], ["return", "Retours"], ["chat", "Service client"], ["truck", "Livraison"]].map(([icon, title]) => ({ type: "item", settings: { icon, title, text: "Votre engagement réel" } })) },
   "custom-liquid": { settings: { custom_liquid: "<div style=\"padding:48px;border:1px dashed currentColor;border-radius:16px;text-align:center;opacity:.7\">Votre widget ou code personnalisé s'affiche ici.</div>" } },
   "before-after": { settings: { image_before_asset: pack, image_after_asset: life || detail } },
@@ -72,7 +74,7 @@ for (const e of SECTION_LIBRARY) {
     document.querySelectorAll(".es-pv-bar").forEach((x) => x.remove());
     // Seule la section compte : en-tête, bandeau et pied de page masqués.
     const st = document.createElement("style");
-    st.textContent = '[data-es-section^="group:"]{display:none!important} body{padding-top:0!important}';
+    st.textContent = '[data-es-section^="group:"],.es-fab{display:none!important} body{padding-top:0!important}';
     document.head.appendChild(st);
     for (const img of Array.from(document.images)) img.loading = "eager";
     await new Promise((r) => setTimeout(r, 900));

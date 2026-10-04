@@ -1,44 +1,233 @@
-{%- assign product = section.settings.product | default: collections.all.products.first -%}
-<section class="es-section es-featured color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-featured-product>
-  <div class="es-container es-featured__grid">
-    <div class="es-featured__media es-media-frame" data-reveal="zoom">
-      {%- if section.settings.image != blank or section.settings.image_asset != blank -%}
-        {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: product.title, sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-cover' %}
-      {%- elsif product.featured_media -%}
-        {{ product.featured_media | image_url: width: 1500 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 50vw, 100vw', widths: '550, 750, 1100, 1500', class: 'es-cover', alt: product.featured_media.alt }}
-      {%- else -%}
-        {{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}
+{%- comment -%}
+  Produit vedette premium : galerie avec vignettes et zoom, variantes en pastilles, prix (remise réelle calculée
+  depuis le prix barré Shopify), ajout au panier et points forts saisis par le marchand.
+  Identifiants des réglages inchangés depuis « Produit en vedette » (compatibilité des thèmes existants).
+{%- endcomment -%}
+{%- liquid
+  assign product = section.settings.product | default: collections.all.products.first
+  assign variant = product.selected_or_first_available_variant
+  assign has_stage = false
+  if section.settings.image != blank or section.settings.image_asset != blank
+    assign has_stage = true
+  endif
+  assign slides = 0
+  if has_stage
+    assign slides = 1
+  endif
+  if section.settings.show_gallery
+    for m in product.media limit: 10
+      if m.media_type == 'image'
+        assign slides = slides | plus: 1
+      endif
+    endfor
+  elsif has_stage == false and product.featured_media
+    assign slides = 1
+  endif
+-%}
+<section class="es-section es-featured es-fp es-fp--thumbs-{{ section.settings.thumbs_position }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-featured-product data-fp{% if section.settings.enable_zoom %} data-fp-zoom{% endif %}>
+  <div class="es-container es-featured__grid es-fp__grid">
+    <div class="es-fp__gallery" data-reveal="up">
+      <div class="es-fp__stage es-media-frame" data-fp-stage aria-label="{{ 'products.product.media' | t | escape }}" role="group">
+        {%- assign k = 0 -%}
+        {%- if has_stage -%}
+          <figure class="es-fp__slide is-active" data-fp-slide="{{ k }}">
+            {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: product.title, sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-fp__img', loading: 'eager' %}
+          </figure>
+          {%- assign k = 1 -%}
+        {%- endif -%}
+        {%- if section.settings.show_gallery or has_stage == false -%}
+          {%- for m in product.media limit: 10 -%}
+            {%- if m.media_type == 'image' -%}
+              {%- unless section.settings.show_gallery == false and k > 0 -%}
+                <figure class="es-fp__slide{% if k == 0 %} is-active{% endif %}" data-fp-slide="{{ k }}" data-media-id="{{ m.id }}">
+                  {{ m.preview_image | image_url: width: 1800 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 50vw, 100vw', widths: '550, 750, 1100, 1500, 1800', class: 'es-fp__img', alt: m.alt | default: product.title }}
+                </figure>
+                {%- assign k = k | plus: 1 -%}
+              {%- endunless -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+        {%- if k == 0 -%}
+          <figure class="es-fp__slide is-active" data-fp-slide="0">{{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}</figure>
+        {%- endif -%}
+        {%- if variant.compare_at_price > variant.price and section.settings.show_sale_badge -%}
+          {%- assign percent = variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round -%}
+          <span class="es-fp__sale">{{ 'sections.featured_product.save' | t: percent: percent }}</span>
+        {%- endif -%}
+        {%- if section.settings.enable_zoom and k > 0 -%}
+          <button type="button" class="es-fp__zoom" data-fp-zoom-btn aria-pressed="false" aria-label="{{ 'sections.featured_product.zoom' | t | escape }}">{% render 'icon', name: 'search' %}</button>
+        {%- endif -%}
+        {%- if k > 1 -%}
+          <button type="button" class="es-fp__arrow es-fp__arrow--prev" data-fp-go="-1" aria-label="{{ 'general.previous' | t | escape }}">{% render 'icon', name: 'arrow-left' %}</button>
+          <button type="button" class="es-fp__arrow es-fp__arrow--next" data-fp-go="1" aria-label="{{ 'general.next' | t | escape }}">{% render 'icon', name: 'arrow' %}</button>
+        {%- endif -%}
+      </div>
+      {%- if k > 1 -%}
+        <div class="es-fp__thumbs" data-fp-thumbs>
+          {%- assign t = 0 -%}
+          {%- if has_stage -%}
+            <button type="button" class="es-fp__thumb is-active" data-fp-thumb="0" aria-label="{{ 'products.product.media_n' | t: n: 1 | escape }}" aria-current="true">{% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: '', sizes: '96px', class: 'es-cover' %}</button>
+            {%- assign t = 1 -%}
+          {%- endif -%}
+          {%- for m in product.media limit: 10 -%}
+            {%- if m.media_type == 'image' -%}
+              {%- assign tn = t | plus: 1 -%}
+              <button type="button" class="es-fp__thumb{% if t == 0 %} is-active{% endif %}" data-fp-thumb="{{ t }}" aria-label="{{ 'products.product.media_n' | t: n: tn | escape }}"{% if t == 0 %} aria-current="true"{% endif %}>{{ m.preview_image | image_url: width: 200 | image_tag: loading: 'lazy', alt: '', class: 'es-cover' }}</button>
+              {%- assign t = t | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
       {%- endif -%}
     </div>
-    <div class="es-featured__info" data-reveal="up">
-      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+
+    <div class="es-featured__info es-fp__info" data-reveal="up">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- elsif section.settings.show_vendor and product.vendor != blank -%}<p class="es-eyebrow">{{ product.vendor }}</p>{%- endif -%}
       <h2 class="es-heading es-h2"><a href="{{ product.url }}">{%- if product.title != blank -%}{{ product.title }}{%- else -%}{{ 'products.product.placeholder_title' | t }}{%- endif -%}</a></h2>
-      {% render 'price', product: product, use_variant: true %}
+      <div class="es-fp__price">{% render 'price', product: product, use_variant: true %}</div>
       {%- if section.settings.text != blank -%}<div class="es-rte">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.blocks.size > 0 -%}
+        <ul class="es-fp__highlights" role="list">
+          {%- for block in section.blocks -%}
+            <li style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+              <span class="es-fp__hl-icon" aria-hidden="true">{% render 'icon', name: block.settings.icon %}</span>
+              <span>{{ block.settings.text }}</span>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
       {%- if product != blank -%}
-        {% render 'product-buy', product: product, section_id: section.id, show_quantity: section.settings.show_quantity, show_dynamic_checkout: false, picker: 'buttons' %}
+        {% render 'product-buy', product: product, section_id: section.id, show_quantity: section.settings.show_quantity, show_dynamic_checkout: section.settings.show_dynamic_checkout, picker: section.settings.picker %}
       {%- endif -%}
       <a href="{{ product.url }}" class="es-link-arrow">{{ 'products.product.view_details' | t }} {% render 'icon', name: 'arrow' %}</a>
     </div>
   </div>
 </section>
 
+{% stylesheet %}
+.es-fp__grid { align-items: start; }
+@media (min-width: 990px) { .es-fp__grid { grid-template-columns: 1.08fr 1fr; } .es-fp__info { position: sticky; top: calc(var(--header-h, 72px) + 24px); padding-top: 12px; } }
+.es-fp__gallery { display: grid; gap: 12px; min-width: 0; }
+@media (min-width: 990px) { .es-fp--thumbs-left .es-fp__gallery { grid-template-columns: 84px minmax(0, 1fr); } .es-fp--thumbs-left .es-fp__thumbs { order: -1; flex-direction: column; overflow: visible auto; max-height: 100%; } }
+.es-fp__stage { position: relative; aspect-ratio: 1; touch-action: pan-y; }
+.es-fp__slide { position: absolute; inset: 0; margin: 0; opacity: 0; visibility: hidden; transition: opacity .6s var(--ease-out), visibility 0s .6s; overflow: hidden; }
+.es-fp__slide.is-active { opacity: 1; visibility: visible; transition: opacity .6s var(--ease-out); }
+.es-fp__slide .es-placeholder__svg { width: 70%; height: 100%; margin: auto; }
+.es-fp__img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s var(--ease-out); transform-origin: var(--zx, 50%) var(--zy, 50%); }
+.es-fp__slide .es-placeholder { position: absolute; inset: 0; min-height: 0; }
+[data-fp-zoom] .es-fp__stage { cursor: zoom-in; }
+.es-fp__stage.is-zoomed { cursor: zoom-out; }
+.es-fp__stage.is-zoomed .es-fp__slide.is-active .es-fp__img { transform: scale(2.2); }
+@media (hover: hover) { [data-fp-zoom] .es-fp__stage:hover .es-fp__slide.is-active .es-fp__img { transform: scale(1.6); } [data-fp-zoom] .es-fp__stage.is-zoomed:hover .es-fp__slide.is-active .es-fp__img { transform: scale(2.2); } }
+.es-fp__sale { position: absolute; top: 14px; left: 14px; z-index: 2; padding: 6px 12px; border-radius: 999px; background: var(--c-accent); color: var(--c-accent-text); font-weight: 700; font-size: .8rem; letter-spacing: .02em; }
+.es-fp__zoom, .es-fp__arrow { position: absolute; z-index: 2; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .88); color: #111; cursor: pointer; box-shadow: 0 8px 20px -10px rgba(0, 0, 0, .4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: transform .3s var(--ease-out), opacity .3s; }
+.es-fp__zoom .es-icon, .es-fp__arrow .es-icon { width: 18px; height: 18px; }
+.es-fp__zoom { top: 14px; right: 14px; }
+.es-fp__zoom[aria-pressed="true"] { background: var(--c-text); color: var(--c-bg); }
+.es-fp__arrow { top: 50%; margin-top: -21px; opacity: 0; }
+.es-fp__arrow--prev { left: 14px; }
+.es-fp__arrow--next { right: 14px; }
+.es-fp__stage:hover .es-fp__arrow, .es-fp__arrow:focus-visible { opacity: 1; }
+@media (hover: none) { .es-fp__arrow { opacity: 1; width: 38px; height: 38px; } }
+.es-fp__arrow:hover, .es-fp__zoom:hover { transform: scale(1.06); }
+.es-fp__thumbs { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 5px; margin: -3px; }
+.es-fp__thumbs::-webkit-scrollbar { display: none; }
+.es-fp__thumb { flex: none; width: 76px; aspect-ratio: 1; padding: 0; border: 0; border-radius: calc(var(--radius-card) * .6); overflow: hidden; background: var(--c-surface); cursor: pointer; opacity: .55; outline: 2px solid transparent; outline-offset: 2px; transition: opacity .3s, outline-color .3s, transform .3s var(--ease-out); }
+.es-fp__thumb:hover { opacity: .9; }
+.es-fp__thumb.is-active { opacity: 1; outline-color: var(--c-text); }
+.es-fp__thumb .es-placeholder { min-height: 0; }
+.es-fp__info > * { margin-bottom: 18px; }
+.es-fp__price .es-price { font-size: 1.4rem; }
+.es-fp__highlights { list-style: none; margin: 0 0 22px; padding: 16px 0; display: grid; gap: 12px; border-block: 1px solid var(--c-border); }
+.es-fp__highlights li { display: flex; gap: 12px; align-items: center; font-size: .95rem; }
+.es-fp__hl-icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: rgba(var(--c-accent-rgb), .12); color: var(--c-accent); }
+.es-fp__hl-icon .es-icon { width: 18px; height: 18px; }
+.es-fp .es-option--buttons .es-chip { border-radius: 999px; }
+.es-fp .es-option__values .es-chip { transition: background .25s, color .25s, border-color .25s, transform .25s var(--ease-out); }
+.es-fp .es-option__values .es-chip:hover { transform: translateY(-1px); }
+@media (prefers-reduced-motion: reduce) {
+  .es-fp__slide, .es-fp__slide.is-active, .es-fp__img, .es-fp__thumb { transition: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esFeaturedPremium) return; window.esFeaturedPremium = true;
+  function init(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-fp]'), function (s) {
+      if (s._esfp) return; s._esfp = true;
+      var stage = s.querySelector('[data-fp-stage]'); if (!stage) return;
+      var slides = Array.prototype.slice.call(s.querySelectorAll('[data-fp-slide]')), thumbs = Array.prototype.slice.call(s.querySelectorAll('[data-fp-thumb]'));
+      var zoomBtn = s.querySelector('[data-fp-zoom-btn]'), cur = 0, zoomable = s.hasAttribute('data-fp-zoom');
+      function zoom(on) { stage.classList.toggle('is-zoomed', on); if (zoomBtn) zoomBtn.setAttribute('aria-pressed', String(on)); }
+      function go(i) {
+        var n = slides.length; if (!n) return; i = (i + n) % n; zoom(false);
+        slides.forEach(function (sl, j) { sl.classList.toggle('is-active', j === i); });
+        thumbs.forEach(function (t, j) { var on = j === i; t.classList.toggle('is-active', on); if (on) { t.setAttribute('aria-current', 'true'); t.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } else t.removeAttribute('aria-current'); });
+        cur = i;
+      }
+      thumbs.forEach(function (t, j) { t.addEventListener('click', function () { go(j); }); });
+      Array.prototype.forEach.call(s.querySelectorAll('[data-fp-go]'), function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); go(cur + parseInt(b.getAttribute('data-fp-go'), 10)); }); });
+      if (zoomBtn) zoomBtn.addEventListener('click', function (e) { e.stopPropagation(); zoom(!stage.classList.contains('is-zoomed')); });
+      function origin(e) { var r = stage.getBoundingClientRect(); stage.style.setProperty('--zx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%'); stage.style.setProperty('--zy', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%'); }
+      var downX = null, moved = false;
+      stage.addEventListener('pointerdown', function (e) { downX = e.clientX; moved = false; });
+      stage.addEventListener('pointermove', function (e) { if (zoomable) origin(e); if (downX !== null && Math.abs(e.clientX - downX) > 8) moved = true; });
+      stage.addEventListener('pointerup', function (e) {
+        if (downX === null) return; var dx = e.clientX - downX; downX = null;
+        if (e.target.closest('button')) return;
+        if (moved && Math.abs(dx) > 40 && !stage.classList.contains('is-zoomed')) { go(cur + (dx < 0 ? 1 : -1)); return; }
+        if (!moved && zoomable) { origin(e); zoom(!stage.classList.contains('is-zoomed')); }
+      });
+      stage.addEventListener('pointerleave', function () { downX = null; });
+      stage.addEventListener('keydown', function (e) { if (e.key === 'Escape') zoom(false); if (e.key === 'ArrowRight') go(cur + 1); if (e.key === 'ArrowLeft') go(cur - 1); });
+      s.addEventListener('es:variant', function (e) {
+        var m = e.detail && e.detail.featured_media; if (!m) return;
+        var k = slides.findIndex(function (sl) { return sl.getAttribute('data-media-id') === String(m.id); });
+        if (k > -1) go(k);
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
 {% schema %}
 {
-  "name": "Produit en vedette",
+  "name": "Produit vedette premium",
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
     { "type": "product", "id": "product", "label": "Produit" },
     { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "checkbox", "id": "show_vendor", "label": "Marque en surtitre (si le surtitre est vide)", "default": false },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "image_picker", "id": "image", "label": "Image de mise en scène (facultatif)" },
     { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "header", "content": "Galerie" },
+    { "type": "checkbox", "id": "show_gallery", "label": "Galerie des images du produit", "default": true },
+    { "type": "select", "id": "thumbs_position", "label": "Vignettes", "default": "bottom", "options": [{ "value": "bottom", "label": "Sous l'image" }, { "value": "left", "label": "À gauche (ordinateur)" }] },
+    { "type": "checkbox", "id": "enable_zoom", "label": "Zoom au survol et au clic", "default": true },
+    { "type": "checkbox", "id": "show_sale_badge", "label": "Pastille de remise (calculée depuis le prix barré Shopify)", "default": true },
+    { "type": "header", "content": "Achat" },
+    { "type": "select", "id": "picker", "label": "Choix des variantes", "default": "buttons", "options": [{ "value": "buttons", "label": "Pastilles" }, { "value": "dropdown", "label": "Liste déroulante" }] },
     { "type": "checkbox", "id": "show_quantity", "label": "Sélecteur de quantité", "default": true },
+    { "type": "checkbox", "id": "show_dynamic_checkout", "label": "Boutons de paiement accéléré", "default": false },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
   ],
-  "presets": [{ "name": "Produit en vedette" }]
+  "blocks": [
+    { "type": "highlight", "name": "Point fort", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "check", "options": [{ "value": "check", "label": "Coche" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "hand", "label": "Main" }, { "value": "truck", "label": "Camion" }, { "value": "return", "label": "Retour" }, { "value": "shield", "label": "Bouclier" }, { "value": "heart", "label": "Cœur" }, { "value": "clock", "label": "Horloge" }, { "value": "globe", "label": "Globe" }, { "value": "gift", "label": "Cadeau" }, { "value": "bolt", "label": "Éclair" }] },
+      { "type": "text", "id": "text", "label": "Texte", "default": "[À compléter : point fort vérifié]", "info": "Uniquement une caractéristique confirmée du produit." }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Produit vedette premium", "blocks": [
+    { "type": "highlight", "settings": { "icon": "sparkle" } },
+    { "type": "highlight", "settings": { "icon": "check" } },
+    { "type": "highlight", "settings": { "icon": "truck", "text": "[À compléter : délai de livraison réel]" } }
+  ] }]
 }
 {% endschema %}

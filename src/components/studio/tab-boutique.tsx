@@ -46,6 +46,7 @@ const SECTION_NAMES: Record<string, string> = {
   "scroll-story": "Présentation animée", "video-showcase": "Vidéo", "video-reels": "Vidéos", "cta-banner": "Appel à l'action", "before-after": "Avant / après", "gallery-mosaic": "Galerie",
   "horizontal-gallery": "Galerie", "specs-list": "Caractéristiques", "stack-cards": "Cartes", "story-circles": "Stories", timeline: "Étapes", situations: "Situations",
   "product-reviews": "Avis", "product-recommendations": "Recommandations", "main-collection": "Page collection", "main-cart": "Panier", "contact-form": "Contact",
+  "immersive-reviews": "Avis", "video-carousel": "Vidéos", "featured-blog": "Blog", countdown: "Compte à rebours", "alternating-content": "Contenus alternés",
 };
 const SECTION_NAMES_EN: Record<string, string> = {
   "announcement-bar": "Announcement bar", header: "Header", footer: "Footer", "hero-split": "Hero", "hero-fullbleed": "Hero", "hero-editorial": "Hero",
@@ -54,6 +55,7 @@ const SECTION_NAMES_EN: Record<string, string> = {
   "scroll-story": "Animated showcase", "video-showcase": "Video", "video-reels": "Videos", "cta-banner": "Call to action", "before-after": "Before / after", "gallery-mosaic": "Gallery",
   "horizontal-gallery": "Gallery", "specs-list": "Specifications", "stack-cards": "Cards", "story-circles": "Stories", timeline: "Steps", situations: "Use cases",
   "product-reviews": "Reviews", "product-recommendations": "Recommendations", "main-collection": "Collection page", "main-cart": "Cart", "contact-form": "Contact",
+  "immersive-reviews": "Reviews", "video-carousel": "Videos", "featured-blog": "Blog", countdown: "Countdown", "alternating-content": "Alternating content",
 };
 const describeSelection = (s: NonNullable<Selection>, t: TFn) => {
   const where = t(SECTION_NAMES[s.type ?? ""], SECTION_NAMES_EN[s.type ?? ""]) ?? s.type ?? "Section";

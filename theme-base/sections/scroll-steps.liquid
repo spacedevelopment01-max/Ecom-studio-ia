@@ -1,0 +1,218 @@
+{%- comment -%}
+  Étapes au défilement : toute la section reste épinglée à l'écran ; à chaque palier de défilement,
+  le numéro, le titre, le texte et le média associé (photo ou vidéo) sont remplacés par ceux de l'étape suivante.
+{%- endcomment -%}
+{%- assign steps = section.blocks.size -%}
+<section class="es-ssteps es-ssteps--media-{{ section.settings.media_side }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --steps: {{ steps | at_least: 1 }};" data-ssteps>
+  <div class="es-ssteps__track">
+    <div class="es-ssteps__pin">
+      <div class="es-container es-ssteps__grid">
+        <div class="es-ssteps__copy">
+          {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+            <header class="es-ssteps__head">
+              {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+              {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h3 es-ssteps__title">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+            </header>
+          {%- endif -%}
+          <div class="es-ssteps__count" aria-hidden="true">
+            <span class="es-ssteps__digits"><span class="es-ssteps__roll" data-ssteps-roll>{%- for block in section.blocks -%}<span>{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>{%- endfor -%}</span></span>
+            <small>/ {{ steps | prepend: '0' | slice: -2, 2 }}</small>
+          </div>
+          <div class="es-ssteps__texts">
+            {%- for block in section.blocks -%}
+              <article class="es-ssteps__step{% if forloop.first %} is-active{% endif %}" data-ssteps-step {{ block.shopify_attributes }}>
+                {%- if block.settings.eyebrow != blank -%}<p class="es-ssteps__kicker">{{ block.settings.eyebrow }}</p>{%- endif -%}
+                <h3 class="es-heading es-ssteps__step-title">{{ block.settings.title }}</h3>
+                {%- if block.settings.text != blank -%}<div class="es-rte es-ssteps__text">{{ block.settings.text }}</div>{%- endif -%}
+              </article>
+            {%- endfor -%}
+          </div>
+          <ol class="es-ssteps__nav" role="list">
+            {%- for block in section.blocks -%}
+              <li><button type="button" class="es-ssteps__go{% if forloop.first %} is-active{% endif %}" data-ssteps-go="{{ forloop.index0 }}"{% if forloop.first %} aria-current="step"{% endif %}><i class="es-ssteps__bar" aria-hidden="true"><i></i></i><span>{{ block.settings.title }}</span></button></li>
+            {%- endfor -%}
+          </ol>
+        </div>
+        <div class="es-ssteps__media">
+          {%- for block in section.blocks -%}
+            <figure class="es-ssteps__shot{% if forloop.first %} is-active{% endif %}" data-ssteps-shot>
+              {%- if block.settings.video != blank or block.settings.video_asset != blank -%}
+                {% render 'es-video', video: block.settings.video, asset: block.settings.video_asset, poster: block.settings.image, poster_asset: block.settings.image_asset, class: 'es-cover', autoplay: true, alt: block.settings.title %}
+              {%- else -%}
+                {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-cover' %}
+              {%- endif -%}
+              {%- if block.settings.caption != blank -%}<figcaption class="es-ssteps__caption">{{ block.settings.caption }}</figcaption>{%- endif -%}
+            </figure>
+          {%- endfor -%}
+          <span class="es-ssteps__badge" aria-hidden="true" data-ssteps-badge>01</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-ssteps { padding-top: calc(var(--pt, 0px) * var(--space-scale, 1)); padding-bottom: calc(var(--pb, 0px) * var(--space-scale, 1)); }
+.es-ssteps__track { position: relative; height: calc(var(--steps) * 90vh + 20vh); }
+.es-ssteps__pin { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; align-items: center; overflow: hidden; }
+.es-ssteps__grid { display: grid; gap: clamp(16px, 3vh, 32px); width: 100%; height: 100%; padding-block: clamp(20px, 5vh, 56px); grid-template-rows: minmax(0, 1fr) auto; }
+.es-ssteps__copy { display: grid; align-content: center; gap: clamp(12px, 2.4vh, 28px); order: 2; min-height: 0; }
+.es-ssteps__media { position: relative; order: 1; min-height: 30vh; border-radius: var(--radius-card, 18px); overflow: hidden; background: var(--c-surface); }
+@media (min-width: 990px) {
+  .es-ssteps__grid { grid-template-columns: 1fr 1.08fr; grid-template-rows: none; gap: clamp(40px, 6vw, 96px); align-items: center; padding-block: clamp(40px, 9vh, 96px); }
+  .es-ssteps__copy { order: 1; }
+  .es-ssteps__media { order: 2; height: 100%; max-height: 760px; }
+  .es-ssteps--media-left .es-ssteps__copy { order: 2; }
+  .es-ssteps--media-left .es-ssteps__media { order: 1; }
+}
+.es-ssteps__head .es-eyebrow { margin-bottom: .6rem; }
+.es-ssteps__title { margin: 0; max-width: 22ch; }
+.es-ssteps__count { display: flex; align-items: flex-end; gap: 10px; font-family: var(--font-heading); line-height: .9; }
+.es-ssteps__digits { display: block; height: 1em; overflow: hidden; font-size: clamp(3.4rem, 9vw, 7.5rem); letter-spacing: -.04em; color: var(--c-accent); }
+.es-ssteps__roll { display: flex; flex-direction: column; transform: translateY(calc(var(--active, 0) * -1em)); transition: transform .8s var(--ease-out); }
+.es-ssteps__roll span { display: block; height: 1em; line-height: 1em; }
+.es-ssteps__count small { font-size: 1rem; color: var(--c-muted); padding-bottom: .5em; letter-spacing: .1em; }
+.es-ssteps__texts { display: grid; min-height: 0; }
+.es-ssteps__step { grid-area: 1 / 1; opacity: 0; transform: translateY(26px); filter: blur(4px); transition: opacity .55s var(--ease-out), transform .8s var(--ease-out), filter .6s var(--ease-out); pointer-events: none; }
+.es-ssteps__step.is-active { opacity: 1; transform: none; filter: none; pointer-events: auto; transition-delay: .12s; }
+.es-ssteps__step.is-past { transform: translateY(-26px); }
+.es-ssteps__kicker { margin: 0 0 .6rem; font-size: .76rem; letter-spacing: .24em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); color: var(--c-muted); }
+.es-ssteps__step-title { font-size: calc(clamp(1.7rem, 3.4vw, 2.9rem) * var(--heading-scale, 1)); margin: 0 0 .4em; }
+.es-ssteps__text { color: color-mix(in srgb, var(--c-text) 80%, var(--c-bg)); font-size: 1.04rem; line-height: 1.65; max-width: 46ch; }
+.es-ssteps__nav { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--steps), 1fr); gap: 10px; }
+.es-ssteps__go { display: grid; gap: 10px; width: 100%; padding: 6px 0; border: 0; background: none; color: var(--c-muted); font: inherit; font-size: .84rem; text-align: left; cursor: pointer; transition: color .3s; }
+.es-ssteps__go span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.es-ssteps__go.is-active, .es-ssteps__go:hover { color: var(--c-text); }
+.es-ssteps__bar { position: relative; display: block; height: 3px; border-radius: 3px; background: rgba(var(--c-text-rgb), .14); overflow: hidden; }
+.es-ssteps__bar i { position: absolute; inset: 0; background: var(--c-accent); transform-origin: left; transform: scaleX(var(--fill, 0)); }
+.es-ssteps__shot { position: absolute; inset: 0; margin: 0; clip-path: inset(100% 0 0 0); transition: clip-path 1s var(--ease-out); z-index: 1; }
+.es-ssteps__shot img, .es-ssteps__shot video { transform: scale(1.12); transition: transform 1.4s var(--ease-out); }
+.es-ssteps__shot.is-active { clip-path: inset(0 0 0 0); z-index: 2; }
+.es-ssteps__shot.is-active img, .es-ssteps__shot.is-active video { transform: none; }
+.es-ssteps__shot.is-past { clip-path: inset(0 0 0 0); z-index: 1; }
+.es-ssteps__caption { position: absolute; left: 16px; bottom: 16px; padding: 7px 14px; border-radius: 999px; font-size: .8rem; background: rgba(0,0,0,.45); color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.es-ssteps__badge { position: absolute; z-index: 3; top: 16px; right: 16px; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: var(--c-bg); color: var(--c-text); font-family: var(--font-heading); font-size: 1.1rem; box-shadow: 0 12px 30px -16px rgba(0,0,0,.5); }
+@media (max-width: 989px) {
+  .es-ssteps__head { display: none; }
+  .es-ssteps__digits { font-size: clamp(2.6rem, 13vw, 4rem); }
+  .es-ssteps__step-title { font-size: calc(clamp(1.45rem, 6vw, 2rem) * var(--heading-scale, 1)); }
+  .es-ssteps__text { font-size: .96rem; line-height: 1.55; }
+  .es-ssteps__go span { display: none; }
+  .es-ssteps__badge { display: none; }
+}
+@media (max-width: 989px) and (min-height: 760px) { .es-ssteps__head { display: block; } }
+@media (prefers-reduced-motion: reduce) {
+  .es-ssteps__step, .es-ssteps__shot, .es-ssteps__roll, .es-ssteps__shot img, .es-ssteps__shot video { transition: none !important; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.__esSSteps) return;
+  window.__esSSteps = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items = [];
+  function show(it, i, frac) {
+    var n = it.steps.length;
+    if (i !== it.cur) {
+      it.cur = i;
+      it.el.style.setProperty('--active', i);
+      it.steps.forEach(function (s, j) { s.classList.toggle('is-active', j === i); s.classList.toggle('is-past', j < i); s.setAttribute('aria-hidden', j === i ? 'false' : 'true'); });
+      it.shots.forEach(function (s, j) {
+        s.classList.toggle('is-active', j === i); s.classList.toggle('is-past', j < i);
+        var v = s.querySelector('video');
+        if (v) { if (j === i && !reduce) v.play().catch(function () {}); else v.pause(); }
+      });
+      it.gos.forEach(function (g, j) { g.classList.toggle('is-active', j === i); if (j === i) g.setAttribute('aria-current', 'step'); else g.removeAttribute('aria-current'); });
+      if (it.badge) it.badge.textContent = ('0' + (i + 1)).slice(-2);
+    }
+    it.gos.forEach(function (g, j) { g.querySelector('.es-ssteps__bar i').style.setProperty('--fill', j < i ? 1 : j === i ? frac.toFixed(3) : 0); });
+  }
+  function update() {
+    var vh = window.innerHeight;
+    items.forEach(function (it) {
+      var r = it.track.getBoundingClientRect();
+      if (r.bottom < -vh || r.top > vh * 2) return;
+      var n = it.steps.length;
+      var P = Math.min(0.9999, Math.max(0, -r.top / Math.max(1, r.height - vh)));
+      var i = Math.floor(P * n);
+      show(it, i, P * n - i);
+    });
+  }
+  var ticking = false;
+  function onScroll() { if (ticking) return; ticking = true; requestAnimationFrame(function () { update(); ticking = false; }); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+
+  function init(section) {
+    if (section.__ss) return;
+    section.__ss = true;
+    var it = {
+      el: section, track: section.querySelector('.es-ssteps__track'), cur: -1,
+      steps: Array.prototype.slice.call(section.querySelectorAll('[data-ssteps-step]')),
+      shots: Array.prototype.slice.call(section.querySelectorAll('[data-ssteps-shot]')),
+      gos: Array.prototype.slice.call(section.querySelectorAll('[data-ssteps-go]')),
+      badge: section.querySelector('[data-ssteps-badge]')
+    };
+    if (!it.steps.length) return;
+    it.gos.forEach(function (g, j) {
+      g.addEventListener('click', function () {
+        var r = it.track.getBoundingClientRect();
+        var y = window.scrollY + r.top + (j + 0.3) / it.steps.length * (r.height - window.innerHeight);
+        window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+      });
+    });
+    items.push(it);
+    show(it, 0, 0);
+    update();
+  }
+  function boot(root) { Array.prototype.forEach.call((root || document).querySelectorAll('[data-ssteps]'), init); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { boot(); });
+  else boot();
+  document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
+  // Éditeur Shopify : sélectionner un bloc fait défiler jusqu'à son étape.
+  document.addEventListener('shopify:block:select', function (e) {
+    var it = items.filter(function (x) { return x.el.contains(e.target); })[0];
+    if (!it) return;
+    var j = it.steps.indexOf(e.target);
+    if (j >= 0) it.gos[j].click();
+  });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Étapes au défilement",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Comment ça marche" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "De la commande" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "à chez vous." },
+    { "type": "select", "id": "media_side", "label": "Position du média", "default": "right", "options": [
+      { "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" }
+    ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 0 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape", "settings": [
+      { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Une étape" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : ce qui se passe à cette étape.]</p>" },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)", "info": "Remplace l'image, qui sert alors d'affiche." },
+      { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4)" },
+      { "type": "text", "id": "caption", "label": "Légende du média" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Étapes au défilement", "blocks": [
+    { "type": "step", "settings": { "eyebrow": "Choisir", "title": "Trouvez votre modèle.", "text": "<p>Parcourez la boutique et sélectionnez la taille ou la variante qui vous convient.</p>" } },
+    { "type": "step", "settings": { "eyebrow": "Commander", "title": "Commandez en ligne.", "text": "<p>[À compléter : moyens de paiement acceptés.]</p>" } },
+    { "type": "step", "settings": { "eyebrow": "Recevoir", "title": "Recevez votre commande.", "text": "<p>[À compléter : délais et modes de livraison.]</p>" } }
+  ] }]
+}
+{% endschema %}

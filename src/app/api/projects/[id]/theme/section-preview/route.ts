@@ -25,7 +25,8 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const type = new URL(req.url).searchParams.get("type") ?? "";
   if (!/^[\w-]{1,80}$/.test(type) || !sectionSchema(cur.spec, type)) throw new HttpError(404, L("Section inconnue.", "Unknown section."));
   const key = `${cur.version.id}:${type}`;
-  let html = cache.get(key);
+  // En développement, les fichiers du thème de base changent : pas de mémoire des rendus.
+  let html = process.env.NODE_ENV === "production" ? cache.get(key) : undefined;
   if (!html) {
     const filled = withProjectMedia(cur.spec, type);
     const res = applyOps(cur.spec, [{ op: "add_section", template: "index", type, settings: filled.settings as any, blocks: filled.blocks as any, position: { index: 0 } } as any], { targeted: new Set(), overrideLocks: true });

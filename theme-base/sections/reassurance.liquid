@@ -1,0 +1,119 @@
+{%- comment -%}
+  Réassurance en grandes cartes : paiement, livraison, retours, service client…
+  Les conditions (délais, frais, durées) sont celles du marchand : aucun chiffre ni garantie par défaut.
+{%- endcomment -%}
+<section class="es-section es-reas color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.text != blank -%}
+      <header class="es-section-head es-section-head--center es-reas__head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+        {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <ul class="es-reas__grid es-reas__grid--{{ section.settings.style }}" role="list" style="--cols: {{ section.blocks.size | at_most: 4 }}">
+        {%- for block in section.blocks -%}
+          <li class="es-reas__card es-glow{% if section.settings.animate_icons %} es-reas__card--anim{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            <span class="es-reas__ghost" aria-hidden="true">{% render 'es-glyph', name: block.settings.icon %}</span>
+            <span class="es-reas__icon">{% render 'es-glyph', name: block.settings.icon %}</span>
+            <h3 class="es-reas__title">{{ block.settings.title }}</h3>
+            {%- if block.settings.text != blank -%}<div class="es-reas__text">{{ block.settings.text }}</div>{%- endif -%}
+            {%- if block.settings.link_label != blank and block.settings.link != blank -%}
+              <a class="es-reas__link" href="{{ block.settings.link }}">{{ block.settings.link_label }} {% render 'icon', name: 'arrow' %}</a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-reas__head { max-width: 720px; }
+.es-reas__head .es-lead { margin-inline: auto; }
+.es-reas__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(14px, 1.8vw, 24px); grid-template-columns: 1fr; }
+@media (min-width: 600px) { .es-reas__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .es-reas__grid { grid-template-columns: repeat(var(--cols, 4), 1fr); } }
+.es-reas__card { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: clamp(28px, 3vw, 40px) clamp(24px, 2.6vw, 34px) clamp(28px, 3vw, 36px);
+  border-radius: calc(var(--radius-card) + 4px); background: linear-gradient(170deg, rgba(var(--c-text-rgb), .055), rgba(var(--c-text-rgb), .015) 70%); border: 1px solid rgba(var(--c-text-rgb), .1);
+  box-shadow: 0 30px 60px -50px rgba(0,0,0,.55); transition: transform .6s var(--ease-out), border-color .4s, box-shadow .6s var(--ease-out); }
+.es-reas__card:hover { transform: translateY(-6px); border-color: rgba(var(--c-accent-rgb), .35); box-shadow: 0 44px 80px -50px rgba(var(--c-accent-rgb), calc(var(--glow) * .9)); }
+.es-reas__grid--solid .es-reas__card { background: var(--c-surface); border-color: transparent; }
+.es-reas__grid--outline .es-reas__card { background: transparent; }
+.es-reas__ghost { position: absolute; right: -18px; top: -18px; width: 132px; height: 132px; color: var(--c-accent); opacity: .07; pointer-events: none; transition: transform 1.2s var(--ease-out), opacity .6s; }
+.es-reas__ghost .es-icon { width: 100%; height: 100%; stroke-width: 1.1; }
+.es-reas__card:hover .es-reas__ghost { transform: rotate(-8deg) scale(1.06); opacity: .12; }
+.es-reas__icon { position: relative; display: grid; place-items: center; width: 68px; height: 68px; margin-bottom: 14px; border-radius: 22px; color: var(--c-accent-text);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--c-accent) 70%, #fff), var(--c-accent) 60%, color-mix(in srgb, var(--c-accent) 80%, #000));
+  box-shadow: 0 18px 36px -14px rgba(var(--c-accent-rgb), calc(.4 + var(--glow) * .6)), inset 0 1px 0 rgba(255,255,255,.35); }
+.es-reas__icon .es-icon { width: 36px; height: 36px; overflow: visible; }
+.es-reas__icon::after { content: ""; position: absolute; inset: -7px; border-radius: 27px; border: 1px solid rgba(var(--c-accent-rgb), .35); opacity: 0; transform: scale(.9); }
+.es-reas__title { margin: 0; font-size: clamp(1.12rem, 1.5vw, 1.3rem); font-weight: var(--font-body-weight-bold); letter-spacing: -.015em; line-height: 1.25; }
+.es-reas__text { color: var(--c-muted); font-size: .94rem; line-height: 1.6; }
+.es-reas__text p { margin: 0; }
+.es-reas__link { margin-top: auto; padding-top: 10px; display: inline-flex; align-items: center; gap: .5em; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); color: var(--c-accent); text-decoration: none; }
+.es-reas__link .es-icon { width: 16px; height: 16px; transition: transform .4s var(--ease-out); }
+.es-reas__link:hover .es-icon { transform: translateX(4px); }
+
+/* Icônes animées, discrètes : une courte animation puis une longue pause. */
+.es-reas__icon .es-glyph * { transform-box: view-box; transform-origin: 12px 12px; }
+.motion-ready .es-reas__card--anim.is-in .es-reas__icon::after { animation: es-reas-ring 4.8s var(--ease-out) infinite; animation-delay: calc(var(--i, 0) * .35s + .6s); }
+.motion-ready .es-reas__card--anim.is-in .es-reas__icon .es-glyph { animation: es-reas-bob 4.8s var(--ease-in-out) infinite; animation-delay: calc(var(--i, 0) * .35s + .6s); }
+.motion-ready .es-reas__card--anim.is-in .es-glyph--truck { animation-name: es-reas-drive; }
+.motion-ready .es-reas__card--anim.is-in .es-glyph--lock .es-g-b { animation: es-reas-shackle 4.8s var(--ease-out) infinite; animation-delay: calc(var(--i, 0) * .35s + .6s); }
+.motion-ready .es-reas__card--anim.is-in .es-glyph--return { animation-name: es-reas-turn; }
+.motion-ready .es-reas__card--anim.is-in .es-glyph--clock .es-g-b { animation: es-reas-tick 4.8s var(--ease-in-out) infinite; }
+.motion-ready .es-reas__card--anim.is-in .es-glyph--chat .es-g-b { animation: es-reas-dots 1.6s steps(1) infinite; }
+.motion-ready .es-reas__card--anim.is-in .es-glyph--shield .es-g-b,
+.motion-ready .es-reas__card--anim.is-in .es-glyph--check .es-g-b,
+.motion-ready .es-reas__card--anim.is-in .es-glyph--card .es-g-b { stroke-dasharray: 24; animation: es-reas-draw 4.8s var(--ease-out) infinite; animation-delay: calc(var(--i, 0) * .35s + .6s); }
+@keyframes es-reas-ring { 0% { opacity: 0; transform: scale(.9); } 12% { opacity: 1; } 32%, 100% { opacity: 0; transform: scale(1.25); } }
+@keyframes es-reas-bob { 0%, 30%, 100% { transform: none; } 10% { transform: translateY(-3px) rotate(-4deg); } 20% { transform: translateY(1px) rotate(2deg); } }
+@keyframes es-reas-drive { 0%, 36%, 100% { transform: none; } 10% { transform: translateX(5px); } 12% { transform: translateX(-9px); opacity: 0; } 14% { opacity: 0; } 24% { transform: translateX(0); opacity: 1; } }
+@keyframes es-reas-shackle { 0%, 34%, 100% { transform: none; } 10% { transform: translateY(-2.5px); } 20% { transform: translateY(.5px); } }
+@keyframes es-reas-turn { 0%, 34%, 100% { transform: none; } 16% { transform: rotate(-24deg); } }
+@keyframes es-reas-tick { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes es-reas-dots { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes es-reas-draw { 0% { stroke-dashoffset: 24; } 18%, 100% { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .es-reas__card *, .es-reas__card::after { animation: none !important; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Réassurance",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Indiquez vos conditions réelles (délais, frais, durée de retour, horaires) : elles doivent correspondre à vos conditions générales de vente." },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Commandez l'esprit tranquille" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Nos engagements," },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "noir sur blanc." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "style", "label": "Style des cartes", "default": "soft", "options": [{ "value": "soft", "label": "Dégradé doux" }, { "value": "solid", "label": "Fond plein" }, { "value": "outline", "label": "Contour seul" }] },
+    { "type": "checkbox", "id": "animate_icons", "label": "Icônes animées", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "card", "name": "Garantie", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "shield", "options": [
+        { "value": "lock", "label": "Cadenas" }, { "value": "card", "label": "Carte bancaire" }, { "value": "truck", "label": "Camion" }, { "value": "return", "label": "Retour" }, { "value": "chat", "label": "Bulle de discussion" }, { "value": "shield", "label": "Bouclier" }, { "value": "clock", "label": "Horloge" }, { "value": "gift", "label": "Cadeau" }, { "value": "package", "label": "Colis" }, { "value": "globe", "label": "Globe" }, { "value": "check", "label": "Coche" }, { "value": "heart", "label": "Cœur" }
+      ] },
+      { "type": "text", "id": "title", "label": "Titre", "default": "[À compléter : garantie]" },
+      { "type": "richtext", "id": "text", "label": "Conditions", "default": "<p>[À compléter : vos conditions réelles.]</p>" },
+      { "type": "text", "id": "link_label", "label": "Texte du lien", "default": "En savoir plus" },
+      { "type": "url", "id": "link", "label": "Lien", "info": "Par exemple vers votre politique de livraison ou de retour." }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Réassurance", "blocks": [
+    { "type": "card", "settings": { "icon": "lock", "title": "Paiement sécurisé", "text": "<p>[À compléter : moyens de paiement acceptés.]</p>" } },
+    { "type": "card", "settings": { "icon": "truck", "title": "Livraison", "text": "<p>[À compléter : délais et tarifs réels de livraison.]</p>" } },
+    { "type": "card", "settings": { "icon": "return", "title": "Retours", "text": "<p>[À compléter : durée et conditions de retour.]</p>" } },
+    { "type": "card", "settings": { "icon": "chat", "title": "Service client", "text": "<p>[À compléter : horaires et moyens de contact.]</p>" } }
+  ] }]
+}
+{% endschema %}

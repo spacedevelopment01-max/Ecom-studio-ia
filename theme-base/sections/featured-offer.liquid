@@ -1,0 +1,142 @@
+{%- comment -%}
+  Offre centrale : grand bloc centré (valeur mise en avant, code promo copiable, validité, conditions, bouton).
+  Aucune remise inventée : tout est saisi par le marchand, espaces réservés explicites par défaut.
+{%- endcomment -%}
+{%- assign code = section.settings.code | strip -%}
+<section class="es-section es-offer es-offer--{{ section.settings.style }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --ov: {{ section.settings.overlay | divided_by: 100.0 }};" data-offer>
+  {%- if section.settings.style == 'image' -%}
+    <div class="es-offer__bg" aria-hidden="true" data-parallax="0.08">
+      {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: '', sizes: '100vw', class: 'es-cover' %}
+    </div>
+  {%- endif -%}
+  <div class="es-container">
+    <div class="es-offer__card" data-reveal="up">
+      <span class="es-offer__glow" aria-hidden="true"></span>
+      {%- if section.settings.eyebrow != blank -%}<p class="es-offer__eyebrow">{% render 'icon', name: 'gift' %}<span>{{ section.settings.eyebrow }}</span></p>{%- endif -%}
+      {%- if section.settings.highlight != blank -%}<p class="es-offer__value{% if section.settings.highlight contains '[' %} is-placeholder{% endif %}">{{ section.settings.highlight }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-offer__title">{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-offer__text">{{ section.settings.text }}</div>{%- endif -%}
+      {%- assign p = section.settings.product -%}
+      {%- if p != blank -%}
+        <div class="es-offer__product">
+          {%- if p.featured_media -%}<span class="es-offer__thumb">{{ p.featured_media | image_url: width: 160 | image_tag: loading: 'lazy', alt: p.featured_media.alt, class: 'es-cover' }}</span>{%- endif -%}
+          <span><b>{{ p.title }}</b>{% render 'price', product: p, use_variant: false %}</span>
+        </div>
+      {%- endif -%}
+      <div class="es-offer__code{% if code == blank %} is-empty{% endif %}">
+        <span class="es-offer__code-label">{{ 'sections.featured_offer.code_label' | t }}</span>
+        {%- if code != blank -%}
+          <span class="es-offer__code-value" data-offer-code>{{ code }}</span>
+          <button type="button" class="es-offer__copy" data-offer-copy data-copied="{{ 'sections.featured_offer.copied' | t | escape }}">{% render 'icon', name: 'check' %}<span data-offer-copy-label>{{ 'sections.featured_offer.copy' | t }}</span></button>
+        {%- else -%}
+          <span class="es-offer__code-value">{{ 'sections.featured_offer.code_placeholder' | t }}</span>
+        {%- endif -%}
+      </div>
+      <p class="visually-hidden" role="status" data-offer-status></p>
+      {%- if section.settings.validity != blank -%}<p class="es-offer__validity">{% render 'icon', name: 'clock' %}<span>{{ section.settings.validity }}</span></p>{%- endif -%}
+      {%- if section.settings.button_label != blank -%}
+        <div class="es-offer__actions"><a class="es-button" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a></div>
+      {%- endif -%}
+      {%- if section.settings.conditions != blank -%}<div class="es-offer__terms">{{ section.settings.conditions }}</div>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+@property --es-of-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.es-offer { overflow: hidden; isolation: isolate; }
+.es-offer__bg { position: absolute; inset: -8% 0; z-index: -1; }
+.es-offer__bg::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, var(--ov)); }
+.es-offer__bg .es-placeholder { position: absolute; inset: 0; }
+.es-offer__card { position: relative; max-width: 760px; margin-inline: auto; padding: clamp(32px, 6vw, 72px) clamp(22px, 5vw, 72px); text-align: center; border-radius: calc(var(--radius-card) * 1.6); background: var(--c-bg); color: var(--c-text); box-shadow: 0 40px 90px -50px rgba(0, 0, 0, .6); isolation: isolate; }
+.es-offer--plain .es-offer__card { background: color-mix(in srgb, var(--c-accent) 7%, var(--c-bg)); box-shadow: none; }
+.es-offer__glow { position: absolute; inset: -1.5px; border-radius: inherit; z-index: -1; padding: 1.5px; background: conic-gradient(from var(--es-of-a), transparent 0 25%, var(--c-accent) 40%, transparent 55% 75%, color-mix(in srgb, var(--c-accent) 60%, #fff) 90%, transparent); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation: es-of-spin 7s linear infinite; }
+@keyframes es-of-spin { to { --es-of-a: 360deg; } }
+.es-offer__eyebrow { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 1.2rem; padding: 7px 14px; border-radius: 999px; background: rgba(var(--c-accent-rgb), .12); color: var(--c-text); font-size: .76rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.es-offer__eyebrow .es-icon { width: 16px; height: 16px; color: var(--c-accent); }
+.es-offer__value { margin: 0 0 .2em; font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: calc(clamp(2.6rem, 9vw, 6rem) * var(--heading-scale)); line-height: 1; letter-spacing: -.02em; background: linear-gradient(120deg, var(--c-text), var(--c-accent)); -webkit-background-clip: text; background-clip: text; color: transparent; overflow-wrap: anywhere; }
+.es-offer__value.is-placeholder { display: table; margin: 0 auto .5em; padding: .35em .7em; font-size: calc(clamp(1.3rem, 3vw, 1.9rem) * var(--heading-scale)); border: 2px dashed rgba(var(--c-accent-rgb), .55); border-radius: 14px; }
+.es-offer__title { margin-bottom: .4em; }
+.es-offer__text { max-width: 52ch; margin-inline: auto; color: color-mix(in srgb, currentColor 80%, transparent); }
+.es-offer__product { display: inline-flex; align-items: center; gap: 14px; margin-top: 1.4rem; padding: 10px 18px 10px 10px; border-radius: 999px; border: 1px solid var(--c-border); text-align: left; }
+.es-offer__product b { display: block; font-size: .92rem; }
+.es-offer__thumb { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; flex: none; background: var(--c-surface); }
+.es-offer__code { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 14px; margin: 1.8rem auto 0; padding: 12px 12px 12px 20px; max-width: 520px; border: 2px dashed rgba(var(--c-accent-rgb), .6); border-radius: 16px; background: rgba(var(--c-accent-rgb), .06); }
+.es-offer__code-label { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--c-muted); font-weight: 700; }
+.es-offer__code-value { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.3rem; font-weight: 700; letter-spacing: .12em; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.es-offer__code.is-empty .es-offer__code-value { font-family: inherit; font-size: .95rem; letter-spacing: 0; font-weight: 500; color: var(--c-muted); }
+.es-offer__copy { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--c-text); color: var(--c-bg); font-weight: 700; font-size: .86rem; cursor: pointer; transition: transform .3s var(--ease-out), background .3s; }
+.es-offer__copy .es-icon { width: 16px; height: 16px; display: none; }
+.es-offer__copy.is-done { background: var(--c-accent); color: var(--c-accent-text); }
+.es-offer__copy.is-done .es-icon { display: block; }
+.es-offer__copy:hover { transform: translateY(-1px); }
+.es-offer__validity { display: inline-flex; align-items: center; gap: 8px; margin: 1.1rem 0 0; font-size: .9rem; }
+.es-offer__validity .es-icon { width: 17px; height: 17px; color: var(--c-accent); }
+.es-offer__actions { margin-top: 1.8rem; }
+.es-offer__actions .es-icon { width: 18px; height: 18px; }
+.es-offer__terms { margin: 1.4rem auto 0; max-width: 58ch; font-size: .76rem; line-height: 1.5; color: var(--c-muted); }
+.es-offer__terms p { margin: 0; }
+@media (prefers-reduced-motion: reduce) { .es-offer__glow { animation: none; } .es-offer__copy { transition: none; } }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esFeaturedOffer) return; window.esFeaturedOffer = true;
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise(function (ok, ko) {
+      var t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy') ? ok() : ko(); } catch (e) { ko(e); }
+      t.remove();
+    });
+  }
+  function init(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-offer]'), function (s) {
+      if (s._es) return; s._es = true;
+      var b = s.querySelector('[data-offer-copy]'), code = s.querySelector('[data-offer-code]'), status = s.querySelector('[data-offer-status]');
+      if (!b || !code) return;
+      var label = b.querySelector('[data-offer-copy-label]'), original = label.textContent;
+      b.addEventListener('click', function () {
+        copyText(code.textContent.trim()).then(function () {
+          b.classList.add('is-done'); label.textContent = b.getAttribute('data-copied'); if (status) status.textContent = b.getAttribute('data-copied');
+          clearTimeout(b._t); b._t = setTimeout(function () { b.classList.remove('is-done'); label.textContent = original; }, 2400);
+        }).catch(function () {
+          var r = document.createRange(); r.selectNodeContents(code); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        });
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Offre centrale",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "N'affichez qu'une offre réelle : créez d'abord la réduction dans Shopify (Réductions), puis recopiez ici sa valeur, son code et ses conditions." },
+    { "type": "select", "id": "style", "label": "Style", "default": "image", "options": [{ "value": "image", "label": "Carte sur image" }, { "value": "plain", "label": "Carte simple" }] },
+    { "type": "image_picker", "id": "image", "label": "Image de fond" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "range", "id": "overlay", "min": 0, "max": 90, "step": 5, "unit": "%", "label": "Assombrissement de l'image", "default": 35 },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Offre" },
+    { "type": "text", "id": "highlight", "label": "Valeur mise en avant (remise ou prix)", "default": "[À compléter : remise]", "info": "Ex. « -15 % » ou « 29 € », identique à la réduction créée dans Shopify." },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "[À compléter : nom de l'offre]" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : ce que comprend l'offre et les produits concernés.]</p>" },
+    { "type": "product", "id": "product", "label": "Produit concerné (facultatif)", "info": "Affiche son prix réel." },
+    { "type": "text", "id": "code", "label": "Code promo", "info": "Laissez vide s'il n'y a pas de code." },
+    { "type": "text", "id": "validity", "label": "Validité", "default": "[À compléter : dates de validité]" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "J'en profite" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "richtext", "id": "conditions", "label": "Conditions", "default": "<p>[À compléter : conditions de l'offre (montant minimum, produits exclus, cumul avec d'autres offres).]</p>" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Offre centrale" }]
+}
+{% endschema %}

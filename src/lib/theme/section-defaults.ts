@@ -4,6 +4,11 @@
  * Seuls les champs vides sont complétés ; les textes restent ceux du préréglage, à personnaliser.
  */
 import { sectionSchema, type ThemeSpec } from "./spec";
+import { PREMIUM_MEDIA_TYPES, premiumProjectMedia } from "./section-defaults-premium";
+import { SHOWCASE_MEDIA_TYPES, showcaseProjectMedia } from "./section-defaults-showcase";
+import { BRAND_MEDIA_TYPES, brandProjectMedia } from "./section-defaults-brand";
+import { UTILITY_MEDIA_TYPES, utilityProjectMedia } from "./section-defaults-utility";
+import { NARRATIVE_MEDIA_TYPES, narrativeProjectMedia } from "./section-defaults-narrative";
 
 type Blocks = { type: string; settings?: Record<string, unknown> }[];
 
@@ -30,6 +35,11 @@ export function withProjectMedia(spec: ThemeSpec, type: string, settings: Record
   const schema = sectionSchema(spec, type);
   if (!schema) return { settings, blocks };
   const p = mediaPools(spec);
+  if (PREMIUM_MEDIA_TYPES.has(type)) return premiumProjectMedia(type, schema, p, settings, blocks);
+  if (SHOWCASE_MEDIA_TYPES.has(type)) return showcaseProjectMedia(type, schema, p, settings, blocks, spec.store.collections ?? []);
+  if (BRAND_MEDIA_TYPES.has(type)) return brandProjectMedia(type, schema, p, settings, blocks);
+  if (UTILITY_MEDIA_TYPES.has(type)) return utilityProjectMedia(type, schema, p, settings, blocks);
+  if (NARRATIVE_MEDIA_TYPES.has(type)) return narrativeProjectMedia(spec, type, schema, p, settings, blocks);
   let n = 0;
   const nextPhoto = () => p.photos.length ? p.photos[n++ % p.photos.length] : undefined;
   const out = { ...settings };

@@ -1,0 +1,197 @@
+{%- comment -%}
+  Produit à 360° : suite d'images ordonnées (blocs « Vue »), à défaut les images du produit.
+  Rotation au glisser (souris, tactile), au clavier, avec le curseur, et au défilement (désactivée si le mouvement est réduit).
+{%- endcomment -%}
+{%- liquid
+  assign product = section.settings.product | default: collections.all.products.first
+  assign use_blocks = false
+  if section.settings.source == 'blocks' and section.blocks.size > 0
+    assign use_blocks = true
+  endif
+  if section.blocks.size > 0 and product.media.size == 0
+    assign use_blocks = true
+  endif
+  if use_blocks
+    assign frames = section.blocks.size
+  else
+    assign frames = 0
+    for m in product.media
+      if m.media_type == 'image'
+        assign frames = frames | plus: 1
+      endif
+    endfor
+  endif
+  assign label = 'sections.product_360.label' | t
+-%}
+<section class="es-section es-360 es-360--{{ section.settings.layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-p360 data-scroll="{{ section.settings.scroll_rotate }}" data-turns="{{ section.settings.turns }}">
+  <div class="es-container es-360__grid">
+    <div class="es-360__copy">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.settings.show_product and product != blank -%}
+        <div class="es-360__product" data-reveal="up">
+          <p class="es-360__name">{{ product.title }}</p>
+          {% render 'price', product: product, use_variant: false %}
+          <a class="es-button" href="{{ product.url }}">{{ 'products.product.view_details' | t }} {% render 'icon', name: 'arrow' %}</a>
+        </div>
+      {%- endif -%}
+    </div>
+    <div class="es-360__viewer" data-reveal="zoom">
+      <div class="es-360__stage" data-p360-stage aria-hidden="true">
+        {%- assign k = 0 -%}
+        {%- if use_blocks -%}
+          {%- for block in section.blocks -%}
+            <div class="es-360__frame{% if forloop.first %} is-active{% endif %}" data-p360-frame {{ block.shopify_attributes }}>
+              {%- if forloop.first -%}
+                {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: '', sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-360__img', loading: 'eager' %}
+              {%- else -%}
+                {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: '', sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-360__img' %}
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for m in product.media -%}
+            {%- if m.media_type == 'image' -%}
+              <div class="es-360__frame{% if k == 0 %} is-active{% endif %}" data-p360-frame>
+                {{ m.preview_image | image_url: width: 1400 | image_tag: loading: 'lazy', alt: '', class: 'es-360__img', sizes: '(min-width: 990px) 50vw, 100vw', widths: '550, 900, 1400' }}
+              </div>
+              {%- assign k = k | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if frames == 0 -%}<div class="es-360__frame is-active" data-p360-frame>{% render 'es-image', alt: '', class: 'es-360__img' %}</div>{%- endif -%}
+        {%- endif -%}
+        <span class="es-360__floor" aria-hidden="true"></span>
+      </div>
+      <p class="es-360__hint" data-p360-hint aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" focusable="false"><path d="M4 12a8 4 0 0 0 16 0"/><path d="m17.5 15.2 2.5-3.2 1 3.8"/><path d="M20 12a8 4 0 0 0-16 0" stroke-dasharray="2 2.5"/></svg>
+        <span>{{ 'sections.product_360.hint' | t }}</span>
+      </p>
+      <div class="es-360__controls">
+        <button type="button" class="es-360__btn" data-p360-step="-1" aria-label="{{ 'sections.product_360.left' | t | escape }}">{% render 'icon', name: 'arrow-left' %}</button>
+        <label class="visually-hidden" for="P360-{{ section.id }}">{{ label }}</label>
+        <input class="es-360__range" type="range" id="P360-{{ section.id }}" min="1" max="{{ frames | at_least: 1 }}" step="1" value="1" data-p360-range aria-valuetext="{{ 'sections.product_360.view_n' | t: n: 1, total: frames | escape }}" data-valuetext="{{ 'sections.product_360.view_n' | t: n: '%n', total: '%c' | escape }}">
+        <span class="es-360__deg" aria-hidden="true" data-p360-deg>0°</span>
+        <button type="button" class="es-360__btn" data-p360-step="1" aria-label="{{ 'sections.product_360.right' | t | escape }}">{% render 'icon', name: 'arrow' %}</button>
+      </div>
+      <p class="visually-hidden">{{ label }}{% if product.title != blank %} : {{ product.title }}{% endif %}</p>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-360__grid { display: grid; gap: clamp(28px, 5vw, 72px); align-items: center; }
+@media (min-width: 990px) { .es-360--split .es-360__grid { grid-template-columns: .85fr 1.15fr; } }
+.es-360--center .es-360__copy { text-align: center; max-width: 720px; margin-inline: auto; }
+.es-360--center .es-360__viewer { max-width: 760px; width: 100%; margin-inline: auto; }
+.es-360__product { display: grid; justify-items: start; gap: 10px; margin-top: 1.6rem; }
+.es-360--center .es-360__product { justify-items: center; }
+.es-360__name { margin: 0; font-weight: var(--font-body-weight-bold); font-size: 1.05rem; }
+.es-360__product .es-button { margin-top: 8px; }
+.es-360__product .es-icon { width: 18px; height: 18px; }
+.es-360__viewer { position: relative; border-radius: calc(var(--radius-card) * 1.4); background: radial-gradient(120% 90% at 50% 35%, var(--c-bg), color-mix(in srgb, var(--c-text) 7%, var(--c-bg))); border: 1px solid var(--c-border); padding: clamp(14px, 3vw, 28px); overflow: hidden; }
+.es-360__stage { position: relative; aspect-ratio: 1; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.es-360__stage.is-dragging { cursor: grabbing; }
+.es-360__frame { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+.es-360__frame.is-active { opacity: 1; visibility: visible; }
+.es-360__img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
+.es-360__frame .es-placeholder { position: absolute; inset: 0; min-height: 0; border-radius: var(--radius-card); }
+.es-360__floor { position: absolute; left: 18%; right: 18%; bottom: 3%; height: 7%; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .16), transparent); z-index: -1; }
+.es-360__hint { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px 14px; border-radius: 999px; background: rgba(var(--c-text-rgb), .82); color: var(--c-bg); font-size: .8rem; font-weight: 600; white-space: nowrap; pointer-events: none; transition: opacity .5s, transform .5s var(--ease-out); animation: es-360-nudge 2.4s var(--ease-in-out) infinite; }
+.es-360.is-touched .es-360__hint { opacity: 0; transform: translate(-50%, -8px); animation: none; }
+@keyframes es-360-nudge { 0%, 100% { margin-left: 0; } 50% { margin-left: 6px; } }
+.es-360__controls { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.es-360__btn { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--c-border); background: var(--c-bg); color: inherit; cursor: pointer; transition: transform .3s var(--ease-out), background .3s; }
+.es-360__btn:hover { transform: scale(1.06); }
+.es-360__btn .es-icon { width: 18px; height: 18px; }
+.es-360__range { flex: 1; min-width: 0; height: 28px; margin: 0; accent-color: var(--c-accent); cursor: pointer; background: transparent; }
+.es-360__deg { min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; font-size: .86rem; font-weight: 700; color: var(--c-muted); }
+@media (prefers-reduced-motion: reduce) { .es-360__hint { animation: none; transition: none; } .es-360__btn { transition: none; } }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esProduct360) return; window.esProduct360 = true;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  var scrollers = [], ticking = false;
+  function init(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-p360]'), function (s) {
+      if (s._es) return; s._es = true;
+      var stage = s.querySelector('[data-p360-stage]'), range = s.querySelector('[data-p360-range]'), deg = s.querySelector('[data-p360-deg]');
+      var frames = Array.prototype.slice.call(s.querySelectorAll('[data-p360-frame]')), n = frames.length;
+      if (!stage || !range || !n) return;
+      var cur = 0, tpl = range.getAttribute('data-valuetext') || '';
+      frames.forEach(function (f) { var img = f.querySelector('img'); if (img) img.loading = 'eager'; });
+      function show(i) {
+        i = ((Math.round(i) % n) + n) % n; if (i === cur && frames[i].classList.contains('is-active')) return;
+        frames[cur].classList.remove('is-active'); frames[i].classList.add('is-active'); cur = i;
+        range.value = String(i + 1);
+        range.setAttribute('aria-valuetext', tpl.replace('%n', i + 1).replace('%c', n));
+        if (deg) deg.textContent = Math.round(i * 360 / n) + '°';
+      }
+      function touched() { s.classList.add('is-touched'); s._user = true; }
+      range.addEventListener('input', function () { touched(); show(parseInt(range.value, 10) - 1); });
+      Array.prototype.forEach.call(s.querySelectorAll('[data-p360-step]'), function (b) {
+        b.addEventListener('click', function () { touched(); show(cur + parseInt(b.getAttribute('data-p360-step'), 10)); });
+      });
+      var startX = null, startI = 0, px = 0;
+      stage.addEventListener('pointerdown', function (e) {
+        startX = e.clientX; startI = cur; px = Math.max(6, stage.offsetWidth / (n * 1.4));
+        stage.classList.add('is-dragging'); touched();
+        try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+      stage.addEventListener('pointermove', function (e) { if (startX === null) return; show(startI - (e.clientX - startX) / px); });
+      function end() { startX = null; stage.classList.remove('is-dragging'); }
+      stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end); stage.addEventListener('lostpointercapture', end);
+      if (s.getAttribute('data-scroll') === 'true' && !reduce && n > 1) scrollers.push({ s: s, show: show, n: n, turns: parseFloat(s.getAttribute('data-turns')) || 1 });
+      show(0);
+    });
+    update();
+  }
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight;
+    scrollers.forEach(function (it) {
+      if (it.s._user) return;
+      var r = it.s.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > vh) return;
+      var p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
+      it.show(p * it.n * it.turns);
+    });
+  }
+  window.addEventListener('scroll', function () { if (!ticking && scrollers.length) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Produit à 360°",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Pour une vraie rotation, ajoutez 24 à 36 photos prises en tournant autour du produit, dans l'ordre (blocs « Vue »). Sans blocs, les images du produit sont utilisées." },
+    { "type": "product", "id": "product", "label": "Produit" },
+    { "type": "select", "id": "source", "label": "Images", "default": "blocks", "options": [{ "value": "blocks", "label": "Vues ajoutées en blocs (à défaut, images du produit)" }, { "value": "product", "label": "Images du produit" }] },
+    { "type": "select", "id": "layout", "label": "Mise en page", "default": "split", "options": [{ "value": "split", "label": "Texte à côté" }, { "value": "center", "label": "Centrée" }] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Vue à 360°" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Faites le tour du produit" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Faites glisser l'image pour l'observer sous tous les angles.</p>" },
+    { "type": "checkbox", "id": "show_product", "label": "Nom, prix et lien du produit", "default": true },
+    { "type": "checkbox", "id": "scroll_rotate", "label": "Rotation au défilement de la page", "default": true },
+    { "type": "range", "id": "turns", "min": 1, "max": 3, "step": 1, "label": "Tours pendant le défilement", "default": 1 },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "frame", "name": "Vue", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" }
+    ] }
+  ],
+  "max_blocks": 50,
+  "presets": [{ "name": "Produit à 360°" }]
+}
+{% endschema %}

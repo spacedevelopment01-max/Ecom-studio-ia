@@ -1,0 +1,237 @@
+{%- comment -%}
+  Galerie média premium : grille mixte images + vidéos (tailles variées), vidéos lues au survol ou à l'écran,
+  visionneuse plein écran (flèches, clavier ← → Échap, balayage tactile). Moins d'animations demandé :
+  aucune lecture automatique, l'affiche reste visible.
+{%- endcomment -%}
+{%- assign total = section.blocks.size -%}
+<section class="es-section es-mg color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --mg-cols: {{ section.settings.columns }}; --mg-gap: {{ section.settings.gap }}px;" data-es-media-gallery data-play="{{ section.settings.video_play }}">
+  <div class="es-container">
+    {%- if section.settings.heading != blank or section.settings.eyebrow != blank or section.settings.text != blank -%}
+      <header class="es-section-head es-mg__head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+        {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+    <ul class="es-mg__grid" role="list">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign full = ''
+          if block.settings.image != blank
+            assign full = block.settings.image | image_url: width: 2400
+          elsif block.settings.image_asset != blank
+            assign full = block.settings.image_asset | asset_url
+          elsif block.settings.poster_asset != blank
+            assign full = block.settings.poster_asset | asset_url
+          endif
+          assign caption = block.settings.caption
+          assign tag = 'div'
+          if section.settings.lightbox
+            assign tag = 'button'
+          endif
+        -%}
+        <li class="es-mg__cell es-mg__cell--{{ block.settings.size }}" data-reveal="zoom" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          <{{ tag }}{% if tag == 'button' %} type="button" aria-haspopup="dialog" aria-label="{{ 'sections.media_gallery.open' | t: n: forloop.index | escape }}{% if caption != blank %} — {{ caption | escape }}{% endif %}" data-mg-open="{{ forloop.index0 }}"{% endif %} class="es-mg__item es-mg__item--{{ block.type }}" data-mg-item data-caption="{{ caption | escape }}" data-full="{{ full }}">
+            {%- if block.type == 'video' -%}
+              {% render 'es-section-media', image: block.settings.poster, asset: block.settings.poster_asset, video: block.settings.video, video_asset: block.settings.video_asset, alt: caption, sizes: '(min-width: 990px) 50vw, 100vw' %}
+              <span class="es-mg__badge" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>{{ 'sections.media_gallery.video' | t }}</span>
+            {%- else -%}
+              {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: caption, sizes: '(min-width: 990px) 50vw, 100vw', class: 'es-cover' %}
+            {%- endif -%}
+            {%- if section.settings.lightbox -%}<span class="es-mg__zoom" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>{%- endif -%}
+            {%- if caption != blank and section.settings.show_captions -%}<span class="es-mg__caption">{{ caption }}</span>{%- endif -%}
+          </{{ tag }}>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+  {%- if section.settings.lightbox and total > 0 -%}
+    <dialog class="es-mg__dialog" aria-label="{{ 'sections.media_gallery.dialog' | t | escape }}" data-mg-dialog>
+      <div class="es-mg__lb">
+        <p class="es-mg__count" aria-live="polite"><span data-mg-index>1</span> / {{ total }}</p>
+        <button type="button" class="es-mg__lb-btn es-mg__lb-close" data-mg-close aria-label="{{ 'sections.media_gallery.close' | t | escape }}">{% render 'icon', name: 'close' %}</button>
+        <figure class="es-mg__stage">
+          <div class="es-mg__frame" data-mg-frame></div>
+          <figcaption class="es-mg__lb-caption" data-mg-caption></figcaption>
+        </figure>
+        {%- if total > 1 -%}
+          <button type="button" class="es-mg__lb-btn es-mg__lb-prev" data-mg-prev aria-label="{{ 'sections.media_gallery.previous' | t | escape }}">{% render 'icon', name: 'arrow-left' %}</button>
+          <button type="button" class="es-mg__lb-btn es-mg__lb-next" data-mg-next aria-label="{{ 'sections.media_gallery.next' | t | escape }}">{% render 'icon', name: 'arrow' %}</button>
+        {%- endif -%}
+      </div>
+    </dialog>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+.es-mg__head { max-width: 760px; }
+.es-mg__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--mg-gap, 12px); grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 44vw; grid-auto-flow: dense; }
+@media (min-width: 750px) { .es-mg__grid { grid-template-columns: repeat(var(--mg-cols, 4), minmax(0, 1fr)); grid-auto-rows: clamp(170px, calc(88vw / var(--mg-cols, 4)), 340px); } }
+.es-mg__cell { min-width: 0; min-height: 0; }
+.es-mg__cell--wide { grid-column: span 2; }
+.es-mg__cell--tall { grid-row: span 2; }
+.es-mg__cell--large { grid-column: span 2; grid-row: span 2; }
+.es-mg__item { position: relative; display: block; width: 100%; height: 100%; padding: 0; margin: 0; border: 0; overflow: hidden; border-radius: var(--radius-card); background: var(--c-surface); color: #fff; font: inherit; text-align: left; isolation: isolate; }
+button.es-mg__item { cursor: zoom-in; }
+.es-mg__item > img, .es-mg__item > video, .es-mg__item > .es-placeholder { position: absolute; inset: 0; transition: transform 1.1s var(--ease-out), opacity .6s ease; }
+.es-mg__item:hover > img, .es-mg__item:hover > video, .es-mg__item:focus-visible > img { transform: scale(1.05); }
+.es-mg__item .es-smedia__video { opacity: 0; }
+.es-mg__item .es-smedia__video.is-playing, .es-mg__item .es-smedia__video:only-child { opacity: 1; }
+.es-mg__item::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.55)); opacity: 0; transition: opacity .45s; pointer-events: none; }
+.es-mg__item:hover::after, .es-mg__item:focus-visible::after { opacity: 1; }
+.es-mg__badge { position: absolute; z-index: 2; top: 12px; left: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 8px; border-radius: 99px; background: rgba(0,0,0,.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size: .72rem; font-weight: var(--font-body-weight-bold); letter-spacing: .08em; text-transform: uppercase; }
+.es-mg__badge svg { width: 14px; height: 14px; }
+.es-mg__zoom { position: absolute; z-index: 2; top: 12px; right: 12px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.9); color: #111; opacity: 0; transform: scale(.8); transition: opacity .35s, transform .45s var(--ease-out); }
+.es-mg__zoom svg { width: 17px; height: 17px; }
+.es-mg__item:hover .es-mg__zoom, .es-mg__item:focus-visible .es-mg__zoom { opacity: 1; transform: none; }
+.es-mg__caption { position: absolute; z-index: 2; left: 14px; right: 14px; bottom: 12px; font-size: .9rem; line-height: 1.35; text-shadow: 0 1px 12px rgba(0,0,0,.5); opacity: 0; transform: translateY(8px); transition: opacity .4s, transform .5s var(--ease-out); }
+.es-mg__item:hover .es-mg__caption, .es-mg__item:focus-visible .es-mg__caption { opacity: 1; transform: none; }
+@media (hover: none) { .es-mg__caption { opacity: 1; transform: none; } .es-mg__item::after { opacity: 1; } }
+.es-mg__item:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+/* Visionneuse */
+.es-mg__dialog { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(10, 10, 12, .96); color: #fff; }
+.es-mg__dialog::backdrop { background: rgba(0,0,0,.6); }
+.es-mg__dialog[open] { animation: es-mg-in .35s var(--ease-out); }
+@keyframes es-mg-in { from { opacity: 0; } to { opacity: 1; } }
+.es-mg__lb { position: relative; width: 100%; height: 100%; display: grid; place-items: center; padding: 64px clamp(12px, 7vw, 96px) 40px; touch-action: pan-y; }
+.es-mg__stage { margin: 0; display: grid; gap: 12px; justify-items: center; max-width: 100%; max-height: 100%; }
+.es-mg__frame { display: grid; place-items: center; max-width: 100%; }
+.es-mg__frame img, .es-mg__frame video { max-width: min(100%, 1600px); max-height: calc(100dvh - 150px); width: auto; height: auto; object-fit: contain; border-radius: 6px; animation: es-mg-zoom .45s var(--ease-out); }
+@keyframes es-mg-zoom { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+.es-mg__lb-caption { font-size: .92rem; opacity: .8; text-align: center; max-width: 70ch; }
+.es-mg__count { position: absolute; top: 22px; left: 24px; margin: 0; font-size: .85rem; letter-spacing: .12em; font-variant-numeric: tabular-nums; opacity: .8; }
+.es-mg__lb-btn { position: absolute; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #fff; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.08); transition: background .3s, transform .35s var(--ease-out); }
+.es-mg__lb-btn:hover { background: rgba(255,255,255,.2); }
+.es-mg__lb-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.es-mg__lb-close { top: 12px; right: 12px; }
+.es-mg__lb-prev { left: clamp(8px, 2vw, 24px); top: 50%; transform: translateY(-50%); }
+.es-mg__lb-next { right: clamp(8px, 2vw, 24px); top: 50%; transform: translateY(-50%); }
+@media (max-width: 749px) { .es-mg__lb-prev, .es-mg__lb-next { top: auto; bottom: 16px; transform: none; } .es-mg__lb { padding-bottom: 84px; } }
+@media (prefers-reduced-motion: reduce) {
+  .es-mg__item > img, .es-mg__item > video, .es-mg__zoom, .es-mg__caption { transition: none; transform: none !important; }
+  .es-mg__dialog[open], .es-mg__frame img, .es-mg__frame video { animation: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.EsMediaGallery) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || (window.themeSettings && window.themeSettings.motion === false);
+  var canHover = window.matchMedia('(hover: hover)').matches;
+  function play(v) { var p = v.play(); v.classList.add('is-playing'); if (p && p.catch) p.catch(function () { v.classList.remove('is-playing'); }); }
+  function init(root) {
+    if (!root || root._esMg) return;
+    root._esMg = true;
+    var items = Array.prototype.slice.call(root.querySelectorAll('[data-mg-item]'));
+    var mode = root.getAttribute('data-play');
+    if (!reduce) items.forEach(function (it) {
+      var v = it.querySelector('video.es-smedia__video');
+      if (!v) return;
+      if (mode === 'hover' && canHover) {
+        it.addEventListener('mouseenter', function () { play(v); });
+        it.addEventListener('focus', function () { play(v); });
+        it.addEventListener('mouseleave', function () { v.pause(); });
+        it.addEventListener('blur', function () { v.pause(); });
+      } else if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (es) { if (es[0].isIntersecting) play(v); else v.pause(); }, { threshold: 0.4 }).observe(it);
+      }
+    });
+    var dialog = root.querySelector('[data-mg-dialog]');
+    if (!dialog || typeof dialog.showModal !== 'function') return;
+    var frame = dialog.querySelector('[data-mg-frame]'), cap = dialog.querySelector('[data-mg-caption]'), num = dialog.querySelector('[data-mg-index]');
+    var index = 0, opener = null;
+    function show(i) {
+      index = (i + items.length) % items.length;
+      var it = items[index];
+      frame.innerHTML = '';
+      var src = it.querySelector('video') || it.querySelector('img');
+      var node;
+      if (src && src.tagName === 'VIDEO') {
+        node = src.cloneNode(true);
+        node.classList.remove('es-cover', 'is-playing');
+        node.removeAttribute('aria-hidden');
+        node.controls = true; node.muted = false; node.loop = true; node.setAttribute('playsinline', '');
+        if (!reduce) node.autoplay = true;
+      } else if (src) {
+        node = src.cloneNode(true);
+        node.className = '';
+        node.setAttribute('sizes', '100vw');
+        node.loading = 'eager';
+        var full = it.getAttribute('data-full');
+        if (full && !node.getAttribute('srcset')) node.src = full;
+      }
+      if (node) frame.appendChild(node);
+      cap.textContent = it.getAttribute('data-caption') || '';
+      num.textContent = index + 1;
+    }
+    function open(i, trigger) { opener = trigger; show(i); dialog.showModal(); var c = dialog.querySelector('[data-mg-close]'); c && c.focus(); }
+    root.querySelectorAll('[data-mg-open]').forEach(function (b) { b.addEventListener('click', function () { open(parseInt(b.getAttribute('data-mg-open'), 10), b); }); });
+    dialog.addEventListener('close', function () { frame.innerHTML = ''; if (opener) opener.focus(); });
+    dialog.addEventListener('click', function (e) { if (e.target === dialog || e.target.classList.contains('es-mg__lb')) dialog.close(); });
+    var c = dialog.querySelector('[data-mg-close]'), pv = dialog.querySelector('[data-mg-prev]'), nx = dialog.querySelector('[data-mg-next]');
+    c && c.addEventListener('click', function () { dialog.close(); });
+    pv && pv.addEventListener('click', function () { show(index - 1); });
+    nx && nx.addEventListener('click', function () { show(index + 1); });
+    dialog.addEventListener('keydown', function (e) {
+      if (items.length < 2) return;
+      if (e.key === 'ArrowRight') { show(index + 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { show(index - 1); e.preventDefault(); }
+    });
+    var x0 = null;
+    dialog.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') x0 = e.clientX; }, { passive: true });
+    dialog.addEventListener('pointerup', function (e) { if (x0 === null) return; var dx = e.clientX - x0; x0 = null; if (Math.abs(dx) > 50 && items.length > 1) show(index + (dx < 0 ? 1 : -1)); }, { passive: true });
+  }
+  function initAll(ctx) { Array.prototype.forEach.call((ctx || document).querySelectorAll('[data-es-media-gallery]'), init); }
+  window.EsMediaGallery = { init: initAll };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { initAll(); }); else initAll();
+  document.addEventListener('shopify:section:load', function (e) { initAll(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Galerie média premium",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "En images" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "et en mouvement" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "columns", "label": "Colonnes (ordinateur)", "default": "4", "options": [ { "value": "3", "label": "3" }, { "value": "4", "label": "4" } ] },
+    { "type": "range", "id": "gap", "min": 0, "max": 32, "step": 2, "unit": "px", "label": "Espace entre les médias", "default": 12 },
+    { "type": "select", "id": "video_play", "label": "Lecture des vidéos", "default": "visible", "options": [ { "value": "visible", "label": "Quand elles sont à l'écran" }, { "value": "hover", "label": "Au survol (ordinateur)" } ], "info": "Vidéos muettes. Aucune lecture automatique si le visiteur a demandé moins d'animations." },
+    { "type": "checkbox", "id": "lightbox", "label": "Agrandir en plein écran au clic", "default": true },
+    { "type": "checkbox", "id": "show_captions", "label": "Afficher les légendes", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "image", "name": "Image", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "caption", "label": "Légende (et description de l'image)" },
+      { "type": "select", "id": "size", "label": "Taille dans la grille", "default": "normal", "options": [ { "value": "normal", "label": "Normale" }, { "value": "wide", "label": "Large" }, { "value": "tall", "label": "Haute" }, { "value": "large", "label": "Grande" } ] }
+    ] },
+    { "type": "video", "name": "Vidéo", "settings": [
+      { "type": "video", "id": "video", "label": "Vidéo (hébergée par Shopify)" },
+      { "type": "text", "id": "video_asset", "label": "Vidéo fournie avec le thème (MP4)" },
+      { "type": "image_picker", "id": "poster", "label": "Image d'affiche" },
+      { "type": "text", "id": "poster_asset", "label": "Affiche fournie avec le thème" },
+      { "type": "text", "id": "caption", "label": "Légende (et description de la vidéo)" },
+      { "type": "select", "id": "size", "label": "Taille dans la grille", "default": "tall", "options": [ { "value": "normal", "label": "Normale" }, { "value": "wide", "label": "Large" }, { "value": "tall", "label": "Haute" }, { "value": "large", "label": "Grande" } ] }
+    ] }
+  ],
+  "max_blocks": 16,
+  "presets": [{ "name": "Galerie média premium", "blocks": [
+    { "type": "image", "settings": { "size": "large" } },
+    { "type": "video", "settings": { "size": "tall" } },
+    { "type": "image" },
+    { "type": "image" },
+    { "type": "video", "settings": { "size": "wide" } },
+    { "type": "image" },
+    { "type": "image" }
+  ] }]
+}
+{% endschema %}

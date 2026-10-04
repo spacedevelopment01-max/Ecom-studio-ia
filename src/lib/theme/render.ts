@@ -12,6 +12,7 @@ import { compileTheme, type ThemeFiles } from "./compile";
 import { parseSchemaBlock, storeProducts, themeLang, withDefaults, type SectionInstance, type StoreProduct, type ThemeSpec } from "./spec";
 import { intlLocale, pick, type Lang } from "../i18n";
 import { L } from "../i18n-server";
+import { sampleBlogs } from "./preview-samples";
 
 // ---------------------------------------------------------------- polices
 
@@ -754,6 +755,8 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     cart: store.cart,
     page,
     blog: { title: "Journal", articles: [], url: `${opts.base}/blogs/journal` },
+    // Articles « Exemple » pour l'aperçu du studio uniquement (section featured-blog) ; jamais dans le thème exporté.
+    blogs: sampleBlogs(opts.spec, opts.base, lang),
     article: null,
     search: { performed: !!q, terms: q, results, results_count: results.length },
     recommendations: { performed: store.recommendations.length > 0, products: store.recommendations, products_count: store.recommendations.length },
@@ -787,8 +790,9 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const layoutName = typeof template.layout === "string" ? template.layout : "theme";
   const layoutSrc = files.get(`layout/${layoutName}.liquid`) ?? files.get("layout/theme.liquid")!;
   let html = await ctxRender(layoutSrc, `layout/${layoutName}.liquid`, { content_for_layout: content });
-  if (collected.css.length) html = html.replace("</head>", `<style data-section-styles>${collected.css.join("\n")}</style></head>`);
-  if (collected.js.length) html = html.replace("</body>", `<script>${collected.js.join("\n")}</script></body>`);
+  // Remplacement par fonction : le code des sections peut contenir « $$ » ou « $' », motifs spéciaux de String.replace.
+  if (collected.css.length) html = html.replace("</head>", () => `<style data-section-styles>${collected.css.join("\n")}</style></head>`);
+  if (collected.js.length) html = html.replace("</body>", () => `<script>${collected.js.join("\n")}</script></body>`);
   html = rewriteLinks(html, opts.base);
   // Sources dynamiques des réglages (« {{ product.vendor }} » saisi dans l'éditeur Shopify) : résolues pour l'aperçu.
   html = html.replace(/\{\{\s*((?:product|shop|collection|page)(?:\.[a-z_]+)+)\s*\}\}/g, (all: string, path: string) => {

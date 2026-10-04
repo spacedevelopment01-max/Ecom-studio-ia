@@ -1,0 +1,162 @@
+{%- comment -%}
+  Onglets de contenu accessibles (motif ARIA « tabs ») : texte riche + image par onglet, transition douce.
+  Sans JavaScript, tous les panneaux restent lisibles les uns sous les autres.
+{%- endcomment -%}
+<section class="es-section es-ctabs es-ctabs--{{ section.settings.tab_style }}{% if section.settings.image_position == 'left' %} es-ctabs--img-left{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-ctabs>
+  <div class="es-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+      <header class="es-ctabs__head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+      </header>
+    {%- endif -%}
+    <div class="es-ctabs__bar" data-reveal="up">
+      <div class="es-ctabs__list" role="tablist" aria-label="{{ section.settings.heading | default: section.settings.eyebrow | escape }}" data-ctabs-list hidden>
+        {%- for block in section.blocks -%}
+          <button type="button" role="tab" class="es-ctabs__tab" id="Tab-{{ section.id }}-{{ forloop.index }}" aria-controls="Panel-{{ section.id }}-{{ forloop.index }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" tabindex="{% if forloop.first %}0{% else %}-1{% endif %}" data-ctabs-tab {{ block.shopify_attributes }}>
+            {%- if block.settings.icon != 'none' -%}{% render 'icon', name: block.settings.icon %}{%- endif -%}
+            <span>{{ block.settings.title }}</span>
+          </button>
+        {%- endfor -%}
+        <span class="es-ctabs__ink" aria-hidden="true" data-ctabs-ink></span>
+      </div>
+    </div>
+    <div class="es-ctabs__panels">
+      {%- for block in section.blocks -%}
+        {%- assign has_img = false -%}
+        {%- if block.settings.image != blank or block.settings.image_asset != blank -%}{%- assign has_img = true -%}{%- endif -%}
+        <div class="es-ctabs__panel{% if forloop.first %} is-active{% endif %}{% unless has_img %} es-ctabs__panel--text{% endunless %}" role="tabpanel" id="Panel-{{ section.id }}-{{ forloop.index }}" aria-labelledby="Tab-{{ section.id }}-{{ forloop.index }}" tabindex="0" data-ctabs-panel>
+          <div class="es-ctabs__copy">
+            <h3 class="es-heading es-h3 es-ctabs__title">{{ block.settings.heading | default: block.settings.title }}</h3>
+            <div class="es-rte">{{ block.settings.content }}</div>
+            {%- if block.settings.button_label != blank -%}<a class="es-link-arrow es-ctabs__link" href="{{ block.settings.button_link | default: routes.all_products_collection_url }}">{{ block.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+          </div>
+          {%- if has_img -%}
+            <div class="es-ctabs__media">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 45vw, 100vw', class: 'es-cover' %}</div>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-ctabs__head { text-align: center; max-width: 760px; margin: 0 auto clamp(20px, 3vw, 36px); }
+.es-ctabs__bar { display: flex; justify-content: center; margin-bottom: clamp(24px, 4vw, 48px); }
+.es-ctabs__list { position: relative; display: flex; gap: 4px; max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 5px; }
+.es-ctabs__list::-webkit-scrollbar { display: none; }
+.es-ctabs__tab { position: relative; z-index: 1; flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border: 0; background: none; color: inherit; font-weight: var(--font-body-weight-bold); font-size: .95rem; cursor: pointer; border-radius: 999px; opacity: .62; transition: opacity .3s, color .35s; white-space: nowrap; }
+.es-ctabs__tab .es-icon { width: 18px; height: 18px; }
+.es-ctabs__tab:hover, .es-ctabs__tab[aria-selected="true"] { opacity: 1; }
+.es-ctabs__ink { position: absolute; z-index: 0; left: 0; top: 5px; height: calc(100% - 10px); width: 0; border-radius: 999px; transform: translateX(var(--x, 0)); width: var(--w, 0); transition: transform .5s var(--ease-out), width .5s var(--ease-out); pointer-events: none; }
+.es-ctabs--pills .es-ctabs__list { border-radius: 999px; background: rgba(var(--c-text-rgb), .06); }
+.es-ctabs--pills .es-ctabs__ink { background: var(--c-text); box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .5); }
+.es-ctabs--pills .es-ctabs__tab[aria-selected="true"] { color: var(--c-bg); }
+.es-ctabs--underline .es-ctabs__list { gap: 18px; padding: 0; border-bottom: 1px solid var(--c-border); border-radius: 0; }
+.es-ctabs--underline .es-ctabs__tab { padding: 0 2px; border-radius: 0; min-height: 50px; }
+.es-ctabs--underline .es-ctabs__ink { top: auto; bottom: 0; height: 2px; border-radius: 2px; background: var(--c-accent); }
+.es-ctabs__panel { display: grid; gap: clamp(24px, 4vw, 64px); align-items: center; }
+.es-ctabs__panel + .es-ctabs__panel { margin-top: 48px; }
+.es-ctabs.is-ready .es-ctabs__panel + .es-ctabs__panel { margin-top: 0; }
+.es-ctabs.is-ready .es-ctabs__panel[hidden] { display: none; }
+.es-ctabs.is-ready .es-ctabs__panel.is-active { animation: es-ctabs-in .6s var(--ease-out); }
+.es-ctabs.is-ready .es-ctabs__panel.is-active .es-ctabs__media { animation: es-ctabs-img .9s var(--ease-out); }
+@keyframes es-ctabs-in { from { opacity: 0; transform: translateY(12px); } }
+@keyframes es-ctabs-img { from { clip-path: inset(0 0 0 100% round var(--radius-card)); } to { clip-path: inset(0 0 0 0 round var(--radius-card)); } }
+.es-ctabs__panel:focus-visible { outline-offset: 8px; }
+.es-ctabs__copy { max-width: 560px; }
+.es-ctabs__title { margin-bottom: .55em; }
+.es-ctabs__link { margin-top: 1.4rem; }
+.es-ctabs__media { position: relative; aspect-ratio: 4 / 3; border-radius: var(--radius-card); overflow: hidden; background: var(--c-surface); }
+.es-ctabs__media .es-cover, .es-ctabs__media .es-placeholder { position: absolute; inset: 0; min-height: 0; }
+.es-ctabs__panel--text { justify-items: center; text-align: center; }
+@media (min-width: 990px) {
+  .es-ctabs__panel:not(.es-ctabs__panel--text) { grid-template-columns: 1fr 1.1fr; }
+  .es-ctabs--img-left .es-ctabs__media { order: -1; }
+  .es-ctabs__media { aspect-ratio: 5 / 4; }
+}
+@media (max-width: 749px) { .es-ctabs__bar { justify-content: flex-start; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); } }
+@media (prefers-reduced-motion: reduce) {
+  .es-ctabs__ink { transition: none; }
+  .es-ctabs.is-ready .es-ctabs__panel.is-active, .es-ctabs.is-ready .es-ctabs__panel.is-active .es-ctabs__media { animation: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esContentTabs) return; window.esContentTabs = true;
+  function init(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('[data-ctabs]'), function (s) {
+      if (s._es) return; s._es = true;
+      var list = s.querySelector('[data-ctabs-list]'), ink = s.querySelector('[data-ctabs-ink]');
+      var tabs = Array.prototype.slice.call(s.querySelectorAll('[data-ctabs-tab]')), panels = Array.prototype.slice.call(s.querySelectorAll('[data-ctabs-panel]'));
+      if (!list || !tabs.length) return;
+      list.hidden = false; s.classList.add('is-ready');
+      function moveInk() {
+        var t = tabs.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0]; if (!t || !ink) return;
+        ink.style.setProperty('--x', t.offsetLeft + 'px'); ink.style.setProperty('--w', t.offsetWidth + 'px');
+      }
+      function select(i, focus) {
+        tabs.forEach(function (t, j) { var on = i === j; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+        panels.forEach(function (p, j) { var on = i === j; p.hidden = !on; p.classList.toggle('is-active', on); });
+        if (focus) tabs[i].focus();
+        tabs[i].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        moveInk();
+      }
+      tabs.forEach(function (t, i) {
+        t.addEventListener('click', function () { select(i, false); });
+        t.addEventListener('keydown', function (e) {
+          var k = e.key, n = tabs.length, j = null;
+          if (k === 'ArrowRight' || k === 'ArrowDown') j = (i + 1) % n;
+          else if (k === 'ArrowLeft' || k === 'ArrowUp') j = (i - 1 + n) % n;
+          else if (k === 'Home') j = 0; else if (k === 'End') j = n - 1;
+          if (j !== null) { e.preventDefault(); select(j, true); }
+        });
+      });
+      panels.forEach(function (p, j) { p.hidden = j !== 0; });
+      moveInk();
+      window.addEventListener('resize', moveInk);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveInk);
+      s.addEventListener('shopify:block:select', function (e) { var k = tabs.indexOf(e.target); if (k > -1) select(k, false); });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Onglets de contenu",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "En détail" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Tout savoir sur le produit" },
+    { "type": "select", "id": "tab_style", "label": "Style des onglets", "default": "pills", "options": [{ "value": "pills", "label": "Pastilles" }, { "value": "underline", "label": "Soulignés" }] },
+    { "type": "select", "id": "image_position", "label": "Position de l'image", "default": "right", "options": [{ "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" }] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "tab", "name": "Onglet", "settings": [
+      { "type": "text", "id": "title", "label": "Nom de l'onglet", "default": "Onglet" },
+      { "type": "select", "id": "icon", "label": "Icône", "default": "none", "options": [{ "value": "none", "label": "Aucune" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "hand", "label": "Main" }, { "value": "truck", "label": "Camion" }, { "value": "return", "label": "Retour" }, { "value": "shield", "label": "Bouclier" }, { "value": "heart", "label": "Cœur" }, { "value": "clock", "label": "Horloge" }, { "value": "globe", "label": "Globe" }] },
+      { "type": "text", "id": "heading", "label": "Titre du contenu (facultatif)" },
+      { "type": "richtext", "id": "content", "label": "Contenu", "default": "<p>[À compléter : contenu de cet onglet, avec des informations vérifiées.]</p>" },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "button_label", "label": "Lien (texte)" },
+      { "type": "url", "id": "button_link", "label": "Lien" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Onglets de contenu", "blocks": [
+    { "type": "tab", "settings": { "title": "Le produit", "icon": "sparkle", "content": "<p>[À compléter : présentez le produit, ses matières et ses dimensions confirmées.]</p>" } },
+    { "type": "tab", "settings": { "title": "Utilisation", "icon": "hand", "content": "<p>[À compléter : conseils d'utilisation tirés de la notice.]</p>" } },
+    { "type": "tab", "settings": { "title": "Entretien", "icon": "drop", "content": "<p>[À compléter : consignes d'entretien réelles.]</p>" } },
+    { "type": "tab", "settings": { "title": "Livraison", "icon": "truck", "content": "<p>[À compléter : délais, tarifs et pays livrés.]</p>" } }
+  ] }]
+}
+{% endschema %}

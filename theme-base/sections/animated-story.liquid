@@ -1,0 +1,168 @@
+{%- comment -%}
+  Récit de marque en chapitres : le texte s'allume au fil du défilement (mot à mot ou paragraphe par paragraphe)
+  pendant que l'image fixe change d'un chapitre à l'autre. Sur téléphone, chaque chapitre porte son image.
+{%- endcomment -%}
+{%- assign count = section.blocks.size -%}
+<section class="es-section es-astory es-astory--{{ section.settings.reveal }}{% if section.settings.layout == 'image-right' %} es-astory--right{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-astory data-mode="{{ section.settings.reveal }}">
+  <div class="es-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+      <header class="es-section-head es-astory__head">
+        {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+      </header>
+    {%- endif -%}
+
+    <div class="es-astory__grid">
+      <div class="es-astory__stage-wrap" aria-hidden="true">
+        <div class="es-astory__stage">
+          {%- for block in section.blocks -%}
+            <figure class="es-astory__shot{% if forloop.first %} is-active{% endif %}" data-astory-shot="{{ forloop.index0 }}">
+              {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: '', sizes: '(min-width: 990px) 46vw, 1px', class: 'es-cover' %}
+            </figure>
+          {%- endfor -%}
+          <div class="es-astory__hud">
+            <p class="es-astory__chapter-num"><span>{{ 'sections.story.chapter' | t }}</span> <b data-astory-current>01</b><small>/ {{ count | prepend: '0' | slice: -2, 2 }}</small></p>
+            <div class="es-astory__dots">{%- for block in section.blocks -%}<i class="{% if forloop.first %}is-active{% endif %}" data-astory-dot="{{ forloop.index0 }}"></i>{%- endfor -%}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="es-astory__chapters">
+        {%- for block in section.blocks -%}
+          <article class="es-astory__chapter{% if forloop.first %} is-active{% endif %}" data-astory-chapter="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            <div class="es-astory__inline-media">
+              {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 1px, 92vw', class: 'es-cover' %}
+            </div>
+            <p class="es-astory__kicker"><b>{{ forloop.index | prepend: '0' | slice: -2, 2 }}</b>{%- if block.settings.kicker != blank -%}<span>{{ block.settings.kicker }}</span>{%- endif -%}</p>
+            <h3 class="es-heading es-astory__title">{{ block.settings.title }}</h3>
+            <div class="es-rte es-astory__text"{% if section.settings.reveal == 'words' %} data-scroll-words{% endif %}>{{ block.settings.text }}</div>
+          </article>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-astory__head { max-width: 820px; }
+.es-astory__grid { display: grid; gap: clamp(28px, 5vw, 96px); }
+.es-astory__stage-wrap { display: none; }
+@media (min-width: 990px) {
+  .es-astory__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .es-astory--right .es-astory__stage-wrap { order: 2; }
+  .es-astory__stage-wrap { display: block; position: sticky; top: calc(var(--header-h, 72px) + 24px); height: calc(100vh - var(--header-h, 72px) - 48px); max-height: 820px; }
+  .es-astory__inline-media { display: none; }
+  .es-astory__chapter { min-height: 58vh; display: flex; flex-direction: column; justify-content: center; }
+  .es-astory__chapter:first-child { min-height: 50vh; justify-content: flex-start; padding-top: 6vh; }
+  .es-astory__chapter:last-child { min-height: 50vh; }
+}
+.es-astory__stage { position: relative; height: 100%; border-radius: var(--radius-card); overflow: hidden; background: var(--c-surface); box-shadow: 0 60px 120px -70px rgba(var(--c-accent-rgb), calc(var(--glow) * 1.2)), 0 40px 80px -60px rgba(0,0,0,.55); }
+.es-astory__shot { position: absolute; inset: 0; margin: 0; opacity: 0; transform: scale(1.08); transition: opacity 1s var(--ease-out), transform 1.6s var(--ease-out); }
+.es-astory__shot.is-active { opacity: 1; transform: none; }
+.es-astory__shot img, .es-astory__shot .es-placeholder { width: 100%; height: 100%; object-fit: cover; }
+.es-astory__stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,.55)); }
+.es-astory__hud { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 24px 28px; color: #fff; }
+.es-astory__chapter-num { margin: 0; display: flex; align-items: baseline; gap: 8px; font-size: .74rem; letter-spacing: .22em; text-transform: uppercase; }
+.es-astory__chapter-num b { font-family: var(--font-heading); font-size: 2.6rem; letter-spacing: 0; line-height: 1; font-weight: var(--font-heading-weight); }
+.es-astory__chapter-num small { font-size: .8rem; opacity: .7; letter-spacing: .1em; }
+.es-astory__dots { display: flex; gap: 6px; }
+.es-astory__dots i { width: 22px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.35); transition: background .5s, width .5s var(--ease-out); }
+.es-astory__dots i.is-active { width: 44px; background: #fff; }
+.es-astory__chapters { display: grid; gap: clamp(48px, 8vw, 72px); }
+.es-astory__inline-media { aspect-ratio: 4 / 3; border-radius: var(--radius-card); overflow: hidden; background: var(--c-surface); margin-bottom: 22px; }
+.es-astory__inline-media img, .es-astory__inline-media .es-placeholder { width: 100%; height: 100%; object-fit: cover; }
+.es-astory__kicker { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; color: var(--c-muted); }
+.es-astory__kicker b { display: inline-grid; place-items: center; min-width: 38px; height: 38px; padding: 0 8px; border-radius: 999px; border: 1px solid rgba(var(--c-accent-rgb), .45); color: var(--c-accent); letter-spacing: .04em; font-size: .78rem; transition: background .5s, color .5s; }
+.es-astory__chapter.is-active .es-astory__kicker b { background: var(--c-accent); color: var(--c-accent-text); border-color: transparent; }
+.es-astory__title { font-size: calc(clamp(1.8rem, 3.4vw, 2.9rem) * var(--heading-scale)); line-height: 1.08; margin-bottom: .5em; }
+.es-astory__text { font-size: clamp(1.08rem, 1.5vw, 1.3rem); line-height: 1.65; max-width: 40ch; }
+.es-astory__text p { margin: 0 0 .8em; }
+/* Mot à mot : les mots s'allument au défilement (découpage par le script du thème). */
+.motion-ready .es-astory--words [data-scroll-words] .es-w { opacity: .18; transition: opacity .35s linear, color .35s linear; }
+.motion-ready .es-astory--words [data-scroll-words] .es-w.is-lit { opacity: 1; }
+/* Paragraphe par paragraphe */
+.motion-ready .es-astory--paragraphs .es-astory__text > * { opacity: .16; transform: translateY(10px); transition: opacity .8s var(--ease-out), transform .9s var(--ease-out); }
+.motion-ready .es-astory--paragraphs .es-astory__text > .is-lit { opacity: 1; transform: none; }
+.es-astory__chapter .es-astory__title { transition: opacity .6s var(--ease-out); }
+.motion-ready .es-astory__chapter:not(.is-active) .es-astory__title { opacity: .45; }
+@media (max-width: 989px) {
+  .motion-ready .es-astory__chapter:not(.is-active) .es-astory__title { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es-astory__shot { transition: none; transform: none; }
+  .motion-ready .es-astory--paragraphs .es-astory__text > * { opacity: 1; transform: none; }
+}
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  var stories = [];
+  function setup(root) {
+    (root || document).querySelectorAll('[data-astory]').forEach(function (s) {
+      if (s._esAstory) return; s._esAstory = true;
+      var paras = [];
+      if (s.getAttribute('data-mode') === 'paragraphs') s.querySelectorAll('.es-astory__text > *').forEach(function (p) { paras.push(p); });
+      stories.push({ s: s, chapters: Array.prototype.slice.call(s.querySelectorAll('[data-astory-chapter]')), shots: Array.prototype.slice.call(s.querySelectorAll('[data-astory-shot]')), dots: Array.prototype.slice.call(s.querySelectorAll('[data-astory-dot]')), cur: s.querySelector('[data-astory-current]'), paras: paras, last: -1 });
+    });
+    update();
+  }
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight;
+    stories.forEach(function (st) {
+      if (!st.s.isConnected) return;
+      var r = st.s.getBoundingClientRect(); if (r.bottom < -vh || r.top > vh * 2) return;
+      st.paras.forEach(function (p) { p.classList.toggle('is-lit', p.getBoundingClientRect().top < vh * .78); });
+      var active = 0;
+      st.chapters.forEach(function (c, i) { if (c.getBoundingClientRect().top < vh * .55) active = i; });
+      if (active === st.last) return; st.last = active;
+      function mark(list) { list.forEach(function (el, i) { el.classList.toggle('is-active', i === active); }); }
+      mark(st.chapters); mark(st.shots); mark(st.dots);
+      if (st.cur) st.cur.textContent = ('0' + (active + 1)).slice(-2);
+    });
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setup(); }); else setup();
+  document.addEventListener('shopify:section:load', function (e) { setup(e.target); });
+  document.addEventListener('shopify:block:select', function (e) {
+    var c = e.target.closest && e.target.closest('[data-astory-chapter]'); if (c) c.scrollIntoView({ block: 'center' });
+  });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Histoire animée",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Racontez votre histoire réelle : dates, lieux et étapes doivent être exacts." },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Notre histoire" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Une histoire racontée" },
+    { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur", "default": "chapitre par chapitre." },
+    { "type": "select", "id": "reveal", "label": "Apparition du texte", "default": "words", "options": [{ "value": "words", "label": "Mot à mot" }, { "value": "paragraphs", "label": "Paragraphe par paragraphe" }] },
+    { "type": "select", "id": "layout", "label": "Position de l'image", "default": "image-left", "options": [{ "value": "image-left", "label": "Image à gauche" }, { "value": "image-right", "label": "Image à droite" }] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "chapter", "name": "Chapitre", "settings": [
+      { "type": "text", "id": "kicker", "label": "Repère (date, lieu…)", "default": "[À compléter : année ou lieu]" },
+      { "type": "text", "id": "title", "label": "Titre", "default": "[À compléter : titre du chapitre]" },
+      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : racontez ce moment de votre histoire, avec vos mots et des faits réels.]</p>" },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Histoire animée", "blocks": [
+    { "type": "chapter", "settings": { "title": "Le point de départ", "text": "<p>[À compléter : comment tout a commencé — l'idée, le besoin ou la rencontre à l'origine de votre marque.]</p>" } },
+    { "type": "chapter", "settings": { "title": "Le déclic", "text": "<p>[À compléter : le moment où le produit a pris forme — essais, choix des matières, premiers retours.]</p>" } },
+    { "type": "chapter", "settings": { "title": "Aujourd'hui", "text": "<p>[À compléter : ce que vous proposez aujourd'hui et ce qui vous guide pour la suite.]</p>" } }
+  ] }]
+}
+{% endschema %}

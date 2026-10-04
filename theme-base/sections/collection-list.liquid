@@ -1,34 +1,102 @@
-<section class="es-section es-clist color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+{%- comment -%}
+  Collections premium : grandes cartes image avec titre en surimpression, zoom et flèche au survol,
+  en grille régulière, grille asymétrique (première collection en grand) ou carrousel.
+  Réglages historiques conservés (heading, columns, color_scheme, marges, blocs collection) : les thèmes existants restent valides.
+{%- endcomment -%}
+{%- assign layout = section.settings.layout | default: 'grid' -%}
+<section class="es-section es-cpl es-cpl--{{ layout }} es-cpl--{{ section.settings.ratio | default: 'portrait' }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;"{% if layout == 'carousel' %} data-hgallery{% endif %}>
   <div class="es-container">
-    {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-section-head" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
-    <div class="es-clist__grid" style="--cols: {{ section.settings.columns }}">
+    {%- if section.settings.heading != blank or section.settings.eyebrow != blank or layout == 'carousel' -%}
+      <header class="es-section-head es-section-head--split es-cpl__head">
+        <div>
+          {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+          {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+        </div>
+        {%- if layout == 'carousel' and section.blocks.size > 1 -%}
+          <div class="es-hgallery__nav">
+            <button type="button" class="es-icon-button es-icon-button--outline" data-hg-prev aria-label="{{ 'general.previous' | t | escape }}">{% render 'icon', name: 'arrow-left' %}</button>
+            <button type="button" class="es-icon-button es-icon-button--outline" data-hg-next aria-label="{{ 'general.next' | t | escape }}">{% render 'icon', name: 'arrow' %}</button>
+          </div>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+    <div class="es-cpl__grid" style="--cols: {{ section.settings.columns }}"{% if layout == 'carousel' %} data-hg-track{% endif %}>
       {%- for block in section.blocks -%}
         {%- assign c = block.settings.collection -%}
-        <a href="{{ c.url | default: routes.collections_url }}" class="es-clist__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
-          <div class="es-media-frame es-media-frame--square">
+        {%- assign title = block.settings.title | default: c.title | default: 'Collection' -%}
+        <a href="{{ c.url | default: routes.collections_url }}" class="es-cpl__item{% if layout == 'asymmetric' and forloop.first %} es-cpl__item--lead{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          <div class="es-media-frame es-cpl__media">
             {%- if block.settings.image != blank or block.settings.image_asset != blank -%}
-              {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: c.title, sizes: '(min-width: 990px) 30vw, 50vw', class: 'es-cover' %}
+              {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: title, sizes: '(min-width: 990px) 40vw, 80vw', class: 'es-cover' %}
             {%- elsif c.featured_image -%}
-              {{ c.featured_image | image_url: width: 900 | image_tag: loading: 'lazy', class: 'es-cover', alt: c.title }}
+              {{ c.featured_image | image_url: width: 1200 | image_tag: loading: 'lazy', class: 'es-cover', alt: title, sizes: '(min-width: 990px) 40vw, 80vw', widths: '400, 600, 900, 1200' }}
             {%- else -%}
               {{ 'collection-1' | placeholder_svg_tag: 'es-placeholder__svg' }}
             {%- endif -%}
           </div>
-          <span class="es-clist__title">{{ block.settings.title | default: c.title | default: 'Collection' }} {% render 'icon', name: 'arrow' %}</span>
+          <span class="es-cpl__overlay">
+            <span class="es-cpl__text">
+              <span class="es-cpl__title es-heading">{{ title }}</span>
+              {%- if section.settings.show_count and c.products_count > 0 -%}<span class="es-cpl__count">{{ 'sections.collection_list.products_count' | t: count: c.products_count }}</span>{%- endif -%}
+            </span>
+            <span class="es-cpl__arrow" aria-hidden="true">{% render 'icon', name: 'arrow' %}</span>
+          </span>
         </a>
       {%- endfor -%}
     </div>
   </div>
 </section>
 
+{% stylesheet %}
+/* ---------- Collections premium : grandes cartes, titre en surimpression ---------- */
+.es-cpl__grid { display: grid; gap: clamp(12px, 1.6vw, 20px); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 990px) { .es-cpl__grid { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); } }
+.es-cpl__item { position: relative; display: block; min-width: 0; text-decoration: none; color: #fff; border-radius: var(--radius-card); overflow: hidden; isolation: isolate; }
+.es-cpl__media { aspect-ratio: 4 / 5; border-radius: inherit; }
+.es-cpl--square .es-cpl__media { aspect-ratio: 1; }
+.es-cpl--landscape .es-cpl__media { aspect-ratio: 4 / 3; }
+.es-cpl__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.68) 100%); transition: opacity .5s var(--ease-out); }
+.es-cpl__item:hover .es-cpl__media::after { opacity: .85; }
+.es-cpl__item img { transition: transform 1.2s var(--ease-out); }
+.es-cpl__item:hover img { transform: scale(1.06); }
+.es-cpl__overlay { position: absolute; inset: auto 0 0; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: clamp(16px, 2.4vw, 28px); }
+.es-cpl__text { min-width: 0; }
+.es-cpl__title { display: block; margin: 0; font-size: calc(clamp(1.2rem, 2.1vw, 1.9rem) * var(--heading-scale)); line-height: 1.05; text-shadow: 0 2px 18px rgba(0,0,0,.25); }
+.es-cpl__count { display: block; margin-top: 8px; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; opacity: .82; }
+.es-cpl__arrow { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.32); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform .5s var(--ease-out), background .4s, color .4s; }
+.es-cpl__arrow .es-icon { width: 18px; height: 18px; }
+.es-cpl__item:hover .es-cpl__arrow, .es-cpl__item:focus-visible .es-cpl__arrow { background: #fff; color: #111; transform: rotate(-45deg); }
+.es-cpl__item--lead { grid-column: span 2; }
+.es-cpl__item--lead .es-cpl__media { aspect-ratio: 4 / 3; }
+@media (min-width: 990px) {
+  .es-cpl--asymmetric .es-cpl__item--lead { grid-row: span 2; }
+  .es-cpl--asymmetric .es-cpl__item--lead .es-cpl__media { aspect-ratio: auto; height: 100%; }
+  .es-cpl--asymmetric .es-cpl__item--lead .es-cpl__title { font-size: calc(clamp(1.8rem, 3.2vw, 3rem) * var(--heading-scale)); }
+}
+.es-cpl--carousel .es-cpl__grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 4px; }
+.es-cpl--carousel .es-cpl__grid::-webkit-scrollbar { display: none; }
+.es-cpl--carousel .es-cpl__item { flex: none; width: min(74vw, 340px); scroll-snap-align: start; }
+@media (min-width: 990px) { .es-cpl--carousel .es-cpl__item { width: calc((100% - (var(--cols) - .6) * 20px) / (var(--cols) + .4)); } }
+.es-cpl__head .es-heading { margin-bottom: 0; }
+@media (max-width: 749px) {
+  .es-cpl__item:not(.es-cpl__item--lead) .es-cpl__arrow { display: none; }
+  .es-cpl__overlay { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .es-cpl__item img, .es-cpl__arrow { transition: none; } }
+{% endstylesheet %}
+
 {% schema %}
 {
-  "name": "Liste de collections",
+  "name": "Collections premium",
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Explorer" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "grid", "options": [{ "value": "grid", "label": "Grille régulière" }, { "value": "asymmetric", "label": "Grille asymétrique (première en grand)" }, { "value": "carousel", "label": "Carrousel" }] },
     { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes", "default": 3 },
+    { "type": "select", "id": "ratio", "label": "Format des cartes", "default": "portrait", "options": [{ "value": "portrait", "label": "Portrait" }, { "value": "square", "label": "Carré" }, { "value": "landscape", "label": "Paysage" }] },
+    { "type": "checkbox", "id": "show_count", "label": "Afficher le nombre de produits", "default": true },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
@@ -42,6 +110,6 @@
     ] }
   ],
   "max_blocks": 8,
-  "presets": [{ "name": "Liste de collections", "blocks": [{ "type": "collection" }, { "type": "collection" }, { "type": "collection" }] }]
+  "presets": [{ "name": "Collections premium", "settings": { "layout": "asymmetric" }, "blocks": [{ "type": "collection" }, { "type": "collection" }, { "type": "collection" }] }]
 }
 {% endschema %}

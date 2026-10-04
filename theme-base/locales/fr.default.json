@@ -18,6 +18,117 @@
     "skip_to_text": "Aller au contenu"
   },
   "sections": {
+    "comparison": {
+      "yes": "Oui",
+      "no": "Non",
+      "partial": "Partiellement",
+      "swipe": "Faites glisser pour comparer"
+    },
+    "experts": {
+      "verified": "Professionnel vérifié",
+      "photo_placeholder": "Photo du professionnel",
+      "proof": "Voir la source",
+      "hint": "Ajoutez les professionnels réels qui recommandent votre produit, avec leur accord écrit (bloc « Professionnel »)."
+    },
+    "story": {
+      "chapter": "Chapitre"
+    },
+    "logo_list": {
+      "placeholder": "Votre logo partenaire"
+    },
+    "how_to": {
+      "step": "Étape {{ n }}"
+    },
+    "customer_wall": {
+      "open": "Agrandir le média {{ n }}",
+      "brand": "Photo de la marque",
+      "customer": "Photo client"
+    },
+    "featured_offer": {
+      "code_label": "Code promo",
+      "code_placeholder": "[À compléter : code promo]",
+      "copy": "Copier",
+      "copied": "Code copié"
+    },
+    "legal_page": {
+      "toc": "Sommaire",
+      "updated": "Dernière mise à jour :",
+      "print": "Imprimer",
+      "title_placeholder": "[À compléter : titre de la page]"
+    },
+    "product_360": {
+      "label": "Vue à 360° du produit",
+      "hint": "Faites glisser pour tourner",
+      "left": "Tourner vers la gauche",
+      "right": "Tourner vers la droite",
+      "view_n": "Vue {{ n }} sur {{ total }}"
+    },
+    "featured_product": {
+      "zoom": "Zoomer sur l'image",
+      "save": "-{{ percent }} %"
+    },
+    "carousel": {
+      "carousel": "Carrousel",
+      "slide": "Diapositive",
+      "slide_of": "{{ index }} sur {{ count }}",
+      "go_to": "Afficher la diapositive {{ index }}"
+    },
+    "immersive_reviews": {
+      "label": "Avis clients",
+      "verified": "Achat vérifié"
+    },
+    "video_carousel": {
+      "label": "Vidéos"
+    },
+    "featured_blog": {
+      "view_all": "Voir tous les articles",
+      "read_more": "Lire l'article",
+      "reading_time": {
+        "one": "{{ count }} min de lecture",
+        "other": "{{ count }} min de lecture"
+      },
+      "empty": "Aucun article publié pour le moment : vos articles apparaîtront ici dès leur publication dans le blog choisi."
+    },
+    "countdown": {
+      "label": "Temps restant",
+      "days": "Jours",
+      "hours": "Heures",
+      "minutes": "Minutes",
+      "seconds": "Secondes",
+      "missing_date": "[À compléter : date de fin réelle de votre offre]"
+    },
+    "collection_list": {
+      "products_count": {
+        "one": "{{ count }} produit",
+        "other": "{{ count }} produits"
+      }
+    },
+    "slideshow": {
+      "carousel": "Diaporama",
+      "slide": "Diapositive",
+      "slide_of": "{{ n }} sur {{ total }}",
+      "go_to": "Aller à la diapositive {{ n }}",
+      "previous": "Diapositive précédente",
+      "next": "Diapositive suivante"
+    },
+    "media_gallery": {
+      "open": "Agrandir le média {{ n }}",
+      "dialog": "Visionneuse",
+      "close": "Fermer la visionneuse",
+      "previous": "Média précédent",
+      "next": "Média suivant",
+      "video": "Vidéo"
+    },
+    "social_gallery": {
+      "open_post": "Voir la publication",
+      "new_tab": "s'ouvre dans un nouvel onglet",
+      "hint": "Ajoutez vos propres photos ou vidéos (bloc « Publication ») : rien ne s'affiche tant qu'il n'y en a pas."
+    },
+    "faq": {
+      "search_label": "Rechercher dans les questions",
+      "no_results": "Aucune question ne correspond à votre recherche.",
+      "results": "Questions affichées : {{ count }}"
+    },
     "announcement": "Annonce",
     "header": {
       "menu": "Menu",
