@@ -5,34 +5,49 @@
  */
 import { getJsonSetting, getSetting } from "../settings";
 import { UserFacingError } from "../jobs";
+import { L } from "../i18n-server";
 
 export type ProviderId = "anthropic" | "openai" | "google" | "fal";
 
-export const PROVIDERS: Record<ProviderId, { name: string; role: string; keyHelp: string; docs: string }> = {
-  anthropic: {
-    name: "Anthropic (Claude)",
-    role: "Analyse visuelle, stratégie, rédaction, code des thèmes, contrôle qualité",
-    keyHelp: "Clé API de la console Anthropic (sk-ant-…)",
-    docs: "https://platform.claude.com/",
+// Libellés affichés dans l'administration : accesseurs évalués à la lecture, dans la langue de l'interface.
+const provider = (name: { fr: string; en: string }, role: { fr: string; en: string }, keyHelp: { fr: string; en: string }, docs: string) => ({
+  get name() {
+    return L(name.fr, name.en);
   },
-  openai: {
-    name: "OpenAI (images)",
-    role: "Génération et retouche d'images par masque (décors autour du produit réel)",
-    keyHelp: "Clé API OpenAI (sk-…) avec accès aux modèles d'image",
-    docs: "https://platform.openai.com/docs/guides/image-generation",
+  get role() {
+    return L(role.fr, role.en);
   },
-  google: {
-    name: "Google Gemini API (images et vidéo Veo)",
-    role: "Images de scène et plans vidéo générés à partir d'une image",
-    keyHelp: "Clé Gemini API (Google AI Studio)",
-    docs: "https://ai.google.dev/gemini-api/docs/video",
+  get keyHelp() {
+    return L(keyHelp.fr, keyHelp.en);
   },
-  fal: {
-    name: "fal.ai (modèles vidéo et image tiers)",
-    role: "Alternative pour la vidéo image-vers-vidéo",
-    keyHelp: "Clé fal.ai (Key …)",
-    docs: "https://fal.ai/models",
-  },
+  docs,
+});
+
+export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly role: string; readonly keyHelp: string; docs: string }> = {
+  anthropic: provider(
+    { fr: "Anthropic (Claude)", en: "Anthropic (Claude)" },
+    { fr: "Analyse visuelle, stratégie, rédaction, code des thèmes, contrôle qualité", en: "Visual analysis, strategy, copywriting, theme code, quality control" },
+    { fr: "Clé API de la console Anthropic (sk-ant-…)", en: "API key from the Anthropic Console (sk-ant-…)" },
+    "https://platform.claude.com/",
+  ),
+  openai: provider(
+    { fr: "OpenAI (images)", en: "OpenAI (images)" },
+    { fr: "Génération et retouche d'images par masque (décors autour du produit réel)", en: "Mask-based image generation and editing (backgrounds around the real product)" },
+    { fr: "Clé API OpenAI (sk-…) avec accès aux modèles d'image", en: "OpenAI API key (sk-…) with access to image models" },
+    "https://platform.openai.com/docs/guides/image-generation",
+  ),
+  google: provider(
+    { fr: "Google Gemini API (images et vidéo Veo)", en: "Google Gemini API (images and Veo video)" },
+    { fr: "Images de scène et plans vidéo générés à partir d'une image", en: "Scene images and video shots generated from an image" },
+    { fr: "Clé Gemini API (Google AI Studio)", en: "Gemini API key (Google AI Studio)" },
+    "https://ai.google.dev/gemini-api/docs/video",
+  ),
+  fal: provider(
+    { fr: "fal.ai (modèles vidéo et image tiers)", en: "fal.ai (third-party video and image models)" },
+    { fr: "Alternative pour la vidéo image-vers-vidéo", en: "Alternative for image-to-video generation" },
+    { fr: "Clé fal.ai (Key …)", en: "fal.ai key (Key …)" },
+    "https://fal.ai/models",
+  ),
 };
 
 export type TaskId =
@@ -49,19 +64,27 @@ export type TaskId =
   | "image_generation"
   | "video_generation";
 
-export const TASKS: Record<TaskId, { label: string; kind: "llm" | "image" | "video" }> = {
-  vision_analysis: { label: "Analyse visuelle du produit", kind: "llm" },
-  strategy: { label: "Direction de marque et stratégie", kind: "llm" },
-  copywriting: { label: "Rédaction (fiches, pages, marque)", kind: "llm" },
-  theme_design: { label: "Conception du thème boutique", kind: "llm" },
-  theme_edit: { label: "Retouches du thème par conversation", kind: "llm" },
-  quality_control: { label: "Contrôle qualité", kind: "llm" },
-  social_planning: { label: "Planification éditoriale", kind: "llm" },
-  social_copy: { label: "Textes des publications", kind: "llm" },
-  classification: { label: "Classement des fichiers", kind: "llm" },
-  video_direction: { label: "Réalisation vidéo (concept, storyboard)", kind: "llm" },
-  image_generation: { label: "Génération d'images (décors)", kind: "image" },
-  video_generation: { label: "Génération vidéo (plans)", kind: "video" },
+const task = (fr: string, en: string, kind: "llm" | "image" | "video") => ({
+  get label() {
+    return L(fr, en);
+  },
+  kind,
+});
+
+/** Tâches et libellés (dans la langue de l'interface, évalués à la lecture). */
+export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "image" | "video" }> = {
+  vision_analysis: task("Analyse visuelle du produit", "Product visual analysis", "llm"),
+  strategy: task("Direction de marque et stratégie", "Brand direction and strategy", "llm"),
+  copywriting: task("Rédaction (fiches, pages, marque)", "Copywriting (product pages, pages, brand)", "llm"),
+  theme_design: task("Conception du thème boutique", "Store theme design", "llm"),
+  theme_edit: task("Retouches du thème par conversation", "Theme edits via chat", "llm"),
+  quality_control: task("Contrôle qualité", "Quality control", "llm"),
+  social_planning: task("Planification éditoriale", "Content planning", "llm"),
+  social_copy: task("Textes des publications", "Social post copy", "llm"),
+  classification: task("Classement des fichiers", "File organization", "llm"),
+  video_direction: task("Réalisation vidéo (concept, storyboard)", "Video direction (concept, storyboard)", "llm"),
+  image_generation: task("Génération d'images (décors)", "Image generation (backgrounds)", "image"),
+  video_generation: task("Génération vidéo (plans)", "Video generation (shots)", "video"),
 };
 
 export type Route = { provider: ProviderId; model: string; effort?: "low" | "medium" | "high" | "xhigh" | "max" };
@@ -124,7 +147,7 @@ export function pricesCheckedAt(): number | null {
  */
 export function requirePrice(provider: string, model: string): Price {
   const p = priceFor(provider, model);
-  if (!p || !priceValid(p)) throw new UserFacingError(`Tarif inconnu pour ${provider}:${model} : renseignez-le dans l'administration (Modèles et tarifs) avant d'utiliser ce modèle.`);
+  if (!p || !priceValid(p)) throw new UserFacingError(L(`Tarif inconnu pour ${provider}:${model} : renseignez-le dans l'administration (Modèles et tarifs) avant d'utiliser ce modèle.`, `Unknown price for ${provider}:${model}. Enter it in the admin settings (Models and pricing) before using this model.`));
   return p;
 }
 

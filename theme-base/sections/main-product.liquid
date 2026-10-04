@@ -84,8 +84,8 @@
                 <a href="#{{ block.settings.anchor | default: 'avis' }}" class="es-rating" {{ block.shopify_attributes }}>
                   <span class="es-stars" style="--pct: {{ pct }}%" aria-hidden="true"></span>
                   <span>{{ r.rating | round: 1 }}</span>
-                  {%- if product.metafields.reviews.rating_count != blank -%}<span class="es-muted">({{ product.metafields.reviews.rating_count }} avis)</span>{%- endif -%}
-                  <span class="visually-hidden">Note de {{ r.rating }} sur {{ r.scale_max }}</span>
+                  {%- if product.metafields.reviews.rating_count != blank -%}<span class="es-muted">({{ 'products.product.reviews_count' | t: count: product.metafields.reviews.rating_count }})</span>{%- endif -%}
+                  <span class="visually-hidden">{{ 'products.product.rating_of' | t: rating: r.rating, max: r.scale_max }}</span>
                 </a>
               {%- endif -%}
             {%- when 'bundles' -%}
@@ -94,7 +94,7 @@
               <div class="es-bundles es-bundles--{{ block.settings.layout | default: 'cards' }}" data-bundles data-section="{{ section.id }}" data-units="{{ block.settings.units_per_pack }}" {{ block.shopify_attributes }}>
                 {%- if block.settings.heading != blank -%}<p class="es-bundles__heading"><span>{{ block.settings.heading }}</span></p>{%- endif -%}
                 {%- if block.settings.subheading != blank -%}<p class="es-bundles__sub">{{ block.settings.subheading }}</p>{%- endif -%}
-                <div class="es-bundles__grid" role="radiogroup" aria-label="{{ block.settings.heading | default: 'Quantité' | escape }}">
+                <div class="es-bundles__grid" role="radiogroup" aria-label="{%- if block.settings.heading != blank -%}{{ block.settings.heading | escape }}{%- else -%}{{ 'products.product.quantity' | t | escape }}{%- endif -%}">
                   {%- for i in (1..3) -%}
                     {%- assign kq = 'qty' | append: i -%}{%- assign kd = 'discount' | append: i -%}{%- assign kl = 'label' | append: i -%}{%- assign kt = 'tag' | append: i -%}{%- assign ks = 'sub' | append: i -%}{%- assign kc = 'chip' | append: i -%}
                     {%- assign q = block.settings[kq] -%}
@@ -179,9 +179,9 @@
             {%- when 'delivery' -%}
               {%- if block.settings.max_days > 0 -%}
                 <div class="es-eta" data-eta data-min="{{ block.settings.min_days }}" data-max="{{ block.settings.max_days }}" data-business="{{ block.settings.business_days }}" {{ block.shopify_attributes }}>
-                  <div class="es-eta__step">{% render 'icon', name: 'clock' %}<div><span class="es-small es-muted">Commandé</span><strong>Aujourd'hui</strong></div></div>
+                  <div class="es-eta__step">{% render 'icon', name: 'clock' %}<div><span class="es-small es-muted">{{ 'products.product.eta.ordered' | t }}</span><strong>{{ 'products.product.eta.today' | t }}</strong></div></div>
                   {% render 'icon', name: 'arrow' %}
-                  <div class="es-eta__step">{% render 'icon', name: 'truck' %}<div><span class="es-small es-muted">{{ block.settings.label }}</span><strong data-eta-range>Sous {{ block.settings.max_days }} jours</strong></div></div>
+                  <div class="es-eta__step">{% render 'icon', name: 'truck' %}<div><span class="es-small es-muted">{{ block.settings.label }}</span><strong data-eta-range>{{ 'products.product.eta.within' | t: count: block.settings.max_days }}</strong></div></div>
                 </div>
               {%- endif -%}
             {%- when 'reassurance' -%}

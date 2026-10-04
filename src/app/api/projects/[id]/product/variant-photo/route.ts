@@ -7,6 +7,7 @@ import { HttpError } from "@/lib/auth";
 import { handle, ok } from "@/lib/http";
 import { saveAsset, type Asset } from "@/lib/library";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
+import { L } from "@/lib/i18n-server";
 
 export const runtime = "nodejs";
 const MAX = 25 * 1024 * 1024;
@@ -23,10 +24,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const value = typeof form.get("value") === "string" ? String(form.get("value")).trim() : "";
   const photo = form.get("photo");
   const values = p.product.variants.flatMap((v) => v.values);
-  if (!value || !values.some((v) => v.trim().toLowerCase() === value.toLowerCase())) throw new HttpError(400, `« ${value} » n'est pas une valeur de variante du produit.`);
-  if (!photo || typeof photo === "string" || !photo.size) throw new HttpError(400, "Ajoutez une photo.");
-  if (photo.size > MAX) throw new HttpError(413, "La photo dépasse 25 Mo.");
-  if (!/^image\/(jpeg|png|webp|avif)$/.test(photo.type)) throw new HttpError(415, "Format non pris en charge (JPEG, PNG, WebP, AVIF).");
+  if (!value || !values.some((v) => v.trim().toLowerCase() === value.toLowerCase())) throw new HttpError(400, L(`« ${value} » n'est pas une valeur de variante du produit.`, `"${value}" is not one of the product's variant values.`));
+  if (!photo || typeof photo === "string" || !photo.size) throw new HttpError(400, L("Ajoutez une photo.", "Add a photo."));
+  if (photo.size > MAX) throw new HttpError(413, L("La photo dépasse 25 Mo.", "The photo exceeds 25 MB."));
+  if (!/^image\/(jpeg|png|webp|avif)$/.test(photo.type)) throw new HttpError(415, L("Format non pris en charge (JPEG, PNG, WebP, AVIF).", "Unsupported format (JPEG, PNG, WebP, AVIF)."));
   // Une seule photo par valeur : la précédente part à la corbeille.
   for (const a of all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'variant-original' AND deleted_at IS NULL", p.id)) {
     if (((JSON.parse(a.meta || "{}") as { variant?: string }).variant ?? "").toLowerCase() === value.toLowerCase()) run("UPDATE assets SET deleted_at = ? WHERE id = ?", now(), a.id);

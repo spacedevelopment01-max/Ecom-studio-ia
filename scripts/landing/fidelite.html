@@ -57,18 +57,20 @@
   <img class="logo" src="ostral-logo-light.svg" alt="Ostral">
   <div class="col">
     <p class="eyebrow">Ostral · Drone</p>
-    <h1>La technologie,<em>sans détour.</em></h1>
-    <p class="sub">Drone pliable avec caméra stabilisée orientable.</p>
-    <span class="cta">Découvrir le drone <b>→</b></span>
+    <h1 data-en="Technology,<em>made simple.</em>">La technologie,<em>sans détour.</em></h1>
+    <p class="sub" data-en="Foldable drone with a stabilized, tilting camera.">Drone pliable avec caméra stabilisée orientable.</p>
+    <span class="cta" data-en="Discover the drone <b>→</b>">Découvrir le drone <b>→</b></span>
   </div>
   <!-- Repères (positions calées sur le détourage) -->
   <div id="callouts"></div>
 </div>
+<script src="../film/lang.js"></script>
 <script>
+  applyLang();
   // [x, y] du repère sur le produit, [x, y] de l'étiquette, texte.
   const C = [
-    [[1305, 683], [1190, 965], "Caméra stabilisée orientable"],
-    [[1047, 646], [820, 850], "Bras repliables"],
+    [[1305, 683], [1190, 965], tr("Caméra stabilisée orientable", "Stabilized, tilting camera")],
+    [[1047, 646], [820, 850], tr("Bras repliables", "Folding arms")],
   ];
   const root = document.getElementById("callouts");
   for (const [[px, py], [lx, ly], text] of C) {

@@ -3,20 +3,24 @@ import { z } from "zod";
 import type { BrandPalette, DirectionId } from "./theme/directions";
 
 export const SECTORS = [
-  { id: "beaute", label: "Beauté & cosmétique" },
-  { id: "mode", label: "Mode & accessoires" },
-  { id: "bijoux", label: "Bijoux & montres" },
-  { id: "maison", label: "Maison & décoration" },
-  { id: "hightech", label: "High-tech & gadgets" },
-  { id: "sport", label: "Sport & plein air" },
-  { id: "alimentation", label: "Alimentation & boissons" },
-  { id: "enfants", label: "Bébé & enfants" },
-  { id: "animaux", label: "Animaux" },
-  { id: "artisanat", label: "Artisanat & papeterie" },
+  { id: "beaute", label: "Beauté & cosmétique", labelEn: "Beauty & cosmetics" },
+  { id: "mode", label: "Mode & accessoires", labelEn: "Fashion & accessories" },
+  { id: "bijoux", label: "Bijoux & montres", labelEn: "Jewelry & watches" },
+  { id: "maison", label: "Maison & décoration", labelEn: "Home & decor" },
+  { id: "hightech", label: "High-tech & gadgets", labelEn: "Tech & gadgets" },
+  { id: "sport", label: "Sport & plein air", labelEn: "Sports & outdoors" },
+  { id: "alimentation", label: "Alimentation & boissons", labelEn: "Food & drinks" },
+  { id: "enfants", label: "Bébé & enfants", labelEn: "Baby & kids" },
+  { id: "animaux", label: "Animaux", labelEn: "Pets" },
+  { id: "artisanat", label: "Artisanat & papeterie", labelEn: "Crafts & stationery" },
 ] as const;
 export type SectorId = (typeof SECTORS)[number]["id"];
 export const SECTOR_IDS = SECTORS.map((s) => s.id) as [SectorId, ...SectorId[]];
-export const sectorLabel = (id?: string | null) => SECTORS.find((s) => s.id === id)?.label ?? "Non déterminé";
+/** Libellé du secteur dans la langue demandée (français par défaut). Fichier partagé navigateur/serveur : la langue est un paramètre. */
+export const sectorLabel = (id?: string | null, lang: "fr" | "en" = "fr") => {
+  const s = SECTORS.find((x) => x.id === id);
+  return s ? (lang === "en" ? s.labelEn : s.label) : lang === "en" ? "Not determined" : "Non déterminé";
+};
 
 export const FactSchema = z.object({
   key: z.string(),
@@ -91,11 +95,13 @@ export type Strategy = {
 
 /** Type de boutique : un produit phare, un catalogue varié, ou une niche (plusieurs produits d'un même univers). */
 export type StoreType = "mono" | "multi" | "niche";
-export const STORE_TYPES: Record<StoreType, { label: string; hint: string }> = {
-  mono: { label: "Mono-produit", hint: "Un produit phare, toute la boutique raconte son histoire." },
-  multi: { label: "Multi-produit", hint: "Un catalogue varié, organisé en collections." },
-  niche: { label: "Niche", hint: "Plusieurs produits d'un même univers, pour une communauté précise." },
+export const STORE_TYPES: Record<StoreType, { label: string; hint: string; en: { label: string; hint: string } }> = {
+  mono: { label: "Mono-produit", hint: "Un produit phare, toute la boutique raconte son histoire.", en: { label: "Single product", hint: "One hero product: the whole store tells its story." } },
+  multi: { label: "Multi-produit", hint: "Un catalogue varié, organisé en collections.", en: { label: "Multi-product", hint: "A varied catalog, organized into collections." } },
+  niche: { label: "Niche", hint: "Plusieurs produits d'un même univers, pour une communauté précise.", en: { label: "Niche", hint: "Several products from the same world, for a specific community." } },
 };
+/** Libellé et explication d'un type de boutique dans la langue demandée. */
+export const storeTypeInfo = (t: StoreType, lang: "fr" | "en" = "fr") => (lang === "en" ? STORE_TYPES[t].en : { label: STORE_TYPES[t].label, hint: STORE_TYPES[t].hint });
 
 /** Produit du catalogue (en plus du produit principal analysé en détail). */
 export type CatalogItem = {
@@ -117,6 +123,8 @@ export type ProjectSettings = {
   timezone: string;
   autopublish: { enabled: boolean; networks: string[]; requireApprovalFor: string[] };
   socialLinks?: Partial<Record<"instagram" | "tiktok" | "facebook" | "youtube" | "pinterest", string>>;
+  /** Langue des contenus créés pour ce projet (boutique, images, vidéos, publications…). Français par défaut. */
+  language?: "fr" | "en";
 };
 
 export const emptyProduct = (): ProductProfile => ({

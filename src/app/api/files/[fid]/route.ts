@@ -5,6 +5,7 @@ import { body, handle, ok } from "@/lib/http";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
 import { getAsset, publicAssetSummary, usagesOf, type Asset } from "@/lib/library";
 import { storagePath } from "@/lib/storage";
+import { L } from "@/lib/i18n-server";
 
 export const runtime = "nodejs";
 
@@ -12,7 +13,7 @@ async function assetOf(ctx: { params: Promise<{ fid: string }> }) {
   const user = await requireUser();
   const { fid } = await ctx.params;
   const a = getAsset(fid);
-  if (!a) throw new HttpError(404, "Fichier introuvable.");
+  if (!a) throw new HttpError(404, L("Fichier introuvable.", "File not found."));
   ownedProject(user, a.project_id);
   return a;
 }
@@ -56,7 +57,7 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ fid: s
   const b = await body(req, z.object({ name: z.string().trim().min(1).max(200).optional(), folderId: z.string().nullable().optional(), status: z.enum(["ready", "review", "approved", "rejected"]).optional(), starred: z.boolean().optional(), restore: z.boolean().optional() }));
   if (b.name) run("UPDATE assets SET name = ? WHERE id = ?", b.name, a.id);
   if (b.folderId !== undefined) {
-    if (b.folderId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", b.folderId, a.project_id)) throw new HttpError(404, "Dossier introuvable.");
+    if (b.folderId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", b.folderId, a.project_id)) throw new HttpError(404, L("Dossier introuvable.", "Folder not found."));
     run("UPDATE assets SET folder_id = ? WHERE id = ?", b.folderId, a.id);
   }
   if (b.status) run("UPDATE assets SET status = ? WHERE id = ?", b.status, a.id);
@@ -70,8 +71,8 @@ export const DELETE = handle(async (_req: Request, ctx: { params: Promise<{ fid:
   const a = await assetOf(ctx);
   const used = all<{ target_type: string; target_id: string }>("SELECT target_type, target_id FROM asset_usages WHERE asset_id = ?", a.id);
   const blocking = used.filter((u) => u.target_type === "post" && one("SELECT 1 FROM posts WHERE id = ? AND status IN ('scheduled','publishing','published')", u.target_id));
-  if (blocking.length) throw new HttpError(409, "Ce média est utilisé par une publication programmée ou publiée : retirez-le d'abord de la publication.");
-  if (a.role === "original" && json<any>(a.meta, {}).protected) throw new HttpError(409, "Original protégé.");
+  if (blocking.length) throw new HttpError(409, L("Ce média est utilisé par une publication programmée ou publiée : retirez-le d'abord de la publication.", "This media is used by a scheduled or published post: remove it from the post first."));
+  if (a.role === "original" && json<any>(a.meta, {}).protected) throw new HttpError(409, L("Original protégé.", "Protected original."));
   run("UPDATE assets SET deleted_at = ? WHERE id = ?", now(), a.id);
   return ok({ usages: used.length });
 });

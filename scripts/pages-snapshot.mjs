@@ -22,18 +22,25 @@ let html = "";
 /** Pages statiques publiées avec l'accueil (pages légales). */
 const PAGES = ["mentions-legales", "conditions", "confidentialite", "cookies", "contact"];
 const pages = {};
+const pagesEn = {};
 try {
   for (let i = 0; i < 60 && !html; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     try {
-      const res = await fetch(`http://127.0.0.1:${PORT}${BASE}`);
+      const res = await fetch(`http://127.0.0.1:${PORT}${BASE}`, { headers: { cookie: "ecs-lang=fr" } });
       if (res.ok) html = await res.text();
     } catch {}
   }
   for (const p of PAGES) {
-    const res = await fetch(`http://127.0.0.1:${PORT}${BASE}/${p}`);
+    const res = await fetch(`http://127.0.0.1:${PORT}${BASE}/${p}`, { headers: { cookie: "ecs-lang=fr" } });
     if (!res.ok) throw new Error(`Page ${p} : ${res.status}`);
     pages[p] = await res.text();
+  }
+  // Version anglaise (cookie de langue) publiée sous /en/.
+  for (const p of ["", ...PAGES]) {
+    const res = await fetch(`http://127.0.0.1:${PORT}${BASE}${p ? `/${p}` : ""}`, { headers: { cookie: "ecs-lang=en" } });
+    if (!res.ok) throw new Error(`Page en/${p} : ${res.status}`);
+    pagesEn[p] = await res.text();
   }
 } finally {
   process.kill(-server.pid); // tout le groupe : next démarre ses propres processus
@@ -47,6 +54,12 @@ fs.writeFileSync(path.join(OUT, "index.html"), prefix(html));
 for (const [p, h] of Object.entries(pages)) {
   fs.mkdirSync(path.join(OUT, p), { recursive: true });
   fs.writeFileSync(path.join(OUT, p, "index.html"), prefix(h));
+}
+// Pages anglaises : liens internes (accueil, pages légales) vers leur version /en/.
+const toEn = (h) => h.replace(new RegExp(`href="${BASE}(/(?:${[...PAGES, "studio", "inscription", "connexion"].join("|")}))?/?(#[^"]*)?"`, "g"), (_m, p = "", hash = "") => `href="${BASE}/en${p}/${hash}"`);
+for (const [p, h] of Object.entries(pagesEn)) {
+  fs.mkdirSync(path.join(OUT, "en", p), { recursive: true });
+  fs.writeFileSync(path.join(OUT, "en", p, "index.html"), toEn(prefix(h)));
 }
 fs.cpSync("public", OUT, { recursive: true });
 fs.cpSync(path.join(".next-pages", "static"), path.join(OUT, "_next", "static"), { recursive: true });
@@ -76,6 +89,20 @@ a.ghost{display:block;text-align:center;color:var(--fg);border:1px solid var(--l
 for (const r of ["studio", "inscription", "connexion"]) {
   fs.mkdirSync(path.join(OUT, r), { recursive: true });
   fs.writeFileSync(path.join(OUT, r, "index.html"), studio);
+}
+const studioEn = studio
+  .replace('lang="fr"', 'lang="en"')
+  .replace("Ouvrir le studio — E-COM STUDIO IA", "Open the studio — E-COM STUDIO IA")
+  .replace("Le studio s'ouvre dans GitHub Codespaces", "The studio opens in GitHub Codespaces")
+  .replace("Cette page GitHub est une vitrine : elle ne peut pas faire tourner le studio, qui a besoin d'un serveur (base de données, création des images et vidéos).", "This GitHub page is a showcase: it can't run the studio, which needs a server (database, image and video creation).")
+  .replace("Touchez « Ouvrir le studio » et connectez-vous à GitHub.", "Tap “Open the studio” and sign in to GitHub.")
+  .replace("Patientez 2 à 3 minutes : l'installation et le démarrage sont automatiques.", "Wait 2 to 3 minutes: installation and startup are automatic.")
+  .replace("Le studio s'affiche dans un onglet (port 3000).", "The studio opens in a tab (port 3000).")
+  .replace(">Ouvrir le studio</a>", ">Open the studio</a>")
+  .replace(`href="${BASE}/">Retour à l'accueil`, `href="${BASE}/en/">Back to home`);
+for (const r of ["studio", "inscription", "connexion"]) {
+  fs.mkdirSync(path.join(OUT, "en", r), { recursive: true });
+  fs.writeFileSync(path.join(OUT, "en", r, "index.html"), studioEn);
 }
 fs.writeFileSync(path.join(OUT, "404.html"), studio.replace("Le studio s'ouvre dans GitHub Codespaces", "Cette page fait partie du studio"));
 fs.writeFileSync(path.join(OUT, ".nojekyll"), "");

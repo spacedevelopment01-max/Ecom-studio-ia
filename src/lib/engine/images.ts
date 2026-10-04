@@ -17,6 +17,7 @@ import { llmConfigured } from "../ai/llm";
 import { geminiPlate, imageProviderAvailable, openaiScene } from "../ai/media-providers";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
+import { C, L } from "../i18n-server";
 
 export function latestAsset(projectId: string, role: string): Asset | undefined {
   return one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role);
@@ -37,7 +38,7 @@ export function palette(p: Project) {
   return p.brand?.palette ?? { primary: "#6E5644", secondary: "#E6DACB", accent: "#B98B5E", light: "#F6F2EC", dark: "#1C1713" };
 }
 
-const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "produit";
+const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
 
 /** Ligne d'accroche courte pour les visuels (au plus ~60 caractères, coupée sur une virgule ou un mot). */
 export function shortLine(text: string, max = 60): string {
@@ -58,7 +59,7 @@ export async function ensureCutouts(ctx: JobContext | null, project: Project): P
       out.push(existing);
       continue;
     }
-    ctx?.progress(0.05 + (i / Math.max(1, originals.length)) * 0.3, `Détourage de la photo ${i + 1}/${originals.length}`);
+    ctx?.progress(0.05 + (i / Math.max(1, originals.length)) * 0.3, L(`Détourage de la photo ${i + 1}/${originals.length}`, `Cutting out photo ${i + 1}/${originals.length}`));
     const cut = await cutoutProduct(assetData(o));
     const colors = await extractPalette(cut.png);
     out.push(
@@ -66,13 +67,13 @@ export async function ensureCutouts(ctx: JobContext | null, project: Project): P
         projectId: project.id,
         userId: project.userId,
         data: cut.png,
-        name: `${slug(project.product.name || project.name)}-detoure-${i + 1}.png`,
+        name: `${slug(project.product.name || project.name)}-${C("detoure", "cutout")}-${i + 1}.png`,
         mime: "image/png",
         role: "cutout",
         folderKey: "product.cutouts",
         origin: "generated",
         sourceAssetId: o.id,
-        meta: { method: cut.method === "model" ? "Détourage local (modèle embarqué)" : "Détourage local (fond uni)", bbox: cut.bbox, source: { w: cut.sourceW, h: cut.sourceH }, colors },
+        meta: { method: cut.method === "model" ? L("Détourage local (modèle embarqué)", "Local cutout (built-in model)") : L("Détourage local (fond uni)", "Local cutout (plain background)"), bbox: cut.bbox, source: { w: cut.sourceW, h: cut.sourceH }, colors },
       }),
     );
   }
@@ -85,7 +86,7 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
   const provider = imageProviderAvailable();
   if (!provider) return null;
   const brief = llmConfigured()
-    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? `PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}, format ${FORMATS[formatId].label}` : `${style}, format ${FORMATS[formatId].label}`)
+    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}, format ${FORMATS[formatId].label}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}, ${FORMATS[formatId].label} format`) : C(`${style}, format ${FORMATS[formatId].label}`, `${style}, ${FORMATS[formatId].label} format`))
     : lifestyle
       ? { prompt: `Authentic everyday lifestyle photograph: ${lifestyle}. Natural daylight, real home or outdoor setting, candid editorial style, shallow depth of field. People may appear naturally around the product without covering it. No text, no logos, no other branded products.`, surface: "", lightFrom: "left" as const }
       : { prompt: `${style} product photography set, soft natural light, ${project.brand?.palette.secondary ?? "neutral"} tones`, surface: "", lightFrom: "left" as const };
@@ -135,7 +136,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   let project = loadProject(projectId);
   const ictx: ImgCtx = { userId: project.userId, projectId, jobId: ctx.job.id };
   const cutouts = await ensureCutouts(ctx, project);
-  if (!cutouts.length) throw new Error("Aucune photo du produit : importez au moins une photo pour créer les images.");
+  if (!cutouts.length) throw new Error(L("Aucune photo du produit : importez au moins une photo pour créer les images.", "No product photo: upload at least one photo to create the images."));
   project = loadProject(projectId);
   const main = cutouts[0];
   const cutBuf = assetData(main);
@@ -151,22 +152,22 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   };
 
   await ctx.step("packshots", async () => {
-    ctx.progress(0.38, "Packshots fond blanc et fond de marque");
+    ctx.progress(0.38, L("Packshots fond blanc et fond de marque", "Packshots on white and on brand background"));
     const ids = [
-      await save(await renderPackshot(product), `${base}-packshot-blanc.jpg`, "packshot", "images.packshots", { recipe: "Packshot fond blanc, ombre de contact", fidelity: "pixels d'origine du produit" }),
-      await save(await renderPackshot(product, { background: pal.light }), `${base}-packshot-fond-marque.jpg`, "packshot", "images.packshots", { recipe: "Packshot fond de marque", fidelity: "pixels d'origine du produit" }),
+      await save(await renderPackshot(product), `${base}-packshot-${C("blanc", "white")}.jpg`, "packshot", "images.packshots", { recipe: L("Packshot fond blanc, ombre de contact", "Packshot on white, contact shadow"), fidelity: L("pixels d'origine du produit", "original product pixels") }),
+      await save(await renderPackshot(product, { background: pal.light }), `${base}-packshot-${C("fond-marque", "brand-background")}.jpg`, "packshot", "images.packshots", { recipe: L("Packshot fond de marque", "Packshot on brand background"), fidelity: L("pixels d'origine du produit", "original product pixels") }),
     ];
     return ids;
   });
 
   await ctx.step("details", async () => {
-    ctx.progress(0.45, "Détails produit (recadrages de la photo originale)");
+    ctx.progress(0.45, L("Détails produit (recadrages de la photo originale)", "Product details (crops of the original photo)"));
     const original = one<Asset>("SELECT * FROM assets WHERE id = ?", main.source_asset_id)!;
     const meta = JSON.parse(main.meta || "{}");
     const regions = project.product.visual && (project.product as any).detailRegions;
     const crops = await detailCrops(assetData(original), { png: cutBuf, width: product.width, height: product.height, bbox: meta.bbox, sourceW: meta.source.w, sourceH: meta.source.h, method: "model" }, regions);
     const ids: string[] = [];
-    for (const [i, c] of crops.entries()) ids.push(await save(c, `${base}-detail-${i + 1}.jpg`, "detail", "images.details", { recipe: "Recadrage haute définition de la photo originale (aucune génération)" }));
+    for (const [i, c] of crops.entries()) ids.push(await save(c, `${base}-detail-${i + 1}.jpg`, "detail", "images.details", { recipe: L("Recadrage haute définition de la photo originale (aucune génération)", "High-resolution crop of the original photo (nothing generated)") }));
     return ids;
   });
 
@@ -174,7 +175,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   const withAi = opts.withAi !== false && !!imageProviderAvailable();
   for (const [i, style] of styles.entries()) {
     await ctx.step(`scene:${style}`, async () => {
-      ctx.progress(0.5 + i * 0.08, `Mise en scène « ${style} »${withAi ? " (décor généré)" : ""}`);
+      ctx.progress(0.5 + i * 0.08, L(`Mise en scène « ${style} »${withAi ? " (décor généré)" : ""}`, `Staging "${style}"${withAi ? " (generated set)" : ""}`));
       let bg: Buffer | null = null;
       let provider = "local";
       let qc: unknown = null;
@@ -187,13 +188,13 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
               if (llmConfigured()) {
                 const check = await aiQcImage({ ...ictx, usageKey: `${ctx.job.id}:qc:${style}` }, assetData(one<Asset>("SELECT * FROM assets WHERE id = ?", main.source_asset_id)!), r.image);
                 qc = check;
-                if (!check.sameProduct || check.score < 6) throw new Error(`Contrôle de fidélité non concluant : ${check.issues.join(" ; ")}`);
+                if (!check.sameProduct || check.score < 6) throw new Error(L(`Contrôle de fidélité non concluant : ${check.issues.join(" ; ")}`, `Fidelity check failed: ${check.issues.join("; ")}`));
               }
-              const id = await save(await sharp(r.image).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}-ia.jpg`, "scene", "images.scenes", { recipe: `Décor peint par IA autour du produit réel (${style})`, provider: "OpenAI", qc });
+              const id = await save(await sharp(r.image).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}-${C("ia", "ai")}.jpg`, "scene", "images.scenes", { recipe: L(`Décor peint par IA autour du produit réel (${style})`, `AI-painted set around the real product (${style})`), provider: "OpenAI", qc });
               return [id];
             }
             bg = r.image;
-            provider = "Gemini (décor) + composition locale";
+            provider = L("Gemini (décor) + composition locale", "Gemini (set) + local compositing");
           }
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -201,7 +202,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
         }
       }
       const s = await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, background: bg ? await loadImage(bg) : null });
-      return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}.jpg`, "scene", "images.scenes", { recipe: `Mise en scène ${style}`, provider, qc })];
+      return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}.jpg`, "scene", "images.scenes", { recipe: L(`Mise en scène ${style}`, `Staging: ${style}`), provider, qc })];
     });
   }
 
@@ -210,14 +211,14 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     const contexts = LIFESTYLE[project.product.sector ?? ""] ?? LIFESTYLE.maison;
     for (const [i, situation] of contexts.entries()) {
       await ctx.step(`lifestyle:${i}`, async () => {
-        ctx.progress(0.7 + i * 0.02, "Photos du produit en situation");
+        ctx.progress(0.7 + i * 0.02, L("Photos du produit en situation", "Lifestyle product photos"));
         try {
           const r = await aiBackground(ictx, project, cutBuf, "lifestyle", i === 0 ? "landscape" : "product", `${ctx.job.id}:lifestyle:${i}`, situation);
           if (!r) return [];
           if (r.provider !== "openai") {
             // Gemini : décor de vie généré, produit réel posé dessus par la composition locale (ombres, sol).
             const s = await renderScene({ product, palette: pal, style: "spotlight", format: i === 0 ? FORMATS.landscape : FORMATS.product, seed: 31 + i, background: await loadImage(r.image) });
-            return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-en-situation-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: `Photo en situation : décor généré (${situation}) et produit réel composé`, provider: "Gemini + composition locale" })];
+            return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: L(`Photo en situation : décor généré (${situation}) et produit réel composé`, `Lifestyle photo: generated set (${situation}) with the real product composited`), provider: L("Gemini + composition locale", "Gemini + local compositing") })];
           }
           let qc: unknown = null;
           if (llmConfigured()) {
@@ -225,7 +226,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
             qc = check;
             if (!check.sameProduct || check.score < 6) return [];
           }
-          return [await save(await sharp(r.image).jpeg({ quality: 92 }).toBuffer(), `${base}-en-situation-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: `Photo en situation générée autour du produit réel : ${situation}`, provider: "OpenAI", qc })];
+          return [await save(await sharp(r.image).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: L(`Photo en situation générée autour du produit réel : ${situation}`, `Lifestyle photo generated around the real product: ${situation}`), provider: "OpenAI", qc })];
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[images] photo en situation indisponible :", (e as Error).message);
@@ -237,15 +238,15 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
 
   // Bannière publicitaire 16:9 de niveau agence (texte, produit, informations confirmées).
   const proBanner = async () => {
-    const r = await renderProCreatives({ product: cutBuf, palette: pal, typo: brandTypo(project), brand: project.brand?.name ?? project.name, headline: project.brand?.tagline || project.product.name || project.name, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: "Découvrir" }, [{ template: "signature", format: "landscape" }]).catch(() => null);
-    return r?.length ? [await save(r[0].jpg, `${base}-banniere-publicite-16x9.jpg`, "banner", "images.banners", { recipe: "Bannière publicitaire 16:9 (mise en page agence)" })] : [];
+    const r = await renderProCreatives({ product: cutBuf, palette: pal, typo: brandTypo(project), brand: project.brand?.name ?? project.name, headline: project.brand?.tagline || project.product.name || project.name, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: C("Découvrir", "Shop now") }, [{ template: "signature", format: "landscape" }]).catch(() => null);
+    return r?.length ? [await save(r[0].jpg, `${base}-${C("banniere-publicite", "ad-banner")}-16x9.jpg`, "banner", "images.banners", { recipe: L("Bannière publicitaire 16:9 (mise en page agence)", "16:9 ad banner (agency layout)") })] : [];
   };
   if (opts.banner !== false) {
     await ctx.step("banner", async () => {
-      ctx.progress(0.75, "Bannières de boutique");
+      ctx.progress(0.75, L("Bannières de boutique", "Store banners"));
       return [
-        await save(await renderBanner(product, pal, "studio", FORMATS.banner, 21), `${base}-banniere-studio.jpg`, "banner", "images.banners", { recipe: "Bannière 2:1 sans texte (textes dans le thème)" }),
-        await save(await renderBanner(product, pal, "color", FORMATS.landscape, 22), `${base}-banniere-couleur.jpg`, "banner", "images.banners", { recipe: "Bannière 16:9 fond de marque" }),
+        await save(await renderBanner(product, pal, "studio", FORMATS.banner, 21), `${base}-${C("banniere", "banner")}-studio.jpg`, "banner", "images.banners", { recipe: L("Bannière 2:1 sans texte (textes dans le thème)", "2:1 banner without text (text lives in the theme)") }),
+        await save(await renderBanner(product, pal, "color", FORMATS.landscape, 22), `${base}-${C("banniere-couleur", "banner-color")}.jpg`, "banner", "images.banners", { recipe: L("Bannière 16:9 fond de marque", "16:9 banner on brand background") }),
         ...(await proBanner()),
       ];
     });
@@ -253,8 +254,8 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
 
   if (opts.social !== false) {
     await ctx.step("social", async () => {
-      ctx.progress(0.85, "Visuels réseaux sociaux et publicités");
-      const headline = project.brand?.tagline || project.product.name || project.brand?.name || "Découvrir";
+      ctx.progress(0.85, L("Visuels réseaux sociaux et publicités", "Social media and ad visuals"));
+      const headline = project.brand?.tagline || project.product.name || project.brand?.name || C("Découvrir", "Discover");
       const sub = shortLine(project.product.summary ?? "");
       const brandName = project.brand?.name ?? project.name;
       const logoAsset = latestAsset(projectId, "logo");
@@ -268,7 +269,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
       const ids: string[] = [];
       // Visuels de niveau agence (mise en page HTML) quand un navigateur est disponible.
       const pro = await renderProCreatives(
-        { product: cutBuf, palette: pal, typo, brand: brandName, logo: null, headline, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: "Découvrir" },
+        { product: cutBuf, palette: pal, typo, brand: brandName, logo: null, headline, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: C("Découvrir", "Shop now") },
         [
           { template: "signature", format: "portrait" },
           { template: "editorial", format: "square" },
@@ -279,18 +280,18 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
       if (pro?.length) {
         for (const [k, r] of pro.entries()) {
           const role = k < 2 ? "social" : "ad";
-          ids.push(await save(r.jpg, `${base}-${role === "ad" ? "publicite" : "post"}-${r.label.replace(":", "x")}-${r.template}.jpg`, role, role === "ad" ? "images.ads" : "images.social", { recipe: `Visuel ${r.label} (${r.template})`, text: { headline }, format: r.label }));
+          ids.push(await save(r.jpg, `${base}-${role === "ad" ? C("publicite", "ad") : "post"}-${r.label.replace(":", "x")}-${r.template}.jpg`, role, role === "ad" ? "images.ads" : "images.social", { recipe: L(`Visuel ${r.label} (${r.template})`, `${r.label} visual (${r.template})`), text: { headline }, format: r.label }));
         }
         return ids;
       }
       for (const [fmt, layout, folder, role] of variants) {
-        const r = await renderCreative({ product, palette: pal, typo, format: FORMATS[fmt], layout, headline, subline: sub, cta: role === "ad" ? "Découvrir" : undefined, brand: brandName, logo, seed: ids.length + 3 });
-        ids.push(await save(r.jpg, `${base}-${role === "ad" ? "publicite" : "post"}-${FORMATS[fmt].label.replace(":", "x")}-${layout}.jpg`, role, folder, { recipe: `Visuel ${FORMATS[fmt].label} (${layout})`, text: { headline, sub }, safeArea: r.safe, minFontPx: r.minFontPx, format: FORMATS[fmt].label }));
+        const r = await renderCreative({ product, palette: pal, typo, format: FORMATS[fmt], layout, headline, subline: sub, cta: role === "ad" ? C("Découvrir", "Shop now") : undefined, brand: brandName, logo, seed: ids.length + 3 });
+        ids.push(await save(r.jpg, `${base}-${role === "ad" ? C("publicite", "ad") : "post"}-${FORMATS[fmt].label.replace(":", "x")}-${layout}.jpg`, role, folder, { recipe: L(`Visuel ${FORMATS[fmt].label} (${layout})`, `${FORMATS[fmt].label} visual (${layout})`), text: { headline, sub }, safeArea: r.safe, minFontPx: r.minFontPx, format: FORMATS[fmt].label }));
       }
       return ids;
     });
   }
-  ctx.progress(0.98, "Images prêtes");
+  ctx.progress(0.98, L("Images prêtes", "Images ready"));
   return { created };
 }
 
@@ -304,13 +305,13 @@ export function confirmedFacts(p: Project): string[] {
     const v = f.value.replace(/\.$/, "").trim();
     if (v.length <= 28) out.push(v);
   }
-  for (const v of p.product.variants ?? []) if (v.values.length > 1) out.push(`${v.values.length} ${v.name.toLowerCase()}${/[sx]$/.test(v.name) ? "" : "s"} au choix`);
+  for (const v of p.product.variants ?? []) if (v.values.length > 1) out.push(C(`${v.values.length} ${v.name.toLowerCase()}${/[sx]$/.test(v.name) ? "" : "s"} au choix`, `${v.values.length} ${v.name.toLowerCase()}${/s$/i.test(v.name) ? "" : "s"} available`));
   // Peu d'informations confirmées : le nom du produit sert de repère (jamais d'argument inventé).
   if (out.length < 2 && p.product.name) {
     // Nom long : les premiers mots, sans couper un mot.
     let short = "";
     for (const w of p.product.name.split(/\s+/)) if ((short + " " + w).trim().length <= 26) short = (short + " " + w).trim(); else break;
-    if (short) out.unshift(short.replace(/\s+(à|de|du|des|et|en|pour|avec)$/i, ""));
+    if (short) out.unshift(short.replace(C(/\s+(à|de|du|des|et|en|pour|avec)$/i, /\s+(a|an|the|of|and|in|for|with|to)$/i), ""));
   }
   return [...new Set(out)].slice(0, 3);
 }
@@ -328,7 +329,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
   const project = loadProject(projectId);
   const cutouts = await ensureCutouts(ctx, project);
   const cut = (req.sourceCutoutId && cutouts.find((c) => c.id === req.sourceCutoutId)) || cutouts[0];
-  if (!cut) throw new Error("Importez d'abord une photo du produit.");
+  if (!cut) throw new Error(L("Importez d'abord une photo du produit.", "Upload a product photo first."));
   const product = await loadImage(assetData(cut));
   const pal = palette(project);
   const fmt = FORMATS[req.format ?? (req.kind === "banner" ? "banner" : req.kind === "packshot" ? "packshot" : "portrait")];
@@ -338,7 +339,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
   let meta: Record<string, unknown> = {};
   let role: string = req.kind;
   let folder = "images.scenes";
-  ctx.progress(0.3, "Composition de l'image");
+  ctx.progress(0.3, L("Composition de l'image", "Composing the image"));
   if (req.kind === "packshot") {
     data = await renderPackshot(product, { format: fmt });
     folder = "images.packshots";
@@ -352,7 +353,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
       });
       if (r?.provider === "openai") {
         data = await sharp(Buffer.from(r.b64, "base64")).jpeg({ quality: 92 }).toBuffer();
-        const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-scene-ia-${Date.now()}.jpg`, mime: "image/jpeg", role: "scene", folderKey: "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe: "Décor peint par IA autour du produit réel", provider: "OpenAI" }, status: "review" });
+        const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-scene-${C("ia", "ai")}-${Date.now()}.jpg`, mime: "image/jpeg", role: "scene", folderKey: "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe: L("Décor peint par IA autour du produit réel", "AI-painted set around the real product"), provider: "OpenAI" }, status: "review" });
         return { assetId: a.id };
       }
       if (r) bg = Buffer.from(r.b64, "base64");
@@ -360,14 +361,14 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
     const s = await renderScene({ product, palette: pal, style: req.style ?? "studio", format: fmt, seed: Date.now() % 1000, background: bg ? await loadImage(bg) : null, offsetX: req.kind === "banner" ? 0.18 : 0 });
     data = await sharp(s.png).jpeg({ quality: 92 }).toBuffer();
     folder = req.kind === "banner" ? "images.banners" : "images.scenes";
-    meta = { recipe: `Scène ${req.style ?? "studio"}`, provider: bg ? "Décor IA + composition" : "local" };
+    meta = { recipe: L(`Scène ${req.style ?? "studio"}`, `Scene: ${req.style ?? "studio"}`), provider: bg ? L("Décor IA + composition", "AI set + compositing") : "local" };
   } else {
     const logoAsset = latestAsset(projectId, "logo");
     const r = await renderCreative({ product, palette: pal, typo: brandTypo(project), format: fmt, layout: req.layout ?? "editorial", headline: req.headline || project.brand?.tagline || project.product.name, subline: req.subline, cta: req.cta, brand: project.brand?.name ?? project.name, logo: logoAsset ? await loadImage(assetData(logoAsset)) : null, scene: req.style, seed: Date.now() % 1000 });
     data = r.jpg;
     folder = req.kind === "ad" ? "images.ads" : "images.social";
     role = req.kind;
-    meta = { recipe: `Visuel ${fmt.label}`, safeArea: r.safe, minFontPx: r.minFontPx, text: { headline: req.headline, sub: req.subline, cta: req.cta } };
+    meta = { recipe: L(`Visuel ${fmt.label}`, `${fmt.label} visual`), safeArea: r.safe, minFontPx: r.minFontPx, text: { headline: req.headline, sub: req.subline, cta: req.cta } };
   }
   const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${role}-${fmt.label.replace(":", "x")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role, folderKey: folder, origin: "generated", sourceAssetId: cut.id, meta: { ...meta, format: fmt.label }, status: "review" });
   return { assetId: a.id };

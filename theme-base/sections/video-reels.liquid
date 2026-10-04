@@ -8,7 +8,7 @@
       <figure class="es-reels__item" data-reel {{ block.shopify_attributes }}>
         <div class="es-reels__frame">
           {% render 'es-video', video: block.settings.video, asset: block.settings.video_asset, poster: block.settings.poster, poster_asset: block.settings.poster_asset, class: 'es-cover', autoplay: false, alt: block.settings.caption %}
-          <button type="button" class="es-reels__btn es-reels__btn--sound" data-reel-sound aria-pressed="false" aria-label="Activer le son"><span class="es-reels__muted">{% render 'icon', name: 'mute' %}</span><span class="es-reels__unmuted">{% render 'icon', name: 'sound' %}</span></button>
+          <button type="button" class="es-reels__btn es-reels__btn--sound" data-reel-sound aria-pressed="false" aria-label="{{ 'general.unmute' | t | escape }}"><span class="es-reels__muted">{% render 'icon', name: 'mute' %}</span><span class="es-reels__unmuted">{% render 'icon', name: 'sound' %}</span></button>
           <button type="button" class="es-reels__btn es-reels__btn--play" data-reel-play aria-label="{{ 'general.pause' | t }}"><span class="es-reels__pause" aria-hidden="true"></span></button>
         </div>
         {%- if block.settings.caption != blank -%}<figcaption class="es-reels__caption">{{ block.settings.caption }}</figcaption>{%- endif -%}

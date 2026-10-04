@@ -4,6 +4,8 @@
  */
 import { all, one } from "./db";
 import { balance, EUR, getSubscription, monthlyPriceEur } from "./billing";
+import { L, uiLang } from "./i18n-server";
+import { intlLocale } from "./i18n";
 
 const DAY = 86400_000;
 /** TVA française appliquée aux abonnements (le HT sert à la marge estimée). */
@@ -85,7 +87,7 @@ export function dashboard() {
     const end = new Date(ref.getFullYear(), ref.getMonth() - k + 1, 1).getTime();
     const r = all<{ kind: string; cents: number; n: number }>("SELECT kind, SUM(amount_cents) cents, COUNT(*) n FROM payments WHERE status = 'paid' AND created_at >= ? AND created_at < ? GROUP BY kind", start, end);
     months.push({
-      label: new Date(start).toLocaleDateString("fr-FR", { month: "long", year: "numeric" }),
+      label: new Date(start).toLocaleDateString(intlLocale(uiLang()), { month: "long", year: "numeric" }),
       subscriptionEur: (r.find((x) => x.kind === "subscription")?.cents ?? 0) / 100,
       topupEur: (r.find((x) => x.kind === "topup")?.cents ?? 0) / 100,
       payments: r.reduce((s, x) => s + x.n, 0),
@@ -127,7 +129,7 @@ export function dashboard() {
       marginEur: revenueHt30 - aiCost30 - fees30,
     },
     months,
-    lastPayments: lastPayments.map((p) => ({ id: p.id, email: p.email ?? "compte supprimé", kind: p.kind, amountEur: p.amount_cents / 100, status: p.status, at: p.created_at })),
+    lastPayments: lastPayments.map((p) => ({ id: p.id, email: p.email ?? L("compte supprimé", "deleted account"), kind: p.kind, amountEur: p.amount_cents / 100, status: p.status, at: p.created_at })),
     atRisk: subscribers.filter((r) => r.jobs30 === 0).slice(0, 10).map((r) => ({ email: r.email, lastActive: r.lastActive })),
     nearLimit: subscribers.filter((r) => r.usedPct >= 0.8).slice(0, 10).map((r) => ({ email: r.email, usedPct: r.usedPct * 100 })),
   };

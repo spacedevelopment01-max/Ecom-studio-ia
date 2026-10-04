@@ -5,6 +5,7 @@ import { FactSchema } from "@/lib/project-types";
 import { currentTheme, saveProduct, saveThemeVersion, remember } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { eachSection } from "@/lib/theme/spec";
+import { L } from "@/lib/i18n-server";
 
 /**
  * Mise à jour du produit. Une réponse à une question remplace uniquement les
@@ -47,7 +48,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       if (f) Object.assign(f, { value: a.answer, status: "confirmed", source: "user" });
       else prod.facts.push({ key: q.factKey, label: q.question.replace(/\?$/, ""), value: a.answer, status: "confirmed", source: "user" });
       const label = (f?.label ?? q.factKey).toLowerCase();
-      replacements.push({ needle: new RegExp(`\\[À compléter : [^\\]]*(${label.split(" ")[0]}|${q.factKey})[^\\]]*\\]`, "gi"), value: a.answer, label });
+      replacements.push({ needle: new RegExp(`\\[(?:À compléter :|To complete:) [^\\]]*(${label.split(" ")[0]}|${q.factKey})[^\\]]*\\]`, "gi"), value: a.answer, label });
     }
     remember(p.id, { kind: "fact", key: q.factKey, value: a.answer, source: "user" });
   }
@@ -71,7 +72,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
         for (const bl of Object.values(section.blocks ?? {})) for (const k of Object.keys(bl.settings)) bl.settings[k] = patch(bl.settings[k]);
       }
       if (changed) {
-        saveThemeVersion(p.id, spec, `Informations complétées : ${replacements.map((r) => r.label).join(", ")}`, "user");
+        saveThemeVersion(p.id, spec, L(`Informations complétées : ${replacements.map((r) => r.label).join(", ")}`, `Details completed: ${replacements.map((r) => r.label).join(", ")}`), "user");
         themeUpdated = true;
       }
     }

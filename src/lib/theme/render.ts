@@ -9,7 +9,9 @@ import { importedSectionSchema, schemaTranslator } from "./import";
 import path from "node:path";
 import { Drop, Hash, Liquid, Tokenizer, type Context, type Emitter, type TagToken, type TopLevelToken, type Template } from "liquidjs";
 import { compileTheme, type ThemeFiles } from "./compile";
-import { parseSchemaBlock, storeProducts, withDefaults, type SectionInstance, type StoreProduct, type ThemeSpec } from "./spec";
+import { parseSchemaBlock, storeProducts, themeLang, withDefaults, type SectionInstance, type StoreProduct, type ThemeSpec } from "./spec";
+import { intlLocale, pick, type Lang } from "../i18n";
+import { L } from "../i18n-server";
 
 // ---------------------------------------------------------------- polices
 
@@ -92,11 +94,15 @@ export type PreviewOptions = {
 
 type ImageObj = { src: string; width: number; height: number; alt: string; id: string; aspect_ratio: number; media_type: "image" };
 
-function money(cents: unknown) {
-  if (cents === null || cents === undefined || cents === "") return "Prix à définir";
+const priceToSet = (lang: Lang) => pick(lang, "Prix à définir", "Price to be set");
+
+/** Prix en euros au format de la langue de la boutique : « 29,90 € » ou « €29.90 ». */
+function money(cents: unknown, lang: Lang = "fr") {
+  if (cents === null || cents === undefined || cents === "") return priceToSet(lang);
   const n = Number(cents);
-  if (!Number.isFinite(n)) return "Prix à définir";
-  return (n / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ /g, " ") + " €";
+  if (!Number.isFinite(n)) return priceToSet(lang);
+  const amount = (n / 100).toLocaleString(intlLocale(lang), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\u202f/g, " ");
+  return lang === "en" ? `€${amount}` : `${amount} €`;
 }
 
 function productDrop(sp: StoreProduct, pi: number, base: string) {
@@ -163,14 +169,14 @@ function productDrop(sp: StoreProduct, pi: number, base: string) {
 /** Identifiant de variante unique dans la boutique : 1000 × (rang du produit + 1) + rang de la variante. */
 export const variantId = (productIndex: number, variantIndex: number) => 1000 * (productIndex + 1) + variantIndex;
 
-const SORTS = [
-  { value: "manual", name: "En vedette" },
-  { value: "price-ascending", name: "Prix croissant" },
-  { value: "price-descending", name: "Prix décroissant" },
-  { value: "created-descending", name: "Nouveautés" },
+const SORTS = (lang: Lang) => [
+  { value: "manual", name: pick(lang, "En vedette", "Featured") },
+  { value: "price-ascending", name: pick(lang, "Prix croissant", "Price, low to high") },
+  { value: "price-descending", name: pick(lang, "Prix décroissant", "Price, high to low") },
+  { value: "created-descending", name: pick(lang, "Nouveautés", "Newest") },
 ];
 
-function collectionDrop(handle: string, title: string, description: string, products: any[], base: string, image?: string) {
+function collectionDrop(handle: string, title: string, description: string, products: any[], base: string, image?: string, lang: Lang = "fr") {
   return {
     id: handle,
     title,
@@ -181,7 +187,7 @@ function collectionDrop(handle: string, title: string, description: string, prod
     products_count: products.length,
     all_products_count: products.length,
     filters: [],
-    sort_options: SORTS,
+    sort_options: SORTS(lang),
     sort_by: "manual",
     default_sort_by: "manual",
     featured_image: image ? { src: `${base}/assets/${image}`, width: 1600, height: 2000, alt: title, aspect_ratio: 0.8 } : products[0]?.featured_image ?? null,
@@ -191,12 +197,13 @@ function collectionDrop(handle: string, title: string, description: string, prod
 
 function buildStore(opts: PreviewOptions, current: { product?: string; collection?: string } = {}) {
   const { spec, base } = opts;
+  const lang = themeLang(spec);
   const all = storeProducts(spec);
   const products = all.map((sp, pi) => productDrop(sp, pi, base));
   const byHandle = new Map(products.map((p) => [p.handle, p]));
   const product: any = (current.product && byHandle.get(current.product)) || products[0];
-  const allCollection = collectionDrop("all", "Tous les produits", "", products, base);
-  const extra = (spec.store.collections ?? []).map((c) => collectionDrop(c.handle, c.title, c.description, c.products.map((h) => byHandle.get(h)).filter(Boolean), base, c.image));
+  const allCollection = collectionDrop("all", pick(lang, "Tous les produits", "All products"), "", products, base, undefined, lang);
+  const extra = (spec.store.collections ?? []).map((c) => collectionDrop(c.handle, c.title, c.description, c.products.map((h) => byHandle.get(h)).filter(Boolean), base, c.image, lang));
   const collections: any = [...extra, allCollection];
   collections.all = allCollection;
   for (const c of extra) collections[c.handle] = c;
@@ -245,7 +252,7 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     name: spec.store.shopName,
     url: base,
     description: spec.store.shopName,
-    money_format: "{{amount_with_comma_separator}} €",
+    money_format: lang === "en" ? "€{{amount}}" : "{{amount_with_comma_separator}} €",
     customer_accounts_enabled: false,
     policies,
     enabled_payment_types: ["visa", "master", "american_express", "paypal", "apple_pay", "google_pay"],
@@ -291,9 +298,10 @@ function wrapSettings(values: Record<string, unknown>, base: string, schemaTypes
 
 export type RenderResult = { html: string; status: number; template: string };
 
-/** Traductions du thème : français d'abord, puis la langue par défaut du thème (thèmes importés). */
-const LOCALE = (files: ThemeFiles) => {
-  const key = ["locales/fr.default.json", "locales/fr.json", "locales/fr-FR.json", "locales/en.default.json"].find((k) => files.has(k)) ?? [...files.keys()].find((k) => /^locales\/[a-z-]+\.default\.json$/.test(k));
+/** Traductions du thème : langue de la boutique d'abord, puis la langue par défaut du thème (thèmes importés). */
+const LOCALE = (files: ThemeFiles, lang: Lang) => {
+  const own = (l: Lang) => [`locales/${l}.default.json`, `locales/${l}.json`, ...[...files.keys()].filter((k) => new RegExp(`^locales/${l}-[A-Za-z]+(\\.default)?\\.json$`).test(k))];
+  const key = [...own(lang), ...[...files.keys()].filter((k) => /^locales\/[a-z-]+\.default\.json$/.test(k)), ...own(lang === "fr" ? "en" : "fr")].find((k) => files.has(k));
   try {
     return key ? JSON.parse(stripComment(files.get(key)!)) : {};
   } catch {
@@ -323,8 +331,8 @@ function withWidth(url: string, w: number) {
   return url.includes("?") ? `${url}&width=${w}` : `${url}?width=${w}`;
 }
 
-export function createEngine(files: ThemeFiles, base: string) {
-  const locale = LOCALE(files);
+export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr") {
+  const locale = LOCALE(files, lang);
   const norm = (p: string) => p.replace(/^\/+/, "");
   const liquid = new Liquid({
     fs: {
@@ -403,7 +411,7 @@ export function createEngine(files: ThemeFiles, base: string) {
         .on("tag:endstyle", () => stream.stop())
         .on("template", (tpl: Template) => this.tpls.push(tpl))
         .on("end", () => {
-          throw new Error("La balise style n'est pas fermée.");
+          throw new Error(L("La balise style n'est pas fermée.", "The style tag isn't closed."));
         });
       stream.start();
     },
@@ -426,7 +434,7 @@ export function createEngine(files: ThemeFiles, base: string) {
         .on("tag:endform", () => stream.stop())
         .on("template", (tpl: Template) => this.tpls.push(tpl))
         .on("end", () => {
-          throw new Error("La balise form n'est pas fermée.");
+          throw new Error(L("La balise form n'est pas fermée.", "The form tag isn't closed."));
         });
       stream.start();
     },
@@ -464,7 +472,7 @@ export function createEngine(files: ThemeFiles, base: string) {
         .on("tag:endpaginate", () => stream.stop())
         .on("template", (tpl: Template) => this.tpls.push(tpl))
         .on("end", () => {
-          throw new Error("La balise paginate n'est pas fermée.");
+          throw new Error(L("La balise paginate n'est pas fermée.", "The paginate tag isn't closed."));
         });
       stream.start();
       this.args = token.args;
@@ -528,9 +536,9 @@ export function createEngine(files: ThemeFiles, base: string) {
     return `<img src="${url}"${srcset}${attr("sizes", o.sizes)}${attr("alt", o.alt ?? "")}${attr("class", o.class)}${attr("loading", o.loading ?? "lazy")}${attr("fetchpriority", o.fetchpriority)} decoding="async">`;
   });
   f("placeholder_svg_tag", (name: string, cls = "") => placeholderSvg(name, cls));
-  f("money", money);
-  f("money_with_currency", (c: unknown) => (c === null || c === undefined ? "Prix à définir" : `${money(c)} EUR`));
-  f("money_without_currency", (c: unknown) => (c === null || c === undefined ? "" : (Number(c) / 100).toFixed(2).replace(".", ",")));
+  f("money", (c: unknown) => money(c, lang));
+  f("money_with_currency", (c: unknown) => (c === null || c === undefined ? priceToSet(lang) : `${money(c, lang)} EUR`));
+  f("money_without_currency", (c: unknown) => (c === null || c === undefined ? "" : lang === "en" ? (Number(c) / 100).toFixed(2) : (Number(c) / 100).toFixed(2).replace(".", ",")));
   f("t", (key: string, ...args: any[]) => translate(locale, key, Object.fromEntries(args.filter(Array.isArray))));
   f("font_face", (font: unknown) => {
     if (!(font instanceof FontDrop)) return "";
@@ -552,14 +560,14 @@ export function createEngine(files: ThemeFiles, base: string) {
     const label: Record<string, string> = { visa: "VISA", master: "MC", american_express: "AMEX", paypal: "PayPal", apple_pay: "Pay", google_pay: "GPay" };
     return `<svg class="${o.class ?? ""}" viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="${type}"><rect x=".5" y=".5" width="37" height="23" rx="3" fill="#fff" stroke="#ccc"/><text x="19" y="15.5" text-anchor="middle" font-size="7" font-family="Arial" font-weight="700" fill="#333">${label[type] ?? type}</text></svg>`;
   });
-  f("payment_button", () => `<div class="shopify-payment-button"><button type="button" class="es-button es-button--secondary es-button--full" disabled title="Affiché par Shopify sur la boutique réelle">Paiement accéléré (Shop Pay, Apple Pay…)</button></div>`);
+  f("payment_button", () => `<div class="shopify-payment-button"><button type="button" class="es-button es-button--secondary es-button--full" disabled title="${pick(lang, "Affiché par Shopify sur la boutique réelle", "Displayed by Shopify on the live store")}">${pick(lang, "Paiement accéléré (Shop Pay, Apple Pay…)", "Express checkout (Shop Pay, Apple Pay…)")}</button></div>`);
   f("handleize", (s: string) => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
   f("handle", (s: string) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "-"));
   f("link_to", (text: string, url: string) => `<a href="${url}">${text}</a>`);
   f("within", (url: string) => url);
   f("time_tag", (d: unknown) => {
     const date = d ? new Date(String(d)) : new Date();
-    return `<time datetime="${date.toISOString()}">${date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</time>`;
+    return `<time datetime="${date.toISOString()}">${date.toLocaleDateString(lang === "en" ? "en-US" : intlLocale(lang), { day: "numeric", month: "long", year: "numeric" })}</time>`;
   });
   f("format_address", () => "");
   f("format_code", (s: string) => s);
@@ -606,10 +614,12 @@ function stripComment(s: string) {
 }
 
 /** Schéma d'une section, valeurs par défaut « t:… » traduites avec les fichiers de langue du thème (comme Shopify). */
-const translators = new WeakMap<ThemeFiles, (v: unknown) => unknown>();
-function sectionSchemaOf(files: ThemeFiles, source: string) {
-  let tr = translators.get(files);
-  if (!tr) translators.set(files, (tr = schemaTranslator(files)));
+const translators = new WeakMap<ThemeFiles, Map<Lang, (v: unknown) => unknown>>();
+function sectionSchemaOf(files: ThemeFiles, source: string, lang: Lang) {
+  let byLang = translators.get(files);
+  if (!byLang) translators.set(files, (byLang = new Map()));
+  let tr = byLang.get(lang);
+  if (!tr) byLang.set(lang, (tr = schemaTranslator(files, lang)));
   return importedSectionSchema(source, tr);
 }
 
@@ -619,7 +629,7 @@ function* renderSectionGen(engine: Liquid, ctx: Context, emitter: Emitter, files
     emitter.write(`<!-- section introuvable : ${inst.type} -->`);
     return;
   }
-  const schema = sectionSchemaOf(files, source) ?? { name: inst.type, settings: [], blocks: [] };
+  const schema = sectionSchemaOf(files, source, ((ctx.getAll() as any).__lang as Lang | undefined) ?? "fr") ?? { name: inst.type, settings: [], blocks: [] };
   const base = (ctx.getAll() as any).__base as string;
   const resolve = (ctx.getAll() as any).__resolve as ((type: string, v: unknown) => unknown) | undefined;
   const types = new Map<string, string>();
@@ -689,7 +699,8 @@ export function routeFor(spec: ThemeSpec, pathname: string, search: URLSearchPar
 
 export async function renderPage(opts: PreviewOptions, pathname: string, search: URLSearchParams): Promise<RenderResult> {
   const files = opts.files ?? compileTheme(opts.spec);
-  const engine = createEngine(files, opts.base);
+  const lang = themeLang(opts.spec);
+  const engine = createEngine(files, opts.base, lang);
   const route = routeFor(opts.spec, pathname, search);
   const tplKey = route.template;
   const store = buildStore(opts, { product: tplKey === "product" ? route.handle : undefined, collection: tplKey === "collection" ? route.handle : undefined });
@@ -713,7 +724,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   let pageTitle = opts.spec.store.shopName;
   if (route.handle?.startsWith("policy:")) {
     const pol = store.policies.find((p) => p.url.endsWith(route.handle!.slice(7)));
-    page = { title: pol?.title ?? "Politique", content: pol?.body ?? "", handle: route.handle };
+    page = { title: pol?.title ?? pick(lang, "Politique", "Policy"), content: pol?.body ?? "", handle: route.handle };
     pageTitle = page.title;
   } else if (tplKey.startsWith("page")) {
     const sp = opts.spec.store.pages.find((x) => x.handle === route.handle);
@@ -721,13 +732,14 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     pageTitle = sp?.title ?? pageTitle;
   } else if (tplKey === "product") pageTitle = store.product.title;
   else if (tplKey === "collection") pageTitle = store.collection.title;
-  else if (tplKey === "404") pageTitle = "Page introuvable";
+  else if (tplKey === "404") pageTitle = pick(lang, "Page introuvable", "Page not found");
 
   const q = route.search ?? "";
   const results = q ? store.products.filter((p: any) => `${p.title} ${p.description}`.toLowerCase().includes(q.toLowerCase())).map((p: any) => ({ ...p, object_type: "product" })) : [];
   const collected = { css: [] as string[], js: [] as string[] };
   const scope: Record<string, unknown> = {
     __base: opts.base,
+    __lang: lang,
     __collected: collected,
     __resolve: store.resolve,
     settings: globalSettings,
@@ -745,14 +757,14 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     recommendations: { performed: store.recommendations.length > 0, products: store.recommendations, products_count: store.recommendations.length },
     all_products: Object.fromEntries(store.products.map((p: any) => [p.handle, p])),
     customer: null,
-    request: { page_type: tplKey.split(".")[0], locale: { iso_code: "fr" }, origin: "", design_mode: false, path: pathname, host: "apercu" },
+    request: { page_type: tplKey.split(".")[0], locale: { iso_code: lang }, origin: "", design_mode: false, path: pathname, host: "apercu" },
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },
     canonical_url: `${opts.base}${pathname}`,
     page_title: pageTitle,
     page_description: (tplKey === "product" ? store.product.description : opts.spec.store.product.description_html).replace(/<[^>]+>/g, " ").slice(0, 160),
     page_image: null,
     // Objet global attendu par les scripts des thèmes Shopify (Dawn : global.js, cart, animations).
-    content_for_header: `<script>window.Shopify=window.Shopify||{designMode:false,locale:"fr",country:"FR",currency:{active:"EUR",rate:"1.0"},routes:{root:"${opts.base}/"},shop:"apercu",theme:{name:"aperçu"}};</script>`,
+    content_for_header: `<script>window.Shopify=window.Shopify||{designMode:false,locale:"${lang}",country:"FR",currency:{active:"EUR",rate:"1.0"},routes:{root:"${opts.base}/"},shop:"apercu",theme:{name:"${pick(lang, "aperçu", "preview")}"}};</script>`,
     current_page: 1,
     current_tags: null,
     additional_checkout_buttons: false,
@@ -804,10 +816,11 @@ export async function renderSectionStandalone(engine: Liquid, files: ThemeFiles,
 export async function renderNamedSections(opts: PreviewOptions, names: string[], pathname: string): Promise<Record<string, string>> {
   const files = opts.files ?? compileTheme(opts.spec);
   void pathname;
-  const engine = createEngine(files, opts.base);
+  const lang = themeLang(opts.spec);
+  const engine = createEngine(files, opts.base, lang);
   const store = buildStore(opts);
   const out: Record<string, string> = {};
-  const scope: Record<string, unknown> = { __base: opts.base, __collected: { css: [], js: [] }, __resolve: store.resolve, settings: {}, shop: store.shop, routes: store.routes, cart: store.cart, linklists: store.linklists };
+  const scope: Record<string, unknown> = { __base: opts.base, __lang: lang, __collected: { css: [], js: [] }, __resolve: store.resolve, settings: {}, shop: store.shop, routes: store.routes, cart: store.cart, linklists: store.linklists };
   for (const name of names) {
     out[name] = await renderSectionStandalone(engine, files, scope, name, { type: name, settings: {} }, "static");
   }

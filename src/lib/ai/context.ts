@@ -6,6 +6,8 @@
 import { all } from "../db";
 import { memory, type Project } from "../projects";
 import { sectorLabel } from "../project-types";
+import { contentLang } from "../i18n-server";
+import { placeholder } from "./prompts";
 
 export function projectContext(p: Project, scope: "all" | "shop" | "images" | "video" | "social" | "brand" = "all"): string {
   const out: string[] = ["<contexte_projet>"];
@@ -19,7 +21,7 @@ export function projectContext(p: Project, scope: "all" | "shop" | "images" | "v
   const unknown = pr.facts.filter((f) => f.status === "unknown");
   if (confirmed.length) out.push(`Faits CONFIRMÉS (utilisables tels quels) :\n${confirmed.map((f) => `- ${f.label} : ${f.value} [source : ${f.source}]`).join("\n")}`);
   if (inferred.length) out.push(`Observations VISUELLES (à formuler avec prudence, jamais comme une promesse) :\n${inferred.map((f) => `- ${f.label} : ${f.value}`).join("\n")}`);
-  if (unknown.length) out.push(`INCONNUES (ne jamais inventer ; écrire « [À compléter : …] » si nécessaire) :\n${unknown.map((f) => `- ${f.label}`).join("\n")}`);
+  if (unknown.length) out.push(`INCONNUES (ne jamais inventer ; écrire « ${placeholder(contentLang())} » si nécessaire) :\n${unknown.map((f) => `- ${f.label}`).join("\n")}`);
   if (pr.price.amount !== null) out.push(`Prix confirmé : ${(pr.price.amount / 100).toFixed(2)} ${pr.price.currency}`);
   else out.push(`Prix : inconnu`);
   if (pr.variants.length) out.push(`Variantes : ${pr.variants.map((v) => `${v.name} (${v.values.join(", ")})`).join(" ; ")}`);

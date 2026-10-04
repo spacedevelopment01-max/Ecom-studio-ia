@@ -7,6 +7,7 @@ import crypto from "node:crypto";
 import { id, now, one, run } from "./db";
 import { creditTopup, getSubscription, syncAllowance, OFFER, monthlyPriceEur } from "./billing";
 import { appUrl, getSetting, setSetting } from "./settings";
+import { L, uiLang } from "./i18n-server";
 
 export function stripeKeys() {
   return { secret: getSetting("stripe.secretKey"), webhookSecret: getSetting("stripe.webhookSecret") };
@@ -19,10 +20,10 @@ export function paymentsLive(): boolean {
 
 async function stripe(path: string, params: Record<string, string>) {
   const { secret } = stripeKeys();
-  if (!secret) throw new Error("Paiement en ligne non configuré.");
+  if (!secret) throw new Error(L("Paiement en ligne non configuré.", "Online payment is not configured."));
   const r = await fetch(`https://api.stripe.com/v1/${path}`, { method: "POST", headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(params) });
   const j: any = await r.json();
-  if (!r.ok) throw new Error(`Stripe : ${j.error?.message ?? r.status}`);
+  if (!r.ok) throw new Error(L(`Stripe : ${j.error?.message ?? r.status}`, `Stripe: ${j.error?.message ?? r.status}`));
   return j;
 }
 
@@ -38,13 +39,13 @@ export async function subscriptionCheckout(user: { id: string; email: string }, 
     "subscription_data[metadata][stores]": String(n),
     success_url: `${appUrl()}/studio/compte?paiement=ok`,
     cancel_url: `${appUrl()}/studio/compte?paiement=annule`,
-    locale: "fr",
+    locale: uiLang(),
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": "eur",
     "line_items[0][price_data][unit_amount]": String(Math.round(OFFER.basePriceEur * 100)),
     "line_items[0][price_data][tax_behavior]": "inclusive",
     "line_items[0][price_data][recurring][interval]": "month",
-    "line_items[0][price_data][product_data][name]": "E-COM STUDIO IA — boutique",
+    "line_items[0][price_data][product_data][name]": L("E-COM STUDIO IA — boutique", "E-COM STUDIO IA — store"),
   };
   if (n > 1) {
     Object.assign(params, {
@@ -53,7 +54,7 @@ export async function subscriptionCheckout(user: { id: string; email: string }, 
       "line_items[1][price_data][unit_amount]": String(Math.round(OFFER.extraStorePriceEur * 100)),
       "line_items[1][price_data][tax_behavior]": "inclusive",
       "line_items[1][price_data][recurring][interval]": "month",
-      "line_items[1][price_data][product_data][name]": "E-COM STUDIO IA — boutique supplémentaire",
+      "line_items[1][price_data][product_data][name]": L("E-COM STUDIO IA — boutique supplémentaire", "E-COM STUDIO IA — additional store"),
     });
   }
   const s = await stripe("checkout/sessions", params);
@@ -61,7 +62,7 @@ export async function subscriptionCheckout(user: { id: string; email: string }, 
 }
 
 export async function topupCheckout(user: { id: string; email: string }, amountEur: number) {
-  if (amountEur < 10 || amountEur % OFFER.topupStepEur !== 0 || amountEur > 1000) throw new Error("Les recharges se font par multiples de 10 € (jusqu'à 1 000 €).");
+  if (amountEur < 10 || amountEur % OFFER.topupStepEur !== 0 || amountEur > 1000) throw new Error(L("Les recharges se font par multiples de 10 € (jusqu'à 1 000 €).", "Top-ups must be in multiples of €10 (up to €1,000)."));
   const s = await stripe("checkout/sessions", {
     mode: "payment",
     customer_email: user.email,
@@ -70,12 +71,12 @@ export async function topupCheckout(user: { id: string; email: string }, amountE
     "metadata[amount_eur]": String(amountEur),
     success_url: `${appUrl()}/studio/compte?recharge=ok`,
     cancel_url: `${appUrl()}/studio/compte?recharge=annule`,
-    locale: "fr",
+    locale: uiLang(),
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": "eur",
     "line_items[0][price_data][unit_amount]": String(amountEur * 100),
     "line_items[0][price_data][tax_behavior]": "inclusive",
-    "line_items[0][price_data][product_data][name]": `Recharge de crédits de création : ${amountEur} €`,
+    "line_items[0][price_data][product_data][name]": L(`Recharge de crédits de création : ${amountEur} €`, `Creation credits top-up: €${amountEur}`),
   });
   return { url: s.url as string };
 }

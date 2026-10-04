@@ -19,6 +19,7 @@ import {
   type SectionInstance,
   type ThemeSpec,
 } from "./spec";
+import { L, uiLang } from "../i18n-server";
 
 const Position = z.object({ after: z.string().optional(), before: z.string().optional(), index: z.number().int().optional() }).optional();
 const Value = z.union([z.string(), z.number(), z.boolean(), z.null()]);
@@ -87,7 +88,7 @@ function validateSettings(spec: ThemeSpec, type: string, blockType: string | nul
   for (const [k, v] of Object.entries(values ?? {})) {
     const def = defs.find((d) => d.id === k);
     if (!def) {
-      errors.push(`réglage inconnu « ${k} » pour ${blockType ? `le bloc ${blockType}` : `la section ${type}`}`);
+      errors.push(L(`réglage inconnu « ${k} » pour ${blockType ? `le bloc ${blockType}` : `la section ${type}`}`, `unknown setting "${k}" for ${blockType ? `block ${blockType}` : `section ${type}`}`));
       continue;
     }
     const c = coerceSetting(def, v);
@@ -104,14 +105,14 @@ export function validateCustomSection(liquid: string): string | null {
     try {
       return parseSchemaBlock(liquid);
     } catch (e) {
-      return `schéma JSON invalide : ${(e as Error).message}`;
+      return L(`schéma JSON invalide : ${(e as Error).message}`, `invalid JSON schema: ${(e as Error).message}`);
     }
   })();
-  if (!schema) return "la section doit contenir un bloc {% schema %}";
+  if (!schema) return L("la section doit contenir un bloc {% schema %}", "the section must contain a {% schema %} block");
   if (typeof schema === "string") return schema;
-  if (!schema.name || schema.name.length > 25) return "le nom du schéma doit faire 25 caractères au plus";
-  if (/<script[^>]+src\s*=\s*["']?https?:/i.test(liquid)) return "les scripts externes ne sont pas autorisés dans les sections générées";
-  if (/\beval\s*\(|new\s+Function\s*\(|document\.cookie/i.test(liquid)) return "code JavaScript non autorisé (eval, Function, cookies)";
+  if (!schema.name || schema.name.length > 25) return L("le nom du schéma doit faire 25 caractères au plus", "the schema name must be 25 characters or fewer");
+  if (/<script[^>]+src\s*=\s*["']?https?:/i.test(liquid)) return L("les scripts externes ne sont pas autorisés dans les sections générées", "external scripts aren't allowed in generated sections");
+  if (/\beval\s*\(|new\s+Function\s*\(|document\.cookie/i.test(liquid)) return L("code JavaScript non autorisé (eval, Function, cookies)", "JavaScript code not allowed (eval, Function, cookies)");
   try {
     const stripped = liquid
       .replace(/\{%-?\s*schema\s*-?%\}[\s\S]*?\{%-?\s*endschema\s*-?%\}/, "")
@@ -123,7 +124,7 @@ export function validateCustomSection(liquid: string): string | null {
       .replace(/\{%-?\s*render\s+block\s*-?%\}/g, "");
     liquidCheck.parse(stripped);
   } catch (e) {
-    return `Liquid invalide : ${(e as Error).message.split("\n")[0]}`;
+    return L(`Liquid invalide : ${(e as Error).message.split("\n")[0]}`, `invalid Liquid: ${(e as Error).message.split("\n")[0]}`);
   }
   return null;
 }
@@ -141,12 +142,12 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
       switch (op.op) {
         case "set_global": {
           if (!ctx.overrideLocks && locked.has("settings") && !ctx.targeted?.has("settings")) {
-            reject("les réglages généraux sont verrouillés");
+            reject(L("les réglages généraux sont verrouillés", "the theme settings are locked"));
             break;
           }
-          const def = settingsSchema(spec).flatMap((g) => g.settings ?? []).find((s) => s.id === op.key);
+          const def = settingsSchema(spec, uiLang()).flatMap((g) => g.settings ?? []).find((s) => s.id === op.key);
           if (!def || def.type === "color_scheme_group") {
-            reject(`réglage général inconnu « ${op.key} »`);
+            reject(L(`réglage général inconnu « ${op.key} »`, `unknown theme setting "${op.key}"`));
             break;
           }
           const c = coerceSetting(def, op.value);
@@ -155,21 +156,21 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             break;
           }
           spec.settings[op.key] = c.value;
-          applied.push(`Réglage général « ${def.label ?? op.key} » mis à jour`);
+          applied.push(L(`Réglage général « ${def.label ?? op.key} » mis à jour`, `Theme setting "${def.label ?? op.key}" updated`));
           break;
         }
         case "set_scheme_color": {
           if (!/^#[0-9a-fA-F]{6}$/.test(op.value)) {
-            reject("couleur attendue au format #RRGGBB");
+            reject(L("couleur attendue au format #RRGGBB", "color expected in #RRGGBB format"));
             break;
           }
           const schemes = (spec.settings.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
           if (!schemes[op.scheme]) {
-            reject(`schéma ${op.scheme} absent`);
+            reject(L(`schéma ${op.scheme} absent`, `scheme ${op.scheme} is missing`));
             break;
           }
           schemes[op.scheme].settings[op.key] = op.value.toUpperCase();
-          applied.push(`Couleur ${op.key} du ${op.scheme} → ${op.value.toUpperCase()}`);
+          applied.push(L(`Couleur ${op.key} du ${op.scheme} → ${op.value.toUpperCase()}`, `${op.scheme} ${op.key} color → ${op.value.toUpperCase()}`));
           break;
         }
         case "set_setting":
@@ -177,23 +178,23 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           const c = containerOf(spec, op.template);
           const s = c?.sections[op.section];
           if (!c || !s) {
-            reject(`section ${op.section} introuvable dans ${op.template}`);
+            reject(L(`section ${op.section} introuvable dans ${op.template}`, `section ${op.section} not found in ${op.template}`));
             break;
           }
           if (isLocked(op.template, op.section)) {
-            reject(`la section ${op.section} est validée et verrouillée`);
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
             break;
           }
           let key = op.key;
           let value: unknown = op.op === "set_setting" ? op.value : null;
           if (op.op === "use_media" && spec.imported) {
-            reject("thème importé : ses images sont hébergées par Shopify. Importez l'image dans Shopify (Contenu › Fichiers) puis choisissez-la dans l'éditeur de thème Shopify");
+            reject(L("thème importé : ses images sont hébergées par Shopify. Importez l'image dans Shopify (Contenu › Fichiers) puis choisissez-la dans l'éditeur de thème Shopify", "imported theme: its images are hosted by Shopify. Upload the image in Shopify (Content › Files), then pick it in the Shopify theme editor"));
             break;
           }
           if (op.op === "use_media") {
             const file = ctx.mediaFile?.(op.assetId);
             if (!file) {
-              reject("média introuvable dans la bibliothèque du projet");
+              reject(L("média introuvable dans la bibliothèque du projet", "media not found in the project library"));
               break;
             }
             spec.files[file.filename] = op.assetId;
@@ -202,7 +203,7 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           }
           const target = op.block ? s.blocks?.[op.block] : s;
           if (!target) {
-            reject(`bloc ${op.block} introuvable`);
+            reject(L(`bloc ${op.block} introuvable`, `block ${op.block} not found`));
             break;
           }
           const v = validateSettings(spec, s.type, op.block ? target.type : null, { [key]: value });
@@ -211,27 +212,27 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             break;
           }
           target.settings = { ...target.settings, ...v.settings };
-          applied.push(`${op.block ? `Bloc ${op.block}` : `Section ${op.section}`} : « ${key} » mis à jour`);
+          applied.push(L(`${op.block ? `Bloc ${op.block}` : `Section ${op.section}`} : « ${key} » mis à jour`, `${op.block ? `Block ${op.block}` : `Section ${op.section}`}: "${key}" updated`));
           break;
         }
         case "add_section": {
           const c = containerOf(spec, op.template);
           if (!c) {
-            reject(`gabarit ${op.template} inconnu`);
+            reject(L(`gabarit ${op.template} inconnu`, `unknown template ${op.template}`));
             break;
           }
           const schema = sectionSchema(spec, op.type);
           if (!schema) {
-            reject(`type de section inconnu « ${op.type} »`);
+            reject(L(`type de section inconnu « ${op.type} »`, `unknown section type "${op.type}"`));
             break;
           }
           const group = op.template.startsWith("group:") ? op.template.slice(6) : null;
           if (group && !schema.enabled_on?.groups?.includes(group) && !op.type.startsWith("es-custom-")) {
-            reject(`la section ${op.type} n'est pas prévue pour le groupe ${group}`);
+            reject(L(`la section ${op.type} n'est pas prévue pour le groupe ${group}`, `section ${op.type} isn't meant for the ${group} group`));
             break;
           }
           if (!group && schema.enabled_on?.groups?.length) {
-            reject(`la section ${op.type} est réservée à l'en-tête ou au pied de page`);
+            reject(L(`la section ${op.type} est réservée à l'en-tête ou au pied de page`, `section ${op.type} is only for the header or footer`));
             break;
           }
           const v = validateSettings(spec, op.type, null, op.settings);
@@ -247,7 +248,7 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             inst.block_order = [];
             for (const b of wanted) {
               if (!schema.blocks.some((x) => x.type === b.type)) {
-                errors.push(`bloc « ${b.type} » inconnu`);
+                errors.push(L(`bloc « ${b.type} » inconnu`, `unknown block "${b.type}"`));
                 continue;
               }
               const bv = validateSettings(spec, op.type, b.type, b.settings);
@@ -259,67 +260,68 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           }
           c.sections[sid] = inst;
           c.order = insertAt(c.order, sid, op.position);
-          applied.push(`Section « ${schema.name} » ajoutée (${sid})${errors.length ? ` — ignoré : ${errors.join(" ; ")}` : ""}`);
+          const label = sectionSchema(spec, op.type, uiLang())?.name ?? schema.name;
+          applied.push(L(`Section « ${label} » ajoutée (${sid})${errors.length ? ` — ignoré : ${errors.join(" ; ")}` : ""}`, `Section "${label}" added (${sid})${errors.length ? ` — ignored: ${errors.join("; ")}` : ""}`));
           break;
         }
         case "remove_section": {
           const c = containerOf(spec, op.template);
           if (!c?.sections[op.section]) {
-            reject(`section ${op.section} introuvable`);
+            reject(L(`section ${op.section} introuvable`, `section ${op.section} not found`));
             break;
           }
           if (isLocked(op.template, op.section)) {
-            reject(`la section ${op.section} est validée et verrouillée`);
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
             break;
           }
           if (/^main-/.test(c.sections[op.section].type)) {
-            reject("la section principale d'une page ne peut pas être supprimée");
+            reject(L("la section principale d'une page ne peut pas être supprimée", "a page's main section can't be removed"));
             break;
           }
           delete c.sections[op.section];
           c.order = c.order.filter((x) => x !== op.section);
-          applied.push(`Section ${op.section} supprimée`);
+          applied.push(L(`Section ${op.section} supprimée`, `Section ${op.section} removed`));
           break;
         }
         case "move_section": {
           const c = containerOf(spec, op.template);
           if (!c?.sections[op.section]) {
-            reject(`section ${op.section} introuvable`);
+            reject(L(`section ${op.section} introuvable`, `section ${op.section} not found`));
             break;
           }
           c.order = insertAt(c.order, op.section, op.position);
-          applied.push(`Section ${op.section} déplacée`);
+          applied.push(L(`Section ${op.section} déplacée`, `Section ${op.section} moved`));
           break;
         }
         case "toggle_section": {
           const c = containerOf(spec, op.template);
           const s = c?.sections[op.section];
           if (!s) {
-            reject(`section ${op.section} introuvable`);
+            reject(L(`section ${op.section} introuvable`, `section ${op.section} not found`));
             break;
           }
           if (isLocked(op.template, op.section)) {
-            reject(`la section ${op.section} est validée et verrouillée`);
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
             break;
           }
           s.disabled = op.disabled || undefined;
-          applied.push(`Section ${op.section} ${op.disabled ? "masquée" : "affichée"}`);
+          applied.push(L(`Section ${op.section} ${op.disabled ? "masquée" : "affichée"}`, `Section ${op.section} ${op.disabled ? "hidden" : "shown"}`));
           break;
         }
         case "replace_section": {
           const c = containerOf(spec, op.template);
           const s = c?.sections[op.section];
           if (!c || !s) {
-            reject(`section ${op.section} introuvable`);
+            reject(L(`section ${op.section} introuvable`, `section ${op.section} not found`));
             break;
           }
           if (isLocked(op.template, op.section)) {
-            reject(`la section ${op.section} est validée et verrouillée`);
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
             break;
           }
           const schema = sectionSchema(spec, op.type);
           if (!schema) {
-            reject(`type de section inconnu « ${op.type} »`);
+            reject(L(`type de section inconnu « ${op.type} »`, `unknown section type "${op.type}"`));
             break;
           }
           // Conserve les réglages compatibles (titres, textes, images) pour ne rien perdre.
@@ -352,29 +354,29 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             }
           }
           c.sections[op.section] = inst;
-          applied.push(`Section ${op.section} refaite en « ${schema.name} »`);
+          applied.push(L(`Section ${op.section} refaite en « ${sectionSchema(spec, op.type, uiLang())?.name ?? schema.name} »`, `Section ${op.section} rebuilt as "${sectionSchema(spec, op.type, uiLang())?.name ?? schema.name}"`));
           break;
         }
         case "add_block": {
           const c = containerOf(spec, op.template);
           const s = c?.sections[op.section];
           if (!s) {
-            reject(`section ${op.section} introuvable`);
+            reject(L(`section ${op.section} introuvable`, `section ${op.section} not found`));
             break;
           }
           if (isLocked(op.template, op.section)) {
-            reject(`la section ${op.section} est validée et verrouillée`);
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
             break;
           }
           const schema = sectionSchema(spec, s.type);
           const bs = schema?.blocks.find((b) => b.type === op.type);
           if (!bs) {
-            reject(`bloc « ${op.type} » non disponible dans ${s.type}`);
+            reject(L(`bloc « ${op.type} » non disponible dans ${s.type}`, `block "${op.type}" isn't available in ${s.type}`));
             break;
           }
           const count = Object.keys(s.blocks ?? {}).length;
           if (schema?.max_blocks && count >= schema.max_blocks) {
-            reject(`la section accepte au plus ${schema.max_blocks} blocs`);
+            reject(L(`la section accepte au plus ${schema.max_blocks} blocs`, `the section accepts at most ${schema.max_blocks} blocks`));
             break;
           }
           const v = validateSettings(spec, s.type, op.type, op.settings);
@@ -383,34 +385,35 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           const bid = newBlockId(s, op.type);
           s.blocks[bid] = { type: op.type, settings: v.settings };
           s.block_order = insertAt(s.block_order, bid, op.position);
-          applied.push(`Bloc « ${bs.name ?? op.type} » ajouté à ${op.section}`);
+          const blockLabel = sectionSchema(spec, s.type, uiLang())?.blocks.find((b) => b.type === op.type)?.name ?? bs.name ?? op.type;
+          applied.push(L(`Bloc « ${blockLabel} » ajouté à ${op.section}`, `Block "${blockLabel}" added to ${op.section}`));
           break;
         }
         case "remove_block": {
           const c = containerOf(spec, op.template);
           const s = c?.sections[op.section];
           if (!s?.blocks?.[op.block]) {
-            reject(`bloc ${op.block} introuvable`);
+            reject(L(`bloc ${op.block} introuvable`, `block ${op.block} not found`));
             break;
           }
           if (isLocked(op.template, op.section)) {
-            reject(`la section ${op.section} est validée et verrouillée`);
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
             break;
           }
           delete s.blocks[op.block];
           s.block_order = (s.block_order ?? []).filter((x) => x !== op.block);
-          applied.push(`Bloc ${op.block} supprimé`);
+          applied.push(L(`Bloc ${op.block} supprimé`, `Block ${op.block} removed`));
           break;
         }
         case "move_block": {
           const c = containerOf(spec, op.template);
           const s = c?.sections[op.section];
           if (!s?.blocks?.[op.block]) {
-            reject(`bloc ${op.block} introuvable`);
+            reject(L(`bloc ${op.block} introuvable`, `block ${op.block} not found`));
             break;
           }
           s.block_order = insertAt(s.block_order ?? Object.keys(s.blocks), op.block, op.position);
-          applied.push(`Bloc ${op.block} déplacé`);
+          applied.push(L(`Bloc ${op.block} déplacé`, `Block ${op.block} moved`));
           break;
         }
         case "custom_section": {
@@ -420,13 +423,13 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
             break;
           }
           spec.customSections[op.type] = { name: op.name, liquid: op.liquid };
-          applied.push(`Section sur mesure « ${op.name} » enregistrée`);
+          applied.push(L(`Section sur mesure « ${op.name} » enregistrée`, `Custom section "${op.name}" saved`));
           break;
         }
         case "lock": {
           const key = lockKey(op.template, op.section);
           spec.locks = op.locked ? [...new Set([...spec.locks, key])] : spec.locks.filter((k) => k !== key);
-          applied.push(`${op.section} ${op.locked ? "verrouillée" : "déverrouillée"}`);
+          applied.push(L(`${op.section} ${op.locked ? "verrouillée" : "déverrouillée"}`, `${op.section} ${op.locked ? "locked" : "unlocked"}`));
           break;
         }
       }
@@ -442,23 +445,23 @@ export function validateSpec(spec: ThemeSpec): string[] {
   const problems: string[] = [];
   // Thème importé : ses pages peuvent être des gabarits Liquid (conservés tels quels), seuls les JSON sont dans le spec.
   for (const key of spec.imported ? [] : ["index", "product", "collection", "cart", "search", "404", "page", "list-collections"]) {
-    if (!spec.templates[key]) problems.push(`gabarit obligatoire manquant : ${key}`);
+    if (!spec.templates[key]) problems.push(L(`gabarit obligatoire manquant : ${key}`, `required template missing: ${key}`));
   }
   for (const [where, c] of [...Object.entries(spec.templates), ...Object.entries(spec.groups).map(([g, j]) => [`group:${g}`, j] as const)]) {
     for (const id of c.order) {
       const s = c.sections[id];
       if (!s) {
-        problems.push(`${where} : l'ordre référence une section absente (${id})`);
+        problems.push(L(`${where} : l'ordre référence une section absente (${id})`, `${where}: the order references a missing section (${id})`));
         continue;
       }
-      if (!sectionSchema(spec, s.type)) problems.push(`${where} : type de section inconnu ${s.type}`);
+      if (!sectionSchema(spec, s.type)) problems.push(L(`${where} : type de section inconnu ${s.type}`, `${where}: unknown section type ${s.type}`));
     }
   }
   // Thème importé : ses propres règles s'appliquent (sections et polices propres au thème du client).
   if (spec.imported) return problems;
-  if (!spec.templates.product?.order.some((id) => spec.templates.product.sections[id]?.type === "main-product")) problems.push("la fiche produit doit contenir la section Produit");
+  if (!spec.templates.product?.order.some((id) => spec.templates.product.sections[id]?.type === "main-product")) problems.push(L("la fiche produit doit contenir la section Produit", "the product page must contain the Product section"));
   const defaults = globalSettingDefaults();
-  for (const k of ["type_heading_font", "type_body_font"]) if (!spec.settings[k] && !defaults[k]) problems.push(`police manquante : ${k}`);
+  for (const k of ["type_heading_font", "type_body_font"]) if (!spec.settings[k] && !defaults[k]) problems.push(L(`police manquante : ${k}`, `missing font: ${k}`));
   return problems;
 }
 

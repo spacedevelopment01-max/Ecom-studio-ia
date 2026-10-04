@@ -2,10 +2,58 @@
  * Bibliothèque de sections proposée dans le studio (« Ajouter une section ») :
  * noms parlants, catégories, descriptions et exemple de réglages pour l'aperçu.
  * Les types viennent de theme-base/sections ; une section absente d'ici reste ajoutable sous son nom technique.
+ * Textes affichés dans le studio : langue de l'interface (libraryEntry).
  */
+import type { Lang } from "../i18n";
+
 export type SectionCategory = "Ouverture" | "Produit" | "Preuves" | "Animations" | "Images et vidéos" | "Collections" | "Textes" | "Conversion" | "Avancé";
 
 export type LibraryEntry = { type: string; name: string; category: SectionCategory; description: string; keywords?: string };
+
+/** Noms, descriptions et mots-clés anglais (la catégorie reste la clé française, traduite par l'interface). */
+const SECTION_LIBRARY_EN: Record<string, { name: string; description: string; keywords: string }> = {
+  "hero-fullbleed": { name: "Main banner", description: "Large full-screen image or video, headline and button.", keywords: "hero home full screen banner" },
+  "hero-split": { name: "Split banner", description: "Text on one side, product photo on the other.", keywords: "hero split banner" },
+  "hero-editorial": { name: "Editorial banner", description: "Big two-line headline, magazine style.", keywords: "hero magazine editorial" },
+  "marquee": { name: "Scrolling banner", description: "Continuously scrolling text.", keywords: "marquee ticker scrolling" },
+  "curved-marquee": { name: "Curved text", description: "Scrolling banner that follows a curve.", keywords: "marquee curve curved" },
+  "routine-steps": { name: "Step-by-step routine", description: "The product stays on screen while the steps scroll by, with labels on the product.", keywords: "steps how to use scroll sticky routine" },
+  "scroll-story": { name: "Product scroll story", description: "Product details appear as you scroll.", keywords: "scroll story details" },
+  "stack-cards": { name: "Stacked cards", description: "Cards that stack up as you scroll.", keywords: "cards stack stacked" },
+  "horizontal-gallery": { name: "Editorial scroll cards", description: "Horizontal carousel of illustrated cards.", keywords: "carousel horizontal gallery" },
+  "stats": { name: "Animated key figures", description: "Verified figures that animate, with their source.", keywords: "figures statistics stats counter numbers" },
+  "before-after": { name: "Before / After", description: "Sliding comparison between two images.", keywords: "comparison before after" },
+  "testimonials": { name: "Premium customer reviews", description: "Real reviews you enter, shown as cards with rating and photo.", keywords: "reviews testimonials" },
+  "product-reviews": { name: "Customer reviews (app)", description: "Placeholder for your reviews app (Judge.me, Loox…).", keywords: "reviews app" },
+  "trust-bar": { name: "Trust badges", description: "Your real commitments: payment, returns, customer service.", keywords: "trust reassurance guarantees badges" },
+  "features-grid": { name: "Benefits", description: "Grid of features with icons or images.", keywords: "features benefits advantages" },
+  "image-with-text": { name: "Image with text", description: "An image and its explanation, side by side.", keywords: "image text" },
+  "featured-product": { name: "Featured product", description: "A product with photo, price and buy button.", keywords: "product featured buy" },
+  "specs-list": { name: "Specifications", description: "Clear spec sheet in rows.", keywords: "specifications technical specs" },
+  "situations": { name: "Situations", description: "\"Sound familiar?\": the moments when the product helps.", keywords: "situations problems use cases" },
+  "timeline": { name: "Session timeline", description: "Timeline of numbered steps.", keywords: "timeline steps" },
+  "video-showcase": { name: "Premium video", description: "Large video with a title, played on scroll.", keywords: "video" },
+  "video-reels": { name: "UGC video carousel", description: "Vertical, social-media-style videos.", keywords: "reels ugc tiktok vertical videos" },
+  "gallery-mosaic": { name: "Flexible collage", description: "Photo mosaic with mixed sizes.", keywords: "mosaic gallery collage" },
+  "story-circles": { name: "Story circles", description: "Round, stories-style thumbnails.", keywords: "stories circles" },
+  "featured-collection": { name: "Featured collection", description: "A selection of products in a grid.", keywords: "collection products grid" },
+  "collection-list": { name: "Collection list", description: "Your collections as thumbnails.", keywords: "collections categories" },
+  "rich-text": { name: "Editorial text", description: "A highlighted paragraph.", keywords: "text editorial" },
+  "faq": { name: "Frequently asked questions", description: "Expandable questions and answers.", keywords: "faq questions" },
+  "newsletter": { name: "Newsletter", description: "Sign-up to your emails.", keywords: "newsletter email sign up subscribe" },
+  "cta-banner": { name: "Call-to-action banner", description: "A strong message and a button.", keywords: "call to action cta button" },
+  "contact-form": { name: "Contact form", description: "Shopify contact form.", keywords: "contact form" },
+  "wave-divider": { name: "Wave divider", description: "Wave transition between two sections.", keywords: "divider wave separator" },
+  "custom-liquid": { name: "Custom Liquid", description: "Code for a widget or an app.", keywords: "code liquid html widget" },
+  "apps": { name: "Apps", description: "Placeholder for an installed app's block.", keywords: "app apps" },
+};
+
+/** Entrée de la bibliothèque dans la langue de l'interface. */
+export function libraryEntry(type: string, lang: Lang): LibraryEntry | undefined {
+  const e = SECTION_LIBRARY.find((x) => x.type === type);
+  const en = SECTION_LIBRARY_EN[type];
+  return e && lang === "en" && en ? { ...e, ...en } : e;
+}
 
 export const SECTION_LIBRARY: LibraryEntry[] = [
   { type: "hero-fullbleed", name: "Bannière principale", category: "Ouverture", description: "Grande image ou vidéo plein écran, titre et bouton.", keywords: "héros hero accueil plein écran" },

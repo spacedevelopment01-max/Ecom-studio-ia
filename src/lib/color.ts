@@ -82,18 +82,25 @@ export function ensureContrast(fg: string, bg: string, ratio = 4.5): string {
 
 export const isDark = (hex: string) => luminance(hex) < 0.22;
 
-/** Nom approximatif en français, pour les textes et l'accessibilité. */
-export function colorName(hex: string): string {
+const COLOR_WORDS = {
+  fr: { white: "blanc", black: "noir", offWhite: "blanc cassé", lightGray: "gris clair", gray: "gris", charcoal: "anthracite", brown: "brun", pale: (b: string) => `${b} pâle`, deep: (b: string) => `${b} profond`,
+    hues: ["rouge", "orange", "ambre", "jaune", "vert anis", "vert", "turquoise", "bleu", "violet", "magenta", "rose", "rouge"] },
+  en: { white: "white", black: "black", offWhite: "off-white", lightGray: "light gray", gray: "gray", charcoal: "charcoal", brown: "brown", pale: (b: string) => `pale ${b}`, deep: (b: string) => `deep ${b}`,
+    hues: ["red", "orange", "amber", "yellow", "lime green", "green", "turquoise", "blue", "purple", "magenta", "pink", "red"] },
+};
+const HUE_MAX = [15, 40, 55, 70, 100, 160, 195, 240, 275, 320, 345, 361];
+
+/** Nom approximatif de la couleur (français par défaut, ou anglais), pour les textes et l'accessibilité. */
+export function colorName(hex: string, lang: "fr" | "en" = "fr"): string {
+  const w = COLOR_WORDS[lang === "en" ? "en" : "fr"];
   const [h, s, l] = hsl(hex);
-  if (l > 0.92) return "blanc";
-  if (l < 0.1) return "noir";
-  if (s < 0.18 || (s < 0.3 && l > 0.8)) return l > 0.8 ? "blanc cassé" : l > 0.6 ? "gris clair" : l > 0.35 ? "gris" : "anthracite";
-  const names: [number, string][] = [
-    [15, "rouge"], [40, "orange"], [55, "ambre"], [70, "jaune"], [100, "vert anis"], [160, "vert"], [195, "turquoise"], [240, "bleu"], [275, "violet"], [320, "magenta"], [345, "rose"], [361, "rouge"],
-  ];
-  let base = names.find(([max]) => h < max)?.[1] ?? "rouge";
-  if (base === "orange" && l < 0.45 && s < 0.6) base = "brun";
-  if (l > 0.75) return `${base} pâle`;
-  if (l < 0.3) return `${base} profond`;
+  if (l > 0.92) return w.white;
+  if (l < 0.1) return w.black;
+  if (s < 0.18 || (s < 0.3 && l > 0.8)) return l > 0.8 ? w.offWhite : l > 0.6 ? w.lightGray : l > 0.35 ? w.gray : w.charcoal;
+  const idx = HUE_MAX.findIndex((max) => h < max);
+  let base = w.hues[idx < 0 ? 0 : idx];
+  if (idx === 1 && l < 0.45 && s < 0.6) base = w.brown;
+  if (l > 0.75) return w.pale(base);
+  if (l < 0.3) return w.deep(base);
   return base;
 }

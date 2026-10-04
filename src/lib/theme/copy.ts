@@ -1,9 +1,11 @@
 /**
  * Contenus rédactionnels de la boutique (produits par l'IA ou par le moteur
  * local), indépendants de la mise en page. Les informations inconnues sont
- * écrites sous la forme « [À compléter : …] » pour rester visibles.
+ * écrites sous la forme « [À compléter : …] » (« [To complete: …] » en anglais) pour rester visibles.
+ * Les textes sont rédigés dans la langue de la boutique.
  */
 import { z } from "zod";
+import { pick, type Lang } from "../i18n";
 
 export const ICONS = ["sparkle", "leaf", "drop", "hand", "shield", "truck", "return", "check"] as const;
 
@@ -52,4 +54,4 @@ export const ShopCopySchema = z.object({
 
 export type ShopCopy = z.infer<typeof ShopCopySchema>;
 
-export const UNKNOWN = (what: string) => `[À compléter : ${what}]`;
+export const UNKNOWN = (what: string, lang: Lang = "fr") => pick(lang, `[À compléter : ${what}]`, `[To complete: ${what}]`);

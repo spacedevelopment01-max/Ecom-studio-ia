@@ -259,7 +259,7 @@
         while (days > 0) { d.setDate(d.getDate() + 1); if (!business || (d.getDay() !== 0 && d.getDay() !== 6)) days--; }
         return d;
       }
-      var fmt = function (d) { return d.toLocaleDateString(document.documentElement.lang || 'fr', { weekday: 'short', day: 'numeric', month: 'short' }); };
+      var fmt = function (d) { return d.toLocaleDateString(document.documentElement.lang || undefined, { weekday: 'short', day: 'numeric', month: 'short' }); };
       var out = $('[data-eta-range]', box); if (!out || !max) return;
       out.textContent = min && min !== max ? fmt(add(min)) + ' – ' + fmt(add(max)) : fmt(add(max));
     });
@@ -551,7 +551,7 @@
       var v = $('video', it); if (!v) return;
       v.muted = true; v.loop = true; v.playsInline = true;
       var snd = $('[data-reel-sound]', it), play = $('[data-reel-play]', it);
-      snd && snd.addEventListener('click', function () { v.muted = !v.muted; snd.setAttribute('aria-pressed', String(!v.muted)); snd.setAttribute('aria-label', v.muted ? 'Activer le son' : 'Couper le son'); });
+      snd && snd.addEventListener('click', function () { v.muted = !v.muted; snd.setAttribute('aria-pressed', String(!v.muted)); snd.setAttribute('aria-label', v.muted ? (strings.unmute || 'Unmute') : (strings.mute || 'Mute')); });
       play && play.addEventListener('click', function () { if (v.paused) { v.play().catch(function () {}); play.classList.remove('is-paused'); it._userPaused = false; } else { v.pause(); play.classList.add('is-paused'); it._userPaused = true; } });
     });
     function update() {

@@ -10,6 +10,7 @@ import { assetData, getAsset, type Asset } from "../library";
 import { PermanentError, UserFacingError } from "../jobs";
 import { isPublicAppUrl, publicMediaUrl } from "../public-url";
 import { graphVersion, providerConfig } from "./oauth";
+import { L } from "../i18n-server";
 
 export type Connection = {
   id: string;
@@ -52,12 +53,12 @@ export function markConnection(c: Connection, status: "active" | "expired" | "re
 /** Rafraîchit un jeton expiré (TikTok, YouTube, Pinterest, Canva). */
 export async function freshToken(c: Connection): Promise<string> {
   const access = decrypt(c.access_token);
-  if (!access) throw new PermanentError("Jeton absent : reconnectez le compte.");
+  if (!access) throw new PermanentError(L("Jeton absent : reconnectez le compte.", "Missing token: reconnect the account."));
   if (!c.expires_at || c.expires_at > now() + 120_000) return access;
   const refresh = decrypt(c.refresh_token);
   if (!refresh) {
-    markConnection(c, "expired", "Autorisation expirée : reconnectez le compte.");
-    throw new PermanentError("Autorisation expirée : reconnectez le compte.");
+    markConnection(c, "expired", L("Autorisation expirée : reconnectez le compte.", "Authorization expired: reconnect the account."));
+    throw new PermanentError(L("Autorisation expirée : reconnectez le compte.", "Authorization expired: reconnect the account."));
   }
   const map: Record<string, { url: string; cfg: "tiktok" | "youtube" | "pinterest" | "canva" }> = {
     tiktok: { url: "https://open.tiktokapis.com/v2/oauth/token/", cfg: "tiktok" },
@@ -76,8 +77,8 @@ export async function freshToken(c: Connection): Promise<string> {
   const r = await fetch(m.url, { method: "POST", headers, body: new URLSearchParams(body) });
   const t: any = await r.json().catch(() => ({}));
   if (!r.ok || !t.access_token) {
-    markConnection(c, "expired", "Le renouvellement de l'autorisation a échoué : reconnectez le compte.");
-    throw new PermanentError("Autorisation expirée : reconnectez le compte.");
+    markConnection(c, "expired", L("Le renouvellement de l'autorisation a échoué : reconnectez le compte.", "Renewing the authorization failed: reconnect the account."));
+    throw new PermanentError(L("Autorisation expirée : reconnectez le compte.", "Authorization expired: reconnect the account."));
   }
   run(
     "UPDATE connections SET access_token = ?, refresh_token = COALESCE(?, refresh_token), expires_at = ?, status = 'active', status_message = NULL, updated_at = ? WHERE id = ?",
@@ -111,16 +112,16 @@ async function graph(path: string, params: Record<string, string>, method: "GET"
   const j: any = await r.json().catch(() => ({}));
   if (j.error) {
     const code = j.error.code;
-    if (code === 190) throw Object.assign(new PermanentError("Autorisation Meta expirée ou révoquée : reconnectez le compte."), { reconnect: true });
-    if (code === 10 || code === 200) throw new PermanentError(`Autorisation manquante chez Meta : ${j.error.message}`);
-    if (code === 4 || code === 17 || code === 32 || code === 613) throw new Error(`Limite de débit Meta atteinte, nouvel essai plus tard : ${j.error.message}`);
-    throw new Error(`Meta : ${j.error.message}`);
+    if (code === 190) throw Object.assign(new PermanentError(L("Autorisation Meta expirée ou révoquée : reconnectez le compte.", "Meta authorization expired or revoked: reconnect the account.")), { reconnect: true });
+    if (code === 10 || code === 200) throw new PermanentError(L(`Autorisation manquante chez Meta : ${j.error.message}`, `Missing permission on Meta: ${j.error.message}`));
+    if (code === 4 || code === 17 || code === 32 || code === 613) throw new Error(L(`Limite de débit Meta atteinte, nouvel essai plus tard : ${j.error.message}`, `Meta rate limit reached, retrying later: ${j.error.message}`));
+    throw new Error(L(`Meta : ${j.error.message}`, `Meta: ${j.error.message}`));
   }
   return j;
 }
 
 function requirePublicMedia() {
-  if (!isPublicAppUrl()) throw new UserFacingError("Meta télécharge les médias depuis une adresse publique HTTPS. Définissez l'adresse publique du studio (APP_URL) dans l'administration, ou utilisez l'export manuel.");
+  if (!isPublicAppUrl()) throw new UserFacingError(L("Meta télécharge les médias depuis une adresse publique HTTPS. Définissez l'adresse publique du studio (APP_URL) dans l'administration, ou utilisez l'export manuel.", "Meta downloads media from a public HTTPS address. Set the studio's public address (APP_URL) in the admin area, or use the manual export."));
 }
 
 const ext = (a: Asset) => (a.mime === "video/mp4" ? "mp4" : a.mime === "image/png" ? "png" : "jpg");
@@ -154,10 +155,10 @@ async function waitContainer(id: string, token: string) {
   for (let i = 0; i < 40; i++) {
     const s = await graph(id, { fields: "status_code,status", access_token: token }, "GET");
     if (s.status_code === "FINISHED") return;
-    if (s.status_code === "ERROR" || s.status_code === "EXPIRED") throw new PermanentError(`Instagram a refusé le média : ${s.status ?? s.status_code}`);
+    if (s.status_code === "ERROR" || s.status_code === "EXPIRED") throw new PermanentError(L(`Instagram a refusé le média : ${s.status ?? s.status_code}`, `Instagram rejected the media: ${s.status ?? s.status_code}`));
     await new Promise((r) => setTimeout(r, 6000));
   }
-  throw new Error("Traitement du média Instagram trop long, nouvel essai plus tard.");
+  throw new Error(L("Traitement du média Instagram trop long, nouvel essai plus tard.", "Instagram media processing is taking too long, retrying later."));
 }
 
 async function publishInstagram(c: Connection, post: PostRow): Promise<PublishResult> {
@@ -165,7 +166,7 @@ async function publishInstagram(c: Connection, post: PostRow): Promise<PublishRe
   const token = decrypt(c.access_token)!;
   const ig = c.external_id;
   const media = mediaOf(post);
-  if (!media.length) throw new PermanentError("Instagram exige au moins une image ou une vidéo.");
+  if (!media.length) throw new PermanentError(L("Instagram exige au moins une image ou une vidéo.", "Instagram requires at least one image or video."));
   const caption = fullCaption(post);
   let creation: string;
   if (media.length > 1) {
@@ -191,10 +192,10 @@ async function publishInstagram(c: Connection, post: PostRow): Promise<PublishRe
 async function publishTikTok(c: Connection, post: PostRow): Promise<PublishResult> {
   const token = await freshToken(c);
   const video = mediaOf(post).find((a) => a.kind === "video");
-  if (!video) throw new PermanentError("TikTok : seule la publication de vidéos est prise en charge depuis le studio (les photos exigent un domaine vérifié).");
+  if (!video) throw new PermanentError(L("TikTok : seule la publication de vidéos est prise en charge depuis le studio (les photos exigent un domaine vérifié).", "TikTok: only video posts are supported from the studio (photos require a verified domain)."));
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json; charset=UTF-8" };
   const ci: any = await (await fetch("https://open.tiktokapis.com/v2/post/publish/creator_info/query/", { method: "POST", headers })).json();
-  if (ci.error?.code && ci.error.code !== "ok") throw new PermanentError(`TikTok : ${ci.error.message}`);
+  if (ci.error?.code && ci.error.code !== "ok") throw new PermanentError(L(`TikTok : ${ci.error.message}`, `TikTok: ${ci.error.message}`));
   const levels: string[] = ci.data?.privacy_level_options ?? ["SELF_ONLY"];
   const privacy = levels.includes("PUBLIC_TO_EVERYONE") ? "PUBLIC_TO_EVERYONE" : levels[0];
   const data = assetData(video);
@@ -208,52 +209,52 @@ async function publishTikTok(c: Connection, post: PostRow): Promise<PublishResul
     })
   ).json();
   if (init.error?.code && init.error.code !== "ok") {
-    if (/scope|unaudited|privacy/i.test(init.error.code + init.error.message)) throw new PermanentError(`TikTok refuse la publication : ${init.error.message}`);
-    throw new Error(`TikTok : ${init.error.message}`);
+    if (/scope|unaudited|privacy/i.test(init.error.code + init.error.message)) throw new PermanentError(L(`TikTok refuse la publication : ${init.error.message}`, `TikTok refused the post: ${init.error.message}`));
+    throw new Error(L(`TikTok : ${init.error.message}`, `TikTok: ${init.error.message}`));
   }
   for (let i = 0; i < total; i++) {
     const part = data.subarray(i * chunk, Math.min(data.length, (i + 1) * chunk));
     const up = await fetch(init.data.upload_url, { method: "PUT", headers: { "Content-Type": "video/mp4", "Content-Range": `bytes ${i * chunk}-${i * chunk + part.length - 1}/${data.length}`, "Content-Length": String(part.length) }, body: new Uint8Array(part) });
-    if (!up.ok && up.status !== 206 && up.status !== 201) throw new Error(`Envoi TikTok interrompu (${up.status}).`);
+    if (!up.ok && up.status !== 206 && up.status !== 201) throw new Error(L(`Envoi TikTok interrompu (${up.status}).`, `TikTok upload interrupted (${up.status}).`));
   }
   const publishId = init.data.publish_id;
   for (let i = 0; i < 40; i++) {
     await new Promise((r) => setTimeout(r, 5000));
     const st: any = await (await fetch("https://open.tiktokapis.com/v2/post/publish/status/fetch/", { method: "POST", headers, body: JSON.stringify({ publish_id: publishId }) })).json();
     const s = st.data?.status;
-    if (s === "PUBLISH_COMPLETE") return { remoteId: (st.data.publicaly_available_post_id ?? [publishId])[0]?.toString() ?? publishId, note: privacy === "SELF_ONLY" ? "Publiée en « moi uniquement » : l'application TikTok n'est pas encore auditée." : undefined };
-    if (s === "FAILED") throw new PermanentError(`TikTok a rejeté la vidéo : ${st.data.fail_reason}`);
+    if (s === "PUBLISH_COMPLETE") return { remoteId: (st.data.publicaly_available_post_id ?? [publishId])[0]?.toString() ?? publishId, note: privacy === "SELF_ONLY" ? L("Publiée en « moi uniquement » : l'application TikTok n'est pas encore auditée.", "Published as \"Only me\": the TikTok app has not been audited yet.") : undefined };
+    if (s === "FAILED") throw new PermanentError(L(`TikTok a rejeté la vidéo : ${st.data.fail_reason}`, `TikTok rejected the video: ${st.data.fail_reason}`));
   }
-  return { remoteId: publishId, note: "Envoyée ; TikTok termine le traitement." };
+  return { remoteId: publishId, note: L("Envoyée ; TikTok termine le traitement.", "Sent; TikTok is finishing processing.") };
 }
 
 async function publishYouTube(c: Connection, post: PostRow): Promise<PublishResult> {
   const token = await freshToken(c);
   const video = mediaOf(post).find((a) => a.kind === "video");
-  if (!video) throw new PermanentError("YouTube n'accepte que des vidéos.");
+  if (!video) throw new PermanentError(L("YouTube n'accepte que des vidéos.", "YouTube only accepts videos."));
   const isShort = (video.height ?? 0) > (video.width ?? 0) && (video.duration ?? 0) <= 180;
   const title = (post.title || post.caption.split("\n")[0]).slice(0, 95) + (isShort && !/#shorts/i.test(post.title) ? " #Shorts" : "");
   const meta = { snippet: { title: title.slice(0, 100), description: fullCaption(post).slice(0, 4900), categoryId: "22" }, status: { privacyStatus: json<any>(c.meta, {}).privacy ?? "public", selfDeclaredMadeForKids: false } };
   const data = assetData(video);
   const start = await fetch("https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json; charset=UTF-8", "X-Upload-Content-Type": "video/mp4", "X-Upload-Content-Length": String(data.length) }, body: JSON.stringify(meta) });
-  if (start.status === 401) throw Object.assign(new PermanentError("Autorisation YouTube expirée : reconnectez le compte."), { reconnect: true });
-  if (start.status === 403) throw new PermanentError(`YouTube refuse la mise en ligne : ${(await start.text()).slice(0, 300)}`);
+  if (start.status === 401) throw Object.assign(new PermanentError(L("Autorisation YouTube expirée : reconnectez le compte.", "YouTube authorization expired: reconnect the account.")), { reconnect: true });
+  if (start.status === 403) throw new PermanentError(L(`YouTube refuse la mise en ligne : ${(await start.text()).slice(0, 300)}`, `YouTube refused the upload: ${(await start.text()).slice(0, 300)}`));
   const loc = start.headers.get("location");
-  if (!loc) throw new Error(`YouTube : session d'envoi non ouverte (${start.status}).`);
+  if (!loc) throw new Error(L(`YouTube : session d'envoi non ouverte (${start.status}).`, `YouTube: upload session not opened (${start.status}).`));
   const up = await fetch(loc, { method: "PUT", headers: { "Content-Type": "video/mp4", "Content-Length": String(data.length) }, body: new Uint8Array(data) });
   const j: any = await up.json().catch(() => ({}));
-  if (!up.ok || !j.id) throw new Error(`YouTube : envoi échoué (${up.status}).`);
-  return { remoteId: j.id, url: isShort ? `https://www.youtube.com/shorts/${j.id}` : `https://www.youtube.com/watch?v=${j.id}`, note: j.status?.privacyStatus === "private" ? "Mise en ligne privée (application non vérifiée par Google)." : undefined };
+  if (!up.ok || !j.id) throw new Error(L(`YouTube : envoi échoué (${up.status}).`, `YouTube: upload failed (${up.status}).`));
+  return { remoteId: j.id, url: isShort ? `https://www.youtube.com/shorts/${j.id}` : `https://www.youtube.com/watch?v=${j.id}`, note: j.status?.privacyStatus === "private" ? L("Mise en ligne privée (application non vérifiée par Google).", "Uploaded as private (app not verified by Google).") : undefined };
 }
 
 async function publishPinterest(c: Connection, post: PostRow): Promise<PublishResult> {
   const token = await freshToken(c);
   const meta = json<any>(c.meta, {});
   const boardId = meta.boardId;
-  if (!boardId) throw new PermanentError("Choisissez un tableau Pinterest dans les connexions.");
+  if (!boardId) throw new PermanentError(L("Choisissez un tableau Pinterest dans les connexions.", "Choose a Pinterest board in Connections."));
   const media = mediaOf(post);
   const first = media[0];
-  if (!first) throw new PermanentError("Pinterest exige une image ou une vidéo.");
+  if (!first) throw new PermanentError(L("Pinterest exige une image ou une vidéo.", "Pinterest requires an image or a video."));
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
   let media_source: any;
   if (first.kind === "video") {
@@ -262,12 +263,12 @@ async function publishPinterest(c: Connection, post: PostRow): Promise<PublishRe
     for (const [k, v] of Object.entries(reg.upload_parameters ?? {})) form.append(k, String(v));
     form.append("file", new Blob([new Uint8Array(assetData(first))], { type: "video/mp4" }));
     const up = await fetch(reg.upload_url, { method: "POST", body: form });
-    if (!up.ok && up.status !== 204) throw new Error(`Envoi vidéo Pinterest échoué (${up.status}).`);
+    if (!up.ok && up.status !== 204) throw new Error(L(`Envoi vidéo Pinterest échoué (${up.status}).`, `Pinterest video upload failed (${up.status}).`));
     for (let i = 0; i < 30; i++) {
       await new Promise((r) => setTimeout(r, 4000));
       const st: any = await (await fetch(`https://api.pinterest.com/v5/media/${reg.media_id}`, { headers })).json();
       if (st.status === "succeeded") break;
-      if (st.status === "failed") throw new PermanentError("Pinterest a refusé la vidéo.");
+      if (st.status === "failed") throw new PermanentError(L("Pinterest a refusé la vidéo.", "Pinterest rejected the video."));
     }
     const poster = media.find((a) => a.kind === "image");
     media_source = { source_type: "video_id", media_id: reg.media_id, ...(poster ? { cover_image_content_type: "image/jpeg", cover_image_data: assetData(poster).toString("base64") } : {}) };
@@ -276,13 +277,13 @@ async function publishPinterest(c: Connection, post: PostRow): Promise<PublishRe
   }
   const r = await fetch("https://api.pinterest.com/v5/pins", { method: "POST", headers, body: JSON.stringify({ board_id: boardId, title: post.title.slice(0, 100), description: fullCaption(post).slice(0, 800), ...(post.link ? { link: post.link } : {}), media_source }) });
   const j: any = await r.json().catch(() => ({}));
-  if (r.status === 401) throw Object.assign(new PermanentError("Autorisation Pinterest expirée : reconnectez le compte."), { reconnect: true });
-  if (!r.ok) throw new Error(`Pinterest : ${j.message ?? r.status}`);
+  if (r.status === 401) throw Object.assign(new PermanentError(L("Autorisation Pinterest expirée : reconnectez le compte.", "Pinterest authorization expired: reconnect the account.")), { reconnect: true });
+  if (!r.ok) throw new Error(L(`Pinterest : ${j.message ?? r.status}`, `Pinterest: ${j.message ?? r.status}`));
   return { remoteId: j.id, url: `https://www.pinterest.com/pin/${j.id}/` };
 }
 
 export async function publishPost(post: PostRow, c: Connection): Promise<PublishResult> {
-  if (c.status === "revoked" || c.status === "expired") throw new PermanentError(`Le compte ${c.name} doit être reconnecté.`);
+  if (c.status === "revoked" || c.status === "expired") throw new PermanentError(L(`Le compte ${c.name} doit être reconnecté.`, `The account ${c.name} must be reconnected.`));
   switch (c.provider) {
     case "facebook":
       return publishFacebook(c, post);
@@ -295,7 +296,7 @@ export async function publishPost(post: PostRow, c: Connection): Promise<Publish
     case "pinterest":
       return publishPinterest(c, post);
     default:
-      throw new PermanentError(`Publication non prise en charge pour ${c.provider}.`);
+      throw new PermanentError(L(`Publication non prise en charge pour ${c.provider}.`, `Publishing is not supported for ${c.provider}.`));
   }
 }
 
@@ -326,19 +327,19 @@ export function capabilitiesOf(c: Pick<Connection, "provider" | "scopes">): { ca
   const has = (x: string) => s.includes(x);
   switch (c.provider) {
     case "facebook":
-      return { can: ["Texte et lien", "Image", "Plusieurs images", "Vidéo"].filter(() => has("pages_manage_posts")), missing: has("pages_manage_posts") ? [] : ["pages_manage_posts"] };
+      return { can: L(["Texte et lien", "Image", "Plusieurs images", "Vidéo"], ["Text and link", "Image", "Multiple images", "Video"]).filter(() => has("pages_manage_posts")), missing: has("pages_manage_posts") ? [] : ["pages_manage_posts"] };
     case "instagram":
-      return { can: has("instagram_content_publish") ? ["Image", "Carrousel", "Reel", "Story"] : [], missing: has("instagram_content_publish") ? [] : ["instagram_content_publish"] };
+      return { can: has("instagram_content_publish") ? L(["Image", "Carrousel", "Reel", "Story"], ["Image", "Carousel", "Reel", "Story"]) : [], missing: has("instagram_content_publish") ? [] : ["instagram_content_publish"] };
     case "tiktok":
-      return { can: has("video.publish") ? ["Vidéo (publication directe)"] : has("video.upload") ? ["Vidéo en brouillon"] : [], missing: ["video.publish", "video.upload"].filter((x) => !has(x)) };
+      return { can: has("video.publish") ? L(["Vidéo (publication directe)"], ["Video (direct post)"]) : has("video.upload") ? L(["Vidéo en brouillon"], ["Video as draft"]) : [], missing: ["video.publish", "video.upload"].filter((x) => !has(x)) };
     case "youtube":
-      return { can: has("youtube.upload") ? ["Vidéo", "Shorts"] : [], missing: has("youtube.upload") ? [] : ["youtube.upload"] };
+      return { can: has("youtube.upload") ? L(["Vidéo", "Shorts"], ["Video", "Shorts"]) : [], missing: has("youtube.upload") ? [] : ["youtube.upload"] };
     case "pinterest":
-      return { can: has("pins:write") ? ["Épingle image", "Épingle vidéo"] : [], missing: ["pins:write", "boards:read"].filter((x) => !has(x)) };
+      return { can: has("pins:write") ? L(["Épingle image", "Épingle vidéo"], ["Image Pin", "Video Pin"]) : [], missing: ["pins:write", "boards:read"].filter((x) => !has(x)) };
     case "canva":
-      return { can: ["Envoyer des médias", "Créer un design", "Exporter"], missing: ["asset:write", "design:content:write"].filter((x) => !has(x)) };
+      return { can: L(["Envoyer des médias", "Créer un design", "Exporter"], ["Send media", "Create a design", "Export"]), missing: ["asset:write", "design:content:write"].filter((x) => !has(x)) };
     case "shopify":
-      return { can: ["Installer le thème", "Créer le produit", "Créer les pages"], missing: ["write_themes", "write_products"].filter((x) => !has(x)) };
+      return { can: L(["Installer le thème", "Créer le produit", "Créer les pages"], ["Install the theme", "Create the product", "Create the pages"]), missing: ["write_themes", "write_products"].filter((x) => !has(x)) };
     default:
       return { can: [], missing: [] };
   }

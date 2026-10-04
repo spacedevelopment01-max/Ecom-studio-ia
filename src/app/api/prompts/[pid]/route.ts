@@ -2,6 +2,7 @@ import { z } from "zod";
 import { now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/auth";
+import { L } from "@/lib/i18n-server";
 
 const raw = (pid: string) => decodeURIComponent(pid).replace(/^u:/, "");
 
@@ -14,7 +15,7 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ pid: s
     else run("DELETE FROM prompt_favorites WHERE user_id = ? AND prompt_id = ?", user.id, decodeURIComponent(pid));
   }
   if (b.title || b.body) {
-    if (!one("SELECT 1 FROM user_prompts WHERE id = ? AND user_id = ?", raw(pid), user.id)) throw new HttpError(404, "Seuls vos prompts personnels sont modifiables (enregistrez une copie).");
+    if (!one("SELECT 1 FROM user_prompts WHERE id = ? AND user_id = ?", raw(pid), user.id)) throw new HttpError(404, L("Seuls vos prompts personnels sont modifiables (enregistrez une copie).", "Only your personal prompts can be edited (save a copy)."));
     run("UPDATE user_prompts SET title = COALESCE(?, title), body = COALESCE(?, body), updated_at = ? WHERE id = ? AND user_id = ?", b.title ?? null, b.body ?? null, now(), raw(pid), user.id);
   }
   return ok();

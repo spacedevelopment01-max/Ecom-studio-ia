@@ -7,6 +7,7 @@
  */
 import { isPublicAppUrl, publicMediaUrl } from "../public-url";
 import { storeProducts, type ThemeSpec } from "./spec";
+import { L } from "../i18n-server";
 
 const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 const row = (cells: unknown[]) => cells.map(esc).join(",");
@@ -88,4 +89,6 @@ export function wooProductsCsv(spec: ThemeSpec): string {
 }
 
 export const catalogImagesNote = () =>
-  isPublicAppUrl() ? "Les images sont référencées par des liens valables 7 jours : importez le fichier dans la semaine." : "Le studio n'a pas d'adresse publique HTTPS : la colonne des images est vide. Ajoutez les images depuis le dossier « medias » de l'export du thème, ou définissez l'adresse publique dans l'administration.";
+  isPublicAppUrl()
+    ? L("Les images sont référencées par des liens valables 7 jours : importez le fichier dans la semaine.", "Images are referenced by links valid for 7 days: import the file within the week.")
+    : L("Le studio n'a pas d'adresse publique HTTPS : la colonne des images est vide. Ajoutez les images depuis le dossier « medias » de l'export du thème, ou définissez l'adresse publique dans l'administration.", "The studio has no public HTTPS address: the image column is empty. Add the images from the \"medias\" folder of the theme export, or set the public address in the admin.");

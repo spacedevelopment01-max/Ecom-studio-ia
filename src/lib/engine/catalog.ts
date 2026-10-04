@@ -13,6 +13,7 @@ import type { CatalogItem } from "../project-types";
 import type { StoreCollection, StoreProduct } from "../theme/spec";
 import type { JobContext } from "../jobs";
 import { palette } from "./images";
+import { C, L } from "../i18n-server";
 
 export const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "produit";
 
@@ -27,15 +28,15 @@ export async function ensureCatalogMedia(ctx: JobContext | null, projectId: stri
     if (!original || original.deleted_at) continue;
     let cut = derived(projectId, "catalog-cutout", original.id);
     if (!cut) {
-      ctx?.progress(0.05 + (n / Math.max(1, items.length)) * 0.4, `Détourage : ${item.name}`);
+      ctx?.progress(0.05 + (n / Math.max(1, items.length)) * 0.4, L(`Détourage : ${item.name}`, `Cutout: ${item.name}`));
       const c = await cutoutProduct(assetData(original));
-      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(item.name)}-detoure.png`, mime: "image/png", role: "catalog-cutout", folderKey: "product.catalog", origin: "generated", sourceAssetId: original.id, meta: { product: item.key, colors: await extractPalette(c.png), method: c.method } });
+      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(item.name)}-${C("detoure", "cutout")}.png`, mime: "image/png", role: "catalog-cutout", folderKey: "product.catalog", origin: "generated", sourceAssetId: original.id, meta: { product: item.key, colors: await extractPalette(c.png), method: c.method } });
     }
     if (!derived(projectId, "catalog-packshot", cut.id)) {
-      ctx?.progress(0.05 + ((n + 0.5) / Math.max(1, items.length)) * 0.4, `Packshot : ${item.name}`);
+      ctx?.progress(0.05 + ((n + 0.5) / Math.max(1, items.length)) * 0.4, L(`Packshot : ${item.name}`, `Packshot: ${item.name}`));
       const img = await loadImage(assetData(cut));
       const jpg = await renderPackshot(img, { background: palette(p).light });
-      await saveAsset({ projectId, userId: p.userId, data: Buffer.from(jpg), name: `${slug(item.name)}-packshot.jpg`, mime: "image/jpeg", role: "catalog-packshot", folderKey: "product.catalog", origin: "generated", sourceAssetId: cut.id, meta: { product: item.key, recipe: "Packshot fond de marque, ombre de contact", fidelity: "pixels d'origine du produit" } });
+      await saveAsset({ projectId, userId: p.userId, data: Buffer.from(jpg), name: `${slug(item.name)}-packshot.jpg`, mime: "image/jpeg", role: "catalog-packshot", folderKey: "product.catalog", origin: "generated", sourceAssetId: cut.id, meta: { product: item.key, recipe: L("Packshot fond de marque, ombre de contact", "Packshot on brand background, contact shadow"), fidelity: L("pixels d'origine du produit", "original product pixels") } });
     }
   }
 }
@@ -61,7 +62,7 @@ export function catalogStore(p: Project, main: StoreProduct, fileName: (a: Asset
   const used = new Set([main.handle]);
   const products: StoreProduct[] = [];
   const byCategory = new Map<string, string[]>();
-  const mainCategory = p.product.category?.trim() || p.catalog[0]?.category || "La sélection";
+  const mainCategory = p.product.category?.trim() || p.catalog[0]?.category || C("La sélection", "The selection");
   byCategory.set(mainCategory, [main.handle]);
   for (const item of p.catalog) {
     let handle = slug(item.name);
@@ -77,7 +78,7 @@ export function catalogStore(p: Project, main: StoreProduct, fileName: (a: Asset
       title: item.name,
       handle,
       vendor: p.brand?.name ?? p.name,
-      description_html: `${item.description ? `<p>${esc(item.description)}</p>` : ""}${features.length ? `<ul>${features.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}` || "<p>[À compléter : description du produit]</p>",
+      description_html: `${item.description ? `<p>${esc(item.description)}</p>` : ""}${features.length ? `<ul>${features.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}` || C("<p>[À compléter : description du produit]</p>", "<p>[To complete: product description]</p>"),
       price: item.price,
       compare_at_price: item.compareAt,
       currency: "EUR",
@@ -112,14 +113,14 @@ export async function ensureVariantMedia(ctx: JobContext | null, projectId: stri
     const value = (JSON.parse(original.meta || "{}") as { variant?: string }).variant ?? "";
     let cut = derived(projectId, "variant-cutout", original.id);
     if (!cut) {
-      ctx?.progress(0.1, `Détourage : ${value}`);
+      ctx?.progress(0.1, L(`Détourage : ${value}`, `Cutout: ${value}`));
       const c = await cutoutProduct(assetData(original));
-      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(value)}-detoure.png`, mime: "image/png", role: "variant-cutout", folderKey: "product.cutouts", origin: "generated", sourceAssetId: original.id, meta: { variant: value, colors: await extractPalette(c.png), method: c.method } });
+      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(value)}-${C("detoure", "cutout")}.png`, mime: "image/png", role: "variant-cutout", folderKey: "product.cutouts", origin: "generated", sourceAssetId: original.id, meta: { variant: value, colors: await extractPalette(c.png), method: c.method } });
     }
     if (!derived(projectId, "variant-packshot", cut.id)) {
-      ctx?.progress(0.15, `Packshot : ${value}`);
+      ctx?.progress(0.15, L(`Packshot : ${value}`, `Packshot: ${value}`));
       const jpg = await renderPackshot(await loadImage(assetData(cut)), { background: palette(p).light });
-      await saveAsset({ projectId, userId: p.userId, data: Buffer.from(jpg), name: `${slug(value)}-packshot.jpg`, mime: "image/jpeg", role: "variant-packshot", folderKey: "images.packshots", origin: "generated", sourceAssetId: cut.id, meta: { variant: value, recipe: "Packshot fond de marque, ombre de contact", fidelity: "pixels d'origine du produit" } });
+      await saveAsset({ projectId, userId: p.userId, data: Buffer.from(jpg), name: `${slug(value)}-packshot.jpg`, mime: "image/jpeg", role: "variant-packshot", folderKey: "images.packshots", origin: "generated", sourceAssetId: cut.id, meta: { variant: value, recipe: L("Packshot fond de marque, ombre de contact", "Packshot on brand background, contact shadow"), fidelity: L("pixels d'origine du produit", "original product pixels") } });
     }
   }
 }
@@ -134,7 +135,7 @@ export function attachVariantMedia(projectId: string, product: StoreProduct, fil
     if (!original) continue;
     const cut = derived(projectId, "variant-cutout", original.id);
     const asset = (cut && derived(projectId, "variant-packshot", cut.id)) || original;
-    const f = fileName(asset, `variante-${slug(value)}`);
+    const f = fileName(asset, `${C("variante", "variant")}-${slug(value)}`);
     files[f] = asset.id;
     if (!product.images.includes(f)) product.images.push(f);
     v.image = f;

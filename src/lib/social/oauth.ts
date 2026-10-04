@@ -8,64 +8,117 @@ import crypto from "node:crypto";
 import { id, now, one, run } from "../db";
 import { encrypt } from "../secrets";
 import { appUrl, getSetting } from "../settings";
+import { L } from "../i18n-server";
 
 export type ProviderKey = "meta" | "tiktok" | "youtube" | "pinterest" | "canva" | "shopify";
 
-export const PROVIDER_INFO: Record<ProviderKey, { label: string; networks: string[]; docs: string; scopes: string[]; needs: string; capabilities: string[]; limits: string[] }> = {
-  meta: {
-    label: "Meta (Facebook et Instagram)",
+type ProviderInfo = { label: string; networks: string[]; docs: string; scopes: string[]; needs: string; capabilities: string[]; limits: string[] };
+type Bi<T> = { fr: T; en: T };
+
+/** Textes affichés dans la langue de l'interface au moment de la lecture (jamais figés au chargement du module). */
+function info(d: { label: Bi<string>; networks: string[]; docs: string; scopes: string[]; needs: Bi<string>; capabilities: Bi<string[]>; limits: Bi<string[]> }): ProviderInfo {
+  return {
+    get label() { return L(d.label.fr, d.label.en); },
+    networks: d.networks,
+    docs: d.docs,
+    scopes: d.scopes,
+    get needs() { return L(d.needs.fr, d.needs.en); },
+    get capabilities() { return L(d.capabilities.fr, d.capabilities.en); },
+    get limits() { return L(d.limits.fr, d.limits.en); },
+  };
+}
+
+export const PROVIDER_INFO: Record<ProviderKey, ProviderInfo> = {
+  meta: info({
+    label: { fr: "Meta (Facebook et Instagram)", en: "Meta (Facebook and Instagram)" },
     networks: ["facebook", "instagram"],
     docs: "https://developers.facebook.com/docs/instagram-platform/content-publishing",
     scopes: ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "instagram_basic", "instagram_content_publish", "business_management"],
-    needs: "Une application Meta (Facebook Login) avec les autorisations de publication validées par Meta.",
-    capabilities: ["Publier sur une Page Facebook : texte, lien, image, vidéo", "Publier sur un compte Instagram professionnel relié à la Page : image, carrousel, reel"],
-    limits: ["Instagram exige un compte professionnel relié à une Page Facebook", "Les médias doivent être accessibles publiquement en HTTPS (adresse publique du studio requise)", "Limite de 50 publications Instagram par 24 h et par compte (API)"],
-  },
-  tiktok: {
-    label: "TikTok",
+    needs: { fr: "Une application Meta (Facebook Login) avec les autorisations de publication validées par Meta.", en: "A Meta app (Facebook Login) with publishing permissions approved by Meta." },
+    capabilities: {
+      fr: ["Publier sur une Page Facebook : texte, lien, image, vidéo", "Publier sur un compte Instagram professionnel relié à la Page : image, carrousel, reel"],
+      en: ["Publish to a Facebook Page: text, link, image, video", "Publish to an Instagram professional account linked to the Page: image, carousel, reel"],
+    },
+    limits: {
+      fr: ["Instagram exige un compte professionnel relié à une Page Facebook", "Les médias doivent être accessibles publiquement en HTTPS (adresse publique du studio requise)", "Limite de 50 publications Instagram par 24 h et par compte (API)"],
+      en: ["Instagram requires a professional account linked to a Facebook Page", "Media must be publicly accessible over HTTPS (the studio needs a public address)", "Limit of 50 Instagram posts per 24 hours per account (API)"],
+    },
+  }),
+  tiktok: info({
+    label: { fr: "TikTok", en: "TikTok" },
     networks: ["tiktok"],
     docs: "https://developers.tiktok.com/doc/content-posting-api-get-started",
     scopes: ["user.info.basic", "video.publish", "video.upload"],
-    needs: "Une application TikTok for Developers avec le produit « Content Posting API ».",
-    capabilities: ["Publier une vidéo directement sur le compte (Direct Post)", "Envoyer une vidéo en brouillon dans l'application TikTok (Upload)"],
-    limits: ["Tant que l'application n'a pas passé l'audit de TikTok, les publications directes sont limitées à la visibilité « moi uniquement »", "Les publications photo nécessitent un domaine vérifié auprès de TikTok"],
-  },
-  youtube: {
-    label: "YouTube",
+    needs: { fr: "Une application TikTok for Developers avec le produit « Content Posting API ».", en: "A TikTok for Developers app with the \"Content Posting API\" product." },
+    capabilities: {
+      fr: ["Publier une vidéo directement sur le compte (Direct Post)", "Envoyer une vidéo en brouillon dans l'application TikTok (Upload)"],
+      en: ["Publish a video directly to the account (Direct Post)", "Send a video as a draft to the TikTok app (Upload)"],
+    },
+    limits: {
+      fr: ["Tant que l'application n'a pas passé l'audit de TikTok, les publications directes sont limitées à la visibilité « moi uniquement »", "Les publications photo nécessitent un domaine vérifié auprès de TikTok"],
+      en: ["Until the app passes TikTok's audit, direct posts are limited to \"Only me\" visibility", "Photo posts require a domain verified with TikTok"],
+    },
+  }),
+  youtube: info({
+    label: { fr: "YouTube", en: "YouTube" },
     networks: ["youtube"],
     docs: "https://developers.google.com/youtube/v3/guides/uploading_a_video",
     scopes: ["https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/youtube.readonly"],
-    needs: "Un projet Google Cloud avec l'API YouTube Data v3 et un écran de consentement OAuth.",
-    capabilities: ["Mettre en ligne une vidéo (Shorts si verticale et courte) avec titre, description et visibilité"],
-    limits: ["Les applications non vérifiées par Google ne peuvent publier qu'en privé", "Quota quotidien de l'API (environ 6 mises en ligne par jour avec le quota par défaut)"],
-  },
-  pinterest: {
-    label: "Pinterest",
+    needs: { fr: "Un projet Google Cloud avec l'API YouTube Data v3 et un écran de consentement OAuth.", en: "A Google Cloud project with the YouTube Data API v3 and an OAuth consent screen." },
+    capabilities: {
+      fr: ["Mettre en ligne une vidéo (Shorts si verticale et courte) avec titre, description et visibilité"],
+      en: ["Upload a video (as a Short if vertical and short) with title, description and visibility"],
+    },
+    limits: {
+      fr: ["Les applications non vérifiées par Google ne peuvent publier qu'en privé", "Quota quotidien de l'API (environ 6 mises en ligne par jour avec le quota par défaut)"],
+      en: ["Apps not verified by Google can only publish privately", "Daily API quota (about 6 uploads per day with the default quota)"],
+    },
+  }),
+  pinterest: info({
+    label: { fr: "Pinterest", en: "Pinterest" },
     networks: ["pinterest"],
     docs: "https://developers.pinterest.com/docs/api/v5/pins-create",
     scopes: ["boards:read", "pins:read", "pins:write", "user_accounts:read"],
-    needs: "Une application Pinterest avec l'accès standard à l'API v5.",
-    capabilities: ["Créer une épingle image ou vidéo sur un tableau, avec titre, description et lien"],
-    limits: ["Un accès « Trial » limite la visibilité des épingles ; l'accès standard est demandé à Pinterest"],
-  },
-  canva: {
-    label: "Canva",
+    needs: { fr: "Une application Pinterest avec l'accès standard à l'API v5.", en: "A Pinterest app with standard access to API v5." },
+    capabilities: {
+      fr: ["Créer une épingle image ou vidéo sur un tableau, avec titre, description et lien"],
+      en: ["Create an image or video Pin on a board, with title, description and link"],
+    },
+    limits: {
+      fr: ["Un accès « Trial » limite la visibilité des épingles ; l'accès standard est demandé à Pinterest"],
+      en: ["\"Trial\" access limits Pin visibility; standard access must be requested from Pinterest"],
+    },
+  }),
+  canva: info({
+    label: { fr: "Canva", en: "Canva" },
     networks: [],
     docs: "https://www.canva.dev/docs/connect/",
     scopes: ["asset:read", "asset:write", "design:meta:read", "design:content:read", "design:content:write"],
-    needs: "Une intégration Canva Connect (client id / secret) avec les autorisations ci-dessus.",
-    capabilities: ["Envoyer une création du studio dans Canva et ouvrir un design modifiable", "Récupérer le design exporté (PNG, JPG, PDF ou MP4) dans les fichiers du projet"],
-    limits: ["L'intégration doit être approuvée par Canva pour être utilisée par tous les comptes", "L'export MP4 dépend du type de design"],
-  },
-  shopify: {
-    label: "Shopify",
+    needs: { fr: "Une intégration Canva Connect (client id / secret) avec les autorisations ci-dessus.", en: "A Canva Connect integration (client ID / secret) with the permissions above." },
+    capabilities: {
+      fr: ["Envoyer une création du studio dans Canva et ouvrir un design modifiable", "Récupérer le design exporté (PNG, JPG, PDF ou MP4) dans les fichiers du projet"],
+      en: ["Send a studio creation to Canva and open an editable design", "Bring the exported design (PNG, JPG, PDF or MP4) back into the project files"],
+    },
+    limits: {
+      fr: ["L'intégration doit être approuvée par Canva pour être utilisée par tous les comptes", "L'export MP4 dépend du type de design"],
+      en: ["The integration must be approved by Canva before all accounts can use it", "MP4 export depends on the design type"],
+    },
+  }),
+  shopify: info({
+    label: { fr: "Shopify", en: "Shopify" },
     networks: [],
     docs: "https://shopify.dev/docs/apps/build/authentication-authorization",
     scopes: ["write_themes", "write_products", "write_content", "write_files", "write_online_store_navigation"],
-    needs: "Une application Shopify (Dev Dashboard) avec ces autorisations et l'adresse de retour du studio.",
-    capabilities: ["Installer le thème comme thème non publié", "Créer le produit, ses images et variantes", "Créer les pages (Notre histoire, FAQ, Contact, Livraison) et les menus"],
-    limits: ["L'installation du thème depuis le studio demande une adresse publique (Shopify télécharge le ZIP) ; sinon importez le ZIP manuellement", "La publication du thème reste une décision du marchand dans Shopify"],
-  },
+    needs: { fr: "Une application Shopify (Dev Dashboard) avec ces autorisations et l'adresse de retour du studio.", en: "A Shopify app (Dev Dashboard) with these permissions and the studio's redirect URL." },
+    capabilities: {
+      fr: ["Installer le thème comme thème non publié", "Créer le produit, ses images et variantes", "Créer les pages (Notre histoire, FAQ, Contact, Livraison) et les menus"],
+      en: ["Install the theme as an unpublished theme", "Create the product, its images and variants", "Create the pages (Our story, FAQ, Contact, Shipping) and the menus"],
+    },
+    limits: {
+      fr: ["L'installation du thème depuis le studio demande une adresse publique (Shopify télécharge le ZIP) ; sinon importez le ZIP manuellement", "La publication du thème reste une décision du marchand dans Shopify"],
+      en: ["Installing the theme from the studio requires a public address (Shopify downloads the ZIP); otherwise, import the ZIP manually", "Publishing the theme remains the merchant's decision in Shopify"],
+    },
+  }),
 };
 
 export function providerConfig(p: ProviderKey) {
@@ -129,7 +182,7 @@ async function postForm(url: string, body: Record<string, string>, headers: Reco
   } catch {
     j = { raw: text };
   }
-  if (!r.ok || j.error) throw new Error(`Échange du code refusé (${r.status}) : ${JSON.stringify(j.error ?? j).slice(0, 300)}`);
+  if (!r.ok || j.error) throw new Error(L(`Échange du code refusé (${r.status}) : ${JSON.stringify(j.error ?? j).slice(0, 300)}`, `Code exchange refused (${r.status}): ${JSON.stringify(j.error ?? j).slice(0, 300)}`));
   return j;
 }
 
@@ -177,7 +230,7 @@ export function upsertConnection(userId: string, c: SavedConnection, projectId?:
 /** Échange le code d'autorisation et enregistre le ou les comptes autorisés. */
 export async function completeOAuth(p: ProviderKey, code: string, st: NonNullable<ReturnType<typeof consumeState>>): Promise<string[]> {
   const { clientId, clientSecret } = providerConfig(p);
-  if (!clientId || !clientSecret) throw new Error("Connexion non configurée par l'administration.");
+  if (!clientId || !clientSecret) throw new Error(L("Connexion non configurée par l'administration.", "Connection not set up by the administrator."));
   const ru = redirectUri(p);
   const saved: string[] = [];
   if (p === "meta") {
@@ -195,35 +248,35 @@ export async function completeOAuth(p: ProviderKey, code: string, st: NonNullabl
       const ig = page.instagram_business_account;
       if (ig) saved.push(upsertConnection(st.user_id, { provider: "instagram", externalId: ig.id, name: `@${ig.username}`, avatar: ig.profile_picture_url, access: page.access_token, scopes: granted, meta: { pageId: page.id, igUserId: ig.id } }, st.project_id));
     }
-    if (!saved.length) throw new Error("Aucune Page Facebook n'a été autorisée. Relancez la connexion et sélectionnez au moins une Page.");
+    if (!saved.length) throw new Error(L("Aucune Page Facebook n'a été autorisée. Relancez la connexion et sélectionnez au moins une Page.", "No Facebook Page was authorized. Restart the connection and select at least one Page."));
   } else if (p === "tiktok") {
     const t = await postForm("https://open.tiktokapis.com/v2/oauth/token/", { client_key: clientId, client_secret: clientSecret, code, grant_type: "authorization_code", redirect_uri: ru });
     const info = await (await fetch("https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
     const u = info.data?.user ?? {};
-    saved.push(upsertConnection(st.user_id, { provider: "tiktok", externalId: t.open_id ?? u.open_id, name: u.display_name ?? "Compte TikTok", avatar: u.avatar_url, access: t.access_token, refresh: t.refresh_token, expiresAt: now() + (t.expires_in ?? 86400) * 1000, scopes: t.scope ?? "", meta: { refreshExpiresAt: now() + (t.refresh_expires_in ?? 0) * 1000 } }, st.project_id));
+    saved.push(upsertConnection(st.user_id, { provider: "tiktok", externalId: t.open_id ?? u.open_id, name: u.display_name ?? L("Compte TikTok", "TikTok account"), avatar: u.avatar_url, access: t.access_token, refresh: t.refresh_token, expiresAt: now() + (t.expires_in ?? 86400) * 1000, scopes: t.scope ?? "", meta: { refreshExpiresAt: now() + (t.refresh_expires_in ?? 0) * 1000 } }, st.project_id));
   } else if (p === "youtube") {
     const t = await postForm("https://oauth2.googleapis.com/token", { client_id: clientId, client_secret: clientSecret, code, grant_type: "authorization_code", redirect_uri: ru });
     const ch = await (await fetch("https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
     const c = ch.items?.[0];
-    if (!c) throw new Error("Aucune chaîne YouTube sur ce compte Google.");
+    if (!c) throw new Error(L("Aucune chaîne YouTube sur ce compte Google.", "No YouTube channel on this Google account."));
     saved.push(upsertConnection(st.user_id, { provider: "youtube", externalId: c.id, name: c.snippet.title, avatar: c.snippet.thumbnails?.default?.url, access: t.access_token, refresh: t.refresh_token, expiresAt: now() + (t.expires_in ?? 3600) * 1000, scopes: t.scope ?? "", meta: {} }, st.project_id));
   } else if (p === "pinterest") {
     const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
     const t = await postForm("https://api.pinterest.com/v5/oauth/token", { grant_type: "authorization_code", code, redirect_uri: ru }, { Authorization: `Basic ${basic}` });
     const me = await (await fetch("https://api.pinterest.com/v5/user_account", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
     const boards = await (await fetch("https://api.pinterest.com/v5/boards?page_size=100", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
-    saved.push(upsertConnection(st.user_id, { provider: "pinterest", externalId: me.username ?? "pinterest", name: me.username ?? "Compte Pinterest", avatar: me.profile_image, access: t.access_token, refresh: t.refresh_token, expiresAt: now() + (t.expires_in ?? 2592000) * 1000, scopes: t.scope ?? "", meta: { boards: (boards.items ?? []).map((b: any) => ({ id: b.id, name: b.name })), boardId: boards.items?.[0]?.id ?? null } }, st.project_id));
+    saved.push(upsertConnection(st.user_id, { provider: "pinterest", externalId: me.username ?? "pinterest", name: me.username ?? L("Compte Pinterest", "Pinterest account"), avatar: me.profile_image, access: t.access_token, refresh: t.refresh_token, expiresAt: now() + (t.expires_in ?? 2592000) * 1000, scopes: t.scope ?? "", meta: { boards: (boards.items ?? []).map((b: any) => ({ id: b.id, name: b.name })), boardId: boards.items?.[0]?.id ?? null } }, st.project_id));
   } else if (p === "canva") {
     const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
     const t = await postForm("https://api.canva.com/rest/v1/oauth/token", { grant_type: "authorization_code", code, code_verifier: st.verifier, redirect_uri: ru }, { Authorization: `Basic ${basic}` });
     const me = await (await fetch("https://api.canva.com/rest/v1/users/me/profile", { headers: { Authorization: `Bearer ${t.access_token}` } })).json().catch(() => ({}));
     const who = await (await fetch("https://api.canva.com/rest/v1/users/me", { headers: { Authorization: `Bearer ${t.access_token}` } })).json().catch(() => ({}));
-    saved.push(upsertConnection(st.user_id, { provider: "canva", externalId: who?.team_user?.user_id ?? "canva", name: me?.profile?.display_name ?? "Compte Canva", access: t.access_token, refresh: t.refresh_token, expiresAt: now() + (t.expires_in ?? 14400) * 1000, scopes: t.scope ?? "", meta: {} }, st.project_id));
+    saved.push(upsertConnection(st.user_id, { provider: "canva", externalId: who?.team_user?.user_id ?? "canva", name: me?.profile?.display_name ?? L("Compte Canva", "Canva account"), access: t.access_token, refresh: t.refresh_token, expiresAt: now() + (t.expires_in ?? 14400) * 1000, scopes: t.scope ?? "", meta: {} }, st.project_id));
   } else if (p === "shopify") {
     const shop = st.extra!;
     const r = await fetch(`https://${shop}/admin/oauth/access_token`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }) });
     const t = await r.json();
-    if (!t.access_token) throw new Error("Shopify n'a pas délivré de jeton d'accès.");
+    if (!t.access_token) throw new Error(L("Shopify n'a pas délivré de jeton d'accès.", "Shopify did not issue an access token."));
     saved.push(upsertConnection(st.user_id, { provider: "shopify", externalId: shop, name: shop, access: t.access_token, scopes: t.scope ?? "", meta: { shop } }, st.project_id));
     if (st.project_id) run("UPDATE projects SET store_url = ? WHERE id = ?", `https://${shop}`, st.project_id);
   }

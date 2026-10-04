@@ -9,6 +9,8 @@ import { aiMode, hasAiCredits } from "@/lib/ai/access";
 import { aiAvailability } from "@/lib/ai/config";
 import { balance } from "@/lib/billing";
 import { sectorLabel } from "@/lib/project-types";
+import { HttpError } from "@/lib/auth";
+import { L, uiLang } from "@/lib/i18n-server";
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
@@ -22,7 +24,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const cutout = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL ORDER BY created_at LIMIT 1", p.id);
   const b = balance(user.id);
   return ok({
-    project: { id: p.id, name: p.name, status: p.status, platform: p.platform, storeUrl: p.row.store_url, createdAt: p.row.created_at, updatedAt: p.row.updated_at, sectorLabel: sectorLabel(p.product.sector) },
+    project: { id: p.id, name: p.name, status: p.status, platform: p.platform, storeUrl: p.row.store_url, createdAt: p.row.created_at, updatedAt: p.row.updated_at, sectorLabel: sectorLabel(p.product.sector, uiLang()) },
     product: p.product,
     brand: p.brand,
     strategy: p.strategy,
@@ -54,6 +56,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
           timezone: z.string().optional(),
           autopublish: z.object({ enabled: z.boolean(), networks: z.array(z.string()), requireApprovalFor: z.array(z.string()) }).optional(),
           socialLinks: z.record(z.string(), z.string()).optional(),
+          language: z.enum(["fr", "en"]).optional(),
         })
         .optional(),
     }),
@@ -65,7 +68,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       try {
         new Intl.DateTimeFormat("fr-FR", { timeZone: b.settings.timezone });
       } catch {
-        throw new Error("Fuseau horaire inconnu.");
+        throw new HttpError(400, L("Fuseau horaire inconnu.", "Unknown time zone."));
       }
     }
     saveSettings(p.id, { ...p.settings, ...b.settings } as any);

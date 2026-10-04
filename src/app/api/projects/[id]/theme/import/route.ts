@@ -1,5 +1,6 @@
 import { handle, ok } from "@/lib/http";
 import { HttpError } from "@/lib/auth";
+import { L } from "@/lib/i18n-server";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { importThemeForProject } from "@/lib/engine/theme-import";
 
@@ -10,8 +11,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const form = await req.formData();
   const file = form.get("theme");
-  if (!(file instanceof File)) throw new HttpError(400, "Joignez le fichier ZIP du thème.");
-  if (file.size > 60 * 1024 * 1024) throw new HttpError(413, "Le fichier dépasse 60 Mo.");
+  if (!(file instanceof File)) throw new HttpError(400, L("Joignez le fichier ZIP du thème.", "Attach the theme ZIP file."));
+  if (file.size > 60 * 1024 * 1024) throw new HttpError(413, L("Le fichier dépasse 60 Mo.", "The file is larger than 60 MB."));
   try {
     const r = await importThemeForProject(p.id, user.id, Buffer.from(await file.arrayBuffer()), file.name || "theme.zip");
     return ok(r);

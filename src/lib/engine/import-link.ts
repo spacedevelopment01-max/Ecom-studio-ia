@@ -6,6 +6,7 @@
  */
 import dns from "node:dns/promises";
 import net from "node:net";
+import { C, L } from "../i18n-server";
 
 export type LinkImport = {
   url: string;
@@ -31,13 +32,13 @@ export async function assertPublicUrl(raw: string): Promise<URL> {
   try {
     u = new URL(raw);
   } catch {
-    throw new Error("Lien invalide.");
+    throw new Error(L("Lien invalide.", "Invalid link."));
   }
-  if (!/^https?:$/.test(u.protocol)) throw new Error("Seuls les liens http et https sont acceptés.");
-  if (u.username || u.password) throw new Error("Les liens contenant des identifiants sont refusés.");
+  if (!/^https?:$/.test(u.protocol)) throw new Error(L("Seuls les liens http et https sont acceptés.", "Only http and https links are accepted."));
+  if (u.username || u.password) throw new Error(L("Les liens contenant des identifiants sont refusés.", "Links containing credentials are not allowed."));
   const host = u.hostname.replace(/^\[|\]$/g, "");
   const addrs = net.isIP(host) ? [host] : (await dns.lookup(host, { all: true })).map((a) => a.address);
-  if (!addrs.length || addrs.some(isPrivate)) throw new Error("Ce lien pointe vers une adresse privée : import refusé.");
+  if (!addrs.length || addrs.some(isPrivate)) throw new Error(L("Ce lien pointe vers une adresse privée : import refusé.", "This link points to a private address: import refused."));
   return u;
 }
 
@@ -50,7 +51,7 @@ export async function safeFetch(raw: string, opts: { maxBytes?: number; accept?:
     const r = await fetch(u, {
       redirect: "manual",
       signal: ctrl.signal,
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; EcomStudioIA/1.0; +analyse de fiche produit)", Accept: opts.accept ?? "text/html,application/json;q=0.9,*/*;q=0.5", "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.6" },
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; EcomStudioIA/1.0; +analyse de fiche produit)", Accept: opts.accept ?? "text/html,application/json;q=0.9,*/*;q=0.5", "Accept-Language": C("fr-FR,fr;q=0.9,en;q=0.6", "en-US,en;q=0.9,fr;q=0.6") },
     }).finally(() => clearTimeout(timer));
     if (r.status >= 300 && r.status < 400 && r.headers.get("location")) {
       url = new URL(r.headers.get("location")!, u).toString();
@@ -74,7 +75,7 @@ export async function safeFetch(raw: string, opts: { maxBytes?: number; accept?:
     }
     return { url: u.toString(), status: r.status, type: r.headers.get("content-type") ?? "", body: Buffer.concat(chunks) };
   }
-  throw new Error("Trop de redirections.");
+  throw new Error(L("Trop de redirections.", "Too many redirects."));
 }
 
 const decode = (s: string) =>
@@ -136,7 +137,7 @@ function jsonLdProduct(html: string): LinkImport["product"] {
 
 export async function importLink(raw: string): Promise<LinkImport> {
   const page = await safeFetch(raw);
-  if (page.status >= 400) throw new Error(`La page a répondu ${page.status}. Vérifiez le lien ou décrivez le produit.`);
+  if (page.status >= 400) throw new Error(L(`La page a répondu ${page.status}. Vérifiez le lien ou décrivez le produit.`, `The page responded with ${page.status}. Check the link or describe the product.`));
   const html = page.body.toString("utf8");
   const base = new URL(page.url);
   const abs = (s: string) => {

@@ -5,11 +5,12 @@ import { json, now, one, run } from "./db";
 import { enqueue } from "./jobs";
 import { saveAsset } from "./library";
 import { setStatus } from "./projects";
+import { L } from "./i18n-server";
 
 export const MAX_FILE = 25 * 1024 * 1024;
 
 export const StartInput = z.object({
-  link: z.string().url().optional().or(z.literal("")),
+  link: z.string().url({ error: () => L("Lien invalide.", "Invalid link.") }).optional().or(z.literal("")),
   description: z.string().max(8000).optional(),
   productName: z.string().max(120).optional(),
   brandName: z.string().max(80).optional(),
@@ -17,6 +18,8 @@ export const StartInput = z.object({
   platform: z.enum(["shopify", "woocommerce", "prestashop", "wix", "squarespace"]).default("shopify"),
   mode: z.enum(["autopilot", "guided"]).default("autopilot"),
   storeType: z.enum(["mono", "multi", "niche"]).default("mono"),
+  /** Langue des contenus du projet (par défaut : celle de l'interface). */
+  language: z.enum(["fr", "en"]).optional(),
 });
 export type StartInput = z.infer<typeof StartInput>;
 
@@ -32,8 +35,8 @@ export const hasProductInput = (input: StartInput, files: File[]) => files.lengt
 /** Enregistre les photos et le logo fournis. */
 export async function saveStartFiles(projectId: string, userId: string, files: File[], logo: File | null) {
   for (const [i, f] of files.slice(0, 8).entries()) {
-    if (f.size > MAX_FILE) throw new HttpError(413, `La photo « ${f.name} » dépasse 25 Mo.`);
-    if (!/^image\/(jpeg|png|webp|avif|heic|heif)$/.test(f.type)) throw new HttpError(415, `Format non pris en charge pour « ${f.name} » (JPEG, PNG, WebP, AVIF).`);
+    if (f.size > MAX_FILE) throw new HttpError(413, L(`La photo « ${f.name} » dépasse 25 Mo.`, `The photo "${f.name}" exceeds 25 MB.`));
+    if (!/^image\/(jpeg|png|webp|avif|heic|heif)$/.test(f.type)) throw new HttpError(415, L(`Format non pris en charge pour « ${f.name} » (JPEG, PNG, WebP, AVIF).`, `Unsupported format for "${f.name}" (JPEG, PNG, WebP, AVIF).`));
     await saveAsset({ projectId, userId, data: Buffer.from(await f.arrayBuffer()), name: f.name || `photo-${i + 1}.jpg`, mime: f.type, role: "original", folderKey: "product.originals", origin: "upload", meta: { uploadedAt: now() } });
   }
   if (logo) {
@@ -44,9 +47,9 @@ export async function saveStartFiles(projectId: string, userId: string, files: F
 /** Lance le pilote complet sur un projet (photos déjà enregistrées comme originaux). */
 export function launchPipeline(projectId: string, userId: string, input: StartInput, photoCount: number) {
   const prev = json<{ type: string; ref: string }[]>(one<{ sources_json: string }>("SELECT sources_json FROM projects WHERE id = ?", projectId)?.sources_json, []);
-  const sources = [...prev, ...(photoCount ? [{ type: "photo", ref: `${photoCount} photo(s)` }] : []), ...(input.link ? [{ type: "link", ref: input.link }] : []), ...(input.description ? [{ type: "description", ref: "description du client" }] : [])];
+  const sources = [...prev, ...(photoCount ? [{ type: "photo", ref: `${photoCount} photo(s)` }] : []), ...(input.link ? [{ type: "link", ref: input.link }] : []), ...(input.description ? [{ type: "description", ref: L("description du client", "customer description") }] : [])];
   run("UPDATE projects SET sources_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(sources), now(), projectId);
   if (input.productName || input.brandName) run("UPDATE projects SET name = ? WHERE id = ?", input.productName || input.brandName, projectId);
   setStatus(projectId, "queued");
-  return enqueue({ userId, projectId, type: "pipeline.run", label: "Création du projet", payload: { projectId, mode: input.mode, input: { link: input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price } }, maxAttempts: 2 });
+  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, input: { link: input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price } }, maxAttempts: 2 });
 }

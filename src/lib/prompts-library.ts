@@ -3,7 +3,11 @@
  * Chaque prompt précise le contexte, l'objectif, la direction créative, le
  * livrable attendu et les contrôles. Les variables {{…}} sont complétées à
  * l'insertion avec le produit, la marque et les médias du projet actif.
+ * Chaque prompt existe en français et en anglais : la version suit la langue des contenus
+ * (sur la bibliothèque du studio, sans projet : la langue de l'interface, ou celle choisie).
  */
+import { C, contentLang } from "./i18n-server";
+import type { Lang } from "./i18n";
 
 export type SectorData = {
   id: string;
@@ -26,7 +30,7 @@ export type SectorData = {
   tone: string;
 };
 
-export const SECTOR_DATA: SectorData[] = [
+const SECTORS_FR: SectorData[] = [
   {
     id: "beaute",
     label: "Beauté & cosmétique",
@@ -229,7 +233,219 @@ export const SECTOR_DATA: SectorData[] = [
   },
 ];
 
-export type PromptCategory = { id: string; label: string; group: "Analyse" | "Marque" | "Boutique" | "Images" | "Vidéos" | "Réseaux sociaux" | "Publicités"; target: "produit" | "marque" | "boutique" | "images" | "videos" | "social" | "publicites" | "calendrier" };
+/** Version anglaise des données sectorielles (même ordre, mêmes identifiants). */
+const SECTORS_EN: SectorData[] = [
+  {
+    id: "beaute",
+    label: "Beauty & cosmetics",
+    buyer: "people who care about ingredients, compare active ingredients and read labels",
+    drivers: ["a readable ingredient list", "texture and feel", "a simple routine", "skin tolerance claimed only if tested"],
+    objections: ["\"Will it suit my skin?\"", "\"How long does a bottle last?\"", "\"Is the texture sticky?\""],
+    vocabulary: ["texture", "finish", "ritual", "application", "bottle", "actives"],
+    forbidden: ["unproven anti-aging or anti-wrinkle claims", "\"hypoallergenic\" without testing", "\"100% natural\" without the full ingredient list", "any medical claim (treats, cures, heals)"],
+    surfaces: ["light travertine", "frosted glass", "ecru terry cloth", "water droplets on marble"],
+    light: "soft, diffused light from the left, controlled reflections on the glass, short shadows",
+    details: ["dropper with a hanging drop", "label and INCI list", "texture swatched on glass"],
+    scenes: ["a clean bathroom shelf in the morning", "an open travel kit", "a hand holding the bottle next to a towel"],
+    motion: ["a drop falling in slow motion", "a slow rotation of the bottle", "texture spreading in macro"],
+    hooks: ["Your routine in three steps", "What's really in this bottle", "The evening ritual"],
+    trust: ["full INCI list", "actual volume", "directions for use", "precautions"],
+    seasons: ["winter routine", "back-to-school skin", "vacation kit"],
+    pinKeywords: ["skincare routine", "face serum", "minimalist bathroom"],
+    shopFocus: ["ingredients and actives", "how to use", "precautions", "volume"],
+    tone: "precise, soothing, free of medical jargon",
+  },
+  {
+    id: "mode",
+    label: "Fashion & accessories",
+    buyer: "shoppers who care about the cut, the fabric and how the piece wears",
+    drivers: ["cut and drape", "fabric and feel", "versatile outfits", "a reliable size guide"],
+    objections: ["\"Which size should I pick?\"", "\"Is the color accurate?\"", "\"How do I care for it?\""],
+    vocabulary: ["cut", "drape", "fabric", "finishes", "silhouette", "fit"],
+    forbidden: ["\"eco-friendly\" without proof", "unverified \"made in\" claims", "\"fits perfectly\" without a size guide"],
+    surfaces: ["polished concrete", "crumpled linen", "light wood", "colored paper backdrop"],
+    light: "strong side light that reveals the fabric texture, crisp shadows",
+    details: ["seams and topstitching", "label and fabric content", "zips and buttons"],
+    scenes: ["a sunny street early in the morning", "a bright studio with a clothing rack", "laid flat on an unmade bed"],
+    motion: ["fabric rippling in slow motion", "an outfit change on a clap", "a zoom on a seam"],
+    hooks: ["Three ways to wear it", "The fabric, up close", "The detail people notice"],
+    trust: ["size guide", "exact fabric content", "care instructions", "model measurements on worn photos"],
+    seasons: ["back-to-school wardrobe", "transitional season", "holiday season"],
+    pinKeywords: ["minimalist outfit", "outfit ideas", "capsule wardrobe"],
+    shopFocus: ["size guide", "fabric content", "care", "worn photos"],
+    tone: "confident, visual, concrete about the fabric",
+  },
+  {
+    id: "bijoux",
+    label: "Jewelry & watches",
+    buyer: "people buying for themselves or as a gift, who pay close attention to materials and finishes",
+    drivers: ["exact material and purity", "finishes", "box and gift presentation", "size and dimensions"],
+    objections: ["\"Will it tarnish?\"", "\"What's the real size?\"", "\"Is it a good gift?\""],
+    vocabulary: ["sparkle", "finish", "chain", "stone", "gift box", "worn"],
+    forbidden: ["\"solid gold\" or \"925 silver\" without a confirmed hallmark", "uncertified \"precious stone\" claims", "untested \"hypoallergenic\" claims"],
+    surfaces: ["deep velvet", "raw stone", "crumpled silk", "black mirror"],
+    light: "spot lighting to make it sparkle, reflectors for clean highlights, a controlled dark background",
+    details: ["clasp", "stone setting", "hallmark or engraving"],
+    scenes: ["a wrist in natural light", "an open gift box on a table", "a hand resting on fabric"],
+    motion: ["a highlight sweeping across the piece", "a macro rotation", "a gift box opening"],
+    hooks: ["The detail that catches the light", "To give (or to keep)", "Your everyday piece"],
+    trust: ["material and hallmark", "dimensions and weight", "care", "actual gift packaging"],
+    seasons: ["Mother's Day", "Valentine's Day", "holiday season"],
+    pinKeywords: ["minimalist jewelry", "gift ideas for her", "dainty necklace"],
+    shopFocus: ["materials", "dimensions", "care", "packaging"],
+    tone: "elegant, understated, reassuring about materials",
+  },
+  {
+    id: "maison",
+    label: "Home & decor",
+    buyer: "people furnishing their home who want beautiful, useful objects and pay attention to dimensions",
+    drivers: ["dimensions and how it fits the room", "material", "everyday use", "easy care"],
+    objections: ["\"Will it fit?\"", "\"Will the color look right in my home?\"", "\"Is it fragile?\""],
+    vocabulary: ["material", "light", "room", "mood", "object", "everyday use"],
+    forbidden: ["\"handmade\" without confirmation", "durability figures without proof", "unconfirmed \"dishwasher safe\" claims"],
+    surfaces: ["oiled oak", "natural linen", "matte ceramic", "limewashed wall"],
+    light: "low window light with leaf shadows, warm tones",
+    details: ["grain of the material", "glaze or finish", "underside of the object and maker's mark"],
+    scenes: ["a breakfast table", "a styled shelf", "a reading nook at the end of the day"],
+    motion: ["light moving across the room", "steam rising from a cup", "a hand setting the object down"],
+    hooks: ["The object that changes the room", "The morning ritual", "Made to last"],
+    trust: ["exact dimensions", "material", "care", "shipping terms for fragile items"],
+    seasons: ["cozy fall", "holiday table", "spring refresh"],
+    pinKeywords: ["minimalist decor", "cozy interior", "table setting"],
+    shopFocus: ["dimensions", "materials", "care", "packaging"],
+    tone: "warm, sensory, practical",
+  },
+  {
+    id: "hightech",
+    label: "Tech & gadgets",
+    buyer: "comparison shoppers who want exact specs and compatibility",
+    drivers: ["complete spec sheet", "compatibility", "measured battery life and performance", "what's in the box"],
+    objections: ["\"Does it work with my device?\"", "\"What's the real battery life?\"", "\"What's the warranty?\""],
+    vocabulary: ["compatibility", "battery life", "ports", "handling", "settings", "box"],
+    forbidden: ["battery or performance figures that weren't provided", "unconfirmed certifications (CE, IP)", "\"the best on the market\""],
+    surfaces: ["a dark walnut desk", "a charcoal gradient backdrop", "a felt desk mat", "brushed aluminum"],
+    light: "cool, crisp light, light edges along the contours, controlled reflections",
+    details: ["ports", "buttons and indicator lights", "surface texture"],
+    scenes: ["a desk setup in the evening", "a travel bag", "a living-room table with a screen"],
+    motion: ["an exploded view of the product", "indicator lights switching on", "a rotation on a dark background"],
+    hooks: ["What's in the box", "Plugged in in ten seconds", "What it changes on your desk"],
+    trust: ["spec sheet", "compatibility", "actual warranty", "user manual"],
+    seasons: ["back to school", "Black Friday (no fake discounts)", "holiday gifts"],
+    pinKeywords: ["desk setup", "useful gadget", "desk organization"],
+    shopFocus: ["specs", "compatibility", "what's in the box", "warranty"],
+    tone: "clear, factual, no hype",
+  },
+  {
+    id: "sport",
+    label: "Sports & outdoors",
+    buyer: "athletes and outdoor lovers who want reliable, lightweight gear",
+    drivers: ["real use in the field", "weight and bulk", "durability claimed only if tested", "care"],
+    objections: ["\"Will it fit in my bag?\"", "\"Is it waterproof?\"", "\"How long does it keep things hot or cold?\""],
+    vocabulary: ["trail", "outing", "lightweight", "grip", "effort", "adventure"],
+    forbidden: ["unconfirmed insulation or waterproofing times", "\"unbreakable\"", "athletic performance claims"],
+    surfaces: ["granite rock", "a raw wood plank", "wet grass", "a running track"],
+    light: "golden natural light at the start or end of the day, slight backlight",
+    details: ["cap and thread", "non-slip texture", "engraved logo"],
+    scenes: ["a mountain trail at sunrise", "a locker room after a workout", "a bike leaning against a wall"],
+    motion: ["a moving shot along the trail", "condensation droplets", "a quick slide into the bag"],
+    hooks: ["Ready for tomorrow's outing", "What's in my bag", "Tested in the field"],
+    trust: ["capacity and weight", "materials", "care", "real test results if they exist"],
+    seasons: ["January restart", "summer hiking", "back-to-sport season"],
+    pinKeywords: ["hiking gear", "insulated water bottle", "gym bag"],
+    shopFocus: ["specs", "uses", "care", "dimensions"],
+    tone: "energetic, direct, concrete",
+  },
+  {
+    id: "alimentation",
+    label: "Food & drinks",
+    buyer: "food lovers and curious shoppers who care about ingredients, origin and storage",
+    drivers: ["precisely described taste", "ingredients and allergens", "verified origin", "serving ideas"],
+    objections: ["\"Does it contain allergens?\"", "\"How long does it keep?\"", "\"How should I enjoy it?\""],
+    vocabulary: ["flavor", "notes", "tasting", "recipe", "origin", "pairing"],
+    forbidden: ["\"organic\" without certification", "unauthorized nutrition or health claims", "unconfirmed origin", "unverified \"homemade\" claims"],
+    surfaces: ["a weathered wooden board", "ecru linen", "slate", "a checkered tablecloth"],
+    light: "warm side light, shallow depth of field, appetizing textures",
+    details: ["label and ingredient list", "close-up texture", "cap or seal"],
+    scenes: ["a shared brunch table", "a countertop with ingredients", "a picnic basket"],
+    motion: ["a slow-motion pour", "rising steam", "a spoon dipping in"],
+    hooks: ["The recipe in 30 seconds", "Where this flavor comes from", "Serve it with…"],
+    trust: ["ingredient and allergen list", "storage", "origin", "net weight"],
+    seasons: ["summer aperitifs", "holiday season", "back-to-school snacks"],
+    pinKeywords: ["easy recipe", "gourmet pantry", "appetizer ideas"],
+    shopFocus: ["ingredients", "allergens", "storage", "recipe ideas"],
+    tone: "indulgent, sensory, honest",
+  },
+  {
+    id: "enfants",
+    label: "Baby & kids",
+    buyer: "parents and relatives looking for safety, simplicity and clear age information",
+    drivers: ["recommended age", "materials", "easy cleaning", "everyday practicality"],
+    objections: ["\"Is it right for their age?\"", "\"What is it made of?\"", "\"How do I wash it?\""],
+    vocabulary: ["age", "discovery", "everyday", "soft", "practical", "family"],
+    forbidden: ["unconfirmed safety standards (EN 71, ASTM, etc.)", "unproven developmental benefits", "absolute \"completely safe\" claims"],
+    surfaces: ["a wool play mat", "light wood", "a cotton sheet", "a pastel wall"],
+    light: "soft, bright light, pastel tones, light shadows",
+    details: ["seams and finishes", "age and materials label", "fasteners"],
+    scenes: ["a tidy kid's room", "an open diaper bag", "playtime on the floor"],
+    motion: ["an object set down gently", "a slow rotation on a pastel background", "a parent's hands adjusting it"],
+    hooks: ["Made for little ones, designed for parents", "What to know before you buy", "In the diaper bag"],
+    trust: ["recommended age", "confirmed standards", "materials", "care"],
+    seasons: ["new baby", "starting daycare", "Christmas"],
+    pinKeywords: ["nursery", "baby registry", "wooden toy"],
+    shopFocus: ["age", "safety", "materials", "care"],
+    tone: "reassuring, gentle, precise",
+  },
+  {
+    id: "animaux",
+    label: "Pets",
+    buyer: "pet owners who care about their companion's comfort, size and safety",
+    drivers: ["the right size for the animal", "materials and durability", "care", "everyday use"],
+    objections: ["\"Which size for my dog?\"", "\"Will they destroy it?\"", "\"How do I clean it?\""],
+    vocabulary: ["companion", "size", "walk", "comfort", "routine", "durable"],
+    forbidden: ["unproven veterinary benefits", "\"indestructible\"", "unconfirmed food compositions"],
+    surfaces: ["warm hardwood floor", "a wool throw", "garden grass", "kitchen tiles"],
+    light: "warm natural light, shot at the animal's eye level",
+    details: ["clasp or attachment", "texture", "size label"],
+    scenes: ["back from a walk", "a resting spot by the window", "in the car before setting off"],
+    motion: ["a pet approaching (never put at risk)", "an object rolling", "a hand adjusting a harness"],
+    hooks: ["Their favorite moment of the day", "Which size to choose", "Walks, made easy"],
+    trust: ["size guide", "materials", "care", "usage tips"],
+    seasons: ["vacation with your pet", "winter walks", "adoption"],
+    pinKeywords: ["dog accessories", "cat corner", "dog walk"],
+    shopFocus: ["sizes", "materials", "care", "use"],
+    tone: "friendly, practical, warm",
+  },
+  {
+    id: "artisanat",
+    label: "Crafts & stationery",
+    buyer: "lovers of beautiful pieces who care about craftsmanship, materials and small batches",
+    drivers: ["described craftsmanship", "material and origin", "one-of-a-kind piece or small batch", "use and durability"],
+    objections: ["\"Is every piece identical?\"", "\"How long does it take to make?\"", "\"How do I care for it?\""],
+    vocabulary: ["craft", "workshop", "material", "batch", "handmade", "piece"],
+    forbidden: ["\"handmade\" or \"artisan\" if not confirmed", "unverified material origin", "\"one of a kind\" for a series"],
+    surfaces: ["a worn wooden workbench", "cotton paper", "linen canvas", "workshop stone"],
+    light: "side workshop light, dust in the light beam, natural tones",
+    details: ["tool marks", "paper edge and grain", "signature or stamp"],
+    scenes: ["the workshop mid-production", "a desk with an open notebook", "a parcel packed by hand"],
+    motion: ["hands at work", "a page turning", "a tool marking the material"],
+    hooks: ["How a piece is made", "Inside the workshop", "Why every piece is different"],
+    trust: ["making process", "materials", "real lead times", "care"],
+    seasons: ["back to school and notebooks", "holiday gifts", "Mother's and Father's Day"],
+    pinKeywords: ["stationery", "handmade", "creative studio"],
+    shopFocus: ["craftsmanship", "materials", "lead times", "personalization"],
+    tone: "authentic, calm, attentive to detail",
+  },
+];
+
+/** Données sectorielles complètes dans la langue demandée (par défaut : langue des contenus). */
+export function sectorData(lang: Lang = contentLang()): SectorData[] {
+  return lang === "en" ? SECTORS_EN : SECTORS_FR;
+}
+
+/** Secteurs : `label` suit la langue des contenus au moment de la lecture (les autres champs restent en français ; voir `sectorData()`). */
+export const SECTOR_DATA: SectorData[] = SECTORS_FR.map((s, i) => Object.defineProperty({ ...s }, "label", { get: () => C(s.label, SECTORS_EN[i].label), enumerable: true }));
+
+export type PromptCategory = { id: string; label: string; group: string; target: "produit" | "marque" | "boutique" | "images" | "videos" | "social" | "publicites" | "calendrier" };
 
 /** Ambiance conseillée par secteur pour les boutiques (directions du studio). */
 const MOOD: Record<string, string> = {
@@ -245,7 +461,7 @@ const MOOD: Record<string, string> = {
   artisanat: "« Galerie » ou « Terroir »",
 };
 
-export const CATEGORIES: PromptCategory[] = [
+const CATEGORIES_FR: PromptCategory[] = [
   { id: "analyse", label: "Analyse produit", group: "Analyse", target: "produit" },
   { id: "positionnement", label: "Positionnement et promesse", group: "Marque", target: "marque" },
   { id: "nom", label: "Nom et signature", group: "Marque", target: "marque" },
@@ -289,7 +505,7 @@ const L = (a: string[]) => a.join(", ");
 const pick = <T,>(a: T[], i: number) => a[i % a.length];
 
 /** Chaque fabrique utilise les données propres au secteur : les prompts diffèrent réellement. */
-const MAKERS: Record<string, (s: SectorData) => Omit<LibraryPrompt, "id" | "sector" | "sectorLabel" | "category" | "categoryLabel" | "group" | "target" | "body">> = {
+const MAKERS_FR: Record<string, (s: SectorData) => Omit<LibraryPrompt, "id" | "sector" | "sectorLabel" | "category" | "categoryLabel" | "group" | "target" | "body">> = {
   analyse: (s) => ({
     title: `Analyser un produit ${s.label.toLowerCase()} et lister ce qui manque`,
     context: `Produit : {{produit}}. Photos et sources disponibles : {{medias}}. Faits déjà connus : {{faits}}. Les acheteurs de ce secteur sont des ${s.buyer}.`,
@@ -452,7 +668,248 @@ const MAKERS: Record<string, (s: SectorData) => Omit<LibraryPrompt, "id" | "sect
   }),
 };
 
-function assemble(p: Omit<LibraryPrompt, "body">): string {
+
+/** Ambiance conseillée par secteur (version anglaise ; les noms de directions restent des noms propres). */
+const MOOD_EN: Record<string, string> = {
+  beaute: "\"Atelier\" (luminous ivory, high-contrast serif, golden italics) or \"Nocturne\" for an evening fragrance",
+  mode: "\"Flux\" (premium sportswear: black and white, extra-bold grotesque, framed header, stacked cards, curved text, vertical videos) or \"Brut\"",
+  bijoux: "\"Joaillerie\" (full-screen portrait, spaced capitals with one italic word, collection circles, worn videos) or \"Galerie\"",
+  maison: "\"Terroir\" (cream and earth tones, generous rounded corners)",
+  hightech: "\"Nocturne\" (deep night, glass, glows) or \"Clinique\" (pure white, tight typography)",
+  sport: "\"Élan\" (charcoal and bright neon, fast italics)",
+  alimentation: "\"Gourmand\" (cream and deep green, extra-bold serif, waves, confetti, sticker badges) or \"Terroir\"",
+  enfants: "\"Pop\" (bold colors, bounces, very rounded corners)",
+  animaux: "\"Pop\" (bold colors, bounces)",
+  artisanat: "\"Galerie\" or \"Terroir\"",
+};
+
+/** Libellés anglais des catégories et des groupes. */
+const CATEGORY_EN: Record<string, string> = {
+  analyse: "Product analysis",
+  positionnement: "Positioning and promise",
+  nom: "Name and tagline",
+  logo: "Logo and identity",
+  boutique: "Complete store",
+  accueil: "Homepage refresh",
+  fiche: "Product page and checkout",
+  animation: "Animated section",
+  packshot: "Packshot",
+  detail: "Detail photo",
+  scene: "Lifestyle scene",
+  banniere: "Store banner",
+  visuelpub: "Ad visual",
+  videopub: "15-second video ad",
+  motion: "Motion design reveal",
+  reel: "Educational Reel or TikTok",
+  carrousel: "Instagram carousel",
+  pinterest: "Pinterest pins",
+  campagne: "Ad campaign",
+  lancement: "Launch calendar",
+};
+const GROUP_EN: Record<string, string> = {
+  Analyse: "Analysis",
+  Marque: "Brand",
+  Boutique: "Store",
+  Images: "Images",
+  "Vidéos": "Videos",
+  "Réseaux sociaux": "Social media",
+  "Publicités": "Ads",
+};
+
+const MAKERS_EN: Record<string, (s: SectorData) => Omit<LibraryPrompt, "id" | "sector" | "sectorLabel" | "category" | "categoryLabel" | "group" | "target" | "body">> = {
+  analyse: (s) => ({
+    title: `Analyze a ${s.label.toLowerCase()} product and list what's missing`,
+    context: `Product: {{produit}}. Available photos and sources: {{medias}}. Facts already known: {{faits}}. Buyers in this sector are ${s.buyer}.`,
+    objective: `Build a reliable product sheet that separates confirmed facts, visual observations and unknowns, then identify the information you must ask for before selling.`,
+    direction: `Look first at: ${L(s.details)}. Copy any printed text word for word. In this sector, the deciding purchase factors are: ${L(s.drivers)}. Information expected on the product page: ${L(s.trust)}.`,
+    deliverable: `1) Fact table (confirmed / observed / unknown); 2) at most 5 essential questions, each with its reason; 3) list of claims to avoid; 4) three detail areas to photograph.`,
+    checks: [`None of these claims without proof: ${L(s.forbidden)}`, "Every fact states its source", "Questions only cover what can't be inferred"],
+  }),
+  positionnement: (s) => ({
+    title: `Positioning and promise for a ${s.label.toLowerCase()} brand`,
+    context: `Brand: {{marque}}. Product: {{produit}}. Intended audience: {{cible}}. Confirmed facts: {{faits}}.`,
+    objective: `Write a sharp, credible positioning that answers the typical objections in this sector: ${L(s.objections)}.`,
+    direction: `Target tone: ${s.tone}. Base the difference on verifiable elements (${L(s.drivers)}). Avoid generic promises and any forbidden wording (${L(s.forbidden)}).`,
+    deliverable: `One positioning statement (for whom, what use, what difference), three message pillars, a short promise, and an honest answer to each objection.`,
+    checks: ["Every pillar rests on a confirmed fact", "No unverifiable superlatives", "Readable in under 10 seconds"],
+  }),
+  nom: (s) => ({
+    title: `Brand names and taglines for ${s.label.toLowerCase()}`,
+    context: `Product: {{produit}}. Current visual world: {{palette}}. Tone: {{ton}}.`,
+    objective: `Suggest short names that are easy to pronounce in English and easy to remember, plus a tagline that evokes ${pick(s.vocabulary, 1)} and ${pick(s.vocabulary, 3)}.`,
+    direction: `Explore four territories: elegant descriptive, sensory evocation, invented proper name, simple foreign word. Avoid names too close to well-known brands in the sector and dated puns.`,
+    deliverable: `8 names (2 per territory) with their intent, 3 taglines under 6 words, and the recommended name + tagline pair with its rationale.`,
+    checks: ["Check name availability (trademark register, social handles, domain) before adopting it", "No promise in the tagline", "Unambiguous pronunciation"],
+  }),
+  logo: (s) => ({
+    title: `Typographic logo and guidelines for ${s.label.toLowerCase()}`,
+    context: `Brand: {{marque}}. Palette: {{palette}}. Tone: {{ton}}. Uses: label, favicon, social media, video.`,
+    objective: `Define a logo that stays legible from 16 px to poster size, consistent with a "${s.tone}" world.`,
+    direction: `Suggest a wordmark and a monogram; specify family, weight, case, letter spacing and any ornament. Think about the sector's uses: ${pick(s.details, 2)}, packaging, video watermark.`,
+    deliverable: `Specification of the main logo, the monogram and the light version; usage rules (clear space, minimum size, allowed backgrounds); two supporting colors.`,
+    checks: ["Enough contrast on light and dark backgrounds", "Legible in a single color", "No reference to an existing brand"],
+  }),
+  boutique: (s) => ({
+    title: `Create a premium ${s.label.toLowerCase()} store`,
+    context: `Product: {{produit}}. Brand: {{marque}}. Palette: {{palette}}. Available media: {{medias}}. Audience: {{cible}}.`,
+    objective: `Design a Shopify store on par with major brands (Apple, Aesop, Nike polish) that converts by first answering: ${L(s.objections)}.`,
+    direction: `Recommended direction: ${MOOD_EN[s.id]}. Floating glass header with rounded corners, floating buttons (contact, back to top). Immersive full-screen hero: a badge of short facts, a very large headline whose last words switch to colored italics, two pill buttons (a bright primary with an animated sheen and an arrow, a glass secondary). Then: an engagement line that lights up on scroll, numbered glowing cards (gradient icon tile, "Discover →" link, neon outline on hover) on the real details (${L(s.details)}), a lifestyle image (${pick(s.scenes, 0)}) that reframes on scroll, a step-by-step product presentation, animated key figures only if numeric facts are confirmed, an FAQ in rounded cards (${L(s.shopFocus)}), and a final call to action over an image. Lighting: ${s.light}.`,
+    deliverable: `Ordered structure of the homepage (8 to 10 sections) and the product page, with short headings, accent words, 1–2 sentence texts, matching images and global settings (header shape, sheens, glows, corner radius, animations); Story, FAQ, Contact, Shipping & returns pages.`,
+    checks: ["Modern, premium look on phone and desktop, nothing that feels like a generic template", "No invented reviews, ratings, figures or promotions", `"To complete" placeholders visible when information is unknown (${L(s.trust)})`, "Gentle animations, turned off when the user prefers reduced motion", "Buy button reachable at all times on mobile"],
+  }),
+  accueil: (s) => ({
+    title: `Make the homepage stunning (${s.label.toLowerCase()})`,
+    context: `Current store for {{marque}}. Product: {{produit}}. Available images: {{medias}}.`,
+    objective: `An opening that grabs attention in one second, like a major brand's launch page: people understand the product and want to keep scrolling.`,
+    direction: `Full-screen hero on the widest image (${pick(s.scenes, 1)}) with a gradient overlay in the background color; a badge of three short facts; a 4–8 word headline built around "${pick(s.hooks, 0)}", with the last two words in colored italics; a one-sentence text; a bright primary button with a sheen and a glass secondary button. Headlines that appear word by word, a slow subtle zoom on the image. If useful, a scrolling ticker with three phrases from the sector (${L(s.vocabulary.slice(0, 4))}). Keep the sections already approved.`,
+    deliverable: `Targeted changes to the hero (badge, headline and accent word, text, image, buttons) and the header (floating glass), leaving everything else untouched.`,
+    checks: ["Don't change locked sections", "Text contrast over the image ≥ 4.5:1", "Readable on a 375 px screen, image on top and text below on phones"],
+  }),
+  fiche: (s) => ({
+    title: `Premium product page and checkout flow (${s.label.toLowerCase()})`,
+    context: `Product page for {{produit}} at {{marque}}. Confirmed facts: {{faits}}.`,
+    objective: `A product page as polished as a major brand's, removing the friction specific to this sector: ${L(s.objections)}.`,
+    direction: `Large swipeable gallery on mobile; title, price, hook line, variants as rounded pills (the selected one lights up in the accent color), a bright add-to-cart button, verified highlights with check marks, tabs as rounded cards (${L(s.shopFocus)}), real reassurance only. A glass buy bar that follows the scroll on mobile, a smooth side cart.`,
+    deliverable: `Block copy, tab content, display settings and the list of information the merchant must provide to complete the page.`,
+    checks: ["Highlights drawn from confirmed facts", "No artificial urgency", `No: ${pick(s.forbidden, 0)}`, "Buy button visible without scrolling on phones"],
+  }),
+  animation: (s) => ({
+    title: `Launch-page style animated sequence (${s.label.toLowerCase()})`,
+    context: `Store for {{marque}}. Product: {{produit}}. Detail images: {{medias}}.`,
+    objective: `Create a sequence that reveals the product as people scroll, like major brands' launch pages, without getting in the way of reading or buying.`,
+    direction: `A sticky image that changes at each step with a slight zoom, steps on the other side: ${L(s.details)}. An engagement line whose words light up one by one on scroll, numbers that count up to their value (confirmed facts only). Motion inspired by: ${pick(s.motion, 0)}. A soft glow in the accent color around the product.`,
+    deliverable: `One section (existing or custom) with 3 to 4 steps: short heading, two-sentence text, matching image; settings editable in the Shopify editor.`,
+    checks: ["Respects prefers-reduced-motion", "No text hidden behind the image on mobile", "Smooth at 60 frames per second (transforms and opacity only)", "Settings editable in the Shopify editor"],
+  }),
+  packshot: (s) => ({
+    title: `E-commerce packshot for ${s.label.toLowerCase()}`,
+    context: `Product: {{produit}} (reference photo: {{medias}}). Measured colors: {{palette}}.`,
+    objective: `Get a sharp, accurate, centered product-page image, on white and then on a brand background.`,
+    direction: `${s.light}. Soft contact shadow, centered framing with a 12% margin, no props. For the brand-background version, pick a light shade that makes the product stand out.`,
+    deliverable: `Two square 2000 × 2000 px images (white background, brand background), product identical to the reference photo.`,
+    checks: ["Shape, proportions, colors, label and logo identical to the reference", "No stray reflections or visible cutout edges", "Pure white background for marketplaces"],
+  }),
+  detail: (s) => ({
+    title: `Detail photos for ${s.label.toLowerCase()}`,
+    context: `Product: {{produit}}. High-resolution original photo: {{medias}}.`,
+    objective: `Show the real quality with close-ups taken from the original photo (nothing generated on the product).`,
+    direction: `Priority crops: ${L(s.details)}. 4:5 format, slightly sharpened, no color changes.`,
+    deliverable: `Two to three 1600 × 2000 px crops, each paired with a factual caption.`,
+    checks: ["Pixels taken from the original photo", "Label text legible", "Captions free of unconfirmed claims"],
+  }),
+  scene: (s) => ({
+    title: `Lifestyle scene for ${s.label.toLowerCase()}`,
+    context: `Product: {{produit}}. Brand: {{marque}}. Palette: {{palette}}.`,
+    objective: `Show the product in a believable, desirable setting without changing how it looks.`,
+    direction: `Set: ${pick(s.scenes, 0)}; surface: ${pick(s.surfaces, 0)}; ${s.light}. Keep the set simple so the product stands out; no text in the image.`,
+    deliverable: `One 4:5 scene (1600 × 2000) and a 16:9 version for the store, with the real product composited into the set.`,
+    checks: ["The product is the one in the reference photo, at a believable scale", "Shadow consistent with the light direction", "No other branded product visible"],
+  }),
+  banniere: (s) => ({
+    title: `Homepage banner for ${s.label.toLowerCase()}`,
+    context: `Store for {{marque}}. Product: {{produit}}. Palette: {{palette}}.`,
+    objective: `Create a wide banner that leaves calm space for the theme's headline (text added in Shopify, not in the image).`,
+    direction: `Composition: product offset to the right, empty area on the left; surface: ${pick(s.surfaces, 1)}; ${s.light}.`,
+    deliverable: `A 2400 × 1200 banner and a 16:9 version, with no text baked in.`,
+    checks: ["Text area with enough contrast", "Mobile crop that doesn't cut the product", "File size optimized for the web"],
+  }),
+  visuelpub: (s) => ({
+    title: `Static ad visual for ${s.label.toLowerCase()}`,
+    context: `Product: {{produit}}. Brand: {{marque}}. Tone: {{ton}}.`,
+    objective: `Stop the scroll and give a concrete reason to click.`,
+    direction: `Hook: "${pick(s.hooks, 1)}", adapted to the product; one single message; large, sharp product; "Shop now" button. 1:1, 4:5 and 9:16 versions with safe margins.`,
+    deliverable: `Three visuals with a headline (2 to 6 words), a factual subheading and a call to action, all typeset.`,
+    checks: ["Flawless spelling", "Text readable on phones (≥ 4% of the width)", `No mention of: ${L(s.forbidden.slice(0, 2))}`],
+  }),
+  videopub: (s) => ({
+    title: `15-second video ad for ${s.label.toLowerCase()}`,
+    context: `Product: {{produit}}. Brand: {{marque}}. Media: {{medias}}.`,
+    objective: `A vertical ad that hooks viewers in 2 seconds and ends on a clear call to action.`,
+    direction: `Shot list: hook ("${pick(s.hooks, 2)}"), product reveal, 2 to 3 confirmed points, close-up detail (${pick(s.details, 0)}), end screen. Motion: ${pick(s.motion, 1)}.`,
+    deliverable: `A 12–18 s 9:16 video, MP4 H.264, SRT subtitles, plus a 1:1 version.`,
+    checks: ["2 to 6 words of text per shot", "Product accurate throughout", "Safe margins respected (top 12%, bottom 20%)"],
+  }),
+  motion: (s) => ({
+    title: `Motion design product reveal (${s.label.toLowerCase()})`,
+    context: `Cutout of {{produit}}. Palette: {{palette}}. Logo: {{marque}}.`,
+    objective: `An elegant animation for the store and social media, with no filmed footage.`,
+    direction: `Brand background, product entrance (${pick(s.motion, 2)}), a light sweep across the material, word-by-word animated typography, a graphic transition, ending on the logo.`,
+    deliverable: `A looping 16:9 video for the store (no sound) and a 9:16 version with soft music.`,
+    checks: ["Smooth animation at 30 fps", "No text that goes by too fast (≥ 1.6 s per shot)", "Seamless loop for the store version"],
+  }),
+  reel: (s) => ({
+    title: `Educational Reel or TikTok (${s.label.toLowerCase()})`,
+    context: `Product: {{produit}}. Frequent buyer questions: ${L(s.objections)}.`,
+    objective: `Answer a real question in under 20 seconds and make people want to learn more.`,
+    direction: `Talking-to-camera or hands + on-screen text; the first line is the question; demo: ${pick(s.scenes, 2)}; tone: ${s.tone}.`,
+    deliverable: `Shot-by-shot script, on-screen text, native caption and 3 to 5 specific hashtags.`,
+    checks: ["Answer based on confirmed facts", "No copyrighted trending audio without rights", "Understandable without sound"],
+  }),
+  carrousel: (s) => ({
+    title: `Instagram carousel (${s.label.toLowerCase()})`,
+    context: `Product: {{produit}}. Brand: {{marque}}. Visuals: {{medias}}.`,
+    objective: `A save-worthy carousel that teaches something useful about ${pick(s.drivers, 0)}.`,
+    direction: `6 slides: a cover with a clear promise, 4 content slides (${L(s.shopFocus)}), a final slide with a call to action. Layout consistent with the brand guidelines.`,
+    deliverable: `Copy for each slide (heading + 1 sentence), a caption with a hook on the first line, hashtags.`,
+    checks: ["One idea per slide", "Consistent typography", "No unconfirmed information"],
+  }),
+  pinterest: (s) => ({
+    title: `Pinterest pins (${s.label.toLowerCase()})`,
+    context: `Product: {{produit}}. Store link: {{lien}}.`,
+    objective: `Get found in search for intents such as: ${L(s.pinKeywords)}.`,
+    direction: `Vertical 2:3 visuals; descriptive titles with keywords; useful 2–3 sentence descriptions; mood: ${pick(s.surfaces, 2)}.`,
+    deliverable: `5 pins (title under 100 characters, description, main keyword, matching visual).`,
+    checks: ["Titles that don't mislead", "Link to the right product page", "No hashtag overload"],
+  }),
+  campagne: (s) => ({
+    title: `Launch ad campaign (${s.label.toLowerCase()})`,
+    context: `Product: {{produit}}. Brand: {{marque}}. Goals: {{objectifs}}. Budget: to be set by the merchant.`,
+    objective: `Structure a clear, measurable test campaign with distinct angles.`,
+    direction: `Three angles: ${L(s.hooks)}. Audiences: ${s.buyer}. Possible seasonality: ${L(s.seasons)}. Formats: 9:16 video, 1:1 visual, carousel.`,
+    deliverable: `Campaign plan: goals, audiences, angles × formats, primary texts, headlines, calls to action, metrics to track. No money is spent without approval.`,
+    checks: ["Complies with the network's advertising policies", `No forbidden claims (${L(s.forbidden.slice(0, 2))})`, "Budget and launch approved by the merchant"],
+  }),
+  lancement: (s) => ({
+    title: `14-day launch calendar (${s.label.toLowerCase()})`,
+    context: `Product: {{produit}}. Networks: Instagram, TikTok, Pinterest, Facebook. Media: {{medias}}.`,
+    objective: `Plan two weeks of varied posts that gradually lead to a purchase.`,
+    direction: `Week 1: discovery (behind the scenes, details: ${pick(s.details, 1)}, a question to the community). Week 2: proof and use (${pick(s.scenes, 1)}, education, product reminder). Vary formats and angles; adapt the copy to each network.`,
+    deliverable: `14 dated posts: network, format, angle, title, caption, media, suggested time.`,
+    checks: ["No two identical posts on two networks", "Media in the right format", "Every post approved before scheduling"],
+  }),
+};
+
+/** Catégories dans la langue demandée (libellé et groupe traduits). */
+export function categories(lang: Lang = contentLang()): PromptCategory[] {
+  return lang === "en" ? CATEGORIES_FR.map((c) => ({ ...c, label: CATEGORY_EN[c.id] ?? c.label, group: GROUP_EN[c.group] ?? c.group })) : CATEGORIES_FR;
+}
+
+/** Catégories : `label` et `group` suivent la langue des contenus au moment de la lecture. */
+export const CATEGORIES: PromptCategory[] = CATEGORIES_FR.map((c) =>
+  Object.defineProperties({ ...c }, {
+    label: { get: () => C(c.label, CATEGORY_EN[c.id] ?? c.label), enumerable: true },
+    group: { get: () => C(c.group, GROUP_EN[c.group] ?? c.group), enumerable: true },
+  }),
+);
+
+function assemble(p: Omit<LibraryPrompt, "body">, lang: Lang): string {
+  if (lang === "en")
+    return `## Context
+${p.context}
+
+## Objective
+${p.objective}
+
+## Creative direction
+${p.direction}
+
+## Expected output
+${p.deliverable}
+
+## Checks before approving
+${p.checks.map((c) => `- ${c}`).join("\n")}
+- Respect the decisions and preferences already saved for the project
+- Any unknown information stays "[To complete: …]"`;
   return `## Contexte
 ${p.context}
 
@@ -471,24 +928,27 @@ ${p.checks.map((c) => `- ${c}`).join("\n")}
 - Toute information inconnue reste « [À compléter : …] »`;
 }
 
-let cache: LibraryPrompt[] | null = null;
-export function libraryPrompts(): LibraryPrompt[] {
-  if (cache) return cache;
+const cache: Partial<Record<Lang, LibraryPrompt[]>> = {};
+/** Les 200 prompts dans la langue demandée (par défaut : langue des contenus). Mêmes identifiants en français et en anglais. */
+export function libraryPrompts(lang: Lang = contentLang()): LibraryPrompt[] {
+  const hit = cache[lang];
+  if (hit) return hit;
   const out: LibraryPrompt[] = [];
-  for (const s of SECTOR_DATA) {
-    for (const c of CATEGORIES) {
-      const made = MAKERS[c.id](s);
+  const makers = lang === "en" ? MAKERS_EN : MAKERS_FR;
+  for (const s of sectorData(lang)) {
+    for (const c of categories(lang)) {
+      const made = makers[c.id](s);
       const base = { id: `${s.id}-${c.id}`, sector: s.id, sectorLabel: s.label, category: c.id, categoryLabel: c.label, group: c.group, target: c.target, ...made };
-      out.push({ ...base, body: assemble(base) });
+      out.push({ ...base, body: assemble(base, lang) });
     }
   }
-  cache = out;
+  cache[lang] = out;
   return out;
 }
 
-export const PROMPT_STATS = { total: SECTOR_DATA.length * CATEGORIES.length, sectors: SECTOR_DATA.length, perSector: CATEGORIES.length };
+export const PROMPT_STATS = { total: SECTORS_FR.length * CATEGORIES_FR.length, sectors: SECTORS_FR.length, perSector: CATEGORIES_FR.length };
 
 /** Complète les variables avec le contexte du projet actif. */
 export function fillPrompt(body: string, vars: Record<string, string>): string {
-  return body.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `[${k} : à préciser]`);
+  return body.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? C(`[${k} : à préciser]`, `[${k}: to specify]`));
 }

@@ -18,6 +18,7 @@ import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
 import { llmConfigured } from "../ai/llm";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
+import { C, L, contentLang } from "../i18n-server";
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "produit";
 
@@ -118,7 +119,7 @@ export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): Sto
 export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: string } = {}) {
   const p = loadProject(projectId);
   const brand = p.brand;
-  if (!brand) throw new Error("La marque doit être définie avant la boutique.");
+  if (!brand) throw new Error(L("La marque doit être définie avant la boutique.", "The brand must be defined before the store."));
   const copy = savedCopy(projectId) ?? localCopy(p.product, brand);
   await ensureVariantMedia(ctx, projectId);
   const { slots, files, gallery } = collectImages(projectId);
@@ -132,7 +133,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     Object.assign(files, catalog.files);
   }
   const direction = opts.direction ?? brand.direction;
-  ctx?.progress(0.2, `Composition de la boutique (direction ${directionById(direction).name})`);
+  ctx?.progress(0.2, L(`Composition de la boutique (direction ${directionById(direction).name})`, `Composing the store (${directionById(direction).name} direction)`));
   let spec = buildSpec({
     direction,
     shopName: brand.name,
@@ -144,10 +145,11 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     files,
     product: main,
     social: p.settings.socialLinks,
+    language: contentLang(),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
   let author: "ai" | "system" = "system";
-  let summary = opts.summary ?? `Boutique créée — direction ${directionById(direction).name}`;
+  let summary = opts.summary ?? L(`Boutique créée — direction ${directionById(direction).name}`, `Store created — ${directionById(direction).name} direction`);
   if (opts.useAi !== false && llmConfigured() && ctx) {
     try {
       const design = await ctx.step(`design:${direction}`, () => aiDesignHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:design:${direction}` }, p, spec));
@@ -158,13 +160,13 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       // Catalogue : la grille de produits figure toujours juste après l'ouverture.
       if (catalog && !design.index.some((s) => s.type === "featured-collection")) {
         const first = ops.findIndex((o) => o.op === "add_section");
-        ops.splice(first + 1, 0, { op: "add_section", template: "index", type: "featured-collection", settings: { heading: p.storeType === "multi" ? "Les incontournables" : "La sélection", collection: "all", limit: 8, columns: 4 } });
+        ops.splice(first + 1, 0, { op: "add_section", template: "index", type: "featured-collection", settings: { heading: p.storeType === "multi" ? C("Les incontournables", "Best sellers") : C("La sélection", "The selection"), collection: "all", limit: 8, columns: 4 } });
       }
       const r = applyOps(fresh, ops);
       if (r.spec.templates.index.order.length >= 4 && !validateSpec(r.spec).length) {
         spec = r.spec;
         author = "ai";
-        summary = `Boutique conçue par l'IA — ${design.reasoning.slice(0, 160)}`;
+        summary = L(`Boutique conçue par l'IA — ${design.reasoning.slice(0, 160)}`, `Store designed by AI — ${design.reasoning.slice(0, 160)}`);
       }
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -172,7 +174,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     }
     // Relecture visuelle : l'IA regarde la boutique rendue (ordinateur et téléphone) et corrige ce qui se voit.
     try {
-      ctx.progress(0.7, "Relecture visuelle de la boutique");
+      ctx.progress(0.7, L("Relecture visuelle de la boutique", "Visual review of the store"));
       const review = await ctx.step(`review:${direction}`, async () => {
         const shots = await snapshotTheme(spec);
         return shots ? aiReviewHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:review:${direction}` }, p, spec, shots) : null;
@@ -182,24 +184,24 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         if (r.applied.length && !validateSpec(r.spec).length) {
           spec = r.spec;
           author = "ai";
-          summary += ` · relue sur captures (${review.score}/10, ${r.applied.length} correction${r.applied.length > 1 ? "s" : ""})`;
+          summary += L(` · relue sur captures (${review.score}/10, ${r.applied.length} correction${r.applied.length > 1 ? "s" : ""})`, ` · reviewed on screenshots (${review.score}/10, ${r.applied.length} fix${r.applied.length > 1 ? "es" : ""})`);
         }
-      } else if (review) summary += ` · relue sur captures (${review.score}/10)`;
+      } else if (review) summary += L(` · relue sur captures (${review.score}/10)`, ` · reviewed on screenshots (${review.score}/10)`);
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[shop] relecture visuelle indisponible :", (e as Error).message);
     }
   }
   const problems = validateSpec(spec);
-  if (problems.length) throw new Error(`Thème invalide : ${problems.join(" ; ")}`);
-  const v = saveThemeVersion(projectId, spec, summary, author, { checks: ["structure", "schémas des sections", "contraste des couleurs"], problems });
-  ctx?.progress(0.95, "Boutique enregistrée");
+  if (problems.length) throw new Error(L(`Thème invalide : ${problems.join(" ; ")}`, `Invalid theme: ${problems.join("; ")}`));
+  const v = saveThemeVersion(projectId, spec, summary, author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems });
+  ctx?.progress(0.95, L("Boutique enregistrée", "Store saved"));
   return { versionId: v.id, number: v.number };
 }
 
 /** Change de direction en conservant les retouches de contenu ? Non : nouvelle version complète, l'ancienne reste restaurable. */
 export async function switchDirection(ctx: JobContext | null, projectId: string, direction: DirectionId) {
-  return buildShop(ctx, projectId, { direction, useAi: false, summary: `Direction ${directionById(direction).name} appliquée` });
+  return buildShop(ctx, projectId, { direction, useAi: false, summary: L(`Direction ${directionById(direction).name} appliquée`, `${directionById(direction).name} direction applied`) });
 }
 
 export function hasTheme(projectId: string) {

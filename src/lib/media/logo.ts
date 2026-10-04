@@ -7,6 +7,11 @@
 import { createCanvas, SvgExportFlag, type SKRSContext2D } from "@napi-rs/canvas";
 import sharp from "sharp";
 import { ensureFonts, font } from "./fonts";
+import { contentLang } from "../i18n-server";
+import { intlLocale } from "../i18n";
+
+/** Locale des capitales : langue des contenus (« fr-FR » en français, comme avant). */
+const loc = () => intlLocale(contentLang());
 
 export type LogoSpec = {
   name: string;
@@ -190,9 +195,9 @@ export function drawSymbol(ctx: SKRSContext2D, kind: SymbolKind, x: number, y: n
 }
 
 function applyCase(s: string, c: LogoSpec["case"]) {
-  if (c === "upper") return s.toLocaleUpperCase("fr-FR");
-  if (c === "lower") return s.toLocaleLowerCase("fr-FR");
-  if (c === "title") return s.replace(/\p{L}+/gu, (w) => w[0].toLocaleUpperCase("fr-FR") + w.slice(1));
+  if (c === "upper") return s.toLocaleUpperCase(loc());
+  if (c === "lower") return s.toLocaleLowerCase(loc());
+  if (c === "title") return s.replace(/\p{L}+/gu, (w) => w[0].toLocaleUpperCase(loc()) + w.slice(1));
   return s;
 }
 
@@ -256,7 +261,7 @@ export function buildLogo(spec: LogoSpec) {
     const words = name.split(/\s+/).filter(Boolean);
     const lines = name.length > 14 && words.length > 1 ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")] : [name];
     const ms = lines.map((l) => measure(l, fam, wt, nameSize, spec.tracking, spec.italic));
-    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase("fr-FR") : "";
+    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase(loc()) : "";
     const tagSize = 22;
     const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.26) : null;
     const W = Math.max(ring, ...ms.map((x) => x.width), tm?.width ?? 0) + P * 2;
@@ -284,7 +289,7 @@ export function buildLogo(spec: LogoSpec) {
   }
 
   if (spec.layout === "monogram" || spec.layout === "emblem") {
-    const letters = (spec.monogram || name.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2)).toLocaleUpperCase("fr-FR");
+    const letters = (spec.monogram || name.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2)).toLocaleUpperCase(loc());
     const box = 360;
     const size = letters.length > 1 ? 170 : 220;
     const m = measure(letters, fam, wt, size, 0.02, spec.italic);
@@ -339,7 +344,7 @@ export function buildLogo(spec: LogoSpec) {
     const lines = words.length > 1 ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")] : [name];
     const ms = lines.map((l) => measure(l, fam, wt, size, spec.tracking, spec.italic));
     const tagSize = 30;
-    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase("fr-FR") : "";
+    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase(loc()) : "";
     const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.24) : null;
     const W = Math.max(...ms.map((m) => m.width), tm?.width ?? 0) + P * 2;
     const lineGap = size * 1.02;

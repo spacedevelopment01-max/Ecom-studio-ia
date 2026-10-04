@@ -5,6 +5,7 @@ import { HttpError } from "@/lib/auth";
 import { getAsset, addUsage } from "@/lib/library";
 import { postView } from "@/lib/posts";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
+import { L } from "@/lib/i18n-server";
 
 
 export const GET = handle(async (req: Request, ctx: Ctx) => {
@@ -20,12 +21,12 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   const b = await body(req, z.object({ network: z.enum(["instagram", "facebook", "tiktok", "youtube", "pinterest"]), format: z.enum(["image", "carousel", "video", "reel", "story", "short", "pin", "text"]), title: z.string().max(200).default(""), caption: z.string().max(5000).default(""), hashtags: z.string().max(500).default(""), media: z.array(z.string()).max(10).default([]), scheduledAt: z.number().nullable().optional(), connectionId: z.string().nullable().optional(), link: z.string().max(500).optional(), campaignId: z.string().optional() }));
-  for (const m of b.media) if (getAsset(m)?.project_id !== p.id) throw new HttpError(400, "Média étranger au projet.");
+  for (const m of b.media) if (getAsset(m)?.project_id !== p.id) throw new HttpError(400, L("Média étranger au projet.", "Media does not belong to this project."));
   const pid = id();
   run(
     "INSERT INTO posts (id, project_id, connection_id, network, format, status, scheduled_at, timezone, title, caption, hashtags, link, media, campaign_id, publish_key, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     pid, p.id, b.connectionId ?? null, b.network, b.format, "draft", b.scheduledAt ?? null, p.settings.timezone, b.title, b.caption, b.hashtags, b.link ?? null, JSON.stringify(b.media), b.campaignId ?? null, `manual:${pid}`, now(), now(),
   );
-  for (const m of b.media) addUsage(m, "post", pid, "Publication");
+  for (const m of b.media) addUsage(m, "post", pid, L("Publication", "Post"));
   return ok({ id: pid });
 });

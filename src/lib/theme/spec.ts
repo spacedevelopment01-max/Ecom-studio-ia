@@ -9,6 +9,9 @@ import fs from "node:fs";
 import path from "node:path";
 import type { ImportedTheme } from "./import";
 import { importedArchive, importedSchema, importedSectionTypes } from "./imported";
+import type { Lang } from "../i18n";
+import { L } from "../i18n-server";
+import { localizeSectionSchema, localizeSettingsSchema } from "./schema-i18n";
 
 export type BlockInstance = { type: string; settings: Record<string, unknown>; disabled?: boolean };
 export type SectionInstance = {
@@ -49,6 +52,11 @@ export type StorePage = { handle: string; title: string; template_suffix: string
 export type ThemeSpec = {
   v: 1;
   name: string;
+  /**
+   * Langue de la boutique (textes pour les acheteurs, locale par défaut, libellés de l'éditeur Shopify).
+   * Fixée à la composition ; absente sur les thèmes plus anciens = français.
+   */
+  language?: Lang;
   direction: string;
   settings: Record<string, unknown>;
   groups: { header: GroupJson; footer: GroupJson };
@@ -121,6 +129,11 @@ export const THEME_BASE = process.env.THEME_BASE_DIR || path.join(process.cwd(),
 
 const schemaCache = new Map<string, { mtime: number; schema: SectionSchema }>();
 
+/** Langue d'un thème (français pour les thèmes créés avant le bilinguisme). */
+export const themeLang = (spec: { language?: Lang } | null | undefined): Lang => spec?.language ?? "fr";
+
+type SchemaSpec = (Pick<ThemeSpec, "customSections"> & { imported?: ImportedTheme; language?: Lang }) | null;
+
 export function parseSchemaBlock(liquid: string): SectionSchema | null {
   const m = liquid.match(/\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema\s*-?%\}/);
   if (!m) return null;
@@ -140,17 +153,25 @@ export function baseSectionSource(type: string): string | null {
   return fs.existsSync(f) ? fs.readFileSync(f, "utf8") : null;
 }
 
-export function sectionSchema(spec: (Pick<ThemeSpec, "customSections"> & { imported?: ImportedTheme }) | null, type: string): SectionSchema | null {
+/**
+ * Schéma d'une section. Les textes par défaut (et préréglages) sont dans la langue du thème ;
+ * les libellés aussi, sauf si `labels` demande une autre langue (affichage dans le studio : langue de l'interface).
+ * Les sections sur mesure (écrites par l'IA) ne sont pas traduites.
+ */
+export function sectionSchema(spec: SchemaSpec, type: string, labels?: Lang): SectionSchema | null {
   const custom = spec?.customSections?.[type];
   if (custom) return parseSchemaBlock(custom.liquid);
-  if (spec?.imported) return importedSchema(spec.imported, type);
+  const content = themeLang(spec);
+  if (spec?.imported) return importedSchema(spec.imported, type, labels ?? content);
   const f = path.join(THEME_BASE, "sections", `${type}.liquid`);
   if (!fs.existsSync(f)) return null;
   const mtime = fs.statSync(f).mtimeMs;
-  const hit = schemaCache.get(type);
+  const key = `${type}:${labels ?? content}:${content}`;
+  const hit = schemaCache.get(key);
   if (hit && hit.mtime === mtime) return hit.schema;
-  const schema = parseSchemaBlock(fs.readFileSync(f, "utf8"));
-  if (schema) schemaCache.set(type, { mtime, schema });
+  const raw = parseSchemaBlock(fs.readFileSync(f, "utf8"));
+  const schema = raw ? localizeSectionSchema(raw, { labels: labels ?? content, content }) : null;
+  if (schema) schemaCache.set(key, { mtime, schema });
   return schema;
 }
 
@@ -159,12 +180,15 @@ export function availableSectionTypes(spec: { imported?: ImportedTheme } | null)
   return spec?.imported ? importedSectionTypes(spec.imported) : baseSectionTypes();
 }
 
-export function settingsSchema(spec?: { imported?: ImportedTheme } | null): { name: string; settings?: SettingSchema[] }[] {
-  if (spec?.imported) return importedArchive(spec.imported).settings;
-  return JSON.parse(fs.readFileSync(path.join(THEME_BASE, "config", "settings_schema.json"), "utf8"));
+/** Réglages généraux du thème : défauts dans la langue du thème, libellés dans `labels` (sinon la langue du thème). */
+export function settingsSchema(spec?: { imported?: ImportedTheme; language?: Lang } | null, labels?: Lang): { name: string; settings?: SettingSchema[] }[] {
+  const content = themeLang(spec);
+  if (spec?.imported) return importedArchive(spec.imported, labels ?? content).settings;
+  const groups = JSON.parse(fs.readFileSync(path.join(THEME_BASE, "config", "settings_schema.json"), "utf8"));
+  return localizeSettingsSchema(groups, { labels: labels ?? content, content });
 }
 
-export function globalSettingDefaults(spec?: { imported?: ImportedTheme } | null): Record<string, unknown> {
+export function globalSettingDefaults(spec?: { imported?: ImportedTheme; language?: Lang } | null): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const group of settingsSchema(spec)) {
     for (const s of group.settings ?? []) if (s.id && s.default !== undefined) out[s.id] = s.default;
@@ -188,7 +212,7 @@ export function coerceSetting(def: SettingSchema, value: unknown): { ok: true; v
     case "range":
     case "number": {
       const n = Number(value);
-      if (!Number.isFinite(n)) return { ok: false, reason: `${def.id} doit être un nombre` };
+      if (!Number.isFinite(n)) return { ok: false, reason: L(`${def.id} doit être un nombre`, `${def.id} must be a number`) };
       if (def.type === "range" && def.min !== undefined && def.max !== undefined) {
         const step = def.step ?? 1;
         const clamped = Math.min(def.max, Math.max(def.min, n));
@@ -202,13 +226,13 @@ export function coerceSetting(def: SettingSchema, value: unknown): { ok: true; v
     case "radio": {
       const v = String(value);
       if (def.options && !def.options.some((o) => o.value === v)) {
-        return { ok: false, reason: `${def.id} accepte : ${def.options.map((o) => o.value).join(", ")}` };
+        return { ok: false, reason: L(`${def.id} accepte : ${def.options.map((o) => o.value).join(", ")}`, `${def.id} accepts: ${def.options.map((o) => o.value).join(", ")}`) };
       }
       return { ok: true, value: v };
     }
     case "color": {
       const v = String(value);
-      if (!/^#[0-9a-fA-F]{6}$/.test(v)) return { ok: false, reason: `${def.id} attend une couleur #RRGGBB` };
+      if (!/^#[0-9a-fA-F]{6}$/.test(v)) return { ok: false, reason: L(`${def.id} attend une couleur #RRGGBB`, `${def.id} expects a #RRGGBB color`) };
       return { ok: true, value: v.toUpperCase() };
     }
     case "richtext": {
@@ -243,7 +267,7 @@ export function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-export const sectionLabel = (spec: ThemeSpec | null, type: string) => sectionSchema(spec, type)?.name ?? type;
+export const sectionLabel = (spec: ThemeSpec | null, type: string, labels?: Lang) => sectionSchema(spec, type, labels)?.name ?? type;
 
 export function cloneSpec(spec: ThemeSpec): ThemeSpec {
   return JSON.parse(JSON.stringify(spec));

@@ -15,7 +15,7 @@
     {%- if product_card.available == false -%}<span class="es-badge">{{ 'products.product.sold_out' | t }}</span>{%- endif -%}
   </a>
   <div class="es-card__info">
-    <h3 class="es-card__title"><a href="{{ product_card.url | default: '#' }}">{{ product_card.title | default: 'Produit' }}</a></h3>
+    <h3 class="es-card__title"><a href="{{ product_card.url | default: '#' }}">{%- if product_card.title != blank -%}{{ product_card.title }}{%- else -%}{{ 'products.product.placeholder_card' | t }}{%- endif -%}</a></h3>
     {% render 'price', product: product_card, use_variant: false %}
   </div>
 </article>

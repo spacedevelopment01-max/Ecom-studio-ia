@@ -10,6 +10,17 @@ import { db, logError, now, run } from "../src/lib/db";
 import { enqueueDuePosts } from "../src/lib/engine/calendar";
 import { handlers, HANDLER_TYPES } from "./handlers";
 import { runForUser } from "../src/lib/ai/access";
+import { runWithLang, userLang } from "../src/lib/i18n-server";
+import { isLang } from "../src/lib/i18n";
+import { json, one } from "../src/lib/db";
+
+/** Langue des contenus d'une tâche : celle choisie pour l'action, sinon celle du projet. */
+function jobLangs(job: { user_id: string | null; project_id: string | null; payload: string }) {
+  const p = json<{ lang?: string }>(job.payload, {});
+  const proj = job.project_id ? one<{ settings_json: string }>("SELECT settings_json FROM projects WHERE id = ?", job.project_id) : null;
+  const projLang = json<{ language?: string }>(proj?.settings_json ?? "{}", {}).language;
+  return { ui: userLang(job.user_id), content: isLang(p.lang) ? p.lang : isLang(projLang) ? projLang : "fr", contentForced: isLang(p.lang) } as const;
+}
 
 const CONCURRENCY = Math.max(1, Math.min(3, Number(process.env.WORKER_CONCURRENCY) || Math.floor(os.cpus().length / 2) || 1));
 let running = 0;
@@ -25,8 +36,8 @@ async function runOne() {
   (async () => {
     try {
       // Sans crédits de création, les étapes IA basculent sur le moteur local (voir src/lib/ai/access.ts).
-      const result = await runForUser(job.user_id, () => handlers[job.type](ctx));
-      completeJob(job.id, result);
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => handlers[job.type](ctx)));
+      runWithLang({ ui: userLang(job.user_id) }, () => completeJob(job.id, result));
       console.log(`[worker] ✓ ${job.type} ${job.id} en ${((Date.now() - started) / 1000).toFixed(1)} s`);
     } catch (e) {
       if (e instanceof JobCancelled) {
@@ -38,7 +49,7 @@ async function runOne() {
       } else {
         const fresh = getJob(job.id) ?? job;
         if (fresh.status === "paused") return releaseJob(job.id);
-        failJob(fresh, e);
+        runWithLang({ ui: userLang(job.user_id) }, () => failJob(fresh, e));
         logError(`job:${job.type}`, e, { userId: job.user_id, projectId: job.project_id ?? undefined, details: { jobId: job.id } });
         console.error(`[worker] ✗ ${job.type} ${job.id} :`, (e as Error).message);
       }

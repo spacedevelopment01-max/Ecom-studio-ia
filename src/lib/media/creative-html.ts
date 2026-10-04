@@ -11,6 +11,8 @@ import { chromiumPath } from "../theme/snapshot";
 import { CANVAS_FONTS, FONT_DIR } from "./fonts";
 import { isDark, mix, onColor, withLightness, hsl } from "../color";
 import type { Palette, Typo } from "./compose";
+import { contentLang } from "../i18n-server";
+import { intlLocale } from "../i18n";
 
 export type ProTemplate = "signature" | "editorial" | "arguments";
 export type ProFormat = "square" | "portrait" | "story" | "landscape";
@@ -57,7 +59,7 @@ function page(t: ProTemplate, f: ProFormat, i: ProInput, productUri: string, log
   const upper = i.typo.uppercase ? "uppercase" : "none";
   const tall = f === "story";
   const facts = i.facts.slice(0, 3).map((x) => `<li>${esc(x)}</li>`).join("");
-  const kw = esc((i.keyword ?? "").toUpperCase());
+  const kw = esc((i.keyword ?? "").toLocaleUpperCase(intlLocale(contentLang())));
   const cta = i.cta ? `<span class="cta">${esc(i.cta)} <b>→</b></span>` : "";
   const logo = logoUri ? `<img class="logo" src="${logoUri}" alt="">` : `<span class="wordmark">${esc(i.brand)}</span>`;
   const base = `
@@ -178,7 +180,7 @@ export async function renderProCreatives(input: ProInput, jobs: { template: ProT
     for (const j of jobs) {
       const { w, h, label } = SIZES[j.format];
       const pg = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
-      await pg.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>${faces}</style></head><body>${page(j.template, j.format, input, productUri, logoUri, wide)}</body></html>`, { waitUntil: "load" });
+      await pg.setContent(`<!doctype html><html lang="${contentLang()}"><head><meta charset="utf-8"><style>${faces}</style></head><body>${page(j.template, j.format, input, productUri, logoUri, wide)}</body></html>`, { waitUntil: "load" });
       await pg.evaluate(async () => {
         await document.fonts.ready;
         const img = document.querySelector<HTMLImageElement>(".prod");

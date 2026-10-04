@@ -15,8 +15,12 @@ import { CANVAS_FONTS } from "../media/fonts";
 import type { VideoSpec } from "../media/video";
 import { projectContext } from "./context";
 import { llmJson, type LlmImage } from "./llm";
-import { DIRECTION_LIST, FONT_LIST, SYSTEM, globalSettingsCatalog, sectionCatalog } from "./prompts";
+import { DIRECTION_LIST, FONT_LIST, globalSettingsCatalog, placeholder, sectionCatalog, systemPrompts } from "./prompts";
+import { contentLang, L } from "../i18n-server";
 import type { Project } from "../projects";
+
+/** Instructions des tâches dans la langue des contenus de l'exécution en cours. */
+const S = () => systemPrompts(contentLang());
 
 type Base = { userId: string; projectId: string; jobId?: string | null; usageKey?: string };
 
@@ -61,7 +65,7 @@ export async function aiAnalyzeProduct(b: Base, input: { photos: LlmImage[]; col
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.analysis,
+      system: S().analysis,
       images: input.photos,
       prompt: parts.join("\n\n"),
       maxTokens: 16000,
@@ -114,7 +118,7 @@ export async function aiBrand(b: Base, p: Project, guidance?: string) {
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.brand,
+      system: S().brand,
       context: projectContext(p, "brand"),
       prompt: `Construis la direction de marque.
 Directions de boutique disponibles :\n${DIRECTION_LIST}
@@ -141,7 +145,7 @@ export async function aiShopCopy(b: Base, p: Project, feedback?: string): Promis
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.copy,
+      system: S().copy,
       context: projectContext(p, "shop"),
       prompt: `Rédige l'ensemble des textes de la boutique au format JSON suivant (toutes les clés obligatoires) :
 seo{title,description}, announcement[0-3 annonces factuelles, vide si rien de confirmé], hero{eyebrow,heading,line1,line2 (titre en deux lignes très courtes pour le héros éditorial),text,cta}, statement{eyebrow,heading,text}, features{heading,items[2-6]{title,text,icon parmi sparkle|leaf|drop|hand|shield|truck|return|check}}, story{heading,steps[2-5]{title,text}}, detail{eyebrow,heading,text}, specs{heading,items[]{label,value}}, faq{heading,items[2-12]{q,a}}, marquee[2-6 expressions courtes], gallery{heading,captions[]}, cta{heading,text,button}, newsletter{heading,text}, product{title,short,description_html,highlights[],tabs[]{heading,content_html},reassurance[0-3, seulement engagements confirmés]}, about{heading,intro,blocks[1-4]{heading,text},values[]{title,text}}, shipping{heading,body_html}, contact{heading,text}, footer{about,newsletter}.
@@ -166,7 +170,7 @@ export async function aiQcText(b: Base, p: Project, label: string, content: unkn
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.qcText,
+      system: S().qcText,
       context: projectContext(p),
       prompt: `Contrôle ce contenu (${label}) :\n<contenu>\n${JSON.stringify(content, null, 1).slice(0, 30000)}\n</contenu>`,
       maxTokens: 8000,
@@ -175,25 +179,26 @@ export async function aiQcText(b: Base, p: Project, label: string, content: unkn
   );
 }
 
-// Allégations à risque : interdites si elles ne figurent pas dans les faits confirmés.
-const RISKY: [RegExp, string][] = [
-  [/\b(bio|biologique)s?\b/i, "mention biologique"],
-  [/certifi(é|ée|és|ées|cation)/i, "certification"],
-  [/\blabel(lisé)?s?\b/i, "label"],
-  [/\bvegan\b|\bvégan/i, "vegan"],
-  [/cliniquement|dermatologiquement|testé sous contrôle/i, "test clinique"],
-  [/hypoallerg/i, "hypoallergénique"],
-  [/\bgaranti(e|s)?\b/i, "garantie"],
-  [/n°\s?1|numéro 1|leader/i, "classement"],
-  [/\bavis\b|★|étoiles?\b|clients? satisfaits?/i, "avis ou notes"],
-  [/stock limité|derni(er|ère)s? (articles|exemplaires|pièces)/i, "rareté"],
-  [/-\s?\d{1,2}\s?%|\bpromo(tion)?s?\b|\bsoldes\b/i, "promotion"],
-  [/livraison (gratuite|offerte|express|en \d+)/i, "conditions de livraison"],
-  [/satisfait ou rembours/i, "garantie de remboursement"],
-  [/(fabriqué|made) (en|in) (france|europe|italie)/i, "origine"],
-  [/brevet/i, "brevet"],
-  [/anti-?âge|anti-?rides|guéri|soigne|traite(ment)? (de|contre)/i, "allégation santé ou efficacité"],
-  [/\b\d+\s?%\s?(naturel|d'origine)/i, "pourcentage d'origine"],
+// Allégations à risque : interdites si elles ne figurent pas dans les faits confirmés (français et anglais).
+type Risk = [RegExp, { fr: string; en: string }];
+const RISKY: Risk[] = [
+  [/\b(bio|biologique)s?\b|\borganic\b/i, { fr: "mention biologique", en: "organic claim" }],
+  [/certifi(é|ée|és|ées|cation)|\bcertified\b/i, { fr: "certification", en: "certification" }],
+  [/\blabel(lisé)?s?\b/i, { fr: "label", en: "label" }],
+  [/\bvegan\b|\bvégan/i, { fr: "vegan", en: "vegan" }],
+  [/cliniquement|dermatologiquement|testé sous contrôle|clinically|dermatologically|dermatologist[- ]tested/i, { fr: "test clinique", en: "clinical testing" }],
+  [/hypoallerg/i, { fr: "hypoallergénique", en: "hypoallergenic" }],
+  [/\bgaranti(e|s)?\b|\bguarantee[sd]?\b|\bwarrant(y|ies)\b/i, { fr: "garantie", en: "guarantee" }],
+  [/n°\s?1|numéro 1|leader|#\s?1\b|number one/i, { fr: "classement", en: "ranking" }],
+  [/\bavis\b|★|étoiles?\b|clients? satisfaits?|\breviews?\b|\bstars?\b|satisfied customers?|happy customers?/i, { fr: "avis ou notes", en: "reviews or ratings" }],
+  [/stock limité|derni(er|ère)s? (articles|exemplaires|pièces)|limited stock|only \d+ left|last (items|pieces|units)/i, { fr: "rareté", en: "scarcity" }],
+  [/-\s?\d{1,2}\s?%|\bpromo(tion)?s?\b|\bsoldes\b|\d{1,2}\s?% off\b|\bon sale\b/i, { fr: "promotion", en: "promotion" }],
+  [/livraison (gratuite|offerte|express|en \d+)|free (shipping|delivery)|express (shipping|delivery)|ships in \d+/i, { fr: "conditions de livraison", en: "shipping terms" }],
+  [/satisfait ou rembours|money[- ]back/i, { fr: "garantie de remboursement", en: "money-back guarantee" }],
+  [/(fabriqué|made) (en|in) (france|europe|italie|italy|usa|the usa)/i, { fr: "origine", en: "origin" }],
+  [/brevet|\bpatent(ed)?\b/i, { fr: "brevet", en: "patent" }],
+  [/anti-?âge|anti-?rides|guéri|soigne|traite(ment)? (de|contre)|anti-?aging|anti-?wrinkle|\bcures?\b|\bheals?\b/i, { fr: "allégation santé ou efficacité", en: "health or efficacy claim" }],
+  [/\b\d+\s?%\s?(naturel|d'origine|natural)/i, { fr: "pourcentage d'origine", en: "origin percentage" }],
 ];
 
 export function lintClaims(content: unknown, p: Project): { path: string; term: string; label: string }[] {
@@ -208,7 +213,7 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
     if (typeof v === "string") {
       for (const [re, label] of RISKY) {
         const m = v.match(re);
-        if (m && !allowed.includes(m[0].toLowerCase())) issues.push({ path, term: m[0], label });
+        if (m && !allowed.includes(m[0].toLowerCase())) issues.push({ path, term: m[0], label: L(label.fr, label.en) });
       }
     } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
     else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) walk(x, path ? `${path}.${k}` : k);
@@ -225,13 +230,13 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
   let rounds = 0;
   for (let round = 0; round < 3; round++) {
     rounds = round + 1;
-    onStep?.(round === 0 ? "Rédaction des textes de la boutique" : `Correction des textes (passe ${round + 1})`);
+    onStep?.(round === 0 ? L("Rédaction des textes de la boutique", "Writing the store copy") : L(`Correction des textes (passe ${round + 1})`, `Revising the copy (pass ${round + 1})`));
     copy = await aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, feedback || undefined);
     const lint = lintClaims(copy, p);
-    onStep?.("Contrôle qualité des textes");
+    onStep?.(L("Contrôle qualité des textes", "Quality check of the copy"));
     const qc = await aiQcText({ ...b, usageKey: `${b.usageKey}:qc${round}` }, p, "textes de la boutique", copy);
     const blocking = [
-      ...lint.map((l) => `${l.path} : « ${l.term} » (${l.label}) n'est pas confirmé — retire-le ou remplace par « [À compléter : …] »`),
+      ...lint.map((l) => L(`${l.path} : « ${l.term} » (${l.label}) n'est pas confirmé — retire-le ou remplace par « ${placeholder(contentLang())} »`, `${l.path}: "${l.term}" (${l.label}) is not confirmed. Remove it or replace it with "${placeholder(contentLang())}"`)),
       ...qc.issues.filter((i) => i.severity === "bloquant").map((i) => `${i.path} : ${i.problem} → ${i.fix}`),
     ];
     remaining = blocking;
@@ -272,7 +277,7 @@ export async function aiDesignHome(b: Base, p: Project, spec: ThemeSpec) {
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.themeDesign,
+      system: S().themeDesign,
       context: projectContext(p, "shop"),
       reference: themeReference(spec),
       prompt: `Direction choisie : ${spec.direction}. Structure actuelle proposée par la direction :\n${outline(spec, ["index"])}
@@ -311,7 +316,7 @@ export async function aiThemeChat(
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.themeEdit,
+      system: S().themeEdit,
       context: projectContext(p, "shop"),
       reference: themeReference(spec, true),
       images: input.attachments.filter((a) => a.image).map((a) => ({ data: a.image!, label: `pièce jointe ${a.name} (identifiant ${a.assetId})` })),
@@ -361,7 +366,7 @@ export async function aiRepairOps(b: Base, p: Project, spec: ThemeSpec, input: {
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.themeEdit,
+      system: S().themeEdit,
       context: projectContext(p, "shop"),
       reference: themeReference(spec, true),
       prompt: `Structure actuelle (après application des opérations acceptées) :\n${outline(spec, ["group:header", input.page, "group:footer"].filter((v, i, a) => a.indexOf(v) === i))}
@@ -395,7 +400,7 @@ export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: 
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.themeReview,
+      system: S().themeReview,
       context: projectContext(p, "shop"),
       reference: themeReference(spec, true),
       images: [
@@ -437,7 +442,7 @@ export async function aiVideoPlan(b: Base, p: Project, input: { format: VideoSpe
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.video,
+      system: S().video,
       context: projectContext(p, "video"),
       prompt: `Format : ${input.format}. Objectif : ${input.goal}.
 Images disponibles pour les plans detail/scene (index : description) : ${input.images.map((d, i) => `${i}: ${d}`).join(" ; ") || "aucune"}
@@ -473,7 +478,7 @@ export async function aiUgcScript(b: Base, p: Project, input: { beats: number; p
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.ugc,
+      system: S().ugc,
       context: projectContext(p, "video"),
       prompt: `Nombre de plans : ${input.beats} (8 secondes chacun).
 Personne : ${input.presenter}. Décor : ${input.setting}. Ton : ${input.tone}. Angle : ${input.angle}.
@@ -509,7 +514,7 @@ export async function aiSocialPlan(b: Base, p: Project, params: { days: number; 
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.social,
+      system: S().social,
       context: projectContext(p, "social"),
       prompt: `Prépare ${params.days} jours de publications, ${params.perDay} par jour, réparties sur : ${params.networks.join(", ")}.
 Objectifs : ${params.goals || "faire connaître le produit et amener vers la boutique"}. Ton : ${params.tone || "celui de la marque"}.
@@ -531,7 +536,7 @@ export async function aiRewritePost(b: Base, p: Project, post: { network: string
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.social,
+      system: S().social,
       context: projectContext(p, "social"),
       prompt: `Réécris cette publication ${post.network} (${post.format}, angle « ${post.angle} »).\nTitre actuel : ${post.title}\nLégende actuelle :\n${post.caption}\nConsigne : ${instruction || "améliore l'accroche et la clarté"}\nRéponds { "title": "…", "caption": "…", "hashtags": ["…"] }.`,
       maxTokens: 4000,
@@ -550,7 +555,7 @@ export async function aiImageBrief(b: Base, p: Project, kind: string) {
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.imageBrief,
+      system: S().imageBrief,
       context: projectContext(p, "images"),
       prompt: `Type de visuel : ${kind}. Réponds { "prompt": "…", "surface": "…", "lightFrom": "left" | "right" }.`,
       maxTokens: 2000,
@@ -567,7 +572,7 @@ export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.qcImage,
+      system: S().qcImage,
       images: [
         { data: reference, label: "référence (photo du client)" },
         { data: candidate, label: "création à contrôler" },
@@ -587,7 +592,7 @@ export async function aiClassify(b: Base, files: { id: string; name: string; kin
       projectId: b.projectId,
       jobId: b.jobId,
       usageKey: b.usageKey,
-      system: SYSTEM.classify,
+      system: S().classify,
       prompt: `Dossiers : ${folders.map((f) => `${f.key} (${f.name})`).join(", ")}\nFichiers :\n${files.map((f) => `${f.id} | ${f.name} | ${f.kind} | ${f.role ?? ""} | ${f.meta.slice(0, 200)}`).join("\n")}\nRéponds { "items": [ { "id": "…", "folder": "clé", "name": "nom-clair" } ] }.`,
       maxTokens: 6000,
     },

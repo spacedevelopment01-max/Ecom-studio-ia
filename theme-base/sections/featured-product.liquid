@@ -12,7 +12,7 @@
     </div>
     <div class="es-featured__info" data-reveal="up">
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
-      <h2 class="es-heading es-h2"><a href="{{ product.url }}">{{ product.title | default: 'Votre produit' }}</a></h2>
+      <h2 class="es-heading es-h2"><a href="{{ product.url }}">{%- if product.title != blank -%}{{ product.title }}{%- else -%}{{ 'products.product.placeholder_title' | t }}{%- endif -%}</a></h2>
       {% render 'price', product: product, use_variant: true %}
       {%- if section.settings.text != blank -%}<div class="es-rte">{{ section.settings.text }}</div>{%- endif -%}
       {%- if product != blank -%}

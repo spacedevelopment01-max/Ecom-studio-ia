@@ -3,9 +3,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, Button, Field, Input, Logo, ThemeToggle } from "./ui";
+import { LangSwitch, useT } from "./i18n";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -27,34 +29,37 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     <div className="grid min-h-dvh lg:grid-cols-2">
       <div className="flex flex-col px-5 py-6 sm:px-10">
         <div className="flex items-center justify-between">
-          <Link href="/"><Logo /></Link>
-          <ThemeToggle />
+          <Link href="/" aria-label={t("E-COM STUDIO IA, accueil", "E-COM STUDIO IA, home")}><Logo /></Link>
+          <div className="flex items-center gap-2">
+            <LangSwitch />
+            <ThemeToggle />
+          </div>
         </div>
         <div className="mx-auto my-auto w-full max-w-sm py-12">
-          <h1 className="font-display text-4xl font-semibold">{mode === "login" ? "Bon retour." : "Créer votre studio."}</h1>
-          <p className="mt-2 text-muted">{mode === "login" ? "Retrouvez vos boutiques, créations et calendriers." : "Une photo suffira ensuite pour démarrer votre premier projet."}</p>
+          <h1 className="font-display text-4xl font-semibold">{mode === "login" ? t("Bon retour.", "Welcome back.") : t("Créer votre studio.", "Create your studio.")}</h1>
+          <p className="mt-2 text-muted">{mode === "login" ? t("Retrouvez vos boutiques, créations et calendriers.", "Get back to your stores, creations and calendars.") : t("Une photo suffira ensuite pour démarrer votre premier projet.", "Then a single photo is all it takes to start your first project.")}</p>
           <form onSubmit={submit} className="mt-8 grid gap-4">
             {mode === "register" && (
-              <Field label="Prénom ou nom" htmlFor="name">
+              <Field label={t("Prénom ou nom", "First name or full name")} htmlFor="name">
                 <Input id="name" name="name" autoComplete="name" />
               </Field>
             )}
-            <Field label="Adresse e-mail" htmlFor="email">
+            <Field label={t("Adresse e-mail", "Email address")} htmlFor="email">
               <Input id="email" name="email" type="email" required autoComplete="email" />
             </Field>
-            <Field label="Mot de passe" htmlFor="password" hint={mode === "register" ? "8 caractères au minimum." : undefined}>
+            <Field label={t("Mot de passe", "Password")} htmlFor="password" hint={mode === "register" ? t("8 caractères au minimum.", "At least 8 characters.") : undefined}>
               <Input id="password" name="password" type="password" required minLength={8} autoComplete={mode === "login" ? "current-password" : "new-password"} />
             </Field>
             {error && <p role="alert" className="rounded-2xl bg-bad-soft px-4 py-3 text-sm text-bad">{error}</p>}
             <Button type="submit" size="lg" loading={loading}>
-              {mode === "login" ? "Se connecter" : "Créer mon compte"}
+              {mode === "login" ? t("Se connecter", "Sign in") : t("Créer mon compte", "Create my account")}
             </Button>
           </form>
           <p className="mt-6 text-sm text-muted">
             {mode === "login" ? (
-              <>Pas encore de compte ? <Link href="/inscription" className="font-medium text-ink underline underline-offset-4">Créer un compte</Link></>
+              <>{t("Pas encore de compte ?", "No account yet?")} <Link href="/inscription" className="font-medium text-ink underline underline-offset-4">{t("Créer un compte", "Create an account")}</Link></>
             ) : (
-              <>Déjà inscrit ? <Link href="/connexion" className="font-medium text-ink underline underline-offset-4">Se connecter</Link></>
+              <>{t("Déjà inscrit ?", "Already have an account?")} <Link href="/connexion" className="font-medium text-ink underline underline-offset-4">{t("Se connecter", "Sign in")}</Link></>
             )}
           </p>
         </div>
@@ -62,8 +67,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       <div className="relative hidden overflow-hidden bg-ink lg:block">
         <img src="/demo/hero-side.jpg" alt="" className="absolute inset-0 size-full object-cover opacity-90" />
         <div className="absolute inset-x-10 bottom-10 text-paper">
-          <p className="font-display text-4xl leading-tight">« Une photo. Une marque. <span className="serif-i">Une boutique.</span> »</p>
-          <p className="mt-3 text-sm text-paper/70">Visuel de démonstration généré par le studio · produit fictif</p>
+          <p className="font-display text-4xl leading-tight">{t("« Une photo. Une marque. ", "“One photo. One brand. ")}<span className="serif-i">{t("Une boutique.", "One store.")}</span>{t(" »", "”")}</p>
+          <p className="mt-3 text-sm text-paper/70">{t("Visuel de démonstration généré par le studio · produit fictif", "Demo visual generated by the studio · fictional product")}</p>
         </div>
       </div>
     </div>

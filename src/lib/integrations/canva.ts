@@ -7,15 +7,16 @@ import { json, one, run } from "../db";
 import { assetData, getAsset, saveAsset, type Asset } from "../library";
 import { PermanentError } from "../jobs";
 import { freshToken, type Connection } from "../social/publish";
+import { L } from "../i18n-server";
 
 const API = "https://api.canva.com/rest/v1";
 
 async function call(token: string, path: string, init: RequestInit = {}) {
   const r = await fetch(`${API}${path}`, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init.headers ?? {}) } });
   const j: any = await r.json().catch(() => ({}));
-  if (r.status === 401) throw new PermanentError("Autorisation Canva expirée : reconnectez Canva.");
-  if (r.status === 403) throw new PermanentError(`Canva refuse l'opération (autorisation manquante) : ${j.message ?? ""}`);
-  if (!r.ok) throw new Error(`Canva ${r.status} : ${j.message ?? JSON.stringify(j).slice(0, 200)}`);
+  if (r.status === 401) throw new PermanentError(L("Autorisation Canva expirée : reconnectez Canva.", "Canva authorization expired: reconnect Canva."));
+  if (r.status === 403) throw new PermanentError(L(`Canva refuse l'opération (autorisation manquante) : ${j.message ?? ""}`, `Canva refused the operation (missing permission): ${j.message ?? ""}`));
+  if (!r.ok) throw new Error(L(`Canva ${r.status} : ${j.message ?? JSON.stringify(j).slice(0, 200)}`, `Canva ${r.status}: ${j.message ?? JSON.stringify(j).slice(0, 200)}`));
   return j;
 }
 
@@ -27,7 +28,7 @@ async function poll<T>(fn: () => Promise<T>, done: (v: T) => boolean, failed: (v
     if (done(v)) return v;
     await new Promise((r) => setTimeout(r, delay));
   }
-  throw new Error("Canva met trop de temps à répondre ; réessayez.");
+  throw new Error(L("Canva met trop de temps à répondre ; réessayez.", "Canva is taking too long to respond; please try again."));
 }
 
 export function canvaConnection(userId: string): Connection | undefined {
@@ -36,7 +37,7 @@ export function canvaConnection(userId: string): Connection | undefined {
 
 export async function sendToCanva(userId: string, asset: Asset) {
   const c = canvaConnection(userId);
-  if (!c) throw new PermanentError("Connectez Canva dans l'onglet Connexions.");
+  if (!c) throw new PermanentError(L("Connectez Canva dans l'onglet Connexions.", "Connect Canva in the Connections tab."));
   const token = await freshToken(c);
   const data = assetData(asset);
   const meta = { name_base64: Buffer.from(asset.name.slice(0, 50)).toString("base64") };
@@ -44,7 +45,7 @@ export async function sendToCanva(userId: string, asset: Asset) {
   const job = await poll(
     () => call(token, `/asset-uploads/${up.job.id}`),
     (j) => j.job?.status === "success",
-    (j) => (j.job?.status === "failed" ? `Envoi refusé par Canva : ${j.job?.error?.message ?? ""}` : null),
+    (j) => (j.job?.status === "failed" ? L(`Envoi refusé par Canva : ${j.job?.error?.message ?? ""}`, `Canva refused the upload: ${j.job?.error?.message ?? ""}`) : null),
   );
   const canvaAssetId = job.job.asset.id;
   const w = Math.max(40, Math.min(8000, asset.width ?? 1080));
@@ -59,15 +60,15 @@ export async function sendToCanva(userId: string, asset: Asset) {
 /** Exporte le design Canva et l'ajoute au projet comme nouvelle version liée. */
 export async function importFromCanva(userId: string, asset: Asset, format: "png" | "jpg" | "pdf" | "mp4" = "png") {
   const c = canvaConnection(userId);
-  if (!c) throw new PermanentError("Connectez Canva dans l'onglet Connexions.");
+  if (!c) throw new PermanentError(L("Connectez Canva dans l'onglet Connexions.", "Connect Canva in the Connections tab."));
   const info = json<any>(asset.meta, {}).canva;
-  if (!info?.designId) throw new PermanentError("Ce média n'a pas encore été ouvert dans Canva.");
+  if (!info?.designId) throw new PermanentError(L("Ce média n'a pas encore été ouvert dans Canva.", "This media has not been opened in Canva yet."));
   const token = await freshToken(c);
   const exp = await call(token, "/exports", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ design_id: info.designId, format: { type: format, ...(format === "jpg" ? { quality: 90 } : {}) } }) });
   const done = await poll(
     () => call(token, `/exports/${exp.job.id}`),
     (j) => j.job?.status === "success",
-    (j) => (j.job?.status === "failed" ? `Export Canva impossible : ${j.job?.error?.message ?? ""}` : null),
+    (j) => (j.job?.status === "failed" ? L(`Export Canva impossible : ${j.job?.error?.message ?? ""}`, `Canva export failed: ${j.job?.error?.message ?? ""}`) : null),
     60,
   );
   const urls: string[] = done.job.urls ?? [];
@@ -87,7 +88,7 @@ export async function importFromCanva(userId: string, asset: Asset, format: "png
       origin: "import",
       sourceAssetId: asset.id,
       versionOf: asset.version_of ?? asset.id,
-      meta: { canva: { designId: info.designId, exportedAt: Date.now() }, recipe: "Retouché dans Canva" },
+      meta: { canva: { designId: info.designId, exportedAt: Date.now() }, recipe: L("Retouché dans Canva", "Edited in Canva") },
     });
     saved.push(a.id);
   }

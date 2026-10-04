@@ -7,33 +7,62 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Check, ChevronRight, FileImage, FileVideo, Folder, FolderOpen, Sparkles } from "lucide-react";
 import { cx } from "./ui";
+import { useLang } from "./i18n";
+import type { Lang } from "@/lib/i18n";
 
-const TREE: { name: string; kids: string[] }[] = [
-  { name: "01 · Produit", kids: ["Photos originales", "Détourages", "Catalogue"] },
-  { name: "02 · Marque", kids: ["Logos", "Charte & palette"] },
-  { name: "03 · Images", kids: ["Packshots", "Scènes & usages", "Réseaux sociaux", "Publicités"] },
-  { name: "04 · Vidéos", kids: ["Publicités", "Réseaux sociaux", "Boutique"] },
-  { name: "05 · Boutique", kids: ["Exports de thèmes"] },
-  { name: "06 · Contenus", kids: ["Textes", "Calendrier"] },
-];
+type Tree = { name: string; kids: string[] }[];
+type Files = { from: string; to: string; parent: number; kid: string; video?: boolean }[];
 
-const FILES: { from: string; to: string; parent: number; kid: string; video?: boolean }[] = [
-  { from: "IMG_4821.jpg", to: "drone-photo-originale.jpg", parent: 0, kid: "Photos originales" },
-  { from: "capture (3).png", to: "drone-detoure.png", parent: 0, kid: "Détourages" },
-  { from: "logo ok.svg", to: "logo-principal.svg", parent: 1, kid: "Logos" },
-  { from: "Sans titre.jpg", to: "drone-post-4x5.jpg", parent: 2, kid: "Réseaux sociaux" },
-  { from: "video_final_v2.mp4", to: "drone-pub-9x16.mp4", parent: 3, kid: "Publicités", video: true },
-];
+const TREES: Record<Lang, Tree> = {
+  fr: [
+    { name: "01 · Produit", kids: ["Photos originales", "Détourages", "Catalogue"] },
+    { name: "02 · Marque", kids: ["Logos", "Charte & palette"] },
+    { name: "03 · Images", kids: ["Packshots", "Scènes & usages", "Réseaux sociaux", "Publicités"] },
+    { name: "04 · Vidéos", kids: ["Publicités", "Réseaux sociaux", "Boutique"] },
+    { name: "05 · Boutique", kids: ["Exports de thèmes"] },
+    { name: "06 · Contenus", kids: ["Textes", "Calendrier"] },
+  ],
+  en: [
+    { name: "01 · Product", kids: ["Original photos", "Cutouts", "Catalog"] },
+    { name: "02 · Brand", kids: ["Logos", "Guidelines & palette"] },
+    { name: "03 · Images", kids: ["Packshots", "Scenes & usage", "Social media", "Ads"] },
+    { name: "04 · Videos", kids: ["Ads", "Social media", "Store"] },
+    { name: "05 · Store", kids: ["Theme exports"] },
+    { name: "06 · Content", kids: ["Copy", "Calendar"] },
+  ],
+};
+
+const FILES_BY_LANG: Record<Lang, Files> = {
+  fr: [
+    { from: "IMG_4821.jpg", to: "drone-photo-originale.jpg", parent: 0, kid: "Photos originales" },
+    { from: "capture (3).png", to: "drone-detoure.png", parent: 0, kid: "Détourages" },
+    { from: "logo ok.svg", to: "logo-principal.svg", parent: 1, kid: "Logos" },
+    { from: "Sans titre.jpg", to: "drone-post-4x5.jpg", parent: 2, kid: "Réseaux sociaux" },
+    { from: "video_final_v2.mp4", to: "drone-pub-9x16.mp4", parent: 3, kid: "Publicités", video: true },
+  ],
+  en: [
+    { from: "IMG_4821.jpg", to: "drone-original-photo.jpg", parent: 0, kid: "Original photos" },
+    { from: "screenshot (3).png", to: "drone-cutout.png", parent: 0, kid: "Cutouts" },
+    { from: "logo ok.svg", to: "logo-main.svg", parent: 1, kid: "Logos" },
+    { from: "Untitled.jpg", to: "drone-post-4x5.jpg", parent: 2, kid: "Social media" },
+    { from: "video_final_v2.mp4", to: "drone-ad-9x16.mp4", parent: 3, kid: "Ads", video: true },
+  ],
+};
+const FILES_COUNT = FILES_BY_LANG.fr.length;
 
 /** Étapes par fichier : 1 arrivée, 2 analyse, 3 renommé et envoyé, 4 rangé. */
 const PER = 3;
 const TICK = 750;
 const HOLD = 5;
-const LAST = FILES.length * PER + 1 + HOLD;
+const LAST = FILES_COUNT * PER + 1 + HOLD;
 
 const key = (parent: number, kid: string) => `${parent}/${kid}`;
 
 export function FilesSorter() {
+  const { lang } = useLang();
+  const t = (fr: string, en: string) => (lang === "en" ? en : fr);
+  const TREE = TREES[lang];
+  const FILES = FILES_BY_LANG[lang];
   const box = useRef<HTMLDivElement>(null);
   const rows = useRef<(HTMLLIElement | null)[]>([]);
   const folders = useRef<Record<string, HTMLLIElement | null>>({});
@@ -45,7 +74,7 @@ export function FilesSorter() {
     const el = box.current;
     if (!el) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setStep(FILES.length * PER + 1);
+      setStep(FILES_COUNT * PER + 1);
       return;
     }
     let timer: ReturnType<typeof setInterval> | undefined;
@@ -84,10 +113,10 @@ export function FilesSorter() {
     <div ref={box} className="relative overflow-hidden rounded-[28px] border border-line bg-paper shadow-soft">
       <div className="flex items-center gap-2 border-b border-line px-4 py-3">
         <span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" />
-        <span className="ml-2 text-xs text-muted">Fichiers · Ostral</span>
+        <span className="ml-2 text-xs text-muted">{t("Fichiers · Ostral", "Files · Ostral")}</span>
         <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-signal-soft px-2.5 py-1 text-[11px] font-medium text-signal">
           <Sparkles className={cx("size-3", step > 0 && done < FILES.length && "animate-spin [animation-duration:2.4s]")} />
-          {done < FILES.length ? `L'IA range… ${done}/${FILES.length}` : "Tout est rangé"}
+          {done < FILES.length ? t(`L'IA range… ${done}/${FILES.length}`, `AI is sorting… ${done}/${FILES.length}`) : t("Tout est rangé", "All sorted")}
         </span>
       </div>
       <div className="grid sm:grid-cols-[minmax(0,210px)_1fr]">
@@ -122,7 +151,7 @@ export function FilesSorter() {
           })}
         </ul>
         <div className="p-4 sm:p-5">
-          <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">Fichiers importés</p>
+          <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t("Fichiers importés", "Uploaded files")}</p>
           <ul className="mt-3 grid gap-2">
             {FILES.map((f, i) => {
               const s = stage(i);
@@ -135,7 +164,7 @@ export function FilesSorter() {
                       <span className={cx("block truncate transition-all duration-300", s >= 3 ? "absolute inset-0 -translate-y-2 opacity-0" : "text-ink-2")}>{f.from}</span>
                       <span className={cx("block truncate font-medium text-ink transition-all duration-300", s >= 3 ? "opacity-100" : "absolute inset-0 translate-y-2 opacity-0")}>{f.to}</span>
                     </span>
-                    {s === 2 && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-signal-soft px-2 py-0.5 text-[10px] font-medium text-signal"><Sparkles className="size-3 animate-pulse" /> Analyse</span>}
+                    {s === 2 && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-signal-soft px-2 py-0.5 text-[10px] font-medium text-signal"><Sparkles className="size-3 animate-pulse" /> {t("Analyse", "Analyzing")}</span>}
                     {s >= 4 && <Check className="size-4 shrink-0 text-signal" />}
                   </div>
                   <p className={cx("ml-6 mt-1 truncate text-[11px] text-ink-2 transition-all duration-300", s >= 3 ? "opacity-100" : "-translate-x-1 opacity-0")}>
@@ -157,7 +186,7 @@ export function FilesSorter() {
           <span className="truncate">{ghost.label}</span>
         </span>
       )}
-      <p className="sr-only">Démonstration : l'IA renomme chaque fichier importé et le range dans le bon sous-dossier.</p>
+      <p className="sr-only">{t("Démonstration : l'IA renomme chaque fichier importé et le range dans le bon sous-dossier.", "Demo: the AI renames each uploaded file and moves it into the right subfolder.")}</p>
     </div>
   );
 }

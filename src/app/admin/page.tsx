@@ -2,8 +2,13 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { ToastProvider } from "@/components/ui";
 import { AdminConsole } from "@/components/admin";
+import { serverLang } from "@/lib/i18n-server";
+import { pick } from "@/lib/i18n";
 
-export const metadata = { title: "Administration" };
+export async function generateMetadata() {
+  const lang = await serverLang();
+  return { title: pick(lang, "Administration", "Admin") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function Page() {

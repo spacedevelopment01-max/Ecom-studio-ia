@@ -7,13 +7,14 @@ import { generateLogos, hasClientLogo } from "@/lib/engine/identity";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { HttpError } from "@/lib/auth";
 import { DIRECTIONS } from "@/lib/theme/directions";
+import { L } from "@/lib/i18n-server";
 
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
 /** Modifications manuelles de la marque et validation d'éléments. */
 export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  if (!p.brand) throw new HttpError(409, "La marque n'est pas encore créée.");
+  if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   const b = await body(
     req,
     z.object({
@@ -54,6 +55,6 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const b = await body(req, z.object({ guidance: z.string().max(1000).optional() }));
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.build", label: "Nouvelle direction de marque", payload: { projectId: p.id, guidance: b.guidance } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.build", label: L("Nouvelle direction de marque", "New brand direction"), payload: { projectId: p.id, guidance: b.guidance } });
   return ok({ jobId: job.id });
 });

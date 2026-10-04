@@ -3,6 +3,12 @@
  * (serveur + worker lancés) à partir de produits réels de fournisseurs (scripts/demo-products/inputs).
  *   BASE=http://localhost:3000 ONLY=verger,oreiller,drone,chat,tribunes tsx scripts/build-demos.ts
  * Sortie : public/demo/<id>/…, public/demo/directions/<direction>.jpg, public/demo/manifest.json
+ * Version anglaise (projets créés avec language=en, interface en anglais) :
+ *   LANG=en ONLY=verger tsx scripts/build-demos.ts   (puis ONLY=oreiller, ONLY=drone…, une par une)
+ *   Vignettes des directions (sur le projet anglais du drone, comme en français) :
+ *   LANG=en ONLY_DIRECTIONS=<id du projet> EMAIL=<compte de démonstration> tsx scripts/build-demos.ts
+ * Sortie à côté des fichiers français, suffixe « .en » : public/demo/<id>/<nom>.en.<ext>,
+ * public/demo/directions/<direction>.en.jpg, public/demo/manifest.en.json (les fichiers français ne sont pas touchés).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -11,7 +17,11 @@ import { chromium, type BrowserContext } from "playwright";
 
 const BASE = process.env.BASE ?? "http://localhost:3000";
 const RENDERS = process.env.RENDERS ?? path.join(process.cwd(), "scripts", "demo-renders", "inputs");
+const EN = process.env.LANG === "en";
 const OUT = path.join(process.cwd(), "public", "demo");
+/** Nom de fichier de sortie : « boutique-bureau.jpg » → « boutique-bureau.en.jpg » en anglais. */
+const X = (name: string) => (EN ? name.replace(/(\.\w+)$/, ".en$1") : name);
+const MANIFEST = X("manifest.json");
 const PASSWORD = "demo-studio-2026";
 
 type CatalogDemo = { name: string; category: string; price: string; description: string; features?: string[]; photo: string };
@@ -101,7 +111,70 @@ const REAL_DEMOS: DemoDef[] = [
   },
 ];
 
-const PRODUCTS: DemoDef[] = process.env.ONLY ? REAL_DEMOS.filter((d) => process.env.ONLY!.split(",").includes(d.id)) : [
+/**
+ * Entrées anglaises des démonstrations réelles (LANG=en) : traduction fidèle des entrées françaises,
+ * sans rien ajouter. Les noms de marque (noms propres) sont inchangés.
+ */
+const EN_DEMOS: Record<string, Partial<DemoDef>> = {
+  verger: {
+    sector: "Beverages", category: "Iced teas",
+    productName: "Peach Iced Tea", price: "€2.40",
+    description: "Peach iced tea in a 33 cl can.",
+    catalog: [
+      { name: "Lemon Iced Tea", category: "Iced teas", price: "2.40", description: "Lemon iced tea in a 33 cl can.", photo: path.join(REAL, "boissons", "canette-citron.png") },
+      { name: "Red Berry Iced Tea", category: "Iced teas", price: "2.40", description: "Red berry iced tea in a 33 cl can.", photo: path.join(REAL, "boissons", "canette-fruits-rouges.png") },
+    ],
+    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "A supplier's 33 cl can of iced tea, relabeled: the brand and the three flavors are created by the studio." },
+    pdp: [
+      { type: "badges", after: "title", settings: { badge1: "🥫 33 cl can", badge2: "♻️ Recyclable aluminum" } },
+      { type: "siblings", after: "badges", settings: { collection: "iced-teas", heading: "Choose your flavor" } },
+      { type: "bundles", after: "price", settings: { layout: "cards", heading: "Build your pack", units_per_pack: 1, unit_label: "can", default_tier: "2", qty1: 6, label1: "Pack of 6", discount1: 0, qty2: 12, label2: "Pack of 12", discount2: 5, tag2: "-5%", qty3: 24, label3: "Pack of 24", discount3: 10, tag3: "-10%" } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 2, max_days: 4, business_days: true, label: "Estimated delivery" } },
+    ],
+  },
+  oreiller: {
+    sector: "Home", category: "Sleep",
+    productName: "Papillon Ergonomic Pillow", price: "€39.90",
+    description: "Butterfly-shaped ergonomic pillow. Two sides of different heights (one low side, one high side), a central hollow for the head and side wings for sleeping on your side. Breathable cover. Colors: slate blue or sage green.",
+    variants: { name: "Color", values: ["Slate blue", "Sage green"], photos: { "Sage green": path.join(REAL, "maison", "oreiller-vert.jpg") } },
+    pdp: [
+      { type: "benefits", after: "price", settings: { emoji1: "🦋", title1: "Butterfly shape", text1: "A central hollow for the head and side wings for sleeping on your side.", emoji2: "↕️", title2: "Two heights", text2: "One low side, one high side: turn the pillow to suit your preference.", emoji3: "🌬️", title3: "Breathable cover", text3: "", emoji4: "", title4: "" } },
+      { type: "bundles", after: "buy_buttons", settings: { layout: "rows", heading: "For the whole home", qty1: 1, label1: "1 pillow", discount1: 0, qty2: 2, label2: "2 pillows", chip2: "The duo", discount2: 10, tag2: "-10%", qty3: 0, default_tier: "1" } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 6, business_days: true, label: "Estimated delivery" } },
+    ],
+    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "A white-label ergonomic pillow from a supplier, in two colors: the brand, the visuals and the store are created by the studio." },
+  },
+  drone: {
+    sector: "Tech", category: "Drones",
+    productName: "Foldable Drone with Stabilized Camera", price: "€189",
+    description: "Foldable drone with an adjustable stabilized camera. According to the supplier's listing: 1-inch sensor, f/1.8 aperture, stated flight time of 30 minutes, GPS return to home, obstacle sensing in four directions, vertical shooting, remote controller with a 6.9-inch foldable screen.",
+    pdp: [
+      { type: "benefits", after: "price", settings: { emoji1: "📍", title1: "Return to home", text1: "Via GPS, according to the supplier's listing.", emoji2: "🛰️", title2: "Obstacle sensing", text2: "In four directions, according to the supplier's listing.", emoji3: "🔋", title3: "30 minutes stated", text3: "Flight time per battery, as stated by the supplier.", emoji4: "🎒", title4: "Foldable", text4: "The arms fold away for transport." } },
+      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 7, business_days: true, label: "Estimated delivery" } },
+    ],
+    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "A white-label foldable drone from a supplier; the manufacturer's markings were removed from the photo, and the brand and store are created by the studio." },
+  },
+  chat: {
+    sector: "Pets", category: "Grooming",
+    productName: "Pet Hair Remover Glove", price: "€12.90",
+    description: "Double-sided glove for removing cat hair from sofas, clothes and cushions. Mesh back with wrist strap, fabric side that catches the hair. Dimensions: 20 × 15 cm.",
+    catalog: [
+      { name: "Anti-Scratch Sofa Protector", category: "Home", price: "19.90", description: "Roll covering to cut and stick onto scratched areas (sofa, wall, door): the cat scratches it without damaging the furniture.", features: ["Cuts with scissors", "Adhesive back"], photo: path.join(REAL, "animaux", "protege-canape.jpg") },
+    ],
+    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "White-label cat products from suppliers: the brand, the visuals and the store are created by the studio." },
+  },
+  tribunes: {
+    sector: "Fashion", category: "Supporter T-shirts",
+    productName: "Lavender Supporter T-shirt", price: "€29.90",
+    description: "Navy blue supporter T-shirt with FRANCE lettering and the number 10, tone-on-tone embroidered lavender sprigs, blue-white-red trims, flag on the chest.",
+    catalog: [
+      { name: "Watercolor Supporter T-shirt", category: "Supporter T-shirts", price: "29.90", description: "Ecru supporter T-shirt with a blue and red watercolor pattern, tricolor crest and raised landscape (Eiffel Tower, lavender fields).", photo: path.join(REAL, "vetements", "tshirt-aquarelle.jpg") },
+    ],
+    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "Supporter T-shirts from a supplier (supplier visuals): the brand and the store are created by the studio. Designs featuring the federation's official crest were excluded." },
+  },
+};
+const ONLY_IDS = process.env.ONLY?.split(",");
+const PRODUCTS: DemoDef[] = EN ? REAL_DEMOS.filter((d) => !ONLY_IDS || ONLY_IDS.includes(d.id)).map((d) => ({ ...d, ...EN_DEMOS[d.id] })) : process.env.ONLY ? REAL_DEMOS.filter((d) => process.env.ONLY!.split(",").includes(d.id)) : [
   { id: "serum", sector: "Beauté", direction: "atelier", productName: "Sérum Éclat", brandName: "Maison Ondine", price: "34,90 €", description: "Sérum visage en flacon compte-gouttes en verre de 30 ml. Formule à la niacinamide et à l'acide hyaluronique. Texture légère, à appliquer matin et soir sur peau propre." },
   { id: "drone", sector: "High-tech", direction: "nocturne", productName: "Drone Aeris X1", brandName: "Aeris", price: "499 €", description: "Drone de loisir quadrirotor avec caméra stabilisée sur nacelle. Châssis graphite, poids : 249 g. Autonomie : 31 minutes par batterie. Vidéo 4K à 30 images par seconde." },
   { id: "soda", sector: "Boissons", direction: "gourmand", productName: "Pétale Framboise & Hibiscus", brandName: "Pétale", price: "2,90 €", description: "Soda pétillant à la framboise et à l'hibiscus en canette de 33 cl. 4 g de sucre pour 100 ml. Sans édulcorant." },
@@ -156,6 +229,8 @@ async function shot(ctx: BrowserContext, url: string, dest: string, viewport: { 
 const ONLY_DIRECTIONS = process.env.ONLY_DIRECTIONS; // identifiant d'un projet existant : ne refait que les vignettes
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const ctx = await browser.newContext({ reducedMotion: "reduce" });
+// Langue de l'interface du studio (cookie « ecs-lang ») : anglais pour LANG=en.
+if (EN) await ctx.addCookies([{ name: "ecs-lang", value: "en", url: BASE }]);
 async function shootDirections(pid: string) {
   const { DIRECTIONS } = await import("../src/lib/theme/directions");
   fs.mkdirSync(path.join(OUT, "directions"), { recursive: true });
@@ -163,7 +238,7 @@ async function shootDirections(pid: string) {
     await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: d.id } });
     await waitIdle(ctx, pid);
     const theme = await api(ctx, `/api/projects/${pid}/theme`);
-    await shot(ctx, `/preview/${pid}/v/${theme.current.versionId}/`, path.join(OUT, "directions", `${d.id}.jpg`), { width: 1280, height: 860 }, 1600);
+    await shot(ctx, `/preview/${pid}/v/${theme.current.versionId}/`, path.join(OUT, "directions", X(`${d.id}.jpg`)), { width: 1280, height: 860 }, 1600);
     console.log(`  direction ${d.id} ✓`);
   }
 }
@@ -174,7 +249,7 @@ if (ONLY_DIRECTIONS) {
   process.exit(0);
 }
 const email = `demo-${Date.now()}@ecom-studio.local`;
-await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: "Démonstrations" } });
+await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: EN ? "Demos" : "Démonstrations" } });
 // Le compte de démonstration a besoin de plusieurs boutiques : activation manuelle locale.
 const { db } = await import("../src/lib/db");
 const { syncAllowance, getSubscription } = await import("../src/lib/billing");
@@ -184,9 +259,9 @@ db().prepare("UPDATE subscriptions SET status = 'manual', stores = 20 WHERE user
 syncAllowance(me.user.id);
 
 // ONLY=<id,…> : régénère ces démonstrations seulement et les fusionne dans le manifeste existant.
-if (!process.env.ONLY) fs.rmSync(OUT, { recursive: true, force: true });
+if (!process.env.ONLY && !EN) fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(path.join(OUT, "directions"), { recursive: true });
-const previous = process.env.ONLY && fs.existsSync(path.join(OUT, "manifest.json")) ? JSON.parse(fs.readFileSync(path.join(OUT, "manifest.json"), "utf8")).demos : [];
+const previous = process.env.ONLY && fs.existsSync(path.join(OUT, MANIFEST)) ? JSON.parse(fs.readFileSync(path.join(OUT, MANIFEST), "utf8")).demos : [];
 const demos: any[] = [];
 let firstProject: { pid: string } | null = null;
 
@@ -198,7 +273,7 @@ for (const p of PRODUCTS) {
   // Photo transparente (produit détouré) : posée sur un fond clair, comme une photo de fournisseur.
   const photo = photoFile.endsWith(".png") ? await sharp(photoFile).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(photoFile);
   const res = await ctx.request.post(`${BASE}/api/projects`, {
-    multipart: { photos: { name: path.basename(photoFile).replace(/\.png$/, ".jpg"), mimeType: "image/jpeg", buffer: photo }, productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: "shopify", storeType: p.storeType ?? "mono" },
+    multipart: { photos: { name: path.basename(photoFile).replace(/\.png$/, ".jpg"), mimeType: "image/jpeg", buffer: photo }, productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: "shopify", storeType: p.storeType ?? "mono", ...(EN ? { language: "en" } : {}) },
   });
   const created = await res.json();
   if (!res.ok()) throw new Error(JSON.stringify(created));
@@ -221,8 +296,8 @@ for (const p of PRODUCTS) {
   }
   // Vidéos refaites avec les photos en situation (elles ouvrent le montage).
   if (p.lifestyle?.length) {
-    await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "9:16", target: "ads", goal: "publicité courte pour les réseaux sociaux" } });
-    await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "16:9", target: "shop", goal: "vidéo d'ambiance pour la boutique", music: "none" } });
+    await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "9:16", target: "ads", goal: EN ? "short ad for social media" : "publicité courte pour les réseaux sociaux" } });
+    await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "16:9", target: "shop", goal: EN ? "mood video for the store" : "vidéo d'ambiance pour la boutique", music: "none" } });
     await waitIdle(ctx, pid);
   }
   // Variante (coloris…) : valeurs du produit, puis photo de chaque valeur.
@@ -251,7 +326,7 @@ for (const p of PRODUCTS) {
       const after = order.find((x) => x.startsWith(`demo_${b.after}`)) ?? order.find((x) => mp.blocks![x].type === b.after);
       order.splice(after ? order.indexOf(after) + 1 : order.length, 0, id);
     }
-    saveThemeVersion(pid, spec, "Fiche produit : lots, livraison et autres réglages du marchand", "user");
+    saveThemeVersion(pid, spec, EN ? "Product page: bundles, delivery and other merchant settings" : "Fiche produit : lots, livraison et autres réglages du marchand", "user");
   }
 
   const files = (await api(ctx, `/api/projects/${pid}/files?q=`)).assets as any[];
@@ -259,16 +334,18 @@ for (const p of PRODUCTS) {
   const assets = files.length ? files : all;
   // Scènes dans l'ordre de création : la première (« vie quotidienne ») sert d'exemple principal.
   const byRole = (r: string) => assets.filter((a) => a.role === r).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
-  await sharp(photo).resize({ width: 900 }).jpeg({ quality: 84 }).toFile(path.join(dir, "photo.jpg"));
+  await sharp(photo).resize({ width: 900 }).jpeg({ quality: 84 }).toFile(path.join(dir, X("photo.jpg")));
   const images: { src: string; label: string }[] = [];
-  const pick: [string, string, number][] = [["cutout", "Détourage", 1], ["packshot", "Packshot", 1], ["detail", "Détail", 1], ["scene", "Scène", 2], ["social", "Visuel social", 1], ["ad", "Publicité", 1], ["banner", "Bannière", 1]];
+  const pick: [string, string, number][] = EN
+    ? [["cutout", "Cutout", 1], ["packshot", "Packshot", 1], ["detail", "Detail", 1], ["scene", "Scene", 2], ["social", "Social visual", 1], ["ad", "Ad", 1], ["banner", "Banner", 1]]
+    : [["cutout", "Détourage", 1], ["packshot", "Packshot", 1], ["detail", "Détail", 1], ["scene", "Scène", 2], ["social", "Visuel social", 1], ["ad", "Publicité", 1], ["banner", "Bannière", 1]];
   for (const [role, label, n] of pick) {
     for (const [i, a] of byRole(role).slice(0, n).entries()) {
-      const file = `${role}-${i + 1}.jpg`;
+      const file = X(`${role}-${i + 1}.jpg`);
       if (role === "cutout") {
         const r = await ctx.request.get(`${BASE}${a.url}`);
-        await sharp(Buffer.from(await r.body())).resize({ width: 900 }).webp({ quality: 86 }).toFile(path.join(dir, `${role}-${i + 1}.webp`));
-        images.push({ src: `/demo/${p.id}/${role}-${i + 1}.webp`, label });
+        await sharp(Buffer.from(await r.body())).resize({ width: 900 }).webp({ quality: 86 }).toFile(path.join(dir, X(`${role}-${i + 1}.webp`)));
+        images.push({ src: `/demo/${p.id}/${X(`${role}-${i + 1}.webp`)}`, label });
       } else {
         await saveImg(ctx, a.url, path.join(dir, file));
         images.push({ src: `/demo/${p.id}/${file}`, label });
@@ -276,21 +353,21 @@ for (const p of PRODUCTS) {
     }
   }
   const logo = byRole("logo-svg")[0] ?? byRole("logo")[0];
-  const logoFile = logo?.mime === "image/svg+xml" ? "logo.svg" : "logo.png";
+  const logoFile = X(logo?.mime === "image/svg+xml" ? "logo.svg" : "logo.png");
   if (logo) await saveRaw(ctx, logo.url, path.join(dir, logoFile));
   const videos = byRole("video").sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0));
   const vertical = videos.find((v) => v.meta?.format === "9:16") ?? videos[0];
   const wide = videos.find((v) => v.meta?.format === "16:9");
-  if (vertical) await saveRaw(ctx, vertical.url, path.join(dir, "video.mp4"));
-  if (wide) await saveRaw(ctx, wide.url, path.join(dir, "video-boutique.mp4"));
+  if (vertical) await saveRaw(ctx, vertical.url, path.join(dir, X("video.mp4")));
+  if (wide) await saveRaw(ctx, wide.url, path.join(dir, X("video-boutique.mp4")));
   const poster = byRole("video-poster").find((x) => x.sourceAssetId === vertical?.id);
-  if (poster) await saveImg(ctx, poster.url, path.join(dir, "video-poster.jpg"), 720);
+  if (poster) await saveImg(ctx, poster.url, path.join(dir, X("video-poster.jpg")), 720);
 
   const theme = await api(ctx, `/api/projects/${pid}/theme`);
   const vid = theme.current.versionId;
-  await shot(ctx, `/preview/${pid}/v/${vid}/`, path.join(dir, "boutique-bureau.jpg"), { width: 1440, height: 900 });
-  await shot(ctx, `/preview/${pid}/v/${vid}/`, path.join(dir, "boutique-mobile.jpg"), { width: 390, height: 844 });
-  await shot(ctx, `/preview/${pid}/v/${vid}/products/${theme.current.product.handle}`, path.join(dir, "fiche-produit.jpg"), { width: 1440, height: 900 });
+  await shot(ctx, `/preview/${pid}/v/${vid}/`, path.join(dir, X("boutique-bureau.jpg")), { width: 1440, height: 900 });
+  await shot(ctx, `/preview/${pid}/v/${vid}/`, path.join(dir, X("boutique-mobile.jpg")), { width: 390, height: 844 });
+  await shot(ctx, `/preview/${pid}/v/${vid}/products/${theme.current.product.handle}`, path.join(dir, X("fiche-produit.jpg")), { width: 1440, height: 900 });
 
   demos.push({
     id: p.id,
@@ -299,15 +376,15 @@ for (const p of PRODUCTS) {
     sector: p.sector,
     direction: theme.current.direction,
     palette: Object.values(ov.brand?.palette ?? {}).slice(0, 5),
-    photo: `/demo/${p.id}/photo.jpg`,
+    photo: `/demo/${p.id}/${X("photo.jpg")}`,
     logo: logo ? `/demo/${p.id}/${logoFile}` : "",
-    shopDesktop: `/demo/${p.id}/boutique-bureau.jpg`,
-    shopMobile: `/demo/${p.id}/boutique-mobile.jpg`,
-    productPage: `/demo/${p.id}/fiche-produit.jpg`,
+    shopDesktop: `/demo/${p.id}/${X("boutique-bureau.jpg")}`,
+    shopMobile: `/demo/${p.id}/${X("boutique-mobile.jpg")}`,
+    productPage: `/demo/${p.id}/${X("fiche-produit.jpg")}`,
     images,
-    video: vertical ? `/demo/${p.id}/video.mp4` : "",
-    videoPoster: poster ? `/demo/${p.id}/video-poster.jpg` : "",
-    shopVideo: wide ? `/demo/${p.id}/video-boutique.mp4` : undefined,
+    video: vertical ? `/demo/${p.id}/${X("video.mp4")}` : "",
+    videoPoster: poster ? `/demo/${p.id}/${X("video-poster.jpg")}` : "",
+    shopVideo: wide ? `/demo/${p.id}/${X("video-boutique.mp4")}` : undefined,
     storeType: p.storeType ?? "mono",
     products: 1 + (p.catalog?.length ?? 0),
     source: p.source ?? null,
@@ -315,11 +392,15 @@ for (const p of PRODUCTS) {
 }
 
 // Toutes les directions de boutique, appliquées au premier produit (sauf régénération partielle).
-if (!process.env.ONLY) await shootDirections(firstProject!.pid);
+// DIRECTIONS=1 : les refait aussi lors d'une régénération partielle (ex. LANG=en ONLY=verger DIRECTIONS=1).
+if (!process.env.ONLY || process.env.DIRECTIONS) await shootDirections(firstProject!.pid);
 
 // DROP=<id,…> : démonstrations retirées (produits 3D remplacés par des produits réels).
 const drop = (process.env.DROP ?? "").split(",").filter(Boolean);
+const order = (d: any) => { const k = REAL_DEMOS.findIndex((x) => x.id === d.id); return k < 0 ? 99 : k; };
 const merged = (process.env.ONLY ? [...demos, ...previous.filter((d: any) => !demos.some((x) => x.id === d.id))] : demos).filter((d: any) => !drop.includes(d.id));
-fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify({ generatedAt: new Date().toISOString(), note: "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).", demos: merged }, null, 2));
-console.log(`✓ ${demos.length} démonstrations → public/demo`);
+// Ordre stable (celui de REAL_DEMOS) quand les démonstrations sont régénérées une par une.
+if (EN) merged.sort((a: any, b: any) => order(a) - order(b));
+fs.writeFileSync(path.join(OUT, MANIFEST), JSON.stringify({ generatedAt: new Date().toISOString(), note: EN ? "Brands created by E-COM STUDIO IA (built-in engine) from photos of real supplier products, retouched (original markings removed)." : "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).", demos: merged }, null, 2));
+console.log(`✓ ${demos.length} démonstrations → public/demo/${MANIFEST}`);
 await browser.close();

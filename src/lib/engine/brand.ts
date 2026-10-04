@@ -8,6 +8,7 @@ import { renderBrandBook } from "../media/brand-book";
 import { canvasFamily } from "../media/fonts";
 import { assetData, getAsset } from "../library";
 import { sectorLabel } from "../project-types";
+import { C, L, contentLang } from "../i18n-server";
 import { generateLogos, proposeTaglines } from "./identity";
 import { aiBrand, brandFromAi } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
@@ -22,7 +23,7 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   let logoSpec: Omit<LogoSpec, "color">;
   const keepValidated = p.brand?.validated ?? [];
   if (llmConfigured()) {
-    ctx.progress(0.1, "Direction de marque (IA)");
+    ctx.progress(0.1, L("Direction de marque (IA)", "Brand direction (AI)"));
     const r = await ctx.step("brand-ai", () => aiBrand({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand` }, p, opts.guidance));
     const out = brandFromAi(r, { concept: r.logo.concept, status: "proposed" });
     brand = out.brand;
@@ -30,7 +31,7 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     logoSpec = { name: r.name, family: r.logo.family, weight: r.logo.weight, italic: r.logo.italic, case: r.logo.case, tracking: r.logo.tracking, layout: r.logo.layout, emblem: r.logo.emblem };
     remember(projectId, { kind: "decision", key: "direction_boutique", value: `${directionById(r.direction).name} — ${r.directionReason}`, status: "inferred", source: "ai", scope: "shop" });
   } else {
-    ctx.progress(0.1, "Direction de marque (moteur local)");
+    ctx.progress(0.1, L("Direction de marque (moteur local)", "Brand direction (local engine)"));
     const out = localBrand(p.product, opts.providedBrand || p.brand?.name);
     brand = out.brand;
     saveStrategy(projectId, out.strategy);
@@ -54,11 +55,11 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
 
   // Logo : celui du client est conservé ; sinon trois propositions vectorielles, la plus adaptée appliquée.
   const clientLogo = one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo' AND origin = 'upload' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId);
-  if (clientLogo) brand.logo = { assetId: clientLogo.id, concept: "Logo fourni par le client", status: "provided" };
+  if (clientLogo) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
   saveBrand(projectId, brand);
   if (!clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name } });
   await saveBrandGuide(projectId);
-  ctx.progress(0.9, "Charte de marque (PDF)");
+  ctx.progress(0.9, L("Charte de marque (PDF)", "Brand guidelines (PDF)"));
   await saveBrandBook(projectId);
   return loadProject(projectId).brand!;
 }
@@ -83,13 +84,13 @@ export async function saveBrandBook(projectId: string) {
     logoWeb: await img(derived("logo-horizontal") ?? main),
     mark: await img(derived("logo-mark")),
     product: await img(latest("cutout")),
-    sectorLabel: sectorLabel(p.product.sector),
+    sectorLabel: sectorLabel(p.product.sector, contentLang()),
     date: new Date(),
   });
   const batch = Date.now().toString(36);
   const prev = latest("brand-book");
-  const book = await saveAsset({ projectId, userId: p.userId, data: pdf, name: `charte-${b.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`, mime: "application/pdf", kind: "document", role: "brand-book", folderKey: "brand.guide", origin: "generated", versionOf: prev ? prev.version_of ?? prev.id : null, meta: { pages: pages.length, batch } });
-  for (const [i, jpg] of pages.entries()) await saveAsset({ projectId, userId: p.userId, data: jpg, name: `charte-planche-${i + 1}.jpg`, mime: "image/jpeg", role: "brand-book-page", folderKey: "brand.guide", origin: "generated", sourceAssetId: book.id, meta: { page: i + 1, batch } });
+  const book = await saveAsset({ projectId, userId: p.userId, data: pdf, name: `${C("charte", "brand-guidelines")}-${b.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`, mime: "application/pdf", kind: "document", role: "brand-book", folderKey: "brand.guide", origin: "generated", versionOf: prev ? prev.version_of ?? prev.id : null, meta: { pages: pages.length, batch } });
+  for (const [i, jpg] of pages.entries()) await saveAsset({ projectId, userId: p.userId, data: jpg, name: `${C("charte-planche", "brand-guidelines-page")}-${i + 1}.jpg`, mime: "image/jpeg", role: "brand-book-page", folderKey: "brand.guide", origin: "generated", sourceAssetId: book.id, meta: { page: i + 1, batch } });
   return book;
 }
 
@@ -98,7 +99,8 @@ export async function saveBrandGuide(projectId: string) {
   const p = loadProject(projectId);
   const b = p.brand;
   if (!b) return;
-  const md = `# Charte de marque — ${b.name}
+  const d = directionById(b.direction);
+  const md = C(`# Charte de marque — ${b.name}
 
 ${b.tagline ? `> ${b.tagline}\n` : ""}
 ## Positionnement
@@ -129,12 +131,48 @@ ${b.positioning}
 ${b.logo.concept}
 
 ## Direction artistique de la boutique
-${directionById(b.direction).name} — ${directionById(b.direction).description}
+${d.name} — ${d.description}
 
 ${b.story ? `## Histoire\n${b.story}\n` : ""}
 ${b.values.length ? `## Valeurs\n${b.values.map((v) => `- **${v.title}** : ${v.text}`).join("\n")}\n` : ""}
 _Document généré par E-COM STUDIO IA (${b.generatedBy === "ai" ? "IA" : "moteur local"}). Les éléments « À compléter » restent à confirmer._
-`;
+`, `# Brand guidelines — ${b.name}
+
+${b.tagline ? `> ${b.tagline}\n` : ""}
+## Positioning
+${b.positioning}
+
+**Audience:** ${b.audience}
+
+## Personality and tone
+- Personality: ${b.personality.join(", ") || "to be defined"}
+- Voice: ${b.tone.voice}
+- Do: ${b.tone.do.join("; ")}
+- Don't: ${b.tone.dont.join("; ")}
+
+## Palette
+| Role | Color |
+|---|---|
+| Primary | ${b.palette.primary} |
+| Secondary | ${b.palette.secondary} |
+| Accent | ${b.palette.accent} |
+| Light | ${b.palette.light} |
+| Dark | ${b.palette.dark} |
+
+## Typography (Shopify font library)
+- Headings: ${b.fonts.heading}
+- Body: ${b.fonts.body}
+
+## Logo
+${b.logo.concept}
+
+## Store art direction
+${d.name} — ${d.description}
+
+${b.story ? `## Story\n${b.story}\n` : ""}
+${b.values.length ? `## Values\n${b.values.map((v) => `- **${v.title}**: ${v.text}`).join("\n")}\n` : ""}
+_Document generated by E-COM STUDIO IA (${b.generatedBy === "ai" ? "AI" : "local engine"}). Items marked "To complete" still need to be confirmed._
+`);
   const prev = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'brand-guide' AND deleted_at IS NULL ORDER BY version DESC LIMIT 1", projectId)[0];
-  await saveAsset({ projectId, userId: p.userId, data: Buffer.from(md, "utf8"), name: "charte-de-marque.md", mime: "text/markdown", kind: "document", role: "brand-guide", folderKey: "brand.guide", origin: "generated", versionOf: prev ? prev.version_of ?? prev.id : null, meta: { recipe: "Charte de marque" } });
+  await saveAsset({ projectId, userId: p.userId, data: Buffer.from(md, "utf8"), name: C("charte-de-marque.md", "brand-guidelines.md"), mime: "text/markdown", kind: "document", role: "brand-guide", folderKey: "brand.guide", origin: "generated", versionOf: prev ? prev.version_of ?? prev.id : null, meta: { recipe: C("Charte de marque", "Brand guidelines") } });
 }

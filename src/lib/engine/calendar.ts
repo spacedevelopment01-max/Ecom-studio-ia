@@ -13,6 +13,8 @@ import { llmConfigured } from "../ai/llm";
 import { FORMATS, renderCreative, type FormatId } from "../media/compose";
 import { brandTypo, ensureCutouts, latestAsset, palette, assetsByRole } from "./images";
 import { enqueue, type JobContext } from "../jobs";
+import { C, L, uiLang } from "../i18n-server";
+import { intlLocale } from "../i18n";
 
 export type PlanParams = {
   startDate: string; // AAAA-MM-JJ (dans le fuseau choisi)
@@ -37,18 +39,19 @@ export const NETWORK_FORMATS: Record<string, { image: FormatId; video: "9:16" | 
 };
 
 const ANGLES = [
-  { angle: "Le produit en détail", kind: "detail", layout: "minimal" },
-  { angle: "Mise en situation", kind: "scene", layout: "editorial" },
-  { angle: "Ce qu'il contient", kind: "creative", layout: "bold" },
-  { angle: "Question à la communauté", kind: "creative", layout: "centered" },
-  { angle: "Packshot", kind: "packshot", layout: "minimal" },
-  { angle: "Coulisses de la marque", kind: "scene", layout: "split" },
+  { angle: "Le produit en détail", en: "The product up close", kind: "detail", layout: "minimal", ask: false },
+  { angle: "Mise en situation", en: "In real life", kind: "scene", layout: "editorial", ask: false },
+  { angle: "Ce qu'il contient", en: "What's inside", kind: "creative", layout: "bold", ask: false },
+  { angle: "Question à la communauté", en: "Ask the community", kind: "creative", layout: "centered", ask: true },
+  { angle: "Packshot", en: "Packshot", kind: "packshot", layout: "minimal", ask: false },
+  { angle: "Coulisses de la marque", en: "Behind the brand", kind: "scene", layout: "split", ask: false },
 ] as const;
 
 /** Plan local (sans IA) : angles variés, textes sobres fondés sur les faits connus. */
 export function localPlan(p: Project, params: PlanParams): PostDraft[] {
   const facts = p.product.facts.filter((f) => f.status !== "unknown" && f.value && f.value.length < 90);
-  const name = p.product.name || p.brand?.name || "notre produit";
+  const name = p.product.name || p.brand?.name || C("notre produit", "our product");
+  const more = params.link ? C("\nÀ découvrir sur la boutique.", "\nDiscover it in our store.") : "";
   const posts: PostDraft[] = [];
   let k = 0;
   for (let day = 0; day < params.days; day++) {
@@ -57,19 +60,19 @@ export function localPlan(p: Project, params: PlanParams): PostDraft[] {
       const a = ANGLES[k % ANGLES.length];
       const fact = facts[k % Math.max(1, facts.length)];
       const wantsVideo = (net === "tiktok" || net === "youtube") || (k % 100) / 100 < params.mix.video / 100;
-      const caption =
-        a.angle === "Question à la communauté"
-          ? `Comment utiliseriez-vous ${name} au quotidien ? Dites-le-nous en commentaire.`
-          : fact
-            ? `${name} — ${fact.label.toLowerCase()} : ${fact.value}.${params.link ? `\nÀ découvrir sur la boutique.` : ""}`
-            : `${name}, vu de près.${params.link ? `\nÀ découvrir sur la boutique.` : ""}`;
+      const angle = C<string>(a.angle, a.en);
+      const caption = a.ask
+        ? C(`Comment utiliseriez-vous ${name} au quotidien ? Dites-le-nous en commentaire.`, `How would you use ${name} every day? Tell us in the comments.`)
+        : fact
+          ? C(`${name} — ${fact.label.toLowerCase()} : ${fact.value}.`, `${name} — ${fact.label.toLowerCase()}: ${fact.value}.`) + more
+          : C(`${name}, vu de près.`, `${name}, up close.`) + more;
       posts.push({
         day,
         slot,
         network: net,
         format: wantsVideo ? (net === "youtube" ? "short" : "reel") : net === "pinterest" ? "pin" : "image",
-        angle: a.angle,
-        title: a.angle === "Packshot" ? name : `${name} : ${a.angle.toLowerCase()}`,
+        angle,
+        title: a.kind === "packshot" ? name : C(`${name} : ${angle.toLowerCase()}`, `${name}: ${angle.toLowerCase()}`),
         caption,
         hashtags: [p.brand?.name, p.product.category, p.product.name].filter(Boolean).map((t) => String(t).replace(/\s+/g, "")).slice(0, 4),
         visual: { kind: wantsVideo ? "video" : (a.kind as any), headline: (fact?.value ?? p.brand?.tagline ?? name).slice(0, 40), subline: "", layout: a.layout as any },
@@ -91,14 +94,14 @@ export function scheduleTime(params: PlanParams, day: number, slot: number): num
 export async function createContentPlan(ctx: JobContext, projectId: string, params: PlanParams) {
   const p = loadProject(projectId);
   const planId = ctx.payload.planId as string;
-  ctx.progress(0.05, "Stratégie éditoriale");
+  ctx.progress(0.05, L("Stratégie éditoriale", "Editorial strategy"));
   const drafts = await ctx.step("drafts", async () => {
     if (llmConfigured()) {
       const r = await aiSocialPlan({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:plan` }, p, { days: params.days, perDay: params.perDay, networks: params.networks.map((n) => n.network), goals: params.goals, tone: params.tone, mix: params.mix, link: params.link });
       run("UPDATE content_plans SET strategy = ? WHERE id = ?", r.strategy, planId);
       return r.posts;
     }
-    run("UPDATE content_plans SET strategy = ? WHERE id = ?", "Plan préparé par le moteur local : angles variés à partir des informations confirmées. Activez l'IA pour une stratégie rédigée sur mesure.", planId);
+    run("UPDATE content_plans SET strategy = ? WHERE id = ?", L("Plan préparé par le moteur local : angles variés à partir des informations confirmées. Activez l'IA pour une stratégie rédigée sur mesure.", "Plan prepared by the local engine: varied angles based on confirmed information. Enable AI for a custom-written strategy."), planId);
     return localPlan(p, params);
   });
 
@@ -156,7 +159,7 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
   for (const [i, postId] of postIds.entries()) {
     const post = one<any>("SELECT * FROM posts WHERE id = ?", postId);
     if (!post || post.status !== "generating") continue;
-    ctx.progress(0.2 + (i / postIds.length) * 0.75, `Publication ${i + 1}/${postIds.length} : média ${NETWORK_FORMATS[post.network]?.label ?? post.network}`);
+    ctx.progress(0.2 + (i / postIds.length) * 0.75, L(`Publication ${i + 1}/${postIds.length} : média ${NETWORK_FORMATS[post.network]?.label ?? post.network}`, `Post ${i + 1}/${postIds.length}: ${NETWORK_FORMATS[post.network]?.label ?? post.network} media`));
     const visual = json<PostDraft["visual"]>(post.brief, { kind: "creative", headline: "", subline: "", layout: "editorial" });
     const fmt = NETWORK_FORMATS[post.network] ?? NETWORK_FORMATS.instagram;
     let mediaIds: string[] = [];
@@ -169,19 +172,19 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
       mediaIds = [pool[i % pool.length].id];
     } else if (product) {
       const r = await renderCreative({ product, palette: palette(p), typo: brandTypo(p), format: FORMATS[fmt.image], layout: visual.layout, headline: visual.headline || p.product.name, subline: visual.subline || undefined, brand: p.brand?.name ?? p.name, logo, seed: i + 11 });
-      const a = await saveAsset({ projectId, userId: p.userId, data: r.jpg, name: `publication-${post.network}-${new Date(post.scheduled_at).toISOString().slice(0, 10)}-${i + 1}.jpg`, mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", meta: { recipe: `Visuel ${FORMATS[fmt.image].label} pour ${fmt.label}`, post: postId, safeArea: r.safe, minFontPx: r.minFontPx } });
+      const a = await saveAsset({ projectId, userId: p.userId, data: r.jpg, name: `${C("publication", "post")}-${post.network}-${new Date(post.scheduled_at).toISOString().slice(0, 10)}-${i + 1}.jpg`, mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", meta: { recipe: L(`Visuel ${FORMATS[fmt.image].label} pour ${fmt.label}`, `${FORMATS[fmt.image].label} visual for ${fmt.label}`), post: postId, safeArea: r.safe, minFontPx: r.minFontPx } });
       mediaIds = [a.id];
     }
-    for (const m of mediaIds) addUsage(m, "post", postId, `${fmt.label} — ${new Date(post.scheduled_at).toLocaleDateString("fr-FR")}`);
+    for (const m of mediaIds) addUsage(m, "post", postId, `${fmt.label} — ${new Date(post.scheduled_at).toLocaleDateString(intlLocale(uiLang()))}`);
     const status = !mediaIds.length && post.network !== "facebook" ? "draft" : decideStatus(p, post.network, post.connection_id, params.approval, mediaIds);
     run("UPDATE posts SET media = ?, status = ?, auto_approved = ?, approved_at = CASE WHEN ? = 'scheduled' THEN ? ELSE approved_at END, updated_at = ? WHERE id = ?", JSON.stringify(mediaIds), status, status === "scheduled" ? 1 : 0, status, now(), now(), postId);
   }
   if (needVideo) {
     // Une vidéo verticale est produite une seule fois puis réutilisée.
-    enqueue({ userId: p.userId, projectId, type: "video.render", label: "Vidéo 9:16 pour le calendrier", payload: { format: "9:16", target: "social", attachPlan: planId }, idempotencyKey: `plan-video:${planId}` });
+    enqueue({ userId: p.userId, projectId, type: "video.render", label: L("Vidéo 9:16 pour le calendrier", "9:16 video for the calendar"), payload: { format: "9:16", target: "social", attachPlan: planId }, idempotencyKey: `plan-video:${planId}` });
   }
   run("UPDATE content_plans SET status = 'ready' WHERE id = ?", planId);
-  notify(p.userId, projectId, "Calendrier prêt", `${postIds.length} publications préparées${needVideo ? ` ; ${needVideo} attendent la vidéo en cours de rendu` : ""}.`);
+  notify(p.userId, projectId, L("Calendrier prêt", "Calendar ready"), L(`${postIds.length} publications préparées${needVideo ? ` ; ${needVideo} attendent la vidéo en cours de rendu` : ""}.`, `${postIds.length} posts prepared${needVideo ? `; ${needVideo} waiting for the video being rendered` : ""}.`));
   return { posts: postIds.length, waitingVideo: needVideo };
 }
 
@@ -200,7 +203,7 @@ export function attachVideoToPlan(planId: string, videoId: string) {
   const posts = all<{ id: string; network: string; connection_id: string | null; project_id: string }>("SELECT id, network, connection_id, project_id FROM posts WHERE plan_id = ? AND status = 'draft' AND media = '[]' AND format IN ('reel','short','video','story')", planId);
   for (const post of posts) {
     run("UPDATE posts SET media = ?, status = 'review', updated_at = ? WHERE id = ?", JSON.stringify([videoId]), now(), post.id);
-    addUsage(videoId, "post", post.id, "Publication vidéo");
+    addUsage(videoId, "post", post.id, L("Publication vidéo", "Video post"));
   }
 }
 
@@ -211,7 +214,7 @@ export function enqueueDuePosts() {
     now(),
   );
   for (const d of due) {
-    enqueue({ userId: d.user_id, projectId: d.project_id, type: "post.publish", label: "Publication programmée", payload: { postId: d.id }, idempotencyKey: `publish:${d.id}:${d.scheduled_at}`, maxAttempts: 4 });
+    enqueue({ userId: d.user_id, projectId: d.project_id, type: "post.publish", label: L("Publication programmée", "Scheduled post"), payload: { postId: d.id }, idempotencyKey: `publish:${d.id}:${d.scheduled_at}`, maxAttempts: 4 });
   }
   return due.length;
 }

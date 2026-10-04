@@ -13,7 +13,7 @@
         {%- for block in section.blocks -%}
           <figure class="es-testi__card" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
             {%- assign stars = block.settings.rating | plus: 0 -%}
-            {%- if stars > 0 -%}<p class="es-testi__stars" aria-label="{{ stars }} sur 5">{%- for i in (1..5) -%}<span{% if i > stars %} class="is-off"{% endif %}>★</span>{%- endfor -%}</p>{%- endif -%}
+            {%- if stars > 0 -%}<p class="es-testi__stars" aria-label="{{ 'products.product.rating_of' | t: rating: stars, max: 5 | escape }}">{%- for i in (1..5) -%}<span{% if i > stars %} class="is-off"{% endif %}>★</span>{%- endfor -%}</p>{%- endif -%}
             <blockquote class="es-testi__quote">{{ block.settings.quote }}</blockquote>
             <figcaption class="es-testi__who">
               {%- if block.settings.image != blank or block.settings.image_asset != blank -%}<span class="es-testi__avatar">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.author, sizes: '48px', class: 'es-cover' %}</span>{%- endif -%}
@@ -23,7 +23,7 @@
         {%- endfor -%}
       </div>
     {%- elsif request.design_mode -%}
-      <p class="es-reviews__hint">Ajoutez de vrais avis de vos clients (bloc « Avis ») : rien ne s'affiche tant qu'il n'y en a pas.</p>
+      <p class="es-reviews__hint">{{ 'sections.reviews.testimonials_hint' | t }}</p>
     {%- endif -%}
   </div>
 </section>

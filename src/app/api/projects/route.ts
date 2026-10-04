@@ -5,6 +5,7 @@ import { ensureFolders } from "@/lib/library";
 import { hasProductInput, launchPipeline, readStartForm, saveStartFiles } from "@/lib/project-start";
 import { getSubscription, subscriptionActive } from "@/lib/billing";
 import { DEFAULT_SETTINGS } from "@/lib/projects";
+import { L, setProjectContentLang, uiLang } from "@/lib/i18n-server";
 
 export const runtime = "nodejs";
 
@@ -38,18 +39,20 @@ export const POST = handle(async (req: Request) => {
   const count = one<{ n: number }>("SELECT COUNT(*) n FROM projects WHERE user_id = ? AND archived = 0", user.id)!.n;
   const allowed = subscriptionActive(sub) ? sub.stores : 1;
   if (count >= allowed && user.role !== "admin") {
-    throw new HttpError(402, subscriptionActive(sub) ? `Votre abonnement couvre ${allowed} boutique(s). Ajoutez une boutique (40 €/mois) dans votre compte.` : "Le compte d'essai comprend une boutique. Abonnez-vous pour en gérer plusieurs.");
+    throw new HttpError(402, subscriptionActive(sub) ? L(`Votre abonnement couvre ${allowed} boutique(s). Ajoutez une boutique (40 €/mois) dans votre compte.`, `Your subscription covers ${allowed} store(s). Add a store (€40/month) in your account.`) : L("Le compte d'essai comprend une boutique. Abonnez-vous pour en gérer plusieurs.", "The trial account includes one store. Subscribe to manage more."));
   }
   const pid = id();
+  const language = input.language ?? uiLang();
+  setProjectContentLang(language);
   run(
     "INSERT INTO projects (id, user_id, name, status, platform, store_type, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
     pid,
     user.id,
-    input.productName || input.brandName || "Nouveau projet",
+    input.productName || input.brandName || L("Nouveau projet", "New project"),
     "draft",
     input.platform,
     input.storeType,
-    JSON.stringify({ ...DEFAULT_SETTINGS, mode: input.mode, timezone: user.timezone }),
+    JSON.stringify({ ...DEFAULT_SETTINGS, mode: input.mode, timezone: user.timezone, language }),
     "[]",
     now(),
     now(),

@@ -1,20 +1,25 @@
 /**
  * Outils injectés UNIQUEMENT dans l'aperçu du studio (jamais dans l'export) :
  * bandeau d'aperçu, désignation d'un élément, conservation du défilement.
+ * Textes dans la langue de l'interface du studio.
  */
-export const PREVIEW_TOOLS = `
+import { pick, type Lang } from "../i18n";
+
+export const previewTools = (lang: Lang) => {
+  const t = (fr: string, en: string) => pick(lang, fr, en);
+  return `
 <style id="es-preview-style">
   .es-pv-bar{position:fixed;left:12px;bottom:12px;z-index:2147483000;font:500 12px/1.3 system-ui,sans-serif;background:rgba(20,18,16,.86);color:#fff;padding:7px 11px;border-radius:999px;backdrop-filter:blur(8px);pointer-events:none}
   .es-pv-hover{outline:2px dashed #2F5BEA!important;outline-offset:-2px!important;cursor:crosshair!important}
   .es-pv-picked{outline:3px solid #2F5BEA!important;outline-offset:-3px!important}
   .es-pv-label{position:fixed;z-index:2147483001;background:#2F5BEA;color:#fff;font:600 11px system-ui,sans-serif;padding:3px 8px;border-radius:6px;pointer-events:none}
 </style>
-<div class="es-pv-bar" aria-hidden="true">Aperçu · données de démonstration de la boutique · paiement désactivé</div>
+<div class="es-pv-bar" aria-hidden="true">${t("Aperçu · données de démonstration de la boutique · paiement désactivé", "Preview · store demo data · checkout disabled")}</div>
 <script>
 (function(){
   var picking=false, hovered=null, label=null;
   var SEL='a,button,img,video,h1,h2,h3,h4,h5,p,li,summary,label,[data-es-block],[data-es-section]';
-  function kind(tag){ return /^(a|button|summary)$/.test(tag)?'Bouton':/^h[1-5]$/.test(tag)?'Titre':/^(img|video)$/.test(tag)?'Image':/^(p|li|label)$/.test(tag)?'Texte':'Bloc'; }
+  function kind(tag){ return /^(a|button|summary)$/.test(tag)?'${t("Bouton", "Button")}':/^h[1-5]$/.test(tag)?'${t("Titre", "Heading")}':/^(img|video)$/.test(tag)?'Image':/^(p|li|label)$/.test(tag)?'${t("Texte", "Text")}':'${t("Bloc", "Block")}'; }
   function post(m){ try{ parent.postMessage(Object.assign({source:'es-preview'},m),'*'); }catch(e){} }
   function info(el){
     var sec=el.closest('[data-es-section]'); if(!sec) return null;
@@ -39,8 +44,8 @@ export const PREVIEW_TOOLS = `
   }, true);
   document.addEventListener('submit', function(e){
     var f=e.target; var sub=e.submitter;
-    if(sub && sub.name==='checkout'){ e.preventDefault(); alert('Aperçu : le paiement est géré par Shopify sur la boutique réelle.'); }
-    if(f && /contact|account/.test(f.getAttribute('action')||'')){ e.preventDefault(); alert('Aperçu : les formulaires sont traités par Shopify sur la boutique réelle.'); }
+    if(sub && sub.name==='checkout'){ e.preventDefault(); alert(${JSON.stringify(t("Aperçu : le paiement est géré par Shopify sur la boutique réelle.", "Preview: checkout is handled by Shopify on the live store."))}); }
+    if(f && /contact|account/.test(f.getAttribute('action')||'')){ e.preventDefault(); alert(${JSON.stringify(t("Aperçu : les formulaires sont traités par Shopify sur la boutique réelle.", "Preview: forms are processed by Shopify on the live store."))}); }
   }, true);
   document.addEventListener('keydown', function(e){ if(picking && e.key==='Escape'){ picking=false; clearHover(); post({type:'pick-cancel'}); } });
   window.addEventListener('message', function(e){
@@ -72,3 +77,7 @@ export const PREVIEW_TOOLS = `
   window.addEventListener('load', function(){ post({type:'loaded', path: location.pathname, title: document.title}); });
 })();
 </script>`;
+};
+
+/** Outils de l'aperçu en français (compatibilité). */
+export const PREVIEW_TOOLS = previewTools("fr");

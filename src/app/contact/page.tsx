@@ -1,9 +1,29 @@
+import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal-page";
-import { COMPANY } from "@/lib/legal";
+import { company } from "@/lib/legal";
+import { serverLang } from "@/lib/i18n-server";
 
-export const metadata = { title: "Contact" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: "Contact" };
+}
 
-export default function Page() {
+export default async function Page() {
+  const lang = await serverLang();
+  const COMPANY = company(lang);
+  if (lang === "en")
+    return (
+      <LegalPage title="Contact" intro="A question about the studio, a request about your data or your subscription: write to us, we reply to every message.">
+        <section>
+          <h2>Write to us</h2>
+          <p>Email: {COMPANY.email}</p>
+          <p>Address: {COMPANY.legalName}, {COMPANY.address}</p>
+        </section>
+        <section>
+          <h2>Already a customer?</h2>
+          <p>Your subscription, credits and invoices are managed from the studio's "Account" area.</p>
+        </section>
+      </LegalPage>
+    );
   return (
     <LegalPage title="Contact" intro="Une question sur le studio, une demande sur vos données ou votre abonnement : écrivez-nous, nous répondons à chaque message.">
       <section>

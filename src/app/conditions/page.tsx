@@ -1,11 +1,74 @@
+import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal-page";
-import { COMPANY } from "@/lib/legal";
+import { company } from "@/lib/legal";
 import { OFFER } from "@/lib/billing";
+import { intlLocale, pick } from "@/lib/i18n";
+import { serverLang } from "@/lib/i18n-server";
 
-export const metadata = { title: "Conditions générales de vente et d'utilisation" };
-const eur = (v: number) => v.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await serverLang();
+  return { title: pick(lang, "Conditions générales de vente et d'utilisation", "Terms of sale and use") };
+}
 
-export default function Page() {
+export default async function Page() {
+  const lang = await serverLang();
+  const COMPANY = company(lang);
+  const eur = (v: number) => v.toLocaleString(intlLocale(lang), { style: "currency", currency: "EUR" });
+  if (lang === "en")
+    return (
+      <LegalPage title="Terms of sale and use" intro={`These terms govern the use of the ${COMPANY.brand} studio and the subscription to its plans. By creating an account, you accept them.`}>
+        <section>
+          <h2>1. The service</h2>
+          <p>{COMPANY.brand} is an online studio that helps create a brand, an online store (Shopify, WooCommerce or PrestaShop theme, migration kit for Wix and Squarespace), images, videos and social media posts, based on the information and photos provided by the customer. Some features use artificial intelligence services.</p>
+        </section>
+        <section>
+          <h2>2. Account</h2>
+          <p>The customer provides accurate information and keeps their login credentials confidential. They are responsible for the use of their account. The service is intended for adults and professionals.</p>
+        </section>
+        <section>
+          <h2>3. Prices and payment</h2>
+          <ul>
+            <li>Subscription for one store: {eur(OFFER.basePriceEur)} incl. VAT per month.</li>
+            <li>Additional store: {eur(OFFER.extraStorePriceEur)} incl. VAT per month.</li>
+            <li>Creation credit top-ups: in increments of {eur(OFFER.topupStepEur)} incl. VAT.</li>
+          </ul>
+          <p>The subscription includes creation credits renewed every month; unused monthly credits do not roll over. Top-up credits carry over from one month to the next as long as the account is active. When credits run out, new AI generations are paused; the rest of the studio keeps working. Payment is made by card through a secure payment provider; the subscription renews automatically every month.</p>
+        </section>
+        <section>
+          <h2>4. Cancellation</h2>
+          <p>The subscription has no commitment: it can be canceled at any time from the "Account" area or by writing to us, effective at the end of the current monthly period. Creations already downloaded or exported remain the customer's.</p>
+        </section>
+        <section>
+          <h2>5. Right of withdrawal</h2>
+          <p>Consumer customers have fourteen days to withdraw. When they request immediate performance of the service (a creation started before the end of this period) and acknowledge losing this right once the service has been fully performed, withdrawal no longer applies to services already provided. Credits used are non-refundable.</p>
+        </section>
+        <section>
+          <h2>6. Customer content and creations</h2>
+          <p>The customer warrants that they hold the rights to the photos, texts, logos and trademarks they upload. They remain solely responsible for the products sold and the information published (claims, prices, delivery times, reviews). The studio never invents reviews, figures or promises: information to be confirmed remains flagged "to complete", and the customer checks it before publishing.</p>
+          <p>The creations obtained (brand, theme, images, videos, texts) belong to the customer, who may use them freely, including commercially. The studio may not be able to guarantee the uniqueness of a suggested name or logo: it is up to the customer to check their availability (registered trademarks, domain names) before any filing or use.</p>
+        </section>
+        <section>
+          <h2>7. Posts and connections</h2>
+          <p>Social media posts and uploads to a store only go out with the customer's approval, through each platform's official authorizations. The customer complies with the rules of these platforms.</p>
+        </section>
+        <section>
+          <h2>8. Availability and liability</h2>
+          <p>The service is provided with care, with no guarantee of commercial results. Occasional interruptions may occur for maintenance. The publisher's liability is limited to direct damages and, at most, to the amounts paid over the last twelve months, except in the event of gross negligence or contrary legal provisions.</p>
+        </section>
+        <section>
+          <h2>9. Personal data</h2>
+          <p>See the <a href="/confidentialite">privacy policy</a>.</p>
+        </section>
+        <section>
+          <h2>10. Disputes</h2>
+          <p>These terms are governed by French law. In the event of a dispute, consumer customers may use the consumer mediator free of charge: {COMPANY.mediator}. They may also use the European online dispute resolution platform.</p>
+        </section>
+        <section>
+          <h2>11. Contact</h2>
+          <p>{COMPANY.legalName}, {COMPANY.address}. {COMPANY.email}.</p>
+        </section>
+      </LegalPage>
+    );
   return (
     <LegalPage title="Conditions générales de vente et d'utilisation" intro={`Ces conditions encadrent l'utilisation du studio ${COMPANY.brand} et la souscription à ses offres. En créant un compte, vous les acceptez.`}>
       <section>

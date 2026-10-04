@@ -6,6 +6,7 @@ import { exportThemeZip, themeFingerprint } from "@/lib/theme/compile";
 import { libraryLoader as loader } from "@/lib/theme/loader";
 import { exportKit, exportPrestaShop, exportWooCommerce } from "@/lib/theme/platforms";
 import { saveAsset } from "@/lib/library";
+import { L } from "@/lib/i18n-server";
 import { shopifyProductsCsv, wooProductsCsv } from "@/lib/theme/catalog-export";
 
 export const runtime = "nodejs";
@@ -16,10 +17,10 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const u = new URL(req.url).searchParams;
   const platform = u.get("platform") ?? "shopify";
   const v = u.get("version") ? themeVersion(p.id, u.get("version")!) : currentTheme(p.id);
-  if (!v) throw new HttpError(404, "Aucune boutique à exporter.");
+  if (!v) throw new HttpError(404, L("Aucune boutique à exporter.", "No store to export."));
   if (platform === "shopify-csv" || platform === "woocommerce-csv") {
     const csv = Buffer.from("\ufeff" + (platform === "shopify-csv" ? shopifyProductsCsv(v.spec) : wooProductsCsv(v.spec)), "utf8");
-    const fname = `${v.spec.store.shopName.replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase()}-produits-${platform === "shopify-csv" ? "shopify" : "woocommerce"}.csv`;
+    const fname = `${v.spec.store.shopName.replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase()}-${L("produits", "products")}-${platform === "shopify-csv" ? "shopify" : "woocommerce"}.csv`;
     await saveAsset({ projectId: p.id, userId: user.id, data: csv, name: fname, mime: "text/csv", kind: "document", role: "theme-export", folderKey: "shop.exports", origin: "export", meta: { platform, themeVersion: v.version.number } });
     return new Response(new Uint8Array(csv), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(fname)}` } });
   }
@@ -30,11 +31,11 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     const r = await exportThemeZip(v.spec, loader);
     zip = r.zip;
     name = `${v.spec.store.shopName.replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase()}-shopify-v${v.version.number}.zip`;
-    note = r.skipped.length ? `Fichiers non inclus : ${r.skipped.join(", ")}` : "";
+    note = r.skipped.length ? L(`Fichiers non inclus : ${r.skipped.join(", ")}`, `Files not included: ${r.skipped.join(", ")}`) : "";
   } else if (platform === "woocommerce") ({ zip, name } = await exportWooCommerce(v.spec, loader));
   else if (platform === "prestashop") ({ zip, name } = await exportPrestaShop(v.spec, loader));
   else if (platform === "wix" || platform === "squarespace") ({ zip, name } = await exportKit(v.spec, loader, platform));
-  else throw new HttpError(400, "Plateforme inconnue.");
+  else throw new HttpError(400, L("Plateforme inconnue.", "Unknown platform."));
   await saveAsset({ projectId: p.id, userId: user.id, data: zip, name, mime: "application/zip", kind: "archive", role: "theme-export", folderKey: "shop.exports", origin: "export", meta: { platform, themeVersion: v.version.number, versionId: v.version.id, fingerprint: themeFingerprint(v.spec), note } });
   return new Response(new Uint8Array(zip), { headers: { "Content-Type": "application/zip", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(name)}`, "X-Theme-Fingerprint": themeFingerprint(v.spec) } });
 });
