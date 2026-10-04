@@ -59,7 +59,7 @@ export default function TabMarque() {
     }
   }
   const toggleValid = (key: string) => save(validated.has(key) ? { unvalidate: [key] } : { validate: [key] });
-  const V = ({ k }: { k: string }) => (
+  const V = (k: string) => (
     <button onClick={() => toggleValid(k)} className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs", validated.has(k) ? "bg-ok-soft text-ok" : "bg-paper-2 text-muted hover:text-ink")} title={validated.has(k) ? "Validé : conservé lors des nouvelles propositions" : "Valider pour le conserver"}>
       {validated.has(k) ? <Lock className="size-3" /> : <Unlock className="size-3" />} {validated.has(k) ? "Validé" : "Valider"}
     </button>
@@ -76,7 +76,7 @@ export default function TabMarque() {
           </SectionTitle>
           <div className="grid gap-5">
             <div className="grid gap-1.5">
-              <div className="flex items-center justify-between"><label htmlFor="bname" className="text-sm font-medium">Nom de marque</label><V k="name" /></div>
+              <div className="flex items-center justify-between"><label htmlFor="bname" className="text-sm font-medium">Nom de marque</label>{V("name")}</div>
               <Input id="bname" value={b.name} onChange={(e) => set({ name: e.target.value })} className="font-display text-xl" />
               {b.alternatives.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -86,7 +86,7 @@ export default function TabMarque() {
               )}
             </div>
             <div className="grid gap-1.5">
-              <div className="flex items-center justify-between"><label htmlFor="btag" className="text-sm font-medium">Signature</label><V k="tagline" /></div>
+              <div className="flex items-center justify-between"><label htmlFor="btag" className="text-sm font-medium">Signature</label>{V("tagline")}</div>
               <Input id="btag" value={b.tagline} onChange={(e) => set({ tagline: e.target.value })} placeholder="Une phrase courte, sans promesse invérifiable" />
               {(ident?.taglines.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -104,7 +104,7 @@ export default function TabMarque() {
             </div>
             <Field label="Histoire de la marque" htmlFor="bstory" hint="N'écrivez que des faits réels (origine, fondateurs, fabrication)."><Textarea id="bstory" rows={4} value={b.story} onChange={(e) => set({ story: e.target.value })} /></Field>
             <div>
-              <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">Palette</p><V k="palette" /></div>
+              <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">Palette</p>{V("palette")}</div>
               <div className="grid grid-cols-5 gap-2">
                 {(Object.keys(b.palette) as (keyof Brand["palette"])[]).map((k) => (
                   <label key={k} className="grid gap-1.5 text-center text-xs">
@@ -121,7 +121,7 @@ export default function TabMarque() {
         </Card>
         <div className="grid content-start gap-6">
           <Card className="p-5">
-            <div className="flex items-center justify-between"><h3 className="font-display text-lg font-semibold">Logo</h3><V k="logo" /></div>
+            <div className="flex items-center justify-between"><h3 className="font-display text-lg font-semibold">Logo</h3>{V("logo")}</div>
             <p className="mt-1 text-xs text-muted">{b.logo.concept}</p>
             {!ident?.provided && (ident?.proposals.length ?? 0) > 0 && (
               <div className="mt-4">
