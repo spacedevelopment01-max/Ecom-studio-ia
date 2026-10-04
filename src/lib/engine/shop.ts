@@ -12,6 +12,7 @@ import type { ShopCopy } from "../theme/copy";
 import { applyOps, validateSpec, type ThemeOp } from "../theme/ops";
 import type { StoreProduct, ThemeSpec } from "../theme/spec";
 import { localCopy } from "./local-copy";
+import { serviceTermsHtml } from "./services-text";
 import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedia } from "./catalog";
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
@@ -97,6 +98,21 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   return { slots, files, gallery };
 }
 
+/**
+ * Site de services : les vraies photos du marchand (rôle « lifestyle », dossier « Scènes & usages »)
+ * passent avant les scènes générées dans les emplacements de la composition (méthode, réalisations…).
+ */
+function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string, string>) {
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (status = 'approved') DESC, created_at DESC LIMIT 8", projectId);
+  const order: Exclude<keyof ImageSlots, "reels">[] = ["lifestyle", "scene1", "scene2", "scene3", "detail1", "detail2", "lifestyle2"];
+  life.slice(0, order.length).forEach((a, i) => {
+    const f = themeFileName(a, `photo-${i + 1}`);
+    files[f] = a.id;
+    slots[order[i]] = f;
+  });
+  if (!slots.hero && slots.lifestyle) slots.hero = slots.lifestyle;
+}
+
 export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): StoreProduct {
   const variants = p.product.variants.length
     ? p.product.variants[0].values.map((v) => ({ title: v, options: [v], price: p.product.price.amount, available: true }))
@@ -120,14 +136,17 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   const p = loadProject(projectId);
   const brand = p.brand;
   if (!brand) throw new Error(L("La marque doit être définie avant la boutique.", "The brand must be defined before the store."));
-  const copy = savedCopy(projectId) ?? localCopy(p.product, brand);
+  const copy = savedCopy(projectId) ?? localCopy(p.product, brand, p);
   await ensureVariantMedia(ctx, projectId);
   const { slots, files, gallery } = collectImages(projectId);
+  const services = p.business === "services";
+  // Entreprise de services : les photos du marchand (rôle « lifestyle ») illustrent ouverture, prestations, méthode et réalisations.
+  if (services) serviceSlots(projectId, slots, files);
   const main = storeProduct(p, copy, gallery);
   attachVariantMedia(projectId, main, files, themeFileName);
   // Boutique multi-produit ou niche : les autres produits sont détourés, mis en packshot et rangés en collections.
   let catalog: ReturnType<typeof catalogStore> | null = null;
-  if (p.storeType !== "mono" && p.catalog.length) {
+  if (!services && p.storeType !== "mono" && p.catalog.length) {
     await ensureCatalogMedia(ctx, projectId);
     catalog = catalogStore(loadProject(projectId), main, themeFileName);
     Object.assign(files, catalog.files);
@@ -146,17 +165,20 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     product: main,
     social: p.settings.socialLinks,
     language: contentLang(),
+    ...(services ? { business: "services" as const, services: p.services, servicesTermsHtml: serviceTermsHtml(p.services) } : {}),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
   let author: "ai" | "system" = "system";
-  let summary = opts.summary ?? L(`Boutique créée — direction ${directionById(direction).name}`, `Store created — ${directionById(direction).name} direction`);
+  let summary = opts.summary ?? (services ? L(`Site créé — direction ${directionById(direction).name}`, `Website created — ${directionById(direction).name} direction`) : L(`Boutique créée — direction ${directionById(direction).name}`, `Store created — ${directionById(direction).name} direction`));
   if (opts.useAi !== false && llmConfigured() && ctx) {
     try {
       const design = await ctx.step(`design:${direction}`, () => aiDesignHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:design:${direction}` }, p, spec));
       const ops: ThemeOp[] = [];
       if (design.custom && /^es-custom-[a-z0-9-]{2,40}$/.test(design.custom.type)) ops.push({ op: "custom_section", type: design.custom.type, name: design.custom.name.slice(0, 25), liquid: design.custom.liquid });
       const fresh: ThemeSpec = { ...spec, settings: { ...spec.settings, ...Object.fromEntries(Object.entries(design.globals ?? {}).filter(([, v]) => v !== undefined)) }, templates: { ...spec.templates, index: { sections: {}, order: [] } } };
-      for (const s of design.index) ops.push({ op: "add_section", template: "index", type: s.type, settings: s.settings, blocks: s.blocks });
+      // Site de services : aucune section de vente, même si l'IA en propose.
+      const SALES = /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown|main-)/;
+      for (const s of design.index) if (!(services && SALES.test(s.type))) ops.push({ op: "add_section", template: "index", type: s.type, settings: s.settings, blocks: s.blocks });
       // Catalogue : la grille de produits figure toujours juste après l'ouverture.
       if (catalog && !design.index.some((s) => s.type === "featured-collection")) {
         const first = ops.findIndex((o) => o.op === "add_section");
@@ -180,7 +202,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         return shots ? aiReviewHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:review:${direction}` }, p, spec, shots) : null;
       });
       if (review?.ops.length) {
-        const r = applyOps(spec, review.ops);
+        const r = applyOps(spec, services ? review.ops.filter((o) => !("type" in o && typeof o.type === "string" && /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown)/.test(o.type))) : review.ops);
         if (r.applied.length && !validateSpec(r.spec).length) {
           spec = r.spec;
           author = "ai";

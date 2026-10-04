@@ -10,7 +10,16 @@
     <div class="es-hero-full__box">
       {%- if section.settings.badge != blank -%}<p class="es-pill-badge" data-reveal="up">{% render 'icon', name: 'check' %}{{ section.settings.badge }}</p>{%- endif -%}
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
-      <h1 class="es-heading es-display{% if section.settings.heading_font == 'body' %} es-heading-sans{% endif %}" data-reveal="words">
+      {%- liquid
+        assign es_longest = 0
+        assign es_words = section.settings.heading | append: ' ' | append: section.settings.heading_accent | split: ' '
+        for es_w in es_words
+          if es_w.size > es_longest
+            assign es_longest = es_w.size
+          endif
+        endfor
+      -%}
+      <h1 class="es-heading es-display{% if section.settings.heading_font == 'body' %} es-heading-sans{% endif %}{% if es_longest > 13 %} es-display--xlong{% elsif es_longest > 9 %} es-display--long{% endif %}" data-reveal="words">
         {{- section.settings.heading -}}
         {%- if section.settings.heading_accent != blank %} <span class="es-accent">{{ section.settings.heading_accent }}</span>{% endif -%}
       </h1>
@@ -35,6 +44,19 @@
 {%- endif -%}
   {%- if section.settings.show_scroll_cue -%}<span class="es-scroll-cue" aria-hidden="true"></span>{%- endif -%}
 </section>
+
+
+{% stylesheet %}
+/* Téléphone : l'image (zoom lent) reste dans son cadre, sans liseré sous le fondu. */
+@media (max-width: 749px) { .es-hero-full__media { overflow: hidden; } }
+.es-hero-full .es-eyebrow { color: var(--c-text); opacity: .9; text-shadow: 0 1px 12px rgba(0,0,0,.25); }
+.es-hero-full .es-lead { font-size: clamp(1.02rem, 1.3vw, 1.18rem); max-width: 52ch; }
+/* Mots longs (« accompagnement », « professionnels ») : le titre rétrécit au lieu d'être coupé. */
+.es-hero-full .es-display { overflow-wrap: break-word; hyphens: manual; }
+.es-hero-full .es-display.es-display--long { font-size: calc(clamp(2.4rem, 6.6vw, 6rem) * var(--heading-scale)); }
+.es-hero-full .es-display.es-display--xlong { font-size: calc(clamp(2rem, 5.4vw, 5rem) * var(--heading-scale)); }
+.es-hero-full--center .es-lead, .es-hero-full--bottom-center .es-lead { margin-inline: auto; }
+{% endstylesheet %}
 
 {% schema %}
 {

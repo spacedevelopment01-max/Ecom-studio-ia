@@ -54,7 +54,7 @@ export const handlers: Record<string, Handler> = {
       remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(r.copy), source: "ai" });
       return r.qc;
     }
-    remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(p.product, p.brand!)), source: "local" });
+    remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(p.product, p.brand!, p)), source: "local" });
     return { local: true };
   },
 
@@ -91,7 +91,7 @@ export const handlers: Record<string, Handler> = {
       revert = r.revert;
       for (const m of r.remember) remember(projectId, { kind: "preference", key: m.key, value: m.value, scope: m.scope, source: "user" });
     } else {
-      const r = localThemeCommand(cur.spec, message, selection);
+      const r = localThemeCommand(cur.spec, message, selection, p.business);
       reply = r.reply;
       ops = r.ops;
       revert = r.revert;

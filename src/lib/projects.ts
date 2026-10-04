@@ -1,7 +1,7 @@
 /** Accès aux projets : produit, marque, mémoire, versions du thème. */
 import { all, id, json, now, one, run, tx } from "./db";
 import type { ProjectRow } from "./auth";
-import { emptyProduct, type Brand, type CatalogItem, type ProductProfile, type ProjectSettings, type StoreType, type Strategy } from "./project-types";
+import { emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type CatalogItem, type ProductProfile, type ProjectSettings, type ServiceProfile, type StoreType, type Strategy } from "./project-types";
 import type { ThemeSpec } from "./theme/spec";
 import { L } from "./i18n-server";
 
@@ -19,6 +19,9 @@ export type Project = {
   storeType: StoreType;
   catalog: CatalogItem[];
   sources: { type: "photo" | "link" | "description"; ref: string; note?: string }[];
+  /** Boutique de produits ou site d'entreprise de services. */
+  business: BusinessType;
+  services: ServiceProfile;
 };
 
 export const DEFAULT_SETTINGS: ProjectSettings = {
@@ -46,7 +49,14 @@ export function loadProject(projectId: string): Project {
     storeType: (["mono", "multi", "niche"].includes(row.store_type) ? row.store_type : "mono") as StoreType,
     catalog: json<CatalogItem[]>(row.catalog_json, []),
     sources: json(row.sources_json, []),
+    business: ((row as any).business_type === "services" ? "services" : "products") as BusinessType,
+    services: { ...emptyServiceProfile(), ...json<Partial<ServiceProfile>>((row as any).business_json, {}) },
   };
+}
+
+/** Offre de services (entreprises de services). */
+export function saveServices(projectId: string, services: ServiceProfile) {
+  run("UPDATE projects SET business_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(services), now(), projectId);
 }
 
 export function saveProduct(projectId: string, product: ProductProfile) {

@@ -36,6 +36,9 @@
 .es-hero__title { color: inherit; font-size: calc(clamp(2.5rem, 6.6vw, 5.6rem) * var(--heading-scale)); line-height: 1; }
 .es-hero__text { font-size: 1.12em; max-width: 54ch; opacity: .9; }
 .es-hero--center .es-hero__text { margin-inline: auto; }
+.es-hero:not(.es-hero--text-dark) .es-hero__box { text-shadow: 0 2px 22px rgba(0,0,0,.22); }
+.es-hero__box .es-button { text-shadow: none; }
+.es-hero__text { font-size: clamp(1.02rem, 1.3vw, 1.15rem); }
 {% endstylesheet %}
 
 {% javascript %}

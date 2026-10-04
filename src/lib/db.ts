@@ -381,6 +381,8 @@ CREATE TABLE IF NOT EXISTS worker_heartbeat (
 const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["projects", "store_type", "TEXT NOT NULL DEFAULT 'mono'"],
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
+  ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
+  ["projects", "business_json", "TEXT NOT NULL DEFAULT '{}'"],
 ];
 
 function migrate(db: Database.Database) {

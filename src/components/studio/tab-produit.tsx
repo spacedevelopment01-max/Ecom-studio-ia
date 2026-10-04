@@ -5,12 +5,20 @@ import { api, Badge, Button, Card, cx, Field, Input, Select, useApi, useToast } 
 import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, SectionTitle, type AssetView } from "./common";
 import { CatalogPanel } from "./catalog-panel";
+import TabActivite from "./tab-activite";
 import type { Fact } from "@/lib/project-types";
 import { useT } from "../i18n";
 
 const SOURCE: Record<string, { fr: string; en: string }> = { user: { fr: "vous", en: "you" }, photo: { fr: "photo", en: "photo" }, link: { fr: "lien", en: "link" }, ai: { fr: "analyse", en: "analysis" }, description: { fr: "description", en: "description" } };
 
-export default function TabProduit() {
+/** Onglet « Produit » ; pour le site d'une entreprise de services, il devient « Activité ». */
+export default function TabProduitOuActivite() {
+  const { data } = useProject();
+  if (!data) return null;
+  return data.business === "services" ? <TabActivite /> : <TabProduit />;
+}
+
+function TabProduit() {
   const { id, data, reload } = useProject();
   const toast = useToast();
   const t = useT();

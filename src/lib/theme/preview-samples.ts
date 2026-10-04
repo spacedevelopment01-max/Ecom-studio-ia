@@ -13,20 +13,30 @@ export function sampleBlogs(spec: ThemeSpec, base: string, lang: Lang) {
   const p = mediaPools(spec);
   const photos = [...p.life, ...p.photos, ...p.cutout].filter((f, i, a) => a.indexOf(f) === i);
   const words = (n: number) => Array.from({ length: n }, () => (en ? "sample" : "exemple")).join(" ");
-  const titles = en
-    ? ["Sample article: your first blog post will appear here", "Sample article: tips around your product", "Sample article: behind the scenes of your brand"]
-    : ["Exemple d'article : votre premier article apparaîtra ici", "Exemple d'article : conseils autour de votre produit", "Exemple d'article : les coulisses de votre marque"];
-  const excerpt = en
-    ? "Sample shown in the studio preview only. On your store, this section lists the real articles of the selected blog."
-    : "Exemple affiché uniquement dans l'aperçu du studio. Sur votre boutique, la section affiche les vrais articles du blog choisi.";
-  const articles = titles.map((title, i) => ({
+  // Titres et extraits réalistes, propres au produit de la boutique ; chaque article porte l'étiquette « Exemple ».
+  const name = spec.store.product?.title || spec.store.shopName;
+  const shop = spec.store.shopName;
+  const posts = en
+    ? [
+        { title: `How to choose ${name}: our tips`, excerpt: `Size, everyday use, small details: everything worth knowing about ${name} before you order.` },
+        { title: `Behind the scenes at ${shop}`, excerpt: `From selecting products to packing your order, a look at how we work day to day.` },
+        { title: "Care tips to make it last", excerpt: "A few simple habits to keep your purchase looking its best, season after season." },
+      ]
+    : [
+        { title: `Bien choisir ${name} : nos conseils`, excerpt: `Usage, détails, petites questions pratiques : tout ce qu'il faut savoir avant de commander.` },
+        { title: `Dans les coulisses de ${shop}`, excerpt: "De la sélection des produits à la préparation de votre colis, découvrez notre façon de travailler." },
+        { title: "Nos conseils pour le garder longtemps", excerpt: "Quelques gestes simples pour en prendre soin et en profiter le plus longtemps possible." },
+      ];
+  const tag = en ? "Example" : "Exemple";
+  const articles = posts.map(({ title, excerpt }, i) => ({
     id: i + 1,
     title,
     handle: `exemple-${i + 1}`,
     url: `${base}/blogs/journal/exemple-${i + 1}`,
     image: photos.length ? `${base}/assets/${photos[i % photos.length]}` : null,
     published_at: new Date(Date.UTC(2026, 0, 12 - i * 4)).toISOString(),
-    author: en ? "Sample" : "Exemple",
+    author: tag,
+    tags: [tag],
     excerpt,
     excerpt_or_content: excerpt,
     // Longueur variable : le temps de lecture estimé diffère d'un exemple à l'autre.

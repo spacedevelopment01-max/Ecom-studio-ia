@@ -5,7 +5,7 @@ export const UgcOptionsSchema = z.object({
   beats: z.number().int().min(1).max(5),
   presenter: z.enum(["femme", "homme", "auto"]),
   age: z.enum(["18-25", "25-35", "35-50", "50+"]),
-  setting: z.enum(["salon", "cuisine", "salle-de-bain", "chambre", "bureau", "exterieur", "voiture"]),
+  setting: z.enum(["salon", "cuisine", "salle-de-bain", "chambre", "bureau", "exterieur", "voiture", "activite"]),
   tone: z.enum(["enthousiaste", "naturel", "expert"]),
   angle: z.enum(["deballage", "demonstration", "presentation", "probleme"]),
   url: z.string().max(120).optional(),

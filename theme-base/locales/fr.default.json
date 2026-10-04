@@ -132,11 +132,37 @@
     "announcement": "Annonce",
     "header": {
       "menu": "Menu",
-      "navigation": "Navigation principale"
+      "navigation": "Navigation principale",
+      "call": "Appeler le"
     },
     "reviews": {
       "app_hint": "Ajoutez ici le bloc de votre application d'avis : seuls de vrais avis clients s'afficheront.",
       "testimonials_hint": "Ajoutez de vrais avis de vos clients (bloc « Avis ») : rien ne s'affiche tant qu'il n'y en a pas."
+    },
+    "booking": {
+      "open_new_tab": "Ouvrir l'agenda dans un nouvel onglet",
+      "via": "Réservation sécurisée via {{ provider }}",
+      "request": "Demande",
+      "service": "Prestation souhaitée",
+      "choose": "Choisir une prestation",
+      "preferred": "Créneau souhaité",
+      "preferred_placeholder": "Ex. mardi en fin de journée"
+    },
+    "practical_info": {
+      "hours": "Horaires",
+      "where": "Adresse",
+      "area": "Zone d'intervention",
+      "directions": "Itinéraire",
+      "contact": "Nous joindre",
+      "map_notice": "La carte est fournie par {{ provider }} et ne se charge qu'à votre demande.",
+      "show_map": "Afficher la carte",
+      "map": "Carte"
+    },
+    "portfolio": {
+      "filter": "Filtrer les réalisations",
+      "all": "Tout",
+      "compare": "Comparer avant et après",
+      "see_project": "Voir le projet"
     }
   },
   "newsletter": {

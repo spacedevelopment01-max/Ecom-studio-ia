@@ -5,7 +5,7 @@
       <span class="es-hero-edito__line" data-reveal="mask" aria-hidden="true">{{ section.settings.heading_line1 }}</span>
       <span class="es-hero-edito__line es-hero-edito__line--accent" data-reveal="mask" style="--d: 1" aria-hidden="true">{{ section.settings.heading_line2 }}</span>
     </h1>
-    <div class="es-hero-edito__product" data-float{% if section.settings.parallax %} data-parallax="-0.18"{% endif %}>
+    <div class="es-hero-edito__product" data-float{% if section.settings.parallax %} data-parallax="-0.06"{% endif %}>
       {% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.image_alt, sizes: '(min-width: 990px) 40vw, 80vw', loading: 'eager', fetchpriority: 'high', class: 'es-hero-edito__img' %}
     </div>
     <div class="es-hero-edito__foot">
@@ -16,6 +16,21 @@
     </div>
   </div>
 </section>
+
+
+{% stylesheet %}
+.es-hero-edito__eyebrow { margin-bottom: clamp(14px, 2vw, 24px); }
+.es-hero-edito__product { margin-top: clamp(-56px, -3.2vw, -16px); }
+.es-hero-edito__img { width: auto; max-width: 100%; max-height: clamp(300px, 58vh, 560px); margin-inline: auto; object-fit: contain; }
+.es-hero-edito__foot { position: relative; z-index: 3; gap: 22px; margin-top: clamp(20px, 3vw, 36px); }
+.es-hero-edito__foot .es-lead { max-width: 52ch; font-size: clamp(1.02rem, 1.3vw, 1.18rem); }
+@media (max-width: 749px) {
+  .es-hero-edito__title { font-size: calc(clamp(2.6rem, 14vw, 4.2rem) * var(--heading-scale)); }
+  .es-hero-edito__product { width: min(72vw, 320px); margin-top: 14px; }
+  .es-hero-edito__img { max-height: 46svh; }
+  .es-hero-edito__product[data-parallax] { transform: none !important; }
+}
+{% endstylesheet %}
 
 {% schema %}
 {

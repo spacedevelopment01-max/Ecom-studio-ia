@@ -4,11 +4,13 @@
  * et — si un fournisseur vidéo est configuré — de plans générés. Encodage
  * H.264/AAC (yuv420p, faststart) compatible avec toutes les plateformes.
  * Le produit n'est jamais régénéré : sa fidélité est garantie sur toute la durée.
+ * Entreprise de services : pas de produit (`product: null`) — photos réelles de l'activité ou typographie
+ * animée, liste des prestations, infos pratiques et écran final à la marque.
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { createCanvas, loadImage, type Image, type SKRSContext2D, type Canvas } from "@napi-rs/canvas";
+import { createCanvas, loadImage, Path2D, type Image, type SKRSContext2D, type Canvas } from "@napi-rs/canvas";
 import { ensureContrast, hsl, isDark, mix, onColor, withLightness } from "../color";
 import { font, ensureFonts } from "./fonts";
 import { wrapLines } from "./compose";
@@ -42,7 +44,11 @@ export type VideoScene =
   /** Écran partagé : photo d'un côté, produit détouré et titre de l'autre. */
   | { kind: "split"; duration: number; image: number; headline?: string }
   /** Phrases courtes plein écran, l'une après l'autre, sur fonds alternés. */
-  | { kind: "words"; duration: number; items: string[] };
+  | { kind: "words"; duration: number; items: string[] }
+  /** Liste numérotée qui s'affiche ligne à ligne (prestations d'une entreprise de services). */
+  | { kind: "list"; duration: number; heading?: string; items: string[] }
+  /** Infos pratiques avec pictogrammes : horaires, zone, téléphone, site (entreprise de services). */
+  | { kind: "info"; duration: number; heading?: string; rows: { icon: "clock" | "pin" | "phone" | "mail" | "web"; text: string }[] };
 
 export type VideoSpec = {
   format: VideoFormat;
@@ -54,7 +60,8 @@ export type VideoSpec = {
 };
 
 export type VideoAssets = {
-  product: Image;
+  /** Détourage du produit ; null pour une entreprise de services (aucun produit à montrer). */
+  product: Image | null;
   images: Image[]; // détails et scènes
   clips: string[][]; // chemins d'images extraites de plans vidéo générés
   logo?: Image | null;
@@ -173,6 +180,27 @@ function pill(ctx: Ctx, x: number, y: number, w: number, h: number) {
   ctx.closePath();
 }
 
+/** Pictogrammes simples (trait), centrés sur l'origine, pour les infos pratiques. */
+function drawIcon(ctx: Ctx, k: "clock" | "pin" | "phone" | "mail" | "web", size: number, color: string) {
+  const s = size / 24;
+  ctx.save();
+  ctx.translate(-size / 2, -size / 2);
+  ctx.scale(s, s);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  const paths: Record<string, string[]> = {
+    clock: ["M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0", "M12 7v5l3 2"],
+    pin: ["M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z", "M14.5 9.5a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0"],
+    phone: ["M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"],
+    mail: ["M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z", "m3 7 9 6 9-6"],
+    web: ["M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0", "M3 12h18", "M12 3a14 14 0 0 1 0 18", "M12 3a14 14 0 0 0 0 18"],
+  };
+  for (const d of paths[k]) ctx.stroke(new Path2D(d));
+  ctx.restore();
+}
+
 // ---------------------------------------------------------------- rendu
 
 type Prepared = {
@@ -221,9 +249,11 @@ function prepare(spec: VideoSpec, a: VideoAssets): Prepared {
     textOnDark: "#FFFFFF",
     accent: a.palette.accent,
   };
-  const ph = Math.min(H * (isTall ? 0.5 : 0.62), W * 0.9 * (a.product.height / a.product.width));
-  const big = productLayer(a.product, ph, "rgba(20,14,10,");
-  const bigSweep = sweepLayer(a.product, big.pw, big.height);
+  // Sans produit (services) : calque transparent, jamais dessiné de façon visible.
+  const product = a.product ?? (createCanvas(4, 4) as unknown as Image);
+  const ph = Math.min(H * (isTall ? 0.5 : 0.62), W * 0.9 * (product.height / product.width));
+  const big = productLayer(product, ph, a.product ? "rgba(20,14,10," : "rgba(0,0,0,");
+  const bigSweep = sweepLayer(product, big.pw, big.height);
   return { W, H, safe, pal, big, bigSweep, ...backgrounds(W, H, pal) };
 }
 
@@ -496,20 +526,109 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.globalAlpha = 1;
       break;
     }
+    case "list": {
+      // Fond clair, titre, lignes numérotées qui glissent l'une après l'autre.
+      ctx.drawImage(P.bgLight as any, 0, 0);
+      const wide = W > H;
+      const items = scene.items.filter(Boolean).slice(0, 5);
+      let y = safe.top + (wide ? 0 : H * 0.04);
+      if (scene.heading) y += kinetic(ctx, scene.heading, { x: safe.side, y, maxW: W - safe.side * 2, size: Math.round(headSize * 0.8), family: typo.heading, weight: headW, color: pal.text, t: local, uppercase: typo.uppercase }) + headSize * 0.5;
+      const avail = H - safe.bottom - y;
+      const rowH = Math.min(avail / Math.max(1, items.length), bodySize * (wide ? 3.2 : isTall ? 4.6 : 3.8));
+      const fsz = Math.round(Math.min(bodySize * (isTall ? 1.35 : 1.1), rowH * 0.36));
+      items.forEach((it, i) => {
+        const p = easeOut(seg(local, 0.35 + i * 0.32, 0.6));
+        if (p <= 0) return;
+        const ry = y + i * rowH;
+        ctx.globalAlpha = p;
+        ctx.strokeStyle = mix(pal.text, pal.bg, 0.8);
+        ctx.lineWidth = Math.max(1, W * 0.0015);
+        ctx.beginPath();
+        ctx.moveTo(safe.side, ry + rowH - 1);
+        ctx.lineTo(safe.side + (W - safe.side * 2) * p, ry + rowH - 1);
+        ctx.stroke();
+        ctx.fillStyle = pal.accent;
+        ctx.font = font(typo.heading, Math.max(headW, 600), Math.round(fsz * 1.2));
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(i + 1).padStart(2, "0"), safe.side + (1 - p) * 40, ry + rowH / 2);
+        ctx.fillStyle = pal.text;
+        ctx.font = font(typo.body, 600, fsz);
+        const tx = safe.side + fsz * 2.6 + (1 - p) * 60;
+        const line = wrapLines(ctx, it, W - safe.side - tx)[0] ?? "";
+        ctx.fillText(line === it ? it : `${line.replace(/[\s,;:·]+$/, "")}…`, tx, ry + rowH / 2);
+        ctx.globalAlpha = 1;
+      });
+      break;
+    }
+    case "info": {
+      ctx.drawImage(P.bgBrand as any, 0, 0);
+      const color = textColorFor(pal.brand);
+      let y = safe.top + H * 0.04;
+      if (scene.heading) y += kinetic(ctx, scene.heading, { x: safe.side, y, maxW: W - safe.side * 2, size: Math.round(headSize * 0.8), family: typo.heading, weight: headW, color, t: local, uppercase: typo.uppercase }) + headSize * 0.6;
+      const rows = scene.rows.slice(0, 4);
+      const ic = Math.round(bodySize * 1.9);
+      rows.forEach((r, i) => {
+        const p = easeOutBack(seg(local, 0.4 + i * 0.35, 0.6));
+        if (p <= 0) return;
+        const ry = y + i * ic * 1.6;
+        ctx.save();
+        ctx.globalAlpha = clamp(p);
+        ctx.translate(safe.side + ic / 2, ry + ic / 2);
+        ctx.scale(clamp(p, 0, 1.2), clamp(p, 0, 1.2));
+        ctx.fillStyle = pal.accent;
+        ctx.beginPath();
+        ctx.arc(0, 0, ic / 2, 0, Math.PI * 2);
+        ctx.fill();
+        drawIcon(ctx, r.icon, ic * 0.5, onColor(pal.accent));
+        ctx.restore();
+        ctx.globalAlpha = clamp(p);
+        ctx.fillStyle = color;
+        ctx.font = font(typo.body, 500, bodySize);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        const tx = safe.side + ic * 1.45;
+        const lines = wrapLines(ctx, r.text, W - safe.side - tx).slice(0, 2);
+        lines.forEach((l, k) => ctx.fillText(l, tx + (1 - clamp(p)) * 30, ry + ic / 2 + (k - (lines.length - 1) / 2) * bodySize * 1.2));
+        ctx.globalAlpha = 1;
+      });
+      break;
+    }
     case "end": {
       ctx.drawImage(P.bgDark as any, 0, 0);
       const color = "#FFFFFF";
       const L = P.big;
       const pScale = 0.58;
       const p = easeOut(seg(local, 0, 0.8));
-      ctx.save();
-      ctx.globalAlpha = p;
-      ctx.translate(W / 2, H * (W > H ? 0.66 : 0.6) + (1 - p) * 40);
-      ctx.scale(pScale, pScale);
-      ctx.drawImage(L.canvas as any, -L.canvas.width / 2, -L.baseOffset);
-      ctx.restore();
+      if (a.product) {
+        ctx.save();
+        ctx.globalAlpha = p;
+        ctx.translate(W / 2, H * (W > H ? 0.66 : 0.6) + (1 - p) * 40);
+        ctx.scale(pScale, pScale);
+        ctx.drawImage(L.canvas as any, -L.canvas.width / 2, -L.baseOffset);
+        ctx.restore();
+      } else {
+        // Services : anneaux à la couleur de marque qui s'ouvrent derrière le texte.
+        const cy = H * (W > H ? 0.5 : 0.48);
+        const r0 = Math.min(W, H) * 0.34;
+        const g = ctx.createRadialGradient(W / 2, cy, 0, W / 2, cy, r0 * 1.6);
+        g.addColorStop(0, mix(pal.brand, "#000000", 0.2) + "aa");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.globalAlpha = p;
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = pal.accent;
+        ctx.lineWidth = Math.max(2, W * 0.003);
+        for (const [k, rr] of [[0, 1], [1, 1.28]] as const) {
+          const q = easeInOut(seg(local, 0.1 + k * 0.2, 1.2));
+          ctx.globalAlpha = 0.5 - k * 0.2;
+          ctx.beginPath();
+          ctx.arc(W / 2, cy, r0 * rr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(q, 0.9995)); // Skia ignore un tour complet exact
+          ctx.stroke();
+        }
+      }
       ctx.globalAlpha = 1;
-      let y = safe.top;
+      let y = a.product ? safe.top : H * (W > H ? 0.5 : 0.48) - headSize * 0.62; // services : nom centré dans les anneaux
       if (a.logo) {
         const lh = Math.round(H * 0.05);
         const lw = Math.min((a.logo.width / a.logo.height) * lh, W * 0.5);
@@ -702,6 +821,11 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
     ff.on("close", (code) => (code === 0 ? resolve() : reject(new Error(L(`Encodage vidéo impossible (ffmpeg ${code}) : ${stderr.slice(-400)}`, `Video encoding failed (ffmpeg ${code}): ${stderr.slice(-400)}`)))));
   });
 
+  // ffmpeg absent ou arrêté : on échoue tout de suite au lieu d'attendre indéfiniment que le tube se vide.
+  let ffError: unknown = null;
+  done.catch((e) => (ffError = e));
+  ff.stdin.on("error", () => {});
+
   const canvas = createCanvas(P.W, P.H);
   const ctx = canvas.getContext("2d");
   const TR = 0.5; // durée de transition (s)
@@ -719,7 +843,8 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
       if (d >= 0 && d <= TR) drawTransition(ctx, spec.transition, d / TR, P);
     }
     const buf = canvas.data();
-    if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
+    if (ffError) throw ffError;
+    if (!ff.stdin.write(buf)) await Promise.race([new Promise((r) => ff.stdin.once("drain", r)), done.catch(() => {})]);
     if (onProgress && i % 15 === 0) onProgress(i / frames);
   }
   ff.stdin.end();
@@ -734,7 +859,8 @@ export function sceneText(s: VideoScene): string | undefined {
     case "title": return [s.text, s.sub].filter(Boolean).join(". ");
     case "reveal": case "spotlight": case "split": return s.headline;
     case "callouts": return [s.heading, ...s.items].filter(Boolean).join(" · ");
-    case "words": return s.items.join(" · ");
+    case "words": case "list": return [("heading" in s ? s.heading : undefined), ...s.items].filter(Boolean).join(" · ");
+    case "info": return [s.heading, ...s.rows.map((r) => r.text)].filter(Boolean).join(" · ");
     case "hook": return s.headline;
     case "end": return `${s.headline}. ${s.cta}`;
     default: return s.caption;

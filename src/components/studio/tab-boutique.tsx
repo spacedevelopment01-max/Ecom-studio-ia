@@ -13,6 +13,8 @@ import type { DirectionCard } from "@/lib/theme/directions";
 import type { ImportReport } from "@/lib/theme/import";
 import { useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
+import { isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId } from "./platform-picker";
+import type { BusinessType } from "@/lib/project-types";
 
 type TFn = <T>(fr: T, en: T) => T;
 
@@ -80,8 +82,21 @@ const SUGGESTIONS: [string, string][] = [
   ["Reviens à la version précédente.", "Go back to the previous version."],
 ];
 
+/** Suggestions pour le site d'une entreprise de services (aucune notion de panier, de fiche produit ou de livraison). */
+const SUGGESTIONS_SERVICES: [string, string][] = [
+  ["Ajoute une section Tarifs avec mes prestations.", "Add a Pricing section with my services."],
+  ["Mets le bouton de rendez-vous plus en avant.", "Make the booking button more prominent."],
+  ["Ajoute mes horaires et une carte.", "Add my opening hours and a map."],
+  ["Présente l'équipe avec des portraits ronds.", "Show the team with round portraits."],
+  ["Ajoute une galerie avant / après de mes réalisations.", "Add a before / after gallery of my work."],
+  ["Change le header : logo centré et menu en dessous.", "Change the header: centered logo with the menu below."],
+  ["Refais cette section dans un style plus élégant.", "Redo this section in a more elegant style."],
+  ["Reviens à la version précédente.", "Go back to the previous version."],
+];
+
 export default function TabBoutique() {
   const { id, data, reload: reloadProject } = useProject();
+  const isServices = data?.business === "services";
   const toast = useToast();
   const t = useT();
   const { data: theme, reload } = useApi<ThemeData>(`/api/projects/${id}/theme`);
@@ -235,6 +250,16 @@ export default function TabBoutique() {
     }
   }
 
+  /** Clic sur une section de la structure : l'aperçu défile jusqu'à elle et la surligne. */
+  const [focused, setFocused] = useState<string | null>(null);
+  function focusSection(sectionId: string, hidden?: boolean) {
+    setFocused(sectionId);
+    if (hidden) return toast("info", t("Cette section est masquée : réaffichez-la (icône œil) pour la voir dans l'aperçu.", "This section is hidden: show it again (eye icon) to see it in the preview."));
+    setView("preview");
+    // Sur téléphone l'aperçu vient de s'afficher : on laisse le temps au cadre d'être visible.
+    setTimeout(() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "focus", section: sectionId }, "*"), 60);
+  }
+
   async function addSection(type: string) {
     if (!libTarget) return;
     setAdding(type);
@@ -258,7 +283,7 @@ export default function TabBoutique() {
         {cost.dialog}
         <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} />
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
-        <Empty title={t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={async () => { if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {}, lang: cl.lang }); reloadProject(); }}>{t("Composer la boutique maintenant", "Build the store now")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
+        <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={async () => { if (!(await cost.confirm("theme"))) return; await api(`/api/projects/${id}/theme/build`, { body: {}, lang: cl.lang }); reloadProject(); }}>{isServices ? t("Composer le site maintenant", "Build the website now") : t("Composer la boutique maintenant", "Build the store now")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
           {data?.brand ? t("La marque est prête : vous pouvez lancer la composition.", "The brand is ready: you can start building the store.") : t("Elle sera créée après la marque et les textes (voir le Pilote).", "It will be created after the brand and the copy (see Pilot).")}
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">{t("Les thèmes disponibles", "Available themes")}</h2>
@@ -287,7 +312,7 @@ export default function TabBoutique() {
             <p className="font-medium text-ink">{t("Décrivez ce que vous voulez changer.", "Describe what you want to change.")}</p>
             <p className="mt-1">{t("Désignez un élément dans l'aperçu avec", "Select an element in the preview with")} <Crosshair className="inline size-3.5" /> {t("pour une retouche ciblée, joignez une image ou une capture. Chaque modification crée une version restaurable.", "for a targeted edit, or attach an image or screenshot. Every change creates a version you can restore.")}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {SUGGESTIONS.map(([fr, en]) => { const s = t(fr, en); return <button key={fr} onClick={() => setMessage(s)} className="rounded-full border border-line bg-card px-3 py-1 text-left text-xs hover:border-ink">{s}</button>; })}
+              {(isServices ? SUGGESTIONS_SERVICES : SUGGESTIONS).map(([fr, en]) => { const s = t(fr, en); return <button key={fr} onClick={() => setMessage(s)} className="rounded-full border border-line bg-card px-3 py-1 text-left text-xs hover:border-ink">{s}</button>; })}
             </div>
           </div>
         )}
@@ -390,14 +415,14 @@ export default function TabBoutique() {
               onMove={(from, to) => ops([{ op: "move_section", template: tp.template, section: tp.sections[from].id, position: { index: to } }], t(`${tp.sections[from].name} déplacée`, `${tp.sections[from].name} moved`))}
               render={(s, i, handle, dragging) => (
                 <div>
-                  <div className={cx("flex items-center gap-1.5 rounded-xl border bg-card p-1.5 pr-2 text-sm", dragging ? "border-signal shadow-soft" : "border-line", s.disabled && "opacity-50")}>
+                  <div className={cx("group flex items-center gap-1 rounded-xl border bg-card p-1.5 pr-1.5 text-sm", dragging ? "border-signal shadow-soft" : "border-line", s.disabled && "opacity-50")}>
                     {handle}
-                    <div className="min-w-0 flex-1">
+                    <button type="button" onClick={() => focusSection(s.id, s.disabled)} className={cx("min-w-0 flex-1 rounded-lg px-1 py-0.5 text-left hover:bg-paper-2", focused === s.id && "bg-signal-soft/60")} title={t("Voir cette section dans l'aperçu", "Show this section in the preview")}>
                       <p className="truncate font-medium">{theme.library.find((l) => l.type === s.type)?.name ?? s.name}</p>
                       {s.heading && <p className="truncate text-xs text-muted">{s.heading}</p>}
-                    </div>
-                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`))} disabled={i === 0} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:grid" aria-label={t("Monter", "Move up")}><ArrowUp className="size-3.5" /></button>
-                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`))} disabled={i === tp.sections.length - 1} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:grid" aria-label={t("Descendre", "Move down")}><ArrowDown className="size-3.5" /></button>
+                    </button>
+                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`))} disabled={i === 0} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Monter", "Move up")}><ArrowUp className="size-3.5" /></button>
+                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`))} disabled={i === tp.sections.length - 1} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Descendre", "Move down")}><ArrowDown className="size-3.5" /></button>
                     <button onClick={() => ops([{ op: "toggle_section", template: tp.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? t("affichée", "shown") : t("masquée", "hidden")}`)} className="grid size-7 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? t("Afficher", "Show") : t("Masquer", "Hide")}>{s.disabled ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</button>
                     <button onClick={() => ops([{ op: "lock", template: tp.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? t("déverrouillée", "unlocked") : t("validée", "approved")}`)} className={cx("grid size-7 place-items-center rounded-full hover:bg-paper-2", s.locked && "text-ok")} aria-label={s.locked ? t("Déverrouiller", "Unlock") : t("Valider et verrouiller", "Approve and lock")} title={s.locked ? t("Validée : protégée des modifications non ciblées", "Approved: protected from non-targeted changes") : t("Valider cette section", "Approve this section")}>{s.locked ? <Lock className="size-3.5" /> : <Unlock className="size-3.5" />}</button>
                     {isPage && <button onClick={() => { if (confirm(t(`Supprimer la section « ${s.name} » ? Vous pourrez revenir à la version précédente.`, `Delete the “${s.name}” section? You can go back to the previous version.`))) ops([{ op: "remove_section", template: tp.template, section: s.id }], t(`${s.name} supprimée`, `${s.name} deleted`)); }} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-bad" aria-label={t("Supprimer la section", "Delete section")}><Trash2 className="size-3.5" /></button>}
@@ -442,7 +467,8 @@ export default function TabBoutique() {
         <div className="ml-auto flex items-center gap-1.5">
           <Badge tone={viewVersion ? "warn" : "neutral"}>v{theme.versions.find((v) => v.id === versionId)?.number ?? cur.number}{viewVersion ? t(" (consultation)", " (viewing)") : ""}</Badge>
           <button onClick={() => setHistoryOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Versions", "Versions")}><History className="size-4" /></button>
-          <button onClick={() => setExportOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Exporter", "Export")}><Download className="size-4" /></button>
+          {data && <PlatformPill projectId={id} platform={data.project.platform} business={data.business} onChanged={reloadProject} />}
+          <button onClick={() => setExportOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={data && isPlatform(data.project.platform) ? t(`Exporter pour ${platformInfo(data.project.platform, data.business, t).short}`, `Export for ${platformInfo(data.project.platform, data.business, t).short}`) : t("Exporter", "Export")}><Download className="size-4" aria-hidden /><span className="sr-only">{t("Exporter et installer", "Export and install")}</span></button>
           {src && <a href={src} target="_blank" rel="noreferrer" className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Ouvrir dans un onglet", "Open in a new tab")}><ExternalLink className="size-4" /></a>}
         </div>
       </div>
@@ -458,10 +484,10 @@ export default function TabBoutique() {
       <div ref={frameBox} className="relative flex-1 overflow-hidden bg-paper-2 p-0 sm:p-4">
         {src && (desktopScale < 1 ? (
           <div className="mx-auto overflow-hidden rounded-none bg-white shadow-soft sm:rounded-2xl" style={{ width: DESKTOP_W * desktopScale, height: "100%" }}>
-            <iframe ref={iframe} key={versionId ?? ""} src={src} title={t("Aperçu de la boutique", "Store preview")} className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
+            <iframe ref={iframe} key={versionId ?? ""} src={src} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
           </div>
         ) : (
-          <iframe ref={iframe} key={versionId ?? ""} src={src} title={t("Aperçu de la boutique", "Store preview")} className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
+          <iframe ref={iframe} key={versionId ?? ""} src={src} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
         ))}
       </div>
     </div>
@@ -476,13 +502,13 @@ export default function TabBoutique() {
           <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)} className={cx("flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm", view === k ? "bg-ink text-paper" : "text-ink-2")}><I className="size-4" /> {l}</button>
         ))}
       </div>
-      <div className="grid h-[calc(100dvh-9.5rem)] grid-cols-1 lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)_280px]">
+      <div className="grid h-[calc(100dvh-9.5rem)] grid-cols-1 lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]">
         <section className={cx("min-h-0 border-r border-line bg-paper", view !== "chat" && "hidden lg:block")} aria-label={t("Discussion", "Chat")}>{Chat}</section>
         <section className={cx("min-h-0", view !== "preview" && "hidden lg:block")} aria-label={t("Aperçu", "Preview")}>{Preview}</section>
         <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? "hidden xl:block" : "")} aria-label={t("Structure", "Structure")}>{Structure}</section>
       </div>
       <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} multiple kinds={["image", "video", "logo"]} onPick={(a) => setAttachments([...attachments, ...a])} />
-      <Modal open={historyOpen} onClose={() => setHistoryOpen(false)} title={t("Versions de la boutique", "Store versions")}>
+      <Modal open={historyOpen} onClose={() => setHistoryOpen(false)} title={isServices ? t("Versions du site", "Website versions") : t("Versions de la boutique", "Store versions")}>
         <ul className="grid max-h-[60dvh] gap-2 overflow-y-auto">
           {theme.versions.map((v) => (
             <li key={v.id} className={cx("flex items-start gap-3 rounded-2xl border p-3 text-sm", v.id === cur.versionId ? "border-ink" : "border-line")}>
@@ -504,7 +530,7 @@ export default function TabBoutique() {
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} />
       <ThemeGallery open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
-      <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} />
+      <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} />
     </div>
   );
 }
@@ -524,48 +550,83 @@ function pageTemplate(path: string, theme: ThemeData | null): string {
   return "404";
 }
 
-function ExportModal({ open, onClose, projectId, versionId, fingerprint }: { open: boolean; onClose: () => void; projectId: string; versionId: string | null; fingerprint: string }) {
+function ExportModal({ open, onClose, projectId, versionId, fingerprint, platform, business }: { open: boolean; onClose: () => void; projectId: string; versionId: string | null; fingerprint: string; platform: PlatformId; business: BusinessType }) {
   const toast = useToast();
   const t = useT();
   const { reload } = useProject();
-  const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; linked: boolean }[]; publicUrl: boolean }>(open ? `/api/connections?project=${projectId}` : null);
+  const [others, setOthers] = useState(false);
+  const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; linked: boolean }[]; publicUrl: boolean }>(open && platform === "shopify" ? `/api/connections?project=${projectId}` : null);
   const shop = conns?.connections.find((c) => c.provider === "shopify");
+  const svc = business === "services";
   const q = versionId ? `&version=${versionId}` : "";
-  const items = [
-    ["shopify", "Shopify", t("Thème Online Store 2.0 · ZIP installable (Boutique en ligne › Thèmes › Ajouter un thème › Importer)", "Online Store 2.0 theme · installable ZIP (Online Store › Themes › Add theme › Upload)")],
-    ["shopify-csv", t("Produits Shopify (CSV)", "Shopify products (CSV)"), t("Tous les produits de la boutique, au format d'import Shopify (Produits › Importer)", "All store products, in Shopify import format (Products › Import)")],
-    ["woocommerce", "WooCommerce", t("Thème de blocs WordPress installable (Apparence › Thèmes › Ajouter › Téléverser)", "Installable WordPress block theme (Appearance › Themes › Add New › Upload)")],
-    ["woocommerce-csv", t("Produits WooCommerce (CSV)", "WooCommerce products (CSV)"), t("Tous les produits, au format d'import WooCommerce (Produits › Importer)", "All products, in WooCommerce import format (Products › Import)")],
-    ["prestashop", "PrestaShop", t("Thème enfant du thème Classic, installable (Apparence › Thème et logo)", "Installable child theme of the Classic theme (Design › Theme & Logo)")],
-    ["wix", "Wix", t("Kit de reprise : Wix n'accepte pas de thème importé", "Rebuild kit: Wix doesn't accept imported themes")],
-    ["squarespace", "Squarespace", t("Kit de reprise : Squarespace n'accepte pas de thème importé", "Rebuild kit: Squarespace doesn't accept imported themes")],
-  ];
+  // Fichier principal de chaque plateforme, plus le CSV des produits pour une boutique.
+  const howTo: Record<PlatformId, string> = {
+    shopify: t("Shopify › Boutique en ligne › Thèmes › Ajouter un thème › Importer le fichier ZIP.", "Shopify › Online Store › Themes › Add theme › Upload the ZIP file."),
+    woocommerce: svc ? t("WordPress › Apparence › Thèmes › Ajouter › Téléverser le fichier ZIP, puis Activer. WooCommerce n'est pas nécessaire.", "WordPress › Appearance › Themes › Add New › Upload the ZIP file, then Activate. WooCommerce isn't needed.") : t("WordPress › Apparence › Thèmes › Ajouter › Téléverser le fichier ZIP, puis Activer (avec l'extension WooCommerce pour vendre).", "WordPress › Appearance › Themes › Add New › Upload the ZIP file, then Activate (with the WooCommerce plugin to sell)."),
+    prestashop: t("PrestaShop › Apparence › Thème et logo › Ajouter un nouveau thème › Importer le fichier ZIP (le thème Classic doit être présent).", "PrestaShop › Design › Theme & Logo › Add new theme › Upload the ZIP file (the Classic theme must be installed)."),
+    wix: t("Ouvrez le guide du kit : il indique, page par page, quoi reprendre dans l'éditeur Wix (médias, couleurs, polices, textes).", "Open the kit's guide: it lists, page by page, what to rebuild in the Wix editor (media, colors, fonts, text)."),
+    squarespace: t("Ouvrez le guide du kit : il indique, page par page, quoi reprendre dans Squarespace (médias, couleurs, polices, textes).", "Open the kit's guide: it lists, page by page, what to rebuild in Squarespace (media, colors, fonts, text)."),
+  };
+  const csv = !svc && (platform === "shopify" || platform === "woocommerce") ? ([platform === "shopify" ? "shopify-csv" : "woocommerce-csv", platform === "shopify" ? t("Produits Shopify (CSV)", "Shopify products (CSV)") : t("Produits WooCommerce (CSV)", "WooCommerce products (CSV)"), platform === "shopify" ? t("Tous les produits de la boutique, au format d'import Shopify (Produits › Importer)", "All store products, in Shopify import format (Products › Import)") : t("Tous les produits, au format d'import WooCommerce (Produits › Importer)", "All products, in WooCommerce import format (Products › Import)")] as const) : null;
+  const main = platformInfo(platform, business, t);
+  const rest = PLATFORM_IDS.filter((x) => x !== platform);
   return (
     <Modal open={open} onClose={onClose} title={t("Exporter et installer", "Export and install")}>
       <p className="text-sm text-muted">{t("L'export contient exactement les fichiers affichés dans l'aperçu (empreinte", "The export contains exactly the files shown in the preview (fingerprint")} <code className="rounded bg-paper-2 px-1.5 text-xs">{fingerprint}</code>{t("). Une copie est rangée dans Fichiers › Boutique › Exports.", "). A copy is saved in Files › Store › Exports.")}</p>
-      <ul className="mt-4 grid gap-2">
-        {items.map(([k, l, d]) => (
-          <li key={k}>
-            <a href={`/api/projects/${projectId}/theme/export?platform=${k}${q}`} className="flex items-center gap-3 rounded-2xl border border-line p-3 hover:border-ink">
-              <Download className="size-4 shrink-0" />
-              <span className="min-w-0"><span className="block text-sm font-medium">{l}</span><span className="block text-xs text-muted">{d}</span></span>
-            </a>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-5 rounded-2xl bg-paper-2 p-4 text-sm">
-        <p className="font-medium">{t("Installation directe dans Shopify", "Direct install to Shopify")}</p>
-        {shop ? (
-          <>
-            <p className="mt-1 text-xs text-muted">{t("Boutique connectée :", "Connected store:")} {shop.name}. {t("Le thème est installé comme thème non publié ; la publication reste votre décision dans Shopify.", "The theme is installed as an unpublished theme; publishing remains your decision in Shopify.")}{!conns?.publicUrl && t(" L'installation du thème nécessite une adresse publique du studio : en local, importez le ZIP.", " Installing the theme requires a public studio address: when running locally, upload the ZIP.")}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {[["product", t("Produits et collections", "Products and collections")], ["pages", t("Pages", "Pages")], ["theme", t("Thème", "Theme")]].map(([p, l]) => (
-                <Button key={p} size="sm" variant="secondary" onClick={async () => { try { await api(`/api/projects/${projectId}/shopify`, { body: { parts: [p] } }); toast("ok", t(`Envoi « ${l} » lancé.`, `Sending “${l}” started.`)); reload(); } catch (e) { toast("bad", (e as Error).message); } }}>{t("Envoyer :", "Send:")} {l}</Button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p className="mt-1 text-xs text-muted">{t("Connectez votre boutique dans l'espace Connexions pour installer directement le thème, le produit et les pages.", "Connect your store in the Connections tab to install the theme, product and pages directly.")}</p>
+      <div className="mt-4 rounded-2xl border-2 border-signal/50 bg-signal-soft/40 p-4">
+        <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">{main.name} <Badge tone="signal">{t("Votre plateforme", "Your platform")}</Badge> <Badge tone={main.kind === "theme" ? "ok" : "warn"}>{main.kind === "theme" ? t("Thème installable", "Installable theme") : t("Kit de reprise", "Rebuild kit")}</Badge></p>
+        <p className="mt-1 text-xs text-ink-2">{main.text}</p>
+        <a href={`/api/projects/${projectId}/theme/export?platform=${platform}${q}`} className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper">
+          <Download className="size-4" aria-hidden /> {main.kind === "theme" ? t(`Télécharger le thème ${main.short}`, `Download the ${main.short} theme`) : t(`Télécharger le kit ${main.short}`, `Download the ${main.short} kit`)}
+        </a>
+        <p className="mt-2 text-xs text-muted">{howTo[platform]}</p>
+        {csv && (
+          <a href={`/api/projects/${projectId}/theme/export?platform=${csv[0]}${q}`} className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-card p-3 hover:border-ink">
+            <Download className="size-4 shrink-0" aria-hidden />
+            <span className="min-w-0"><span className="block text-sm font-medium">{csv[1]}</span><span className="block text-xs text-muted">{csv[2]}</span></span>
+          </a>
+        )}
+      </div>
+      {platform === "shopify" && (
+        <div className="mt-4 rounded-2xl bg-paper-2 p-4 text-sm">
+          <p className="font-medium">{t("Installation directe dans Shopify", "Direct install to Shopify")}</p>
+          {shop ? (
+            <>
+              <p className="mt-1 text-xs text-muted">{t("Boutique connectée :", "Connected store:")} {shop.name}. {t("Le thème est installé comme thème non publié ; la publication reste votre décision dans Shopify.", "The theme is installed as an unpublished theme; publishing remains your decision in Shopify.")}{!conns?.publicUrl && t(" L'installation du thème nécessite une adresse publique du studio : en local, importez le ZIP.", " Installing the theme requires a public studio address: when running locally, upload the ZIP.")}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(svc ? [["pages", t("Pages", "Pages")], ["theme", t("Thème", "Theme")]] : [["product", t("Produits et collections", "Products and collections")], ["pages", t("Pages", "Pages")], ["theme", t("Thème", "Theme")]]).map(([p, l]) => (
+                  <Button key={p} size="sm" variant="secondary" onClick={async () => { try { await api(`/api/projects/${projectId}/shopify`, { body: { parts: [p] } }); toast("ok", t(`Envoi « ${l} » lancé.`, `Sending “${l}” started.`)); reload(); } catch (e) { toast("bad", (e as Error).message); } }}>{t("Envoyer :", "Send:")} {l}</Button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="mt-1 text-xs text-muted">{svc ? t("Connectez votre compte Shopify dans l'espace Connexions pour installer directement le thème et les pages.", "Connect your Shopify account in the Connections tab to install the theme and pages directly.") : t("Connectez votre boutique dans l'espace Connexions pour installer directement le thème, le produit et les pages.", "Connect your store in the Connections tab to install the theme, product and pages directly.")}</p>
+          )}
+        </div>
+      )}
+      <div className="mt-4">
+        <button onClick={() => setOthers(!others)} aria-expanded={others} className="text-sm font-medium text-ink-2 underline underline-offset-4">{others ? t("Masquer les autres plateformes", "Hide other platforms") : t("Exporter pour une autre plateforme", "Export for another platform")}</button>
+        {others && (
+          <ul className="mt-3 grid gap-2">
+            {rest.map((k) => {
+              const info = platformInfo(k, business, t);
+              return (
+                <li key={k}>
+                  <a href={`/api/projects/${projectId}/theme/export?platform=${k}${q}`} className="flex items-center gap-3 rounded-2xl border border-line p-3 hover:border-ink">
+                    <Download className="size-4 shrink-0" aria-hidden />
+                    <span className="min-w-0"><span className="block text-sm font-medium">{info.name} · {info.kind === "theme" ? t("thème installable", "installable theme") : t("kit de reprise", "rebuild kit")}</span><span className="block text-xs text-muted">{info.text}</span></span>
+                  </a>
+                </li>
+              );
+            })}
+            {!svc && !csv && (
+              <li className="grid gap-2 sm:grid-cols-2">
+                {[["shopify-csv", t("Produits Shopify (CSV)", "Shopify products (CSV)")], ["woocommerce-csv", t("Produits WooCommerce (CSV)", "WooCommerce products (CSV)")]].map(([k, l]) => (
+                  <a key={k} href={`/api/projects/${projectId}/theme/export?platform=${k}${q}`} className="flex items-center gap-2 rounded-2xl border border-line p-3 text-sm hover:border-ink"><Download className="size-4 shrink-0" aria-hidden /> {l}</a>
+                ))}
+              </li>
+            )}
+          </ul>
         )}
       </div>
     </Modal>

@@ -7,6 +7,12 @@ import { DIRECTIONS } from "../theme/directions";
 import { FONT_HANDLES } from "../theme/render";
 
 import { pick, type Lang } from "../i18n";
+import { PRODUCT_SECTOR_IDS, SERVICE_SECTOR_IDS } from "../project-types";
+
+/** Consignes propres aux entreprises de services (appliquées quand le contexte l'indique). */
+const SERVICES_BRAND = `Entreprise de services (indiquée dans le contexte) : nom adapté au métier et à une clientèle locale (cabinet, institut, studio, atelier…), signature sans promesse de résultat ; secteur parmi ${SERVICE_SECTOR_IDS.join(", ")} ; stratégie tournée vers la prise de rendez-vous ou de devis : angles (savoir-faire en action, coulisses, avant / après de vraies réalisations ou déroulé d'un rendez-vous, conseils d'expert, présentation de l'équipe, rappel de prise de rendez-vous), piliers et messages clés fondés sur les prestations, la zone, les horaires et le mode de contact fournis ; cible : les clients de la zone, sans données inventées.`;
+const SERVICES_COPY = `Entreprise de services (indiquée dans le contexte) : tu rédiges le site vitrine de l'activité, pas une boutique. Correspondance des champs : hero et cta.button = appel à l'action du mode de contact (« Prendre rendez-vous », « Demander un devis », « Appeler », « Nous contacter ») ; features = les prestations ; story = comment ça se passe (demande, rendez-vous ou devis, prestation) ; specs = infos pratiques (zone, adresse, horaires, contact) puis prestations avec durée et tarif seulement s'ils sont fournis ; faq = questions d'un client (rendez-vous, tarifs, zone, horaires, durée, annulation) ; product = page de présentation de l'activité (title = nom de l'activité, description_html = présentation et liste des prestations, tabs = Prestations, Tarifs, Infos pratiques) ; shipping = « Infos pratiques » (zone, adresse, horaires, accès, contact, prise de rendez-vous) suivies des conditions de prestation (devis, acompte, annulation, paiement, assurance) en espaces réservés ; about = le métier, l'équipe et la façon de travailler ; announcement vide sauf information confirmée (horaires, zone). Aucun mot de vente en ligne (panier, livraison, commande, retours, stock).`;
+const SERVICES_SOCIAL = `Entreprise de services (indiquée dans le contexte) : publications de professionnel de proximité : coulisses, avant / après de vraies réalisations (jamais pour la santé), conseils d'expert, présentation de l'équipe, focus sur une prestation, déroulé d'un rendez-vous, rappel de prise de rendez-vous avec zone et horaires ; appel à l'action vers la prise de rendez-vous, le devis ou l'appel ; visual.kind « scene » pour les vraies photos de l'activité, « creative » pour les visuels typographiques (jamais « packshot ») ; aucun tarif, délai, résultat ou avis non fourni.`;
 
 /** Nom de la langue (en français, pour les consignes). */
 export const langName = (lang: Lang) => pick(lang, "français", "anglais (américain)");
@@ -35,10 +41,10 @@ export function charter(lang: Lang): string {
     "- Français impeccable : orthographe, accords, typographie française (espaces insécables avant : ; ! ?, guillemets « »), pas d'anglicismes inutiles. N'utilise jamais de tiret cadratin ou demi-cadratin (— –) dans les phrases : virgule, deux-points ou point à la place.",
     "- Anglais impeccable (orthographe américaine) : grammaire, ponctuation et typographie anglaises (aucune espace avant : ; ! ?, guillemets droits ou typographiques \"…\", jamais « »), ton marketing naturel de marque anglophone, pas de tournures calquées sur le français. N'utilise jamais de tiret cadratin ou demi-cadratin (— –) dans les phrases : virgule, deux-points ou point à la place.",
   );
-  return `Tu travailles pour E-COM STUDIO IA, un studio qui transforme un produit en marque, boutique et contenus marketing. Les contenus sont rédigés en ${langName(lang)} soigné.
+  return `Tu travailles pour E-COM STUDIO IA, un studio qui transforme un produit, ou une activité de services (artisan, coach, salon, cabinet, agence, restaurant, photographe, professeur…), en marque, site et contenus marketing. Les contenus sont rédigés en ${langName(lang)} soigné.
 
 Charte de véracité (non négociable) :
-- N'invente jamais : certification, label, origine, composition, fonction, performance, délai de livraison, garantie, avis client, note, nombre de clients, stock, promotion, prix, récompense, résultat chiffré, bénéfice santé ou promesse d'efficacité.
+- N'invente jamais : certification, label, origine, composition, fonction, performance, délai de livraison, garantie, avis client, note, nombre de clients, stock, promotion, prix, récompense, résultat chiffré, bénéfice santé ou promesse d'efficacité ; pour un service : tarif, devis gratuit, délai ou disponibilité d'intervention, diplôme, qualification, assurance, années d'expérience.
 - Une information absente du contexte reste inconnue. Si un texte en a besoin, écris exactement « ${ph} ».
 - Les observations visuelles (couleur, forme, matière apparente) se formulent comme telles (${pick(lang, "« flacon en verre ambré »", "\"amber glass bottle\"")}), jamais comme des garanties techniques.
 - Respecte les décisions, corrections et préférences du client présentes dans le contexte : elles priment sur tes choix.
@@ -84,7 +90,7 @@ Rôle : analyste produit et directeur artistique. Tu examines les photos et les 
 Méthode :
 1. Décris précisément ce que tu vois : type d'objet, forme, proportions, matières apparentes, couleurs, finitions, éléments imprimés (recopie mot pour mot le texte lisible), logo présent ou non.
 2. Sépare strictement : faits confirmés (écrits sur le produit, donnés par le client ou la source), observations visuelles (« inferred »), inconnues.
-3. Identifie le secteur parmi : beaute, mode, bijoux, maison, hightech, sport, alimentation, enfants, animaux, artisanat.
+3. Identifie le secteur parmi : ${PRODUCT_SECTOR_IDS.join(", ")}.
 4. Liste UNIQUEMENT les questions indispensables qui ne peuvent pas être déduites (3 à 5 maximum), en expliquant pourquoi chacune compte. Une question est « required » seulement si la boutique ne peut pas être vendue honnêtement sans elle (ex. prix, contenance réglementaire).
 5. Liste les allégations à éviter pour ce type de produit (réglementation : cosmétiques, alimentaire, enfants, santé…).
 6. Propose 1 à 3 zones de détail intéressantes à recadrer (coordonnées relatives 0–1 dans le cadre du produit).
@@ -101,6 +107,7 @@ Exigences :
 - Direction artistique de boutique : choisis l'identifiant le plus adapté et justifie-le.
 - Logo : décris un concept réalisable en typographie (famille, graisse, casse, interlettrage, mise en page, ornement).
 - Ton éditorial : voix, 3 choses à faire, 3 à éviter.
+${SERVICES_BRAND}
 Langues : nom, alternatives, signature, positionnement, cible, personnalité, ton, histoire, valeurs et stratégie en ${lname} (langue des contenus) ; directionReason et logo.concept (explications pour l'utilisateur du studio) dans la langue de l'interface.`,
 
   copy: `${CHARTER}
@@ -113,6 +120,7 @@ Exigences :
 - FAQ : questions réelles d'un acheteur ; réponses honnêtes ; délais, retours et garanties inconnus restent « ${ph} ».
 - Aucune fausse urgence, aucun avis, aucune promotion inventée. Réassurance uniquement si l'engagement est confirmé (sinon tableau vide).
 - description_html : HTML simple (<p>, <ul>, <li>, <strong>).
+${SERVICES_COPY}
 Langue : tous les textes en ${lname}.`,
 
   themeDesign: `${CHARTER}
@@ -128,6 +136,7 @@ Exigences :
 - Utilise uniquement les types de sections et réglages du catalogue fourni ; respecte les options autorisées.
 - Les images sont désignées par les noms de fichiers disponibles fournis (réglages se terminant par « _asset »).
 - Pas de section d'avis ou de preuves sociales inventées.
+- Entreprise de services (indiquée dans le contexte) : la page présente l'activité et ses prestations, puis amène à prendre rendez-vous, demander un devis ou appeler ; privilégie les sections de prestations, de tarifs (seulement ceux fournis), d'équipe, de réalisations, d'infos pratiques et de prise de rendez-vous si le catalogue les propose ; aucune grille de produits, aucun panier.
 Langues : textes des sections, blocs et sections sur mesure en ${lname} (langue des contenus) ; « reasoning » dans la langue de l'interface.`,
 
   themeEdit: `${CHARTER}
@@ -184,6 +193,7 @@ Règles par réseau :
 - YouTube Shorts : titre de moins de 70 caractères, description courte, vidéo 9:16.
 - Pinterest : titre descriptif et recherché (moins de 100 caractères), description utile avec mots-clés, image verticale 2:3, lien vers la page produit.
 N'annonce aucune promotion, aucun avis, aucune donnée non confirmée.
+${SERVICES_SOCIAL}
 Langues : titres, légendes, hashtags et textes des visuels en ${lname} (langue des contenus, hashtags usuels dans cette langue) ; « strategy » (résumé pour l'utilisateur du studio) dans la langue de l'interface.`,
 
   video: `${CHARTER}

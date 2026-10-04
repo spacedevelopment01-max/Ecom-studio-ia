@@ -32,6 +32,18 @@
   </div>
 </section>
 
+{% stylesheet %}
+/* Étapes non actives : discrètes mais lisibles (capture statique, aperçu). */
+.es-story .es-story__step { opacity: .5; }
+.es-story .es-story__step.is-active { opacity: 1; }
+.es-story .es-story__index { display: inline-flex; align-items: center; gap: 10px; color: var(--c-accent); font-weight: var(--font-body-weight-bold); letter-spacing: .14em; font-size: .8rem; }
+.es-story .es-story__index::after { content: ""; width: 28px; height: 1px; background: currentColor; opacity: .5; }
+.es-story .es-story__step .es-h3 { margin-bottom: .4em; }
+.es-story .es-story__step .es-rte { font-size: max(1.02rem, 15px); line-height: 1.7; color: color-mix(in srgb, var(--c-text) 78%, var(--c-bg)); max-width: 46ch; }
+.es-story .es-story__stage { border-radius: var(--radius-card); overflow: hidden; }
+@media (min-width: 990px) { .es-story .es-story__step { min-height: 52vh; } }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Défilement produit",

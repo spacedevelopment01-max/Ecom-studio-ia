@@ -1,9 +1,12 @@
-<section class="es-section es-specs color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+<section class="es-section es-specs{% if section.settings.image != blank or section.settings.image_asset != blank %} es-specs--media{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container es-specs__grid">
     <header class="es-specs__head">
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
       <h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>
       {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.settings.image != blank or section.settings.image_asset != blank -%}
+        <div class="es-specs__media es-media-frame" data-reveal="up">{% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.heading, sizes: '(min-width: 990px) 36vw, 100vw', class: 'es-cover' %}</div>
+      {%- endif -%}
     </header>
     <dl class="es-specs__list">
       {%- for block in section.blocks -%}
@@ -16,6 +19,17 @@
   </div>
 </section>
 
+{% stylesheet %}
+.es-specs .es-specs__head .es-heading { margin-bottom: .4em; }
+.es-specs .es-specs__head .es-rte { font-size: max(1rem, 15px); line-height: 1.65; max-width: 44ch; }
+.es-specs .es-specs__media { aspect-ratio: 4 / 3; margin-top: clamp(20px, 3vw, 32px); border-radius: var(--radius-card); overflow: hidden; }
+.es-specs .es-specs__list { border-top: 1px solid var(--c-text); align-self: start; }
+.es-specs .es-specs__row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: baseline; padding: 20px 0; font-size: max(1rem, 15px); }
+.es-specs .es-specs__row dt { font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); color: var(--c-muted); }
+.es-specs .es-specs__row dd { line-height: 1.5; overflow-wrap: anywhere; }
+@media (max-width: 749px) { .es-specs .es-specs__row { grid-template-columns: 1fr; gap: 4px; padding: 16px 0; } }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Caractéristiques",
@@ -25,6 +39,8 @@
     { "type": "text", "id": "eyebrow", "label": "Surtitre" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Caractéristiques" },
     { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "image", "label": "Image (facultatif)" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }

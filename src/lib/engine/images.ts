@@ -2,6 +2,8 @@
  * Création du jeu d'images d'un projet : détourage, packshots, détails réels,
  * mises en scène (décor IA si disponible, sinon studio local), bannières,
  * visuels sociaux et publicitaires. Chaque fichier est rangé, nommé et lié.
+ * Entreprise de services : pas de détourage ni de packshot — voir ./service-media
+ * (photos réelles de l'activité ou visuels typographiques, offre réelle).
  */
 import { renderProCreatives } from "../media/creative-html";
 import sharp from "sharp";
@@ -18,6 +20,7 @@ import { geminiPlate, imageProviderAvailable, openaiScene } from "../ai/media-pr
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 import { C, L } from "../i18n-server";
+import { generateServiceImageSet, generateServiceSingleImage, isServices, type ServiceSingleRequest } from "./service-media";
 
 export function latestAsset(projectId: string, role: string): Asset | undefined {
   return one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role);
@@ -51,6 +54,8 @@ export function shortLine(text: string, max = 60): string {
 
 /** Détoure les photos originales qui ne le sont pas encore. */
 export async function ensureCutouts(ctx: JobContext | null, project: Project): Promise<Asset[]> {
+  // Services : les photos montrent un lieu, une équipe, des réalisations — rien à détourer.
+  if (isServices(project)) return [];
   const originals = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND kind = 'image' AND deleted_at IS NULL ORDER BY created_at", project.id);
   const out: Asset[] = [];
   for (const [i, o] of originals.entries()) {
@@ -134,6 +139,7 @@ export type ImageSetOptions = { scenes?: SceneStyle[]; withAi?: boolean; social?
  */
 export async function generateImageSet(ctx: JobContext, projectId: string, opts: ImageSetOptions = {}) {
   let project = loadProject(projectId);
+  if (isServices(project)) return generateServiceImageSet(ctx, projectId, opts);
   const ictx: ImgCtx = { userId: project.userId, projectId, jobId: ctx.job.id };
   const cutouts = await ensureCutouts(ctx, project);
   if (!cutouts.length) throw new Error(L("Aucune photo du produit : importez au moins une photo pour créer les images.", "No product photo: upload at least one photo to create the images."));
@@ -325,8 +331,10 @@ function keywordFor(p: Project): string {
 }
 
 /** Génère une image unique à la demande (studio Images). */
-export async function generateSingleImage(ctx: JobContext, projectId: string, req: { kind: "packshot" | "scene" | "social" | "ad" | "banner"; style?: SceneStyle; format?: FormatId; layout?: Layout; headline?: string; subline?: string; cta?: string; useAi?: boolean; sourceCutoutId?: string }) {
+export async function generateSingleImage(ctx: JobContext, projectId: string, req: { kind: "packshot" | "scene" | "social" | "ad" | "banner" | ServiceSingleRequest["kind"]; style?: SceneStyle; format?: FormatId; layout?: Layout; headline?: string; subline?: string; cta?: string; useAi?: boolean; sourceCutoutId?: string; serviceIndex?: number; items?: string[]; usePhoto?: boolean; photoId?: string }) {
   const project = loadProject(projectId);
+  if (isServices(project)) return generateServiceSingleImage(ctx, projectId, { ...req, kind: req.kind === "packshot" ? "banner" : req.kind });
+  if (!["packshot", "scene", "social", "ad", "banner"].includes(req.kind)) throw new Error(L("Ce type d'image est réservé aux entreprises de services.", "This image type is for service businesses only."));
   const cutouts = await ensureCutouts(ctx, project);
   const cut = (req.sourceCutoutId && cutouts.find((c) => c.id === req.sourceCutoutId)) || cutouts[0];
   if (!cut) throw new Error(L("Importez d'abord une photo du produit.", "Upload a product photo first."));

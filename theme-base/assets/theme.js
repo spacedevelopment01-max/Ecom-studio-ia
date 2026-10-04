@@ -572,6 +572,9 @@
       if (bar) { var max = track.scrollWidth - track.clientWidth; bar.style.setProperty('--p', (max > 0 ? 15 + 85 * track.scrollLeft / max : 100) + '%'); }
     }
     track.addEventListener('scroll', function () { requestAnimationFrame(update); }, { passive: true });
+    // Sur grand écran, la vidéo du milieu est centrée d'emblée (pas de vide à gauche de la première).
+    var mid = items[Math.floor((items.length - 1) / 2)];
+    if (items.length > 2 && window.innerWidth >= 750) track.scrollLeft = Math.max(0, mid.offsetLeft + mid.offsetWidth / 2 - track.clientWidth / 2);
     // Centre la première vidéo et ne lit qu'à l'écran.
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { if (es[0].isIntersecting) update(); else items.forEach(function (it) { var v = $('video', it); v && v.pause(); }); }, { threshold: 0.3 }).observe(track);
     update();

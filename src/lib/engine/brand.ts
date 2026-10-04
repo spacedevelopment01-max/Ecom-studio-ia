@@ -32,7 +32,7 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     remember(projectId, { kind: "decision", key: "direction_boutique", value: `${directionById(r.direction).name} — ${r.directionReason}`, status: "inferred", source: "ai", scope: "shop" });
   } else {
     ctx.progress(0.1, L("Direction de marque (moteur local)", "Brand direction (local engine)"));
-    const out = localBrand(p.product, opts.providedBrand || p.brand?.name);
+    const out = localBrand(p.product, opts.providedBrand || p.brand?.name, p);
     brand = out.brand;
     saveStrategy(projectId, out.strategy);
     logoSpec = out.logoSpec;
@@ -130,7 +130,7 @@ ${b.positioning}
 ## Logo
 ${b.logo.concept}
 
-## Direction artistique de la boutique
+## Direction artistique ${p.business === "services" ? "du site" : "de la boutique"}
 ${d.name} — ${d.description}
 
 ${b.story ? `## Histoire\n${b.story}\n` : ""}
@@ -166,7 +166,7 @@ ${b.positioning}
 ## Logo
 ${b.logo.concept}
 
-## Store art direction
+## ${p.business === "services" ? "Website" : "Store"} art direction
 ${d.name} — ${d.description}
 
 ${b.story ? `## Story\n${b.story}\n` : ""}

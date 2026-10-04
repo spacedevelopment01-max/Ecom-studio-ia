@@ -2,21 +2,26 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowRight, Camera, ImagePlus, Link2, Palette, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
+import { ArrowRight, Briefcase, Camera, ImagePlus, Link2, Palette, Plus, Settings, Shield, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
-import { STORE_TYPES, storeTypeInfo, type StoreType } from "@/lib/project-types";
+import { STORE_TYPES, storeTypeInfo, type BusinessType, type ServiceItem, type ServiceProfile, type StoreType } from "@/lib/project-types";
 import { LANGS } from "@/lib/i18n";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useCostConfirm } from "./cost-confirm";
+import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type PlatformId } from "./platform-picker";
+import { cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
 
-type ProjectCard = { id: string; name: string; status: string; sector: string | null; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
+type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
 
 /** Formulaire de départ. Sans « projectId » : crée un projet ; avec : démarre la création d'un projet existant. */
-export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number }) {
+export function NewProject({ onDone, compact, projectId, existingPhotos = 0, initialBusiness = "products", initialPlatform }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number; initialBusiness?: BusinessType; initialPlatform?: string }) {
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
   const router = useRouter();
+  const [business, setBusiness] = useState<BusinessType>(initialBusiness);
+  const [platform, setPlatform] = useState<PlatformId>(isPlatform(initialPlatform) ? initialPlatform : recommendedPlatform(initialBusiness));
+  const [platformTouched, setPlatformTouched] = useState(isPlatform(initialPlatform));
   const [photos, setPhotos] = useState<File[]>([]);
   const [mode, setMode] = useState<"photo" | "link" | "text">("photo");
   const [more, setMore] = useState(false);
@@ -24,7 +29,11 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
   const [drag, setDrag] = useState(false);
   const [typed, setTyped] = useState(false);
   const [storeType, setStoreType] = useState<StoreType>("mono");
-  const hasInput = photos.length > 0 || typed;
+  const [services, setServices] = useState<ServiceItem[]>([]);
+  const [contactMode, setContactMode] = useState<ServiceProfile["contactMode"]>("form");
+  const [needDesc, setNeedDesc] = useState(false);
+  const svc = business === "services";
+  const hasInput = (!svc && photos.length > 0) || typed;
   const input = useRef<HTMLInputElement>(null);
   const cost = useCostConfirm();
   const addFiles = (list: FileList | null) => {
@@ -33,11 +42,23 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
     setPhotos(next);
     if (next.length) setMode("photo");
   };
+  function chooseBusiness(b: BusinessType) {
+    setBusiness(b);
+    setNeedDesc(false);
+    if (!platformTouched) setPlatform(recommendedPlatform(b));
+  }
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (svc && !typed) {
+      // Site de services : la description de l'activité (ou le site actuel) est indispensable.
+      setNeedDesc(true);
+      (e.currentTarget.elements.namedItem("description") as HTMLTextAreaElement | null)?.focus();
+      return;
+    }
     const fd = new FormData(e.currentTarget);
     fd.delete("photos");
     photos.forEach((p) => fd.append("photos", p));
+    if (svc) fd.set("services", JSON.stringify(cleanServices(services)));
     if (hasInput && !(await cost.confirm("pipeline"))) return;
     setBusy(true);
     try {
@@ -57,6 +78,47 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
       setBusy(false);
     }
   }
+  const photoZone = (
+    <div
+      onDragOver={(e) => (e.preventDefault(), setDrag(true))}
+      onDragLeave={() => setDrag(false)}
+      onDrop={(e) => (e.preventDefault(), setDrag(false), addFiles(e.dataTransfer.files))}
+      className={cx("grid place-items-center gap-3 rounded-3xl border-2 border-dashed px-6 text-center transition", compact || svc ? "py-8" : "py-14", drag ? "border-signal bg-signal-soft" : "border-line bg-card")}
+    >
+      {photos.length ? (
+        <div className="flex flex-wrap justify-center gap-3">
+          {photos.map((f, i) => (
+            <div key={i} className="relative size-24 overflow-hidden rounded-2xl border border-line">
+              <img src={URL.createObjectURL(f)} alt={f.name} className="size-full object-cover" />
+              <button type="button" onClick={() => setPhotos(photos.filter((_, k) => k !== i))} className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-black/60 text-white" aria-label={t(`Retirer ${f.name}`, `Remove ${f.name}`)}>
+                <X className="size-3" />
+              </button>
+            </div>
+          ))}
+          {photos.length < 8 && (
+            <button type="button" onClick={() => input.current?.click()} className="grid size-24 place-items-center rounded-2xl border border-dashed border-line text-muted hover:border-ink" aria-label={t("Ajouter des photos", "Add photos")}>
+              <Plus className="size-5" />
+            </button>
+          )}
+        </div>
+      ) : svc ? (
+        <>
+          <span className="grid size-12 place-items-center rounded-2xl bg-paper-2"><ImagePlus className="size-5" /></span>
+          <p className="font-display text-lg">{t("Photos de votre activité (facultatif)", "Photos of your business (optional)")}</p>
+          <p className="max-w-sm text-sm text-muted">{t("Réalisations, équipe, lieu. Elles sont utilisées telles quelles, sans détourage. 8 photos au plus.", "Your work, your team, your premises. They are used as they are, never cut out. Up to 8 photos.")}</p>
+          <Button type="button" variant="secondary" onClick={() => input.current?.click()}>{t("Choisir des photos", "Choose photos")}</Button>
+        </>
+      ) : (
+        <>
+          <span className="grid size-14 place-items-center rounded-2xl bg-paper-2"><ImagePlus className="size-6" /></span>
+          <p className="font-display text-xl">{t("Déposez la photo de votre produit", "Drop your product photo")}</p>
+          <p className="max-w-sm text-sm text-muted">{t("Une seule suffit. Plusieurs angles améliorent la fidélité. JPEG, PNG, WebP, 25 Mo au plus.", "One is enough. Several angles improve accuracy. JPEG, PNG, WebP, 25 MB max.")}</p>
+          <Button type="button" variant="secondary" onClick={() => input.current?.click()}>{t("Choisir des photos", "Choose photos")}</Button>
+        </>
+      )}
+      <input ref={input} type="file" name="photos" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="hidden" onChange={(e) => addFiles(e.target.files)} />
+    </div>
+  );
   return (
     <form
       onSubmit={submit}
@@ -64,104 +126,136 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
         const f = e.currentTarget;
         const link = (f.elements.namedItem("link") as HTMLInputElement | null)?.value ?? "";
         const desc = (f.elements.namedItem("description") as HTMLTextAreaElement | null)?.value ?? "";
-        setTyped(!!link.trim() || desc.trim().length > 10);
+        const ok = !!link.trim() || desc.trim().length > 10;
+        setTyped(ok);
+        if (ok) setNeedDesc(false);
       }}
-      className="grid gap-5"
+      className="grid gap-6"
+      noValidate
     >
       {cost.dialog}
+      <input type="hidden" name="businessType" value={business} />
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">{t("Type de boutique", "Store type")}</legend>
-        <input type="hidden" name="storeType" value={storeType} />
-        <div className="grid gap-2 sm:grid-cols-3">
-          {(Object.keys(STORE_TYPES) as StoreType[]).map((st) => (
-            <button key={st} type="button" aria-pressed={storeType === st} onClick={() => setStoreType(st)} className={cx("rounded-2xl border p-3 text-left transition", storeType === st ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
-              <span className="block text-sm font-semibold">{storeTypeInfo(st, lang).label}</span>
-              <span className="mt-0.5 block text-xs text-muted">{storeTypeInfo(st, lang).hint}</span>
+        <legend className="mb-2.5 font-display text-xl font-semibold">{t("Que voulez-vous créer ?", "What do you want to create?")}</legend>
+        <div role="radiogroup" aria-label={t("Que voulez-vous créer ?", "What do you want to create?")} className="grid gap-2.5 sm:grid-cols-2">
+          {([
+            ["products", Store, t("Une boutique", "An online store"), t("Je vends des produits.", "I sell products.")],
+            ["services", Briefcase, t("Le site de mon entreprise de services", "My services business website"), t("Artisan, coach, salon, cabinet, agence, restaurant, photographe, professeur…", "Tradesperson, coach, salon, practice, agency, restaurant, photographer, tutor…")],
+          ] as const).map(([id, Icon, label, hint]) => (
+            <button key={id} type="button" role="radio" aria-checked={business === id} onClick={() => chooseBusiness(id)} className={cx("flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal", business === id ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
+              <span className={cx("grid size-10 shrink-0 place-items-center rounded-xl", business === id ? "bg-signal text-signal-ink" : "bg-paper-2")}><Icon className="size-5" aria-hidden /></span>
+              <span className="min-w-0">
+                <span className="block text-[15px] font-semibold leading-tight">{label}</span>
+                <span className="mt-1 block text-xs text-muted">{hint}</span>
+              </span>
             </button>
           ))}
         </div>
-        {storeType !== "mono" && <p className="mt-2 text-xs text-muted">{t("Commencez par votre produit phare : les autres produits s'ajoutent ensuite dans l'onglet Produit (photo, nom, prix), et la boutique se recompose avec ses collections.", "Start with your hero product: other products are added afterwards in the Product tab (photo, name, price), and the store reorganizes itself into collections.")}</p>}
+      </fieldset>
+      {!svc && (
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium">{t("Type de boutique", "Store type")}</legend>
+          <input type="hidden" name="storeType" value={storeType} />
+          <div className="grid gap-2 sm:grid-cols-3">
+            {(Object.keys(STORE_TYPES) as StoreType[]).map((st) => (
+              <button key={st} type="button" aria-pressed={storeType === st} onClick={() => setStoreType(st)} className={cx("rounded-2xl border p-3 text-left transition", storeType === st ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
+                <span className="block text-sm font-semibold">{storeTypeInfo(st, lang).label}</span>
+                <span className="mt-0.5 block text-xs text-muted">{storeTypeInfo(st, lang).hint}</span>
+              </button>
+            ))}
+          </div>
+          {storeType !== "mono" && <p className="mt-2 text-xs text-muted">{t("Commencez par votre produit phare : les autres produits s'ajoutent ensuite dans l'onglet Produit (photo, nom, prix), et la boutique se recompose avec ses collections.", "Start with your hero product: other products are added afterwards in the Product tab (photo, name, price), and the store reorganizes itself into collections.")}</p>}
+        </fieldset>
+      )}
+      <fieldset className="grid gap-2">
+        <legend className="mb-1">
+          <span className="block font-display text-xl font-semibold">{svc ? t("Où sera publié votre site ?", "Where will your website live?") : t("Sur quelle plateforme vendrez-vous ?", "Which platform will you sell on?")}</span>
+          <span className="mt-0.5 block text-xs text-muted">{svc ? t("Conseil : WordPress pour un site de services ; Shopify convient aussi. Modifiable à tout moment dans le studio.", "Tip: WordPress for a services website; Shopify works too. You can change it anytime in the studio.") : t("Modifiable à tout moment dans le studio.", "You can change it anytime in the studio.")}</span>
+        </legend>
+        <PlatformCards name="platform" value={platform} onChange={(p) => (setPlatform(p), setPlatformTouched(true))} business={business} compact={compact} />
       </fieldset>
       {!projectId && (
-        <Field label={t("Langue de la boutique et des contenus", "Store and content language")} htmlFor="language" hint={t("Vous pourrez choisir une autre langue pour une action précise (par exemple des publicités en anglais).", "You can pick another language for a specific action later (for example, ads in French).")}>
+        <Field label={svc ? t("Langue du site et des contenus", "Website and content language") : t("Langue de la boutique et des contenus", "Store and content language")} htmlFor="language" hint={t("Vous pourrez choisir une autre langue pour une action précise (par exemple des publicités en anglais).", "You can pick another language for a specific action later (for example, ads in French).")}>
           <Select id="language" name="language" defaultValue={lang} key={lang}>
             {LANGS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
           </Select>
         </Field>
       )}
-      <div role="tablist" aria-label={t("Point de départ", "Starting point")} className="flex flex-wrap gap-2">
-        {[
-          ["photo", Camera, t("Photo(s)", "Photo(s)")],
-          ["link", Link2, t("Lien produit", "Product link")],
-          ["text", Type, t("Description", "Description")],
-        ].map(([id, Icon, label]: any) => (
-          <button key={id} type="button" role="tab" aria-selected={mode === id} onClick={() => setMode(id)} className={cx("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm", mode === id ? "border-ink bg-ink text-paper" : "border-line bg-card")}>
-            <Icon className="size-4" /> {label}
-          </button>
-        ))}
-      </div>
-      <div className={cx(mode !== "photo" && "hidden")}>
-        <div
-          onDragOver={(e) => (e.preventDefault(), setDrag(true))}
-          onDragLeave={() => setDrag(false)}
-          onDrop={(e) => (e.preventDefault(), setDrag(false), addFiles(e.dataTransfer.files))}
-          className={cx("grid place-items-center gap-3 rounded-3xl border-2 border-dashed px-6 text-center transition", compact ? "py-8" : "py-14", drag ? "border-signal bg-signal-soft" : "border-line bg-card")}
-        >
-          {photos.length ? (
-            <div className="flex flex-wrap justify-center gap-3">
-              {photos.map((f, i) => (
-                <div key={i} className="relative size-24 overflow-hidden rounded-2xl border border-line">
-                  <img src={URL.createObjectURL(f)} alt={f.name} className="size-full object-cover" />
-                  <button type="button" onClick={() => setPhotos(photos.filter((_, k) => k !== i))} className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-black/60 text-white" aria-label={t(`Retirer ${f.name}`, `Remove ${f.name}`)}>
-                    <X className="size-3" />
-                  </button>
-                </div>
-              ))}
-              {photos.length < 8 && (
-                <button type="button" onClick={() => input.current?.click()} className="grid size-24 place-items-center rounded-2xl border border-dashed border-line text-muted hover:border-ink" aria-label={t("Ajouter des photos", "Add photos")}>
-                  <Plus className="size-5" />
-                </button>
-              )}
-            </div>
-          ) : (
-            <>
-              <span className="grid size-14 place-items-center rounded-2xl bg-paper-2"><ImagePlus className="size-6" /></span>
-              <p className="font-display text-xl">{t("Déposez la photo de votre produit", "Drop your product photo")}</p>
-              <p className="max-w-sm text-sm text-muted">{t("Une seule suffit. Plusieurs angles améliorent la fidélité. JPEG, PNG, WebP, 25 Mo au plus.", "One is enough. Several angles improve accuracy. JPEG, PNG, WebP, 25 MB max.")}</p>
-              <Button type="button" variant="secondary" onClick={() => input.current?.click()}>{t("Choisir des photos", "Choose photos")}</Button>
-            </>
-          )}
-          <input ref={input} type="file" name="photos" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="hidden" onChange={(e) => addFiles(e.target.files)} />
+      {svc ? (
+        <div className="grid gap-5">
+          <Field
+            label={t("Décrivez votre activité", "Describe your business")}
+            htmlFor="description"
+            error={needDesc ? t("Indispensable : quelques lignes sur votre activité, ou le lien de votre site actuel ci-dessous.", "Required: a few lines about your business, or the link to your current website below.") : null}
+            hint={t("Votre métier, vos prestations, votre zone, ce qui vous distingue. Ce que vous écrivez est considéré comme confirmé ; rien n'est inventé.", "Your trade, your services, your area, what sets you apart. Whatever you write is treated as confirmed; nothing is made up.")}
+          >
+            <Textarea id="description" name="description" rows={5} aria-required="true" aria-invalid={needDesc || undefined} placeholder={t("Ex. : Plombier chauffagiste à Lyon, dépannage 7j/7, installation de chaudières, devis gratuit.", "E.g.: Plumber and heating engineer in Leeds, emergency call-outs 7 days a week, boiler installation, free quotes.")} />
+          </Field>
+          <Field label={t("Votre site actuel (si vous en avez un)", "Your current website (if you have one)")} htmlFor="link" hint={t("Le studio y lit votre présentation, vos prestations et vos coordonnées, comme source d'information uniquement.", "The studio reads your introduction, services and contact details there, as a source of information only.")}>
+            <Input id="link" name="link" type="url" placeholder="https://…" />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("Nom de l'entreprise", "Business name")} htmlFor="brandName"><Input id="brandName" name="brandName" maxLength={80} autoComplete="organization" placeholder={t("Vide : le studio vous en propose", "Empty: the studio suggests some")} /></Field>
+            <Field label={t("Zone d'intervention", "Service area")} htmlFor="area"><Input id="area" name="area" placeholder={t("Ex. Lyon et 30 km autour", "E.g. Leeds and 20 miles around")} maxLength={300} /></Field>
+            <Field label={t("Adresse (si vous recevez du public)", "Address (if customers visit you)")} htmlFor="address"><Input id="address" name="address" maxLength={300} autoComplete="street-address" /></Field>
+            <Field label={t("Horaires", "Opening hours")} htmlFor="hours"><Input id="hours" name="hours" placeholder={t("Ex. Lun–Ven 8 h–19 h", "E.g. Mon–Fri 8am–7pm")} maxLength={400} /></Field>
+            <Field label={t("Téléphone", "Phone")} htmlFor="phone"><Input id="phone" name="phone" type="tel" maxLength={40} autoComplete="tel" /></Field>
+            <Field label={t("E-mail", "Email")} htmlFor="email"><Input id="email" name="email" type="email" maxLength={160} autoComplete="email" /></Field>
+          </div>
+          <fieldset className="grid gap-2">
+            <legend className="mb-1 text-sm font-medium">{t("Vos prestations", "Your services")} <span className="font-normal text-muted">{t("(facultatif : sinon le studio les reprend de votre description)", "(optional: otherwise the studio takes them from your description)")}</span></legend>
+            <ServicesEditor value={services} onChange={setServices} idPrefix="new-svc" />
+          </fieldset>
+          <fieldset className="grid gap-2">
+            <legend className="mb-1 text-sm font-medium">{t("Comment vos clients vous contactent", "How customers get in touch")}</legend>
+            <input type="hidden" name="contactMode" value={contactMode} />
+            <ContactModePicker value={contactMode} onChange={setContactMode} />
+            {contactMode === "booking" && (
+              <Field label={t("Lien de prise de rendez-vous", "Booking link")} htmlFor="bookingUrl" hint={t("Calendly, Planity, Doctolib… Le bouton « Prendre rendez-vous » du site y mènera.", "Calendly, Fresha, Acuity… The site's “Book an appointment” button will lead there.")}>
+                <Input id="bookingUrl" name="bookingUrl" type="url" placeholder="https://…" maxLength={500} />
+              </Field>
+            )}
+          </fieldset>
+          {photoZone}
+          <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("S'il est fourni, il est conservé tel quel.", "If provided, it is kept exactly as is.")}><LogoInput /></Field>
         </div>
-      </div>
-      <div className={cx(mode !== "link" && "hidden")}>
-        <Field label={t("Lien d'une fiche produit ou d'un site", "Link to a product page or website")} hint={t("Le contenu sert de source d'information et d'inspiration ; il n'est jamais exécuté comme une instruction.", "The content is used as a source of information and inspiration; it is never executed as an instruction.")} htmlFor="link">
-          <Input id="link" name="link" type="url" placeholder="https://…" />
-        </Field>
-      </div>
-      <Field label={mode === "text" ? t("Décrivez votre produit", "Describe your product") : t("Quelques précisions (facultatif)", "A few details (optional)")} hint={t("Exemple : « Contenance : 30 ml. Composition : … ». Ce que vous écrivez est considéré comme confirmé.", "Example: \"Volume: 30 ml. Ingredients: …\". Whatever you write is treated as confirmed.")} htmlFor="description">
-        <Textarea id="description" name="description" rows={mode === "text" ? 6 : 3} placeholder={t("Ce que le produit est, pour qui, ses caractéristiques réelles…", "What the product is, who it's for, its actual features…")} />
-      </Field>
-      <button type="button" onClick={() => setMore((v) => !v)} className="justify-self-start text-sm font-medium text-ink-2 underline underline-offset-4">
-        {more ? t("Moins d'options", "Fewer options") : t("Nom, marque, prix, logo, plateforme…", "Name, brand, price, logo, platform…")}
+      ) : (
+        <>
+          <div role="tablist" aria-label={t("Point de départ", "Starting point")} className="flex flex-wrap gap-2">
+            {[
+              ["photo", Camera, t("Photo(s)", "Photo(s)")],
+              ["link", Link2, t("Lien produit", "Product link")],
+              ["text", Type, t("Description", "Description")],
+            ].map(([id, Icon, label]: any) => (
+              <button key={id} type="button" role="tab" aria-selected={mode === id} onClick={() => setMode(id)} className={cx("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm", mode === id ? "border-ink bg-ink text-paper" : "border-line bg-card")}>
+                <Icon className="size-4" /> {label}
+              </button>
+            ))}
+          </div>
+          <div className={cx(mode !== "photo" && "hidden")}>{photoZone}</div>
+          <div className={cx(mode !== "link" && "hidden")}>
+            <Field label={t("Lien d'une fiche produit ou d'un site", "Link to a product page or website")} hint={t("Le contenu sert de source d'information et d'inspiration ; il n'est jamais exécuté comme une instruction.", "The content is used as a source of information and inspiration; it is never executed as an instruction.")} htmlFor="link">
+              <Input id="link" name="link" type="url" placeholder="https://…" />
+            </Field>
+          </div>
+          <Field label={mode === "text" ? t("Décrivez votre produit", "Describe your product") : t("Quelques précisions (facultatif)", "A few details (optional)")} hint={t("Exemple : « Contenance : 30 ml. Composition : … ». Ce que vous écrivez est considéré comme confirmé.", "Example: \"Volume: 30 ml. Ingredients: …\". Whatever you write is treated as confirmed.")} htmlFor="description">
+            <Textarea id="description" name="description" rows={mode === "text" ? 6 : 3} placeholder={t("Ce que le produit est, pour qui, ses caractéristiques réelles…", "What the product is, who it's for, its actual features…")} />
+          </Field>
+        </>
+      )}
+      <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="justify-self-start text-sm font-medium text-ink-2 underline underline-offset-4">
+        {more ? t("Moins d'options", "Fewer options") : svc ? t("Mode de travail…", "Workflow…") : t("Nom, marque, prix, logo, mode de travail…", "Name, brand, price, logo, workflow…")}
       </button>
       {more && (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("Nom du produit", "Product name")} htmlFor="productName"><Input id="productName" name="productName" /></Field>
-          <Field label={t("Nom de marque (si vous en avez un)", "Brand name (if you have one)")} htmlFor="brandName"><Input id="brandName" name="brandName" /></Field>
-          <Field label={t("Prix de vente TTC", "Retail price (incl. tax)")} htmlFor="price"><Input id="price" name="price" placeholder={t("ex. 34,90 €", "e.g. €34.90")} /></Field>
-{!projectId && (
-          <Field label={t("Plateforme de la boutique", "Store platform")} htmlFor="platform">
-            <Select id="platform" name="platform" defaultValue="shopify">
-              <option value="shopify">{t("Shopify (thème installable)", "Shopify (installable theme)")}</option>
-              <option value="woocommerce">{t("WooCommerce (thème installable)", "WooCommerce (installable theme)")}</option>
-              <option value="prestashop">{t("PrestaShop (thème enfant installable)", "PrestaShop (installable child theme)")}</option>
-              <option value="wix">{t("Wix (kit de reprise)", "Wix (rebuild kit)")}</option>
-              <option value="squarespace">{t("Squarespace (kit de reprise)", "Squarespace (rebuild kit)")}</option>
-            </Select>
-          </Field>
+          {!svc && (
+            <>
+              <Field label={t("Nom du produit", "Product name")} htmlFor="productName"><Input id="productName" name="productName" /></Field>
+              <Field label={t("Nom de marque (si vous en avez un)", "Brand name (if you have one)")} htmlFor="brandName"><Input id="brandName" name="brandName" /></Field>
+              <Field label={t("Prix de vente TTC", "Retail price (incl. tax)")} htmlFor="price"><Input id="price" name="price" placeholder={t("ex. 34,90 €", "e.g. €34.90")} /></Field>
+              <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("S'il est fourni, il est conservé tel quel.", "If provided, it is kept exactly as is.")}><LogoInput /></Field>
+            </>
           )}
-          <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("S'il est fourni, il est conservé tel quel.", "If provided, it is kept exactly as is.")}><Input id="logo" name="logo" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="pt-2.5" /></Field>
           <Field label={t("Mode de travail", "Workflow")} htmlFor="mode">
             <Select id="mode" name="mode" defaultValue="autopilot">
               <option value="autopilot">{t("L'IA enchaîne tout, je retouche ensuite", "AI runs everything, I fine-tune afterwards")}</option>
@@ -171,11 +265,12 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0 }: {
         </div>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" variant="signal" size="lg" loading={busy} disabled={!!projectId && !hasInput && !existingPhotos}>
-          {hasInput || projectId ? t("Lancer la création", "Start creating") : t("Ouvrir le studio", "Open the studio")} <ArrowRight className="size-4" />
+        <Button type="submit" variant="signal" size="lg" loading={busy} disabled={!svc && !!projectId && !hasInput && !existingPhotos}>
+          {hasInput || projectId || svc ? t("Lancer la création", "Start creating") : t("Ouvrir le studio", "Open the studio")} <ArrowRight className="size-4" />
         </Button>
-        {!!projectId && !hasInput && existingPhotos > 0 && <p className="text-sm text-muted">{t(`${existingPhotos} photo(s) déjà ajoutée(s) dans l'onglet Produit seront utilisées.`, `${existingPhotos} photo${existingPhotos > 1 ? "s" : ""} already added in the Product tab will be used.`)}</p>}
-        {!projectId && !hasInput && <p className="text-sm text-muted">{t("Pas encore de photo ? Le projet est créé vide : vous ajouterez le produit plus tard.", "No photo yet? The project is created empty: you can add the product later.")}</p>}
+        {!svc && !!projectId && !hasInput && existingPhotos > 0 && <p className="text-sm text-muted">{t(`${existingPhotos} photo(s) déjà ajoutée(s) dans l'onglet Produit seront utilisées.`, `${existingPhotos} photo${existingPhotos > 1 ? "s" : ""} already added in the Product tab will be used.`)}</p>}
+        {!svc && !projectId && !hasInput && <p className="text-sm text-muted">{t("Pas encore de photo ? Le projet est créé vide : vous ajouterez le produit plus tard.", "No photo yet? The project is created empty: you can add the product later.")}</p>}
+        {svc && !hasInput && <p className="text-sm text-muted">{t("Quelques lignes sur votre activité suffisent pour démarrer.", "A few lines about your business are enough to get started.")}</p>}
       </div>
     </form>
   );
@@ -190,6 +285,19 @@ const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
   paused: { label: "En pause", labelEn: "Paused", tone: "warn" },
   draft: { label: "À démarrer", labelEn: "Not started", tone: "neutral" },
 };
+
+/** Champ logo traduit (le bouton natif « Choose File » suit la langue du navigateur, pas celle du studio). */
+function LogoInput() {
+  const t = useT();
+  const [name, setName] = useState("");
+  return (
+    <label htmlFor="logo" className="flex h-11 cursor-pointer items-center gap-3 rounded-xl border border-line bg-card px-3 text-sm transition hover:border-ink focus-within:outline-2 focus-within:outline-signal">
+      <input id="logo" name="logo" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="sr-only" onChange={(e) => setName(e.target.files?.[0]?.name ?? "")} />
+      <span className="inline-flex items-center gap-1.5 rounded-lg bg-paper-2 px-2.5 py-1 text-xs font-medium"><ImagePlus className="size-3.5" aria-hidden /> {t("Choisir un fichier", "Choose a file")}</span>
+      <span className="min-w-0 truncate text-muted">{name || t("Aucun fichier choisi", "No file chosen")}</span>
+    </label>
+  );
+}
 
 export function StudioHome() {
   const t = useT();
@@ -218,9 +326,9 @@ export function StudioHome() {
           <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
             <div>
               <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Nouveau projet", "New project")}</p>
-              <h1 className="mt-3 font-display text-5xl font-semibold leading-[0.95]">{t("Commençons par votre produit.", "Let's start with your product.")}</h1>
-              <p className="mt-4 max-w-md text-lg text-ink-2">{t("Le studio analyse, construit la marque, la boutique, les images, les vidéos et un premier calendrier. Vous suivez l'avancement en direct et intervenez quand vous voulez.", "The studio analyzes your product, then builds the brand, the store, the images, the videos and a first posting calendar. You follow progress live and step in whenever you want.")}</p>
-              {projects.length > 0 && <Button variant="ghost" className="mt-6" onClick={() => setCreating(false)}>{t("← Retour à mes boutiques", "← Back to my stores")}</Button>}
+              <h1 className="mt-3 font-display text-4xl font-semibold leading-[0.95] sm:text-5xl">{t("Une boutique ou le site de votre activité.", "An online store, or your business website.")}</h1>
+              <p className="mt-4 max-w-md text-lg text-ink-2">{t("Vous vendez des produits, ou vous proposez des services (artisan, coach, salon, cabinet, agence, restaurant…) : le studio analyse, construit la marque, le site, les images, les vidéos et un premier calendrier de publications. Vous suivez l'avancement en direct et intervenez quand vous voulez.", "Whether you sell products or offer services (trades, coaching, salon, practice, agency, restaurant…), the studio analyzes, then builds the brand, the website, the images, the videos and a first posting calendar. You follow progress live and step in whenever you want.")}</p>
+              {projects.length > 0 && <Button variant="ghost" className="mt-6" onClick={() => setCreating(false)}>{t("← Retour à mes projets", "← Back to my projects")}</Button>}
             </div>
             <Card className="p-5 sm:p-7"><NewProject /></Card>
           </div>
@@ -228,25 +336,29 @@ export function StudioHome() {
           <>
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h1 className="font-display text-4xl font-semibold">{t("Mes boutiques", "My stores")}</h1>
+                <h1 className="font-display text-4xl font-semibold">{t("Mes projets", "My projects")}</h1>
                 <p className="mt-1 text-muted">
                   {t(`${projects.length} projet${projects.length > 1 ? "s" : ""} · abonnement : `, `${projects.length} project${projects.length > 1 ? "s" : ""} · subscription: `)}
                   {data?.subscription.status === "active" || data?.subscription.status === "manual" ? t(`${data?.subscription.stores} boutique(s)`, `${data?.subscription.stores} store${(data?.subscription.stores ?? 0) > 1 ? "s" : ""}`) : t("essai (1 boutique)", "trial (1 store)")}
                 </p>
               </div>
-              <Button variant="signal" icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t("Nouvelle boutique", "New store")}</Button>
+              <Button variant="signal" icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t("Nouveau projet", "New project")}</Button>
             </div>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((p) => (
                 <Link key={p.id} href={`/studio/${p.id}/pilote`} className="group overflow-hidden rounded-3xl border border-line bg-card transition hover:-translate-y-1 hover:shadow-soft">
                   <div className="relative aspect-[4/3] bg-paper-2">
-                    {p.cover ? <img src={p.cover} alt="" className="size-full object-cover transition duration-700 group-hover:scale-105" /> : <Store className="absolute inset-0 m-auto size-8 text-muted" />}
+                    {p.cover ? <img src={p.cover} alt="" className="size-full object-cover transition duration-700 group-hover:scale-105" /> : p.business === "services" ? <Briefcase className="absolute inset-0 m-auto size-8 text-muted" /> : <Store className="absolute inset-0 m-auto size-8 text-muted" />}
                     <Badge tone={STATUS[p.status]?.tone ?? "neutral"} dot className="absolute left-3 top-3">{(lang === "en" ? STATUS[p.status]?.labelEn : STATUS[p.status]?.label) ?? p.status}</Badge>
+                    <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-card/90 px-2.5 py-0.5 text-xs font-medium text-ink backdrop-blur">
+                      {p.business === "services" ? <Briefcase className="size-3" aria-hidden /> : <Store className="size-3" aria-hidden />}
+                      {p.business === "services" ? t("Services", "Services") : t("Boutique", "Store")}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between gap-3 p-4">
                     <div className="min-w-0">
                       <p className="truncate font-display text-lg font-semibold">{p.brand ?? p.name}</p>
-                      <p className="text-xs text-muted">{t("Modifié le", "Updated")} {formatDate(p.updatedAt, { day: "numeric", month: "long" })}</p>
+                      <p className="text-xs text-muted">{isPlatform(p.platform) ? `${platformInfo(p.platform, p.business, t).short} · ` : ""}{t("Modifié le", "Updated")} {formatDate(p.updatedAt, { day: "numeric", month: "long" })}</p>
                     </div>
                     {p.palette && (
                       <div className="flex -space-x-1.5">

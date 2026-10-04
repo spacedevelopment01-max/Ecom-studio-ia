@@ -1,0 +1,177 @@
+{%- comment -%}
+  Prise de rendez-vous : lien externe (Calendly, Planity, Doctolib…) en bouton, ou intégré dans la page quand
+  le service le permet (Calendly, Cal.com, TidyCal, Zcal, Google Agenda). Sans lien : formulaire de contact Shopify.
+  Planity et Doctolib refusent l'intégration : ils restent en bouton (ouverture dans un nouvel onglet).
+{%- endcomment -%}
+{%- liquid
+  assign url = section.settings.booking_url | strip
+  assign mode = section.settings.display
+  assign embeddable = false
+  if url contains 'calendly.com' or url contains 'cal.com' or url contains 'tidycal.com' or url contains 'zcal.co' or url contains 'calendar.google.com' or url contains 'youcanbook.me'
+    assign embeddable = true
+  endif
+  if url contains 'planity.com' or url contains 'doctolib.' or url contains 'treatwell.'
+    assign embeddable = false
+  endif
+  assign show = 'form'
+  if url != blank
+    assign show = 'button'
+    if mode == 'embed' and embeddable
+      assign show = 'embed'
+    elsif mode == 'auto' and embeddable
+      assign show = 'embed'
+    endif
+  endif
+  if mode == 'form'
+    assign show = 'form'
+  endif
+  assign provider = ''
+  if url contains 'calendly.com'
+    assign provider = 'Calendly'
+  elsif url contains 'planity.com'
+    assign provider = 'Planity'
+  elsif url contains 'doctolib.'
+    assign provider = 'Doctolib'
+  elsif url contains 'cal.com'
+    assign provider = 'Cal.com'
+  elsif url contains 'calendar.google.com'
+    assign provider = 'Google Agenda'
+  endif
+  assign phone_href = section.settings.phone | remove: ' ' | remove: '.' | remove: '-' | remove: '(' | remove: ')'
+  assign form_id = 'BookingForm-' | append: section.id
+-%}
+<section class="es-section es-booking es-booking--{{ show }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --embed-h: {{ section.settings.embed_height }}px;">
+  <div class="es-container es-booking__grid">
+    <div class="es-booking__intro">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+      {%- if section.blocks.size > 0 -%}
+        <ol class="es-booking__steps" role="list" data-reveal="up" style="--d: 1">
+          {%- for block in section.blocks -%}
+            <li {{ block.shopify_attributes }}><span class="es-booking__step-num" aria-hidden="true">{{ forloop.index }}</span><span><strong>{{ block.settings.title }}</strong>{%- if block.settings.text != blank -%}<span class="es-booking__step-text">{{ block.settings.text }}</span>{%- endif -%}</span></li>
+          {%- endfor -%}
+        </ol>
+      {%- endif -%}
+      {%- if section.settings.phone != blank or section.settings.email != blank -%}
+        <ul class="es-booking__direct" role="list" data-reveal="up" style="--d: 2">
+          {%- if section.settings.phone != blank -%}<li><a href="tel:{{ phone_href }}" class="es-booking__chip">{% render 'icon', name: 'phone' %}<span>{{ section.settings.phone }}</span></a></li>{%- endif -%}
+          {%- if section.settings.email != blank -%}<li><a href="mailto:{{ section.settings.email | strip }}" class="es-booking__chip">{% render 'icon', name: 'mail' %}<span>{{ section.settings.email }}</span></a></li>{%- endif -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+    <div class="es-booking__panel es-glow is-lit" data-reveal="up" style="--d: 1">
+      {%- case show -%}
+        {%- when 'embed' -%}
+          <div class="es-booking__embed" data-booking-embed>
+            <iframe src="{{ url }}{% if url contains 'calendly.com' %}{% if url contains '?' %}&{% else %}?{% endif %}hide_gdpr_banner=1{% endif %}" title="{{ section.settings.heading | escape }}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="payment"></iframe>
+          </div>
+          <p class="es-booking__fallback es-small es-muted"><a href="{{ url }}" target="_blank" rel="noopener">{{ 'sections.booking.open_new_tab' | t }}</a></p>
+        {%- when 'button' -%}
+          <div class="es-booking__cta">
+            <span class="es-booking__cta-icon" aria-hidden="true">{% render 'icon', name: 'clock' %}</span>
+            <p class="es-heading es-h4 es-booking__cta-title">{{ section.settings.panel_title | default: section.settings.button_label }}</p>
+            {%- if section.settings.panel_text != blank -%}<div class="es-rte es-muted">{{ section.settings.panel_text }}</div>{%- endif -%}
+            <a class="es-button es-button--full" href="{{ url }}" target="_blank" rel="noopener">{{ section.settings.button_label }}{% render 'icon', name: 'arrow' %}</a>
+            {%- if provider != blank -%}<p class="es-small es-muted es-booking__provider">{{ 'sections.booking.via' | t: provider: provider }}</p>{%- endif -%}
+          </div>
+        {%- else -%}
+          {%- form 'contact', id: form_id, class: 'es-form es-booking__form' -%}
+            {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'contact.success' | t }}</p>{%- endif -%}
+            {%- if form.errors -%}<div class="es-form-error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+            <input type="hidden" name="contact[{{ 'sections.booking.request' | t }}]" value="{{ section.settings.heading | escape }}">
+            <div class="es-form__row">
+              <label>{{ 'contact.name' | t }} *<input type="text" name="contact[name]" autocomplete="name" required value="{{ form.name }}"></label>
+              <label>{{ 'contact.phone' | t }}<input type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}"></label>
+            </div>
+            <label>{{ 'contact.email' | t }} *<input type="email" name="contact[email]" autocomplete="email" required value="{{ form.email }}"></label>
+            {%- if section.settings.services != blank -%}
+              {%- assign options = section.settings.services | newline_to_br | split: '<br />' -%}
+              <label>{{ 'sections.booking.service' | t }}
+                <select name="contact[{{ 'sections.booking.service' | t }}]">
+                  <option value="">{{ 'sections.booking.choose' | t }}</option>
+                  {%- for o in options -%}{%- assign v = o | strip -%}{%- if v != blank -%}<option value="{{ v | escape }}">{{ v }}</option>{%- endif -%}{%- endfor -%}
+                </select>
+              </label>
+            {%- endif -%}
+            {%- if section.settings.ask_date -%}
+              <label>{{ 'sections.booking.preferred' | t }}<input type="text" name="contact[{{ 'sections.booking.preferred' | t }}]" placeholder="{{ 'sections.booking.preferred_placeholder' | t }}"></label>
+            {%- endif -%}
+            <label>{{ 'contact.message' | t }}<textarea name="contact[body]" rows="4" class="es-textarea">{{ form.body }}</textarea></label>
+            <button type="submit" class="es-button es-button--full">{{ section.settings.button_label }}</button>
+            {%- if section.settings.form_note != blank -%}<p class="es-small es-muted es-booking__note">{{ section.settings.form_note }}</p>{%- endif -%}
+          {%- endform -%}
+      {%- endcase -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-booking__grid { display: grid; gap: clamp(28px, 5vw, 72px); align-items: start; }
+@media (min-width: 990px) { .es-booking__grid { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); } .es-booking--button .es-booking__grid { align-items: center; } }
+.es-booking__intro .es-heading { margin-bottom: 16px; }
+.es-booking__steps { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 16px; counter-reset: s; }
+.es-booking__steps li { display: flex; gap: 14px; align-items: flex-start; }
+.es-booking__step-num { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(var(--c-accent-rgb), .15); color: var(--c-text); font-weight: var(--font-body-weight-bold); font-size: .9rem; }
+.es-booking__steps strong { display: block; }
+.es-booking__step-text { display: block; color: var(--c-muted); font-size: .95rem; margin-top: 2px; }
+.es-booking__direct { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.es-booking__chip { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 10px 18px; border-radius: 999px; border: 1px solid rgba(var(--c-text-rgb), .16); background: rgba(var(--c-text-rgb), .03); text-decoration: none; font-weight: var(--font-body-weight-bold); font-variant-numeric: tabular-nums; transition: border-color .3s, background .3s; max-width: 100%; overflow-wrap: anywhere; }
+.es-booking__chip:hover { border-color: var(--c-accent); background: rgba(var(--c-accent-rgb), .1); }
+.es-booking__chip .es-icon { width: 18px; height: 18px; flex: none; color: var(--c-accent); }
+.es-booking__panel { padding: clamp(20px, 3vw, 40px); border-radius: var(--radius-card); background: var(--c-surface); border: 1px solid rgba(var(--c-text-rgb), .1); box-shadow: 0 40px 80px -50px rgba(0, 0, 0, .45); }
+.es-booking__embed { position: relative; border-radius: calc(var(--radius-card) * .6); overflow: hidden; background: #fff; min-height: 320px; }
+.es-booking__embed iframe { display: block; width: 100%; height: var(--embed-h); border: 0; }
+@media (max-width: 749px) { .es-booking__embed iframe { height: max(560px, calc(var(--embed-h) * .9)); } }
+.es-booking__fallback { margin: 12px 0 0; text-align: center; }
+.es-booking__cta { display: grid; gap: 14px; justify-items: start; }
+.es-booking__cta-icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 18px; background: rgba(var(--c-accent-rgb), .15); color: var(--c-accent); }
+.es-booking__cta-icon .es-icon { width: 26px; height: 26px; }
+.es-booking__cta-title { margin: 0; }
+.es-booking__cta .es-button { margin-top: 8px; gap: 10px; }
+.es-booking__provider { margin: 0; }
+.es-booking__form { display: grid; gap: 14px; }
+.es-booking__form label { display: grid; gap: 6px; font-weight: var(--font-body-weight-bold); }
+.es-booking__form input, .es-booking__form select, .es-booking__form .es-textarea { width: 100%; font-weight: 400; }
+.es-booking__form select { min-height: 48px; padding: 0 14px; border-radius: var(--radius-input, 10px); border: 1px solid var(--c-border); background: var(--c-bg); }
+.es-booking__note { margin: 0; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Prise de rendez-vous",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Rendez-vous" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Prendre rendez-vous" },
+    { "type": "richtext", "id": "text", "label": "Introduction", "default": "<p>Choisissez le créneau qui vous convient, nous confirmons rapidement.</p>" },
+    { "type": "header", "content": "Réservation en ligne" },
+    { "type": "text", "id": "booking_url", "label": "Lien de réservation", "info": "Calendly, Cal.com, Planity, Doctolib… Vide : formulaire de demande de rendez-vous." },
+    { "type": "select", "id": "display", "label": "Affichage", "default": "auto", "options": [{ "value": "auto", "label": "Automatique (intégré si le service le permet)" }, { "value": "embed", "label": "Agenda intégré dans la page" }, { "value": "button", "label": "Bouton vers le service" }, { "value": "form", "label": "Formulaire de demande" }] },
+    { "type": "range", "id": "embed_height", "min": 480, "max": 1000, "step": 20, "unit": "px", "label": "Hauteur de l'agenda intégré", "default": 700 },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Prendre rendez-vous" },
+    { "type": "text", "id": "panel_title", "label": "Titre de la carte (bouton)" },
+    { "type": "richtext", "id": "panel_text", "label": "Texte de la carte (bouton)" },
+    { "type": "header", "content": "Formulaire" },
+    { "type": "textarea", "id": "services", "label": "Prestations proposées dans le formulaire", "info": "Une par ligne. Facultatif." },
+    { "type": "checkbox", "id": "ask_date", "label": "Demander un créneau souhaité", "default": true },
+    { "type": "text", "id": "form_note", "label": "Note sous le formulaire", "info": "Ex. délai de réponse, uniquement s'il est tenu." },
+    { "type": "header", "content": "Contact direct" },
+    { "type": "text", "id": "phone", "label": "Téléphone" },
+    { "type": "text", "id": "email", "label": "E-mail" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Choisissez votre prestation" },
+      { "type": "text", "id": "text", "label": "Texte" }
+    ] }
+  ],
+  "max_blocks": 4,
+  "presets": [{ "name": "Prise de rendez-vous" }]
+}
+{% endschema %}

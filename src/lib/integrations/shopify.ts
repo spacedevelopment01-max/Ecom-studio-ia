@@ -91,6 +91,8 @@ export async function pushProduct(c: Connection, spec: ThemeSpec, product?: Stor
 
 /** Envoie tous les produits de la boutique (brouillons), puis crée les collections manuelles. */
 export async function pushCatalog(c: Connection, spec: ThemeSpec, onProgress?: (done: number, total: number) => void) {
+  // Site d'entreprise de services : aucun produit à créer (le site repose sur les pages et le thème).
+  if (spec.store.business === "services") return { products: [] as string[], collections: [] as string[] };
   const products = storeProducts(spec);
   const missing = products.filter((p) => p.price === null).map((p) => p.title);
   if (missing.length) throw new UserFacingError(L(`Renseignez le prix de : ${missing.join(", ")} avant l'envoi à Shopify.`, `Enter the price of: ${missing.join(", ")} before sending to Shopify.`));

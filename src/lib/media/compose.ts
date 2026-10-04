@@ -701,3 +701,124 @@ async function sharpJpeg(png: Buffer) {
   const sharp = (await import("sharp")).default;
   return sharp(png).jpeg({ quality: 90, mozjpeg: true }).toBuffer();
 }
+
+// ---------------------------------------------------------------- entreprises de services (repli sans navigateur)
+
+export type ServiceCardInput = {
+  palette: Palette;
+  typo: Typo;
+  format: Format;
+  brand: string;
+  eyebrow?: string;
+  title: string;
+  text?: string;
+  lines?: string[];
+  cta?: string;
+  photo?: Image | null;
+  /** Bannière sans texte (le texte vit dans le site). */
+  textless?: boolean;
+};
+
+/**
+ * Visuel de service composé sur toile (utilisé quand le navigateur sans interface n'est pas disponible) :
+ * photo réelle de l'activité en plein cadre avec dégradé, ou fond de marque graphique ; textes nets et contrastés.
+ */
+export async function renderServiceCard(input: ServiceCardInput): Promise<Buffer> {
+  ensureFonts();
+  const { w, h } = input.format;
+  const c = createCanvas(w, h);
+  const ctx = c.getContext("2d");
+  const pal = input.palette;
+  const u = Math.min(w, h) / 100;
+  const tall = h / w > 1.6;
+  const side = w > h * 1.2 ? w * 0.06 : 7 * u;
+  const deep = isDark(pal.primary) ? pal.primary : withLightness(pal.primary, Math.min(0.32, hsl(pal.primary)[2]));
+  if (input.photo) {
+    const im = input.photo;
+    const r = Math.max(w / im.width, h / im.height);
+    ctx.drawImage(im as any, (w - im.width * r) / 2, (h - im.height * r) / 2, im.width * r, im.height * r);
+    if (!input.textless) {
+      const g = ctx.createLinearGradient(0, h * 0.3, 0, h);
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(1, "rgba(0,0,0,0.8)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+    }
+  } else {
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, mix(deep, "#FFFFFF", 0.1));
+    g.addColorStop(1, withLightness(deep, Math.max(0.07, hsl(deep)[2] - 0.1)));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = pal.accent;
+    ctx.beginPath();
+    ctx.arc(w * 0.88, h * 0.14, Math.max(w, h) * 0.34, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.16;
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = Math.max(2, u * 0.35);
+    ctx.beginPath();
+    ctx.arc(w * 0.88, h * 0.14, Math.max(w, h) * 0.46, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    grain(ctx, w, h, 0.03, 9);
+  }
+  if (!input.textless) {
+    const fg = "#FFFFFF";
+    const bottom = tall ? h * 0.2 : 6.5 * u;
+    const maxW = w > h * 1.2 ? w * 0.5 : w - side * 2;
+    ctx.fillStyle = fg;
+    ctx.font = font(input.typo.heading, Math.max(input.typo.headingWeight ?? 500, 500), Math.round(3.2 * u));
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    (ctx as any).letterSpacing = `${Math.round(0.45 * u)}px`;
+    ctx.fillText(upper(input.brand), side, tall ? h * 0.12 : 6.5 * u);
+    (ctx as any).letterSpacing = "0px";
+    // Mise en page du bas vers le haut : bouton, lignes, texte, titre, surtitre.
+    let y = h - bottom;
+    if (input.cta) {
+      const size = Math.round(3.1 * u);
+      const accent = pal.accent;
+      y -= size * 2.6;
+      drawButton(ctx, input.cta, side, y, size, accent, onColor(accent), input.typo.body);
+      y -= size * 1.2;
+    }
+    const lines = (input.lines ?? []).filter(Boolean).slice(0, 5);
+    if (lines.length) {
+      const size = Math.round(3 * u);
+      ctx.font = font(input.typo.body, 500, size);
+      for (const l of [...lines].reverse()) {
+        y -= size * 1.5;
+        ctx.fillStyle = fg;
+        ctx.fillText(`· ${l}`, side, y, maxW);
+      }
+      y -= size * 0.6;
+    }
+    if (input.text) {
+      const size = Math.round(3.1 * u);
+      ctx.font = font(input.typo.body, 400, size);
+      const tl = wrapLines(ctx, input.text, maxW).slice(0, 3);
+      y -= tl.length * size * 1.35;
+      ctx.fillStyle = mix(fg, deep, 0.12);
+      tl.forEach((l, i) => ctx.fillText(l, side, y + i * size * 1.35));
+      y -= size * 0.8;
+    }
+    const title = input.typo.uppercase ? upper(input.title) : input.title;
+    const fitted = fitText(ctx, title, input.typo.heading, input.typo.headingWeight ?? 500, { w: maxW, h: h * 0.3 }, Math.round((tall ? 9.6 : 8.4) * u), Math.round(4.4 * u), 1.05);
+    y -= fitted.lines.length * fitted.size * 1.05;
+    ctx.font = font(input.typo.heading, input.typo.headingWeight ?? 500, fitted.size);
+    ctx.fillStyle = fg;
+    ctx.textBaseline = "alphabetic";
+    drawLines(ctx, fitted.lines, side, y - fitted.size * 0.18, fitted.size, 1.05, "left");
+    if (input.eyebrow) {
+      ctx.font = font(input.typo.body, 600, Math.round(2.4 * u));
+      ctx.textBaseline = "top";
+      (ctx as any).letterSpacing = `${Math.round(0.4 * u)}px`;
+      ctx.fillStyle = mix(pal.accent, "#FFFFFF", 0.35);
+      ctx.fillText(upper(input.eyebrow), side, y - 5 * u);
+      (ctx as any).letterSpacing = "0px";
+    }
+  }
+  return c.encode("jpeg", 92);
+}

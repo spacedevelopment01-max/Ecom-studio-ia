@@ -1,22 +1,49 @@
-{%- comment -%} Cartes « Vous vous reconnaissez ? » : les situations que vit le client avant d'acheter. {%- endcomment -%}
-<section class="es-section es-situations color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
-  <div class="es-container es-container--narrow">
-    <header class="es-section-head es-section-head--center">
+{%- comment -%} Cartes « Vous vous reconnaissez ? » : les situations que vit le client avant d'acheter (photo facultative par carte). {%- endcomment -%}
+{%- assign count = section.blocks.size -%}
+<section class="es-section es-situations color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --n: {{ count | at_least: 1 }};">
+  <div class="es-container">
+    <header class="es-section-head es-section-head--center es-situations__head">
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
       {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
     </header>
     <div class="es-situations__list" data-reveal-stagger>
       {%- for block in section.blocks -%}
-        <article class="es-situation" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
-          {%- if block.settings.emoji != blank -%}<span class="es-situation__icon" aria-hidden="true">{{ block.settings.emoji }}</span>{%- endif -%}
-          <h3 class="es-situation__title">{{ block.settings.title }}</h3>
-          {%- if block.settings.text != blank -%}<p class="es-situation__text">{{ block.settings.text }}</p>{%- endif -%}
+        {%- assign has_img = false -%}
+        {%- if block.settings.image != blank or block.settings.image_asset != blank -%}{%- assign has_img = true -%}{%- endif -%}
+        <article class="es-situation{% if has_img %} es-situation--media{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          {%- if has_img -%}
+            <div class="es-situation__media">{% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, sizes: '(min-width: 990px) 30vw, 90vw', class: 'es-cover' %}</div>
+          {%- endif -%}
+          <div class="es-situation__body">
+            {%- if block.settings.emoji != blank -%}<span class="es-situation__icon" aria-hidden="true">{{ block.settings.emoji }}</span>{%- endif -%}
+            <h3 class="es-situation__title">{{ block.settings.title }}</h3>
+            {%- if block.settings.text != blank -%}<p class="es-situation__text">{{ block.settings.text }}</p>{%- endif -%}
+          </div>
         </article>
       {%- endfor -%}
     </div>
-    {%- if section.settings.conclusion != blank -%}<p class="es-situations__end" data-reveal="up">{{ section.settings.conclusion }}</p>{%- endif -%}
+    {%- if section.settings.conclusion != blank -%}<p class="es-situations__end" data-reveal="up"><span>{{ section.settings.conclusion }}</span></p>{%- endif -%}
   </div>
 </section>
+
+{% stylesheet %}
+.es-situations .es-situations__head { max-width: 760px; margin-inline: auto; }
+.es-situations .es-situations__list { display: grid; gap: clamp(16px, 2vw, 24px); margin-top: clamp(28px, 4vw, 48px); grid-template-columns: 1fr; }
+@media (min-width: 750px) { .es-situations .es-situations__list { grid-template-columns: repeat(min(var(--n), 2), minmax(0, 1fr)); } }
+@media (min-width: 990px) { .es-situations .es-situations__list { grid-template-columns: repeat(min(var(--n), 3), minmax(0, 1fr)); } }
+.es-situations .es-situation { display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: var(--radius-card, 18px); border: 1px solid rgba(var(--c-text-rgb), .1); background: var(--c-bg); box-shadow: 0 24px 50px -40px rgba(0, 0, 0, .45); transition: transform .5s var(--ease-out), box-shadow .5s var(--ease-out); }
+.es-situations .es-situation:hover { transform: translateY(-4px); box-shadow: 0 34px 60px -40px rgba(0, 0, 0, .5); }
+.es-situations .es-situation__media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--c-surface); }
+.es-situations .es-situation__media .es-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease-out); }
+.es-situations .es-situation:hover .es-situation__media .es-cover { transform: scale(1.04); }
+.es-situations .es-situation__body { position: relative; display: grid; gap: 10px; padding: clamp(22px, 2.6vw, 30px); }
+.es-situations .es-situation__icon { display: grid; place-items: center; width: 52px; height: 52px; margin: 0 0 4px; border-radius: 50%; font-size: 1.6rem; line-height: 1; background: rgba(var(--c-accent-rgb), .1); }
+.es-situations .es-situation--media .es-situation__icon { margin-top: calc(-26px - clamp(22px, 2.6vw, 30px)); background: var(--c-bg); box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .4); }
+.es-situations .es-situation__title { margin: 0; font-family: var(--font-heading); font-size: clamp(1.15rem, 1.5vw, 1.3rem); line-height: 1.3; color: var(--c-text); }
+.es-situations .es-situation__text { margin: 0; font-size: max(.98rem, 15px); line-height: 1.65; color: color-mix(in srgb, var(--c-text) 72%, var(--c-bg)); }
+.es-situations .es-situations__end { margin: clamp(28px, 4vw, 44px) auto 0; text-align: center; max-width: 52ch; font-family: var(--font-heading); font-size: clamp(1.1rem, 1.6vw, 1.35rem); line-height: 1.4; }
+.es-situations .es-situations__end span { background: linear-gradient(transparent 62%, rgba(var(--c-accent-rgb), .22) 62%); }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -35,7 +62,9 @@
     { "type": "situation", "name": "Situation", "settings": [
       { "type": "text", "id": "emoji", "label": "Pictogramme (émoji)", "default": "😣" },
       { "type": "text", "id": "title", "label": "Titre", "default": "Une situation que vit votre client ?" },
-      { "type": "textarea", "id": "text", "label": "Texte", "default": "Décrivez-la avec ses mots, sans promesse de résultat." }
+      { "type": "textarea", "id": "text", "label": "Texte", "default": "Décrivez-la avec ses mots, sans promesse de résultat." },
+      { "type": "image_picker", "id": "image", "label": "Image (facultatif)" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" }
     ] }
   ],
   "presets": [{ "name": "Situations", "blocks": [{ "type": "situation" }, { "type": "situation" }, { "type": "situation" }] }]

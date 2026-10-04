@@ -122,6 +122,62 @@ export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?:
 }
 
 /**
+ * Image d'ambiance d'une activité de services (texte vers image) : lieu, gestes, matériaux, lumière.
+ * Consignes d'honnêteté ajoutées à chaque demande : aucun visage identifiable présenté comme un client,
+ * aucun texte, logo, diplôme, certificat ni récompense. `reference` : photo réelle de l'activité (ambiance seulement).
+ */
+export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null }) {
+  const provider = imageProviderAvailable();
+  if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI).", "No image provider configured (Google Gemini or OpenAI)."));
+  const text = `${input.prompt}
+Editorial photograph that conveys the atmosphere of this activity, natural light, realistic, premium. Hands, tools, materials and the place are welcome; people only from behind, out of focus or partially framed, never a recognizable face presented as a customer. No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
+  const ref = input.reference ? await sharp(input.reference).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
+  if (provider === "google") {
+    const key = providerKey("google")!;
+    const route = routeFor("image_generation");
+    const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
+    assertCanSpend(ctx.userId, cost("google", model, { images: 1 }).micro);
+    const parts: any[] = [{ text }];
+    if (ref) parts.push({ inline_data: { mime_type: "image/jpeg", data: ref.toString("base64") } });
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: input.aspect } } }),
+    });
+    if (r.status === 401 || r.status === 403) throw new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel."));
+    if (r.status === 400) throw new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300));
+    if (!r.ok) throw new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`);
+    const j: any = await r.json();
+    const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
+    const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
+    if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
+    recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
+    return Buffer.from(b64, "base64");
+  }
+  const key = providerKey("openai")!;
+  const route = routeFor("image_generation");
+  const model = route.provider === "openai" ? route.model : "gpt-image-1";
+  assertCanSpend(ctx.userId, cost("openai", model, { input: 300, imageOut: 6300 }).micro);
+  const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
+  const size = input.aspect === "16:9" ? "1536x1024" : input.aspect === "1:1" ? "1024x1024" : "1024x1536";
+  let res: any;
+  try {
+    res = ref
+      ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: "high" } as any)
+      : await client.images.generate({ model, prompt: text, size, quality: "high" } as any);
+  } catch (e: any) {
+    if (e?.status === 401 || e?.status === 403) throw new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel."));
+    if (e?.status === 400) throw new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`));
+    throw e;
+  }
+  const b64 = res.data?.[0]?.b64_json;
+  if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
+  const u = res.usage ?? {};
+  recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  return Buffer.from(b64, "base64");
+}
+
+/**
  * Plan vidéo image-vers-vidéo (Veo via l'API Gemini). Retourne un MP4.
  * `people` : plan avec une personne (UGC) — le prompt est transmis tel quel et Veo 3 génère aussi la voix et le son.
  */
@@ -169,13 +225,17 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
  * Le détourage du produit est fourni en référence (forme, étiquette, couleurs à conserver) ;
  * `persona` (image du premier plan) garde la même personne et le même décor d'un plan à l'autre.
  */
-export async function ugcFrame(ctx: Ctx, input: { prompt: string; product: Buffer; persona?: Buffer; aspect: "9:16" | "16:9" }) {
+export async function ugcFrame(ctx: Ctx, input: { prompt: string; product: Buffer; persona?: Buffer; aspect: "9:16" | "16:9"; subject?: "product" | "service" }) {
   const provider = imageProviderAvailable();
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) pour créer la personne de la vidéo UGC.", "No image provider configured (Google Gemini or OpenAI) to create the person in the UGC video."));
   const product = await sharp(input.product).flatten({ background: "#ffffff" }).resize(1024, 1024, { fit: "contain", background: "#ffffff" }).jpeg({ quality: 90 }).toBuffer();
   const persona = input.persona ? await sharp(input.persona).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
+  // Entreprise de services : la première image n'est qu'une référence d'ambiance (lieu, couleurs), pas un produit à tenir.
+  const subject = input.subject === "service"
+    ? "The first reference image only gives the mood, colors and kind of place of the business: do not copy any person from it, add no text, logo, diploma or certificate. The presenter is not a customer."
+    : "The product shown in the first reference image must appear exactly as it is: same shape, proportions, label, logo, text and colors; do not redesign it, do not add another product.";
   const text = `${input.prompt}
-The product shown in the first reference image must appear exactly as it is: same shape, proportions, label, logo, text and colors; do not redesign it, do not add another product.${persona ? " Keep the same person, outfit and room as in the second reference image." : ""}
+${subject}${persona ? " Keep the same person, outfit and room as in the second reference image." : ""}
 Authentic smartphone video still, natural light, realistic skin and hands, no text overlay, no watermark. Aspect ratio ${input.aspect}.`;
   if (provider === "google") {
     const key = providerKey("google")!;

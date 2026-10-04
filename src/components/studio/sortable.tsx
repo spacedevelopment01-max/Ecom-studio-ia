@@ -44,7 +44,7 @@ export function SortableList<T extends { id: string }>({ items, onMove, render, 
   };
 
   return (
-    <ul ref={list} className="grid" style={{ gap }}>
+    <ul ref={list} className="grid grid-cols-[minmax(0,1fr)]" style={{ gap }}>
       {items.map((item, i) => {
         let shift = 0;
         if (drag && i !== drag.from) {

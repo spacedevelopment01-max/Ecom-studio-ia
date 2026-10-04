@@ -1,0 +1,181 @@
+{%- comment -%}
+  Infos pratiques : horaires (une ligne par jour ou plage, « Jour : horaires »), adresse, zone d'intervention,
+  téléphone cliquable, e-mail et carte facultative (Google Maps ou OpenStreetMap), chargée seulement sur demande
+  du visiteur (aucun service tiers contacté avant son clic).
+{%- endcomment -%}
+{%- liquid
+  assign phone_href = section.settings.phone | remove: ' ' | remove: '.' | remove: '-' | remove: '(' | remove: ')'
+  assign map_query = section.settings.map_query | default: section.settings.address | strip_newlines | url_encode
+  assign map_src = ''
+  assign route_url = ''
+  if section.settings.map == 'google' and map_query != blank
+    assign map_src = 'https://maps.google.com/maps?output=embed&z=15&q=' | append: map_query
+    assign route_url = 'https://www.google.com/maps/dir/?api=1&destination=' | append: map_query
+  elsif section.settings.map == 'osm' and section.settings.latitude != blank and section.settings.longitude != blank
+    assign lat = section.settings.latitude | plus: 0
+    assign lon = section.settings.longitude | plus: 0
+    assign lon2 = lon | plus: 0.008
+    assign lat2 = lat | plus: 0.004
+    assign lat1 = lat | minus: 0.004
+    assign lon1 = lon | minus: 0.008
+    assign map_src = 'https://www.openstreetmap.org/export/embed.html?layer=mapnik&bbox=' | append: lon1 | append: '%2C' | append: lat1 | append: '%2C' | append: lon2 | append: '%2C' | append: lat2 | append: '&marker=' | append: lat | append: '%2C' | append: lon
+    assign route_url = 'https://www.openstreetmap.org/?mlat=' | append: lat | append: '&mlon=' | append: lon | append: '#map=16/' | append: lat | append: '/' | append: lon
+  elsif map_query != blank
+    assign route_url = 'https://www.google.com/maps/search/?api=1&query=' | append: map_query
+  endif
+  assign hours = section.settings.hours | newline_to_br | split: '<br />'
+  assign has_map = false
+  if map_src != blank
+    assign has_map = true
+  endif
+-%}
+<section class="es-section es-info{% if has_map %} es-info--map{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    <header class="es-info__head">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
+    </header>
+
+    <div class="es-info__grid">
+      <div class="es-info__cards">
+        {%- if section.settings.hours != blank -%}
+          <div class="es-info__card es-info__card--hours" data-reveal="up">
+            <h3 class="es-info__title">{% render 'icon', name: 'clock' %}{{ 'sections.practical_info.hours' | t }}</h3>
+            <dl class="es-info__hours">
+              {%- for line in hours -%}
+                {%- assign l = line | strip -%}
+                {%- if l == blank -%}{%- continue -%}{%- endif -%}
+                {%- assign first_char = l | slice: 0 -%}
+                {%- if first_char == '[' -%}
+                  {%- assign day = l -%}{%- assign time = '' -%}
+                {%- elsif l contains ' : ' -%}
+                  {%- assign day = l | split: ' : ' | first -%}
+                  {%- assign time = l | remove_first: day | remove_first: ' : ' -%}
+                {%- elsif l contains ': ' -%}
+                  {%- assign day = l | split: ': ' | first -%}
+                  {%- assign time = l | remove_first: day | remove_first: ': ' -%}
+                {%- else -%}
+                  {%- assign day = l -%}{%- assign time = '' -%}
+                {%- endif -%}
+                <div class="es-info__row"><dt>{{ day }}</dt><dd>{{ time }}</dd></div>
+              {%- endfor -%}
+            </dl>
+            {%- if section.settings.hours_note != blank -%}<p class="es-info__note">{{ section.settings.hours_note }}</p>{%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.address != blank or section.settings.area != blank -%}
+          <div class="es-info__card" data-reveal="up" style="--d: 1">
+            <h3 class="es-info__title">{% render 'icon', name: 'globe' %}{{ 'sections.practical_info.where' | t }}</h3>
+            {%- if section.settings.address != blank -%}<address class="es-info__address">{{ section.settings.address | newline_to_br }}</address>{%- endif -%}
+            {%- if section.settings.area != blank -%}<p class="es-info__area"><span class="es-info__label">{{ 'sections.practical_info.area' | t }}</span>{{ section.settings.area }}</p>{%- endif -%}
+            {%- if route_url != blank -%}<a class="es-link-arrow es-info__route" href="{{ route_url }}" target="_blank" rel="noopener">{{ 'sections.practical_info.directions' | t }}{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.phone != blank or section.settings.email != blank -%}
+          <div class="es-info__card es-info__card--contact" data-reveal="up" style="--d: 2">
+            <h3 class="es-info__title">{% render 'icon', name: 'chat' %}{{ 'sections.practical_info.contact' | t }}</h3>
+            {%- if section.settings.phone != blank -%}<a class="es-info__phone" href="tel:{{ phone_href }}">{% render 'icon', name: 'phone' %}<span>{{ section.settings.phone }}</span></a>{%- endif -%}
+            {%- if section.settings.email != blank -%}<a class="es-info__email" href="mailto:{{ section.settings.email | strip }}">{% render 'icon', name: 'mail' %}<span>{{ section.settings.email }}</span></a>{%- endif -%}
+            {%- if section.settings.button_label != blank -%}<a class="es-button es-button--full es-info__cta" href="{{ section.settings.button_link | default: routes.root_url }}">{{ section.settings.button_label }}</a>{%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if has_map -%}
+        <div class="es-info__map" data-reveal="up" data-map data-src="{{ map_src | escape }}">
+          {%- if section.settings.map_consent -%}
+            <div class="es-info__map-gate">
+              {% render 'icon', name: 'globe' %}
+              <p>{%- if section.settings.map == 'google' -%}{{ 'sections.practical_info.map_notice' | t: provider: 'Google Maps' }}{%- else -%}{{ 'sections.practical_info.map_notice' | t: provider: 'OpenStreetMap' }}{%- endif -%}</p>
+              <button type="button" class="es-button es-button--small es-button--secondary" data-map-load>{{ 'sections.practical_info.show_map' | t }}</button>
+            </div>
+          {%- else -%}
+            <iframe src="{{ map_src }}" title="{{ 'sections.practical_info.map' | t }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+.es-info__head { max-width: 720px; margin-bottom: clamp(28px, 4vw, 52px); }
+.es-info__grid { display: grid; gap: clamp(16px, 2vw, 24px); }
+.es-info__cards { display: grid; gap: clamp(14px, 2vw, 22px); align-content: start; }
+@media (min-width: 750px) { .es-info:not(.es-info--map) .es-info__cards { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } }
+@media (min-width: 990px) { .es-info--map .es-info__grid { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); } }
+.es-info__card { padding: clamp(22px, 2.6vw, 32px); border-radius: var(--radius-card); background: var(--c-surface); border: 1px solid rgba(var(--c-text-rgb), .08); display: grid; gap: 12px; align-content: start; min-width: 0; }
+.es-info__title { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; font-weight: var(--font-body-weight-bold); color: var(--c-muted); }
+.es-info__title .es-icon { width: 18px; height: 18px; color: var(--c-accent); }
+.es-info__hours { margin: 0; display: grid; }
+.es-info__row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px dashed rgba(var(--c-text-rgb), .14); }
+.es-info__row:last-child { border-bottom: 0; }
+.es-info__row dt { font-weight: var(--font-body-weight-bold); }
+.es-info__row dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--c-text) 82%, var(--c-bg)); }
+.es-info__note { margin: 4px 0 0; font-size: .88rem; color: var(--c-muted); }
+.es-info__address { font-style: normal; font-size: 1.05rem; line-height: 1.55; }
+.es-info__area { margin: 0; }
+.es-info__label { display: block; font-size: .8rem; color: var(--c-muted); margin-bottom: 2px; }
+.es-info__route { display: inline-flex; align-items: center; gap: 8px; font-weight: var(--font-body-weight-bold); text-decoration: none; width: fit-content; border-bottom: 1px solid rgba(var(--c-text-rgb), .25); padding-bottom: 2px; }
+.es-info__route .es-icon { width: 16px; height: 16px; }
+.es-info__phone, .es-info__email { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; min-width: 0; }
+.es-info__phone { font-family: var(--font-heading); font-size: clamp(1.5rem, 2.6vw, 2rem); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.es-info__phone .es-icon { width: 22px; height: 22px; flex: none; color: var(--c-accent); }
+.es-info__email { font-size: 1rem; overflow-wrap: anywhere; }
+.es-info__email .es-icon { width: 18px; height: 18px; flex: none; color: var(--c-accent); }
+.es-info__phone:hover span, .es-info__email:hover span { text-decoration: underline; text-underline-offset: 4px; }
+.es-info__cta { margin-top: 8px; }
+.es-info__map { position: relative; min-height: 360px; border-radius: var(--radius-card); overflow: hidden; background: color-mix(in srgb, var(--c-accent) 10%, var(--c-surface)); border: 1px solid rgba(var(--c-text-rgb), .08); }
+.es-info__map iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.es-info__map-gate { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 28px; text-align: center; background-image: radial-gradient(circle at 30% 20%, rgba(var(--c-accent-rgb), .18), transparent 55%), repeating-linear-gradient(45deg, rgba(var(--c-text-rgb), .035) 0 2px, transparent 2px 22px); }
+.es-info__map-gate .es-icon { width: 36px; height: 36px; color: var(--c-accent); }
+.es-info__map-gate p { margin: 0; max-width: 36ch; color: var(--c-muted); font-size: .92rem; }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  if (window.esPracticalInfo) return; window.esPracticalInfo = true;
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-map-load]');
+    if (!b) return;
+    var box = b.closest('[data-map]'); if (!box) return;
+    var f = document.createElement('iframe');
+    f.src = box.getAttribute('data-src'); f.title = b.textContent; f.loading = 'lazy'; f.referrerPolicy = 'no-referrer-when-downgrade';
+    box.innerHTML = ''; box.appendChild(f);
+  });
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Infos pratiques",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Infos pratiques" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Nous trouver, nous joindre" },
+    { "type": "richtext", "id": "text", "label": "Introduction" },
+    { "type": "textarea", "id": "hours", "label": "Horaires", "default": "[À compléter : vos horaires, une ligne par jour]", "info": "Une ligne par jour ou plage, au format « Lundi – vendredi : 9 h – 18 h »." },
+    { "type": "text", "id": "hours_note", "label": "Précision sur les horaires", "info": "Ex. « Sur rendez-vous uniquement »." },
+    { "type": "textarea", "id": "address", "label": "Adresse" },
+    { "type": "text", "id": "area", "label": "Zone d'intervention", "info": "Ex. « Lyon et 20 km alentour »." },
+    { "type": "text", "id": "phone", "label": "Téléphone" },
+    { "type": "text", "id": "email", "label": "E-mail" },
+    { "type": "text", "id": "button_label", "label": "Bouton (facultatif)" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "header", "content": "Carte" },
+    { "type": "select", "id": "map", "label": "Carte", "default": "none", "options": [{ "value": "none", "label": "Aucune" }, { "value": "google", "label": "Google Maps (d'après l'adresse)" }, { "value": "osm", "label": "OpenStreetMap (d'après les coordonnées)" }] },
+    { "type": "text", "id": "map_query", "label": "Adresse pour la carte", "info": "Vide : l'adresse ci-dessus." },
+    { "type": "text", "id": "latitude", "label": "Latitude (OpenStreetMap)", "info": "Ex. 45.7640" },
+    { "type": "text", "id": "longitude", "label": "Longitude (OpenStreetMap)", "info": "Ex. 4.8357" },
+    { "type": "checkbox", "id": "map_consent", "label": "Charger la carte seulement après un clic du visiteur", "default": true, "info": "Recommandé : aucun service de cartographie n'est contacté sans l'accord du visiteur." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "presets": [{ "name": "Infos pratiques" }]
+}
+{% endschema %}

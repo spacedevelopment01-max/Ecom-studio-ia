@@ -21,7 +21,7 @@ function storeFor(projectId: string): Pick<ThemeSpec, "store" | "files"> {
   if (p.brand) {
     const imgs = collectImages(projectId);
     files = imgs.files;
-    product = storeProduct(p, savedCopy(projectId) ?? localCopy(p.product, p.brand), imgs.gallery);
+    product = storeProduct(p, savedCopy(projectId) ?? localCopy(p.product, p.brand, p), imgs.gallery);
   } else {
     product = { title: p.product.name || C("Votre produit", "Your product"), handle: C("produit", "product"), vendor: name, description_html: "", price: null, compare_at_price: null, currency: "EUR", options: [], variants: [], images: [], tags: [] };
   }

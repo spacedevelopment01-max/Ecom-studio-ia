@@ -11,14 +11,38 @@
     <div class="es-stats__grid es-stats__grid--{{ section.settings.layout | default: 'grid' }}" style="--cols: {{ section.blocks.size | at_most: 4 }}">
       {%- for block in section.blocks -%}
         <div class="es-stat" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
-          <span class="es-stat__value{% if section.settings.accent_values %} es-stat__value--accent{% endif %}" data-count="{{ block.settings.value | escape }}">{{ block.settings.value }}</span>
-          <span class="es-stat__label">{{ block.settings.label }}</span>
+          <span class="es-stat__value{% if section.settings.accent_values %} es-stat__value--accent{% endif %}{% if block.settings.value.size > 10 %} es-stat__value--long{% elsif block.settings.value.size > 6 %} es-stat__value--mid{% endif %}" data-count="{{ block.settings.value | escape }}">{{ block.settings.value }}</span>
+          {%- assign lab = block.settings.label | split: ' · ' -%}
+          <span class="es-stat__label">{{ lab.first }}{% if lab.size > 1 %} <small class="es-stat__tag">{{ lab.last }}</small>{% endif %}</span>
         </div>
       {%- endfor -%}
     </div>
     {%- if section.settings.source != blank -%}<p class="es-stats__source es-small es-muted" data-reveal="up">{{ section.settings.source }}</p>{%- endif -%}
   </div>
 </section>
+
+{% stylesheet %}
+.es-stats .es-section-head { margin-bottom: clamp(28px, 4vw, 48px); }
+.es-stats__grid--grid { gap: 28px 0; padding-top: 0; border-top: 0; }
+.es-stats__grid--grid .es-stat { position: relative; padding: clamp(20px, 2.4vw, 30px) clamp(16px, 2.4vw, 32px) 4px; border-top: 1px solid rgba(var(--c-text-rgb), .14); }
+.es-stats__grid--grid .es-stat::before { content: ""; position: absolute; left: 0; top: -1px; width: 48px; height: 2px; background: var(--c-accent); }
+@media (min-width: 750px) {
+  .es-stats__grid--grid .es-stat { padding-left: clamp(16px, 2.4vw, 32px); }
+  .es-stats__grid--grid .es-stat:first-child { padding-left: 0; }
+  .es-stats__grid--grid .es-stat + .es-stat { box-shadow: inset 1px 0 0 rgba(var(--c-text-rgb), .1); }
+  .es-stats__grid--grid .es-stat + .es-stat::before { left: clamp(16px, 2.4vw, 32px); }
+}
+@media (max-width: 749px) {
+  .es-stats__grid--grid .es-stat { padding-left: 0; padding-right: 12px; }
+  .es-stats__grid--grid .es-stat:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+.es-stat__value { font-size: clamp(2.4rem, 5vw, 4rem); }
+.es-stat__value--mid { font-size: clamp(1.7rem, 3.6vw, 3rem); }
+.es-stat__value--long { font-size: clamp(1.15rem, 1.8vw, 1.45rem); letter-spacing: 0; line-height: 1.25; }
+.es-stat__label { margin-top: 12px; font-size: 1rem; line-height: 1.45; max-width: 34ch; }
+.es-stats__source { font-size: .9rem; }
+.es-stat__tag { display: inline-block; margin-left: 2px; padding: 2px 8px; border-radius: 99px; background: rgba(var(--c-text-rgb), .07); font-size: .66rem; font-weight: var(--font-body-weight-bold); letter-spacing: .08em; text-transform: uppercase; vertical-align: 2px; white-space: nowrap; }
+{% endstylesheet %}
 
 {% schema %}
 {

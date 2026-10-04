@@ -1,13 +1,15 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, ArrowRight, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages } from "lucide-react";
+import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Input, Progress, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { EngineNotice, SectionTitle } from "./common";
 import { StartCreation } from "./start-creation";
 import { useT } from "../i18n";
 import { LANGS, type Lang } from "@/lib/i18n";
+import { isPlatform, PlatformCards } from "./platform-picker";
+import { missingActivity } from "./services-editor";
 
 function StepIcon({ status }: { status: string }) {
   if (status === "done") return <span className="grid size-7 place-items-center rounded-full bg-ok text-white"><Check className="size-4" /></span>;
@@ -56,6 +58,26 @@ function Questions() {
         ))}
       </div>
       <Button className="mt-5" onClick={save} loading={busy}>{t("Enregistrer mes réponses", "Save my answers")}</Button>
+    </Card>
+  );
+}
+
+/** Site de services : informations essentielles encore manquantes (jamais devinées). */
+function ActivityGaps() {
+  const { id, data } = useProject();
+  const t = useT();
+  if (!data || data.business !== "services" || !data.pipeline) return null;
+  const missing = missingActivity(data.services);
+  if (!missing.length) return null;
+  const LABEL: Record<string, string> = { services: t("vos prestations", "your services"), area: t("votre zone ou adresse", "your area or address"), contact: t("un téléphone ou un e-mail", "a phone number or email"), hours: t("vos horaires", "your opening hours"), booking: t("votre lien de rendez-vous", "your booking link") };
+  return (
+    <Card className="flex flex-wrap items-center gap-4 p-5 sm:p-6">
+      <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-warn-soft text-warn"><Briefcase className="size-5" aria-hidden /></span>
+      <div className="min-w-0 flex-1">
+        <p className="font-medium">{t("Complétez votre activité", "Complete your business details")}</p>
+        <p className="mt-0.5 text-sm text-muted">{t("Il manque : ", "Missing: ")}{missing.map((m) => LABEL[m]).join(", ")}. {t("Le studio ne les devine pas : en attendant, le site affiche « à compléter ».", "The studio doesn't guess them: meanwhile, the website shows “to complete”.")}</p>
+      </div>
+      <Link href={`/studio/${id}/produit`} className="inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper">{t("Ouvrir l'onglet Activité", "Open the Business tab")} <ArrowRight className="size-4" /></Link>
     </Card>
   );
 }
@@ -134,9 +156,37 @@ function ContentLanguage() {
       setBusy(false);
     }
   }
+  const svc = data.business === "services";
+  async function changePlatform(platform: string) {
+    if (platform === data!.project.platform) return;
+    setBusy(true);
+    try {
+      await api(`/api/projects/${id}`, { method: "PATCH", body: { platform } });
+      await reload();
+      toast("ok", t("Plateforme enregistrée : l'export et l'installation s'adaptent.", "Platform saved: export and installation adapt accordingly."));
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <Card className="p-5 sm:p-6">
-      <SectionTitle title={t("Réglages", "Settings")} />
+      <SectionTitle title={t("Réglages du projet", "Project settings")} />
+      <div className="mb-6 grid gap-1.5">
+        <p className="flex items-center gap-2 text-sm font-medium">{svc ? <Briefcase className="size-4 text-muted" aria-hidden /> : <Store className="size-4 text-muted" aria-hidden />} {t("Type de projet", "Project type")}</p>
+        <p className="text-sm">
+          <Badge tone="signal">{svc ? t("Services", "Services") : t("Boutique", "Store")}</Badge>{" "}
+          <span className="text-ink-2">{svc ? t("Site d'une entreprise de services : activité, prestations, prise de contact.", "Website for a services business: business, services, getting in touch.") : t("Boutique en ligne : produits, panier, paiement sur votre plateforme.", "Online store: products, cart, checkout on your platform.")}</span>
+        </p>
+      </div>
+      <div className="mb-6 grid gap-2">
+        <p className="flex items-center gap-2 text-sm font-medium"><Globe className="size-4 text-muted" aria-hidden /> {svc ? t("Plateforme du site", "Website platform") : t("Plateforme de la boutique", "Store platform")}</p>
+        <p className="text-xs text-muted">{svc ? t("Conseil : WordPress pour un site de services ; Shopify convient aussi. Le site reste le même, seule la livraison change.", "Tip: WordPress for a services website; Shopify works too. The website stays the same, only the delivery changes.") : t("Le site reste le même, seule la livraison change (thème installable ou kit de reprise).", "The site stays the same, only the delivery changes (installable theme or rebuild kit).")}</p>
+        <div className={busy ? "pointer-events-none opacity-60" : undefined}>
+          <PlatformCards value={isPlatform(data.project.platform) ? data.project.platform : "shopify"} onChange={changePlatform} business={data.business} compact />
+        </div>
+      </div>
       <div className="grid gap-1.5">
         <label htmlFor="project-content-lang" className="flex items-center gap-2 text-sm font-medium">
           <Languages className="size-4 text-muted" aria-hidden /> {t("Langue des contenus du projet", "Project content language")}
@@ -193,6 +243,7 @@ export default function TabPilote() {
     }
   }
   const done = pl?.steps.filter((s) => s.status === "done" || s.status === "skipped").length ?? 0;
+  const svc = data.business === "services";
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("l'analyse, la marque et les textes", "the analysis, the brand and the copy")} />
@@ -229,7 +280,7 @@ export default function TabPilote() {
           {awaiting && (
             <div className="mt-4 rounded-2xl border border-warn/40 bg-warn-soft p-4 text-sm">
               <p className="font-medium text-warn">{t("Votre marque attend votre validation.", "Your brand is awaiting your approval.")}</p>
-              <p className="mt-1 text-ink-2">{t("Vérifiez le nom, la palette et le logo. La suite (textes, images, vidéos, boutique, calendrier) partira de vos choix.", "Check the name, palette and logo. Everything that follows (copy, images, videos, store, calendar) will build on your choices.")}</p>
+              <p className="mt-1 text-ink-2">{svc ? t("Vérifiez le nom, la palette et le logo. La suite (textes, images, vidéos, site, calendrier) partira de vos choix.", "Check the name, palette and logo. Everything that follows (copy, images, videos, website, calendar) will build on your choices.") : t("Vérifiez le nom, la palette et le logo. La suite (textes, images, vidéos, boutique, calendrier) partira de vos choix.", "Check the name, palette and logo. Everything that follows (copy, images, videos, store, calendar) will build on your choices.")}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => resume("copy")} loading={busy === "copy"}>{t("Valider et continuer", "Approve and continue")}</Button>
                 <Link href={`/studio/${id}/marque`} className="inline-flex h-8 items-center rounded-full border border-line bg-card px-3 text-[13px]">{t("Ajuster la marque", "Adjust the brand")}</Link>
@@ -274,7 +325,7 @@ export default function TabPilote() {
           </Card>
           {data.theme ? (
             <Card className="p-5">
-              <p className="text-sm text-muted">{t("Boutique · version", "Store · version")} {data.theme.number}</p>
+              <p className="text-sm text-muted">{svc ? t("Site · version", "Website · version") : t("Boutique · version", "Store · version")} {data.theme.number}</p>
               <p className="mt-1 font-display text-xl">{t(`Direction « ${data.theme.direction} »`, `“${data.theme.direction}” direction`)}</p>
               <p className="mt-1 line-clamp-2 text-sm text-ink-2">{data.theme.summary}</p>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -287,11 +338,12 @@ export default function TabPilote() {
               </div>
             </Card>
           ) : (
-            <Empty title={t("La boutique arrive", "Your store is on its way")} icon={<Store className="size-5" />}>{t("Elle sera composée après la marque, les textes et les images.", "It will be built after the brand, the copy and the images.")}</Empty>
+            <Empty title={svc ? t("Votre site arrive", "Your website is on its way") : t("La boutique arrive", "Your store is on its way")} icon={<Store className="size-5" />}>{svc ? t("Il sera composé après la marque, les textes et les images.", "It will be built after the brand, the copy and the images.") : t("Elle sera composée après la marque, les textes et les images.", "It will be built after the brand, the copy and the images.")}</Empty>
           )}
           {pl?.job.finishedAt && <p className="text-xs text-muted">{t("Dernière exécution terminée le", "Last run finished on")} {formatDate(pl.job.finishedAt)}.</p>}
         </div>
       </div>
+      <ActivityGaps />
       <Questions />
       <ContentLanguage />
       <Memory />

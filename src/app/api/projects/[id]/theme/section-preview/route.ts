@@ -11,6 +11,10 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { applyOps } from "@/lib/theme/ops";
 import { renderPage } from "@/lib/theme/render";
 import { withProjectMedia } from "@/lib/theme/section-defaults";
+import { contentContext } from "@/lib/theme/section-content";
+import { PREVIEW_DESIGN_MODE, previewNeighbors } from "@/lib/theme/section-copy-proof";
+import { pick } from "@/lib/i18n";
+import { themeLang } from "@/lib/theme/spec";
 import { sectionSchema, type ThemeSpec } from "@/lib/theme/spec";
 
 export const runtime = "nodejs";
@@ -28,19 +32,26 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   // En développement, les fichiers du thème de base changent : pas de mémoire des rendus.
   let html = process.env.NODE_ENV === "production" ? cache.get(key) : undefined;
   if (!html) {
-    const filled = withProjectMedia(cur.spec, type);
-    const res = applyOps(cur.spec, [{ op: "add_section", template: "index", type, settings: filled.settings as any, blocks: filled.blocks as any, position: { index: 0 } } as any], { targeted: new Set(), overrideLocks: true });
+    const cctx = contentContext(p, cur.spec, true);
+    const filled = withProjectMedia(cur.spec, type, {}, undefined, cctx);
+    // Séparateurs : rendus entre deux sections voisines factices, sinon on ne voit qu'une bande.
+    const around = sectionSchema(cur.spec, "rich-text") ? previewNeighbors(type, filled.settings, sectionSchema(cur.spec, type)!, cctx, cur.spec) : null;
+    const res = applyOps(cur.spec, [
+      { op: "add_section", template: "index", type, settings: (around?.settings ?? filled.settings) as any, blocks: filled.blocks as any, position: { index: 0 } } as any,
+      ...(around ? [{ op: "add_section", template: "index", ...around.before, position: { index: 0 } }, { op: "add_section", template: "index", ...around.after, position: { index: 2 } }] as any[] : []),
+    ], { targeted: new Set(), overrideLocks: true });
     if (!res.applied.length) throw new HttpError(400, res.rejected.map((r) => r.reason).join(" ; ") || L("Aperçu impossible.", "Preview unavailable."));
-    // Page d'accueil réduite à la seule section ajoutée ; en-tête et pied de page masqués.
+    // Page d'accueil réduite à la seule section ajoutée (et ses voisines d'aperçu) ; en-tête et pied de page masqués.
     const spec: ThemeSpec = res.spec;
     const index = spec.templates.index;
-    const added = index.order[0];
-    index.order = [added];
-    index.sections = { [added]: index.sections[added] };
+    index.order = index.order.slice(0, res.applied.length);
+    index.sections = Object.fromEntries(index.order.map((id) => [id, index.sections[id]]));
     for (const g of Object.values(spec.groups)) for (const s of Object.values(g.sections)) (s as { disabled?: boolean }).disabled = true;
-    const r = await renderPage({ spec, base: `/preview/${p.id}/v/${cur.version.id}`, cart: [] }, "/", new URLSearchParams());
+    const r = await renderPage({ spec, base: `/preview/${p.id}/v/${cur.version.id}`, cart: [], designMode: PREVIEW_DESIGN_MODE.has(type) }, "/", new URLSearchParams());
     // Aperçu non interactif (pas de navigation), animations d'apparition jouées tout de suite.
-    html = r.html.replace("</head>", `<style>.es-fab{display:none!important}a,button,input,select,textarea,form{pointer-events:none!important}html,body{overflow-x:hidden}</style></head>`).replace("</body>", `<script>document.querySelectorAll('.reveal,[data-reveal]').forEach(function(e){e.classList.add('is-visible','in')})</script></body>`);
+    // Bandeau discret : l'aperçu montre des contenus d'exemple (avis, logos…) que le marchand remplacera.
+    const banner = filled.samples ? `<div style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:2147483647;background:rgba(17,17,17,.82);color:#fff;font:600 11px/1.2 system-ui,sans-serif;padding:7px 12px;border-radius:999px;letter-spacing:.01em;pointer-events:none;white-space:nowrap;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis">${pick(themeLang(cur.spec), "Contenus d'exemple · remplacés par les vôtres", "Example content · replaced by yours")}</div>` : "";
+    html = r.html.replace("</head>", `<style>.es-fab{display:none!important}a,button,input,select,textarea,form{pointer-events:none!important}html,body{overflow-x:hidden}</style></head>`).replace("</body>", `${banner}<script>document.querySelectorAll('.reveal,[data-reveal]').forEach(function(e){e.classList.add('is-visible','in','is-in')})</script></body>`);
     if (cache.size > 200) cache.delete(cache.keys().next().value!);
     cache.set(key, html);
   }

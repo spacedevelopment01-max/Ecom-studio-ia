@@ -7,6 +7,8 @@
  *  3. Plans animés : Veo 3 (image vers vidéo, voix et son générés) ou fal.ai (sans voix).
  *  4. Montage : format vertical ou horizontal, sous-titres, carte de fin à la marque, mention
  *     « Vidéo générée par IA » incrustée pendant toute la vidéo (personne de synthèse réaliste).
+ * Entreprise de services : « présentation face caméra » — la personne générée présente l'activité et
+ * ses prestations à la troisième personne ; elle ne se dit ni cliente, ni le professionnel lui-même.
  */
 import { execFile } from "node:child_process";
 import fs from "node:fs";
@@ -26,6 +28,7 @@ import { brandTypo, confirmedFacts, ensureCutouts, palette } from "./images";
 import { FONT_DIR, font } from "../media/fonts";
 import { cleanUgcScript, ugcIssues } from "../ugc-rules";
 import { C, L, contentLang, uiLang } from "../i18n-server";
+import { activityName, contactLine, realActivityPhotos, isServices, placeLine, serviceCta, serviceItems } from "./service-media";
 
 export { cleanUgcScript, ugcIssues };
 
@@ -61,6 +64,7 @@ export const UGC_SETTINGS: Record<string, string> = {
   bureau: "a home office desk",
   exterieur: "outdoors in a park, natural daylight",
   voiture: "the front seat of a parked car, daylight",
+  activite: "a bright, tidy place typical of this business activity (workshop, practice room, studio, salon or office)",
 };
 export const UGC_TONES: Record<string, { fr: string; en: string }> = {
   enthousiaste: { fr: "enthousiaste et spontané", en: "warm, enthusiastic" },
@@ -91,6 +95,7 @@ const pick = <T,>(map: Record<string, T>, k: string, d: string) => map[k] ?? map
 
 /** Script sans IA : présentation à partir des seuls faits confirmés (langue des contenus). */
 export function localUgcScript(p: Project, o: UgcOptions): UgcScript {
+  if (isServices(p)) return localServiceUgcScript(p, o);
   const n = Math.max(1, Math.min(5, o.beats));
   const name = p.product.name || p.brand?.name || C("ce produit", "this product");
   const facts = confirmedFacts(p).filter((f) => !name.toLowerCase().startsWith(f.toLowerCase()));
@@ -113,22 +118,90 @@ export function localUgcScript(p: Project, o: UgcOptions): UgcScript {
   };
 }
 
+/** Gestes d'une présentation d'activité face caméra (aucun produit en main). */
+const SERVICE_ACTIONS = [
+  "talks to the phone camera with a friendly, open hand gesture",
+  "gestures toward the room behind them while explaining",
+  "counts on their fingers while explaining, relaxed",
+  "smiles and points down toward the caption area",
+  "nods warmly at the camera to close",
+];
+
+/**
+ * Présentation d'une activité de services, à la troisième personne, depuis l'offre réelle :
+ * « Voici {activité}… », prestations, zone, appel à prendre rendez-vous. Jamais « j'ai fait appel à… ».
+ */
+export function localServiceUgcScript(p: Project, o: UgcOptions): UgcScript {
+  const n = Math.max(1, Math.min(5, o.beats));
+  const brand = p.brand?.name || activityName(p);
+  const items = serviceItems(p);
+  const place = placeLine(p);
+  const lower = (f: string) => `${f.charAt(0).toLowerCase()}${f.slice(1)}`;
+  const lines: string[] = [];
+  lines.push(place ? C(`Voici ${brand}, à ${place}. Je vous présente l'activité en quelques secondes.`, `Meet ${brand}, in ${place}. Here's a quick look at what they do.`) : C(`Voici ${brand}. Je vous présente l'activité en quelques secondes.`, `Meet ${brand}. Here's a quick look at what they do.`));
+  const middles = items.map((s) => C(`Au programme : ${lower(s.name)}${s.duration ? `, comptez ${s.duration}` : ""}.`, `On offer: ${lower(s.name)}${s.duration ? `, about ${s.duration}` : ""}.`));
+  if (!middles.length && p.product.summary) middles.push(C(`En bref : ${lower(p.product.summary.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, ""))}.`, `In short: ${lower(p.product.summary.split(/(?<=[.!?])\s/)[0].replace(/[.!?]$/, ""))}.`));
+  if (p.services?.hours) middles.push(C(`Côté horaires : ${p.services.hours}.`, `Opening hours: ${p.services.hours}.`));
+  if (!middles.length) middles.push(C(`Tout est expliqué sur leur page, prestation par prestation.`, `Everything is explained on their page, service by service.`));
+  for (let i = 1; i < n - 1; i++) lines.push(middles[(i - 1) % middles.length]);
+  const contact = o.url || contactLine(p);
+  if (n > 1) lines.push(contact ? C(`${serviceCta(p)} : ${contact}.`, `${serviceCta(p)}: ${contact}.`) : C(`${serviceCta(p)} : le lien est juste en dessous.`, `${serviceCta(p)}: the link is right below.`));
+  const caption = (l: string) => (l.length <= 64 ? l : `${l.slice(0, 61).replace(/\s+\S*$/, "")}…`);
+  return {
+    concept: C(`Présentation de l'activité face caméra, ${n} plan${n > 1 ? "s" : ""}`, `On-camera business presentation, ${n} shot${n > 1 ? "s" : ""}`),
+    persona: `${pick(UGC_PRESENTERS, o.presenter, "auto")} ${pick(UGC_AGES, o.age, "25-35")}, neat everyday outfit, friendly presenter (not a customer)`,
+    setting: pick(UGC_SETTINGS, o.setting, "activite"),
+    beats: lines.slice(0, n).map((line, i) => ({ line, caption: caption(line), action: i === n - 1 && n > 1 ? SERVICE_ACTIONS[4] : SERVICE_ACTIONS[i % 4] })),
+  };
+}
+
+/** Répliques interdites pour une activité de services : se dire client(e) ou se faire passer pour le professionnel. */
+const SERVICE_CLAIMS = [
+  /\b(j'ai fait appel|je suis (client|cliente|allée?|passée?)|j'y (vais|suis allée?)|ils m'ont|elle m'a|il m'a|on m'a (aidé|soigné|coiffé))/i,
+  /\b(mon|ma) (coach|kiné|avocat|avocate|coiffeur|coiffeuse|artisan|comptable|photographe|professeur|prof|esthéticienne)(?=[\s.,;:!?]|$)/i,
+  /\b(je m'appelle|je suis (le|la|votre) (gérant|gérante|fondateur|fondatrice|praticien|praticienne|coach|kiné|avocat|avocate|artisan))/i,
+  /\b(i hired|i booked|i went to|i('m| am) a (client|customer)|they helped me|my (coach|lawyer|accountant|hairdresser|therapist|plumber|photographer|teacher))\b/i,
+  /\b(my name is|i('m| am) (the|your) (owner|founder|coach|therapist|lawyer|plumber))\b/i,
+];
+export function serviceUgcIssues(script: Pick<UgcScript, "beats">): string[] {
+  const out: string[] = [];
+  script.beats.forEach((b, i) => {
+    if (SERVICE_CLAIMS.some((r) => r.test(b.line) || r.test(b.caption)))
+      out.push(L(`Plan ${i + 1} : la personne est générée par IA ; elle présente l'activité, elle ne peut ni se dire cliente ni se présenter comme le professionnel. Reformulez à la troisième personne (« Voici… », « Au programme… »).`, `Shot ${i + 1}: the person is AI-generated; they present the business and can't claim to be a customer or the professional. Rephrase in the third person ("Meet…", "On offer…").`));
+  });
+  return out;
+}
+
 export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcOptions): Promise<{ script: UgcScript; issues: string[]; engine: "ia" | "local" }> {
   const p = loadProject(projectId);
+  const services = isServices(p);
+  const check = (s: UgcScript) => [...ugcIssues(s, contentLang(), uiLang()), ...(services ? serviceUgcIssues(s) : [])];
   if (llmConfigured()) {
     const presenter = `${pick(UGC_PRESENTERS, o.presenter, "auto")} ${pick(UGC_AGES, o.age, "25-35")}`;
-    const r = await aiUgcScript({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ugc` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, "salon"), tone: C(pick(UGC_TONES, o.tone, "naturel").fr, pick(UGC_TONES, o.tone, "naturel").en), angle: C(pick(UGC_ANGLES, o.angle, "presentation").fr, pick(UGC_ANGLES, o.angle, "presentation").en), url: o.url, brief: o.brief });
+    const serviceBrief = services
+      ? C(
+          `ENTREPRISE DE SERVICES (pas de produit) : la personne présente l'activité ${activityName(p)} et ses prestations réelles (${serviceItems(p).map((s) => s.name).join(", ") || "voir le contexte"}) à la troisième personne (« Voici… », « Au programme… »). Elle n'est ni cliente ni le professionnel : jamais « j'ai fait appel », « mon coach », « je m'appelle ». Aucun produit en main ; gestes de présentation. Appel final : ${serviceCta(p)}.`,
+          `SERVICE BUSINESS (no product): the person presents the business ${activityName(p)} and its real services (${serviceItems(p).map((s) => s.name).join(", ") || "see context"}) in the third person ("Meet…", "On offer…"). They are neither a customer nor the professional: never "I hired", "my coach", "my name is". No product in hand; presenting gestures. Final call to action: ${serviceCta(p)}.`,
+        )
+      : "";
+    const r = await aiUgcScript({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ugc` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, services ? "activite" : "salon"), tone: C(pick(UGC_TONES, o.tone, "naturel").fr, pick(UGC_TONES, o.tone, "naturel").en), angle: services ? C("présentation de l'activité face caméra", "on-camera business presentation") : C(pick(UGC_ANGLES, o.angle, "presentation").fr, pick(UGC_ANGLES, o.angle, "presentation").en), url: o.url, brief: [serviceBrief, o.brief].filter(Boolean).join(" ") || undefined });
     const script = cleanUgcScript({ ...r, beats: r.beats.slice(0, o.beats) });
-    return { script, issues: ugcIssues(script, contentLang(), uiLang()), engine: "ia" };
+    return { script, issues: check(script), engine: "ia" };
   }
   const script = localUgcScript(p, o);
-  return { script, issues: ugcIssues(script, contentLang(), uiLang()), engine: "local" };
+  return { script, issues: check(script), engine: "local" };
 }
 
 /** Prompt du plan animé : action, réplique (voix générée par Veo 3) et rendu « filmé au téléphone ». */
-export function beatPrompt(script: UgcScript, i: number, o: UgcOptions, withVoice: boolean) {
+export function beatPrompt(script: UgcScript, i: number, o: UgcOptions, withVoice: boolean, subject: "product" | "service" = "product") {
   const b = script.beats[i];
   const tone = pick(UGC_TONES, o.tone, "naturel").en;
+  if (subject === "service")
+    return [
+      `Vertical smartphone video of a friendly presenter. ${script.persona}, in ${script.setting}, ${b.action}.`,
+      withVoice ? `The person looks into the phone camera and says in ${C("French", "English")}, in a ${tone} voice, with natural lip sync: "${b.line}"` : `The person talks naturally to the phone camera.`,
+      `Handheld phone footage with slight natural movement, realistic hands and face, ambient room sound only, no music, no subtitles, no text, no logo, no diploma or certificate on the walls.`,
+    ].join(" ");
   return [
     `Vertical smartphone UGC video. ${script.persona}, in ${script.setting}, ${b.action}.`,
     withVoice ? `The person looks into the phone camera and says in ${C("French", "English")}, in a ${tone} voice, with natural lip sync: "${b.line}"` : `The person talks naturally to the phone camera.`,
@@ -136,8 +209,9 @@ export function beatPrompt(script: UgcScript, i: number, o: UgcOptions, withVoic
   ].join(" ");
 }
 
-function framePrompt(script: UgcScript, i: number) {
+function framePrompt(script: UgcScript, i: number, subject: "product" | "service" = "product") {
   const b = script.beats[i];
+  if (subject === "service") return `Smartphone video still of a friendly presenter introducing a local business. ${script.persona}, in ${script.setting}, ${b.action}. No product in hand.`;
   return `Smartphone video still for a UGC product video. ${script.persona}, in ${script.setting}, ${b.action}. The product from the reference image is clearly visible in the person's hands or right next to them.`;
 }
 
@@ -198,7 +272,7 @@ ${cues.map((c) => `Dialogue: 0,${assTime(c.start)},${assTime(c.end)},Cap,,0,0,0,
 }
 
 /** Carte de fin : produit réel, nom de la marque et appel à l'action, aux couleurs de la marque. */
-export async function ugcEndCard(size: { w: number; h: number }, input: { product: Buffer; brand: string; cta: string; colors: { dark: string; light: string; accent: string }; heading: string }) {
+export async function ugcEndCard(size: { w: number; h: number }, input: { product: Buffer | null; brand: string; cta: string; colors: { dark: string; light: string; accent: string }; heading: string }) {
   const c = createCanvas(size.w, size.h);
   const g = c.getContext("2d");
   const grad = g.createLinearGradient(0, 0, 0, size.h);
@@ -207,37 +281,41 @@ export async function ugcEndCard(size: { w: number; h: number }, input: { produc
   g.fillStyle = grad;
   g.fillRect(0, 0, size.w, size.h);
   const vertical = size.h > size.w;
-  const img = await loadImage(await sharp(input.product).png().toBuffer());
+  // Sans produit (services) : texte centré sur un halo de marque.
+  const solo = !input.product;
   const box = vertical ? size.w * 0.62 : size.h * 0.6;
-  const k = Math.min(box / img.width, box / img.height);
-  const pw = img.width * k, ph = img.height * k;
-  const cx = vertical ? size.w / 2 : size.w * 0.32;
-  const cy = vertical ? size.h * 0.4 : size.h / 2;
+  const cx = vertical || solo ? size.w / 2 : size.w * 0.32;
+  const cy = vertical ? size.h * (solo ? 0.46 : 0.4) : size.h / 2;
   const halo = g.createRadialGradient(cx, cy, 0, cx, cy, box * 0.75);
   halo.addColorStop(0, `${input.colors.accent}55`);
   halo.addColorStop(1, "transparent");
   g.fillStyle = halo;
   g.fillRect(0, 0, size.w, size.h);
-  g.drawImage(img, cx - pw / 2, cy - ph / 2, pw, ph);
-  g.textAlign = vertical ? "center" : "left";
-  const tx = vertical ? size.w / 2 : size.w * 0.58;
-  let ty = vertical ? size.h * 0.72 : size.h * 0.44;
+  if (input.product) {
+    const img = await loadImage(await sharp(input.product).png().toBuffer());
+    const k = Math.min(box / img.width, box / img.height);
+    const pw = img.width * k, ph = img.height * k;
+    g.drawImage(img, cx - pw / 2, cy - ph / 2, pw, ph);
+  }
+  g.textAlign = vertical || solo ? "center" : "left";
+  const tx = vertical || solo ? size.w / 2 : size.w * 0.58;
+  let ty = solo ? cy : vertical ? size.h * 0.72 : size.h * 0.44;
   g.fillStyle = input.colors.light;
   let fsz = vertical ? 92 : 84;
   g.font = font(input.heading, 600, fsz);
-  const maxW = vertical ? size.w * 0.84 : size.w * 0.36;
+  const maxW = vertical || solo ? size.w * 0.84 : size.w * 0.36;
   while (g.measureText(input.brand).width > maxW && fsz > 40) g.font = font(input.heading, 600, (fsz -= 4));
   g.fillText(input.brand, tx, ty);
   ty += vertical ? 96 : 92;
   g.font = font("Inter", 600, vertical ? 42 : 38);
   const ctaW = g.measureText(input.cta).width + 72;
-  const bx = vertical ? tx - ctaW / 2 : tx;
+  const bx = vertical || solo ? tx - ctaW / 2 : tx;
   g.fillStyle = input.colors.accent;
   g.beginPath();
   g.roundRect(bx, ty - 50, ctaW, 80, 40);
   g.fill();
   g.fillStyle = "#FFFFFF";
-  g.fillText(input.cta, vertical ? tx : tx + 36, ty + 4);
+  g.fillText(input.cta, vertical || solo ? tx : tx + 36, ty + 4);
   return c.toBuffer("image/png");
 }
 
@@ -297,13 +375,23 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
   if (!video) throw new UserFacingError(L("Aucun fournisseur vidéo configuré (Google Veo ou fal.ai) : la vidéo UGC ne peut pas être générée.", "No video provider configured (Google Veo or fal.ai): the UGC video can't be generated."));
   if (!imageProviderAvailable()) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.", "No image provider configured (Google Gemini or OpenAI): the person in the video can't be created."));
   const script = cleanUgcScript(req.script);
-  const issues = ugcIssues(script, contentLang(), uiLang());
+  const services = isServices(project);
+  const subject = services ? "service" : "product";
+  const issues = [...ugcIssues(script, contentLang(), uiLang()), ...(services ? serviceUgcIssues(script) : [])];
   if (issues.length) throw new UserFacingError(issues.join(" "));
   const o = req.options;
   const cutouts = await ensureCutouts(ctx, project);
-  if (!cutouts.length) throw new UserFacingError(L("Importez une photo du produit : la vidéo UGC montre le produit réel.", "Upload a product photo: the UGC video shows the real product."));
+  if (!cutouts.length && !services) throw new UserFacingError(L("Importez une photo du produit : la vidéo UGC montre le produit réel.", "Upload a product photo: the UGC video shows the real product."));
   project = loadProject(projectId);
-  const product = assetData(cutouts[0]);
+  // Services : la référence n'est qu'une ambiance (photo réelle du lieu, sinon nuancier de la marque).
+  const pal0 = palette(project);
+  const realPhoto = services ? realActivityPhotos(projectId)[0] : undefined;
+  const product = cutouts[0]
+    ? assetData(cutouts[0])
+    : realPhoto
+      ? await sharp(assetData(realPhoto)).rotate().jpeg({ quality: 88 }).toBuffer()
+      : await sharp({ create: { width: 512, height: 512, channels: 3, background: pal0.light } }).composite([{ input: await sharp({ create: { width: 512, height: 256, channels: 3, background: pal0.primary } }).png().toBuffer(), left: 0, top: 256 }]).jpeg().toBuffer();
+  const sourceId = cutouts[0]?.id ?? realPhoto?.id ?? null;
   const base = { userId: project.userId, projectId, jobId: ctx.job.id };
   const n = script.beats.length;
   const withVoice = video === "google";
@@ -317,8 +405,8 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       const persona = frameIds[0] ? assetData(getAsset(frameIds[0])!) : undefined;
       let best: { buf: Buffer; score: number } | null = null;
       for (let attempt = 0; attempt < 2; attempt++) {
-        const buf = await ugcFrame({ ...base, usageKey: `${ctx.job.id}:frame:${i}:${attempt}` }, { prompt: framePrompt(script, i), product, persona, aspect: o.format });
-        if (!llmConfigured()) {
+        const buf = await ugcFrame({ ...base, usageKey: `${ctx.job.id}:frame:${i}:${attempt}` }, { prompt: framePrompt(script, i, subject), product, persona, aspect: o.format, subject });
+        if (!llmConfigured() || services) {
           best = { buf, score: 10 };
           break;
         }
@@ -327,7 +415,7 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
         if (!best || score > best.score) best = { buf, score };
         if (qc.sameProduct && qc.score >= 7) break;
       }
-      const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(best!.buf).jpeg({ quality: 92 }).toBuffer(), name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.jpg`, mime: "image/jpeg", role: "ugc-frame", folderKey: "videos.social", origin: "generated", sourceAssetId: cutouts[0].id, meta: { recipe: L("Image d'ouverture d'un plan UGC : personne et décor générés, produit réel en référence", "Opening frame of a UGC shot: generated person and set, real product as reference"), aiGenerated: true, qcScore: best!.score }, status: "review" });
+      const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(best!.buf).jpeg({ quality: 92 }).toBuffer(), name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.jpg`, mime: "image/jpeg", role: "ugc-frame", folderKey: "videos.social", origin: "generated", sourceAssetId: sourceId, meta: { recipe: services ? L("Image d'ouverture d'une présentation face caméra : personne et décor générés (ni client, ni professionnel réel)", "Opening frame of an on-camera presentation: generated person and set (neither a customer nor the real professional)") : L("Image d'ouverture d'un plan UGC : personne et décor générés, produit réel en référence", "Opening frame of a UGC shot: generated person and set, real product as reference"), aiGenerated: true, qcScore: best!.score }, status: "review" });
       return { id: a.id, score: best!.score };
     });
     frameIds.push(fid.id);
@@ -340,7 +428,7 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
     const cid = await ctx.step(`clip:${i}`, async () => {
       ctx.progress(0.3 + (i / n) * 0.5, L(`Tournage du plan ${i + 1}/${n}${withVoice ? " (image, voix et son)" : ""}`, `Shooting shot ${i + 1}/${n}${withVoice ? " (picture, voice and sound)" : ""}`));
       const frame = assetData(getAsset(frameIds[i])!);
-      const prompt = beatPrompt(script, i, o, withVoice);
+      const prompt = beatPrompt(script, i, o, withVoice, subject);
       const usage = { ...base, usageKey: `${ctx.job.id}:clip:${i}` };
       const buf = video === "google"
         ? await veoClip(usage, { image: frame, prompt, aspect: o.format, people: true }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)))
@@ -360,7 +448,7 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
     return f;
   });
   const colors = palette(project);
-  const endCard = await ugcEndCard(UGC_SIZES[o.format], { product, brand: brand.name, cta: o.url ? o.url : C("Lien en description", "Link in description"), colors: { dark: colors.dark, light: colors.light, accent: colors.accent }, heading: brandTypo(project).heading });
+  const endCard = await ugcEndCard(UGC_SIZES[o.format], { product: services ? null : product, brand: brand.name, cta: o.url ? o.url : services ? serviceCta(project, true) : C("Lien en description", "Link in description"), colors: { dark: colors.dark, light: colors.light, accent: colors.accent }, heading: brandTypo(project).heading });
   const out = path.join(dir, "ugc.mp4");
   const r = await assembleUgc({ clips, captions: script.beats.map((b) => b.caption || b.line), endCard, format: o.format, accent: colors.accent, out, dir, label: aiLabel() });
 
@@ -382,9 +470,10 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
     role: "video",
     folderKey: "videos.social",
     origin: "generated",
-    sourceAssetId: cutouts[0].id,
+    sourceAssetId: sourceId,
     meta: {
       kind: "ugc",
+      ...(services ? { business: "services", presentation: true } : {}),
       format: o.format,
       script,
       options: o,
@@ -392,7 +481,7 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       issues: notes,
       aiGenerated: true,
       aiLabel: aiLabel(),
-      method: withVoice ? L("Vidéo UGC générée par IA : personne, voix et décor générés, produit réel en référence", "AI-generated UGC video: generated person, voice and set, real product as reference") : L("Vidéo UGC générée par IA : personne et décor générés, produit réel en référence (sans voix, sous-titrée)", "AI-generated UGC video: generated person and set, real product as reference (no voice, subtitled)"),
+      method: services ? (withVoice ? L("Présentation face caméra générée par IA : personne, voix et décor générés (ni client, ni professionnel réel)", "AI-generated on-camera presentation: generated person, voice and set (neither a customer nor the real professional)") : L("Présentation face caméra générée par IA : personne et décor générés, sous-titrée, sans voix", "AI-generated on-camera presentation: generated person and set, subtitled, no voice")) : withVoice ? L("Vidéo UGC générée par IA : personne, voix et décor générés, produit réel en référence", "AI-generated UGC video: generated person, voice and set, real product as reference") : L("Vidéo UGC générée par IA : personne et décor générés, produit réel en référence (sans voix, sous-titrée)", "AI-generated UGC video: generated person and set, real product as reference (no voice, subtitled)"),
       delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : ""}`,
     },
     status: "review",

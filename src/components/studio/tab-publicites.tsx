@@ -25,11 +25,26 @@ const CTAS: Record<Lang, string[]> = {
   fr: ["Découvrir", "Acheter", "En savoir plus", "Voir le produit", "S'inscrire"],
   en: ["Discover", "Shop now", "Learn more", "View product", "Sign up"],
 };
-const objectiveIn = (o: string, lang: Lang) => pick(lang, o, OBJECTIVES.find(([fr]) => fr === o)?.[1] ?? o);
+/** Entreprises de services : objectifs et boutons de prise de contact (identiques à src/lib/engine/ads.ts). */
+const SERVICE_OBJECTIVES: [string, string][] = [
+  ["Prises de rendez-vous", "Appointments"],
+  ["Demandes de devis", "Quote requests"],
+  ["Appels", "Calls"],
+  ["Notoriété", "Awareness"],
+  ["Interactions", "Engagement"],
+];
+const SERVICE_CTAS: Record<Lang, string[]> = {
+  fr: ["Prendre rendez-vous", "Demander un devis", "Appeler", "En savoir plus", "Nous contacter"],
+  en: ["Book now", "Get a quote", "Call now", "Learn more", "Contact us"],
+};
+const objectiveIn = (o: string, lang: Lang) => pick(lang, o, [...OBJECTIVES, ...SERVICE_OBJECTIVES].find(([fr]) => fr === o)?.[1] ?? o);
 /** Bouton équivalent dans l'autre langue (même position dans la liste). */
 const ctaIn = (cta: string, lang: Lang) => {
-  const i = Math.max(CTAS.fr.indexOf(cta), CTAS.en.indexOf(cta));
-  return i >= 0 ? CTAS[lang][i] : cta;
+  for (const list of [CTAS, SERVICE_CTAS]) {
+    const i = Math.max(list.fr.indexOf(cta), list.en.indexOf(cta));
+    if (i >= 0) return list[lang][i];
+  }
+  return cta;
 };
 
 export default function TabPublicites() {
@@ -37,6 +52,10 @@ export default function TabPublicites() {
   const toast = useToast();
   const t = useT();
   const projectLang: Lang = data?.settings.language ?? "fr";
+  const svc = data?.business === "services";
+  const ctaList = svc ? SERVICE_CTAS : CTAS;
+  const objectives = svc ? SERVICE_OBJECTIVES : OBJECTIVES;
+  const mainCta = (lang: Lang) => ctaList[lang][svc ? ({ booking: 0, quote: 1, call: 2, form: 4 } as const)[data?.services?.contactMode ?? "form"] ?? 4 : 0];
   const { data: list, reload } = useApi<{ campaigns: Campaign[] }>(`/api/projects/${id}/campaigns`);
   const [edit, setEdit] = useState<Campaign | null>(null);
   const [picker, setPicker] = useState<number | null>(null);
@@ -45,11 +64,11 @@ export default function TabPublicites() {
   const blank = (): Campaign => ({
     id: "",
     name: `${t("Lancement", "Launch")} · ${data?.brand?.name ?? data?.project.name ?? ""}`,
-    objective: "Trafic vers la boutique",
+    objective: svc ? (data?.services?.contactMode === "quote" ? "Demandes de devis" : data?.services?.contactMode === "call" ? "Appels" : "Prises de rendez-vous") : "Trafic vers la boutique",
     networks: ["instagram", "facebook"],
     status: "draft",
-    brief: { audience: data?.brand?.audience ?? "", budgetNote: "", kpis: t("Taux de clic, coût par clic, ajouts au panier", "Click-through rate, cost per click, add-to-carts"), language: projectLang },
-    plan: { ads: (data?.strategy?.angles ?? [{ title: pick(projectLang, "Le produit", "The product"), idea: "" }]).slice(0, 3).map((a) => ({ angle: a.title, primary: a.idea, headline: data?.brand?.tagline ?? "", cta: CTAS[projectLang][0], media: [] })) },
+    brief: { audience: data?.brand?.audience ?? "", budgetNote: "", kpis: svc ? t("Taux de clic, coût par contact, demandes reçues (rendez-vous, devis, appels)", "Click-through rate, cost per lead, requests received (bookings, quotes, calls)") : t("Taux de clic, coût par clic, ajouts au panier", "Click-through rate, cost per click, add-to-carts"), language: projectLang },
+    plan: { ads: (data?.strategy?.angles ?? [{ title: svc ? pick(projectLang, "Nos prestations", "Our services") : pick(projectLang, "Le produit", "The product"), idea: "" }]).slice(0, 3).map((a) => ({ angle: a.title, primary: a.idea, headline: data?.brand?.tagline ?? "", cta: mainCta(projectLang), media: [] })) },
     posts: [],
   });
   const save = async (c: Campaign) => {
@@ -95,7 +114,7 @@ export default function TabPublicites() {
       const r = await api<{ ads: { angle: string; primary: string; headline: string; cta: string }[]; by: "ai" | "local" }>(`/api/projects/${id}/campaigns/draft`, { body: { count: Math.max(1, Math.min(6, current.length || 3)), objective: objectiveIn(c.objective, lang), audience: c.brief.audience || undefined }, lang });
       // Les créations déjà choisies restent attachées aux annonces (même position).
       setEdit((e) => e && { ...e, plan: { ads: r.ads.map((a, i) => ({ ...a, media: current[i]?.media ?? [] })) } });
-      toast("ok", r.by === "ai" ? t("Annonces proposées : relisez-les avant d'enregistrer.", "Ads drafted: review them before saving.") : t("Annonces proposées à partir des faits du produit (moteur local) : complétez les passages entre crochets.", "Ads drafted from the product facts (local engine): fill in the bracketed parts."));
+      toast("ok", r.by === "ai" ? t("Annonces proposées : relisez-les avant d'enregistrer.", "Ads drafted: review them before saving.") : (svc ? t("Annonces proposées à partir de vos prestations (moteur local) : complétez les passages entre crochets.", "Ads drafted from your services (local engine): fill in the bracketed parts.") : t("Annonces proposées à partir des faits du produit (moteur local) : complétez les passages entre crochets.", "Ads drafted from the product facts (local engine): fill in the bracketed parts.")));
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
@@ -103,7 +122,7 @@ export default function TabPublicites() {
     }
   };
   const editLang = edit ? langOf(edit) : projectLang;
-  const ctaOptions = (cur: string) => (CTAS[editLang].includes(cur) || !cur ? CTAS[editLang] : [cur, ...CTAS[editLang]]);
+  const ctaOptions = (cur: string) => (ctaList[editLang].includes(cur) || !cur ? ctaList[editLang] : [cur, ...ctaList[editLang]]);
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <div className="rounded-2xl border border-line bg-card p-4 text-sm text-ink-2">
@@ -140,7 +159,7 @@ export default function TabPublicites() {
           <div className="grid gap-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label={t("Nom", "Name")} htmlFor="cname"><Input id="cname" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></Field>
-              <Field label={t("Objectif", "Objective")} htmlFor="cobj"><Select id="cobj" value={edit.objective} onChange={(e) => setEdit({ ...edit, objective: e.target.value })}>{(OBJECTIVES.some(([fr]) => fr === edit.objective) ? OBJECTIVES : [[edit.objective, edit.objective] as [string, string], ...OBJECTIVES]).map(([fr, en]) => <option key={fr} value={fr}>{t(fr, en)}</option>)}</Select></Field>
+              <Field label={t("Objectif", "Objective")} htmlFor="cobj"><Select id="cobj" value={edit.objective} onChange={(e) => setEdit({ ...edit, objective: e.target.value })}>{(objectives.some(([fr]) => fr === edit.objective) ? objectives : [[edit.objective, edit.objective] as [string, string], ...objectives]).map(([fr, en]) => <option key={fr} value={fr}>{t(fr, en)}</option>)}</Select></Field>
             </div>
             <div className="flex flex-wrap gap-3">
               {Object.keys(NETWORKS).map((n) => (
@@ -176,7 +195,7 @@ export default function TabPublicites() {
                 </div>
               </Card>
             ))}
-            <Button variant="ghost" size="sm" icon={<Plus className="size-4" />} onClick={() => setEdit({ ...edit, plan: { ads: [...(edit.plan.ads ?? []), { angle: "", primary: "", headline: "", cta: CTAS[editLang][0], media: [] }] } })} className="justify-self-start">{t("Ajouter une annonce", "Add an ad")}</Button>
+            <Button variant="ghost" size="sm" icon={<Plus className="size-4" />} onClick={() => setEdit({ ...edit, plan: { ads: [...(edit.plan.ads ?? []), { angle: "", primary: "", headline: "", cta: mainCta(editLang), media: [] }] } })} className="justify-self-start">{t("Ajouter une annonce", "Add an ad")}</Button>
             <div className="flex flex-wrap gap-2 border-t border-line pt-4">
               <Button onClick={async () => { await save(edit); setEdit(null); }}>{t("Enregistrer", "Save")}</Button>
               <Button variant="secondary" icon={<Send className="size-4" />} onClick={async () => { await toPosts(edit); setEdit(null); }}>{t("Créer les publications organiques", "Create organic posts")}</Button>

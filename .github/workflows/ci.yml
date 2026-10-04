@@ -29,6 +29,10 @@ jobs:
       - name: Installation
         run: npm ci
 
+      # ffmpeg encode les vidéos (déjà présent dans l'image Docker) : les tests de rendu vidéo en ont besoin.
+      - name: ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
       - name: Vérification des types
         run: npm run typecheck
 
@@ -57,6 +61,16 @@ jobs:
             for t in multi niche; do
               echo "::group::$d / $t"
               npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-$d-$t" "$d" "$t"
+              echo "::endgroup::"
+            done
+          done
+
+      - name: Shopify Theme Check (sites de services, 11 directions, FR et EN)
+        run: |
+          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
+            for l in fr en; do
+              echo "::group::$d / services ($l)"
+              BUSINESS=services LANG_THEME=$l npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-services-$l-$d" "$d"
               echo "::endgroup::"
             done
           done

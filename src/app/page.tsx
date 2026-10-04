@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Check, Camera, Link2, Type, Sparkles, Store, Image as ImageIcon, Film, CalendarDays, FolderTree, BookOpen, Plug, ShieldCheck, MessageSquare, Pause, Palette, Lock } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Briefcase, Check, Camera, Link2, Type, Sparkles, Store, Image as ImageIcon, Film, CalendarDays, FolderTree, BookOpen, Plug, ShieldCheck, MessageSquare, Pause, Palette, Lock } from "lucide-react";
 import type { Metadata } from "next";
 import { Logo, ThemeToggle } from "@/components/ui";
 import { LangSwitch } from "@/components/i18n";
@@ -15,6 +15,7 @@ import { OFFER } from "@/lib/billing";
 import { paymentsLive } from "@/lib/payments";
 import { currentUser } from "@/lib/auth";
 import { PROMPT_STATS } from "@/lib/prompts-library";
+import { SECTORS } from "@/lib/project-types";
 
 export const dynamic = "force-dynamic";
 
@@ -187,10 +188,10 @@ export default async function Home() {
                 <br />
                 <Words text={T("Une marque.", "One brand.")} d={2} />
                 <br />
-                <Words text={T("Une boutique qui vend.", "A store that sells.")} className="text-gradient pb-1" d={4} />
+                <Words text={T("Un site qui vend.", "A site that sells.")} className="text-gradient pb-1" d={4} />
               </h1>
               <p className="reveal mt-7 max-w-xl text-lg leading-relaxed text-ink-2 sm:text-xl" style={{ ["--d" as any]: 6 }}>
-                {T("Déposez la photo de votre produit, collez un lien, ou commencez sans rien. L'IA construit la marque, la boutique (Shopify, WooCommerce, PrestaShop…), les images, les vidéos et vos publications. Vous gardez la main à chaque étape.", "Drop in a photo of your product, paste a link, or start from scratch. AI builds the brand, the store (Shopify, WooCommerce, PrestaShop…), the images, the videos and your posts. You stay in control at every step.")}
+                {T("Vous vendez des produits ou des services ? Déposez une photo, collez un lien, ou décrivez votre activité. L'IA construit la marque, la boutique ou le site vitrine (Shopify, WordPress, PrestaShop…), les images, les vidéos et vos publications. Vous gardez la main à chaque étape.", "Selling products or services? Drop in a photo, paste a link, or describe your business. AI builds the brand, the online store or the business website (Shopify, WordPress, PrestaShop…), the images, the videos and your posts. You stay in control at every step.")}
               </p>
               <div className="reveal mt-9 flex flex-wrap items-center gap-3" style={{ ["--d" as any]: 7 }}>
                 <Link href={cta} className="btn-glow inline-flex h-14 items-center gap-2.5 rounded-full bg-signal px-7 text-[15px] font-semibold text-signal-ink transition hover:-translate-y-0.5">
@@ -216,7 +217,7 @@ export default async function Home() {
                   />
                 </div>
                 <ul className="mt-6 flex flex-wrap justify-center gap-2">
-                  {[T("Monoproduit, multiproduits ou niche", "Single-product, multi-product or niche"), "Shopify · WooCommerce · PrestaShop", T("Vidéos et UGC par IA", "AI videos and UGC")].map((t, i) => (
+                  {[T("Produits ou services", "Products or services"), "Shopify · WordPress · PrestaShop", T("Vidéos et UGC par IA", "AI videos and UGC")].map((t, i) => (
                     <li key={t} className="floaty glass rounded-full border border-line px-4 py-2 text-xs font-medium text-ink-2 shadow-soft" style={{ animationDelay: `${-i * 2}s` }}>{t}</li>
                   ))}
                 </ul>
@@ -302,7 +303,7 @@ export default async function Home() {
         <section id="boutiques" className="scroll-mt-20 border-y border-line bg-card py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="max-w-3xl">
-              <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">{T("Toutes les boutiques", "Every kind of store")}</p>
+              <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">{T("Produits ou services", "Products or services")}</p>
               <h2 className="words mt-4 font-display text-[clamp(2.3rem,5.2vw,4.4rem)] font-semibold leading-[0.96]">
                 <Words text={T("Un produit, un catalogue", "One product, a catalog")} /> <Words text={T("ou une niche.", "or a niche.")} className="text-gradient" d={4} />
               </h2>
@@ -325,18 +326,55 @@ export default async function Home() {
               ))}
             </div>
 
+            {/* Entreprises de services */}
+            <div id="services" className="mt-20 scroll-mt-24 overflow-hidden rounded-[2rem] border border-line bg-paper">
+              <div className="grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-12">
+                <div className="lg:col-span-5">
+                  <p className="reveal inline-flex items-center gap-2 rounded-full bg-signal-soft px-3 py-1 text-xs font-semibold uppercase tracking-[.16em] text-signal"><Briefcase className="size-3.5" aria-hidden /> {T("Entreprises de services", "Service businesses")}</p>
+                  <h3 className="words mt-5 font-display text-[clamp(2rem,4.2vw,3.4rem)] font-semibold leading-[1]">
+                    <Words text={T("Pas de produit à vendre\u00a0?", "Nothing to ship?")} /> <Words text={T("Un site qui remplit votre agenda.", "A website that fills your calendar.")} className="text-gradient" d={3} />
+                  </h3>
+                  <p className="reveal mt-5 text-[17px] leading-relaxed text-ink-2">{T("Artisan, coach, salon, cabinet, restaurant, agence… Choisissez « Le site de mon entreprise de services » en créant le projet : le studio construit un site vitrine pensé pour être contacté, pas une boutique avec panier.", "Tradesperson, coach, salon, practice, restaurant, agency… Pick \"My services business website\" when creating the project: the studio builds a business website designed to get you contacted, not a store with a cart.")}</p>
+                  <ul className="mt-6 grid gap-2.5 text-[15px] text-ink-2">
+                    {[
+                      T("Vos prestations, avec tarifs et durées si vous les donnez", "Your services, with prices and durations if you provide them"),
+                      T("Prise de rendez-vous, demande de devis, appel ou formulaire", "Booking, quote request, phone call or contact form"),
+                      T("Zone d'intervention, horaires, adresse et infos pratiques", "Service area, opening hours, address and practical info"),
+                      T("Méthode en étapes, questions fréquentes, page à propos", "Step-by-step approach, FAQ, about page"),
+                      T("Images, publications et publicités sans photo produit", "Images, posts and ads without any product photo"),
+                    ].map((t, i) => (
+                      <li key={t} className="reveal flex gap-2.5" style={{ ["--d" as any]: i }}><Check className="mt-0.5 size-4 shrink-0 text-signal" aria-hidden /> {t}</li>
+                    ))}
+                  </ul>
+                  <ul className="mt-7 flex flex-wrap gap-2" aria-label={T("Exemples d'activités", "Example businesses")}>
+                    {SECTORS.filter((x) => x.kind === "services").map((x) => (
+                      <li key={x.id} className="rounded-full border border-line bg-card px-3 py-1.5 text-xs text-ink-2">{lang === "en" ? x.labelEn : x.label}</li>
+                    ))}
+                  </ul>
+                </div>
+                <figure className="relative lg:col-span-7">
+                  <div className="reveal reveal-scale overflow-hidden rounded-2xl border border-line bg-[#070B17] shadow-[0_30px_90px_-40px_var(--glow)]">
+                    <div className="flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5" aria-hidden><span className="size-2.5 rounded-full bg-white/20" /><span className="size-2.5 rounded-full bg-white/20" /><span className="size-2.5 rounded-full bg-white/20" /></div>
+                    <img src={M("/demo/services/site-bureau.jpg")} alt={T("Site vitrine généré pour une coach sportive (démonstration fictive)", "Business website generated for a personal trainer (fictional demo)")} loading="lazy" className="aspect-[16/10] w-full object-cover object-top" />
+                  </div>
+                  <img src={M("/demo/services/site-mobile.jpg")} alt="" aria-hidden loading="lazy" className="reveal absolute -bottom-6 right-3 hidden w-[24%] rounded-[1.4rem] border-4 border-[#0A1024] shadow-2xl sm:block" style={{ ["--d" as any]: 3 }} />
+                  <figcaption className="mt-4 text-xs text-muted sm:pr-[28%]">{T("Démonstration fictive générée par le studio : « Studio Maëlle », coach sportive à Nantes, publiée pour WordPress. Aucun panier : chaque bouton mène à la prise de rendez-vous.", "Fictional demo generated by the studio: \"Studio Maëlle\", a personal trainer in Nantes, published for WordPress. No cart: every button leads to booking.")}</figcaption>
+                </figure>
+              </div>
+            </div>
+
             <div className="mt-20 grid gap-10 lg:grid-cols-12">
               <div className="lg:col-span-4">
                 <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">{T("Plateformes", "Platforms")}</p>
                 <h3 className="words mt-4 font-display text-[clamp(2rem,4vw,3.2rem)] font-semibold leading-[1]">
                   <Words text={T("Pas seulement", "Not just")} /> <Words text="Shopify." className="text-gradient" d={2} />
                 </h3>
-                <p className="reveal mt-5 text-[17px] leading-relaxed text-ink-2">{T("La même boutique, livrée pour la plateforme de votre choix. Rien n'est promis au-delà de ce que chaque plateforme accepte.", "The same store, delivered for the platform of your choice. Nothing is promised beyond what each platform accepts.")}</p>
+                <p className="reveal mt-5 text-[17px] leading-relaxed text-ink-2">{T("Vous choisissez la plateforme en créant le projet (et pouvez en changer ensuite dans l'onglet Boutique). Le même site est livré pour elle ; rien n'est promis au-delà de ce que chaque plateforme accepte.", "You pick the platform when creating the project (and can change it later in the Store tab). The same site is delivered for it; nothing is promised beyond what each platform accepts.")}</p>
               </div>
               <ul className="grid gap-4 sm:grid-cols-2 lg:col-span-8">
                 {[
                   ["Shopify", T("Thème Online Store 2.0 complet, contrôlé avec Theme Check, installé directement dans votre boutique ou exporté en ZIP. Catalogue en CSV.", "Complete Online Store 2.0 theme, validated with Theme Check, installed directly in your store or exported as a ZIP. Catalog as CSV.")],
-                  ["WooCommerce", T("Thème de blocs WordPress à téléverser (Apparence › Thèmes), avec vos couleurs, typographies, images et textes. Catalogue en CSV.", "WordPress block theme to upload (Appearance › Themes), with your colors, fonts, images and copy. Catalog as CSV.")],
+                  ["WordPress · WooCommerce", T("Thème de blocs WordPress à téléverser (Apparence › Thèmes), avec vos couleurs, typographies, images et textes. Avec WooCommerce et un catalogue CSV pour vendre des produits, ou en site vitrine sans boutique pour une entreprise de services.", "WordPress block theme to upload (Appearance › Themes), with your colors, fonts, images and copy. With WooCommerce and a CSV catalog to sell products, or as a business website without a store for a service company.")],
                   ["PrestaShop", T("Thème enfant du thème Classic (versions 1.7 et 8), installable depuis l'administration, aux couleurs de votre marque.", "Child theme of the Classic theme (versions 1.7 and 8), installable from the back office, in your brand's colors.")],
                   [T("Wix et Squarespace", "Wix and Squarespace"), T("Ces plateformes n'acceptent pas de thème importé : le studio fournit un kit de reprise (images, charte, textes, catalogue CSV et guide pas à pas).", "These platforms don't accept imported themes: the studio provides a migration kit (images, brand guidelines, copy, CSV catalog and step-by-step guide).")],
                 ].map(([t, d], i) => (
@@ -555,6 +593,8 @@ export default async function Home() {
             <h2 className="words font-display text-[clamp(2.2rem,5vw,3.6rem)] font-semibold leading-[1] lg:col-span-4"><Words text={T("Questions", "Frequently asked")} /> <Words text={T("fréquentes", "questions")} className="text-gradient" d={1} /></h2>
             <div className="lg:col-span-8">
               {[
+                [T("Et si je vends des services, pas des produits ?", "What if I sell services, not products?"), T("Choisissez « Le site de mon entreprise de services » en créant le projet. Le studio construit alors un site vitrine (prestations, tarifs, rendez-vous ou devis, horaires, zone d'intervention) au lieu d'une boutique, et adapte les textes, images, publications et publicités. WordPress est conseillé ; Shopify convient aussi, et Wix ou Squarespace avec un kit de reprise.", "Pick \"My services business website\" when creating the project. The studio then builds a business website (services, prices, booking or quotes, opening hours, service area) instead of a store, and adapts the copy, images, posts and ads. WordPress is recommended; Shopify works too, and Wix or Squarespace with a rebuild kit.")],
+                [T("Où choisir Shopify, WordPress ou une autre plateforme ?", "Where do I choose Shopify, WordPress or another platform?"), T("Dans le formulaire de création du projet, juste après le choix « boutique » ou « entreprise de services » : rubrique « Sur quelle plateforme vendrez-vous ? » (ou « Où sera publié votre site ? » pour une entreprise de services), avec une carte par plateforme. Vous pouvez aussi en changer plus tard depuis l'onglet Boutique : le studio relivre le site pour la nouvelle plateforme.", "In the project creation form, right after choosing \"store\" or \"services business\": \"Which platform will you sell on?\" (or \"Where will your website live?\" for a services business), with one card per platform. You can also change it later from the Store tab: the studio redelivers the site for the new platform.")],
                 [T("Faut-il une photo pour commencer ?", "Do I need a photo to get started?"), T("Non. Vous pouvez ouvrir le studio sans rien, explorer les espaces et les thèmes, puis ajouter une photo, un lien ou quelques lignes quand vous êtes prêt : la création démarre à ce moment-là.", "No. You can open the studio with nothing, explore the workspaces and themes, then add a photo, a link or a few lines when you're ready: creation starts at that point.")],
                 [T("Puis-je arrêter une création en cours ?", "Can I stop a creation in progress?"), T("Oui. Le bouton « Pause » arrête la création à la fin de l'étape en cours ; « Reprendre » repart de là. Les étapes déjà terminées sont conservées et ne sont ni refaites ni refacturées.", "Yes. The \"Pause\" button stops the creation at the end of the current step; \"Resume\" picks up from there. Completed steps are kept and are neither redone nor charged again.")],
                 [T("Faut-il savoir écrire des prompts ?", "Do I need to know how to write prompts?"), T("Non. Une photo, un lien ou quelques lignes suffisent pour démarrer. La bibliothèque de prompts sert à aller plus loin, quand vous le souhaitez.", "No. A photo, a link or a few lines are enough to get started. The prompt library is there to go further, whenever you want.")],
