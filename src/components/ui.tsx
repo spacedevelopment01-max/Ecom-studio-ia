@@ -218,7 +218,7 @@ export function Empty({ icon, title, children, action }: { icon?: ReactNode; tit
   );
 }
 
-export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean }) {
+export function Modal({ open, onClose, title, children, wide, xl }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean; xl?: boolean }) {
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   // onClose change à chaque rendu du parent (actualisation automatique du studio) : on garde la dernière
@@ -241,7 +241,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-6" onMouseDown={(e) => e.target === e.currentTarget && closeRef.current()}>
-      <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className={cx("max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl border border-line bg-card p-5 shadow-soft sm:rounded-3xl sm:p-7", wide ? "sm:max-w-4xl" : "sm:max-w-lg")}>
+      <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className={cx("max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl border border-line bg-card p-5 shadow-soft sm:rounded-3xl sm:p-7", xl ? "sm:max-w-6xl" : wide ? "sm:max-w-4xl" : "sm:max-w-lg")}>
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2 className="font-display text-2xl">{title}</h2>
           <button type="button" onClick={() => closeRef.current()} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-paper-2" aria-label={t("Fermer", "Close")}>

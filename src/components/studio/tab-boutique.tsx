@@ -219,6 +219,20 @@ export default function TabBoutique() {
     }
   }
 
+  /** « Générer » : l'IA crée une section sur mesure à l'endroit choisi ; le résultat arrive dans la discussion. */
+  async function generateSection(description: string) {
+    if (!libTarget) return;
+    if (!(await cost.confirm("theme", { localOk: false }))) return;
+    try {
+      await api(`/api/projects/${id}/theme/chat`, { body: { message: description, page: libTarget.template, generate: { template: libTarget.template, index: libTarget.index } }, lang: cl.lang });
+      toast("ok", t("Création de la section en cours : elle apparaîtra dans l'aperçu dans un instant (suivi dans la discussion).", "Creating the section: it will appear in the preview shortly (progress in the chat)."));
+      setLibTarget(null);
+      reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    }
+  }
+
   async function addSection(type: string) {
     if (!libTarget) return;
     setAdding(type);
@@ -486,7 +500,7 @@ export default function TabBoutique() {
         </ul>
       </Modal>
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
-      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} />
+      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} />
       <ThemeGallery open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} />
     </div>
