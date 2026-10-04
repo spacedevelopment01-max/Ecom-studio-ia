@@ -3,10 +3,25 @@
     {%- if section.blocks.size > 0 -%}
       {%- for block in section.blocks -%}{% render block %}{%- endfor -%}
     {%- elsif request.design_mode -%}
-      <p class="es-reviews__hint">{{ 'general.app_block_hint' | t }}</p>
+      {%- comment -%} Éditeur seulement : emplacement d'application, présenté comme un cadre prêt à recevoir le bloc. {%- endcomment -%}
+      <div class="es-appslot">
+        <span class="es-appslot__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" focusable="false"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><path d="M17 13.5v7M13.5 17h7"/></svg></span>
+        <div class="es-appslot__lines" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="es-appslot__hint">{{ 'general.app_block_hint' | t }}</p>
+      </div>
     {%- endif -%}
   </div>
 </section>
+
+{% stylesheet %}
+.es-appslot { display: grid; justify-items: center; gap: 18px; padding: clamp(32px, 5vw, 64px) clamp(20px, 4vw, 48px); border-radius: var(--radius-card); border: 1.5px dashed rgba(var(--c-text-rgb), .22); background: radial-gradient(120% 140% at 50% 0%, rgba(var(--c-accent-rgb), .08), transparent 60%), rgba(var(--c-text-rgb), .02); text-align: center; }
+.es-appslot__icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 20px; color: var(--c-accent-text); background: var(--c-accent); box-shadow: 0 18px 36px -16px rgba(var(--c-accent-rgb), .7); }
+.es-appslot__lines { display: grid; justify-items: center; gap: 10px; width: min(420px, 100%); }
+.es-appslot__lines span { display: block; height: 10px; width: 100%; border-radius: 99px; background: rgba(var(--c-text-rgb), .09); }
+.es-appslot__lines span:nth-child(2) { width: 82%; }
+.es-appslot__lines span:nth-child(3) { width: 56%; }
+.es-appslot__hint { margin: 4px 0 0; max-width: 46ch; color: var(--c-muted); font-size: .95rem; line-height: 1.55; }
+{% endstylesheet %}
 
 {% schema %}
 {

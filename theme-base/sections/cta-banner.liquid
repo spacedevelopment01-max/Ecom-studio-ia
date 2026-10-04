@@ -9,6 +9,17 @@
   </div>
 </section>
 
+
+{% stylesheet %}
+/* Image en fond : marge de parallaxe suffisante, jamais de bande vide en haut ou en bas. */
+.es-cta { position: relative; isolation: isolate; }
+.es-cta__media { inset: -30% 0; }
+.es-cta__media ~ .es-cta__inner { padding-block: clamp(40px, 7vw, 96px); }
+.es-cta__inner .es-heading { margin-bottom: 14px; }
+.es-cta__inner .es-lead { font-size: clamp(1.02rem, 1.3vw, 1.18rem); margin-bottom: 28px; }
+.es-cta__media + .es-cta__inner .es-lead { color: rgba(255,255,255,.9); }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Bannière d'appel",

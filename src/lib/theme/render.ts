@@ -91,6 +91,8 @@ export type PreviewOptions = {
   files?: ThemeFiles;
   cart: PreviewCartLine[];
   injectStudioTools?: boolean;
+  /** `request.design_mode` (aperçu de la bibliothèque : emplacements d'application montrés comme dans l'éditeur). */
+  designMode?: boolean;
 };
 
 type ImageObj = { src: string; width: number; height: number; alt: string; id: string; aspect_ratio: number; media_type: "image" };
@@ -762,7 +764,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     recommendations: { performed: store.recommendations.length > 0, products: store.recommendations, products_count: store.recommendations.length },
     all_products: Object.fromEntries(store.products.map((p: any) => [p.handle, p])),
     customer: null,
-    request: { page_type: tplKey.split(".")[0], locale: { iso_code: lang }, origin: "", design_mode: false, path: pathname, host: "apercu" },
+    request: { page_type: tplKey.split(".")[0], locale: { iso_code: lang }, origin: "", design_mode: !!opts.designMode, path: pathname, host: "apercu" },
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },
     canonical_url: `${opts.base}${pathname}`,
     page_title: pageTitle,

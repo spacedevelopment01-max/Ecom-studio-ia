@@ -70,7 +70,9 @@
 @media (min-width: 990px) { .es-about__media { position: sticky; top: calc(var(--header-h, 72px) + 24px); } }
 .es-about__caption { margin-top: 12px; font-size: .8rem; color: var(--c-muted); letter-spacing: .04em; }
 .es-about__story { display: grid; gap: clamp(28px, 4vw, 48px); padding-top: clamp(0px, 2vw, 24px); }
-.es-about__lead { font-family: var(--font-heading); font-size: calc(clamp(1.35rem, 2.3vw, 1.9rem) * var(--heading-scale, 1)); line-height: 1.32; letter-spacing: -.01em; }
+.es-about__lead { font-size: clamp(1.18rem, 1.7vw, 1.45rem); line-height: 1.5; letter-spacing: -.005em; color: var(--c-text); max-width: 34em; }
+.es-about__lead p { margin: 0 0 .6em; }
+.es-about__lead p:last-child { margin-bottom: 0; }
 .es-about__pillars { display: grid; gap: clamp(22px, 3vw, 36px); }
 .es-about__pillar { padding-top: 22px; border-top: 1px solid var(--c-border); }
 .es-about__kicker { display: flex; align-items: baseline; gap: 14px; margin: 0 0 12px; font-weight: var(--font-body-weight-bold); font-size: 1.05rem; }

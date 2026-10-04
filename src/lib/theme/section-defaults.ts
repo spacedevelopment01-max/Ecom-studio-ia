@@ -9,6 +9,8 @@ import { SHOWCASE_MEDIA_TYPES, showcaseProjectMedia } from "./section-defaults-s
 import { BRAND_MEDIA_TYPES, brandProjectMedia } from "./section-defaults-brand";
 import { UTILITY_MEDIA_TYPES, utilityProjectMedia } from "./section-defaults-utility";
 import { NARRATIVE_MEDIA_TYPES, narrativeProjectMedia } from "./section-defaults-narrative";
+import { applySectionCopy } from "./section-copy";
+import type { ContentContext } from "./section-content";
 
 type Blocks = { type: string; settings?: Record<string, unknown> }[];
 
@@ -31,7 +33,20 @@ export function mediaPools(spec: ThemeSpec) {
   };
 }
 
-export function withProjectMedia(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks): { settings: Record<string, unknown>; blocks?: Blocks } {
+/**
+ * Section remplie avec les médias du projet puis, si un contexte de rédaction est fourni,
+ * avec des textes rédigés à partir du projet (section-copy.ts).
+ */
+export function withProjectMedia(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks, ctx?: ContentContext): { settings: Record<string, unknown>; blocks?: Blocks; samples?: boolean } {
+  const media = projectMediaOnly(spec, type, settings, blocks);
+  const schema = sectionSchema(spec, type);
+  if (!ctx || !schema) return media;
+  // Les blocs du préréglage servent de base à la rédaction quand la section n'en a pas reçu.
+  const preset = ((schema.presets?.[0] as { blocks?: Blocks } | undefined)?.blocks ?? []).filter((b) => !b.type.startsWith("@")).map((b) => ({ type: b.type, settings: { ...(b.settings ?? {}) } }));
+  return applySectionCopy(type, schema, ctx, { settings: media.settings, blocks: media.blocks ?? (preset.length ? preset : undefined) });
+}
+
+function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks?: Blocks): { settings: Record<string, unknown>; blocks?: Blocks } {
   const schema = sectionSchema(spec, type);
   if (!schema) return { settings, blocks };
   const p = mediaPools(spec);
@@ -51,7 +66,8 @@ export function withProjectMedia(spec: ThemeSpec, type: string, settings: Record
     if (empty("image_before_asset")) out.image_before_asset = p.cutout[0] ?? nextPhoto();
     if (empty("image_after_asset")) out.image_after_asset = p.life[0] ?? nextPhoto();
   } else if (empty("image_asset")) {
-    const v = type.startsWith("hero") || type === "image-with-text" || type === "cta-banner" ? p.life[0] ?? nextPhoto() : nextPhoto();
+    // Héros éditorial : le produit détouré flotte sur le grand titre (une photo pleine le masquerait).
+    const v = type === "hero-editorial" && p.cutout[0] ? p.cutout[0] : type.startsWith("hero") || type === "image-with-text" || type === "cta-banner" ? p.life[0] ?? nextPhoto() : nextPhoto();
     if (v) out.image_asset = v;
   }
   if (empty("video_asset") && p.videos[0]) out.video_asset = p.videos[0];

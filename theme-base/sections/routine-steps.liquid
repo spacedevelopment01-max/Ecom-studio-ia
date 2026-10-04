@@ -54,6 +54,13 @@
   </div>
 </section>
 
+{% stylesheet %}
+.es-routine .es-routine__step .es-rte { font-size: max(1rem, 15px); line-height: 1.65; }
+.es-routine .es-routine__kicker { font-size: .74rem; color: var(--c-accent); font-weight: var(--font-body-weight-bold); }
+.es-routine .es-routine__chips span { font-size: .78rem; padding: 7px 14px; box-shadow: 0 8px 20px -14px rgba(0, 0, 0, .35); }
+@media (max-width: 749px) { .es-routine .es-routine__chips { max-width: 100%; flex-wrap: wrap; justify-content: center; white-space: normal; } }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Routine en gestes",

@@ -69,9 +69,13 @@
 @media (min-width: 990px) { .es-recos__item { width: calc((min(100vw, var(--page-width)) - 2 * var(--gutter) - 3 * 26px) / 4); min-width: 240px; } }
 .es-recos__item .es-card__info { padding-top: 14px; }
 .es-recos__item .es-card { height: 100%; }
+.es-recos .es-price { white-space: nowrap; }
 .es-recos__progress { position: relative; height: 2px; margin-top: 10px; background: rgba(var(--c-text-rgb), .12); border-radius: 2px; overflow: hidden; }
 .es-recos__progress i { position: absolute; inset: 0 auto 0 0; width: var(--p, 25%); background: var(--c-accent); border-radius: inherit; transition: width .3s var(--ease-out); }
-.es-recos--few .es-recos__track { justify-content: center; }
+/* Peu de produits : rangée centrée sans rogner la première carte quand elle défile (marges automatiques). */
+.es-recos--few .es-recos__item:first-child { margin-left: auto; }
+.es-recos--few .es-recos__item:last-child { margin-right: auto; }
+@media (min-width: 990px) { .es-recos--few .es-recos__head { flex-direction: column; align-items: center; text-align: center; } }
 @media (min-width: 990px) { .es-recos--few .es-recos__item { width: min(360px, 30vw); } }
 .es-recos.is-static .es-recos__nav, .es-recos.is-static .es-recos__progress { display: none; }
 @media (max-width: 749px) { .es-recos__nav { display: none; } }

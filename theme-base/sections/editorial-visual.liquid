@@ -72,8 +72,8 @@
 .es-edito__body { display: grid; gap: 24px; padding-left: clamp(0px, 3vw, 44px); border-left: 1px solid var(--c-border); }
 .es-edito__text { font-size: 1.04rem; line-height: 1.75; color: color-mix(in srgb, var(--c-text) 84%, var(--c-bg)); }
 .es-edito--dropcap .es-edito__text > p:first-child::first-letter { float: left; font-family: var(--font-heading); font-size: 3.6em; line-height: .82; padding: .06em .1em 0 0; color: var(--c-accent); }
-.es-edito__vertical { position: absolute; top: 0; right: calc(var(--gutter, 24px) * -0.1); margin: 0; writing-mode: vertical-rl; font-size: .7rem; letter-spacing: .4em; text-transform: uppercase; color: var(--c-muted); }
-.es-edito--image-right .es-edito__vertical { right: auto; left: calc(var(--gutter, 24px) * -0.1); transform: rotate(180deg); }
+.es-edito__vertical { position: absolute; top: 0; right: 0; margin: 0; writing-mode: vertical-rl; font-size: .7rem; letter-spacing: .4em; text-transform: uppercase; color: var(--c-muted); }
+.es-edito--image-right .es-edito__vertical { right: auto; left: 0; transform: rotate(180deg); }
 @media (max-width: 989px) {
   .es-edito__visual { margin-right: 18px; }
   .es-edito--image-right .es-edito__visual { margin-right: 0; margin-left: 18px; }

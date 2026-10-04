@@ -1,4 +1,11 @@
 {
+ "Coordonnées": "Contact details",
+ "Adresse e-mail affichée": "Displayed email address",
+ "Facultatif. Laissez vide pour ne rien afficher.": "Optional. Leave empty to show nothing.",
+ "Horaires": "Opening hours",
+ "Facultatif. Ex. : du lundi au vendredi, 9 h – 18 h.": "Optional. E.g. Monday to Friday, 9am – 6pm.",
+ "Délai de réponse": "Response time",
+ "Facultatif. Indiquez uniquement un délai que vous tenez réellement.": "Optional. Only state a response time you actually keep.",
  "Avis clients immersifs": "Immersive reviews",
  "N'utilisez que des avis réels et vérifiables, recopiés avec l'accord du client. Les espaces réservés « [À compléter …] » sont à remplacer ou à supprimer avant publication.": "Only use real, verifiable reviews, copied with the customer's consent. Replace or remove the \"[To complete …]\" placeholders before publishing.",
  "Ce qu'en disent nos clients": "What our customers say",

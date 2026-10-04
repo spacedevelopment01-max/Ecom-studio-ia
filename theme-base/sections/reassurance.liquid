@@ -78,6 +78,14 @@
 @keyframes es-reas-dots { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @keyframes es-reas-draw { 0% { stroke-dashoffset: 24; } 18%, 100% { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) { .es-reas__card *, .es-reas__card::after { animation: none !important; } }
+@media (max-width: 599px) {
+  .es-reas__card { display: grid; grid-template-columns: 56px minmax(0, 1fr); column-gap: 18px; row-gap: 6px; align-items: start; padding: 22px 20px; }
+  .es-reas__icon { grid-row: 1 / span 3; width: 56px; height: 56px; margin: 0; border-radius: 18px; }
+  .es-reas__icon .es-icon { width: 28px; height: 28px; }
+  .es-reas__icon::after { border-radius: 23px; }
+  .es-reas__title, .es-reas__text, .es-reas__link { grid-column: 2; }
+  .es-reas__ghost { width: 96px; height: 96px; }
+}
 {% endstylesheet %}
 
 {% schema %}

@@ -29,6 +29,17 @@
   </div>
 </section>
 
+{% stylesheet %}
+.es-features .es-feature .es-h4 { margin: 0 0 .45em; }
+.es-features .es-feature .es-rte { font-size: max(.98rem, 15px); line-height: 1.65; }
+.es-features .es-feature__icon { color: var(--c-accent); }
+.es-features .es-feature__icon .es-icon { width: 22px; height: 22px; }
+.es-features--cards .es-feature { border: 1px solid rgba(var(--c-text-rgb), .06); transition: transform .5s var(--ease-out), box-shadow .5s var(--ease-out); }
+.es-features--cards .es-feature:hover { transform: translateY(-4px); box-shadow: 0 30px 60px -44px rgba(0, 0, 0, .45); }
+.es-features--cards .es-feature__icon { box-shadow: 0 10px 24px -16px rgba(var(--c-accent-rgb), .9); }
+.es-features .es-section-head--center { max-width: 760px; margin-inline: auto; }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Grille d'atouts",

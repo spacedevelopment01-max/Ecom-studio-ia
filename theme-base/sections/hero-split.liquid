@@ -25,6 +25,15 @@
 {%- endif -%}
 </section>
 
+{% stylesheet %}
+.es-hero-split .es-lead { font-size: clamp(1.02rem, 1.3vw, 1.18rem); }
+@media (max-width: 989px) {
+  /* Téléphone et tablette : l'image suit le texte, sans parallaxe qui la ferait chevaucher le bouton. */
+  .es-hero-split__media[data-parallax] { transform: none !important; }
+  .es-hero-split__grid { gap: 36px; }
+}
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Héros divisé",

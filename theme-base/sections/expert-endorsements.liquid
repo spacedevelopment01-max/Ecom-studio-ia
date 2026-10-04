@@ -32,16 +32,25 @@
               {%- endif -%}
             </div>
             <blockquote class="es-xp__quote">{{ block.settings.quote }}</blockquote>
+            {%- liquid
+              assign xp_parts = block.settings.name | split: ' · '
+              assign xp_name = xp_parts.first | strip
+            -%}
             <figcaption class="es-xp__who">
               <span class="es-xp__avatar">
                 {%- if block.settings.image != blank or block.settings.image_asset != blank -%}
                   {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.name, sizes: '72px', class: 'es-cover', width: 144, height: 144 %}
+                {%- elsif xp_name != blank and xp_name contains '[' -%}
+                  <span class="es-xp__silhouette" role="img" aria-label="{{ 'sections.experts.photo_placeholder' | t | escape }}">{% render 'es-glyph', name: 'user' %}</span>
+                {%- elsif xp_name != blank -%}
+                  {%- assign xp_words = xp_name | split: ' ' -%}
+                  <span class="es-xp__silhouette es-xp__initials" aria-hidden="true">{{ xp_words.first | slice: 0 | upcase }}{% if xp_words.size > 1 %}{{ xp_words.last | slice: 0 | upcase }}{% endif %}</span>
                 {%- else -%}
                   <span class="es-xp__silhouette" role="img" aria-label="{{ 'sections.experts.photo_placeholder' | t | escape }}">{% render 'es-glyph', name: 'user' %}</span>
                 {%- endif -%}
               </span>
               <span class="es-xp__id">
-                <b class="es-xp__name">{{ block.settings.name }}</b>
+                <b class="es-xp__name">{{ xp_name }}{% if xp_parts.size > 1 %} <span class="es-xp__tag">{{ xp_parts.last }}</span>{% endif %}</b>
                 {%- if block.settings.profession != blank -%}<span class="es-xp__job">{{ block.settings.profession }}</span>{%- endif -%}
               </span>
             </figcaption>
@@ -91,6 +100,8 @@
 .es-xp__avatar img { width: 100%; height: 100%; object-fit: cover; }
 .es-xp__silhouette { display: grid; place-items: center; width: 100%; height: 100%; color: var(--c-muted); background: linear-gradient(145deg, rgba(var(--c-accent-rgb), .14), rgba(var(--c-text-rgb), .05)); }
 .es-xp__silhouette .es-icon { width: 28px; height: 28px; }
+.es-xp__initials { font-family: var(--font-heading); font-size: 1.2rem; letter-spacing: .02em; color: var(--c-accent); }
+.es-xp__tag { display: inline-block; margin-left: 4px; padding: 2px 8px; border-radius: 99px; background: rgba(var(--c-text-rgb), .08); color: var(--c-muted); font-size: .68rem; font-weight: var(--font-body-weight-bold); letter-spacing: .08em; text-transform: uppercase; vertical-align: 2px; }
 .es-xp__id { display: grid; gap: 2px; min-width: 0; }
 .es-xp__name { font-weight: var(--font-body-weight-bold); line-height: 1.3; }
 .es-xp__job { font-size: .88rem; color: var(--c-muted); line-height: 1.35; }

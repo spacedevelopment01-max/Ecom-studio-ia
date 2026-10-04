@@ -8,10 +8,59 @@
       {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-reviews__heading">{{ section.settings.heading }}</h2>{%- endif -%}
       {%- for block in section.blocks -%}{% render block %}{%- endfor -%}
     {%- elsif request.design_mode -%}
-      <p class="es-reviews__hint">{{ 'sections.reviews.app_hint' | t }}</p>
+      {%- comment -%} Éditeur seulement : silhouette d'un module d'avis (aucun avis ni note inventés). {%- endcomment -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-reviews__heading">{{ section.settings.heading }}</h2>{%- endif -%}
+      <div class="es-rvmock" aria-hidden="true">
+        <div class="es-rvmock__summary">
+          <span class="es-rvmock__stars">★★★★★</span>
+          <span class="es-rvmock__bar es-rvmock__bar--title"></span>
+          {%- for w in (1..5) -%}
+            <span class="es-rvmock__row"><i>{{ 6 | minus: w }}★</i><span class="es-rvmock__track"><span style="width: {% case w %}{% when 1 %}78{% when 2 %}15{% when 3 %}5{% else %}1{% endcase %}%"></span></span></span>
+          {%- endfor -%}
+          <span class="es-rvmock__btn"></span>
+        </div>
+        <div class="es-rvmock__list">
+          {%- for i in (1..3) -%}
+            <div class="es-rvmock__card">
+              <span class="es-rvmock__who"><span class="es-rvmock__avatar"></span><span class="es-rvmock__bar" style="width: {% cycle '34%', '42%', '28%' %}"></span></span>
+              <span class="es-rvmock__stars es-rvmock__stars--sm">★★★★★</span>
+              <span class="es-rvmock__bar"></span>
+              <span class="es-rvmock__bar" style="width: {% cycle '86%', '72%', '91%' %}"></span>
+              <span class="es-rvmock__bar" style="width: {% cycle '94%', '88%', '97%' %}"></span>
+              <span class="es-rvmock__bar" style="width: {% cycle '54%', '63%', '40%' %}"></span>
+              <span class="es-rvmock__thumbs"><i></i><i></i></span>
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+      <p class="es-reviews__hint es-rvmock__hint">{{ 'sections.reviews.app_hint' | t }}</p>
     {%- endif -%}
   </div>
 </section>
+
+{% stylesheet %}
+.es-rvmock { display: grid; gap: clamp(16px, 2vw, 28px); grid-template-columns: 1fr; margin-top: clamp(8px, 2vw, 20px); }
+@media (min-width: 900px) { .es-rvmock { grid-template-columns: minmax(240px, 300px) 1fr; } }
+.es-rvmock__summary, .es-rvmock__card { display: grid; gap: 12px; align-content: start; padding: clamp(20px, 2.4vw, 30px); border-radius: var(--radius-card); background: rgba(var(--c-text-rgb), .035); border: 1px solid var(--c-border); }
+.es-rvmock__list { display: grid; gap: clamp(12px, 1.6vw, 20px); grid-template-columns: 1fr; align-items: start; }
+@media (max-width: 749px) { .es-rvmock__card:nth-child(3) { display: none; } }
+.es-rvmock__thumbs { display: flex; gap: 8px; margin-top: 6px; }
+.es-rvmock__thumbs i { width: 56px; height: 56px; border-radius: calc(var(--radius-card) / 2 + 2px); background: linear-gradient(135deg, rgba(var(--c-accent-rgb), .16), rgba(var(--c-text-rgb), .06)); }
+@media (min-width: 750px) { .es-rvmock__list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.es-rvmock__stars { color: var(--c-accent); font-size: 1.6rem; letter-spacing: 4px; line-height: 1; }
+.es-rvmock__stars--sm { font-size: 1rem; letter-spacing: 2px; }
+.es-rvmock__bar { display: block; height: 10px; width: 100%; border-radius: 99px; background: rgba(var(--c-text-rgb), .1); }
+.es-rvmock__bar--title { width: 60%; height: 14px; }
+.es-rvmock__row { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 10px; font-size: .8rem; color: var(--c-muted); }
+.es-rvmock__row i { font-style: normal; }
+.es-rvmock__track { height: 8px; border-radius: 99px; background: rgba(var(--c-text-rgb), .08); overflow: hidden; }
+.es-rvmock__track span { display: block; height: 100%; border-radius: inherit; background: var(--c-accent); opacity: .75; }
+.es-rvmock__btn { display: block; height: 42px; margin-top: 8px; border-radius: var(--radius-pill, 99px); border: 1.5px solid rgba(var(--c-text-rgb), .2); }
+.es-rvmock__who { display: flex; align-items: center; gap: 10px; }
+.es-rvmock__who .es-rvmock__bar { height: 12px; }
+.es-rvmock__avatar { width: 36px; height: 36px; flex: none; border-radius: 50%; background: rgba(var(--c-accent-rgb), .18); }
+.es-rvmock__hint { margin: clamp(18px, 2.4vw, 28px) auto 0; max-width: 640px; padding: 14px 20px; font-size: .92rem; }
+{% endstylesheet %}
 
 {% schema %}
 {

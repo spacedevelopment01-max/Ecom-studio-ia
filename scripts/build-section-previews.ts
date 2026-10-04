@@ -8,7 +8,8 @@ import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { chromium } from "playwright";
-import { currentTheme } from "../src/lib/projects";
+import { currentTheme, loadProject } from "../src/lib/projects";
+import { contentContext } from "../src/lib/theme/section-content";
 import { applyOps } from "../src/lib/theme/ops";
 import { themeContext, chromiumPath } from "../src/lib/theme/snapshot";
 import { SECTION_LIBRARY } from "../src/lib/theme/section-library";
@@ -31,11 +32,8 @@ const SAMPLES: Record<string, { settings?: Record<string, unknown>; blocks?: { t
     settings: { eyebrow: "Mode d'emploi", heading: "Votre premier vol, en trois gestes.", watermark: "VOL", image_asset: cut, chip1: "Pliable", chip2: "Caméra orientable" },
     blocks: [{ type: "step", settings: { eyebrow: "Dépliez", title: "Bras dépliés, prêt à partir.", text: "<p>Les bras se replient pour le transport.</p>", image_asset: cut, label: "Bras pliables", label_x: 22, label_y: 30 } }, { type: "step" }, { type: "step" }],
   },
-  testimonials: { blocks: [1, 2, 3].map(() => ({ type: "review", settings: { quote: "Votre client décrit ici son expérience, avec ses mots.", author: "Prénom", detail: "Ville", rating: "5" } })) },
-  "immersive-reviews": { settings: { height: "medium" }, blocks: [1, 2, 3].map(() => ({ type: "review", settings: { quote: "Votre client décrit ici son expérience, avec ses mots.", author: "Prénom", detail: "Ville", rating: "5", verified: true } })) },
-  countdown: { settings: { end_date: "2026-12-31", end_time: "23:59", text: "<p>Votre offre réelle et ses conditions.</p>" } },
-  "trust-bar": { blocks: [["shield", "Paiement sécurisé"], ["return", "Retours"], ["chat", "Service client"], ["truck", "Livraison"]].map(([icon, title]) => ({ type: "item", settings: { icon, title, text: "Votre engagement réel" } })) },
-  "custom-liquid": { settings: { custom_liquid: "<div style=\"padding:48px;border:1px dashed currentColor;border-radius:16px;text-align:center;opacity:.7\">Votre widget ou code personnalisé s'affiche ici.</div>" } },
+  // Avis, arguments de confiance, Liquid personnalisé : exemples rédigés par section-copy-proof.ts.
+  "immersive-reviews": { settings: { height: "medium" } },
   "before-after": { settings: { image_before_asset: pack, image_after_asset: life || detail } },
   "image-with-text": { settings: { image_asset: life || detail } },
 };
@@ -60,7 +58,8 @@ for (const e of SECTION_LIBRARY) {
   spec.templates.index.sections = {};
   // Comme un ajout depuis le studio (préréglage + médias du projet), complété par l'exemple éventuel.
   const sample = SAMPLES[e.type] ?? {};
-  const filled = withProjectMedia(spec, e.type, sample.settings, sample.blocks);
+  // Textes rédigés à partir du projet, comme l'aperçu de la bibliothèque (mode exemple).
+  const filled = withProjectMedia(spec, e.type, sample.settings, sample.blocks, contentContext(loadProject(PID!), spec, true));
   const res = applyOps(spec, [{ op: "add_section", template: "index", type: e.type, settings: filled.settings as any, blocks: filled.blocks as any, position: { index: 0 } } as any], { overrideLocks: true });
   if (!res.applied.length) {
     console.log(`✗ ${e.type} : ${res.rejected.map((r) => r.reason).join(" ; ")}`);

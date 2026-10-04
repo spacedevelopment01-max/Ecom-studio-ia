@@ -177,6 +177,17 @@
 .es-hf__checks li { display: flex; align-items: center; gap: 10px; }
 .es-hf__checks .es-icon { width: 18px; height: 18px; color: var(--c-accent); flex: none; }
 .es-hf__box > .es-hf__spacer { margin: 0; }
+/* Texte clair sur image : mot d'accent et bouton secondaire restent lisibles quel que soit le schéma. */
+.es-hf--background:not(.es-hf--text-dark) .es-accent { color: inherit; opacity: .86; }
+.es-hf--background:not(.es-hf--text-dark) .es-hf__box { text-shadow: 0 2px 22px rgba(0,0,0,.22); }
+.es-hf--background:not(.es-hf--text-dark) .es-button, .es-hf--background:not(.es-hf--text-dark) .es-hf__badge { text-shadow: none; }
+.es-hf--background:not(.es-hf--text-dark) .es-button--secondary { color: #fff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.5); }
+.es-hf--background.es-hf--text-dark .es-button--secondary { color: #141414; background: rgba(255,255,255,.4); border: 1px solid rgba(0,0,0,.3); }
+.es-hf--background:not(.es-hf--text-dark) .es-hf__badge { color: #fff; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.32); }
+.es-hf--background:not(.es-hf--text-dark) .es-hf__badge .es-icon { color: inherit; }
+.es-hf__text { font-size: clamp(1rem, 1.2vw, 1.1rem); }
+.es-hf__text--large { font-size: clamp(1.05rem, 1.4vw, 1.22rem); }
+@media (max-width: 749px) { .es-hf__features b { font-size: 1.25rem; } .es-hf__features { gap: 12px 22px; } }
 {% endstylesheet %}
 
 {% javascript %}

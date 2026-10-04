@@ -2,6 +2,15 @@
   <div class="es-container">{{ section.settings.custom_liquid }}</div>
 </section>
 
+{% stylesheet %}
+/* Encart de démonstration (aperçu de la bibliothèque) : classes réutilisables dans votre propre code. */
+.es-custom__demo { position: relative; display: grid; gap: 12px; justify-items: start; padding: clamp(28px, 4vw, 48px); border-radius: var(--radius-card); background: linear-gradient(135deg, rgba(var(--c-accent-rgb), .1), rgba(var(--c-text-rgb), .03)); border: 1px solid var(--c-border); }
+.es-custom__demo-tag { display: inline-flex; padding: 6px 12px; border-radius: 99px; background: var(--c-accent); color: var(--c-accent-text); font-size: .72rem; font-weight: var(--font-body-weight-bold); letter-spacing: .14em; text-transform: uppercase; }
+.es-custom__demo-title { margin: 6px 0 0; font-family: var(--font-heading); font-style: var(--font-heading-style); font-weight: var(--font-heading-weight); font-size: calc(clamp(1.4rem, 2.6vw, 2rem) * var(--heading-scale)); line-height: 1.15; text-wrap: balance; }
+.es-custom__demo-text { margin: 0; max-width: 60ch; color: var(--c-muted); font-size: 1rem; line-height: 1.6; }
+.es-custom__demo-code { display: block; max-width: 100%; overflow-x: auto; margin-top: 6px; padding: 10px 14px; border-radius: 10px; background: rgba(var(--c-text-rgb), .07); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .84rem; white-space: normal; overflow-wrap: anywhere; }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Liquid personnalisé",

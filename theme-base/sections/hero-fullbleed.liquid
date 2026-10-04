@@ -36,6 +36,15 @@
   {%- if section.settings.show_scroll_cue -%}<span class="es-scroll-cue" aria-hidden="true"></span>{%- endif -%}
 </section>
 
+
+{% stylesheet %}
+/* Téléphone : l'image (zoom lent) reste dans son cadre, sans liseré sous le fondu. */
+@media (max-width: 749px) { .es-hero-full__media { overflow: hidden; } }
+.es-hero-full .es-eyebrow { color: var(--c-text); opacity: .9; text-shadow: 0 1px 12px rgba(0,0,0,.25); }
+.es-hero-full .es-lead { font-size: clamp(1.02rem, 1.3vw, 1.18rem); max-width: 52ch; }
+.es-hero-full--center .es-lead, .es-hero-full--bottom-center .es-lead { margin-inline: auto; }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Héros plein écran",

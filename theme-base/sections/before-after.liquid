@@ -1,12 +1,12 @@
 {%- comment -%} Comparaison avant / après, avec curseur accessible au clavier. {%- endcomment -%}
 <section class="es-section es-ambient es-before-after color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container">
-    <header class="es-section-head">
+    <header class="es-section-head es-section-head--center es-ba__head">
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
       {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
       {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
     </header>
-    <div class="es-compare" data-compare data-reveal="zoom" style="--ratio: {{ section.settings.ratio }}">
+    <div class="es-compare es-compare--{{ section.settings.ratio | handle }}" data-compare data-reveal="zoom" style="--ratio: {{ section.settings.ratio }}">
       {% render 'es-image', image: section.settings.image_after, asset: section.settings.image_after_asset, alt: section.settings.label_after, sizes: '(min-width: 1320px) 1240px, 100vw', class: 'es-compare__img' %}
       <div class="es-compare__before">
         {% render 'es-image', image: section.settings.image_before, asset: section.settings.image_before_asset, alt: section.settings.label_before, sizes: '(min-width: 1320px) 1240px, 100vw', class: 'es-compare__img' %}
@@ -19,6 +19,22 @@
     </div>
   </div>
 </section>
+
+{% stylesheet %}
+.es-ba__head { max-width: 760px; }
+.es-ba__head .es-lead { margin-inline: auto; }
+.es-before-after .es-compare { max-width: 1120px; margin-inline: auto; }
+.es-before-after .es-compare__label { top: 20px; font-weight: var(--font-body-weight-bold); }
+.es-before-after .es-compare__label--before { left: 20px; }
+.es-before-after .es-compare__label--after { right: 20px; }
+@media (max-width: 749px) {
+  .es-before-after .es-compare--16-9, .es-before-after .es-compare--4-3 { aspect-ratio: 4 / 5; }
+  .es-before-after .es-compare__label { top: 12px; padding: 7px 12px; font-size: .7rem; letter-spacing: .14em; }
+  .es-before-after .es-compare__label--before { left: 12px; }
+  .es-before-after .es-compare__label--after { right: 12px; }
+  .es-before-after .es-compare__knob { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
+}
+{% endstylesheet %}
 
 {% schema %}
 {

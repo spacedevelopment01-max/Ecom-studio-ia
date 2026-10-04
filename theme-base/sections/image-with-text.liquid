@@ -12,6 +12,13 @@
   </div>
 </section>
 
+{% stylesheet %}
+.es-iwt .es-iwt__content .es-heading { margin-bottom: .5em; }
+.es-iwt .es-iwt__content .es-rte { font-size: max(1.02rem, 15px); line-height: 1.7; max-width: 52ch; color: color-mix(in srgb, var(--c-text) 80%, var(--c-bg)); }
+.es-iwt .es-iwt__content .es-button { margin-top: clamp(20px, 2.4vw, 32px); }
+.es-iwt .es-iwt__media { border-radius: var(--radius-card); overflow: hidden; }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "Image et texte",

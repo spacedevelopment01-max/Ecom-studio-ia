@@ -8,7 +8,7 @@
   assign network = section.settings.network
   assign account_url = section.settings.account_url
 -%}
-<section class="es-section es-sg es-sg--{{ section.settings.ratio }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --sg-cols: {{ section.settings.columns }}; --sg-cols-m: {{ section.settings.columns_mobile }}; --sg-gap: {{ section.settings.gap }}px;" data-es-social-gallery>
+<section class="es-section es-sg es-sg--{{ section.settings.ratio }}{% assign sg_odd = section.blocks.size | modulo: 2 %}{% if section.settings.columns_mobile == '2' and sg_odd == 1 and section.blocks.size > 2 %} es-sg--m-lead{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --sg-cols: {{ section.settings.columns }}; --sg-cols-m: {{ section.settings.columns_mobile }}; --sg-gap: {{ section.settings.gap }}px;" data-es-social-gallery>
   <div class="es-container">
     {%- if section.blocks.size > 0 -%}
       <header class="es-sg__head">
@@ -69,6 +69,8 @@
 .es-sg__net { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: #fff; background: linear-gradient(135deg, var(--c-accent), color-mix(in srgb, var(--c-accent) 55%, #000)); }
 .es-sg__net .es-icon { width: 20px; height: 20px; }
 .es-sg__grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sg-gap, 8px); grid-template-columns: repeat(var(--sg-cols-m, 2), minmax(0, 1fr)); }
+/* Mobile, 2 colonnes, nombre impair : la première publication passe en grand (pas de case vide). */
+@media (max-width: 749px) { .es-sg--m-lead .es-sg__cell:first-child { grid-column: span 2; } }
 @media (min-width: 750px) { .es-sg__grid { grid-template-columns: repeat(min(var(--sg-cols, 4), 4), minmax(0, 1fr)); } }
 @media (min-width: 1100px) { .es-sg__grid { grid-template-columns: repeat(var(--sg-cols, 5), minmax(0, 1fr)); } }
 .es-sg__post { position: relative; display: block; overflow: hidden; aspect-ratio: 1; border-radius: calc(var(--radius-card) * .6); background: var(--c-surface); color: #fff; text-decoration: none; isolation: isolate; }
