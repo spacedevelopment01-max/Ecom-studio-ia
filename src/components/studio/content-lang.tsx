@@ -11,9 +11,10 @@ import { useT } from "../i18n";
 import { useProject } from "./project-context";
 import { cx } from "../ui";
 
-export function useContentLang(initial?: Lang) {
+/** `base` : langue par défaut à la place de celle du projet (ex. la langue du thème pour le chat de la boutique). */
+export function useContentLang(initial?: Lang, base?: Lang) {
   const { data } = useProject();
-  const projectLang: Lang = data?.settings.language ?? "fr";
+  const projectLang: Lang = base ?? data?.settings.language ?? "fr";
   const [chosen, setLang] = useState<Lang | null>(initial ?? null);
   return { lang: chosen ?? projectLang, setLang, projectLang };
 }

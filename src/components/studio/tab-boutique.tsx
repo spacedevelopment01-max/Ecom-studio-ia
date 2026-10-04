@@ -21,6 +21,7 @@ type ThemeData = {
     versionId: string;
     number: number;
     direction: string;
+    language?: "fr" | "en";
     name: string;
     summary: string;
     fingerprint: string;
@@ -81,8 +82,9 @@ export default function TabBoutique() {
   const { id, data, reload: reloadProject } = useProject();
   const toast = useToast();
   const t = useT();
-  const cl = useContentLang();
   const { data: theme, reload } = useApi<ThemeData>(`/api/projects/${id}/theme`);
+  // Les textes écrits dans la boutique suivent la langue du thème (sinon celle du projet), sauf choix contraire.
+  const cl = useContentLang(undefined, theme?.current?.language);
   const cost = useCostConfirm();
   const chatJobs = useActive(["shop.chat", "shop.build", "shop.direction", "shopify.push"]);
   const [view, setView] = useState<"chat" | "preview" | "structure">("chat");

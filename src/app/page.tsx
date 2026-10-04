@@ -93,23 +93,29 @@ const SECTIONS_COUNT = (() => {
 export default async function Home() {
   const lang = await serverLang();
   const T = (fr: string, en: string) => pick(lang, fr, en);
+  // Médias à texte incrusté (films, courtes vidéos, visuel avant/après) : version anglaise « .en » quand elle existe.
+  const M = (src: string) => {
+    if (lang !== "en") return src;
+    const en = src.replace(/(\.\w+)$/, ".en$1");
+    return fs.existsSync(path.join(process.cwd(), "public", en)) ? en : src;
+  };
   const raw = demos();
   const list = raw.map((d) => localizeDemo(d, lang));
   const d0 = list[0];
   // Avant / après : le drone (photo fournisseur sur fond de ciel) puis composé dans un décor du quotidien,
   // au même cadrage que la photo d'origine (public/demo/drone/avant-apres.jpg, produit réel détouré).
   const ba = list.find((d) => d.id === "drone") ?? d0;
-  const baAfter = ba?.id === "drone" ? "/demo/drone/avant-apres.jpg" : (raw.find((d) => d.id === ba?.id) ?? ba)?.images.find((x) => /scène|scene/i.test(x.label))?.src ?? ba?.photo;
+  const baAfter = ba?.id === "drone" ? M("/demo/drone/avant-apres.jpg") : (raw.find((d) => d.id === ba?.id) ?? ba)?.images.find((x) => /scène|scene/i.test(x.label))?.src ?? ba?.photo;
   const user = await currentUser();
   const live = paymentsLive();
-  const themes = directionCards();
+  const themes = directionCards(lang);
   const cta = user ? "/studio" : "/inscription";
   const chapters = [
-    { tag: T("Analyse", "Analysis"), title: T("Une photo suffit pour démarrer.", "One photo is all it takes."), text: T("Le studio détoure votre produit au pixel près, mesure sa palette sur l'objet et dessine logo et charte. Pas encore de photo ? Ouvrez le studio quand même : vous l'ajouterez plus tard.", "The studio cuts out your product with pixel precision, measures its palette on the object itself and designs your logo and brand guidelines. No photo yet? Open the studio anyway: you can add one later."), video: "/explainers/photo.mp4", poster: "/explainers/photo.jpg" },
-    { tag: T("Boutique sur mesure", "Custom store"), title: T("Votre thème, créé de A à Z par l'IA.", "Your theme, built from A to Z by AI."), text: T("Couleurs et typographies de votre marque, mise en page pensée pour votre produit, sections inédites codées pour lui : un vrai thème unique, prêt pour Shopify, WooCommerce ou PrestaShop, que vous retouchez ensuite en discutant.", "Your brand's colors and fonts, a layout designed around your product, brand-new sections coded just for it: a truly unique theme, ready for Shopify, WooCommerce or PrestaShop, that you then fine-tune just by chatting."), video: "/explainers/themes.mp4", poster: "/explainers/themes.jpg" },
-    { tag: T("Retouche", "Editing"), title: T("Vous modifiez en discutant.", "Edit by chatting."), text: T("Boutons, titres, couleurs, images, sections : désignez n'importe quel élément dans l'aperçu et demandez ce que vous voulez, seul cet élément change. Chaque modification crée une version que vous pouvez restaurer.", "Buttons, headings, colors, images, sections: point to any element in the preview and ask for what you want; only that element changes. Every edit creates a version you can restore."), video: "/explainers/chat.mp4", poster: "/explainers/chat.jpg" },
-    { tag: T("Images et vidéos", "Images and videos"), title: T("Chaque visuel au bon format.", "Every visual in the right format."), text: T("Packshots, scènes, publicités et vidéos montées en 1:1, 4:5, 9:16 et 16:9, toujours à partir des pixels réels de votre produit, avec des textes nets.", "Packshots, scenes, ads and edited videos in 1:1, 4:5, 9:16 and 16:9, always built from your product's real pixels, with crisp text."), video: "/explainers/formats.mp4", poster: "/explainers/formats.jpg" },
-    { tag: T("Calendrier", "Calendar"), title: T("Vous validez, le studio publie.", "You approve, the studio publishes."), text: T("Des semaines de publications préparées pour chaque réseau. Rien ne part sans votre accord ; une fois vos comptes connectés, la publication programmée tourne même navigateur fermé.", "Weeks of posts prepared for each network. Nothing goes out without your approval; once your accounts are connected, scheduled publishing runs even with your browser closed."), video: "/explainers/cal.mp4", poster: "/explainers/cal.jpg" },
+    { tag: T("Analyse", "Analysis"), title: T("Une photo suffit pour démarrer.", "One photo is all it takes."), text: T("Le studio détoure votre produit au pixel près, mesure sa palette sur l'objet et dessine logo et charte. Pas encore de photo ? Ouvrez le studio quand même : vous l'ajouterez plus tard.", "The studio cuts out your product with pixel precision, measures its palette on the object itself and designs your logo and brand guidelines. No photo yet? Open the studio anyway: you can add one later."), video: M("/explainers/photo.mp4"), poster: M("/explainers/photo.jpg") },
+    { tag: T("Boutique sur mesure", "Custom store"), title: T("Votre thème, créé de A à Z par l'IA.", "Your theme, built from A to Z by AI."), text: T("Couleurs et typographies de votre marque, mise en page pensée pour votre produit, sections inédites codées pour lui : un vrai thème unique, prêt pour Shopify, WooCommerce ou PrestaShop, que vous retouchez ensuite en discutant.", "Your brand's colors and fonts, a layout designed around your product, brand-new sections coded just for it: a truly unique theme, ready for Shopify, WooCommerce or PrestaShop, that you then fine-tune just by chatting."), video: M("/explainers/themes.mp4"), poster: M("/explainers/themes.jpg") },
+    { tag: T("Retouche", "Editing"), title: T("Vous modifiez en discutant.", "Edit by chatting."), text: T("Boutons, titres, couleurs, images, sections : désignez n'importe quel élément dans l'aperçu et demandez ce que vous voulez, seul cet élément change. Chaque modification crée une version que vous pouvez restaurer.", "Buttons, headings, colors, images, sections: point to any element in the preview and ask for what you want; only that element changes. Every edit creates a version you can restore."), video: M("/explainers/chat.mp4"), poster: M("/explainers/chat.jpg") },
+    { tag: T("Images et vidéos", "Images and videos"), title: T("Chaque visuel au bon format.", "Every visual in the right format."), text: T("Packshots, scènes, publicités et vidéos montées en 1:1, 4:5, 9:16 et 16:9, toujours à partir des pixels réels de votre produit, avec des textes nets.", "Packshots, scenes, ads and edited videos in 1:1, 4:5, 9:16 and 16:9, always built from your product's real pixels, with crisp text."), video: M("/explainers/formats.mp4"), poster: M("/explainers/formats.jpg") },
+    { tag: T("Calendrier", "Calendar"), title: T("Vous validez, le studio publie.", "You approve, the studio publishes."), text: T("Des semaines de publications préparées pour chaque réseau. Rien ne part sans votre accord ; une fois vos comptes connectés, la publication programmée tourne même navigateur fermé.", "Weeks of posts prepared for each network. Nothing goes out without your approval; once your accounts are connected, scheduled publishing runs even with your browser closed."), video: M("/explainers/cal.mp4"), poster: M("/explainers/cal.jpg") },
   ];
   const features: [any, string, string][] = [
     [MessageSquare, T("Boutique par conversation", "Store by conversation"), T("Discutez à gauche, la boutique s'actualise à droite. Désignez une zone, joignez une image, demandez « modifie uniquement ce bouton ».", "Chat on the left, the store updates on the right. Point to an area, attach an image, ask \"change only this button.\"")],
@@ -202,7 +208,7 @@ export default async function Home() {
                 <div className="neon on overflow-hidden rounded-[2rem] border border-line bg-[#070B17] shadow-[0_40px_120px_-40px_var(--glow)]">
                   <FilmPlayer
                     films={[
-                      { label: T("Comment ça marche · 1 min", "How it works · 1 min"), src: "/explainers/film-court.mp4", poster: "/explainers/film-court.jpg", description: T("Film explicatif sans voix : de la photo à la publication en 7 étapes", "Explainer film without voice-over: from photo to post in 7 steps") },
+                      { label: T("Comment ça marche · 1 min", "How it works · 1 min"), src: M("/explainers/film-court.mp4"), poster: M("/explainers/film-court.jpg"), description: T("Film explicatif sans voix : de la photo à la publication en 7 étapes", "Explainer film without voice-over: from photo to post in 7 steps") },
                     ]}
                   />
                 </div>

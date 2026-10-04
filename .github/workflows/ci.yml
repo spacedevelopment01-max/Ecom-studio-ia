@@ -43,6 +43,14 @@ jobs:
             echo "::endgroup::"
           done
 
+      - name: Shopify Theme Check (thèmes en anglais)
+        run: |
+          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
+            echo "::group::$d (en)"
+            LANG_THEME=en npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-en-$d" "$d"
+            echo "::endgroup::"
+          done
+
       - name: Shopify Theme Check (boutiques multi-produit et niche)
         run: |
           for d in atelier brut gourmand flux; do

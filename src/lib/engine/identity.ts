@@ -112,7 +112,7 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
   const batch = Date.now().toString(36);
   for (const pr of proposals) {
     const png = await logoPng({ ...pr.spec, color, accent }, 900);
-    await saveAsset({ ...common, data: png, name: `proposition-${pr.key}.png`, mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, batch } });
+    await saveAsset({ ...common, data: png, name: C(`proposition-${pr.key}.png`, `proposal-${pr.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, batch } });
   }
   const choice = opts.choice ?? p.brand.logo.proposal ?? defaultProposal(p.brand.direction);
   return applyLogo(ctx, projectId, proposals.find((x) => x.key === choice) ?? proposals[0]);
@@ -130,14 +130,14 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   const webSpec: LogoSpec = spec.layout === "badge" ? { ...spec, layout: "lockup", tagline: undefined } : spec;
   const web = webSpec === spec ? null : await logoSet(webSpec, "#FFFFFF");
   const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { spec: pr.spec, concept: pr.concept, proposal: pr.key } };
-  const main = await saveAsset({ ...base, data: set.mainPng, name: "logo-principal.png", mime: "image/png", role: "logo", status: "review" });
-  await saveAsset({ ...base, data: Buffer.from(set.mainSvg), name: "logo-principal.svg", mime: "image/svg+xml", kind: "logo", role: "logo-svg", sourceAssetId: main.id });
-  const light = await saveAsset({ ...base, data: (web ?? set).lightPng, name: "logo-clair.png", mime: "image/png", role: "logo-light", sourceAssetId: main.id });
-  await saveAsset({ ...base, data: Buffer.from((web ?? set).lightSvg), name: "logo-clair.svg", mime: "image/svg+xml", kind: "logo", role: "logo-light-svg", sourceAssetId: main.id });
+  const main = await saveAsset({ ...base, data: set.mainPng, name: C("logo-principal.png", "logo-main.png"), mime: "image/png", role: "logo", status: "review" });
+  await saveAsset({ ...base, data: Buffer.from(set.mainSvg), name: C("logo-principal.svg", "logo-main.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-svg", sourceAssetId: main.id });
+  const light = await saveAsset({ ...base, data: (web ?? set).lightPng, name: C("logo-clair.png", "logo-light.png"), mime: "image/png", role: "logo-light", sourceAssetId: main.id });
+  await saveAsset({ ...base, data: Buffer.from((web ?? set).lightSvg), name: C("logo-clair.svg", "logo-light.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-light-svg", sourceAssetId: main.id });
   const horizontal = web ? await saveAsset({ ...base, data: web.mainPng, name: "logo-horizontal.png", mime: "image/png", role: "logo-horizontal", sourceAssetId: main.id }) : main;
   if (web) await saveAsset({ ...base, data: Buffer.from(web.mainSvg), name: "logo-horizontal.svg", mime: "image/svg+xml", kind: "logo", role: "logo-horizontal-svg", sourceAssetId: main.id });
-  await saveAsset({ ...base, data: set.monoPng, name: "marque-reduite.png", mime: "image/png", role: "logo-mark", sourceAssetId: main.id });
-  await saveAsset({ ...base, data: Buffer.from(set.monoSvg), name: "marque-reduite.svg", mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id });
+  await saveAsset({ ...base, data: set.monoPng, name: C("marque-reduite.png", "brand-mark.png"), mime: "image/png", role: "logo-mark", sourceAssetId: main.id });
+  await saveAsset({ ...base, data: Buffer.from(set.monoSvg), name: C("marque-reduite.svg", "brand-mark.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id });
   const fav = await saveAsset({ ...base, data: set.faviconPng, name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
   saveBrand(projectId, { ...brand, logo: { ...brand.logo, assetId: main.id, concept: pr.concept, status: "proposed", proposal: pr.key } });
   swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id });

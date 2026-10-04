@@ -8,7 +8,7 @@ import { decomposeTheme, openThemeZip, type ImportReport } from "../theme/import
 import type { StoreProduct, ThemeSpec } from "../theme/spec";
 import { collectImages, savedCopy, storeProduct } from "./shop";
 import { localCopy } from "./local-copy";
-import { C, L } from "../i18n-server";
+import { C, L, contentLang } from "../i18n-server";
 
 /** Données de démonstration de la boutique pour l'aperçu : celles du thème actuel, sinon le produit du projet. */
 function storeFor(projectId: string): Pick<ThemeSpec, "store" | "files"> {
@@ -49,6 +49,7 @@ export async function importThemeForProject(projectId: string, userId: string, z
     locks: [],
     imported: { name: d.report.name, archive: asset.id, root: arc.root, groups: Object.keys(d.groups) as ("header" | "footer")[], presets: d.presets, report: d.report },
     store: base.store,
+    language: contentLang(),
   };
   const v = saveThemeVersion(projectId, spec, L(`Thème importé : ${d.report.name} (${d.report.files.sections} sections, ${d.report.pages.length} pages)`, `Imported theme: ${d.report.name} (${d.report.files.sections} sections, ${d.report.pages.length} pages)`), "user");
   return { versionId: v.id, number: v.number, report: d.report };

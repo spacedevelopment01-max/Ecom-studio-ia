@@ -18,7 +18,7 @@ import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
 import { llmConfigured } from "../ai/llm";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
-import { C, L } from "../i18n-server";
+import { C, L, contentLang } from "../i18n-server";
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "produit";
 
@@ -145,6 +145,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     files,
     product: main,
     social: p.settings.socialLinks,
+    language: contentLang(),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
   let author: "ai" | "system" = "system";

@@ -100,7 +100,12 @@ describe("boutique en anglais", () => {
       for (const [p, content] of files) {
         if (/^sections\/[^/]+\.liquid$/.test(p)) {
           const m = content.match(/\{%-?\s*schema\s*-?%\}([\s\S]*?)\{%-?\s*endschema\s*-?%\}/);
-          if (m) for (const s of schemaStrings(JSON.parse(m[1]))) if (french(s)) bad.push(`${p}: ${s}`);
+          if (m) {
+            const raw = JSON.parse(m[1]);
+            for (const s of schemaStrings(raw)) if (french(s)) bad.push(`${p}: ${s}`);
+            // Shopify (Theme Check) : noms de section, de bloc et de préréglage de 25 caractères au plus.
+            for (const n of [raw.name, ...(raw.blocks ?? []).map((b: any) => b.name), ...(raw.presets ?? []).map((x: any) => x.name)]) if (typeof n === "string" && n.length > 25) bad.push(`${p}: name too long "${n}"`);
+          }
         }
         if (p === "config/settings_schema.json") for (const g of JSON.parse(content)) if (g.name !== "theme_info") for (const s of [g.name, ...schemaStrings({ settings: g.settings })]) if (french(s)) bad.push(`${p}: ${s}`);
         if (/^(templates\/.+|sections\/.+-group)\.json$/.test(p) || p === "config/settings_data.json") for (const s of deepStrings(JSON.parse(stripHeader(content)))) if (french(s)) bad.push(`${p}: ${s}`);
@@ -131,8 +136,8 @@ describe("boutique en anglais", () => {
     for (const s of deepStrings(blocks.map((b) => b.settings))) expect(french(s), s).toBe(false);
     // Interface en français : nom de la section en français ; en anglais : en anglais.
     expect(sectionSchema(spec, "faq", "fr")?.name).toBe("Questions fréquentes");
-    expect(sectionSchema(spec, "faq", "en")?.name).toBe("Frequently asked questions");
-    expect(sectionSchema(spec, "faq")?.name).toBe("Frequently asked questions");
+    expect(sectionSchema(spec, "faq", "en")?.name).toBe("FAQ");
+    expect(sectionSchema(spec, "faq")?.name).toBe("FAQ");
   });
 
   it("les thèmes existants sans langue restent en français", () => {

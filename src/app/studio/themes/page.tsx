@@ -37,7 +37,7 @@ export default async function ThemesPage() {
           )}
         </p>
         <p className="mt-2 text-sm text-muted">{t("Aperçus réalisés sur un produit de démonstration fictif.", "Previews built on a fictional demo product.")}</p>
-        <div className="mt-8"><ThemeGrid directions={directionCards()} /></div>
+        <div className="mt-8"><ThemeGrid directions={directionCards(lang)} /></div>
       </main>
     </div>
   );
