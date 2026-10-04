@@ -1,0 +1,321 @@
+{
+  "generatedAt": "2026-10-04T01:15:59.490Z",
+  "note": "Brands created by E-COM STUDIO IA (built-in engine) from photos of real supplier products, retouched (original markings removed).",
+  "demos": [
+    {
+      "id": "verger",
+      "brand": "Verger",
+      "product": "Peach Iced Tea",
+      "sector": "Beverages",
+      "direction": "gourmand",
+      "palette": [
+        "#955223",
+        "#E4D4C8",
+        "#CFC159",
+        "#F7F4F2",
+        "#1F1914"
+      ],
+      "photo": "/demo/verger/photo.en.jpg",
+      "logo": "/demo/verger/logo.en.svg",
+      "shopDesktop": "/demo/verger/boutique-bureau.en.jpg",
+      "shopMobile": "/demo/verger/boutique-mobile.en.jpg",
+      "productPage": "/demo/verger/fiche-produit.en.jpg",
+      "images": [
+        {
+          "src": "/demo/verger/cutout-1.en.webp",
+          "label": "Cutout"
+        },
+        {
+          "src": "/demo/verger/packshot-1.en.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/verger/detail-1.en.jpg",
+          "label": "Detail"
+        },
+        {
+          "src": "/demo/verger/scene-1.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/verger/scene-2.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/verger/social-1.en.jpg",
+          "label": "Social visual"
+        },
+        {
+          "src": "/demo/verger/ad-1.en.jpg",
+          "label": "Ad"
+        },
+        {
+          "src": "/demo/verger/banner-1.en.jpg",
+          "label": "Banner"
+        }
+      ],
+      "video": "/demo/verger/video.en.mp4",
+      "videoPoster": "/demo/verger/video-poster.en.jpg",
+      "shopVideo": "/demo/verger/video-boutique.en.mp4",
+      "storeType": "niche",
+      "products": 3,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://www.aliexpress.com/",
+        "note": "A supplier's 33 cl can of iced tea, relabeled: the brand and the three flavors are created by the studio."
+      }
+    },
+    {
+      "id": "oreiller",
+      "brand": "Somnéa",
+      "product": "Papillon Ergonomic Pillow",
+      "sector": "Home",
+      "direction": "clinique",
+      "palette": [
+        "#454873",
+        "#D3D4D9",
+        "#8D74B4",
+        "#F2F3F7",
+        "#14151F"
+      ],
+      "photo": "/demo/oreiller/photo.en.jpg",
+      "logo": "/demo/oreiller/logo.en.svg",
+      "shopDesktop": "/demo/oreiller/boutique-bureau.en.jpg",
+      "shopMobile": "/demo/oreiller/boutique-mobile.en.jpg",
+      "productPage": "/demo/oreiller/fiche-produit.en.jpg",
+      "images": [
+        {
+          "src": "/demo/oreiller/cutout-1.en.webp",
+          "label": "Cutout"
+        },
+        {
+          "src": "/demo/oreiller/packshot-1.en.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/oreiller/detail-1.en.jpg",
+          "label": "Detail"
+        },
+        {
+          "src": "/demo/oreiller/scene-1.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/oreiller/scene-2.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/oreiller/social-1.en.jpg",
+          "label": "Social visual"
+        },
+        {
+          "src": "/demo/oreiller/ad-1.en.jpg",
+          "label": "Ad"
+        },
+        {
+          "src": "/demo/oreiller/banner-1.en.jpg",
+          "label": "Banner"
+        }
+      ],
+      "video": "/demo/oreiller/video.en.mp4",
+      "videoPoster": "/demo/oreiller/video-poster.en.jpg",
+      "shopVideo": "/demo/oreiller/video-boutique.en.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://www.aliexpress.com/",
+        "note": "A white-label ergonomic pillow from a supplier, in two colors: the brand, the visuals and the store are created by the studio."
+      }
+    },
+    {
+      "id": "drone",
+      "brand": "Ostral",
+      "product": "Foldable Drone with Stabilized Camera",
+      "sector": "Tech",
+      "direction": "nocturne",
+      "palette": [
+        "#455773",
+        "#D4D6D8",
+        "#7874B4",
+        "#F2F4F7",
+        "#14181F"
+      ],
+      "photo": "/demo/drone/photo.en.jpg",
+      "logo": "/demo/drone/logo.en.svg",
+      "shopDesktop": "/demo/drone/boutique-bureau.en.jpg",
+      "shopMobile": "/demo/drone/boutique-mobile.en.jpg",
+      "productPage": "/demo/drone/fiche-produit.en.jpg",
+      "images": [
+        {
+          "src": "/demo/drone/cutout-1.en.webp",
+          "label": "Cutout"
+        },
+        {
+          "src": "/demo/drone/packshot-1.en.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/drone/detail-1.en.jpg",
+          "label": "Detail"
+        },
+        {
+          "src": "/demo/drone/scene-1.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/drone/scene-2.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/drone/social-1.en.jpg",
+          "label": "Social visual"
+        },
+        {
+          "src": "/demo/drone/ad-1.en.jpg",
+          "label": "Ad"
+        },
+        {
+          "src": "/demo/drone/banner-1.en.jpg",
+          "label": "Banner"
+        }
+      ],
+      "video": "/demo/drone/video.en.mp4",
+      "videoPoster": "/demo/drone/video-poster.en.jpg",
+      "shopVideo": "/demo/drone/video-boutique.en.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://www.aliexpress.com/",
+        "note": "A white-label foldable drone from a supplier; the manufacturer's markings were removed from the photo, and the brand and store are created by the studio."
+      }
+    },
+    {
+      "id": "chat",
+      "brand": "Ronron",
+      "product": "Pet Hair Remover Glove",
+      "sector": "Pets",
+      "direction": "pop",
+      "palette": [
+        "#454573",
+        "#D6D6D7",
+        "#9274B4",
+        "#F2F2F7",
+        "#14141F"
+      ],
+      "photo": "/demo/chat/photo.en.jpg",
+      "logo": "/demo/chat/logo.en.svg",
+      "shopDesktop": "/demo/chat/boutique-bureau.en.jpg",
+      "shopMobile": "/demo/chat/boutique-mobile.en.jpg",
+      "productPage": "/demo/chat/fiche-produit.en.jpg",
+      "images": [
+        {
+          "src": "/demo/chat/cutout-1.en.webp",
+          "label": "Cutout"
+        },
+        {
+          "src": "/demo/chat/packshot-1.en.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/chat/detail-1.en.jpg",
+          "label": "Detail"
+        },
+        {
+          "src": "/demo/chat/scene-1.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/chat/scene-2.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/chat/social-1.en.jpg",
+          "label": "Social visual"
+        },
+        {
+          "src": "/demo/chat/ad-1.en.jpg",
+          "label": "Ad"
+        },
+        {
+          "src": "/demo/chat/banner-1.en.jpg",
+          "label": "Banner"
+        }
+      ],
+      "video": "/demo/chat/video.en.mp4",
+      "videoPoster": "/demo/chat/video-poster.en.jpg",
+      "shopVideo": "/demo/chat/video-boutique.en.mp4",
+      "storeType": "niche",
+      "products": 2,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://www.aliexpress.com/",
+        "note": "White-label cat products from suppliers: the brand, the visuals and the store are created by the studio."
+      }
+    },
+    {
+      "id": "tribunes",
+      "brand": "Les Tribunes",
+      "product": "Lavender Supporter T-shirt",
+      "sector": "Fashion",
+      "direction": "flux",
+      "palette": [
+        "#263C91",
+        "#C8CEE4",
+        "#7859CF",
+        "#F2F3F7",
+        "#14161F"
+      ],
+      "photo": "/demo/tribunes/photo.en.jpg",
+      "logo": "/demo/tribunes/logo.en.svg",
+      "shopDesktop": "/demo/tribunes/boutique-bureau.en.jpg",
+      "shopMobile": "/demo/tribunes/boutique-mobile.en.jpg",
+      "productPage": "/demo/tribunes/fiche-produit.en.jpg",
+      "images": [
+        {
+          "src": "/demo/tribunes/cutout-1.en.webp",
+          "label": "Cutout"
+        },
+        {
+          "src": "/demo/tribunes/packshot-1.en.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/tribunes/detail-1.en.jpg",
+          "label": "Detail"
+        },
+        {
+          "src": "/demo/tribunes/scene-1.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/tribunes/scene-2.en.jpg",
+          "label": "Scene"
+        },
+        {
+          "src": "/demo/tribunes/social-1.en.jpg",
+          "label": "Social visual"
+        },
+        {
+          "src": "/demo/tribunes/ad-1.en.jpg",
+          "label": "Ad"
+        },
+        {
+          "src": "/demo/tribunes/banner-1.en.jpg",
+          "label": "Banner"
+        }
+      ],
+      "video": "/demo/tribunes/video.en.mp4",
+      "videoPoster": "/demo/tribunes/video-poster.en.jpg",
+      "shopVideo": "/demo/tribunes/video-boutique.en.mp4",
+      "storeType": "niche",
+      "products": 2,
+      "source": {
+        "supplier": "AliExpress",
+        "url": "https://www.aliexpress.com/",
+        "note": "Supporter T-shirts from a supplier (supplier visuals): the brand and the store are created by the studio. Designs featuring the federation's official crest were excluded."
+      }
+    }
+  ]
+}
