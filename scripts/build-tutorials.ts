@@ -37,6 +37,8 @@ for (const id of ids) {
   await ctx.addCookies([{ name: "ecs-lang", value: LANG, url: BASE }]);
   const login = await ctx.request.post(`${BASE}/api/auth/login`, { data: { email: EMAIL, password: PASSWORD } });
   if (!login.ok()) throw new Error(`connexion : ${await login.text()}`);
+  // Langue de l'interface enregistrée côté serveur, comme le fait le sélecteur FR/EN : les réponses des tâches (worker) la suivent.
+  await ctx.request.post(`${BASE}/api/me/lang`, { data: { lang: LANG } });
   // tsx (esbuild) nomme les fonctions avec un utilitaire « __name » absent du navigateur.
   await ctx.addInitScript({ content: "window.__name = window.__name || ((f) => f);" });
   await ctx.addInitScript(OVERLAY);

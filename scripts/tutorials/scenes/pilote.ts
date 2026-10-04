@@ -7,10 +7,13 @@ export default async function ({ r, t }: SceneCtx) {
   const main = p.locator("main");
   const card = (text: string) => main.getByText(text, { exact: true }).first().locator("xpath=ancestor::div[contains(@class,'rounded-3xl')][1]");
   const progress = card(t("Avancement de la création", "Creation progress"));
-  await r.during(progress.locator("ol li").first().waitFor({ state: "visible", timeout: 120_000 }));
-  await r.during(p.waitForLoadState("networkidle").catch(() => {}));
-  // Photo de couverture et logo chargés avant de filmer.
-  await r.during(p.waitForFunction(() => { const imgs = [...document.querySelectorAll("main img")] as HTMLImageElement[]; return imgs.length > 0 && imgs.every((i) => i.complete && i.naturalWidth > 0); }, null, { timeout: 120_000 }).catch(() => {}));
+  // Toutes les attentes de chargement d'ouverture en une seule coupe au montage.
+  await r.during((async () => {
+    await progress.locator("ol li").first().waitFor({ state: "visible", timeout: 120_000 });
+    await p.waitForLoadState("networkidle").catch(() => {});
+    // Photo de couverture et logo chargés avant de filmer.
+    await p.waitForFunction(() => { const imgs = [...document.querySelectorAll("main img")] as HTMLImageElement[]; return imgs.length > 0 && imgs.every((i) => i.complete && i.naturalWidth > 0); }, null, { timeout: 120_000 }).catch(() => {});
+  })());
 
   await r.step(0, async () => {
     await r.spot(progress, 6);

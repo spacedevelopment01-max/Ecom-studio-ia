@@ -1,5 +1,16 @@
 import type { SceneCtx } from "../../build-tutorials";
 
+/** Ce navigateur de tournage ne lit pas le H.264 : on affiche la vignette du média comme image d'attente du lecteur,
+ *  comme le ferait un navigateur ordinaire avec la première image de la vidéo. */
+async function posterize(p: import("playwright").Page) {
+  await p.evaluate(() => {
+    const d = document.querySelector("[role=dialog]");
+    const v = d?.querySelector("video");
+    const img = d?.querySelector("img") as HTMLImageElement | null;
+    if (v && !v.poster && img?.src) { v.poster = img.src; v.preload = "none"; v.load(); }
+  });
+}
+
 // Rien n'est enregistré, validé ni publié pendant le tournage : la fenêtre est refermée sans enregistrer,
 // les cases cochées sont décochées et « Nouvelle publication » est seulement montrée.
 export default async function ({ r, t }: SceneCtx) {
@@ -9,7 +20,18 @@ export default async function ({ r, t }: SceneCtx) {
   const filter = (fr: string, en: string) => p.getByRole("button", { name: new RegExp(`^${t(fr, en)} \\d+$`) });
   await r.during((async () => {
     await boxes.first().waitFor({ state: "visible", timeout: 60_000 });
-    await p.waitForFunction(() => [...document.querySelectorAll("main img, img")].filter((i) => i.getBoundingClientRect().top < innerHeight).every((i) => (i as HTMLImageElement).complete), null, { timeout: 30_000 }).catch(() => {});
+    // Une vignette en échec (serveur chargé) est redemandée.
+    await p.waitForFunction(() => {
+      let ok = true;
+      for (const i of [...document.querySelectorAll("img")].filter((i) => i.getBoundingClientRect().top < innerHeight) as HTMLImageElement[]) {
+        if (!i.complete) ok = false;
+        else if (i.naturalWidth === 0 && i.src.includes("/api/files/")) {
+          ok = false;
+          i.src = i.src.replace(/[?&]r=\d+$/, "") + `${i.src.includes("?") ? "&" : "?"}r=${Date.now()}`;
+        }
+      }
+      return ok;
+    }, null, { timeout: 60_000, polling: 2000 }).catch(() => {});
     await r.wait(500);
   })());
 
@@ -43,7 +65,8 @@ export default async function ({ r, t }: SceneCtx) {
   await r.step(3, async () => {
     await r.click(firstRow.locator("span.line-clamp-2"), { settle: 300 });
     await r.during(d.locator("#pcap").waitFor({ timeout: 20_000 }));
-    await d.locator("img, video").first().waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+    await d.locator("img").first().waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+    await posterize(p);
     await r.wait(700);
     await r.point(d.locator("#pnet"));
     await r.wait(500);

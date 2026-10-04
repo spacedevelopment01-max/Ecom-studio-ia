@@ -1,5 +1,16 @@
 import type { SceneCtx } from "../../build-tutorials";
 
+/** Ce navigateur de tournage ne lit pas le H.264 : on affiche la vignette du média comme image d'attente du lecteur,
+ *  comme le ferait un navigateur ordinaire avec la première image de la vidéo. */
+async function posterize(p: import("playwright").Page) {
+  await p.evaluate(() => {
+    const d = document.querySelector("[role=dialog]");
+    const v = d?.querySelector("video");
+    const img = d?.querySelector("img") as HTMLImageElement | null;
+    if (v && !v.poster && img?.src) { v.poster = img.src; v.preload = "none"; v.load(); }
+  });
+}
+
 /** Publication déplacée pendant le tournage, remise à sa date d'origine par cleanup. */
 let moved: { id: string; at: number } | null = null;
 
@@ -10,7 +21,12 @@ export default async function ({ r, t, projectId, base }: SceneCtx) {
   const chips = p.locator("button[draggable=true]");
   const day = (n: number) => p.getByRole("button", { name: String(n), exact: true });
   const postsLoaded = () => p.waitForResponse((x) => x.url().includes(`/api/projects/${projectId}/posts?from=`) && x.request().method() === "GET", { timeout: 30_000 }).catch(() => {});
-  await r.during(chips.first().waitFor({ state: "visible", timeout: 60_000 }));
+  // Première publication du mois (celle qui sera glissée), lue avant le tournage : l'attente est coupée au montage.
+  const first = await r.during((async () => {
+    const posts = (await (await p.context().request.get(`${base}/api/projects/${projectId}/posts`)).json()).posts as { id: string; scheduledAt: number | null }[];
+    await chips.first().waitFor({ state: "visible", timeout: 60_000 });
+    return posts.filter((x) => x.scheduledAt).sort((a, b) => a.scheduledAt! - b.scheduledAt!)[0];
+  })());
   await r.wait(400);
 
   await r.step(0, async () => {
@@ -32,8 +48,7 @@ export default async function ({ r, t, projectId, base }: SceneCtx) {
     await r.wait(1200);
     res = postsLoaded();
     await r.click(p.getByRole("button", { name: t("Aujourd'hui", "Today") }), { settle: 200 });
-    await r.during(res);
-    await chips.first().waitFor({ state: "visible", timeout: 20_000 });
+    await r.during((async () => { await res; await chips.first().waitFor({ state: "visible", timeout: 30_000 }); })());
     await r.wait(900);
   });
   await r.step(2, async () => {
@@ -47,15 +62,15 @@ export default async function ({ r, t, projectId, base }: SceneCtx) {
     await r.wait(1500);
     res = postsLoaded();
     await r.click(p.getByRole("button", { name: t("Mois", "Month"), exact: true }), { settle: 200 });
-    await r.during(res);
-    await chips.first().waitFor({ state: "visible", timeout: 20_000 });
+    await r.during((async () => { await res; await chips.first().waitFor({ state: "visible", timeout: 30_000 }); })());
     await r.wait(600);
   });
   await r.step(3, async () => {
     await r.click(chips.nth(3), { settle: 300 });
     const d = p.getByRole("dialog");
     await r.during(d.locator("#pcap").waitFor({ timeout: 20_000 }));
-    await d.locator("img, video").first().waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+    await d.locator("img").first().waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+    await posterize(p);
     await r.wait(800);
     await r.point(d.locator("#pcap"));
     await r.wait(900);
@@ -64,18 +79,15 @@ export default async function ({ r, t, projectId, base }: SceneCtx) {
     await r.click(d.getByRole("button", { name: t("Fermer", "Close") }).first(), { settle: 600 });
   });
   await r.step(4, async () => {
-    const api = p.context().request;
-    const posts = (await (await api.get(`${base}/api/projects/${projectId}/posts`)).json()).posts as { id: string; scheduledAt: number | null }[];
-    const first = posts.filter((x) => x.scheduledAt).sort((a, b) => a.scheduledAt! - b.scheduledAt!)[0];
     moved = { id: first.id, at: first.scheduledAt! };
     const chip = chips.first();
     const target = day(13).locator("..");
     await r.point(chip, { dx: 30 });
-    await p.mouse.down();
-    await r.wait(200);
+    await r.wait(300);
     const saved = p.waitForResponse((x) => x.url().includes(`/api/posts/${first.id}`) && x.request().method() === "PATCH", { timeout: 20_000 }).catch(() => {});
+    // Le curseur dessiné suit le geste ; le vrai glisser-déposer HTML5 est joué par Playwright.
     await r.point(target);
-    await p.mouse.up();
+    await chip.dragTo(target, { sourcePosition: { x: 30, y: 8 } });
     await r.during(saved);
     await r.wait(1600);
     await r.spot(target, 2);
@@ -84,8 +96,9 @@ export default async function ({ r, t, projectId, base }: SceneCtx) {
   });
   await r.step(5, async () => {
     const legend = p.getByText(t("Brouillon", "Draft"), { exact: true }).last().locator("..");
-    await r.spot(legend, 8);
+    // Le curseur d'abord : le sous-titre passe en haut avant la mise en évidence.
     await r.point(legend, { dx: 20 });
+    await r.spot(legend, 8);
     await r.wait(1500);
     await r.spot(null);
   });

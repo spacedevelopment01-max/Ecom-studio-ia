@@ -6,9 +6,12 @@ export default async function ({ r, t }: SceneCtx) {
   const main = p.locator("main");
   const card = (text: string) => main.getByText(text, { exact: true }).first().locator("xpath=ancestor::div[contains(@class,'rounded-3xl')][1]");
   const sheet = card(t("Fiche produit", "Product sheet"));
-  await r.during(sheet.getByLabel(t("Valeur", "Value")).first().waitFor({ state: "visible", timeout: 120_000 }));
-  await r.during(main.getByRole("radiogroup").waitFor({ timeout: 120_000 }).catch(() => {}));
-  await r.during(p.waitForFunction(() => { const imgs = [...document.querySelectorAll("main img")] as HTMLImageElement[]; return imgs.length > 0 && imgs.every((i) => i.complete && i.naturalWidth > 0); }, null, { timeout: 120_000 }).catch(() => {}));
+  // Toutes les attentes de chargement d'ouverture en une seule coupe au montage.
+  await r.during((async () => {
+    await sheet.getByLabel(t("Valeur", "Value")).first().waitFor({ state: "visible", timeout: 120_000 });
+    await main.getByRole("radiogroup").waitFor({ timeout: 120_000 }).catch(() => {});
+    await p.waitForFunction(() => { const imgs = [...document.querySelectorAll("main img")] as HTMLImageElement[]; return imgs.length > 0 && imgs.every((i) => i.complete && i.naturalWidth > 0); }, null, { timeout: 120_000 }).catch(() => {});
+  })());
 
   await r.step(0, async () => {
     await r.spot(sheet, 4);

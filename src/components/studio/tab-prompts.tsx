@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Heart, Search, Sparkles, Save, Trash2, ArrowRight } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Input, Select, Textarea, useApi, useToast } from "../ui";
@@ -11,6 +11,8 @@ type P = { id: string; sector: string; sectorLabel: string; category: string; ca
 type Data = { prompts: P[]; favorites: string[]; sectors: { id: string; label: string }[]; categories: { id: string; label: string; group: string }[] };
 
 const TARGET_TAB: Record<string, string> = { produit: "produit", marque: "marque", boutique: "boutique", images: "images", videos: "videos", social: "publications", publicites: "publicites", calendrier: "calendrier" };
+/** Espaces qui reprennent vraiment un prompt inséré (les autres : prompt copié, à coller là où l'on veut s'en servir). */
+const INSERTABLE = new Set(["boutique", "images", "videos"]);
 const TARGET_LABEL: Record<string, string> = { produit: "Produit", marque: "Marque", boutique: "Boutique (conversation)", images: "Images", videos: "Vidéos", social: "Publications", publicites: "Publicités", calendrier: "Calendrier" };
 const TARGET_LABEL_EN: Record<string, string> = { produit: "Product", marque: "Brand", boutique: "Store (chat)", images: "Images", videos: "Videos", social: "Posts", publicites: "Ads", calendrier: "Calendar" };
 
@@ -24,6 +26,13 @@ export default function TabPrompts() {
   const { data, reload } = useApi<Data>("/api/prompts");
   const [q, setQ] = useState("");
   const [sector, setSector] = useState(project?.product.sector ?? "");
+  // Le projet se charge parfois après l'onglet : le filtre prend alors son secteur (une seule fois, sans écraser un choix).
+  const sectorInit = useRef(!!project?.product.sector);
+  useEffect(() => {
+    if (sectorInit.current || !project?.product.sector) return;
+    sectorInit.current = true;
+    setSector(project.product.sector);
+  }, [project?.product.sector]);
   const [cat, setCat] = useState("");
   const [only, setOnly] = useState<"" | "fav" | "mine">("");
   const [sel, setSel] = useState<P | null>(null);
@@ -67,7 +76,14 @@ export default function TabPrompts() {
     try {
       sessionStorage.setItem(`es-insert-${tab}-${id}`, body);
     } catch {}
-    toast("ok", t(`Prompt inséré dans l'espace ${TARGET_LABEL[sel.target] ?? tab}, complété avec votre projet.`, `Prompt inserted into the ${TARGET_LABEL_EN[sel.target] ?? tab} area, completed with your project.`));
+    if (INSERTABLE.has(tab)) {
+      toast("ok", t(`Prompt inséré dans l'espace ${TARGET_LABEL[sel.target] ?? tab}, complété avec votre projet.`, `Prompt inserted into the ${TARGET_LABEL_EN[sel.target] ?? tab} area, completed with your project.`));
+    } else {
+      // Pas de champ qui le reprend automatiquement dans cet espace : on le copie, honnêtement, pour qu'il soit collé au bon endroit.
+      let copied = false;
+      try { await navigator.clipboard.writeText(body); copied = true; } catch {}
+      toast("ok", copied ? t(`Prompt complété et copié : collez-le dans l'espace ${TARGET_LABEL[sel.target] ?? tab}, là où vous voulez vous en servir.`, `Prompt completed and copied: paste it in the ${TARGET_LABEL_EN[sel.target] ?? tab} area, wherever you want to use it.`) : t("Copie impossible : sélectionnez le texte du prompt et copiez-le.", "Couldn't copy: select the prompt text and copy it."));
+    }
     router.push(`/studio/${id}/${tab}`);
   };
   return (
@@ -138,7 +154,7 @@ export default function TabPrompts() {
             {filled && <p className="mt-2 text-xs text-ok">{t("Complété avec le produit, la marque et les médias du projet actif.", "Completed with the active project's product, brand and media.")}</p>}
             <ContentLangPicker {...cl} className="mt-3" />
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button variant="signal" icon={<ArrowRight className="size-4" />} onClick={insert}>{t("Insérer dans", "Insert into")} {targetLabel(sel.target)}</Button>
+              <Button variant="signal" icon={<ArrowRight className="size-4" />} onClick={insert}>{INSERTABLE.has(TARGET_TAB[sel.target] ?? "boutique") ? t("Insérer dans", "Insert into") : t("Copier et ouvrir", "Copy and open")} {targetLabel(sel.target)}</Button>
               <Button variant="secondary" icon={<Sparkles className="size-4" />} onClick={fill} loading={busy} disabled={filled}>{t("Compléter avec le projet", "Complete with the project")}</Button>
               <Button variant="ghost" icon={<Copy className="size-4" />} onClick={async () => { await navigator.clipboard.writeText(text); toast("ok", t("Prompt copié.", "Prompt copied.")); }}>{t("Copier", "Copy")}</Button>
               <Button

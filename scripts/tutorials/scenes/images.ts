@@ -26,7 +26,19 @@ async function pick(r: Recorder, select: Locator, value: string, settle = 900) {
 /** Projet chargé et vignettes visibles affichées. */
 async function ready(r: Recorder, gallery: Locator) {
   await gallery.first().locator("img").waitFor({ state: "visible", timeout: 60_000 });
-  await r.page.waitForFunction(() => [...document.querySelectorAll("div.columns-2 img")].filter((i) => i.getBoundingClientRect().top < innerHeight).every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0), null, { timeout: 60_000 }).catch(() => {});
+  // Une vignette en échec (serveur chargé) est redemandée, comme le ferait un rechargement de la page.
+  await r.page.waitForFunction(() => {
+    const imgs = [...document.querySelectorAll("div.columns-2 img")].filter((i) => i.getBoundingClientRect().top < innerHeight) as HTMLImageElement[];
+    let ok = true;
+    for (const i of imgs) {
+      if (!i.complete) ok = false;
+      else if (i.naturalWidth === 0) {
+        ok = false;
+        i.src = i.src.replace(/&r=\d+$/, "") + `&r=${Date.now()}`;
+      }
+    }
+    return ok;
+  }, null, { timeout: 90_000, polling: 2000 }).catch(() => {});
   await r.wait(300);
 }
 
@@ -76,9 +88,19 @@ export default async function ({ r, t }: SceneCtx) {
   }, { hold: 600 });
   await r.step(5, async () => {
     for (const [fr, en, role] of [["Scènes", "Scenes", "scene"], ["Bannières", "Banners", "banner"], ["Tout", "All", "packshot"]] as const) {
-      const res = p.waitForResponse((x) => x.url().includes(`/files?role=${role}`), { timeout: 20_000 }).catch(() => {});
+      // L'onglet charge sa liste deux fois (changement de filtre puis rechargement) : on attend les deux réponses,
+      // sinon une réponse en retard de l'onglet précédent peut s'afficher sous le nouvel onglet.
+      let n = 0;
+      const onRes = (x: import("playwright").Response) => { if (x.url().includes(`/files?role=${role}`)) n++; };
+      p.on("response", onRes);
       await r.click(p.getByRole("tab", { name: t(fr, en), exact: true }), { settle: 200 });
-      await r.during((async () => { await res; await r.wait(250); await ready(r, gallery); })());
+      await r.during((async () => {
+        const t0 = Date.now();
+        while (n < 2 && Date.now() - t0 < 25_000) await p.waitForTimeout(200);
+        await r.wait(300);
+        await ready(r, gallery);
+      })());
+      p.off("response", onRes);
       await r.wait(1300);
     }
   });
@@ -88,8 +110,15 @@ export default async function ({ r, t }: SceneCtx) {
     await r.wait(1500);
     await r.spot(null);
     await r.click(gallery.nth(1), { settle: 400 });
-    await p.getByRole("dialog").locator("img").first().waitFor({ state: "visible", timeout: 15_000 }).catch(() => {});
-    await p.getByRole("dialog").getByRole("button", { name: t("Valider", "Approve") }).waitFor({ timeout: 15_000 });
+    await r.during((async () => {
+      await p.getByRole("dialog").getByRole("button", { name: t("Valider", "Approve") }).waitFor({ timeout: 30_000 });
+      await p.waitForFunction(() => {
+        const i = document.querySelector("[role=dialog] img") as HTMLImageElement | null;
+        if (!i) return false;
+        if (i.complete && i.naturalWidth === 0) i.src = i.src.replace(/[?&]r=\d+$/, "") + `${i.src.includes("?") ? "&" : "?"}r=${Date.now()}`;
+        return i.complete && i.naturalWidth > 0;
+      }, null, { timeout: 60_000, polling: 1000 }).catch(() => {});
+    })());
     await r.wait(600);
   });
   await r.step(7, async () => {

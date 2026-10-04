@@ -65,7 +65,7 @@ export default async function ({ r, t }: SceneCtx) {
     const save = modal.getByRole("button", { name: t("Enregistrer", "Save"), exact: true });
     await r.point(modal.getByRole("button", { name: t("Créer les publications organiques", "Create organic posts") }));
     await r.wait(1500);
-    const saved = p.waitForResponse((res) => res.url().endsWith("/campaigns") && res.request().method() === "POST", { timeout: 30_000 });
+    const saved = p.waitForResponse((res) => res.url().endsWith("/campaigns") && res.request().method() === "POST", { timeout: 90_000 });
     await r.click(save, { settle: 300 });
     await r.during(saved);
     await r.during(modal.waitFor({ state: "hidden" }));
