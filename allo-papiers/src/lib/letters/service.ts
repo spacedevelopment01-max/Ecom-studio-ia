@@ -37,6 +37,10 @@ export type LetterRow = {
   body: string;
   edited_by_user: boolean;
   reviewed_at: Date | null;
+  /** Documents du coffre joints au courrier (identifiants), dans l'ordre. */
+  attachments: string[];
+  /** Pièces demandées ou utiles (repérées dans le courrier reçu ou suggérées par la démarche). */
+  needs: { type: string; libelle: string }[];
   created_at: Date;
   updated_at: Date;
 };

@@ -1,4 +1,4 @@
-import { AnalysisSchema, type Analysis } from "./schema";
+import { AnalysisSchema, ClassificationSchema, type Analysis, type Classification } from "./schema";
 import { daysBetween, isIsoDate } from "../time";
 
 /**
@@ -79,7 +79,22 @@ export function sanitizeAnalysis(raw: unknown, pageCount: number, today: string)
     a.informations_manquantes.unshift(`Page(s) difficile(s) à lire : ${a.lisibilite.pages_illisibles.join(", ")}.`);
   }
 
+  // ── Pièces demandées et classement : jamais de date inventée ──
+  for (const pd of a.pieces_demandees) if (pd.source && (!validPage(pd.source.page) || !pd.source.citation.trim())) pd.source = null;
+  a.classement = sanitizeClassification(a.classement);
+
   a.incertitudes.push(...notes);
   a.etapes = a.etapes.slice(0, 8);
   return a;
+}
+
+/** Le classement ne garde que des dates valides ; une date de validité absente reste absente. */
+export function sanitizeClassification(raw: unknown): Classification {
+  const c = ClassificationSchema.parse(raw);
+  if (c.date_document && !isIsoDate(c.date_document)) c.date_document = null;
+  if (c.valable_jusqu_au && !isIsoDate(c.valable_jusqu_au)) c.valable_jusqu_au = null;
+  c.libelle = c.libelle.trim().slice(0, 120) || "Document";
+  if (c.periode) c.periode = c.periode.trim().slice(0, 40) || null;
+  if (c.emetteur) c.emetteur = c.emetteur.trim().slice(0, 120) || null;
+  return c;
 }

@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { json, readJson, route } from "@/lib/http";
-import { requireSession } from "@/lib/auth";
+import { requireElevated, requireSession } from "@/lib/auth";
 import { prepareSend } from "@/lib/sends";
+import { getLetter } from "@/lib/letters/service";
+import { filesOfDocuments } from "@/lib/vault";
 import { sql } from "@/lib/db";
 
 export const GET = route(async () => {
@@ -12,11 +14,24 @@ export const GET = route(async () => {
   return json({ sends: rows });
 });
 
-const Body = z.object({ letter_id: z.string().uuid(), attachments: z.array(z.string().uuid()).max(5).default([]) });
+// Sans liste explicite, les pièces jointes sont celles choisies dans le courrier (documents du coffre).
+const Body = z.object({ letter_id: z.string().uuid(), attachments: z.array(z.string().uuid()).max(15).optional() });
 
 export const POST = route(async (req) => {
   const { user } = await requireSession();
   const b = await readJson(req, Body);
-  const id = await prepareSend(user, b.letter_id, b.attachments);
+  let files = b.attachments;
+  if (!files) {
+    const letter = await getLetter(user.id, b.letter_id);
+    files = (await filesOfDocuments(user.id, letter.attachments ?? [])).map((f) => f.id);
+  }
+  // Joindre une pièce protégée (identité, banque, santé…) demande d'avoir ouvert le coffre.
+  if (files.length) {
+    const [s] = await sql()<{ n: number }[]>`
+      select count(*)::int as n from document_files f join documents d on d.id = f.document_id
+       where f.user_id = ${user.id} and f.id = any(${files}) and d.sensitive`;
+    if (s.n > 0) await requireElevated();
+  }
+  const id = await prepareSend(user, b.letter_id, files);
   return json({ id });
 });

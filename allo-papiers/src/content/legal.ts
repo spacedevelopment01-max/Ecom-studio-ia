@@ -165,6 +165,8 @@ const confidentialite: LegalPage = {
         "Le traitement par l'IA a lieu en dehors de l'Union européenne (États-Unis ou autres pays). Anthropic ne propose pas, à ce jour, de traitement limité à l'Union européenne sur son API directe. Il s'agit donc d'un transfert hors Union européenne, encadré par des clauses contractuelles types de la Commission européenne.",
         "Attention : le fait que vos fichiers soient stockés en Europe ne veut pas dire que l'analyse par l'IA se fait en Europe.",
         "Nous vous demandons votre accord explicite avant la première analyse. Si vous refusez, vous pouvez toujours utiliser la rédaction guidée de lettres, qui fonctionne sans IA.",
+        "Rangement du coffre : lorsque vous demandez à ranger un justificatif, ses pages sont transmises à la même IA, uniquement pour reconnaître son type (par exemple « avis d'imposition »), sa période, son émetteur et une date de validité si elle y est écrite. Ces informations servent à classer la pièce et à la retrouver quand un courrier la demande. Vous pouvez toujours ranger ou corriger une pièce vous-même, sans IA.",
+        "Aucune pièce n'est jointe à un envoi sans que vous l'ayez vue : les pièces proposées automatiquement s'affichent avant toute validation et vous pouvez les retirer.",
       ],
     },
     {

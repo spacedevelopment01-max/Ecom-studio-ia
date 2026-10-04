@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Eye, FolderInput, Lock, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
-import { AnalysisView } from "@/components/analysis-view";
+import { AnalysisView, type PieceStatus } from "@/components/analysis-view";
 import { api, ApiError, withStepUp } from "@/components/api";
 import { Alert, STATUS_LABELS, Spinner } from "@/components/ui";
 import type { Analysis } from "@/lib/ai/schema";
@@ -18,9 +18,10 @@ type Props = {
   folders: { id: string; name: string }[];
   locked: boolean;
   plan: "free" | "plus";
+  pieces: PieceStatus[];
 };
 
-export function DocumentResult({ doc, analysis, checklist, deadline, files, folders, locked, plan }: Props) {
+export function DocumentResult({ doc, analysis, checklist, deadline, files, folders, locked, plan, pieces }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [originals, setOriginals] = useState<{ url: string; mime: string }[] | null>(null);
@@ -112,7 +113,7 @@ export function DocumentResult({ doc, analysis, checklist, deadline, files, fold
       ) : doc.status === "analyzed" && analysis ? (
         <>
           {analysis.provider === "demo" && <Alert tone="warn" className="mb-5" title="Résultat simulé">Ce résultat a été produit en mode démonstration : il ne correspond pas à votre document.</Alert>}
-          <AnalysisView analysis={analysis.result} mode="document" documentId={doc.id} checklist={checklist} deadline={deadline} plan={plan} />
+          <AnalysisView analysis={analysis.result} mode="document" documentId={doc.id} checklist={checklist} deadline={deadline} plan={plan} pieces={pieces} />
         </>
       ) : doc.status === "analyzing" ? (
         <div className="card p-6"><Spinner label="Analyse en cours… Rechargez la page dans un instant." /></div>

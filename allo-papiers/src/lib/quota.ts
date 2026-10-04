@@ -4,7 +4,7 @@ import { HttpError } from "./http";
 import { limits, type Plan } from "./plans";
 import { parisMonth } from "./time";
 
-export type CreditKind = "document" | "chat" | "compare";
+export type CreditKind = "document" | "chat" | "compare" | "classement";
 
 /** Lit le plan EN BASE (jamais depuis le navigateur). */
 export async function currentPlan(userId: string): Promise<Plan> {
@@ -19,7 +19,7 @@ export async function usage(userId: string) {
      where user_id = ${userId} and period = ${period}
        and (status = 'consumed' or created_at > now() - interval '15 minutes')
      group by kind`;
-  const used = { document: 0, chat: 0, compare: 0 } as Record<CreditKind, number>;
+  const used = { document: 0, chat: 0, compare: 0, classement: 0 } as Record<CreditKind, number>;
   for (const r of rows) used[r.kind] = r.n;
   const plan = await currentPlan(userId);
   return { period, plan, used, limits: limits(plan) };
@@ -37,6 +37,13 @@ export async function reserveCredit(userId: string, kind: CreditKind, refId: str
   }
   const [r] = await sql()<{ reserve_credit: string }[]>`select reserve_credit(${userId}, ${kind}, ${refId}, ${parisMonth()}, ${limit})`;
   const outcome = r.reserve_credit;
+  if (outcome === "quota_exceeded" && kind === "classement") {
+    throw new HttpError(
+      402,
+      "quota_atteint",
+      "Le rangement automatique par l'IA a atteint sa limite ce mois-ci. Vous pouvez quand même ranger la pièce en choisissant son type vous-même.",
+    );
+  }
   if (outcome === "quota_exceeded") {
     throw new HttpError(
       402,

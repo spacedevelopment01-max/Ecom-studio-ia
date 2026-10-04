@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ClipboardCopy, FileDown, Save, Send, Sparkles, Trash2 } from "lucide-react";
-import { api, ApiError } from "@/components/api";
+import { api, ApiError, withStepUp } from "@/components/api";
 import { OrientationPanel } from "@/components/orientation";
+import { PiecesPanel } from "./pieces-panel";
 import { Alert, ProNotice } from "@/components/ui";
 
 type Addr = { name: string; line1: string; line2: string; postalCode: string; city: string };
@@ -17,6 +18,8 @@ type Letter = {
   reviewed_at: string | null;
   updated_at: string;
   document_id: string | null;
+  attachments?: string[];
+  needs?: { type: string; libelle: string }[];
 };
 
 const ORG_KIND: Record<string, string> = { caf: "caf", cpam: "cpam", impots: "impots", mairie: "mairie", urssaf: "urssaf", france_travail: "france_travail", prefecture: "prefecture", retraite: "carsat" };
@@ -47,14 +50,16 @@ export function LetterEditor({
   template,
   courrierAddress,
   organismType,
-  files,
+  vaultDocs,
+  autoAttached,
   plan,
 }: {
   letter: Letter;
   template: { title: string; warning: string | null; professionalNotice: boolean; sendingNote: string; checks: string[] } | null;
   courrierAddress: { name: string; text: string; page: number } | null;
   organismType: string | null;
-  files: { id: string; label: string }[];
+  vaultDocs: { id: string; label: string; type: string | null; pages: number }[];
+  autoAttached?: number | null;
   plan: string;
 }) {
   const [title, setTitle] = useState(initial.title);
@@ -68,7 +73,6 @@ export function LetterEditor({
   const [error, setError] = useState<string | null>(null);
   const [proposal, setProposal] = useState<{ texte: string; changements: string[]; points_a_verifier: string[] } | null>(null);
   const [instruction, setInstruction] = useState("");
-  const [attach, setAttach] = useState<string[]>([]);
   const first = useRef(true);
   const dirtyRef = useRef(false);
   const saving$ = useRef<Promise<void> | null>(null);
@@ -158,7 +162,7 @@ export function LetterEditor({
     setError(null);
     try {
       if (dirty) await save();
-      const r = await api<{ id: string }>("/api/sends", { method: "POST", json: { letter_id: initial.id, attachments: attach } });
+      const r = await withStepUp(() => api<{ id: string }>("/api/sends", { method: "POST", json: { letter_id: initial.id } }));
       location.href = `/envois/${r.id}`;
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Préparation de l'envoi impossible.");
@@ -262,6 +266,8 @@ export function LetterEditor({
         </section>
       )}
 
+      <PiecesPanel letterId={initial.id} needs={initial.needs ?? []} initialAttachments={initial.attachments ?? []} docs={vaultDocs} excludeId={initial.document_id} reviewed={reviewed} autoAttached={autoAttached ?? null} />
+
       <section className="card mt-5 p-5 sm:p-6">
         <h2 className="text-xl font-semibold">Relecture</h2>
         <label className="mt-3 flex items-start gap-3 rounded-2xl bg-orange-soft/70 p-4">
@@ -279,21 +285,7 @@ export function LetterEditor({
       <section className="card mt-5 p-5 sm:p-6">
         <h2 className="text-xl font-semibold">Envoyer en recommandé (facultatif)</h2>
         <p className="mt-1 text-[0.97rem] text-muted">Vous verrez un récapitulatif complet (texte, adresse, pièces, prix) et devrez valider explicitement. Rien ne part sans votre accord.</p>
-        {files.length > 0 && (
-          <details className="mt-3">
-            <summary className="cursor-pointer font-semibold">Joindre des pièces ({attach.length}/5)</summary>
-            <ul className="mt-2 grid max-h-64 gap-1 overflow-y-auto">
-              {files.map((f) => (
-                <li key={f.id}>
-                  <label className="flex items-center gap-3 rounded-lg p-2 hover:bg-sand/60">
-                    <input type="checkbox" className="check" checked={attach.includes(f.id)} disabled={!attach.includes(f.id) && attach.length >= 5} onChange={(e) => setAttach((a) => (e.target.checked ? [...a, f.id] : a.filter((x) => x !== f.id)))} />
-                    {f.label}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
+        <p className="mt-2 text-[0.95rem] text-muted">Les pièces jointes ci-dessus seront ajoutées à l'envoi.</p>
         <button className="btn btn-navy mt-4 w-full sm:w-auto" onClick={prepareSend} disabled={!reviewed}><Send className="h-5 w-5" aria-hidden /> Préparer l'envoi recommandé</button>
       </section>
 

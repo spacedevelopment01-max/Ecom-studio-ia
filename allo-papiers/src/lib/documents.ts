@@ -34,6 +34,9 @@ export type DocumentRow = {
   deadline_kind: "ecrite" | "calculee" | "aucune" | null;
   summary: string | null;
   error_code: string | null;
+  kind: "courrier" | "piece";
+  piece_type: string | null;
+  piece_label: string | null;
 };
 
 export type FileRow = { id: string; position: number; mime: string; size_bytes: number; page_count: number; storage_key: string };
@@ -42,8 +45,8 @@ export type FileRow = { id: string; position: number; mime: string; size_bytes: 
 export async function getDocument(userId: string, id: string): Promise<DocumentRow> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw notFound();
   const [doc] = await sql()<DocumentRow[]>`
-    select id, user_id, folder_id, created_at, updated_at, title, parcours, status, user_status, page_count, sensitive,
-           organism, doc_type, urgency, to_char(deadline, 'YYYY-MM-DD') as deadline, deadline_kind, summary, error_code
+    select id, user_id, folder_id, created_at, updated_at, title, parcours, kind, status, user_status, page_count, sensitive,
+           piece_type, piece_label, organism, doc_type, urgency, to_char(deadline, 'YYYY-MM-DD') as deadline, deadline_kind, summary, error_code
       from documents where id = ${id} and user_id = ${userId}`;
   if (!doc) throw notFound();
   return doc;
@@ -62,10 +65,10 @@ export async function latestAnalysis(userId: string, documentId: string): Promis
   return row ?? null;
 }
 
-export async function createDocument(userId: string, parcours: ParcoursId, title?: string) {
+export async function createDocument(userId: string, parcours: ParcoursId, title?: string, kind: "courrier" | "piece" = "courrier") {
   const [doc] = await sql()<{ id: string }[]>`
-    insert into documents (user_id, parcours, title)
-    values (${userId}, ${parcours}, ${title?.trim().slice(0, 120) || "Nouveau document"})
+    insert into documents (user_id, parcours, title, kind)
+    values (${userId}, ${parcours}, ${title?.trim().slice(0, 120) || (kind === "piece" ? "Pièce à ranger" : "Nouveau document")}, ${kind})
     returning id`;
   return doc.id;
 }
@@ -205,6 +208,12 @@ export async function runAnalysis(userId: string, documentId: string) {
       }
     });
     if (usesCredit) await commitCredit("document", documentId, userId);
+    // Le courrier analysé est aussi rangé dans le coffre (sauf si l'utilisateur l'a déjà classé lui-même).
+    const [cls] = await sql()<{ classified_by: string | null }[]>`select classified_by from documents where id = ${documentId}`;
+    if (cls?.classified_by !== "utilisateur" && result.classement) {
+      const { applyClassification } = await import("./vault");
+      await applyClassification(userId, documentId, result.classement, usesCredit ? "ia" : "demonstration");
+    }
     await audit(userId, "document_analyse", { targetType: "document", targetId: documentId, meta: { pages: page_count, demo: !usesCredit } });
     return result;
   } catch (e) {

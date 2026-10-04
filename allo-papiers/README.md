@@ -31,6 +31,8 @@ Légende :
 | Résultat : résumé, urgence, date limite (écrite ou calculée), étapes à cocher, conséquences, passages cités, brouillon | ✅ | Testé sur des résultats fictifs et simulés |
 | Quotas (3 documents par mois en gratuit, limites Plus), protégés contre les requêtes simultanées | ✅ | 12 requêtes simultanées → exactement 3 analyses accordées. Les échecs ne consomment rien |
 | Discussion avec le document, comparaison, reformulation par l'IA | 🟡 | Code complet, mais il faut la clé Anthropic. Réservé à l'offre Plus (vérifié par le serveur) |
+| Coffre rangé : chaque justificatif scanné est reconnu par l'IA (type, période, émetteur, date de validité si elle est écrite) et classé par catégorie | ✅ (logique, rangement simulé) / 🟡 (vraie IA) | Le rangement à la main est toujours possible et gratuit, et il prime sur l'IA. Les pièces sensibles (identité, banque, santé…) sont protégées automatiquement. Un échec ne consomme rien |
+| « Apporter mes documents enregistrés » : le courrier reçu (ou le modèle choisi) indique les pièces demandées ; un clic joint la plus récente encore valable de chaque type | ✅ | Rien ne part sans votre validation : vous voyez, retirez ou ajoutez chaque pièce. PDF « courrier + pièces » et envoi recommandé d'une pièce protégée : coffre ouvert obligatoire |
 | Rédaction guidée : 29 démarches (travail, logement, achats, banque, assurance, notaire et avocat) | ✅ | Aucun préavis calculé automatiquement |
 | PDF propre d'un courrier, d'une fiche de rendez-vous | ✅ | |
 | Dossiers : pièces, chronologie, statuts, « Mon problème est réglé » | ✅ | |
@@ -115,8 +117,8 @@ Sans clé Resend en local, les emails sont écrits dans `.data/outbox/`. Rien n'
 ## 8. Contrôles effectués et contrôles impossibles ici
 
 **Effectués :**
-- **46 tests automatiques** : quotas simultanés, échecs gratuits, isolation des comptes, chiffrement et suppression réelle, rappels uniquement sur date confirmée et sans doublon, vérification renforcée, validation des envois, webhooks signés et en double, abonnement et résiliation, PDF, règles de prudence de l'IA, annuaire, catalogue de courriers.
-- **17 parcours navigateur** sur un profil Pixel 7 et sur ordinateur : connexion, import photo et PDF, analyse simulée, cases à cocher conservées, rappel, coffre, courrier et PDF, récapitulatif d'envoi sans envoi possible sans paiement, rédaction guidée, dossier, fiche de rendez-vous, verrouillage, isolation d'un second compte, protection contre les requêtes d'une autre origine.
+- **55 tests automatiques** : rangement du coffre (IA simulée, échec gratuit, quota, correction à la main), choix automatique des pièces (la plus récente encore valable, jamais celle d'un autre compte), PDF avec pièces et envoi protégés par le coffre, quotas simultanés, échecs gratuits, isolation des comptes, chiffrement et suppression réelle, rappels uniquement sur date confirmée et sans doublon, vérification renforcée, validation des envois, webhooks signés et en double, abonnement et résiliation, PDF, règles de prudence de l'IA, annuaire, catalogue de courriers.
+- **19 parcours navigateur** sur un profil Pixel 7 et sur ordinateur : rangement d'un justificatif dans le coffre, « Répondre avec mes documents enregistrés », connexion, import photo et PDF, analyse simulée, cases à cocher conservées, rappel, coffre, courrier et PDF, récapitulatif d'envoi sans envoi possible sans paiement, rédaction guidée, dossier, fiche de rendez-vous, verrouillage, isolation d'un second compte, protection contre les requêtes d'une autre origine.
 - **Compilation de production** réussie, avec la politique de sécurité stricte active.
 
 **Non effectués, faute d'accès :**

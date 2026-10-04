@@ -197,8 +197,7 @@ async function main() {
     await page.waitForSelector("text=Adresses différentes");
     await page.check("text=J'ai vérifié : cette adresse est la bonne.");
     await page.waitForSelector("text=Enregistré", { timeout: 10000 });
-    await page.check("text=J'ai relu ce courrier en entier");
-    await page.waitForTimeout(600);
+    await Promise.all([page.waitForResponse((r) => r.url().endsWith("/review") && r.ok()), page.check("text=J'ai relu ce courrier en entier")]);
     const pdf = await page.request.get(`${letterUrl.replace("/courriers/", "/api/letters/")}/pdf`);
     if (pdf.headers()["content-type"] !== "application/pdf") throw new Error(`PDF non produit (${pdf.status()})`);
     const body = await pdf.body();
@@ -227,6 +226,32 @@ async function main() {
     const sendId = page.url().split("/").pop()!.split("?")[0];
     const s = await (await page.request.get(`${BASE}/api/sends/${sendId}`)).json();
     if (s.send.status === "submitted" || s.send.trackingNumber) throw new Error("un envoi a été déclenché sans paiement confirmé");
+  });
+
+  await check("Coffre rangé : scanner un justificatif, il est classé et retrouvé", async () => {
+    await page.goto(`${BASE}/nouveau?mode=piece&type=avis_imposition`);
+    await page.waitForSelector("text=3. Ranger dans mon coffre");
+    await page.setInputFiles('input[aria-label="Importer des fichiers"]', [jpg]);
+    await page.waitForSelector("text=Page 1", { timeout: 30000 });
+    await page.click("button:has-text('Ranger dans mon coffre')");
+    await page.waitForURL(/\/coffre-fort\?range=/, { timeout: 30000 });
+    await page.waitForSelector("text=Revenus et impôts", { timeout: 20000 });
+    if (!(await page.locator("text=Rangement simulé").count())) throw new Error("le rangement simulé n'est pas signalé");
+    await shot(page, "coffre-range");
+  });
+
+  await check("« Répondre avec mes documents enregistrés » : pièces jointes automatiquement", async () => {
+    await page.goto(`${BASE}/documents/${docId}`);
+    await page.waitForSelector("text=Pièces demandées par ce courrier");
+    if ((await page.locator("text=Dans votre coffre").count()) < 1) throw new Error("la pièce rangée n'est pas reconnue comme disponible");
+    await shot(page, "pieces-demandees");
+    await page.click("button:has-text('Répondre avec mes documents enregistrés')");
+    await page.waitForURL(/\/courriers\/[0-9a-f-]{36}\?pieces=1/, { timeout: 20000 });
+    await page.waitForSelector("text=1 pièce sur 2 retrouvée");
+    const id = page.url().split("/").pop()!.split("?")[0];
+    const l = await (await page.request.get(`${BASE}/api/letters/${id}`)).json();
+    if ((l.letter?.attachments ?? l.attachments ?? []).length !== 1) throw new Error("la pièce n'a pas été jointe au courrier");
+    await shot(page, "courrier-pieces");
   });
 
   await check("Rédaction guidée sans document (démission CDI)", async () => {

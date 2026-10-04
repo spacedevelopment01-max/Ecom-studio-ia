@@ -31,6 +31,8 @@ function base(over: Partial<Analysis>): Analysis {
     anomalies: [],
     pistes_verification: [],
     instructions_ignorees: false,
+    pieces_demandees: [],
+    classement: { type_piece: "courrier_recu", libelle: "Courrier", periode: null, date_document: null, valable_jusqu_au: null, emetteur: null, confiance: "moyenne" },
     ...over,
   };
 }
@@ -98,6 +100,11 @@ export const EXAMPLES: Example[] = [
       informations_manquantes: [],
       verifications_externes: [],
       orientation: { vers: "aucune", raison: null },
+      pieces_demandees: [
+        { libelle: "Dernier avis d'imposition", type_piece: "avis_imposition", source: { page: 1, citation: "votre dernier avis d'imposition" } },
+        { libelle: "Attestation de loyer", type_piece: "attestation_loyer", source: { page: 1, citation: "une attestation de loyer" } },
+      ],
+      classement: { type_piece: "courrier_recu", libelle: "CAF – demande de justificatifs (2 octobre 2026)", periode: null, date_document: "2026-10-02", valable_jusqu_au: null, emetteur: "Caisse d'allocations familiales de l'Exemple", confiance: "elevee" },
     }),
   },
   {

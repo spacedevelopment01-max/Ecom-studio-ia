@@ -13,6 +13,8 @@ import {
   FileText,
   HelpCircle,
   ListChecks,
+  Paperclip,
+  Vault,
   MapPin,
   MessagesSquare,
   Quote,
@@ -74,6 +76,8 @@ function Cite({ page, text }: { page: number; text: string }) {
   );
 }
 
+export type PieceStatus = { libelle: string; type: string; source: { page: number; citation: string } | null; inVault: boolean; note: string | null };
+
 export type AnalysisViewProps = {
   analysis: Analysis;
   mode: "exemple" | "document";
@@ -81,9 +85,11 @@ export type AnalysisViewProps = {
   checklist?: { step_index: number; done: boolean }[];
   deadline?: { id: string; confirmed_at: string | null; enabled: boolean } | null;
   plan?: "free" | "plus";
+  /** Disponibilité dans le coffre des pièces demandées (calculée côté serveur). */
+  pieces?: PieceStatus[];
 };
 
-export function AnalysisView({ analysis: a, mode, documentId, checklist = [], deadline, plan = "free" }: AnalysisViewProps) {
+export function AnalysisView({ analysis: a, mode, documentId, checklist = [], deadline, plan = "free", pieces }: AnalysisViewProps) {
   const [done, setDone] = useState<Record<number, boolean>>(() => Object.fromEntries(checklist.map((c) => [c.step_index, c.done])));
   const [confirmed, setConfirmed] = useState(Boolean(deadline?.confirmed_at));
   const [copied, setCopied] = useState(false);
@@ -113,12 +119,16 @@ export function AnalysisView({ analysis: a, mode, documentId, checklist = [], de
     }
   }
 
-  async function toLetter() {
+  // Les anciennes analyses n'ont pas ce champ.
+  const asked: PieceStatus[] = pieces ?? (a.pieces_demandees ?? []).map((p) => ({ libelle: p.libelle, type: p.type_piece, source: p.source, inVault: false, note: null }));
+  const inVault = asked.filter((p) => p.inVault).length;
+
+  async function toLetter(autoAttach = false) {
     if (!documentId) return;
     setBusy(true);
     try {
-      const r = await api<{ id: string }>("/api/letters", { method: "POST", json: { document_id: documentId } });
-      location.href = `/courriers/${r.id}`;
+      const r = await api<{ id: string; attached?: number }>("/api/letters", { method: "POST", json: { document_id: documentId, auto_attach: autoAttach } });
+      location.href = autoAttach ? `/courriers/${r.id}?pieces=${r.attached ?? 0}#pieces` : `/courriers/${r.id}`;
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Impossible de créer le courrier.");
       setBusy(false);
@@ -234,6 +244,43 @@ export function AnalysisView({ analysis: a, mode, documentId, checklist = [], de
         {a.consequences.source ? <Cite page={a.consequences.source.page} text={a.consequences.source.citation} /> : <p className="mt-2 text-sm text-muted">Le document ne précise pas de conséquence : aucune n'est supposée ici.</p>}
       </Section>
 
+      {asked.length > 0 && (
+        <Section icon={Paperclip} title="Pièces demandées par ce courrier" id="pieces">
+          <ul className="grid gap-2.5">
+            {asked.map((p, i) => (
+              <li key={i} className="rounded-2xl border border-line p-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold">{p.libelle}</span>
+                  {!isExample && (p.inVault ? (
+                    <span className="chip bg-ok/10 text-ok"><Check className="h-4 w-4" aria-hidden /> Dans votre coffre</span>
+                  ) : (
+                    <span className="chip bg-warn/10 text-warn">Pas encore dans votre coffre</span>
+                  ))}
+                </div>
+                {p.note && <p className="mt-1 text-[0.95rem] text-warn">{p.note}</p>}
+                {p.source && <Cite page={p.source.page} text={p.source.citation} />}
+              </li>
+            ))}
+          </ul>
+          {isExample ? (
+            <p className="mt-4 text-[0.97rem] text-muted">Avec un compte, les pièces que vous scannez sont rangées dans votre coffre-fort et jointes à votre réponse en un clic.</p>
+          ) : (
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <button className="btn btn-primary !min-h-11 w-full" onClick={() => toLetter(true)} disabled={busy}>
+                <Vault className="h-5 w-5" aria-hidden /> Répondre avec mes documents enregistrés
+              </button>
+              {inVault < asked.length && (
+                <Link href={`/nouveau?mode=piece&retour=/documents/${documentId}`} className="btn btn-outline !min-h-11 w-full">Scanner une pièce manquante</Link>
+              )}
+              <p className="text-[0.95rem] text-muted sm:col-span-2">
+                {inVault > 0 ? `${inVault} pièce${inVault > 1 ? "s" : ""} sur ${asked.length} trouvée${inVault > 1 ? "s" : ""} dans votre coffre.` : "Aucune de ces pièces n'est encore dans votre coffre."}{" "}
+                Elles seront jointes au courrier : vous pourrez les vérifier, les retirer ou en ajouter avant tout envoi.
+              </p>
+            </div>
+          )}
+        </Section>
+      )}
+
       {/* Répondre : trois façons */}
       <Section icon={Send} title="Répondre" id="repondre">
         {a.brouillon_reponse ? (
@@ -257,7 +304,7 @@ export function AnalysisView({ analysis: a, mode, documentId, checklist = [], de
                 {isExample ? (
                   <Link href="/connexion" className="btn btn-primary !min-h-11 w-full"><FileDown className="h-5 w-5" aria-hidden /> Modifier et exporter</Link>
                 ) : (
-                  <button className="btn btn-primary !min-h-11 w-full" onClick={toLetter} disabled={busy}><FileDown className="h-5 w-5" aria-hidden /> Modifier et exporter</button>
+                  <button className="btn btn-primary !min-h-11 w-full" onClick={() => toLetter()} disabled={busy}><FileDown className="h-5 w-5" aria-hidden /> Modifier et exporter</button>
                 )}
               </div>
             )}
@@ -272,7 +319,7 @@ export function AnalysisView({ analysis: a, mode, documentId, checklist = [], de
           <div className="rounded-2xl border border-line p-4">
             <p className="font-semibold"><Send className="mr-1 inline h-5 w-5 text-orange" aria-hidden /> C. Recommandé</p>
             <p className="mt-1 text-[0.95rem] text-muted">Préparez une lettre recommandée (paiement séparé). Rien ne part sans votre validation explicite.</p>
-            {!isExample && a.brouillon_reponse && <button className="btn btn-outline mt-3 !min-h-11 w-full" onClick={toLetter} disabled={busy}>Préparer l'envoi</button>}
+            {!isExample && a.brouillon_reponse && <button className="btn btn-outline mt-3 !min-h-11 w-full" onClick={() => toLetter()} disabled={busy}>Préparer l'envoi</button>}
           </div>
         </div>
       </Section>

@@ -79,7 +79,7 @@ export function contentHash(x: {
 
 async function loadAttachments(userId: string, fileIds: string[]): Promise<Attachment[]> {
   if (fileIds.length === 0) return [];
-  if (fileIds.length > 5) throw new HttpError(400, "trop_de_pieces", "5 pièces jointes au maximum.");
+  if (fileIds.length > 15) throw new HttpError(400, "trop_de_pieces", "15 pages de pièces jointes au maximum.");
   const rows = await sql()<{ id: string; document_id: string; sha256: string; mime: string; title: string; position: number }[]>`
     select f.id, f.document_id, f.sha256, f.mime, d.title, f.position
       from document_files f join documents d on d.id = f.document_id
@@ -319,6 +319,8 @@ export async function buildSendPdf(send: SendRow): Promise<Buffer> {
       body: `Objet : ${subject}\n\n${body}`,
       edited_by_user: true,
       reviewed_at: new Date(),
+      attachments: [],
+      needs: [],
       created_at: send.created_at,
       updated_at: send.created_at,
     },

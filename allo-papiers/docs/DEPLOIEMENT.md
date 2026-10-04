@@ -35,7 +35,8 @@ Ce guide est écrit pour un débutant. Comptez environ **1 h 30** la première f
 4. Menu de gauche **SQL Editor** → **New query** :
    - Ouvrez sur GitHub le fichier `allo-papiers/db/migrations/001_init.sql`, bouton **Raw**, sélectionnez tout et copiez.
    - Collez dans l'éditeur Supabase, puis appuyez sur **Run**. Le message attendu est « Success. No rows returned ».
-   - Recommencez avec `allo-papiers/db/supabase/bucket-prive.sql`.
+   - Recommencez avec `allo-papiers/db/migrations/002_coffre_range.sql` (coffre rangé et pièces jointes), puis avec `allo-papiers/db/supabase/bucket-prive.sql`.
+   - Plus tard, à chaque nouveau fichier `00X_….sql` ajouté dans `db/migrations`, exécutez-le de la même façon, dans l'ordre des numéros.
 5. Récupérez les informations de connexion :
    - Bouton **Connect** (en haut) → onglet **Connection string** → choisissez **Transaction pooler**. Copiez l'adresse et remplacez `[YOUR-PASSWORD]` par le mot de passe de l'étape 2. Ce sera `DATABASE_URL`.
    - **Project Settings → API** : copiez le **Project URL** (`SUPABASE_URL`) et la clé **service_role** (`SUPABASE_SERVICE_ROLE_KEY`, gardez-la secrète).

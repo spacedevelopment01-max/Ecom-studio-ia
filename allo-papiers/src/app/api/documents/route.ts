@@ -6,17 +6,22 @@ import { canUseParcours, PARCOURS_IDS, type ParcoursId } from "@/lib/plans";
 import { currentPlan } from "@/lib/quota";
 import { sql } from "@/lib/db";
 
-const Create = z.object({ parcours: z.enum(PARCOURS_IDS as [ParcoursId, ...ParcoursId[]]), title: z.string().max(120).optional() });
+const Create = z.object({
+  parcours: z.enum(PARCOURS_IDS as [ParcoursId, ...ParcoursId[]]).default("courrier"),
+  title: z.string().max(120).optional(),
+  // « piece » : justificatif à ranger dans le coffre, sans analyse complète
+  kind: z.enum(["courrier", "piece"]).default("courrier"),
+});
 
 export const POST = route(async (req) => {
   const { user } = await requireSession();
-  const { parcours, title } = await readJson(req, Create);
+  const { parcours, title, kind } = await readJson(req, Create);
   const plan = await currentPlan(user.id);
-  if (!canUseParcours(plan, parcours)) throw new HttpError(402, "offre_plus_requise", "Ce parcours fait partie de l'offre Plus (4,99 € par mois).");
+  if (kind === "courrier" && !canUseParcours(plan, parcours)) throw new HttpError(402, "offre_plus_requise", "Ce parcours fait partie de l'offre Plus (4,99 € par mois).");
   const [{ n }] = await sql()<{ n: number }[]>`
     select count(*)::int as n from documents where user_id = ${user.id} and status = 'uploaded' and created_at > now() - interval '1 day'`;
   if (n > 20) throw new HttpError(429, "trop_de_brouillons", "Trop de documents en attente. Terminez ou supprimez les documents commencés.");
-  const id = await createDocument(user.id, parcours, title);
+  const id = await createDocument(user.id, kind === "piece" ? "courrier" : parcours, title, kind);
   return json({ id });
 });
 
