@@ -2,6 +2,7 @@
  * Films de la page d'accueil (16:9, musique, bruitages).
  *   VO=<dossier des voix> npx tsx scripts/build-film.ts        film commenté (1 min, voix off)
  *   FILM=court npx tsx scripts/build-film.ts                  film explicatif sans voix (scripts/film/film-court.html)
+ *   LANG=en FILM=court npx tsx scripts/build-film.ts          version anglaise → film-court.en.mp4 / film-court.en.jpg
  * VO contient s1.wav … s8.wav (voix off de chaque scène, texte dans scripts/film/voiceover.json)
  * et durations.json. Les images sont des animations CSS (scripts/film/film.html) figées image par image.
  * Sortie : public/explainers/film.mp4, film.jpg (affiche), film.vtt (sous-titres) ; film-court.mp4, film-court.jpg.
@@ -11,6 +12,7 @@ import path from "node:path";
 import { spawn, execFileSync } from "node:child_process";
 import { chromium } from "playwright";
 import { synthMusic } from "../src/lib/media/video";
+import { QUERY, SUFFIX, enAssets } from "./film/en-assets";
 
 const FPS = 30;
 const W = 1920, H = 1080;
@@ -19,9 +21,11 @@ let TOTAL = 60;
 const SR = 44100;
 const VO = process.env.VO;
 if (!VO && !SILENT) throw new Error("VO manquant (dossier des voix off)");
+if (SUFFIX && !SILENT) throw new Error("LANG=en : seul le film court (FILM=court) a une version anglaise");
 const NAME = SILENT ? "film-court" : "film";
 const OUT = path.join(process.cwd(), "public", "explainers");
-const PAGE = "file://" + path.join(process.cwd(), "scripts", "film", `${NAME}.html`);
+const PAGE = "file://" + path.join(process.cwd(), "scripts", "film", `${NAME}.html`) + (QUERY ? `?${QUERY}` : "");
+const OUT_NAME = NAME + SUFFIX;
 const tmp = fs.mkdtempSync(path.join(process.env.FILM_TMP ?? "/tmp", "film-"));
 
 // 1. Découpage calé sur la voix : chaque scène dure sa voix + une respiration, la dernière complète la minute.
@@ -44,6 +48,7 @@ console.log(timeline.map((s) => `${s.id} ${s.start.toFixed(1)}→${(s.start + s.
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const page = await browser.newPage({ viewport: { width: W, height: H } });
 if (!SILENT) await page.addInitScript((tl) => ((window as any).TIMELINE = tl), timeline);
+await page.addInitScript((list) => ((window as any).EN_ASSETS = list), enAssets());
 await page.goto(PAGE, { waitUntil: "load" });
 await page.evaluate(async () => {
   await document.fonts.ready;
@@ -72,7 +77,7 @@ for (let f = 0; f < Math.round(FPS * TOTAL); f++) {
   await page.evaluate((t) => (window as any).seek(t), f / FPS);
   const buf = await page.screenshot({ type: "jpeg", quality: 90 });
   if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
-  if (f === Math.round(FPS * ((SILENT ? timeline.find((x) => x.id === "t4")! : timeline[3]).start + 3))) fs.writeFileSync(path.join(OUT, `${NAME}.jpg`), await page.screenshot({ type: "jpeg", quality: 82 }));
+  if (f === Math.round(FPS * ((SILENT ? timeline.find((x) => x.id === "t4")! : timeline[3]).start + 3))) fs.writeFileSync(path.join(OUT, `${OUT_NAME}.jpg`), await page.screenshot({ type: "jpeg", quality: 82 }));
   if (f % 150 === 0) console.log(`  image ${f}/${FPS * TOTAL}`);
 }
 ff.stdin.end();
@@ -122,9 +127,9 @@ fs.writeFileSync(path.join(tmp, "music.wav"), synthMusic(TOTAL, "pulse", timelin
 fs.mkdirSync(OUT, { recursive: true });
 if (SILENT) {
   // Sans voix : la musique porte le film, les bruitages ponctuent chaque geste.
-  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", video, "-i", path.join(tmp, "music.wav"), "-i", path.join(tmp, "sfx.wav"), "-filter_complex", `[1:a]volume=0.9,afade=t=in:d=1,afade=t=out:st=${TOTAL - 2.5}:d=2.5[mus];[mus][2:a]amix=inputs=2:normalize=0,alimiter=limit=0.95,loudnorm=I=-16:TP=-1.5:LRA=11[aout]`, "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-ar", String(SR), "-t", String(TOTAL), "-movflags", "+faststart", path.join(OUT, `${NAME}.mp4`)]);
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", video, "-i", path.join(tmp, "music.wav"), "-i", path.join(tmp, "sfx.wav"), "-filter_complex", `[1:a]volume=0.9,afade=t=in:d=1,afade=t=out:st=${TOTAL - 2.5}:d=2.5[mus];[mus][2:a]amix=inputs=2:normalize=0,alimiter=limit=0.95,loudnorm=I=-16:TP=-1.5:LRA=11[aout]`, "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-ar", String(SR), "-t", String(TOTAL), "-movflags", "+faststart", path.join(OUT, `${OUT_NAME}.mp4`)]);
   fs.rmSync(tmp, { recursive: true, force: true });
-  console.log(`✓ ${NAME} → ${(fs.statSync(path.join(OUT, `${NAME}.mp4`)).size / 1024 / 1024).toFixed(1)} Mo`);
+  console.log(`✓ ${OUT_NAME} → ${(fs.statSync(path.join(OUT, `${OUT_NAME}.mp4`)).size / 1024 / 1024).toFixed(1)} Mo`);
   process.exit(0);
 }
 const inputs = ["-i", video, "-i", path.join(tmp, "music.wav"), "-i", path.join(tmp, "sfx.wav")];
