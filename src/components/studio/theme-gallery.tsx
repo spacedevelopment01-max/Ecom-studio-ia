@@ -41,17 +41,22 @@ export function ThemeGrid({ directions, current, onPick, busy }: { directions: D
 }
 
 /** Fenêtre « Thèmes » de l'éditeur de boutique : changer de direction crée une nouvelle version restaurable. */
-export function ThemeGallery({ open, onClose, projectId, directions, current, canApply, onApplied }: { open: boolean; onClose: () => void; projectId: string; directions: DirectionCard[]; current?: string | null; canApply: boolean; onApplied?: () => void }) {
+export function ThemeGallery({ open, onClose, projectId, directions, current, canApply, onApplied, services }: { open: boolean; onClose: () => void; projectId: string; directions: DirectionCard[]; current?: string | null; canApply: boolean; onApplied?: () => void; services?: boolean }) {
   const t = useT();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   return (
     <Modal open={open} onClose={onClose} title={t("Thèmes", "Themes")} wide>
       <p className="mb-5 text-sm text-muted">
-        {t(
-          "Onze directions artistiques, chacune avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version de la boutique : textes, images et produit sont conservés, et l'ancienne version reste restaurable. Tout reste modifiable ensuite dans l'éditeur Shopify.",
-          "Eleven art directions, each with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the store: copy, images and product are kept, and the previous version can still be restored. Everything stays editable afterwards in the Shopify editor.",
-        )}
+        {services
+          ? t(
+              "Onze directions artistiques, chacune avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version du site : textes, prestations et images sont conservés, et l'ancienne version reste restaurable. Les vignettes sont des exemples ; votre site garde son contenu.",
+              "Eleven art directions, each with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the website: copy, services and images are kept, and the previous version can still be restored. The thumbnails are examples; your website keeps its own content.",
+            )
+          : t(
+              "Onze directions artistiques, chacune avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version de la boutique : textes, images et produit sont conservés, et l'ancienne version reste restaurable. Tout reste modifiable ensuite dans l'éditeur Shopify.",
+              "Eleven art directions, each with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the store: copy, images and product are kept, and the previous version can still be restored. Everything stays editable afterwards in the Shopify editor.",
+            )}
         {!canApply && t(" Les thèmes s'appliquent une fois la boutique créée (après l'analyse du produit).", " Themes can be applied once the store has been created (after the product analysis).")}
       </p>
       <ThemeGrid

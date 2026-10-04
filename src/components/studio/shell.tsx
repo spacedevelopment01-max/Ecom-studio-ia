@@ -7,6 +7,7 @@ import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from 
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 import { missingActivity } from "./services-editor";
+import { TutorialButton, TutorialsMenuLink } from "./tutorial";
 
 export const TABS = [
   { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass, group: "Création", groupEn: "Create" },
@@ -292,6 +293,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           ))}
         </nav>
         <div className="grid gap-1 border-t border-line pt-3 text-sm">
+          <TutorialsMenuLink tab={tab} business={data?.business} folded={folded} />
           <Link href="/studio/compte" title={folded ? t("Compte et crédits", "Account and credits") : undefined} aria-label={folded ? t("Compte et crédits", "Account and credits") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Compte et crédits", "Account and credits")}`}</Link>
           {me?.user.role === "admin" && <Link href="/admin" title={folded ? t("Administration", "Admin") : undefined} aria-label={folded ? t("Administration", "Admin") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && ` ${t("Administration", "Admin")}`}</Link>}
           <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? t("Déconnexion", "Log out") : undefined} aria-label={folded ? t("Déconnexion", "Log out") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && ` ${t("Déconnexion", "Log out")}`}</button>
@@ -306,6 +308,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
               <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{(() => { const cur = TABS.find((x) => x.id === tab); return cur ? tabLabel(cur, lang, data?.business) : null; })()}</h1>
               <p className="truncate text-xs text-muted">{data?.brand?.name ?? data?.project.name}</p>
             </div>
+            <TutorialButton tab={tab} business={data?.business} />
             <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span>
             <ActiveJobs />
             <CreditPill />
