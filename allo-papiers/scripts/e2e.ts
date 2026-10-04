@@ -98,7 +98,7 @@ async function main() {
   let letterUrl = "";
 
   await check("Pages publiques : mention d'indépendance en bas de chaque page, pas de débordement", async () => {
-    for (const p of ["/", "/exemples/caf-justificatifs", "/exemples/amende-stationnement", "/aide", "/mentions-legales", "/confidentialite", "/conditions", "/orientation"]) {
+    for (const p of ["/", "/exemples/caf-justificatifs", "/exemples/amende-stationnement", "/aide", "/securite", "/mentions-legales", "/confidentialite", "/conditions", "/orientation"]) {
       await page.goto(`${BASE}${p}`);
       const footer = await page.textContent("footer");
       if (!footer?.includes("Allô Papiers est un service privé indépendant, non affilié à l'administration.")) throw new Error(`mention absente sur ${p}`);
@@ -106,6 +106,18 @@ async function main() {
       if (overflow > 0) throw new Error(`débordement horizontal de ${overflow}px sur ${p}`);
       if ((await page.content()).match(/Gros caractères|Lire les explications/)) throw new Error("bouton supprimé réapparu");
     }
+    // La sécurité est mise en avant dès l'accueil, sans promesse exagérée
+    await page.goto(`${BASE}/`);
+    for (const t of ["La sécurité d'abord", "Mon document sert-il à entraîner une IA ?", "L'IA lit-elle mon document ?"]) {
+      if (!(await page.getByText(t, { exact: true }).count())) throw new Error(`bloc sécurité incomplet : ${t}`);
+    }
+    if ((await page.content()).match(/100 ?% sécuris|chiffrement de bout en bout garanti/i)) throw new Error("promesse de sécurité exagérée");
+    await page.locator("#securite").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+    await shot(page, "accueil-securite");
+    await page.goto(`${BASE}/securite`);
+    await page.waitForSelector("text=Le trajet de votre document");
+    await shot(page, "page-securite");
     await page.goto(`${BASE}/exemples/caf-justificatifs`);
     await shot(page, "exemple-mobile");
   });

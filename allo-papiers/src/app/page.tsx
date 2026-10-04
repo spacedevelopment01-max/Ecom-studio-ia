@@ -19,6 +19,7 @@ import {
 import { ScrollStory } from "@/components/scroll-story";
 import { ExplainerFilm } from "@/components/explainer-film";
 import { ProNotice } from "@/components/ui";
+import { SecurityQuestions } from "@/components/security-questions";
 
 const ORGANISMES = ["Impôts", "CAF", "CPAM", "Amendes", "Banque", "Assurance", "URSSAF", "Mairie", "Énergie"];
 
@@ -76,6 +77,16 @@ export default function Home() {
               <li className="flex items-start gap-2"><Check className="mt-1 h-5 w-5 shrink-0" aria-hidden /> 3 documents simples gratuits chaque mois, sans carte bancaire</li>
               <li className="flex items-start gap-2"><Check className="mt-1 h-5 w-5 shrink-0" aria-hidden /> Aucun envoi sans votre validation</li>
             </ul>
+            <a href="#securite" className="group mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-navy/15 bg-white/80 p-4 shadow-sm transition hover:border-orange/50 hover:shadow-md">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy text-[#fdba74]"><Lock className="h-5 w-5" aria-hidden /></span>
+              <span>
+                <span className="block font-semibold text-navy">Vos papiers sont protégés, et nous vous disons comment.</span>
+                <span className="mt-0.5 block text-[0.97rem] text-muted">
+                  Fichiers chiffrés et stockés en Europe, jamais utilisés pour entraîner l'IA, effaçables à tout moment.{" "}
+                  <span className="font-semibold text-orange group-hover:underline">Voir les détails ↓</span>
+                </span>
+              </span>
+            </a>
           </div>
 
           {/* Visuel : courrier → résultat (exemple fictif) */}
@@ -109,6 +120,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ───── Sécurité d'abord ───── */}
+      <SecurityQuestions />
 
       {/* ───── Organismes ───── */}
       <section className="border-y border-line bg-sand/60 py-8" aria-label="Types de courriers">

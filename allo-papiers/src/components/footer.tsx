@@ -23,6 +23,7 @@ export function Footer() {
         </nav>
         <nav aria-label="Mentions" className="grid content-start gap-2 text-[0.95rem]">
           <Link className="hover:text-orange" href="/mentions-legales">Mentions légales</Link>
+          <Link className="hover:text-orange" href="/securite">Sécurité de vos documents</Link>
           <Link className="hover:text-orange" href="/confidentialite">Confidentialité</Link>
           <Link className="hover:text-orange" href="/conditions">Conditions d'utilisation</Link>
         </nav>

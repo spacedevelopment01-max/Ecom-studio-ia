@@ -250,6 +250,13 @@ export function NewDocument({ mode = "courrier", presetType = "", retour = "" }:
       <section className={`card mt-5 p-5 sm:p-6 ${parcours ? "" : "pointer-events-none opacity-50"}`} aria-disabled={!parcours}>
         <h2 className="text-xl font-semibold">2. Ajoutez les pages</h2>
         <p className="mt-1 text-[0.97rem] text-muted">Posez la feuille à plat, bien éclairée, sans reflet. Cadrez toute la page.</p>
+        <p className="mt-3 flex items-start gap-2.5 rounded-2xl bg-navy/[0.04] p-3 text-[0.95rem] text-ink/85">
+          <Lock className="mt-0.5 h-5 w-5 shrink-0 text-navy" aria-hidden />
+          <span>
+            Vos pages sont chiffrées et rangées dans votre espace privé. Ne photographiez jamais un mot de passe, un code de carte ou un code reçu par SMS&nbsp;: aucune démarche ne les demande.{" "}
+            <Link href="/securite" className="font-semibold text-orange underline">Sécurité de vos documents</Link>
+          </span>
+        </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <button type="button" className="btn btn-primary w-full" onClick={() => cameraRef.current?.click()} disabled={!parcours || analyzing}>
             <Camera className="h-6 w-6" aria-hidden /> Prendre une photo

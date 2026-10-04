@@ -10,7 +10,7 @@ const PUBLIC_LINKS = [
   { href: "/#fonctionnement", label: "Comment ça marche" },
   { href: "/demonstrations", label: "Vidéos" },
   { href: "/#tarifs", label: "Tarifs" },
-  { href: "/#confidentialite", label: "Confidentialité" },
+  { href: "/securite", label: "Sécurité" },
   { href: "/aide", label: "Aide" },
 ];
 
