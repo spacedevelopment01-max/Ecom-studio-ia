@@ -167,6 +167,13 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           {storeType !== "mono" && <p className="mt-2 text-xs text-muted">{t("Commencez par votre produit phare : les autres produits s'ajoutent ensuite dans l'onglet Produit (photo, nom, prix), et la boutique se recompose avec ses collections.", "Start with your hero product: other products are added afterwards in the Product tab (photo, name, price), and the store reorganizes itself into collections.")}</p>}
         </fieldset>
       )}
+      <fieldset className="grid gap-2">
+        <legend className="mb-1">
+          <span className="block font-display text-xl font-semibold">{svc ? t("Où sera publié votre site ?", "Where will your website live?") : t("Sur quelle plateforme vendrez-vous ?", "Which platform will you sell on?")}</span>
+          <span className="mt-0.5 block text-xs text-muted">{svc ? t("Conseil : WordPress pour un site de services ; Shopify convient aussi. Modifiable à tout moment dans le studio.", "Tip: WordPress for a services website; Shopify works too. You can change it anytime in the studio.") : t("Modifiable à tout moment dans le studio.", "You can change it anytime in the studio.")}</span>
+        </legend>
+        <PlatformCards name="platform" value={platform} onChange={(p) => (setPlatform(p), setPlatformTouched(true))} business={business} compact={compact} />
+      </fieldset>
       {!projectId && (
         <Field label={svc ? t("Langue du site et des contenus", "Website and content language") : t("Langue de la boutique et des contenus", "Store and content language")} htmlFor="language" hint={t("Vous pourrez choisir une autre langue pour une action précise (par exemple des publicités en anglais).", "You can pick another language for a specific action later (for example, ads in French).")}>
           <Select id="language" name="language" defaultValue={lang} key={lang}>
@@ -210,7 +217,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
             )}
           </fieldset>
           {photoZone}
-          <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("S'il est fourni, il est conservé tel quel.", "If provided, it is kept exactly as is.")}><Input id="logo" name="logo" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="pt-2.5" /></Field>
+          <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("S'il est fourni, il est conservé tel quel.", "If provided, it is kept exactly as is.")}><LogoInput /></Field>
         </div>
       ) : (
         <>
@@ -236,13 +243,6 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           </Field>
         </>
       )}
-      <fieldset className="grid gap-2">
-        <legend className="mb-1">
-          <span className="block text-sm font-medium">{svc ? t("Où sera publié votre site ?", "Where will your website live?") : t("Sur quelle plateforme vendrez-vous ?", "Which platform will you sell on?")}</span>
-          <span className="mt-0.5 block text-xs text-muted">{svc ? t("Conseil : WordPress pour un site de services ; Shopify convient aussi. Modifiable à tout moment dans le studio.", "Tip: WordPress for a services website; Shopify works too. You can change it anytime in the studio.") : t("Modifiable à tout moment dans le studio.", "You can change it anytime in the studio.")}</span>
-        </legend>
-        <PlatformCards name="platform" value={platform} onChange={(p) => (setPlatform(p), setPlatformTouched(true))} business={business} compact={compact} />
-      </fieldset>
       <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="justify-self-start text-sm font-medium text-ink-2 underline underline-offset-4">
         {more ? t("Moins d'options", "Fewer options") : svc ? t("Mode de travail…", "Workflow…") : t("Nom, marque, prix, logo, mode de travail…", "Name, brand, price, logo, workflow…")}
       </button>
@@ -253,7 +253,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
               <Field label={t("Nom du produit", "Product name")} htmlFor="productName"><Input id="productName" name="productName" /></Field>
               <Field label={t("Nom de marque (si vous en avez un)", "Brand name (if you have one)")} htmlFor="brandName"><Input id="brandName" name="brandName" /></Field>
               <Field label={t("Prix de vente TTC", "Retail price (incl. tax)")} htmlFor="price"><Input id="price" name="price" placeholder={t("ex. 34,90 €", "e.g. €34.90")} /></Field>
-              <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("S'il est fourni, il est conservé tel quel.", "If provided, it is kept exactly as is.")}><Input id="logo" name="logo" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="pt-2.5" /></Field>
+              <Field label={t("Votre logo (facultatif)", "Your logo (optional)")} htmlFor="logo" hint={t("S'il est fourni, il est conservé tel quel.", "If provided, it is kept exactly as is.")}><LogoInput /></Field>
             </>
           )}
           <Field label={t("Mode de travail", "Workflow")} htmlFor="mode">
@@ -285,6 +285,19 @@ const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
   paused: { label: "En pause", labelEn: "Paused", tone: "warn" },
   draft: { label: "À démarrer", labelEn: "Not started", tone: "neutral" },
 };
+
+/** Champ logo traduit (le bouton natif « Choose File » suit la langue du navigateur, pas celle du studio). */
+function LogoInput() {
+  const t = useT();
+  const [name, setName] = useState("");
+  return (
+    <label htmlFor="logo" className="flex h-11 cursor-pointer items-center gap-3 rounded-xl border border-line bg-card px-3 text-sm transition hover:border-ink focus-within:outline-2 focus-within:outline-signal">
+      <input id="logo" name="logo" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" className="sr-only" onChange={(e) => setName(e.target.files?.[0]?.name ?? "")} />
+      <span className="inline-flex items-center gap-1.5 rounded-lg bg-paper-2 px-2.5 py-1 text-xs font-medium"><ImagePlus className="size-3.5" aria-hidden /> {t("Choisir un fichier", "Choose a file")}</span>
+      <span className="min-w-0 truncate text-muted">{name || t("Aucun fichier choisi", "No file chosen")}</span>
+    </label>
+  );
+}
 
 export function StudioHome() {
   const t = useT();

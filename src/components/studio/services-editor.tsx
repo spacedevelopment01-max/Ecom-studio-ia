@@ -46,7 +46,7 @@ export function ContactModePicker({ value, onChange }: { value: ServiceProfile["
     ["form", MessageSquare, t("Formulaire de contact", "Contact form")],
   ];
   return (
-    <div role="radiogroup" aria-label={t("Mode de contact", "Contact method")} className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+    <div role="radiogroup" aria-label={t("Mode de contact", "Contact method")} className="grid grid-cols-2 gap-2">
       {modes.map(([id, Icon, label]) => (
         <button key={id} type="button" role="radio" aria-checked={value === id} onClick={() => onChange(id)} className={cx("flex min-h-11 items-center gap-2 rounded-2xl border px-3 py-2 text-left text-[13px] transition", value === id ? "border-signal bg-signal-soft font-medium" : "border-line bg-card hover:border-ink")}>
           <Icon className="size-4 shrink-0" aria-hidden /> {label}

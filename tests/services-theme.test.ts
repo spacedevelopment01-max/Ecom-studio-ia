@@ -43,7 +43,11 @@ describe("site d'entreprise de services", () => {
         expect(r.html).not.toMatch(/es-cart-link|data-cart-drawer|href="\/p\/products\/|href="\/p\/collections/);
       }
       const home = (await renderPage({ spec, base: "/p", files, cart: [] }, "/", new URLSearchParams())).html;
-      for (const type of ["services-list", "practical-info", "portfolio", "team", "testimonials", "faq", "cta-banner"]) expect(home, `${dir} ${type}`).toContain(`data-es-type="${type}"`);
+      for (const type of ["services-list", "practical-info", "portfolio", "testimonials", "faq", "cta-banner"]) expect(home, `${dir} ${type}`).toContain(`data-es-type="${type}"`);
+      // Pas d'« Équipe » à compléter sur l'accueil : elle reste sur la page À propos.
+      expect(home, `${dir} team`).not.toContain('data-es-type="team"');
+      const about = (await renderPage({ spec, base: "/p", files, cart: [] }, pages[2], new URLSearchParams())).html;
+      expect(about, `${dir} about team`).toContain('data-es-type="team"');
       expect(visible(home)).toContain(lang === "fr" ? "Prendre rendez-vous" : "Book an appointment");
       expect(visible(home)).toContain(serviceProfile.services[0].name);
       expect(home).toContain(`tel:${serviceProfile.phone.replace(/\s/g, "")}`);
@@ -61,8 +65,15 @@ describe("site d'entreprise de services", () => {
       expect(String(b.settings.quote)).toMatch(/^\[À compléter/);
       expect(b.settings.rating).toBe("0");
     }
-    const team = Object.values(index.sections).find((s) => s.type === "team")!;
+    const team = Object.values(spec.templates["page.about"].sections).find((s) => s.type === "team")!;
     for (const b of Object.values(team.blocks ?? {})) expect(String(b.settings.name)).toMatch(/^\[À compléter/);
+  });
+
+  it("sans photos : pas de section « Réalisations » aux cadres vides", async () => {
+    for (const dir of ["atelier", "brut", "galerie"] as const) {
+      const spec = serviceSpec(dir, "fr", serviceProfile, { noPhotos: true });
+      expect(Object.values(spec.templates.index.sections).some((s) => s.type === "portfolio"), dir).toBe(false);
+    }
   });
 
   it("appel à l'action selon le mode de contact (devis, appel)", () => {

@@ -173,10 +173,11 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
         return ["timeline", { eyebrow: t("Notre méthode", "Our approach"), heading, heading_accent: "", image_asset: photos[1] ?? photos[0] ?? im.lifestyle ?? "", color_scheme: scheme(sch), ...pad(104) }, steps.map((s) => ({ type: "step", settings: { title: s.title, text: p(s.text) } }))];
       return ["how-to", { eyebrow: t("Notre méthode", "Our approach"), heading, text: "", layout: kind === "howto-h" ? "horizontal" : "vertical", media_ratio: "landscape", button_label: cta.label, button_link: cta.url, color_scheme: scheme(sch), ...pad(104) }, steps.map((s, i) => ({ type: "step", settings: { title: s.title, text: p(s.text), duration: "", tip: "", image_asset: kind === "howto-v" && photos.length >= 6 ? photos[3 + (i % (photos.length - 3))] : "" } }))];
     },
-    portfolio: (sch: number, layout: "grid" | "editorial"): Row => {
-      const imgs = photos.slice(0, layout === "editorial" ? 4 : photos.length >= 6 ? 6 : 3);
-      const list = imgs.length >= 2 ? imgs : ["", "", ""];
-      return ["portfolio", { eyebrow: t("Réalisations", "Our work"), heading: t("Quelques réalisations", "A few recent projects"), text: "", layout, label_before: t("Avant", "Before"), label_after: t("Après", "After"), button_label: "", button_link: "", color_scheme: scheme(sch), ...pad(104) }, list.map((f) => ({ type: "project", settings: { image_asset: f, title: todo("nom du projet", "project name"), caption: todo("ce qui a été réalisé", "what was done"), tag: "" } }))];
+    /** Réalisations : seulement avec au moins deux vraies photos (jamais de cadres vides sur l'accueil). */
+    portfolio: (sch: number, layout: "grid" | "editorial"): Row[] => {
+      const list = photos.slice(0, layout === "editorial" ? 4 : photos.length >= 6 ? 6 : 3);
+      if (list.length < 2) return [];
+      return [["portfolio", { eyebrow: t("Réalisations", "Our work"), heading: t("Quelques réalisations", "A few recent projects"), text: "", layout, label_before: t("Avant", "Before"), label_after: t("Après", "After"), button_label: "", button_link: "", color_scheme: scheme(sch), ...pad(104) }, list.map((f) => ({ type: "project", settings: { image_asset: f, title: todo("nom du projet", "project name"), caption: todo("ce qui a été réalisé", "what was done"), tag: "" } }))]];
     },
     team: (sch: number, style: "cards" | "portraits" | "plain", n = 2): Row => [
       "team",

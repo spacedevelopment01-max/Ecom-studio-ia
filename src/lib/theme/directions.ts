@@ -671,17 +671,17 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     const svcHero = (sch: 1 | 2, pos: "right" | "left"): Row => heroSplit(sch, pos, im.lifestyle ?? im.hero ?? im.scene1 ?? im.banner);
     const svcMarq = (sch: 1 | 2 | 3 | 4, size: string): Row[] => (c.marquee.length >= 2 ? [marq(sch, size)] : []);
     const recipes: Record<DirectionId, Row[]> = {
-      atelier: [svcHero(1, "right"), R.servicesList(1, "cards", { withImages: true }), ...why(2), R.method(1, "howto-v"), R.portfolio(2, "editorial"), R.team(1, "portraits"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
-      clinique: [svcHero(1, "right"), ...R.trust(2), R.servicesList(1, "list"), ...why(2, "cards"), R.method(1, "howto-h"), R.team(2, "cards"), R.testimonials(1), R.portfolio(2, "grid"), R.practical(1), faqSec(2), cta(3)],
-      brut: [heroFull(1, "bottom-left", "heading"), ...svcMarq(4, "huge"), R.servicesList(1, "cards"), R.method(2, "timeline"), R.portfolio(1, "grid"), R.team(2, "plain"), R.testimonials(1), R.practical(2), faqSec(1), cta(4)],
-      terroir: [svcHero(1, "left"), ...statementRow(2), R.servicesList(1, "cards", { withImages: true }), R.method(2, "timeline"), R.portfolio(1, "editorial"), R.team(2, "cards"), R.testimonials(1), R.practical(2), faqSec(1), cta(3)],
-      nocturne: [heroFull(1, "bottom-left", "body"), ...R.trust(2), R.servicesList(1, "cards"), ...why(2), R.method(1, "howto-h"), R.portfolio(2, "grid"), R.team(1, "portraits"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
-      pop: [svcHero(2, "right"), ...svcMarq(4, "large"), R.servicesList(1, "cards"), ...why(2, "cards"), R.method(1, "howto-h"), R.portfolio(2, "grid"), R.team(1, "portraits"), R.testimonials(2), R.practical(1), faqSec(2), cta(4)],
-      galerie: [svcHero(1, "left"), R.portfolio(1, "editorial"), R.servicesList(2, "list"), ...statementRow(1), R.method(2, "timeline"), R.team(1, "plain"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
-      elan: [heroFull(1, "bottom-left", "heading"), ...svcMarq(4, "large"), R.servicesList(1, "cards"), R.method(2, "howto-h"), ...why(1), R.portfolio(2, "grid"), R.team(1, "cards"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
-      flux: [heroFull(3, "bottom-left", "heading"), curve(1), R.servicesList(1, "list"), R.method(2, "timeline"), R.portfolio(1, "grid"), R.team(2, "plain"), R.testimonials(1), R.practical(2), faqSec(1), cta(3)],
-      joaillerie: [heroFull(3, "bottom-left", "heading"), R.servicesList(1, "list"), ...statementRow(4, "statement", true), R.portfolio(1, "editorial"), R.method(2, "howto-v"), R.team(1, "portraits"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
-      gourmand: [svcHero(1, "right"), ...statementRow(3, "statement", true), wave(3, 1), R.servicesList(1, "cards", { withImages: true }), wave(1, 4), R.method(4, "howto-h"), wave(4, 1), R.portfolio(1, "grid"), R.team(2, "portraits"), R.testimonials(1), R.practical(2), faqSec(1), wave(1, 3), cta(3)],
+      atelier: [svcHero(1, "right"), R.servicesList(1, "cards", { withImages: true }), ...why(2), R.method(1, "howto-v"), ...R.portfolio(2, "editorial"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      clinique: [svcHero(1, "right"), ...R.trust(2), R.servicesList(1, "list"), ...why(2, "cards"), R.method(1, "howto-h"), R.testimonials(1), ...R.portfolio(2, "grid"), R.practical(1), faqSec(2), cta(3)],
+      brut: [heroFull(1, "bottom-left", "heading"), ...svcMarq(4, "huge"), R.servicesList(1, "cards"), R.method(2, "timeline"), ...R.portfolio(1, "grid"), R.testimonials(1), R.practical(2), faqSec(1), cta(4)],
+      terroir: [svcHero(1, "left"), ...statementRow(2), R.servicesList(1, "cards", { withImages: true }), R.method(2, "timeline"), ...R.portfolio(1, "editorial"), R.testimonials(1), R.practical(2), faqSec(1), cta(3)],
+      nocturne: [heroFull(1, "bottom-left", "body"), ...R.trust(2), R.servicesList(1, "cards"), ...why(2), R.method(1, "howto-h"), ...R.portfolio(2, "grid"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      pop: [svcHero(2, "right"), ...svcMarq(4, "large"), R.servicesList(1, "cards"), ...why(2, "cards"), R.method(1, "howto-h"), ...R.portfolio(2, "grid"), R.testimonials(2), R.practical(1), faqSec(2), cta(4)],
+      galerie: [svcHero(1, "left"), ...R.portfolio(1, "editorial"), R.servicesList(2, "list"), ...statementRow(1), R.method(2, "timeline"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      elan: [heroFull(1, "bottom-left", "heading"), ...svcMarq(4, "large"), R.servicesList(1, "cards"), R.method(2, "howto-h"), ...why(1), ...R.portfolio(2, "grid"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      flux: [heroFull(3, "bottom-left", "heading"), curve(1), R.servicesList(1, "list"), R.method(2, "timeline"), ...R.portfolio(1, "grid"), R.testimonials(1), R.practical(2), faqSec(1), cta(3)],
+      joaillerie: [heroFull(3, "bottom-left", "heading"), R.servicesList(1, "list"), ...statementRow(4, "statement", true), ...R.portfolio(1, "editorial"), R.method(2, "howto-v"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
+      gourmand: [svcHero(1, "right"), ...statementRow(3, "statement", true), wave(3, 1), R.servicesList(1, "cards", { withImages: true }), wave(1, 4), R.method(4, "howto-h"), wave(4, 1), ...R.portfolio(1, "grid"), R.testimonials(1), R.practical(2), faqSec(1), wave(1, 3), cta(3)],
     };
     index = recipes[d.id];
     // Vague d'ouverture sans phrase centrée (phrase identique au titre) : la vague n'a plus rien à relier.
