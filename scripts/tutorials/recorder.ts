@@ -52,7 +52,8 @@ export const OVERLAY = () => {
   else document.addEventListener("DOMContentLoaded", install);
 };
 
-type Frame = { file: string; t: number };
+/** t : horodatage de l'image (horloge du navigateur) ; at : heure d'arrivée côté script (Date.now, en secondes). */
+type Frame = { file: string; t: number; at: number };
 
 export class Recorder {
   frames: Frame[] = [];
@@ -72,7 +73,8 @@ export class Recorder {
     this.cdp.on("Page.screencastFrame", async (f) => {
       const file = path.join(this.dir, `f${String(this.n++).padStart(5, "0")}.jpg`);
       fs.writeFileSync(file, Buffer.from(f.data, "base64"));
-      this.frames.push({ file, t: f.metadata.timestamp ?? Date.now() / 1000 });
+      const at = Date.now() / 1000;
+      this.frames.push({ file, t: f.metadata.timestamp ?? at, at });
       await this.cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {});
     });
     await this.cdp.send("Page.startScreencast", { format: "jpeg", quality: 88, maxWidth: VIEWPORT.width, maxHeight: VIEWPORT.height, everyNthFrame: 1 });
@@ -97,12 +99,26 @@ export class Recorder {
     return res;
   }
 
+  /**
+   * Horloge du script → horloge des images. Les deux horloges dérivent l'une par rapport à l'autre pendant un long tournage :
+   * on prend le décalage mesuré sur l'image arrivée le plus près de cet instant.
+   */
+  toFrameClock(abs: number) {
+    if (!this.frames.length) return abs;
+    let best = this.frames[0];
+    for (const f of this.frames) if (Math.abs(f.at - abs) < Math.abs(best.at - abs)) best = f;
+    return abs - (best.at - best.t);
+  }
+  private frameCuts(): [number, number][] {
+    return this.cuts.map(([a, b]) => [this.toFrameClock(a), this.toFrameClock(b)] as [number, number]).filter(([a, b]) => b > a);
+  }
+
   /** Temps dans la vidéo montée (secondes depuis le début) d'un instant de l'horloge du script (secondes depuis start). */
   videoTime(scriptSeconds: number) {
-    const abs = this.t0 + scriptSeconds;
-    const first = this.frames.length ? Math.min(...this.frames.map((f) => f.t)) : this.t0;
+    const abs = this.toFrameClock(this.t0 + scriptSeconds);
+    const first = this.frames.length ? Math.min(...this.frames.map((f) => f.t)) : abs;
     let cut = 0;
-    for (const [a, b] of this.cuts) if (abs >= b) cut += b - a; else if (abs > a) cut += abs - a;
+    for (const [a, b] of this.frameCuts()) if (abs >= b) cut += b - a; else if (abs > a) cut += abs - a;
     return Math.max(0, abs - first - cut);
   }
 
@@ -234,11 +250,12 @@ export class Recorder {
   /** Encode les images capturées (durées réelles entre deux images) en MP4 H.264 1280×800 et produit l'affiche. */
   async encode(out: string, poster: string, posterAt: number) {
     // Montage : les images prises pendant une attente coupée disparaissent, la suite est avancée d'autant.
-    const inCut = (t: number) => this.cuts.some(([a, b]) => t > a && t < b);
-    const shift = (t: number) => this.cuts.reduce((acc, [a, b]) => acc + (t >= b ? b - a : 0), 0);
+    const cuts = this.frameCuts();
+    const inCut = (t: number) => cuts.some(([a, b]) => t > a && t < b);
+    const shift = (t: number) => cuts.reduce((acc, [a, b]) => acc + (t >= b ? b - a : 0), 0);
     const frames = this.frames.filter((f) => !inCut(f.t)).map((f) => ({ file: f.file, t: f.t - shift(f.t) })).sort((a, b) => a.t - b.t);
     if (frames.length < 2) throw new Error("aucune image capturée");
-    const endAbs = Date.now() / 1000;
+    const endAbs = this.toFrameClock(Date.now() / 1000);
     const end = endAbs - shift(endAbs);
     const list = frames.map((f, i) => `file '${f.file}'\nduration ${Math.max(1 / 60, ((frames[i + 1]?.t ?? end) - f.t)).toFixed(4)}`).join("\n") + `\nfile '${frames[frames.length - 1].file}'\n`;
     const listFile = path.join(this.dir, "list.txt");

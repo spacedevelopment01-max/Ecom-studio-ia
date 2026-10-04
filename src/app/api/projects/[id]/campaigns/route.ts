@@ -23,3 +23,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   run("INSERT INTO campaigns (id, project_id, name, objective, networks, status, brief, plan, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", cid, p.id, b.name, b.objective, JSON.stringify(b.networks), b.status, JSON.stringify(b.brief), JSON.stringify(b.plan), now(), now());
   return ok({ id: cid });
 });
+
+/** Supprime une campagne. Ses publications déjà créées sont gardées (elles peuvent être programmées), détachées de la campagne. */
+export const DELETE = handle(async (req: Request, ctx: Ctx) => {
+  const { project: p } = await projectFromCtx(ctx);
+  const b = await body(req, z.object({ id: z.string().min(1) }));
+  run("UPDATE posts SET campaign_id = NULL WHERE campaign_id = ? AND project_id = ?", b.id, p.id);
+  run("DELETE FROM campaigns WHERE id = ? AND project_id = ?", b.id, p.id);
+  return ok({ deleted: true });
+});

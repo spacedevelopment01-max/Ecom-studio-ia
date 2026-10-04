@@ -5,7 +5,7 @@
  */
 import { pick, type Lang } from "../i18n";
 
-export const previewTools = (lang: Lang) => {
+export const previewTools = (lang: Lang, business: "products" | "services" = "products") => {
   const t = (fr: string, en: string) => pick(lang, fr, en);
   return `
 <style id="es-preview-style">
@@ -16,7 +16,7 @@ export const previewTools = (lang: Lang) => {
   .es-pv-focus-out{outline-color:transparent!important}
   .es-pv-label{position:fixed;z-index:2147483001;background:#2F5BEA;color:#fff;font:600 11px system-ui,sans-serif;padding:3px 8px;border-radius:6px;pointer-events:none}
 </style>
-<div class="es-pv-bar" aria-hidden="true">${t("Aperçu · données de démonstration de la boutique · paiement désactivé", "Preview · store demo data · checkout disabled")}</div>
+<div class="es-pv-bar" aria-hidden="true">${business === "services" ? t("Aperçu du site · formulaires et réservations désactivés", "Website preview · forms and booking disabled") : t("Aperçu · données de démonstration de la boutique · paiement désactivé", "Preview · store demo data · checkout disabled")}</div>
 <script>
 (function(){
   var picking=false, hovered=null, label=null;

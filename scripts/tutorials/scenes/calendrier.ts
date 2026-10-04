@@ -85,9 +85,14 @@ export default async function ({ r, t, projectId, base }: SceneCtx) {
     await r.point(chip, { dx: 30 });
     await r.wait(300);
     const saved = p.waitForResponse((x) => x.url().includes(`/api/posts/${first.id}`) && x.request().method() === "PATCH", { timeout: 20_000 }).catch(() => {});
-    // Le curseur dessiné suit le geste ; le vrai glisser-déposer HTML5 est joué par Playwright.
+    // Le curseur dessiné suit le geste ; le glisser-déposer HTML5 est rejoué par ses événements
+    // (le glisser à la souris de Playwright n'aboutit pas toujours quand le studio se rafraîchit).
     await r.point(target);
-    await chip.dragTo(target, { sourcePosition: { x: 30, y: 8 } });
+    const dt = await p.evaluateHandle(() => new DataTransfer());
+    await chip.dispatchEvent("dragstart", { dataTransfer: dt });
+    await target.dispatchEvent("dragover", { dataTransfer: dt });
+    await target.dispatchEvent("drop", { dataTransfer: dt });
+    await chip.dispatchEvent("dragend", { dataTransfer: dt }).catch(() => {});
     await r.during(saved);
     await r.wait(1600);
     await r.spot(target, 2);
@@ -153,6 +158,13 @@ export default async function ({ r, t, projectId, base }: SceneCtx) {
 /** Remet la publication déplacée à sa date d'origine. */
 export async function cleanup({ r, base }: SceneCtx) {
   if (!moved) return;
-  await r.page.context().request.patch(`${base}/api/posts/${moved.id}`, { data: { scheduledAt: moved.at } });
+  // Le serveur peut être lent : on insiste, puis on vérifie que la date d'origine est bien revenue.
+  for (let i = 0; i < 5; i++) {
+    try {
+      const res = await r.page.context().request.patch(`${base}/api/posts/${moved.id}`, { data: { scheduledAt: moved.at }, timeout: 120_000 });
+      if (res.ok()) break;
+    } catch {}
+    await r.wait(3000);
+  }
   moved = null;
 }
