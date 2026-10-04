@@ -37,6 +37,10 @@ export async function assertPublicUrl(raw: string): Promise<URL> {
   if (!/^https?:$/.test(u.protocol)) throw new Error(L("Seuls les liens http et https sont acceptés.", "Only http and https links are accepted."));
   if (u.username || u.password) throw new Error(L("Les liens contenant des identifiants sont refusés.", "Links containing credentials are not allowed."));
   const host = u.hostname.replace(/^\[|\]$/g, "");
+  // Sites de démonstration locaux (tests/fixtures/sites, servis par scripts/serve-site-fixtures.ts) :
+  // une adresse locale n'est acceptée QUE si le drapeau explicite est posé ET hors production.
+  // Sans ces deux conditions, la protection anti-SSRF s'applique normalement.
+  if (process.env.SITE_IMPORT_ALLOW_LOCAL === "1" && process.env.NODE_ENV !== "production") return u;
   const addrs = net.isIP(host) ? [host] : (await dns.lookup(host, { all: true })).map((a) => a.address);
   if (!addrs.length || addrs.some(isPrivate)) throw new Error(L("Ce lien pointe vers une adresse privée : import refusé.", "This link points to a private address: import refused."));
   return u;
