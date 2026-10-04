@@ -39,6 +39,8 @@ function lastMail(to: string) {
 }
 
 async function shot(page: Page, name: string) {
+  // Le badge du serveur de développement Next n'a pas sa place sur les captures.
+  await page.addStyleTag({ content: "nextjs-portal{display:none!important}" }).catch(() => {});
   await page.screenshot({ path: path.join(OUT, `${String(++step).padStart(2, "0")}-${name}.png`) });
 }
 
@@ -244,6 +246,9 @@ async function main() {
     await page.goto(`${BASE}/documents/${docId}`);
     await page.waitForSelector("text=Pièces demandées par ce courrier");
     if ((await page.locator("text=Dans votre coffre").count()) < 1) throw new Error("la pièce rangée n'est pas reconnue comme disponible");
+    await page.locator("#pieces").scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy(0, -90));
+    await page.waitForTimeout(700);
     await shot(page, "pieces-demandees");
     await page.click("button:has-text('Répondre avec mes documents enregistrés')");
     await page.waitForURL(/\/courriers\/[0-9a-f-]{36}\?pieces=1/, { timeout: 20000 });
