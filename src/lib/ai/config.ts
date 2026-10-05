@@ -58,6 +58,8 @@ export type TaskId =
   | "theme_edit"
   | "theme_custom"
   | "quality_control"
+  | "photo_triage"
+  | "cutout_check"
   | "social_planning"
   | "social_copy"
   | "classification"
@@ -83,6 +85,8 @@ export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "imag
   theme_edit: task("Retouches du thème par conversation", "Theme edits via chat", "llm"),
   theme_custom: task("Thème entièrement sur mesure (plan et sections)", "Fully custom theme (plan and sections)", "llm"),
   quality_control: task("Contrôle qualité", "Quality control", "llm"),
+  photo_triage: task("Tri des photos du produit avant détourage", "Product photo sorting before cutout", "llm"),
+  cutout_check: task("Contrôle visuel des détourages", "Visual check of cutouts", "llm"),
   social_planning: task("Planification éditoriale", "Content planning", "llm"),
   social_copy: task("Textes des publications", "Social post copy", "llm"),
   classification: task("Classement des fichiers", "File organization", "llm"),
@@ -103,6 +107,8 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = {
   theme_edit: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   theme_custom: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
   quality_control: { provider: "anthropic", model: "claude-opus-5-5", effort: "low" },
+  photo_triage: { provider: "anthropic", model: "claude-haiku-4-5" },
+  cutout_check: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
   social_planning: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   social_copy: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
   classification: { provider: "anthropic", model: "claude-haiku-4-5" },

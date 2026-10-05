@@ -663,6 +663,63 @@ export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
   );
 }
 
+const PHOTO_KIND = z.enum(["packshot", "situation", "text", "other"]);
+export const PhotoTriageSchema = z.object({
+  photos: z.preprocess((v) => v ?? [], z.array(z.object({ index: z.coerce.number().int(), kind: PHOTO_KIND.catch("other") }))),
+  best: z.preprocess((v) => (v === undefined ? null : v), z.coerce.number().int().nullable()).catch(null),
+});
+
+/**
+ * Tri visuel des photos du produit avant détourage, en une seule requête (modèle économique) :
+ * packshot, photo en situation, visuel avec texte ou autre ; indice (1…n) de la meilleure photo produit.
+ */
+export async function aiPhotoTriage(b: Base, photos: Buffer[]) {
+  return llmJson(
+    {
+      task: "photo_triage",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().photoTriage,
+      images: photos.map((data, i) => ({ data, label: `photo ${i + 1}` })),
+      prompt: `${photos.length} photo(s). Réponds { "photos": [ { "index": 1, "kind": "packshot|situation|text|other" } ], "best": 1 | null } avec une entrée par photo, dans l'ordre.`,
+      maxTokens: 1500,
+    },
+    PhotoTriageSchema,
+  );
+}
+
+export const CUTOUT_PROBLEMS = ["product_cut", "missing_parts", "background_left", "person_left", "wrong_object", "other_objects", "text_left", "blurry"] as const;
+export const CutoutCheckSchema = z.object({
+  verdict: z.enum(["ok", "rejected"]).catch("rejected"),
+  score: z.coerce.number().catch(0),
+  problems: z.preprocess((v) => (Array.isArray(v) ? v.filter((x) => (CUTOUT_PROBLEMS as readonly string[]).includes(x)) : []), z.array(z.enum(CUTOUT_PROBLEMS))),
+  note: str,
+});
+
+/** Contrôle visuel d'un détourage : photo d'origine, détourage sur fond blanc et sur fond sombre. */
+export async function aiCutoutCheck(b: Base, images: { original: Buffer; white: Buffer; dark: Buffer }) {
+  return llmJson(
+    {
+      task: "cutout_check",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().cutoutCheck,
+      images: [
+        { data: images.original, label: "photo d'origine" },
+        { data: images.white, label: "détourage sur fond blanc" },
+        { data: images.dark, label: "détourage sur fond sombre" },
+      ],
+      prompt: `Réponds { "verdict": "ok" | "rejected", "score": 0-10, "problems": ["code", …], "note": "…" }.`,
+      maxTokens: 800,
+    },
+    CutoutCheckSchema,
+  );
+}
+
 export async function aiClassify(b: Base, files: { id: string; name: string; kind: string; role: string | null; meta: string }[], folders: { key: string; name: string }[]) {
   return llmJson(
     {

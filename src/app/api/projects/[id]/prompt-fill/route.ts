@@ -17,7 +17,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     ...(p.services.hours ? [C(`Horaires : ${p.services.hours}`, `Hours: ${p.services.hours}`)] : []),
   ] : [];
   const facts = [...offer, ...p.product.facts.filter((f) => f.status !== "unknown").map((f) => C(`${f.label} : ${f.value}`, `${f.label}: ${f.value}`))].join(C(" ; ", "; "));
-  const media = all<{ name: string; role: string }>("SELECT name, role FROM assets WHERE project_id = ? AND deleted_at IS NULL AND kind IN ('image','video') AND role IN ('original','cutout','packshot','scene','detail','video','lifestyle') ORDER BY created_at DESC LIMIT 8", p.id);
+  const media = all<{ name: string; role: string }>("SELECT name, role FROM assets WHERE project_id = ? AND deleted_at IS NULL AND status != 'rejected' AND kind IN ('image','video') AND role IN ('original','cutout','packshot','scene','detail','video','lifestyle') ORDER BY created_at DESC LIMIT 8", p.id);
   const vars: Record<string, string> = {
     produit: [p.product.name || (svc ? C("l'activité", "the business") : C("le produit", "the product")), p.product.summary].filter(Boolean).join(" — "),
     marque: p.brand ? `${p.brand.name}${p.brand.tagline ? C(` (« ${p.brand.tagline} »)`, ` ("${p.brand.tagline}")`) : ""}` : p.name,

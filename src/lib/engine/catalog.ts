@@ -8,16 +8,32 @@ import { all, one } from "../db";
 import { assetData, getAsset, saveAsset, type Asset } from "../library";
 import { loadProject, saveCatalog, type Project } from "../projects";
 import { cutoutProduct, extractPalette } from "../media/cutout";
+import { checkCutoutLocal } from "../media/cutout-quality";
 import { renderPackshot } from "../media/compose";
 import type { CatalogItem } from "../project-types";
 import type { StoreCollection, StoreProduct } from "../theme/spec";
-import type { JobContext } from "../jobs";
+import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { palette } from "./images";
 import { C, L } from "../i18n-server";
 
 export const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "produit";
 
 const derived = (projectId: string, role: string, sourceId: string) => one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND source_asset_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role, sourceId);
+
+/**
+ * Détourage contrôlé par les règles locales (part du produit, morceaux épars, bords, trous) ; null si le détourage
+ * n'a pas pu être fait proprement (machine trop juste et fond non uni). Un détourage refusé est gardé mais jamais utilisé.
+ */
+async function checkedCutout(original: Buffer) {
+  try {
+    const c = await cutoutProduct(original);
+    return { ...c, quality: await checkCutoutLocal(c, original) };
+  } catch (e) {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    console.warn("[catalog] détourage impossible :", (e as Error).message);
+    return null;
+  }
+}
 
 /** Détourage et packshot de chaque produit du catalogue (déjà faits : réutilisés). */
 export async function ensureCatalogMedia(ctx: JobContext | null, projectId: string) {
@@ -29,9 +45,11 @@ export async function ensureCatalogMedia(ctx: JobContext | null, projectId: stri
     let cut = derived(projectId, "catalog-cutout", original.id);
     if (!cut) {
       ctx?.progress(0.05 + (n / Math.max(1, items.length)) * 0.4, L(`Détourage : ${item.name}`, `Cutout: ${item.name}`));
-      const c = await cutoutProduct(assetData(original));
-      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(item.name)}-${C("detoure", "cutout")}.png`, mime: "image/png", role: "catalog-cutout", folderKey: "product.catalog", origin: "generated", sourceAssetId: original.id, meta: { product: item.key, colors: await extractPalette(c.png), method: c.method } });
+      const c = await checkedCutout(assetData(original));
+      if (!c) continue; // pas de détourage valable : la photo d'origine sert telle quelle
+      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(item.name)}-${C("detoure", "cutout")}.png`, mime: "image/png", role: "catalog-cutout", folderKey: "product.catalog", origin: "generated", sourceAssetId: original.id, status: c.quality.ok ? "ready" : "rejected", meta: { product: item.key, colors: c.quality.ok ? await extractPalette(c.png) : [], method: c.method, quality: { verdict: c.quality.ok ? "ok" : "rejected", reasons: c.quality.reasons, score: c.quality.score, by: "local", checkedAt: Date.now() } } });
     }
+    if (cut.status === "rejected") continue;
     if (!derived(projectId, "catalog-packshot", cut.id)) {
       ctx?.progress(0.05 + ((n + 0.5) / Math.max(1, items.length)) * 0.4, L(`Packshot : ${item.name}`, `Packshot: ${item.name}`));
       const img = await loadImage(assetData(cut));
@@ -114,9 +132,11 @@ export async function ensureVariantMedia(ctx: JobContext | null, projectId: stri
     let cut = derived(projectId, "variant-cutout", original.id);
     if (!cut) {
       ctx?.progress(0.1, L(`Détourage : ${value}`, `Cutout: ${value}`));
-      const c = await cutoutProduct(assetData(original));
-      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(value)}-${C("detoure", "cutout")}.png`, mime: "image/png", role: "variant-cutout", folderKey: "product.cutouts", origin: "generated", sourceAssetId: original.id, meta: { variant: value, colors: await extractPalette(c.png), method: c.method } });
+      const c = await checkedCutout(assetData(original));
+      if (!c) continue; // pas de détourage valable : la photo d'origine sert telle quelle
+      cut = await saveAsset({ projectId, userId: p.userId, data: c.png, name: `${slug(value)}-${C("detoure", "cutout")}.png`, mime: "image/png", role: "variant-cutout", folderKey: "product.cutouts", origin: "generated", sourceAssetId: original.id, status: c.quality.ok ? "ready" : "rejected", meta: { variant: value, colors: c.quality.ok ? await extractPalette(c.png) : [], method: c.method, quality: { verdict: c.quality.ok ? "ok" : "rejected", reasons: c.quality.reasons, score: c.quality.score, by: "local", checkedAt: Date.now() } } });
     }
+    if (cut.status === "rejected") continue;
     if (!derived(projectId, "variant-packshot", cut.id)) {
       ctx?.progress(0.15, L(`Packshot : ${value}`, `Packshot: ${value}`));
       const jpg = await renderPackshot(await loadImage(assetData(cut)), { background: palette(p).light });

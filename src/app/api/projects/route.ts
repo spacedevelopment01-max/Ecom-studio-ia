@@ -13,7 +13,7 @@ export const GET = handle(async () => {
   const user = await requireUser();
   const rows = all<any>(
     `SELECT p.id, p.name, p.status, p.platform, p.sector, p.brand_json, p.business_type, p.updated_at, p.created_at,
-       (SELECT id FROM assets a WHERE a.project_id = p.id AND a.role IN ('scene','packshot','lifestyle','banner','cutout','original') AND a.deleted_at IS NULL ORDER BY CASE a.role WHEN 'scene' THEN 0 WHEN 'packshot' THEN 1 WHEN 'lifestyle' THEN 2 WHEN 'banner' THEN 3 WHEN 'cutout' THEN 4 ELSE 5 END, a.created_at DESC LIMIT 1) AS cover
+       (SELECT id FROM assets a WHERE a.project_id = p.id AND a.role IN ('scene','packshot','lifestyle','banner','cutout','original') AND a.deleted_at IS NULL AND a.status != 'rejected' ORDER BY CASE a.role WHEN 'scene' THEN 0 WHEN 'packshot' THEN 1 WHEN 'lifestyle' THEN 2 WHEN 'banner' THEN 3 WHEN 'cutout' THEN 4 ELSE 5 END, a.created_at DESC LIMIT 1) AS cover
      FROM projects p WHERE p.user_id = ? AND p.archived = 0 ORDER BY p.updated_at DESC`,
     user.id,
   );

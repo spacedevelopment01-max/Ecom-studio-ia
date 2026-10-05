@@ -90,7 +90,8 @@ export async function saveBrandBook(projectId: string) {
     logoLight: await img(derived("logo-light")),
     logoWeb: await img(derived("logo-horizontal") ?? main),
     mark: await img(derived("logo-mark")),
-    product: await img(latest("cutout")),
+    // Détourage utilisable seulement (jamais un détourage refusé au contrôle ou écarté par le client).
+    product: await img(all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", projectId)[0]),
     sectorLabel: sectorLabel(p.product.sector, contentLang()),
     date: new Date(),
   });

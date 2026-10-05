@@ -11,7 +11,8 @@ import { loadImage } from "@napi-rs/canvas";
 import { all, one } from "../db";
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, type Project } from "../projects";
-import { cutoutProduct, detailCrops, extractPalette } from "../media/cutout";
+import { detailCrops } from "../media/cutout";
+import { ensureCutouts } from "./cutouts";
 import { FORMATS, renderCreative, renderPackshot, renderScene, renderBanner, type FormatId, type Layout, type SceneStyle, type Typo } from "../media/compose";
 import { canvasFamily } from "../media/fonts";
 import { aiImageBrief, aiQcImage } from "../ai/tasks";
@@ -52,38 +53,8 @@ export function shortLine(text: string, max = 60): string {
   return first.slice(0, max).replace(/\s+\S*$/, "").replace(/[\s,;:–-]+$/, "");
 }
 
-/** Détoure les photos originales qui ne le sont pas encore. */
-export async function ensureCutouts(ctx: JobContext | null, project: Project): Promise<Asset[]> {
-  // Services : les photos montrent un lieu, une équipe, des réalisations — rien à détourer.
-  if (isServices(project)) return [];
-  const originals = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND kind = 'image' AND deleted_at IS NULL ORDER BY created_at", project.id);
-  const out: Asset[] = [];
-  for (const [i, o] of originals.entries()) {
-    const existing = one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'cutout' AND source_asset_id = ? AND deleted_at IS NULL", project.id, o.id);
-    if (existing) {
-      out.push(existing);
-      continue;
-    }
-    ctx?.progress(0.05 + (i / Math.max(1, originals.length)) * 0.3, L(`Détourage de la photo ${i + 1}/${originals.length}`, `Cutting out photo ${i + 1}/${originals.length}`));
-    const cut = await cutoutProduct(assetData(o));
-    const colors = await extractPalette(cut.png);
-    out.push(
-      await saveAsset({
-        projectId: project.id,
-        userId: project.userId,
-        data: cut.png,
-        name: `${slug(project.product.name || project.name)}-${C("detoure", "cutout")}-${i + 1}.png`,
-        mime: "image/png",
-        role: "cutout",
-        folderKey: "product.cutouts",
-        origin: "generated",
-        sourceAssetId: o.id,
-        meta: { method: cut.method === "model" ? L("Détourage local (modèle embarqué)", "Local cutout (built-in model)") : L("Détourage local (fond uni)", "Local cutout (plain background)"), bbox: cut.bbox, source: { w: cut.sourceW, h: cut.sourceH }, colors },
-      }),
-    );
-  }
-  return out;
-}
+/** Détourages triés, contrôlés et utilisables (voir ./cutouts) : les détourages refusés ne servent jamais. */
+export { ensureCutouts, validCutouts } from "./cutouts";
 
 type ImgCtx = { userId: string; projectId: string; jobId?: string | null };
 
