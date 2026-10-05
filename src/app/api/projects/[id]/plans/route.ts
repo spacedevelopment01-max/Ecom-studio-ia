@@ -5,6 +5,7 @@ import { enqueue } from "@/lib/jobs";
 import { HttpError } from "@/lib/auth";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
+import { assertAutopublish, assertCalendarDays } from "@/lib/plan-gates";
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
@@ -37,6 +38,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     throw new HttpError(400, L("Fuseau horaire inconnu.", "Unknown time zone."));
   }
   for (const n of b.networks) if (n.connectionId && !one("SELECT 1 FROM connections WHERE id = ? AND user_id = ?", n.connectionId, user.id)) throw new HttpError(400, L("Compte social inconnu.", "Unknown social account."));
+  assertCalendarDays(user, b.days);
+  if (b.approval === "auto") assertAutopublish(user);
   if (b.days * b.perDay > 150) throw new HttpError(400, L("150 publications au maximum par plan.", "150 posts maximum per plan."));
   const pid = id();
   run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", pid, p.id, JSON.stringify(b), "planning", now());

@@ -5,6 +5,7 @@ import { Check, Search, Film, FileText } from "lucide-react";
 import { Badge, Button, cx, formatBytes, Input, Modal, Progress, Spinner, useApi } from "../ui";
 import { useProject, type JobView } from "./project-context";
 import { currentLang, useLang, useT } from "../i18n";
+import { useBilling } from "../billing-client";
 import { pick, type Lang } from "@/lib/i18n";
 
 export type AssetView = {
@@ -175,24 +176,27 @@ export function SectionTitle({ title, children, action }: { title: string; child
   );
 }
 
+/**
+ * Bandeau d'information de l'espace : sans forfait (découverte gratuite), rappelle ce que les forfaits ajoutent ;
+ * sans fournisseur d'IA sur l'installation, le signale. Jamais de crédits ni de « mode local ».
+ */
 export function EngineNotice({ what }: { what: string }) {
   const t = useT();
   const { data } = useProject();
+  const { billing } = useBilling();
   if (!data) return null;
-  const configured = data.ai.llm;
-  const chosenLocal = configured && data.ai.credits !== false && data.ai.mode === "local";
-  if (configured && data.ai.credits !== false && !chosenLocal) return null;
+  if (!data.ai.llm)
+    return (
+      <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
+        {t(<>L'IA n'est pas encore connectée sur cette installation : {what} sont préparés en version simplifiée.</>, <>AI isn't connected on this installation yet: {what} are prepared in a simplified version.</>)}
+      </div>
+    );
+  if (!billing || billing.plan) return null;
   return (
     <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
-      <strong>{t("Version sans IA (moteur local).", "Non-AI version (local engine).")}</strong>{" "}
-      {chosenLocal
-        ? t(<>Vous avez choisi le mode local (en haut du studio) : {what} sont produits sans IA et sans consommer vos crédits.</>, <>You chose local mode (at the top of the studio): {what} are produced without AI and without using your credits.</>)
-        : configured
-        ? t(<>Vos crédits de création sont épuisés ou vous êtes en essai gratuit : {what} sont produits par le moteur local, sans invention.</>, <>Your creation credits are used up or you are on a free trial: {what} are produced by the local engine, with nothing made up.</>)
-        : t(<>Aucun fournisseur d'IA n'est connecté sur cette installation : {what} sont produits par le moteur local ({data?.business === "services" ? "mises en page à partir de vos photos, typographie" : "détourage, compositions"}, motion design, textes de base sans invention).</>, <>No AI provider is connected on this installation: {what} are produced by the local engine ({data?.business === "services" ? "layouts from your photos, typography" : "cutouts, compositions"}, motion design, basic copy with nothing made up).</>)}{" "}
-      {t(<><strong>Les résultats avec l'IA connectée sont bien meilleurs</strong> : marque et textes écrits pour votre produit, thème composé sur mesure, retouches comprises en langage naturel, photos réalistes et vidéos UGC.</>, <><strong>Results with AI connected are far better</strong>: a brand and copy written for your product, a custom-built theme, edits understood in plain language, realistic photos and UGC videos.</>)}
-      {configured && !chosenLocal && <> <a href="/studio/compte" className="font-semibold underline">{t("Passer à l'abonnement", "Upgrade to a subscription")}</a></>}
-      {chosenLocal && <> {t("Repassez sur « IA » en haut du studio quand vous le souhaitez.", "Switch back to “AI” at the top of the studio whenever you like.")}</>}
+      <strong>{t("Découverte gratuite.", "Free discovery.")}</strong>{" "}
+      {t("L'IA analyse votre produit, crée votre marque, vos logos et un aperçu de votre page d'accueil. Les images, les vidéos et l'export de la boutique sont inclus dans les forfaits.", "AI analyzes your product, creates your brand, your logos and a preview of your home page. Images, videos and store export come with the plans.")}{" "}
+      <a href="/studio/compte#forfaits" className="font-semibold underline">{t("Choisir un forfait", "Choose a plan")}</a>
     </div>
   );
 }

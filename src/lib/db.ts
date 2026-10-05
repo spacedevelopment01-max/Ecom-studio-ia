@@ -314,10 +314,40 @@ CREATE TABLE IF NOT EXISTS ledger (
   created_at INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ledger_ref ON ledger(type, ref) WHERE ref IS NOT NULL;
+CREATE TABLE IF NOT EXISTS quota_usage (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  period_start INTEGER NOT NULL,
+  key TEXT NOT NULL,           -- visuals | aiVideos | ugc | blog
+  included INTEGER NOT NULL,
+  rollover INTEGER NOT NULL DEFAULT 0,
+  used INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, period_start, key)
+);
+CREATE TABLE IF NOT EXISTS pack_balances (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  key TEXT NOT NULL,           -- visuals | aiVideos | ugc | languages
+  balance INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, key)
+);
+CREATE TABLE IF NOT EXISTS pack_purchases (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  pack TEXT NOT NULL,
+  ref TEXT NOT NULL UNIQUE,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS quota_events (
+  ref TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  key TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS payments (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  kind TEXT NOT NULL,          -- subscription | topup
+  kind TEXT NOT NULL,          -- subscription | pack | topup (ancien)
   amount_cents INTEGER NOT NULL,
   status TEXT NOT NULL,
   stripe_id TEXT UNIQUE,
@@ -419,6 +449,30 @@ CREATE TABLE IF NOT EXISTS recurring_charges (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
+
+-- Articles de blog écrits par l'IA (forfaits Vendre et Dominer).
+CREATE TABLE IF NOT EXISTS blog_articles (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  title TEXT NOT NULL DEFAULT '',
+  slug TEXT NOT NULL DEFAULT '',
+  meta_title TEXT NOT NULL DEFAULT '',
+  meta_description TEXT NOT NULL DEFAULT '',
+  excerpt TEXT NOT NULL DEFAULT '',
+  body_html TEXT NOT NULL DEFAULT '',
+  tags TEXT NOT NULL DEFAULT '[]',
+  cover_asset_id TEXT,
+  language TEXT NOT NULL DEFAULT 'fr',
+  status TEXT NOT NULL DEFAULT 'draft', -- draft | ready | published
+  published_url TEXT,
+  platform_ref TEXT,                    -- identifiant de l'article sur la plateforme (Shopify : gid)
+  qc_notes TEXT NOT NULL DEFAULT '[]',  -- points du contrôle qualité restant à relire
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS blog_articles_project ON blog_articles(project_id, deleted_at, updated_at);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */
@@ -427,6 +481,9 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
   ["projects", "business_json", "TEXT NOT NULL DEFAULT '{}'"],
+  ["subscriptions", "plan", "TEXT"], // creer | vendre | dominer (null : ancien abonnement → « Créer »)
+  ["subscriptions", "billing", "TEXT"], // month | year
+  ["payments", "label", "TEXT"],
 ];
 
 function migrate(db: Database.Database) {

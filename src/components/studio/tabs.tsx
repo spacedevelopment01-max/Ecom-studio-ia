@@ -17,6 +17,7 @@ const MAP: Record<string, React.ComponentType> = {
   videos: dynamic(() => import("./tab-videos"), { loading }),
   prompts: dynamic(() => import("./tab-prompts"), { loading }),
   publications: dynamic(() => import("./tab-publications"), { loading }),
+  blog: dynamic(() => import("./tab-blog"), { loading }),
   calendrier: dynamic(() => import("./tab-calendrier"), { loading }),
   publicites: dynamic(() => import("./tab-publicites"), { loading }),
   fichiers: dynamic(() => import("./tab-fichiers"), { loading }),

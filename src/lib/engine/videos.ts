@@ -56,8 +56,8 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
         ? `Slow cinematic push-in on this real photo of the business, soft light shift, subtle depth of field. Keep every person, object and place exactly as they are; add no people, no text, no logo.`
         : `Slow cinematic push-in on the product set, soft light shift, subtle depth of field, ${brand.palette.secondary} tones`;
       const buf = provider === "google"
-        ? await veoClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip` }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m))
-        : await falClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip` }, { image: assetData(scene), prompt }, (m) => ctx.progress(0.15, m));
+        ? await veoClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip:${req.format}:${req.target ?? ""}` }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m))
+        : await falClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip:${req.format}:${req.target ?? ""}` }, { image: assetData(scene), prompt }, (m) => ctx.progress(0.15, m));
       const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name)}-${C("plan-genere", "generated-shot")}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: scene.id, meta: { provider, recipe: L("Plan d'ambiance généré (image vers vidéo)", "Generated mood shot (image to video)") }, status: "review" });
       return a.id;
     }).catch((e) => {

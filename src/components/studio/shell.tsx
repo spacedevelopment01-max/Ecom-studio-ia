@@ -2,12 +2,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Wallet, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 import { missingActivity } from "./services-editor";
 import { TutorialButton, TutorialsMenuLink } from "./tutorial";
+import { PlanLink, QuotaBanner, useBilling } from "../billing-client";
 
 export const TABS = [
   { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass, group: "Création", groupEn: "Create" },
@@ -18,6 +19,7 @@ export const TABS = [
   { id: "videos", label: "Vidéos", labelEn: "Videos", icon: Film, group: "Création", groupEn: "Create" },
   { id: "prompts", label: "Prompts", labelEn: "Prompts", icon: BookOpen, group: "Création", groupEn: "Create" },
   { id: "publications", label: "Publications", labelEn: "Posts", icon: Send, group: "Diffusion", groupEn: "Publish" },
+  { id: "blog", label: "Blog", labelEn: "Blog", icon: Newspaper, group: "Diffusion", groupEn: "Publish" },
   { id: "calendrier", label: "Calendrier", labelEn: "Calendar", icon: CalendarDays, group: "Diffusion", groupEn: "Publish" },
   { id: "publicites", label: "Publicités", labelEn: "Ads", icon: Megaphone, group: "Diffusion", groupEn: "Publish" },
   { id: "fichiers", label: "Fichiers", labelEn: "Files", icon: FolderTree, group: "Ressources", groupEn: "Resources" },
@@ -172,44 +174,6 @@ function MobileLangToggle() {
   );
 }
 
-/** Choix du moteur (local gratuit ou IA avec crédits) et jauge des crédits, en haut du studio. */
-export function CreditPill() {
-  const t = useT();
-  const { data, reload } = useProject();
-  const [busy, setBusy] = useState(false);
-  const c = data?.credits;
-  if (!c || !data) return null;
-  const configured = data.ai.llm || data.ai.image;
-  const mode = data.ai.mode ?? "ai";
-  const canAi = configured && data.ai.credits !== false;
-  const set = async (m: "ai" | "local") => {
-    if (m === mode || busy) return;
-    setBusy(true);
-    try {
-      await api("/api/me/ai-mode", { body: { mode: m } });
-      reload();
-    } finally {
-      setBusy(false);
-    }
-  };
-  const left = Math.max(0, 1 - c.usedPct);
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex h-10 items-center rounded-full border border-line bg-card p-0.5 text-xs" role="group" aria-label={t("Moteur de création", "Creation engine")}>
-        <button onClick={() => set("local")} aria-pressed={mode === "local" || !canAi} title={t("Moteur local : gratuit, ne consomme aucun crédit", "Local engine: free, uses no credits")} className={cx("h-8 rounded-full px-2.5 sm:px-3", mode === "local" || !canAi ? "bg-ink text-paper" : "text-muted hover:text-ink")}>{t("Local", "Local")}</button>
-        <button onClick={() => (canAi ? set("ai") : (window.location.href = "/studio/compte"))} aria-pressed={mode === "ai" && canAi} title={canAi ? t("IA : résultats bien meilleurs, consomme vos crédits de création", "AI: much better results, uses your creation credits") : configured ? t("Crédits épuisés ou essai gratuit : passez à l'abonnement", "Credits used up or free trial: upgrade to a subscription") : t("IA non connectée sur cette installation", "AI is not connected on this installation")} className={cx("h-8 rounded-full px-2.5 sm:px-3", mode === "ai" && canAi ? "bg-signal text-signal-ink" : "text-muted hover:text-ink", !configured && "opacity-50")} disabled={!configured}>{t("IA", "AI")}</button>
-      </div>
-      {!c.empty && (
-        <Link href="/studio/compte" className={cx("hidden h-10 items-center gap-2 rounded-full border px-3 text-xs md:flex", c.paused ? "border-bad bg-bad-soft text-bad" : c.alert ? "border-warn bg-warn-soft text-warn" : "border-line bg-card")} title={t("Crédits de création restants", "Creation credits left")}>
-          <Wallet className="size-4" />
-          <span className="w-14"><Progress value={left} /></span>
-          <span>{t(`${Math.round(left * 100)} %`, `${Math.round(left * 100)}%`)}</span>
-        </Link>
-      )}
-    </div>
-  );
-}
-
 export function StudioShell({ projectId, children }: { projectId: string; children: ReactNode }) {
   const t = useT();
   const { lang } = useLang();
@@ -219,6 +183,8 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   const { data } = useProject();
   const status = STATUS[data?.project.status ?? "draft"] ?? STATUS.draft;
   const { data: me } = useApi<{ user: { role: string; email: string } }>("/api/me");
+  // Forfait et quotas (lien « Mon compte », bandeau quand un quota est épuisé) : jamais de crédits.
+  const { billing } = useBilling({ poll: 60000 });
   // Menu latéral replié ou déplié (ordinateur), mémorisé sur cet appareil.
   const [folded, setFolded] = useState(false);
   useEffect(() => {
@@ -294,7 +260,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
         </nav>
         <div className="grid gap-1 border-t border-line pt-3 text-sm">
           <TutorialsMenuLink tab={tab} business={data?.business} folded={folded} />
-          <Link href="/studio/compte" title={folded ? t("Compte et crédits", "Account and credits") : undefined} aria-label={folded ? t("Compte et crédits", "Account and credits") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Compte et crédits", "Account and credits")}`}</Link>
+          <Link href="/studio/compte" title={folded ? t("Mon compte", "My account") : undefined} aria-label={folded ? t("Mon compte", "My account") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Mon compte", "My account")}`}</Link>
           {me?.user.role === "admin" && <Link href="/admin" title={folded ? t("Administration", "Admin") : undefined} aria-label={folded ? t("Administration", "Admin") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && ` ${t("Administration", "Admin")}`}</Link>}
           <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? t("Déconnexion", "Log out") : undefined} aria-label={folded ? t("Déconnexion", "Log out") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && ` ${t("Déconnexion", "Log out")}`}</button>
         </div>
@@ -311,7 +277,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             <TutorialButton tab={tab} business={data?.business} />
             <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span>
             <ActiveJobs />
-            <CreditPill />
+            <PlanLink billing={billing} />
             <Notifications />
             <div className="hidden shrink-0 sm:flex"><LangSwitch /></div>
             <MobileLangToggle />
@@ -331,6 +297,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             })}
           </nav>
         </header>
+        <QuotaBanner billing={billing} />
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>

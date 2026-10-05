@@ -5,7 +5,7 @@
  * une section sur mesure avec l'IA à partir d'une description.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Plus, Search, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Lock, Plus, Search, Sparkles, Wand2 } from "lucide-react";
 import { Button, cx, Modal } from "../ui";
 import { useLang, useT } from "../i18n";
 import { intlLocale } from "@/lib/i18n";
@@ -44,6 +44,7 @@ export function SectionLibrary({
   versionId,
   aiAvailable,
   onGenerate,
+  generateLocked,
 }: {
   open: boolean;
   onClose: () => void;
@@ -55,6 +56,8 @@ export function SectionLibrary({
   versionId?: string;
   aiAvailable: boolean;
   onGenerate: (description: string) => Promise<void>;
+  /** Forfait Créer : la génération d'une section par l'IA est réservée à Vendre et Dominer. */
+  generateLocked?: boolean;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -127,7 +130,7 @@ export function SectionLibrary({
         </div>
         <div className={cx("min-h-0 overflow-hidden rounded-2xl border border-line bg-paper-2", sel !== GENERATE && "order-first lg:order-none")}>
           {sel === GENERATE || !current ? (
-            <GeneratePane aiAvailable={aiAvailable} onGenerate={onGenerate} />
+            <GeneratePane aiAvailable={aiAvailable} onGenerate={onGenerate} locked={!!generateLocked} />
           ) : (
             <PreviewPane key={current.type} item={current} projectId={projectId} versionId={versionId} onAdd={() => onPick(current.type)} adding={busy === current.type} disabled={!!busy} />
           )}
@@ -191,7 +194,7 @@ function PreviewPane({ item, projectId, versionId, onAdd, adding, disabled }: { 
 }
 
 /** « Générer » : décrire la section voulue, l'IA l'écrit (code, réglages modifiables) et l'ajoute à la page. */
-function GeneratePane({ aiAvailable, onGenerate }: { aiAvailable: boolean; onGenerate: (description: string) => Promise<void> }) {
+function GeneratePane({ aiAvailable, onGenerate, locked }: { aiAvailable: boolean; onGenerate: (description: string) => Promise<void>; locked: boolean }) {
   const t = useT();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -224,10 +227,16 @@ function GeneratePane({ aiAvailable, onGenerate }: { aiAvailable: boolean; onGen
             <button key={x} type="button" onClick={() => setText(x)} className="rounded-full border border-line bg-card px-2.5 py-1 text-xs text-ink-2 hover:border-ink">{x}</button>
           ))}
         </div>
-        {aiAvailable ? (
+        {locked ? (
+          <div className="mt-4 grid gap-2 text-center">
+            <Button className="w-full" disabled icon={<Lock className="size-4" />}>{t("Inclus dans les forfaits Vendre et Dominer", "Included in the Sell and Dominate plans")}</Button>
+            <p className="text-xs text-muted">{t("Avec votre forfait, ajoutez toutes les sections de la bibliothèque. Les sections sur mesure écrites par l'IA sont incluses dans les forfaits Vendre et Dominer.", "With your plan, add any section from the library. Custom sections written by AI are included in the Sell and Dominate plans.")}</p>
+            <a href="/studio/compte#forfaits" className="text-xs font-medium text-signal underline underline-offset-2">{t("Voir les forfaits dans « Mon compte »", "See the plans in “My account”")}</a>
+          </div>
+        ) : aiAvailable ? (
           <Button className="mt-4 w-full" icon={<Wand2 className="size-4" />} loading={busy} disabled={text.trim().length < 8} onClick={go}>{t("Générer la section avec l'IA", "Generate the section with AI")}</Button>
         ) : (
-          <p className="mt-4 rounded-2xl border border-info/30 bg-info-soft p-3 text-xs text-info">{t("La génération de section est faite par l'IA : passez sur « IA » en haut du studio (abonnement avec crédits de création). Le moteur local ne sait pas écrire une section sur mesure.", "Section generation is done by AI: switch to “AI” at the top of the studio (subscription with creation credits). The local engine can't write a custom section.")}</p>
+          <p className="mt-4 rounded-2xl border border-info/30 bg-info-soft p-3 text-xs text-info">{t("La génération d'une section sur mesure est faite par l'IA : elle est incluse dans les forfaits Vendre et Dominer.", "Custom section generation is done by AI: it comes with the Sell and Dominate plans.")}</p>
         )}
       </div>
     </div>

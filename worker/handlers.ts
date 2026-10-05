@@ -5,7 +5,11 @@ import { runPipeline } from "../src/lib/engine/pipeline";
 import { generateImageSet, generateSingleImage } from "../src/lib/engine/images";
 import { produceVideo } from "../src/lib/engine/videos";
 import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
+import { writeBlogArticle } from "../src/lib/engine/blog";
+import { withQuotaScope } from "../src/lib/ai/access";
+import { consumeQuota } from "../src/lib/quotas";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
+import { buildCustomTheme } from "../src/lib/engine/custom-theme";
 import { createContentPlan, attachVideoToPlan, NETWORK_FORMATS } from "../src/lib/engine/calendar";
 import { buildBrand } from "../src/lib/engine/brand";
 import { loadProject, currentTheme, saveThemeVersion, themeVersion, listThemeVersions, remember, notify } from "../src/lib/projects";
@@ -40,7 +44,15 @@ export const handlers: Record<string, Handler> = {
 
   /** Script UGC à relire et modifier avant la génération. */
   "ugc.script": async (ctx) => writeUgcScript(ctx, ctx.job.project_id!, ctx.payload.options),
-  "video.ugc": async (ctx) => produceUgc(ctx, ctx.job.project_id!, { options: ctx.payload.options, script: ctx.payload.script }),
+  // La vidéo UGC compte pour une vidéo UGC du forfait, une fois terminée (ses images et plans ne sont pas décomptés à part).
+  "video.ugc": async (ctx) => {
+    const r = await withQuotaScope("ugc", () => produceUgc(ctx, ctx.job.project_id!, { options: ctx.payload.options, script: ctx.payload.script }));
+    consumeQuota(ctx.job.user_id!, "ugc", 1, `ugc:${ctx.job.id}`);
+    return r;
+  },
+
+  /** Article de blog écrit (ou réécrit) par l'IA : 1 article du forfait, décompté une fois l'article enregistré. */
+  "blog.write": async (ctx) => writeBlogArticle(ctx, ctx.job.project_id!, { topic: ctx.payload.topic, brief: ctx.payload.brief, articleId: ctx.payload.articleId, instruction: ctx.payload.instruction }),
 
   "brand.build": async (ctx) => {
     const b = await buildBrand(ctx, ctx.payload.projectId, { guidance: ctx.payload.guidance });
@@ -60,6 +72,8 @@ export const handlers: Record<string, Handler> = {
 
   "shop.build": async (ctx) => buildShop(ctx, ctx.payload.projectId, { useAi: ctx.payload.useAi }),
   "shop.direction": async (ctx) => switchDirection(ctx, ctx.payload.projectId, ctx.payload.direction),
+  /** Thème entièrement sur mesure (forfait Dominer) : plan, puis chaque section écrite par l'IA, Theme Check, nouvelle version. */
+  "theme.custom": async (ctx) => buildCustomTheme(ctx, ctx.payload.projectId),
 
   /** Retouche du thème par conversation : opérations ciblées, nouvelle version. */
   "shop.chat": async (ctx) => {
@@ -268,6 +282,7 @@ export const handlers: Record<string, Handler> = {
     if (!a) throw new PermanentError(L("Média introuvable.", "Media not found."));
     return { assets: await importFromCanva(ctx.job.user_id, a, ctx.payload.format ?? "png") };
   },
+
 
   "shopify.push": async (ctx) => {
     const { projectId, parts } = ctx.payload as { projectId: string; parts: ("theme" | "product" | "pages")[] };

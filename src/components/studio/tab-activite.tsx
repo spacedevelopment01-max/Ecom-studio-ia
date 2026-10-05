@@ -76,7 +76,7 @@ export default function TabActivite() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="grid min-w-0 content-start gap-6">
           <Card className="min-w-0 p-5 sm:p-7">
-            <SectionTitle title={t("Votre activité", "Your business")} action={<div className="flex flex-wrap items-center gap-2"><FromSiteBadge site={data?.settings.existingSite} /><Badge tone={p.analyzedBy === "ai" ? "info" : "neutral"}>{p.analyzedBy === "ai" ? t("Analyse IA", "AI analysis") : t("Moteur local", "Local engine")}</Badge></div>}>
+            <SectionTitle title={t("Votre activité", "Your business")} action={<div className="flex flex-wrap items-center gap-2"><FromSiteBadge site={data?.settings.existingSite} /><Badge tone={p.analyzedBy === "ai" ? "info" : "neutral"}>{p.analyzedBy === "ai" ? t("Analyse IA", "AI analysis") : t("Version simplifiée", "Simplified version")}</Badge></div>}>
               {t("Ce que vous écrivez ici est considéré comme confirmé et repris tel quel sur le site, dans les images et les publications. Rien n'est inventé : ce qui manque reste « à compléter ».", "What you write here is treated as confirmed and used as is on the website, in images and in posts. Nothing is made up: anything missing stays marked “to complete”.")}
             </SectionTitle>
             <div className="grid gap-4 sm:grid-cols-2">

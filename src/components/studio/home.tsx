@@ -8,6 +8,8 @@ import { STORE_TYPES, storeTypeInfo, type BusinessType, type ServiceItem, type S
 import { LANGS } from "@/lib/i18n";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useCostConfirm } from "./cost-confirm";
+import { QuotaBanner, useBilling } from "../billing-client";
+import { PLANS } from "@/lib/plans";
 import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type PlatformId } from "./platform-picker";
 import { cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
 
@@ -30,21 +32,21 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   const [photos, setPhotos] = useState<File[]>([]);
   const [mode, setMode] = useState<"photo" | "link" | "text">("photo");
   const [more, setMore] = useState(false);
-  // Vidéos de la création complète : choix annoncé dès le départ (les plans filmés par l'IA consomment beaucoup de crédits).
+  // Vidéos de la création complète : choix annoncé dès le départ. Les plans filmés par l'IA utilisent
+  // 2 vidéos IA du forfait (la création initiale de la boutique ne décompte pas les visuels).
   const [videos, setVideos] = useState<"ai" | "edited" | "none">("ai");
-  const [videoEst, setVideoEst] = useState<Partial<Record<"ai" | "edited" | "none", { pct: number; ai: boolean; videoAi: boolean }>>>({});
+  const { billing } = useBilling();
+  const AI_VIDEOS_NEEDED = 2;
+  const videoAiBlocked: string | null = !billing
+    ? null
+    : !billing.plan
+      ? t("Inclus dans les forfaits : choisissez un forfait pour en profiter.", "Included in the plans: choose a plan to use it.")
+      : billing.quotas.aiVideos.left < AI_VIDEOS_NEEDED
+        ? t(`Il vous reste ${billing.quotas.aiVideos.left} vidéo${billing.quotas.aiVideos.left > 1 ? "s" : ""} IA ce mois-ci (il en faut ${AI_VIDEOS_NEEDED}).`, `You have ${billing.quotas.aiVideos.left} AI video${billing.quotas.aiVideos.left === 1 ? "" : "s"} left this month (${AI_VIDEOS_NEEDED} needed).`)
+        : null;
   useEffect(() => {
-    let alive = true;
-    for (const v of ["ai", "edited", "none"] as const)
-      api<{ pctOfAvailable: number; ai: boolean; videoAi?: boolean }>(`/api/estimate?action=pipeline&videos=${v}`)
-        .then((r) => alive && setVideoEst((m) => ({ ...m, [v]: { pct: r.pctOfAvailable, ai: r.ai, videoAi: !!r.videoAi } })))
-        .catch(() => {});
-    return () => { alive = false; };
-  }, []);
-  const videoAi = videoEst.ai?.videoAi ?? true;
-  useEffect(() => {
-    if (videoEst.ai && !videoEst.ai.videoAi && videos === "ai") setVideos("edited");
-  }, [videoEst.ai, videos]);
+    if (videoAiBlocked && videos === "ai") setVideos("edited");
+  }, [videoAiBlocked, videos]);
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const [typed, setTyped] = useState(false);
@@ -289,23 +291,26 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
       <fieldset className="grid gap-2">
         <legend className="mb-1">
           <span className="block font-display text-xl font-semibold">{t("Vidéos de la création", "Videos in the creation")}</span>
-          <span className="mt-0.5 block text-xs text-muted">{t("Les plans filmés par l'IA donnent le meilleur rendu, mais ce sont eux qui consomment le plus de crédits. Vous pourrez toujours en créer plus tard dans l'onglet Vidéos.", "AI-filmed shots give the best result, but they use the most credits. You can always create videos later in the Videos tab.")}</span>
+          <span className="mt-0.5 block text-xs text-muted">{t("Vous pourrez toujours en créer d'autres plus tard dans l'onglet Vidéos.", "You can always create more later in the Videos tab.")}</span>
         </legend>
         <input type="hidden" name="videos" value={videos} />
         <div role="radiogroup" aria-label={t("Vidéos de la création", "Videos in the creation")} className="grid gap-2">
           {([
-            ["ai", Sparkles, t("Avec plans filmés par l'IA", "With AI-filmed shots"), t("Meilleur rendu : chaque vidéo contient un plan tourné par l'IA à partir de votre produit. Consomme beaucoup de crédits.", "Best result: each video includes a shot filmed by AI from your product. Uses a lot of credits."), !videoAi],
-            ["edited", Film, t("Montées à partir de vos images", "Edited from your images"), t("Animation, textes et musique à partir des photos : bon rendu, presque rien en crédits.", "Animation, captions and music from the photos: good result, almost no credits."), false],
-            ["none", X, t("Pas de vidéo pour l'instant", "No video for now"), t("Vous les créerez plus tard, quand vous voudrez, dans l'onglet Vidéos.", "You'll create them later, whenever you like, in the Videos tab."), false],
-          ] as const).map(([id, Icon, label, hint, disabled]) => (
+            ["ai", Sparkles, t("Avec plans filmés par l'IA", "With AI-filmed shots"), t(`Meilleur rendu : chaque vidéo contient un plan tourné par l'IA à partir de votre produit. Utilise ${AI_VIDEOS_NEEDED} vidéos IA de votre forfait.`, `Best result: each video includes a shot filmed by AI from your product. Uses ${AI_VIDEOS_NEEDED} AI videos from your plan.`), videoAiBlocked],
+            ["edited", Film, t("Montées à partir de vos images", "Edited from your images"), t("Animation, textes et musique à partir de vos photos. N'utilise pas vos vidéos IA.", "Animation, captions and music from your photos. Doesn't use your AI videos."), null],
+            ["none", X, t("Pas de vidéo pour l'instant", "No video for now"), t("Aucune vidéo : vous les créerez plus tard, quand vous voudrez, dans l'onglet Vidéos.", "No video: you'll create them later, whenever you like, in the Videos tab."), null],
+          ] as const).map(([id, Icon, label, hint, blocked]) => {
+            const disabled = !!blocked;
+            return (
             <button key={id} type="button" role="radio" aria-checked={videos === id} disabled={disabled} onClick={() => setVideos(id)} className={cx("flex items-start gap-3 rounded-2xl border-2 p-3.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50", videos === id ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}>
               <span className={cx("grid size-9 shrink-0 place-items-center rounded-xl", videos === id ? "bg-signal text-signal-ink" : "bg-paper-2")}><Icon className="size-4" aria-hidden /></span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold leading-tight">{label}</span>
                 <span className="mt-1 block text-xs text-muted">{hint}</span>
-                {disabled ? <span className="mt-1.5 block text-xs font-medium text-warn">{t("Indisponible en mode local ou sans crédits.", "Unavailable in local mode or without credits.")}</span> : videoEst[id]?.ai ? <span className="mt-1.5 block text-xs font-medium text-ink-2">{t(`≈ ${Math.max(1, Math.round(videoEst[id]!.pct))} % de vos crédits restants pour toute la création`, `≈ ${Math.max(1, Math.round(videoEst[id]!.pct))}% of your remaining credits for the whole creation`)}</span> : null}</span>
+                {blocked && <span className="mt-1.5 block text-xs font-medium text-warn">{blocked}</span>}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
       </fieldset>
       <button type="button" onClick={() => setMore((v) => !v)} aria-expanded={more} className="justify-self-start text-sm font-medium text-ink-2 underline underline-offset-4">
@@ -410,6 +415,7 @@ export function StudioHome() {
   const { data, loading } = useApi<{ projects: ProjectCard[]; subscription: { status: string; stores: number } }>("/api/projects", { poll: 8000 });
   const { data: me } = useApi<{ user: { role: string; name: string } }>("/api/me");
   const [creating, setCreating] = useState(false);
+  const { billing } = useBilling({ poll: 60000 });
   const projects = data?.projects ?? [];
   const showNew = creating || (!loading && projects.length === 0);
   return (
@@ -420,12 +426,13 @@ export function StudioHome() {
           <div className="flex items-center gap-2">
             {me?.user.role === "admin" && <Link href="/admin" className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm sm:inline-flex"><Shield className="size-4" /> {t("Administration", "Admin")}</Link>}
             <Link href="/studio/themes" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm"><Palette className="size-4" /> {t("Thèmes", "Themes")}</Link>
-            <Link href="/studio/compte" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm" aria-label={t("Compte", "Account")}><Settings className="size-4" /> <span className="hidden sm:inline">{t("Compte", "Account")}</span></Link>
+            <Link href="/studio/compte" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm" aria-label={t("Mon compte", "My account")}><Settings className="size-4" /> <span className="hidden sm:inline">{t("Mon compte", "My account")}</span></Link>
             <LangSwitch />
             <ThemeToggle />
           </div>
         </div>
       </header>
+      <QuotaBanner billing={billing} />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         {showNew ? (
           <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
@@ -443,8 +450,8 @@ export function StudioHome() {
               <div>
                 <h1 className="font-display text-4xl font-semibold">{t("Mes projets", "My projects")}</h1>
                 <p className="mt-1 text-muted">
-                  {t(`${projects.length} projet${projects.length > 1 ? "s" : ""} · abonnement : `, `${projects.length} project${projects.length > 1 ? "s" : ""} · subscription: `)}
-                  {data?.subscription.status === "active" || data?.subscription.status === "manual" ? t(`${data?.subscription.stores} boutique(s)`, `${data?.subscription.stores} store${(data?.subscription.stores ?? 0) > 1 ? "s" : ""}`) : t("essai (1 boutique)", "trial (1 store)")}
+                  {t(`${projects.length} projet${projects.length > 1 ? "s" : ""} · `, `${projects.length} project${projects.length > 1 ? "s" : ""} · `)}
+                  {billing?.plan ? t(`forfait ${PLANS[billing.plan].name.fr} (1 boutique ou 1 site)`, `${PLANS[billing.plan].name.en} plan (1 store or 1 website)`) : t("découverte gratuite", "free discovery")}
                 </p>
               </div>
               <Button variant="signal" icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t("Nouveau projet", "New project")}</Button>

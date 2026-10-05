@@ -140,3 +140,69 @@ export async function pushTheme(c: Connection, projectId: string, versionId: str
   userErrors(d, "themeCreate");
   return { themeId: d.themeCreate.theme.id as string, editorUrl: `https://${c.external_id}/admin/themes/${String(d.themeCreate.theme.id).split("/").pop()}/editor` };
 }
+
+// ---------------------------------------------------------------- articles de blog
+
+export type ShopifyArticleInput = {
+  /** Article déjà envoyé (gid) : mis à jour au lieu d'être dupliqué. */
+  ref?: string | null;
+  title: string;
+  handle: string;
+  bodyHtml: string;
+  summary: string;
+  tags: string[];
+  author: string;
+  metaTitle: string;
+  metaDescription: string;
+  /** Image de couverture accessible publiquement (Shopify la télécharge). */
+  imageUrl?: string | null;
+  imageAlt?: string;
+  publish: boolean;
+  /** Nom du blog créé s'il n'existe ni « News » ni « Journal ». */
+  blogTitle: string;
+};
+
+/** Blog de la boutique où ranger les articles : « News » ou « Journal » s'il existe, sinon créé. */
+async function articleBlog(c: Connection, title: string): Promise<{ id: string; handle: string }> {
+  const d = await gql(c, `query{ blogs(first: 50){ nodes{ id title handle } } }`);
+  const blogs: { id: string; title: string; handle: string }[] = d?.blogs?.nodes ?? [];
+  const known = blogs.find((b) => /^(news|journal|blog|actualites|actualités)$/i.test(b.handle) || /^(news|journal|blog|actualités)$/i.test(b.title.trim()));
+  if (known) return known;
+  const created = await gql(c, `mutation($blog: BlogCreateInput!){ blogCreate(blog: $blog){ blog{ id handle } userErrors{ field message } } }`, { blog: { title } });
+  userErrors(created, "blogCreate");
+  return created.blogCreate.blog;
+}
+
+/** Crée (ou met à jour) l'article dans le blog de la boutique, en brouillon ou publié. */
+export async function pushBlogArticle(c: Connection, a: ShopifyArticleInput): Promise<{ ref: string; url: string; published: boolean }> {
+  const blog = await articleBlog(c, a.blogTitle);
+  const base: Record<string, unknown> = {
+    title: a.title,
+    handle: a.handle,
+    body: a.bodyHtml,
+    summary: a.summary,
+    tags: a.tags,
+    isPublished: a.publish,
+    author: { name: a.author },
+    ...(a.imageUrl ? { image: { url: a.imageUrl, altText: a.imageAlt ?? a.title } } : {}),
+  };
+  const seo = [
+    { namespace: "global", key: "title_tag", type: "single_line_text_field", value: a.metaTitle },
+    { namespace: "global", key: "description_tag", type: "single_line_text_field", value: a.metaDescription },
+  ].filter((m) => m.value);
+  const send = async (withSeo: boolean) => {
+    const article = { ...base, ...(withSeo && seo.length ? { metafields: seo } : {}) };
+    if (a.ref) {
+      const d = await gql(c, `mutation($id: ID!, $article: ArticleUpdateInput!){ articleUpdate(id: $id, article: $article){ article{ id handle } userErrors{ field message } } }`, { id: a.ref, article });
+      return { d, key: "articleUpdate" };
+    }
+    const d = await gql(c, `mutation($article: ArticleCreateInput!){ articleCreate(article: $article){ article{ id handle } userErrors{ field message } } }`, { article: { ...article, blogId: blog.id } });
+    return { d, key: "articleCreate" };
+  };
+  let r = await send(true);
+  // Champs SEO refusés (définition différente dans la boutique) : l'article part sans eux plutôt que pas du tout.
+  if ((r.d?.[r.key]?.userErrors ?? []).some((e: any) => /metafield/i.test(`${e.field ?? ""} ${e.message}`))) r = await send(false);
+  userErrors(r.d, r.key);
+  const art = r.d[r.key].article as { id: string; handle: string };
+  return { ref: art.id, url: `https://${c.external_id}/blogs/${blog.handle}/${art.handle}`, published: a.publish };
+}

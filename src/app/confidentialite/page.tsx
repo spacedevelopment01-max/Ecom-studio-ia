@@ -25,7 +25,7 @@ export default async function Page() {
             <li><strong>Account</strong>: email address, name, password (stored encrypted, never in plain text).</li>
             <li><strong>Projects</strong>: uploaded photos and files, product information, brand, texts, themes, images and videos created.</li>
             <li><strong>Connections</strong>: authorization tokens for the platforms you connect (social networks, store), stored encrypted; never your passwords.</li>
-            <li><strong>Billing</strong>: subscription and credit history. Card data is processed by the payment provider, not by us.</li>
+            <li><strong>Billing</strong>: subscription and pack purchase history. Card data is processed by the payment provider, not by us.</li>
             <li><strong>Technical</strong>: logs needed for security and proper operation.</li>
           </ul>
         </section>
@@ -59,7 +59,7 @@ export default async function Page() {
           <li><strong>Compte</strong> : adresse e-mail, nom, mot de passe (stocké chiffré, jamais en clair).</li>
           <li><strong>Projets</strong> : photos et fichiers importés, informations produit, marque, textes, thèmes, images et vidéos créés.</li>
           <li><strong>Connexions</strong> : jetons d'autorisation des plateformes que vous connectez (réseaux sociaux, boutique), stockés chiffrés ; jamais vos mots de passe.</li>
-          <li><strong>Facturation</strong> : historique d'abonnement et de crédits. Les données de carte sont traitées par le prestataire de paiement, pas par nous.</li>
+          <li><strong>Facturation</strong> : historique d'abonnement et d'achats de packs. Les données de carte sont traitées par le prestataire de paiement, pas par nous.</li>
           <li><strong>Technique</strong> : journaux nécessaires à la sécurité et au bon fonctionnement.</li>
         </ul>
       </section>

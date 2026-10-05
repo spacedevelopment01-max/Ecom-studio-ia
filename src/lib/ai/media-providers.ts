@@ -11,12 +11,42 @@
 import OpenAI, { toFile } from "openai";
 import sharp from "sharp";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
-import { currentUserHasAiCredits } from "./access";
+import { currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
+import { assertQuota, consumeQuota, userPlan } from "../quotas";
+import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
 import { providerKey, requirePrice, routeFor, usdToEur } from "./config";
 import { L } from "../i18n-server";
 
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string };
+
+/** Quota du forfait concerné par une génération (selon la portée de la tâche en cours), null si rien n'est décompté. */
+function quotaFor(media: "image" | "video") {
+  const scope = currentQuotaScope();
+  if (scope === "ugc") return null; // la vidéo UGC est décomptée une fois, en entier
+  if (media === "image") return scope === "creation" ? null : "visuals";
+  return "aiVideos";
+}
+
+/** Avant une génération : quota du forfait (message clair s'il est épuisé), puis budget IA caché. */
+function gate(ctx: Ctx, micro: number, media: "image" | "video") {
+  const q = quotaFor(media);
+  if (q) assertQuota(ctx.userId, q);
+  assertCanSpend(ctx.userId, micro);
+}
+
+/** Après une génération : consommation réelle (budget caché) et décompte du quota. */
+function recordMedia(u: Parameters<typeof recordUsage>[0]) {
+  recordUsage(u);
+  const q = quotaFor(u.task === "video_generation" ? "video" : "image");
+  if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
+}
+
+/** Pendant une tâche, un compte sans forfait (découverte gratuite) ne crée ni images ni vidéos par l'IA. */
+function mediaAllowed() {
+  const u = currentAiUser();
+  return currentUserHasAiCredits() && (!u || !!userPlan(u));
+}
 
 function cost(provider: string, model: string, units: { input?: number; output?: number; imageIn?: number; imageOut?: number; images?: number; seconds?: number }) {
   // Sans tarif connu, la génération est refusée (sinon elle serait comptée 0 € hors enveloppe).
@@ -29,7 +59,7 @@ function cost(provider: string, model: string, units: { input?: number; output?:
 }
 
 export function imageProviderAvailable(): "openai" | "google" | null {
-  if (!currentUserHasAiCredits()) return null;
+  if (!mediaAllowed()) return null;
   const r = routeFor("image_generation");
   if (providerKey(r.provider)) return r.provider === "openai" || r.provider === "google" ? r.provider : null;
   if (providerKey("openai")) return "openai";
@@ -38,7 +68,7 @@ export function imageProviderAvailable(): "openai" | "google" | null {
 }
 
 export function videoProviderAvailable(): "google" | "fal" | null {
-  if (!currentUserHasAiCredits()) return null;
+  if (!mediaAllowed()) return null;
   const r = routeFor("video_generation");
   if ((r.provider === "google" || r.provider === "fal") && providerKey(r.provider)) return r.provider;
   if (providerKey("google")) return "google";
@@ -56,7 +86,7 @@ export async function openaiScene(ctx: Ctx, input: { composite: Buffer; productM
   if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  assertCanSpend(ctx.userId, cost("openai", model, { input: 400, imageIn: 1500, imageOut: 6300 }).micro);
+  gate(ctx, cost("openai", model, { input: 400, imageIn: 1500, imageOut: 6300 }).micro, "image");
   // Le masque OpenAI : zones transparentes = zones à peindre. On rend donc
   // transparent tout ce qui n'est pas le produit.
   const { data, info } = await sharp(input.productMask).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -88,7 +118,7 @@ export async function openaiScene(ctx: Ctx, input: { composite: Buffer; productM
   if (!b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
   const u = res.usage ?? {};
   const c = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
-  recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -98,7 +128,7 @@ export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?:
   if (!key) throw new UserFacingError(L("Aucune clé Google Gemini configurée pour la génération d'images.", "No Google Gemini key configured for image generation."));
   const route = routeFor("image_generation");
   const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-  assertCanSpend(ctx.userId, cost("google", model, { images: 1 }).micro);
+  gate(ctx, cost("google", model, { images: 1 }).micro, "image");
   const parts: any[] = [{ text: `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty and clear (a product will be placed there later). Aspect ratio ${input.aspect}. No text, no logo, no product, no people.` }];
   if (input.reference) {
     const jpeg = await sharp(input.reference).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
@@ -117,7 +147,7 @@ export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?:
   const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
   if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
   const c = cost("google", model, { images: 1 });
-  recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -136,7 +166,7 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
     const key = providerKey("google")!;
     const route = routeFor("image_generation");
     const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-    assertCanSpend(ctx.userId, cost("google", model, { images: 1 }).micro);
+    gate(ctx, cost("google", model, { images: 1 }).micro, "image");
     const parts: any[] = [{ text }];
     if (ref) parts.push({ inline_data: { mime_type: "image/jpeg", data: ref.toString("base64") } });
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
@@ -151,13 +181,13 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
     if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
-    recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
+    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
     return Buffer.from(b64, "base64");
   }
   const key = providerKey("openai")!;
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  assertCanSpend(ctx.userId, cost("openai", model, { input: 300, imageOut: 6300 }).micro);
+  gate(ctx, cost("openai", model, { input: 300, imageOut: 6300 }).micro, "image");
   const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
   const size = input.aspect === "16:9" ? "1536x1024" : input.aspect === "1:1" ? "1024x1024" : "1024x1536";
   let res: any;
@@ -173,7 +203,7 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
   const b64 = res.data?.[0]?.b64_json;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
-  recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -185,9 +215,12 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
   const key = providerKey("google");
   if (!key) throw new UserFacingError(L("Aucune clé Google configurée pour la vidéo.", "No Google key configured for video."));
   const route = routeFor("video_generation");
-  const model = route.provider === "google" ? route.model : "veo-3.0-generate-001";
+  const chosen = route.provider === "google" ? route.model : "veo-3.0-generate-001";
+  // Forfait « Créer » : vidéos en qualité standard (modèle rapide) ; les autres forfaits gardent le modèle réglé.
+  const plan = userPlan(ctx.userId);
+  const model = plan && PLANS[plan].videoQuality === "fast" && chosen === "veo-3.0-generate-001" ? "veo-3.0-fast-generate-001" : chosen;
   const seconds = input.seconds ?? 8;
-  assertCanSpend(ctx.userId, cost("google", model, { seconds }).micro);
+  gate(ctx, cost("google", model, { seconds }).micro, "video");
   const jpeg = await sharp(input.image).jpeg({ quality: 90 }).toBuffer();
   const start = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:predictLongRunning`, {
     method: "POST",
@@ -213,7 +246,7 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
       const v = await fetch(uri, { headers: { "x-goog-api-key": key } });
       if (!v.ok) throw new Error(L(`Téléchargement Veo impossible (${v.status}).`, `Couldn't download the Veo video (${v.status}).`));
       const c = cost("google", model, { seconds });
-      recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "google", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
+      recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "google", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
       return Buffer.from(await v.arrayBuffer());
     }
   }
@@ -241,7 +274,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     const key = providerKey("google")!;
     const route = routeFor("image_generation");
     const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-    assertCanSpend(ctx.userId, cost("google", model, { images: 1 }).micro);
+    gate(ctx, cost("google", model, { images: 1 }).micro, "image");
     const parts: any[] = [{ text }, { inline_data: { mime_type: "image/jpeg", data: product.toString("base64") } }];
     if (persona) parts.push({ inline_data: { mime_type: "image/jpeg", data: persona.toString("base64") } });
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
@@ -256,13 +289,13 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
     if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
-    recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
+    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
     return Buffer.from(b64, "base64");
   }
   const key = providerKey("openai")!;
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  assertCanSpend(ctx.userId, cost("openai", model, { input: 400, imageIn: 3000, imageOut: 6300 }).micro);
+  gate(ctx, cost("openai", model, { input: 400, imageIn: 3000, imageOut: 6300 }).micro, "image");
   const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
   const images = [await toFile(product, "produit.jpg", { type: "image/jpeg" })];
   if (persona) images.push(await toFile(persona, "personne.jpg", { type: "image/jpeg" }));
@@ -277,7 +310,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   const b64 = res.data?.[0]?.b64_json;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
-  recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -288,7 +321,7 @@ export async function falClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
   const route = routeFor("video_generation");
   const model = route.provider === "fal" ? route.model : "fal-ai/kling-video/v2.1/pro/image-to-video";
   const seconds = input.seconds ?? 5;
-  assertCanSpend(ctx.userId, cost("fal", model, { seconds }).micro);
+  gate(ctx, cost("fal", model, { seconds }).micro, "video");
   const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
   const headers = { Authorization: `Key ${key}`, "Content-Type": "application/json" };
   const r = await fetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
@@ -305,7 +338,7 @@ export async function falClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
       if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune vidéo.", "fal.ai returned no video."));
       const v = await fetch(url);
       const c = cost("fal", model, { seconds });
-      recordUsage({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "fal", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
+      recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "fal", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
       return Buffer.from(await v.arrayBuffer());
     }
     if (st.status === "FAILED" || st.status === "ERROR") throw new PermanentError(L("La génération fal.ai a échoué.", "fal.ai generation failed."));

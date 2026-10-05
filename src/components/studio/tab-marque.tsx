@@ -105,7 +105,7 @@ export default function TabMarque() {
                 <span className="block">{t("Nom, logo, couleurs et polices repris de votre site : votre marque reste la vôtre. Le positionnement, la cible et le ton sont proposés pour vos publications et publicités ; ajustez-les librement.", "Name, logo, colors and fonts taken from your website: your brand stays yours. Positioning, audience and tone are suggested for your posts and ads; adjust them freely.")}</span>
               </>
             ) : (
-              <>{b.generatedBy === "ai" ? t("Proposée par l'IA à partir du produit.", "Proposed by the AI based on the product.") : t("Base proposée par le moteur local : à affiner.", "Starting point from the local engine: refine as needed.")} {t("Les éléments validés sont conservés lors des nouvelles propositions.", "Approved elements are kept in new proposals.")}</>
+              <>{b.generatedBy === "ai" ? t("Proposée par l'IA à partir du produit.", "Proposed by the AI based on the product.") : t("Base proposée automatiquement : à affiner.", "Automatically suggested starting point: refine as needed.")} {t("Les éléments validés sont conservés lors des nouvelles propositions.", "Approved elements are kept in new proposals.")}</>
             )}
           </SectionTitle>
           <div className="grid gap-5">

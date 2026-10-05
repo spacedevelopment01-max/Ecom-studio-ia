@@ -5,13 +5,14 @@ import { ArrowRight, ArrowUpRight, Briefcase, Check, Camera, Link2, Type, Sparkl
 import type { Metadata } from "next";
 import { Logo, ThemeToggle } from "@/components/ui";
 import { LangSwitch } from "@/components/i18n";
-import { intlLocale, pick, type Lang } from "@/lib/i18n";
+import { pick, type Lang } from "@/lib/i18n";
 import { serverLang } from "@/lib/i18n-server";
 import { SiteFooter } from "@/components/site-footer";
 import { FilesSorter } from "@/components/files-sorter";
 import { AutoVideo, BeforeAfter, FilmPlayer, DemoTabs, RevealObserver, ScrollFX, ThemeShowcase, VideoChapters, type Demo } from "@/components/landing-client";
 import { directionCards } from "@/lib/theme/directions";
-import { OFFER } from "@/lib/billing";
+import { DISCOVERY, PLAN_IDS, PLANS, REFUND_DAYS } from "@/lib/plans";
+import { CompareTable, PackCards, PricingCards } from "@/components/pricing";
 import { paymentsLive } from "@/lib/payments";
 import { currentUser } from "@/lib/auth";
 import { PROMPT_STATS } from "@/lib/prompts-library";
@@ -39,11 +40,6 @@ function demos(file: "manifest.json" | "manifest.en.json" = "manifest.json"): De
     return [];
   }
 }
-
-const eur = (n: number, lang: Lang) =>
-  lang === "en"
-    ? "€" + n.toLocaleString(intlLocale(lang), { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })
-    : n.toLocaleString(intlLocale(lang), { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }) + " €";
 
 /** Repli si public/demo/manifest.en.json n'est pas généré : textes des démonstrations françaises traduits pour l'interface anglaise. */
 const DEMO_EN: Record<string, { product?: string; note?: string }> = {
@@ -114,6 +110,16 @@ export default async function Home() {
   const live = paymentsLive();
   const themes = directionCards(lang).map((c) => ({ ...c, preview: M(c.preview) }));
   const cta = user ? "/studio" : "/inscription";
+  const discoveryLabel: Record<(typeof DISCOVERY.includes)[number], string> = {
+    analysis: T("L'IA analyse votre produit", "AI analyzes your product"),
+    brand: T("Votre marque : nom, couleurs, ton", "Your brand: name, colors, tone"),
+    logos: T("Vos logos", "Your logos"),
+    homePreview: T("Un aperçu de votre page d'accueil", "A preview of your home page"),
+  };
+  // « -10 % avec Vendre, -20 % avec Dominer » (remises des forfaits sur les packs).
+  const packDiscount = PLAN_IDS.filter((id) => PLANS[id].packDiscount > 0)
+    .map((id) => T(`-${Math.round(PLANS[id].packDiscount * 100)} % avec ${PLANS[id].name.fr}`, `${Math.round(PLANS[id].packDiscount * 100)}% off with ${PLANS[id].name.en}`))
+    .join(", ");
   const chapters = [
     { tag: T("Analyse", "Analysis"), title: T("Une photo suffit pour démarrer.", "One photo is all it takes."), text: T("Le studio détoure votre produit au pixel près, mesure sa palette sur l'objet et dessine logo et charte. Pas encore de photo ? Ouvrez le studio quand même : vous l'ajouterez plus tard.", "The studio cuts out your product with pixel precision, measures its palette on the object itself and designs your logo and brand guidelines. No photo yet? Open the studio anyway: you can add one later."), video: M("/explainers/photo.mp4"), poster: M("/explainers/photo.jpg") },
     { tag: T("Boutique sur mesure", "Custom store"), title: T("Votre thème, créé de A à Z par l'IA.", "Your theme, built from A to Z by AI."), text: T("Couleurs et typographies de votre marque, mise en page pensée pour votre produit, sections inédites codées pour lui : un vrai thème unique, prêt pour Shopify, WooCommerce ou PrestaShop, que vous retouchez ensuite en discutant.", "Your brand's colors and fonts, a layout designed around your product, brand-new sections coded just for it: a truly unique theme, ready for Shopify, WooCommerce or PrestaShop, that you then fine-tune just by chatting."), video: M("/explainers/themes.mp4"), poster: M("/explainers/themes.jpg") },
@@ -203,7 +209,7 @@ export default async function Home() {
               </div>
               <ul className="reveal mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" style={{ ["--d" as any]: 8 }}>
                 <li className="flex items-center gap-2"><Lock className="size-4 text-signal" aria-hidden /> {T("Espace privé", "Private workspace")}</li>
-                <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Essai sans carte bancaire", "No credit card required to try")}</li>
+                <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Découverte gratuite, sans carte bancaire", "Free discovery, no credit card")}</li>
                 <li className="flex items-center gap-2"><Pause className="size-4 text-signal" aria-hidden /> {T("Pause et reprise à tout moment", "Pause and resume anytime")}</li>
               </ul>
             </div>
@@ -422,14 +428,14 @@ export default async function Home() {
               </div>
               <p className="reveal max-w-md text-sm leading-relaxed text-muted">
                 {lang === "en" ? (
-                  <>The brands are <strong className="text-ink">created by the studio</strong>. Each demo starts from a real product sold white-label by a supplier: original photo retouched, manufacturer markings removed, brand and labels redone. Cutout, logo, store, images and videos are produced by the studio itself, with its local engine.</>
+                  <>The brands are <strong className="text-ink">created by the studio</strong>. Each demo starts from a real product sold white-label by a supplier: original photo retouched, manufacturer markings removed, brand and labels redone. Cutout, logo, store, images and videos are produced by the studio itself.</>
                 ) : (
-                  <>Les marques sont <strong className="text-ink">créées par le studio</strong>. Chaque démonstration part d'un vrai produit vendu en marque blanche par un fournisseur : photo d'origine retouchée, inscriptions du fabricant retirées, marque et étiquettes refaites. Détourage, logo, boutique, images et vidéos sont produits par le studio lui-même, avec son moteur local.</>
+                  <>Les marques sont <strong className="text-ink">créées par le studio</strong>. Chaque démonstration part d'un vrai produit vendu en marque blanche par un fournisseur : photo d'origine retouchée, inscriptions du fabricant retirées, marque et étiquettes refaites. Détourage, logo, boutique, images et vidéos sont produits par le studio lui-même.</>
                 )}
               </p>
             </div>
             {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">{T("Les démonstrations s'affichent après génération (script « npm run demos »).", "Demos appear once generated (\"npm run demos\" script).")}</p>}
-            {list.length > 0 && <p className="reveal mt-6 text-center text-sm text-muted">{lang === "en" ? <>These demos were produced by the <strong className="text-ink">local engine, with no AI connected</strong>. With the AI included in the subscription, results are far better: custom copy and branding, realistic photos, UGC videos.</> : <>Ces démonstrations ont été produites par le <strong className="text-ink">moteur local, sans IA connectée</strong>. Avec l'IA de l'abonnement, les résultats sont bien meilleurs : textes et marque sur mesure, photos réalistes, vidéos UGC.</>}</p>}
+            {list.length > 0 && <p className="reveal mt-6 text-center text-sm text-muted">{lang === "en" ? <>These demos were made <strong className="text-ink">without the AI included in the plans</strong>. With a plan, results are far better: custom copy and branding, realistic photos, UGC videos.</> : <>Ces démonstrations ont été réalisées <strong className="text-ink">sans l'IA des forfaits</strong>. Avec un forfait, les résultats sont bien meilleurs : textes et marque sur mesure, photos réalistes, vidéos UGC.</>}</p>}
           </div>
           {list.length > 0 && (
             <div className="mt-20">
@@ -551,43 +557,56 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Offre */}
+        {/* Offre : forfaits, découverte gratuite, packs (tout vient de src/lib/plans.ts) */}
         <section id="offre" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-24 sm:px-6 sm:py-32">
-          <div className="grid gap-12 lg:grid-cols-2">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">{T("Offre", "Pricing")}</p>
+            <h2 className="words mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-semibold leading-[0.98]">
+              <Words text={T("Un forfait, une boutique,", "One plan, one store,")} /> <Words text={T("tout compris.", "all included.")} className="text-gradient" d={3} />
+            </h2>
+            <p className="reveal mt-5 text-lg text-ink-2">{T("L'IA est comprise : vous savez chaque mois combien de visuels et de vidéos vous pouvez créer.", "AI is included: every month you know exactly how many visuals and videos you can create.")}</p>
+          </div>
+          <div className="reveal mt-10">
+            <PricingCards loggedIn={!!user} />
+          </div>
+          <ul className="reveal mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-ink-2">
+            <li className="flex items-center gap-2"><ShieldCheck className="size-4 text-signal" aria-hidden /> {T(`Satisfait ou remboursé ${REFUND_DAYS} jours`, `${REFUND_DAYS}-day money-back guarantee`)}</li>
+            <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Sans engagement en mensuel", "No commitment on monthly billing")}</li>
+            <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Résiliable à tout moment", "Cancel anytime")}</li>
+          </ul>
+          <CompareTable className="reveal mt-8" />
+          {!live && <p className="mt-4 text-center text-xs text-muted">{T("Le paiement en ligne ouvre bientôt : vous pouvez déjà créer votre compte et faire la découverte gratuite.", "Online payment opens soon: you can already create your account and try the free discovery.")}</p>}
+
+          {/* Découverte gratuite */}
+          <div className="reveal mt-16 grid gap-8 overflow-hidden rounded-[2rem] border border-signal/30 bg-signal-soft p-6 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <p className="reveal text-sm font-medium uppercase tracking-[.2em] text-signal">{T("Offre", "Pricing")}</p>
-              <h2 className="words mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-semibold leading-[0.98]">
-                <Words text={T("Un prix clair. L'IA comprise,", "One clear price. AI included,")} /> <Words text={T("sans quota caché.", "no hidden quotas.")} className="text-gradient" d={4} />
-              </h2>
-              <p className="reveal mt-5 text-lg text-ink-2">{T("L'IA est comprise dans l'abonnement, avec des crédits de création renouvelés chaque mois. Aucune clé, aucun supplément caché, aucune limite arbitraire du nombre de créations.", "AI is included in the subscription, with creation credits renewed every month. No API key, no hidden extras, no arbitrary cap on the number of creations.")}</p>
-              <ul className="reveal mt-8 grid gap-3 text-[15px] text-ink-2">
-                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> {T("Jauge de crédits visible à tout moment", "Credit gauge visible at all times")}</li>
-                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> {T("Alerte à 80 % ; générations en pause seulement quand le budget est épuisé", "Alert at 80%; generations pause only when the budget runs out")}</li>
-                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> {T(`Recharges de crédits par ${eur(OFFER.topupStepEur, lang)}, conservées d'un mois à l'autre`, `Credit top-ups in ${eur(OFFER.topupStepEur, lang)} increments, carried over from month to month`)}</li>
-                <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> {T("Aucune clé d'API à fournir : les IA sont incluses", "No API key needed: the AI models are included")}</li>
-                              <li className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" /> {T("Essai gratuit en version sans IA (moteur local)", "Free trial in the no-AI version (local engine)")}</li>
+              <p className="text-sm font-medium uppercase tracking-[.16em] text-signal">{T("Découverte gratuite", "Free discovery")}</p>
+              <h3 className="mt-3 font-display text-3xl font-semibold leading-tight sm:text-4xl">{T("Voyez votre marque avant de payer.", "See your brand before you pay.")}</h3>
+              <ul className="mt-5 grid gap-2.5 text-[15px] text-ink sm:grid-cols-2">
+                {DISCOVERY.includes.map((k) => (
+                  <li key={k} className="flex gap-2.5"><Check className="mt-0.5 size-5 shrink-0 text-signal" aria-hidden /> {discoveryLabel[k]}</li>
+                ))}
               </ul>
-              <p className="reveal mt-6 rounded-2xl border border-signal/30 bg-signal-soft p-4 text-[15px] leading-relaxed text-ink">
-                <strong>{T("Les résultats avec l'IA connectée sont bien meilleurs.", "Results with AI connected are far better.")}</strong> {T("L'essai gratuit utilise le moteur local du studio. Avec l'abonnement, l'IA écrit votre marque et vos textes pour votre produit, compose un thème sur mesure, comprend toutes vos retouches en langage naturel, crée des photos réalistes et des vidéos UGC.", "The free trial uses the studio's local engine. With the subscription, AI writes your brand and copy for your product, designs a custom theme, understands all your edits in plain language, and creates realistic photos and UGC videos.")}
-              </p>
+              <p className="mt-4 text-sm text-ink-2">{T("Sans carte bancaire. Une découverte par compte. Les images, les vidéos et l'export de la boutique sont inclus dans les forfaits.", "No credit card. One discovery per account. Images, videos and store export come with the plans.")}</p>
             </div>
-            <div className="reveal reveal-scale grid gap-4">
-              <div className="neon on relative overflow-hidden rounded-[2rem] bg-[#0A1024] p-8 text-white sm:p-10">
-                <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-[radial-gradient(circle,rgba(61,110,240,.55),transparent_65%)]" aria-hidden />
-                <p className="text-sm text-white/70">{T("Une boutique", "One store")}</p>
-                <p className="mt-2 font-display text-6xl font-semibold">{eur(OFFER.basePriceEur, lang)}<span className="text-xl font-normal text-white/60">{T(" TTC / mois", " incl. VAT / month")}</span></p>
-                <p className="mt-4 text-white/80">{T("IA et crédits de création inclus, renouvelés chaque mois", "AI and creation credits included, renewed every month")}</p>
-                <hr className="my-6 border-white/15" />
-                <div className="grid gap-3 text-sm text-white/80">
-                  <p className="flex justify-between gap-4"><span>{T("Boutique supplémentaire", "Additional store")}</span><strong className="text-white">+ {eur(OFFER.extraStorePriceEur, lang)} {T("/ mois", "/ month")}</strong></p>
-                  <p className="flex justify-between gap-4"><span>{T("Recharge", "Top-up")}</span><strong className="text-white">{T(`par tranches de ${eur(OFFER.topupStepEur, lang)}`, `in ${eur(OFFER.topupStepEur, lang)} increments`)}</strong></p>
-                </div>
-                <Link href={user ? "/studio/compte" : "/inscription"} className="btn-glow mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#3D6EF0] font-semibold text-white">
-                  {live ? T("S'abonner", "Subscribe") : T("Créer mon compte", "Create my account")} <ArrowRight className="size-4" />
-                </Link>
-                {!live && <p className="mt-3 text-center text-xs text-white/60">{T("Le paiement en ligne n'est pas encore ouvert : la création de compte et l'essai du studio sont disponibles.", "Online payment isn't open yet: you can already create an account and try the studio.")}</p>}
+            <Link href={user ? "/studio" : "/inscription"} className="btn-glow inline-flex h-14 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-signal px-7 text-[15px] font-semibold text-signal-ink transition hover:-translate-y-0.5">
+              <Sparkles className="size-4" aria-hidden /> {T("Essayer gratuitement", "Try it for free")}
+            </Link>
+          </div>
+
+          {/* Packs */}
+          <div id="packs" className="mt-16 scroll-mt-24">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div className="max-w-2xl">
+                <h3 className="reveal font-display text-3xl font-semibold sm:text-4xl">{T("Besoin de plus ? Les packs.", "Need more? Packs.")}</h3>
+                <p className="reveal mt-2 text-ink-2">{T("À ajouter à votre forfait quand vous voulez. Ils n'expirent pas.", "Add them to your plan whenever you like. They never expire.")}</p>
               </div>
+              <p className="reveal rounded-full bg-paper-2 px-4 py-2 text-sm font-medium text-ink-2">{packDiscount}</p>
             </div>
+            <div className="reveal mt-6">
+              <PackCards />
+            </div>
+            <p className="mt-3 text-xs text-muted">{T("Prix TTC. Les packs s'ajoutent à un forfait.", "Prices incl. VAT. Packs are added to a plan.")}</p>
           </div>
         </section>
 
@@ -607,7 +626,11 @@ export default async function Home() {
                 [T("Puis-je changer de thème après coup ?", "Can I switch themes afterwards?"), T("Oui, à tout moment depuis l'onglet Boutique (bouton « Thèmes »). Textes, images et produit sont conservés ; l'ancienne version reste restaurable.", "Yes, at any time from the Store tab (\"Themes\" button). Copy, images and product are kept; the previous version can still be restored.")],
                 [T("Que se passe-t-il si une information manque ?", "What happens if some information is missing?"), T("Elle reste visible « à compléter » dans les textes, et le studio vous pose la question. Quand vous répondez, seuls les passages concernés sont mis à jour, sans écraser ce que vous avez validé.", "It stays visible as \"to complete\" in the copy, and the studio asks you about it. When you answer, only the relevant passages are updated, without overwriting what you've approved.")],
                 [T("Mes publications partent-elles si mon ordinateur est éteint ?", "Do my posts go out if my computer is off?"), T("Oui, une fois vos comptes connectés. Les publications programmées sont exécutées par le serveur, avec reprises contrôlées et protection contre les doublons. Les limites propres à chaque réseau sont indiquées dans le studio.", "Yes, once your accounts are connected. Scheduled posts are run by the server, with controlled retries and duplicate protection. Each network's own limits are shown in the studio.")],
-                [T("Puis-je gérer plusieurs boutiques ?", "Can I manage several stores?"), T(`Oui, chacune avec ses fichiers, sa marque, ses comptes sociaux et son calendrier ; ${eur(OFFER.extraStorePriceEur, lang)} par boutique supplémentaire.`, `Yes, each with its own files, brand, social accounts and calendar; ${eur(OFFER.extraStorePriceEur, lang)} per additional store.`)],
+                [T("La découverte gratuite, c'est quoi ?", "What is the free discovery?"), T("Sans carte bancaire, l'IA analyse votre produit, crée votre marque et vos logos, et vous montre un aperçu de votre page d'accueil. Pour créer des images, des vidéos et exporter ou publier la boutique, choisissez un forfait. Une découverte par compte.", "With no credit card, AI analyzes your product, creates your brand and logos, and shows you a preview of your home page. To create images and videos and to export or publish the store, choose a plan. One discovery per account.")],
+                [T("Puis-je gérer plusieurs boutiques ?", "Can I manage several stores?"), T("Une boutique par abonnement : pour une deuxième boutique, un deuxième abonnement.", "One store per subscription: for a second store, a second subscription.")],
+                [T("Que se passe-t-il si j'arrive au bout de mes visuels ?", "What happens when I run out of visuals?"), T("Vous ajoutez un pack (il n'expire pas), ou vous attendez le mois suivant : vos quotas reviennent à la date de renouvellement. Avec Vendre et Dominer, ce que vous n'utilisez pas est reporté au mois suivant.", "You add a pack (it never expires), or you wait for next month: your quotas come back on the renewal date. With Sell and Dominate, whatever you don't use rolls over to the next month.")],
+                [T("Puis-je changer de forfait ?", "Can I change plans?"), T("Oui, à tout moment, depuis « Mon compte » dans le studio.", "Yes, at any time, from \"My account\" in the studio.")],
+                [T("Puis-je me faire rembourser ?", "Can I get a refund?"), T(`Oui : satisfait ou remboursé pendant ${REFUND_DAYS} jours. En mensuel, sans engagement et résiliable à tout moment.`, `Yes: ${REFUND_DAYS}-day money-back guarantee. Monthly billing has no commitment and can be canceled anytime.`)],
               ].map(([q, a]) => (
                 <details key={q} className="group border-b border-line py-5">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-display text-xl">

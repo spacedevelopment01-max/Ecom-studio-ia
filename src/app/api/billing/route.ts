@@ -1,27 +1,41 @@
 import { all } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { requireUser } from "@/lib/auth";
-import { balance, getSubscription, monthlyAllowanceMicro, monthlyPriceEur, OFFER, EUR } from "@/lib/billing";
+import { currentPeriod, getSubscription, planOf } from "@/lib/billing";
 import { paymentsLive } from "@/lib/payments";
-import { TASKS, type TaskId } from "@/lib/ai/config";
+import { PACK_IDS, PACKS, PLANS, packPrice, type BillingView, type PackId, type PlanId } from "@/lib/plans";
+import { languagesOf, launchPackBought, quotasView } from "@/lib/quotas";
+import { L } from "@/lib/i18n-server";
 
-/** Vue client : jauge globale, pourcentages et consommations par usage (sans coûts fournisseurs). */
+/** Vue client : forfait, quotas restants, packs. Jamais de crédits ni de coûts d'IA. */
 export const GET = handle(async () => {
   const user = await requireUser();
-  const b = balance(user.id);
   const sub = getSubscription(user.id);
-  const since = b.periodEnd - 31 * 86400_000;
-  const byTask = all<{ task: string; billed: number; n: number }>("SELECT task, SUM(billed) billed, COUNT(*) n FROM usage_events WHERE user_id = ? AND created_at >= ? GROUP BY task ORDER BY billed DESC", user.id, since);
-  const total = byTask.reduce((s, x) => s + x.billed, 0) || 1;
-  const units = all<{ unit: string; q: number; inp: number; out: number; est: number }>("SELECT unit, SUM(quantity) q, SUM(input_units) inp, SUM(output_units) out, MAX(estimated) est FROM usage_events WHERE user_id = ? AND created_at >= ? GROUP BY unit", user.id, since);
-  const history = all<{ type: string; amount: number; note: string; created_at: number }>("SELECT type, amount, note, created_at FROM ledger WHERE user_id = ? AND type IN ('topup','allowance','renewal','adjustment') ORDER BY created_at DESC LIMIT 20", user.id);
-  return ok({
-    history: history.map((h) => ({ type: h.type, note: h.note, at: h.created_at, positive: h.amount >= 0 })),
-    gauge: { usedPct: b.usedPct, availablePct: b.capacity ? b.available / b.capacity : 0, alert: b.alert, paused: b.paused, periodEnd: b.periodEnd, availableEur: b.available / EUR, capacityEur: b.capacity / EUR, topupEur: b.topupBalance / EUR },
-    byTask: byTask.map((x) => ({ task: x.task, label: TASKS[x.task as TaskId]?.label ?? x.task, share: x.billed / total, count: x.n })),
-    units,
-    subscription: { status: sub.status, stores: sub.stores, priceEur: monthlyPriceEur(sub.stores), allowanceEur: monthlyAllowanceMicro(sub.stores) / EUR, periodEnd: sub.current_period_end },
-    offer: OFFER,
+  const plan = planOf(sub);
+  const period = currentPeriod(user.id);
+  const discoveryUsed = !!all("SELECT 1 FROM projects WHERE user_id = ? LIMIT 1", user.id).length;
+  const payments = all<{ kind: string; amount_cents: number; label: string | null; created_at: number }>("SELECT kind, amount_cents, label, created_at FROM payments WHERE user_id = ? AND status = 'paid' ORDER BY created_at DESC LIMIT 20", user.id);
+  const label = (p: (typeof payments)[number]) => {
+    if (p.kind === "pack" && p.label && p.label in PACKS) return L(PACKS[p.label as PackId].name.fr, PACKS[p.label as PackId].name.en);
+    if (p.kind === "subscription") {
+      const [id, billing] = (p.label ?? "creer:month").split(":");
+      const pl = PLANS[(id in PLANS ? id : "creer") as PlanId];
+      return L(`Forfait ${pl.name.fr} (${billing === "year" ? "annuel" : "mensuel"})`, `${pl.name.en} plan (${billing === "year" ? "yearly" : "monthly"})`);
+    }
+    return L("Recharge", "Top-up");
+  };
+  const view: BillingView = {
+    plan,
+    billing: plan ? (sub.billing ?? "month") : null,
+    status: sub.status,
+    periodEnd: plan && sub.current_period_end && sub.billing !== "year" ? sub.current_period_end : period.end,
+    quotas: quotasView(user.id),
+    languages: languagesOf(user.id),
+    discovery: { available: !plan, used: !plan && discoveryUsed },
+    packPrices: Object.fromEntries(PACK_IDS.map((id) => [id, packPrice(id, plan)])) as BillingView["packPrices"],
+    launchPackBought: launchPackBought(user.id),
     paymentsLive: paymentsLive(),
-  });
+    history: payments.map((p) => ({ kind: p.kind as BillingView["history"][number]["kind"], label: label(p), amountEur: p.amount_cents / 100, at: p.created_at })),
+  };
+  return ok(view);
 });

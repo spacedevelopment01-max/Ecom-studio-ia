@@ -1,4 +1,5 @@
 "use client";
+import { PLAN_IDS, PLANS } from "@/lib/plans";
 import { useState } from "react";
 import Link from "next/link";
 import { Activity, ArrowLeft, CheckCircle2, Copy, KeyRound, RefreshCw, XCircle } from "lucide-react";
@@ -322,7 +323,7 @@ function Payments({ data, set }: { data: Overview; set: SetFn }) {
   );
 }
 
-type ClientRow = { id: string; email: string; name: string; role: string; createdAt: number; subscription: string; stores: number; monthlyEur: number; projects: number; lastActive: number | null; jobs30: number; aiCost30Eur: number; usedPct: number; availableEur: number; paidEur: number; segment: "abonne" | "offert" | "essai" | "sans" | "impaye" | "resilie" };
+type ClientRow = { id: string; email: string; name: string; role: string; createdAt: number; subscription: string; stores: number; plan: string | null; monthlyEur: number; projects: number; lastActive: number | null; jobs30: number; aiCost30Eur: number; usedPct: number; availableEur: number; paidEur: number; segment: "abonne" | "offert" | "essai" | "sans" | "impaye" | "resilie" };
 type Dashboard = {
   accounts: { total: number; new7: number; new30: number; active30: number };
   plans: Record<ClientRow["segment"], number>;
@@ -503,14 +504,14 @@ function Clients({ d, reload }: { d: Dashboard; reload: () => void }) {
       </div>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[980px] text-sm">
-          <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Client", "Customer")}</th><th>{t("Statut", "Status")}</th><th>{t("Abonnement", "Subscription")}</th><th>{t("Boutiques", "Stores")}</th><th>{t("Activité", "Activity")}</th><th>{t("Forfait", "Plan")}</th><th>{t("Payé", "Paid")}</th><th>{t("Actions", "Actions")}</th></tr></thead>
+          <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Client", "Customer")}</th><th>{t("Statut", "Status")}</th><th>{t("Abonnement", "Subscription")}</th><th>{t("Forfait", "Plan")}</th><th>{t("Activité", "Activity")}</th><th>{t("Budget IA", "AI budget")}</th><th>{t("Payé", "Paid")}</th><th>{t("Actions", "Actions")}</th></tr></thead>
           <tbody className="divide-y divide-line">
             {list.map((u) => (
               <tr key={u.id}>
                 <td className="py-2.5 pr-2">{u.name || "—"}<span className="block text-xs text-muted">{u.email} {u.role === "admin" && "· admin"}</span><span className="block text-[11px] text-muted">{t(`inscrit ${ago(u.createdAt)} · ${u.projects} projet${u.projects > 1 ? "s" : ""}`, `signed up ${ago(u.createdAt)} · ${u.projects} project${u.projects > 1 ? "s" : ""}`)}</span></td>
                 <td className="pr-2"><Badge tone={segLabel(u.segment).tone}>{t(segLabel(u.segment).short, segLabel(u.segment).shortEn)}</Badge>{u.monthlyEur > 0 && <span className="mt-1 block text-xs text-muted">{eur2(u.monthlyEur)} {t("/ mois", "/ month")}</span>}</td>
                 <td className="pr-2"><Select value={u.subscription} onChange={(e) => act(u.id, { subscription: e.target.value })} aria-label={t("Abonnement", "Subscription")}>{[["none", t("Sans abonnement", "No subscription")], ["trial", t("Essai", "Trial")], ["manual", t("Offert (manuel)", "Complimentary (manual)")], ["active", t("Payant (Stripe)", "Paid (Stripe)")], ["past_due", t("Impayé (Stripe)", "Unpaid (Stripe)")], ["canceled", t("Résilié", "Canceled")]].map(([v, l]) => <option key={v} value={v} disabled={v === "active" || v === "past_due"}>{l}</option>)}</Select></td>
-                <td className="pr-2"><Input type="number" min={1} max={50} defaultValue={u.stores} onBlur={(e) => Number(e.target.value) !== u.stores && act(u.id, { stores: Number(e.target.value) })} className="w-20" aria-label={t("Boutiques", "Stores")} /></td>
+                <td className="pr-2"><Select value={u.plan ?? "creer"} onChange={(e) => act(u.id, { plan: e.target.value })} aria-label={t("Forfait", "Plan")}>{PLAN_IDS.map((id) => <option key={id} value={id}>{t(PLANS[id].name.fr, PLANS[id].name.en)}</option>)}</Select></td>
                 <td className="pr-2 text-xs">{ago(u.lastActive)}<span className="block text-muted">{t(`${u.jobs30} création${u.jobs30 > 1 ? "s" : ""} en 30 j`, `${u.jobs30} creation${u.jobs30 > 1 ? "s" : ""} in 30 d`)}</span></td>
                 <td className="pr-2 tabular-nums">{pctTxt(lang, Math.round(u.usedPct * 100))}<span className="block text-xs text-muted">{t(`reste ${eur2(u.availableEur)} · IA ${eur2(u.aiCost30Eur)}`, `${eur2(u.availableEur)} left · AI ${eur2(u.aiCost30Eur)}`)}</span></td>
                 <td className="pr-2 tabular-nums">{eur2(u.paidEur)}</td>

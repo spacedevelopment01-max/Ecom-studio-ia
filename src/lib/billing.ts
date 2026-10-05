@@ -1,10 +1,9 @@
 /**
- * Offre commerciale et enveloppe IA.
- *  - 49,90 € TTC / mois pour une boutique, 40 € / mois par boutique supplémentaire.
- *  - 1/3 de l'abonnement alimente l'enveloppe IA mensuelle (non reportée).
- *  - Recharges par multiples de 10 € : 50 % alimentent l'IA ; solde conservé.
- *  - Alerte à 80 % ; nouvelles générations en pause quand le disponible est épuisé.
- * Aucun quota de créations n'est ajouté : seul le budget compte.
+ * Abonnement et budget IA interne (jamais affiché au client : il voit des quotas, voir quotas.ts et plans.ts).
+ *  - Chaque forfait a un budget IA mensuel caché (`aiBudgetEur`) : garde-fou de marge, renouvelé chaque mois.
+ *  - À la première activation d'un forfait, un budget unique couvre la création de la boutique.
+ *  - Sans forfait : un petit budget unique pour la découverte gratuite (analyse, marque, logos, aperçu).
+ *  - Budget épuisé : le studio passe discrètement sur le moteur local (voir ai/access.ts).
  * Montants internes en micro-euros (1 € = 1 000 000).
  */
 import { addMonths } from "date-fns";
@@ -13,18 +12,15 @@ import { UserFacingError } from "./jobs";
 import { getJsonSetting } from "./settings";
 import { pick } from "./i18n";
 import { L, userLang } from "./i18n-server";
+import { DISCOVERY, PLANS, type Billing, type PlanId } from "./plans";
 
 /** Texte enregistré pour un compte (relevé, notification) : dans la langue mémorisée de ce compte. */
 const forUser = (userId: string, fr: string, en: string) => pick(userLang(userId), fr, en);
 
-export const OFFER = {
-  basePriceEur: 49.9,
-  extraStorePriceEur: 40,
-  aiShareOfSubscription: 1 / 3,
-  topupStepEur: 10,
-  aiShareOfTopup: 0.5,
-  alertThreshold: 0.8,
-} as const;
+/** Budget unique (caché) pour la création initiale de la boutique, à la première activation d'un forfait. */
+export const CREATION_BUDGET_EUR = 12;
+/** Anciennes recharges (avant les packs) : encore créditées si un paiement arrive. */
+const LEGACY_TOPUP_AI_SHARE = 0.5;
 
 export const EUR = 1_000_000;
 export const toEur = (micro: number) => micro / EUR;
@@ -33,6 +29,8 @@ export type Subscription = {
   user_id: string;
   status: "none" | "trial" | "active" | "past_due" | "canceled" | "manual";
   stores: number;
+  plan: PlanId | null;
+  billing: Billing | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   current_period_start: number | null;
@@ -51,15 +49,6 @@ type Wallet = {
   alert80_sent_at: number | null;
 };
 
-export function monthlyPriceEur(stores: number) {
-  const n = Math.max(1, stores);
-  return Math.round((OFFER.basePriceEur + (n - 1) * OFFER.extraStorePriceEur) * 100) / 100;
-}
-
-export function monthlyAllowanceMicro(stores: number) {
-  return Math.round(monthlyPriceEur(stores) * OFFER.aiShareOfSubscription * EUR);
-}
-
 export function getSubscription(userId: string): Subscription {
   const s = one<Subscription>("SELECT * FROM subscriptions WHERE user_id = ?", userId);
   if (s) return s;
@@ -69,12 +58,30 @@ export function getSubscription(userId: string): Subscription {
 
 export const subscriptionActive = (s: Subscription) => s.status === "active" || s.status === "manual" || s.status === "trial";
 
+/** Forfait en vigueur : abonnement actif (les anciens abonnements sans forfait sont rattachés à « Créer »). */
+export function planOf(sub: Subscription): PlanId | null {
+  if (!subscriptionActive(sub) || sub.status === "trial") return null;
+  return sub.plan && sub.plan in PLANS ? sub.plan : "creer";
+}
+
+/** Prix mensuel (TTC) d'un abonnement payant : prix du forfait, ou équivalent mensuel en annuel. */
+export function monthlyPriceEur(sub: Pick<Subscription, "plan" | "billing">) {
+  const plan: PlanId = sub.plan && sub.plan in PLANS ? sub.plan : "creer";
+  return sub.billing === "year" ? Math.round((PLANS[plan].price.year / 12) * 100) / 100 : PLANS[plan].price.month;
+}
+
+/** Budget IA mensuel caché d'un abonnement. */
+export function monthlyAllowanceMicro(sub: Subscription) {
+  const plan = planOf(sub);
+  return plan ? Math.round(PLANS[plan].aiBudgetEur * EUR) : 0;
+}
+
 function ensureWallet(userId: string): Wallet {
   let w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId);
   if (!w) {
     const sub = getSubscription(userId);
     const start = now();
-    const allowance = subscriptionActive(sub) && sub.status !== "trial" ? monthlyAllowanceMicro(sub.stores) : 0;
+    const allowance = monthlyAllowanceMicro(sub);
     run(
       "INSERT INTO wallets (user_id, period_start, period_end, monthly_allowance, monthly_used, topup_balance, updated_at) VALUES (?,?,?,?,0,0,?)",
       userId,
@@ -83,13 +90,34 @@ function ensureWallet(userId: string): Wallet {
       allowance,
       now(),
     );
-    if (allowance) run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance, forUser(userId, "Crédits de création activés", "Creation credits activated"), now());
+    if (allowance) run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance, forUser(userId, "Budget IA du forfait", "Plan AI budget"), now());
     w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
   }
-  return renewIfDue(w);
+  w = renewIfDue(w);
+  if (!planOf(getSubscription(userId)) && grantOnce(userId, "discovery", Math.round(DISCOVERY.aiBudgetEur * EUR), "Découverte gratuite", "Free discovery")) {
+    w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
+  }
+  return w;
 }
 
-/** Renouvelle l'enveloppe mensuelle à échéance (le solde de recharge est conservé). */
+/** Budget unique (découverte, création de la boutique) : une seule fois par compte. */
+function grantOnce(userId: string, type: "discovery" | "creation", micro: number, fr: string, en: string): boolean {
+  if (one("SELECT 1 FROM ledger WHERE user_id = ? AND type = ?", userId, type)) return false;
+  return tx(() => {
+    if (one("SELECT 1 FROM ledger WHERE user_id = ? AND type = ?", userId, type)) return false;
+    run("UPDATE wallets SET topup_balance = topup_balance + ?, topup_period_added = topup_period_added + ?, updated_at=? WHERE user_id=?", micro, micro, now(), userId);
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, type, "topup", micro, forUser(userId, fr, en), now());
+    return true;
+  });
+}
+
+/** Début et fin de la période mensuelle en cours (quotas et budget se renouvellent ensemble). */
+export function currentPeriod(userId: string) {
+  const w = ensureWallet(userId);
+  return { start: w.period_start, end: w.period_end };
+}
+
+/** Renouvelle le budget mensuel à échéance (les budgets uniques restants sont conservés). */
 function renewIfDue(w: Wallet): Wallet {
   if (now() < w.period_end) return w;
   const sub = getSubscription(w.user_id);
@@ -99,7 +127,7 @@ function renewIfDue(w: Wallet): Wallet {
     start = end;
     end = addMonths(end, 1).getTime();
   }
-  const allowance = subscriptionActive(sub) && sub.status !== "trial" ? monthlyAllowanceMicro(sub.stores) : 0;
+  const allowance = monthlyAllowanceMicro(sub);
   tx(() => {
     run(
       "UPDATE wallets SET period_start=?, period_end=?, monthly_allowance=?, monthly_used=0, topup_period_added=0, topup_period_used=0, alert80_sent_at=NULL, updated_at=? WHERE user_id=?",
@@ -109,20 +137,21 @@ function renewIfDue(w: Wallet): Wallet {
       now(),
       w.user_id,
     );
-    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), w.user_id, "renewal", "monthly", allowance, forUser(w.user_id, "Renouvellement mensuel des crédits de création", "Monthly renewal of creation credits"), now());
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), w.user_id, "renewal", "monthly", allowance, forUser(w.user_id, "Renouvellement mensuel", "Monthly renewal"), now());
   });
   return one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", w.user_id)!;
 }
 
-/** Recalcule l'enveloppe après un changement d'abonnement (boutiques, activation). */
+/** Recalcule le budget après un changement d'abonnement (forfait, activation) ; première activation : budget de création. */
 export function syncAllowance(userId: string) {
   const w = ensureWallet(userId);
   const sub = getSubscription(userId);
-  const allowance = subscriptionActive(sub) && sub.status !== "trial" ? monthlyAllowanceMicro(sub.stores) : 0;
+  const allowance = monthlyAllowanceMicro(sub);
   if (allowance !== w.monthly_allowance) {
     run("UPDATE wallets SET monthly_allowance=?, updated_at=? WHERE user_id=?", allowance, now(), userId);
-    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance - w.monthly_allowance, forUser(userId, "Crédits ajustés à votre abonnement", "Credits adjusted to your subscription"), now());
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance - w.monthly_allowance, forUser(userId, "Budget ajusté au forfait", "Budget adjusted to the plan"), now());
   }
+  if (planOf(sub)) grantOnce(userId, "creation", Math.round(CREATION_BUDGET_EUR * EUR), "Création de la boutique", "Store creation");
 }
 
 export type Balance = {
@@ -152,21 +181,18 @@ export function balance(userId: string): Balance {
     monthlyRemaining,
     topupBalance: w.topup_balance,
     periodEnd: w.period_end,
-    alert: usedPct >= OFFER.alertThreshold,
+    alert: usedPct >= 0.8,
     paused: available <= 0,
   };
 }
 
-/** Vérifie qu'une génération payante peut démarrer. */
+/** Vérifie qu'une génération payante peut démarrer (limite d'usage équitable de l'IA, sans montant affiché). */
 export function assertCanSpend(userId: string, estimateMicro: number) {
   if (estimateMicro <= 0) return;
   const b = balance(userId);
-  if (b.available <= 0) {
-    throw new UserFacingError(L("Vos crédits de création sont épuisés : les nouvelles générations sont en pause. Rechargez vos crédits ou attendez leur renouvellement.", "Your creation credits are used up: new generations are paused. Top up your credits or wait for them to renew."));
-  }
   if (b.available < estimateMicro) {
-    const pct = Math.max(1, Math.round((estimateMicro / Math.max(1, b.capacity ?? b.available)) * 100));
-    throw new UserFacingError(L(`Crédits de création insuffisants pour cette génération (environ ${pct} % de vos crédits nécessaires). Rechargez vos crédits ou attendez leur renouvellement.`, `Not enough creation credits for this generation (about ${pct}% of your credits needed). Top up your credits or wait for them to renew.`));
+    const end = new Date(b.periodEnd).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
+    throw new UserFacingError(L(`Vous avez atteint la limite d'utilisation équitable de l'IA de votre forfait pour ce mois-ci. Elle se renouvelle le ${end}.`, `You've reached your plan's fair-use AI limit for this month. It renews on ${end}.`));
   }
 }
 
@@ -188,26 +214,12 @@ export function charge(userId: string, amountMicro: number, ref: string | null, 
     );
     run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), userId, "usage", fromTopup > 0 ? "topup" : "monthly", -amountMicro, ref, note, now());
   });
-  const b = balance(userId);
-  const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
-  if (b.alert && !w.alert80_sent_at) {
-    run("UPDATE wallets SET alert80_sent_at=? WHERE user_id=?", now(), userId);
-    run(
-      "INSERT INTO notifications (id, user_id, level, title, body, created_at) VALUES (?,?,?,?,?,?)",
-      id(),
-      userId,
-      "warning",
-      forUser(userId, "80 % de vos crédits de création sont utilisés", "80% of your creation credits have been used"),
-      forUser(userId, "Les générations continuent jusqu'à épuisement. Vous pouvez recharger vos crédits par tranches de 10 €.", "Generations continue until your credits run out. You can top up your credits in €10 increments."),
-      now(),
-    );
-  }
 }
 
-/** Crédite une recharge payée : seuls les multiples de 10 € sont acceptés. */
+/** Ancienne recharge payée (avant les packs) : crédite encore le budget si un paiement arrive. */
 export function creditTopup(userId: string, paidEur: number, ref: string) {
-  if (paidEur <= 0 || Math.round(paidEur * 100) % (OFFER.topupStepEur * 100) !== 0) throw new Error(L("Les recharges se font par multiples de 10 €.", "Top-ups must be in multiples of €10."));
-  const ai = Math.round(paidEur * OFFER.aiShareOfTopup * EUR);
+  if (paidEur <= 0) return;
+  const ai = Math.round(paidEur * LEGACY_TOPUP_AI_SHARE * EUR);
   tx(() => {
     if (one("SELECT 1 FROM ledger WHERE type='topup' AND ref=?", ref)) return;
     ensureWallet(userId);
