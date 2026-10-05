@@ -68,7 +68,7 @@ export async function aiAnalyzeProduct(b: Base, input: { photos: LlmImage[]; col
       system: S().analysis,
       images: input.photos,
       prompt: parts.join("\n\n"),
-      maxTokens: 16000,
+      maxTokens: 32000,
     },
     AnalysisSchema,
   );

@@ -231,7 +231,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
           aiAnalyzeProduct(
             { userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:analysis` },
             {
-              photos: originals.map((o, i) => ({ data: assetData(o), label: `photo ${i + 1}` })),
+              photos: originals.slice(0, 6).map((o, i) => ({ data: assetData(o), label: `photo ${i + 1}` })),
               colors: colors.map((c: any) => `${c.hex} (${c.name}, ${Math.round(c.share * 100)} %)`).join(", "),
               link: link ? { url: link.url, text: link.text, data: { title: link.title, description: link.description, product: link.product } } : null,
               description: inp.description,

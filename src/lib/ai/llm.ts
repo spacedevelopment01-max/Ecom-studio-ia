@@ -150,6 +150,9 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   return { text, stop: msg.stop_reason, model: msg.model };
 }
 
+/** Plafond de sortie (réflexion comprise) quand une réponse JSON a été coupée faute de place. */
+const MAX_OUTPUT_TOKENS = 64000;
+
 /** Texte libre (rédaction). */
 export async function llmText(call: LlmCall): Promise<string> {
   const content = await buildContent(call);
@@ -173,15 +176,24 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     { type: "text", text: "Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code." },
   ];
   let last = "";
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const r = await rawCall(call, messages, undefined, attempt ? `:fix${attempt}` : "");
+  let budget = call.maxTokens ?? 32000;
+  let fixes = 0;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const r = await rawCall({ ...call, maxTokens: budget }, messages, undefined, attempt ? `:fix${attempt}` : "");
     last = r.text;
+    // Réponse coupée faute de place (réflexion longue, beaucoup de photos) : même demande avec plus de place,
+    // sans renvoyer le début tronqué au modèle.
+    if (r.stop === "max_tokens" && budget < MAX_OUTPUT_TOKENS) {
+      budget = Math.min(MAX_OUTPUT_TOKENS, budget * 2);
+      continue;
+    }
     const parsed = extractJson(r.text);
     const res = schema.safeParse(parsed);
     if (res.success) return res.data;
+    if (fixes++ >= 1) break;
     const issue = res.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     messages.push({ role: "assistant", content: r.text || "{}" });
-    messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue || "JSON illisible"}). Renvoie l'objet complet corrigé, uniquement le JSON.` });
+    messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue || "JSON illisible"}). Renvoie l'objet complet corrigé, uniquement le JSON, de façon concise.` });
   }
   throw new PermanentError(L(`Réponse IA inexploitable après correction : ${last.slice(0, 200)}`, `Unusable AI response after correction: ${last.slice(0, 200)}`));
 }
