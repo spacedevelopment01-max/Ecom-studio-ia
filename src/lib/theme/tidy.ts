@@ -34,7 +34,11 @@ function dropBlock(s: SectionInstance, id: string) {
 /** Sections qui n'ont de sens qu'avec des blocs (une galerie sans image, une frise sans étape…). */
 const NEEDS_BLOCKS = new Set(["horizontal-gallery", "gallery-mosaic", "story-circles", "stack-cards", "timeline", "features-grid", "stats", "specs-list", "faq", "video-reels", "collection-list", "scroll-story"]);
 
-export function tidyComposition(spec: ThemeSpec): ThemeSpec {
+/**
+ * `strictAssets` (composition et relecture par l'IA) : un nom d'image inexistant est remplacé même quand le thème
+ * n'a encore aucun média (il est alors vidé). Sans cette option, une composition sans fichiers (aperçus, essais) est laissée telle quelle.
+ */
+export function tidyComposition(spec: ThemeSpec, opts: { strictAssets?: boolean } = {}): ThemeSpec {
   const shopName = norm(spec.store.shopName);
   const productTitle = norm(spec.store.product.title);
   const index = spec.templates.index;
@@ -82,7 +86,7 @@ export function tidyComposition(spec: ThemeSpec): ThemeSpec {
   }
 
   // Image inexistante (nom inventé par l'IA) : remplacée par une vraie image du produit plutôt qu'un cadre vide ou cassé.
-  if (!spec.imported && Object.keys(spec.files).length) {
+  if (!spec.imported && (opts.strictAssets || Object.keys(spec.files).length)) {
     const files = Object.keys(spec.files);
     const fallback = ["packshot", "hero", "en-situation", "scene", "produit-detoure"].map((h) => files.find((f) => f.includes(h) && !/\.(mp4|webm)$/.test(f))).find(Boolean) ?? "";
     const fix = (settings: Record<string, unknown>) => {

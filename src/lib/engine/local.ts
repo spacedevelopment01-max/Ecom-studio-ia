@@ -143,9 +143,10 @@ export function localAnalysis(input: { name?: string; brand?: string; descriptio
     nameStatus: input.name ? "provided" : name ? "detected" : "unknown",
     category: "",
     sector,
-    summary: desc ? desc.split(/\n|\. /)[0].slice(0, 220) : input.photos ? C(`Produit présenté en photo${colorLine ? `, dominantes ${colorLine}` : ""}.`, `Product shown in photos${colorLine ? `, mainly ${colorLine}` : ""}.`) : "",
+    summary: desc ? desc.split(/\n|\. /)[0].slice(0, 220) : "",
     facts,
-    visual: { colors: input.colors, description: input.photos && colorLine ? C(`Teintes dominantes observées : ${colorLine}.`, `Main colors observed: ${colorLine}.`) : "" },
+    // Les couleurs mesurées restent des données internes : pas de phrase « teintes observées » montrée aux acheteurs.
+    visual: { colors: input.colors, description: "" },
     price: { amount: price, currency: input.link?.product?.currency ?? "EUR", status: price === null ? "unknown" : "confirmed" },
     variants: input.link?.product?.variants?.length > 1 ? [{ name: "Option", values: input.link!.product.variants.map((v: any) => v.title) }] : [],
     questions,

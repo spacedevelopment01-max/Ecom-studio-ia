@@ -197,7 +197,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       }
       // Finitions d'agence (doublons, sections d'espaces réservés, images inexistantes…) avant tout contrôle.
       const r = applyOps(fresh, ops);
-      r.spec = tidyComposition(r.spec);
+      r.spec = tidyComposition(r.spec, { strictAssets: true });
       if (r.spec.templates.index.order.length >= 4 && !validateSpec(r.spec).length) {
         spec = r.spec;
         author = "ai";
@@ -225,7 +225,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         append(inBothLangs(() => L(` · composition de l'IA écartée à la relecture visuelle (${review.score}/10)`, ` · AI layout discarded at visual review (${review.score}/10)`)));
       } else if (review?.ops.length) {
         const r = applyOps(spec, services ? review.ops.filter((o) => !("type" in o && typeof o.type === "string" && /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown)/.test(o.type))) : review.ops);
-        r.spec = tidyComposition(r.spec);
+        r.spec = tidyComposition(r.spec, { strictAssets: true });
         // Une relecture qui viderait l'accueil (moins de 4 sections) ou en retirerait l'ouverture n'est pas appliquée.
         const opening = (t: ThemeSpec) => t.templates.index.sections[t.templates.index.order[0]]?.type ?? "";
         const keepsOpening = !/^(hero-|video-|slideshow)/.test(opening(spec)) || /^(hero-|video-|slideshow)/.test(opening(r.spec));

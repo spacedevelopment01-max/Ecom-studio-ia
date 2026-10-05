@@ -126,7 +126,7 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
       items: [
         { q: C("Quels sont les délais de livraison ?", "How long does shipping take?"), a: delivery },
         { q: C("Puis-je retourner ma commande ?", "Can I return my order?"), a: returns },
-        { q: C(`Comment utiliser ${name} ?`, `How do I use ${name}?`), a: fact("usage") ?? unk("mode d'emploi", "instructions for use") },
+        { q: C("Comment l'utiliser ?", "How do I use it?"), a: fact("usage") ?? unk("mode d'emploi", "instructions for use") },
       ],
     },
     marquee: factMarquee(product, brand),
