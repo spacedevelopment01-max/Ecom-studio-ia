@@ -3,8 +3,7 @@
  * avec LiquidJS. Gère pages, médias, polices et panier de démonstration.
  */
 import fs from "node:fs";
-import { cookies } from "next/headers";
-import { HttpError, ownedProject, requireUser } from "@/lib/auth";
+import { HttpError, currentUser, ownedProject } from "@/lib/auth";
 import { handle } from "@/lib/http";
 import { currentTheme, themeVersion } from "@/lib/projects";
 import { compileTheme, importedBinary, themeAssetBinary } from "@/lib/theme/compile";
@@ -13,30 +12,40 @@ import { fontFilePath, renderNamedSections, renderPage, variantId, type PreviewC
 import { storeProducts } from "@/lib/theme/spec";
 import { previewTools } from "@/lib/theme/preview-tools";
 import { L, uiLang } from "@/lib/i18n-server";
+import { PREVIEW_SANDBOX_CSP, previewCors, previewSegment, splitPreviewSegment, verifyPreview } from "@/lib/theme/preview-access";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
 export const runtime = "nodejs";
 
 type P = { params: Promise<{ id: string; vid: string; path?: string[] }> };
 
-async function load(ctx: P) {
-  const user = await requireUser();
-  const { id, vid, path } = await ctx.params;
-  ownedProject(user, id);
+/**
+ * Accès : clé d'aperçu signée dans l'adresse (« <version>~<clé> », voir preview-access.ts), seule possible depuis
+ * l'aperçu cloisonné ; sinon session du studio, puis redirection vers l'adresse avec clé.
+ */
+async function load(req: Request, ctx: P) {
+  const { id, vid: seg, path } = await ctx.params;
+  const { vid, token } = splitPreviewSegment(seg);
+  let redirect: string | null = null;
+  if (!token || !verifyPreview(token, id)) {
+    const user = await currentUser();
+    if (!user) throw new HttpError(401, L("Connexion requise.", "Sign-in required."));
+    ownedProject(user, id);
+    const url = new URL(req.url);
+    redirect = `/preview/${id}/v/${previewSegment(vid, user.id, id)}${path?.length ? `/${path.map(encodeURIComponent).join("/")}` : "/"}${url.search}`;
+  }
   const v = vid === "current" ? currentTheme(id) : themeVersion(id, vid);
   if (!v) throw new HttpError(404, L("Version de boutique introuvable.", "Store version not found."));
-  return { id, vid, spec: v.spec as ThemeSpec, segs: path ?? [], base: `/preview/${id}/v/${vid}` };
+  return { id, vid, spec: v.spec as ThemeSpec, segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
 }
 
-const CART_COOKIE = (id: string) => `es_cart_${id}`;
+/**
+ * Panier de démonstration, gardé côté serveur par projet : l'aperçu cloisonné (origine opaque) ne peut
+ * ni lire ni écrire de cookie.
+ */
+const carts: Map<string, PreviewCartLine[]> = ((globalThis as { __esPreviewCarts?: Map<string, PreviewCartLine[]> }).__esPreviewCarts ??= new Map());
 async function readCart(id: string): Promise<PreviewCartLine[]> {
-  try {
-    const raw = JSON.parse((await cookies()).get(CART_COOKIE(id))?.value ?? "[]") as any[];
-    // Anciens paniers (un seul produit) : rang de variante → identifiant global.
-    return raw.map((l) => ({ variantId: Number(l.variantId ?? 1000 + Number(l.variantIndex ?? 0)), quantity: Number(l.quantity) || 0 }));
-  } catch {
-    return [];
-  }
+  return (carts.get(id) ?? []).map((l) => ({ ...l }));
 }
 
 /** Toutes les variantes de la boutique, par identifiant global. */
@@ -49,7 +58,9 @@ function variantTable(spec: ThemeSpec) {
   return map;
 }
 async function writeCart(id: string, cart: PreviewCartLine[]) {
-  (await cookies()).set(CART_COOKIE(id), JSON.stringify(cart.filter((l) => l.quantity > 0).slice(0, 20)), { path: `/preview/${id}`, httpOnly: true, sameSite: "lax" });
+  carts.delete(id);
+  carts.set(id, cart.filter((l) => l.quantity > 0).slice(0, 20));
+  if (carts.size > 500) carts.delete(carts.keys().next().value!);
 }
 
 function cartJson(spec: ThemeSpec, cart: PreviewCartLine[]) {
@@ -66,8 +77,29 @@ async function sectionsFor(spec: ThemeSpec, base: string, cart: PreviewCartLine[
   return renderNamedSections({ spec, base, cart }, names.split(",").slice(0, 5), "/");
 }
 
-export const GET = handle(async (req: Request, ctx: P) => {
-  const { id, spec, segs, base } = await load(ctx);
+/**
+ * En-têtes communs : lecture par le document cloisonné (origine « null ») ; tout fichier ouvert directement
+ * (page, SVG d'un thème importé…) reste lui aussi dans le bac à sable.
+ */
+function withCors(req: Request, res: Response) {
+  previewCors(req, res.headers);
+  if (!res.headers.has("Content-Security-Policy")) res.headers.set("Content-Security-Policy", PREVIEW_SANDBOX_CSP);
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  return res;
+}
+
+export const OPTIONS = async (req: Request) =>
+  new Response(null, {
+    status: 204,
+    headers: previewCors(req, new Headers({ "Access-Control-Allow-Methods": "GET, POST", "Access-Control-Allow-Headers": "Content-Type, Accept, X-Requested-With", "Access-Control-Max-Age": "600" })),
+  });
+
+export const GET = handle(async (req: Request, ctx: P) => withCors(req, await get(req, ctx)));
+export const POST = handle(async (req: Request, ctx: P) => withCors(req, await post(req, ctx)));
+
+async function get(req: Request, ctx: P): Promise<Response> {
+  const { id, spec, segs, base, redirect } = await load(req, ctx);
+  if (redirect) return new Response(null, { status: 307, headers: { Location: redirect, "Cache-Control": "no-store" } });
   const url = new URL(req.url);
   const path = "/" + segs.join("/");
   if (segs[0] === "assets") {
@@ -96,11 +128,11 @@ export const GET = handle(async (req: Request, ctx: P) => {
   if (url.searchParams.get("sections")) return Response.json(await sectionsFor(spec, base, cart, url.searchParams.get("sections")));
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
   const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business)}</body>`);
-  return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN" } });
-});
+  return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": PREVIEW_SANDBOX_CSP, "Referrer-Policy": "no-referrer" } });
+}
 
-export const POST = handle(async (req: Request, ctx: P) => {
-  const { id, spec, segs, base } = await load(ctx);
+async function post(req: Request, ctx: P): Promise<Response> {
+  const { id, spec, segs, base } = await load(req, ctx);
   const path = "/" + segs.join("/");
   let cart = await readCart(id);
   const ct = req.headers.get("content-type") ?? "";
@@ -131,5 +163,5 @@ export const POST = handle(async (req: Request, ctx: P) => {
   if (ct.includes("application/json") || req.headers.get("accept")?.includes("application/json") || path.endsWith(".js") || data.sections) {
     return Response.json({ ...cartJson(spec, cart), sections });
   }
-  return Response.redirect(new URL(`${base}/cart`, req.url), 303);
-});
+  return new Response(null, { status: 303, headers: { Location: `${base}/cart` } });
+}

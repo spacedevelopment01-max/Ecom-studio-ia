@@ -240,7 +240,7 @@ export async function checkCustomSection(p: Project, base: ThemeSpec, item: Plan
   const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
   if (dup.length) issues.push(L(`identifiants de réglages en double : ${[...new Set(dup)].join(", ")}`, `duplicate setting ids: ${[...new Set(dup)].join(", ")}`));
   if (/\{%-?\s*include\s/.test(liquid)) issues.push(L("« include » est obsolète : utiliser « render »", "“include” is deprecated: use “render”"));
-  if (/<link[^>]+href\s*=\s*["']?(https?:)?\/\//i.test(liquid) || /@import\s+url\(\s*["']?(https?:)?\/\//i.test(liquid) || /url\(\s*["']?https?:\/\//i.test(liquid)) issues.push(L("aucune ressource externe (feuille de style, police, image d'un autre site) : utiliser le thème et les fichiers fournis", "no external resources (stylesheet, font, image from another site): use the theme and the provided files"));
+  if (/<link[^>]+href\s*=\s*["']?(https?:)?\/\//i.test(liquid) || /@import\s+url\(\s*["']?(https?:)?\/\//i.test(liquid) || /url\(\s*["']?(https?:)?\/\//i.test(liquid)) issues.push(L("aucune ressource externe (feuille de style, police, image d'un autre site) : utiliser le thème et les fichiers fournis", "no external resources (stylesheet, font, image from another site): use the theme and the provided files"));
   if (/\|\s*t\b/.test(liquid.replace(/\{%-?\s*schema[\s\S]*$/, ""))) issues.push(L("pas de filtre de traduction « t » (clés absentes des traductions du thème) : écrire les textes dans les réglages", "no “t” translation filter (keys missing from the theme locales): put the texts in the settings"));
   // Instance : seulement des réglages et blocs déclarés dans le schéma.
   const unknown = Object.keys(out.settings ?? {}).filter((k) => !ids.includes(k));

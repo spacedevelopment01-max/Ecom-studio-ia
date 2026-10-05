@@ -160,7 +160,8 @@ export default function TabBoutique() {
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       const d = e.data;
-      if (!d || d.source !== "es-preview") return;
+      // Seulement l'aperçu affiché (cloisonné : origine opaque, on vérifie donc la fenêtre émettrice).
+      if (!d || d.source !== "es-preview" || e.source !== iframe.current?.contentWindow) return;
       if (d.type === "selected") {
         setSelection(d.selection);
         setPicking(false);
@@ -509,10 +510,10 @@ export default function TabBoutique() {
       <div ref={frameBox} className="relative flex-1 overflow-hidden bg-paper-2 p-0 sm:p-4">
         {src && (desktopScale < 1 ? (
           <div className="mx-auto overflow-hidden rounded-none bg-white shadow-soft sm:rounded-2xl" style={{ width: DESKTOP_W * desktopScale, height: "100%" }}>
-            <iframe ref={iframe} key={versionId ?? ""} src={src} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
+            <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals" title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
           </div>
         ) : (
-          <iframe ref={iframe} key={versionId ?? ""} src={src} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
+          <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals" title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
         ))}
         {src && discovery && (
           <div className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden" aria-hidden>

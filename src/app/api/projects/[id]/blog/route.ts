@@ -4,7 +4,7 @@ import { enqueue } from "@/lib/jobs";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { aiAvailability } from "@/lib/ai/config";
 import { shopifyConnection } from "@/lib/integrations/shopify";
-import { articleView, blogAccess, blogPlanReason, listArticles, storeLinks } from "@/lib/engine/blog";
+import { articleView, blogAccess, countTrashed, blogPlanReason, listArticles, storeLinks } from "@/lib/engine/blog";
 import { L } from "@/lib/i18n-server";
 import { gateBlogWrite } from "./gate";
 
@@ -16,7 +16,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   return ok({
     articles: listArticles(p.id).map(articleView),
     trash: trash ? listArticles(p.id, true).map(articleView) : undefined,
-    trashCount: listArticles(p.id, true).length,
+    trashCount: countTrashed(p.id),
     access: { allowed: a.allowed, admin: a.admin, plan: a.plan, left: a.left, included: a.included, reason: blogPlanReason(user.id) },
     shopify: !!shopifyConnection(user.id, p.id),
     ai: aiAvailability().llm,

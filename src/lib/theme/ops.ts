@@ -100,7 +100,24 @@ function validateSettings(spec: ThemeSpec, type: string, blockType: string | nul
   return { settings: out, errors };
 }
 
-const liquidCheck = new Liquid({ strictFilters: false });
+const liquidCheck = new Liquid({ strictFilters: false, parseLimit: 1_000_000 });
+/** Taille maximale d'une plage littérale `(a..b)` dans une section écrite à la main. */
+export const MAX_LITERAL_RANGE = 1000;
+
+/**
+ * Script chargé depuis l'extérieur du thème : `<script src>` qui n'est pas un fichier du thème (`{{ 'x.js' | asset_url }}`),
+ * adresse sans protocole (`//…`), `data:`/`blob:`, `script_tag` d'une adresse, import dynamique, script créé par le code.
+ */
+export function hasExternalScript(liquid: string): boolean {
+  // Seul un fichier du thème est permis : src="{{ 'fichier.js' | asset_url }}".
+  for (const m of liquid.matchAll(/<script\b[^>]*?\bsrc\s*=\s*/gi)) {
+    const rest = liquid.slice(m.index! + m[0].length, m.index! + m[0].length + 200);
+    if (!/^["']?\{\{-?\s*["'][\w.-]+["']\s*\|\s*asset_url\s*-?\}\}["']?[\s>]/.test(rest)) return true;
+  }
+  if (/['"](?:https?:)?\/\/[^'"]*['"]\s*\|\s*script_tag/i.test(liquid)) return true;
+  if (/\bimport\s*\(|\bimportScripts\s*\(|createElement\s*\(\s*["'`]script["'`]\s*\)/i.test(liquid)) return true;
+  return false;
+}
 
 export function validateCustomSection(liquid: string): string | null {
   const schema = (() => {
@@ -113,7 +130,12 @@ export function validateCustomSection(liquid: string): string | null {
   if (!schema) return L("la section doit contenir un bloc {% schema %}", "the section must contain a {% schema %} block");
   if (typeof schema === "string") return schema;
   if (!schema.name || schema.name.length > 25) return L("le nom du schéma doit faire 25 caractères au plus", "the schema name must be 25 characters or fewer");
-  if (/<script[^>]+src\s*=\s*["']?https?:/i.test(liquid)) return L("les scripts externes ne sont pas autorisés dans les sections générées", "external scripts aren't allowed in generated sections");
+  if (hasExternalScript(liquid)) return L("les scripts externes ne sont pas autorisés dans les sections générées", "external scripts aren't allowed in generated sections");
+  // Plages littérales démesurées ((1..100000), boucles imbriquées) : refusées avant même l'aperçu.
+  for (const m of liquid.matchAll(/\(\s*(-?\d+)\s*\.\.\s*(-?\d+)\s*\)/g)) {
+    if (Math.abs(Number(m[2]) - Number(m[1])) > MAX_LITERAL_RANGE) return L(`plage de boucle trop grande (${m[0]}) : ${MAX_LITERAL_RANGE} éléments au plus`, `loop range too large (${m[0]}): ${MAX_LITERAL_RANGE} items at most`);
+  }
+  if (liquid.length > 200_000) return L("section trop longue (200 000 caractères au plus)", "section too long (200,000 characters at most)");
   if (/\beval\s*\(|new\s+Function\s*\(|document\.cookie/i.test(liquid)) return L("code JavaScript non autorisé (eval, Function, cookies)", "JavaScript code not allowed (eval, Function, cookies)");
   try {
     const stripped = liquid

@@ -7,13 +7,16 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { OpSchema, applyOps, validateSpec } from "@/lib/theme/ops";
 import { getAsset } from "@/lib/library";
 import { themeFileName } from "@/lib/engine/shop";
+import { assertSectionGeneration } from "@/lib/theme/custom-access";
 
 /** Modifications directes depuis l'interface (déplacer, masquer, verrouiller, remplacer une image). */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
-  const { project: p } = await projectFromCtx(ctx);
+  const { user, project: p } = await projectFromCtx(ctx);
   const cur = currentTheme(p.id);
   if (!cur) throw new HttpError(409, L("Aucune boutique.", "No store yet."));
   const b = await body(req, z.object({ ops: z.array(OpSchema).min(1).max(50), summary: z.string().max(200).optional() }));
+  // Section sur mesure (Liquid libre) : réservée aux forfaits qui l'incluent, comme « Générer » à l'écran.
+  if (b.ops.some((o) => o.op === "custom_section")) assertSectionGeneration(user);
   const targeted = new Set(b.ops.filter((o: any) => o.template && o.section).map((o: any) => `${o.template}:${o.section}`));
   const res = applyOps(cur.spec, b.ops, {
     targeted,

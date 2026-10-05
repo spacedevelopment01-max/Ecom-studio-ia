@@ -334,6 +334,12 @@ function withWidth(url: string, w: number) {
   return url.includes("?") ? `${url}&width=${w}` : `${url}?width=${w}`;
 }
 
+/** Limites du moteur d'aperçu (exportées pour les tests). */
+export const LIQUID_LIMITS = { renderLimit: 5_000, memoryLimit: 64_000_000, parseLimit: 4_000_000 } as const;
+
+/** Erreur d'une limite de rendu Liquid (temps, mémoire, taille). */
+export const isLiquidLimitError = (e: unknown) => /limit exceeded/i.test(String((e as Error)?.message ?? e));
+
 export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr") {
   const locale = LOCALE(files, lang);
   const norm = (p: string) => p.replace(/^\/+/, "");
@@ -361,6 +367,9 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
     lenientIf: true,
     jsTruthy: false,
     timezoneOffset: "Europe/Paris",
+    // Bornes de rendu (une section écrite à la main ne doit jamais bloquer le serveur) : temps par rendu,
+    // allocations (boucles, plages, chaînes) et taille des gabarits analysés.
+    ...LIQUID_LIMITS,
   });
 
   // ----- balises Shopify
@@ -785,7 +794,13 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   for (const id of template.order as string[]) {
     const inst = template.sections[id];
     if (!inst || inst.disabled) continue;
-    parts.push(await renderSectionStandalone(engine, files, scope, id, inst, tplKey));
+    try {
+      parts.push(await renderSectionStandalone(engine, files, scope, id, inst, tplKey));
+    } catch (e) {
+      // Section trop lourde (boucles démesurées…) : elle est omise de l'aperçu, le reste de la page s'affiche.
+      if (!isLiquidLimitError(e)) throw e;
+      parts.push(`<!-- section ${String(id).replace(/--/g, "")} : rendu interrompu (trop lourd) -->`);
+    }
   }
   const content = parts.join("\n");
   if (template.layout === false) return { html: content, status: route.status, template: tplKey };

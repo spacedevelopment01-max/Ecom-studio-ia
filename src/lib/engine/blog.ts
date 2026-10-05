@@ -56,6 +56,9 @@ export const getArticle = (projectId: string, articleId: string) => one<BlogRow>
 export const listArticles = (projectId: string, trash = false) =>
   all<BlogRow>(`SELECT * FROM blog_articles WHERE project_id = ? AND deleted_at IS ${trash ? "NOT " : ""}NULL ORDER BY updated_at DESC`, projectId);
 
+export const countTrashed = (projectId: string) =>
+  one<{ n: number }>("SELECT COUNT(*) AS n FROM blog_articles WHERE project_id = ? AND deleted_at IS NOT NULL", projectId)?.n ?? 0;
+
 /** Vue envoyée à l'écran. */
 export function articleView(r: BlogRow) {
   const cover = r.cover_asset_id ? getAsset(r.cover_asset_id) : undefined;
@@ -66,7 +69,8 @@ export function articleView(r: BlogRow) {
     metaTitle: r.meta_title,
     metaDescription: r.meta_description,
     excerpt: r.excerpt,
-    bodyHtml: r.body_html,
+    // Nettoyé aussi à la lecture : un ancien article enregistré avant le nettoyeur actuel ne peut rien exécuter.
+    bodyHtml: sanitizeBlogHtml(r.body_html),
     tags: json<string[]>(r.tags, []),
     cover: cover && !cover.deleted_at ? { id: cover.id, url: assetUrl(cover), thumbUrl: assetUrl(cover, { thumb: true }) } : null,
     language: r.language,
@@ -204,7 +208,8 @@ const topicCache = new Map<string, { at: number; topics: BlogTopic[] }>();
 export async function suggestTopics(p: Project, opts: { refresh?: boolean } = {}): Promise<{ topics: BlogTopic[]; ai: boolean }> {
   const key = `${p.id}:${contentLang()}`;
   const hit = topicCache.get(key);
-  if (hit && !opts.refresh && Date.now() - hit.at < 15 * 60_000) return { topics: hit.topics, ai: true };
+  // « Autres idées » : au plus un nouvel appel à l'IA toutes les 30 s par projet (sinon, les dernières idées).
+  if (hit && Date.now() - hit.at < (opts.refresh ? 30_000 : 15 * 60_000)) return { topics: hit.topics, ai: true };
   if (!llmConfigured()) return { topics: localTopics(p), ai: false };
   const existing = listArticles(p.id).map((a) => `- ${a.title}`).join("\n");
   const links = storeLinks(p.id);
@@ -361,7 +366,7 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
     `INSERT INTO blog_articles (id, project_id, user_id, title, slug, meta_title, meta_description, excerpt, body_html, tags, cover_asset_id, language, status, qc_notes, created_at, updated_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'draft',?,?,?)
      ON CONFLICT(id) DO UPDATE SET title = excluded.title, slug = excluded.slug, meta_title = excluded.meta_title, meta_description = excluded.meta_description, excerpt = excluded.excerpt,
-       body_html = excluded.body_html, tags = excluded.tags, cover_asset_id = excluded.cover_asset_id, language = excluded.language, status = 'draft', qc_notes = excluded.qc_notes, updated_at = excluded.updated_at`,
+       body_html = excluded.body_html, tags = excluded.tags, cover_asset_id = excluded.cover_asset_id, language = excluded.language, status = CASE WHEN blog_articles.published_url IS NOT NULL THEN 'ready' ELSE 'draft' END, qc_notes = excluded.qc_notes, updated_at = excluded.updated_at`,
     articleId, projectId, p.userId, a.title, slug, a.metaTitle, a.metaDescription, a.excerpt, a.bodyHtml, JSON.stringify(a.tags), cover, contentLang(), JSON.stringify(notes), t, t,
   );
   // Un article écrit (ou réécrit avec l'IA) = 1 article du forfait, décompté une seule fois par tâche.
@@ -392,7 +397,7 @@ ${tags.length ? `<meta name="keywords" content="${escHtml(tags.join(", "))}">\n`
 <h1>${escHtml(a.title)}</h1>
 <!-- ${escHtml(shopName)} · ${escHtml(a.slug)} -->
 <!-- Corps de l'article à coller dans votre éditeur : -->
-${a.body_html}
+${sanitizeBlogHtml(a.body_html)}
 </article>
 </body>
 </html>
@@ -414,7 +419,7 @@ export function articlesWxr(articles: BlogRow[], site: { title: string; url?: st
     <dc:creator>${cdata(login)}</dc:creator>
     <guid isPermaLink="false">${xmlEsc(`ecom-studio-ia:${a.id}`)}</guid>
     <description></description>
-    <content:encoded>${cdata(a.body_html)}</content:encoded>
+    <content:encoded>${cdata(sanitizeBlogHtml(a.body_html))}</content:encoded>
     <excerpt:encoded>${cdata(a.excerpt)}</excerpt:encoded>
     <wp:post_id>${i + 1}</wp:post_id>
     <wp:post_date>${cdata(date(a.created_at))}</wp:post_date>

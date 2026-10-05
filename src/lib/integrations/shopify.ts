@@ -13,6 +13,7 @@ import { appUrl } from "../settings";
 import { storeProducts, type StoreProduct, type ThemeSpec } from "../theme/spec";
 import type { Connection } from "../social/publish";
 import { L } from "../i18n-server";
+import { sanitizeBlogHtml } from "../blog-html";
 
 const version = () => getSetting("shopify.apiVersion") || "2025-07";
 
@@ -173,13 +174,28 @@ async function articleBlog(c: Connection, title: string): Promise<{ id: string; 
   return created.blogCreate.blog;
 }
 
+/** Article déjà envoyé : son blog actuel, ou null s'il a été supprimé dans Shopify. */
+async function existingArticle(c: Connection, id: string): Promise<{ id: string; handle: string; blog: { handle: string } | null } | null> {
+  const d = await gql(c, `query($id: ID!){ article(id: $id){ id handle blog{ handle } } }`, { id });
+  return d?.article ?? null;
+}
+
 /** Crée (ou met à jour) l'article dans le blog de la boutique, en brouillon ou publié. */
 export async function pushBlogArticle(c: Connection, a: ShopifyArticleInput): Promise<{ ref: string; url: string; published: boolean }> {
-  const blog = await articleBlog(c, a.blogTitle);
+  // Mise à jour : l'article reste dans son blog (aucun blog créé, lien juste). Supprimé dans Shopify : recréé.
+  let ref = a.ref ?? null;
+  let blogHandle: string | null = null;
+  if (ref) {
+    const prev = await existingArticle(c, ref);
+    if (prev) blogHandle = prev.blog?.handle ?? null;
+    else ref = null;
+  }
+  let blog: { id: string; handle: string } | null = null;
+  const blogFor = async () => (blog ??= await articleBlog(c, a.blogTitle));
   const base: Record<string, unknown> = {
     title: a.title,
     handle: a.handle,
-    body: a.bodyHtml,
+    body: sanitizeBlogHtml(a.bodyHtml),
     summary: a.summary,
     tags: a.tags,
     isPublished: a.publish,
@@ -192,17 +208,25 @@ export async function pushBlogArticle(c: Connection, a: ShopifyArticleInput): Pr
   ].filter((m) => m.value);
   const send = async (withSeo: boolean) => {
     const article = { ...base, ...(withSeo && seo.length ? { metafields: seo } : {}) };
-    if (a.ref) {
-      const d = await gql(c, `mutation($id: ID!, $article: ArticleUpdateInput!){ articleUpdate(id: $id, article: $article){ article{ id handle } userErrors{ field message } } }`, { id: a.ref, article });
+    if (ref) {
+      const d = await gql(c, `mutation($id: ID!, $article: ArticleUpdateInput!){ articleUpdate(id: $id, article: $article){ article{ id handle blog{ handle } } userErrors{ field message } } }`, { id: ref, article });
       return { d, key: "articleUpdate" };
     }
-    const d = await gql(c, `mutation($article: ArticleCreateInput!){ articleCreate(article: $article){ article{ id handle } userErrors{ field message } } }`, { article: { ...article, blogId: blog.id } });
+    const b = await blogFor();
+    const d = await gql(c, `mutation($article: ArticleCreateInput!){ articleCreate(article: $article){ article{ id handle blog{ handle } } userErrors{ field message } } }`, { article: { ...article, blogId: b.id } });
     return { d, key: "articleCreate" };
   };
+  const errs = (r: { d: any; key: string }): any[] => r.d?.[r.key]?.userErrors ?? [];
   let r = await send(true);
+  // Article supprimé dans Shopify entre-temps : recréé plutôt qu'une erreur brute.
+  if (ref && errs(r).some((e: any) => /not\s*found|n'existe|introuvable|does not exist/i.test(String(e.message)))) {
+    ref = null;
+    r = await send(true);
+  }
   // Champs SEO refusés (définition différente dans la boutique) : l'article part sans eux plutôt que pas du tout.
-  if ((r.d?.[r.key]?.userErrors ?? []).some((e: any) => /metafield/i.test(`${e.field ?? ""} ${e.message}`))) r = await send(false);
+  if (errs(r).some((e: any) => /metafield/i.test(`${e.field ?? ""} ${e.message}`))) r = await send(false);
   userErrors(r.d, r.key);
-  const art = r.d[r.key].article as { id: string; handle: string };
-  return { ref: art.id, url: `https://${c.external_id}/blogs/${blog.handle}/${art.handle}`, published: a.publish };
+  const art = r.d[r.key].article as { id: string; handle: string; blog?: { handle: string } | null };
+  const handle = art.blog?.handle ?? blogHandle ?? (blog as { handle: string } | null)?.handle ?? (await blogFor()).handle;
+  return { ref: art.id, url: `https://${c.external_id}/blogs/${handle}/${art.handle}`, published: a.publish };
 }

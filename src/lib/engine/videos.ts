@@ -20,7 +20,8 @@ import { localVideoPlan } from "./local";
 import { aiVideoPlan, aiQcImage } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { videoProviderAvailable, veoClip, falClip } from "../ai/media-providers";
-import type { JobContext } from "../jobs";
+import { UserFacingError, type JobContext } from "../jobs";
+import { json, run } from "../db";
 import { logoPng } from "../media/logo";
 import { C, L } from "../i18n-server";
 import { activityPhotos, isServices, localServiceVideoPlan } from "./service-media";
@@ -34,10 +35,11 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   let project = loadProject(projectId);
   const services = isServices(project);
   const cutouts = await ensureCutouts(ctx, project);
-  if (!cutouts.length && !services) throw new Error(L("Importez une photo du produit pour créer une vidéo.", "Upload a product photo to create a video."));
+  // Erreurs définitives (rien à retenter tant que le client n'a pas agi).
+  if (!cutouts.length && !services) throw new UserFacingError(L("Importez une photo du produit pour créer une vidéo.", "Upload a product photo to create a video."));
   project = loadProject(projectId);
   const brand = project.brand;
-  if (!brand) throw new Error(L("Définissez la marque avant de produire une vidéo.", "Set up the brand before producing a video."));
+  if (!brand) throw new UserFacingError(L("Définissez la marque avant de produire une vidéo.", "Set up the brand before producing a video."));
   // Photos en situation d'abord (celles du marchand avant les générées) : elles ouvrent les vidéos.
   // Services : photos réelles de l'activité (réalisations, équipe, lieu), puis ambiances générées.
   const life = assetsByRole(projectId, "lifestyle", 6).filter((a) => a.status !== "rejected").sort((x, y) => Number(y.origin === "upload") - Number(x.origin === "upload")).slice(0, 2);
@@ -46,6 +48,9 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
 
   // 1. Plans générés (facultatif, coûteux) : à partir d'une scène réelle.
   const clipDirs: string[][] = [];
+  const tmpDirs: string[] = [];
+  /** Plan IA demandé, mais pas utilisé (indisponible ou refusé au contrôle) : dit dans la note d'étape. */
+  let clipFallback: string | null = null;
   const provider = req.useAiClip ? videoProviderAvailable() : null;
   if (provider && imgs.length) {
     // Un plan généré qui échoue (fournisseur indisponible, crédits insuffisants) ne bloque pas la vidéo : elle est montée sans lui.
@@ -62,29 +67,40 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       return a.id;
     }).catch((e) => {
       ctx.progress(0.2, L(`Plan généré par IA indisponible (${(e as Error).message}) : vidéo montée à partir des images`, `AI-generated shot unavailable (${(e as Error).message}): video edited from the images`));
+      clipFallback = L("plan IA indisponible", "AI shot unavailable");
       return null;
     });
     // Extraction des images du plan + contrôle de fidélité sur 3 images.
     const clipAsset = clipFile ? (await import("../library")).getAsset(clipFile) : null;
     if (clipAsset) {
       const dir = tmpDir("clip");
+      // Images du plan (≈ 120 JPEG) : supprimées après le rendu, ou tout de suite si le plan n'est pas retenu.
+      tmpDirs.push(dir);
       const src = path.join(dir, "in.mp4");
       fs.writeFileSync(src, assetData(clipAsset));
       const { w, h } = VIDEO_SIZES[req.format];
       await exec("ffmpeg", ["-y", "-i", src, "-t", "4", "-vf", `fps=30,scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h}`, "-q:v", "3", path.join(dir, "f%04d.jpg")]);
       const frames = fs.readdirSync(dir).filter((f) => f.endsWith(".jpg")).sort().map((f) => path.join(dir, f));
       let ok = frames.length > 20;
+      let reason = ok ? "" : L("plan trop court ou illisible", "shot too short or unreadable");
       if (ok && llmConfigured() && !services) {
         const ref = assetData(cutouts[0]);
         for (const idx of [0, Math.floor(frames.length / 2), frames.length - 1]) {
           const r = await aiQcImage({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clipqc:${idx}` }, ref, fs.readFileSync(frames[idx]));
           if (!r.sameProduct || r.score < 6) {
             ok = false;
+            reason = !r.sameProduct ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : L(`fidélité insuffisante (${r.score}/10)`, `not faithful enough (${r.score}/10)`);
             break;
           }
         }
       }
       if (ok) clipDirs.push(frames);
+      else {
+        // Plan refusé au contrôle : écarté de la bibliothèque (statut « refusé », raison gardée).
+        run("UPDATE assets SET status = 'rejected', meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), rejectedReason: reason }), clipAsset.id);
+        clipFallback = L(`plan IA refusé au contrôle : ${reason}`, `AI shot rejected by the check: ${reason}`);
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
     }
   }
 
@@ -123,6 +139,8 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
     ? await loadImage(assetData(logoAsset))
     : await loadImage(await logoPng({ name: brand.name, family: brandTypo(project).heading, weight: 500, case: "upper", tracking: 0.14, layout: "wordmark", emblem: "none", color: "#FFFFFF" }, 900));
   const dir = tmpDir("video");
+  tmpDirs.push(dir);
+  try {
   const out = path.join(dir, "video.mp4");
   const result = await renderVideo(plan, { product, images, clips: clipDirs, logo, palette: palette(project), typo: brandTypo(project), brand: brand.name }, out, (p) => ctx.progress(0.4 + p * 0.5, L(`Rendu vidéo ${Math.round(p * 100)} %`, `Rendering video ${Math.round(p * 100)}%`)));
 
@@ -154,6 +172,10 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   await exec("ffmpeg", ["-y", "-ss", String(Math.min(4, result.duration / 3)), "-i", out, "-frames:v", "1", "-q:v", "2", posterFrame]);
   await saveAsset({ projectId, userId: project.userId, data: await sharp(posterFrame).jpeg({ quality: 88 }).toBuffer(), name: `${name}-${C("affiche", "poster")}.jpg`, mime: "image/jpeg", role: "video-poster", folderKey: folder, origin: "generated", sourceAssetId: video.id, meta: { recipe: L("Image d'affiche extraite de la vidéo", "Poster frame taken from the video") } });
   await saveAsset({ projectId, userId: project.userId, data: Buffer.from(srtFromSpec(plan), "utf8"), name: `${name}.srt`, mime: "application/x-subrip", kind: "text", role: "subtitles", folderKey: folder, origin: "generated", sourceAssetId: video.id, meta: { recipe: L("Sous-titres (textes à l'écran) au format SRT", "Subtitles (on-screen text) in SRT format") } });
-  fs.rmSync(dir, { recursive: true, force: true });
-  return { assetId: video.id, technical, issues };
+  const method = clipDirs.length ? "ai-clip" : "motion";
+  return { assetId: video.id, technical, issues, method: method as "ai-clip" | "motion", aiClipRequested: !!req.useAiClip, clipFallback };
+  } finally {
+    // Fichiers temporaires (rendu, images du plan IA) supprimés, même en cas d'erreur.
+    for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true });
+  }
 }

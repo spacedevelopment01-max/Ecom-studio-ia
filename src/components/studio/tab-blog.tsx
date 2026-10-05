@@ -365,8 +365,11 @@ function ArticleEditor({ article, data, busy, confirm, onClose, onChanged, onSta
 
   const set = <K extends keyof Article>(k: K, v: Article[K]) => (setA((x) => ({ ...x, [k]: v })), setDirty(true));
   const onInput = () => {
-    html.current = editor.current?.innerHTML ?? "";
-    setWords(countWords(html.current));
+    const next = editor.current?.innerHTML ?? "";
+    // Un simple clic (sortie du champ sans rien changer) ne marque pas l'article comme modifié.
+    if (next === html.current) return;
+    html.current = next;
+    setWords(countWords(next));
     setDirty(true);
   };
   const cmd = (name: string, value?: string) => {
@@ -401,14 +404,25 @@ function ArticleEditor({ article, data, busy, confirm, onClose, onChanged, onSta
     onClose();
   };
 
+  /** Article actuellement en ligne sur Shopify (même s'il a été modifié depuis). */
+  const online = !!a.publishedUrl;
+
   const publish = async (live: boolean) => {
+    // Repasser en brouillon un article en ligne le retire du blog public : confirmation explicite.
+    if (!live && online && !window.confirm(t("Retirer cet article de votre blog Shopify ? Il ne sera plus visible en ligne (il reste en brouillon dans Shopify et ici).", "Remove this post from your Shopify blog? It will no longer be visible online (it stays as a draft in Shopify and here)."))) return;
     setPublishing(live ? "live" : "draft");
     try {
       if (dirty && !(await save())) return;
-      const r = await api<{ article: Article; url: string; coverSent: boolean }>(`/api/projects/${id}/blog/${a.id}/publish`, { body: { publish: live } });
+      const r = await api<{ article: Article; url: string; hasCover?: boolean; coverSent: boolean }>(`/api/projects/${id}/blog/${a.id}/publish`, { body: { publish: live, ...(!live && online ? { unpublish: true } : {}) } });
       setA(r.article);
       await onChanged();
-      toast("ok", live ? t("Article publié dans votre blog Shopify.", "Post published to your Shopify blog.") : t("Article envoyé en brouillon dans votre blog Shopify.", "Post sent as a draft to your Shopify blog."));
+      const msg = live
+        ? t("Article publié dans votre blog Shopify.", "Post published to your Shopify blog.")
+        : online
+          ? t("Article retiré de votre blog Shopify (brouillon).", "Post removed from your Shopify blog (draft).")
+          : t("Article envoyé en brouillon dans votre blog Shopify.", "Post sent as a draft to your Shopify blog.");
+      const coverNote = r.hasCover && !r.coverSent ? t(" La couverture n'a pas été envoyée : ajoutez-la dans Shopify.", " The cover wasn't sent: add it in Shopify.") : "";
+      toast(coverNote ? "info" : "ok", msg + coverNote);
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
@@ -418,7 +432,7 @@ function ArticleEditor({ article, data, busy, confirm, onClose, onChanged, onSta
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(html.current);
+      await navigator.clipboard.writeText(sanitizeBlogHtml(html.current));
       toast("ok", t("Texte HTML copié : collez-le dans l'éditeur de votre site (mode HTML ou code).", "HTML copied: paste it into your site's editor (HTML or code view)."));
     } catch {
       toast("bad", t("La copie n'est pas autorisée par le navigateur : utilisez « Fichier HTML ».", "The browser didn't allow copying: use \"HTML file\"."));
@@ -438,10 +452,13 @@ function ArticleEditor({ article, data, busy, confirm, onClose, onChanged, onSta
   };
 
   const remove = async () => {
-    if (!window.confirm(t("Mettre cet article à la corbeille ? Vous pourrez le restaurer.", "Move this post to the trash? You can restore it."))) return;
+    const msg = online
+      ? t("Mettre cet article à la corbeille ? Vous pourrez le restaurer. Il reste en ligne sur Shopify tant que vous ne l'y supprimez pas.", "Move this post to the trash? You can restore it. It stays live on Shopify until you delete it there.")
+      : t("Mettre cet article à la corbeille ? Vous pourrez le restaurer.", "Move this post to the trash? You can restore it.");
+    if (!window.confirm(msg)) return;
     try {
       await api(`/api/projects/${id}/blog/${a.id}`, { method: "DELETE" });
-      toast("ok", t("Article mis à la corbeille.", "Post moved to the trash."));
+      toast("ok", online ? t("Article mis à la corbeille. Il reste en ligne sur Shopify tant que vous ne l'y supprimez pas.", "Post moved to the trash. It stays live on Shopify until you delete it there.") : t("Article mis à la corbeille.", "Post moved to the trash."));
       await onChanged();
       onClose();
     } catch (e) {
@@ -541,8 +558,11 @@ function ArticleEditor({ article, data, busy, confirm, onClose, onChanged, onSta
         <aside className="grid content-start gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={STATUS[a.status].tone}>{t(STATUS[a.status].fr, STATUS[a.status].en)}</Badge>
-            {a.publishedUrl && <a href={a.publishedUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-signal underline">{t("Voir en ligne", "View online")} <ExternalLink className="size-3" /></a>}
+            {online && <a href={a.publishedUrl!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-signal underline">{t("Voir en ligne", "View online")} <ExternalLink className="size-3" /></a>}
           </div>
+          {online && a.status !== "published" && (
+            <p className="rounded-xl border border-warn/30 bg-warn-soft p-2.5 text-xs text-warn">{t("Version en ligne différente : republiez avec « Mettre à jour sur Shopify » pour mettre le blog à jour.", "The live version is different: use \"Update on Shopify\" to update your blog.")}</p>
+          )}
           <Button icon={<Check className="size-4" />} loading={saving} disabled={saving || !dirty} onClick={() => save()}>{t("Enregistrer", "Save")}</Button>
           {a.status === "draft" && !dirty && <Button variant="secondary" size="sm" onClick={() => save({ status: "ready" })}>{t("Marquer comme prêt", "Mark as ready")}</Button>}
 
@@ -559,8 +579,12 @@ function ArticleEditor({ article, data, busy, confirm, onClose, onChanged, onSta
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("Publier", "Publish")}</p>
             {data.shopify ? (
               <>
-                <Button variant="signal" icon={<Send className="size-4" />} loading={publishing === "live"} disabled={!!publishing} onClick={() => publish(true)}>{a.onShopify && a.status === "published" ? t("Mettre à jour sur Shopify", "Update on Shopify") : t("Publier sur Shopify", "Publish on Shopify")}</Button>
-                <Button variant="secondary" size="sm" loading={publishing === "draft"} disabled={!!publishing} onClick={() => publish(false)}>{t("Envoyer en brouillon sur Shopify", "Send as a draft to Shopify")}</Button>
+                <Button variant="signal" icon={<Send className="size-4" />} loading={publishing === "live"} disabled={!!publishing} onClick={() => publish(true)}>{a.onShopify && online ? t("Mettre à jour sur Shopify", "Update on Shopify") : t("Publier sur Shopify", "Publish on Shopify")}</Button>
+                {online ? (
+                  <Button variant="ghost" size="sm" loading={publishing === "draft"} disabled={!!publishing} onClick={() => publish(false)}>{t("Retirer du blog (repasser en brouillon)", "Remove from blog (back to draft)")}</Button>
+                ) : (
+                  <Button variant="secondary" size="sm" loading={publishing === "draft"} disabled={!!publishing} onClick={() => publish(false)}>{t("Envoyer en brouillon sur Shopify", "Send as a draft to Shopify")}</Button>
+                )}
               </>
             ) : (
               <p className="text-xs text-muted">{t("Connectez votre boutique Shopify dans l'onglet Connexions pour publier en un clic, ou exportez l'article ci-dessous.", "Connect your Shopify store in the Connections tab to publish in one click, or export the post below.")}</p>
