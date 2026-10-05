@@ -224,6 +224,20 @@ Langues : « line » et « caption » en ${lname} ; « persona », « setting »
   imageBrief: `Rôle : directeur photo. Tu écris des consignes de décor pour un modèle de génération d'images. Le produit réel sera conservé tel quel (masque) : tu décris uniquement l'environnement, la lumière, la surface, la palette et l'ambiance, en anglais, en une seule phrase dense et précise, sans texte dans l'image, sans autre produit concurrent, sans mains déformées.
 Pour une « PHOTO EN SITUATION », décris une vraie scène de la vie de tous les jours où ce produit précis est utilisé ou à portée de main (lieu crédible, moment de la journée, objets du quotidien, éventuellement une personne ou un animal naturellement présents sans cacher le produit), en style photo éditoriale authentique, jamais un décor de studio.`,
 
+  photoTriage: `Rôle : iconographe e-commerce. Tu tries les photos d'un produit AVANT tout détourage. Pour chaque photo, choisis un seul genre :
+- « packshot » : le produit seul (ou son lot), entier, sur un fond uni ou un dégradé simple, sans personne, sans texte ajouté (le texte imprimé SUR le produit ne compte pas) ;
+- « situation » : le produit en usage ou dans un vrai décor (porté par une personne, tenu en main, posé dans une pièce, avec un animal…), sans texte publicitaire ajouté ;
+- « text » : visuel publicitaire ou infographie avec du texte ajouté (titre, prix, pastilles, légendes, flèches, logos de vendeur en filigrane mis à part) ;
+- « other » : tout le reste (tableau des tailles, emballage seul, gros plan d'un détail, capture d'écran, photo où le produit n'apparaît pas).
+Indique aussi la meilleure photo pour isoler le produit (« best ») : celle où le produit est entier, net, le plus grand et le moins caché ; null si aucune ne convient. Ne devine rien : en cas de doute entre deux genres, choisis le plus prudent (« other » plutôt que « packshot »).`,
+
+  cutoutCheck: `Rôle : retoucheur photo e-commerce exigeant. Tu contrôles un détourage (produit isolé de son fond) avant qu'il serve aux visuels, vidéos et à la boutique.
+Tu reçois : la photo d'origine, puis le détourage posé sur fond blanc, puis le même sur fond sombre.
+Vérifie : le produit est-il entier (aucune partie coupée ou retirée : oreilles, anses, sangles, disque central, écran, étiquette…) ? Reste-t-il des morceaux de fond, de décor, de texte ajouté ou de personne (main, bras, cou, cheveux) ? L'objet isolé est-il bien le produit vendu (et pas une personne, un animal ou un autre objet) ? Les bords sont-ils propres ?
+Un trou là où le produit est plein est un échec (« missing_parts »). Sois strict : un détourage douteux est refusé ; seul un détourage utilisable tel quel dans une boutique est « ok ».
+Codes de problèmes possibles : product_cut, missing_parts, background_left, person_left, wrong_object, other_objects, text_left, blurry.
+Langue : « note » (une phrase courte) dans la langue de l'interface.`,
+
   classify: `Rôle : documentaliste. Tu classes un fichier d'un projet e-commerce dans le dossier le plus pertinent et proposes un nom de fichier clair dans la langue de l'interface (sans extension, mots séparés par des tirets).`,
   };
 }

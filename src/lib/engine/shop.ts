@@ -52,7 +52,7 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   };
   // Photos en situation (vie de tous les jours) : héros de la boutique et première scène.
   // Celles du marchand passent avant celles générées par l'IA.
-  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (status = 'approved') DESC, created_at DESC", projectId);
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, created_at DESC", projectId);
   put("lifestyle", life[0], "en-situation-1");
   put("lifestyle2", life[1], "en-situation-2");
   put("cutout", pick("cutout"), "produit-detoure");
@@ -104,7 +104,7 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
  * passent avant les scènes générées dans les emplacements de la composition (méthode, réalisations…).
  */
 function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string, string>) {
-  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (status = 'approved') DESC, created_at DESC LIMIT 8", projectId);
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, created_at DESC LIMIT 8", projectId);
   const order: Exclude<keyof ImageSlots, "reels">[] = ["lifestyle", "scene1", "scene2", "scene3", "detail1", "detail2", "lifestyle2"];
   life.slice(0, order.length).forEach((a, i) => {
     const f = themeFileName(a, `photo-${i + 1}`);

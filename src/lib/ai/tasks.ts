@@ -26,24 +26,39 @@ type Base = { userId: string; projectId: string; jobId?: string | null; usageKey
 
 // ---------------------------------------------------------------- analyse
 
-const AnalysisSchema = z.object({
-  name: z.string(),
-  nameStatus: z.enum(["provided", "detected", "proposed", "unknown"]),
-  category: z.string(),
-  sector: z.enum(SECTOR_IDS),
-  summary: z.string(),
-  facts: z.array(FactSchema),
-  visual: z.object({
-    shape: z.string(),
-    materials: z.array(z.string()),
-    labelText: z.array(z.string()),
-    hasLogo: z.boolean(),
-    description: z.string(),
-  }),
-  variants: z.array(z.object({ name: z.string(), values: z.array(z.string()) })),
-  questions: z.array(QuestionSchema).max(5),
-  claimsToAvoid: z.array(z.string()),
-  detailRegions: z.array(z.object({ label: z.string(), x: z.number(), y: z.number(), w: z.number(), h: z.number() })).max(3),
+/** Liste limitée sans échouer : l'IA renvoie parfois un élément de trop, on garde les premiers. */
+const capped = <T extends z.ZodTypeAny>(item: T, max: number) => z.preprocess((v) => (Array.isArray(v) ? v.slice(0, max) : v ?? []), z.array(item));
+const str = z.preprocess((v) => (v == null ? "" : typeof v === "string" ? v : String(v)), z.string());
+/** Fait tolérant : valeur nulle ou numérique, statut ou source inattendus ramenés à une valeur sûre. */
+const LenientFact = z.object({
+  key: str,
+  label: str,
+  value: str,
+  status: z.enum(["confirmed", "inferred", "unknown"]).catch("inferred"),
+  source: z.enum(["user", "photo", "link", "ai", "description"]).catch("ai"),
+});
+const LenientQuestion = z.object({ id: str, question: str, why: str, required: z.boolean().catch(false), factKey: str, answer: z.string().optional() });
+
+export const AnalysisSchema = z.object({
+  name: str,
+  nameStatus: z.enum(["provided", "detected", "proposed", "unknown"]).catch("proposed"),
+  category: str,
+  sector: z.enum(SECTOR_IDS).catch("maison"),
+  summary: str,
+  facts: z.preprocess((v) => v ?? [], z.array(LenientFact)),
+  visual: z
+    .object({
+      shape: str,
+      materials: z.preprocess((v) => v ?? [], z.array(str)),
+      labelText: z.preprocess((v) => v ?? [], z.array(str)),
+      hasLogo: z.boolean().catch(false),
+      description: str,
+    })
+    .catch({ shape: "", materials: [], labelText: [], hasLogo: false, description: "" }),
+  variants: z.preprocess((v) => v ?? [], z.array(z.object({ name: str, values: z.preprocess((v) => v ?? [], z.array(str)) }))),
+  questions: capped(LenientQuestion, 5),
+  claimsToAvoid: z.preprocess((v) => v ?? [], z.array(str)),
+  detailRegions: capped(z.object({ label: str, x: z.number(), y: z.number(), w: z.number(), h: z.number() }), 3).catch([]),
 });
 export type Analysis = z.infer<typeof AnalysisSchema>;
 
@@ -68,7 +83,7 @@ export async function aiAnalyzeProduct(b: Base, input: { photos: LlmImage[]; col
       system: S().analysis,
       images: input.photos,
       prompt: parts.join("\n\n"),
-      maxTokens: 16000,
+      maxTokens: 32000,
     },
     AnalysisSchema,
   );
@@ -645,6 +660,63 @@ export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
       maxTokens: 3000,
     },
     z.object({ sameProduct: z.boolean(), score: z.number(), issues: z.array(z.string()) }),
+  );
+}
+
+const PHOTO_KIND = z.enum(["packshot", "situation", "text", "other"]);
+export const PhotoTriageSchema = z.object({
+  photos: z.preprocess((v) => v ?? [], z.array(z.object({ index: z.coerce.number().int(), kind: PHOTO_KIND.catch("other") }))),
+  best: z.preprocess((v) => (v === undefined ? null : v), z.coerce.number().int().nullable()).catch(null),
+});
+
+/**
+ * Tri visuel des photos du produit avant détourage, en une seule requête (modèle économique) :
+ * packshot, photo en situation, visuel avec texte ou autre ; indice (1…n) de la meilleure photo produit.
+ */
+export async function aiPhotoTriage(b: Base, photos: Buffer[]) {
+  return llmJson(
+    {
+      task: "photo_triage",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().photoTriage,
+      images: photos.map((data, i) => ({ data, label: `photo ${i + 1}` })),
+      prompt: `${photos.length} photo(s). Réponds { "photos": [ { "index": 1, "kind": "packshot|situation|text|other" } ], "best": 1 | null } avec une entrée par photo, dans l'ordre.`,
+      maxTokens: 1500,
+    },
+    PhotoTriageSchema,
+  );
+}
+
+export const CUTOUT_PROBLEMS = ["product_cut", "missing_parts", "background_left", "person_left", "wrong_object", "other_objects", "text_left", "blurry"] as const;
+export const CutoutCheckSchema = z.object({
+  verdict: z.enum(["ok", "rejected"]).catch("rejected"),
+  score: z.coerce.number().catch(0),
+  problems: z.preprocess((v) => (Array.isArray(v) ? v.filter((x) => (CUTOUT_PROBLEMS as readonly string[]).includes(x)) : []), z.array(z.enum(CUTOUT_PROBLEMS))),
+  note: str,
+});
+
+/** Contrôle visuel d'un détourage : photo d'origine, détourage sur fond blanc et sur fond sombre. */
+export async function aiCutoutCheck(b: Base, images: { original: Buffer; white: Buffer; dark: Buffer }) {
+  return llmJson(
+    {
+      task: "cutout_check",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().cutoutCheck,
+      images: [
+        { data: images.original, label: "photo d'origine" },
+        { data: images.white, label: "détourage sur fond blanc" },
+        { data: images.dark, label: "détourage sur fond sombre" },
+      ],
+      prompt: `Réponds { "verdict": "ok" | "rejected", "score": 0-10, "problems": ["code", …], "note": "…" }.`,
+      maxTokens: 800,
+    },
+    CutoutCheckSchema,
   );
 }
 

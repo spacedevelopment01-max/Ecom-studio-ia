@@ -29,7 +29,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
       : "SELECT id FROM assets WHERE project_id = ? AND role IN ('scene','packshot') AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1",
     p.id,
   );
-  const cutout = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL ORDER BY created_at LIMIT 1", p.id);
+  const cutout = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at LIMIT 1", p.id);
   const b = balance(user.id);
   return ok({
     project: { id: p.id, name: p.name, status: p.status, platform: p.platform, storeUrl: p.row.store_url, createdAt: p.row.created_at, updatedAt: p.row.updated_at, sectorLabel: p.business === "services" && p.product.category ? p.product.category : sectorLabel(p.product.sector, uiLang()), business: p.business },

@@ -11,7 +11,8 @@ import { enqueue, JobCancelled, JobContext, JobPaused, type Job } from "../jobs"
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, saveProduct, saveServices, setStatus, remember, notify } from "../projects";
 import { importLink, fetchImage } from "./import-link";
-import { ensureCutouts, generateImageSet } from "./images";
+import { generateImageSet } from "./images";
+import { analysisPhotos, cutoutSummary, ensureCutouts, validCutouts } from "./cutouts";
 import { localAnalysis, factsFromDescription, localServiceAnalysis, mergeServiceProfile } from "./local";
 import { buildBrand } from "./brand";
 import { localCopy } from "./local-copy";
@@ -30,7 +31,7 @@ import { note, stepNoteText, type StepNote } from "../step-notes";
 
 export const STEPS = [
   { id: "sources", label: "Lecture des sources", detail: "Photos, lien importé, description", en: { label: "Reading sources", detail: "Photos, imported link, description" } },
-  { id: "cutout", label: "Détourage du produit", detail: "Pixels du produit isolés, couleurs mesurées", en: { label: "Product cutout", detail: "Product pixels isolated, colors measured" } },
+  { id: "cutout", label: "Détourage du produit", detail: "Photos triées, produit isolé puis contrôlé, couleurs mesurées", en: { label: "Product cutout", detail: "Photos sorted, product isolated then checked, colors measured" } },
   { id: "analysis", label: "Analyse du produit", detail: "Faits confirmés, observations, inconnues, questions", en: { label: "Product analysis", detail: "Confirmed facts, observations, unknowns, questions" } },
   { id: "brand", label: "Direction de marque", detail: "Nom, positionnement, palette, typographies, logo", en: { label: "Brand direction", detail: "Name, positioning, palette, typography, logo" } },
   { id: "copy", label: "Rédaction", detail: "Textes de la boutique, contrôle qualité", en: { label: "Copywriting", detail: "Store copy, quality check" } },
@@ -215,23 +216,31 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         const msg = (e as Error).message;
         return { skipped: inBothLangs(() => L(`Détourage impossible sur les photos de votre site (${msg}) : ajoutez une photo nette du produit dans l'onglet Produit pour les visuels détourés.`, `Cutout not possible on your website's photos (${msg}): add a clear product photo in the Product tab for cutout visuals.`)) };
       }
-      if (!cut.length) return "skipped";
-      return note("cutout.done", { n: cut.length });
+      const sum = cutoutSummary(projectId);
+      if (!cut.length) {
+        // Aucun détourage valable : signalé clairement, la création continue avec ce qui est possible.
+        const any = one("SELECT 1 FROM assets WHERE project_id = ? AND kind = 'image' AND role IN ('original','lifestyle') AND deleted_at IS NULL", projectId);
+        if (!any) return "skipped";
+        notify(p.userId, projectId, L("Aucun détourage valable du produit", "No usable product cutout"), L("Ajoutez une photo nette du produit seul, sur fond uni, dans l'onglet Produit : les visuels du produit et les vidéos se créeront ensuite.", "Add a sharp photo of the product alone, on a plain background, in the Product tab: product visuals and videos will be created next."), "warning");
+        return { skipped: note("cutout.none", sum) };
+      }
+      return note("cutout.sorted", sum);
     }
     case "analysis": {
       if (services) return analyzeService(ctx, payload);
-      const cutouts = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL ORDER BY created_at", projectId);
+      const cutouts = validCutouts(projectId);
       const colors = cutouts.length ? json<any>(cutouts[0].meta, {}).colors ?? [] : [];
       const link = json<any>(one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'link_import'", projectId)?.value, null);
       const price = parsePrice(inp.price) ?? link?.product?.price ?? null;
       let product: ProductProfile;
       if (llmConfigured()) {
-        const originals = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND kind = 'image' AND deleted_at IS NULL ORDER BY created_at LIMIT 4", projectId);
+        // Packshots et photos en situation ; jamais les visuels publicitaires avec texte (allégations du vendeur).
+        const originals = analysisPhotos(projectId);
         const r = await ctx.step("ai", () =>
           aiAnalyzeProduct(
             { userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:analysis` },
             {
-              photos: originals.map((o, i) => ({ data: assetData(o), label: `photo ${i + 1}` })),
+              photos: originals.slice(0, 6).map((o, i) => ({ data: assetData(o), label: `photo ${i + 1}` })),
               colors: colors.map((c: any) => `${c.hex} (${c.name}, ${Math.round(c.share * 100)} %)`).join(", "),
               link: link ? { url: link.url, text: link.text, data: { title: link.title, description: link.description, product: link.product } } : null,
               description: inp.description,
@@ -290,8 +299,8 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
           return note("images.done", { n: r.created.length });
         });
       }
-      const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
-      if (!has) return p.settings.existingSite ? { skipped: NO_CUTOUT_SITE() } : "skipped";
+      const has = validCutouts(projectId).length > 0;
+      if (!has) return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
       const r = await generateImageSet(ctx, projectId);
       return note("images.done", { n: r.created.length });
     }
@@ -304,8 +313,8 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
           return inBothLangs(() => videoStepNote([a, b], inp.videos !== "edited"));
         });
       }
-      const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
-      if (!has) return p.settings.existingSite ? { skipped: NO_CUTOUT_SITE() } : "skipped";
+      const has = validCutouts(projectId).length > 0;
+      if (!has) return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
       const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })));
       const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })));
       return inBothLangs(() => videoStepNote([a, b], inp.videos !== "edited"));

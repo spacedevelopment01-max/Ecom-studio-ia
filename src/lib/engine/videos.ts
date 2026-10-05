@@ -59,7 +59,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   if (!brand) throw new UserFacingError(L("Définissez la marque avant de produire une vidéo.", "Set up the brand before producing a video."));
   // Photos en situation d'abord (celles du marchand avant les générées) : elles ouvrent les vidéos.
   // Services : photos réelles de l'activité (réalisations, équipe, lieu), puis ambiances générées.
-  const life = assetsByRole(projectId, "lifestyle", 6).filter((a) => a.status !== "rejected").sort((x, y) => Number(y.origin === "upload") - Number(x.origin === "upload")).slice(0, 2);
+  const life = assetsByRole(projectId, "lifestyle", 6).filter((a) => a.status !== "rejected").sort((x, y) => Number(y.origin === "upload") - Number(x.origin === "upload") || Number(y.origin !== "generated") - Number(x.origin !== "generated")).slice(0, 2);
   const imgs: Asset[] = services ? activityPhotos(projectId).slice(0, 4) : [...life, ...assetsByRole(projectId, "detail", 2), ...assetsByRole(projectId, "scene", 3)].filter((a) => a.status !== "rejected");
   const descriptions = imgs.map((a) => C(`${a.role === "lifestyle" ? "produit en situation" : a.role} : ${a.name}`, `${a.role === "lifestyle" ? "lifestyle shot" : a.role}: ${a.name}`));
 

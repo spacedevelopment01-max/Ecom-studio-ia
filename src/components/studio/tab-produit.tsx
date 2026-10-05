@@ -1,14 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Plus, Trash2, RefreshCw } from "lucide-react";
+import { Ban, ImagePlus, Plus, Trash2, RefreshCw } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, Input, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { AssetThumb, EngineNotice, SectionTitle, type AssetView } from "./common";
+import { AssetThumb, EngineNotice, SectionTitle, useActive, type AssetView } from "./common";
 import { FromSiteBadge } from "./existing-site";
 import { CatalogPanel } from "./catalog-panel";
 import TabActivite from "./tab-activite";
 import type { Fact } from "@/lib/project-types";
-import { useT } from "../i18n";
+import { useLang, useT } from "../i18n";
+import type { Lang } from "@/lib/i18n";
+import { cutoutReasonText, PHOTO_KINDS, type PhotoKind } from "@/lib/cutout-reasons";
 
 const SOURCE: Record<string, { fr: string; en: string }> = { user: { fr: "vous", en: "you" }, photo: { fr: "photo", en: "photo" }, link: { fr: "lien", en: "link" }, ai: { fr: "analyse", en: "analysis" }, description: { fr: "description", en: "description" } };
 
@@ -28,8 +30,6 @@ function TabProduit() {
   const [price, setPrice] = useState("");
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
-  const upload = useRef<HTMLInputElement>(null);
-  const { data: originals, reload: reloadOriginals } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=original,cutout`);
   useEffect(() => {
     if (!data || dirty) return;
     setFacts(data.product.facts);
@@ -120,59 +120,148 @@ function TabProduit() {
               </div>
             )}
           </Card>
-          <Card className="p-5">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display text-lg font-semibold">{t("Photos du produit", "Product photos")}</h3>
-              <Button size="sm" variant="secondary" icon={<ImagePlus className="size-4" />} onClick={() => upload.current?.click()}>{t("Ajouter", "Add")}</Button>
-              <input
-                ref={upload}
-                type="file"
-                multiple
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const fd = new FormData();
-                  Array.from(e.target.files ?? []).forEach((f) => fd.append("files", f));
-                  fd.append("role", "original");
-                  try {
-                    await api(`/api/projects/${id}/files`, { form: fd });
-                    toast("ok", t("Photos ajoutées. Elles seront détourées à la prochaine génération d'images.", "Photos added. Their background will be removed during the next image generation."));
-                    reloadOriginals();
-                  } catch (err) {
-                    toast("bad", (err as Error).message);
-                  }
-                }}
-              />
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {(originals?.assets ?? []).map((a) => (
-                <figure key={a.id} className="overflow-hidden rounded-xl border border-line">
-                  <AssetThumb a={a} className="aspect-square w-full" />
-                  <figcaption className="truncate px-1.5 py-1 text-[10px] text-muted">{a.role === "cutout" ? t("Détourage", "Cutout") : t("Original", "Original")}</figcaption>
-                </figure>
-              ))}
-            </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="mt-3"
-              icon={<RefreshCw className="size-4" />}
-              onClick={async () => {
-                if (!confirm(t("Réanalyser le produit relance aussi les étapes suivantes (marque, textes, images…). Les versions précédentes restent disponibles. Continuer ?", "Reanalyzing the product also reruns the following steps (brand, copy, images…). Previous versions remain available. Continue?"))) return;
-                await api(`/api/projects/${id}/resume`, { body: { from: "analysis" } });
-                toast("ok", t("Nouvelle analyse lancée.", "New analysis started."));
-                reload();
-              }}
-            >
-              {t("Réanalyser tout le projet", "Reanalyze the whole project")}
-            </Button>
-          </Card>
+          <ProductPhotosCard />
           <LifestyleCard />
           <VariantsCard />
         </div>
       </div>
       <CatalogPanel />
     </div>
+  );
+}
+
+/** Statut d'un détourage tel que le client le lit : validé, refusé (raison courte) ou écarté. */
+function cutoutStatus(c: AssetView, lang: Lang): { tone: "ok" | "bad" | "neutral"; label: string; detail?: string } {
+  const q = c.meta?.quality as { verdict?: string; reasons?: string[]; by?: string; note?: string } | undefined;
+  const reasons = (q?.reasons ?? []).map((r) => cutoutReasonText(r, lang));
+  if (q?.verdict === "user" || (c.status === "rejected" && q?.verdict === "ok")) return { tone: "neutral", label: lang === "en" ? "Not used (your choice)" : "Non utilisé (votre choix)" };
+  if (c.status === "rejected") return { tone: "bad", label: lang === "en" ? "Rejected" : "Refusé", detail: [reasons.join(", "), q?.note].filter(Boolean).join(" — ") };
+  if (!q) return { tone: "neutral", label: lang === "en" ? "Not checked yet" : "Pas encore contrôlé" };
+  return { tone: "ok", label: lang === "en" ? "Approved" : "Validé", detail: q.by === "ai" ? (lang === "en" ? "rules + visual check" : "règles + contrôle visuel") : lang === "en" ? "local rules only" : "règles locales seules" };
+}
+
+/**
+ * Photos du produit : genre de chaque photo (tri avant détourage), détourage avec son statut (validé ou refusé
+ * et pourquoi), « Refaire le détourage » et « Ne pas utiliser ». Une photo ajoutée est triée, détourée et contrôlée.
+ */
+function ProductPhotosCard() {
+  const { id, reload } = useProject();
+  const toast = useToast();
+  const t = useT();
+  const { lang } = useLang();
+  const upload = useRef<HTMLInputElement>(null);
+  const running = useActive(["cutout.run", "pipeline.run"]).length > 0;
+  const { data, reload: reloadPhotos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=original,cutout,lifestyle`, { poll: running ? 3000 : undefined });
+  const [busy, setBusy] = useState<string | null>(null);
+  const all = data?.assets ?? [];
+  const cutouts = all.filter((a) => a.role === "cutout");
+  // Photos d'origine : celles du produit, puis les photos en situation qui ont un détourage (dernière candidate).
+  const photos = all.filter((a) => a.role === "original" || (a.role === "lifestyle" && cutouts.some((c) => c.sourceAssetId === a.id))).sort((x, y) => x.createdAt - y.createdAt);
+  async function act(action: "run" | "redo" | "setAside", assetId?: string) {
+    setBusy(`${action}:${assetId ?? ""}`);
+    try {
+      await api(`/api/projects/${id}/cutouts`, { body: { action, assetId } });
+      toast("ok", action === "setAside" ? t("Ce détourage ne sera plus utilisé.", "This cutout will no longer be used.") : t("Détourage et contrôle en cours : le résultat s'affiche ici.", "Cutout and check in progress: the result will show here."));
+      reloadPhotos();
+      reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+  return (
+    <Card className="p-5">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display text-lg font-semibold">{t("Photos du produit", "Product photos")}</h3>
+        <Button size="sm" variant="secondary" icon={<ImagePlus className="size-4" />} onClick={() => upload.current?.click()}>{t("Ajouter", "Add")}</Button>
+        <input
+          ref={upload}
+          type="file"
+          multiple
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            const fd = new FormData();
+            Array.from(e.target.files ?? []).forEach((f) => fd.append("files", f));
+            e.target.value = "";
+            fd.append("role", "original");
+            try {
+              await api(`/api/projects/${id}/files`, { form: fd });
+              await api(`/api/projects/${id}/cutouts`, { body: { action: "run" } });
+              toast("ok", t("Photos ajoutées : tri, détourage et contrôle en cours.", "Photos added: sorting, cutout and check in progress."));
+              reloadPhotos();
+              reload();
+            } catch (err) {
+              toast("bad", (err as Error).message);
+            }
+          }}
+        />
+      </div>
+      <p className="mt-1 text-xs text-muted">{t("Seules les photos du produit seul sur fond uni sont détourées ; chaque détourage est contrôlé et un détourage refusé n'est jamais utilisé.", "Only photos of the product alone on a plain background are cut out; each cutout is checked and a rejected cutout is never used.")}</p>
+      {running && <p className="mt-2 text-xs text-info">{t("Tri et détourage en cours…", "Sorting and cutting out…")}</p>}
+      <ul className="mt-3 grid gap-3">
+        {photos.map((o) => {
+          const c = cutouts.find((x) => x.sourceAssetId === o.id);
+          const kind = o.meta?.triage?.kind as PhotoKind | undefined;
+          const st = c ? cutoutStatus(c, lang) : null;
+          const err = o.meta?.cutoutError;
+          return (
+            <li key={o.id} className="rounded-xl border border-line p-2">
+              <div className="grid grid-cols-2 gap-2">
+                <figure className="overflow-hidden rounded-lg border border-line">
+                  <AssetThumb a={o} className="aspect-square w-full" />
+                  <figcaption className="truncate px-1.5 py-1 text-[10px] text-muted">{kind ? t(PHOTO_KINDS[kind].fr, PHOTO_KINDS[kind].en) : t("Photo d'origine", "Original photo")}</figcaption>
+                </figure>
+                {c ? (
+                  <figure className={cx("overflow-hidden rounded-lg border", c.status === "rejected" ? "border-bad/40" : "border-line")}>
+                    <AssetThumb a={c} className={cx("aspect-square w-full", c.status === "rejected" && "opacity-60")} />
+                    <figcaption className="px-1.5 py-1 text-[10px] text-muted">{t("Détourage", "Cutout")}</figcaption>
+                  </figure>
+                ) : (
+                  <div className="grid aspect-square place-items-center rounded-lg bg-paper-2 p-2 text-center text-[11px] text-muted">
+                    {err ? t("Détourage impossible sur cette machine (fond non uni)", "Cutout not possible on this machine (background not plain)") : kind && kind !== "packshot" ? t("Non détourée", "Not cut out") : t("En attente", "Pending")}
+                  </div>
+                )}
+              </div>
+              {st && (
+                <p className="mt-2 text-xs">
+                  <Badge tone={st.tone}>{st.label}</Badge>
+                  {st.detail && <span className="ml-1.5 text-muted">{st.detail}</span>}
+                </p>
+              )}
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {(c || kind === "packshot" || err) && (
+                  <Button size="sm" variant="ghost" icon={<RefreshCw className="size-3.5" />} loading={busy === `redo:${c?.id ?? o.id}`} onClick={() => act("redo", c?.id ?? o.id)}>
+                    {c ? t("Refaire le détourage", "Redo the cutout") : t("Détourer", "Cut out")}
+                  </Button>
+                )}
+                {c && c.status !== "rejected" && (
+                  <Button size="sm" variant="ghost" icon={<Ban className="size-3.5" />} loading={busy === `setAside:${c.id}`} onClick={() => act("setAside", c.id)}>
+                    {t("Ne pas utiliser", "Don't use")}
+                  </Button>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      {!photos.length && <p className="mt-3 text-sm text-muted">{t("Ajoutez une photo nette du produit seul, sur fond uni.", "Add a sharp photo of the product alone, on a plain background.")}</p>}
+      <Button
+        size="sm"
+        variant="ghost"
+        className="mt-3"
+        icon={<RefreshCw className="size-4" />}
+        onClick={async () => {
+          if (!confirm(t("Réanalyser le produit relance aussi les étapes suivantes (marque, textes, images…). Les versions précédentes restent disponibles. Continuer ?", "Reanalyzing the product also reruns the following steps (brand, copy, images…). Previous versions remain available. Continue?"))) return;
+          await api(`/api/projects/${id}/resume`, { body: { from: "analysis" } });
+          toast("ok", t("Nouvelle analyse lancée.", "New analysis started."));
+          reload();
+        }}
+      >
+        {t("Réanalyser tout le projet", "Reanalyze the whole project")}
+      </Button>
+    </Card>
   );
 }
 

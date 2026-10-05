@@ -18,6 +18,16 @@ const CATALOG: Record<string, (p: Record<string, string | number>, lang: Lang) =
   "sources.description": (_, l) => (l === "en" ? "Description saved" : "Description enregistrée"),
   "sources.serviceDescription": (_, l) => (l === "en" ? "Business description saved" : "Description de l'activité enregistrée"),
   "cutout.done": ({ n }, l) => (l === "en" ? `${n} cutout${s(+n)} done` : `${n} détourage${s(+n)} réalisé${s(+n)}`),
+  "cutout.sorted": (p, l) => cutoutParts(p, l, true).join(", "),
+  "cutout.none": (p, l) => {
+    const parts = cutoutParts(p, l, false);
+    const head = l === "en" ? "No usable cutout" : "Aucun détourage valable";
+    const tail =
+      l === "en"
+        ? "add a sharp photo of the product alone, on a plain background, in the Product tab. Creation continues with your other photos."
+        : "ajoutez une photo nette du produit seul, sur fond uni, dans l'onglet Produit. La création continue avec vos autres photos.";
+    return `${head}${parts.length ? ` (${parts.join(", ")})` : ""}${l === "en" ? ": " : " : "}${tail}`;
+  },
   "analysis.product": ({ established, unknown, questions, ai }, l) => {
     const by = ai ? (l === "en" ? " — AI analysis" : " — analyse IA") : "";
     return l === "en"
@@ -45,9 +55,25 @@ const CATALOG: Record<string, (p: Record<string, string | number>, lang: Lang) =
   "skip.videosNone": (_, l) => (l === "en" ? "Videos not requested at launch: create them whenever you like in the Videos tab" : "Vidéos non demandées au lancement : créez-les quand vous voulez dans l'onglet Vidéos"),
   "skip.servicePhotos": ({ n }, l) => (l === "en" ? `${n} business photo${s(+n)} kept as they are` : `${n} photo${s(+n)} de l'activité gardée${s(+n)} telle${s(+n)} quelle${s(+n)}`),
   "skip.serviceNoPhoto": (_, l) => (l === "en" ? "No photo provided: you can add some in the Business tab" : "Aucune photo fournie : vous pourrez en ajouter dans l'onglet Activité"),
+  "skip.noCutout": (_, l) => (l === "en" ? "No usable product cutout yet: add a sharp photo of the product alone, on a plain background, in the Product tab, then run this step again." : "Pas encore de détourage valable du produit : ajoutez une photo nette du produit seul, sur fond uni, dans l'onglet Produit, puis relancez cette étape."),
   "skip.noCutoutSite": (_, l) => (l === "en" ? "Waiting for a clear product photo (Product tab): visuals and videos are created next." : "En attente d'une photo nette du produit (onglet Produit) : les visuels et vidéos se créent ensuite."),
   "stopped": (_, l) => (l === "en" ? "Stopped at your request: restart whenever you like." : "Arrêtée à votre demande : relancez quand vous voulez."),
 };
+
+/** Bilan du tri des photos et des détourages, dans l'ordre où le client le lit. */
+function cutoutParts(p: Record<string, string | number>, l: Lang, withCut: boolean): string[] {
+  const n = (k: string) => Number(p[k]) || 0;
+  const en = l === "en";
+  const parts: string[] = [];
+  if (withCut) parts.push(en ? `${n("cut")} photo${s(n("cut"))} cut out` : `${n("cut")} photo${s(n("cut"))} détourée${s(n("cut"))}`);
+  if (n("life")) parts.push(en ? `${n("life")} lifestyle photo${s(n("life"))} kept` : `${n("life")} photo${s(n("life"))} en situation gardée${s(n("life"))}`);
+  if (n("text")) parts.push(en ? `${n("text")} visual${s(n("text"))} with text set aside` : `${n("text")} visuel${s(n("text"))} avec texte écarté${s(n("text"))}`);
+  if (n("other")) parts.push(en ? `${n("other")} other visual${s(n("other"))} set aside` : `${n("other")} autre${s(n("other"))} visuel${s(n("other"))} écarté${s(n("other"))}`);
+  if (n("busy")) parts.push(en ? `${n("busy")} photo${s(n("busy"))} with a busy background not cut out` : `${n("busy")} photo${s(n("busy"))} sur fond chargé non détourée${s(n("busy"))}`);
+  if (n("rejected")) parts.push(en ? `${n("rejected")} cutout${s(n("rejected"))} rejected by the check` : `${n("rejected")} détourage${s(n("rejected"))} refusé${s(n("rejected"))} au contrôle`);
+  if (n("failed")) parts.push(en ? `${n("failed")} cutout${s(n("failed"))} not possible on this machine` : `${n("failed")} détourage${s(n("failed"))} impossible${s(n("failed"))} sur cette machine`);
+  return parts;
+}
 
 /** Note d'étape à enregistrer : clé du catalogue et paramètres. */
 export const note = (k: keyof typeof CATALOG & string, p?: Record<string, Param>): StepNote => ({ k, p });

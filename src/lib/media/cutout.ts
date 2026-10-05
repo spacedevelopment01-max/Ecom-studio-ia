@@ -3,81 +3,111 @@
  * extraction de la palette et des zones de détail. Les pixels du produit ne
  * sont jamais régénérés : toutes les compositions réutilisent ce détourage.
  */
+import { spawn } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import sharp from "sharp";
 import { colorName, rgbToHex } from "../color";
 import { contentLang, L } from "../i18n-server";
+import { interiorHoles, isTrueGap, measureBackground } from "./cutout-quality";
 
-export type Cutout = { png: Buffer; width: number; height: number; bbox: { x: number; y: number; w: number; h: number }; sourceW: number; sourceH: number; method: "model" | "flood" };
+export type CutoutModel = "large" | "medium" | "small";
+export type Cutout = { png: Buffer; width: number; height: number; bbox: { x: number; y: number; w: number; h: number }; sourceW: number; sourceH: number; method: "model" | "flood" | "existing"; model?: CutoutModel };
 
-let removeBg: ((blob: Blob, cfg: any) => Promise<Blob>) | null = null;
+/** Détourage impossible proprement (modèle indisponible et fond de la photo non uni) : aucun détourage n'est produit. */
+export class CutoutUnavailable extends Error {}
 
-async function modelCutout(input: Buffer): Promise<Buffer> {
-  if (!removeBg) {
-    const mod = await import("@imgly/background-removal-node");
-    removeBg = (mod as any).removeBackground;
+/** Délai maximal du détourage par le modèle avant de passer au détourage de secours. */
+const MODEL_TIMEOUT_MS = Number(process.env.CUTOUT_TIMEOUT_MS) || 180_000;
+
+/** Modèles réellement livrés avec le paquet installé (le « large » n'est pas fourni par toutes les versions). */
+export function shippedModels(): CutoutModel[] {
+  try {
+    const res = JSON.parse(fs.readFileSync(path.join(process.cwd(), "node_modules", "@imgly", "background-removal-node", "dist", "resources.json"), "utf8")) as Record<string, unknown>;
+    return (["large", "medium", "small"] as const).filter((m) => `/models/${m}` in res);
+  } catch {
+    return ["medium", "small"];
   }
-  const png = await sharp(input, { failOn: "none" }).rotate().resize(2048, 2048, { fit: "inside", withoutEnlargement: true }).png().toBuffer();
-  const out = await removeBg!(new Blob([new Uint8Array(png)], { type: "image/png" }), { model: "medium", output: { format: "image/png", quality: 1 } });
-  return fillInteriorHoles(Buffer.from(await out.arrayBuffer()), png);
+}
+
+/** Mémoire disponible (Mo) : la plus petite des mesures du système et de la limite du conteneur. */
+export function availableMemoryMB(): number {
+  const free = os.freemem();
+  const proc = typeof (process as { availableMemory?: () => number }).availableMemory === "function" ? (process as unknown as { availableMemory: () => number }).availableMemory() : free;
+  return Math.round(Math.min(free, proc > 0 ? proc : free) / 2 ** 20);
 }
 
 /**
- * Rebouche les « trous » que le modèle découpe à tort à l'intérieur du produit (languette colorée,
- * étiquette, reflet…) : une zone transparente qui ne touche pas le bord de l'image et dont la couleur
- * d'origine diffère du fond est rendue opaque avec ses vrais pixels. Les vrais jours (anse d'une tasse,
- * fond visible à travers) gardent la couleur du fond et restent transparents.
+ * Modèle le plus précis que la machine peut tenir : « large » s'il est livré et qu'il reste au moins 2,6 Go,
+ * sinon « medium » (≈ 0,95 Go mesuré). Le « small » (quantifié) ne demande pas moins de mémoire en pratique :
+ * il ne sert qu'en second essai, après un plantage du premier.
+ */
+export function chooseModel(availMB = availableMemoryMB(), shipped = shippedModels()): CutoutModel {
+  if (shipped.includes("large") && availMB >= 2600) return "large";
+  if (shipped.includes("medium")) return "medium";
+  return shipped[0] ?? "medium";
+}
+
+/** Lance le modèle dans un processus séparé (un plantage ou un manque de mémoire n'arrête pas le studio). */
+function runModel(png: Buffer, model: CutoutModel): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const script = path.join(process.cwd(), "src", "lib", "media", "cutout-child.mjs");
+    const child = spawn(process.execPath, [script], { env: { ...process.env, CUTOUT_MODEL: model }, stdio: ["pipe", "pipe", "pipe"] });
+    const out: Buffer[] = [];
+    let err = "";
+    const timer = setTimeout(() => child.kill("SIGKILL"), MODEL_TIMEOUT_MS);
+    child.stdout.on("data", (c: Buffer) => out.push(c));
+    child.stderr.on("data", (c: Buffer) => (err = (err + c.toString()).slice(-2000)));
+    child.on("error", (e) => (clearTimeout(timer), reject(e)));
+    child.on("close", (code, signal) => {
+      clearTimeout(timer);
+      const buf = Buffer.concat(out);
+      if (code === 0 && buf.length) return resolve(buf);
+      reject(new Error(`détourage interrompu (${signal ?? `code ${code}`}) ${err.trim().split("\n").pop() ?? ""}`));
+    });
+    child.stdin.on("error", () => {});
+    child.stdin.end(png);
+  });
+}
+
+async function modelCutout(input: Buffer): Promise<{ png: Buffer; model: CutoutModel }> {
+  const png = await sharp(input, { failOn: "none" }).rotate().resize(2048, 2048, { fit: "inside", withoutEnlargement: true }).flatten({ background: "#ffffff" }).png().toBuffer();
+  const first = chooseModel();
+  let out: Buffer;
+  let model = first;
+  try {
+    out = await runModel(png, first);
+  } catch (e) {
+    if (first === "small" || !shippedModels().includes("small")) throw e;
+    // Plantage (mémoire juste) : second essai avec le petit modèle sur une image réduite.
+    console.warn(`[cutout] modèle ${first} indisponible (${availableMemoryMB()} Mo libres), essai du petit modèle :`, (e as Error).message);
+    const small = await sharp(png).resize(1024, 1024, { fit: "inside", withoutEnlargement: true }).png().toBuffer();
+    out = await sharp(await runModel(small, "small")).resize(await sharp(png).metadata().then((m) => m.width!), undefined).png().toBuffer();
+    model = "small";
+  }
+  return { png: await fillInteriorHoles(out, png), model };
+}
+
+/**
+ * Rebouche les « trous » que le modèle découpe à tort à l'intérieur du produit (disque d'un boîtier, languette,
+ * étiquette, reflet…) avec les vrais pixels. Un trou ne reste transparent que s'il montre le fond à l'identique
+ * (vrai jour : anse d'une tasse, centre d'un anneau) — voir `isTrueGap`.
  */
 export async function fillInteriorHoles(cut: Buffer, original: Buffer): Promise<Buffer> {
   const { data, info } = await sharp(cut).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;
   const src = await sharp(original).resize(w, h, { fit: "fill" }).removeAlpha().raw().toBuffer();
-  const N = w * h;
-  const transparent = (p: number) => data[p * 4 + 3] < 128;
-  // Fond relié au bord.
-  const outside = new Uint8Array(N);
-  const stack: number[] = [];
-  for (let x = 0; x < w; x++) stack.push(x, (h - 1) * w + x);
-  for (let y = 0; y < h; y++) stack.push(y * w, y * w + w - 1);
-  const bg = [0, 0, 0];
-  let bgN = 0;
-  while (stack.length) {
-    const p = stack.pop()!;
-    if (outside[p] || !transparent(p)) continue;
-    outside[p] = 1;
-    if (bgN < 200000) { bg[0] += src[p * 3]; bg[1] += src[p * 3 + 1]; bg[2] += src[p * 3 + 2]; bgN++; }
-    const x = p % w;
-    if (x > 0) stack.push(p - 1);
-    if (x < w - 1) stack.push(p + 1);
-    if (p >= w) stack.push(p - w);
-    if (p < N - w) stack.push(p + w);
-  }
-  if (!bgN) return cut;
-  const bgc = bg.map((v) => v / bgN);
-  // Composantes transparentes intérieures.
-  const seen = new Uint8Array(N);
+  const { holes, outside } = interiorHoles(data, 4, src, w, h);
+  if (!holes.length) return cut;
+  let opaque = 0;
+  for (let p = 0; p < w * h; p++) if (data[p * 4 + 3] >= 128) opaque++;
+  const silhouette = opaque + holes.reduce((s, x) => s + x.area, 0);
   let changed = false;
-  for (let start = 0; start < N; start++) {
-    if (seen[start] || outside[start] || !transparent(start)) continue;
-    const comp: number[] = [];
-    const st = [start];
-    let sr = 0, sg = 0, sb = 0;
-    while (st.length) {
-      const p = st.pop()!;
-      if (seen[p] || outside[p] || !transparent(p)) continue;
-      seen[p] = 1;
-      comp.push(p);
-      sr += src[p * 3]; sg += src[p * 3 + 1]; sb += src[p * 3 + 2];
-      const x = p % w;
-      if (x > 0) st.push(p - 1);
-      if (x < w - 1) st.push(p + 1);
-      if (p >= w) st.push(p - w);
-      if (p < N - w) st.push(p + w);
-    }
-    const n = comp.length;
-    const dist = Math.abs(sr / n - bgc[0]) + Math.abs(sg / n - bgc[1]) + Math.abs(sb / n - bgc[2]);
-    if (dist < 75) continue; // couleur du fond : vrai jour, on le garde
+  for (const hole of holes) {
+    if (isTrueGap(hole, silhouette)) continue;
     // Le trou et son liseré semi-transparent (2 px) reprennent les vrais pixels, opaques.
-    for (const p of comp) {
+    for (const p of hole.pixels) {
       const x = p % w, y = (p / w) | 0;
       for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
         const xx = x + dx, yy = y + dy;
@@ -114,13 +144,14 @@ async function floodCutout(input: Buffer): Promise<Buffer> {
   const seen = new Uint8Array(w * h);
   const stack: number[] = [];
   for (const [x, y] of border) stack.push(y * w + x);
-  const tol = 38;
+  const tol = 16;
   while (stack.length) {
     const p = stack.pop()!;
     if (seen[p]) continue;
     const i = p * 4;
-    const d = Math.abs(data[i] - avg[0]) + Math.abs(data[i + 1] - avg[1]) + Math.abs(data[i + 2] - avg[2]);
-    if (d > tol * 3) continue;
+    // Fond réellement uni (seul cas où ce secours est permis) : tolérance serrée, pour ne pas ronger les bords clairs du produit.
+    const d = Math.max(Math.abs(data[i] - avg[0]), Math.abs(data[i + 1] - avg[1]), Math.abs(data[i + 2] - avg[2]));
+    if (d > tol) continue;
     seen[p] = 1;
     data[i + 3] = 0;
     const x = p % w;
@@ -133,13 +164,27 @@ async function floodCutout(input: Buffer): Promise<Buffer> {
   return sharp(data, { raw: { width: w, height: h, channels: 4 } }).blur(0.6).png().toBuffer();
 }
 
+/**
+ * Détoure le produit. Si le modèle ne peut pas tourner (mémoire insuffisante, plantage), le détourage de secours
+ * par couleur du fond n'est utilisé que si le fond est réellement uni ; sinon `CutoutUnavailable` est levée et
+ * aucun détourage n'est produit (jamais un détourage grossier sur un fond chargé).
+ */
 export async function cutoutProduct(input: Buffer): Promise<Cutout> {
-  const meta = await sharp(input, { failOn: "none" }).rotate().metadata();
   let png: Buffer;
   let method: Cutout["method"] = "model";
+  let model: CutoutModel | undefined;
+  const bg = await measureBackground(input);
   try {
-    png = await modelCutout(input);
+    if (bg.transparent >= 0.9) {
+      // Photo déjà détourée (PNG à fond transparent) : sa transparence est gardée telle quelle.
+      png = await sharp(input, { failOn: "none" }).rotate().resize(2048, 2048, { fit: "inside", withoutEnlargement: true }).ensureAlpha().png().toBuffer();
+      method = "existing";
+    } else ({ png, model } = await modelCutout(input));
   } catch (e) {
+    if (!bg.flat) {
+      console.warn("[cutout] modèle indisponible et fond non uni : pas de détourage :", (e as Error).message);
+      throw new CutoutUnavailable(L("Le détourage n'a pas pu être réalisé sur cette machine et le fond de la photo n'est pas uni : ajoutez une photo nette du produit seul, sur fond uni, dans l'onglet Produit.", "The cutout couldn't be done on this machine and the photo's background isn't plain: add a sharp photo of the product alone, on a plain background, in the Product tab."));
+    }
     console.warn("[cutout] modèle indisponible, détourage par fond uni :", (e as Error).message);
     png = await floodCutout(input);
     method = "flood";
@@ -157,14 +202,14 @@ export async function cutoutProduct(input: Buffer): Promise<Cutout> {
       }
     }
   }
-  if (maxX <= minX || maxY <= minY) throw new Error(L("Aucun produit détecté sur la photo : essayez une photo où le produit est net et bien visible.", "No product detected in the photo: try a photo where the product is sharp and clearly visible."));
+  if (maxX <= minX || maxY <= minY) throw new CutoutUnavailable(L("Aucun produit détecté sur la photo : essayez une photo où le produit est net et bien visible.", "No product detected in the photo: try a photo where the product is sharp and clearly visible."));
   // Marge sur les côtés et en haut seulement : la base du produit touche le bas
   // de l'image pour que les compositions le posent réellement sur le sol.
   const pad = Math.round(Math.max(maxX - minX, maxY - minY) * 0.02);
   const x0 = Math.max(0, minX - pad), y0 = Math.max(0, minY - pad);
   const bbox = { x: x0, y: y0, w: Math.min(info.width, maxX + pad + 1) - x0, h: Math.min(info.height, maxY + 1) - y0 };
   const cropped = await sharp(png).extract({ left: bbox.x, top: bbox.y, width: bbox.w, height: bbox.h }).png().toBuffer();
-  return { png: cropped, width: bbox.w, height: bbox.h, bbox, sourceW: info.width, sourceH: info.height, method };
+  return { png: cropped, width: bbox.w, height: bbox.h, bbox, sourceW: info.width, sourceH: info.height, method, model };
 }
 
 /** Palette dominante des pixels opaques (k-moyennes simplifiées). */
