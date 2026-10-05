@@ -333,7 +333,7 @@ export function paletteFromColors(colors: { hex: string; share: number }[], sect
 /** Noms proposés par le moteur local : évocateurs, sans promesse, à valider par le marchand. */
 const NAME_WORDS_FR: Record<string, string[]> = {
   beaute: ["Aube", "Sève", "Lumen", "Nacre", "Brume", "Velours", "Iris", "Opaline"],
-  mode: ["Faubourg", "Ligne", "Trame", "Allure", "Écru", "Sillon", "Atelier Nord", "Lin"],
+  mode: ["Faubourg", "Ligne", "Trame", "Ourlet", "Écru", "Sillon", "Atelier Nord", "Lin"],
   bijoux: ["Éclat", "Orée", "Fil d'Or", "Constellation", "Perle", "Aurore", "Facette", "Lueur"],
   maison: ["Sillage", "Ardoise", "Braise", "Lueur", "Foyer", "Argile", "Terre d'Ombre", "Nuance"],
   hightech: ["Axiome", "Onde", "Vecteur", "Boréal", "Tangente", "Prisme", "Faisceau", "Orbite"],
@@ -360,7 +360,7 @@ const TAGLINES_FR: Record<string, string> = {
 const NAME_WORDS_EN: Record<string, string[]> = {
   beaute: ["Morrow", "Sap", "Lumen", "Pearl", "Mist", "Velvet", "Iris", "Opal"],
   mode: ["Thread", "Seam", "Weave", "Selvedge", "Ecru", "Furrow", "North Loom", "Linen"],
-  bijoux: ["Gleam", "Halo", "Gold Thread", "Constellation", "Pearl", "Aurora", "Facet", "Glow"],
+  bijoux: ["Gleam", "Lustre", "Gold Thread", "Constellation", "Pearl", "Aurora", "Facet", "Glow"],
   maison: ["Hearth", "Slate", "Cinder", "Glow", "Alcove", "Clay", "Umber", "Shade"],
   hightech: ["Tangent", "Wave", "Vector", "Axiom", "Arclight", "Prism", "Northbeam", "Meridian"],
   sport: ["Summit", "Stride", "Altitude", "Trail", "Horizon", "Ridge", "Compass", "Crest"],
@@ -567,10 +567,12 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
     if (life >= 0) scenes.push({ kind: "hook", duration: 2.8, image: life, headline: line, tag: brand.name });
     else scenes.push({ kind: "title", duration: 2.4, text: line, sub: name, bg: "brand" });
     const o = other([life]);
-    if (o >= 0 && life >= 0) scenes.push({ kind: "split", duration: 3, image: o === life2 ? o : life, headline: name });
+    // Écran partagé avec une autre photo que celle de l'ouverture (jamais deux fois la même image).
+    if (o >= 0 && life >= 0) scenes.push({ kind: "split", duration: 3, image: o, headline: name });
     else scenes.push({ kind: "reveal", duration: 2.8, headline: name, motion: pick(["rise", "zoom", "slide"] as const) });
     scenes.push(...factScene());
-    if (o >= 0 && o !== life2) scenes.push({ kind: "detail", duration: 2.2, image: o });
+    const d = other([life, ...(life >= 0 ? [o] : [])]);
+    if (d >= 0 && imageRoles[d] === "detail") scenes.push({ kind: "detail", duration: 2.2, image: d });
   } else {
     // Classique (alimentation, artisanat…) : titre, révélation, détails, photos.
     transition = pick<VideoSpec["transition"]>(["panel", "fade"]);
@@ -580,6 +582,52 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
     if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: facts[0] ?? line });
     const o = other([life]);
     if (o >= 0) scenes.push({ kind: "scene", duration: 2.2, image: o });
+  }
+  // Durée visée 12 à 15 s (assez pour installer le produit, assez court pour être vu en entier) : on complète
+  // avec des plans d'un genre pas encore utilisé et des images pas encore montrées, jamais deux fois le même plan.
+  const MIN = 12, MAX = 15;
+  const total = () => scenes.reduce((t, x) => t + x.duration, 0) + end.duration;
+  const used = new Set(scenes.map((x) => x.kind));
+  const shown = new Set(scenes.flatMap((x) => ("image" in x ? [x.image] : [])));
+  const unshown = (roles: string[]) => imageRoles.findIndex((r, i) => roles.includes(r) && !shown.has(i));
+  const extras: (() => VideoSpec["scenes"][number] | null)[] = [
+    () => {
+      const i = unshown(["scene", "lifestyle"]);
+      return i >= 0 && !used.has("scene") ? { kind: "scene", duration: 2.4, image: i } : null;
+    },
+    () => {
+      const i = unshown(["detail"]);
+      return i >= 0 && !used.has("detail") ? { kind: "detail", duration: 2.2, image: i } : null;
+    },
+    () => (facts.length >= 2 && !used.has("callouts") && !used.has("words") ? factScene()[0] ?? null : null),
+    // Peu d'images : le produit révélé, puis seul sous un projecteur (deux mises en scène différentes).
+    () => (!isServicesBusiness(biz) && !used.has("reveal") ? { kind: "reveal", duration: 2.8, headline: name, motion: pick(["rise", "zoom", "slide"] as const) } : null),
+    // Le produit seul sous un projecteur, une autre mise en scène que la révélation.
+    () => (!isServicesBusiness(biz) && !used.has("spotlight") ? { kind: "spotlight", duration: 2.6, headline: line !== name ? line : undefined } : null),
+  ];
+  for (const make of extras) {
+    if (total() >= MIN) break;
+    const x = make();
+    if (!x || total() + x.duration > MAX) continue;
+    scenes.push(x);
+    used.add(x.kind);
+    if ("image" in x) shown.add(x.image);
+  }
+  // Encore court (peu d'images) : chaque plan est tenu un peu plus longtemps, sans dépasser 4 s.
+  if (total() < MIN) {
+    const k = Math.min(1.5, (MIN - end.duration) / Math.max(1, total() - end.duration));
+    for (const x of scenes) x.duration = Math.round(Math.min(4, x.duration * k) * 10) / 10;
+  }
+  // Trop long (beaucoup d'images et d'informations) : rythme resserré, chaque plan reste lisible (1,8 s au moins).
+  if (total() > MAX) {
+    const k = (MAX - end.duration) / Math.max(1, total() - end.duration);
+    for (const x of scenes) x.duration = Math.max(x.kind === "words" || x.kind === "callouts" ? Math.min(x.duration, 1.5 * x.items.length + 0.4) : 1.8, Math.floor(x.duration * k * 10) / 10);
+    while (total() > MAX + 0.05 && scenes.length > 3) {
+      // Encore trop long : le dernier plan photo (le moins important) est retiré.
+      const i = scenes.map((x) => x.kind).lastIndexOf(scenes.some((x) => x.kind === "scene") ? "scene" : "detail");
+      if (i < 0) break;
+      scenes.splice(i, 1);
+    }
   }
   scenes.push(end);
   return { format, scenes, transition, music, captions: true };

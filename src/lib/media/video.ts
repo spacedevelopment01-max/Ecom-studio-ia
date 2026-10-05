@@ -11,7 +11,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { createCanvas, loadImage, Path2D, type Image, type SKRSContext2D, type Canvas } from "@napi-rs/canvas";
-import { ensureContrast, hsl, isDark, mix, onColor, withLightness } from "../color";
+import { contrast, ensureContrast, hsl, isDark, mix, onColor, withLightness } from "../color";
 import { font, ensureFonts } from "./fonts";
 import { MAX_PRODUCT_UPSCALE, wrapLines } from "./compose";
 import type { Palette, Typo } from "./compose";
@@ -295,8 +295,40 @@ function drawPhoto(ctx: Ctx, im: Image, W: number, H: number, zoom: number, dx =
   ctx.drawImage(im as any, (W - im.width * f.r) / 2 + dx, (H - im.height * f.r) / 2 + dy, im.width * f.r, im.height * f.r);
 }
 
-function textColorFor(bg: string) {
-  return isDark(bg) ? "#FFFFFF" : ensureContrast("#141414", bg, 7);
+/**
+ * Texte blanc posé sur une photo (claire ou sombre) : voile dégradé qui atteint déjà 55 % de noir en haut du
+ * texte, puis ombre portée douce. Le texte reste lisible même sur une photo blanche (packshot, détail).
+ */
+function onPhotoText(ctx: Ctx, W: number, H: number, textTop: number, draw: () => void) {
+  const from = Math.max(0, textTop - H * 0.14);
+  const g = ctx.createLinearGradient(0, from, 0, H);
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(Math.min(0.95, (textTop - from) / Math.max(1, H - from)), "rgba(0,0,0,0.55)");
+  g.addColorStop(1, "rgba(0,0,0,0.8)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, from, W, H - from);
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.55)";
+  ctx.shadowBlur = Math.round(W * 0.012);
+  ctx.shadowOffsetY = Math.round(W * 0.002);
+  draw();
+  ctx.restore();
+}
+
+/** Couleur de texte lisible sur `bg` dans tous les schémas de couleurs (contraste visé 4,5:1 au moins). */
+export function textColorFor(bg: string) {
+  const white = contrast("#FFFFFF", bg);
+  if (isDark(bg) && white >= 4.5) return "#FFFFFF";
+  const best = [ensureContrast("#141414", bg, 7), "#000000", "#FFFFFF"].sort((x, y) => contrast(y, bg) - contrast(x, bg))[0];
+  return contrast(best, bg) >= 4.5 ? best : contrast("#000000", bg) >= white ? "#000000" : "#FFFFFF";
+}
+
+/** Couleur moyenne d'une zone déjà dessinée (fond réel sous un titre). */
+function sampleColor(ctx: Ctx, x: number, y: number, w: number, h: number) {
+  const d = ctx.getImageData(Math.max(0, Math.round(x)), Math.max(0, Math.round(y)), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))).data;
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let i = 0; i < d.length; i += 64) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; }
+  return `#${[r, g, b].map((v) => Math.round(v / Math.max(1, n)).toString(16).padStart(2, "0")).join("")}`;
 }
 
 function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Prepared, a: VideoAssets, clipFrames: Map<string, Image>) {
@@ -436,12 +468,8 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
         drawPhoto(ctx, im, W, H, z, scene.kind === "scene" ? (progress - 0.5) * W * 0.04 : 0);
       } else ctx.drawImage(P.bgLight as any, 0, 0);
       if (scene.caption) {
-        const g = ctx.createLinearGradient(0, H * 0.55, 0, H);
-        g.addColorStop(0, "rgba(0,0,0,0)");
-        g.addColorStop(1, "rgba(0,0,0,0.72)");
-        ctx.fillStyle = g;
-        ctx.fillRect(0, H * 0.55, W, H * 0.45);
-        kinetic(ctx, scene.caption, { x: safe.side, y: H - safe.bottom - headSize * 2.4, maxW: W - safe.side * 2, size: Math.round(headSize * 0.72), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.2, uppercase: typo.uppercase });
+        const cap = scene.caption;
+        onPhotoText(ctx, W, H, H - safe.bottom - headSize * 2.4, () => kinetic(ctx, cap, { x: safe.side, y: H - safe.bottom - headSize * 2.4, maxW: W - safe.side * 2, size: Math.round(headSize * 0.72), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.2, uppercase: typo.uppercase }));
       }
       break;
     }
@@ -453,7 +481,10 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
         const r = Math.max(W / f.width, H / f.height);
         ctx.drawImage(f as any, (W - f.width * r) / 2, (H - f.height * r) / 2, f.width * r, f.height * r);
       } else ctx.drawImage(P.bgDark as any, 0, 0);
-      if (scene.caption) kinetic(ctx, scene.caption, { x: safe.side, y: H - safe.bottom - headSize * 2.4, maxW: W - safe.side * 2, size: Math.round(headSize * 0.72), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.2, uppercase: typo.uppercase });
+      if (scene.caption) {
+        const cap = scene.caption;
+        onPhotoText(ctx, W, H, H - safe.bottom - headSize * 2.4, () => kinetic(ctx, cap, { x: safe.side, y: H - safe.bottom - headSize * 2.4, maxW: W - safe.side * 2, size: Math.round(headSize * 0.72), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.2, uppercase: typo.uppercase }));
+      }
       break;
     }
     case "hook": {
@@ -461,11 +492,6 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       if (im) {
         drawPhoto(ctx, im, W, H, 1.14 - 0.1 * easeOut(progress), 0, -(1 - progress) * H * 0.015);
       } else ctx.drawImage(P.bgDark as any, 0, 0);
-      const g = ctx.createLinearGradient(0, H * 0.45, 0, H);
-      g.addColorStop(0, "rgba(0,0,0,0)");
-      g.addColorStop(1, "rgba(0,0,0,0.78)");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, H * 0.45, W, H * 0.55);
       if (scene.tag) {
         ctx.globalAlpha = easeOut(seg(local, 0.2, 0.5));
         const ts = Math.round(bodySize * 0.8);
@@ -483,7 +509,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       const hs = Math.round(headSize * 0.95);
       ctx.font = font(typo.heading, headW, hs);
       const n = Math.min(3, wrapLines(ctx, typo.uppercase ? upper(scene.headline) : scene.headline, W - safe.side * 2).length);
-      kinetic(ctx, scene.headline, { x: safe.side, y: H - safe.bottom - n * hs * 1.08, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.35, uppercase: typo.uppercase });
+      onPhotoText(ctx, W, H, H - safe.bottom - n * hs * 1.08, () => kinetic(ctx, scene.headline, { x: safe.side, y: H - safe.bottom - n * hs * 1.08, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.35, uppercase: typo.uppercase }));
       break;
     }
     case "spotlight": {
@@ -519,7 +545,12 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.restore();
       const sw = seg(local, 1.2, 1.1);
       if (sw > 0 && sw < 1) drawSweep(ctx, P.bigSweep, W / 2 - L.pw / 2, baseY - L.height, sw);
-      if (scene.headline) kinetic(ctx, scene.headline, { x: W / 2, y: safe.top, maxW: W - safe.side * 2, size: Math.round(headSize * 0.85), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.6, align: "center", uppercase: typo.uppercase });
+      if (scene.headline) {
+        // Le halo de la couleur de marque peut être clair (jaune, rose pâle) : couleur du titre selon le fond réel.
+        const hs = Math.round(headSize * 0.85);
+        const under = sampleColor(ctx, safe.side, safe.top, W - safe.side * 2, hs * 2.4);
+        kinetic(ctx, scene.headline, { x: W / 2, y: safe.top, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: textColorFor(under), t: local - 0.6, align: "center", uppercase: typo.uppercase });
+      }
       break;
     }
     case "split": {

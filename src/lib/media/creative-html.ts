@@ -140,10 +140,10 @@ function page(t: ProTemplate, f: ProFormat, i0: ProInput, productUri: string, lo
       .eyebrow{font-size:${w * 0.022}px;letter-spacing:.22em;text-transform:uppercase;color:${deep};font-weight:600}
       .head .h{font-size:${w * (tall ? 0.1 : 0.082)}px;max-height:${w * (tall ? 0.1 : 0.082) * 3.3}px;max-width:${w * 0.8}px}
       .sub{font-size:${w * 0.03}px;color:${mix(ink, cream, 0.35)};max-width:${w * 0.7}px;line-height:1.35}
-      .panel{position:absolute;right:${w * 0.07}px;left:${w * 0.07}px;bottom:${h * 0.06}px;height:${tall ? h * 0.48 : h * (f === "square" ? 0.42 : 0.47)}px;border-radius:${w * 0.05}px;background:linear-gradient(160deg, ${mix(p.secondary, cream, 0.1)}, ${mix(p.secondary, deep, 0.25)})}
-      .prod{right:${w * (wide ? 0.09 : 0.12)}px;width:${w * (wide ? 0.66 : 0.46)}px;bottom:${h * 0.09}px;height:${tall ? h * (wide ? 0.34 : 0.52) : h * (wide ? (f === "square" ? 0.2 : 0.27) : f === "square" ? 0.5 : 0.52)}px;object-position:bottom}
+      .panel{position:absolute;right:${w * 0.07}px;left:${w * 0.07}px;bottom:${h * 0.06}px;height:${tall ? h * 0.6 : h * (f === "square" ? 0.42 : 0.47)}px;border-radius:${w * 0.05}px;background:linear-gradient(160deg, ${mix(p.secondary, cream, 0.1)}, ${mix(p.secondary, deep, 0.25)})}
+      .prod{right:${w * (wide ? (tall ? 0.1 : 0.09) : tall ? 0.08 : 0.12)}px;width:${w * (wide ? (tall ? 0.8 : 0.66) : tall ? 0.54 : 0.46)}px;bottom:${h * 0.09}px;height:${tall ? h * (wide ? 0.42 : 0.6) : h * (wide ? (f === "square" ? 0.2 : 0.27) : f === "square" ? 0.5 : 0.52)}px;object-position:bottom}
       .floor{right:${w * 0.19}px;width:${w * 0.32}px;bottom:${h * 0.075}px;height:${w * 0.04}px}
-      .side{position:absolute;left:${w * 0.12}px;${wide ? `top:${h - h * 0.06 - (tall ? h * 0.48 : h * (f === "square" ? 0.42 : 0.47)) + w * 0.05}px` : `bottom:${h * 0.11}px`};display:grid;gap:${w * 0.025}px;max-width:${w * (wide ? 0.7 : 0.34)}px}
+      .side{position:absolute;left:${w * 0.12}px;${wide ? `top:${h - h * 0.06 - (tall ? h * 0.6 : h * (f === "square" ? 0.42 : 0.47)) + w * 0.05}px` : `bottom:${h * 0.11}px`};display:grid;gap:${w * 0.025}px;max-width:${w * (wide ? 0.7 : 0.34)}px}
       .chips{${wide ? "" : "flex-direction:column;align-items:flex-start"}}
       .chips li{background:${cream};color:${ink}}
       .cta{background:${ink};color:${cream};justify-self:start}

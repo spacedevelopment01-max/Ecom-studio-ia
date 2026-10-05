@@ -191,3 +191,52 @@ describe("textes des visuels", () => {
     expect(drone.facts).toEqual(["249 g"]);
   });
 });
+
+describe("finitions (ombre, durée, contraste)", () => {
+  it("packshot d'un produit large et bas : ombre de contact douce, sans bord net ni grande tache", async () => {
+    const { renderPackshot } = await import("@/lib/media/compose");
+    const drone = await block(2000, 800, "#556677");
+    const { data, info } = await sharp(await renderPackshot(drone)).raw().toBuffer({ resolveWithObject: true });
+    const lum = (x: number, y: number) => data[(y * info.width + x) * info.channels];
+    // Colonne au bord de l'ombre (hors produit) : la luminosité varie sans saut brutal d'une ligne à l'autre.
+    const x = Math.round(info.width * 0.5 + 2000 * 0.82 * 0.52);
+    let maxJump = 0, darkRows = 0;
+    for (let y = Math.round(info.height * 0.7); y < info.height - 1; y++) {
+      maxJump = Math.max(maxJump, Math.abs(lum(x, y + 1) - lum(x, y)));
+      if (lum(Math.round(info.width / 2), y) < 235 && y > info.height * 0.86) darkRows++;
+    }
+    expect(maxJump).toBeLessThan(6);
+    // Sous le produit, l'ombre ne descend pas en grande tache (≤ 6 % de la hauteur de l'image).
+    expect(darkRows).toBeLessThan(info.height * 0.06);
+  });
+
+  it("vidéo sans IA : 12 à 15 s, sans plan répété, quel que soit le secteur", async () => {
+    const { localVideoPlan } = await import("@/lib/engine/local");
+    const { emptyProduct } = await import("@/lib/project-types");
+    const brand: any = { name: "SOVA", tagline: "Grandir en douceur.", palette: PAL };
+    for (const sector of ["enfants", "hightech", "mode", "alimentation", "", "maison"]) {
+      for (const roles of [["detail", "scene", "scene", "scene"], ["lifestyle", "detail", "scene"], []]) {
+        for (const facts of [[], [{ key: "a", label: "Poids", value: "249 g", status: "confirmed" }, { key: "b", label: "Autonomie", value: "30 minutes", status: "confirmed" }]]) {
+          const p: any = { ...emptyProduct(), name: "SOVA", sector, facts };
+          const plan = localVideoPlan(p, brand, "9:16", roles);
+          const total = plan.scenes.reduce((t, s) => t + s.duration, 0);
+          expect(total, `${sector} ${roles.join(",")}`).toBeGreaterThanOrEqual(11.9);
+          expect(total).toBeLessThanOrEqual(15.05);
+          const kinds = plan.scenes.map((s) => s.kind);
+          expect(new Set(kinds).size, kinds.join(",")).toBe(kinds.length);
+          const imgs = plan.scenes.flatMap((s) => ("image" in s ? [s.image] : []));
+          expect(new Set(imgs).size).toBe(imgs.length);
+          expect(plan.scenes.every((s) => s.duration <= 6)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("titres des vidéos lisibles sur tous les fonds (contraste ≥ 4,5:1)", async () => {
+    const { textColorFor } = await import("@/lib/media/video");
+    const { contrast } = await import("@/lib/color");
+    for (const bg of ["#000000", "#1C1713", "#7A1F3D", "#808080", "#8A8A8A", "#B98B5E", "#F2D04B", "#E8B4C0", "#6E5644", "#3366FF", "#FFFFFF", "#2F5D62", "#C2185B"]) {
+      expect(contrast(textColorFor(bg), bg), bg).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});

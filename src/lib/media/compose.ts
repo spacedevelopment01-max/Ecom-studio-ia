@@ -218,16 +218,19 @@ export function drawProduct(ctx: SKRSContext2D, product: Image, p: ProductPlacem
     ctx.setTransform(1, 0, -dir * (opts.shadow === "hard" ? 0.5 : 0.32), opts.shadow === "hard" ? 0.16 : 0.1, p.cx, p.baseY);
     ctx.drawImage(sil as any, -pw / 2, -ph, pw, ph);
     ctx.restore();
-    // Ombre de contact.
-    const g = ctx.createRadialGradient(p.cx, p.baseY, 0, p.cx, p.baseY, pw * 0.62);
-    g.addColorStop(0, `${sc}0.42)`);
-    g.addColorStop(0.45, `${sc}0.16)`);
+    // Ombre de contact : dégradé réellement elliptique (aucun bord net), aplatie et proportionnée à la hauteur
+    // du produit (un produit large et bas — drone, coussin — n'a pas une grande tache sous lui).
+    const rx = pw * 0.56;
+    const ry = Math.max(4, Math.min(rx * 0.14, ph * 0.06));
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+    g.addColorStop(0, `${sc}0.4)`);
+    g.addColorStop(0.4, `${sc}0.15)`);
     g.addColorStop(1, `${sc}0)`);
     ctx.save();
+    ctx.translate(p.cx, p.baseY);
+    ctx.scale(1, ry / rx);
     ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.ellipse(p.cx, p.baseY, pw * 0.62, pw * 0.1, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(-rx, -rx, rx * 2, rx * 2);
     ctx.restore();
   }
   if (opts.reflection) {

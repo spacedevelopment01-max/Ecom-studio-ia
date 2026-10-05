@@ -82,13 +82,17 @@ export function drawSymbol(ctx: SKRSContext2D, kind: SymbolKind, x: number, y: n
       break;
     }
     case "orbit": {
-      ctx.arc(cx, cy, s * 0.24, 0, Math.PI * 2);
+      // Planète et anneau complet (lecture immédiate « orbite »), satellite posé sur l'anneau.
+      const rot = -Math.PI / 8, rx = s * 0.46, ry = s * 0.15;
+      ctx.arc(cx, cy, s * 0.22, 0, Math.PI * 2);
       stroke();
       ctx.beginPath();
-      ctx.ellipse(cx, cy, s * 0.46, s * 0.12, -Math.PI / 7, Math.PI * 0.08, Math.PI * 0.92, true);
+      ctx.ellipse(cx, cy, rx, ry, rot, 0, Math.PI * 2);
       stroke();
+      const t = -Math.PI * 0.2;
+      const ex = rx * Math.cos(t), ey = ry * Math.sin(t);
       ctx.beginPath();
-      ctx.arc(cx + s * 0.3, cy - s * 0.32, s * 0.06, 0, Math.PI * 2);
+      ctx.arc(cx + ex * Math.cos(rot) - ey * Math.sin(rot), cy + ex * Math.sin(rot) + ey * Math.cos(rot), s * 0.065, 0, Math.PI * 2);
       ctx.fill();
       break;
     }

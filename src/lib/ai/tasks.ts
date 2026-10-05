@@ -408,7 +408,10 @@ export function scrubClaims<T>(content: T, p: Project): { content: T; removed: {
         removed.push(...hits.map((h) => ({ ...h, path })));
         // Une balise ouverte ou fermée dans la phrase retirée est gardée (HTML valide).
         out += (x.match(/<\/?(?:p|ul|ol|li)[^>]*>/g) ?? []).join("");
-      } else out += x;
+        // Le séparateur qui suit la phrase retirée disparaît avec elle (pas de ligne vide orpheline).
+        continue;
+      }
+      out += x;
       out += parts[i + 1] ?? "";
     }
     out = out.replace(/<(p|li)>\s*<\/\1>/g, "").replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
