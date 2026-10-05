@@ -16,6 +16,7 @@ import { ContentLangPicker, useContentLang } from "./content-lang";
 import { isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId } from "./platform-picker";
 import type { BusinessType } from "@/lib/project-types";
 import { KeptSiteCard, ReproductionBanner, SiteReading } from "./existing-site";
+import { useBilling } from "../billing-client";
 
 type TFn = <T>(fr: T, en: T) => T;
 
@@ -104,6 +105,9 @@ export default function TabBoutique() {
   // Les textes écrits dans la boutique suivent la langue du thème (sinon celle du projet), sauf choix contraire.
   const cl = useContentLang(undefined, theme?.current?.language);
   const cost = useCostConfirm();
+  // Sans forfait (découverte gratuite) : aperçu filigrané « Aperçu », pas d'export ni de publication (bloqués aussi côté serveur).
+  const { billing } = useBilling();
+  const discovery = !!billing && !billing.plan;
   const chatJobs = useActive(["shop.chat", "shop.build", "shop.direction", "shopify.push"]);
   const [view, setView] = useState<"chat" | "preview" | "structure">("chat");
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
@@ -408,7 +412,7 @@ export default function TabBoutique() {
           <Button type="submit" variant="signal" size="md" loading={sending} className="size-11 shrink-0 !px-0" aria-label={t("Envoyer", "Send")}><Send className="size-4" /></Button>
         </form>
         <ContentLangPicker {...cl} compact className="mt-2 text-xs" />
-        {!data?.ai.llm && <p className="mt-2 text-[11px] text-muted">{t("Moteur local : commandes simples uniquement (couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, monter, supprimer, revenir en arrière, changer de direction).", "Local engine: simple commands only (button color, quoted text on the selected element, add an FAQ, move up, delete, undo, change direction).")}</p>}
+        {!data?.ai.llm && <p className="mt-2 text-[11px] text-muted">{t("IA non connectée : commandes simples uniquement (couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, monter, supprimer, revenir en arrière, changer de direction).", "AI not connected: simple commands only (button color, quoted text on the selected element, add an FAQ, move up, delete, undo, change direction).")}</p>}
       </div>
     </div>
   );
@@ -481,8 +485,12 @@ export default function TabBoutique() {
           <Badge tone={viewVersion ? "warn" : "neutral"}>v{theme.versions.find((v) => v.id === versionId)?.number ?? cur.number}{viewVersion ? t(" (consultation)", " (viewing)") : ""}</Badge>
           <button onClick={() => setHistoryOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Versions", "Versions")}><History className="size-4" /></button>
           {data && <PlatformPill projectId={id} platform={data.project.platform} business={data.business} onChanged={reloadProject} />}
-          <button onClick={() => setExportOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={data && isPlatform(data.project.platform) ? t(`Exporter pour ${platformInfo(data.project.platform, data.business, t).short}`, `Export for ${platformInfo(data.project.platform, data.business, t).short}`) : t("Exporter", "Export")}><Download className="size-4" aria-hidden /><span className="sr-only">{t("Exporter et installer", "Export and install")}</span></button>
-          {src && <a href={src} target="_blank" rel="noreferrer" className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Ouvrir dans un onglet", "Open in a new tab")}><ExternalLink className="size-4" /></a>}
+          {discovery ? (
+            <a href="/studio/compte#forfaits" className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink"><Lock className="size-3.5" aria-hidden /> {t("Choisir un forfait pour publier", "Choose a plan to publish")}</a>
+          ) : (
+            <button onClick={() => setExportOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={data && isPlatform(data.project.platform) ? t(`Exporter pour ${platformInfo(data.project.platform, data.business, t).short}`, `Export for ${platformInfo(data.project.platform, data.business, t).short}`) : t("Exporter", "Export")}><Download className="size-4" aria-hidden /><span className="sr-only">{t("Exporter et installer", "Export and install")}</span></button>
+          )}
+          {src && !discovery && <a href={src} target="_blank" rel="noreferrer" className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Ouvrir dans un onglet", "Open in a new tab")}><ExternalLink className="size-4" /></a>}
         </div>
       </div>
       {viewVersion && (
@@ -502,6 +510,11 @@ export default function TabBoutique() {
         ) : (
           <iframe ref={iframe} key={versionId ?? ""} src={src} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
         ))}
+        {src && discovery && (
+          <div className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden" aria-hidden>
+            <span className="-rotate-[30deg] select-none whitespace-nowrap font-display text-[clamp(3rem,12vw,9rem)] font-semibold uppercase tracking-[.2em] text-black/[.07] [text-shadow:0_0_1px_rgba(255,255,255,.4)]">{t("Aperçu", "Preview")}</span>
+          </div>
+        )}
       </div>
     </div>
   );

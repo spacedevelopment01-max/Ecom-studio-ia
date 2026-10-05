@@ -121,7 +121,7 @@ export default function TabPublicites() {
       const r = await api<{ ads: { angle: string; primary: string; headline: string; cta: string }[]; by: "ai" | "local" }>(`/api/projects/${id}/campaigns/draft`, { body: { count: Math.max(1, Math.min(6, current.length || 3)), objective: objectiveIn(c.objective, lang), audience: c.brief.audience || undefined }, lang });
       // Les créations déjà choisies restent attachées aux annonces (même position).
       setEdit((e) => e && { ...e, plan: { ads: r.ads.map((a, i) => ({ ...a, media: current[i]?.media ?? [] })) } });
-      toast("ok", r.by === "ai" ? t("Annonces proposées : relisez-les avant d'enregistrer.", "Ads drafted: review them before saving.") : (svc ? t("Annonces proposées à partir de vos prestations (moteur local) : complétez les passages entre crochets.", "Ads drafted from your services (local engine): fill in the bracketed parts.") : t("Annonces proposées à partir des faits du produit (moteur local) : complétez les passages entre crochets.", "Ads drafted from the product facts (local engine): fill in the bracketed parts.")));
+      toast("ok", r.by === "ai" ? t("Annonces proposées : relisez-les avant d'enregistrer.", "Ads drafted: review them before saving.") : (svc ? t("Annonces proposées à partir de vos prestations (version simplifiée) : complétez les passages entre crochets.", "Ads drafted from your services (simplified version): fill in the bracketed parts.") : t("Annonces proposées à partir des faits du produit (version simplifiée) : complétez les passages entre crochets.", "Ads drafted from the product facts (simplified version): fill in the bracketed parts.")));
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {

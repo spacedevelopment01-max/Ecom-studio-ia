@@ -227,7 +227,7 @@ function GeneratePane({ aiAvailable, onGenerate }: { aiAvailable: boolean; onGen
         {aiAvailable ? (
           <Button className="mt-4 w-full" icon={<Wand2 className="size-4" />} loading={busy} disabled={text.trim().length < 8} onClick={go}>{t("Générer la section avec l'IA", "Generate the section with AI")}</Button>
         ) : (
-          <p className="mt-4 rounded-2xl border border-info/30 bg-info-soft p-3 text-xs text-info">{t("La génération de section est faite par l'IA : passez sur « IA » en haut du studio (abonnement avec crédits de création). Le moteur local ne sait pas écrire une section sur mesure.", "Section generation is done by AI: switch to “AI” at the top of the studio (subscription with creation credits). The local engine can't write a custom section.")}</p>
+          <p className="mt-4 rounded-2xl border border-info/30 bg-info-soft p-3 text-xs text-info">{t("La génération d'une section sur mesure est faite par l'IA : elle est incluse dans les forfaits Vendre et Dominer.", "Custom section generation is done by AI: it comes with the Sell and Dominate plans.")}</p>
         )}
       </div>
     </div>

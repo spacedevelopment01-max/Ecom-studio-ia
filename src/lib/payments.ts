@@ -8,7 +8,7 @@ import { id, now, one, run } from "./db";
 import { creditTopup, getSubscription, syncAllowance } from "./billing";
 import { HttpError } from "./auth";
 import { PACKS, PLANS, packPrice, type Billing, type PackId, type PlanId } from "./plans";
-import { creditPack, launchPackBought, userPlan } from "./quotas";
+import { creditPack, languagesOf, launchPackBought, userPlan } from "./quotas";
 import { appUrl, getSetting, setSetting } from "./settings";
 import { L, uiLang } from "./i18n-server";
 
@@ -70,6 +70,11 @@ export async function packCheckout(user: { id: string; email: string }, packId: 
   const plan = userPlan(user.id);
   if (!plan) throw new HttpError(402, L("Les packs s'ajoutent à un forfait : choisissez d'abord un forfait.", "Packs are added to a plan: choose a plan first."));
   if (PACKS[packId].once && launchPackBought(user.id)) throw new HttpError(409, L("Le pack Lancement ne s'achète qu'une fois.", "The Launch pack can only be bought once."));
+  // Les boutiques gèrent 2 langues pour l'instant : le pack Langue ne sert qu'à passer de 1 à 2.
+  if (packId === "language") {
+    const l = languagesOf(user.id);
+    if (l.included + l.extra >= 2) throw new HttpError(409, L("Votre boutique a déjà 2 langues : c'est le maximum pour l'instant (davantage de langues arrive bientôt).", "Your store already has 2 languages: that's the maximum for now (more languages are coming soon)."));
+  }
   const price = packPrice(packId, plan);
   const s = await stripe("checkout/sessions", {
     mode: "payment",

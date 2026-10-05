@@ -4,7 +4,7 @@ import { pick } from "@/lib/i18n";
 
 export async function generateMetadata() {
   const lang = await serverLang();
-  return { title: pick(lang, "Compte et crédits", "Account and credits") };
+  return { title: pick(lang, "Mon compte", "My account") };
 }
 
 export default function Page() {

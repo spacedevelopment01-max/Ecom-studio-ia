@@ -8,6 +8,7 @@ import { Clapperboard, Minus, Plus, ShieldCheck, Sparkles, Wand2 } from "lucide-
 import { api, Button, cx, Field, Input, Select, Textarea, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
+import { useBilling } from "../billing-client";
 import { ugcIssues, type UgcScriptLike } from "@/lib/ugc-rules";
 import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
@@ -28,9 +29,10 @@ export function UgcPanel() {
   const [sending, setSending] = useState(false);
   const poll = useRef<ReturnType<typeof setInterval> | null>(null);
   const cost = useCostConfirm();
-  const localMode = data?.ai.mode === "local";
-  const ugc = !!data?.ai.ugc && data?.ai.credits !== false && !localMode;
-  const noCredits = !!data?.ai.ugc && data?.ai.credits === false;
+  // Vidéo UGC : incluse dans certains forfaits (quota mensuel) ou ajoutée par un pack. Jamais de crédits affichés.
+  const { billing } = useBilling();
+  const noCredits = !!data?.ai.ugc && !!billing && (!billing.plan || billing.quotas.ugc.included + billing.quotas.ugc.rollover + billing.quotas.ugc.pack === 0);
+  const ugc = !!data?.ai.ugc && !noCredits;
   const voice = !!data?.ai.ugcVoice;
   // Entreprise de services : « présentation face caméra » de l'activité, sans produit en main.
   const services = data?.business === "services";
@@ -87,13 +89,13 @@ export function UgcPanel() {
       <p className="text-xs text-muted">{services ? t("Une personne générée par IA présente votre activité et vos prestations face caméra, à la troisième personne : elle ne se dit ni cliente, ni le professionnel. Vous relisez le script avant de lancer la génération.", "An AI-generated person presents your business and services to camera, in the third person: they never claim to be a customer or the professional. You review the script before starting generation.") : t("Une personne générée par IA présente votre produit réel face caméra, filmée comme au téléphone : décor, gestes, voix et sous-titres. Vous relisez le script avant de lancer la génération.", "An AI-generated person presents your real product to camera, filmed as if on a phone: setting, gestures, voice and subtitles. You review the script before starting generation.")}</p>
       {noCredits && (
         <p className="rounded-2xl border border-info/30 bg-info-soft p-3 text-xs text-info">
-          {t("La vidéo UGC est créée par l'IA : elle est disponible avec l'abonnement (vos crédits de création sont épuisés ou vous êtes en essai gratuit). Vous pouvez déjà écrire et préparer le script.", "UGC videos are created by AI: they're available with a subscription (your creation credits are used up or you're on the free trial). You can already write and prepare the script.")} <a href="/studio/compte" className="font-semibold underline">{t("Passer à l'abonnement", "Upgrade to a subscription")}</a>
+          {!billing?.plan
+            ? t("Les vidéos UGC sont incluses dans les forfaits. Vous pouvez déjà écrire et préparer le script.", "UGC videos come with the plans. You can already write and prepare the script.")
+            : t("Les vidéos UGC ne sont pas incluses dans votre forfait : ajoutez un pack UGC ou changez de forfait. Vous pouvez déjà écrire et préparer le script.", "UGC videos aren't included in your plan: add a UGC pack or change plan. You can already write and prepare the script.")}{" "}
+          <a href={billing?.plan ? "/studio/compte?pack=ugc#packs" : "/studio/compte#forfaits"} className="font-semibold underline">{billing?.plan ? t("Ajouter un pack", "Add a pack") : t("Choisir un forfait", "Choose a plan")}</a>
         </p>
       )}
-      {localMode && !noCredits && !!data?.ai.ugc && (
-        <p className="rounded-2xl border border-info/30 bg-info-soft p-3 text-xs text-info">{t("Vous êtes en mode local : passez sur « IA » en haut du studio pour générer la vidéo UGC avec vos crédits. Vous pouvez déjà préparer le script.", "You're in local mode: switch to \"AI\" at the top of the studio to generate the UGC video with your credits. You can already prepare the script.")}</p>
-      )}
-      {!ugc && !noCredits && !localMode && (
+      {!ugc && !noCredits && (
         <p className="rounded-2xl border border-warn/30 bg-warn-soft p-3 text-xs text-warn">
           {t("La génération UGC demande un fournisseur d'images (Google Gemini ou OpenAI) et un fournisseur vidéo (Google Veo ou fal.ai), activés par l'administration. Vous pouvez déjà écrire et préparer le script.", "UGC generation requires an image provider (Google Gemini or OpenAI) and a video provider (Google Veo or fal.ai), enabled by the administrator. You can already write and prepare the script.")}
         </p>
@@ -192,7 +194,7 @@ export function UgcPanel() {
           </p>
           {ugc && !voice && <p className="text-[11px] text-warn">{t("Fournisseur vidéo sans voix (fal.ai) : la vidéo sera sous-titrée, sans voix. Google Veo ajoute la voix et le son.", "Video provider without voice (fal.ai): the video will be subtitled, with no voice. Google Veo adds voice and sound.")}</p>}
           <Button onClick={generate} loading={sending} disabled={!ugc || issues.length > 0} icon={<Clapperboard className="size-4" />}>{services ? t("Générer la présentation", "Generate the presentation") : t("Générer la vidéo UGC", "Generate the UGC video")}</Button>
-          <p className="flex items-center gap-1.5 text-[11px] text-muted"><Sparkles className="size-3" /> {t("Génération longue (quelques minutes par plan) et coûteuse en crédits de création.", "Long generation (a few minutes per shot) and credit-intensive.")}</p>
+          <p className="flex items-center gap-1.5 text-[11px] text-muted"><Sparkles className="size-3" /> {t("Génération longue (quelques minutes par plan). Utilise 1 vidéo UGC de votre forfait.", "Long generation (a few minutes per shot). Uses 1 UGC video from your plan.")}</p>
         </div>
       )}
     </div>

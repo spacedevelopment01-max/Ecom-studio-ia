@@ -20,7 +20,7 @@ export default async function Page() {
         </section>
         <section>
           <h2>Already a customer?</h2>
-          <p>Your subscription, credits and invoices are managed from the studio's "Account" area.</p>
+          <p>Your plan, packs and invoices are managed from the studio's "My account" area.</p>
         </section>
       </LegalPage>
     );
@@ -33,7 +33,7 @@ export default async function Page() {
       </section>
       <section>
         <h2>Déjà client ?</h2>
-        <p>Votre abonnement, vos crédits et vos factures se gèrent depuis l'espace « Compte » du studio.</p>
+        <p>Votre forfait, vos packs et vos factures se gèrent depuis l'espace « Mon compte » du studio.</p>
       </section>
     </LegalPage>
   );
