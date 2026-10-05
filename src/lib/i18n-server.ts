@@ -30,6 +30,17 @@ export const L = <T,>(fr: T, en: T): T => (uiLang() === "en" ? en : fr);
 /** Texte dans la langue des contenus créés. */
 export const C = <T,>(fr: T, en: T): T => (contentLang() === "en" ? en : fr);
 
+/**
+ * Texte dans les deux langues de l'interface : `fn` (qui utilise `L`) est évalué en français puis en anglais.
+ * Sert aux textes enregistrés (résumés d'étapes, versions) qui doivent s'afficher plus tard dans la langue
+ * de la personne qui les lit, et non dans celle du moment où ils ont été produits.
+ */
+export function inBothLangs(fn: () => string): { fr: string; en: string } {
+  const s = als.getStore();
+  const at = (ui: Lang) => als.run({ ui, content: s?.content ?? ui, contentForced: s?.contentForced ?? false }, fn);
+  return { fr: at("fr"), en: at("en") };
+}
+
 /** Applique la langue du projet aux contenus, sauf si l'action a demandé une autre langue. */
 export function setProjectContentLang(lang: Lang | undefined) {
   const s = als.getStore();

@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { safeNextPath } from "@/lib/safe-path";
 import { currentUser } from "@/lib/auth";
 import { ToastProvider } from "@/components/ui";
 import { AdminConsole } from "@/components/admin";
@@ -13,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Page() {
   const user = await currentUser();
-  if (!user) redirect("/connexion?suite=/admin");
+  if (!user) redirect(`/connexion?suite=${encodeURIComponent(safeNextPath((await headers()).get("x-ecs-path"), "/admin"))}`);
   if (user.role !== "admin") redirect("/studio");
   return (
     <ToastProvider>

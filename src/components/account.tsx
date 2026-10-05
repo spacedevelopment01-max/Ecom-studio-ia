@@ -5,11 +5,12 @@
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Info, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Sparkles } from "lucide-react";
 import { api, Badge, Card, cx, formatDate, Logo, ThemeToggle, useApi, useToast } from "./ui";
 import { LangSwitch, useLang, useT } from "./i18n";
 import { formatEur, PACK_FOR_QUOTA, QUOTA_LABEL, Soon, useBilling } from "./billing-client";
 import { CompareTable, PackCards, PricingCards } from "./pricing";
+import { SecurityCard } from "./password-forms";
 import { PACKS, PLANS, type Billing, type BillingView, type CheckoutBody, type PackId, type PlanId, type QuotaKey } from "@/lib/plans";
 
 const STATUS: Record<BillingView["status"], { fr: string; en: string; tone: "ok" | "warn" | "bad" | "neutral" } | null> = {
@@ -195,12 +196,6 @@ export function AccountPage() {
               </div>
             </section>
 
-            {payOff && (
-              <p className="flex gap-2 rounded-2xl bg-paper-2 p-4 text-sm text-ink-2">
-                <Info className="mt-0.5 size-4 shrink-0" aria-hidden /> {payOff}
-              </p>
-            )}
-
             {/* Historique */}
             <Card className="p-6 sm:p-7">
               <h2 className="font-display text-2xl font-semibold">{t("Historique des paiements", "Payment history")}</h2>
@@ -222,6 +217,8 @@ export function AccountPage() {
             </Card>
           </>
         )}
+        {/* Mot de passe et déconnexion (visible même si le forfait ne se charge pas) */}
+        <SecurityCard />
       </main>
     </div>
   );

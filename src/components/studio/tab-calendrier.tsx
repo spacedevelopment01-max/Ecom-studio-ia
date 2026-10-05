@@ -141,6 +141,12 @@ export default function TabCalendrier() {
   const st = (s: string) => (POST_STATUS[s] ? t(POST_STATUS[s].label, POST_STATUS[s].en) : s);
   const tz = project?.settings.timezone ?? "Europe/Paris";
   const [mode, setMode] = useState<ViewMode>("month");
+  // Téléphone : la vue Semaine (liste lisible) par défaut ; la vue Mois n'y montre que le nombre de publications par jour.
+  useEffect(() => {
+    try {
+      if (window.matchMedia("(max-width: 639px)").matches) setMode("week");
+    } catch {}
+  }, []);
   const [cursor, setCursor] = useState(() => toZonedTime(new Date(), tz));
   const [openPost, setOpenPost] = useState<PostView | null>(null);
   const [planOpen, setPlanOpen] = useState(false);
@@ -218,12 +224,17 @@ export default function TabCalendrier() {
             {days.map((d) => {
               const list = postsOn(d);
               return (
-                <div key={d.toISOString()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => move(e.dataTransfer.getData("text/post"), d)} className={cx("min-h-28 border-b border-r border-line p-1.5 sm:min-h-32", !isSameMonth(d, cursor) && "bg-paper-2/50")}>
+                <div key={d.toISOString()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => move(e.dataTransfer.getData("text/post"), d)} className={cx("min-h-16 border-b border-r border-line p-1 sm:min-h-32 sm:p-1.5", !isSameMonth(d, cursor) && "bg-paper-2/50")}>
                   <button onClick={() => (setCursor(d), setMode("day"))} className={cx("mb-1 grid size-7 place-items-center rounded-full text-xs", isSameDay(d, today) ? "bg-signal font-bold text-signal-ink" : "text-muted hover:bg-paper-2")}>{format(d, "d")}</button>
-                  <div className="grid gap-1">
+                  <div className="hidden gap-1 sm:grid">
                     {list.slice(0, 3).map((p) => Chip(p))}
                     {list.length > 3 && <button onClick={() => (setCursor(d), setMode("day"))} className="text-left text-[11px] text-muted">+ {list.length - 3} {t("autre(s)", "more")}</button>}
                   </div>
+                  {list.length > 0 && (
+                    <button onClick={() => (setCursor(d), setMode("day"))} className="mx-auto flex items-center gap-1 rounded-full bg-signal-soft px-1.5 py-0.5 text-[11px] font-semibold text-signal sm:hidden" aria-label={t(`${list.length} publication(s) le ${format(d, "d MMMM", { locale })}`, `${list.length} post(s) on ${format(d, "MMMM d", { locale })}`)}>
+                      <span className="size-1.5 rounded-full bg-signal" aria-hidden />{list.length}
+                    </button>
+                  )}
                 </div>
               );
             })}

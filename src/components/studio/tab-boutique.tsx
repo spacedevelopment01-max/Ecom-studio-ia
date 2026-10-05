@@ -154,7 +154,7 @@ export default function TabBoutique() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const versionId = viewVersion ?? theme?.current?.versionId ?? null;
-  const src = versionId ? `/preview/${id}/v/${versionId}${page === "/" ? "/" : page}` : null;
+  const src = versionId ? `/preview/${id}/v/${versionId}${page === "/" ? "" : page}` : null;
 
   // Messages de l'aperçu (désignation, défilement, chargement).
   useEffect(() => {
@@ -508,7 +508,8 @@ export default function TabBoutique() {
         </div>
       )}
       <div ref={frameBox} className="relative flex-1 overflow-hidden bg-paper-2 p-0 sm:p-4">
-        {src && (desktopScale < 1 ? (
+        {/* L'aperçu n'est créé qu'une fois la largeur mesurée : sinon l'iframe est recréée (double chargement). */}
+        {src && (device !== "desktop" || boxW !== 0) && (desktopScale < 1 ? (
           <div className="mx-auto overflow-hidden rounded-none bg-white shadow-soft sm:rounded-2xl" style={{ width: DESKTOP_W * desktopScale, height: "100%" }}>
             <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals" title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
           </div>

@@ -1,5 +1,5 @@
 /**
- * Limitation de débit persistante (SQLite) : inscriptions et tentatives de connexion.
+ * Limitation de débit persistante (SQLite) : inscriptions, tentatives de connexion, mot de passe oublié.
  * Partagée entre les processus et conservée au redémarrage ; les entrées anciennes sont purgées.
  */
 import { now, one, run } from "./db";
@@ -38,4 +38,8 @@ export const LIMITS = {
   loginPerIp: { max: 30, windowMs: 10 * 60_000 },
   registerPerIpHour: { max: 5, windowMs: 3600_000 },
   registerPerIpDay: { max: 10, windowMs: 86400_000 },
+  forgotPerEmail: { max: 3, windowMs: 3600_000 },
+  forgotPerIp: { max: 10, windowMs: 3600_000 },
+  resetPerIp: { max: 20, windowMs: 10 * 60_000 },
+  passwordChangePerUser: { max: 5, windowMs: 10 * 60_000 },
 } as const;

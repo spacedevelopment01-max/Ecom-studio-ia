@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Briefcase, Check, Camera, Link2, Type, Sparkles, Store, Image as ImageIcon, Film, CalendarDays, FolderTree, BookOpen, Plug, ShieldCheck, MessageSquare, Pause, Palette, Lock } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Briefcase, Check, Camera, Link2, Type, Sparkles, Store, Image as ImageIcon, Film, CalendarDays, FolderTree, BookOpen, Plug, ShieldCheck, MessageSquare, Pause, Palette, Lock, LogIn } from "lucide-react";
 import type { Metadata } from "next";
 import { Logo, ThemeToggle } from "@/components/ui";
 import { LangSwitch } from "@/components/i18n";
@@ -170,7 +170,10 @@ export default async function Home() {
               </Link>
             ) : (
               <>
-                <Link href="/connexion" className="hidden h-10 items-center rounded-full px-4 text-sm font-medium hover:bg-paper-2 sm:inline-flex">{T("Connexion", "Sign in")}</Link>
+                <Link href="/connexion" aria-label={T("Connexion", "Sign in")} title={T("Connexion", "Sign in")} className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-line bg-card text-sm font-medium hover:bg-paper-2 sm:h-10 sm:w-auto sm:border-0 sm:bg-transparent sm:px-4">
+                  <LogIn className="size-4 sm:hidden" aria-hidden />
+                  <span className="hidden sm:inline">{T("Connexion", "Sign in")}</span>
+                </Link>
                 <Link href="/inscription" className="btn-glow inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink">{T("Essayer", "Try it")}</Link>
               </>
             )}

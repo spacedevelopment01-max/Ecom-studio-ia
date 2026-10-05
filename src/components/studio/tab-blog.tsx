@@ -520,7 +520,7 @@ function ArticleEditor({ article, data, busy, confirm, onClose, onChanged, onSta
                         {data.links.map((l) => <option key={l.url} value={l.url}>{l.title}</option>)}
                       </select>
                     )}
-                    <Input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="/products/… ou https://…" className="h-9 min-w-0 flex-1" />
+                    <Input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder={t("/products/… ou https://…", "/products/… or https://…")} aria-label={t("Adresse du lien", "Link address")} className="h-9 min-w-0 flex-1" />
                     <Button size="sm" onClick={insertLink} disabled={!linkUrl.trim()}>{t("Ajouter le lien", "Add link")}</Button>
                     <p className="w-full text-xs text-muted">{t("Sélectionnez d'abord les mots à transformer en lien.", "Select the words to turn into a link first.")}</p>
                   </div>

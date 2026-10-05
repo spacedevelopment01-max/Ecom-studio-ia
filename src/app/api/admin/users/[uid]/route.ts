@@ -11,7 +11,7 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ uid: st
   const admin = await requireAdmin();
   const { uid } = await ctx.params;
   if (!one("SELECT 1 FROM users WHERE id = ?", uid)) throw new HttpError(404, L("Utilisateur introuvable.", "User not found."));
-  const b = await body(req, z.object({ subscription: z.enum(["none", "manual", "trial", "canceled"]).optional(), stores: z.number().int().min(1).max(50).optional(), plan: z.enum(["creer", "vendre", "dominer"]).optional(), creditEur: z.number().min(-1000).max(1000).optional(), note: z.string().max(200).optional() }));
+  const b = await body(req, z.object({ subscription: z.enum(["none", "manual", "canceled"]).optional(), stores: z.number().int().min(1).max(50).optional(), plan: z.enum(["creer", "vendre", "dominer"]).optional(), creditEur: z.number().min(-1000).max(1000).optional(), note: z.string().max(200).optional() }));
   const hadPlan = !!planOf(getSubscription(uid));
   if (b.subscription) run("UPDATE subscriptions SET status = ?, updated_at = ? WHERE user_id = ?", b.subscription, now(), uid);
   if (b.stores) run("UPDATE subscriptions SET stores = ?, updated_at = ? WHERE user_id = ?", b.stores, now(), uid);

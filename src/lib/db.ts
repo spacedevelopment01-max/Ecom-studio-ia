@@ -497,6 +497,16 @@ CREATE TABLE IF NOT EXISTS rate_events (
   at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS rate_events_key ON rate_events(key, at);
+-- Réinitialisation du mot de passe : jeton à usage unique (seule son empreinte signée est gardée), valable 1 heure.
+CREATE TABLE IF NOT EXISTS password_resets (
+  token_hash TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at INTEGER NOT NULL,
+  used_at INTEGER,
+  created_by TEXT,                    -- 'self' (e-mail) ou identifiant de l'administrateur
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets(user_id);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */

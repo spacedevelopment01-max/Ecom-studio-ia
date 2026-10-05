@@ -188,7 +188,7 @@ export function EngineNotice({ what }: { what: string }) {
   if (!data.ai.llm)
     return (
       <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
-        {t(<>L'IA n'est pas encore connectée sur cette installation : {what} sont préparés en version simplifiée.</>, <>AI isn't connected on this installation yet: {what} are prepared in a simplified version.</>)}
+        {t(<>L'IA n'est pas encore connectée sur cette installation : version simplifiée pour {what}.</>, <>AI isn't connected on this installation yet: simplified version for {what}.</>)}
       </div>
     );
   if (!billing || billing.plan) return null;

@@ -8,11 +8,10 @@
 import { HttpError, type User } from "../auth";
 import { one } from "../db";
 import { currentPeriod, getSubscription, planOf } from "../billing";
-import { PLANS, type PlanId } from "../plans";
+import { CUSTOM_THEMES_PER_MONTH, PLANS, type PlanId } from "../plans";
 import { L } from "../i18n-server";
 
-/** Thèmes entièrement sur mesure par compte et par mois (garde-fou contre les abus : chaque thème mobilise beaucoup d'IA). */
-export const CUSTOM_THEMES_PER_MONTH = 2;
+export { CUSTOM_THEMES_PER_MONTH };
 
 const planFor = (user: Pick<User, "id" | "role">): PlanId | null => (user.role === "admin" ? "dominer" : planOf(getSubscription(user.id)));
 

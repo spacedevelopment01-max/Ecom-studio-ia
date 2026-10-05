@@ -15,7 +15,7 @@ import { all, json, now, one, run } from "../db";
 import { saveAsset, type Asset } from "../library";
 import { loadProject, remember, saveCatalog, saveServices, saveSettings } from "../projects";
 import { emptyServiceProfile, type Brand, type CatalogItem, type ExistingSiteSummary, type ServiceItem } from "../project-types";
-import { C, L } from "../i18n-server";
+import { C, L, inBothLangs, uiLang } from "../i18n-server";
 import type { JobContext } from "../jobs";
 import { importSite, downloadSiteImage, logoToPng, type SiteFetcher } from "./site-import";
 import { closestDirection, matchFont, platformName, reproductionTarget, sitePalette } from "./site-reproduce";
@@ -181,6 +181,11 @@ async function sizeOf(data: Buffer): Promise<{ w: number; h: number }> {
  * Chaque partie est un point de reprise : une reprise ne relit ni ne retélécharge ce qui est fait.
  */
 export async function importExistingSite(ctx: JobContext, projectId: string, url: string, opts: { fetchImpl?: SiteFetcher } = {}): Promise<string> {
+  return (await importExistingSiteNote(ctx, projectId, url, opts))[uiLang()];
+}
+
+/** Lecture du site existant ; le résumé est rendu dans les deux langues (affiché ensuite dans celle de l'interface). */
+export async function importExistingSiteNote(ctx: JobContext, projectId: string, url: string, opts: { fetchImpl?: SiteFetcher } = {}): Promise<{ fr: string; en: string }> {
   const p0 = loadProject(projectId);
   updateSiteSummary(projectId, { url, status: "pending" });
   // 1) lecture du site
@@ -271,11 +276,13 @@ export async function importExistingSite(ctx: JobContext, projectId: string, url
     source: "link",
     scope: "shop",
   });
-  const what = site.business === "products" ? L(`${site.products.length} produit(s)`, `${site.products.length} product(s)`) : L(`${siteServices(site).length} prestation(s) repérée(s)`, `${siteServices(site).length} service(s) found`);
-  return L(
-    `Site lu (${platformName(site.platform)}) : ${site.pages.length} page(s), ${what}, ${media.images} image(s)${media.logoAssetId ? ", logo" : ""} — ${site.decision === "keep" ? "conservé tel quel" : `reproduit sur ${reproductionTarget(site)}`}`,
-    `Website read (${platformName(site.platform)}): ${site.pages.length} page(s), ${what}, ${media.images} image(s)${media.logoAssetId ? ", logo" : ""} — ${site.decision === "keep" ? "kept as is" : `reproduced on ${reproductionTarget(site)}`}`,
-  );
+  return inBothLangs(() => {
+    const what = site.business === "products" ? L(`${site.products.length} produit(s)`, `${site.products.length} product(s)`) : L(`${siteServices(site).length} prestation(s) repérée(s)`, `${siteServices(site).length} service(s) found`);
+    return L(
+      `Site lu (${platformName(site.platform)}) : ${site.pages.length} page(s), ${what}, ${media.images} image(s)${media.logoAssetId ? ", logo" : ""} — ${site.decision === "keep" ? "conservé tel quel" : `reproduit sur ${reproductionTarget(site)}`}`,
+      `Website read (${platformName(site.platform)}): ${site.pages.length} page(s), ${what}, ${media.images} image(s)${media.logoAssetId ? ", logo" : ""} — ${site.decision === "keep" ? "kept as is" : `reproduced on ${reproductionTarget(site)}`}`,
+    );
+  });
 }
 
 /** Logo (original + PNG) et images du site dans la bibliothèque du projet. */

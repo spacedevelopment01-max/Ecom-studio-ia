@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -55,8 +55,8 @@ function ProjectSwitcher({ current }: { current: string }) {
           {p?.coverUrl ? <img src={p.coverUrl} alt="" className="size-full object-cover" /> : <Store className="size-4" />}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold">{p?.brand?.name ?? p?.project.name ?? "…"}</span>
-          <span className="block truncate text-xs text-muted">{p?.project.sectorLabel}</span>
+          {p ? <span className="block truncate text-sm font-semibold">{p.brand?.name ?? p.project.name}</span> : <span className="skeleton block h-4 w-32 rounded" aria-hidden />}
+          {p ? <span className="block truncate text-xs text-muted">{p.project.sectorLabel}</span> : <span className="skeleton mt-1 block h-3 w-20 rounded" aria-hidden />}
         </span>
         <ChevronDown className="size-4 text-muted" />
       </button>
@@ -174,6 +174,44 @@ function MobileLangToggle() {
   );
 }
 
+/** Menu de l'en-tête sur téléphone et tablette (le menu latéral n'y est pas affiché) : compte, tutoriels, déconnexion. */
+function MobileMenu({ tab, business, isAdmin }: { tab: string; business?: "products" | "services"; isAdmin: boolean }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      // Le lecteur de tutoriels s'ouvre dans un portail : un clic dedans ne ferme pas le menu (il le démonterait).
+      if (box.current && !box.current.contains(e.target as Node) && !(e.target as HTMLElement).closest?.("[role=dialog]")) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  const item = "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-ink-2 hover:bg-paper-2 hover:text-ink";
+  return (
+    <div ref={box} className="relative lg:hidden">
+      <button type="button" onClick={() => setOpen((v) => !v)} className="grid size-10 place-items-center rounded-full border border-line bg-card" aria-expanded={open} aria-haspopup="menu" aria-label={t("Menu : compte, tutoriels, déconnexion", "Menu: account, tutorials, sign out")}>
+        <MoreHorizontal className="size-4" />
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-full z-50 mt-2 grid w-64 gap-0.5 rounded-2xl border border-line bg-card p-1.5 shadow-soft">
+          <Link role="menuitem" href="/studio" onClick={() => setOpen(false)} className={item}><LayoutGrid className="size-4 shrink-0" /> {t("Mes projets", "My projects")}</Link>
+          <Link role="menuitem" href="/studio/compte" onClick={() => setOpen(false)} className={item}><Settings className="size-4 shrink-0" /> {t("Mon compte", "My account")}</Link>
+          <TutorialsMenuLink tab={tab} business={business} />
+          {isAdmin && <Link role="menuitem" href="/admin" onClick={() => setOpen(false)} className={item}><Shield className="size-4 shrink-0" /> {t("Administration", "Admin")}</Link>}
+          <button role="menuitem" type="button" onClick={async () => { await api("/api/auth/logout", { method: "POST" }).catch(() => {}); window.location.href = "/"; }} className={cx(item, "border-t border-line text-left")}><LogOut className="size-4 shrink-0" /> {t("Déconnexion", "Log out")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function StudioShell({ projectId, children }: { projectId: string; children: ReactNode }) {
   const t = useT();
   const { lang } = useLang();
@@ -181,7 +219,8 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   const router = useRouter();
   const tab = (pathname.split("/")[3] ?? "pilote") as TabId;
   const { data } = useProject();
-  const status = STATUS[data?.project.status ?? "draft"] ?? STATUS.draft;
+  // Pas de statut tant que le projet n'est pas chargé (sinon « À démarrer » s'affiche un instant à tort).
+  const status = data ? (STATUS[data.project.status] ?? STATUS.draft) : null;
   const { data: me } = useApi<{ user: { role: string; email: string } }>("/api/me");
   // Forfait et quotas (lien « Mon compte », bandeau quand un quota est épuisé) : jamais de crédits.
   const { billing } = useBilling({ poll: 60000 });
@@ -213,6 +252,22 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   }, [projectId, router]);
   const toggleFoldRef = useRef(toggleFold);
   toggleFoldRef.current = toggleFold;
+  // Menu latéral : l'onglet actif reste visible, et un dégradé signale les onglets plus bas (petits écrans).
+  const navRef = useRef<HTMLElement>(null);
+  const [more, setMore] = useState({ up: false, down: false });
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const update = () => setMore({ up: nav.scrollTop > 2, down: nav.scrollTop + nav.clientHeight < nav.scrollHeight - 2 });
+    nav.querySelector<HTMLElement>("[aria-current=page]")?.scrollIntoView({ block: "nearest" });
+    update();
+    nav.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      nav.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [tab, folded]);
   const badge = (id: TabId) => {
     if (!data) return null;
     if (id === "produit") return (data.business === "services" ? missingActivity(data.services).length : 0) + data.product.questions.filter((q) => !q.answer).length || null;
@@ -223,7 +278,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   return (
     <div className={cx("min-h-dvh lg:grid lg:transition-[grid-template-columns] lg:duration-300", folded ? "lg:grid-cols-[76px_1fr]" : "lg:grid-cols-[272px_1fr]")}>
       {/* Barre latérale (ordinateur), repliable pour agrandir l'espace de travail */}
-      <aside className={cx("sticky top-0 hidden h-dvh flex-col gap-5 overflow-hidden border-r border-line bg-paper py-5 lg:flex", folded ? "px-2.5" : "px-4")}>
+      <aside className={cx("sticky top-0 hidden h-dvh flex-col gap-5 overflow-hidden border-r border-line bg-paper py-5 lg:flex [@media(max-height:900px)]:gap-3 [@media(max-height:900px)]:py-3", folded ? "px-2.5" : "px-4")}>
         <div className={cx("flex items-center gap-2", folded ? "flex-col" : "justify-between px-2")}>
           <Link href="/" aria-label={t("Accueil E-COM STUDIO IA", "E-COM STUDIO IA home")}>
             <Logo compact={folded} />
@@ -239,16 +294,17 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
         ) : (
           <ProjectSwitcher current={projectId} />
         )}
-        <nav className="-mx-1 flex-1 overflow-y-auto overflow-x-hidden px-1" aria-label={t("Espaces du projet", "Project spaces")}>
+        <div className="relative -mx-1 flex min-h-0 flex-1 flex-col">
+        <nav ref={navRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-1" aria-label={t("Espaces du projet", "Project spaces")}>
           {GROUPS.map(([g, gEn]) => (
-            <div key={g} className="mb-4">
-              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(g, gEn)}</p>}
+            <div key={g} className="mb-4 [@media(max-height:900px)]:mb-2">
+              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line [@media(max-height:900px)]:mb-1" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted [@media(max-height:900px)]:mb-0.5">{t(g, gEn)}</p>}
               {TABS.filter((x) => x.group === g).map((x) => {
                 const Icon = tabIcon(x, data?.business);
                 const b = badge(x.id);
                 const label = tabLabel(x, lang, data?.business);
                 return (
-                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
+                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition [@media(max-height:900px)]:py-1.5 [@media(max-height:800px)]:py-1", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
                     <Icon className="size-4 shrink-0" />
                     {!folded && <span className="flex-1">{label}</span>}
                     {b !== null && (folded ? <span className="absolute right-2 top-1.5 size-2 rounded-full bg-signal" aria-hidden /> : <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", tab === x.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>)}
@@ -258,11 +314,18 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             </div>
           ))}
         </nav>
-        <div className="grid gap-1 border-t border-line pt-3 text-sm">
+          {more.up && <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-paper to-transparent" aria-hidden />}
+          {more.down && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-10 items-end justify-center bg-gradient-to-t from-paper via-paper/80 to-transparent" aria-hidden>
+              <ChevronDown className="mb-0.5 size-4 text-muted" />
+            </div>
+          )}
+        </div>
+        <div className="grid gap-1 border-t border-line pt-3 text-sm [@media(max-height:900px)]:gap-0 [@media(max-height:900px)]:pt-2">
           <TutorialsMenuLink tab={tab} business={data?.business} folded={folded} />
-          <Link href="/studio/compte" title={folded ? t("Mon compte", "My account") : undefined} aria-label={folded ? t("Mon compte", "My account") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Mon compte", "My account")}`}</Link>
-          {me?.user.role === "admin" && <Link href="/admin" title={folded ? t("Administration", "Admin") : undefined} aria-label={folded ? t("Administration", "Admin") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && ` ${t("Administration", "Admin")}`}</Link>}
-          <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? t("Déconnexion", "Log out") : undefined} aria-label={folded ? t("Déconnexion", "Log out") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && ` ${t("Déconnexion", "Log out")}`}</button>
+          <Link href="/studio/compte" title={folded ? t("Mon compte", "My account") : undefined} aria-label={folded ? t("Mon compte", "My account") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2 [@media(max-height:900px)]:py-1.5", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Mon compte", "My account")}`}</Link>
+          {me?.user.role === "admin" && <Link href="/admin" title={folded ? t("Administration", "Admin") : undefined} aria-label={folded ? t("Administration", "Admin") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2 [@media(max-height:900px)]:py-1.5", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && ` ${t("Administration", "Admin")}`}</Link>}
+          <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? t("Déconnexion", "Log out") : undefined} aria-label={folded ? t("Déconnexion", "Log out") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2 [@media(max-height:900px)]:py-1.5", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && ` ${t("Déconnexion", "Log out")}`}</button>
         </div>
       </aside>
 
@@ -272,16 +335,17 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             <Link href="/studio" className="shrink-0 lg:hidden" aria-label={t("Mes projets", "My projects")}><Logo compact /></Link>
             <div className="min-w-0 flex-1">
               <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{(() => { const cur = TABS.find((x) => x.id === tab); return cur ? tabLabel(cur, lang, data?.business) : null; })()}</h1>
-              <p className="truncate text-xs text-muted">{data?.brand?.name ?? data?.project.name}</p>
+              {data ? <p className="truncate text-xs text-muted">{data.brand?.name ?? data.project.name}</p> : <span className="skeleton mt-1 block h-3 w-28 rounded" aria-hidden />}
             </div>
             <TutorialButton tab={tab} business={data?.business} />
-            <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span>
+            {status ? <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span> : <span className="skeleton hidden h-6 w-24 rounded-full sm:inline-flex" aria-hidden />}
             <ActiveJobs />
             <PlanLink billing={billing} />
             <Notifications />
             <div className="hidden shrink-0 sm:flex"><LangSwitch /></div>
             <MobileLangToggle />
             <ThemeToggle className="shrink-0" />
+            <MobileMenu tab={tab} business={data?.business} isAdmin={me?.user.role === "admin"} />
           </div>
           {/* Onglets (téléphone et tablette) */}
           <nav className="scrollbar-none flex gap-1.5 overflow-x-auto px-4 pb-3 lg:hidden" aria-label={t("Espaces du projet", "Project spaces")}>

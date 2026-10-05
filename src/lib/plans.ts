@@ -96,6 +96,9 @@ export const PLANS: Record<PlanId, Plan> = {
 };
 export const PLAN_IDS = Object.keys(PLANS) as PlanId[];
 
+/** Thèmes entièrement sur mesure par compte et par mois, forfait Dominer (garde-fou : chaque thème mobilise beaucoup d'IA). */
+export const CUSTOM_THEMES_PER_MONTH = 2;
+
 /** Découverte gratuite : la vraie qualité IA, limitée à l'aperçu (pas d'export, pas d'images ni de vidéos IA). */
 export const DISCOVERY = {
   includes: ["analysis", "brand", "logos", "homePreview"] as const,
@@ -187,6 +190,8 @@ export type QuotaView = {
 export type BillingView = {
   /** Forfait en cours (null : pas d'abonnement — découverte gratuite). */
   plan: PlanId | null;
+  /** Création d'images, de vidéos et d'UGC ouverte (forfait, ou compte administrateur). */
+  canCreate?: boolean;
   billing: Billing | null;
   status: "none" | "trial" | "active" | "past_due" | "canceled" | "manual";
   /** Fin de la période en cours (renouvellement des quotas), en ms. */

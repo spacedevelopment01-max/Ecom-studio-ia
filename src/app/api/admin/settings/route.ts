@@ -13,8 +13,9 @@ const PriceSchema = z.discriminatedUnion("unit", [
   z.object({ unit: z.literal("video_second"), perSecond: pos }),
 ]);
 
-const SECRET_KEYS = /apiKey$|clientSecret$|secretKey$|webhookSecret$/;
-const ALLOWED = /^(provider\.(anthropic|openai|google|fal)\.(apiKey|disabled)|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|app\.url|meta\.graphVersion|shopify\.apiVersion)$/;
+// Réglages SMTP (serveur, identifiant, mot de passe, expéditeur) : chiffrés comme les clés, jamais renvoyés en clair.
+const SECRET_KEYS = /apiKey$|clientSecret$|secretKey$|webhookSecret$|^smtp\.(host|user|password|from)$/;
+const ALLOWED = /^(provider\.(anthropic|openai|google|fal)\.(apiKey|disabled)|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion)$/;
 
 /** Réglages d'administration. Les secrets sont chiffrés et jamais renvoyés en clair. */
 export const POST = handle(async (req: Request) => {
@@ -33,6 +34,8 @@ export const POST = handle(async (req: Request) => {
   );
   for (const s of b.set ?? []) {
     if (!ALLOWED.test(s.key)) throw new HttpError(400, L(`Réglage non autorisé : ${s.key}`, `Setting not allowed: ${s.key}`));
+    if (s.key === "smtp.port" && s.value && !/^\d{2,5}$/.test(s.value.trim())) throw new HttpError(400, L("Port SMTP invalide (ex. 587 ou 465).", "Invalid SMTP port (e.g. 587 or 465)."));
+    if (s.key === "smtp.from" && s.value && !/^[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+$|^[^<>]*<[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+>$/.test(s.value.trim())) throw new HttpError(400, L("Adresse d'expédition invalide (ex. studio@exemple.fr ou Studio <studio@exemple.fr>).", "Invalid sender address (e.g. studio@example.com or Studio <studio@example.com>)."));
     setSetting(s.key, s.value, SECRET_KEYS.test(s.key));
   }
   if (b.route) {

@@ -26,6 +26,7 @@ export const GET = handle(async () => {
   };
   const view: BillingView = {
     plan,
+    canCreate: !!plan || user.role === "admin",
     billing: plan ? (sub.billing ?? "month") : null,
     status: sub.status,
     // Une seule date partout (Mon compte, messages de quota, limite d'usage) : la fin de la période des quotas,

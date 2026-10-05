@@ -230,7 +230,7 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
       run("UPDATE content_plans SET strategy = ? WHERE id = ?", r.strategy, planId);
       return r.posts;
     }
-    run("UPDATE content_plans SET strategy = ? WHERE id = ?", L("Plan préparé par le moteur local : angles variés à partir des informations confirmées. Activez l'IA pour une stratégie rédigée sur mesure.", "Plan prepared by the local engine: varied angles based on confirmed information. Enable AI for a custom-written strategy."), planId);
+    run("UPDATE content_plans SET strategy = ? WHERE id = ?", L("Plan préparé en version simplifiée : angles variés à partir des informations confirmées. Une stratégie rédigée sur mesure sera proposée dès que l'IA sera connectée.", "Plan prepared in a simplified version: varied angles based on confirmed information. A custom-written strategy will be offered as soon as AI is connected."), planId);
     return localPlan(p, params);
   });
 

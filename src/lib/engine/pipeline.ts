@@ -16,7 +16,7 @@ import { localAnalysis, factsFromDescription, localServiceAnalysis, mergeService
 import { buildBrand } from "./brand";
 import { localCopy } from "./local-copy";
 import { buildShop } from "./shop";
-import { importExistingSite, loadSiteImport, saveReproductionNotes, siteKept } from "./existing-site";
+import { importExistingSiteNote, loadSiteImport, saveReproductionNotes, siteKept } from "./existing-site";
 import { buildReproducedShop, platformName } from "./site-reproduce";
 import { produceVideo, videoStepNote, type VideoStepResult } from "./videos";
 
@@ -25,7 +25,8 @@ const stepVideo = (r: Awaited<ReturnType<typeof produceVideo>>): VideoStepResult
 import { aiAnalyzeProduct, aiAnalyzeService, aiShopCopyChecked } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { emptyProduct, type BusinessType, type ProductProfile } from "../project-types";
-import { C, L } from "../i18n-server";
+import { C, L, inBothLangs } from "../i18n-server";
+import { note, stepNoteText, type StepNote } from "../step-notes";
 
 export const STEPS = [
   { id: "sources", label: "Lecture des sources", detail: "Photos, lien importé, description", en: { label: "Reading sources", detail: "Photos, imported link, description" } },
@@ -62,7 +63,7 @@ const SITE_SHOP = {
 const stepInfo = (id: (typeof STEPS)[number]["id"], business: BusinessType = "products", site?: { decision?: "keep" | "reproduce" } | null) =>
   (site && id === "shop" && site.decision && SITE_SHOP[site.decision]) || (site && SITE_STEPS[id]) || (business === "services" && SERVICE_STEPS[id]) || STEPS.find((s) => s.id === id)!;
 /** Site existant sans photo détourée : explication affichée à la place d'une étape vide. */
-const NO_CUTOUT_SITE = () => L("En attente d'une photo nette du produit (onglet Produit) : les visuels et vidéos se créent ensuite.", "Waiting for a clear product photo (Product tab): visuals and videos are created next.");
+const NO_CUTOUT_SITE = () => note("skip.noCutoutSite");
 export type StepId = (typeof STEPS)[number]["id"];
 
 /** Contexte limité à une étape : avancement global et points de reprise préfixés. */
@@ -78,9 +79,9 @@ class StepContext extends JobContext {
   }
 }
 
-function markStep(ctx: JobContext, step: StepId, status: "running" | "done" | "skipped" | "failed" | "paused", note?: string) {
-  const steps = (ctx.checkpoint.__steps ?? {}) as Record<string, { status: string; at: number; note?: string }>;
-  steps[step] = { status, at: now(), note };
+function markStep(ctx: JobContext, step: StepId, status: "running" | "done" | "skipped" | "failed" | "paused", stepNote?: StepNote) {
+  const steps = (ctx.checkpoint.__steps ?? {}) as Record<string, { status: string; at: number; note?: StepNote }>;
+  steps[step] = { status, at: now(), note: stepNote };
   ctx.save("__steps", steps);
 }
 
@@ -114,9 +115,9 @@ export async function runPipeline(ctx: JobContext) {
       const info = stepInfo(step.id, cur.business, cur.settings.existingSite);
       ctx.progress(i / total, `${L(info.label, info.en.label)}…`);
       const sc = new StepContext(ctx, i / total, (i + 1) / total, step.id);
-      const note = await runStep(step.id, sc, payload);
-      if (note && typeof note === "object") markStep(ctx, step.id, "skipped", note.skipped);
-      else markStep(ctx, step.id, note === "skipped" ? "skipped" : "done", note && note !== "skipped" ? note : undefined);
+      const res = await runStep(step.id, sc, payload);
+      if (res && typeof res === "object" && "skipped" in res) markStep(ctx, step.id, "skipped", res.skipped);
+      else markStep(ctx, step.id, res === "skipped" ? "skipped" : "done", res && res !== "skipped" ? res : undefined);
       if (step.id === "brand" && payload.mode === "guided") {
         setStatus(projectId, "awaiting_validation");
         const p = loadProject(projectId);
@@ -133,7 +134,7 @@ export async function runPipeline(ctx: JobContext) {
     if (e instanceof JobPaused || e instanceof JobCancelled) {
       // Mise en pause ou annulation demandée par le client : ce n'est pas une erreur. L'étape en cours sera refaite
       // à la relance, les précédentes sont conservées.
-      if (cur) markStep(ctx, cur as StepId, "paused", e instanceof JobCancelled ? L("Arrêtée à votre demande : relancez quand vous voulez.", "Stopped at your request: restart whenever you like.") : undefined);
+      if (cur) markStep(ctx, cur as StepId, "paused", e instanceof JobCancelled ? note("stopped") : undefined);
       setStatus(projectId, "paused");
       throw e;
     }
@@ -144,27 +145,28 @@ export async function runPipeline(ctx: JobContext) {
 }
 
 /** Étape d'un moteur de contenus pour un site de services : une impossibilité (pas de photo exploitable…) est signalée sans arrêter la création. */
-async function serviceContent(fn: () => Promise<string>): Promise<string | { skipped: string }> {
+async function serviceContent(fn: () => Promise<StepNote>): Promise<StepNote | { skipped: StepNote }> {
   try {
     return await fn();
   } catch (e) {
     if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
-    return { skipped: L(`Non créé pour l'instant : ${(e as Error).message}`, `Not created for now: ${(e as Error).message}`) };
+    const msg = (e as Error).message;
+    return { skipped: inBothLangs(() => L(`Non créé pour l'instant : ${msg}`, `Not created for now: ${msg}`)) };
   }
 }
 
-async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload): Promise<string | void | { skipped: string }> {
+async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload): Promise<StepNote | "skipped" | void | { skipped: StepNote }> {
   const projectId = payload.projectId;
   const p = loadProject(projectId);
   const inp = payload.input;
   const services = p.business === "services";
   // Découverte gratuite (sans forfait) : analyse, marque, logos et aperçu de la boutique ; images, vidéos et calendrier avec un forfait.
   if ((step === "images" || step === "video" || step === "calendar") && !userPlan(p.userId) && one<{ role: string }>("SELECT role FROM users WHERE id = ?", p.userId)?.role !== "admin") {
-    return { skipped: L("Inclus dans les forfaits : choisissez un forfait dans « Mon compte », puis relancez cette étape", "Included in the plans: choose a plan in \"My account\", then run this step again") };
+    return { skipped: note("skip.plan") };
   }
   switch (step) {
     case "sources": {
-      if (inp.existingSite && inp.siteUrl) return importExistingSite(ctx, projectId, inp.siteUrl);
+      if (inp.existingSite && inp.siteUrl) return importExistingSiteNote(ctx, projectId, inp.siteUrl);
       if (inp.link && services) {
         // Site actuel d'une entreprise de services : seul le texte sert (présentation, prestations, coordonnées).
         const imported = await ctx.step("link", async () => {
@@ -175,7 +177,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
           return { url: r.url, title: r.title, description: r.description, text: r.text.slice(0, 15000), product: null, platform: r.platform, photos: 0 };
         });
         remember(projectId, { kind: "artifact", key: "link_import", value: JSON.stringify(imported), source: "link", status: "confirmed" });
-        return L(`Site lu : ${imported.title || imported.url}`, `Website read: ${imported.title || imported.url}`);
+        return inBothLangs(() => L(`Site lu : ${imported.title || imported.url}`, `Website read: ${imported.title || imported.url}`));
       }
       if (inp.link) {
         const imported = await ctx.step("link", async () => {
@@ -194,15 +196,15 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
           return { url: r.url, title: r.title, description: r.description, text: r.text.slice(0, 15000), product: r.product, platform: r.platform, photos };
         });
         remember(projectId, { kind: "artifact", key: "link_import", value: JSON.stringify(imported), source: "link", status: "confirmed" });
-        return L(`Lien lu : ${imported.title || imported.url}${imported.photos ? ` (${imported.photos} photo(s) importée(s))` : ""}`, `Link read: ${imported.title || imported.url}${imported.photos ? ` (${imported.photos} photo(s) imported)` : ""}`);
+        return inBothLangs(() => L(`Lien lu : ${imported.title || imported.url}${imported.photos ? ` (${imported.photos} photo(s) importée(s))` : ""}`, `Link read: ${imported.title || imported.url}${imported.photos ? ` (${imported.photos} photo(s) imported)` : ""}`));
       }
-      if (services) return inp.description ? L("Description de l'activité enregistrée", "Business description saved") : L("Photos reçues", "Photos received");
-      return inp.description ? L("Description enregistrée", "Description saved") : L("Photos reçues", "Photos received");
+      if (services) return inp.description ? note("sources.serviceDescription") : note("sources.photos");
+      return inp.description ? note("sources.description") : note("sources.photos");
     }
     case "cutout": {
       if (services) {
         const n = one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin IN ('upload','site') AND deleted_at IS NULL", projectId)?.n ?? 0;
-        return { skipped: n ? L(`${n} photo(s) de l'activité gardée(s) telles quelles`, `${n} business photo(s) kept as they are`) : L("Aucune photo fournie : vous pourrez en ajouter dans l'onglet Activité", "No photo provided: you can add some in the Business tab") };
+        return { skipped: n ? note("skip.servicePhotos", { n }) : note("skip.serviceNoPhoto") };
       }
       let cut;
       try {
@@ -210,10 +212,11 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       } catch (e) {
         // Site existant : les photos du site ne se prêtent pas toujours au détourage ; le reste du studio continue avec elles.
         if (e instanceof JobPaused || e instanceof JobCancelled || !p.settings.existingSite) throw e;
-        return { skipped: L(`Détourage impossible sur les photos de votre site (${(e as Error).message}) : ajoutez une photo nette du produit dans l'onglet Produit pour les visuels détourés.`, `Cutout not possible on your website's photos (${(e as Error).message}): add a clear product photo in the Product tab for cutout visuals.`) };
+        const msg = (e as Error).message;
+        return { skipped: inBothLangs(() => L(`Détourage impossible sur les photos de votre site (${msg}) : ajoutez une photo nette du produit dans l'onglet Produit pour les visuels détourés.`, `Cutout not possible on your website's photos (${msg}): add a clear product photo in the Product tab for cutout visuals.`)) };
       }
       if (!cut.length) return "skipped";
-      return L(`${cut.length} détourage(s) réalisé(s) localement`, `${cut.length} cutout(s) done locally`);
+      return note("cutout.done", { n: cut.length });
     }
     case "analysis": {
       if (services) return analyzeService(ctx, payload);
@@ -264,68 +267,65 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       if (product.name) run("UPDATE projects SET name = CASE WHEN name LIKE 'Nouveau projet%' THEN ? ELSE name END WHERE id = ?", product.name, projectId);
       const unknown = product.facts.filter((f) => f.status === "unknown").length;
       const established = product.facts.filter((f) => f.status !== "unknown").length;
-      return L(
-        `${established} information(s) établie(s), ${unknown} inconnue(s), ${product.questions.length} question(s) — ${product.analyzedBy === "ai" ? "analyse IA" : "moteur local"}`,
-        `${established} fact(s) established, ${unknown} unknown(s), ${product.questions.length} question(s) — ${product.analyzedBy === "ai" ? "AI analysis" : "local engine"}`,
-      );
+      return note("analysis.product", { established, unknown, questions: product.questions.length, ai: product.analyzedBy === "ai" ? 1 : 0 });
     }
     case "brand": {
       const brand = await buildBrand(ctx, projectId, { providedBrand: inp.brandName });
-      return L(`${brand.name} — direction ${brand.direction}${brand.generatedBy === "local" ? " (moteur local)" : ""}`, `${brand.name} — ${brand.direction} direction${brand.generatedBy === "local" ? " (local engine)" : ""}`);
+      return note("brand.done", { name: brand.name, direction: brand.direction });
     }
     case "copy": {
       const fresh = loadProject(projectId);
       if (llmConfigured()) {
         const r = await ctx.step("ai", () => aiShopCopyChecked({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, fresh, (m) => ctx.progress(0.5, m)));
         remember(projectId, { kind: "artifact", key: "shop_copy", value: JSON.stringify(r.copy), source: "ai", status: "confirmed" });
-        return r.qc.remaining.length ? L(`Textes rédigés ; ${r.qc.remaining.length} point(s) à vérifier par vous`, `Copy written; ${r.qc.remaining.length} point(s) for you to check`) : L("Textes rédigés et contrôlés", "Copy written and checked");
+        return r.qc.remaining.length ? note("copy.toCheck", { n: r.qc.remaining.length }) : note("copy.checked");
       }
       remember(projectId, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(fresh.product, fresh.brand!, fresh)), source: "local", status: "confirmed" });
-      return L("Textes de base assemblés (moteur local) — à enrichir", "Base copy assembled (local engine) — to be enriched");
+      return note("copy.base");
     }
     case "images": {
       if (services) {
         return serviceContent(async () => {
           const r = await generateImageSet(ctx, projectId);
-          return L(`${r.created.length} image(s) créée(s)`, `${r.created.length} image(s) created`);
+          return note("images.done", { n: r.created.length });
         });
       }
       const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
       if (!has) return p.settings.existingSite ? { skipped: NO_CUTOUT_SITE() } : "skipped";
       const r = await generateImageSet(ctx, projectId);
-      return L(`${r.created.length} image(s) créée(s)`, `${r.created.length} image(s) created`);
+      return note("images.done", { n: r.created.length });
     }
     case "video": {
-      if (inp.videos === "none") return { skipped: L("Vidéos non demandées au lancement : créez-les quand vous voulez dans l'onglet Vidéos", "Videos not requested at launch: create them whenever you like in the Videos tab") };
+      if (inp.videos === "none") return { skipped: note("skip.videosNone") };
       if (services) {
         return serviceContent(async () => {
           const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") })));
           const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo de présentation de l'activité pour le site", "business presentation video for the website"), music: "none" })));
-          return videoStepNote([a, b], inp.videos !== "edited");
+          return inBothLangs(() => videoStepNote([a, b], inp.videos !== "edited"));
         });
       }
       const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
       if (!has) return p.settings.existingSite ? { skipped: NO_CUTOUT_SITE() } : "skipped";
       const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })));
       const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })));
-      return videoStepNote([a, b], inp.videos !== "edited");
+      return inBothLangs(() => videoStepNote([a, b], inp.videos !== "edited"));
     }
     case "shop": {
       const site = loadSiteImport(projectId);
       if (site && p.settings.existingSite) {
         // Site conservé tel quel : aucun thème n'est créé (le client peut en demander un depuis l'onglet Boutique).
-        if (siteKept(projectId)) return { skipped: L(`Votre site ${platformName(site.platform)} est conservé tel quel`, `Your ${platformName(site.platform)} website is kept as is`) };
+        if (siteKept(projectId)) return { skipped: inBothLangs(() => L(`Votre site ${platformName(site.platform)} est conservé tel quel`, `Your ${platformName(site.platform)} website is kept as is`)) };
         if (site.decision === "reproduce" && !p.settings.existingSite.newSiteRequested) {
           const r = await ctx.step("reproduce", () => buildReproducedShop(ctx, projectId, site));
           saveReproductionNotes(projectId, r.versionId);
-          return L(`Votre site reproduit à l'identique (version ${r.number})`, `Your website reproduced as is (version ${r.number})`);
+          return note("shop.reproduced", { n: r.number });
         }
       }
       const r = await buildShop(ctx, projectId);
-      return services ? L(`Version ${r.number} du site enregistrée`, `Website version ${r.number} saved`) : L(`Version ${r.number} du thème enregistrée`, `Theme version ${r.number} saved`);
+      return note(services ? "shop.site" : "shop.theme", { n: r.number });
     }
     case "calendar": {
-      const planId = await ctx.step("plan", async () => {
+      await ctx.step("plan", async () => {
         const pid = id();
         const fresh = loadProject(projectId);
         const conns = all<{ id: string; provider: string }>("SELECT c.id, c.provider FROM connections c JOIN project_connections pc ON pc.connection_id = c.id WHERE pc.project_id = ? AND c.provider IN ('instagram','facebook','tiktok','youtube','pinterest')", projectId);
@@ -337,13 +337,13 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         run("UPDATE content_plans SET job_id = ? WHERE id = ?", job.id, pid);
         return pid;
       });
-      return L(`Calendrier en préparation (${planId.slice(0, 6)})`, `Calendar in progress (${planId.slice(0, 6)})`);
+      return note("calendar.started");
     }
     case "organize": {
       const n = one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND deleted_at IS NULL", projectId)?.n ?? 0;
       const loose = one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND folder_id IS NULL AND deleted_at IS NULL", projectId)?.n ?? 0;
       if (loose) enqueue({ userId: p.userId, projectId, type: "files.classify", label: L("Classement des fichiers", "File organization"), payload: { projectId }, parentId: ctx.job.id, idempotencyKey: `pipeline-classify:${ctx.job.id}` });
-      return L(`${n} fichiers rangés par dossier${loose ? `, ${loose} à classer` : ""}`, `${n} files organized into folders${loose ? `, ${loose} to sort` : ""}`);
+      return note("organize.done", { n, loose });
     }
   }
 }
@@ -363,10 +363,11 @@ class StepScope extends JobContext {
 
 export function pipelineState(job: Job | undefined, business: BusinessType = "products", site?: { decision?: "keep" | "reproduce" } | null) {
   const cp = json<Record<string, any>>(job?.checkpoint, {});
-  const steps = (cp.__steps ?? {}) as Record<string, { status: string; at: number; note?: string }>;
+  const steps = (cp.__steps ?? {}) as Record<string, { status: string; at: number; note?: StepNote }>;
   return STEPS.map((s) => {
     const i = stepInfo(s.id, business, site);
-    return { id: s.id, label: L(i.label, i.en.label), detail: L(i.detail, i.en.detail), status: steps[s.id]?.status ?? "pending", note: steps[s.id]?.note, at: steps[s.id]?.at };
+    // Résumé traduit à l'affichage, dans la langue de l'interface de la personne qui lit.
+    return { id: s.id, label: L(i.label, i.en.label), detail: L(i.detail, i.en.detail), status: steps[s.id]?.status ?? "pending", note: stepNoteText(steps[s.id]?.note, L("fr", "en")), at: steps[s.id]?.at };
   });
 }
 
@@ -375,7 +376,7 @@ export function pipelineState(job: Job | undefined, business: BusinessType = "pr
  * et offre complétée (prestations, zone, coordonnées) à partir de la description et du site actuel.
  * Ce que le client a saisi prime ; rien n'est inventé (les manques restent vides, à compléter dans l'onglet Activité).
  */
-async function analyzeService(ctx: JobContext, payload: PipelinePayload): Promise<string> {
+async function analyzeService(ctx: JobContext, payload: PipelinePayload): Promise<StepNote> {
   const projectId = payload.projectId;
   const p = loadProject(projectId);
   const inp = payload.input;
@@ -428,14 +429,15 @@ async function analyzeService(ctx: JobContext, payload: PipelinePayload): Promis
   saveProduct(projectId, product);
   saveServices(projectId, offer);
   if (product.name) run("UPDATE projects SET name = CASE WHEN name LIKE 'Nouveau projet%' OR name LIKE 'New project%' THEN ? ELSE name END WHERE id = ?", inp.brandName || product.name, projectId);
-  const missing = [
-    !offer.services.length && L("prestations", "services"),
-    !offer.area && !offer.address && L("zone ou adresse", "area or address"),
-    !offer.phone && !offer.email && L("téléphone ou e-mail", "phone or email"),
-    !offer.hours && L("horaires", "hours"),
-  ].filter(Boolean) as string[];
-  return L(
-    `${offer.services.length} prestation(s), ${product.facts.length} information(s) établie(s)${missing.length ? ` ; à compléter : ${missing.join(", ")}` : ""} — ${product.analyzedBy === "ai" ? "analyse IA" : "moteur local"}`,
-    `${offer.services.length} service(s), ${product.facts.length} fact(s) established${missing.length ? `; to complete: ${missing.join(", ")}` : ""} — ${product.analyzedBy === "ai" ? "AI analysis" : "local engine"}`,
+  const missing = inBothLangs(() =>
+    [
+      !offer.services.length && L("prestations", "services"),
+      !offer.area && !offer.address && L("zone ou adresse", "area or address"),
+      !offer.phone && !offer.email && L("téléphone ou e-mail", "phone or email"),
+      !offer.hours && L("horaires", "hours"),
+    ]
+      .filter(Boolean)
+      .join(", "),
   );
+  return note("analysis.service", { services: offer.services.length, facts: product.facts.length, missing, ai: product.analyzedBy === "ai" ? 1 : 0 });
 }

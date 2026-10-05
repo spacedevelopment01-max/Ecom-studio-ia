@@ -128,8 +128,8 @@ function Memory() {
           <option value="decision">{t("Décision", "Decision")}</option>
           <option value="goal">{t("Objectif", "Goal")}</option>
         </Select>
-        <Input value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} placeholder={t("Sujet (ex. ton des légendes)", "Topic (e.g. caption tone)")} />
-        <Textarea value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} placeholder={t("Ce qu'il faut retenir (ex. jamais d'emoji, vouvoyer)", "What to remember (e.g. never use emojis, keep a formal tone)")} className="sm:col-span-2" rows={2} />
+        <Input aria-label={t("Sujet", "Topic")} value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} placeholder={t("Sujet (ex. ton des légendes)", "Topic (e.g. caption tone)")} />
+        <Textarea aria-label={t("Ce qu'il faut retenir", "What to remember")} value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} placeholder={t("Ce qu'il faut retenir (ex. jamais d'emoji, vouvoyer)", "What to remember (e.g. never use emojis, keep a formal tone)")} className="sm:col-span-2" rows={2} />
         <Button type="submit" variant="secondary" icon={<Plus className="size-4" />} className="justify-self-start">{t("Ajouter", "Add")}</Button>
       </form>
     </Card>
@@ -137,7 +137,8 @@ function Memory() {
 }
 
 /** Réglage : langue des contenus créés pour ce projet. */
-function ContentLanguage() {
+/** `started` : faux tant que la création n'est pas lancée (la plateforme se choisit alors dans « Démarrer la création »). */
+function ContentLanguage({ started = true }: { started?: boolean }) {
   const { id, data, reload } = useProject();
   const toast = useToast();
   const t = useT();
@@ -181,7 +182,7 @@ function ContentLanguage() {
           <span className="text-ink-2">{svc ? t("Site d'une entreprise de services : activité, prestations, prise de contact.", "Website for a services business: business, services, getting in touch.") : t("Boutique en ligne : produits, panier, paiement sur votre plateforme.", "Online store: products, cart, checkout on your platform.")}</span>
         </p>
       </div>
-      <div className="mb-6 grid gap-2">
+      {started && <div className="mb-6 grid gap-2">
         <p className="flex items-center gap-2 text-sm font-medium"><Globe className="size-4 text-muted" aria-hidden /> {svc ? t("Plateforme du site", "Website platform") : t("Plateforme de la boutique", "Store platform")}</p>
         <p className="text-xs text-muted">{svc ? t("Conseil : WordPress pour un site de services ; Shopify convient aussi. Le site reste le même, seule la livraison change.", "Tip: WordPress for a services website; Shopify works too. The website stays the same, only the delivery changes.") : t("Le site reste le même, seule la livraison change (thème installable ou kit de reprise).", "The site stays the same, only the delivery changes (installable theme or rebuild kit).")}</p>
         {data.settings.existingSite?.status === "read" && (
@@ -194,7 +195,7 @@ function ContentLanguage() {
         <div className={busy ? "pointer-events-none opacity-60" : undefined}>
           <PlatformCards value={isPlatform(data.project.platform) ? data.project.platform : "shopify"} onChange={changePlatform} business={data.business} compact />
         </div>
-      </div>
+      </div>}
       <div className="grid gap-1.5">
         <label htmlFor="project-content-lang" className="flex items-center gap-2 text-sm font-medium">
           <Languages className="size-4 text-muted" aria-hidden /> {t("Langue des contenus du projet", "Project content language")}
@@ -258,7 +259,8 @@ export default function TabPilote() {
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("l'analyse, la marque et les textes", "the analysis, the brand and the copy")} />
       {!pl && <StartCreation />}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+      {/* Projet pas encore lancé : pas de carte d'avancement vide ni d'aperçu « en cours » (rien ne tourne). */}
+      {pl && <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <Card className="p-5 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -360,10 +362,10 @@ export default function TabPilote() {
           )}
           {pl?.job.finishedAt && <p className="text-xs text-muted">{t("Dernière exécution terminée le", "Last run finished on")} {formatDate(pl.job.finishedAt)}.</p>}
         </div>
-      </div>
+      </div>}
       <ActivityGaps />
       <Questions />
-      <ContentLanguage />
+      <ContentLanguage started={!!pl} />
       <Memory />
     </div>
   );

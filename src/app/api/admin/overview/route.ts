@@ -7,6 +7,7 @@ import { balance, getSubscription, EUR } from "@/lib/billing";
 import { getSetting, getJsonSetting, appUrl } from "@/lib/settings";
 import { PROVIDER_INFO, providerConfig, redirectUri, type ProviderKey } from "@/lib/social/oauth";
 import { paymentsLive, stripeKeys } from "@/lib/payments";
+import { mailConfigured } from "@/lib/mail";
 
 export const GET = handle(async () => {
   await requireAdmin();
@@ -34,6 +35,8 @@ export const GET = handle(async () => {
     markup: getJsonSetting<number>("billing.markup", 1),
     oauth: (Object.keys(PROVIDER_INFO) as ProviderKey[]).map((k) => ({ key: k, label: PROVIDER_INFO[k].label, configured: providerConfig(k).configured, clientIdMasked: mask(providerConfig(k).clientId), redirectUri: redirectUri(k), needs: PROVIDER_INFO[k].needs, docs: PROVIDER_INFO[k].docs })),
     stripe: { secretMasked: mask(stripeKeys().secret), webhookConfigured: !!stripeKeys().webhookSecret, verifiedAt: getSetting("stripe.verifiedAt"), live: paymentsLive(), webhookUrl: `${appUrl()}/api/stripe/webhook` },
+    // SMTP : valeurs masquées uniquement (le port n'est pas un secret).
+    smtp: { configured: mailConfigured(), hostMasked: mask(getSetting("smtp.host")), port: getSetting("smtp.port") ?? "", userMasked: mask(getSetting("smtp.user")), passwordConfigured: !!getSetting("smtp.password"), fromMasked: mask(getSetting("smtp.from")) },
     users,
     usage,
     revenue,

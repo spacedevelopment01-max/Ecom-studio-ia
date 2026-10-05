@@ -6,7 +6,7 @@
  */
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Sparkles, X } from "lucide-react";
+import { Lock, Sparkles, X } from "lucide-react";
 import { cx, formatDate, useApi } from "./ui";
 import { useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
@@ -48,6 +48,31 @@ export function useBilling(opts: { poll?: number } = {}) {
 export function Soon({ className }: { className?: string }) {
   const t = useT();
   return <span className={cx("inline-flex shrink-0 items-center rounded-full bg-warn-soft px-2 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-warn", className)}>{t("Bientôt", "Soon")}</span>;
+}
+
+/** Création d'images, de vidéos ou d'UGC fermée (découverte gratuite). Faux tant que le forfait n'est pas chargé. */
+export function useCreationLocked() {
+  const { billing } = useBilling();
+  return !!billing && billing.canCreate === false;
+}
+
+/** Raison affichée sous un bouton de création désactivé, avec le lien « Choisir un forfait ». */
+export function PlanRequired({ what, className }: { what: "images" | "videos" | "ugc"; className?: string }) {
+  const t = useT();
+  const text = {
+    images: t("La création d'images est incluse dans les forfaits.", "Image creation is included in the plans."),
+    videos: t("La création de vidéos est incluse dans les forfaits.", "Video creation is included in the plans."),
+    ugc: t("Les vidéos UGC sont réservées aux forfaits.", "UGC videos are available with the plans."),
+  }[what];
+  return (
+    <div role="note" className={cx("flex items-start gap-2 rounded-2xl border border-signal/30 bg-signal-soft px-3 py-2.5 text-xs text-ink", className)}>
+      <Lock className="mt-0.5 size-3.5 shrink-0 text-signal" aria-hidden />
+      <p>
+        {text} {t("La découverte gratuite montre l'analyse, la marque, les logos et l'aperçu de la boutique.", "The free discovery shows the analysis, brand, logos and store preview.")}{" "}
+        <Link href="/studio/compte#forfaits" className="font-semibold underline underline-offset-2">{t("Choisir un forfait", "Choose a plan")}</Link>
+      </p>
+    </div>
+  );
 }
 
 /** Lien discret vers « Mon compte » (forfait en cours) dans l'en-tête du studio. */
