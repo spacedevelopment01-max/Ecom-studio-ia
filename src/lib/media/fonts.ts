@@ -1,9 +1,38 @@
 /** Polices embarquées (OFL) pour les compositions d'images, logos et vidéos. */
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { GlobalFonts } from "@napi-rs/canvas";
 
-export const FONT_DIR = path.join(process.cwd(), "assets", "fonts");
+/**
+ * Dossier des polices. Il ne dépend pas seulement du dossier de lancement : lancé ailleurs (script, service,
+ * travailleur démarré depuis un autre dossier), le rendu retombait EN SILENCE sur une police système de graisse
+ * normale — un logo « Montserrat 800 » sortait fin. On cherche donc FONT_DIR (variable d'environnement), puis
+ * assets/fonts en remontant depuis le dossier courant et depuis ce fichier.
+ */
+export function findFontDir(): string {
+  const probe = (dir: string) => fs.existsSync(path.join(dir, "Inter-400.ttf"));
+  if (process.env.FONT_DIR && probe(process.env.FONT_DIR)) return process.env.FONT_DIR;
+  const starts = [process.cwd()];
+  try {
+    starts.push(path.dirname(fileURLToPath(import.meta.url)));
+  } catch {
+    // Module sans URL de fichier (paquet) : le dossier courant suffit.
+  }
+  for (const start of starts) {
+    let dir = start;
+    for (let i = 0; i < 8; i++) {
+      const cand = path.join(dir, "assets", "fonts");
+      if (probe(cand)) return cand;
+      const up = path.dirname(dir);
+      if (up === dir) break;
+      dir = up;
+    }
+  }
+  return path.join(process.cwd(), "assets", "fonts");
+}
+
+export const FONT_DIR = findFontDir();
 
 /** Familles disponibles pour la composition (nom canvas → fichiers par graisse). */
 export const CANVAS_FONTS: Record<string, { file: Record<number, string>; italic?: string; kind: "serif" | "sans" | "display" }> = {
@@ -47,20 +76,29 @@ export function canvasFamily(shopifyHandle: string | undefined, fallback = "Inte
 }
 
 let registered = false;
+/** Alias effectivement enregistrés (un fichier absent ne doit jamais passer inaperçu). */
+const available = new Set<string>();
 /** Enregistre chaque graisse sous un alias unique : « Famille@600 », « Famille@italic ». */
 export function ensureFonts() {
   if (registered) return;
   for (const [family, def] of Object.entries(CANVAS_FONTS)) {
     for (const [w, file] of Object.entries(def.file)) {
       const p = path.join(FONT_DIR, file);
-      if (fs.existsSync(p)) GlobalFonts.registerFromPath(p, `${family}@${w}`);
+      if (fs.existsSync(p) && GlobalFonts.registerFromPath(p, `${family}@${w}`)) available.add(`${family}@${w}`);
     }
     if (def.italic) {
       const p = path.join(FONT_DIR, def.italic);
-      if (fs.existsSync(p)) GlobalFonts.registerFromPath(p, `${family}@italic`);
+      if (fs.existsSync(p) && GlobalFonts.registerFromPath(p, `${family}@italic`)) available.add(`${family}@italic`);
     }
   }
+  if (!available.size) console.error(`[polices] aucune police trouvée dans ${FONT_DIR} : les logos et visuels ne peuvent pas être rendus fidèlement.`);
   registered = true;
+}
+
+/** Graisses réellement disponibles d'une famille (pour les contrôles et les tests). */
+export function availableWeights(family: string): number[] {
+  ensureFonts();
+  return Object.keys(CANVAS_FONTS[family]?.file ?? {}).map(Number).filter((w) => available.has(`${family}@${w}`));
 }
 
 /** Chaîne CSS « font » utilisable par canvas, avec la graisse la plus proche disponible. */
@@ -68,8 +106,11 @@ export function font(family: string, weight: number, sizePx: number, italic = fa
   ensureFonts();
   const def = CANVAS_FONTS[family] ?? CANVAS_FONTS.Inter;
   const name = CANVAS_FONTS[family] ? family : "Inter";
-  if (italic && def.italic) return `${sizePx}px "${name}@italic"`;
-  const weights = Object.keys(def.file).map(Number).sort((a, b) => Math.abs(a - weight) - Math.abs(b - weight));
+  if (italic && def.italic && available.has(`${name}@italic`)) return `${sizePx}px "${name}@italic"`;
+  // Graisse la plus proche parmi les fichiers réellement chargés.
+  const weights = Object.keys(def.file).map(Number).filter((w) => available.has(`${name}@${w}`)).sort((a, b) => Math.abs(a - weight) - Math.abs(b - weight));
+  // Aucune graisse chargée : jamais de police système en silence (un logo ou un visuel faux est pire qu'un échec).
+  if (!weights.length) throw new Error(`Police « ${name} » introuvable (dossier ${FONT_DIR}) : rendu impossible sans la bonne police.`);
   return `${sizePx}px "${name}@${weights[0]}"`;
 }
 

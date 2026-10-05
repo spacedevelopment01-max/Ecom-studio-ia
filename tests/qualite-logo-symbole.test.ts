@@ -2,7 +2,9 @@
  * Symbole de logo sur mesure : SVG de l'IA nettoyé (tout SVG malveillant ou hors règles refusé), lisibilité à
  * petite taille, repli sur la silhouette du produit puis sur la bibliothèque, proposition par défaut et favicon.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import { createCanvas } from "@napi-rs/canvas";
 import sharp from "sharp";
 import { fitSymbol, sanitizeSymbolSvg, silhouetteSymbol, symbolLegibility, symbolPng, type CustomSymbol } from "@/lib/media/logo-symbol";
@@ -231,4 +233,39 @@ describe("Déclinaisons", () => {
     // Le symbole occupe l'onglet (et pas un petit dessin perdu dans un cercle).
     expect(ink).toBeGreaterThan(256 * 0.2);
   });
+});
+
+describe("Graisse des polices du logo respectée partout", () => {
+  const ink = async (png: Buffer) => {
+    const { data, info } = await sharp(png).ensureAlpha().resize(600, null).raw().toBuffer({ resolveWithObject: true });
+    let s = 0;
+    for (let i = 3; i < data.length; i += 4) s += data[i];
+    return s / 255 / (info.width * info.height);
+  };
+  const spec = (family: string, weight: number) => ({ name: "SOVA", family, weight, case: "upper" as const, tracking: 0.04, layout: "wordmark" as const, emblem: "none" as const, color: "#111111" });
+
+  it("les fichiers de graisse sont trouvés même lancé depuis un autre dossier", async () => {
+    const { findFontDir } = await import("@/lib/media/fonts");
+    const spy = vi.spyOn(process, "cwd").mockReturnValue("/tmp");
+    try {
+      expect(fs.existsSync(path.join(findFontDir(), "Montserrat-800.ttf"))).toBe(true);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  for (const family of ["Montserrat", "Archivo"])
+    it(`${family} 800 nettement plus gras que 400 (PNG et SVG exporté vectorisé)`, async () => {
+      const { availableWeights } = await import("@/lib/media/fonts");
+      expect(availableWeights(family)).toEqual(expect.arrayContaining([400, 800]));
+      const { logoPng, buildLogoSvg } = await import("@/lib/media/logo");
+      const thin = await ink(await logoPng(spec(family, 400), 600));
+      const bold = await ink(await logoPng(spec(family, 800), 600));
+      expect(bold / thin).toBeGreaterThan(1.35);
+      // SVG autonome : texte converti en tracés (aucune police requise), graisse conservée au rendu.
+      const s4 = buildLogoSvg(spec(family, 400)).svg, s8 = buildLogoSvg(spec(family, 800)).svg;
+      expect(s8).not.toMatch(/<text|font-family/i);
+      const r = (await ink(await sharp(Buffer.from(s8)).png().toBuffer())) / (await ink(await sharp(Buffer.from(s4)).png().toBuffer()));
+      expect(r).toBeGreaterThan(1.35);
+    });
 });
