@@ -17,6 +17,7 @@ import { isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId }
 import type { BusinessType } from "@/lib/project-types";
 import { KeptSiteCard, ReproductionBanner, SiteReading } from "./existing-site";
 import { useBilling } from "../billing-client";
+import { CustomThemeButton, useCustomThemeStatus } from "./custom-theme";
 
 type TFn = <T>(fr: T, en: T) => T;
 
@@ -108,7 +109,9 @@ export default function TabBoutique() {
   // Sans forfait (découverte gratuite) : aperçu filigrané « Aperçu », pas d'export ni de publication (bloqués aussi côté serveur).
   const { billing } = useBilling();
   const discovery = !!billing && !billing.plan;
-  const chatJobs = useActive(["shop.chat", "shop.build", "shop.direction", "shopify.push"]);
+  const chatJobs = useActive(["shop.chat", "shop.build", "shop.direction", "shopify.push", "theme.custom"]);
+  // Thème entièrement sur mesure (Dominer) et sections sur mesure (Vendre, Dominer) : accès selon le forfait.
+  const custom = useCustomThemeStatus(id);
   const [view, setView] = useState<"chat" | "preview" | "structure">("chat");
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
   // Sur téléphone, l'aperçu s'ouvre au format téléphone (lisible et désignable au doigt).
@@ -479,6 +482,7 @@ export default function TabBoutique() {
         {cur.motion && <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />}
 <button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: t("En bas de la page", "At the bottom of the page") })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> {t("Section", "Section")}</button>
                 <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> {t("Thèmes", "Themes")}</button>
+                <CustomThemeButton projectId={id} status={custom.data} reload={custom.reload} onDone={() => (reload(), reloadProject())} />
                 <button onClick={() => setImportOpen("upload")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" title={t("Importer le thème de votre boutique Shopify", "Import your Shopify store theme")}><Upload className="size-3.5" /> {t("Importer mon thème", "Import my theme")}</button>
                 {cur.imported && <button onClick={() => setImportOpen("report")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-signal/40 bg-signal-soft px-3 text-xs text-signal" title={t("Analyse de votre thème importé", "Analysis of your imported theme")}><Layers className="size-3.5" /> {cur.imported.name} · {t("analyse", "analysis")}</button>}
         <div className="ml-auto flex items-center gap-1.5">
@@ -554,7 +558,7 @@ export default function TabBoutique() {
         </ul>
       </Modal>
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
-      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} />
+      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} />
       <ThemeGallery services={isServices} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} />
     </div>

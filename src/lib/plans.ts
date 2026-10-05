@@ -116,6 +116,8 @@ export type Pack = {
   adds: Partial<Record<QuotaKey | "languages", number>>;
   /** Achat unique (pack de lancement). */
   once?: boolean;
+  /** Pas encore en vente (la fonction n'est pas construite). */
+  soon?: boolean;
 };
 
 export const PACKS: Record<PackId, Pack> = {
@@ -154,9 +156,12 @@ export const PACKS: Record<PackId, Pack> = {
     description: { fr: "Votre boutique traduite dans une langue de plus : textes, pages et fiches produits.", en: "Your store translated into one more language: copy, pages and product pages." },
     price: 29.9,
     adds: { languages: 1 },
+    soon: true,
   },
 };
 export const PACK_IDS = Object.keys(PACKS) as PackId[];
+/** Packs en vente (les packs « bientôt » ne sont ni affichés ni vendus). */
+export const PACKS_FOR_SALE = PACK_IDS.filter((id) => !PACKS[id].soon);
 
 /** Prix d'un pack pour un forfait (remise comprise), arrondi au centime. */
 export const packPrice = (pack: PackId, plan?: PlanId | null) => Math.round(PACKS[pack].price * (1 - (plan ? PLANS[plan].packDiscount : 0)) * 100) / 100;

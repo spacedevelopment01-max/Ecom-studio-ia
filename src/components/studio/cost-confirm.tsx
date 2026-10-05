@@ -11,7 +11,7 @@ import { useLang, useT } from "../i18n";
 import { formatEur, PACK_FOR_QUOTA, quotaWord } from "../billing-client";
 import { PACKS, type BillingView, type QuotaKey } from "@/lib/plans";
 
-export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc";
+export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc" | "blog";
 
 /** Quota utilisé par une action (null : rien n'est décompté). `many` : un jeu d'images (une par image créée). */
 function usage(action: CostAction, videos?: "ai" | "edited" | "none"): { key: QuotaKey; count: number; many?: boolean; ask: boolean } | null {
@@ -27,6 +27,8 @@ function usage(action: CostAction, videos?: "ai" | "edited" | "none"): { key: Qu
       return { key: "aiVideos", count: 1, ask: true };
     case "ugc":
       return { key: "ugc", count: 1, ask: true };
+    case "blog":
+      return { key: "blog", count: 1, ask: true };
     default:
       return null;
   }

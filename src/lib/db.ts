@@ -449,6 +449,30 @@ CREATE TABLE IF NOT EXISTS recurring_charges (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
+
+-- Articles de blog écrits par l'IA (forfaits Vendre et Dominer).
+CREATE TABLE IF NOT EXISTS blog_articles (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  title TEXT NOT NULL DEFAULT '',
+  slug TEXT NOT NULL DEFAULT '',
+  meta_title TEXT NOT NULL DEFAULT '',
+  meta_description TEXT NOT NULL DEFAULT '',
+  excerpt TEXT NOT NULL DEFAULT '',
+  body_html TEXT NOT NULL DEFAULT '',
+  tags TEXT NOT NULL DEFAULT '[]',
+  cover_asset_id TEXT,
+  language TEXT NOT NULL DEFAULT 'fr',
+  status TEXT NOT NULL DEFAULT 'draft', -- draft | ready | published
+  published_url TEXT,
+  platform_ref TEXT,                    -- identifiant de l'article sur la plateforme (Shopify : gid)
+  qc_notes TEXT NOT NULL DEFAULT '[]',  -- points du contrôle qualité restant à relire
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS blog_articles_project ON blog_articles(project_id, deleted_at, updated_at);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */

@@ -56,11 +56,14 @@ export type TaskId =
   | "copywriting"
   | "theme_design"
   | "theme_edit"
+  | "theme_custom"
   | "quality_control"
   | "social_planning"
   | "social_copy"
   | "classification"
   | "video_direction"
+  | "blog_topics"
+  | "blog_writing"
   | "image_generation"
   | "video_generation";
 
@@ -78,11 +81,14 @@ export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "imag
   copywriting: task("Rédaction (fiches, pages, marque)", "Copywriting (product pages, pages, brand)", "llm"),
   theme_design: task("Conception du thème boutique", "Store theme design", "llm"),
   theme_edit: task("Retouches du thème par conversation", "Theme edits via chat", "llm"),
+  theme_custom: task("Thème entièrement sur mesure (plan et sections)", "Fully custom theme (plan and sections)", "llm"),
   quality_control: task("Contrôle qualité", "Quality control", "llm"),
   social_planning: task("Planification éditoriale", "Content planning", "llm"),
   social_copy: task("Textes des publications", "Social post copy", "llm"),
   classification: task("Classement des fichiers", "File organization", "llm"),
   video_direction: task("Réalisation vidéo (concept, storyboard)", "Video direction (concept, storyboard)", "llm"),
+  blog_topics: task("Sujets d'articles de blog", "Blog post topics", "llm"),
+  blog_writing: task("Rédaction des articles de blog", "Blog post writing", "llm"),
   image_generation: task("Génération d'images (décors)", "Image generation (backgrounds)", "image"),
   video_generation: task("Génération vidéo (plans)", "Video generation (shots)", "video"),
 };
@@ -95,11 +101,14 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = {
   copywriting: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" },
   theme_design: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
   theme_edit: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
+  theme_custom: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
   quality_control: { provider: "anthropic", model: "claude-opus-5-5", effort: "low" },
   social_planning: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   social_copy: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
   classification: { provider: "anthropic", model: "claude-haiku-4-5" },
   video_direction: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
+  blog_topics: { provider: "anthropic", model: "claude-haiku-4-5" },
+  blog_writing: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" },
   image_generation: { provider: "openai", model: "gpt-image-1" },
   video_generation: { provider: "google", model: "veo-3.0-generate-001" },
 };

@@ -5,7 +5,7 @@ import { aiActiveFor } from "@/lib/ai/access";
 import { aiAvailability } from "@/lib/ai/config";
 import { L } from "@/lib/i18n-server";
 
-const ACTIONS: CostAction[] = ["pipeline", "theme", "images", "image", "video-clip", "ugc"];
+const ACTIONS: CostAction[] = ["pipeline", "theme", "images", "image", "video-clip", "ugc", "blog"];
 
 /** Part estimée des crédits de création qu'une action IA va consommer (aucun montant en euros n'est exposé). */
 export const GET = handle(async (req: Request) => {

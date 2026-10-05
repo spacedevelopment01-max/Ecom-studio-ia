@@ -9,7 +9,7 @@ import { ArrowRight, Check, ChevronDown, Minus } from "lucide-react";
 import { cx } from "./ui";
 import { useLang, useT } from "./i18n";
 import { formatEur, Soon } from "./billing-client";
-import { monthlyEquivalent, PACK_IDS, PACKS, PLAN_IDS, PLANS, type Billing, type PackId, type Plan, type PlanId } from "@/lib/plans";
+import { monthlyEquivalent, PACKS_FOR_SALE, PACKS, PLAN_IDS, PLANS, type Billing, type PackId, type Plan, type PlanId } from "@/lib/plans";
 
 type Line = { text: ReactNode; soon?: boolean };
 type TFn = <T>(fr: T, en: T) => T;
@@ -25,17 +25,17 @@ function planLines(p: Plan, t: TFn): Line[] {
     { text: t(`${q.aiVideos} vidéos IA par mois, qualité ${p.videoQuality === "max" ? "maximale" : "standard"}`, `${q.aiVideos} AI videos per month, ${p.videoQuality === "max" ? "maximum" : "standard"} quality`) },
   ];
   if (q.ugc) lines.push({ text: t(`${n(q.ugc, "vidéo UGC", "vidéos UGC")} par mois : une personne présente votre produit face caméra`, `${n(q.ugc, "UGC video", "UGC videos")} per month: a person presents your product on camera`) });
-  if (q.blog) lines.push({ text: t(`${n(q.blog, "article de blog", "articles de blog")} par mois`, `${n(q.blog, "blog post", "blog posts")} per month`), soon: true });
+  if (q.blog) lines.push({ text: t(`${n(q.blog, "article de blog", "articles de blog")} par mois`, `${n(q.blog, "blog post", "blog posts")} per month`) });
   lines.push({ text: p.autopublish ? t(`Publications prêtes pour ${p.calendarDays} jours, publiées automatiquement`, `Posts ready for ${p.calendarDays} days, published automatically`) : t(`Publications prêtes pour ${p.calendarDays} jours`, `Posts ready for ${p.calendarDays} days`) });
   lines.push({ text: p.campaigns === Infinity ? t("Campagnes publicitaires illimitées", "Unlimited ad campaigns") : t(n(p.campaigns, "campagne publicitaire", "campagnes publicitaires"), n(p.campaigns, "ad campaign", "ad campaigns")) });
   lines.push(
     p.theme === "fully-custom"
-      ? { text: t("Thème entièrement sur mesure", "Fully custom theme"), soon: true }
+      ? { text: t("Thème entièrement sur mesure", "Fully custom theme") }
       : p.theme === "custom-sections"
         ? { text: t("Thème avec sections sur mesure", "Theme with custom sections") }
         : { text: t("Thème composé pour votre marque", "Theme designed for your brand") },
   );
-  lines.push({ text: t(n(p.languages, "langue", "langues"), n(p.languages, "language", "languages")), soon: p.languages > 2 });
+  lines.push({ text: t(n(p.languages, "langue", "langues"), n(p.languages, "language", "languages")), soon: p.languages > 1 });
   return lines.slice(0, 8);
 }
 
@@ -170,7 +170,7 @@ export function CompareTable({ className }: { className?: string }) {
     [t("Publication automatique", "Automatic publishing"), (p) => (p.autopublish ? yes : no)],
     [t("Campagnes publicitaires", "Ad campaigns"), (p) => (p.campaigns === Infinity ? t("Illimitées", "Unlimited") : p.campaigns)],
     [t("Variantes de publicités", "Ad variants"), (p) => (p.adVariants ? yes : no)],
-    [t("Langues de la boutique", "Store languages"), (p) => cell(p.languages, p.languages > 2)],
+    [t("Langues de la boutique", "Store languages"), (p) => cell(p.languages, p.languages > 1)],
     [t("Thème", "Theme"), (p) => (p.theme === "fully-custom" ? cell(t("Entièrement sur mesure", "Fully custom"), true) : p.theme === "custom-sections" ? t("Sections sur mesure", "Custom sections") : t("Composé", "Designed"))],
     [t("Report des quotas non utilisés", "Unused quotas roll over"), (p) => (p.rollover ? yes : no)],
     [t("Remise sur les packs", "Pack discount"), (p) => (p.packDiscount ? `-${Math.round(p.packDiscount * 100)}${lang === "en" ? "" : " "}%` : no)],
@@ -234,7 +234,7 @@ export function PackCards({ prices, onBuy, busy, launchBought, lockedReason, hig
   const { lang } = useLang();
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      {PACK_IDS.map((id) => {
+      {PACKS_FOR_SALE.map((id) => {
         const pk = PACKS[id];
         const price = prices?.[id] ?? pk.price;
         const discounted = price < pk.price;

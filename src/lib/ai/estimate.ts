@@ -8,7 +8,7 @@ import { getJsonSetting } from "../settings";
 import { priceFor, routeFor, usdToEur, type TaskId } from "./config";
 import { L } from "../i18n-server";
 
-export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc";
+export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc" | "theme-custom" | "blog";
 
 const ACTIONS: Record<CostAction, { fr: string; en: string }> = {
   pipeline: { fr: "Création complète (marque, boutique, images, vidéos avec plans filmés par l'IA, calendrier)", en: "Full creation (brand, store, images, videos with AI-filmed shots, calendar)" },
@@ -17,6 +17,8 @@ const ACTIONS: Record<CostAction, { fr: string; en: string }> = {
   image: { fr: "Image avec décor IA", en: "Image with AI background" },
   "video-clip": { fr: "Vidéo avec plan filmé généré par IA", en: "Video with an AI-generated shot" },
   ugc: { fr: "Vidéo UGC générée par IA", en: "AI-generated UGC video" },
+  blog: { fr: "Article de blog écrit par l'IA", en: "AI-written blog post" },
+  "theme-custom": { fr: "Thème entièrement sur mesure (chaque section écrite par l'IA)", en: "Fully custom theme (every section written by AI)" },
 };
 
 function usd(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }): number {
@@ -61,6 +63,14 @@ export function estimateMicro(action: CostAction, opts: { beats?: number; videos
       total = usd("video_direction", { input: 8000, output: 2000 }) + n * 1.5 * (usd("image_generation", { images: 1 }) + qc(1)) + usd("video_generation", { seconds: n * (fal ? 10 : 8) });
       break;
     }
+    case "theme-custom":
+      // Plan de page, puis chaque section écrite (une dizaine), avec corrections automatiques et relecture visuelle.
+      total = usd("theme_custom", { input: 40000, output: 8000 }) + 12 * 1.5 * usd("theme_custom", { input: 30000, output: 12000 }) + usd("theme_design", { input: 30000, output: 4000 });
+      break;
+    case "blog":
+      // Rédaction (jusqu'à deux reprises guidées par le contrôle) et relecture qualité.
+      total = 2 * usd("blog_writing", { input: 14000, output: 6000 }) + 2 * usd("quality_control", { input: 12000, output: 1500 });
+      break;
     case "pipeline":
       total =
         usd("vision_analysis", { input: 8000, output: 2000 }) +

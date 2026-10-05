@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal-page";
 import { company } from "@/lib/legal";
-import { PACK_IDS, PACKS, PLAN_IDS, PLANS, REFUND_DAYS } from "@/lib/plans";
+import { PACKS_FOR_SALE, PACKS, PLAN_IDS, PLANS, REFUND_DAYS } from "@/lib/plans";
 import { intlLocale, pick } from "@/lib/i18n";
 import { serverLang } from "@/lib/i18n-server";
 
@@ -38,7 +38,7 @@ export default async function Page() {
             ))}
           </ul>
           <p>Quotas are renewed at the start of each monthly period. Unused quotas are lost at the end of the period, except on the {rollover} plans, where they roll over to the next month (for one month at most). Features marked "Soon" on the pricing page are not available yet.</p>
-          <p>Packs, added to a plan: {PACK_IDS.map((id) => `${PACKS[id].name.en} ${eur(PACKS[id].price)}`).join(", ")} incl. VAT (before discount). Discount according to the plan: {discount}. Packs never expire; the Launch pack can only be bought once. [To complete: what happens to unused packs when the subscription ends.]</p>
+          <p>Packs, added to a plan: {PACKS_FOR_SALE.map((id) => `${PACKS[id].name.en} ${eur(PACKS[id].price)}`).join(", ")} incl. VAT (before discount). Discount according to the plan: {discount}. Packs never expire; the Launch pack can only be bought once. [To complete: what happens to unused packs when the subscription ends.]</p>
           <p>Payment is made by card through a secure payment provider; the subscription renews automatically at the end of each period (month or year).</p>
         </section>
         <section>
@@ -102,7 +102,7 @@ export default async function Page() {
           ))}
         </ul>
         <p>Les quotas sont renouvelés au début de chaque période mensuelle. Les quotas non utilisés sont perdus à la fin de la période, sauf avec les forfaits {rollover}, où ils sont reportés au mois suivant (dans la limite d'un mois). Les fonctions signalées « Bientôt » sur la page des tarifs ne sont pas encore disponibles.</p>
-        <p>Packs, à ajouter à un forfait : {PACK_IDS.map((id) => `${PACKS[id].name.fr} ${eur(PACKS[id].price)}`).join(", ")} TTC (avant remise). Remise selon le forfait : {discount}. Les packs n'expirent pas ; le Pack Lancement ne peut être acheté qu'une fois. [À compléter : sort des packs non utilisés en cas de fin d'abonnement.]</p>
+        <p>Packs, à ajouter à un forfait : {PACKS_FOR_SALE.map((id) => `${PACKS[id].name.fr} ${eur(PACKS[id].price)}`).join(", ")} TTC (avant remise). Remise selon le forfait : {discount}. Les packs n'expirent pas ; le Pack Lancement ne peut être acheté qu'une fois. [À compléter : sort des packs non utilisés en cas de fin d'abonnement.]</p>
         <p>Le paiement est effectué par carte via un prestataire de paiement sécurisé ; l'abonnement est renouvelé automatiquement à la fin de chaque période (mois ou année).</p>
       </section>
       <section>

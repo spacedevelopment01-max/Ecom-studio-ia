@@ -8,6 +8,7 @@ import { L } from "@/lib/i18n-server";
 import { llmConfigured } from "@/lib/ai/llm";
 import { runForUser } from "@/lib/ai/access";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
+import { assertSectionGeneration } from "@/lib/theme/custom-access";
 
 /** Message de retouche : enregistré puis traité en arrière-plan (résistant aux coupures). */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
@@ -24,6 +25,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       generate: z.object({ template: z.string().max(80), index: z.number().int().min(0).optional() }).optional(),
     }),
   );
+  // Sections sur mesure écrites par l'IA : forfaits Vendre et Dominer (Créer compose avec la bibliothèque).
+  if (b.generate) assertSectionGeneration(user);
   if (b.generate && !(await runForUser(user.id, async () => llmConfigured()))) throw new HttpError(402, L("La génération de section demande l'IA : passez sur « IA » en haut du studio.", "Section generation requires AI: switch to “AI” at the top of the studio."));
   // Consigne complète pour l'IA ; la discussion affiche seulement la demande du client.
   const instruction = b.generate

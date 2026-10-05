@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -19,6 +19,7 @@ export const TABS = [
   { id: "videos", label: "Vidéos", labelEn: "Videos", icon: Film, group: "Création", groupEn: "Create" },
   { id: "prompts", label: "Prompts", labelEn: "Prompts", icon: BookOpen, group: "Création", groupEn: "Create" },
   { id: "publications", label: "Publications", labelEn: "Posts", icon: Send, group: "Diffusion", groupEn: "Publish" },
+  { id: "blog", label: "Blog", labelEn: "Blog", icon: Newspaper, group: "Diffusion", groupEn: "Publish" },
   { id: "calendrier", label: "Calendrier", labelEn: "Calendar", icon: CalendarDays, group: "Diffusion", groupEn: "Publish" },
   { id: "publicites", label: "Publicités", labelEn: "Ads", icon: Megaphone, group: "Diffusion", groupEn: "Publish" },
   { id: "fichiers", label: "Fichiers", labelEn: "Files", icon: FolderTree, group: "Ressources", groupEn: "Resources" },

@@ -144,7 +144,7 @@ export function AccountPage() {
                       <li key={k} className="grid gap-2">
                         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                           <p className="text-[15px] font-medium first-letter:uppercase">
-                            {QUOTA_LABEL[k][lang][1]} {k === "blog" && <Soon />}
+                            {QUOTA_LABEL[k][lang][1]}
                           </p>
                           <div className="flex items-center gap-3">
                             {total > 0 ? (
@@ -170,9 +170,8 @@ export function AccountPage() {
                   })}
                 </ul>
                 <p className="mt-5 border-t border-line pt-4 text-sm text-ink-2">
-                  {t("Langues de la boutique : ", "Store languages: ")}
-                  <strong>{b.languages.included + b.languages.extra}</strong>
-                  {b.languages.extra > 0 && t(` (dont ${b.languages.extra} ajoutée${b.languages.extra > 1 ? "s" : ""} par un pack)`, ` (${b.languages.extra} added with a pack)`)}
+                  {t("Langue de la boutique : une langue (français ou anglais). Boutique en plusieurs langues : ", "Store language: one language (French or English). Multilingual store: ")}
+                  <Soon />
                 </p>
               </Card>
             )}
