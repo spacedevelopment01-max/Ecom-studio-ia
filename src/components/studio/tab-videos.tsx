@@ -9,6 +9,7 @@ import { UgcPanel } from "./ugc-panel";
 import { useCostConfirm } from "./cost-confirm";
 import { useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
+import { PlanRequired, useCreationLocked } from "../billing-client";
 
 const SCENE_LABEL: Record<string, string> = { title: "Accroche", reveal: "Révélation", callouts: "Points clés", detail: "Détail", scene: "Scène", clip: "Plan généré", end: "Fin + appel", hook: "Produit en action", spotlight: "Projecteur", split: "Écran partagé", words: "Phrases chocs", list: "Prestations", info: "Infos pratiques" };
 const SCENE_LABEL_EN: Record<string, string> = { title: "Hook", reveal: "Reveal", callouts: "Key points", detail: "Detail", scene: "Scene", clip: "Generated shot", end: "End + call to action", hook: "Product in action", spotlight: "Spotlight", split: "Split screen", words: "Punchlines", list: "Services", info: "Practical info" };
@@ -21,6 +22,7 @@ export default function TabVideos() {
   const active = useActive(["video.render", "video.ugc"]);
   const [mode, setMode] = useState<"motion" | "ugc">("motion");
   const cost = useCostConfirm();
+  const locked = useCreationLocked();
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=video,subtitles`);
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [form, setForm] = useState({ format: "9:16", goal: "", music: "calm", useAiClip: false, target: "ads", url: "" });
@@ -42,6 +44,7 @@ export default function TabVideos() {
     } catch {}
   }, [id]);
   const services = data?.business === "services";
+  const videoStep = data?.pipeline?.steps.find((s) => s.id === "video")?.status;
   const videos = (list?.assets ?? []).filter((a) => a.kind === "video");
   const subs = (list?.assets ?? []).filter((a) => a.role === "subtitles");
   const create = async () => {
@@ -98,12 +101,13 @@ export default function TabVideos() {
               <p className="mt-1.5 text-[11px] text-muted">{!data?.ai.video ? t("Aucun fournisseur vidéo configuré.", "No video provider configured.") : services ? t("Léger mouvement de caméra généré à partir d'une de vos photos (rien n'est ajouté). Nécessite au moins une photo. Utilise 1 vidéo IA de votre forfait.", "Subtle camera move generated from one of your photos (nothing is added). Needs at least one photo. Uses 1 AI video from your plan.") : t("Plan d'ambiance image-vers-vidéo à partir d'une scène réelle, vérifié image par image ; écarté s'il déforme le produit. Utilise 1 vidéo IA de votre forfait.", "Image-to-video mood shot from a real scene, checked frame by frame; discarded if it distorts the product. Uses 1 AI video from your plan.")}</p>
             </div>
             <ContentLangPicker {...cl} />
-            <Button onClick={create} icon={<Film className="size-4" />}>{t("Produire la vidéo", "Produce the video")}</Button>
+            <Button onClick={create} disabled={locked} icon={<Film className="size-4" />}>{t("Produire la vidéo", "Produce the video")}</Button>
+            {locked && <PlanRequired what="videos" />}
           </div>
           </>}
         </Card>
         <div className="grid content-start gap-5">
-          {videos.length === 0 && <Empty title={t("Aucune vidéo pour l'instant", "No videos yet")} icon={<Play className="size-5" />}>{t("La première vidéo est produite automatiquement par le pilote ; vous pouvez en créer d'autres ici.", "The first video is produced automatically by the autopilot; you can create more here.")}</Empty>}
+          {videos.length === 0 && <Empty title={t("Aucune vidéo pour l'instant", "No videos yet")} icon={<Play className="size-5" />}>{locked ? t("Les vidéos sont incluses dans les forfaits : le pilote ne les a pas créées pendant la découverte gratuite.", "Videos come with the plans: the autopilot did not create them during the free discovery.") : videoStep === "done" || videoStep === "running" || videoStep === "pending" ? t("La première vidéo est produite automatiquement par le pilote ; vous pouvez en créer d'autres ici.", "The first video is produced automatically by the autopilot; you can create more here.") : t("Créez votre première vidéo avec le formulaire.", "Create your first video with the form.")}</Empty>}
           {videos.map((v) => {
             const plan = v.meta?.plan;
             const srt = subs.find((s) => s.sourceAssetId === v.id);

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { all, now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { FactSchema } from "@/lib/project-types";
-import { currentTheme, saveProduct, saveThemeVersion, remember } from "@/lib/projects";
+import { currentTheme, factPlaceholderRegex, saveProduct, saveThemeVersion, remember } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { eachSection } from "@/lib/theme/spec";
 import { L } from "@/lib/i18n-server";
@@ -48,7 +48,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       if (f) Object.assign(f, { value: a.answer, status: "confirmed", source: "user" });
       else prod.facts.push({ key: q.factKey, label: q.question.replace(/\?$/, ""), value: a.answer, status: "confirmed", source: "user" });
       const label = (f?.label ?? q.factKey).toLowerCase();
-      replacements.push({ needle: new RegExp(`\\[(?:À compléter :|To complete:) [^\\]]*(${label.split(" ")[0]}|${q.factKey})[^\\]]*\\]`, "gi"), value: a.answer, label });
+      replacements.push({ needle: factPlaceholderRegex(label, q.factKey), value: a.answer, label });
     }
     remember(p.id, { kind: "fact", key: q.factKey, value: a.answer, source: "user" });
   }

@@ -19,7 +19,8 @@ import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
 import { llmConfigured } from "../ai/llm";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
-import { C, L, contentLang } from "../i18n-server";
+import { C, L, contentLang, inBothLangs } from "../i18n-server";
+import type { Bi } from "../step-notes";
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "produit";
 
@@ -132,7 +133,7 @@ export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): Sto
   };
 }
 
-export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: string } = {}) {
+export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi } = {}) {
   const p = loadProject(projectId);
   const brand = p.brand;
   if (!brand) throw new Error(L("La marque doit être définie avant la boutique.", "The brand must be defined before the store."));
@@ -169,7 +170,9 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
   let author: "ai" | "system" = "system";
-  let summary = opts.summary ?? (services ? L(`Site créé — direction ${directionById(direction).name}`, `Website created — ${directionById(direction).name} direction`) : L(`Boutique créée — direction ${directionById(direction).name}`, `Store created — ${directionById(direction).name} direction`));
+  // Résumé de la version enregistré dans les deux langues : affiché ensuite dans celle de l'interface.
+  let summary: Bi = opts.summary ?? inBothLangs(() => (services ? L(`Site créé — direction ${directionById(direction).name}`, `Website created — ${directionById(direction).name} direction`) : L(`Boutique créée — direction ${directionById(direction).name}`, `Store created — ${directionById(direction).name} direction`)));
+  const append = (b: Bi) => (summary = { fr: summary.fr + b.fr, en: summary.en + b.en });
   if (opts.useAi !== false && llmConfigured() && ctx) {
     try {
       const design = await ctx.step(`design:${direction}`, () => aiDesignHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:design:${direction}` }, p, spec));
@@ -188,7 +191,7 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       if (r.spec.templates.index.order.length >= 4 && !validateSpec(r.spec).length) {
         spec = r.spec;
         author = "ai";
-        summary = L(`Boutique conçue par l'IA — ${design.reasoning.slice(0, 160)}`, `Store designed by AI — ${design.reasoning.slice(0, 160)}`);
+        summary = inBothLangs(() => L(`Boutique conçue par l'IA — ${design.reasoning.slice(0, 160)}`, `Store designed by AI — ${design.reasoning.slice(0, 160)}`));
       }
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -206,9 +209,9 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         if (r.applied.length && !validateSpec(r.spec).length) {
           spec = r.spec;
           author = "ai";
-          summary += L(` · relue sur captures (${review.score}/10, ${r.applied.length} correction${r.applied.length > 1 ? "s" : ""})`, ` · reviewed on screenshots (${review.score}/10, ${r.applied.length} fix${r.applied.length > 1 ? "es" : ""})`);
+          append(inBothLangs(() => L(` · relue sur captures (${review.score}/10, ${r.applied.length} correction${r.applied.length > 1 ? "s" : ""})`, ` · reviewed on screenshots (${review.score}/10, ${r.applied.length} fix${r.applied.length > 1 ? "es" : ""})`)));
         }
-      } else if (review) summary += L(` · relue sur captures (${review.score}/10)`, ` · reviewed on screenshots (${review.score}/10)`);
+      } else if (review) append(inBothLangs(() => L(` · relue sur captures (${review.score}/10)`, ` · reviewed on screenshots (${review.score}/10)`)));
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[shop] relecture visuelle indisponible :", (e as Error).message);
@@ -216,14 +219,14 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   }
   const problems = validateSpec(spec);
   if (problems.length) throw new Error(L(`Thème invalide : ${problems.join(" ; ")}`, `Invalid theme: ${problems.join("; ")}`));
-  const v = saveThemeVersion(projectId, spec, summary, author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems });
+  const v = saveThemeVersion(projectId, spec, JSON.stringify(summary), author, { checks: L(["structure", "schémas des sections", "contraste des couleurs"], ["structure", "section schemas", "color contrast"]), problems });
   ctx?.progress(0.95, L("Boutique enregistrée", "Store saved"));
   return { versionId: v.id, number: v.number };
 }
 
 /** Change de direction en conservant les retouches de contenu ? Non : nouvelle version complète, l'ancienne reste restaurable. */
 export async function switchDirection(ctx: JobContext | null, projectId: string, direction: DirectionId) {
-  return buildShop(ctx, projectId, { direction, useAi: false, summary: L(`Direction ${directionById(direction).name} appliquée`, `${directionById(direction).name} direction applied`) });
+  return buildShop(ctx, projectId, { direction, useAi: false, summary: inBothLangs(() => L(`Direction ${directionById(direction).name} appliquée`, `${directionById(direction).name} direction applied`)) });
 }
 
 export function hasTheme(projectId: string) {

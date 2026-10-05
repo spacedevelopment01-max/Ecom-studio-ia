@@ -74,7 +74,9 @@ export function dashboard() {
 
   const pay30 = all<{ kind: string; cents: number; n: number }>("SELECT kind, SUM(amount_cents) cents, COUNT(*) n FROM payments WHERE status = 'paid' AND created_at >= ? GROUP BY kind", d30);
   const sub30 = pay30.find((p) => p.kind === "subscription");
-  const top30 = pay30.find((p) => p.kind === "topup");
+  // Packs (et anciennes recharges) : tout ce qui n'est pas un abonnement.
+  const extra = (r: { kind: string; cents: number; n: number }[]) => r.filter((p) => p.kind !== "subscription").reduce((a, p) => ({ cents: a.cents + p.cents, n: a.n + p.n }), { cents: 0, n: 0 });
+  const top30 = extra(pay30);
   const paid30Cents = pay30.reduce((s, p) => s + p.cents, 0);
   const fees30 = all<{ kind: string; amount_cents: number }>("SELECT kind, amount_cents FROM payments WHERE status = 'paid' AND created_at >= ?", d30).reduce((s, p) => s + stripeFee(p.amount_cents, p.kind === "subscription"), 0);
   const aiCost30 = (one<{ c: number | null }>("SELECT SUM(cost) c FROM usage_events WHERE created_at >= ?", d30)?.c ?? 0) / EUR;
@@ -90,7 +92,7 @@ export function dashboard() {
     months.push({
       label: new Date(start).toLocaleDateString(intlLocale(uiLang()), { month: "long", year: "numeric" }),
       subscriptionEur: (r.find((x) => x.kind === "subscription")?.cents ?? 0) / 100,
-      topupEur: (r.find((x) => x.kind === "topup")?.cents ?? 0) / 100,
+      topupEur: extra(r).cents / 100,
       payments: r.reduce((s, x) => s + x.n, 0),
     });
   }
@@ -122,8 +124,8 @@ export function dashboard() {
       payments: pay30.reduce((s, p) => s + p.n, 0),
       subscriptionEur: (sub30?.cents ?? 0) / 100,
       subscriptionCount: sub30?.n ?? 0,
-      topupEur: (top30?.cents ?? 0) / 100,
-      topupCount: top30?.n ?? 0,
+      topupEur: top30.cents / 100,
+      topupCount: top30.n,
       revenueHtEur: revenueHt30,
       aiCostEur: aiCost30,
       stripeFeesEur: fees30,

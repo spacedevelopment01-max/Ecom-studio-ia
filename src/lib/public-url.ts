@@ -6,7 +6,10 @@ import crypto from "node:crypto";
 import { appUrl } from "./settings";
 
 function key() {
-  return crypto.createHash("sha256").update(`public-media:${process.env.APP_SECRET || "dev-only-secret-ecom-studio-ia"}`).digest();
+  const s = process.env.APP_SECRET;
+  // Comme secrets.ts : en production, pas de secret de secours connu de tous pour signer les liens publics.
+  if ((!s || s.length < 32) && process.env.NODE_ENV === "production") throw new Error("APP_SECRET manquant (32 caractères minimum).");
+  return crypto.createHash("sha256").update(`public-media:${s || "dev-only-secret-ecom-studio-ia"}`).digest();
 }
 
 export function signMedia(kind: "asset" | "theme", ref: string, ttlSeconds = 3 * 3600): string {

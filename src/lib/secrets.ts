@@ -41,3 +41,6 @@ export function mask(secret: string | null | undefined): string {
 
 export const randomToken = (bytes = 32) => crypto.randomBytes(bytes).toString("base64url");
 export const sha256 = (s: string | Buffer) => crypto.createHash("sha256").update(s).digest("hex");
+
+/** Empreinte signée (HMAC-SHA256 avec la clé maître) : un jeton ne peut pas être fabriqué sans APP_SECRET. */
+export const hmac = (s: string) => crypto.createHmac("sha256", masterKey()).update(s).digest("hex");

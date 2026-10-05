@@ -9,7 +9,7 @@ import { ArrowRight, Check, ChevronDown, Minus } from "lucide-react";
 import { cx } from "./ui";
 import { useLang, useT } from "./i18n";
 import { formatEur, Soon } from "./billing-client";
-import { monthlyEquivalent, PACKS_FOR_SALE, PACKS, PLAN_IDS, PLANS, type Billing, type PackId, type Plan, type PlanId } from "@/lib/plans";
+import { CUSTOM_THEMES_PER_MONTH, monthlyEquivalent, PACKS_FOR_SALE, PACKS, PLAN_IDS, PLANS, type Billing, type PackId, type Plan, type PlanId } from "@/lib/plans";
 
 type Line = { text: ReactNode; soon?: boolean };
 type TFn = <T>(fr: T, en: T) => T;
@@ -30,7 +30,7 @@ function planLines(p: Plan, t: TFn): Line[] {
   lines.push({ text: p.campaigns === Infinity ? t("Campagnes publicitaires illimitées", "Unlimited ad campaigns") : t(n(p.campaigns, "campagne publicitaire", "campagnes publicitaires"), n(p.campaigns, "ad campaign", "ad campaigns")) });
   lines.push(
     p.theme === "fully-custom"
-      ? { text: t("Thème entièrement sur mesure", "Fully custom theme") }
+      ? { text: t(`Thème entièrement sur mesure (${CUSTOM_THEMES_PER_MONTH} par mois)`, `Fully custom theme (${CUSTOM_THEMES_PER_MONTH} per month)`) }
       : p.theme === "custom-sections"
         ? { text: t("Thème avec sections sur mesure", "Theme with custom sections") }
         : { text: t("Thème composé pour votre marque", "Theme designed for your brand") },
@@ -165,13 +165,13 @@ export function CompareTable({ className }: { className?: string }) {
     [t("Vidéos IA par mois", "AI videos per month"), (p) => p.quotas.aiVideos],
     [t("Qualité des vidéos IA", "AI video quality"), (p) => (p.videoQuality === "max" ? t("Maximale", "Maximum") : t("Standard", "Standard"))],
     [t("Vidéos UGC par mois (une personne présente votre produit face caméra)", "UGC videos per month (a person presents your product on camera)"), (p) => (p.quotas.ugc ? p.quotas.ugc : no)],
-    [t("Articles de blog par mois", "Blog posts per month"), (p) => (p.quotas.blog ? cell(p.quotas.blog, true) : no)],
+    [t("Articles de blog par mois", "Blog posts per month"), (p) => (p.quotas.blog ? p.quotas.blog : no)],
     [t("Calendrier de publications", "Posting calendar"), (p) => t(`${p.calendarDays} jours`, `${p.calendarDays} days`)],
     [t("Publication automatique", "Automatic publishing"), (p) => (p.autopublish ? yes : no)],
     [t("Campagnes publicitaires", "Ad campaigns"), (p) => (p.campaigns === Infinity ? t("Illimitées", "Unlimited") : p.campaigns)],
     [t("Variantes de publicités", "Ad variants"), (p) => (p.adVariants ? yes : no)],
     [t("Langues de la boutique", "Store languages"), (p) => cell(p.languages, p.languages > 1)],
-    [t("Thème", "Theme"), (p) => (p.theme === "fully-custom" ? cell(t("Entièrement sur mesure", "Fully custom"), true) : p.theme === "custom-sections" ? t("Sections sur mesure", "Custom sections") : t("Composé", "Designed"))],
+    [t("Thème", "Theme"), (p) => (p.theme === "fully-custom" ? t(`Entièrement sur mesure (${CUSTOM_THEMES_PER_MONTH} par mois)`, `Fully custom (${CUSTOM_THEMES_PER_MONTH} per month)`) : p.theme === "custom-sections" ? t("Sections sur mesure", "Custom sections") : t("Composé", "Designed"))],
     [t("Report des quotas non utilisés", "Unused quotas roll over"), (p) => (p.rollover ? yes : no)],
     [t("Remise sur les packs", "Pack discount"), (p) => (p.packDiscount ? `-${Math.round(p.packDiscount * 100)}${lang === "en" ? "" : " "}%` : no)],
     [t("Support", "Support"), (p) => (p.support === "priority-call" ? t("Prioritaire + appel", "Priority + call") : p.support === "priority" ? t("Prioritaire", "Priority") : t("Par e-mail", "By email"))],
@@ -228,12 +228,12 @@ export type PackCardsProps = {
   highlight?: PackId | null;
 };
 
-/** Les 5 packs (n'expirent pas ; Lancement : achat unique). */
+/** Les packs en vente (n'expirent pas ; Lancement : achat unique). Le pack Langue n'est pas encore en vente. */
 export function PackCards({ prices, onBuy, busy, launchBought, lockedReason, highlight }: PackCardsProps) {
   const t = useT();
   const { lang } = useLang();
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className={cx("grid gap-3 sm:grid-cols-2", PACKS_FOR_SALE.length >= 5 ? "lg:grid-cols-5" : PACKS_FOR_SALE.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4")}>
       {PACKS_FOR_SALE.map((id) => {
         const pk = PACKS[id];
         const price = prices?.[id] ?? pk.price;

@@ -67,18 +67,18 @@ describe("paiements Stripe : forfait et packs", () => {
   it("abonnement à un forfait puis achat d'un pack, sans double crédit si l'événement revient", async () => {
     const { handleStripeEvent } = await import("@/lib/payments");
     const u = await createUser(`stripe${Date.now()}@test.fr`, "motdepasse-test", "S");
-    handleStripeEvent({ type: "checkout.session.completed", data: { object: { id: "cs_1", client_reference_id: u.id, customer: "cus_1", subscription: "sub_1", amount_total: 79900, metadata: { kind: "subscription", plan: "vendre", billing: "year" } } } });
+    await handleStripeEvent({ type: "checkout.session.completed", data: { object: { id: "cs_1", client_reference_id: u.id, customer: "cus_1", subscription: "sub_1", payment_status: "paid", amount_total: 79900, metadata: { kind: "subscription", plan: "vendre", billing: "year" } } } });
     const sub = getSubscription(u.id);
     expect(sub).toMatchObject({ status: "active", plan: "vendre", billing: "year", stripe_subscription_id: "sub_1" });
     expect(quotaView(u.id, "visuals").included).toBe(80);
     const pack = { type: "checkout.session.completed", data: { object: { id: "cs_2", client_reference_id: u.id, payment_status: "paid", amount_total: 1791, metadata: { kind: "pack", pack: "videos" } } } };
-    handleStripeEvent(pack);
-    handleStripeEvent(pack);
+    await handleStripeEvent(pack);
+    await handleStripeEvent(pack);
     expect(quotaView(u.id, "aiVideos").pack).toBe(5);
     // Événement tardif d'un ancien abonnement : sans effet.
-    handleStripeEvent({ type: "customer.subscription.deleted", data: { object: { id: "sub_0", metadata: { user_id: u.id } } } });
+    await handleStripeEvent({ type: "customer.subscription.deleted", data: { object: { id: "sub_0", metadata: { user_id: u.id } } } });
     expect(getSubscription(u.id).status).toBe("active");
-    handleStripeEvent({ type: "customer.subscription.deleted", data: { object: { id: "sub_1", metadata: { user_id: u.id } } } });
+    await handleStripeEvent({ type: "customer.subscription.deleted", data: { object: { id: "sub_1", metadata: { user_id: u.id } } } });
     expect(getSubscription(u.id).status).toBe("canceled");
     expect(userPlan(u.id)).toBe(null);
   });

@@ -108,6 +108,19 @@ export function factsFromDescription(desc: string): Fact[] {
   return facts;
 }
 
+/** Questions indispensables connues (prix, nom, livraison, retours) : posées au commerçant, donc dans la langue de son interface. */
+const KNOWN_QUESTIONS: Record<string, () => { question: string; why: string }> = {
+  price: () => ({ question: L("Quel est le prix de vente (TTC) ?", "What is the retail price (including tax)?"), why: L("Indispensable pour vendre ; il n'est pas déductible d'une photo.", "Essential for selling; it can't be inferred from a photo.") }),
+  name: () => ({ question: L("Quel est le nom du produit ?", "What is the product name?"), why: L("Il apparaît partout : fiche, publicités, publications.", "It appears everywhere: product page, ads, posts.") }),
+  shipping: () => ({ question: L("Quels sont vos délais et frais de livraison ?", "What are your shipping times and costs?"), why: L("Affichés dans la FAQ et la page Livraison ; rien ne sera inventé.", "Shown in the FAQ and on the Shipping page; nothing will be made up.") }),
+  returns: () => ({ question: L("Quelles sont vos conditions de retour ?", "What is your return policy?"), why: L("Obligatoire pour la page Livraison et retours.", "Required for the Shipping and returns page.") }),
+};
+
+/** Retraduit à l'affichage les questions connues (projets créés dans une autre langue d'interface). */
+export function localizeQuestions<Q extends { id: string; question: string; why?: string }>(questions: Q[]): Q[] {
+  return questions.map((q) => (KNOWN_QUESTIONS[q.id] ? { ...q, ...KNOWN_QUESTIONS[q.id]() } : q));
+}
+
 export function localAnalysis(input: { name?: string; brand?: string; description?: string; price?: number | null; colors: { hex: string; name: string; share: number }[]; link?: { title: string; description: string; product: any } | null; photos: number }): ProductProfile {
   const desc = [input.description, input.link?.product?.description, input.link?.description].filter(Boolean).join("\n");
   const name = input.name || input.link?.product?.name || "";
@@ -120,10 +133,10 @@ export function localAnalysis(input: { name?: string; brand?: string; descriptio
   const price = input.price ?? input.link?.product?.price ?? null;
   const colorLine = [...new Set(input.colors.slice(0, 4).map((c) => c.name))].slice(0, 3).join(", ");
   const questions = [
-    ...(price === null ? [{ id: "price", question: L("Quel est le prix de vente (TTC) ?", "What is the retail price (including tax)?"), why: L("Indispensable pour vendre ; il n'est pas déductible d'une photo.", "Essential for selling; it can't be inferred from a photo."), required: true, factKey: "price" }] : []),
-    ...(!name ? [{ id: "name", question: L("Quel est le nom du produit ?", "What is the product name?"), why: L("Il apparaît partout : fiche, publicités, publications.", "It appears everywhere: product page, ads, posts."), required: true, factKey: "name" }] : []),
-    { id: "shipping", question: L("Quels sont vos délais et frais de livraison ?", "What are your shipping times and costs?"), why: L("Affichés dans la FAQ et la page Livraison ; rien ne sera inventé.", "Shown in the FAQ and on the Shipping page; nothing will be made up."), required: false, factKey: "shipping" },
-    { id: "returns", question: L("Quelles sont vos conditions de retour ?", "What is your return policy?"), why: L("Obligatoire pour la page Livraison et retours.", "Required for the Shipping and returns page."), required: false, factKey: "returns" },
+    ...(price === null ? [{ id: "price", ...KNOWN_QUESTIONS.price(), required: true, factKey: "price" }] : []),
+    ...(!name ? [{ id: "name", ...KNOWN_QUESTIONS.name(), required: true, factKey: "name" }] : []),
+    { id: "shipping", ...KNOWN_QUESTIONS.shipping(), required: false, factKey: "shipping" },
+    { id: "returns", ...KNOWN_QUESTIONS.returns(), required: false, factKey: "returns" },
   ];
   return {
     name,
@@ -723,16 +736,16 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
       ops: [],
       revert: false,
       reply: L(
-        "Le moteur local comprend des commandes simples : couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une section prestations, prise de rendez-vous, infos pratiques (zone, horaires), réalisations, équipe, déroulé, FAQ ou formulaire de contact ; masquer, supprimer, monter, revenir en arrière, changer de direction. Les retouches libres nécessitent l'IA, à activer dans l'administration.",
-        "The local engine understands simple commands: button color, text in quotes on the selected element, adding a services, booking, practical information (area, hours), our work, team, process, FAQ or contact form section; hiding, removing, moving up, going back, changing direction. Free-form edits require AI, which can be enabled in the admin area.",
+        "La version simplifiée comprend des commandes simples : couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une section prestations, prise de rendez-vous, infos pratiques (zone, horaires), réalisations, équipe, déroulé, FAQ ou formulaire de contact ; masquer, supprimer, monter, revenir en arrière, changer de direction. Les retouches libres seront disponibles dès que l'IA sera connectée.",
+        "The simplified version understands simple commands: button color, text in quotes on the selected element, adding a services, booking, practical information (area, hours), our work, team, process, FAQ or contact form section; hiding, removing, moving up, going back, changing direction. Free-form edits will be available as soon as AI is connected.",
       ),
     };
   return {
     ops: [],
     revert: false,
     reply: L(
-      "Le moteur local comprend des commandes simples : couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, des lots, la livraison estimée (avec vos délais), des pastilles (entre guillemets), une section avis, un abonnement, le prix dans le bouton ; supprimer, monter, revenir en arrière, changer de direction. Les retouches libres nécessitent l'IA, à activer dans l'administration.",
-      "The local engine understands simple commands: button color, text in quotes on the selected element, adding an FAQ, bundles, estimated delivery (with your shipping times), badges (in quotes), a reviews section, a subscription, the price in the button; removing, moving up, going back, changing direction. Free-form edits require AI, which can be enabled in the admin area.",
+      "La version simplifiée comprend des commandes simples : couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, des lots, la livraison estimée (avec vos délais), des pastilles (entre guillemets), une section avis, un abonnement, le prix dans le bouton ; supprimer, monter, revenir en arrière, changer de direction. Les retouches libres seront disponibles dès que l'IA sera connectée.",
+      "The simplified version understands simple commands: button color, text in quotes on the selected element, adding an FAQ, bundles, estimated delivery (with your shipping times), badges (in quotes), a reviews section, a subscription, the price in the button; removing, moving up, going back, changing direction. Free-form edits will be available as soon as AI is connected.",
     ),
   };
 }

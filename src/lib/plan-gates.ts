@@ -19,6 +19,27 @@ export function requirePlan(user: User) {
   return plan;
 }
 
+/**
+ * Création d'images, de vidéos et de vidéos UGC : incluse dans les forfaits uniquement (la découverte gratuite
+ * montre l'analyse, la marque, les logos et l'aperçu de la boutique). Réponse 402 au message clair.
+ */
+export function requireCreationPlan(user: User, what: "images" | "videos" | "ugc") {
+  const plan = planFor(user);
+  if (plan) return plan;
+  const label = { images: L("La création d'images", "Image creation"), videos: L("La création de vidéos", "Video creation"), ugc: L("La vidéo UGC", "UGC video") }[what];
+  throw new HttpError(
+    402,
+    L(`${label} est incluse dans les forfaits. La découverte gratuite montre l'analyse, la marque, les logos et l'aperçu de la boutique : choisissez un forfait dans « Mon compte » pour créer vos visuels et vidéos.`, `${label} is included in the plans. The free discovery shows the analysis, brand, logos and store preview: choose a plan in "My account" to create your visuals and videos.`),
+    "plan_required",
+  );
+}
+
+/** Forfait d'un compte (par identifiant), pour les tâches en arrière-plan : l'administrateur n'est jamais bloqué. */
+export function planOfUserId(userId: string): PlanId | null {
+  const u = one<User>("SELECT id, email, name, role, timezone, created_at FROM users WHERE id = ?", userId);
+  return u ? planFor(u) : null;
+}
+
 /** Jours de publications préparés d'un coup (7 avec Créer, 30 avec Vendre et Dominer). */
 export function assertCalendarDays(user: User, days: number) {
   const plan = requirePlan(user);

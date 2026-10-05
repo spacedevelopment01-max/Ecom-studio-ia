@@ -6,6 +6,7 @@
  *  - La création initiale de la boutique ne décompte pas les visuels (elle fait partie de l'abonnement).
  * Le budget IA (caché) reste le garde-fou de marge : voir billing.ts et ai/access.ts.
  */
+import { subMonths } from "date-fns";
 import { id, now, one, run, tx } from "./db";
 import { UserFacingError } from "./jobs";
 import { L } from "./i18n-server";
@@ -20,12 +21,17 @@ type Row = { user_id: string; period_start: number; key: QuotaKey; included: num
 
 /** Ligne du mois en cours (créée à la première lecture, avec le report du mois précédent). */
 function periodRow(userId: string, key: QuotaKey): Row {
-  const { start } = currentPeriod(userId);
+  const { start, prevStart } = currentPeriod(userId);
   const plan = userPlan(userId);
   const included = plan ? PLANS[plan].quotas[key] : 0;
   let r = one<Row>("SELECT * FROM quota_usage WHERE user_id = ? AND period_start = ? AND key = ?", userId, start, key);
   if (!r) {
-    const prev = one<Row>("SELECT * FROM quota_usage WHERE user_id = ? AND period_start < ? AND key = ? ORDER BY period_start DESC LIMIT 1", userId, start, key);
+    // Le report ne vient que de la période immédiatement précédente (jamais d'un mois ancien : abonné revenu après
+    // une résiliation) ; un mois sans forfait a un quota inclus de 0 et ne reporte donc rien.
+    const prev =
+      prevStart != null
+        ? one<Row>("SELECT * FROM quota_usage WHERE user_id = ? AND period_start = ? AND key = ?", userId, prevStart, key)
+        : one<Row>("SELECT * FROM quota_usage WHERE user_id = ? AND period_start < ? AND period_start >= ? AND key = ? ORDER BY period_start DESC LIMIT 1", userId, start, subMonths(start, 1).getTime() - 2 * 86400_000, key);
     const rollover = plan && PLANS[plan].rollover && prev ? Math.min(included, Math.max(0, prev.included - prev.used)) : 0;
     run("INSERT OR IGNORE INTO quota_usage (user_id, period_start, key, included, rollover, used) VALUES (?,?,?,?,?,0)", userId, start, key, included, rollover);
     r = one<Row>("SELECT * FROM quota_usage WHERE user_id = ? AND period_start = ? AND key = ?", userId, start, key)!;
@@ -99,17 +105,39 @@ export function consumeQuota(userId: string, key: QuotaKey, n = 1, ref?: string 
     const fromPack = Math.min(n - fromMonth, packBalance(userId, key));
     run("UPDATE quota_usage SET used = used + ? WHERE user_id = ? AND period_start = ? AND key = ?", fromMonth, userId, r.period_start, key);
     if (fromPack > 0) run("UPDATE pack_balances SET balance = balance - ? WHERE user_id = ? AND key = ?", fromPack, userId, key);
+    if (ref) run("UPDATE quota_events SET period_start = ?, from_month = ?, from_pack = ? WHERE ref = ?", r.period_start, fromMonth, fromPack, ref);
+  });
+}
+
+/**
+ * Rend un décompte (référence `ref`) : par exemple une image générée puis refusée par le contrôle de fidélité,
+ * jamais montrée au client. Sans effet si rien n'a été décompté sous cette référence.
+ */
+export function refundQuota(userId: string, ref: string): boolean {
+  return tx(() => {
+    const ev = one<{ user_id: string; key: QuotaKey; amount: number; period_start: number | null; from_month: number | null; from_pack: number | null }>("SELECT * FROM quota_events WHERE ref = ?", ref);
+    if (!ev || ev.user_id !== userId) return false;
+    const fromMonth = ev.from_month ?? ev.amount;
+    const fromPack = ev.from_pack ?? 0;
+    if (fromMonth > 0 && ev.period_start != null) run("UPDATE quota_usage SET used = MAX(0, used - ?) WHERE user_id = ? AND period_start = ? AND key = ?", fromMonth, userId, ev.period_start, ev.key);
+    if (fromPack > 0) run("INSERT INTO pack_balances (user_id, key, balance) VALUES (?,?,?) ON CONFLICT(user_id, key) DO UPDATE SET balance = balance + excluded.balance", userId, ev.key, fromPack);
+    run("DELETE FROM quota_events WHERE ref = ?", ref);
+    return true;
   });
 }
 
 /** Ajoute un pack payé (une seule fois par paiement). */
-export function creditPack(userId: string, pack: PackId, ref: string) {
-  tx(() => {
-    const done = run("INSERT OR IGNORE INTO pack_purchases (id, user_id, pack, ref, created_at) VALUES (?,?,?,?,?)", id(), userId, pack, ref, now());
-    if (!done.changes) return;
+export function creditPack(userId: string, pack: PackId, ref: string): "credited" | "duplicate" | "already_bought" {
+  return tx(() => {
+    if (one("SELECT 1 FROM pack_purchases WHERE ref = ?", ref)) return "duplicate";
+    // Pack « une seule fois » (Lancement) : deux paiements ouverts en parallèle ne créditent qu'une fois ;
+    // le second est signalé à l'administration pour remboursement (voir payments.ts).
+    if (PACKS[pack].once && one("SELECT 1 FROM pack_purchases WHERE user_id = ? AND pack = ?", userId, pack)) return "already_bought";
+    run("INSERT INTO pack_purchases (id, user_id, pack, ref, created_at) VALUES (?,?,?,?,?)", id(), userId, pack, ref, now());
     for (const [key, amount] of Object.entries(PACKS[pack].adds)) {
       run("INSERT INTO pack_balances (user_id, key, balance) VALUES (?,?,?) ON CONFLICT(user_id, key) DO UPDATE SET balance = balance + excluded.balance", userId, key, amount);
     }
+    return "credited";
   });
 }
 

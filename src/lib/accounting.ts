@@ -338,8 +338,18 @@ export function breakEven(p: { fixedMonthlyHt: number; priceHt: number; variable
 
 // ---------------------------------------------------------------- export CSV
 
-const csvCell = (v: unknown) => {
+/**
+ * Neutralise une formule dans une cellule CSV (injection à l'ouverture dans Excel ou LibreOffice) : un texte qui
+ * commence par = + - @, une tabulation ou un retour chariot est préfixé d'une apostrophe. Les nombres restent intacts.
+ */
+export function csvSafe(v: unknown): string {
   const s = String(v ?? "");
+  if (/^-?\d+(?:[.,]\d+)?$/.test(s)) return s;
+  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+}
+
+const csvCell = (v: unknown) => {
+  const s = csvSafe(v);
   return /[";\r\n]/.test(s) || /^\s|\s$/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 /** Montant en centimes → texte (virgule décimale en français, point en anglais), sans séparateur de milliers. */

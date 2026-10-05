@@ -2,6 +2,7 @@ import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
+import { requireCreationPlan } from "@/lib/plan-gates";
 import { FORMATS, SCENE_STYLES } from "@/lib/media/compose";
 import { L } from "@/lib/i18n-server";
 
@@ -22,12 +23,32 @@ const Req = z.object({
   usePhoto: z.boolean().optional(),
 });
 
+/** Libellé lisible de la tâche (jamais la clé interne). */
+const KIND_LABELS: Record<string, [string, string]> = {
+  packshot: ["Image produit sur fond uni", "Product image on plain background"],
+  scene: ["Photo mise en scène", "Staged photo"],
+  social: ["Visuel pour les réseaux", "Social media visual"],
+  ad: ["Visuel publicitaire", "Ad visual"],
+  banner: ["Bannière", "Banner"],
+  service: ["Annonce de prestation", "Service announcement"],
+  tips: ["Carrousel de conseils", "Tips carousel"],
+  quote: ["Citation", "Quote"],
+  info: ["Infos pratiques", "Practical information"],
+  booking: ["Prise de rendez-vous", "Booking"],
+  ambiance: ["Image d'ambiance", "Mood image"],
+};
+const imageLabel = (kind: string) => {
+  const [fr, en] = KIND_LABELS[kind] ?? ["Image", "Image"];
+  return L(fr, en);
+};
+
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
+  requireCreationPlan(user, "images");
   const b = await body(req, Req);
   const job =
     b.mode === "set"
       ? enqueue({ userId: user.id, projectId: p.id, type: "images.generate", label: L("Jeu d'images complet", "Full image set"), payload: { projectId: p.id, options: { withAi: b.useAi } } })
-      : enqueue({ userId: user.id, projectId: p.id, type: "image.single", label: L(`Image ${b.kind ?? "scene"}`, `Image: ${b.kind ?? "scene"}`), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto } } });
+      : enqueue({ userId: user.id, projectId: p.id, type: "image.single", label: imageLabel(b.kind ?? "scene"), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto } } });
   return ok({ jobId: job.id });
 });

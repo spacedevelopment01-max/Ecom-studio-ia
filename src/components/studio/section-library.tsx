@@ -147,6 +147,17 @@ function PreviewPane({ item, projectId, versionId, onAdd, adding, disabled }: { 
   const [scale, setScale] = useState(0.5);
   const [loaded, setLoaded] = useState(false);
   const [height, setHeight] = useState(FRAME_H);
+  const frame = useRef<HTMLIFrameElement>(null);
+  // Hauteur envoyée par l'aperçu cloisonné (son document n'est pas lisible depuis le studio).
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.source !== frame.current?.contentWindow || e.data?.source !== "es-section-preview") return;
+      const h = Number(e.data.height);
+      if (Number.isFinite(h) && h > 0) setHeight(Math.max(320, Math.min(h, 20000)));
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
   useEffect(() => {
     const el = box.current;
     if (!el) return;
@@ -166,17 +177,12 @@ function PreviewPane({ item, projectId, versionId, onAdd, adding, disabled }: { 
             </div>
           )}
           <iframe
+            ref={frame}
             title={t(`Aperçu : ${item.name}`, `Preview: ${item.name}`)}
             src={src}
             loading="lazy"
-            onLoad={(e) => {
-              setLoaded(true);
-              try {
-                const doc = (e.target as HTMLIFrameElement).contentDocument;
-                const h = doc?.documentElement.scrollHeight;
-                if (h) setHeight(Math.max(320, h));
-              } catch {}
-            }}
+            sandbox="allow-scripts"
+            onLoad={() => setLoaded(true)}
             className={cx("absolute left-0 top-0 origin-top-left border-0 transition-opacity duration-300", loaded ? "opacity-100" : "opacity-0")}
             style={{ width: FRAME_W, height: Math.min(height, FRAME_H * 1.6), transform: `scale(${scale})` }}
           />

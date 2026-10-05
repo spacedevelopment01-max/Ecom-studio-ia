@@ -5,7 +5,10 @@
  * Le texte extrait est transmis à l'IA comme donnée, jamais comme consigne.
  */
 import dns from "node:dns/promises";
+import http from "node:http";
+import https from "node:https";
 import net from "node:net";
+import zlib from "node:zlib";
 import { C, L } from "../i18n-server";
 
 export type LinkImport = {
@@ -18,14 +21,80 @@ export type LinkImport = {
   platform: string | null;
 };
 
-function isPrivate(ip: string) {
-  if (net.isIPv4(ip)) {
-    const [a, b] = ip.split(".").map(Number);
-    return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224;
-  }
-  const v = ip.toLowerCase();
-  return v === "::1" || v === "::" || v.startsWith("fc") || v.startsWith("fd") || v.startsWith("fe80") || v.startsWith("::ffff:127.") || v.startsWith("::ffff:10.") || v.startsWith("::ffff:192.168.");
+/** Adresse IPv4 (texte) → 4 octets, ou null. */
+function v4bytes(ip: string): number[] | null {
+  if (!net.isIPv4(ip)) return null;
+  return ip.split(".").map(Number);
 }
+
+/** Adresse IPv6 (texte, éventuellement avec IPv4 finale) → 16 octets, ou null. */
+function v6bytes(ip: string): number[] | null {
+  let v = ip.toLowerCase().replace(/^\[|\]$/g, "").replace(/%.*$/, "");
+  if (!net.isIPv6(v)) return null;
+  const tail = v.match(/(\d+\.\d+\.\d+\.\d+)$/);
+  if (tail) {
+    const b = v4bytes(tail[1]);
+    if (!b) return null;
+    v = v.slice(0, -tail[1].length) + `${((b[0] << 8) | b[1]).toString(16)}:${((b[2] << 8) | b[3]).toString(16)}`;
+  }
+  const [head, rest] = v.split("::");
+  const h = head ? head.split(":") : [];
+  const r = rest !== undefined ? (rest ? rest.split(":") : []) : [];
+  const groups = rest !== undefined ? [...h, ...Array(8 - h.length - r.length).fill("0"), ...r] : h;
+  if (groups.length !== 8) return null;
+  return groups.flatMap((g) => {
+    const n = parseInt(g || "0", 16);
+    return [n >> 8, n & 255];
+  });
+}
+
+function privateV4([a, b, c]: number[]) {
+  return (
+    a === 0 || // « ce réseau »
+    a === 10 ||
+    a === 127 ||
+    (a === 100 && b >= 64 && b <= 127) || // CGNAT
+    (a === 169 && b === 254) || // lien local (métadonnées cloud)
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 0 && (c === 0 || c === 2)) ||
+    (a === 192 && b === 168) ||
+    (a === 198 && (b === 18 || b === 19)) || // bancs de test
+    (a === 198 && b === 51 && c === 100) ||
+    (a === 203 && b === 0 && c === 113) ||
+    a >= 224 // multidiffusion, réservé, diffusion
+  );
+}
+
+/**
+ * Adresse non publique (anti-SSRF). Les adresses IPv4 encapsulées en IPv6 (`::ffff:a9fe:a9fe`, NAT64 `64:ff9b::`,
+ * compatibles `::a.b.c.d`, 6to4 `2002::`) sont ramenées à leur IPv4 avant le test, quelle que soit leur écriture.
+ */
+export function isPrivate(ip: string): boolean {
+  const b4 = v4bytes(ip);
+  if (b4) return privateV4(b4);
+  const b = v6bytes(ip);
+  if (!b) return true; // illisible : refusé
+  const zero = (from: number, to: number) => b.slice(from, to).every((x) => x === 0);
+  // ::/128, ::1, ::ffff:0:0/96 (IPv4 encapsulée), ::/96 (IPv4 compatible)
+  if (zero(0, 10) && ((b[10] === 0xff && b[11] === 0xff) || (b[10] === 0 && b[11] === 0))) {
+    if (b[10] === 0 && zero(12, 15) && b[15] <= 1) return true; // :: et ::1
+    return privateV4(b.slice(12, 16));
+  }
+  // NAT64 64:ff9b::/96 et 64:ff9b:1::/48 : IPv4 traduite
+  if (b[0] === 0x00 && b[1] === 0x64 && b[2] === 0xff && b[3] === 0x9b) return true;
+  // 6to4 2002::/16 : IPv4 dans les octets 2 à 5
+  if (b[0] === 0x20 && b[1] === 0x02) return privateV4(b.slice(2, 6));
+  if (b[0] === 0x20 && b[1] === 0x01 && b[2] === 0x00 && b[3] === 0x00) return true; // Teredo
+  if (b[0] === 0x20 && b[1] === 0x01 && b[2] === 0x0d && b[3] === 0xb8) return true; // documentation
+  if (b[0] === 0x01 && b[1] === 0x00 && zero(2, 8)) return true; // 100::/64 (rejet)
+  if ((b[0] & 0xfe) === 0xfc) return true; // fc00::/7 (adresses uniques locales)
+  if (b[0] === 0xfe && (b[1] & 0xc0) === 0x80) return true; // fe80::/10 (lien local)
+  if (b[0] === 0xfe && (b[1] & 0xc0) === 0xc0) return true; // fec0::/10 (site local, obsolète)
+  if (b[0] === 0xff) return true; // multidiffusion
+  return false;
+}
+
+const allowLocal = () => process.env.SITE_IMPORT_ALLOW_LOCAL === "1" && process.env.NODE_ENV !== "production";
 
 export async function assertPublicUrl(raw: string): Promise<URL> {
   let u: URL;
@@ -40,44 +109,93 @@ export async function assertPublicUrl(raw: string): Promise<URL> {
   // Sites de démonstration locaux (tests/fixtures/sites, servis par scripts/serve-site-fixtures.ts) :
   // une adresse locale n'est acceptée QUE si le drapeau explicite est posé ET hors production.
   // Sans ces deux conditions, la protection anti-SSRF s'applique normalement.
-  if (process.env.SITE_IMPORT_ALLOW_LOCAL === "1" && process.env.NODE_ENV !== "production") return u;
+  if (allowLocal()) return u;
   const addrs = net.isIP(host) ? [host] : (await dns.lookup(host, { all: true })).map((a) => a.address);
   if (!addrs.length || addrs.some(isPrivate)) throw new Error(L("Ce lien pointe vers une adresse privée : import refusé.", "This link points to a private address: import refused."));
   return u;
+}
+
+/**
+ * Résolution DNS vérifiée au moment même de la connexion (anti « DNS rebinding ») : la connexion part vers
+ * l'adresse contrôlée, jamais vers une seconde réponse DNS différente. L'en-tête Host et le nom TLS restent ceux du lien.
+ */
+export function checkedLookup(hostname: string, options: any, callback: (...args: any[]) => void) {
+  const opts = typeof options === "number" ? { family: options } : (options ?? {});
+  dns
+    .lookup(hostname, { all: true, family: opts.family || 0 })
+    .then((list) => {
+      const ok = allowLocal() ? list : list.filter((a) => !isPrivate(a.address));
+      if (!list.length || ok.length !== list.length) {
+        const err: NodeJS.ErrnoException = new Error(L("Ce lien pointe vers une adresse privée : import refusé.", "This link points to a private address: import refused."));
+        err.code = "EPRIVATEADDR";
+        return callback(err);
+      }
+      if (opts.all) return callback(null, ok);
+      return callback(null, ok[0].address, ok[0].family);
+    })
+    .catch((e) => callback(e));
+}
+
+type RawResponse = { status: number; headers: http.IncomingHttpHeaders; body: Buffer };
+
+/** Une requête GET (sans suivre les redirections), connexion à l'adresse vérifiée, taille et délai limités. */
+function getOnce(u: URL, headers: Record<string, string>, maxBytes: number, timeoutMs = 15_000): Promise<RawResponse> {
+  return new Promise((resolve, reject) => {
+    const mod = u.protocol === "https:" ? https : http;
+    const req = mod.request(u, { method: "GET", headers: { ...headers, "Accept-Encoding": "gzip, deflate, br" }, lookup: checkedLookup as any, timeout: timeoutMs }, (res) => {
+      const enc = String(res.headers["content-encoding"] ?? "").toLowerCase();
+      const stream: NodeJS.ReadableStream = enc === "gzip" ? res.pipe(zlib.createGunzip()) : enc === "deflate" ? res.pipe(zlib.createInflate()) : enc === "br" ? res.pipe(zlib.createBrotliDecompress()) : res;
+      const chunks: Buffer[] = [];
+      let size = 0;
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve({ status: res.statusCode ?? 0, headers: res.headers, body: Buffer.concat(chunks) });
+      };
+      const timer = setTimeout(() => {
+        req.destroy();
+        finish();
+      }, timeoutMs);
+      stream.on("data", (c: Buffer) => {
+        if (done) return;
+        size += c.length;
+        if (size > maxBytes) {
+          req.destroy();
+          return finish();
+        }
+        chunks.push(c);
+      });
+      stream.on("end", finish);
+      stream.on("error", (e) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        reject(e);
+      });
+    });
+    req.on("timeout", () => req.destroy(new Error(L("Délai dépassé.", "Timed out."))));
+    req.on("error", reject);
+    req.end();
+  });
 }
 
 export async function safeFetch(raw: string, opts: { maxBytes?: number; accept?: string } = {}): Promise<{ url: string; status: number; type: string; body: Buffer }> {
   let url = raw;
   for (let hop = 0; hop < 5; hop++) {
     const u = await assertPublicUrl(url);
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15_000);
-    const r = await fetch(u, {
-      redirect: "manual",
-      signal: ctrl.signal,
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; EcomStudioIA/1.0; +analyse de fiche produit)", Accept: opts.accept ?? "text/html,application/json;q=0.9,*/*;q=0.5", "Accept-Language": C("fr-FR,fr;q=0.9,en;q=0.6", "en-US,en;q=0.9,fr;q=0.6") },
-    }).finally(() => clearTimeout(timer));
-    if (r.status >= 300 && r.status < 400 && r.headers.get("location")) {
-      url = new URL(r.headers.get("location")!, u).toString();
+    const r = await getOnce(
+      u,
+      { "User-Agent": "Mozilla/5.0 (compatible; EcomStudioIA/1.0; +analyse de fiche produit)", Accept: opts.accept ?? "text/html,application/json;q=0.9,*/*;q=0.5", "Accept-Language": C("fr-FR,fr;q=0.9,en;q=0.6", "en-US,en;q=0.9,fr;q=0.6") },
+      opts.maxBytes ?? 3_000_000,
+    );
+    const location = r.headers.location;
+    if (r.status >= 300 && r.status < 400 && location) {
+      url = new URL(Array.isArray(location) ? location[0] : location, u).toString();
       continue;
     }
-    const max = opts.maxBytes ?? 3_000_000;
-    const reader = r.body?.getReader();
-    const chunks: Uint8Array[] = [];
-    let size = 0;
-    if (reader) {
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        size += value.length;
-        if (size > max) {
-          await reader.cancel();
-          break;
-        }
-        chunks.push(value);
-      }
-    }
-    return { url: u.toString(), status: r.status, type: r.headers.get("content-type") ?? "", body: Buffer.concat(chunks) };
+    return { url: u.toString(), status: r.status, type: String(r.headers["content-type"] ?? ""), body: r.body };
   }
   throw new Error(L("Trop de redirections.", "Too many redirects."));
 }

@@ -8,7 +8,7 @@ import { Clapperboard, Minus, Plus, ShieldCheck, Sparkles, Wand2 } from "lucide-
 import { api, Button, cx, Field, Input, Select, Textarea, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
-import { useBilling } from "../billing-client";
+import { useBilling, useCreationLocked } from "../billing-client";
 import { ugcIssues, type UgcScriptLike } from "@/lib/ugc-rules";
 import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
@@ -31,6 +31,7 @@ export function UgcPanel() {
   const cost = useCostConfirm();
   // Vidéo UGC : incluse dans certains forfaits (quota mensuel) ou ajoutée par un pack. Jamais de crédits affichés.
   const { billing } = useBilling();
+  const locked = useCreationLocked();
   const noCredits = !!data?.ai.ugc && !!billing && (!billing.plan || billing.quotas.ugc.included + billing.quotas.ugc.rollover + billing.quotas.ugc.pack === 0);
   const ugc = !!data?.ai.ugc && !noCredits;
   const voice = !!data?.ai.ugcVoice;
@@ -193,7 +194,7 @@ export function UgcPanel() {
             {services ? t("La personne est générée par IA : elle présente l'activité sans faux témoignage, sans se dire cliente ni se faire passer pour vous, et la mention « Vidéo générée par IA » est incrustée. Pensez aussi à activer l'étiquette « contenu IA » en publiant.", "The person is AI-generated: they present the business with no fake testimonial, without claiming to be a customer or pretending to be you, and the \"AI-generated video\" label is burned in. Remember to also turn on the \"AI content\" label when posting.") : t("La personne est générée par IA : elle montre et présente le produit, sans faux témoignage, et la mention « Vidéo générée par IA » est incrustée, comme l'exigent les règles des réseaux sociaux. Pensez aussi à activer l'étiquette « contenu IA » en publiant.", "The person is AI-generated: they show and present the product, with no fake testimonial, and the \"AI-generated video\" label is burned in, as social network rules require. Remember to also turn on the \"AI content\" label when posting.")}
           </p>
           {ugc && !voice && <p className="text-[11px] text-warn">{t("Fournisseur vidéo sans voix (fal.ai) : la vidéo sera sous-titrée, sans voix. Google Veo ajoute la voix et le son.", "Video provider without voice (fal.ai): the video will be subtitled, with no voice. Google Veo adds voice and sound.")}</p>}
-          <Button onClick={generate} loading={sending} disabled={!ugc || issues.length > 0} icon={<Clapperboard className="size-4" />}>{services ? t("Générer la présentation", "Generate the presentation") : t("Générer la vidéo UGC", "Generate the UGC video")}</Button>
+          <Button onClick={generate} loading={sending} disabled={locked || !ugc || issues.length > 0} icon={<Clapperboard className="size-4" />}>{services ? t("Générer la présentation", "Generate the presentation") : t("Générer la vidéo UGC", "Generate the UGC video")}</Button>
           <p className="flex items-center gap-1.5 text-[11px] text-muted"><Sparkles className="size-3" /> {t("Génération longue (quelques minutes par plan). Utilise 1 vidéo UGC de votre forfait.", "Long generation (a few minutes per shot). Uses 1 UGC video from your plan.")}</p>
         </div>
       )}

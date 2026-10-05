@@ -151,9 +151,9 @@ describe("articles de blog écrits par l'IA", () => {
     expect(xml).toContain("<wp:status><![CDATA[publish]]></wp:status>");
     expect(xml).toContain('<category domain="post_tag" nicename="routine-co"><![CDATA[Routine & co]]></category>');
     expect(xml.match(/<item>/g)).toHaveLength(2);
-    // Le contenu se retrouve intact une fois les sections CDATA relues.
+    // Le contenu se retrouve intact une fois les sections CDATA relues (nettoyé à l'export : le « > » du texte devient &gt;, même rendu).
     const content = xml.match(/<content:encoded>([\s\S]*?)<\/content:encoded>/)![1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
-    expect(content).toBe(row.body_html);
+    expect(content).toBe(row.body_html.replace("]]>", "]]&gt;"));
     const html = articleHtml(row, "Maison Ondine");
     expect(html.startsWith("<!doctype html>")).toBe(true);
     expect(html).toContain("<h1>Guide &lt;complet&gt; &amp; clair</h1>");

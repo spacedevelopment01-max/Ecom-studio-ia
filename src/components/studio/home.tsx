@@ -9,6 +9,7 @@ import { LANGS } from "@/lib/i18n";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useCostConfirm } from "./cost-confirm";
 import { QuotaBanner, useBilling } from "../billing-client";
+import { LogoutButton } from "../password-forms";
 import { PLANS } from "@/lib/plans";
 import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type PlatformId } from "./platform-picker";
 import { cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
@@ -412,29 +413,50 @@ function ExistingSiteFields({ url, onUrl, owner, onOwner, errors, showLanguage }
 export function StudioHome() {
   const t = useT();
   const { lang } = useLang();
-  const { data, loading } = useApi<{ projects: ProjectCard[]; subscription: { status: string; stores: number } }>("/api/projects", { poll: 8000 });
+  const { data, error } = useApi<{ projects: ProjectCard[]; subscription: { status: string; stores: number } }>("/api/projects", { poll: 8000 });
   const { data: me } = useApi<{ user: { role: string; name: string } }>("/api/me");
   const [creating, setCreating] = useState(false);
   const { billing } = useBilling({ poll: 60000 });
   const projects = data?.projects ?? [];
-  const showNew = creating || (!loading && projects.length === 0);
+  // Tant que la liste n'est pas chargée : squelette (jamais « 0 projet · découverte gratuite » à un abonné).
+  const firstLoad = !data && !error;
+  const showNew = creating || (!!data && projects.length === 0);
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-          <Link href="/" aria-label="E-COM STUDIO IA"><span className="hidden sm:inline"><Logo /></span><span className="sm:hidden"><Logo compact /></span></Link>
-          <div className="flex items-center gap-2">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6">
+          <Link href="/" aria-label="E-COM STUDIO IA" className="shrink-0"><span className="hidden sm:inline"><Logo /></span><span className="sm:hidden"><Logo compact /></span></Link>
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
             {me?.user.role === "admin" && <Link href="/admin" className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm sm:inline-flex"><Shield className="size-4" /> {t("Administration", "Admin")}</Link>}
-            <Link href="/studio/themes" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm"><Palette className="size-4" /> {t("Thèmes", "Themes")}</Link>
-            <Link href="/studio/compte" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm" aria-label={t("Mon compte", "My account")}><Settings className="size-4" /> <span className="hidden sm:inline">{t("Mon compte", "My account")}</span></Link>
+            <Link href="/studio/themes" aria-label={t("Thèmes", "Themes")} className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4"><Palette className="size-4" /> <span className="hidden sm:inline">{t("Thèmes", "Themes")}</span></Link>
+            <Link href="/studio/compte" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4" aria-label={t("Mon compte", "My account")}><Settings className="size-4" /> <span className="hidden sm:inline">{t("Mon compte", "My account")}</span></Link>
             <LangSwitch />
             <ThemeToggle />
+            <LogoutButton iconOnly className="grid size-10 shrink-0 place-items-center rounded-full border border-line bg-card text-ink-2 hover:border-ink hover:text-ink" />
           </div>
         </div>
       </header>
       <QuotaBanner billing={billing} />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        {showNew ? (
+        {firstLoad && !creating ? (
+          <div aria-busy="true" aria-label={t("Chargement de vos projets", "Loading your projects")}>
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <div className="skeleton h-10 w-56 rounded-xl" />
+                <div className="skeleton mt-2 h-4 w-72 max-w-full rounded" />
+              </div>
+              <div className="skeleton h-10 w-40 rounded-full" />
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="overflow-hidden rounded-3xl border border-line bg-card">
+                  <div className="skeleton aspect-[4/3] rounded-none" />
+                  <div className="grid gap-2 p-4"><div className="skeleton h-5 w-2/3 rounded" /><div className="skeleton h-3 w-1/2 rounded" /></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : showNew ? (
           <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
             <div>
               <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Nouveau projet", "New project")}</p>
@@ -450,8 +472,8 @@ export function StudioHome() {
               <div>
                 <h1 className="font-display text-4xl font-semibold">{t("Mes projets", "My projects")}</h1>
                 <p className="mt-1 text-muted">
-                  {t(`${projects.length} projet${projects.length > 1 ? "s" : ""} · `, `${projects.length} project${projects.length > 1 ? "s" : ""} · `)}
-                  {billing?.plan ? t(`forfait ${PLANS[billing.plan].name.fr} (1 boutique ou 1 site)`, `${PLANS[billing.plan].name.en} plan (1 store or 1 website)`) : t("découverte gratuite", "free discovery")}
+                  {t(`${projects.length} projet${projects.length > 1 ? "s" : ""}`, `${projects.length} project${projects.length > 1 ? "s" : ""}`)}{billing ? " · " : ""}
+                  {!billing ? null : billing.plan ? t(`forfait ${PLANS[billing.plan].name.fr} (1 boutique ou 1 site)`, `${PLANS[billing.plan].name.en} plan (1 store or 1 website)`) : t("découverte gratuite", "free discovery")}
                 </p>
               </div>
               <Button variant="signal" icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t("Nouveau projet", "New project")}</Button>

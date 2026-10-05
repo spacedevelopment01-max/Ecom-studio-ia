@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth-form";
+import { safeNextPath } from "@/lib/safe-path";
 import { currentUser } from "@/lib/auth";
 import { pick } from "@/lib/i18n";
 import { serverLang } from "@/lib/i18n-server";
@@ -16,6 +17,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const plan = typeof q.plan === "string" && q.plan in PLANS ? (q.plan as PlanId) : null;
   const billing: Billing = q.billing === "year" ? "year" : "month";
   const next = plan ? `/studio/compte?plan=${plan}&billing=${billing}` : null;
-  if (await currentUser()) redirect(next ?? "/studio");
-  return <AuthForm mode="register" plan={plan ? { id: plan, billing } : null} />;
+  const suite = safeNextPath(typeof q.suite === "string" ? q.suite : null);
+  if (await currentUser()) redirect(next ?? suite);
+  return <AuthForm mode="register" plan={plan ? { id: plan, billing } : null} next={suite} />;
 }

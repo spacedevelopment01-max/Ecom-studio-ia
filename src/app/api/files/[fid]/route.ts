@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { z } from "zod";
 import { all, json, now, one, run } from "@/lib/db";
-import { body, handle, ok } from "@/lib/http";
+import { body, handle, ok, parseRange } from "@/lib/http";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
 import { getAsset, publicAssetSummary, usagesOf, type Asset } from "@/lib/library";
 import { storagePath } from "@/lib/storage";
@@ -40,12 +40,10 @@ export const GET = handle(async (req: Request, ctx: { params: Promise<{ fid: str
   };
   if (mime === "image/svg+xml") headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'";
   if (u.get("download") === "1") headers["Content-Disposition"] = `attachment; filename*=UTF-8''${encodeURIComponent(a.name)}`;
-  const range = req.headers.get("range");
-  if (range && key === a.storage_key) {
-    const m = range.match(/bytes=(\d*)-(\d*)/);
-    const start = m?.[1] ? Number(m[1]) : 0;
-    const end = m?.[2] ? Math.min(Number(m[2]), stat.size - 1) : stat.size - 1;
-    if (start >= stat.size) return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${stat.size}` } });
+  const range = key === a.storage_key ? parseRange(req.headers.get("range"), stat.size) : null;
+  if (range === "unsatisfiable") return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${stat.size}` } });
+  if (range) {
+    const { start, end } = range;
     const stream = fs.createReadStream(file, { start, end });
     return new Response(stream as any, { status: 206, headers: { ...headers, "Content-Range": `bytes ${start}-${end}/${stat.size}`, "Content-Length": String(end - start + 1) } });
   }

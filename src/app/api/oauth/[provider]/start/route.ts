@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { handle } from "@/lib/http";
+import { handle, safeInternalPath } from "@/lib/http";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
 import { authorizeUrl, createState, providerConfig, PROVIDER_INFO, type ProviderKey } from "@/lib/social/oauth";
 import { L } from "@/lib/i18n-server";
@@ -20,6 +20,6 @@ export const GET = handle(async (req: Request, ctx: { params: Promise<{ provider
     if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(full)) throw new HttpError(400, L("Adresse de boutique invalide (ex. ma-boutique.myshopify.com).", "Invalid store address (e.g. my-store.myshopify.com)."));
     extra = full;
   }
-  const s = createState(user.id, p, projectId, u.get("redirect") ?? (projectId ? `/studio/${projectId}/connexions` : "/studio"), extra);
+  const s = createState(user.id, p, projectId, safeInternalPath(u.get("redirect"), projectId ? `/studio/${projectId}/connexions` : "/studio"), extra);
   return NextResponse.redirect(authorizeUrl(p, s, extra));
 });

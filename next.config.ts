@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     "onnxruntime-node",
     "liquidjs",
     "playwright",
+    "nodemailer",
   ],
   images: { unoptimized: true },
   poweredByHeader: false,

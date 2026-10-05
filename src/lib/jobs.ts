@@ -88,22 +88,42 @@ export function enqueue(input: EnqueueInput): Job {
 
 export const getJob = (jid: string) => one<Job>("SELECT * FROM jobs WHERE id = ?", jid);
 
-export const WORKER_ID = `${os.hostname()}:${process.pid}`;
-const LEASE_MS = 90_000;
+// Identifiant propre à chaque démarrage (un conteneur redémarré peut réutiliser le même nom d'hôte et le même pid).
+export const WORKER_ID = `${os.hostname()}:${process.pid}:${Math.random().toString(36).slice(2, 8)}`;
+export const LEASE_MS = 90_000;
+/** Intervalle de renouvellement du bail pendant l'exécution d'une tâche (appels IA longs sans point d'avancement). */
+export const LEASE_RENEW_MS = 30_000;
+
+/** Tâches en cours d'exécution dans CE processus : jamais reprises par lui-même, même si leur bail a expiré. */
+const inProcess = new Set<string>();
+export function markRunning(jid: string) {
+  inProcess.add(jid);
+}
+export function markFinished(jid: string) {
+  inProcess.delete(jid);
+}
+
+/** Prolonge le bail d'une tâche tenue par ce worker (battement pendant l'exécution). */
+export function renewLease(jid: string): boolean {
+  return run("UPDATE jobs SET locked_until=? WHERE id=? AND locked_by=? AND status IN ('running','queued','paused')", now() + LEASE_MS, jid, WORKER_ID).changes === 1;
+}
 
 /** Réserve atomiquement la prochaine tâche prête dont les dépendances sont terminées. */
 export function claimNext(types?: string[]): Job | null {
   return tx(() => {
     const t = now();
+    const mine = [...inProcess];
     const candidates = all<Job>(
       `SELECT * FROM jobs
        WHERE ((status = 'queued' AND run_at <= ? AND (locked_until IS NULL OR locked_until < ?)) OR (status = 'running' AND locked_until < ?))
        ${types?.length ? `AND type IN (${types.map(() => "?").join(",")})` : ""}
+       ${mine.length ? `AND id NOT IN (${mine.map(() => "?").join(",")})` : ""}
        ORDER BY run_at ASC LIMIT 25`,
       t,
       t,
       t,
       ...(types ?? []),
+      ...mine,
     );
     for (const j of candidates) {
       const deps = json<string[]>(j.depends_on, []);
@@ -129,6 +149,21 @@ export function claimNext(types?: string[]): Job | null {
     return null;
   });
 }
+
+/**
+ * Portée du décompte des quotas d'une tâche : seule la PREMIÈRE création d'un projet (« creation », visuels non
+ * décomptés) en profite. Une relance (`resume`), un nouveau départ sur un projet déjà construit ou toute autre
+ * tâche décomptent normalement chaque visuel.
+ */
+export function jobQuotaScope(job: Pick<Job, "id" | "type" | "payload" | "project_id">): "creation" | "normal" {
+  if (job.type !== "pipeline.run") return "normal";
+  if (json<{ initial?: boolean }>(job.payload, {}).initial !== true) return "normal";
+  if (job.project_id && one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status = 'done' AND id != ?", job.project_id, job.id)) return "normal";
+  return "creation";
+}
+
+/** Une création du pilote est-elle déjà en file, en cours ou en pause pour ce projet ? */
+export const pipelineActive = (projectId: string) => !!one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status IN ('queued','running','paused')", projectId);
 
 export class JobCancelled extends Error {}
 /** Levée au prochain point d'avancement quand l'utilisateur met la tâche en pause. */
@@ -196,24 +231,29 @@ export function completeJob(jid: string, result: unknown) {
 export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = {}) {
   const message = err instanceof Error ? err.message : String(err);
   const permanent = opts.permanent || (err as any)?.permanent === true || job.attempts >= job.max_attempts;
+  // Seule une tâche encore tenue (ni annulée, ni mise en pause entre-temps) change d'état : une tâche annulée
+  // pendant un appel puis interrompue par une erreur ne revient jamais en file.
+  const held = "(status='running' OR (status='queued' AND locked_by=?))";
   if (permanent) {
     run(
-      "UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=? WHERE id=?",
+      `UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=? WHERE id=? AND ${held}`,
       message.slice(0, 4000),
       message.slice(0, 300),
       now(),
       now(),
       job.id,
+      WORKER_ID,
     );
   } else {
     const delay = Math.min(15 * 60_000, 20_000 * 2 ** (job.attempts - 1));
     run(
-      "UPDATE jobs SET status='queued', error=?, message=?, run_at=?, locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=?",
+      `UPDATE jobs SET status='queued', error=?, message=?, run_at=?, locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=? AND ${held}`,
       message.slice(0, 4000),
       L(`Nouvelle tentative dans ${Math.round(delay / 1000)} s : ${message.slice(0, 200)}`, `Retrying in ${Math.round(delay / 1000)} s: ${message.slice(0, 200)}`),
       now() + delay,
       now(),
       job.id,
+      WORKER_ID,
     );
   }
 }

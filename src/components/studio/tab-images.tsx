@@ -8,6 +8,7 @@ import { AssetViewer } from "./asset-viewer";
 import { useCostConfirm } from "./cost-confirm";
 import { useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
+import { PlanRequired, useCreationLocked } from "../billing-client";
 
 const GROUPS = [
   { id: "all", label: "Tout", en: "All", roles: "packshot,detail,scene,lifestyle,banner,social,ad,cutout" },
@@ -83,6 +84,7 @@ function ProductImages() {
   const [form, setForm] = useState({ kind: "scene", style: "window", format: "product", layout: "editorial", headline: "", subline: "", cta: "", useAi: false });
   const active = useActive(["images.generate", "image.single"]);
   const cost = useCostConfirm();
+  const locked = useCreationLocked();
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${GROUPS.find((g) => g.id === group)!.roles}`);
   useEffect(() => {
     if (!active.length) reload();
@@ -157,8 +159,9 @@ function ProductImages() {
               </div>
             )}
             <ContentLangPicker {...cl} />
-            <Button onClick={() => create("single")} icon={<Wand2 className="size-4" />}>{t("Créer l'image", "Create image")}</Button>
-            <Button variant="secondary" className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (packshots, détails, scènes, bannières, réseaux)", "Full set (packshots, details, scenes, banners, social)")}</Button>
+            <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{t("Créer l'image", "Create image")}</Button>
+            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (packshots, détails, scènes, bannières, réseaux)", "Full set (packshots, details, scenes, banners, social)")}</Button>
+            {locked && <PlanRequired what="images" />}
           </div>
         </Card>
         <div>
@@ -205,6 +208,7 @@ function ServiceImages() {
   const [form, setForm] = useState({ kind: "service", format: "portrait", headline: "", subline: "", cta: "", serviceIndex: 0, tips: "", usePhoto: true });
   const active = useActive(["images.generate", "image.single"]);
   const cost = useCostConfirm();
+  const locked = useCreationLocked();
   const roles = SERVICE_GROUPS.find((g) => g.id === group)!.roles;
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${roles}`);
   useEffect(() => {
@@ -269,8 +273,9 @@ function ServiceImages() {
             {photoAllowed && photos > 0 && <Toggle checked={form.usePhoto} onChange={(v) => setForm({ ...form, usePhoto: v })} label={t("Utiliser une photo de l'activité", "Use a business photo")} />}
             {form.kind === "ambiance" && <p className="rounded-2xl bg-paper-2 p-3 text-[11px] text-muted">{t("Illustration générée par IA de votre type d'activité : sans visage de client reconnaissable, sans texte, logo, diplôme ni récompense. Elle ne remplace pas une photo de vos locaux. Utilise 1 visuel de votre forfait.", "AI-generated illustration of your kind of business: no recognizable customer face, no text, logo, diploma or award. It doesn't replace a photo of your premises. Uses 1 visual from your plan.")}</p>}
             <ContentLangPicker {...cl} />
-            <Button onClick={() => create("single")} icon={<Wand2 className="size-4" />}>{form.kind === "tips" ? t("Créer le carrousel", "Create the carousel") : t("Créer le visuel", "Create visual")}</Button>
-            <Button variant="secondary" className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{aiImage ? t("Jeu complet (photos, ambiances IA, bannières, réseaux, publicités)", "Full set (photos, AI moods, banners, social, ads)") : t("Jeu complet (photos, bannières, réseaux, publicités)", "Full set (photos, banners, social, ads)")}</Button>
+            <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{form.kind === "tips" ? t("Créer le carrousel", "Create the carousel") : t("Créer le visuel", "Create visual")}</Button>
+            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{aiImage ? t("Jeu complet (photos, ambiances IA, bannières, réseaux, publicités)", "Full set (photos, AI moods, banners, social, ads)") : t("Jeu complet (photos, bannières, réseaux, publicités)", "Full set (photos, banners, social, ads)")}</Button>
+            {locked && <PlanRequired what="images" />}
           </div>
         </Card>
         <div>

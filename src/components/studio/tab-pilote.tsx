@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe } from "lucide-react";
+import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe, Image as ImageIcon } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Input, Progress, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { EngineNotice, SectionTitle } from "./common";
@@ -128,8 +128,8 @@ function Memory() {
           <option value="decision">{t("Décision", "Decision")}</option>
           <option value="goal">{t("Objectif", "Goal")}</option>
         </Select>
-        <Input value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} placeholder={t("Sujet (ex. ton des légendes)", "Topic (e.g. caption tone)")} />
-        <Textarea value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} placeholder={t("Ce qu'il faut retenir (ex. jamais d'emoji, vouvoyer)", "What to remember (e.g. never use emojis, keep a formal tone)")} className="sm:col-span-2" rows={2} />
+        <Input aria-label={t("Sujet", "Topic")} value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} placeholder={t("Sujet (ex. ton des légendes)", "Topic (e.g. caption tone)")} />
+        <Textarea aria-label={t("Ce qu'il faut retenir", "What to remember")} value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} placeholder={t("Ce qu'il faut retenir (ex. jamais d'emoji, vouvoyer)", "What to remember (e.g. never use emojis, keep a formal tone)")} className="sm:col-span-2" rows={2} />
         <Button type="submit" variant="secondary" icon={<Plus className="size-4" />} className="justify-self-start">{t("Ajouter", "Add")}</Button>
       </form>
     </Card>
@@ -137,7 +137,8 @@ function Memory() {
 }
 
 /** Réglage : langue des contenus créés pour ce projet. */
-function ContentLanguage() {
+/** `started` : faux tant que la création n'est pas lancée (la plateforme se choisit alors dans « Démarrer la création »). */
+function ContentLanguage({ started = true }: { started?: boolean }) {
   const { id, data, reload } = useProject();
   const toast = useToast();
   const t = useT();
@@ -181,7 +182,7 @@ function ContentLanguage() {
           <span className="text-ink-2">{svc ? t("Site d'une entreprise de services : activité, prestations, prise de contact.", "Website for a services business: business, services, getting in touch.") : t("Boutique en ligne : produits, panier, paiement sur votre plateforme.", "Online store: products, cart, checkout on your platform.")}</span>
         </p>
       </div>
-      <div className="mb-6 grid gap-2">
+      {started && <div className="mb-6 grid gap-2">
         <p className="flex items-center gap-2 text-sm font-medium"><Globe className="size-4 text-muted" aria-hidden /> {svc ? t("Plateforme du site", "Website platform") : t("Plateforme de la boutique", "Store platform")}</p>
         <p className="text-xs text-muted">{svc ? t("Conseil : WordPress pour un site de services ; Shopify convient aussi. Le site reste le même, seule la livraison change.", "Tip: WordPress for a services website; Shopify works too. The website stays the same, only the delivery changes.") : t("Le site reste le même, seule la livraison change (thème installable ou kit de reprise).", "The site stays the same, only the delivery changes (installable theme or rebuild kit).")}</p>
         {data.settings.existingSite?.status === "read" && (
@@ -194,7 +195,7 @@ function ContentLanguage() {
         <div className={busy ? "pointer-events-none opacity-60" : undefined}>
           <PlatformCards value={isPlatform(data.project.platform) ? data.project.platform : "shopify"} onChange={changePlatform} business={data.business} compact />
         </div>
-      </div>
+      </div>}
       <div className="grid gap-1.5">
         <label htmlFor="project-content-lang" className="flex items-center gap-2 text-sm font-medium">
           <Languages className="size-4 text-muted" aria-hidden /> {t("Langue des contenus du projet", "Project content language")}
@@ -224,8 +225,10 @@ export default function TabPilote() {
   const pl = data.pipeline;
   const running = pl && (pl.job.status === "running" || pl.job.status === "queued");
   const awaiting = data.project.status === "awaiting_validation";
-  const paused = pl?.job.status === "paused" || data.project.status === "paused";
-  const failed = !paused && (pl?.job.status === "failed" || data.project.status === "error");
+  // Création arrêtée à la demande du client : ni pause reprenable telle quelle, ni erreur.
+  const cancelled = pl?.job.status === "cancelled";
+  const paused = !cancelled && (pl?.job.status === "paused" || data.project.status === "paused");
+  const failed = !paused && !cancelled && (pl?.job.status === "failed" || data.project.status === "error");
   async function pause(action: "pause" | "resume") {
     setBusy(action);
     try {
@@ -256,7 +259,8 @@ export default function TabPilote() {
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("l'analyse, la marque et les textes", "the analysis, the brand and the copy")} />
       {!pl && <StartCreation />}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+      {/* Projet pas encore lancé : pas de carte d'avancement vide ni d'aperçu « en cours » (rien ne tourne). */}
+      {pl && <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <Card className="p-5 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -277,6 +281,13 @@ export default function TabPilote() {
             <p className="mt-4 flex items-center gap-2 rounded-2xl bg-warn-soft p-4 text-sm text-warn" role="status">
               <Pause className="size-4 shrink-0" /> {t("Création en pause. Les étapes terminées sont conservées ; la reprise repart de l'étape interrompue.", "Creation paused. Completed steps are kept; resuming restarts from the interrupted step.")}
             </p>
+          )}
+          {cancelled && (
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-warn-soft p-4 text-sm text-warn" role="status">
+              <Pause className="size-4 shrink-0" />
+              <span className="flex-1">{t("Création arrêtée à votre demande. Les étapes terminées sont conservées.", "Creation stopped at your request. Completed steps are kept.")}</span>
+              <Button size="sm" icon={<Play className="size-4" />} loading={!!busy} onClick={() => resume(pl!.steps.find((x) => x.status !== "done" && x.status !== "skipped")?.id)}>{t("Relancer", "Restart")}</Button>
+            </div>
           )}
           {failed && (
             <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-bad-soft p-4 text-sm text-bad">
@@ -315,7 +326,7 @@ export default function TabPilote() {
         <div className="grid content-start gap-6">
           <Card className="overflow-hidden">
             <div className="relative aspect-[4/3] bg-paper-2">
-              {data.coverUrl ? <img src={data.coverUrl} alt="" className="size-full object-cover" /> : <div className="skeleton size-full" />}
+              {data.coverUrl ? <img src={data.coverUrl} alt="" className="size-full object-cover" /> : data.cutoutUrl ? <img src={data.cutoutUrl} alt="" className="size-full object-contain p-6" /> : <div className="grid size-full place-items-center text-muted"><ImageIcon className="size-8" aria-hidden /></div>}
               {data.logoUrl && <img src={data.logoUrl} alt="Logo" className="absolute bottom-3 left-3 h-10 max-w-[60%] rounded-xl bg-white/90 object-contain px-3 py-1.5" />}
             </div>
             <div className="grid grid-cols-3 divide-x divide-line border-t border-line text-center">
@@ -351,10 +362,10 @@ export default function TabPilote() {
           )}
           {pl?.job.finishedAt && <p className="text-xs text-muted">{t("Dernière exécution terminée le", "Last run finished on")} {formatDate(pl.job.finishedAt)}.</p>}
         </div>
-      </div>
+      </div>}
       <ActivityGaps />
       <Questions />
-      <ContentLanguage />
+      <ContentLanguage started={!!pl} />
       <Memory />
     </div>
   );

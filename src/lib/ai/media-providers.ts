@@ -12,7 +12,8 @@ import OpenAI, { toFile } from "openai";
 import sharp from "sharp";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
 import { currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
-import { assertQuota, consumeQuota, userPlan } from "../quotas";
+import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
+import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
 import { providerKey, requirePrice, routeFor, usdToEur } from "./config";
@@ -40,6 +41,19 @@ function recordMedia(u: Parameters<typeof recordUsage>[0]) {
   recordUsage(u);
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
   if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
+}
+
+/**
+ * Image générée puis écartée (contrôle de fidélité non concluant, erreur avant l'enregistrement) : jamais montrée
+ * au client, elle ne lui coûte pas de visuel. Rend les décomptes faits sous la clé `key` (préfixe des appels).
+ * Le coût réel (budget caché) reste comptabilisé.
+ */
+export function refundMediaQuota(userId: string, key: string): number {
+  const esc = (v: string) => v.replace(/[\\%_]/g, (c) => `\\${c}`);
+  const refs = all<{ ref: string }>("SELECT ref FROM quota_events WHERE user_id = ? AND (ref = ? OR ref LIKE ? ESCAPE '\\')", userId, `visuals:${key}`, `visuals:${esc(key)}:%`);
+  let n = 0;
+  for (const r of refs) if (refundQuota(userId, r.ref)) n++;
+  return n;
 }
 
 /** Pendant une tâche, un compte sans forfait (découverte gratuite) ne crée ni images ni vidéos par l'IA. */

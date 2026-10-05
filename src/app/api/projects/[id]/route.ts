@@ -4,6 +4,7 @@ import { body, handle, ok } from "@/lib/http";
 import { publicJob, type Job } from "@/lib/jobs";
 import { currentTheme, saveProduct, saveServices, saveSettings } from "@/lib/projects";
 import { pipelineState } from "@/lib/engine/pipeline";
+import { localizeQuestions } from "@/lib/engine/local";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { hasAiCredits } from "@/lib/ai/access";
 import { assertAutopublish } from "@/lib/plan-gates";
@@ -32,7 +33,8 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const b = balance(user.id);
   return ok({
     project: { id: p.id, name: p.name, status: p.status, platform: p.platform, storeUrl: p.row.store_url, createdAt: p.row.created_at, updatedAt: p.row.updated_at, sectorLabel: p.business === "services" && p.product.category ? p.product.category : sectorLabel(p.product.sector, uiLang()), business: p.business },
-    product: p.product,
+    // Questions posées au commerçant : dans la langue de son interface, quelle que soit celle du projet.
+    product: { ...p.product, questions: localizeQuestions(p.product.questions ?? []) },
     business: p.business,
     services: p.services,
     brand: p.brand,

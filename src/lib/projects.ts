@@ -3,7 +3,8 @@ import { all, id, json, now, one, run, tx } from "./db";
 import type { ProjectRow } from "./auth";
 import { emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type CatalogItem, type ProductProfile, type ProjectSettings, type ServiceProfile, type StoreType, type Strategy } from "./project-types";
 import type { ThemeSpec } from "./theme/spec";
-import { L } from "./i18n-server";
+import { L, uiLang } from "./i18n-server";
+import { storedText } from "./step-notes";
 
 export type Project = {
   row: ProjectRow;
@@ -120,12 +121,12 @@ export function currentTheme(projectId: string): { version: ThemeVersion; spec: 
   const p = one<{ current_theme_version_id: string | null }>("SELECT current_theme_version_id FROM projects WHERE id = ?", projectId);
   if (!p?.current_theme_version_id) return null;
   const v = one<ThemeVersion>("SELECT * FROM theme_versions WHERE id = ?", p.current_theme_version_id);
-  return v ? { version: v, spec: JSON.parse(v.spec) } : null;
+  return v ? { version: { ...v, summary: storedText(v.summary, uiLang()) }, spec: JSON.parse(v.spec) } : null;
 }
 
 export function themeVersion(projectId: string, versionId: string): { version: ThemeVersion; spec: ThemeSpec } | null {
   const v = one<ThemeVersion>("SELECT * FROM theme_versions WHERE id = ? AND project_id = ?", versionId, projectId);
-  return v ? { version: v, spec: JSON.parse(v.spec) } : null;
+  return v ? { version: { ...v, summary: storedText(v.summary, uiLang()) }, spec: JSON.parse(v.spec) } : null;
 }
 
 export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown): ThemeVersion {
@@ -151,9 +152,21 @@ export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: st
 }
 
 export function listThemeVersions(projectId: string) {
-  return all<Omit<ThemeVersion, "spec">>("SELECT id, project_id, number, summary, author, parent_id, qc, created_at FROM theme_versions WHERE project_id = ? ORDER BY number DESC LIMIT 100", projectId);
+  // Résumés enregistrés en deux langues (ou texte ancien) : rendus dans la langue de l'interface.
+  return all<Omit<ThemeVersion, "spec">>("SELECT id, project_id, number, summary, author, parent_id, qc, created_at FROM theme_versions WHERE project_id = ? ORDER BY number DESC LIMIT 100", projectId).map((v) => ({ ...v, summary: storedText(v.summary, uiLang()) }));
 }
 
 export function notify(userId: string, projectId: string | null, title: string, body = "", level = "info") {
   run("INSERT INTO notifications (id, user_id, project_id, level, title, body, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, projectId, level, title, body, now());
+}
+
+/** Échappe une saisie pour l'insérer telle quelle dans une expression régulière. */
+export const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Repère les mentions « [À compléter : … <fait> …] » d'un fait que le client vient de confirmer. Le libellé est
+ * saisi par le client : il est échappé (un libellé « Poids(g) » ne provoque plus d'erreur 500).
+ */
+export function factPlaceholderRegex(label: string, factKey: string): RegExp {
+  return new RegExp(`\\[(?:À compléter :|To complete:) [^\\]]*(${escapeRegExp(label.split(" ")[0])}|${escapeRegExp(factKey)})[^\\]]*\\]`, "gi");
 }

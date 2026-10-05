@@ -47,7 +47,7 @@ export function TutorialsMenuLink({ tab, business, folded }: { tab: string; busi
   const label = t("Tutoriels vidéo", "Video tutorials");
   return (
     <>
-      <button type="button" onClick={() => setOpen(start())} title={folded ? label : undefined} aria-label={folded ? label : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2", folded ? "justify-center" : "px-3")}>
+      <button type="button" onClick={() => setOpen(start())} title={folded ? label : undefined} aria-label={folded ? label : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-sm text-ink-2 hover:bg-paper-2 short:py-1.5", folded ? "justify-center" : "px-3")}>
         <GraduationCap className="size-4 shrink-0" />{!folded && ` ${label}`}
       </button>
       {open && createPortal(<TutorialPlayer id={open} business={business} onPick={setOpen} onClose={() => setOpen(null)} />, document.body)}
