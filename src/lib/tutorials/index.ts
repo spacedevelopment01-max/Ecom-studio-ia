@@ -35,5 +35,10 @@ export const tutorialBusiness = (id: TutorialId): "products" | "services" => (id
 export const tutorialTab = (id: TutorialId) => (id === "activite" ? "produit" : id === "site" ? "boutique" : id);
 
 /** Fichiers publiés : public/tutorials/<id>[.en].mp4 / .jpg / .json (minutage des étapes). */
-export const tutorialFile = (id: TutorialId, lang: "fr" | "en", ext: "mp4" | "jpg" | "json") => `/tutorials/${id}${lang === "en" ? ".en" : ""}.${ext}`;
+/**
+ * Nom des fichiers publiés. Les bloqueurs de publicité suppriment les adresses contenant « publicite », « ads »… :
+ * le tutoriel de l'onglet Publicités est donc publié sous un nom neutre.
+ */
+export const tutorialSlug = (id: TutorialId) => (id === "publicites" ? "campagnes" : id);
+export const tutorialFile = (id: TutorialId, lang: "fr" | "en", ext: "mp4" | "jpg" | "json") => `/tutorials/${tutorialSlug(id)}${lang === "en" ? ".en" : ""}.${ext}`;
 export type TutorialTiming = { duration: number; steps: number[] };

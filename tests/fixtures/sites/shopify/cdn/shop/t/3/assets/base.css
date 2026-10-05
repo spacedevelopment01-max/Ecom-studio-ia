@@ -1,0 +1,27 @@
+:root {
+  --color-button: var(--color-base-accent-1);
+  --color-button-text: var(--color-base-solid-button-labels);
+  --color-link: var(--color-base-accent-2);
+  --color-foreground: var(--color-base-text);
+  --color-background: var(--color-base-background-1);
+}
+body {
+  color: rgba(var(--color-foreground), 0.85);
+  background-color: rgb(var(--color-background));
+  font-family: var(--font-body-family);
+}
+h1, h2, h3, .h0, .h1, .h2 {
+  font-family: var(--font-heading-family);
+  color: rgb(var(--color-foreground));
+}
+a { color: rgb(var(--color-link)); }
+.button, .shopify-payment-button__button--unbranded {
+  background-color: rgb(var(--color-button));
+  color: rgb(var(--color-button-text));
+  border-radius: 40px;
+}
+.button:disabled { background-color: rgba(var(--color-button), 0.4); }
+.announcement-bar { background: #2B2118; color: #FBF6EF; }
+@media screen and (min-width: 750px) {
+  .banner__heading { font-size: 5.2rem; }
+}

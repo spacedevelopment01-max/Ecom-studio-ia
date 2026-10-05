@@ -10,6 +10,7 @@ import { useT } from "../i18n";
 import { LANGS, type Lang } from "@/lib/i18n";
 import { isPlatform, PlatformCards } from "./platform-picker";
 import { missingActivity } from "./services-editor";
+import { SitePilotCard } from "./existing-site";
 
 function StepIcon({ status }: { status: string }) {
   if (status === "done") return <span className="grid size-7 place-items-center rounded-full bg-ok text-white"><Check className="size-4" /></span>;
@@ -183,6 +184,13 @@ function ContentLanguage() {
       <div className="mb-6 grid gap-2">
         <p className="flex items-center gap-2 text-sm font-medium"><Globe className="size-4 text-muted" aria-hidden /> {svc ? t("Plateforme du site", "Website platform") : t("Plateforme de la boutique", "Store platform")}</p>
         <p className="text-xs text-muted">{svc ? t("Conseil : WordPress pour un site de services ; Shopify convient aussi. Le site reste le même, seule la livraison change.", "Tip: WordPress for a services website; Shopify works too. The website stays the same, only the delivery changes.") : t("Le site reste le même, seule la livraison change (thème installable ou kit de reprise).", "The site stays the same, only the delivery changes (installable theme or rebuild kit).")}</p>
+        {data.settings.existingSite?.status === "read" && (
+          <p className="text-xs text-info">
+            {data.settings.existingSite.decision === "keep"
+              ? t(`Détectée sur votre site actuel : ${data.settings.existingSite.platformLabel}.`, `Detected on your current website: ${data.settings.existingSite.platformLabel}.`)
+              : t(`Votre site (${data.settings.existingSite.platformLabel}) est reproduit sur ${data.settings.existingSite.target}, la plateforme conseillée.`, `Your website (${data.settings.existingSite.platformLabel}) is reproduced on ${data.settings.existingSite.target}, the recommended platform.`)}
+          </p>
+        )}
         <div className={busy ? "pointer-events-none opacity-60" : undefined}>
           <PlatformCards value={isPlatform(data.project.platform) ? data.project.platform : "shopify"} onChange={changePlatform} business={data.business} compact />
         </div>
@@ -323,7 +331,8 @@ export default function TabPilote() {
               ))}
             </div>
           </Card>
-          {data.theme ? (
+          {data.settings.existingSite && <SitePilotCard site={data.settings.existingSite} projectId={id} />}
+          {data.settings.existingSite?.decision === "keep" && !data.settings.existingSite.newSiteRequested && !data.theme ? null : data.theme ? (
             <Card className="p-5">
               <p className="text-sm text-muted">{svc ? t("Site · version", "Website · version") : t("Boutique · version", "Store · version")} {data.theme.number}</p>
               <p className="mt-1 font-display text-xl">{t(`Direction « ${data.theme.direction} »`, `“${data.theme.direction}” direction`)}</p>

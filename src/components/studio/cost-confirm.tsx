@@ -16,10 +16,10 @@ export function useCostConfirm() {
   const [state, setState] = useState<{ est: Estimate; resolve: (go: boolean) => void; localOk: boolean } | null>(null);
 
   /** Résout vrai si l'action peut partir (léger, local, ou confirmé par le client). */
-  const confirm = useCallback(async (action: CostAction, opts: { beats?: number; localOk?: boolean } = {}) => {
+  const confirm = useCallback(async (action: CostAction, opts: { beats?: number; localOk?: boolean; videos?: "ai" | "edited" | "none" } = {}) => {
     let est: Estimate;
     try {
-      est = await api<Estimate>(`/api/estimate?action=${action}${opts.beats ? `&beats=${opts.beats}` : ""}`);
+      est = await api<Estimate>(`/api/estimate?action=${action}${opts.beats ? `&beats=${opts.beats}` : ""}${opts.videos ? `&videos=${opts.videos}` : ""}`);
     } catch {
       return true; // l'estimation ne doit jamais bloquer : le serveur vérifie les crédits de toute façon
     }

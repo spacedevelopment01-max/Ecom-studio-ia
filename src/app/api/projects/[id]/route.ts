@@ -37,7 +37,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     brand: p.brand,
     strategy: p.strategy,
     settings: p.settings,
-    pipeline: pipeline ? { job: publicJob(pipeline), steps: pipelineState(pipeline, p.business) } : null,
+    pipeline: pipeline ? { job: publicJob(pipeline), steps: pipelineState(pipeline, p.business, p.settings.existingSite) } : null,
     active: active.map(publicJob),
     counts,
     posts,
@@ -82,8 +82,11 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
         .optional(),
       /** Description de l'activité (services) : nom, catégorie, résumé, informations confirmées. */
       activity: z.object({ name: z.string().max(160).optional(), category: z.string().max(120).optional(), summary: z.string().max(2000).optional(), facts: z.array(FactSchema).max(60).optional() }).optional(),
+      /** Site existant conservé : le client demande au studio de créer un nouveau site malgré tout (ou y renonce). */
+      existingSite: z.object({ newSiteRequested: z.boolean() }).optional(),
     }),
   );
+  if (b.existingSite && p.settings.existingSite) saveSettings(p.id, { ...p.settings, existingSite: { ...p.settings.existingSite, newSiteRequested: b.existingSite.newSiteRequested } });
   if (b.name) run("UPDATE projects SET name = ?, updated_at = ? WHERE id = ?", b.name, now(), p.id);
   if (b.platform) run("UPDATE projects SET platform = ?, updated_at = ? WHERE id = ?", b.platform, now(), p.id);
   if (b.services) {
@@ -119,7 +122,9 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
         throw new HttpError(400, L("Fuseau horaire inconnu.", "Unknown time zone."));
       }
     }
-    saveSettings(p.id, { ...p.settings, ...b.settings } as any);
+    const latest = one<{ settings_json: string }>("SELECT settings_json FROM projects WHERE id = ?", p.id);
+    const curSettings = { ...p.settings, ...json<Record<string, unknown>>(latest?.settings_json, {}) };
+    saveSettings(p.id, { ...curSettings, ...b.settings } as any);
   }
   return ok();
 });

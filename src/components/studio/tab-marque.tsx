@@ -8,6 +8,7 @@ import type { Brand } from "@/lib/project-types";
 import { DIRECTIONS } from "@/lib/theme/directions";
 import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
+import { FromSiteBadge } from "./existing-site";
 
 const PALETTE_LABEL: Record<string, { fr: string; en: string }> = {
   primary: { fr: "Principale", en: "Primary" },
@@ -33,6 +34,7 @@ const DIRECTION_TAGLINE_EN: Record<string, string> = {
 
 export default function TabMarque() {
   const { id, data, reload } = useProject();
+  const site = data?.settings.existingSite;
   const toast = useToast();
   const t = useT();
   const { lang } = useLang();
@@ -96,8 +98,15 @@ export default function TabMarque() {
       {active[0] && <JobProgress job={active[0]} />}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <Card className="p-5 sm:p-7">
-          <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2"><Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button><Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
-            {b.generatedBy === "ai" ? t("Proposée par l'IA à partir du produit.", "Proposed by the AI based on the product.") : t("Base proposée par le moteur local : à affiner.", "Starting point from the local engine: refine as needed.")} {t("Les éléments validés sont conservés lors des nouvelles propositions.", "Approved elements are kept in new proposals.")}
+          <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2">{site?.status !== "read" && <Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button>}<Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
+            {site?.status === "read" ? (
+              <>
+                <FromSiteBadge site={site} className="mb-1.5" />
+                <span className="block">{t("Nom, logo, couleurs et polices repris de votre site : votre marque reste la vôtre. Le positionnement, la cible et le ton sont proposés pour vos publications et publicités ; ajustez-les librement.", "Name, logo, colors and fonts taken from your website: your brand stays yours. Positioning, audience and tone are suggested for your posts and ads; adjust them freely.")}</span>
+              </>
+            ) : (
+              <>{b.generatedBy === "ai" ? t("Proposée par l'IA à partir du produit.", "Proposed by the AI based on the product.") : t("Base proposée par le moteur local : à affiner.", "Starting point from the local engine: refine as needed.")} {t("Les éléments validés sont conservés lors des nouvelles propositions.", "Approved elements are kept in new proposals.")}</>
+            )}
           </SectionTitle>
           <div className="grid gap-5">
             <div className="grid gap-1.5">
@@ -113,7 +122,7 @@ export default function TabMarque() {
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between"><label htmlFor="btag" className="text-sm font-medium">{t("Signature", "Tagline")}</label>{V("tagline")}</div>
               <Input id="btag" value={b.tagline} onChange={(e) => set({ tagline: e.target.value })} placeholder={t("Une phrase courte, sans promesse invérifiable", "A short line, with no unverifiable promise")} />
-              {(ident?.taglines.length ?? 0) > 0 && (
+              {site?.status !== "read" && (ident?.taglines.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <span className="text-xs text-muted">{t("Autres signatures :", "Other taglines:")}</span>
                   {ident!.taglines.map((tl) => <button key={tl} onClick={() => set({ tagline: tl })} className="rounded-full border border-line px-2.5 py-0.5 text-xs hover:border-ink">{tl}</button>)}
@@ -146,7 +155,7 @@ export default function TabMarque() {
         </Card>
         <div className="grid content-start gap-6">
           <Card className="p-5">
-            <div className="flex items-center justify-between"><h3 className="font-display text-lg font-semibold">{t("Logo", "Logo")}</h3>{V("logo")}</div>
+            <div className="flex items-center justify-between"><h3 className="flex items-center gap-2 font-display text-lg font-semibold">{t("Logo", "Logo")} {b.logo.status === "provided" && b.logo.assetId && <Badge tone="ok">{t("fourni", "provided")}</Badge>}</h3>{V("logo")}</div>
             <p className="mt-1 text-xs text-muted">{b.logo.concept}</p>
             {!ident?.provided && (ident?.proposals.length ?? 0) > 0 && (
               <div className="mt-4">

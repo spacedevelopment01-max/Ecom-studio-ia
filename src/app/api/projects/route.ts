@@ -2,7 +2,7 @@ import { requireUser, HttpError } from "@/lib/auth";
 import { all, id, now, one, run } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { ensureFolders } from "@/lib/library";
-import { hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
+import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
 import { getSubscription, subscriptionActive } from "@/lib/billing";
 import { DEFAULT_SETTINGS } from "@/lib/projects";
 import { L, setProjectContentLang, uiLang } from "@/lib/i18n-server";
@@ -34,7 +34,9 @@ export const GET = handle(async () => {
 export const POST = handle(async (req: Request) => {
   const user = await requireUser();
   const { input, files, logo } = readStartForm(await req.formData());
-  const services = input.businessType === "services" ? serviceProfileFromInput(input) : null;
+  // « J'ai déjà mon site et mon logo » : adresse et accord vérifiés ; type d'activité et plateforme fixés après lecture du site.
+  const site = existingSiteFromInput(input);
+  const services = !site && input.businessType === "services" ? serviceProfileFromInput(input) : null;
   // Site de services : la description de l'activité ou le lien du site existant est indispensable.
   if (services && !hasProductInput(input, files)) throw new HttpError(400, L("Décrivez votre activité en quelques lignes ou indiquez le lien de votre site actuel.", "Describe your business in a few lines or give the link to your current website."));
   // Nombre de boutiques : limité par l'abonnement (une boutique d'essai sans abonnement).
@@ -51,19 +53,19 @@ export const POST = handle(async (req: Request) => {
     "INSERT INTO projects (id, user_id, name, status, platform, store_type, business_type, business_json, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
     pid,
     user.id,
-    input.productName || input.brandName || L("Nouveau projet", "New project"),
+    input.productName || input.brandName || (site ? new URL(site.url).hostname.replace(/^www\./, "") : L("Nouveau projet", "New project")),
     "draft",
-    input.platform,
-    input.storeType,
-    input.businessType,
+    site ? "shopify" : input.platform,
+    site ? "mono" : input.storeType,
+    site ? "products" : input.businessType,
     services ? JSON.stringify(services) : "{}",
-    JSON.stringify({ ...DEFAULT_SETTINGS, mode: input.mode, timezone: user.timezone, language }),
+    JSON.stringify({ ...DEFAULT_SETTINGS, mode: input.mode, timezone: user.timezone, language, ...(site ? { existingSite: { url: site.url, status: "pending" } } : {}) }),
     "[]",
     now(),
     now(),
   );
   ensureFolders(pid);
-  await saveStartFiles(pid, user.id, files, logo, input.businessType);
+  await saveStartFiles(pid, user.id, site ? [] : files, logo, site ? "products" : input.businessType);
   if (!hasProductInput(input, files)) return ok({ id: pid, jobId: null, started: false });
   const job = launchPipeline(pid, user.id, input, files.length);
   return ok({ id: pid, jobId: job.id, started: true });

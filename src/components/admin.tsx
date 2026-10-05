@@ -5,6 +5,7 @@ import { Activity, ArrowLeft, CheckCircle2, Copy, KeyRound, RefreshCw, XCircle }
 import { api, Badge, Button, Card, cx, formatDate, Input, Logo, Select, ThemeToggle, useApi, useToast } from "./ui";
 import { LangSwitch, useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
+import { AccountingView } from "./admin-accounting";
 
 type Overview = {
   appUrl: string;
@@ -28,6 +29,7 @@ type Overview = {
 const SECTIONS = [
   ["bord", "Tableau de bord", "Dashboard"],
   ["clients", "Clients", "Customers"],
+  ["compta", "Comptabilité", "Accounting"],
   ["ia", "Fournisseurs IA", "AI providers"],
   ["routes", "Modèles et tarifs", "Models and pricing"],
   ["connexions", "Connexions OAuth", "OAuth connections"],
@@ -91,6 +93,7 @@ export function AdminConsole() {
             {tab === "paiements" && <Payments data={data} set={set} />}
             {tab === "bord" && (dash ? <DashboardView d={dash} onClients={() => setTab("clients")} /> : <div className="skeleton h-72 rounded-3xl" />)}
             {tab === "clients" && (dash ? <Clients d={dash} reload={() => { reload(); reloadDash(); }} /> : <div className="skeleton h-72 rounded-3xl" />)}
+            {tab === "compta" && <AccountingView />}
             {tab === "conso" && <Usage data={data} />}
             {tab === "sante" && <Health data={data} reload={reload} />}
           </div>

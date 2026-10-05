@@ -12,7 +12,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { chromium } from "playwright";
-import { TUTORIALS, TUTORIAL_IDS, tutorialBusiness, tutorialTab, type TutorialId } from "../src/lib/tutorials";
+import { TUTORIALS, TUTORIAL_IDS, tutorialBusiness, tutorialSlug, tutorialTab, type TutorialId } from "../src/lib/tutorials";
 import { OVERLAY, Recorder, VIEWPORT } from "./tutorials/recorder";
 import { BASE, EMAIL, PASSWORD, readProjects } from "./tutorials/setup";
 
@@ -60,11 +60,11 @@ for (const id of ids) {
   await r.stop();
   const end = r.now();
   const suffix = LANG === "en" ? ".en" : "";
-  const offset = await r.encode(path.join(OUT, `${id}${suffix}.mp4`), path.join(OUT, `${id}${suffix}.jpg`), 4.6);
+  const offset = await r.encode(path.join(OUT, `${tutorialSlug(id)}${suffix}.mp4`), path.join(OUT, `${tutorialSlug(id)}${suffix}.jpg`), 4.6);
   void offset;
   const round = (x: number) => Math.round(x * 10) / 10;
   const duration = round(r.videoTime(end));
-  fs.writeFileSync(path.join(OUT, `${id}${suffix}.json`), JSON.stringify({ duration, steps: r.stepTimes.map((s) => round(r.videoTime(s))) }));
+  fs.writeFileSync(path.join(OUT, `${tutorialSlug(id)}${suffix}.json`), JSON.stringify({ duration, steps: r.stepTimes.map((s) => round(r.videoTime(s))) }));
   fs.rmSync(tmp, { recursive: true, force: true });
   // Remise en état du projet de démonstration (une scène peut créer des versions, des brouillons…).
   if (cleanup) await cleanup({ r, lang: LANG, projectId, base: BASE, t });

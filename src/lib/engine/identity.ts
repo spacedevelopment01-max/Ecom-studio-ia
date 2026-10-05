@@ -173,7 +173,8 @@ export function latestProposals(projectId: string) {
   return ["logotype", "symbole", "embleme"].map((k) => seen.get(k)).filter(Boolean) as (Asset & { info: any })[];
 }
 
-export const hasClientLogo = (projectId: string) => !!one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'logo' AND origin = 'upload' AND deleted_at IS NULL", projectId);
+/** Logo du client : envoyé par lui, ou repris de son site existant. */
+export const hasClientLogo = (projectId: string) => !!one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'logo' AND origin IN ('upload','site') AND deleted_at IS NULL", projectId);
 
 // ---------------------------------------------------------------- signatures
 

@@ -24,6 +24,11 @@ export default function TabVideos() {
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=video,subtitles`);
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [form, setForm] = useState({ format: "9:16", goal: "", music: "calm", useAiClip: false, target: "ads", url: "" });
+  // Mode IA : les vidéos intègrent par défaut un plan filmé par l'IA (le client peut le décocher).
+  const aiVideo = !!data?.ai.video;
+  useEffect(() => {
+    if (aiVideo) setForm((f) => ({ ...f, useAiClip: true }));
+  }, [aiVideo]);
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);

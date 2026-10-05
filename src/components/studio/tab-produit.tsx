@@ -4,6 +4,7 @@ import { ImagePlus, Plus, Trash2, RefreshCw } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, Input, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, SectionTitle, type AssetView } from "./common";
+import { FromSiteBadge } from "./existing-site";
 import { CatalogPanel } from "./catalog-panel";
 import TabActivite from "./tab-activite";
 import type { Fact } from "@/lib/project-types";
@@ -61,7 +62,7 @@ function TabProduit() {
       <EngineNotice what={t("l'analyse produit et l'extraction des faits", "the product analysis and fact extraction")} />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <Card className="min-w-0 p-5 sm:p-7">
-          <SectionTitle title={t("Fiche produit", "Product sheet")} action={<Badge tone={p.analyzedBy === "ai" ? "info" : "neutral"}>{p.analyzedBy === "ai" ? t("Analyse IA", "AI analysis") : t("Moteur local", "Local engine")}</Badge>}>
+          <SectionTitle title={t("Fiche produit", "Product sheet")} action={<div className="flex flex-wrap items-center gap-2"><FromSiteBadge site={data?.settings.existingSite} /><Badge tone={p.analyzedBy === "ai" ? "info" : "neutral"}>{p.analyzedBy === "ai" ? t("Analyse IA", "AI analysis") : t("Moteur local", "Local engine")}</Badge></div>}>
             {t("Les faits « confirmés » sont utilisés tels quels ; les observations visuelles sont formulées avec prudence ; les inconnues restent « à compléter ».", "“Confirmed” facts are used as is; visual observations are worded cautiously; unknowns stay marked “to complete”.")}
           </SectionTitle>
           <div className="grid gap-4 sm:grid-cols-2">

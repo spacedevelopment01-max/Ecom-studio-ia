@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS assets (
   duration REAL,
   storage_key TEXT NOT NULL,
   thumb_key TEXT,
-  origin TEXT NOT NULL,         -- upload | generated | import | export | link
+  origin TEXT NOT NULL,         -- upload | generated | import | export | link | site
   meta TEXT NOT NULL DEFAULT '{}',
   source_asset_id TEXT,         -- média dont celui-ci dérive (l'original est préservé)
   version_of TEXT,              -- première version de la lignée
@@ -374,6 +374,50 @@ CREATE TABLE IF NOT EXISTS worker_heartbeat (
   id TEXT PRIMARY KEY,
   beat_at INTEGER NOT NULL,
   info TEXT
+);
+
+-- Comptabilité de l'administration (aide au suivi) : dépenses saisies et charges récurrentes. Montants en centimes.
+CREATE TABLE IF NOT EXISTS expenses (
+  id TEXT PRIMARY KEY,
+  date TEXT NOT NULL,                 -- AAAA-MM-JJ
+  label TEXT NOT NULL,
+  category TEXT NOT NULL,
+  supplier TEXT NOT NULL DEFAULT '',
+  amount_ht INTEGER NOT NULL,
+  vat_rate INTEGER NOT NULL DEFAULT 2000, -- points de base (2000 = 20 %)
+  vat INTEGER NOT NULL DEFAULT 0,
+  amount_ttc INTEGER NOT NULL,
+  payment_method TEXT NOT NULL DEFAULT 'carte', -- carte | virement | prelevement | especes | autre
+  status TEXT NOT NULL DEFAULT 'paid',          -- paid | to_pay
+  paid_at TEXT,
+  notes TEXT NOT NULL DEFAULT '',
+  receipt_key TEXT,
+  receipt_name TEXT,
+  receipt_mime TEXT,
+  recurring_id TEXT,
+  period_key TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS expenses_date ON expenses(date);
+CREATE UNIQUE INDEX IF NOT EXISTS expenses_recurring_period ON expenses(recurring_id, period_key) WHERE recurring_id IS NOT NULL;
+CREATE TABLE IF NOT EXISTS recurring_charges (
+  id TEXT PRIMARY KEY,
+  label TEXT NOT NULL,
+  category TEXT NOT NULL,
+  supplier TEXT NOT NULL DEFAULT '',
+  amount_ht INTEGER NOT NULL,
+  vat_rate INTEGER NOT NULL DEFAULT 2000,
+  frequency TEXT NOT NULL DEFAULT 'monthly', -- monthly | quarterly | yearly
+  day INTEGER NOT NULL DEFAULT 1,             -- 1 à 28
+  start_date TEXT NOT NULL,
+  end_date TEXT,
+  payment_method TEXT NOT NULL DEFAULT 'prelevement',
+  auto_paid INTEGER NOT NULL DEFAULT 1,       -- 1 : échéance passée = payée ; 0 : toujours « à payer »
+  active INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
 );
 `;
 
