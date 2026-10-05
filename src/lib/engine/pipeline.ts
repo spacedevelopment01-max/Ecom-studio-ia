@@ -18,7 +18,10 @@ import { localCopy } from "./local-copy";
 import { buildShop } from "./shop";
 import { importExistingSite, loadSiteImport, saveReproductionNotes, siteKept } from "./existing-site";
 import { buildReproducedShop, platformName } from "./site-reproduce";
-import { produceVideo } from "./videos";
+import { produceVideo, videoStepNote, type VideoStepResult } from "./videos";
+
+/** Ce qu'une étape vidéo garde (repris tel quel à la reprise d'une tâche). */
+const stepVideo = (r: Awaited<ReturnType<typeof produceVideo>>): VideoStepResult => ({ assetId: r.assetId, method: r.method, clipFallback: r.clipFallback });
 import { aiAnalyzeProduct, aiAnalyzeService, aiShopCopyChecked } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { emptyProduct, type BusinessType, type ProductProfile } from "../project-types";
@@ -127,9 +130,10 @@ export async function runPipeline(ctx: JobContext) {
     return { done: true };
   } catch (e) {
     const cur = Object.entries((ctx.checkpoint.__steps ?? {}) as Record<string, any>).find(([, v]) => v.status === "running")?.[0];
-    if (e instanceof JobPaused) {
-      // Mise en pause demandée : l'étape en cours sera refaite à la reprise, les précédentes sont conservées.
-      if (cur) markStep(ctx, cur as StepId, "paused");
+    if (e instanceof JobPaused || e instanceof JobCancelled) {
+      // Mise en pause ou annulation demandée par le client : ce n'est pas une erreur. L'étape en cours sera refaite
+      // à la relance, les précédentes sont conservées.
+      if (cur) markStep(ctx, cur as StepId, "paused", e instanceof JobCancelled ? L("Arrêtée à votre demande : relancez quand vous voulez.", "Stopped at your request: restart whenever you like.") : undefined);
       setStatus(projectId, "paused");
       throw e;
     }
@@ -144,7 +148,7 @@ async function serviceContent(fn: () => Promise<string>): Promise<string | { ski
   try {
     return await fn();
   } catch (e) {
-    if (e instanceof JobPaused) throw e;
+    if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
     return { skipped: L(`Non créé pour l'instant : ${(e as Error).message}`, `Not created for now: ${(e as Error).message}`) };
   }
 }
@@ -295,16 +299,16 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       if (inp.videos === "none") return { skipped: L("Vidéos non demandées au lancement : créez-les quand vous voulez dans l'onglet Vidéos", "Videos not requested at launch: create them whenever you like in the Videos tab") };
       if (services) {
         return serviceContent(async () => {
-          const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") })).assetId);
-          const b = await ctx.step("v169", async () => (await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo de présentation de l'activité pour le site", "business presentation video for the website"), music: "none" })).assetId);
-          return L(`2 vidéos rendues (${[a, b].length})`, `2 videos rendered (${[a, b].length})`);
+          const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") })));
+          const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo de présentation de l'activité pour le site", "business presentation video for the website"), music: "none" })));
+          return videoStepNote([a, b], inp.videos !== "edited");
         });
       }
       const has = one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL", projectId);
       if (!has) return p.settings.existingSite ? { skipped: NO_CUTOUT_SITE() } : "skipped";
-      const a = await ctx.step("v916", async () => (await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })).assetId);
-      const b = await ctx.step("v169", async () => (await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })).assetId);
-      return L(`2 vidéos rendues (${[a, b].length})`, `2 videos rendered (${[a, b].length})`);
+      const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })));
+      const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })));
+      return videoStepNote([a, b], inp.videos !== "edited");
     }
     case "shop": {
       const site = loadSiteImport(projectId);

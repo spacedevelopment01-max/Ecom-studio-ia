@@ -73,7 +73,7 @@ export type CustomSectionOut = z.infer<typeof CustomSectionSchema>;
 /** Résultat de l'écriture d'une section (enregistré comme point de reprise de la tâche). */
 export type SectionOutcome =
   | { ok: true; type: string; name: string; liquid: string; settings?: Record<string, unknown>; blocks?: { type: string; settings?: Record<string, unknown> }[]; rounds: number }
-  | { ok: false; type: string; name: string; reason: string; rounds: number };
+  | { ok: false; type: string; name: string; reason: string; rounds: number; /** Message déjà écrit pour le client (forfait, IA indisponible…). */ userMessage?: string };
 
 type Base = { userId: string; projectId: string; jobId?: string | null; usageKey?: string };
 
@@ -306,7 +306,7 @@ async function writeSection(p: Project, base: ThemeSpec, plan: PlanItem[], index
       out = await aiCustomSection(key(`${opts.tag}:${index}${attempt ? `:fix${attempt}` : ""}`), p, base, plan, index, issues.length ? { issues, previous } : undefined);
     } catch (e) {
       rethrowControl(e);
-      return { ok: false, type: item.type, name: item.name, reason: (e as Error).message.slice(0, 300), rounds };
+      return { ok: false, type: item.type, name: item.name, reason: (e as Error).message.slice(0, 300), rounds, ...(e instanceof UserFacingError ? { userMessage: (e as Error).message.slice(0, 300) } : {}) };
     }
     issues = await checkCustomSection(p, base, item, out);
     if (!issues.length) return { ok: true, type: item.type, name: item.name, liquid: out.liquid, settings: out.settings ?? undefined, blocks: out.blocks ?? undefined, rounds };
@@ -412,7 +412,14 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
     ctx.progress(0.08 + (0.7 * i) / plan.length, L(`Section ${i + 1} sur ${plan.length} : ${item.name}`, `Section ${i + 1} of ${plan.length}: ${item.name}`));
     outcomes.push(await ctx.step(`section:${i}`, () => writeSection(p, base, plan, i, key, { corrections: 2, tag: "section" })));
   }
-  if (!outcomes.some((o) => o.ok)) throw new UserFacingError(L(`Aucune section n'a pu être écrite (${(outcomes[0] as { reason?: string })?.reason ?? ""}). Votre thème actuel n'a pas changé ; réessayez plus tard.`, `No section could be written (${(outcomes[0] as { reason?: string })?.reason ?? ""}). Your current theme hasn't changed; try again later.`));
+  if (!outcomes.some((o) => o.ok)) {
+    // Détail technique (Zod, fournisseur, contrôles) dans les journaux ; au client, une raison simple.
+    const failures = outcomes.filter((o): o is Extract<SectionOutcome, { ok: false }> => !o.ok);
+    console.warn("[custom-theme] aucune section écrite :", failures.map((o) => `${o.type}: ${o.reason}`).join(" | ").slice(0, 2000));
+    const userMessage = failures.find((o) => o.userMessage)?.userMessage;
+    const why = userMessage ?? L("l'IA n'a pas produit de section qui passe tous les contrôles (Shopify, véracité)", "the AI didn't produce a section that passes every check (Shopify, accuracy)");
+    throw new UserFacingError(L(`Aucune section n'a pu être écrite : ${why}. Votre thème actuel n'a pas changé ; réessayez plus tard.`, `No section could be written: ${why}. Your current theme hasn't changed; try again later.`));
+  }
 
   // Theme Check sur le thème complet : une correction ciblée par section en défaut, sinon la bibliothèque à cet endroit.
   ctx.progress(0.8, L("Contrôle Theme Check (Shopify)", "Theme Check (Shopify)"));

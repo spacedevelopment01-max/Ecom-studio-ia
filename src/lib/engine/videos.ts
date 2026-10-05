@@ -31,6 +31,23 @@ const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 
 export type VideoRequest = { format: VideoFormat; goal?: string; useAiClip?: boolean; plan?: VideoSpec; music?: VideoSpec["music"]; url?: string; target?: "ads" | "social" | "shop" };
 
+/** Résultat d'une vidéo dans une étape de création (ancien format : identifiant seul). */
+export type VideoStepResult = string | { assetId: string; method?: "ai-clip" | "motion"; clipFallback?: string | null };
+
+/** Note d'étape : combien de vidéos, avec ou sans plan IA, et pourquoi le plan IA n'a pas servi. */
+export function videoStepNote(results: VideoStepResult[], aiRequested: boolean): string {
+  const n = results.length;
+  const done = L(`${n} vidéo(s) rendue(s)`, `${n} video(s) rendered`);
+  const known = results.filter((r): r is Exclude<VideoStepResult, string> => typeof r === "object" && !!r?.method);
+  if (known.length !== n) return done;
+  if (!aiRequested) return L(`${done} (montage à partir des images)`, `${done} (edited from the images)`);
+  const ai = known.filter((r) => r.method === "ai-clip").length;
+  const why = [...new Set(known.map((r) => r.clipFallback).filter(Boolean))].join(" ; ");
+  if (ai === n) return L(`${done} (avec plan IA)`, `${done} (with an AI shot)`);
+  if (ai === 0) return L(`${done} à partir des images : plan IA non utilisé${why ? ` (${why})` : ""}`, `${done} from the images: AI shot not used${why ? ` (${why})` : ""}`);
+  return L(`${done} (plan IA : ${ai} sur ${n}, montage à partir des images pour ${n - ai === 1 ? "l'autre" : "les autres"}${why ? ` — ${why}` : ""})`, `${done} (AI shot: ${ai} of ${n}, edited from the images for the ${n - ai === 1 ? "other" : "others"}${why ? ` — ${why}` : ""})`);
+}
+
 export async function produceVideo(ctx: JobContext, projectId: string, req: VideoRequest) {
   let project = loadProject(projectId);
   const services = isServices(project);
@@ -52,6 +69,8 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   /** Plan IA demandé, mais pas utilisé (indisponible ou refusé au contrôle) : dit dans la note d'étape. */
   let clipFallback: string | null = null;
   const provider = req.useAiClip ? videoProviderAvailable() : null;
+  if (req.useAiClip && !provider) clipFallback = L("génération de plans vidéo non disponible", "video shot generation unavailable");
+  else if (provider && !imgs.length) clipFallback = L("aucune photo de scène pour le plan IA", "no scene photo for the AI shot");
   if (provider && imgs.length) {
     // Un plan généré qui échoue (fournisseur indisponible, crédits insuffisants) ne bloque pas la vidéo : elle est montée sans lui.
     const clipFile = await ctx.step("ai-clip", async () => {
@@ -141,39 +160,39 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   const dir = tmpDir("video");
   tmpDirs.push(dir);
   try {
-  const out = path.join(dir, "video.mp4");
-  const result = await renderVideo(plan, { product, images, clips: clipDirs, logo, palette: palette(project), typo: brandTypo(project), brand: brand.name }, out, (p) => ctx.progress(0.4 + p * 0.5, L(`Rendu vidéo ${Math.round(p * 100)} %`, `Rendering video ${Math.round(p * 100)}%`)));
+    const out = path.join(dir, "video.mp4");
+    const result = await renderVideo(plan, { product, images, clips: clipDirs, logo, palette: palette(project), typo: brandTypo(project), brand: brand.name }, out, (p) => ctx.progress(0.4 + p * 0.5, L(`Rendu vidéo ${Math.round(p * 100)} %`, `Rendering video ${Math.round(p * 100)}%`)));
 
-  // 4. Contrôles techniques sur le fichier livré.
-  const { stdout } = await exec("ffprobe", ["-v", "error", "-print_format", "json", "-show_streams", "-show_format", out]);
-  const probe = JSON.parse(stdout);
-  const v = probe.streams.find((s: any) => s.codec_type === "video");
-  const audio = probe.streams.find((s: any) => s.codec_type === "audio");
-  const technical = { codec: v?.codec_name, pixFmt: v?.pix_fmt, width: v?.width, height: v?.height, duration: Number(probe.format?.duration), audio: audio?.codec_name ?? null, sizeBytes: Number(probe.format?.size) };
-  if (technical.codec !== "h264" || technical.pixFmt !== "yuv420p") throw new Error(L("Le fichier vidéo produit n'est pas au format attendu (H.264 yuv420p).", "The rendered video file is not in the expected format (H.264 yuv420p)."));
+    // 4. Contrôles techniques sur le fichier livré.
+    const { stdout } = await exec("ffprobe", ["-v", "error", "-print_format", "json", "-show_streams", "-show_format", out]);
+    const probe = JSON.parse(stdout);
+    const v = probe.streams.find((s: any) => s.codec_type === "video");
+    const audio = probe.streams.find((s: any) => s.codec_type === "audio");
+    const technical = { codec: v?.codec_name, pixFmt: v?.pix_fmt, width: v?.width, height: v?.height, duration: Number(probe.format?.duration), audio: audio?.codec_name ?? null, sizeBytes: Number(probe.format?.size) };
+    if (technical.codec !== "h264" || technical.pixFmt !== "yuv420p") throw new Error(L("Le fichier vidéo produit n'est pas au format attendu (H.264 yuv420p).", "The rendered video file is not in the expected format (H.264 yuv420p)."));
 
-  ctx.progress(0.93, L("Rangement de la vidéo", "Filing the video"));
-  const folder = req.target === "shop" ? "videos.shop" : req.target === "social" ? "videos.social" : "videos.ads";
-  const name = `${slug(project.product.name || brand.name)}-${services ? `${C("presentation", "presentation")}-` : ""}${req.format.replace(":", "x")}-${Date.now().toString(36)}`;
-  const video = await saveAsset({
-    projectId,
-    userId: project.userId,
-    data: fs.readFileSync(out),
-    name: `${name}.mp4`,
-    mime: "video/mp4",
-    role: "video",
-    folderKey: folder,
-    origin: "generated",
-    sourceAssetId: cutouts[0]?.id ?? imgs[0]?.id ?? null,
-    meta: { format: req.format, plan, technical, issues, ...(services ? { business: "services" } : {}), method: clipDirs.length ? L("Motion design + plan généré", "Motion design + generated shot") : services ? (imgs.length ? L("Motion design : présentation de l'activité à partir de vos photos", "Motion design: business presentation from your photos") : L("Motion design : typographie animée à la marque (sans photo)", "Motion design: animated brand typography (no photo)")) : L("Motion design à partir des photos réelles", "Motion design from the real photos"), delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : L(", sans son", ", no audio")}` },
-    status: "review",
-  });
-  const posterFrame = path.join(dir, "poster.jpg");
-  await exec("ffmpeg", ["-y", "-ss", String(Math.min(4, result.duration / 3)), "-i", out, "-frames:v", "1", "-q:v", "2", posterFrame]);
-  await saveAsset({ projectId, userId: project.userId, data: await sharp(posterFrame).jpeg({ quality: 88 }).toBuffer(), name: `${name}-${C("affiche", "poster")}.jpg`, mime: "image/jpeg", role: "video-poster", folderKey: folder, origin: "generated", sourceAssetId: video.id, meta: { recipe: L("Image d'affiche extraite de la vidéo", "Poster frame taken from the video") } });
-  await saveAsset({ projectId, userId: project.userId, data: Buffer.from(srtFromSpec(plan), "utf8"), name: `${name}.srt`, mime: "application/x-subrip", kind: "text", role: "subtitles", folderKey: folder, origin: "generated", sourceAssetId: video.id, meta: { recipe: L("Sous-titres (textes à l'écran) au format SRT", "Subtitles (on-screen text) in SRT format") } });
-  const method = clipDirs.length ? "ai-clip" : "motion";
-  return { assetId: video.id, technical, issues, method: method as "ai-clip" | "motion", aiClipRequested: !!req.useAiClip, clipFallback };
+    ctx.progress(0.93, L("Rangement de la vidéo", "Filing the video"));
+    const folder = req.target === "shop" ? "videos.shop" : req.target === "social" ? "videos.social" : "videos.ads";
+    const name = `${slug(project.product.name || brand.name)}-${services ? `${C("presentation", "presentation")}-` : ""}${req.format.replace(":", "x")}-${Date.now().toString(36)}`;
+    const video = await saveAsset({
+      projectId,
+      userId: project.userId,
+      data: fs.readFileSync(out),
+      name: `${name}.mp4`,
+      mime: "video/mp4",
+      role: "video",
+      folderKey: folder,
+      origin: "generated",
+      sourceAssetId: cutouts[0]?.id ?? imgs[0]?.id ?? null,
+      meta: { format: req.format, plan, technical, issues, ...(services ? { business: "services" } : {}), method: clipDirs.length ? L("Motion design + plan généré", "Motion design + generated shot") : services ? (imgs.length ? L("Motion design : présentation de l'activité à partir de vos photos", "Motion design: business presentation from your photos") : L("Motion design : typographie animée à la marque (sans photo)", "Motion design: animated brand typography (no photo)")) : L("Motion design à partir des photos réelles", "Motion design from the real photos"), delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : L(", sans son", ", no audio")}` },
+      status: "review",
+    });
+    const posterFrame = path.join(dir, "poster.jpg");
+    await exec("ffmpeg", ["-y", "-ss", String(Math.min(4, result.duration / 3)), "-i", out, "-frames:v", "1", "-q:v", "2", posterFrame]);
+    await saveAsset({ projectId, userId: project.userId, data: await sharp(posterFrame).jpeg({ quality: 88 }).toBuffer(), name: `${name}-${C("affiche", "poster")}.jpg`, mime: "image/jpeg", role: "video-poster", folderKey: folder, origin: "generated", sourceAssetId: video.id, meta: { recipe: L("Image d'affiche extraite de la vidéo", "Poster frame taken from the video") } });
+    await saveAsset({ projectId, userId: project.userId, data: Buffer.from(srtFromSpec(plan), "utf8"), name: `${name}.srt`, mime: "application/x-subrip", kind: "text", role: "subtitles", folderKey: folder, origin: "generated", sourceAssetId: video.id, meta: { recipe: L("Sous-titres (textes à l'écran) au format SRT", "Subtitles (on-screen text) in SRT format") } });
+    const method = clipDirs.length ? "ai-clip" : "motion";
+    return { assetId: video.id, technical, issues, method: method as "ai-clip" | "motion", aiClipRequested: !!req.useAiClip, clipFallback };
   } finally {
     // Fichiers temporaires (rendu, images du plan IA) supprimés, même en cas d'erreur.
     for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true });

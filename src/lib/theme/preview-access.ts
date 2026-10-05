@@ -51,7 +51,7 @@ export function splitPreviewSegment(seg: string): { vid: string; token: string |
  * Bac à sable de la page d'aperçu (même ouverte hors du studio) : scripts permis, mais origine opaque,
  * donc ni cookies du studio, ni stockage, ni appels à l'API avec la session du client.
  */
-export const PREVIEW_SANDBOX_CSP = "sandbox allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals";
+export const PREVIEW_SANDBOX_CSP = "sandbox allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals; frame-ancestors 'self'";
 
 /** Le document de l'aperçu (origine « null ») lit ses propres fichiers et le panier de démonstration. */
 export function previewCors(req: Request, headers: Headers): Headers {

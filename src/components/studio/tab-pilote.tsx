@@ -224,8 +224,10 @@ export default function TabPilote() {
   const pl = data.pipeline;
   const running = pl && (pl.job.status === "running" || pl.job.status === "queued");
   const awaiting = data.project.status === "awaiting_validation";
-  const paused = pl?.job.status === "paused" || data.project.status === "paused";
-  const failed = !paused && (pl?.job.status === "failed" || data.project.status === "error");
+  // Création arrêtée à la demande du client : ni pause reprenable telle quelle, ni erreur.
+  const cancelled = pl?.job.status === "cancelled";
+  const paused = !cancelled && (pl?.job.status === "paused" || data.project.status === "paused");
+  const failed = !paused && !cancelled && (pl?.job.status === "failed" || data.project.status === "error");
   async function pause(action: "pause" | "resume") {
     setBusy(action);
     try {
@@ -277,6 +279,13 @@ export default function TabPilote() {
             <p className="mt-4 flex items-center gap-2 rounded-2xl bg-warn-soft p-4 text-sm text-warn" role="status">
               <Pause className="size-4 shrink-0" /> {t("Création en pause. Les étapes terminées sont conservées ; la reprise repart de l'étape interrompue.", "Creation paused. Completed steps are kept; resuming restarts from the interrupted step.")}
             </p>
+          )}
+          {cancelled && (
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-warn-soft p-4 text-sm text-warn" role="status">
+              <Pause className="size-4 shrink-0" />
+              <span className="flex-1">{t("Création arrêtée à votre demande. Les étapes terminées sont conservées.", "Creation stopped at your request. Completed steps are kept.")}</span>
+              <Button size="sm" icon={<Play className="size-4" />} loading={!!busy} onClick={() => resume(pl!.steps.find((x) => x.status !== "done" && x.status !== "skipped")?.id)}>{t("Relancer", "Restart")}</Button>
+            </div>
           )}
           {failed && (
             <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-bad-soft p-4 text-sm text-bad">

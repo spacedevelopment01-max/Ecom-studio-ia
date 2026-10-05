@@ -62,5 +62,5 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   // Rendu mis en mémoire sans clé (elle expire) : la clé du moment est ajoutée à chaque envoi.
   const out = html.split(`${base}/`).join(`${keyed}/`);
   // Bac à sable : le JavaScript des sections ne peut rien faire avec la session du client.
-  return new Response(out, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": "sandbox allow-scripts", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" } });
+  return new Response(out, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": "sandbox allow-scripts; frame-ancestors 'self'", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" } });
 });

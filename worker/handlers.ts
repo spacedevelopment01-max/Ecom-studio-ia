@@ -1,5 +1,6 @@
 /** Gestionnaires des tâches d'arrière-plan. */
 import { all, json, now, one, run } from "../src/lib/db";
+import { sectionGenerationAllowed } from "../src/lib/theme/custom-access";
 import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
 import { runPipeline } from "../src/lib/engine/pipeline";
 import { generateImageSet, generateSingleImage } from "../src/lib/engine/images";
@@ -104,6 +105,15 @@ export const handlers: Record<string, Handler> = {
       reply = r.reply;
       ops = r.ops;
       revert = r.revert;
+      // Sections sur mesure écrites par l'IA : forfaits Vendre et Dominer seulement (Créer : sections de la bibliothèque).
+      const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
+      if (owner && ops.some((o) => o.op === "custom_section") && !sectionGenerationAllowed(owner)) {
+        ops = ops.filter((o) => o.op !== "custom_section");
+        reply += L(
+          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans les forfaits Vendre et Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
+          "\n\nPart of the request needed a custom section written by AI: it's included in the Sell and Dominate plans. I did the rest with the library sections.",
+        );
+      }
       for (const m of r.remember) remember(projectId, { kind: "preference", key: m.key, value: m.value, scope: m.scope, source: "user" });
     } else {
       const r = localThemeCommand(cur.spec, message, selection, p.business);

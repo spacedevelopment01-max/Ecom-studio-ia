@@ -75,6 +75,9 @@ jobs:
             done
           done
 
+      - name: Shopify Theme Check (ZIP téléchargé par le client, dont une section sur mesure)
+        run: npx tsx scripts/theme-check-zip.ts "$RUNNER_TEMP/theme-zip"
+
       - name: Build de production
         run: npm run build
 
