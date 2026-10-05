@@ -26,24 +26,39 @@ type Base = { userId: string; projectId: string; jobId?: string | null; usageKey
 
 // ---------------------------------------------------------------- analyse
 
-const AnalysisSchema = z.object({
-  name: z.string(),
-  nameStatus: z.enum(["provided", "detected", "proposed", "unknown"]),
-  category: z.string(),
-  sector: z.enum(SECTOR_IDS),
-  summary: z.string(),
-  facts: z.array(FactSchema),
-  visual: z.object({
-    shape: z.string(),
-    materials: z.array(z.string()),
-    labelText: z.array(z.string()),
-    hasLogo: z.boolean(),
-    description: z.string(),
-  }),
-  variants: z.array(z.object({ name: z.string(), values: z.array(z.string()) })),
-  questions: z.array(QuestionSchema).max(5),
-  claimsToAvoid: z.array(z.string()),
-  detailRegions: z.array(z.object({ label: z.string(), x: z.number(), y: z.number(), w: z.number(), h: z.number() })).max(3),
+/** Liste limitée sans échouer : l'IA renvoie parfois un élément de trop, on garde les premiers. */
+const capped = <T extends z.ZodTypeAny>(item: T, max: number) => z.preprocess((v) => (Array.isArray(v) ? v.slice(0, max) : v ?? []), z.array(item));
+const str = z.preprocess((v) => (v == null ? "" : typeof v === "string" ? v : String(v)), z.string());
+/** Fait tolérant : valeur nulle ou numérique, statut ou source inattendus ramenés à une valeur sûre. */
+const LenientFact = z.object({
+  key: str,
+  label: str,
+  value: str,
+  status: z.enum(["confirmed", "inferred", "unknown"]).catch("inferred"),
+  source: z.enum(["user", "photo", "link", "ai", "description"]).catch("ai"),
+});
+const LenientQuestion = z.object({ id: str, question: str, why: str, required: z.boolean().catch(false), factKey: str, answer: z.string().optional() });
+
+export const AnalysisSchema = z.object({
+  name: str,
+  nameStatus: z.enum(["provided", "detected", "proposed", "unknown"]).catch("proposed"),
+  category: str,
+  sector: z.enum(SECTOR_IDS).catch("maison"),
+  summary: str,
+  facts: z.preprocess((v) => v ?? [], z.array(LenientFact)),
+  visual: z
+    .object({
+      shape: str,
+      materials: z.preprocess((v) => v ?? [], z.array(str)),
+      labelText: z.preprocess((v) => v ?? [], z.array(str)),
+      hasLogo: z.boolean().catch(false),
+      description: str,
+    })
+    .catch({ shape: "", materials: [], labelText: [], hasLogo: false, description: "" }),
+  variants: z.preprocess((v) => v ?? [], z.array(z.object({ name: str, values: z.preprocess((v) => v ?? [], z.array(str)) }))),
+  questions: capped(LenientQuestion, 5),
+  claimsToAvoid: z.preprocess((v) => v ?? [], z.array(str)),
+  detailRegions: capped(z.object({ label: str, x: z.number(), y: z.number(), w: z.number(), h: z.number() }), 3).catch([]),
 });
 export type Analysis = z.infer<typeof AnalysisSchema>;
 

@@ -178,6 +178,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
   let last = "";
   let budget = call.maxTokens ?? 32000;
   let fixes = 0;
+  let lastIssue = "";
   for (let attempt = 0; attempt < 4; attempt++) {
     const r = await rawCall({ ...call, maxTokens: budget }, messages, undefined, attempt ? `:fix${attempt}` : "");
     last = r.text;
@@ -190,12 +191,15 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     const parsed = extractJson(r.text);
     const res = schema.safeParse(parsed);
     if (res.success) return res.data;
+    lastIssue = res.error.issues.slice(0, 3).map((i) => `${i.path.join(".") || "racine"} : ${i.message}`).join(" ; ");
     if (fixes++ >= 1) break;
     const issue = res.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     messages.push({ role: "assistant", content: r.text || "{}" });
     messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue || "JSON illisible"}). Renvoie l'objet complet corrigé, uniquement le JSON, de façon concise.` });
   }
-  throw new PermanentError(L(`Réponse IA inexploitable après correction : ${last.slice(0, 200)}`, `Unusable AI response after correction: ${last.slice(0, 200)}`));
+  // Détail complet dans les journaux du serveur ; au client, la raison courte (pas le JSON brut).
+  console.error(`[ia] ${call.task} : réponse inexploitable (${lastIssue || "JSON illisible"})\n${last.slice(0, 4000)}`);
+  throw new PermanentError(L(`L'IA a renvoyé une réponse incomplète (${lastIssue || "format illisible"}). Cliquez sur « Reprendre » pour relancer cette étape.`, `The AI returned an incomplete response (${lastIssue || "unreadable format"}). Click "Resume" to run this step again.`));
 }
 
 export function extractJson(text: string): unknown {
