@@ -519,6 +519,8 @@ export async function aiDesignHome(b: Base, p: Project, spec: ThemeSpec) {
       prompt: `Direction choisie : ${spec.direction}. Structure actuelle proposée par la direction :\n${outline(spec, ["index"])}
 Fichiers d'images disponibles (à utiliser dans les réglages *_asset) : ${Object.keys(spec.files).join(", ")}
 Les fichiers « en-situation » sont de vraies photos du produit utilisé au quotidien : quand il y en a, l'ouverture (héros) les montre en grand.
+Les fichiers « packshot », « produit-detoure » et « hero » montrent le produit entier ; « detail-N » sont des gros plans recadrés (jamais en ouverture ni dans un cadre censé montrer tout le produit) ; « scene-N » sont des mises en scène de studio (pas des photos d'usage). N'utilise jamais un nom de fichier absent de cette liste.
+Le pied de page contient déjà une inscription à la lettre d'information : n'ajoute pas de section « newsletter » sur l'accueil s'il a le style « card ».
 ${spec.store.business === "services" ? `SITE D'ENTREPRISE DE SERVICES (pas de boutique) : les fichiers « photo-N » sont les vraies photos du marchand. Compose un accueil de services : ouverture avec le bouton d'appel à l'action déjà rédigé (rendez-vous, devis ou appel, lien existant conservé), « services-list » (prestations, une carte par prestation fournie, prix et durées seulement s'ils sont déjà dans la structure), « Pourquoi nous » ou méthode en étapes (« how-to » ou « timeline »), « portfolio » (réalisations), « team », « testimonials » (espaces réservés honnêtes, jamais d'avis inventé), « practical-info » (horaires, adresse, zone, téléphone), « faq », puis un « cta-banner » final. N'utilise AUCUNE section de vente (featured-product, featured-collection, collection-list, product-*, shipping-journey, featured-offer, countdown, comparison-table) et aucun mot « panier », « commande », « livraison », « produit ». Reprends les réglages et blocs de la structure actuelle pour ces sections.
 ` : ""}${(spec.store.products?.length ?? 0) > 0 ? `Type de boutique : ${p.storeType === "niche" ? "niche (plusieurs produits d'un même univers)" : "multi-produit (catalogue varié)"} — ${(spec.store.products?.length ?? 0) + 1} produits, collections : ${(spec.store.collections ?? []).map((c) => `${c.title} (handle « ${c.handle} »)`).join(", ")}. Place une grille « featured-collection » (collection « all ») juste après l'ouverture et une « collection-list » (un bloc par collection, réglage collection = handle) ; les boutons mènent vers /collections/all.
 ` : ""}Compose la page d'accueil (« index ») : liste ordonnée de sections avec réglages et blocs, au niveau visuel décrit (héros immersif, mots d'accent, cartes lumineuses, texte qui s'allume, chiffres vérifiés). Reprends les textes rédigés de la structure actuelle et améliore le rythme si utile. Ajuste si besoin les réglages globaux dans « globals » (forme de l'en-tête, style des cartes produit, reflets, lueurs, arrondis, intensité des animations). Si une section sur mesure apporte une vraie valeur (ex. animation de présentation du produit), fournis-la dans « custom » (type commençant par es-custom-) et utilise son type dans la liste.`,
@@ -617,11 +619,15 @@ Propose uniquement les opérations corrigées qui réalisent la partie manquante
   );
 }
 
+/**
+ * Relecture tolérante : une liste un peu trop longue ou une opération mal formée ne fait pas perdre toute la relecture
+ * (les listes sont tronquées, les opérations invalides écartées ; la validation du thème filtre ensuite le reste).
+ */
 const ReviewSchema = z.object({
-  score: z.number().min(0).max(10),
-  strengths: z.array(z.string()).max(5),
-  issues: z.array(z.object({ where: z.string(), problem: z.string(), severity: z.enum(["bloquant", "important", "mineur"]) })).max(12),
-  ops: z.array(OpSchema).max(14),
+  score: z.coerce.number().transform((n) => (Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 0)),
+  strengths: capped(str, 5),
+  issues: capped(z.object({ where: str, problem: str, severity: z.enum(["bloquant", "important", "mineur"]).catch("important") }), 12),
+  ops: z.preprocess((v) => (Array.isArray(v) ? v.filter((o) => OpSchema.safeParse(o).success).slice(0, 14) : []), z.array(OpSchema)),
 });
 export type HomeReview = z.infer<typeof ReviewSchema>;
 
@@ -629,7 +635,7 @@ export type HomeReview = z.infer<typeof ReviewSchema>;
  * Relecture visuelle : l'IA regarde la boutique rendue (ordinateur et téléphone), comme un directeur artistique,
  * et corrige ce qui se voit (hiérarchie, contrastes, rythme, images mal cadrées, textes trop longs, répétitions).
  */
-export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: { desktop: Buffer[]; mobile: Buffer[] }) {
+export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: { desktop: Buffer[]; mobile: Buffer[]; product?: { desktop: Buffer[]; mobile: Buffer[] } | null }) {
   return llmJson(
     {
       task: "theme_design",
@@ -643,11 +649,13 @@ export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: 
       images: [
         ...shots.desktop.map((data, i) => ({ data, label: `ordinateur (1440 px) — planche ${i + 1}/${shots.desktop.length}, la page se lit colonne par colonne de gauche à droite` })),
         ...shots.mobile.map((data, i) => ({ data, label: `téléphone (390 px) — planche ${i + 1}/${shots.mobile.length}, colonnes de gauche à droite` })),
+        ...(shots.product?.desktop ?? []).map((data, i, all) => ({ data, label: `FICHE PRODUIT, ordinateur (1440 px) — planche ${i + 1}/${all.length}` })),
+        ...(shots.product?.mobile ?? []).map((data, i, all) => ({ data, label: `FICHE PRODUIT, téléphone (390 px) — planche ${i + 1}/${all.length}` })),
       ],
-      prompt: `Direction : ${spec.direction}. Structure rendue sur les captures :\n${outline(spec, ["group:header", "index", "group:footer"])}
+      prompt: `Direction : ${spec.direction}. Structure rendue sur les captures :\n${outline(spec, ["group:header", "index", ...(shots.product ? ["product"] : []), "group:footer"])}
 Fichiers d'images du thème : ${Object.keys(spec.files).join(", ")}
 Captures prises en mode « animations réduites » : les vidéos y montrent leurs commandes de lecture et les effets d'apparition sont désactivés — ce n'est pas un défaut.
-Évalue la page (score sur 10), liste ses forces et ses défauts visibles, puis donne les opérations qui corrigent les défauts « bloquant » et « important ». Ne touche pas aux textes validés ni aux éléments verrouillés ; pas de refonte si le score est d'au moins 8.`,
+${shots.product ? "Les dernières planches montrent la fiche produit (gabarit « product ») : relis-la avec la même exigence (galerie, bloc d'achat, sections sous le bloc d'achat) ; ses corrections portent sur le gabarit « product ».\n" : ""}Évalue la boutique (score sur 10 : accueil et fiche produit), liste ses forces et ses défauts visibles, puis donne les opérations qui corrigent les défauts « bloquant » et « important ». Ne touche pas aux textes validés ni aux éléments verrouillés ; pas de refonte si le score est d'au moins 8.`,
       maxTokens: 24000,
     },
     ReviewSchema,
@@ -912,6 +920,65 @@ export async function aiCutoutCheck(b: Base, images: { original: Buffer; white: 
       maxTokens: 800,
     },
     CutoutCheckSchema,
+  );
+}
+
+export const LogoSymbolSchema = z.object({ concept: str, svg: str });
+
+/**
+ * Symbole de logo sur mesure : pictogramme SVG simple dessiné d'après la photo du produit et la marque.
+ * La réponse n'est jamais utilisée telle quelle : le SVG est nettoyé et validé côté serveur (media/logo-symbol.ts),
+ * puis contrôlé à l'image (aiLogoSymbolCheck).
+ */
+export async function aiLogoSymbol(b: Base, p: Project, opts: { photo?: Buffer; accent: string; feedback?: string }) {
+  const brand = p.brand;
+  return llmJson(
+    {
+      task: "logo_symbol",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().logoSymbol,
+      images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
+      prompt: `Produit : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.summary ? ` — ${p.product.summary.slice(0, 400)}` : ""}
+${p.product.visual.shape ? `Forme observée : ${p.product.visual.shape}\n` : ""}${p.product.visual.description ? `Description visuelle : ${p.product.visual.description.slice(0, 400)}\n` : ""}Marque : ${brand?.name ?? ""}${brand?.personality?.length ? ` — personnalité : ${brand.personality.join(", ")}` : ""}${brand?.positioning ? ` — ${brand.positioning.slice(0, 200)}` : ""}
+Couleur d'accent permise (une forme au plus) : ${opts.accent}
+${opts.feedback ? `Le symbole précédent a été refusé : ${opts.feedback}\nDessine un nouveau symbole qui corrige ces points.\n` : ""}Réponds { "concept": "…", "svg": "<svg …>…</svg>" }.`,
+      maxTokens: 6000,
+    },
+    LogoSymbolSchema,
+  );
+}
+
+export const LogoSymbolCheckSchema = z.object({
+  legible: z.boolean().catch(false),
+  evokesProduct: z.boolean().catch(false),
+  resemblesExistingLogo: z.boolean().catch(true),
+  score: z.coerce.number().catch(0),
+  issues: capped(str, 6),
+});
+
+/** Le symbole peut-il être proposé ? Lisible, propre au produit, original, et noté au moins 7/10. */
+export function logoSymbolPassed(r: z.infer<typeof LogoSymbolCheckSchema> | null | undefined): boolean {
+  return !!r && r.legible === true && r.evokesProduct === true && r.resemblesExistingLogo === false && qcScore(r.score) >= 7;
+}
+
+/** Contrôle visuel du symbole : photo du produit, puis planche du symbole (grand, inversé, 32 px, 16 px). */
+export async function aiLogoSymbolCheck(b: Base, images: { photo?: Buffer; sheet: Buffer }) {
+  return llmJson(
+    {
+      task: "quality_control",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().logoSymbolCheck,
+      images: [...(images.photo ? [{ data: images.photo, label: "photo du produit" }] : []), { data: images.sheet, label: "planche du symbole" }],
+      prompt: `Réponds { "legible": true|false, "evokesProduct": true|false, "resemblesExistingLogo": true|false, "score": 0-10, "issues": ["…"] }.`,
+      maxTokens: 1200,
+    },
+    LogoSymbolCheckSchema,
   );
 }
 

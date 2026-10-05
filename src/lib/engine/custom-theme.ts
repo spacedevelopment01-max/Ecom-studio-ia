@@ -19,6 +19,10 @@ import { availableSectionTypes, cloneSpec, parseSchemaBlock, sectionSchema, stor
 import { renderPage } from "../theme/render";
 import { themeCheck, type ThemeCheckOffense } from "../theme/theme-check";
 import { snapshotTheme } from "../theme/snapshot";
+import { tidyComposition } from "../theme/tidy";
+
+/** Note minimale de la relecture visuelle pour appliquer un thème sur mesure (en dessous : défauts visibles). */
+export const MIN_REVIEW_SCORE = 5;
 import { llmConfigured, llmJson } from "../ai/llm";
 import { projectContext } from "../ai/context";
 import { charter, designBar, placeholder } from "../ai/prompts";
@@ -459,7 +463,8 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
       ctx.progress(0.9, L("Relecture visuelle de la page", "Visual review of the page"));
       const review = await ctx.step("review", async () => {
         const shots = await snapshotTheme(spec);
-        return shots ? aiReviewHome(key("review"), p, spec, shots) : null;
+        const product = shots ? await snapshotTheme(spec, `/products/${spec.store.product.handle}`, { desktopSheets: 2, mobileSheets: 1 }).catch(() => null) : null;
+        return shots ? aiReviewHome(key("review"), p, spec, { ...shots, product }) : null;
       });
       if (review) {
         score = review.score;
@@ -475,6 +480,14 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
     }
   }
 
+  // Relecture sévère (note sous 5 : défauts visibles) : le thème n'est pas présenté comme prêt ; le thème actuel reste en place.
+  if (score !== null && score < MIN_REVIEW_SCORE) {
+    throw new UserFacingError(L(
+      `Le thème sur mesure n'a pas atteint le niveau attendu à la relecture visuelle (${score}/10) : il n'a pas été appliqué et votre thème actuel n'a pas changé. Relancez la création pour obtenir une autre proposition.`,
+      `The custom theme didn't reach the expected standard in the visual review (${score}/10): it wasn't applied and your current theme hasn't changed. Run the creation again to get another proposal.`,
+    ));
+  }
+  spec = tidyComposition(spec);
   const problems = validateSpec(spec);
   if (problems.length) throw new PermanentError(L(`Thème invalide : ${problems.join(" ; ")}`, `Invalid theme: ${problems.join("; ")}`));
   ctx.progress(0.96, L("Enregistrement de la nouvelle version", "Saving the new version"));

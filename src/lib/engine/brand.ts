@@ -76,7 +76,7 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   if (clientLogo && !site) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
   saveBrand(projectId, brand);
   // Site existant : jamais de logo généré (celui du site ou du client est conservé).
-  if (!site && !clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name } });
+  if (!site && !clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name }, redrawSymbol: true });
   await saveBrandGuide(projectId);
   ctx.progress(0.9, L("Charte de marque (PDF)", "Brand guidelines (PDF)"));
   await saveBrandBook(projectId);

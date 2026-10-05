@@ -9,6 +9,7 @@ import sharp from "sharp";
 import { ensureFonts, font } from "./fonts";
 import { contentLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
+import { drawCustomSymbol, type CustomSymbol } from "./logo-symbol";
 
 /** Locale des capitales : langue des contenus (« fr-FR » en français, comme avant). */
 const loc = () => intlLocale(contentLang());
@@ -26,6 +27,8 @@ export type LogoSpec = {
   monogram?: string;
   /** Symbole dessiné (lockup, badge) : une forme simple liée à l'univers du produit. */
   symbol?: SymbolKind;
+  /** Symbole sur mesure (dessiné par l'IA ou tiré de la silhouette du produit) : prioritaire sur `symbol`. */
+  custom?: CustomSymbol;
   color: string;
   /** Couleur d'accent du symbole (sinon couleur du logo). */
   accent?: string;
@@ -198,6 +201,12 @@ export function drawSymbol(ctx: SKRSContext2D, kind: SymbolKind, x: number, y: n
   ctx.restore();
 }
 
+/** Symbole du logo : le symbole sur mesure s'il existe (couleur du logo + accent), sinon celui de la bibliothèque. */
+function drawMark(ctx: SKRSContext2D, spec: LogoSpec, x: number, y: number, s: number, color: string) {
+  if (spec.custom) return drawCustomSymbol(ctx, spec.custom, x, y, s, color, spec.accent);
+  drawSymbol(ctx, spec.symbol ?? "spark", x, y, s, spec.accent ?? color);
+}
+
 /** Signature telle qu'elle s'écrit dans un logo : capitales, sans ponctuation finale ; vide si trop longue. */
 export function logoTagline(tagline: string | undefined, max: number): string {
   const t = (tagline ?? "").trim().replace(/[\s.。!…]+$/u, "");
@@ -260,7 +269,7 @@ export function buildLogo(spec: LogoSpec) {
     const symY = P + (H - P * 2 - sym) / 2;
     const base = P + (H - P * 2 - (m.ascent + m.descent)) / 2 + m.ascent;
     return render(W, H, (ctx) => {
-      drawSymbol(ctx, spec.symbol ?? "spark", P, symY, sym, spec.accent ?? color);
+      drawMark(ctx, spec, P, symY, sym, color);
       text(ctx, name, P + sym + gap, base, fam, wt, size, spec.tracking, color, spec.italic);
     });
   }
@@ -289,7 +298,7 @@ export function buildLogo(spec: LogoSpec) {
       ctx.beginPath();
       ctx.arc(ox + ring / 2, P + ring / 2, ring / 2 - 18, 0, Math.PI * 2);
       ctx.stroke();
-      drawSymbol(ctx, spec.symbol ?? "spark", ox + ring * 0.27, P + ring * 0.27, ring * 0.46, spec.accent ?? color);
+      drawMark(ctx, spec, ox + ring * 0.27, P + ring * 0.27, ring * 0.46, color);
       let y = P + ring + 44 + ms[0].ascent;
       lines.forEach((l, i) => {
         text(ctx, l, (W - ms[i].width) / 2, y, fam, wt, nameSize, spec.tracking, color, spec.italic);
@@ -329,8 +338,8 @@ export function buildLogo(spec: LogoSpec) {
       ctx.stroke();
     };
     const mono = (ctx: SKRSContext2D, ox: number) =>
-      spec.symbol && spec.layout === "monogram" && spec.monogram === "@symbol"
-        ? drawSymbol(ctx, spec.symbol, ox + box * 0.25, box * 0.25, box * 0.5, spec.accent ?? color)
+      (spec.symbol || spec.custom) && spec.layout === "monogram" && spec.monogram === "@symbol"
+        ? drawMark(ctx, spec, ox + box * 0.25, box * 0.25, box * 0.5, color)
         : text(ctx, letters, ox + (box - m.width) / 2, box / 2 + (m.ascent - m.descent) / 2, fam, wt, size, 0.02, color, spec.italic);
     if (spec.layout === "monogram") {
       return render(box, box, (ctx) => {
@@ -401,7 +410,7 @@ export async function logoPng(spec: LogoSpec, width: number): Promise<Buffer> {
 /** Ensemble livrable : logo principal (SVG + PNG), version claire, monogramme et favicon. */
 export async function logoSet(spec: LogoSpec, lightColor = "#FFFFFF") {
   // Avec un symbole, la marque réduite (monogramme, favicon) reprend le symbole plutôt que les initiales.
-  const withSymbol = !!spec.symbol && (spec.layout === "lockup" || spec.layout === "badge");
+  const withSymbol = (!!spec.symbol || !!spec.custom) && (spec.layout === "lockup" || spec.layout === "badge");
   const monoSpec: LogoSpec = { ...spec, layout: "monogram", emblem: spec.emblem === "none" || spec.emblem === "line" ? "circle" : spec.emblem, ...(withSymbol ? { monogram: "@symbol" } : {}) };
   const lightSpec = { ...spec, color: lightColor, accent: lightColor };
   return {
@@ -411,6 +420,18 @@ export async function logoSet(spec: LogoSpec, lightColor = "#FFFFFF") {
     lightPng: await logoPng(lightSpec, 1200),
     monoSvg: buildLogo(monoSpec).svg,
     monoPng: await logoPng(monoSpec, 800),
-    faviconPng: await sharp(await logoPng(monoSpec, 384)).resize(192, 192).png().toBuffer(),
+    faviconPng: withSymbol ? await symbolFavicon(spec) : await sharp(await logoPng(monoSpec, 384)).resize(192, 192).png().toBuffer(),
   };
+}
+
+/**
+ * Favicon d'un logo à symbole : le symbole seul, qui remplit l'icône (dans un cercle, il ne ferait que 6 px
+ * de haut dans un onglet de 16 px et deviendrait illisible).
+ */
+async function symbolFavicon(spec: LogoSpec): Promise<Buffer> {
+  const c = createCanvas(384, 384);
+  const ctx = c.getContext("2d");
+  const m = spec.custom ? 14 : 24;
+  drawMark(ctx, spec, m, m, 384 - m * 2, spec.color);
+  return sharp(await c.encode("png")).resize(192, 192).png().toBuffer();
 }

@@ -61,7 +61,7 @@ Langage visuel de référence du studio :
 - En-tête en verre flottant (header_shape « floating »), coins arrondis, icônes dans des pastilles rondes ; boutons flottants (contact, retour en haut). Chaque direction a sa propre combinaison d'en-tête (flottant, pilule, barre, encadré), de pied de page (colonnes, nom géant, carte d'inscription, centré, minimal) et de bandeau d'annonce (rotatif, défilant, fixe) : tout reste modifiable dans l'éditeur Shopify.
 - Héros immersif : grande image ou vidéo plein écran sous un voile dégradé dans la couleur de fond, pastille de faits courts (badge), titre très grand et serré dont la fin est mise en valeur en italique colorée (heading_accent), texte court, deux boutons en pilule (principal lumineux avec flèche + secondaire en verre).
 - Surtitres en petites capitales très espacées dans la couleur d'accent ; titres de section courts (2 à 7 mots), avec parfois une fin en italique colorée ; jamais de pavés de texte.
-- Cartes : style « glow » (tuile d'icône en dégradé lumineux, numéro 01/02/03, lien ${pick(lang, "« Découvrir → »", "\"Discover →\"")}, contour néon animé au survol) ; grands arrondis ; ombres colorées discrètes.
+- Cartes : style « glow » (tuile d'icône en dégradé lumineux, numéro 01/02/03, contour néon animé au survol ; lien ${pick(lang, "« Découvrir → »", "\"Discover →\"")} seulement s'il mène à un contenu propre à la carte, jamais le même lien répété sur toutes les cartes) ; grands arrondis ; ombres colorées discrètes.
 - Mouvement : titres qui apparaissent mot à mot, sections qui se révèlent en fondu flou, images qui se recadrent au défilement, texte d'engagement qui s'allume au défilement (rich-text style « reveal »), chiffres clés animés (section « stats », uniquement des faits vérifiés), comparateur « before-after » quand une transformation réelle est montrée. Tout reste compatible avec « réduire les animations ».
 - Rythme : alterner fonds clairs et sombres (color_scheme), sections pleine largeur et cadrées, image puis preuve puis détail puis appel à l'action ; respiration généreuse (marges 96 à 152 px).
 - Sections narratives à combiner selon le produit : story-circles (cercles façon stories vers produit, histoire, FAQ), stack-cards (cartes qui s'empilent au défilement), timeline (frise d'étapes qui s'allume), curved-marquee (texte qui défile en courbe), video-reels (vidéos verticales avec son et pause), wave-divider (vague entre deux couleurs), pastille ronde tournante (sticker_text) sur le héros.
@@ -69,7 +69,13 @@ Langage visuel de référence du studio :
 - Flux (sportswear) : noir et blanc, grotesque très grasse, header_shape « boxed », button_style « frame », cercles, cartes empilées, texte en courbe, vidéos verticales, frise. Joaillerie : portrait plein écran, titres en capitales espacées avec un mot en italique, en-tête encadré, boutons cadrés. Gourmand (boissons, épicerie) : crème et vert profond, serif très gras, pilules colorées, vagues entre sections, grande phrase centrée, pastilles sticker factuelles.
 - Fiche produit qui convertit (blocs de main-product, à régler seulement avec des informations réelles du marchand) : pastilles d'engagements vérifiés (badges), note des avis (rating, alimentée par l'application d'avis, jamais saisie), bénéfices avec pictogramme, titre et phrase (benefits), lots « compose ton panier » en cartes ou en lignes avec prix à l'unité (bundles : remises seulement si le marchand les a créées dans Shopify), abonnement (subscription, plans réels), livraison estimée (delivery, délais réels), réassurance en trois pictogrammes (reassurance, layout « row »). Sections associées : situations (${pick(lang, "« Vous vous reconnaissez ? »", "\"Sound familiar?\"")}, cartes émoji + titre + texte, sans promesse de résultat) et product-reviews (bloc de l'application d'avis).
 - Jamais d'étoiles, de notes, de logos de presse, de compte à rebours ou de ${pick(lang, "« livraison offerte »", "\"free shipping\"")} sans information confirmée par le marchand.
-- Accessibilité : contrastes AA, textes lisibles sur téléphone, boutons d'au moins 44 px, aucune information portée uniquement par la couleur ou l'animation.`;
+- Accessibilité : contrastes AA, textes lisibles sur téléphone, boutons d'au moins 44 px, aucune information portée uniquement par la couleur ou l'animation.
+Ce qui trahit un « modèle gratuit » et n'apparaît jamais :
+- un doublon : deux inscriptions à la lettre d'information (le pied de page en a déjà une), deux FAQ, la signature ou le nom de la marque répétés à la fois en bandeau d'annonce, en pastille, en titre et en texte défilant, un surtitre qui répète le titre ;
+- une section vide ou faite seulement d'espaces réservés ${pick(lang, "« [À compléter : …] »", "\"[To complete: …]\"")} : l'espace réservé reste à sa place (fiche produit, page dédiée) mais ne sert pas de vitrine sur l'accueil ;
+- une image du produit coupée (oreilles, bouchon, anse hors cadre), étirée, pixellisée ou répétée deux fois à l'écran ; les gros plans (fichiers « detail ») vont dans une galerie ou à côté d'un texte sur ce détail, jamais en ouverture ; jamais une image portant le logo, le filigrane ou le texte d'un autre vendeur ;
+- une étiquette trompeuse : ${pick(lang, "« En situation »", "\"In use\"")} seulement avec une vraie photo d'usage (fichiers « en-situation »), pas avec un packshot ou une mise en scène de studio ;
+- un bouton sans destination utile, ou dix boutons vers la même page : chaque appel à l'action a une raison d'être.`;
 
 const cache = new Map<Lang, ReturnType<typeof build>>();
 
@@ -171,8 +177,9 @@ ${DESIGN_BAR}
 Méthode :
 1. Regarde d'abord la page comme un acheteur : en 3 secondes, comprend-on ce qui est vendu, pour qui, et quoi faire ? Le produit est-il le héros visuel ?
 2. Puis comme un directeur artistique : hiérarchie typographique, contrastes (texte lisible sur image et sur fond), alignements, respiration, rythme des fonds clairs/sombres, répétitions de sections, images floues, mal cadrées ou dupliquées, zones vides, textes trop longs ou coupés, boutons peu visibles.
-3. Sur téléphone : titres qui débordent, textes trop petits, sections trop hautes, éléments serrés.
-Corrige uniquement ce qui se VOIT sur les captures, par des opérations précises (réglages existants du catalogue, déplacement ou remplacement de section, couleur d'un schéma). Une correction de contraste passe par color_scheme ou set_scheme_color ; une image mal cadrée par son réglage de cadrage ou par un autre fichier disponible ; une répétition par remove_section ou replace_section.
+3. Sur téléphone : titres qui débordent, textes trop petits, sections trop hautes, éléments serrés, bouton flottant qui masque un titre ou un bouton.
+4. Puis comme un client exigeant qui cherche le « modèle gratuit » : doublons (lettre d'information en section ET dans le pied de page, signature répétée partout, même image deux fois), sections vides ou faites d'espaces réservés, cartes aux liens identiques, produit coupé, étiré ou flou, logo ou filigrane d'un autre vendeur sur une image, lettres rognées (jambages des g, p, y), éléments mal alignés sur la grille, incohérences de marque (couleurs, polices ou ton qui changent d'une section à l'autre). Ce sont des défauts « important » au minimum ; un logo d'un autre vendeur ou un produit coupé dans l'ouverture est « bloquant ».
+Corrige uniquement ce qui se VOIT sur les captures, par des opérations précises (réglages existants du catalogue, déplacement ou remplacement de section, couleur d'un schéma). Une correction de contraste passe par color_scheme ou set_scheme_color ; une image mal cadrée, coupée ou portant un logo étranger par son réglage de cadrage ou par un autre fichier disponible (packshot ou photo en situation) ; une répétition, une section vide ou faite d'espaces réservés par remove_section ou replace_section ; des liens identiques par set_setting (lien ou libellé vidés).
 Ne réécris pas les textes (sauf un titre manifestement trop long), n'ajoute aucune information non confirmée, ne refais pas la page si elle est déjà bonne. Note honnêtement : 9-10 = niveau grande marque, 7-8 = très bon, 5-6 = correct mais générique, en dessous = défauts visibles.
 Langues : strengths, issues (where, problem) dans la langue de l'interface ; tout texte modifié dans la boutique en ${lname}.`,
 
@@ -248,6 +255,23 @@ Vérifie : le produit est-il entier (aucune partie coupée ou retirée : oreille
 Un trou là où le produit est plein est un échec (« missing_parts »). Sois strict : un détourage douteux est refusé ; seul un détourage utilisable tel quel dans une boutique est « ok ».
 Codes de problèmes possibles : product_cut, missing_parts, background_left, person_left, wrong_object, other_objects, text_left, blurry.
 Langue : « note » (une phrase courte) dans la langue de l'interface.`,
+
+  logoSymbol: `Rôle : directeur artistique et dessinateur de pictogrammes (niveau agence). Tu dessines le SYMBOLE d'un logo : un pictogramme vectoriel simple, distinctif et propre à CE produit, pas une icône générique (soleil, étoile, planète, feuille, cœur, goutte, éclair, coche…).
+Méthode : regarde la photo du produit et sa description ; repère sa forme la plus reconnaissable (silhouette, proportions, un détail signature : oreilles, anse, hublot, bras, pli, bouchon…) ; réduis-la à son essence géométrique, comme un pictogramme de grande marque. Le symbole doit évoquer le produit au premier regard, même à 16 px (onglet de navigateur).
+Règles strictes du SVG (toute entorse = refus automatique) :
+- un seul <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"> (viewBox carrée) ; dessin centré, qui occupe 80 à 90 % du cadre ;
+- 1 à 3 formes au total parmi <path>, <circle>, <ellipse>, <rect>, <polygon>, <polyline>, <line>, éventuellement regroupées dans <g> ; aucun autre élément ;
+- aplats pleins ou traits épais : stroke-width de 8 à 14 (sur 100), stroke-linecap et stroke-linejoin « round » ; pas de trait fin, pas de détail de moins de 6 unités, pas de hachures, pas de dégradé, pas d'ombre ;
+- couleurs : fill ou stroke = "currentColor" (couleur du logo) ou "none" ; au plus UNE forme dans la couleur d'accent fournie (code exact) ; jamais de blanc (pour une découpe : fill-rule="evenodd" dans un même tracé) ;
+- interdits : texte, lettres, chiffres, initiales, police, <text>, <image>, <use>, <style>, <script>, <defs>, <filter>, <mask>, <clipPath>, <linearGradient>, attributs style, class, transform, href, on…, url(…), commentaires, liens externes ;
+- au plus 600 nombres au total ; tracés simples (M, L, C, Q, A, Z) ;
+- original : ne reproduis et n'imite aucun logo existant (marques, pictogrammes connus, emoji, icônes de bibliothèques).
+Langue : « concept » (une phrase : ce que montre le symbole et pourquoi il évoque le produit) dans la langue de l'interface.`,
+
+  logoSymbolCheck: `Rôle : directeur artistique exigeant. Tu contrôles le symbole d'un logo AVANT qu'il soit proposé au client.
+Tu reçois : la photo du produit, puis une planche du symbole (grand sur fond clair, en blanc sur fond sombre, puis à 32 px et 16 px réels agrandis, et à taille réelle).
+Vérifie : « legible » — reste-t-il net et reconnaissable à 16 et 32 px (pas une tache, pas de détails qui disparaissent) ? « evokesProduct » — évoque-t-il CE produit (sa forme, un détail signature) plutôt qu'un symbole générique sans rapport ? « resemblesExistingLogo » — ressemble-t-il à un logo ou pictogramme connu (marque, emoji, icône standard) ? Est-il équilibré, centré, propre, digne d'une agence (« score » de 0 à 10) ?
+Sois strict : un symbole douteux est refusé ; le client reçoit alors un autre symbole. « issues » : problèmes concrets, en phrases courtes, dans la langue de l'interface.`,
 
   classify: `Rôle : documentaliste. Tu classes un fichier d'un projet e-commerce dans le dossier le plus pertinent et proposes un nom de fichier clair dans la langue de l'interface (sans extension, mots séparés par des tirets).`,
   };

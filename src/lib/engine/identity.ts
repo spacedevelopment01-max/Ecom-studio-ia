@@ -13,6 +13,12 @@ import { contrast, hsl, isDark, withLightness } from "../color";
 import type { JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { serviceSymbol, serviceTaglines } from "./services-text";
+import type { CustomSymbol } from "../media/logo-symbol";
+import { designSymbol, type SymbolAi } from "./logo-symbol";
+import { llmConfigured } from "../ai/llm";
+import { aiLogoSymbol, aiLogoSymbolCheck, logoSymbolPassed } from "../ai/tasks";
+import { validCutouts } from "./cutouts";
+import { assetData } from "../library";
 
 export type LogoProposal = { key: "logotype" | "symbole" | "embleme"; label: string; concept: string; spec: Omit<LogoSpec, "color"> };
 
@@ -43,7 +49,10 @@ export function symbolFor(p: Project): SymbolKind {
   return best?.sym ?? SECTOR_SYMBOL[p.product.sector ?? ""] ?? "spark";
 }
 
-export function logoProposals(p: Project, base?: Omit<LogoSpec, "color">): LogoProposal[] {
+/** Symbole sur mesure retenu (IA ou silhouette du produit) et son explication. */
+export type CustomMark = { symbol: CustomSymbol; concept: string; source: "ai" | "silhouette" };
+
+export function logoProposals(p: Project, base?: Omit<LogoSpec, "color">, custom?: CustomMark | null): LogoProposal[] {
   const brand = p.brand!;
   const d = directionById(brand.direction);
   const heading = canvasFamily(brand.fonts.heading ?? d.fonts.heading, "Cormorant");
@@ -71,8 +80,12 @@ export function logoProposals(p: Project, base?: Omit<LogoSpec, "color">): LogoP
       ),
       spec: { ...word, name: brand.name },
     },
-    { key: "symbole", label: L("Symbole + nom", "Symbol + name"), concept: C(`Symbole « ${SYMBOL_LABEL[symbol]} » au trait et nom en ${heavy ? family : sans} : lisible en petit, reconnaissable en icône.`, `Line-drawn "${SYMBOL_LABEL_EN[symbol]}" symbol with the name in ${heavy ? family : sans}: legible at small sizes, recognizable as an icon.`), spec: { name: brand.name, family: heavy ? family : sans, weight: heavy ? 800 : 500, case: "upper", tracking: 0.08, layout: "lockup", emblem: "none", symbol } },
-    { key: "embleme", label: L("Emblème", "Emblem"), concept: p.business === "services" ? C(`Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur cartes de visite, devis, vitrine ou véhicule.`, `Round emblem ("${SYMBOL_LABEL_EN[symbol]}" symbol) with the name and tagline: a seal-like badge, ideal for business cards, quotes, storefronts or vehicles.`) : C(`Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur étiquettes et emballages.`, `Round emblem ("${SYMBOL_LABEL_EN[symbol]}" symbol) with the name and tagline: a seal-like badge, ideal for labels and packaging.`), spec: { name: brand.name, tagline: brand.tagline, family, weight: heavy ? 800 : 500, case: word.case, tracking: 0.06, layout: "badge", emblem: "circle", symbol } },
+    custom
+      ? { key: "symbole", label: L("Symbole sur mesure + nom", "Custom symbol + name"), concept: `${custom.concept.replace(/[.\s]+$/, "")}. ${L(`Nom en ${heavy ? family : sans}.`, `Name set in ${heavy ? family : sans}.`)}`, spec: { name: brand.name, family: heavy ? family : sans, weight: heavy ? 800 : 500, case: "upper", tracking: 0.08, layout: "lockup", emblem: "none", symbol, custom: custom.symbol } }
+      : { key: "symbole", label: L("Symbole + nom", "Symbol + name"), concept: C(`Symbole « ${SYMBOL_LABEL[symbol]} » au trait et nom en ${heavy ? family : sans} : lisible en petit, reconnaissable en icône.`, `Line-drawn "${SYMBOL_LABEL_EN[symbol]}" symbol with the name in ${heavy ? family : sans}: legible at small sizes, recognizable as an icon.`), spec: { name: brand.name, family: heavy ? family : sans, weight: heavy ? 800 : 500, case: "upper", tracking: 0.08, layout: "lockup", emblem: "none", symbol } },
+    custom
+      ? { key: "embleme", label: L("Emblème", "Emblem"), concept: p.business === "services" ? C("Emblème rond (symbole sur mesure) avec le nom et la signature : esprit sceau, idéal sur cartes de visite, devis, vitrine ou véhicule.", "Round emblem (custom symbol) with the name and tagline: a seal-like badge, ideal for business cards, quotes, storefronts or vehicles.") : C("Emblème rond (symbole sur mesure) avec le nom et la signature : esprit sceau, idéal sur étiquettes et emballages.", "Round emblem (custom symbol) with the name and tagline: a seal-like badge, ideal for labels and packaging."), spec: { name: brand.name, tagline: brand.tagline, family, weight: heavy ? 800 : 500, case: word.case, tracking: 0.06, layout: "badge", emblem: "circle", symbol, custom: custom.symbol } }
+      : { key: "embleme", label: L("Emblème", "Emblem"), concept: p.business === "services" ? C(`Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur cartes de visite, devis, vitrine ou véhicule.`, `Round emblem ("${SYMBOL_LABEL_EN[symbol]}" symbol) with the name and tagline: a seal-like badge, ideal for business cards, quotes, storefronts or vehicles.`) : C(`Emblème rond (symbole « ${SYMBOL_LABEL[symbol]} ») avec le nom et la signature : esprit sceau, idéal sur étiquettes et emballages.`, `Round emblem ("${SYMBOL_LABEL_EN[symbol]}" symbol) with the name and tagline: a seal-like badge, ideal for labels and packaging.`), spec: { name: brand.name, tagline: brand.tagline, family, weight: heavy ? 800 : 500, case: word.case, tracking: 0.06, layout: "badge", emblem: "circle", symbol } },
   ];
 }
 
@@ -104,22 +117,56 @@ export function logoColors(p: Pick<Project, "brand">) {
  * Crée (ou recrée) les propositions, applique celle choisie et met à jour la boutique.
  * `choice` : clé de proposition ; à défaut, celle déjà choisie, puis celle de la direction.
  */
-export async function generateLogos(ctx: JobContext | null, projectId: string, opts: { base?: Omit<LogoSpec, "color">; choice?: LogoProposal["key"] } = {}) {
+export async function generateLogos(ctx: JobContext | null, projectId: string, opts: { base?: Omit<LogoSpec, "color">; choice?: LogoProposal["key"]; redrawSymbol?: boolean; symbolAi?: SymbolAi | null } = {}) {
   const p = loadProject(projectId);
   if (!p.brand) throw new Error(L("La marque doit exister avant le logo.", "The brand must exist before the logo."));
   // Sans base fournie, le logotype garde le dessin de la proposition précédente (police, casse, interlettrage).
-  const prevWord = latestProposals(projectId).find((x) => x.info.key === "logotype")?.info.spec;
-  const proposals = logoProposals(p, opts.base ?? (prevWord ? { ...prevWord, name: p.brand.name } : undefined));
+  const previous = latestProposals(projectId);
+  const prevWord = previous.find((x) => x.info.key === "logotype")?.info.spec;
   const { color, accent } = logoColors(p);
+  // Symbole sur mesure : recréé à la demande (nouvelle marque, « Recréer les propositions ») ; sinon celui des
+  // propositions précédentes est repris tel quel (changement de nom ou de palette : pas de nouveau dessin).
+  const prevSym = previous.find((x) => x.info.key === "symbole")?.info;
+  let custom: CustomMark | null = null;
+  let symbolNotes: string[] = [];
+  if (!opts.redrawSymbol && prevSym?.symbolTried) custom = prevSym.spec?.custom ? { symbol: prevSym.spec.custom, concept: prevSym.symbolConcept ?? "", source: prevSym.symbolSource ?? "ai" } : null;
+  else {
+    ctx?.progress(0.55, L("Symbole sur mesure", "Custom symbol"));
+    const design = await customSymbolFor(p, color, accent, opts.symbolAi);
+    symbolNotes = design.notes;
+    if (design.symbol) custom = { symbol: design.symbol, concept: design.concept, source: design.source };
+    if (symbolNotes.length) console.info(`[logo] ${projectId} : ${symbolNotes.join(" | ")}`);
+  }
+  const proposals = logoProposals(p, opts.base ?? (prevWord ? { ...prevWord, name: p.brand.name } : undefined), custom);
   const common = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const };
   ctx?.progress(0.6, L("Propositions de logo", "Logo proposals"));
   const batch = Date.now().toString(36);
   for (const pr of proposals) {
     const png = await logoPng({ ...pr.spec, color, accent }, 900);
-    await saveAsset({ ...common, data: png, name: C(`proposition-${pr.key}.png`, `proposal-${pr.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, batch } });
+    const symbolMeta = pr.key === "symbole" ? { symbolTried: true, symbolSource: custom?.source ?? "library", symbolConcept: custom?.concept, symbolNotes } : {};
+    await saveAsset({ ...common, data: png, name: C(`proposition-${pr.key}.png`, `proposal-${pr.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, batch, ...symbolMeta } });
   }
-  const choice = opts.choice ?? p.brand.logo.proposal ?? defaultProposal(p.brand.direction);
+  // Un symbole sur mesure validé devient la proposition par défaut (le choix déjà fait par le client est gardé).
+  const choice = opts.choice ?? p.brand.logo.proposal ?? (custom ? "symbole" : defaultProposal(p.brand.direction));
   return applyLogo(ctx, projectId, proposals.find((x) => x.key === choice) ?? proposals[0]);
+}
+
+/** Symbole sur mesure du projet : IA (si disponible), sinon silhouette du détourage validé, sinon rien. */
+async function customSymbolFor(p: Project, color: string, accent: string, injected?: SymbolAi | null) {
+  const best = p.business === "services" ? undefined : validCutouts(p.id)[0];
+  const cutout = best ? assetData(best) : null;
+  const base = { userId: p.userId, projectId: p.id };
+  const ai: SymbolAi | null =
+    injected !== undefined
+      ? injected
+      : llmConfigured()
+        ? {
+            draw: (feedback) => aiLogoSymbol({ ...base, usageKey: `logo-symbol:${p.id}:${Date.now().toString(36)}` }, p, { photo: cutout ?? undefined, accent, feedback }),
+            check: (sheet) => aiLogoSymbolCheck({ ...base, usageKey: `logo-symbol-check:${p.id}:${Date.now().toString(36)}` }, { photo: cutout ?? undefined, sheet }),
+            passed: logoSymbolPassed,
+          }
+        : null;
+  return designSymbol({ project: p, cutout, color, accent, ai });
 }
 
 /** Déclinaisons livrables d'une proposition, puis remplacement du logo dans la boutique. */

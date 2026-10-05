@@ -70,7 +70,8 @@ export async function themeContext(browser: import("playwright").Browser, spec: 
   return { context, url: (pathname: string) => `${ORIGIN}${BASE}${pathname}` };
 }
 
-export async function snapshotTheme(spec: ThemeSpec, pathname = "/"): Promise<{ desktop: Buffer[]; mobile: Buffer[] } | null> {
+/** Captures d'une page de la boutique ; `opts` limite le nombre de planches (fiche produit relue en complément de l'accueil). */
+export async function snapshotTheme(spec: ThemeSpec, pathname = "/", opts: { desktopSheets?: number; mobileSheets?: number } = {}): Promise<{ desktop: Buffer[]; mobile: Buffer[] } | null> {
   const executablePath = chromiumPath();
   if (!executablePath) return null;
   let chromium: typeof import("playwright").chromium;
@@ -99,8 +100,8 @@ export async function snapshotTheme(spec: ThemeSpec, pathname = "/"): Promise<{ 
       await context.close();
       return buf;
     };
-    const desktop = await sheets(await shoot(1440, 900, false), 760, 1500, 2, 3);
-    const mobile = await sheets(await shoot(390, 844, true), 390, 1500, 4, 2);
+    const desktop = await sheets(await shoot(1440, 900, false), 760, 1500, 2, opts.desktopSheets ?? 3);
+    const mobile = await sheets(await shoot(390, 844, true), 390, 1500, 4, opts.mobileSheets ?? 2);
     return { desktop, mobile };
   } finally {
     await browser.close();

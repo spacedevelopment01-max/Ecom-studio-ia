@@ -24,7 +24,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (p.brand.logo.status === "provided") throw new HttpError(409, L("Votre logo est conservé tel quel. Supprimez-le des fichiers pour recevoir des propositions.", "Your logo is kept as is. Delete it from your files to receive proposals."));
   const b = await body(req, z.object({ choice: z.enum(["logotype", "symbole", "embleme"]).optional(), regenerate: z.boolean().optional() }));
-  if (b.regenerate || !latestProposals(p.id).length) await generateLogos(null, p.id, { choice: b.choice });
+  if (b.regenerate || !latestProposals(p.id).length) await generateLogos(null, p.id, { choice: b.choice, redrawSymbol: !!b.regenerate });
   else if (b.choice) {
     const pr = latestProposals(p.id).find((x) => x.info.key === b.choice);
     if (!pr) throw new HttpError(404, L("Proposition introuvable.", "Proposal not found."));

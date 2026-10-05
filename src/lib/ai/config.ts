@@ -60,6 +60,7 @@ export type TaskId =
   | "quality_control"
   | "photo_triage"
   | "cutout_check"
+  | "logo_symbol"
   | "social_planning"
   | "social_copy"
   | "classification"
@@ -87,6 +88,7 @@ export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "imag
   quality_control: task("Contrôle qualité", "Quality control", "llm"),
   photo_triage: task("Tri des photos du produit avant détourage", "Product photo sorting before cutout", "llm"),
   cutout_check: task("Contrôle visuel des détourages", "Visual check of cutouts", "llm"),
+  logo_symbol: task("Symbole de logo sur mesure (dessin vectoriel)", "Custom logo symbol (vector drawing)", "llm"),
   social_planning: task("Planification éditoriale", "Content planning", "llm"),
   social_copy: task("Textes des publications", "Social post copy", "llm"),
   classification: task("Classement des fichiers", "File organization", "llm"),
@@ -109,6 +111,7 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = {
   quality_control: { provider: "anthropic", model: "claude-opus-5-5", effort: "low" },
   photo_triage: { provider: "anthropic", model: "claude-haiku-4-5" },
   cutout_check: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
+  logo_symbol: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   social_planning: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   social_copy: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
   classification: { provider: "anthropic", model: "claude-haiku-4-5" },

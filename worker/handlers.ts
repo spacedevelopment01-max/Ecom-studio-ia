@@ -185,6 +185,14 @@ export const handlers: Record<string, Handler> = {
         for (const op of ops) if (op.op === "use_media") addUsage(op.assetId, "theme_section", `${op.template}:${op.section}`, L("Section de boutique", "Store section"));
       }
     }
+    // L'IA a annoncé une modification mais aucune opération n'a passé la validation : on ne laisse pas croire au client
+    // que sa boutique a changé (sa réponse décrivait ce qu'elle comptait faire, pas ce qui a été fait).
+    if (mode === "ai" && !revert && ops.length && !applied.length) {
+      reply = L(
+        "Je n'ai pas pu appliquer cette modification : rien n'a été changé dans la boutique. Précisez l'élément visé (vous pouvez le désigner dans l'aperçu) ou reformulez la demande.",
+        "I couldn't apply this change: nothing was changed in the store. Point to the element (you can select it in the preview) or rephrase the request.",
+      );
+    }
     const note = [reply, applied.length ? L(`\n\nModifié : ${applied.join(" ; ")}.`, `\n\nChanged: ${applied.join("; ")}.`) : "", rejected.length ? L(`\n\nNon appliqué : ${rejected.map((r) => r.reason).join(" ; ")}.`, `\n\nNot applied: ${rejected.map((r) => r.reason).join("; ")}.`) : ""].join("");
     run("INSERT INTO chat_messages (id, project_id, thread, role, content, theme_version_id, job_id, created_at) VALUES (?,?,?,?,?,?,?,?)", `${messageId}-r`, projectId, "shop", "assistant", note.trim(), versionId, ctx.job.id, now());
     return { versionId, applied, rejected, mode };
