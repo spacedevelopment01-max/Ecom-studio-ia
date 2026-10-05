@@ -278,7 +278,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   return (
     <div className={cx("min-h-dvh lg:grid lg:transition-[grid-template-columns] lg:duration-300", folded ? "lg:grid-cols-[76px_1fr]" : "lg:grid-cols-[272px_1fr]")}>
       {/* Barre latérale (ordinateur), repliable pour agrandir l'espace de travail */}
-      <aside className={cx("sticky top-0 hidden h-dvh flex-col gap-5 overflow-hidden border-r border-line bg-paper py-5 lg:flex [@media(max-height:900px)]:gap-3 [@media(max-height:900px)]:py-3", folded ? "px-2.5" : "px-4")}>
+      <aside className={cx("sticky top-0 hidden h-dvh flex-col gap-5 overflow-hidden border-r border-line bg-paper py-5 lg:flex short:gap-3 short:py-3", folded ? "px-2.5" : "px-4")}>
         <div className={cx("flex items-center gap-2", folded ? "flex-col" : "justify-between px-2")}>
           <Link href="/" aria-label={t("Accueil E-COM STUDIO IA", "E-COM STUDIO IA home")}>
             <Logo compact={folded} />
@@ -297,14 +297,14 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
         <div className="relative -mx-1 flex min-h-0 flex-1 flex-col">
         <nav ref={navRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-1" aria-label={t("Espaces du projet", "Project spaces")}>
           {GROUPS.map(([g, gEn]) => (
-            <div key={g} className="mb-4 [@media(max-height:900px)]:mb-2">
-              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line [@media(max-height:900px)]:mb-1" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted [@media(max-height:900px)]:mb-0.5">{t(g, gEn)}</p>}
+            <div key={g} className="mb-4 short:mb-2">
+              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line short:mb-1" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted short:mb-0.5">{t(g, gEn)}</p>}
               {TABS.filter((x) => x.group === g).map((x) => {
                 const Icon = tabIcon(x, data?.business);
                 const b = badge(x.id);
                 const label = tabLabel(x, lang, data?.business);
                 return (
-                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition [@media(max-height:900px)]:py-1.5 [@media(max-height:800px)]:py-1", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
+                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition short:py-1.5 shorter:py-1", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
                     <Icon className="size-4 shrink-0" />
                     {!folded && <span className="flex-1">{label}</span>}
                     {b !== null && (folded ? <span className="absolute right-2 top-1.5 size-2 rounded-full bg-signal" aria-hidden /> : <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", tab === x.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>)}
@@ -321,11 +321,11 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             </div>
           )}
         </div>
-        <div className="grid gap-1 border-t border-line pt-3 text-sm [@media(max-height:900px)]:gap-0 [@media(max-height:900px)]:pt-2">
+        <div className="grid gap-1 border-t border-line pt-3 text-sm short:gap-0 short:pt-2">
           <TutorialsMenuLink tab={tab} business={data?.business} folded={folded} />
-          <Link href="/studio/compte" title={folded ? t("Mon compte", "My account") : undefined} aria-label={folded ? t("Mon compte", "My account") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2 [@media(max-height:900px)]:py-1.5", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Mon compte", "My account")}`}</Link>
-          {me?.user.role === "admin" && <Link href="/admin" title={folded ? t("Administration", "Admin") : undefined} aria-label={folded ? t("Administration", "Admin") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2 [@media(max-height:900px)]:py-1.5", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && ` ${t("Administration", "Admin")}`}</Link>}
-          <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? t("Déconnexion", "Log out") : undefined} aria-label={folded ? t("Déconnexion", "Log out") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2 [@media(max-height:900px)]:py-1.5", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && ` ${t("Déconnexion", "Log out")}`}</button>
+          <Link href="/studio/compte" title={folded ? t("Mon compte", "My account") : undefined} aria-label={folded ? t("Mon compte", "My account") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2 short:py-1.5", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Mon compte", "My account")}`}</Link>
+          {me?.user.role === "admin" && <Link href="/admin" title={folded ? t("Administration", "Admin") : undefined} aria-label={folded ? t("Administration", "Admin") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2 short:py-1.5", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && ` ${t("Administration", "Admin")}`}</Link>}
+          <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? t("Déconnexion", "Log out") : undefined} aria-label={folded ? t("Déconnexion", "Log out") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2 short:py-1.5", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && ` ${t("Déconnexion", "Log out")}`}</button>
         </div>
       </aside>
 

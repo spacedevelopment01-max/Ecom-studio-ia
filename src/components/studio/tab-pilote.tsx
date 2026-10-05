@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe } from "lucide-react";
+import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe, Image as ImageIcon } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Input, Progress, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { EngineNotice, SectionTitle } from "./common";
@@ -326,7 +326,7 @@ export default function TabPilote() {
         <div className="grid content-start gap-6">
           <Card className="overflow-hidden">
             <div className="relative aspect-[4/3] bg-paper-2">
-              {data.coverUrl ? <img src={data.coverUrl} alt="" className="size-full object-cover" /> : <div className="skeleton size-full" />}
+              {data.coverUrl ? <img src={data.coverUrl} alt="" className="size-full object-cover" /> : data.cutoutUrl ? <img src={data.cutoutUrl} alt="" className="size-full object-contain p-6" /> : <div className="grid size-full place-items-center text-muted"><ImageIcon className="size-8" aria-hidden /></div>}
               {data.logoUrl && <img src={data.logoUrl} alt="Logo" className="absolute bottom-3 left-3 h-10 max-w-[60%] rounded-xl bg-white/90 object-contain px-3 py-1.5" />}
             </div>
             <div className="grid grid-cols-3 divide-x divide-line border-t border-line text-center">

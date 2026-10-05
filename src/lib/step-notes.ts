@@ -63,10 +63,39 @@ export function cleanLegacyNote(t: string): string {
     .replace(/^Calendar in progress \([a-z0-9]{4,8}\)$/i, "7-day calendar launched: posts to approve in the Calendar tab");
 }
 
+/** Anciens résumés reconnus (projets créés avant les clés) : retraduits comme les nouveaux. */
+const LEGACY: [RegExp, (m: RegExpMatchArray) => { k: string; p?: Record<string, Param> }][] = [
+  [/^Photos (reçues|received)$/, () => ({ k: "sources.photos" })],
+  [/^(Description enregistrée|Description saved)$/, () => ({ k: "sources.description" })],
+  [/^(Description de l'activité enregistrée|Business description saved)$/, () => ({ k: "sources.serviceDescription" })],
+  [/^(\d+) (?:détourage\(s\) réalisé\(s\)|cutout\(s\) done)(?: localement| locally)?$/, (m) => ({ k: "cutout.done", p: { n: +m[1] } })],
+  [/^(\d+) information\(s\) établie\(s\), (\d+) inconnue\(s\), (\d+) question\(s\) — (analyse IA|moteur local)$/, (m) => ({ k: "analysis.product", p: { established: +m[1], unknown: +m[2], questions: +m[3], ai: m[4] === "analyse IA" ? 1 : 0 } })],
+  [/^(\d+) fact\(s\) established, (\d+) unknown\(s\), (\d+) question\(s\) — (AI analysis|local engine)$/, (m) => ({ k: "analysis.product", p: { established: +m[1], unknown: +m[2], questions: +m[3], ai: m[4] === "AI analysis" ? 1 : 0 } })],
+  [/^(.+) — direction (.+?)(?: \(moteur local\))?$/, (m) => ({ k: "brand.done", p: { name: m[1], direction: m[2] } })],
+  [/^(.+) — (.+?) direction(?: \(local engine\))?$/, (m) => ({ k: "brand.done", p: { name: m[1], direction: m[2] } })],
+  [/^(Textes rédigés et contrôlés|Copy written and checked)$/, () => ({ k: "copy.checked" })],
+  [/^Textes rédigés ; (\d+) point\(s\) à vérifier par vous$|^Copy written; (\d+) point\(s\) for you to check$/, (m) => ({ k: "copy.toCheck", p: { n: +(m[1] ?? m[2]) } })],
+  [/^(Textes de base assemblés|Base copy assembled)/, () => ({ k: "copy.base" })],
+  [/^(\d+) (?:image\(s\) créée\(s\)|image\(s\) created)$/, (m) => ({ k: "images.done", p: { n: +m[1] } })],
+  [/^Version (\d+) du thème enregistrée$|^Theme version (\d+) saved$/, (m) => ({ k: "shop.theme", p: { n: +(m[1] ?? m[2]) } })],
+  [/^Version (\d+) du site enregistrée$|^Website version (\d+) saved$/, (m) => ({ k: "shop.site", p: { n: +(m[1] ?? m[2]) } })],
+  [/^(Calendrier en préparation|Calendar in progress) \([a-z0-9]{4,8}\)$/i, () => ({ k: "calendar.started" })],
+  [/^(\d+) fichiers rangés par dossier(?:, (\d+) à classer)?$|^(\d+) files organized into folders(?:, (\d+) to sort)?$/, (m) => ({ k: "organize.done", p: { n: +(m[1] ?? m[3]), loose: +(m[2] ?? m[4] ?? 0) } })],
+  [/^Inclus dans les forfaits|^Included in the plans/, () => ({ k: "skip.plan" })],
+  [/^Vidéos non demandées au lancement|^Videos not requested at launch/, () => ({ k: "skip.videosNone" })],
+  [/^(Arrêtée à votre demande|Stopped at your request)/, () => ({ k: "stopped" })],
+];
+
 /** Texte d'une note (clé + paramètres, texte bilingue ou ancien texte) dans la langue demandée. */
 export function stepNoteText(n: unknown, lang: Lang): string | undefined {
   if (n == null || n === "") return undefined;
-  if (typeof n === "string") return cleanLegacyNote(n);
+  if (typeof n === "string") {
+    for (const [re, to] of LEGACY) {
+      const m = n.match(re);
+      if (m) return stepNoteText(to(m), lang);
+    }
+    return cleanLegacyNote(n);
+  }
   if (isBi(n)) return n[lang];
   if (typeof n === "object" && typeof (n as { k?: unknown }).k === "string") {
     const { k, p = {} } = n as { k: string; p?: Record<string, Param> };

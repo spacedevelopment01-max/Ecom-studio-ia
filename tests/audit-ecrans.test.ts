@@ -226,11 +226,16 @@ describe("I2 / I3 / M9 — résumés d'étapes et questions dans la langue de l'
     expect(stepNoteText(note("calendar.started"), "fr")).not.toMatch(/\(/);
     expect(stepNoteText({ fr: "Photos reçues", en: "Photos received" }, "en")).toBe("Photos received");
     // Anciens projets : texte gardé, nettoyé des mentions techniques.
-    expect(stepNoteText("1 détourage(s) réalisé(s) localement", "fr")).toBe("1 détourage(s) réalisé(s)");
-    expect(stepNoteText("3 information(s) établie(s), 2 inconnue(s), 4 question(s) — moteur local", "fr")).toBe("3 information(s) établie(s), 2 inconnue(s), 4 question(s)");
-    expect(stepNoteText("Ondine — direction Terroir (moteur local)", "fr")).toBe("Ondine — direction Terroir");
+    // Anciens projets : résumés reconnus et retraduits, nettoyés des mentions techniques.
+    expect(stepNoteText("1 détourage(s) réalisé(s) localement", "fr")).toBe("1 détourage réalisé");
+    expect(stepNoteText("1 détourage(s) réalisé(s) localement", "en")).toBe("1 cutout done");
+    expect(stepNoteText("3 information(s) établie(s), 2 inconnue(s), 4 question(s) — moteur local", "fr")).toBe("3 informations établies, 2 inconnues, 4 questions");
+    expect(stepNoteText("Ondine — direction Terroir (moteur local)", "en")).toBe("Ondine — Terroir direction");
     expect(stepNoteText("Calendrier en préparation (heb0mh)", "fr")).not.toMatch(/heb0mh/);
-    expect(stepNoteText("Textes de base assemblés (moteur local) — à enrichir", "fr")).toBe("Textes de base assemblés — à enrichir");
+    expect(stepNoteText("Textes de base assemblés (moteur local) — à enrichir", "en")).toBe("Base copy assembled — to be enriched");
+    expect(stepNoteText("12 fichiers rangés par dossier, 2 à classer", "en")).toBe("12 files organized into folders, 2 to sort");
+    // Texte inconnu : gardé tel quel (sauf mentions techniques).
+    expect(stepNoteText("Site lu : Maison (moteur local)", "fr")).toBe("Site lu : Maison");
   });
 
   it("pipelineState traduit les résumés selon la langue de la requête", async () => {
@@ -257,7 +262,7 @@ describe("I2 / I3 / M9 — résumés d'étapes et questions dans la langue de l'
 
   it("aucune mention « moteur local » dans les textes des étapes et des réponses du chat", async () => {
     const fs = await import("node:fs");
-    for (const f of ["src/lib/engine/pipeline.ts", "src/lib/engine/brand.ts", "src/lib/engine/calendar.ts", "src/lib/engine/local.ts", "src/lib/step-notes.ts"]) {
+    for (const f of ["src/lib/engine/pipeline.ts", "src/lib/engine/brand.ts", "src/lib/engine/calendar.ts", "src/lib/engine/local.ts"]) {
       const code = fs.readFileSync(f, "utf8").split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*\*)/.test(l) && !/\.replace\(/.test(l));
       expect(code.join("\n"), f).not.toMatch(/moteur local|local engine|à activer dans l'administration/);
     }
