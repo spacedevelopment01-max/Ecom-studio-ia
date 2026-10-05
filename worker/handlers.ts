@@ -25,6 +25,7 @@ import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
 import { pushCatalog, pushPages, pushTheme, shopifyConnection } from "../src/lib/integrations/shopify";
 import { renderCreative, FORMATS } from "../src/lib/media/compose";
 import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engine/images";
+import { cutoutSummary, redoCutout } from "../src/lib/engine/cutouts";
 import { loadImage } from "@napi-rs/canvas";
 import { L } from "../src/lib/i18n-server";
 import { planOfUserId } from "../src/lib/plan-gates";
@@ -33,6 +34,13 @@ type Handler = (ctx: JobContext) => Promise<unknown>;
 
 export const handlers: Record<string, Handler> = {
   "pipeline.run": runPipeline,
+
+  /** Tri des photos du produit, détourage et contrôle (ajout d'une photo, « Refaire le détourage »). */
+  "cutout.run": async (ctx) => {
+    const project = loadProject(ctx.payload.projectId);
+    const list = ctx.payload.redo ? await redoCutout(ctx, project, ctx.payload.redo) : await ensureCutouts(ctx, project);
+    return { valid: list.length, summary: cutoutSummary(project.id) };
+  },
 
   "images.generate": async (ctx) => generateImageSet(ctx, ctx.payload.projectId, ctx.payload.options ?? {}),
   "image.single": async (ctx) => generateSingleImage(ctx, ctx.payload.projectId, ctx.payload.request),

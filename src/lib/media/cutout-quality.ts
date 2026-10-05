@@ -50,7 +50,7 @@ export async function measureBackground(input: Buffer): Promise<BgStats> {
     if (Math.max(Math.abs(data[i] - data[j]), Math.abs(data[i + 1] - data[j + 1]), Math.abs(data[i + 2] - data[j + 2])) <= 6) calm++;
   }
   const smooth = calm / Math.max(1, ring.length - 1);
-  const plain = transparent >= 0.9 || uniform >= 0.85 || (smooth >= 0.93 && uniform >= 0.45);
+  const plain = transparent >= 0.9 || uniform >= 0.85 || (smooth >= 0.93 && uniform >= 0.45) || smooth >= 0.97;
   const flat = transparent >= 0.9 || (uniform >= 0.97 && smooth >= 0.95);
   return { uniform: round(uniform), smooth: round(smooth), transparent: round(transparent), color, plain, flat };
 }
@@ -213,7 +213,7 @@ export async function checkCutoutLocal(cut: { png: Buffer; bbox: { x: number; y:
   if (!opaque) reasons.push("empty");
   else if (coverage < 0.03) reasons.push("too_small");
   if (coverage > 0.92) reasons.push("too_large");
-  if (pieces.length >= 6 || small >= 2 || specks >= 12 || (pieces.length >= 3 && strayShare > 0.3)) reasons.push("fragments");
+  if (pieces.length >= 6 || small >= 2 || specks >= 5 || (pieces.length >= 3 && strayShare > 0.3)) reasons.push("fragments");
   if (edgeShare > 0.18 || sidesTouched >= 2) reasons.push("cut_by_frame");
   if (uncertain > 0.3) reasons.push("ragged");
   if (holeShare > 0.04) reasons.push("hole");

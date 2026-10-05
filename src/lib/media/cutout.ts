@@ -144,13 +144,14 @@ async function floodCutout(input: Buffer): Promise<Buffer> {
   const seen = new Uint8Array(w * h);
   const stack: number[] = [];
   for (const [x, y] of border) stack.push(y * w + x);
-  const tol = 38;
+  const tol = 16;
   while (stack.length) {
     const p = stack.pop()!;
     if (seen[p]) continue;
     const i = p * 4;
-    const d = Math.abs(data[i] - avg[0]) + Math.abs(data[i + 1] - avg[1]) + Math.abs(data[i + 2] - avg[2]);
-    if (d > tol * 3) continue;
+    // Fond réellement uni (seul cas où ce secours est permis) : tolérance serrée, pour ne pas ronger les bords clairs du produit.
+    const d = Math.max(Math.abs(data[i] - avg[0]), Math.abs(data[i + 1] - avg[1]), Math.abs(data[i + 2] - avg[2]));
+    if (d > tol) continue;
     seen[p] = 1;
     data[i + 3] = 0;
     const x = p % w;

@@ -107,6 +107,19 @@ describe("trous intérieurs (fillInteriorHoles)", () => {
     expect(at(5, 5)[3]).toBe(0); // le fond reste transparent
   });
 
+  it("cas SOVA réel (photo du propriétaire, sortie brute du modèle) : disque rebouché ; non corrigé, le contrôle refuse", async () => {
+    const photo = await sharp("tests/fixtures/cutout/sova-rose.png").toBuffer();
+    const raw = await sharp("tests/fixtures/cutout/sova-rose-modele-brut.png").toBuffer();
+    const alphaAt = async (png: Buffer, x: number, y: number) => (await sharp(png).raw().toBuffer())[(y * 480 + x) * 4 + 3];
+    expect(await alphaAt(raw, 240, 265)).toBeLessThan(30); // le modèle a bien retiré le disque central
+    const fixed = await fillInteriorHoles(raw, photo);
+    expect(await alphaAt(fixed, 240, 265)).toBe(255);
+    expect(await alphaAt(fixed, 5, 5)).toBe(0);
+    expect((await checkCutoutLocal(full(fixed, 480, 480), photo)).ok).toBe(true);
+    // Filet de sécurité : si la correction échouait, le trou serait signalé par les règles locales.
+    expect((await checkCutoutLocal(full(raw, 480, 480), photo)).reasons).toContain("hole");
+  });
+
   it("une anse de tasse / un anneau sur fond blanc garde son vrai jour transparent", async () => {
     // Anneau épais : le centre montre le fond blanc à l'identique (grand trou, ≥ 15 % de la silhouette).
     const ring = (x: number, y: number): RGB | null => (disc(100, 100, 70)(x, y) && !disc(100, 100, 40)(x, y) ? [40, 60, 120] : null);
