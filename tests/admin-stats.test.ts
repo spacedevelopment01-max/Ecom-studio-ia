@@ -11,19 +11,19 @@ describe("tableau de bord de l'administration", () => {
     const a = await createUser(`paye${t}@test.fr`, "motdepasse-test", "Payant");
     const b = await createUser(`essai${t}@test.fr`, "motdepasse-test", "Essai");
     const c = await createUser(`offert${t}@test.fr`, "motdepasse-test", "Offert");
-    for (const [u, s, n] of [[a.id, "active", 2], [b.id, "trial", 1], [c.id, "manual", 1]] as const) {
+    for (const [u, s, plan] of [[a.id, "active", "vendre"], [b.id, "trial", null], [c.id, "manual", "creer"]] as const) {
       getSubscription(u);
-      run("UPDATE subscriptions SET status = ?, stores = ? WHERE user_id = ?", s, n, u);
+      run("UPDATE subscriptions SET status = ?, plan = ? WHERE user_id = ?", s, plan, u);
     }
-    run("INSERT INTO payments (id, user_id, kind, amount_cents, status, stripe_id, created_at) VALUES (?,?,?,?,?,?,?)", id(), a.id, "subscription", 8990, "paid", `cs_${t}`, t);
+    run("INSERT INTO payments (id, user_id, kind, amount_cents, status, stripe_id, created_at) VALUES (?,?,?,?,?,?,?)", id(), a.id, "subscription", 7990, "paid", `cs_${t}`, t);
     run("INSERT INTO payments (id, user_id, kind, amount_cents, status, stripe_id, created_at) VALUES (?,?,?,?,?,?,?)", id(), a.id, "topup", 1000, "paid", `cs_${t}b`, t);
     run("INSERT INTO jobs (id, user_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)", id(), a.id, "video.render", "v", "{}", "done", t, t, t);
     const d = dashboard();
     expect(d.plans.abonne).toBeGreaterThanOrEqual(1);
     expect(d.plans.essai).toBeGreaterThanOrEqual(1);
     expect(d.plans.offert).toBeGreaterThanOrEqual(1);
-    expect(d.mrrEur).toBeGreaterThanOrEqual(89.9); // 49,90 + 40 pour 2 boutiques
-    expect(d.money30.subscriptionEur).toBeGreaterThanOrEqual(89.9);
+    expect(d.mrrEur).toBeGreaterThanOrEqual(79.9); // forfait Vendre mensuel
+    expect(d.money30.subscriptionEur).toBeGreaterThanOrEqual(79.9);
     expect(d.money30.topupCount).toBeGreaterThanOrEqual(1);
     expect(d.usage.using).toBeGreaterThanOrEqual(1);
     expect(d.usage.notUsing).toBeGreaterThanOrEqual(1); // l'abonnement offert n'a rien créé

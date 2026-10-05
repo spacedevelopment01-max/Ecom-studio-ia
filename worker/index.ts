@@ -35,8 +35,8 @@ async function runOne() {
   console.log(`[worker] ▶ ${job.type} ${job.id} (essai ${job.attempts})`);
   (async () => {
     try {
-      // Sans crédits de création, les étapes IA basculent sur le moteur local (voir src/lib/ai/access.ts).
-      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => handlers[job.type](ctx)));
+      // Budget IA épuisé : les étapes IA basculent discrètement sur le moteur local (voir src/lib/ai/access.ts).
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => handlers[job.type](ctx), job.type === "pipeline.run" ? "creation" : "normal"));
       runWithLang({ ui: userLang(job.user_id) }, () => completeJob(job.id, result));
       console.log(`[worker] ✓ ${job.type} ${job.id} en ${((Date.now() - started) / 1000).toFixed(1)} s`);
     } catch (e) {

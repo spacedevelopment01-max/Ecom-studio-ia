@@ -5,6 +5,8 @@ import { runPipeline } from "../src/lib/engine/pipeline";
 import { generateImageSet, generateSingleImage } from "../src/lib/engine/images";
 import { produceVideo } from "../src/lib/engine/videos";
 import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
+import { withQuotaScope } from "../src/lib/ai/access";
+import { consumeQuota } from "../src/lib/quotas";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
 import { createContentPlan, attachVideoToPlan, NETWORK_FORMATS } from "../src/lib/engine/calendar";
 import { buildBrand } from "../src/lib/engine/brand";
@@ -40,7 +42,12 @@ export const handlers: Record<string, Handler> = {
 
   /** Script UGC à relire et modifier avant la génération. */
   "ugc.script": async (ctx) => writeUgcScript(ctx, ctx.job.project_id!, ctx.payload.options),
-  "video.ugc": async (ctx) => produceUgc(ctx, ctx.job.project_id!, { options: ctx.payload.options, script: ctx.payload.script }),
+  // La vidéo UGC compte pour une vidéo UGC du forfait, une fois terminée (ses images et plans ne sont pas décomptés à part).
+  "video.ugc": async (ctx) => {
+    const r = await withQuotaScope("ugc", () => produceUgc(ctx, ctx.job.project_id!, { options: ctx.payload.options, script: ctx.payload.script }));
+    consumeQuota(ctx.job.user_id!, "ugc", 1, `ugc:${ctx.job.id}`);
+    return r;
+  },
 
   "brand.build": async (ctx) => {
     const b = await buildBrand(ctx, ctx.payload.projectId, { guidance: ctx.payload.guidance });

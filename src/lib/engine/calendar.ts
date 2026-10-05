@@ -3,6 +3,7 @@
  * complètes (texte, légende, média au bon format, date), puis programmation
  * réelle exécutée par le worker — même navigateur fermé.
  */
+import { autopublishAllowed } from "../quotas";
 import { fromZonedTime } from "date-fns-tz";
 import { loadImage } from "@napi-rs/canvas";
 import { all, id, json, now, one, run, tx } from "../db";
@@ -319,7 +320,7 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
 /** Statut après génération : validation manuelle ou programmation automatique selon les règles. */
 export function decideStatus(p: Project, network: string, connectionId: string | null, approval: "manual" | "auto", media: string[]): string {
   const rules = p.settings.autopublish;
-  const auto = approval === "auto" && rules.enabled && rules.networks.includes(network) && !!connectionId;
+  const auto = approval === "auto" && autopublishAllowed(p.userId) && rules.enabled && rules.networks.includes(network) && !!connectionId;
   if (!auto) return "review";
   const kind = media.length ? (one<{ kind: string }>("SELECT kind FROM assets WHERE id = ?", media[0])?.kind ?? "image") : "text";
   if (rules.requireApprovalFor.includes(kind)) return "review";

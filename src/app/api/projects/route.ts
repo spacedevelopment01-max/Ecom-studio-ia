@@ -39,12 +39,12 @@ export const POST = handle(async (req: Request) => {
   const services = !site && input.businessType === "services" ? serviceProfileFromInput(input) : null;
   // Site de services : la description de l'activité ou le lien du site existant est indispensable.
   if (services && !hasProductInput(input, files)) throw new HttpError(400, L("Décrivez votre activité en quelques lignes ou indiquez le lien de votre site actuel.", "Describe your business in a few lines or give the link to your current website."));
-  // Nombre de boutiques : limité par l'abonnement (une boutique d'essai sans abonnement).
+  // Une boutique (ou un site) par abonnement, quel que soit le forfait. Les anciens abonnements multi-boutiques gardent leur nombre.
   const sub = getSubscription(user.id);
   const count = one<{ n: number }>("SELECT COUNT(*) n FROM projects WHERE user_id = ? AND archived = 0", user.id)!.n;
-  const allowed = subscriptionActive(sub) ? sub.stores : 1;
+  const allowed = subscriptionActive(sub) && !sub.plan ? Math.max(1, sub.stores) : 1;
   if (count >= allowed && user.role !== "admin") {
-    throw new HttpError(402, subscriptionActive(sub) ? L(`Votre abonnement couvre ${allowed} boutique(s). Ajoutez une boutique (40 €/mois) dans votre compte.`, `Your subscription covers ${allowed} store(s). Add a store (€40/month) in your account.`) : L("Le compte d'essai comprend une boutique. Abonnez-vous pour en gérer plusieurs.", "The trial account includes one store. Subscribe to manage more."));
+    throw new HttpError(402, L("Un abonnement comprend une boutique ou un site. Pour une autre boutique, archivez celle-ci ou ouvrez un second compte avec son propre abonnement.", "A subscription includes one store or website. For another store, archive this one or open a second account with its own subscription."));
   }
   const pid = id();
   const language = input.language ?? uiLang();

@@ -5,7 +5,8 @@ import { publicJob, type Job } from "@/lib/jobs";
 import { currentTheme, saveProduct, saveServices, saveSettings } from "@/lib/projects";
 import { pipelineState } from "@/lib/engine/pipeline";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { aiMode, hasAiCredits } from "@/lib/ai/access";
+import { hasAiCredits } from "@/lib/ai/access";
+import { assertAutopublish } from "@/lib/plan-gates";
 import { aiAvailability } from "@/lib/ai/config";
 import { balance } from "@/lib/billing";
 import { FactSchema, sectorLabel } from "@/lib/project-types";
@@ -45,14 +46,14 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     logoUrl: logo ? `/api/files/${logo.id}` : null,
     coverUrl: cover ? `/api/files/${cover.id}?thumb=1` : null,
     cutoutUrl: cutout ? `/api/files/${cutout.id}?thumb=1` : null,
-    // credits : l'IA est réellement utilisée pour ce client (sinon moteur local).
-    ai: { ...aiAvailability(), credits: hasAiCredits(user.id), mode: aiMode(user.id) },
+    // credits : l'IA est réellement utilisée pour ce client (budget caché suffisant ; sinon moteur local, sans le dire).
+    ai: { ...aiAvailability(), credits: hasAiCredits(user.id), mode: "ai" as const },
     credits: { usedPct: b.usedPct, alert: b.alert, paused: b.paused, empty: b.capacity === 0 },
   });
 });
 
 export const PATCH = handle(async (req: Request, ctx: Ctx) => {
-  const { project: p } = await projectFromCtx(ctx);
+  const { user, project: p } = await projectFromCtx(ctx);
   const b = await body(
     req,
     z.object({
@@ -86,6 +87,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       existingSite: z.object({ newSiteRequested: z.boolean() }).optional(),
     }),
   );
+  if (b.settings?.autopublish?.enabled) assertAutopublish(user);
   if (b.existingSite && p.settings.existingSite) saveSettings(p.id, { ...p.settings, existingSite: { ...p.settings.existingSite, newSiteRequested: b.existingSite.newSiteRequested } });
   if (b.name) run("UPDATE projects SET name = ?, updated_at = ? WHERE id = ?", b.name, now(), p.id);
   if (b.platform) run("UPDATE projects SET platform = ?, updated_at = ? WHERE id = ?", b.platform, now(), p.id);

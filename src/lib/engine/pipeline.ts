@@ -5,6 +5,7 @@
  * repayer — les étapes terminées. Le client peut laisser faire ou valider la
  * marque avant la suite (mode guidé).
  */
+import { userPlan } from "../quotas";
 import { all, id, json, now, one, run } from "../db";
 import { enqueue, JobCancelled, JobContext, JobPaused, type Job } from "../jobs";
 import { assetData, saveAsset, type Asset } from "../library";
@@ -153,6 +154,10 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
   const p = loadProject(projectId);
   const inp = payload.input;
   const services = p.business === "services";
+  // Découverte gratuite (sans forfait) : analyse, marque, logos et aperçu de la boutique ; images, vidéos et calendrier avec un forfait.
+  if ((step === "images" || step === "video" || step === "calendar") && !userPlan(p.userId) && one<{ role: string }>("SELECT role FROM users WHERE id = ?", p.userId)?.role !== "admin") {
+    return { skipped: L("Inclus dans les forfaits : choisissez un forfait dans « Mon compte », puis relancez cette étape", "Included in the plans: choose a plan in \"My account\", then run this step again") };
+  }
   switch (step) {
     case "sources": {
       if (inp.existingSite && inp.siteUrl) return importExistingSite(ctx, projectId, inp.siteUrl);

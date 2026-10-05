@@ -5,7 +5,8 @@
 import { all, id as newId, now, one, run, tx } from "./db";
 import { getJsonSetting, getSetting, setJsonSetting, setSetting } from "./settings";
 import { clientRows } from "./admin-stats";
-import { EUR, monthlyPriceEur } from "./billing";
+import { EUR } from "./billing";
+import { PLANS } from "./plans";
 import { L, uiLang } from "./i18n-server";
 import { readFile, removeFile } from "./storage";
 import {
@@ -198,7 +199,7 @@ export function report(range: Range, day = today()) {
   const paying = clients.filter((c) => c.monthlyEur > 0);
   const mrrTtc = Math.round(paying.reduce((s, c) => s + c.monthlyEur, 0) * 100);
   const mrrHt = fromTtc(mrrTtc, SALES_VAT).ht;
-  const priceHt = paying.length ? Math.round(mrrHt / paying.length) : fromTtc(Math.round(monthlyPriceEur(1) * 100), SALES_VAT).ht;
+  const priceHt = paying.length ? Math.round(mrrHt / paying.length) : fromTtc(Math.round(PLANS.vendre.price.month * 100), SALES_VAT).ht;
   // Coût variable moyen par abonné et par mois : coûts IA + frais Stripe des 3 derniers mois complets ÷ 3 ÷ abonnés payants.
   const tm = last12Months(day);
   const last3 = { from: `${tm[8]}-01`, to: ymd(new Date(Number(tm[10].slice(0, 4)), Number(tm[10].slice(5, 7)), 0)) };

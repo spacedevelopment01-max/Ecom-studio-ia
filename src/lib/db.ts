@@ -314,10 +314,40 @@ CREATE TABLE IF NOT EXISTS ledger (
   created_at INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ledger_ref ON ledger(type, ref) WHERE ref IS NOT NULL;
+CREATE TABLE IF NOT EXISTS quota_usage (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  period_start INTEGER NOT NULL,
+  key TEXT NOT NULL,           -- visuals | aiVideos | ugc | blog
+  included INTEGER NOT NULL,
+  rollover INTEGER NOT NULL DEFAULT 0,
+  used INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, period_start, key)
+);
+CREATE TABLE IF NOT EXISTS pack_balances (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  key TEXT NOT NULL,           -- visuals | aiVideos | ugc | languages
+  balance INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, key)
+);
+CREATE TABLE IF NOT EXISTS pack_purchases (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  pack TEXT NOT NULL,
+  ref TEXT NOT NULL UNIQUE,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS quota_events (
+  ref TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  key TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS payments (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  kind TEXT NOT NULL,          -- subscription | topup
+  kind TEXT NOT NULL,          -- subscription | pack | topup (ancien)
   amount_cents INTEGER NOT NULL,
   status TEXT NOT NULL,
   stripe_id TEXT UNIQUE,
@@ -427,6 +457,9 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
   ["projects", "business_json", "TEXT NOT NULL DEFAULT '{}'"],
+  ["subscriptions", "plan", "TEXT"], // creer | vendre | dominer (null : ancien abonnement → « Créer »)
+  ["subscriptions", "billing", "TEXT"], // month | year
+  ["payments", "label", "TEXT"],
 ];
 
 function migrate(db: Database.Database) {
