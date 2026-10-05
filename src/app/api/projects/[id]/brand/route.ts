@@ -8,6 +8,7 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { HttpError } from "@/lib/auth";
 import { DIRECTIONS } from "@/lib/theme/directions";
 import { L } from "@/lib/i18n-server";
+import { brandIssues } from "@/lib/engine/brand-check";
 
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
@@ -40,6 +41,8 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   }
   brand.validated = [...new Set([...(brand.validated ?? []), ...(b.validate ?? [])])].filter((x: string) => !(b.unvalidate ?? []).includes(x));
   if (b.validate?.includes("logo")) brand.logo = { ...brand.logo, status: "validated" };
+  // Points à vérifier recalculés sur la version du client (ses choix sont gardés, seulement signalés).
+  brand.checks = brandIssues(brand, p, p.strategy).filter((i) => i.blocking).map((i) => i.message);
   saveBrand(p.id, brand);
   // Le logo suit le nom, la signature et la palette (sauf logo fourni par le client).
   const touchesLogo = (b.name !== undefined && b.name !== p.brand.name) || (b.tagline !== undefined && b.tagline !== p.brand.tagline) || (b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette));

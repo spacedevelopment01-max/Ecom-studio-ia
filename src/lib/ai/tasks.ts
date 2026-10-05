@@ -143,41 +143,61 @@ Langues : nom, catégorie, résumé, prestations et faits en ${lang === "en" ? "
 
 // ---------------------------------------------------------------- marque
 
+/** Couleur hexadécimale tolérante (« #abc », « ABCDEF » → « #AABBCC ») ; invalide → valeur de repli. */
+const hex = (fallback: string) =>
+  z.preprocess((v) => {
+    if (typeof v !== "string") return fallback;
+    let h = v.trim().replace(/^#/, "");
+    if (/^[0-9a-f]{3}$/i.test(h)) h = h.split("").map((c) => c + c).join("");
+    return /^[0-9a-f]{6}$/i.test(h) ? `#${h.toUpperCase()}` : fallback;
+  }, z.string());
+/** Nombre borné (une valeur hors bornes est ramenée dans l'intervalle au lieu de faire échouer toute la marque). */
+const clamped = (min: number, max: number, fallback: number) => z.preprocess((v) => (typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : typeof v === "string" && Number.isFinite(Number(v)) ? Math.min(max, Math.max(min, Number(v))) : fallback), z.number());
+
 const BrandSchema = z.object({
-  name: z.string(),
-  nameStatus: z.enum(["provided", "proposed"]),
-  alternatives: z.array(z.string()).max(4),
-  tagline: z.string(),
-  positioning: z.string(),
-  audience: z.string(),
-  personality: z.array(z.string()).max(5),
-  tone: z.object({ voice: z.string(), do: z.array(z.string()), dont: z.array(z.string()) }),
-  palette: z.object({ primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/), secondary: z.string().regex(/^#[0-9A-Fa-f]{6}$/), accent: z.string().regex(/^#[0-9A-Fa-f]{6}$/), light: z.string().regex(/^#[0-9A-Fa-f]{6}$/), dark: z.string().regex(/^#[0-9A-Fa-f]{6}$/) }),
-  fonts: z.object({ heading: z.string(), body: z.string() }),
-  direction: z.enum(DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]),
-  directionReason: z.string(),
-  logo: z.object({
-    concept: z.string(),
-    family: z.string(),
-    weight: z.number(),
-    italic: z.boolean(),
-    case: z.enum(["upper", "title", "lower", "asis"]),
-    tracking: z.number().min(0).max(0.5),
-    layout: z.enum(["wordmark", "stacked", "monogram", "emblem"]),
-    emblem: z.enum(["none", "circle", "arch", "line", "diamond"]),
-  }),
-  story: z.string(),
-  values: z.array(z.object({ title: z.string(), text: z.string() })).max(4),
-  strategy: z.object({
-    audience: z.array(z.object({ label: z.string(), needs: z.array(z.string()), objections: z.array(z.string()) })).max(3),
-    angles: z.array(z.object({ title: z.string(), idea: z.string() })).max(8),
-    pillars: z.array(z.string()).max(6),
-    keyMessages: z.array(z.string()).max(6),
-  }),
+  name: z.string().trim().min(1),
+  nameStatus: z.enum(["provided", "proposed"]).catch("proposed"),
+  alternatives: capped(str, 4),
+  tagline: str,
+  positioning: str,
+  audience: str,
+  personality: capped(str, 5),
+  tone: z.object({ voice: str, do: capped(str, 5), dont: capped(str, 5) }).catch({ voice: "", do: [], dont: [] }),
+  // Palette absente : celle des couleurs mesurées du produit est appliquée par l'appelant.
+  palette: z.object({ primary: hex("#3A3F4B"), secondary: hex("#E6E2DC"), accent: hex("#B5714A"), light: hex("#F7F5F2"), dark: hex("#16181D") }).optional().catch(undefined),
+  fonts: z.object({ heading: str, body: str }).catch({ heading: "", body: "" }),
+  direction: z.enum(DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]).catch("atelier"),
+  directionReason: str,
+  logo: z
+    .object({
+      concept: str,
+      family: str,
+      // Graisse lisible du favicon à l'enseigne : ni trait trop fin, ni noir écrasé.
+      weight: clamped(400, 900, 600),
+      italic: z.boolean().catch(false),
+      case: z.enum(["upper", "title", "lower", "asis"]).catch("upper"),
+      tracking: clamped(0, 0.3, 0.06),
+      layout: z.enum(["wordmark", "stacked", "monogram", "emblem"]).catch("wordmark"),
+      emblem: z.enum(["none", "circle", "arch", "line", "diamond"]).catch("none"),
+    })
+    .catch({ concept: "", family: "", weight: 600, italic: false, case: "upper", tracking: 0.06, layout: "wordmark", emblem: "none" }),
+  story: str,
+  values: capped(z.object({ title: str, text: str }), 4),
+  strategy: z
+    .object({
+      audience: capped(z.object({ label: str, needs: capped(str, 6), objections: capped(str, 6) }), 3),
+      angles: capped(z.object({ title: str, idea: str }), 8),
+      pillars: capped(str, 6),
+      keyMessages: capped(str, 6),
+    })
+    .catch({ audience: [], angles: [], pillars: [], keyMessages: [] }),
 });
 export type BrandAi = z.infer<typeof BrandSchema>;
 
-export async function aiBrand(b: Base, p: Project, guidance?: string) {
+/** Forme exacte attendue (sans elle, l'IA devine les clés et la réponse est refusée par la validation). */
+const BRAND_SHAPE = `{"name": "", "nameStatus": "provided|proposed", "alternatives": ["", "", ""], "tagline": "", "positioning": "", "audience": "", "personality": ["", "", ""], "tone": {"voice": "", "do": ["", "", ""], "dont": ["", "", ""]}, "palette": {"primary": "#RRGGBB", "secondary": "#RRGGBB", "accent": "#RRGGBB", "light": "#RRGGBB", "dark": "#RRGGBB"}, "fonts": {"heading": "", "body": ""}, "direction": "", "directionReason": "", "logo": {"concept": "", "family": "", "weight": 600, "italic": false, "case": "upper|title|lower|asis", "tracking": 0.06, "layout": "wordmark|stacked|monogram|emblem", "emblem": "none|circle|arch|line|diamond"}, "story": "", "values": [{"title": "", "text": ""}], "strategy": {"audience": [{"label": "", "needs": [""], "objections": [""]}], "angles": [{"title": "", "idea": ""}], "pillars": [""], "keyMessages": [""]}}`;
+
+export async function aiBrand(b: Base, p: Project, guidance?: string, feedback?: string) {
   const r = await llmJson(
     {
       task: "strategy",
@@ -191,7 +211,9 @@ export async function aiBrand(b: Base, p: Project, guidance?: string) {
 Directions de boutique disponibles :\n${DIRECTION_LIST}
 Polices Shopify autorisées (fonts.heading et fonts.body) : ${FONT_LIST}
 Familles disponibles pour le logo (logo.family) : ${Object.keys(CANVAS_FONTS).join(", ")}
-${guidance ? `Orientation demandée par le client : ${guidance}` : ""}`,
+${guidance ? `Orientation demandée par le client : ${guidance}` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité de la proposition précédente (à appliquer impérativement) :\n${feedback}` : ""}
+Réponds avec un objet JSON exactement de cette forme :
+${BRAND_SHAPE}`,
       maxTokens: 16000,
     },
     BrandSchema,
@@ -266,6 +288,23 @@ const RISKY: Risk[] = [
   [/brevet|\bpatent(ed)?\b/i, { fr: "brevet", en: "patent" }],
   [/anti-?âge|anti-?rides|guéri|soigne|traite(ment)? (de|contre)|anti-?aging|anti-?wrinkle|\bcures?\b|\bheals?\b/i, { fr: "allégation santé ou efficacité", en: "health or efficacy claim" }],
   [/\b\d+\s?%\s?(naturel|d'origine|natural)/i, { fr: "pourcentage d'origine", en: "origin percentage" }],
+  // Sécurité et santé de l'enfant (produits pour enfants et bébés) : jamais sans preuve.
+  [/sans (danger|risque)s? pour|(sûr|sûre|sûrs|sûres|sécuritaire)s? pour (les |le |la |votre |vos |l')?(enfants?|bébés?|tout-petits|petits|nourrissons?)|en toute sécurité|100\s?% (sûr|sécuris)|(totalement|parfaitement|entièrement) (sûr|sécuris)|safe for (kids|children|babies|toddlers|infants|little ones)|(completely|totally|perfectly|100\s?%) safe|child[- ]safe|baby[- ]safe/i, { fr: "sécurité de l'enfant", en: "child safety" }],
+  [/non[- ]toxiques?|non-toxic|nontoxic|sans (substances? )?(toxiques?|nocives?)|sans (bpa|phtalates?)|(bpa|phthalates?)[- ]free|free (of|from) (bpa|phthalates?|toxins?)/i, { fr: "composition sans substance", en: "free-from claim" }],
+  [/\bnormes? (ce|en\s?71|européennes?|de sécurité)|\ben\s?71\b|marquage ce|\bce[- ](certified|marked|approved)|\bcpsia\b|\bastm\b|fda[- ]approved|approuvé par la fda|conforme (à la|aux|à) (normes?|réglementation)|(meets|complies with) (all )?(safety )?(standards|regulations)/i, { fr: "norme ou conformité", en: "standard or compliance" }],
+  [/pédiatres?|pediatricians?|(recommandé|approuvé|validé|conseillé)e?s? par (des |les )?(médecins|experts?|spécialistes|professionnels|sages-femmes|orthophonistes|psychologues|parents)|(recommended|approved|endorsed) by (doctors|experts?|specialists|professionals|parents)|testé (en laboratoire|et approuvé|scientifiquement)|lab[- ]tested|scientifically (proven|tested)|prouvé scientifiquement|cliniquement prouvé/i, { fr: "caution d'expert ou test", en: "expert endorsement or testing" }],
+  [/(favorise|améliore|facilite|aide à|aide au|garantit|assure)s? (un |le |l'|son |leur |votre )?(meilleur )?(sommeil|endormissement|nuits?)|(apaise|calme|rassure|soulage)s? (votre |les |le |l'|son |leur |vos )?(enfants?|bébés?|tout-petits|angoisses?|peurs?|pleurs|coliques|stress|anxiété)|réduit (le stress|l'anxiété|les pleurs|les angoisses)|aide(nt)? (votre |vos |les |le |l'|son |leur )?(enfants? |bébés? |tout-petits? |petits? )?à (s'endormir|mieux dormir|dormir|se calmer|se rassurer|s'apaiser)|anti-?(stress|angoisse|anxiété|colique)|helps? (your )?(baby|child|kids?|toddler|little one)?\s?(to )?(sleep|fall asleep|calm down)|improves? sleep|better sleep|(soothes?|calms?) (your )?(baby|child|kids?|toddler|anxiety|fears?|crying)|reduces? (stress|anxiety|crying|colic)|anti-?anxiety/i, { fr: "allégation sommeil ou apaisement", en: "sleep or soothing claim" }],
+  [/(favorise|stimule|développe|booste|améliore|accélère)s? (le |la |l'|son |sa |ses |leur )?(développement|éveil|motricité|apprentissage|langage|concentration|mémoire|intelligence|créativité|confiance)|(boosts?|supports?|enhances?|stimulates?|promotes?|improves?) (your (child|baby)'s |cognitive |early |brain |motor |language )?(development|learning|motor skills|language skills|brain|concentration|memory|intelligence)/i, { fr: "allégation de développement", en: "development claim" }],
+  // Environnement, résistance, fabrication.
+  [/éco-?responsables?|écologiques?|respectueu(x|se)s? de (l'environnement|la planète)|eco-?friendly|environmentally friendly|planet[- ]friendly|\bsustainabl[ey]\b|biodégradables?|biodegradable|compostables?|recyclables?|zéro déchet|zero[- ]waste|neutre en carbone|carbon[- ]neutral/i, { fr: "allégation environnementale", en: "environmental claim" }],
+  [/étanches?|waterproof|water[- ]resistant|résistant à l'eau|incassables?|unbreakable|indestructibles?|résistant aux chocs|shock[- ]?proof|anti-?chocs?|anti-?chutes?|drop[- ]proof/i, { fr: "résistance ou étanchéité", en: "durability or waterproofing" }],
+  [/fait(e|s|es)? (à la )?main|handmade|hand[- ]?crafted|hand[- ]made|artisanale?s?\b|artisanaux/i, { fr: "fabrication artisanale", en: "handmade claim" }],
+  // Logistique et après-vente.
+  [/livraison (rapide|gratuite|offerte|express|en \d+|sous \d+|24\s?h|48\s?h|en 24|en 48|le lendemain)|expédi(é|ée|és|ées|tion) (sous|en|dans les) \d+|retours? (gratuits?|offerts?)|free returns?|fast (shipping|delivery)|(ships?|shipped|dispatched) (within|in) \d+|next[- ]day (delivery|shipping)/i, { fr: "conditions de livraison ou de retour", en: "shipping or returns terms" }],
+  [/\d+\s?jours pour (changer d'avis|retourner|vous décider|essayer)|\d+[- ]day (returns?|trial|money)|essai gratuit|free trial/i, { fr: "délai de retour ou d'essai", en: "return or trial period" }],
+  [/au lieu de \d|prix barré|instead of \$?\d|\bwas \$\d|\bsave \d+\s?%|économisez \d/i, { fr: "promotion", en: "promotion" }],
+  // Preuve sociale chiffrée et classements.
+  [/\b\d[\d\s.,]*\+?\s?(clients|parents|familles|utilisateurs|utilisatrices|acheteurs|commandes|customers|families|users|buyers|orders)\b|best[- ]?sellers?|meilleures? ventes?|le (produit )?(le )?plus vendu|best[- ]selling|le meilleur|la meilleure|les meilleur(e)?s|\bthe best\b/i, { fr: "classement ou preuve sociale", en: "ranking or social proof" }],
 ];
 // Entreprises de services : tarifs, rapidité, disponibilité, qualifications et expérience non fournis.
 const RISKY_SERVICES: Risk[] = [
@@ -287,17 +326,101 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
     .join(" ")
     .toLowerCase();
   const issues: { path: string; term: string; label: string }[] = [];
+  // Prix connus (produit et catalogue) : tout autre montant écrit dans un texte de vente est inventé.
+  const prices = p.business === "services" ? null : knownPrices(p);
   const walk = (v: unknown, path: string) => {
     if (typeof v === "string") {
       for (const [re, label] of p.business === "services" ? [...RISKY, ...RISKY_SERVICES] : RISKY) {
         const m = v.match(re);
-        if (m && !allowed.includes(m[0].toLowerCase())) issues.push({ path, term: m[0], label: L(label.fr, label.en) });
+        if (m && !allowed.includes(m[0].toLowerCase().trim()) && !issues.some((x) => x.path === path && x.term.toLowerCase() === m[0].trim().toLowerCase())) issues.push({ path, term: m[0].trim(), label: L(label.fr, label.en) });
+      }
+      if (prices) {
+        for (const m of v.matchAll(PRICE_RE)) {
+          const n = Number((m[1] ?? m[2]).replace(/\s/g, "").replace(",", "."));
+          if (!prices.some((x) => Math.abs(x - n) < 0.005)) issues.push({ path, term: m[0].trim(), label: L("prix non confirmé", "unconfirmed price") });
+        }
       }
     } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
     else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) walk(x, path ? `${path}.${k}` : k);
   };
   walk(content, "");
   return issues;
+}
+
+/** Montant écrit avec une devise (« 29,90 € », « 29 EUR », « $29.90 »). */
+const PRICE_RE = /(?:(\d{1,5}(?:[.,]\d{1,2})?)\s?(?:€|eur\b|euros?\b))|(?:[$£]\s?(\d{1,5}(?:[.,]\d{1,2})?))/gi;
+function knownPrices(p: Project): number[] {
+  const out: number[] = [];
+  const amount = p.product?.price?.amount;
+  if (typeof amount === "number") out.push(amount, amount / 100);
+  for (const c of (p as any).catalog ?? []) if (typeof c?.price === "number") out.push(c.price, c.price / 100);
+  for (const f of p.product?.facts ?? []) if (f.status === "confirmed") for (const m of `${f.value}`.matchAll(PRICE_RE)) out.push(Number((m[1] ?? m[2]).replace(",", ".")));
+  for (const q of p.product?.questions ?? []) if (q.answer) for (const m of q.answer.matchAll(/\d{1,5}(?:[.,]\d{1,2})?/g)) out.push(Number(m[0].replace(",", ".")));
+  return out;
+}
+
+/**
+ * Formules creuses (« révolutionnaire », « de qualité supérieure »…) : elles ne disent rien du produit et
+ * signent un texte générique. Elles ne sont pas fausses, mais un texte d'agence les remplace par un fait concret.
+ */
+const HOLLOW: RegExp[] = [
+  /révolutionnaires?|révolutionne/i,
+  /incroyables?|exceptionnel(le)?s?|extraordinaires?|inégalée?s?|sans égal|hors du commun|époustouflant(e)?s?/i,
+  /(de |d'une )?(qualité (supérieure|premium|exceptionnelle|optimale|irréprochable)|haute qualité|qualité haut de gamme)/i,
+  /\bultimes?\b|\bparfait(e)?s? pour (tous|toutes|chaque)|\bidéal(e)?s? pour (tous|toutes)|le compagnon idéal|l'allié idéal|must-?have|incontournables?/i,
+  /\bmagiques?\b|\binnovant(e)?s?\b|innovation (unique|majeure)|de pointe|dernière génération|nouvelle génération/i,
+  /ne cherchez plus|qui change (tout|la vie)|changer? (votre|ta) vie|le produit qu'il vous faut|à couper le souffle/i,
+  /\brevolutionary\b|game[- ]?chang(er|ing)|\bamazing\b|\bincredible\b|\bunparalleled\b|\bunmatched\b|\bultimate\b|\bexceptional\b|\bextraordinary\b/i,
+  /(premium|superior|top|high|highest|unmatched)[- ]quality|cutting[- ]edge|state[- ]of[- ]the[- ]art|next[- ]gen(eration)?|\bmust[- ]have\b|life[- ]changing|look no further|perfect for every(one|body)|world[- ]class|best[- ]in[- ]class|\binnovative\b|\bmagical\b/i,
+];
+export function lintHollow(content: unknown): { path: string; term: string }[] {
+  const out: { path: string; term: string }[] = [];
+  const walk = (v: unknown, path: string) => {
+    if (typeof v === "string") {
+      for (const re of HOLLOW) {
+        const m = v.match(re);
+        if (m) out.push({ path, term: m[0].trim() });
+      }
+    } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
+    else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) walk(x, path ? `${path}.${k}` : k);
+  };
+  walk(content, "");
+  return out;
+}
+
+/**
+ * Filet de sécurité final : retire chaque phrase qui porte encore une allégation non confirmée (après les
+ * reprises par l'IA). Un champ vidé reçoit l'espace réservé « [À compléter : …] » : rien de faux n'est publié.
+ */
+export function scrubClaims<T>(content: T, p: Project): { content: T; removed: { path: string; term: string; label: string }[] } {
+  const removed: { path: string; term: string; label: string }[] = [];
+  const ph = placeholder(contentLang());
+  const clean = (s: string, path: string): string => {
+    if (!lintClaims(s, p).length) return s;
+    // Découpage en phrases (HTML simple conservé : les balises restent attachées à leur phrase).
+    // Séparateurs conservés (indices impairs) : sauts de ligne et structure HTML intacts.
+    const parts = s.split(/((?<=[.!?…])[ \t]+|(?<=<\/(?:p|li)>)|\n+)/);
+    let out = "";
+    for (let i = 0; i < parts.length; i += 2) {
+      const x = parts[i];
+      const hits = lintClaims(x.replace(/<[^>]+>/g, " "), p);
+      if (hits.length) {
+        removed.push(...hits.map((h) => ({ ...h, path })));
+        // Une balise ouverte ou fermée dans la phrase retirée est gardée (HTML valide).
+        out += (x.match(/<\/?(?:p|ul|ol|li)[^>]*>/g) ?? []).join("");
+      } else out += x;
+      out += parts[i + 1] ?? "";
+    }
+    out = out.replace(/<(p|li)>\s*<\/\1>/g, "").replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+    return out.replace(/<[^>]+>/g, "").trim() ? out : ph;
+  };
+  const walk = (v: unknown, path: string): unknown => {
+    if (typeof v === "string") return clean(v, path);
+    if (Array.isArray(v)) return v.map((x, i) => walk(x, `${path}[${i}]`));
+    if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x, path ? `${path}.${k}` : k)]));
+    return v;
+  };
+  return { content: walk(content, "") as T, removed };
 }
 
 /** Rédaction avec contrôle qualité et reprise ciblée (deux corrections au plus). */
@@ -314,14 +437,46 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
     onStep?.(L("Contrôle qualité des textes", "Quality check of the copy"));
     const qc = await aiQcText({ ...b, usageKey: `${b.usageKey}:qc${round}` }, p, "textes de la boutique", copy);
     const blocking = [
-      ...lint.map((l) => L(`${l.path} : « ${l.term} » (${l.label}) n'est pas confirmé — retire-le ou remplace par « ${placeholder(contentLang())} »`, `${l.path}: "${l.term}" (${l.label}) is not confirmed. Remove it or replace it with "${placeholder(contentLang())}"`)),
+      ...lint.map((l) => L(`${l.path} : « ${l.term} » (${l.label}) n'est pas confirmé. Retire-le ou remplace par « ${placeholder(contentLang())} »`, `${l.path}: "${l.term}" (${l.label}) is not confirmed. Remove it or replace it with "${placeholder(contentLang())}"`)),
       ...qc.issues.filter((i) => i.severity === "bloquant").map((i) => `${i.path} : ${i.problem} → ${i.fix}`),
+      // Qualité d'agence : formules creuses, longueurs, tirets, nom de la marque et du produit.
+      ...copyQuality(copy, p),
     ];
     remaining = blocking;
     if (!blocking.length) break;
     feedback = blocking.join("\n");
   }
-  return { copy: copy!, qc: { rounds, remaining } };
+  // Filet de sécurité : une allégation encore présente après les reprises est retirée, jamais publiée.
+  const scrubbed = scrubClaims(copy!, p);
+  return { copy: scrubbed.content, qc: { rounds, remaining } };
+}
+
+/** Défauts de forme d'un texte de boutique, formulés comme des consignes de correction pour l'IA. */
+export function copyQuality(copy: ShopCopy, p: Project): string[] {
+  const out: string[] = [];
+  for (const h of lintHollow(copy)) out.push(L(`${h.path} : formule creuse « ${h.term} ». Remplace-la par un fait concret du produit.`, `${h.path}: empty phrase "${h.term}". Replace it with a concrete product fact.`));
+  const c = copy as any;
+  const len = (path: string, v: unknown, max: number) => {
+    if (typeof v === "string" && v.length > max) out.push(L(`${path} : ${v.length} caractères, ${max} au plus.`, `${path}: ${v.length} characters, ${max} at most.`));
+  };
+  len("seo.title", c.seo?.title, 70);
+  len("seo.description", c.seo?.description, 160);
+  len("hero.heading", c.hero?.heading, 60);
+  len("cta.button", c.cta?.button, 28);
+  len("product.title", c.product?.title, 80);
+  const dashes: string[] = [];
+  const walk = (v: unknown, path: string) => {
+    if (typeof v === "string") {
+      if (/\s[—–]\s/.test(v)) dashes.push(path);
+    } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
+    else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) walk(x, path ? `${path}.${k}` : k);
+  };
+  walk(copy, "");
+  if (dashes.length) out.push(L(`Tirets cadratins interdits dans les phrases (${dashes.slice(0, 4).join(", ")}) : virgule, deux-points ou point à la place.`, `No em or en dashes in sentences (${dashes.slice(0, 4).join(", ")}): use a comma, colon or period.`));
+  // Nom de produit donné par le client : repris tel quel (pas de nom inventé ou déformé).
+  const name = p.product?.nameStatus === "provided" ? p.product.name?.trim() : "";
+  if (name && typeof c.product?.title === "string" && !c.product.title.toLowerCase().includes(name.toLowerCase())) out.push(L(`product.title : le nom du produit donné par le client (« ${name} ») doit y figurer tel quel.`, `product.title: the product name given by the client ("${name}") must appear as is.`));
+  return out;
 }
 
 // ---------------------------------------------------------------- thème
@@ -580,8 +735,9 @@ export const PostDraftSchema = z.object({
   angle: z.string(),
   title: z.string(),
   caption: z.string(),
-  hashtags: z.array(z.string()).max(10),
-  visual: z.object({ kind: z.enum(["packshot", "scene", "detail", "creative", "video"]), headline: z.string(), subline: z.string(), layout: z.enum(["editorial", "bold", "minimal", "centered", "split"]) }),
+  // Hashtags : sans « # », sans espace, dix au plus (un de trop ne fait pas échouer tout le calendrier).
+  hashtags: z.preprocess((v) => (Array.isArray(v) ? v : []).map((h) => String(h ?? "").replace(/^#+/, "").replace(/\s+/g, "")).filter(Boolean).slice(0, 10), z.array(z.string())),
+  visual: z.object({ kind: z.enum(["packshot", "scene", "detail", "creative", "video"]).catch("creative"), headline: str, subline: str, layout: z.enum(["editorial", "bold", "minimal", "centered", "split"]).catch("editorial") }),
 });
 export type PostDraft = z.infer<typeof PostDraftSchema>;
 
@@ -663,6 +819,42 @@ export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
   );
 }
 
+/** Note minimale d'une image ou d'un plan généré par IA pour être montré ou utilisé (sur 10). */
+export const QC_MIN_SCORE = 7;
+
+/** Note ramenée sur 10 (un modèle qui répond sur 100 ou en texte ne passe pas par erreur). */
+export function qcScore(score: unknown): number {
+  const n = typeof score === "number" ? score : Number(score);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return n > 10 ? (n <= 100 ? n / 10 : 0) : n;
+}
+
+/** Résultat d'un contrôle de fidélité : utilisable seulement si c'est le même produit ET que la note atteint le seuil. */
+export function qcPassed(r: { sameProduct?: unknown; score?: unknown } | null | undefined): boolean {
+  return !!r && r.sameProduct === true && qcScore(r.score) >= QC_MIN_SCORE;
+}
+
+/**
+ * Contrôle d'une image d'ambiance générée sans produit à comparer (entreprise de services) :
+ * texte ou logo inventé, visage reconnaissable, mains ou corps déformés, artefacts, flou.
+ */
+export async function aiQcScene(b: Base, candidate: Buffer) {
+  return llmJson(
+    {
+      task: "quality_control",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().qcScene,
+      images: [{ data: candidate, label: "image générée à contrôler" }],
+      prompt: `Réponds { "ok": true|false, "score": 0-10, "issues": ["…"] }.`,
+      maxTokens: 2000,
+    },
+    z.object({ ok: z.boolean(), score: z.number(), issues: z.array(z.string()) }),
+  );
+}
+
 const PHOTO_KIND = z.enum(["packshot", "situation", "text", "other"]);
 export const PhotoTriageSchema = z.object({
   photos: z.preprocess((v) => v ?? [], z.array(z.object({ index: z.coerce.number().int(), kind: PHOTO_KIND.catch("other") }))),
@@ -736,7 +928,7 @@ export async function aiClassify(b: Base, files: { id: string; name: string; kin
   );
 }
 
-export function brandFromAi(r: BrandAi, logo: Brand["logo"]): { brand: Brand; strategy: Strategy } {
+export function brandFromAi(r: BrandAi, logo: Brand["logo"], fallbackPalette?: Brand["palette"]): { brand: Brand; strategy: Strategy } {
   return {
     brand: {
       name: r.name,
@@ -747,7 +939,7 @@ export function brandFromAi(r: BrandAi, logo: Brand["logo"]): { brand: Brand; st
       audience: r.audience,
       personality: r.personality,
       tone: r.tone,
-      palette: r.palette,
+      palette: r.palette ?? fallbackPalette ?? { primary: "#3A3F4B", secondary: "#E6E2DC", accent: "#B5714A", light: "#F7F5F2", dark: "#16181D" },
       fonts: r.fonts,
       logo,
       story: r.story,

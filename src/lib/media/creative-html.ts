@@ -48,7 +48,25 @@ function fontFaces(families: string[]) {
   return out.join("\n");
 }
 
-function page(t: ProTemplate, f: ProFormat, i: ProInput, productUri: string, logoUri: string | null, wide: boolean) {
+/** Même texte, à la casse, aux accents et à la ponctuation près. */
+const same = (a?: string, b?: string) => {
+  const n = (x?: string) => (x ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return !!n(a) && n(a) === n(b);
+};
+
+/**
+ * Textes sans répétition : la ligne secondaire et les pastilles ne redisent ni la marque ni le titre
+ * (sinon « SOVA · SOVA · SOVA » quand le produit porte le nom de la marque).
+ */
+export function dedupeCreativeText(i: ProInput): ProInput {
+  const subline = i.subline && !same(i.subline, i.brand) && !same(i.subline, i.headline) ? i.subline : undefined;
+  const facts: string[] = [];
+  for (const f of i.facts) if (!same(f, i.brand) && !same(f, i.headline) && !same(f, subline) && !facts.some((x) => same(x, f))) facts.push(f);
+  return { ...i, subline, facts };
+}
+
+function page(t: ProTemplate, f: ProFormat, i0: ProInput, productUri: string, logoUri: string | null, wide: boolean) {
+  const i = dedupeCreativeText(i0);
   const { w, h } = SIZES[f];
   const p = i.palette;
   const deep = isDark(p.primary) ? p.primary : withLightness(p.primary, Math.min(0.42, hsl(p.primary)[2]));

@@ -263,17 +263,35 @@ export async function detailCrops(original: Buffer, cut: Cutout, regions?: { x: 
         { x: bx + bw * 0.1, y: by, w: bw * 0.8, h: bh * 0.38 },
       ];
   const out: Buffer[] = [];
+  // Fenêtre autorisée : le produit et une petite marge. Jamais le reste de la photo (logo du vendeur, texte
+  // publicitaire, autre objet), qui se retrouverait sinon dans un « détail du produit ».
+  const m = Math.max(bw, bh) * 0.05;
+  const win = { l: Math.max(0, bx - m), t: Math.max(0, by - m), r: Math.min(W, bx + bw + m), b: Math.min(H, by + bh + m) };
+  const kept: { left: number; top: number; width: number; height: number }[] = [];
   for (const b of boxes) {
-    // Recadrage au format 4:5 autour de la zone, borné à l'image.
+    // Recadrage au format 4:5 autour de la zone, borné à la fenêtre du produit.
     const cw = Math.max(b.w, b.h * 0.8);
     const ch = cw * 1.25;
     const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-    const left = Math.max(0, Math.round(cx - cw / 2));
-    const top = Math.max(0, Math.round(cy - ch / 2));
-    const width = Math.min(W - left, Math.round(cw));
-    const height = Math.min(H - top, Math.round(ch));
-    if (width < 120 || height < 120) continue;
-    out.push(await sharp(original, { failOn: "none" }).rotate().extract({ left, top, width, height }).resize(1600, 2000, { fit: "cover" }).modulate({ brightness: 1.02 }).sharpen({ sigma: 0.8 }).jpeg({ quality: 90 }).toBuffer());
+    const left = Math.round(Math.max(win.l, cx - cw / 2));
+    const top = Math.round(Math.max(win.t, cy - ch / 2));
+    const width = Math.round(Math.min(win.r, cx + cw / 2) - left);
+    const height = Math.round(Math.min(win.b, cy + ch / 2) - top);
+    // Trop petit pour un détail net (il faudrait l'agrandir plus de ~2,5 fois) : pas de détail flou.
+    if (width < 320 || height < 320) continue;
+    // Deux détails presque identiques (produit large) : un seul suffit.
+    if (kept.some((k) => overlapRatio(k, { left, top, width, height }) > 0.7)) continue;
+    kept.push({ left, top, width, height });
+    // Taille de sortie 4:5, agrandie au plus de 1,25 fois (au-delà, la photo devient floue) et au plus 1600 × 2000.
+    const outW = Math.min(1600, Math.round(Math.min(width, height * 0.8) * 1.25 / 8) * 8);
+    out.push(await sharp(original, { failOn: "none" }).rotate().extract({ left, top, width, height }).resize(outW, Math.round(outW * 1.25), { fit: "cover" }).modulate({ brightness: 1.02 }).sharpen({ sigma: 0.8 }).jpeg({ quality: 90 }).toBuffer());
   }
   return out;
+}
+
+/** Part de la plus petite des deux zones couverte par l'autre (0 à 1). */
+function overlapRatio(a: { left: number; top: number; width: number; height: number }, b: { left: number; top: number; width: number; height: number }) {
+  const w = Math.max(0, Math.min(a.left + a.width, b.left + b.width) - Math.max(a.left, b.left));
+  const h = Math.max(0, Math.min(a.top + a.height, b.top + b.height) - Math.max(a.top, b.top));
+  return (w * h) / Math.max(1, Math.min(a.width * a.height, b.width * b.height));
 }

@@ -23,7 +23,7 @@ import { UserFacingError, type JobContext } from "../jobs";
 import { llmConfigured } from "../ai/llm";
 import { hasAiCredits, withQuotaScope } from "../ai/access";
 import { assertQuota, consumeQuota } from "../quotas";
-import { aiQcImage, aiUgcScript, type UgcScript } from "../ai/tasks";
+import { aiQcImage, aiQcScene, aiUgcScript, qcPassed, qcScore, QC_MIN_SCORE, type UgcScript } from "../ai/tasks";
 import { imageProviderAvailable, ugcFrame, veoClip, falClip, videoProviderAvailable } from "../ai/media-providers";
 import { brandTypo, confirmedFacts, ensureCutouts, palette } from "./images";
 import { FONT_DIR, font } from "../media/fonts";
@@ -324,6 +324,34 @@ async function hasAudio(file: string) {
   const { stdout } = await exec("ffprobe", ["-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", file]);
   return stdout.trim().length > 0;
 }
+/**
+ * Contrôle d'une image générée (ouverture ou image extraite d'un plan) : même produit, non déformé (produits) ;
+ * aucune personne déformée, aucun texte ni logo inventé (services). Note ramenée sur 10.
+ */
+async function ugcCheck(base: { userId: string; projectId: string; jobId?: string | null }, usageKey: string, services: boolean, reference: Buffer, image: Buffer): Promise<{ ok: boolean; score: number; issues: string[] }> {
+  if (services) {
+    const r = await aiQcScene({ ...base, usageKey }, image);
+    const score = r.ok ? qcScore(r.score) : 0;
+    return { ok: r.ok && score >= QC_MIN_SCORE, score, issues: r.issues };
+  }
+  const r = await aiQcImage({ ...base, usageKey }, reference, image);
+  return { ok: qcPassed(r), score: r.sameProduct ? qcScore(r.score) : 0, issues: r.issues };
+}
+
+/** Images du milieu et de la fin d'un plan généré (le produit peut se déformer en cours de plan). */
+async function clipStills(buf: Buffer, dir: string, tag: string): Promise<Buffer[]> {
+  const src = path.join(dir, `${tag}.mp4`);
+  fs.writeFileSync(src, buf);
+  const d = await duration(src);
+  const out: Buffer[] = [];
+  for (const [k, t] of [d * 0.5, Math.max(0, d - 0.3)].entries()) {
+    const f = path.join(dir, `${tag}-${k}.jpg`);
+    await exec("ffmpeg", ["-y", "-loglevel", "error", "-ss", t.toFixed(2), "-i", src, "-frames:v", "1", "-q:v", "3", f]);
+    if (fs.existsSync(f)) out.push(fs.readFileSync(f));
+  }
+  return out;
+}
+
 async function duration(file: string) {
   const { stdout } = await exec("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file]);
   return Number(stdout.trim()) || 0;
@@ -375,6 +403,8 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
   const video = videoProviderAvailable();
   if (!video) throw new UserFacingError(L("Aucun fournisseur vidéo configuré (Google Veo ou fal.ai) : la vidéo UGC ne peut pas être générée.", "No video provider configured (Google Veo or fal.ai): the UGC video can't be generated."));
   if (!imageProviderAvailable()) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.", "No image provider configured (Google Gemini or OpenAI): the person in the video can't be created."));
+  // Personne et produit sont générés par l'IA : sans IA de vision pour les contrôler, rien n'est généré ni payé.
+  if (!llmConfigured()) throw new UserFacingError(L("Le contrôle des images générées n'est pas disponible : la vidéo UGC n'est pas créée, car la fidélité du produit ne pourrait pas être vérifiée.", "Checking generated images isn't available: the UGC video isn't created, because product fidelity couldn't be verified."));
   const script = cleanUgcScript(req.script);
   const services = isServices(project);
   const subject = services ? "service" : "product";
@@ -407,15 +437,14 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       let best: { buf: Buffer; score: number } | null = null;
       for (let attempt = 0; attempt < 2; attempt++) {
         const buf = await ugcFrame({ ...base, usageKey: `${ctx.job.id}:frame:${i}:${attempt}` }, { prompt: framePrompt(script, i, subject), product, persona, aspect: o.format, subject });
-        if (!llmConfigured() || services) {
-          best = { buf, score: 10 };
-          break;
-        }
-        const qc = await aiQcImage({ ...base, usageKey: `${ctx.job.id}:frameqc:${i}:${attempt}` }, product, buf);
-        const score = qc.sameProduct ? qc.score : 0;
-        if (!best || score > best.score) best = { buf, score };
-        if (qc.sameProduct && qc.score >= 7) break;
+        const qc = await ugcCheck(base, `${ctx.job.id}:frameqc:${i}:${attempt}`, services, product, buf);
+        if (!best || qc.score > best.score) best = { buf, score: qc.score };
+        if (qc.ok) break;
       }
+      // Deux essais refusés au contrôle : la vidéo n'est pas montée avec un produit réinventé (ni décomptée).
+      if (best!.score < QC_MIN_SCORE) throw new UserFacingError(services
+        ? L(`Plan ${i + 1} : l'image générée n'a pas passé le contrôle qualité (${best!.score}/10). La vidéo n'est pas créée et ne vous est pas décomptée ; relancez-la ou modifiez le décor.`, `Shot ${i + 1}: the generated image failed the quality check (${best!.score}/10). The video isn't created and isn't counted; try again or change the setting.`)
+        : L(`Plan ${i + 1} : le produit n'a pas pu être reproduit fidèlement (contrôle ${best!.score}/10). La vidéo n'est pas créée et ne vous est pas décomptée ; essayez avec une autre photo du produit, nette et sur fond uni.`, `Shot ${i + 1}: the product couldn't be reproduced faithfully (check ${best!.score}/10). The video isn't created and isn't counted; try another sharp product photo on a plain background.`));
       const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(best!.buf).jpeg({ quality: 92 }).toBuffer(), name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.jpg`, mime: "image/jpeg", role: "ugc-frame", folderKey: "videos.social", origin: "generated", sourceAssetId: sourceId, meta: { recipe: services ? L("Image d'ouverture d'une présentation face caméra : personne et décor générés (ni client, ni professionnel réel)", "Opening frame of an on-camera presentation: generated person and set (neither a customer nor the real professional)") : L("Image d'ouverture d'un plan UGC : personne et décor générés, produit réel en référence", "Opening frame of a UGC shot: generated person and set, real product as reference"), aiGenerated: true, qcScore: best!.score }, status: "review" });
       return { id: a.id, score: best!.score };
     });
@@ -431,9 +460,27 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       const frame = assetData(getAsset(frameIds[i])!);
       const prompt = beatPrompt(script, i, o, withVoice, subject);
       const usage = { ...base, usageKey: `${ctx.job.id}:clip:${i}` };
-      const buf = video === "google"
-        ? await veoClip(usage, { image: frame, prompt, aspect: o.format, people: true }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)))
-        : await falClip(usage, { image: frame, prompt, seconds: 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
+      // Le plan animé est contrôlé (milieu et fin) : un produit qui se déforme en cours de plan est refusé ; un second essai.
+      let buf: Buffer | null = null;
+      const qdir = tmpDir("ugcqc");
+      try {
+        for (let attempt = 0; attempt < 2 && !buf; attempt++) {
+          const u = attempt ? { ...usage, usageKey: `${usage.usageKey}:${attempt}` } : usage;
+          const b = video === "google"
+            ? await veoClip(u, { image: frame, prompt, aspect: o.format, people: true }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)))
+            : await falClip(u, { image: frame, prompt, seconds: 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
+          const stills = await clipStills(b, qdir, `c${attempt}`);
+          let ok = stills.length > 0;
+          for (const [k, st] of stills.entries()) {
+            if (!ok) break;
+            ok = (await ugcCheck(base, `${ctx.job.id}:clipqc:${i}:${attempt}:${k}`, services, product, st)).ok;
+          }
+          if (ok) buf = b;
+        }
+      } finally {
+        fs.rmSync(qdir, { recursive: true, force: true });
+      }
+      if (!buf) throw new UserFacingError(L(`Plan ${i + 1} : le plan animé n'a pas passé le contrôle (produit ou personne déformés en cours de plan). La vidéo n'est pas créée et ne vous est pas décomptée.`, `Shot ${i + 1}: the animated shot failed the check (product or person distorted during the shot). The video isn't created and isn't counted.`));
       const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.social", origin: "generated", sourceAssetId: frameIds[i], meta: { provider: video, recipe: withVoice ? L("Plan UGC généré (image, voix et son)", "Generated UGC shot (picture, voice and sound)") : L("Plan UGC généré (image, sans voix)", "Generated UGC shot (picture, no voice)"), aiGenerated: true, line: script.beats[i].line }, status: "review" });
       return a.id;
     });

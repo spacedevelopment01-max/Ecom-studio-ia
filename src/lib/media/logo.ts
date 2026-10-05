@@ -194,6 +194,12 @@ export function drawSymbol(ctx: SKRSContext2D, kind: SymbolKind, x: number, y: n
   ctx.restore();
 }
 
+/** Signature telle qu'elle s'écrit dans un logo : capitales, sans ponctuation finale ; vide si trop longue. */
+export function logoTagline(tagline: string | undefined, max: number): string {
+  const t = (tagline ?? "").trim().replace(/[\s.。!…]+$/u, "");
+  return t && t.length <= max ? t.toLocaleUpperCase(loc()) : "";
+}
+
 function applyCase(s: string, c: LogoSpec["case"]) {
   if (c === "upper") return s.toLocaleUpperCase(loc());
   if (c === "lower") return s.toLocaleLowerCase(loc());
@@ -261,7 +267,8 @@ export function buildLogo(spec: LogoSpec) {
     const words = name.split(/\s+/).filter(Boolean);
     const lines = name.length > 14 && words.length > 1 ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")] : [name];
     const ms = lines.map((l) => measure(l, fam, wt, nameSize, spec.tracking, spec.italic));
-    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase(loc()) : "";
+    // Signature de l'emblème : sans point final, et omise si elle est trop longue pour rester lisible en petit.
+    const tag = logoTagline(spec.tagline, 34);
     const tagSize = 22;
     const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.26) : null;
     const W = Math.max(ring, ...ms.map((x) => x.width), tm?.width ?? 0) + P * 2;
@@ -344,7 +351,7 @@ export function buildLogo(spec: LogoSpec) {
     const lines = words.length > 1 ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")] : [name];
     const ms = lines.map((l) => measure(l, fam, wt, size, spec.tracking, spec.italic));
     const tagSize = 30;
-    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase(loc()) : "";
+    const tag = logoTagline(spec.tagline, 44);
     const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.24) : null;
     const W = Math.max(...ms.map((m) => m.width), tm?.width ?? 0) + P * 2;
     const lineGap = size * 1.02;

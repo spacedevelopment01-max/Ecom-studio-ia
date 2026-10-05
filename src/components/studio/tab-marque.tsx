@@ -108,9 +108,16 @@ export default function TabMarque() {
               <>{b.generatedBy === "ai" ? t("Proposée par l'IA à partir du produit.", "Proposed by the AI based on the product.") : t("Base proposée automatiquement : à affiner.", "Automatically suggested starting point: refine as needed.")} {t("Les éléments validés sont conservés lors des nouvelles propositions.", "Approved elements are kept in new proposals.")}</>
             )}
           </SectionTitle>
+          {(b.checks?.length ?? 0) > 0 && (
+            <div className="mb-5 rounded-xl border border-line bg-paper-2 p-3 text-sm" role="note">
+              <p className="font-medium">{t("À vérifier par vous", "For you to check")}</p>
+              <ul className="mt-1 list-disc pl-5 text-muted">{b.checks!.map((c) => <li key={c}>{c}</li>)}</ul>
+            </div>
+          )}
           <div className="grid gap-5">
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between"><label htmlFor="bname" className="text-sm font-medium">{t("Nom de marque", "Brand name")}</label>{V("name")}</div>
+              {b.nameStatus === "proposed" && site?.status !== "read" && <p className="text-xs text-muted">{t("Nom proposé : vérifiez qu'il est libre (INPI, EUIPO, nom de domaine, réseaux sociaux) avant de l'adopter.", "Suggested name: check that it's available (trademark offices, domain name, social handles) before adopting it.")}</p>}
               <Input id="bname" value={b.name} onChange={(e) => set({ name: e.target.value })} className="font-display text-xl" />
               {b.alternatives.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">

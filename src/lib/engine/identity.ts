@@ -9,7 +9,7 @@ import { currentTheme, loadProject, saveBrand, saveThemeVersion, type Project } 
 import { logoPng, logoSet, type LogoSpec, type SymbolKind } from "../media/logo";
 import { canvasFamily, CANVAS_FONTS } from "../media/fonts";
 import { directionById } from "../theme/directions";
-import { isDark, withLightness } from "../color";
+import { contrast, hsl, isDark, withLightness } from "../color";
 import type { JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { serviceSymbol, serviceTaglines } from "./services-text";
@@ -90,11 +90,13 @@ export function defaultProposal(direction: string): LogoProposal["key"] {
   return "symbole";
 }
 
-function logoColors(p: Project) {
+export function logoColors(p: Pick<Project, "brand">) {
   const pal = p.brand!.palette;
   const color = isDark(pal.dark) ? pal.dark : withLightness(pal.dark, 0.12);
-  // Accent du symbole : la couleur principale si elle reste lisible sur fond clair.
-  const accent = isDark(pal.primary) ? pal.primary : color;
+  // Accent du symbole : la couleur principale si elle est franche et lisible sur fond clair ; une principale
+  // neutre (graphite d'un produit gris) cède la place à l'accent de la palette, s'il reste lisible sur blanc.
+  const vivid = (hex: string) => hsl(hex)[1] * (1 - Math.abs(2 * hsl(hex)[2] - 1)) >= 0.12;
+  const accent = isDark(pal.primary) && vivid(pal.primary) ? pal.primary : vivid(pal.accent) && contrast(pal.accent, "#FFFFFF") >= 3 ? pal.accent : isDark(pal.primary) ? pal.primary : color;
   return { color, accent };
 }
 
@@ -186,14 +188,14 @@ const SECTOR_LINES_FR: Record<string, string[]> = {
   hightech: ["La technologie, sans détour.", "Pensé pour être utilisé.", "Simple à prendre en main."],
   sport: ["Fait pour bouger.", "Le mouvement, au quotidien.", "Équipé pour sortir."],
   alimentation: ["Le goût des bonnes choses.", "À savourer, tout simplement.", "Un moment pour soi."],
-  enfants: ["Grandir en douceur.", "Pour les petits, avec soin."],
+  enfants: ["Pour les petits, avec soin.", "Les petits moments comptent."],
   animaux: ["Pour nos compagnons.", "Le quotidien de votre animal, en mieux.", "Pensé pour eux, choisi par vous."],
   artisanat: ["Fait avec soin.", "Le geste et la matière."],
 };
 const KEYWORD_LINES_FR: [RegExp, string[]][] = [
   [/th[ée] glac|boisson|canette|soda|limonade/i, ["La fraîcheur en canette.", "Un moment de fraîcheur, à toute heure."]],
   [/\bth[ée]s?\b|infusion|matcha/i, ["Le thé, prenez le temps.", "Une tasse, un moment."]],
-  [/caf[ée]|espresso/i, ["Le café comme à la maison… parce que c'est la maison.", "Votre café, votre rituel."]],
+  [/caf[ée]|espresso/i, ["Le café, à votre façon.", "Votre café, votre rituel."]],
   [/v[êe]tement|t-?shirt|sweat|hoodie|robe/i, ["Des basiques bien faits.", "L'essentiel du vestiaire."]],
 ];
 
@@ -205,7 +207,7 @@ const SECTOR_LINES_EN: Record<string, string[]> = {
   hightech: ["Tech, without the fuss.", "Built to be used.", "Easy from day one."],
   sport: ["Made to move.", "Movement, every day.", "Geared up to get out."],
   alimentation: ["A taste for good things.", "Simply savor it.", "A moment for yourself."],
-  enfants: ["Growing up gently.", "For little ones, with care."],
+  enfants: ["For little ones, with care.", "Little moments matter."],
   animaux: ["For our companions.", "Your pet's everyday, made better.", "Made for them, chosen by you."],
   artisanat: ["Made with care.", "Craft and material."],
 };

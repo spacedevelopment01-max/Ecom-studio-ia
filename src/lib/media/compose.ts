@@ -153,7 +153,16 @@ function arch(ctx: SKRSContext2D, cx: number, bottom: number, w: number, h: numb
 
 // ---------------------------------------------------------------- produit
 
-export type ProductPlacement = { cx: number; baseY: number; height: number; maxWidth?: number };
+export type ProductPlacement = { cx: number; baseY: number; height: number; maxWidth?: number; maxUpscale?: number };
+
+/**
+ * Agrandissement maximal du détourage : au-delà, le produit devient flou ou pixelisé. On préfère un produit
+ * un peu plus petit dans le cadre, mais net (le détourage garde la résolution de la photo d'origine).
+ */
+export const MAX_PRODUCT_UPSCALE = 1.6;
+
+/** Agrandissement réel du détourage pour une hauteur d'affichage donnée (> 1 : agrandi). */
+export const productUpscale = (product: { width: number; height: number }, drawHeight: number) => drawHeight / Math.max(1, product.height);
 
 /**
  * Dessine le produit avec ombre de contact et ombre portée. Retourne le
@@ -165,6 +174,12 @@ export function drawProduct(ctx: SKRSContext2D, product: Image, p: ProductPlacem
   if (p.maxWidth && pw > p.maxWidth) {
     pw = p.maxWidth;
     ph = (product.height / product.width) * pw;
+  }
+  // Jamais agrandi au point d'être flou : la taille est plafonnée par la résolution du détourage.
+  const maxUp = p.maxUpscale ?? MAX_PRODUCT_UPSCALE;
+  if (ph > product.height * maxUp) {
+    ph = product.height * maxUp;
+    pw = (product.width / product.height) * ph;
   }
   const x = p.cx - pw / 2;
   const y = p.baseY - ph;
@@ -455,7 +470,21 @@ export const SCENE_STYLES: { id: SceneStyle; label: string; en: string }[] = [
   { id: "everyday", label: "Vie quotidienne", en: "Everyday life" },
 ];
 
-export type SceneInput = { product: Image; palette: Palette; style: SceneStyle; format: Format; productScale?: number; offsetX?: number; seed?: number; background?: Image | null; baseYRatio?: number };
+export type SceneInput = {
+  product: Image;
+  palette: Palette;
+  style: SceneStyle;
+  format: Format;
+  productScale?: number;
+  offsetX?: number;
+  seed?: number;
+  background?: Image | null;
+  baseYRatio?: number;
+  /** Largeur maximale du produit (zone libre à côté d'un texte). */
+  maxProductWidth?: number;
+  /** Côté d'où vient la lumière du décor généré (ombre portée du bon côté). */
+  lightFrom?: "left" | "right";
+};
 
 /** Mise en scène de studio (sans texte). */
 export async function renderScene(s: SceneInput): Promise<{ png: Buffer; productBox: { x: number; y: number; w: number; h: number } }> {
@@ -471,7 +500,8 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
   let shadow: "soft" | "hard" | "natural" = "soft";
   let shadowColor = "rgba(20,14,10,";
   let everydayShade: Canvas | null = null;
-  const ph = h / w > 1.6 ? h * scale : Math.min(h * scale, w * scale * 1.15);
+  // Hauteur plafonnée par la résolution du détourage (décor — arche, podium — dimensionné sur le produit net).
+  const ph = Math.min(h / w > 1.6 ? h * scale : Math.min(h * scale, w * scale * 1.15), s.product.height * MAX_PRODUCT_UPSCALE);
 
   if (s.background) {
     // Décor généré (fournisseur d'image) : le produit réel est posé dessus.
@@ -563,7 +593,11 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
     }
   }
   if (s.baseYRatio) baseY = h * s.baseYRatio;
-  const box = drawProduct(ctx, s.product, { cx, baseY, height: ph, maxWidth: w * 0.8 }, { shadow, shadowColor, reflection: s.style === "spotlight" });
+  // Le produit tient entièrement dans le cadre (même décalé sur le côté) avec une marge : jamais coupé.
+  const room = 2 * Math.min(cx, w - cx) - w * 0.08;
+  const maxWidth = Math.max(w * 0.2, Math.min(w * 0.8, room, s.maxProductWidth ?? Infinity));
+  // Décor généré : ni reflet miroir (un lit, une table en bois ne reflètent pas), ombre selon la lumière du décor.
+  const box = drawProduct(ctx, s.product, { cx, baseY, height: ph, maxWidth }, { shadow, shadowColor, reflection: s.style === "spotlight" && !s.background, lightFrom: s.lightFrom });
   if (everydayShade) lightProduct(ctx, box, s.product, everydayShade, w, h);
   if (!s.background) grain(ctx, w, h, 0.03, s.seed ?? 3);
   return { png: await c.encode("png"), productBox: box };
@@ -615,10 +649,12 @@ export async function renderCreative(input: CreativeInput): Promise<{ jpg: Buffe
   const textOnLeft = input.layout === "editorial" || input.layout === "split";
   const sceneStyle: SceneStyle = input.scene ?? (input.layout === "bold" ? "color" : input.layout === "minimal" ? "studio" : input.layout === "split" ? "split" : "arch");
   const productScale = isStory ? 0.46 : input.layout === "centered" ? 0.5 : 0.6;
-  const offsetX = textOnLeft && !isStory ? 0.21 : 0;
+  // Texte à gauche (jusqu'à 53 % de la largeur) : le produit occupe la zone libre de droite, sans chevaucher le texte.
+  const sideZone = textOnLeft && !isStory ? { from: 0.56, to: 0.95 } : null;
+  const offsetX = sideZone ? (sideZone.from + sideZone.to) / 2 - 0.5 : 0;
   // En 9:16, le produit se pose au-dessus de la zone du bouton et de l'interface.
   const baseYRatio = isStory ? (h - safe.bottom - Math.max(w * 0.028, 26) * 4.2) / h : undefined;
-  const scene = await renderScene({ product: input.product, palette: pal, style: sceneStyle, format: { ...input.format }, productScale, offsetX, seed: input.seed, background: input.background, baseYRatio });
+  const scene = await renderScene({ product: input.product, palette: pal, style: sceneStyle, format: { ...input.format }, productScale, offsetX, seed: input.seed, background: input.background, baseYRatio, maxProductWidth: sideZone ? w * (sideZone.to - sideZone.from) : undefined });
   const sceneImg = await loadImage(scene.png);
   ctx.drawImage(sceneImg as any, 0, 0);
 

@@ -9,12 +9,13 @@ import { loadImage } from "@napi-rs/canvas";
 import { all, id, json, now, one, run, tx } from "../db";
 import { addUsage, assetData, saveAsset, type Asset } from "../library";
 import { loadProject, notify, type Project } from "../projects";
-import { aiSocialPlan, type PostDraft } from "../ai/tasks";
+import { aiRewritePost, aiSocialPlan, lintClaims, lintHollow, scrubClaims, type PostDraft } from "../ai/tasks";
+import { placeholder } from "../ai/prompts";
 import { llmConfigured } from "../ai/llm";
 import { FORMATS, renderCreative, type FormatId } from "../media/compose";
 import { brandTypo, ensureCutouts, latestAsset, palette, assetsByRole } from "./images";
 import { enqueue, type JobContext } from "../jobs";
-import { C, L, uiLang } from "../i18n-server";
+import { C, L, contentLang, uiLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
 
 /** Format vidéo accepté par chaque réseau (mêmes valeurs que les formats proposés dans l'éditeur de publication). */
@@ -72,7 +73,7 @@ export function localPlan(p: Project, params: PlanParams): PostDraft[] {
       const caption = a.ask
         ? C(`Comment utiliseriez-vous ${name} au quotidien ? Dites-le-nous en commentaire.`, `How would you use ${name} every day? Tell us in the comments.`)
         : fact
-          ? C(`${name} — ${fact.label.toLowerCase()} : ${fact.value}.`, `${name} — ${fact.label.toLowerCase()}: ${fact.value}.`) + more
+          ? C(`${name}, ${fact.label.toLowerCase()} : ${fact.value.replace(/[.!]+$/, "")}.`, `${name}, ${fact.label.toLowerCase()}: ${fact.value.replace(/[.!]+$/, "")}.`) + more
           : C(`${name}, vu de près.`, `${name}, up close.`) + more;
       posts.push({
         day,
@@ -83,7 +84,7 @@ export function localPlan(p: Project, params: PlanParams): PostDraft[] {
         title: a.kind === "packshot" ? name : C(`${name} : ${angle.toLowerCase()}`, `${name}: ${angle.toLowerCase()}`),
         caption,
         hashtags: [p.brand?.name, p.product.category, p.product.name].filter(Boolean).map((t) => String(t).replace(/\s+/g, "")).slice(0, 4),
-        visual: { kind: wantsVideo ? "video" : (a.kind as any), headline: (fact?.value ?? p.brand?.tagline ?? name).slice(0, 40), subline: "", layout: a.layout as any },
+        visual: { kind: wantsVideo ? "video" : (a.kind as any), headline: shortLine(fact && fact.value.length <= 40 ? fact.value : p.brand?.tagline || name, 40), subline: "", layout: a.layout as any },
       });
       k++;
     }
@@ -212,6 +213,62 @@ function localServicePlan(p: Project, params: PlanParams): PostDraft[] {
   return posts;
 }
 
+/**
+ * Contrôle des publications rédigées par l'IA : allégations non confirmées (livraison, sécurité, santé, avis…),
+ * formules creuses et longueurs. Une publication fautive est réécrite une fois ; si le défaut persiste, elle garde
+ * la mention des points à vérifier et ne peut pas partir sans validation humaine.
+ */
+export async function checkPostDrafts(
+  drafts: PostDraft[],
+  p: Project,
+  rewrite: (post: PostDraft, issues: string[]) => Promise<{ title: string; caption: string; hashtags: string[] }>,
+): Promise<(PostDraft & { claims?: string[] })[]> {
+  const issuesOf = (d: Pick<PostDraft, "title" | "caption" | "visual">) => [
+    ...lintClaims({ title: d.title, caption: d.caption, headline: d.visual.headline, subline: d.visual.subline }, p).map((c) => L(`« ${c.term} » (${c.label})`, `"${c.term}" (${c.label})`)),
+    ...lintHollow({ title: d.title, caption: d.caption, headline: d.visual.headline }).map((h) => L(`formule creuse « ${h.term} »`, `empty phrase "${h.term}"`)),
+  ];
+  const out: (PostDraft & { claims?: string[] })[] = [];
+  let rewrites = 0;
+  for (const d of drafts) {
+    // Titre de visuel lisible sur téléphone : 6 mots au plus, coupé à un mot entier.
+    const visual = { ...d.visual, headline: shortLine(d.visual.headline, 40), subline: shortLine(d.visual.subline, 60) };
+    let post: PostDraft = { ...d, visual };
+    let issues = issuesOf(post);
+    // Au plus 12 réécritures par calendrier (coût maîtrisé) ; au-delà, la publication reste signalée.
+    if (issues.length && rewrites < 12) {
+      rewrites++;
+      try {
+        const r = await rewrite(post, issues);
+        const next = { ...post, title: r.title, caption: r.caption, hashtags: r.hashtags.map((h) => h.replace(/^#+/, "").replace(/\s+/g, "")).filter(Boolean).slice(0, 10) };
+        const left = issuesOf(next);
+        if (left.length < issues.length) {
+          post = next;
+          issues = left;
+        }
+      } catch {
+        // Réécriture impossible : la publication reste signalée.
+      }
+    }
+    // Les allégations encore présentes sont retirées du texte ; la publication garde la mention « à vérifier »
+    // et attend une validation humaine (une formule creuse seule ne bloque pas la programmation).
+    const scrub = scrubClaims({ title: post.title, caption: post.caption, headline: post.visual.headline, subline: post.visual.subline }, p);
+    if (scrub.removed.length) {
+      const c = scrub.content;
+      post = { ...post, title: c.title, caption: c.caption, visual: { ...post.visual, headline: c.headline, subline: c.subline } };
+      out.push({ ...post, claims: [...new Set(scrub.removed.map((r) => L(`« ${r.term} » (${r.label})`, `"${r.term}" (${r.label})`)))].slice(0, 6) });
+    } else out.push(post);
+  }
+  return out;
+}
+
+/** Ligne courte coupée à un mot entier (jamais au milieu d'un mot). */
+export function shortLine(s: string, max: number): string {
+  const t = (s ?? "").replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max + 1).replace(/\s+\S*$/, "").replace(/[\s,;:.!?·–—-]+$/, "");
+  return cut || t.slice(0, max);
+}
+
 export function scheduleTime(params: PlanParams, day: number, slot: number): number {
   const [y, m, d] = params.startDate.split("-").map(Number);
   const date = new Date(Date.UTC(y, m - 1, d + day));
@@ -224,11 +281,11 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
   const p = loadProject(projectId);
   const planId = ctx.payload.planId as string;
   ctx.progress(0.05, L("Stratégie éditoriale", "Editorial strategy"));
-  const drafts = await ctx.step("drafts", async () => {
+  const drafts = await ctx.step("drafts", async (): Promise<(PostDraft & { claims?: string[] })[]> => {
     if (llmConfigured()) {
       const r = await aiSocialPlan({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:plan` }, p, { days: params.days, perDay: params.perDay, networks: params.networks.map((n) => n.network), goals: params.goals, tone: params.tone, mix: params.mix, link: params.link });
       run("UPDATE content_plans SET strategy = ? WHERE id = ?", r.strategy, planId);
-      return r.posts;
+      return checkPostDrafts(r.posts, p, (post, issues) => aiRewritePost({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:fix:${post.day}:${post.slot}` }, p, post, L(`Retire ces allégations non confirmées (ou remplace-les par « ${placeholder(contentLang())} ») : ${issues.join(" ; ")}. Garde l'angle et le ton.`, `Remove these unconfirmed claims (or replace them with "${placeholder(contentLang())}"): ${issues.join("; ")}. Keep the angle and tone.`)));
     }
     run("UPDATE content_plans SET strategy = ? WHERE id = ?", L("Plan préparé en version simplifiée : angles variés à partir des informations confirmées. Une stratégie rédigée sur mesure sera proposée dès que l'IA sera connectée.", "Plan prepared in a simplified version: varied angles based on confirmed information. A custom-written strategy will be offered as soon as AI is connected."), planId);
     return localPlan(p, params);
@@ -266,11 +323,12 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
           params.link ?? null,
           d.angle,
           "[]",
-          JSON.stringify(d.visual),
+          JSON.stringify(d.claims?.length ? { ...d.visual, claims: d.claims } : d.visual),
           key,
           now(),
           now(),
         );
+        if (d.claims?.length) run("UPDATE posts SET error = ? WHERE id = ?", L(`À vérifier avant publication : ${d.claims.join(", ")}`, `Check before publishing: ${d.claims.join(", ")}`), pid);
         ids.push(pid);
       }
     });
@@ -305,7 +363,9 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
       mediaIds = [a.id];
     }
     for (const m of mediaIds) addUsage(m, "post", postId, `${fmt.label} — ${new Date(post.scheduled_at).toLocaleDateString(intlLocale(uiLang()))}`);
-    const status = !mediaIds.length && post.network !== "facebook" ? "draft" : decideStatus(p, post.network, post.connection_id, params.approval, mediaIds);
+    // Une publication signalée par le contrôle des allégations n'est jamais programmée automatiquement.
+    const flagged = !!json<{ claims?: string[] }>(post.brief, {}).claims?.length;
+    const status = !mediaIds.length && post.network !== "facebook" ? "draft" : flagged ? "review" : decideStatus(p, post.network, post.connection_id, params.approval, mediaIds);
     run("UPDATE posts SET media = ?, status = ?, auto_approved = ?, approved_at = CASE WHEN ? = 'scheduled' THEN ? ELSE approved_at END, updated_at = ? WHERE id = ?", JSON.stringify(mediaIds), status, status === "scheduled" ? 1 : 0, status, now(), now(), postId);
   }
   if (needVideo) {

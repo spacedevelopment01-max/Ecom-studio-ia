@@ -13,7 +13,7 @@ import path from "node:path";
 import { createCanvas, loadImage, Path2D, type Image, type SKRSContext2D, type Canvas } from "@napi-rs/canvas";
 import { ensureContrast, hsl, isDark, mix, onColor, withLightness } from "../color";
 import { font, ensureFonts } from "./fonts";
-import { wrapLines } from "./compose";
+import { MAX_PRODUCT_UPSCALE, wrapLines } from "./compose";
 import type { Palette, Typo } from "./compose";
 import { contentLang, L } from "../i18n-server";
 import { intlLocale } from "../i18n";
@@ -251,10 +251,48 @@ function prepare(spec: VideoSpec, a: VideoAssets): Prepared {
   };
   // Sans produit (services) : calque transparent, jamais dessiné de façon visible.
   const product = a.product ?? (createCanvas(4, 4) as unknown as Image);
-  const ph = Math.min(H * (isTall ? 0.5 : 0.62), W * 0.9 * (product.height / product.width));
+  // Jamais agrandi au point d'être flou (résolution du détourage), ni plus large que l'écran.
+  const ph = Math.min(H * (isTall ? 0.5 : 0.62), W * 0.9 * (product.height / product.width), a.product ? a.product.height * MAX_PRODUCT_UPSCALE : Infinity);
   const big = productLayer(product, ph, a.product ? "rgba(20,14,10," : "rgba(0,0,0,");
   const bigSweep = sweepLayer(product, big.pw, big.height);
   return { W, H, safe, pal, big, bigSweep, ...backgrounds(W, H, pal) };
+}
+
+/**
+ * Photo plein cadre. Si le « remplissage » obligerait à trop agrandir la photo (flou, pixels) ou à en couper une
+ * grande part (photo 4:5 dans un cadre 16:9 : produit tronqué), la photo est montrée entière sur un fond
+ * flouté tiré d'elle-même, comme dans les montages professionnels.
+ */
+export function photoFit(im: { width: number; height: number }, W: number, H: number, zoom = 1): { mode: "cover" | "contain"; r: number } {
+  const cover = Math.max(W / im.width, H / im.height) * zoom;
+  const kept = (Math.min(W, im.width * cover) * Math.min(H, im.height * cover)) / (im.width * cover * im.height * cover);
+  if (cover <= 1.5 && kept >= 0.6) return { mode: "cover", r: cover };
+  return { mode: "contain", r: Math.min(W / im.width, H / im.height, 1.5) * Math.min(zoom, 1.06) };
+}
+
+const blurCache = new WeakMap<object, Canvas>();
+function drawPhoto(ctx: Ctx, im: Image, W: number, H: number, zoom: number, dx = 0, dy = 0) {
+  const f = photoFit(im, W, H, zoom);
+  if (f.mode === "contain") {
+    let bg = blurCache.get(im);
+    if (!bg) {
+      const small = layer(Math.max(1, Math.round(W / 8)), Math.max(1, Math.round(H / 8)));
+      const r0 = Math.max(small.c.width / im.width, small.c.height / im.height);
+      small.ctx.drawImage(im as any, (small.c.width - im.width * r0) / 2, (small.c.height - im.height * r0) / 2, im.width * r0, im.height * r0);
+      const big = layer(W, H);
+      big.ctx.filter = `blur(${Math.round(Math.min(W, H) * 0.03)}px)`;
+      big.ctx.drawImage(small.c as any, -W * 0.05, -H * 0.05, W * 1.1, H * 1.1);
+      big.ctx.filter = "none";
+      big.ctx.fillStyle = "rgba(0,0,0,0.28)";
+      big.ctx.fillRect(0, 0, W, H);
+      bg = big.c;
+      blurCache.set(im, bg);
+    }
+    ctx.drawImage(bg as any, 0, 0);
+    ctx.drawImage(im as any, (W - im.width * f.r) / 2, (H - im.height * f.r) / 2, im.width * f.r, im.height * f.r);
+    return;
+  }
+  ctx.drawImage(im as any, (W - im.width * f.r) / 2 + dx, (H - im.height * f.r) / 2 + dy, im.width * f.r, im.height * f.r);
 }
 
 function textColorFor(bg: string) {
@@ -296,9 +334,18 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.drawImage(P.bgLight as any, 0, 0);
       // Arche de couleur qui se lève derrière le produit.
       const archP = easeOut(seg(local, 0, 0.9));
-      const aw = Math.min(W * 0.7, P.big.pw * 1.6);
-      const ah = P.big.height * 1.25 * archP;
       const baseY = H - safe.bottom - H * 0.04;
+      // L'arche reste sous le titre (jamais de texte posé à cheval sur l'arche).
+      let titleBottom = safe.top * 0.6;
+      if (scene.headline) {
+        const hs = Math.round(headSize * 0.82);
+        ctx.font = font(typo.heading, headW, hs);
+        titleBottom = safe.top + wrapLines(ctx, typo.uppercase ? upper(scene.headline) : scene.headline, W - safe.side * 2).length * hs * 1.08 + hs * 0.6;
+      }
+      // Produit réduit si besoin pour tenir entre le titre et le sol (arche comprise).
+      const fit = Math.min(1, (baseY - titleBottom) / (P.big.height * 1.08));
+      const aw = Math.min(W * 0.7, P.big.pw * 1.6) * fit;
+      const ah = Math.min(P.big.height * 1.25, Math.max(P.big.height * 1.04, baseY - titleBottom)) * fit * archP;
       ctx.fillStyle = mix(pal.brand, pal.bg, 0.55);
       ctx.beginPath();
       ctx.moveTo(W / 2 - aw / 2, baseY);
@@ -309,7 +356,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.fill();
       const motion = scene.motion ?? "rise";
       const p = motion === "zoom" ? easeOut(seg(local, 0.15, 1.1)) : easeOutBack(seg(local, 0.2, 1.0));
-      const scale = motion === "zoom" ? 0.82 + 0.18 * p : 1;
+      const scale = (motion === "zoom" ? 0.82 + 0.18 * p : 1) * fit;
       const dy = motion === "rise" ? (1 - p) * H * 0.25 : 0;
       const dx = motion === "slide" ? (1 - p) * W * 0.6 : 0;
       const L = P.big;
@@ -321,7 +368,14 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.drawImage(L.canvas as any, -L.canvas.width / 2, -L.baseOffset);
       ctx.restore();
       const sweepT = seg(local, 1.0, 1.2);
-      if (sweepT > 0 && sweepT < 1) drawSweep(ctx, P.bigSweep, W / 2 + dx - L.pw / 2 * scale, baseY + dy + drift - L.height * scale, sweepT);
+      if (sweepT > 0 && sweepT < 1) {
+        // Reflet calé sur le produit tel qu'il est affiché (même échelle).
+        ctx.save();
+        ctx.translate(W / 2 + dx - (L.pw / 2) * scale, baseY + dy + drift - L.height * scale);
+        ctx.scale(scale, scale);
+        drawSweep(ctx, P.bigSweep, 0, 0, sweepT);
+        ctx.restore();
+      }
       if (scene.headline) {
         const color = pal.text;
         kinetic(ctx, scene.headline, { x: W / 2, y: safe.top, maxW: W - safe.side * 2, size: Math.round(headSize * 0.82), family: typo.heading, weight: headW, color, t: local - 0.5, align: "center", uppercase: typo.uppercase });
@@ -332,8 +386,11 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.drawImage(P.bgLight as any, 0, 0);
       const L = P.big;
       const wide = W > H;
-      const pScale = wide ? 0.95 : 1;
-      const px = wide ? W * 0.3 : W * 0.34;
+      const labelX = wide ? W * 0.55 : W * 0.58;
+      // Le produit tient dans la zone à gauche des légendes (un produit large n'est ni coupé ni sous le texte).
+      const zoneW = labelX - W * 0.04 - safe.side * 0.5;
+      const pScale = Math.min(wide ? 0.95 : 1, zoneW / L.pw);
+      const px = safe.side * 0.5 + zoneW / 2;
       const baseY = H - safe.bottom - H * 0.03;
       ctx.save();
       ctx.translate(px, baseY);
@@ -343,7 +400,6 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       const pw = L.pw * pScale, ph = L.height * pScale;
       if (scene.heading) kinetic(ctx, scene.heading, { x: safe.side, y: safe.top, maxW: W - safe.side * 2, size: Math.round(headSize * 0.7), family: typo.heading, weight: headW, color: pal.text, t: local, uppercase: typo.uppercase });
       const items = scene.items.slice(0, 3);
-      const labelX = wide ? W * 0.55 : W * 0.58;
       const labelW = W - labelX - safe.side;
       items.forEach((item, i) => {
         const start = 0.4 + i * 0.55;
@@ -377,9 +433,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       const im = a.images[scene.image] ?? a.images[0];
       if (im) {
         const z = scene.kind === "detail" ? 1.16 - 0.12 * easeInOut(progress) : 1.04 + 0.08 * easeInOut(progress);
-        const r = Math.max(W / im.width, H / im.height) * z;
-        const dx = (W - im.width * r) / 2 + (scene.kind === "scene" ? (progress - 0.5) * W * 0.04 : 0);
-        ctx.drawImage(im as any, dx, (H - im.height * r) / 2, im.width * r, im.height * r);
+        drawPhoto(ctx, im, W, H, z, scene.kind === "scene" ? (progress - 0.5) * W * 0.04 : 0);
       } else ctx.drawImage(P.bgLight as any, 0, 0);
       if (scene.caption) {
         const g = ctx.createLinearGradient(0, H * 0.55, 0, H);
@@ -405,9 +459,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
     case "hook": {
       const im = a.images[scene.image] ?? a.images[0];
       if (im) {
-        const z = 1.14 - 0.1 * easeOut(progress);
-        const r = Math.max(W / im.width, H / im.height) * z;
-        ctx.drawImage(im as any, (W - im.width * r) / 2, (H - im.height * r) / 2 - (1 - progress) * H * 0.015, im.width * r, im.height * r);
+        drawPhoto(ctx, im, W, H, 1.14 - 0.1 * easeOut(progress), 0, -(1 - progress) * H * 0.015);
       } else ctx.drawImage(P.bgDark as any, 0, 0);
       const g = ctx.createLinearGradient(0, H * 0.45, 0, H);
       g.addColorStop(0, "rgba(0,0,0,0)");
@@ -517,13 +569,16 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.font = font(typo.heading, headW, size);
       const n = wrapLines(ctx, typo.uppercase ? upper(it) : it, W - safe.side * 2).length;
       kinetic(ctx, it, { x: W / 2, y: H / 2 - (n * size * 1.08) / 2 - size * 0.1, maxW: W - safe.side * 2, size, family: typo.heading, weight: headW, color, t: local - i * per - 0.05, align: "center", uppercase: typo.uppercase });
-      ctx.globalAlpha = 0.7;
-      ctx.font = font(typo.body, 600, Math.round(bodySize * 0.75));
-      ctx.fillStyle = color;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillText(`${String(i + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`, W / 2, H - safe.bottom);
-      ctx.globalAlpha = 1;
+      // Compteur « 01 / 03 » seulement s'il y a plusieurs phrases (« 01 / 01 » n'a pas de sens).
+      if (items.length > 1) {
+        ctx.globalAlpha = 0.7;
+        ctx.font = font(typo.body, 600, Math.round(bodySize * 0.75));
+        ctx.fillStyle = color;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(`${String(i + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`, W / 2, H - safe.bottom);
+        ctx.globalAlpha = 1;
+      }
       break;
     }
     case "list": {

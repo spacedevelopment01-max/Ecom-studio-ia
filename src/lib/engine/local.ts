@@ -294,10 +294,34 @@ export function mergeServiceProfile(user: ServiceProfile, found: Partial<Service
   };
 }
 
-/** Palette de marque dérivée des couleurs mesurées du produit. */
-export function paletteFromColors(colors: { hex: string; share: number }[]) {
+/** Teinte d'accent par secteur, pour un produit sans couleur (gris, noir, blanc, métal). */
+const NEUTRAL_ACCENT_HUE: Record<string, number> = { hightech: 212, sport: 18, maison: 24, beaute: 340, mode: 8, bijoux: 42, alimentation: 140, enfants: 200, animaux: 32, artisanat: 28 };
+
+/** Saturation perçue (chroma 0 à 1) : stable pour les gris, contrairement à la saturation HSL des tons très clairs ou très sombres. */
+const chroma = (hex: string) => {
+  const v = hex.replace("#", "");
+  const c = [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) / 255);
+  return Math.max(...c) - Math.min(...c);
+};
+
+/**
+ * Palette de marque dérivée des couleurs mesurées du produit.
+ * Produit sans couleur (gris, noir, métal) : palette neutre graphite et un seul accent propre au secteur, plutôt
+ * qu'une teinte inventée à partir du reflet bleuté d'un gris. Rose pastel : la couleur principale reste un rose
+ * profond (framboise) au lieu de virer au brun brique.
+ */
+export function paletteFromColors(colors: { hex: string; share: number }[], sector?: string | null) {
   const vivid = [...colors].sort((a, b) => hsl(b.hex)[1] * (0.4 + b.share) - hsl(a.hex)[1] * (0.4 + a.share))[0]?.hex ?? "#6B5B4B";
-  const [h, s] = hsl(vivid);
+  if (colors.length && Math.max(...colors.map((c) => chroma(c.hex))) < 0.08) {
+    const h0 = hsl(vivid)[0];
+    const ah = NEUTRAL_ACCENT_HUE[sector ?? ""] ?? 212;
+    return { primary: hslToHex(h0, 0.08, 0.22), secondary: hslToHex(h0, 0.05, 0.88), accent: hslToHex(ah, 0.62, 0.5), light: hslToHex(h0, 0.04, 0.97), dark: hslToHex(h0, 0.08, 0.08) };
+  }
+  let [h, s] = hsl(vivid);
+  if ((h >= 335 || h <= 15) && hsl(vivid)[2] > 0.65) {
+    h = 346;
+    s = Math.max(s, 0.5);
+  }
   const primary = hslToHex(h, Math.min(0.62, Math.max(0.25, s)), 0.36);
   const secondary = hslToHex(h, Math.min(0.35, s * 0.6), 0.84);
   const accent = hslToHex((h + 28) % 360, Math.min(0.55, Math.max(0.3, s)), 0.58);
@@ -312,10 +336,10 @@ const NAME_WORDS_FR: Record<string, string[]> = {
   mode: ["Faubourg", "Ligne", "Trame", "Allure", "Écru", "Sillon", "Atelier Nord", "Lin"],
   bijoux: ["Éclat", "Orée", "Fil d'Or", "Constellation", "Perle", "Aurore", "Facette", "Lueur"],
   maison: ["Sillage", "Ardoise", "Braise", "Lueur", "Foyer", "Argile", "Terre d'Ombre", "Nuance"],
-  hightech: ["Pixel", "Onde", "Vecteur", "Nova", "Circuit", "Prisme", "Signal", "Orbite"],
+  hightech: ["Axiome", "Onde", "Vecteur", "Boréal", "Tangente", "Prisme", "Faisceau", "Orbite"],
   sport: ["Cap", "Élan", "Altitude", "Sentier", "Horizon", "Relief", "Boussole", "Crête"],
   alimentation: ["Récolte", "Terroir", "Fournil", "Verger", "Saveur", "Garrigue", "Moisson", "Cueillette"],
-  enfants: ["Petit Pas", "Câlin", "Nuage", "Grelot", "Pirouette", "Doudou", "Ritournelle", "Comptine"],
+  enfants: ["Petit Pas", "Câlin", "Nuage", "Grelot", "Pirouette", "Luciole", "Ritournelle", "Comptine"],
   animaux: ["Patte", "Museau", "Gamelle", "Truffe", "Compagnon", "Pelage", "Balade", "Moustache"],
   artisanat: ["Papier", "Encre", "Établi", "Copeau", "Plume", "Fusain", "Canevas", "Atelier"],
 };
@@ -328,20 +352,20 @@ const TAGLINES_FR: Record<string, string> = {
   hightech: "La technologie, sans détour.",
   sport: "Fait pour bouger.",
   alimentation: "Le goût des bonnes choses.",
-  enfants: "Grandir en douceur.",
+  enfants: "Pour les petits, avec soin.",
   animaux: "Pour nos compagnons.",
   artisanat: "Fait avec soin.",
 };
 
 const NAME_WORDS_EN: Record<string, string[]> = {
-  beaute: ["Dawn", "Sap", "Lumen", "Pearl", "Mist", "Velvet", "Iris", "Opal"],
-  mode: ["Thread", "Line", "Weave", "Poise", "Ecru", "Furrow", "North Loom", "Linen"],
+  beaute: ["Morrow", "Sap", "Lumen", "Pearl", "Mist", "Velvet", "Iris", "Opal"],
+  mode: ["Thread", "Seam", "Weave", "Selvedge", "Ecru", "Furrow", "North Loom", "Linen"],
   bijoux: ["Gleam", "Halo", "Gold Thread", "Constellation", "Pearl", "Aurora", "Facet", "Glow"],
-  maison: ["Hearth", "Slate", "Ember", "Glow", "Nook", "Clay", "Umber", "Shade"],
-  hightech: ["Pixel", "Wave", "Vector", "Nova", "Circuit", "Prism", "Signal", "Orbit"],
+  maison: ["Hearth", "Slate", "Cinder", "Glow", "Alcove", "Clay", "Umber", "Shade"],
+  hightech: ["Tangent", "Wave", "Vector", "Axiom", "Arclight", "Prism", "Northbeam", "Meridian"],
   sport: ["Summit", "Stride", "Altitude", "Trail", "Horizon", "Ridge", "Compass", "Crest"],
   alimentation: ["Harvest", "Orchard", "Bakehouse", "Grove", "Savor", "Pantry", "Gather", "Meadow"],
-  enfants: ["Little Steps", "Cuddle", "Cloud", "Jingle", "Pirouette", "Snuggle", "Lullaby", "Rhyme"],
+  enfants: ["Little Steps", "Cuddle", "Cloud", "Jingle", "Pirouette", "Firefly", "Lullaby", "Rhyme"],
   animaux: ["Paw", "Snout", "Bowl", "Whisker", "Companion", "Fur", "Stroll", "Tail"],
   artisanat: ["Paper", "Ink", "Workbench", "Shaving", "Quill", "Charcoal", "Canvas", "Workshop"],
 };
@@ -354,7 +378,7 @@ const TAGLINES_EN: Record<string, string> = {
   hightech: "Tech, without the fuss.",
   sport: "Made to move.",
   alimentation: "A taste for good things.",
-  enfants: "Growing up gently.",
+  enfants: "For little ones, with care.",
   animaux: "For our companions.",
   artisanat: "Made with care.",
 };
@@ -396,7 +420,7 @@ export function localBrand(p: ProductProfile, providedBrand?: string, biz?: Busi
       logoSpec: { name, family: CANVAS_FONTS[logoFamily] ? logoFamily : "Cormorant", weight: d.id === "brut" || d.id === "elan" || d.id === "pop" ? 800 : 500, case: d.id === "terroir" || d.id === "pop" || d.id === "gourmand" ? "title" : "upper", tracking: d.id === "atelier" || d.id === "galerie" || d.id === "joaillerie" ? 0.18 : 0.04, layout: name.length > 12 && name.includes(" ") ? "stacked" : "wordmark", emblem: d.id === "elan" ? "line" : "none" },
     };
   }
-  const palette = paletteFromColors(p.visual.colors.length ? p.visual.colors : [{ hex: "#7A6552", share: 1 }]);
+  const palette = paletteFromColors(p.visual.colors.length ? p.visual.colors : [{ hex: "#7A6552", share: 1 }], sector);
   const logoFamily = canvasFamily(d.fonts.heading, "Cormorant");
   return {
     brand: {

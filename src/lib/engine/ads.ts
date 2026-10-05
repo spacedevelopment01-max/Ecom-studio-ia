@@ -7,7 +7,8 @@
  */
 import { z } from "zod";
 import type { Lang } from "../i18n";
-import { contentLang, withContentLang } from "../i18n-server";
+import { contentLang, L, withContentLang } from "../i18n-server";
+import { lintClaims, lintHollow, scrubClaims } from "../ai/tasks";
 import { areaMentioned, howToBook, unknownText } from "./services-text";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { projectContext } from "../ai/context";
@@ -47,7 +48,7 @@ export async function draftAds(p: Project, opts: { userId: string; count?: numbe
   if (llmConfigured()) {
     const services = p.business === "services";
     const ctas = adCtas(p, lang);
-    const r = await llmJson(
+    const ask = (feedback?: string) => llmJson(
       {
         task: "social_copy",
         userId: opts.userId,
@@ -59,16 +60,45 @@ Pour chaque annonce : « angle » (2 à 5 mots), « primary » (texte principal,
 Aucune promotion, aucun avis, aucune note, aucun chiffre ni délai qui ne figure pas dans le contexte. Angles variés d'une annonce à l'autre.
 Langue : tous les champs en ${langName(lang)}, même si le contexte est dans une autre langue (traduis et adapte les faits, sans en ajouter).`,
         context: projectContext(p, "social"),
-        prompt: `Rédige ${count} annonces publicitaires.${opts.objective ? `\nObjectif de la campagne : ${opts.objective}.` : ""}${opts.audience ? `\nAudience : ${opts.audience}.` : ""}
+        prompt: `Rédige ${count} annonces publicitaires.${opts.objective ? `\nObjectif de la campagne : ${opts.objective}.` : ""}${opts.audience ? `\nAudience : ${opts.audience}.` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité de la proposition précédente (à appliquer impérativement) :\n${feedback}` : ""}
 Réponds { "ads": [ { "angle": "…", "primary": "…", "headline": "…", "cta": "…" } ] }.`,
         maxTokens: 6000,
       },
       z.object({ ads: z.array(AdSchema).min(1) }),
     );
-    const ads = r.ads.slice(0, count).map((a) => ({ ...a, cta: ctas.includes(a.cta) ? a.cta : services ? serviceCta(p, lang) : ctas[0] }));
+    let r = await ask();
+    // Contrôle : allégations non confirmées, formules creuses, titre trop long. Une reprise ciblée, puis filet de sécurité.
+    let problems = adProblems(r.ads.slice(0, count), p);
+    if (problems.length) {
+      try {
+        const again = await ask(problems.join("\n"));
+        const left = adProblems(again.ads.slice(0, count), p);
+        if (left.length < problems.length) {
+          r = again;
+          problems = left;
+        }
+      } catch {
+        // Reprise impossible : la première proposition est nettoyée ci-dessous.
+      }
+    }
+    const ads = r.ads.slice(0, count).map((a) => {
+      const clean = scrubClaims({ primary: a.primary, headline: a.headline, angle: a.angle }, p).content;
+      return { ...a, ...clean, headline: clean.headline.length > 40 ? clean.headline.slice(0, 41).replace(/\s+\S*$/, "") : clean.headline, cta: ctas.includes(a.cta) ? a.cta : services ? serviceCta(p, lang) : ctas[0] };
+    });
     return { ads, by: "ai" };
   }
   return { ads: localAds(p, lang, count), by: "local" };
+}
+
+/** Défauts d'annonces rédigées par l'IA, formulés comme consignes de correction. */
+export function adProblems(ads: AdDraft[], p: Project): string[] {
+  const out: string[] = [];
+  ads.forEach((a, i) => {
+    for (const c of lintClaims({ primary: a.primary, headline: a.headline }, p)) out.push(L(`Annonce ${i + 1}, ${c.path} : « ${c.term} » (${c.label}) n'est pas confirmé, retire-le.`, `Ad ${i + 1}, ${c.path}: "${c.term}" (${c.label}) is not confirmed, remove it.`));
+    for (const h of lintHollow({ primary: a.primary, headline: a.headline })) out.push(L(`Annonce ${i + 1}, ${h.path} : formule creuse « ${h.term} », remplace-la par un fait concret.`, `Ad ${i + 1}, ${h.path}: empty phrase "${h.term}", replace it with a concrete fact.`));
+    if (a.headline.length > 40) out.push(L(`Annonce ${i + 1} : titre de ${a.headline.length} caractères, 40 au plus.`, `Ad ${i + 1}: headline is ${a.headline.length} characters, 40 at most.`));
+  });
+  return out;
 }
 
 /**

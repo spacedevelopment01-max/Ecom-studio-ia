@@ -97,6 +97,8 @@ export type Brand = {
   logo: { assetId?: string; markAssetId?: string; concept: string; status: "proposed" | "validated" | "provided"; proposal?: "logotype" | "symbole" | "embleme" };
   /** Autres signatures proposées (au choix du client). */
   taglineAlternatives?: string[];
+  /** Points que le contrôle qualité n'a pas pu corriger seul : à vérifier par le client (nom, signature, palette…). */
+  checks?: string[];
   story: string;
   values: { title: string; text: string }[];
   direction: DirectionId;

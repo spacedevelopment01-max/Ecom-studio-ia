@@ -280,7 +280,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
     }
     case "brand": {
       const brand = await buildBrand(ctx, projectId, { providedBrand: inp.brandName });
-      return note("brand.done", { name: brand.name, direction: brand.direction });
+      return brand.checks?.length ? note("brand.toCheck", { name: brand.name, direction: brand.direction, n: brand.checks.length }) : note("brand.done", { name: brand.name, direction: brand.direction });
     }
     case "copy": {
       const fresh = loadProject(projectId);

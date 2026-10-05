@@ -48,9 +48,9 @@ function recordMedia(u: Parameters<typeof recordUsage>[0]) {
  * au client, elle ne lui coûte pas de visuel. Rend les décomptes faits sous la clé `key` (préfixe des appels).
  * Le coût réel (budget caché) reste comptabilisé.
  */
-export function refundMediaQuota(userId: string, key: string): number {
+export function refundMediaQuota(userId: string, key: string, quota: "visuals" | "aiVideos" = "visuals"): number {
   const esc = (v: string) => v.replace(/[\\%_]/g, (c) => `\\${c}`);
-  const refs = all<{ ref: string }>("SELECT ref FROM quota_events WHERE user_id = ? AND (ref = ? OR ref LIKE ? ESCAPE '\\')", userId, `visuals:${key}`, `visuals:${esc(key)}:%`);
+  const refs = all<{ ref: string }>("SELECT ref FROM quota_events WHERE user_id = ? AND (ref = ? OR ref LIKE ? ESCAPE '\\')", userId, `${quota}:${key}`, `${quota}:${esc(key)}:%`);
   let n = 0;
   for (const r of refs) if (refundQuota(userId, r.ref)) n++;
   return n;
@@ -143,11 +143,9 @@ export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?:
   const route = routeFor("image_generation");
   const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
   gate(ctx, cost("google", model, { images: 1 }).micro, "image");
-  const parts: any[] = [{ text: `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty and clear (a product will be placed there later). Aspect ratio ${input.aspect}. No text, no logo, no product, no people.` }];
-  if (input.reference) {
-    const jpeg = await sharp(input.reference).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
-    parts.push({ text: "Color and mood reference for the product that will be placed (do not draw it):" }, { inline_data: { mime_type: "image/jpeg", data: jpeg.toString("base64") } });
-  }
+  // Aucune image du produit n'est envoyée : les modèles d'image la redessinent presque toujours dans le décor,
+  // ce qui donnerait un second produit (réinventé) à côté du vrai. Le décor est décrit par le texte seul.
+  const parts: any[] = [{ text: `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.` }];
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
