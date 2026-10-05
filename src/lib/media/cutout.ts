@@ -3,22 +3,51 @@
  * extraction de la palette et des zones de détail. Les pixels du produit ne
  * sont jamais régénérés : toutes les compositions réutilisent ce détourage.
  */
+import { spawn } from "node:child_process";
+import path from "node:path";
 import sharp from "sharp";
 import { colorName, rgbToHex } from "../color";
 import { contentLang, L } from "../i18n-server";
 
 export type Cutout = { png: Buffer; width: number; height: number; bbox: { x: number; y: number; w: number; h: number }; sourceW: number; sourceH: number; method: "model" | "flood" };
 
-let removeBg: ((blob: Blob, cfg: any) => Promise<Blob>) | null = null;
+/** Délai maximal du détourage par le modèle avant de passer au détourage de secours. */
+const MODEL_TIMEOUT_MS = Number(process.env.CUTOUT_TIMEOUT_MS) || 180_000;
+
+/** Lance le modèle dans un processus séparé (un plantage ou un manque de mémoire n'arrête pas le studio). */
+function runModel(png: Buffer, model: "medium" | "small"): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const script = path.join(process.cwd(), "src", "lib", "media", "cutout-child.mjs");
+    const child = spawn(process.execPath, [script], { env: { ...process.env, CUTOUT_MODEL: model }, stdio: ["pipe", "pipe", "pipe"] });
+    const out: Buffer[] = [];
+    let err = "";
+    const timer = setTimeout(() => child.kill("SIGKILL"), MODEL_TIMEOUT_MS);
+    child.stdout.on("data", (c: Buffer) => out.push(c));
+    child.stderr.on("data", (c: Buffer) => (err = (err + c.toString()).slice(-2000)));
+    child.on("error", (e) => (clearTimeout(timer), reject(e)));
+    child.on("close", (code, signal) => {
+      clearTimeout(timer);
+      const buf = Buffer.concat(out);
+      if (code === 0 && buf.length) return resolve(buf);
+      reject(new Error(`détourage interrompu (${signal ?? `code ${code}`}) ${err.trim().split("\n").pop() ?? ""}`));
+    });
+    child.stdin.on("error", () => {});
+    child.stdin.end(png);
+  });
+}
 
 async function modelCutout(input: Buffer): Promise<Buffer> {
-  if (!removeBg) {
-    const mod = await import("@imgly/background-removal-node");
-    removeBg = (mod as any).removeBackground;
-  }
   const png = await sharp(input, { failOn: "none" }).rotate().resize(2048, 2048, { fit: "inside", withoutEnlargement: true }).png().toBuffer();
-  const out = await removeBg!(new Blob([new Uint8Array(png)], { type: "image/png" }), { model: "medium", output: { format: "image/png", quality: 1 } });
-  return fillInteriorHoles(Buffer.from(await out.arrayBuffer()), png);
+  let out: Buffer;
+  try {
+    out = await runModel(png, "medium");
+  } catch (e) {
+    // Machine juste en mémoire : nouvel essai avec le petit modèle sur une image réduite.
+    console.warn("[cutout] modèle moyen indisponible, essai du petit modèle :", (e as Error).message);
+    const small = await sharp(png).resize(1024, 1024, { fit: "inside", withoutEnlargement: true }).png().toBuffer();
+    out = await sharp(await runModel(small, "small")).resize(await sharp(png).metadata().then((m) => m.width!), undefined).png().toBuffer();
+  }
+  return fillInteriorHoles(out, png);
 }
 
 /**
