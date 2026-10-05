@@ -473,6 +473,30 @@ CREATE TABLE IF NOT EXISTS blog_articles (
   deleted_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS blog_articles_project ON blog_articles(project_id, deleted_at, updated_at);
+
+-- Webhook Stripe : journal des événements traités (un événement relivré n'est jamais appliqué deux fois).
+CREATE TABLE IF NOT EXISTS stripe_events (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  created INTEGER NOT NULL DEFAULT 0, -- horodatage Stripe de l'événement (secondes)
+  processed_at INTEGER NOT NULL
+);
+-- Arrêt des anciens abonnements Stripe (changement de forfait) : réessayé par le worker jusqu'à confirmation.
+CREATE TABLE IF NOT EXISTS stripe_cancellations (
+  subscription_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  next_at INTEGER NOT NULL,
+  last_error TEXT,
+  done_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+-- Limitation de débit persistante (inscriptions, connexions) : partagée par les processus, survit aux redémarrages.
+CREATE TABLE IF NOT EXISTS rate_events (
+  key TEXT NOT NULL,
+  at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS rate_events_key ON rate_events(key, at);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */
@@ -484,6 +508,16 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["subscriptions", "plan", "TEXT"], // creer | vendre | dominer (null : ancien abonnement → « Créer »)
   ["subscriptions", "billing", "TEXT"], // month | year
   ["payments", "label", "TEXT"],
+  // Webhook Stripe : horodatage (secondes) du dernier événement appliqué à l'abonnement en cours, et de la session
+  // de paiement qui l'a créé (un événement plus ancien, relivré ou reçu dans le désordre, est ignoré).
+  ["subscriptions", "stripe_event_at", "INTEGER"],
+  ["subscriptions", "stripe_checkout_at", "INTEGER"],
+  // Début de la période mensuelle précédente : le report des quotas ne vient que de celle-là.
+  ["wallets", "prev_period_start", "INTEGER"],
+  // Décompte d'un quota : période et répartition (mois / packs), pour pouvoir le rendre (image refusée au contrôle).
+  ["quota_events", "period_start", "INTEGER"],
+  ["quota_events", "from_month", "INTEGER"],
+  ["quota_events", "from_pack", "INTEGER"],
 ];
 
 function migrate(db: Database.Database) {

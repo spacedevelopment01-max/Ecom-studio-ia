@@ -126,5 +126,5 @@ export function launchPipeline(projectId: string, userId: string, input: StartIn
   run("UPDATE projects SET sources_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(sources), now(), projectId);
   if (input.productName || input.brandName) run("UPDATE projects SET name = ? WHERE id = ?", input.productName || input.brandName, projectId);
   setStatus(projectId, "queued");
-  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, input: { link: site ? undefined : input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price, businessType: input.businessType, videos: input.videos, ...(site ? { existingSite: true, siteUrl: site.url } : {}) } }, maxAttempts: 2 });
+  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, initial: true, input: { link: site ? undefined : input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price, businessType: input.businessType, videos: input.videos, ...(site ? { existingSite: true, siteUrl: site.url } : {}) } }, maxAttempts: 2 });
 }

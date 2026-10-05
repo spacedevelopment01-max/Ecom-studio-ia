@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { handle } from "@/lib/http";
 import { clientRows } from "@/lib/admin-stats";
+import { csvSafe } from "@/lib/accounting";
 import { intlLocale } from "@/lib/i18n";
 import { L, uiLang } from "@/lib/i18n-server";
 
@@ -16,7 +17,8 @@ const SEG: Record<string, { fr: string; en: string }> = {
 /** Export CSV des clients (ouvrable dans Excel, Numbers ou Google Sheets). */
 export const GET = handle(async () => {
   await requireAdmin();
-  const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  // Nom saisi à l'inscription : une formule (=HYPERLINK…) est neutralisée avant l'ouverture dans un tableur.
+  const cell = (v: unknown) => `"${csvSafe(v).replace(/"/g, '""')}"`;
   const lang = uiLang();
   const date = (t: number | null) => (t ? new Date(t).toLocaleDateString(intlLocale(lang)) : "");
   // Séparateur décimal selon la langue (virgule en français, point en anglais).

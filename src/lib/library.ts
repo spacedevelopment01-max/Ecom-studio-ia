@@ -11,6 +11,7 @@ import sharp from "sharp";
 import { all, id, json, now, one, run, tx } from "./db";
 import { EXT_BY_MIME, kindFromMime, putFile, readFile, storagePath, tmpDir } from "./storage";
 import { L } from "./i18n-server";
+import { HttpError } from "./auth";
 
 const exec = promisify(execFile);
 
@@ -125,7 +126,7 @@ export function listFolders(projectId: string): Folder[] {
 }
 
 export function createFolder(projectId: string, name: string, parentId: string | null): Folder {
-  if (parentId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", parentId, projectId)) throw new Error(L("Dossier parent introuvable.", "Parent folder not found."));
+  if (parentId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", parentId, projectId)) throw new HttpError(404, L("Dossier parent introuvable.", "Parent folder not found."));
   const fid = id();
   run("INSERT INTO folders (id, project_id, parent_id, name, system_key, created_at) VALUES (?,?,?,?,?,?)", fid, projectId, parentId, name.slice(0, 120), null, now());
   return one<Folder>("SELECT * FROM folders WHERE id = ?", fid)!;

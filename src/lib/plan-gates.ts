@@ -19,6 +19,12 @@ export function requirePlan(user: User) {
   return plan;
 }
 
+/** Forfait d'un compte (par identifiant), pour les tâches en arrière-plan : l'administrateur n'est jamais bloqué. */
+export function planOfUserId(userId: string): PlanId | null {
+  const u = one<User>("SELECT id, email, name, role, timezone, created_at FROM users WHERE id = ?", userId);
+  return u ? planFor(u) : null;
+}
+
 /** Jours de publications préparés d'un coup (7 avec Créer, 30 avec Vendre et Dominer). */
 export function assertCalendarDays(user: User, days: number) {
   const plan = requirePlan(user);

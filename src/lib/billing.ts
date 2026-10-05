@@ -35,12 +35,17 @@ export type Subscription = {
   stripe_subscription_id: string | null;
   current_period_start: number | null;
   current_period_end: number | null;
+  /** Horodatage Stripe (secondes) du dernier événement appliqué à l'abonnement en cours. */
+  stripe_event_at?: number | null;
+  /** Création (secondes) de la session de paiement qui a souscrit l'abonnement en cours. */
+  stripe_checkout_at?: number | null;
 };
 
-type Wallet = {
+export type Wallet = {
   user_id: string;
   period_start: number;
   period_end: number;
+  prev_period_start: number | null;
   monthly_allowance: number;
   monthly_used: number;
   topup_balance: number;
@@ -82,15 +87,16 @@ function ensureWallet(userId: string): Wallet {
     const sub = getSubscription(userId);
     const start = now();
     const allowance = monthlyAllowanceMicro(sub);
-    run(
-      "INSERT INTO wallets (user_id, period_start, period_end, monthly_allowance, monthly_used, topup_balance, updated_at) VALUES (?,?,?,?,0,0,?)",
+    // Web et worker peuvent créer le portefeuille en même temps : le second ne fait rien.
+    const created = run(
+      "INSERT OR IGNORE INTO wallets (user_id, period_start, period_end, monthly_allowance, monthly_used, topup_balance, updated_at) VALUES (?,?,?,?,0,0,?)",
       userId,
       start,
       addMonths(start, 1).getTime(),
       allowance,
       now(),
     );
-    if (allowance) run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance, forUser(userId, "Budget IA du forfait", "Plan AI budget"), now());
+    if (created.changes && allowance) run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "allowance", "monthly", allowance, forUser(userId, "Budget IA du forfait", "Plan AI budget"), now());
     w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
   }
   w = renewIfDue(w);
@@ -111,35 +117,74 @@ function grantOnce(userId: string, type: "discovery" | "creation", micro: number
   });
 }
 
-/** Début et fin de la période mensuelle en cours (quotas et budget se renouvellent ensemble). */
+/**
+ * Début et fin de la période mensuelle en cours (quotas et budget se renouvellent ensemble), et début de la
+ * période immédiatement précédente (seule source du report des quotas). C'est la seule date de renouvellement
+ * montrée au client (Mon compte, messages de quota, limite d'usage).
+ */
 export function currentPeriod(userId: string) {
   const w = ensureWallet(userId);
-  return { start: w.period_start, end: w.period_end };
+  return { start: w.period_start, end: w.period_end, prevStart: w.prev_period_start ?? null };
 }
 
-/** Renouvelle le budget mensuel à échéance (les budgets uniques restants sont conservés). */
-function renewIfDue(w: Wallet): Wallet {
+/** Renouvelle le budget mensuel à échéance (les budgets uniques restants sont conservés). Exportée pour les tests. */
+export function renewIfDue(w: Wallet): Wallet {
   if (now() < w.period_end) return w;
   const sub = getSubscription(w.user_id);
+  let prevStart = w.period_start;
   let start = w.period_start;
   let end = w.period_end;
   while (end <= now()) {
+    prevStart = start;
     start = end;
     end = addMonths(end, 1).getTime();
   }
   const allowance = monthlyAllowanceMicro(sub);
   tx(() => {
+    // Web et worker peuvent renouveler en même temps : seul celui qui voit encore l'ancienne échéance renouvelle.
+    const done = run(
+      "UPDATE wallets SET period_start=?, period_end=?, prev_period_start=?, monthly_allowance=?, monthly_used=0, topup_period_added=0, topup_period_used=0, alert80_sent_at=NULL, updated_at=? WHERE user_id=? AND period_end=?",
+      start,
+      end,
+      prevStart,
+      allowance,
+      now(),
+      w.user_id,
+      w.period_end,
+    );
+    if (done.changes === 1) run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), w.user_id, "renewal", "monthly", allowance, forUser(w.user_id, "Renouvellement mensuel", "Monthly renewal"), now());
+  });
+  return one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", w.user_id)!;
+}
+
+/**
+ * Activation d'un forfait (nouvel abonnement payé, ou activation par l'administration) : la période des quotas et
+ * du budget est réalignée sur la période de facturation (début de l'abonnement). Sans cela, la période née à
+ * l'inscription se renouvellerait quelques jours après le paiement et doublerait les quotas.
+ * La période précédente (découverte, ou ancien forfait) devient la seule source possible du report.
+ */
+export function alignPeriod(userId: string, startMs?: number | null, endMs?: number | null) {
+  const w = ensureWallet(userId);
+  let start = startMs && startMs > 0 ? startMs : now();
+  // Abonnement mensuel : fin de période Stripe ; annuel ou inconnu : un mois (les quotas restent mensuels).
+  let end = endMs && endMs > start && endMs <= addMonths(start, 1).getTime() + 3 * 86400_000 ? endMs : addMonths(start, 1).getTime();
+  if (end <= now()) {
+    start = now();
+    end = addMonths(start, 1).getTime();
+  }
+  if (w.period_start === start && w.period_end === end) return;
+  const allowance = monthlyAllowanceMicro(getSubscription(userId));
+  tx(() => {
     run(
-      "UPDATE wallets SET period_start=?, period_end=?, monthly_allowance=?, monthly_used=0, topup_period_added=0, topup_period_used=0, alert80_sent_at=NULL, updated_at=? WHERE user_id=?",
+      "UPDATE wallets SET prev_period_start=period_start, period_start=?, period_end=?, monthly_allowance=?, monthly_used=0, topup_period_added=0, topup_period_used=0, alert80_sent_at=NULL, updated_at=? WHERE user_id=?",
       start,
       end,
       allowance,
       now(),
-      w.user_id,
+      userId,
     );
-    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), w.user_id, "renewal", "monthly", allowance, forUser(w.user_id, "Renouvellement mensuel", "Monthly renewal"), now());
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, note, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "renewal", "monthly", allowance, forUser(userId, "Début de la période du forfait", "Plan period start"), now());
   });
-  return one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", w.user_id)!;
 }
 
 /** Recalcule le budget après un changement d'abonnement (forfait, activation) ; première activation : budget de création. */

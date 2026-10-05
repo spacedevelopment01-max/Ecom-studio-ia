@@ -10,7 +10,8 @@ services:
     environment:
       APP_SECRET: ${APP_SECRET:?Définissez APP_SECRET (32 caractères aléatoires au moins)}
       APP_URL: ${APP_URL:-http://localhost:3000}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      # Obligatoire : seul ce compte sera administrateur (sinon le premier inscrit, peut-être un inconnu, le deviendrait).
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Définissez ADMIN_EMAIL (votre adresse e-mail : seul ce compte sera administrateur)}
     volumes:
       - studio-data:/data
 

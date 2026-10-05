@@ -26,6 +26,7 @@ import { renderCreative, FORMATS } from "../src/lib/media/compose";
 import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engine/images";
 import { loadImage } from "@napi-rs/canvas";
 import { L } from "../src/lib/i18n-server";
+import { planOfUserId } from "../src/lib/plan-gates";
 
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
@@ -207,6 +208,14 @@ export const handlers: Record<string, Handler> = {
    */
   "post.publish": async (ctx) => {
     const { postId } = ctx.payload;
+    // Publication réservée aux forfaits : revérifiée au moment de l'envoi (forfait résilié depuis la programmation).
+    const owner = one<{ user_id: string; project_id: string; network: string }>("SELECT pr.user_id, p.project_id, p.network FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId);
+    if (owner && !planOfUserId(owner.user_id)) {
+      const msg = L("Publication non envoyée : la publication sur les réseaux est réservée aux forfaits. Choisissez un forfait dans « Mon compte », puis reprogrammez-la.", "Post not sent: publishing to social networks is included in the plans. Choose a plan in \"My account\", then reschedule it.");
+      const moved = run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", msg, now(), postId);
+      if (moved.changes) notify(owner.user_id, owner.project_id, L("Une publication n'a pas été envoyée", "A post was not sent"), msg, "error");
+      return { skipped: "sans forfait" };
+    }
     const claimed = run("UPDATE posts SET status = 'publishing', attempts = attempts + 1, updated_at = ? WHERE id = ? AND status IN ('scheduled','publishing')", now(), postId);
     if (!claimed.changes) return { skipped: "état modifié (annulée, déplacée ou déjà publiée)" };
     const post = one<PostRow & { user_id: string }>("SELECT p.*, pr.user_id FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId)!;

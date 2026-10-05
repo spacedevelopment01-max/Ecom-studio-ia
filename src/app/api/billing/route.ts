@@ -28,7 +28,9 @@ export const GET = handle(async () => {
     plan,
     billing: plan ? (sub.billing ?? "month") : null,
     status: sub.status,
-    periodEnd: plan && sub.current_period_end && sub.billing !== "year" ? sub.current_period_end : period.end,
+    // Une seule date partout (Mon compte, messages de quota, limite d'usage) : la fin de la période des quotas,
+    // alignée sur la facturation dès l'activation du forfait.
+    periodEnd: period.end,
     quotas: quotasView(user.id),
     languages: languagesOf(user.id),
     discovery: { available: !plan, used: !plan && discoveryUsed },

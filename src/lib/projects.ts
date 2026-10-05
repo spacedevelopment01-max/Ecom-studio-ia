@@ -157,3 +157,14 @@ export function listThemeVersions(projectId: string) {
 export function notify(userId: string, projectId: string | null, title: string, body = "", level = "info") {
   run("INSERT INTO notifications (id, user_id, project_id, level, title, body, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, projectId, level, title, body, now());
 }
+
+/** Échappe une saisie pour l'insérer telle quelle dans une expression régulière. */
+export const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Repère les mentions « [À compléter : … <fait> …] » d'un fait que le client vient de confirmer. Le libellé est
+ * saisi par le client : il est échappé (un libellé « Poids(g) » ne provoque plus d'erreur 500).
+ */
+export function factPlaceholderRegex(label: string, factKey: string): RegExp {
+  return new RegExp(`\\[(?:À compléter :|To complete:) [^\\]]*(${escapeRegExp(label.split(" ")[0])}|${escapeRegExp(factKey)})[^\\]]*\\]`, "gi");
+}

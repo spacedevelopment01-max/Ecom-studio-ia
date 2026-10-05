@@ -16,7 +16,7 @@ import { FORMATS, renderCreative, renderPackshot, renderScene, renderBanner, typ
 import { canvasFamily } from "../media/fonts";
 import { aiImageBrief, aiQcImage } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
-import { geminiPlate, imageProviderAvailable, openaiScene } from "../ai/media-providers";
+import { geminiPlate, imageProviderAvailable, openaiScene, refundMediaQuota } from "../ai/media-providers";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 import { C, L } from "../i18n-server";
@@ -204,6 +204,8 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           }
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+          // Image IA écartée (fidélité non concluante…) : remplacée par une scène locale, le visuel n'est pas décompté.
+          refundMediaQuota(ictx.userId, `${ctx.job.id}:scene:${style}`);
           qc = { fallback: (e as Error).message };
         }
       }
@@ -230,12 +232,17 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           if (llmConfigured()) {
             const check = await aiQcImage({ ...ictx, usageKey: `${ctx.job.id}:qc:lifestyle:${i}` }, assetData(one<Asset>("SELECT * FROM assets WHERE id = ?", main.source_asset_id)!), r.image);
             qc = check;
-            if (!check.sameProduct || check.score < 6) return [];
+            if (!check.sameProduct || check.score < 6) {
+              // Photo refusée par le contrôle de fidélité : ni enregistrée ni montrée, donc pas décomptée.
+              refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}`);
+              return [];
+            }
           }
           return [await save(await sharp(r.image).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { recipe: L(`Photo en situation générée autour du produit réel : ${situation}`, `Lifestyle photo generated around the real product: ${situation}`), provider: "OpenAI", qc })];
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[images] photo en situation indisponible :", (e as Error).message);
+          refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}`);
           return [];
         }
       });
