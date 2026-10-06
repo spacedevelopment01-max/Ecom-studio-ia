@@ -132,7 +132,23 @@ export type Strategy = {
   angles: { title: string; idea: string }[];
   pillars: string[];
   keyMessages: string[];
+  /** Plateforme de marque (stratège) : persona, problème, concurrence typique, preuves, objections et réponses. */
+  platform?: BrandPlatform;
   generatedBy: "ai" | "local";
+};
+
+/**
+ * Plateforme de marque, base de toute la rédaction : pour qui (persona), quel problème, face à quoi
+ * (alternatives et codes de la concurrence typique), quelle différence crédible, quelles preuves
+ * (disponibles ou manquantes : une preuve manquante n'est jamais affirmée), quelles objections et leurs réponses.
+ */
+export type BrandPlatform = {
+  persona: string;
+  problem: string;
+  alternatives: string;
+  difference: string;
+  proofs: { claim: string; proof: string; status: "available" | "missing" }[];
+  objections: { objection: string; answer: string }[];
 };
 
 /**
