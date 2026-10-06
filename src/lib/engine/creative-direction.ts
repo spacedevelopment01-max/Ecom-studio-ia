@@ -74,6 +74,8 @@ export const MAX_ROUTE_DRAWS = 2;
 /** Seuil d'exigence d'une piste de l'IA : aucune note sous 6, moyenne d'au moins 7,5. */
 export const ROUTE_MIN_SCORE = 6;
 export const ROUTE_MIN_MEAN = 7.5;
+/** Lien avec le produit ou l'activité : au moins 7. */
+export const ROUTE_MIN_RELEVANCE = 7;
 
 const clamp10 = (n: unknown) => {
   const x = typeof n === "number" ? n : Number(n);
@@ -89,7 +91,8 @@ export function routePassed(r: RouteReview | null | undefined, source: "ai" | "l
   if (!r || r.cliche !== false || r.resemblesKnownBrand !== false || r.readsAsLetters === false) return false;
   const s = ROUTE_CRITERIA.map((k) => clamp10(r.scores?.[k]));
   if (source === "local") return ["smallSizes", "simplicity", "coherence"].every((k) => clamp10(r.scores?.[k as keyof RouteReview["scores"]]) >= ROUTE_MIN_SCORE);
-  return s.every((x) => x >= ROUTE_MIN_SCORE) && s.reduce((a, b) => a + b, 0) / s.length >= ROUTE_MIN_MEAN;
+  // Lien avec l'activité ou le produit : exigence plus haute (un logo hors sujet n'est jamais montré).
+  return s.every((x) => x >= ROUTE_MIN_SCORE) && clamp10(r.scores?.relevance) >= ROUTE_MIN_RELEVANCE && s.reduce((a, b) => a + b, 0) / s.length >= ROUTE_MIN_MEAN;
 }
 
 const CRITERION_FR: Record<string, string> = { originality: "originalité", memorability: "mémorisation", relevance: "pertinence", simplicity: "simplicité", smallSizes: "lisibilité à 16 px et en noir et blanc", coherence: "cohérence typo/couleur", distinctiveness: "singularité (pas de cliché du secteur)" };
@@ -125,6 +128,7 @@ export function roleColors(pal: BrandPalette, ink: PaletteRole, accent: PaletteR
 
 const LIB_LABEL: Record<SymbolKind, [string, string]> = {
   leaf: ["feuille", "leaf"], drop: ["goutte", "drop"], hanger: ["cintre", "hanger"], orbit: ["orbite", "orbit"], bean: ["grain", "bean"], paw: ["patte", "paw"], arch: ["arche", "arch"], wave: ["vague", "wave"], facet: ["facette", "facet"], sun: ["soleil", "sun"], cup: ["tasse", "cup"], spark: ["étoile", "star"],
+  car: ["voiture", "car"], wrench: ["clé", "wrench"], brush: ["pinceau", "brush"], scissors: ["ciseaux", "scissors"], house: ["maison", "house"], bolt: ["éclair", "bolt"], key: ["clé de porte", "key"],
 };
 
 /**

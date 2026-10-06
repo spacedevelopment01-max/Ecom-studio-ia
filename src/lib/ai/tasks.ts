@@ -1233,7 +1233,8 @@ function routesBrief(p: Project) {
   return `Marque : ${b?.name ?? ""}${b?.tagline ? ` — signature « ${b.tagline} »` : ""}
 Personnalité : ${b?.personality.join(", ") || "à déduire"} · Cible : ${b?.audience || "à déduire"}
 Positionnement : ${b?.positioning?.slice(0, 300) ?? ""}
-Produit : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.visual.shape ? ` — forme : ${p.product.visual.shape}` : ""}${p.product.visual.description ? ` — ${p.product.visual.description.slice(0, 300)}` : ""}
+${p.business === "services" ? `Activité (entreprise de services) : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.summary ? ` — ${p.product.summary.slice(0, 300)}` : ""}${p.services?.services?.length ? ` — prestations : ${p.services.services.map((x) => x.name).slice(0, 6).join(", ")}` : ""}` : `Produit : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.visual.shape ? ` — forme : ${p.product.visual.shape}` : ""}${p.product.visual.description ? ` — ${p.product.visual.description.slice(0, 300)}` : ""}`}
+LIEN AVEC L'ACTIVITÉ (obligatoire) : chaque piste doit évoquer, au premier regard, ce que la marque vend ou fait réellement (son métier, son produit, son geste, sa matière) — et rester cohérente avec l'univers du site (direction « ${b?.direction ?? ""} »). Un symbole joli mais hors sujet (diamant pour un garage, feuille pour une agence informatique…) est refusé. Exemple : carrosserie → ligne de carrosserie, reflet de peinture, galbe d'une aile, geste du débosselage ; jamais un objet sans rapport.
 Palette (rôles) : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : ""}
 Familles disponibles (heading, body) et graisses : ${Object.entries(CANVAS_FONTS).map(([f, d]) => `${f} (${Object.keys(d.file).join("/")})`).join(", ")}
 Mots INTERDITS dans les dessins (vus chez le fournisseur, jamais repris) : ${p.product.visual.labelText?.join(", ") || "aucun"}`;

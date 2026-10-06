@@ -40,7 +40,16 @@ const SECTOR_SYMBOL: Record<string, SymbolKind> = {
   alimentation: "sun", enfants: "sun", animaux: "paw", artisanat: "spark",
 };
 const KEYWORD_SYMBOL: [RegExp, SymbolKind][] = [
-  [/\bth[ée]s?\b|\bteas?\b|matcha|infusion|tisane|herbal/i, "leaf"],
+  // Métiers et activités de services : le pictogramme évoque l'activité réelle, jamais un symbole hors sujet.
+  [/carross|d[ée]bossel|garage|m[ée]cani|automobile|\bautos?\b|v[ée]hicule|voiture|\bcars?\b|auto ?body|bodyshop|pneu|tyre|tire\b|d[ée]pann/i, "car"],
+  [/peintre|peinture|painting|painter|\bpaint\b|d[ée]co(ration)? int|ravalement/i, "brush"],
+  [/coiff|barb|hair|salon de beaut/i, "scissors"],
+  [/[ée]lectric|electrician|domotique/i, "bolt"],
+  [/plomb|plumb|chauffag|heating/i, "drop"],
+  [/serrur|locksmith|\bcl[ée]s? minute/i, "key"],
+  [/immobili|real estate|agence immo|ma[çc]on|b[âa]timent|construction|r[ée]novation|toiture|couvreur|roofing|menuis/i, "house"],
+  [/r[ée]paration|repair|d[ée]pannage|entretien|maintenance|bricol|handyman/i, "wrench"],
+  [/(?<!\p{L})th[ée]s?(?!\p{L})|\bteas?\b|matcha|infusion|tisane|herbal/iu, "leaf"],
   [/caf[ée]|coffee|espresso|barista|mousseur|frother/i, "bean"],
   [/v[êe]tement|clothing|apparel|t-?shirt|sweat|hoodie|robe|\bdress|pantalon|trousers|\bpants\b|veste|jacket|textile|\blin\b|linen|coton|cotton/i, "hanger"],
   [/plante|\bplants?\b|botani|v[ée]g[ée]tal|bio\b|organic/i, "leaf"],
@@ -104,9 +113,11 @@ export function logoProposals(p: Project, base?: Omit<LogoSpec, "color">, custom
 
 export const SYMBOL_LABEL: Record<SymbolKind, string> = {
   leaf: "feuille", drop: "goutte", hanger: "cintre", orbit: "orbite", bean: "grain", paw: "patte", arch: "arche", wave: "vague", facet: "facette", sun: "soleil", cup: "tasse", spark: "étoile",
+  car: "voiture", wrench: "clé", brush: "pinceau", scissors: "ciseaux", house: "maison", bolt: "éclair", key: "clé de porte",
 };
 export const SYMBOL_LABEL_EN: Record<SymbolKind, string> = {
   leaf: "leaf", drop: "drop", hanger: "hanger", orbit: "orbit", bean: "bean", paw: "paw", arch: "arch", wave: "wave", facet: "facet", sun: "sun", cup: "cup", spark: "star",
+  car: "car", wrench: "wrench", brush: "brush", scissors: "scissors", house: "house", bolt: "bolt", key: "key",
 };
 
 /** Proposition retenue par défaut selon la direction de la boutique. */

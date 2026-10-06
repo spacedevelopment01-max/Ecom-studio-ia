@@ -41,8 +41,8 @@ export type LogoSpec = {
   markFrame?: boolean;
 };
 
-export type SymbolKind = "leaf" | "drop" | "hanger" | "orbit" | "bean" | "paw" | "arch" | "wave" | "facet" | "sun" | "cup" | "spark";
-export const SYMBOLS: SymbolKind[] = ["leaf", "drop", "hanger", "orbit", "bean", "paw", "arch", "wave", "facet", "sun", "cup", "spark"];
+export type SymbolKind = "leaf" | "drop" | "hanger" | "orbit" | "bean" | "paw" | "arch" | "wave" | "facet" | "sun" | "cup" | "spark" | "car" | "wrench" | "brush" | "scissors" | "house" | "bolt" | "key";
+export const SYMBOLS: SymbolKind[] = ["leaf", "drop", "hanger", "orbit", "bean", "paw", "arch", "wave", "facet", "sun", "cup", "spark", "car", "wrench", "brush", "scissors", "house", "bolt", "key"];
 
 /**
  * Symboles au trait, construits sur une grille carrée (taille s, coin haut-gauche x, y).
@@ -193,6 +193,115 @@ export function drawSymbol(ctx: SKRSContext2D, kind: SymbolKind, x: number, y: n
         ctx.bezierCurveTo(x + s * (dx - 0.07), y + s * 0.26, x + s * (dx + 0.07), y + s * 0.2, x + s * dx, y + s * 0.1);
         stroke();
       }
+      break;
+    }
+    // Pictogrammes de métiers (entreprises de services) : même grille, même trait.
+    case "car": {
+      // Profil de voiture : caisse, pavillon, deux roues.
+      ctx.moveTo(x + s * 0.06, y + s * 0.66);
+      ctx.lineTo(x + s * 0.06, y + s * 0.52);
+      ctx.quadraticCurveTo(x + s * 0.08, y + s * 0.46, x + s * 0.18, y + s * 0.45);
+      ctx.lineTo(x + s * 0.3, y + s * 0.44);
+      ctx.lineTo(x + s * 0.4, y + s * 0.3);
+      ctx.quadraticCurveTo(x + s * 0.43, y + s * 0.27, x + s * 0.48, y + s * 0.27);
+      ctx.lineTo(x + s * 0.66, y + s * 0.27);
+      ctx.quadraticCurveTo(x + s * 0.7, y + s * 0.27, x + s * 0.73, y + s * 0.31);
+      ctx.lineTo(x + s * 0.83, y + s * 0.44);
+      ctx.quadraticCurveTo(x + s * 0.94, y + s * 0.47, x + s * 0.94, y + s * 0.56);
+      ctx.lineTo(x + s * 0.94, y + s * 0.66);
+      ctx.moveTo(x + s * 0.06, y + s * 0.66);
+      ctx.lineTo(x + s * 0.17, y + s * 0.66);
+      ctx.moveTo(x + s * 0.39, y + s * 0.66);
+      ctx.lineTo(x + s * 0.61, y + s * 0.66);
+      ctx.moveTo(x + s * 0.83, y + s * 0.66);
+      ctx.lineTo(x + s * 0.94, y + s * 0.66);
+      stroke();
+      for (const wx of [0.28, 0.72]) {
+        ctx.beginPath();
+        ctx.arc(x + s * wx, y + s * 0.67, s * 0.1, 0, Math.PI * 2);
+        stroke();
+      }
+      break;
+    }
+    case "wrench": {
+      // Clé plate : tête ouverte (anneau entaillé) en haut à droite, manche épais vers le bas à gauche.
+      const hx = x + s * 0.66, hy = y + s * 0.34, r = s * 0.2, open = -Math.PI / 4;
+      ctx.lineWidth = lw * 1.5;
+      ctx.arc(hx, hy, r, open + 0.75, open - 0.75 + Math.PI * 2);
+      stroke();
+      ctx.beginPath();
+      ctx.moveTo(hx - r * 0.72, hy + r * 0.72);
+      ctx.lineTo(x + s * 0.14, y + s * 0.86);
+      ctx.lineWidth = lw * 2.2;
+      stroke();
+      break;
+    }
+    case "brush": {
+      // Pinceau en diagonale, la touche de peinture en couleur pleine.
+      ctx.moveTo(x + s * 0.88, y + s * 0.12);
+      ctx.lineTo(x + s * 0.52, y + s * 0.48);
+      stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.56, y + s * 0.4);
+      ctx.lineTo(x + s * 0.44, y + s * 0.52);
+      ctx.lineTo(x + s * 0.36, y + s * 0.6);
+      ctx.quadraticCurveTo(x + s * 0.14, y + s * 0.62, x + s * 0.1, y + s * 0.9);
+      ctx.quadraticCurveTo(x + s * 0.38, y + s * 0.86, x + s * 0.4, y + s * 0.64);
+      ctx.lineTo(x + s * 0.6, y + s * 0.44);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "scissors": {
+      for (const sy of [0.28, 0.72]) {
+        ctx.beginPath();
+        ctx.arc(x + s * 0.2, y + s * sy, s * 0.12, 0, Math.PI * 2);
+        stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.3, y + s * 0.34);
+      ctx.lineTo(x + s * 0.92, y + s * 0.74);
+      ctx.moveTo(x + s * 0.3, y + s * 0.66);
+      ctx.lineTo(x + s * 0.92, y + s * 0.26);
+      stroke();
+      break;
+    }
+    case "house": {
+      ctx.moveTo(x + s * 0.08, y + s * 0.5);
+      ctx.lineTo(cx, y + s * 0.12);
+      ctx.lineTo(x + s * 0.92, y + s * 0.5);
+      ctx.moveTo(x + s * 0.2, y + s * 0.42);
+      ctx.lineTo(x + s * 0.2, y + s * 0.88);
+      ctx.lineTo(x + s * 0.8, y + s * 0.88);
+      ctx.lineTo(x + s * 0.8, y + s * 0.42);
+      stroke();
+      ctx.beginPath();
+      ctx.rect(x + s * 0.42, y + s * 0.6, s * 0.16, s * 0.28);
+      ctx.fill();
+      break;
+    }
+    case "bolt": {
+      ctx.moveTo(x + s * 0.58, y + s * 0.06);
+      ctx.lineTo(x + s * 0.22, y + s * 0.54);
+      ctx.lineTo(x + s * 0.48, y + s * 0.54);
+      ctx.lineTo(x + s * 0.4, y + s * 0.94);
+      ctx.lineTo(x + s * 0.78, y + s * 0.42);
+      ctx.lineTo(x + s * 0.52, y + s * 0.42);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "key": {
+      ctx.arc(x + s * 0.3, cy, s * 0.18, 0, Math.PI * 2);
+      stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.48, cy);
+      ctx.lineTo(x + s * 0.92, cy);
+      ctx.moveTo(x + s * 0.76, cy);
+      ctx.lineTo(x + s * 0.76, cy + s * 0.14);
+      ctx.moveTo(x + s * 0.88, cy);
+      ctx.lineTo(x + s * 0.88, cy + s * 0.1);
+      stroke();
       break;
     }
     case "spark": {
