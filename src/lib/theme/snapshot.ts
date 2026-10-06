@@ -15,8 +15,20 @@ const ORIGIN = "http://boutique.apercu";
 const BASE = "/p";
 
 export function chromiumPath(): string | null {
-  for (const c of [process.env.CHROMIUM, "/usr/bin/chromium", "/usr/bin/chromium-browser", "/opt/pw-browsers/chromium"]) if (c && fs.existsSync(c)) return c;
+  // Réglage de test : simuler une installation sans navigateur de captures.
+  if (process.env.ES_NO_CHROMIUM === "1") return null;
+  for (const c of [process.env.CHROMIUM, "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome", "/opt/pw-browsers/chromium", playwrightChromium()]) if (c && fs.existsSync(c)) return c;
   return null;
+}
+
+/** Chromium téléchargé par Playwright (« npx playwright install chromium »), s'il est là. */
+function playwrightChromium(): string | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require("playwright") as typeof import("playwright")).chromium.executablePath() || null;
+  } catch {
+    return null;
+  }
 }
 
 const MIME: Record<string, string> = { css: "text/css; charset=utf-8", js: "application/javascript; charset=utf-8", json: "application/json", svg: "image/svg+xml" };

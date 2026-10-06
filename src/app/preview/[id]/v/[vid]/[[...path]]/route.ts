@@ -14,6 +14,9 @@ import { previewTools } from "@/lib/theme/preview-tools";
 import { L, uiLang } from "@/lib/i18n-server";
 import { previewCsp, previewCors, previewSegment, splitPreviewSegment, verifyPreview } from "@/lib/theme/preview-access";
 import type { ThemeSpec } from "@/lib/theme/spec";
+import { one } from "@/lib/db";
+import { DIRECTIONS, type DirectionId } from "@/lib/theme/directions";
+import { composedDirectionSpec } from "@/lib/theme/direction-thumb";
 
 export const runtime = "nodejs";
 
@@ -33,6 +36,13 @@ async function load(req: Request, ctx: P) {
     ownedProject(user, id);
     const url = new URL(req.url);
     redirect = `/preview/${id}/v/${previewSegment(vid, user.id, id)}${path?.length ? `/${path.map(encodeURIComponent).join("/")}` : "/"}${url.search}`;
+  }
+  // « dir-<direction> » : la boutique du projet composée dans une autre direction (vignettes de l'onglet Marque), rien d'enregistré.
+  if (vid.startsWith("dir-")) {
+    const d = vid.slice(4);
+    if (!DIRECTIONS.some((x) => x.id === d) || !one("SELECT 1 FROM projects WHERE id = ? AND brand_json IS NOT NULL AND brand_json != 'null'", id)) throw new HttpError(404, L("Direction introuvable.", "Direction not found."));
+    const spec = await composedDirectionSpec(id, d as DirectionId, currentTheme(id)?.spec.language ?? uiLang());
+    return { id, vid, spec, segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
   }
   const v = vid === "current" ? currentTheme(id) : themeVersion(id, vid);
   if (!v) throw new HttpError(404, L("Version de boutique introuvable.", "Store version not found."));
