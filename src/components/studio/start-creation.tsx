@@ -18,7 +18,7 @@ export function StartCreation() {
           <p className="mt-1 max-w-2xl text-sm text-muted">{t("Une boutique : ajoutez une photo, un lien de fiche produit ou quelques lignes. Un site de services : décrivez votre activité. Le studio enchaîne ensuite marque, site, images, vidéos et calendrier. Vous pouvez aussi explorer les onglets avant.", "A store: add a photo, a product page link or a few lines. A services website: describe your business. The studio then builds the brand, website, images, videos and calendar. You can also explore the tabs first.")}</p>
         </div>
       </div>
-      <NewProject projectId={id} compact existingPhotos={data?.counts.original ?? 0} initialBusiness={data?.business} initialPlatform={data?.project.platform} onDone={() => reload()} key={data ? "ready" : "loading"} />
+      <NewProject projectId={id} compact existingPhotos={data?.counts.original ?? 0} initialBusiness={data?.business} initialPlatform={data?.project.platform} initialServices={data?.services} onDone={() => reload()} key={data ? "ready" : "loading"} />
     </Card>
   );
 }

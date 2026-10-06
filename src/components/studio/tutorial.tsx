@@ -24,7 +24,7 @@ export function TutorialButton({ tab, business }: { tab: string; business?: "pro
   const show = () => { seen(); setOpen(id); };
   return (
     <>
-      <button type="button" onClick={show} className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-sm font-medium transition hover:border-ink" title={t("Comment fonctionne cet onglet ? Vidéo de 1 à 2 minutes", "How does this tab work? 1–2 minute video")}>
+      <button type="button" onClick={show} className="tuto-blink flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-sm font-medium transition hover:border-ink" title={t("Comment fonctionne cet onglet ? Vidéo de 1 à 2 minutes", "How does this tab work? 1–2 minute video")}>
         <PlayCircle className="size-4 text-signal" aria-hidden />
         <span className="hidden md:inline">{t("Tutoriel", "Tutorial")}</span>
         <span className="sr-only md:hidden">{t("Tutoriel", "Tutorial")}</span>

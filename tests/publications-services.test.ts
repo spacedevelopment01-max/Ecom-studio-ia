@@ -1,5 +1,8 @@
 /** Entreprise de services sans photo : chaque publication « image » du calendrier reçoit bien un visuel à la marque. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Moteur local seulement : une clé d'IA posée par un autre fichier de tests (même base) ne doit pas déclencher d'appel.
+vi.mock("@/lib/ai/llm", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/llm")>()), llmConfigured: () => false }));
 import { createUser } from "@/lib/auth";
 import { id, now, one, all, run } from "@/lib/db";
 import { enqueue, JobContext } from "@/lib/jobs";

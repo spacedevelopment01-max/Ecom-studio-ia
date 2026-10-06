@@ -45,7 +45,7 @@ type ThemeData = {
   directions: DirectionCard[];
   library: LibraryItem[];
 };
-type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string } | null;
+type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string; path?: string; role?: string } | null;
 
 /** Noms lisibles des sections, pour la désignation d'un élément dans l'aperçu. */
 const SECTION_NAMES: Record<string, string> = {

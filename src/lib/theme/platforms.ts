@@ -9,7 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { zipSync, strToU8 } from "fflate";
-import { storeProducts, themeLang, type ThemeSpec, type SectionInstance } from "./spec";
+import { storeProducts, themeLang, type ElementStyle, type ThemeSpec, type SectionInstance } from "./spec";
 import { pick, type Lang } from "../i18n";
 import { L } from "../i18n-server";
 import { themeAssetBinary, type AssetLoader } from "./compile";
@@ -64,12 +64,41 @@ function wpLink(url: unknown, fallback: string): string {
   return u;
 }
 
-function wpBlocksForSection(s: SectionInstance, img: (f: string) => string, lang: Lang = "fr", services = false): string {
+/**
+ * Couleurs d'un élément désigné dans le studio, retrouvé dans l'export WordPress par sa nature et son texte
+ * (le HTML WordPress n'est pas celui de l'aperçu) : attributs de bloc, classes et style en ligne de WordPress.
+ */
+function wpStyle(styles: ElementStyle[], role: ElementStyle["role"], text: unknown) {
+  const norm = (v: unknown) => strip(v).toLowerCase().replace(/\s+/g, " ").trim();
+  const t = norm(text);
+  const e = t.length >= 2 ? styles.find((x) => (x.role === role || (role === "text" && x.role === "other")) && x.text && (norm(x.text) === t || (t.length >= 4 && norm(x.text).startsWith(t)))) : undefined;
+  if (!e || (!e.color && !e.background)) return { attrs: "", cls: "", style: "" };
+  const color = { ...(e.color ? { text: e.color.toLowerCase() } : {}), ...(e.background ? { background: e.background.toLowerCase() } : {}) };
+  return {
+    attrs: `"style":${JSON.stringify({ color })}`,
+    cls: [e.color && "has-text-color", e.background && "has-background"].filter(Boolean).join(" "),
+    style: [e.color && `color:${e.color.toLowerCase()}`, e.background && `background-color:${e.background.toLowerCase()}`].filter(Boolean).join(";"),
+  };
+}
+
+function wpBlocksForSection(s: SectionInstance, img: (f: string) => string, lang: Lang = "fr", services = false, styles: ElementStyle[] = []): string {
   const shopUrl = services ? "/contact/" : pick(lang, "/boutique/", "/shop/");
   const st = s.settings as Record<string, any>;
-  const h = (t: unknown, lvl = 2) => (t ? `<!-- wp:heading {"level":${lvl}} -->\n<h${lvl} class="wp-block-heading">${esc(t)}</h${lvl}>\n<!-- /wp:heading -->\n` : "");
-  const p = (t: unknown) => (strip(t) ? `<!-- wp:paragraph -->\n<p>${esc(strip(t))}</p>\n<!-- /wp:paragraph -->\n` : "");
-  const btn = (label: unknown, url: unknown = st.button_link) => (label ? `<!-- wp:buttons -->\n<div class="wp-block-buttons"><!-- wp:button -->\n<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="${esc(wpLink(url, shopUrl))}">${esc(label)}</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons -->\n` : "");
+  const h = (t: unknown, lvl = 2) => {
+    if (!t) return "";
+    const w = wpStyle(styles, "heading", t);
+    return `<!-- wp:heading {"level":${lvl}${w.attrs ? `,${w.attrs}` : ""}} -->\n<h${lvl} class="wp-block-heading${w.cls ? ` ${w.cls}` : ""}"${w.style ? ` style="${w.style}"` : ""}>${esc(t)}</h${lvl}>\n<!-- /wp:heading -->\n`;
+  };
+  const p = (t: unknown) => {
+    if (!strip(t)) return "";
+    const w = wpStyle(styles, "text", t);
+    return `<!-- wp:paragraph${w.attrs ? ` {${w.attrs}}` : ""} -->\n<p${w.cls ? ` class="${w.cls}"` : ""}${w.style ? ` style="${w.style}"` : ""}>${esc(strip(t))}</p>\n<!-- /wp:paragraph -->\n`;
+  };
+  const btn = (label: unknown, url: unknown = st.button_link) => {
+    if (!label) return "";
+    const w = wpStyle(styles, "button", label);
+    return `<!-- wp:buttons -->\n<div class="wp-block-buttons"><!-- wp:button${w.attrs ? ` {${w.attrs}}` : ""} -->\n<div class="wp-block-button"><a class="wp-block-button__link${w.cls ? ` ${w.cls}` : ""} wp-element-button" href="${esc(wpLink(url, shopUrl))}"${w.style ? ` style="${w.style}"` : ""}>${esc(label)}</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons -->\n`;
+  };
   const list = (items: string[]) => (items.length ? `<!-- wp:list -->\n<ul class="wp-block-list">${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>\n<!-- /wp:list -->\n` : "");
   const cols = (inner: string[]) => `<!-- wp:columns -->\n<div class="wp-block-columns">${inner.map((c) => `<!-- wp:column -->\n<div class="wp-block-column">${c}</div>\n<!-- /wp:column -->`).join("\n")}</div>\n<!-- /wp:columns -->\n`;
   const lines = (v: unknown) => String(v ?? "").split(/\n+/).map((x) => x.trim()).filter(Boolean);
@@ -224,7 +253,8 @@ add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style( '${themeSlug}', get_stylesheet_uri(), array(), '1.0.0' );
 } );
 `);
-  const home = homeBlocks(spec).map(({ s }) => wpBlocksForSection(s, img, lang, services)).join("\n");
+  const stylesOf = (template: string, id: string) => (spec.elementStyles ?? []).filter((e) => e.template === template && e.section === id);
+  const home = homeBlocks(spec).map(({ id, s }) => wpBlocksForSection(s, img, lang, services, stylesOf("index", id))).join("\n");
   files["patterns/accueil.php"] = strToU8(`<?php
 /**
  * Title: ${commentSafe(`${t("Accueil", "Home")} ${spec.store.shopName}`)}
@@ -242,7 +272,7 @@ ${home}`);
     for (const page of spec.store.pages) {
       const tpl = spec.templates[`page.${page.template_suffix}`];
       if (!tpl) continue;
-      const body = tpl.order.map((id) => tpl.sections[id]).filter((x) => x && !x.disabled).map((x) => wpBlocksForSection(x, img, lang, true)).join("\n");
+      const body = tpl.order.filter((id) => tpl.sections[id] && !tpl.sections[id].disabled).map((id) => wpBlocksForSection(tpl.sections[id], img, lang, true, stylesOf(`page.${page.template_suffix}`, id))).join("\n");
       files[`patterns/${page.handle}.php`] = strToU8(`<?php\n/**\n * Title: ${commentSafe(page.title)}\n * Slug: ${themeSlug}/${page.handle}\n * Categories: featured\n */\n?>\n${body}`);
       files[`templates/page-${page.handle}.html`] = strToU8(`<!-- wp:template-part {"slug":"header","area":"header"} /-->\n<!-- wp:group {"tagName":"main"} -->\n<main class="wp-block-group"><!-- wp:pattern {"slug":"${themeSlug}/${page.handle}"} /--></main>\n<!-- /wp:group -->\n<!-- wp:template-part {"slug":"footer","area":"footer"} /-->`);
       sitePages.push({ slug: page.handle, title: page.title });

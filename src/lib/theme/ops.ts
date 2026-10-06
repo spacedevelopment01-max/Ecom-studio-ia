@@ -11,6 +11,7 @@ import {
   cloneSpec,
   coerceSetting,
   containerOf,
+  ELEMENT_PATH,
   globalSettingDefaults,
   parseSchemaBlock,
   sectionSchema,
@@ -31,6 +32,10 @@ export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("set_setting"), template: z.string(), section: z.string(), block: z.string().optional(), key: z.string(), value: Value }),
   z.object({ op: z.literal("set_global"), key: z.string(), value: Value }),
   z.object({ op: z.literal("set_scheme_color"), scheme: z.string().regex(/^[\w-]{1,40}$/), key: z.string().regex(/^[a-z0-9_]{1,40}$/), value: z.string() }),
+  /** Couleurs propres à UNE section (fond, texte…) : schéma dédié copié de celui de la section, les autres sections ne changent pas. */
+  /** Couleurs d'UN élément désigné dans l'aperçu (chemin fourni par la sélection) : texte et/ou fond, rien d'autre ne change. */
+  z.object({ op: z.literal("element_style"), template: z.string(), section: z.string(), path: z.string().max(600), role: z.enum(["heading", "text", "button", "other"]).optional(), text: z.string().max(200).optional(), color: z.string().optional(), background: z.string().optional() }),
+  z.object({ op: z.literal("section_colors"), template: z.string(), section: z.string(), colors: z.record(z.string().regex(/^[a-z0-9_]{1,40}$/), z.string()) }),
   z.object({ op: z.literal("add_section"), template: z.string(), type: z.string(), settings: Settings.optional(), blocks: z.array(z.object({ type: z.string(), settings: Settings.optional() })).optional(), position: Position }),
   z.object({ op: z.literal("remove_section"), template: z.string(), section: z.string() }),
   z.object({ op: z.literal("move_section"), template: z.string(), section: z.string(), position: z.object({ after: z.string().optional(), before: z.string().optional(), index: z.number().int().optional() }) }),
@@ -153,6 +158,16 @@ export function validateCustomSection(liquid: string): string | null {
   return null;
 }
 
+/** Contraste WCAG entre deux couleurs #RRGGBB. */
+function contrast(a: string, b: string): number {
+  const lum = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+}
+
 export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {}): ApplyResult {
   const spec = cloneSpec(input);
   const applied: string[] = [];
@@ -201,6 +216,71 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           }
           schemes[op.scheme].settings[op.key] = op.value.toUpperCase();
           applied.push(L(`Couleur ${op.key} du ${op.scheme} → ${op.value.toUpperCase()}`, `${op.scheme} ${op.key} color → ${op.value.toUpperCase()}`));
+          break;
+        }
+        case "element_style": {
+          const c = containerOf(spec, op.template);
+          if (!c?.sections[op.section]) {
+            reject(L(`section ${op.section} introuvable dans ${op.template}`, `section ${op.section} not found in ${op.template}`));
+            break;
+          }
+          if (isLocked(op.template, op.section)) {
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
+            break;
+          }
+          if (!ELEMENT_PATH.test(op.path)) {
+            reject(L("élément désigné introuvable (chemin invalide)", "selected element not found (invalid path)"));
+            break;
+          }
+          const hex = (v?: string) => (v && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toUpperCase() : undefined);
+          if ((op.color && !hex(op.color)) || (op.background && !hex(op.background)) || (!op.color && !op.background)) {
+            reject(L("couleur attendue au format #RRGGBB", "color expected in #RRGGBB format"));
+            break;
+          }
+          const list = (spec.elementStyles ??= []);
+          const i = list.findIndex((e) => e.template === op.template && e.section === op.section && e.path === op.path);
+          const prev = i >= 0 ? list[i] : undefined;
+          const next = { template: op.template, section: op.section, path: op.path, role: op.role ?? prev?.role ?? "other", text: op.text ?? prev?.text, color: hex(op.color) ?? prev?.color, background: hex(op.background) ?? prev?.background };
+          // Bouton recoloré sans couleur de texte : texte lisible garanti.
+          if (next.role === "button" && next.background && !hex(op.color) && (!next.color || contrast(next.color, next.background) < 4.5)) next.color = contrast("#111111", next.background) >= contrast("#FFFFFF", next.background) ? "#111111" : "#FFFFFF";
+          if (i >= 0) list[i] = next;
+          else list.push(next);
+          applied.push(L(`Élément « ${(next.text ?? op.path).slice(0, 40)} » (lui seul) : ${[next.color && `texte ${next.color}`, next.background && `fond ${next.background}`].filter(Boolean).join(", ")}`, `Element "${(next.text ?? op.path).slice(0, 40)}" (only): ${[next.color && `text ${next.color}`, next.background && `background ${next.background}`].filter(Boolean).join(", ")}`));
+          break;
+        }
+        case "section_colors": {
+          const c = containerOf(spec, op.template);
+          const s = c?.sections[op.section];
+          if (!c || !s) {
+            reject(L(`section ${op.section} introuvable dans ${op.template}`, `section ${op.section} not found in ${op.template}`));
+            break;
+          }
+          if (isLocked(op.template, op.section)) {
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
+            break;
+          }
+          const schemes = (spec.settings.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
+          const current = typeof s.settings.color_scheme === "string" && schemes[s.settings.color_scheme] ? s.settings.color_scheme : schemes["scheme-1"] ? "scheme-1" : Object.keys(schemes)[0];
+          if (!current) {
+            reject(L("ce thème n'a pas de schéma de couleurs", "this theme has no color scheme"));
+            break;
+          }
+          const bad = Object.entries(op.colors).find(([k, v]) => !/^#[0-9a-fA-F]{6}$/.test(v) || (spec.imported ? typeof schemes[current].settings[k] !== "string" : !SCHEME_KEYS.includes(k)));
+          if (bad || !Object.keys(op.colors).length) {
+            reject(L(`couleur invalide pour la section (${bad?.[0] ?? "aucune"})`, `invalid color for the section (${bad?.[0] ?? "none"})`));
+            break;
+          }
+          const own = `es-${op.section}`.replace(/[^\w-]/g, "-").slice(0, 40);
+          if (!schemes[own]) schemes[own] = { settings: { ...schemes[current].settings } };
+          const target = schemes[own].settings;
+          for (const [k, v] of Object.entries(op.colors)) target[k] = v.toUpperCase();
+          // Fond changé sans couleur de texte : texte lisible garanti (noir ou blanc selon le contraste).
+          if (op.colors.background && !op.colors.text && typeof target.text === "string" && contrast(target.text, target.background) < 4.5) {
+            target.text = contrast("#111111", target.background) >= contrast("#FFFFFF", target.background) ? "#111111" : "#FFFFFF";
+          }
+          spec.settings.color_schemes = schemes as any;
+          s.settings.color_scheme = own;
+          applied.push(L(`Couleurs de la section ${op.section} (elle seule) : ${Object.entries(op.colors).map(([k, v]) => `${k} ${v.toUpperCase()}`).join(", ")}`, `Colors of section ${op.section} (only): ${Object.entries(op.colors).map(([k, v]) => `${k} ${v.toUpperCase()}`).join(", ")}`));
           break;
         }
         case "set_setting":

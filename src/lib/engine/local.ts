@@ -13,7 +13,7 @@ import { contactCta, isServicesBusiness, serviceDirection, serviceNames, service
 import { DIRECTIONS, type DirectionId } from "../theme/directions";
 import type { ThemeOp } from "../theme/ops";
 import type { ThemeSpec } from "../theme/spec";
-import { availableSectionTypes, containerOf, sectionSchema } from "../theme/spec";
+import { availableSectionTypes, containerOf, sectionLabel, sectionSchema } from "../theme/spec";
 import { canvasFamily } from "../media/fonts";
 import { C, L, uiLang } from "../i18n-server";
 
@@ -814,32 +814,83 @@ function buttonColorTargets(spec: ThemeSpec): { key: string; schemes: string[] }
  * Les demandes sont comprises en français comme en anglais, quelle que soit la langue :
  * la réponse suit la langue de l'interface (L), les textes ajoutés au thème celle des contenus (C).
  */
-export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string } | null, business: BusinessType = "products"): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string; path?: string; role?: string; text?: string } | null, business: BusinessType = "products"): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
   const services = business === "services";
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|\bundo\b|go back|revert|previous version|roll ?back)/.test(m)) return { ops: [], reply: L("Je reviens à la version précédente.", "Going back to the previous version."), revert: true };
   const quoted = message.match(/[«"“]\s*([^»"”]+?)\s*[»"”]/)?.[1];
   const hex = message.match(/#[0-9a-fA-F]{6}\b/)?.[0];
   // Couleurs nommées : l'anglais d'abord (« or » est aussi une conjonction anglaise), puis le français.
-  const namedEn: Record<string, string> = { black: "#111111", white: "#FFFFFF", red: "#B42318", blue: "#1D4ED8", green: "#1F7A4D", gold: "#B8913A", golden: "#B8913A", beige: "#E8DCC8", pink: "#E7A5B5", orange: "#E07A2E", gray: "#6B6B6B", grey: "#6B6B6B" };
-  const namedFr: Record<string, string> = { noir: "#111111", blanc: "#FFFFFF", rouge: "#B42318", bleu: "#1D4ED8", vert: "#1F7A4D", or: "#B8913A", doré: "#B8913A", beige: "#E8DCC8", rose: "#E7A5B5", orange: "#E07A2E", gris: "#6B6B6B" };
+  const namedEn: Record<string, string> = { black: "#111111", white: "#FFFFFF", red: "#B42318", blue: "#1D4ED8", green: "#1F7A4D", gold: "#B8913A", golden: "#B8913A", beige: "#E8DCC8", pink: "#E7A5B5", orange: "#E07A2E", gray: "#6B6B6B", grey: "#6B6B6B", yellow: "#F2C94C", purple: "#6D28D9", violet: "#6D28D9", brown: "#7A4B2A", burgundy: "#7A1F2B", teal: "#0F766E", turquoise: "#14B8A6", cream: "#F3EBDD", navy: "#1E2A4A" };
+  const namedFr: Record<string, string> = { noir: "#111111", blanc: "#FFFFFF", rouge: "#B42318", bleu: "#1D4ED8", vert: "#1F7A4D", or: "#B8913A", doré: "#B8913A", beige: "#E8DCC8", rose: "#E7A5B5", orange: "#E07A2E", gris: "#6B6B6B", jaune: "#F2C94C", violet: "#6D28D9", marron: "#7A4B2A", bordeaux: "#7A1F2B", turquoise: "#14B8A6", crème: "#F3EBDD", "bleu nuit": "#1E2A4A", "bleu marine": "#1E2A4A", marine: "#1E2A4A" };
   const findColor = (named: Record<string, string>) => {
-    const k = Object.keys(named).find((w) => new RegExp(`\\b${w}\\b`).test(m));
+    // Le nom le plus long d'abord (« bleu nuit » avant « bleu ») ; limites de mot qui gèrent les accents (« doré », « crème »).
+    const k = Object.keys(named).sort((a, b) => b.length - a.length).find((w) => new RegExp(`(?<![\\p{L}])${w}(?![\\p{L}])`, "u").test(m));
     return k ? named[k] : undefined;
   };
   const color = hex ?? findColor(namedEn) ?? findColor(namedFr);
+  // Couleur de fond (« sur fond jaune », « fond #F5E1A4 ») et couleur du texte (l'autre couleur citée).
+  const named: Record<string, string> = { ...namedFr, ...namedEn };
+  const colorWords = `#[0-9a-fA-F]{6}|${Object.keys(named).sort((a, b) => b.length - a.length).join("|")}`;
+  const toHex = (w?: string) => (w ? (w.startsWith("#") ? w.toUpperCase() : named[w]) : undefined);
+  const bgColor = toHex(m.match(new RegExp(`(?:fond|arrière[- ]plan|background)\\s+(?:en\\s+|de\\s+|couleur\\s+)?(${colorWords})(?![\\p{L}])`, "u"))?.[1] ?? m.match(new RegExp(`(?<![\\p{L}])(${colorWords})\\s+(?:background|fond)\\b`, "u"))?.[1]);
+  const textColor = toHex([...m.matchAll(new RegExp(`(?<![\\p{L}#])(${colorWords})(?![\\p{L}])`, "gu"))].map((x) => x[1]).find((w) => toHex(w) !== bgColor));
   const ops: ThemeOp[] = [];
   const dir = DIRECTIONS.find((d) => m.includes(d.name.toLowerCase()) || m.includes(d.id));
   if (dir && /(style|direction|thème|theme|passe|switch|apply)/.test(m)) return { ops: [], reply: L(`J'applique la direction ${dir.name} en conservant vos textes et images.`, `Applying the ${dir.name} direction while keeping your copy and images.`), revert: false, direction: dir.id };
+  // Élément ou section désigné dans l'aperçu : la couleur ne touche QUE lui, jamais tout le site.
+  // Élément précis désigné (titre, texte, bouton…) : ses couleurs à lui seul (texte, fond).
+  if (color && selection?.path && (!selection.kind || selection.kind !== "Section") && !/(tous les boutons|tout le site|toute la page|all buttons|whole site|entire site)/.test(m)) {
+    const role = (["heading", "text", "button", "other"].includes(selection.role ?? "") ? selection.role : "other") as "heading" | "text" | "button" | "other";
+    const textWords = /(texte|écrit|ecrit|titre|police|lettres|text|font|title|letters)/.test(m);
+    let colorV = textColor;
+    let backgroundV = bgColor;
+    // Une seule couleur : le fond pour un bouton (« bouton rouge »), le texte pour un titre ou un texte.
+    if (!bgColor && textColor && role === "button" && !textWords) (backgroundV = textColor), (colorV = undefined);
+    const what = (selection.kind ?? L("élément", "element")).toLowerCase();
+    const name = selection.text ? ` « ${selection.text.slice(0, 40)} »` : "";
+    ops.push({ op: "element_style", template: selection.template, section: selection.section, path: selection.path, role, text: selection.text?.slice(0, 200), color: colorV, background: backgroundV });
+    const parts = [colorV && L(`texte ${colorV}`, `text ${colorV}`), backgroundV && L(`fond ${backgroundV}`, `background ${backgroundV}`)].filter(Boolean).join(", ");
+    return { ops, reply: L(`${what.charAt(0).toUpperCase() + what.slice(1)}${name} uniquement : ${parts}. Rien d'autre ne change.`, `${what.charAt(0).toUpperCase() + what.slice(1)}${name} only: ${parts}. Nothing else changes.`), revert: false };
+  }
+  if (color && selection && !/(bouton|button|cta|tout le site|toute la page|whole site|entire site)/.test(m)) {
+    const c = containerOf(spec, selection.template);
+    const s = c?.sections[selection.section];
+    const label = s ? sectionLabel(spec, s.type, uiLang()) : selection.section;
+    const isSection = !selection.block && (!selection.kind || selection.kind === "Section");
+    if (!isSection) {
+      const what = (selection.kind ?? "élément").toLowerCase();
+      return {
+        ops: [],
+        reply: L(
+          `Rien n'a été modifié. Dans la version simplifiée, je ne peux pas changer la couleur de ce seul élément (${what}) sans toucher au reste. Je peux mettre ces couleurs sur toute la section « ${label} » : cliquez « Toute la section », puis renvoyez votre demande.`,
+          `Nothing was changed. In the simplified version I can't change the color of this single element (${what}) without affecting the rest. I can apply these colors to the whole "${label}" section: click "Whole section", then send your request again.`,
+        ),
+        revert: false,
+      };
+    }
+    // « En rouge sur fond jaune » : texte rouge, fond jaune. Une seule couleur : le texte si on parle de texte, sinon le fond.
+    const textWords = /(texte|écrit|ecrit|titre|police|lettres|text|font|title|letters)/.test(m);
+    const colors: Record<string, string> = {};
+    if (bgColor) colors.background = bgColor;
+    if (textColor) colors.text = textColor;
+    if (!bgColor && textColor && !textWords) {
+      delete colors.text;
+      colors.background = textColor;
+    }
+    ops.push({ op: "section_colors", template: selection.template, section: selection.section, colors });
+    const parts = [colors.background && L(`fond ${colors.background}`, `background ${colors.background}`), colors.text && L(`texte ${colors.text}`, `text ${colors.text}`)].filter(Boolean).join(", ");
+    return { ops, reply: L(`Section « ${label} » uniquement : ${parts}. Le reste du site ne change pas.`, `"${label}" section only: ${parts}. The rest of the site is unchanged.`), revert: false };
+  }
   if (color && /(bouton|button|accent|cta)/.test(m)) {
     const target = buttonColorTargets(spec);
     if (!target.schemes.length) return { ops: [], reply: L("Je ne trouve pas le réglage de couleur des boutons de ce thème : changez-la dans l'éditeur de thème Shopify (Paramètres du thème › Couleurs).", "I can't find this theme's button color setting: change it in the Shopify theme editor (Theme settings › Colors)."), revert: false };
     for (const sc of target.schemes) ops.push({ op: "set_scheme_color", scheme: sc, key: target.key, value: color });
-    return { ops, reply: L(`Couleur des boutons : ${color}.`, `Button color: ${color}.`), revert: false };
+    return { ops, reply: L(`Couleur des boutons (tout le site) : ${color}.`, `Button color (whole site): ${color}.`), revert: false };
   }
   if (color && /(fond|arrière|background)/.test(m)) {
     ops.push({ op: "set_scheme_color", scheme: "scheme-1", key: "background", value: color });
-    return { ops, reply: L(`Fond principal : ${color}.`, `Main background: ${color}.`), revert: false };
+    return { ops, reply: L(`Fond principal du site (toutes les sections sur ce fond) : ${color}. Pour une seule section, sélectionnez-la d'abord dans l'aperçu.`, `Main site background (every section on this background): ${color}. For a single section, select it first in the preview.`), revert: false };
   }
   if (selection && quoted) {
     const c = containerOf(spec, selection.template);
