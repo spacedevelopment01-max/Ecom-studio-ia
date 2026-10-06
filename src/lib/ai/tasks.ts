@@ -982,6 +982,142 @@ export async function aiLogoSymbolCheck(b: Base, images: { photo?: Buffer; sheet
   );
 }
 
+// ---------------------------------------------------------------- direction artistique du logo (3 pistes)
+
+const ROLE = z.enum(["primary", "secondary", "accent", "light", "dark"]);
+export const RouteDraftSchema = z.object({
+  key: z.enum(["produit", "concept", "typo"]),
+  name: str,
+  why: str,
+  svg: str,
+  heading: str,
+  headingWeight: z.coerce.number().catch(600),
+  body: str,
+  case: z.enum(["upper", "title", "lower", "asis"]).catch("upper"),
+  tracking: z.coerce.number().catch(0.04),
+  composition: z.enum(["horizontal", "stacked", "emblem", "wordmark"]).catch("horizontal"),
+  ink: ROLE.catch("dark"),
+  accent: ROLE.catch("primary"),
+  ground: ROLE.catch("primary"),
+});
+const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
+
+function routesBrief(p: Project) {
+  const b = p.brand;
+  const pal = b?.palette;
+  return `Marque : ${b?.name ?? ""}${b?.tagline ? ` — signature « ${b.tagline} »` : ""}
+Personnalité : ${b?.personality.join(", ") || "à déduire"} · Cible : ${b?.audience || "à déduire"}
+Positionnement : ${b?.positioning?.slice(0, 300) ?? ""}
+Produit : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.visual.shape ? ` — forme : ${p.product.visual.shape}` : ""}${p.product.visual.description ? ` — ${p.product.visual.description.slice(0, 300)}` : ""}
+Palette (rôles) : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : ""}
+Familles disponibles (heading, body) et graisses : ${Object.entries(CANVAS_FONTS).map(([f, d]) => `${f} (${Object.keys(d.file).join("/")})`).join(", ")}
+Mots INTERDITS dans les dessins (vus chez le fournisseur, jamais repris) : ${p.product.visual.labelText?.join(", ") || "aucun"}`;
+}
+
+/** Trois pistes créatives (brief + dessins SVG), jamais utilisées sans nettoyage, lisibilité et contrôle (engine/creative-direction). */
+export async function aiCreativeRoutes(b: Base, p: Project, opts: { photo?: Buffer }) {
+  const r = await llmJson(
+    {
+      task: "logo_symbol",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().creativeRoutes,
+      context: projectContext(p, "brand"),
+      images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
+      prompt: `${routesBrief(p)}
+Couleur d'accent : le code exact du rôle choisi pour « accent » de chaque piste.
+Réponds { "competitorCodes": ["codes visuels habituels du secteur, évités"], "routes": [trois objets ${ROUTE_SHAPE}] } — une piste par clé, dans l'ordre produit, concept, typo.`,
+      maxTokens: 16000,
+    },
+    z.object({ competitorCodes: capped(str, 8).catch([]), routes: capped(RouteDraftSchema, 3) }),
+  );
+  return r.routes;
+}
+
+/** Reprise ciblée d'UNE piste, avec les défauts relevés par le contrôle. */
+export async function aiCreativeRedraw(b: Base, p: Project, opts: { key: "produit" | "concept" | "typo"; feedback: string; previous: unknown; photo?: Buffer }) {
+  return llmJson(
+    {
+      task: "logo_symbol",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().creativeRoutes,
+      context: projectContext(p, "brand"),
+      images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
+      prompt: `${routesBrief(p)}
+Redessine UNIQUEMENT la piste « ${opts.key} ». La version précédente a été refusée : ${opts.feedback}
+Version précédente (à ne pas recopier) : ${JSON.stringify(opts.previous ?? null).slice(0, 4000)}
+Garde l'esprit de la piste mais corrige ces points ; si l'idée elle-même est en cause, change d'idée.
+Réponds avec un seul objet ${ROUTE_SHAPE} (key = "${opts.key}").`,
+      maxTokens: 8000,
+    },
+    RouteDraftSchema,
+  );
+}
+
+const score = z.coerce.number().catch(0);
+export const RouteReviewSchema = z.object({
+  scores: z
+    .object({ originality: score, memorability: score, relevance: score, simplicity: score, smallSizes: score, coherence: score, distinctiveness: score })
+    .catch({ originality: 0, memorability: 0, relevance: 0, simplicity: 0, smallSizes: 0, coherence: 0, distinctiveness: 0 }),
+  // Réponse ambiguë ou absente : on suppose le pire (la piste n'est pas montrée).
+  cliche: z.boolean().catch(true),
+  resemblesKnownBrand: z.boolean().catch(true),
+  readsAsLetters: z.boolean().nullable().catch(null),
+  issues: capped(str, 6),
+  fix: str,
+});
+
+/** Contrôle « directeur de création » d'une piste, sur sa planche de mises en situation. */
+export async function aiCreativeReview(b: Base, input: { photo?: Buffer; board: Buffer; route: { key: string; name: string; why: string; markKind: string } }) {
+  return llmJson(
+    {
+      task: "quality_control",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().creativeReview,
+      images: [...(input.photo ? [{ data: input.photo, label: "photo du produit" }] : []), { data: input.board, label: "planche de la piste" }],
+      prompt: `Piste « ${input.route.name} » (${input.route.key}${input.route.markKind.includes("monogram") || input.route.markKind === "letter" ? ", avec monogramme" : ""}) — justification : ${input.route.why}
+Réponds { "scores": { "originality": 0-10, "memorability": 0-10, "relevance": 0-10, "simplicity": 0-10, "smallSizes": 0-10, "coherence": 0-10, "distinctiveness": 0-10 }, "cliche": true|false, "resemblesKnownBrand": true|false, "readsAsLetters": true|false|null, "issues": ["…"], "fix": "…" }.`,
+      maxTokens: 1500,
+    },
+    RouteReviewSchema,
+  );
+}
+
+export const SocialVoiceSchema = z.object({
+  pillars: capped(z.object({ title: str, idea: str }), 3),
+  say: capped(str, 5),
+  dontSay: capped(str, 5),
+  emoji: z.enum(["none", "sparing", "free"]).catch("sparing"),
+  emojis: capped(str, 8).catch([]),
+  captions: capped(z.object({ pillar: str, text: str }), 3),
+});
+
+/** Ligne éditoriale des réseaux (piliers, ce qu'on dit / ne dit pas, emojis, légendes d'exemple), contrôlée ensuite. */
+export async function aiSocialVoice(b: Base, p: Project) {
+  return llmJson(
+    {
+      task: "strategy",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().socialVoice,
+      context: projectContext(p, "social"),
+      prompt: `Réponds { "pillars": [{"title": "", "idea": ""}], "say": [""], "dontSay": [""], "emoji": "none|sparing|free", "emojis": [""], "captions": [{"pillar": "", "text": ""}] }.`,
+      maxTokens: 3000,
+    },
+    SocialVoiceSchema,
+  );
+}
+
 export async function aiClassify(b: Base, files: { id: string; name: string; kind: string; role: string | null; meta: string }[], folders: { key: string; name: string }[]) {
   return llmJson(
     {

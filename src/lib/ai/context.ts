@@ -48,6 +48,13 @@ export function projectContext(p: Project, scope: "all" | "shop" | "images" | "v
     out.push(`Direction artistique de la boutique : ${b.direction}`);
     if (b.story) out.push(`Histoire : ${b.story}`);
     if (b.validated.length) out.push(`Éléments VALIDÉS par le client (ne pas changer sans demande) : ${b.validated.join(", ")}`);
+    // Ligne éditoriale des réseaux (kit de la marque) : reprise par le calendrier et les réécritures de publications.
+    if (b.social && (scope === "social" || scope === "all")) {
+      const s = b.social;
+      out.push(`Ligne éditoriale réseaux — piliers : ${s.pillars.map((x) => `${x.title} (${x.idea})`).join(" ; ")}`);
+      out.push(`On dit : ${s.say.join(" ; ")}. On ne dit pas : ${s.dontSay.join(" ; ")}.`);
+      out.push(`Emojis : ${s.emoji === "none" ? "aucun" : s.emoji === "sparing" ? `un au plus par légende${s.emojis.length ? ` (${s.emojis.join(" ")})` : ""}` : "libres"}.`);
+    }
   }
   if (p.strategy) {
     out.push(`\n## Stratégie`);

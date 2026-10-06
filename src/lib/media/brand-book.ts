@@ -7,7 +7,7 @@ import { createCanvas, type Canvas, type Image, type SKRSContext2D } from "@napi
 import { contrast, hexToRgb, isDark, mix, onColor } from "../color";
 import { font } from "./fonts";
 import { jpegPagesToPdf } from "./pdf";
-import type { Brand, Strategy } from "../project-types";
+import type { Brand, SocialVoice, Strategy } from "../project-types";
 import { C, contentLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
 
@@ -23,6 +23,9 @@ export type BookInput = {
   product: Image | null; // produit détouré (applications)
   sectorLabel: string;
   date: Date;
+  /** Planche d'ensemble du kit réseaux sociaux et ligne éditoriale (planche « Réseaux sociaux »). */
+  social?: Image | null;
+  voice?: SocialVoice | null;
 };
 
 const W = 1754, H = 1240, M = 110;
@@ -84,7 +87,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   const paper = isDark(pal.light) ? "#F7F4EF" : pal.light;
   const accent = pal.primary;
   const HF = inp.headingFamily, BF = inp.bodyFamily;
-  const total = 10;
+  const total = inp.social || inp.voice ? 11 : 10;
   const canvases: Canvas[] = [];
   // Langue des contenus : toute la charte (titres, explications, dates) suit la langue du projet.
   const locale = intlLocale(contentLang());
@@ -470,6 +473,34 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     ctx.fillRect(px, 340 + ps - 90, ps, 90);
     text(ctx, b.tagline || b.name, px + ps / 2, 340 + ps - 34, font(HF, 600, 30), onColor(ink), "center");
     para(ctx, C("Les visuels du studio reprennent ces règles automatiquement : couleurs, typographies, marges et logo.", "The studio's visuals apply these rules automatically: colors, typefaces, margins and logo."), px, 880, ps, 22, mix(ink, paper, 0.3));
+  }
+
+  // 11 · Réseaux sociaux : kit (profil, stories à la une, modèles, bannières) et ligne éditoriale.
+  if (inp.social || inp.voice) {
+    const ctx = page();
+    head(ctx, 11, C("Réseaux sociaux", "Social media"), C("Le kit et la ligne éditoriale", "The kit and the editorial line"));
+    const kw = 1000;
+    if (inp.social) {
+      card(ctx, M, 300, kw, kw * 0.625 + 20, "#FFFFFF");
+      contain(ctx, inp.social, M + 10, 310, kw - 20, kw * 0.625);
+    }
+    const v = inp.voice;
+    if (v) {
+      const x = M + kw + 50, w = W - M - x;
+      let y = 320;
+      label(ctx, C("Piliers de contenu", "Content pillars"), x, y);
+      y = para(ctx, v.pillars.map((p, i) => `${i + 1}. ${p.title}`).join("\n"), x, y + 40, w, 24, ink, 1.45, 600, 560) + 16;
+      label(ctx, C("Ce qu'on dit", "What we say"), x, y, "#1F7A4D");
+      y = para(ctx, v.say.slice(0, 3).map((s) => `— ${s}`).join("\n"), x, y + 36, w, 21, ink, 1.4, 400, 800) + 12;
+      label(ctx, C("Ce qu'on ne dit pas", "What we don't say"), x, y, "#B42318");
+      y = para(ctx, v.dontSay.slice(0, 3).map((s) => `— ${s}`).join("\n"), x, y + 36, w, 21, ink, 1.4, 400, 1010) + 12;
+      label(ctx, "Emojis", x, y);
+      para(ctx, v.emoji === "none" ? C("Aucun emoji.", "No emoji.") : v.emoji === "sparing" ? C("Un au plus par légende, jamais à la place d'un mot.", "One at most per caption, never instead of a word.") : C("Libres, avec goût.", "Welcome, with taste."), x, y + 36, w, 21, ink, 1.4, 400, 1110);
+      if (v.captions[0]) {
+        label(ctx, C("Exemple de légende", "Sample caption"), M, 980);
+        para(ctx, v.captions[0].text.replace(/\n+/g, " "), M, 1020, kw, 22, mix(ink, paper, 0.2), 1.45, 400, 1120);
+      }
+    }
   }
 
   const pages = canvases.map((c) => c.toBuffer("image/jpeg", 88));

@@ -22,7 +22,8 @@ export type LogoSpec = {
   italic?: boolean;
   case: "upper" | "title" | "lower" | "asis";
   tracking: number; // en em (0 à 0,4)
-  layout: "wordmark" | "stacked" | "monogram" | "emblem" | "lockup" | "badge";
+  /** vertical : symbole centré au-dessus du nom (et de la signature). */
+  layout: "wordmark" | "stacked" | "monogram" | "emblem" | "lockup" | "badge" | "vertical";
   emblem: "none" | "circle" | "arch" | "line" | "diamond";
   monogram?: string;
   /** Symbole dessiné (lockup, badge) : une forme simple liée à l'univers du produit. */
@@ -32,6 +33,12 @@ export type LogoSpec = {
   color: string;
   /** Couleur d'accent du symbole (sinon couleur du logo). */
   accent?: string;
+  /** Logotype : point final dessiné dans la couleur d'accent. */
+  dot?: boolean;
+  /** Police de la signature (sinon Jost). */
+  taglineFamily?: string;
+  /** Marque réduite : cercle autour du symbole (par défaut) ; false pour un symbole qui a déjà son contenant. */
+  markFrame?: boolean;
 };
 
 export type SymbolKind = "leaf" | "drop" | "hanger" | "orbit" | "bean" | "paw" | "arch" | "wave" | "facet" | "sun" | "cup" | "spark";
@@ -273,6 +280,25 @@ export function buildLogo(spec: LogoSpec) {
       text(ctx, name, P + sym + gap, base, fam, wt, size, spec.tracking, color, spec.italic);
     });
   }
+  // Symbole centré au-dessus du nom, signature dessous (composition empilée).
+  if (spec.layout === "vertical") {
+    const size = 110;
+    const m = measure(name, fam, wt, size, spec.tracking, spec.italic);
+    const sym = Math.round(m.ascent * 2.6);
+    const tf = spec.taglineFamily ?? "Jost";
+    const tag = logoTagline(spec.tagline, 40);
+    const tagSize = 26;
+    const tm = tag ? measure(tag, tf, 500, tagSize, 0.22) : null;
+    const gap = Math.round(size * 0.42);
+    const W = Math.max(sym, m.width, tm?.width ?? 0) + P * 2;
+    const H = P + sym + gap + m.ascent + m.descent + (tm ? tagSize * 2.2 : 0) + P;
+    return render(W, H, (ctx) => {
+      drawMark(ctx, spec, (W - sym) / 2, P, sym, color);
+      const base = P + sym + gap + m.ascent;
+      text(ctx, name, (W - m.width) / 2, base, fam, wt, size, spec.tracking, color, spec.italic);
+      if (tm) text(ctx, tag, (W - tm.width) / 2, base + m.descent + tagSize * 1.75, tf, 500, tagSize, 0.22, color);
+    });
+  }
   // Emblème : symbole dans un cercle, nom et signature centrés dessous.
   if (spec.layout === "badge") {
     const ring = 300;
@@ -283,7 +309,7 @@ export function buildLogo(spec: LogoSpec) {
     // Signature de l'emblème : sans point final, et omise si elle est trop longue pour rester lisible en petit.
     const tag = logoTagline(spec.tagline, 34);
     const tagSize = 22;
-    const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.26) : null;
+    const tm = tag ? measure(tag, spec.taglineFamily ?? "Jost", 500, tagSize, 0.26) : null;
     const W = Math.max(ring, ...ms.map((x) => x.width), tm?.width ?? 0) + P * 2;
     const lineGap = nameSize * 1.04;
     const H = P + ring + 44 + ms[0].ascent + lineGap * (lines.length - 1) + ms[ms.length - 1].descent + (tm ? tagSize * 2.6 : 0) + P;
@@ -304,7 +330,7 @@ export function buildLogo(spec: LogoSpec) {
         text(ctx, l, (W - ms[i].width) / 2, y, fam, wt, nameSize, spec.tracking, color, spec.italic);
         if (i < lines.length - 1) y += lineGap;
       });
-      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 2, "Jost", 500, tagSize, 0.26, color);
+      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 2, spec.taglineFamily ?? "Jost", 500, tagSize, 0.26, color);
     });
   }
 
@@ -342,6 +368,8 @@ export function buildLogo(spec: LogoSpec) {
         ? drawMark(ctx, spec, ox + box * 0.25, box * 0.25, box * 0.5, color)
         : text(ctx, letters, ox + (box - m.width) / 2, box / 2 + (m.ascent - m.descent) / 2, fam, wt, size, 0.02, color, spec.italic);
     if (spec.layout === "monogram") {
+      // Symbole qui a déjà son contenant (disque, arche) : il remplit la marque réduite, sans cercle autour.
+      if (spec.markFrame === false && spec.monogram === "@symbol") return render(box, box, (ctx) => drawMark(ctx, spec, box * 0.06, box * 0.06, box * 0.88, color));
       return render(box, box, (ctx) => {
         frame(ctx, 0);
         mono(ctx, 0);
@@ -365,7 +393,7 @@ export function buildLogo(spec: LogoSpec) {
     const ms = lines.map((l) => measure(l, fam, wt, size, spec.tracking, spec.italic));
     const tagSize = 30;
     const tag = logoTagline(spec.tagline, 44);
-    const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.24) : null;
+    const tm = tag ? measure(tag, spec.taglineFamily ?? "Jost", 500, tagSize, 0.24) : null;
     const W = Math.max(...ms.map((m) => m.width), tm?.width ?? 0) + P * 2;
     const lineGap = size * 1.02;
     const H = P + ms[0].ascent + lineGap * (lines.length - 1) + ms[ms.length - 1].descent + (tm ? tagSize * 2.4 : 0) + P;
@@ -375,15 +403,24 @@ export function buildLogo(spec: LogoSpec) {
         text(ctx, l, (W - ms[i].width) / 2, y, fam, wt, size, spec.tracking, color, spec.italic);
         if (i < lines.length - 1) y += lineGap;
       });
-      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 1.9, "Jost", 500, tagSize, 0.24, color);
+      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 1.9, spec.taglineFamily ?? "Jost", 500, tagSize, 0.24, color);
     });
   }
   const m = measure(name, fam, wt, size, spec.tracking, spec.italic);
   const ruled = spec.emblem === "line";
-  const W = m.width + P * 2;
+  // Point final dessiné, couleur d'accent : le détail qui signe un logotype (épaisseur proche du fût des lettres).
+  const dotR = spec.dot ? size * (wt >= 700 ? 0.085 : wt >= 500 ? 0.07 : 0.055) : 0;
+  const dotGap = spec.dot ? size * (0.05 + spec.tracking) : 0;
+  const W = m.width + (spec.dot ? dotGap + dotR * 2 : 0) + P * 2;
   const H = P + m.ascent + m.descent + P + (ruled ? 26 : 0);
   return render(W, H, (ctx) => {
     text(ctx, name, P, P + m.ascent, fam, wt, size, spec.tracking, color, spec.italic);
+    if (spec.dot) {
+      ctx.fillStyle = spec.accent ?? color;
+      ctx.beginPath();
+      ctx.arc(P + m.width + dotGap + dotR, P + m.ascent - dotR, dotR, 0, Math.PI * 2);
+      ctx.fill();
+    }
     if (ruled) {
       ctx.fillStyle = color;
       ctx.fillRect(P, P + m.ascent + m.descent + 20, m.width, 5);
@@ -410,7 +447,8 @@ export async function logoPng(spec: LogoSpec, width: number): Promise<Buffer> {
 /** Ensemble livrable : logo principal (SVG + PNG), version claire, monogramme et favicon. */
 export async function logoSet(spec: LogoSpec, lightColor = "#FFFFFF") {
   // Avec un symbole, la marque réduite (monogramme, favicon) reprend le symbole plutôt que les initiales.
-  const withSymbol = (!!spec.symbol || !!spec.custom) && (spec.layout === "lockup" || spec.layout === "badge");
+  // Un symbole sur mesure (y compris le monogramme dessiné d'un logotype) sert toujours de marque réduite.
+  const withSymbol = !!spec.custom || (!!spec.symbol && (spec.layout === "lockup" || spec.layout === "badge" || spec.layout === "vertical"));
   const monoSpec: LogoSpec = { ...spec, layout: "monogram", emblem: spec.emblem === "none" || spec.emblem === "line" ? "circle" : spec.emblem, ...(withSymbol ? { monogram: "@symbol" } : {}) };
   const lightSpec = { ...spec, color: lightColor, accent: lightColor };
   return {

@@ -35,6 +35,9 @@ export function brandTypo(p: Project): Typo {
   const heading = canvasFamily(p.brand?.fonts.heading ?? d.fonts.heading, "Cormorant");
   const body = canvasFamily(p.brand?.fonts.body ?? d.fonts.body, "Jost");
   const heavy = ["brut", "elan", "pop"].includes(d.id);
+  // Piste de logo retenue : visuels et publications reprennent ses typographies (même voix que le logo et le kit).
+  const route = p.brand?.logo.route;
+  if (route) return { heading: route.heading, body: route.body, headingWeight: Math.min(800, Math.max(500, route.headingWeight)), uppercase: d.id === "brut" || d.id === "elan" };
   return { heading, body, headingWeight: heavy ? 800 : 500, uppercase: d.id === "brut" || d.id === "elan" };
 }
 

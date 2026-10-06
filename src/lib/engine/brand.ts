@@ -10,6 +10,7 @@ import { assetData, getAsset } from "../library";
 import { sectorLabel } from "../project-types";
 import { C, L, contentLang } from "../i18n-server";
 import { generateLogos, proposeTaglines } from "./identity";
+import { latestSocialKit } from "./social-kit";
 import { brandFromAi } from "../ai/tasks";
 import { aiBrandChecked, finalizeBrand } from "./brand-check";
 import { llmConfigured } from "../ai/llm";
@@ -93,11 +94,16 @@ export async function saveBrandBook(projectId: string) {
   const derived = (role: string) => (main ? all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND source_asset_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role, main.id)[0] : undefined) ?? latest(role);
   const img = async (a?: Asset) => (a ? loadImage(assetData(a)) : null);
   const d = directionById(b.direction);
+  // Piste de logo retenue : la charte reprend ses typographies (logo, kit et charte parlent d'une seule voix).
+  const route = b.logo.route;
+  const kit = latestSocialKit(projectId);
   const { pages, pdf } = renderBrandBook({
     brand: b,
     strategy: p.strategy,
-    headingFamily: canvasFamily(b.fonts.heading ?? d.fonts.heading, "Cormorant"),
-    bodyFamily: canvasFamily(b.fonts.body ?? d.fonts.body, "Jost"),
+    headingFamily: route?.heading ?? canvasFamily(b.fonts.heading ?? d.fonts.heading, "Cormorant"),
+    bodyFamily: route?.body ?? canvasFamily(b.fonts.body ?? d.fonts.body, "Jost"),
+    social: kit ? await img(kit.sheet) : null,
+    voice: b.social ?? null,
     logo: await img(main),
     logoLight: await img(derived("logo-light")),
     logoWeb: await img(derived("logo-horizontal") ?? main),

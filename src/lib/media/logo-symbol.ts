@@ -23,7 +23,8 @@ export type SymbolShape = {
 };
 
 export type CustomSymbol = {
-  source: "ai" | "silhouette";
+  /** ai : dessiné par l'IA ; silhouette : tirée du détourage ; monogram : monogramme construit localement. */
+  source: "ai" | "silhouette" | "monogram";
   /** Carré [x, y, côté] centré sur le dessin. */
   viewBox: [number, number, number];
   shapes: SymbolShape[];
@@ -90,7 +91,8 @@ function rectPath(x: number, y: number, w: number, h: number, rx: number, ry: nu
  * 1 à 3 formes simples ; aucun texte, police, image, script, lien, style, filtre, dégradé ni transformation.
  * Couleurs : `currentColor` (ou une couleur sombre) pour la couleur du logo, l'accent fourni pour une forme au plus.
  */
-export function sanitizeSymbolSvg(input: string, opts: { accent?: string } = {}): SanitizeResult {
+export function sanitizeSymbolSvg(input: string, opts: { accent?: string; maxShapes?: number } = {}): SanitizeResult {
+  const maxShapes = Math.min(6, Math.max(1, opts.maxShapes ?? MAX_SHAPES));
   const no = (reason: string): SanitizeResult => ({ ok: false, reason });
   if (typeof input !== "string" || !input.trim()) return no("SVG vide");
   if (input.length > MAX_SVG_CHARS) return no(`SVG trop lourd (${input.length} caractères, ${MAX_SVG_CHARS} au plus)`);
@@ -140,7 +142,7 @@ export function sanitizeSymbolSvg(input: string, opts: { accent?: string } = {})
     if (name === "svg") root = node;
     if (SHAPES.has(name)) {
       shapes.push({ node });
-      if (shapes.length > MAX_SHAPES) return no(`trop de formes (${MAX_SHAPES} au plus)`);
+      if (shapes.length > maxShapes) return no(`trop de formes (${maxShapes} au plus)`);
     }
     if (!selfClosing) {
       if (SHAPES.has(name) && src.slice(pos).match(/^\s*<\s*\/\s*([A-Za-z]+)\s*>/)?.[1]?.toLowerCase() !== name) return no("contenu interdit dans une forme");

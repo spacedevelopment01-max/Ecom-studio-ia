@@ -94,7 +94,18 @@ export type Brand = {
   tone: { voice: string; do: string[]; dont: string[] };
   palette: BrandPalette;
   fonts: { heading: string; body: string };
-  logo: { assetId?: string; markAssetId?: string; concept: string; status: "proposed" | "validated" | "provided"; proposal?: "logotype" | "symbole" | "embleme" };
+  logo: {
+    assetId?: string;
+    markAssetId?: string;
+    concept: string;
+    status: "proposed" | "validated" | "provided";
+    /** Piste créative retenue (produit, concept, typo) ; anciennes propositions : logotype, symbole, emblème. */
+    proposal?: "logotype" | "symbole" | "embleme" | "produit" | "concept" | "typo";
+    /** Typographies et couleurs de la piste retenue (kit réseaux sociaux, charte, visuels). */
+    route?: { key: string; name: string; heading: string; headingWeight: number; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; source: "ai" | "local" };
+  };
+  /** Ligne éditoriale des réseaux sociaux (approche community manager). */
+  social?: SocialVoice;
   /** Autres signatures proposées (au choix du client). */
   taglineAlternatives?: string[];
   /** Points que le contrôle qualité n'a pas pu corriger seul : à vérifier par le client (nom, signature, palette…). */
@@ -103,6 +114,16 @@ export type Brand = {
   values: { title: string; text: string }[];
   direction: DirectionId;
   validated: string[];
+  generatedBy: "ai" | "local";
+};
+
+export type SocialVoice = {
+  pillars: { title: string; idea: string }[];
+  say: string[];
+  dontSay: string[];
+  emoji: "none" | "sparing" | "free";
+  emojis: string[];
+  captions: { pillar: string; text: string }[];
   generatedBy: "ai" | "local";
 };
 

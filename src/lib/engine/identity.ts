@@ -14,13 +14,26 @@ import type { JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { serviceSymbol, serviceTaglines } from "./services-text";
 import type { CustomSymbol } from "../media/logo-symbol";
-import { designSymbol, type SymbolAi } from "./logo-symbol";
 import { llmConfigured } from "../ai/llm";
-import { aiLogoSymbol, aiLogoSymbolCheck, logoSymbolPassed } from "../ai/tasks";
+import { aiCreativeRedraw, aiCreativeReview, aiCreativeRoutes, lintClaims, lintHollow } from "../ai/tasks";
+import { designRoutes, localRoutes, roleColors, type BrandInput, type CreativeAi, type RouteDraft } from "./creative-direction";
+import { routeBoard, routeLogoSpec, type CreativeRoute, type RouteReview } from "../media/brand-mockups";
+import { monogramLetter } from "../media/monogram";
+import { saveSocialKit } from "./social-kit";
+import sharp from "sharp";
 import { validCutouts } from "./cutouts";
 import { assetData } from "../library";
 
-export type LogoProposal = { key: "logotype" | "symbole" | "embleme"; label: string; concept: string; spec: Omit<LogoSpec, "color"> };
+export type LogoProposal = {
+  key: "logotype" | "symbole" | "embleme" | "produit" | "concept" | "typo";
+  label: string;
+  concept: string;
+  spec: Omit<LogoSpec, "color">;
+  /** Couleurs propres à la piste (sinon celles déduites de la palette). */
+  colors?: { color: string; accent: string };
+  /** Piste créative complète (typographie, palette, symbole, contrôle). */
+  route?: CreativeRoute;
+};
 
 const SECTOR_SYMBOL: Record<string, SymbolKind> = {
   beaute: "drop", mode: "hanger", bijoux: "facet", maison: "arch", hightech: "orbit", sport: "wave",
@@ -113,74 +126,89 @@ export function logoColors(p: Pick<Project, "brand">) {
   return { color, accent };
 }
 
+/** Clés des pistes créatives (nouvelles propositions) et des propositions de l'ancienne génération. */
+export const PROPOSAL_KEYS = ["produit", "concept", "typo", "logotype", "symbole", "embleme"] as const;
+export type ProposalKey = (typeof PROPOSAL_KEYS)[number];
+
+/** Accès à l'IA de la direction artistique, branché sur les tâches réelles. */
+function realRouteAi(p: Project, cutout: Buffer | null): CreativeAi {
+  const base = { userId: p.userId, projectId: p.id };
+  const k = (what: string) => `${what}:${p.id}:${Date.now().toString(36)}`;
+  return {
+    routes: () => aiCreativeRoutes({ ...base, usageKey: k("logo-routes") }, p, { photo: cutout ?? undefined }) as Promise<RouteDraft[]>,
+    redraw: (key, feedback, previous) => aiCreativeRedraw({ ...base, usageKey: k(`logo-route-${key}`) }, p, { key, feedback, previous, photo: cutout ?? undefined }) as Promise<RouteDraft>,
+    review: (route, board) => aiCreativeReview({ ...base, usageKey: k(`logo-route-review-${route.key}`) }, { photo: cutout ?? undefined, board, route }) as Promise<RouteReview>,
+  };
+}
+
+/** Allégations et formules creuses dans le nom ou la justification d'une piste. */
+const routeTextIssues = (p: Project) => (text: string) => [...lintClaims({ t: text }, p).map((c) => c.term), ...lintHollow({ t: text }).map((h) => h.term)];
+
 /**
- * Crée (ou recrée) les propositions, applique celle choisie et met à jour la boutique.
- * `choice` : clé de proposition ; à défaut, celle déjà choisie, puis celle de la direction.
+ * Crée (ou recrée) les trois pistes créatives, applique celle choisie et met à jour la boutique.
+ * `redrawSymbol` : nouvelle création (nouvelle marque, « Recréer les propositions ») ; sinon les pistes précédentes
+ * sont reprises (changement de nom ou de palette : mêmes dessins, couleurs et monogrammes mis à jour, sans IA).
+ * `choice` : clé de piste ; à défaut, celle déjà choisie, puis la première.
  */
-export async function generateLogos(ctx: JobContext | null, projectId: string, opts: { base?: Omit<LogoSpec, "color">; choice?: LogoProposal["key"]; redrawSymbol?: boolean; symbolAi?: SymbolAi | null } = {}) {
+export async function generateLogos(ctx: JobContext | null, projectId: string, opts: { base?: Omit<LogoSpec, "color">; choice?: ProposalKey; redrawSymbol?: boolean; routeAi?: CreativeAi | null } = {}) {
   const p = loadProject(projectId);
   if (!p.brand) throw new Error(L("La marque doit exister avant le logo.", "The brand must exist before the logo."));
-  // Sans base fournie, le logotype garde le dessin de la proposition précédente (police, casse, interlettrage).
-  const previous = latestProposals(projectId);
-  const prevWord = previous.find((x) => x.info.key === "logotype")?.info.spec;
-  const { color, accent } = logoColors(p);
-  // Symbole sur mesure : recréé à la demande (nouvelle marque, « Recréer les propositions ») ; sinon celui des
-  // propositions précédentes est repris tel quel (changement de nom ou de palette : pas de nouveau dessin).
-  const prevSym = previous.find((x) => x.info.key === "symbole")?.info;
-  let custom: CustomMark | null = null;
-  let symbolNotes: string[] = [];
-  if (!opts.redrawSymbol && prevSym?.symbolTried) custom = prevSym.spec?.custom ? { symbol: prevSym.spec.custom, concept: prevSym.symbolConcept ?? "", source: prevSym.symbolSource ?? "ai" } : null;
-  else {
-    ctx?.progress(0.55, L("Symbole sur mesure", "Custom symbol"));
-    const design = await customSymbolFor(p, color, accent, opts.symbolAi);
-    symbolNotes = design.notes;
-    if (design.symbol) custom = { symbol: design.symbol, concept: design.concept, source: design.source };
-    if (symbolNotes.length) console.info(`[logo] ${projectId} : ${symbolNotes.join(" | ")}`);
-  }
-  const proposals = logoProposals(p, opts.base ?? (prevWord ? { ...prevWord, name: p.brand.name } : undefined), custom);
-  const common = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const };
-  ctx?.progress(0.6, L("Propositions de logo", "Logo proposals"));
-  const batch = Date.now().toString(36);
-  for (const pr of proposals) {
-    const png = await logoPng({ ...pr.spec, color, accent }, 900);
-    const symbolMeta = pr.key === "symbole" ? { symbolTried: true, symbolSource: custom?.source ?? "library", symbolConcept: custom?.concept, symbolNotes } : {};
-    await saveAsset({ ...common, data: png, name: C(`proposition-${pr.key}.png`, `proposal-${pr.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, batch, ...symbolMeta } });
-  }
-  // Un symbole sur mesure validé devient la proposition par défaut (le choix déjà fait par le client est gardé).
-  const choice = opts.choice ?? p.brand.logo.proposal ?? (custom ? "symbole" : defaultProposal(p.brand.direction));
-  return applyLogo(ctx, projectId, proposals.find((x) => x.key === choice) ?? proposals[0]);
-}
-
-/** Symbole sur mesure du projet : IA (si disponible), sinon silhouette du détourage validé, sinon rien. */
-async function customSymbolFor(p: Project, color: string, accent: string, injected?: SymbolAi | null) {
+  const brand = p.brand;
   const best = p.business === "services" ? undefined : validCutouts(p.id)[0];
   const cutout = best ? assetData(best) : null;
-  const base = { userId: p.userId, projectId: p.id };
-  const ai: SymbolAi | null =
-    injected !== undefined
-      ? injected
-      : llmConfigured()
-        ? {
-            draw: (feedback) => aiLogoSymbol({ ...base, usageKey: `logo-symbol:${p.id}:${Date.now().toString(36)}` }, p, { photo: cutout ?? undefined, accent, feedback }),
-            check: (sheet) => aiLogoSymbolCheck({ ...base, usageKey: `logo-symbol-check:${p.id}:${Date.now().toString(36)}` }, { photo: cutout ?? undefined, sheet }),
-            passed: logoSymbolPassed,
-          }
-        : null;
-  return designSymbol({ project: p, cutout, color, accent, ai });
+  const binput: BrandInput = { name: brand.name, tagline: brand.tagline, palette: brand.palette, direction: brand.direction, sector: p.product.sector };
+  const previous = latestProposals(projectId).filter((x) => x.info.route);
+  let routes: CreativeRoute[];
+  let notes: string[] = [];
+  let aiState = "off";
+  const sameInitial = previous.length && monogramLetter(previous[0].info.brandName ?? "") === monogramLetter(brand.name);
+  if (!opts.redrawSymbol && previous.length && sameInitial) {
+    // Reprise : les dessins de l'IA restent, couleurs recalculées depuis la palette ; les versions du studio sont refaites.
+    const local = await localRoutes(binput, { cutout, library: symbolFor(p) });
+    routes = previous.map((x) => {
+      const r = x.info.route as CreativeRoute;
+      if (r.source === "local") return local[r.key].find((c) => c.markKind === r.markKind) ?? local[r.key][0] ?? r;
+      return r.roles ? { ...r, colors: roleColors(brand.palette, r.roles.ink, r.roles.accent, r.roles.ground, r.roles.tint) } : r;
+    });
+  } else {
+    ctx?.progress(0.55, L("Pistes créatives du logo", "Logo creative routes"));
+    const ai = opts.routeAi !== undefined ? opts.routeAi : llmConfigured() ? realRouteAi(p, cutout) : null;
+    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), ai, textIssues: routeTextIssues(p) });
+    routes = design.routes;
+    notes = design.notes;
+    aiState = design.ai;
+    if (notes.length) console.info(`[logo] ${projectId} : ${notes.join(" | ")}`);
+  }
+  const common = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const };
+  ctx?.progress(0.65, L("Planches de présentation", "Presentation boards"));
+  const batch = Date.now().toString(36);
+  const proposals: LogoProposal[] = [];
+  for (const route of routes) {
+    const full = routeLogoSpec(route, brand);
+    const { color, accent, ...spec } = full;
+    const pr: LogoProposal = { key: route.key, label: route.name, concept: route.why, spec: { ...spec, accent }, colors: { color, accent: accent ?? color }, route };
+    proposals.push(pr);
+    const png = await logoPng(full, 900);
+    const asset = await saveAsset({ ...common, data: png, name: C(`piste-${route.key}.png`, `route-${route.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, colors: pr.colors, route, brandName: brand.name, batch, ai: aiState, notes } });
+    const board = await routeBoard({ route, brand, product: cutout });
+    await saveAsset({ ...common, data: await sharp(board).jpeg({ quality: 86 }).toBuffer(), name: C(`planche-piste-${route.key}.jpg`, `route-board-${route.key}.jpg`), mime: "image/jpeg", role: "logo-route-board", sourceAssetId: asset.id, meta: { key: route.key, batch } });
+  }
+  const wanted = opts.choice ?? brand.logo.proposal;
+  return applyLogo(ctx, projectId, proposals.find((x) => x.key === wanted) ?? proposals[0]);
 }
 
-/** Déclinaisons livrables d'une proposition, puis remplacement du logo dans la boutique. */
+/** Déclinaisons livrables d'une proposition, puis remplacement du logo dans la boutique et kit réseaux sociaux. */
 export async function applyLogo(ctx: JobContext | null, projectId: string, pr: LogoProposal) {
   const p = loadProject(projectId);
   const brand = p.brand!;
-  const { color, accent } = logoColors(p);
+  const { color, accent } = pr.colors ?? logoColors(p);
   ctx?.progress(0.75, L("Déclinaisons du logo", "Logo variations"));
-  const spec: LogoSpec = { ...pr.spec, name: brand.name, ...(pr.spec.layout === "badge" ? { tagline: brand.tagline } : {}), color, accent };
+  const spec: LogoSpec = { ...pr.spec, name: brand.name, ...(pr.spec.layout === "badge" || pr.spec.layout === "vertical" ? { tagline: brand.tagline } : {}), color, accent };
   const set = await logoSet(spec, "#FFFFFF");
-  // Un emblème rond sert sur les étiquettes et emballages ; le site utilise la version horizontale.
-  const webSpec: LogoSpec = spec.layout === "badge" ? { ...spec, layout: "lockup", tagline: undefined } : spec;
+  // Un emblème rond ou une composition empilée servent sur les étiquettes et emballages ; le site utilise la version horizontale.
+  const webSpec: LogoSpec = spec.layout === "badge" || spec.layout === "vertical" ? { ...spec, layout: "lockup", tagline: undefined } : spec;
   const web = webSpec === spec ? null : await logoSet(webSpec, "#FFFFFF");
-  const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { spec: pr.spec, concept: pr.concept, proposal: pr.key } };
+  const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { spec: pr.spec, concept: pr.concept, proposal: pr.key, route: pr.route?.name } };
   const main = await saveAsset({ ...base, data: set.mainPng, name: C("logo-principal.png", "logo-main.png"), mime: "image/png", role: "logo", status: "review" });
   await saveAsset({ ...base, data: Buffer.from(set.mainSvg), name: C("logo-principal.svg", "logo-main.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-svg", sourceAssetId: main.id });
   const light = await saveAsset({ ...base, data: (web ?? set).lightPng, name: C("logo-clair.png", "logo-light.png"), mime: "image/png", role: "logo-light", sourceAssetId: main.id });
@@ -190,8 +218,15 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   await saveAsset({ ...base, data: set.monoPng, name: C("marque-reduite.png", "brand-mark.png"), mime: "image/png", role: "logo-mark", sourceAssetId: main.id });
   await saveAsset({ ...base, data: Buffer.from(set.monoSvg), name: C("marque-reduite.svg", "brand-mark.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id });
   const fav = await saveAsset({ ...base, data: set.faviconPng, name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
-  saveBrand(projectId, { ...brand, logo: { ...brand.logo, assetId: main.id, concept: pr.concept, status: "proposed", proposal: pr.key } });
+  const r = pr.route;
+  const route = r ? { key: r.key, name: r.name, heading: r.heading, headingWeight: r.headingWeight, body: r.body, colors: r.colors, source: r.source } : undefined;
+  saveBrand(projectId, { ...brand, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, route } });
   swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id });
+  // Kit réseaux sociaux aux couleurs et typographies de la piste choisie (sans nouvel appel à l'IA).
+  if (r) {
+    ctx?.progress(0.82, L("Kit réseaux sociaux", "Social media kit"));
+    await saveSocialKit(projectId, { route: r }).catch((e) => console.error(`[kit social] ${projectId} : ${(e as Error).message}`));
+  }
   return { main, proposal: pr.key };
 }
 
@@ -211,15 +246,18 @@ export function swapThemeLogos(projectId: string, ids: { logo: string; light: st
   return changed ? saveThemeVersion(projectId, spec, L("Logo mis à jour", "Logo updated"), "system") : null;
 }
 
-/** Dernières propositions enregistrées (une par clé). */
+/** Dernières propositions enregistrées : celles du dernier lot (une par clé), pistes d'abord. */
 export function latestProposals(projectId: string) {
   const rows = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo-proposal' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 12", projectId);
   const seen = new Map<string, Asset & { info: any }>();
+  let batch: string | undefined;
   for (const r of rows) {
     const info = json<any>(r.meta as any, {});
+    if (batch === undefined) batch = info.batch;
+    if (info.batch !== batch) continue;
     if (!seen.has(info.key)) seen.set(info.key, { ...r, info });
   }
-  return ["logotype", "symbole", "embleme"].map((k) => seen.get(k)).filter(Boolean) as (Asset & { info: any })[];
+  return PROPOSAL_KEYS.map((k) => seen.get(k)).filter(Boolean) as (Asset & { info: any })[];
 }
 
 /** Logo du client : envoyé par lui, ou repris de son site existant. */
