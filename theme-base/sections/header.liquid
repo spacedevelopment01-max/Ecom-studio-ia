@@ -22,6 +22,7 @@
   if cta_href contains '://'
     assign cta_external = true
   endif
+  assign mega = section.settings.mega_menu | default: 'none'
 -%}
 <header class="es-header es-header--{{ section.settings.layout }} es-header--shape-{{ shape }} es-header--icons-{{ section.settings.icons }}{% if section.settings.sticky %} es-header--sticky{% endif %}{% if transparent %} es-header--transparent{% endif %} color-{{ section.settings.color_scheme }}" data-header>
   <div class="es-header__inner es-container">
@@ -42,7 +43,67 @@
     <nav class="es-header__nav" aria-label="{{ 'sections.header.navigation' | t }}">
       <ul role="list">
         {%- for link in menu.links -%}
-          <li><a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+          {%- liquid
+            assign has_children = false
+            if link.links.size > 0
+              assign has_children = true
+            endif
+          -%}
+          <li class="es-nav__item{% if has_children %} es-nav__item--parent{% if mega != 'none' %} es-nav__item--mega{% endif %}{% endif %}">
+            <a href="{{ link.url }}" class="es-nav__link"{% if link.active %} aria-current="page"{% endif %}{% if has_children %} aria-haspopup="true"{% endif %}>
+              {%- if section.settings.desktop_icons %}{% render 'es-link-extra', blocks: section.blocks, title: link.title, mode: 'icon' %}{% endif -%}
+              <span>{{ link.title }}</span>
+              {%- if has_children %}<span class="es-nav__caret" aria-hidden="true">{% render 'icon', name: 'plus' %}</span>{% endif -%}
+            </a>
+            {%- if has_children -%}
+              {%- if mega == 'none' -%}
+                <ul class="es-dropdown color-{{ section.settings.color_scheme }}" role="list">
+                  {%- for child in link.links -%}
+                    <li>
+                      <a href="{{ child.url }}">{% render 'es-link-extra', blocks: section.blocks, title: child.title, mode: 'icon' %}<span>{{ child.title }}</span></a>
+                      {%- if child.links.size > 0 -%}
+                        <ul class="es-dropdown__sub" role="list">
+                          {%- for grandchild in child.links -%}<li><a href="{{ grandchild.url }}">{{ grandchild.title }}</a></li>{%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- else -%}
+                <div class="es-mega es-mega--{{ mega }} color-{{ section.settings.color_scheme }}">
+                  <div class="es-container es-mega__inner">
+                    {%- if mega == 'featured' -%}
+                      <div class="es-mega__promos es-mega__promos--lead">{% render 'es-menu-promo', blocks: section.blocks, where: 'mega', menu_title: link.title, limit: 1, size: 'large' %}</div>
+                    {%- endif -%}
+                    <div class="es-mega__links">
+                      {%- for child in link.links -%}
+                        {%- if mega == 'cards' -%}
+                          {%- capture card_img -%}{% render 'es-link-extra', blocks: section.blocks, title: child.title, mode: 'image', class: 'es-mega__card-img' %}{%- endcapture -%}
+                          <a href="{{ child.url }}" class="es-mega__card">
+                            {%- if card_img != blank -%}{{ card_img }}{%- else -%}<span class="es-link-img es-mega__card-img es-mega__card-img--empty" aria-hidden="true">{{ child.title | slice: 0 }}</span>{%- endif -%}
+                            <span class="es-mega__card-title">{% render 'es-link-extra', blocks: section.blocks, title: child.title, mode: 'icon' %}<span>{{ child.title }}</span></span>
+                          </a>
+                        {%- else -%}
+                          <div class="es-mega__col">
+                            <a href="{{ child.url }}" class="es-mega__heading">{% render 'es-link-extra', blocks: section.blocks, title: child.title, mode: 'icon' %}<span>{{ child.title }}</span></a>
+                            {%- if child.links.size > 0 -%}
+                              <ul role="list">
+                                {%- for grandchild in child.links -%}<li><a href="{{ grandchild.url }}">{% render 'es-link-extra', blocks: section.blocks, title: grandchild.title, mode: 'icon' %}<span>{{ grandchild.title }}</span></a></li>{%- endfor -%}
+                              </ul>
+                            {%- endif -%}
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+                      <a href="{{ link.url }}" class="es-mega__all">{{ 'sections.header.see_all' | t }} {% render 'icon', name: 'arrow' %}</a>
+                    </div>
+                    {%- if mega == 'columns-promo' or mega == 'cards' -%}
+                      <div class="es-mega__promos">{% render 'es-menu-promo', blocks: section.blocks, where: 'mega', menu_title: link.title, limit: 2, size: 'small' %}</div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              {%- endif -%}
+            {%- endif -%}
+          </li>
         {%- endfor -%}
       </ul>
     </nav>
@@ -69,16 +130,43 @@
     </div>
   </div>
 
-  <div class="es-mobile-menu es-mobile-menu--{{ section.settings.mobile_menu }} color-{{ section.settings.color_scheme }}" id="MobileMenu" hidden data-mobile-menu>
+  <div class="es-mobile-menu es-mobile-menu--{{ section.settings.mobile_menu }} es-mobile-menu--sub-{{ section.settings.mobile_submenu }} color-{{ section.settings.color_scheme }}" id="MobileMenu" hidden data-mobile-menu>
     <div class="es-mobile-menu__head">
       <span class="es-header__wordmark">{{ shop.name }}</span>
       <button type="button" class="es-icon-button" data-menu-close aria-label="{{ 'general.close' | t }}">{% render 'icon', name: 'close' %}</button>
     </div>
+    {%- if section.settings.mobile_promo == 'top' -%}
+      <div class="es-mobile-menu__promos">{% render 'es-menu-promo', blocks: section.blocks, where: 'mobile', limit: 2, size: 'small' %}</div>
+    {%- endif -%}
     <ul role="list" class="es-mobile-menu__list">
       {%- for link in menu.links -%}
-        <li style="--i: {{ forloop.index }}"><a href="{{ link.url }}">{{ link.title }}</a></li>
+        <li style="--i: {{ forloop.index }}">
+          {%- if link.links.size > 0 -%}
+            <details class="es-mm__group"{% if section.settings.mobile_submenu == 'open' %} open{% endif %}>
+              <summary class="es-mm__link">{% render 'es-link-extra', blocks: section.blocks, title: link.title, mode: 'icon' %}<span>{{ link.title }}</span><span class="es-mm__caret" aria-hidden="true">{% render 'icon', name: 'plus' %}</span></summary>
+              <ul role="list" class="es-mm__sub">
+                {%- for child in link.links -%}
+                  <li>
+                    <a href="{{ child.url }}">{% render 'es-link-extra', blocks: section.blocks, title: child.title, mode: 'icon' %}<span>{{ child.title }}</span></a>
+                    {%- if child.links.size > 0 -%}
+                      <ul role="list" class="es-mm__sub2">
+                        {%- for grandchild in child.links -%}<li><a href="{{ grandchild.url }}">{{ grandchild.title }}</a></li>{%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+                <li><a href="{{ link.url }}" class="es-mm__all">{{ 'sections.header.see_all' | t }}</a></li>
+              </ul>
+            </details>
+          {%- else -%}
+            <a href="{{ link.url }}" class="es-mm__link">{% render 'es-link-extra', blocks: section.blocks, title: link.title, mode: 'icon' %}<span>{{ link.title }}</span></a>
+          {%- endif -%}
+        </li>
       {%- endfor -%}
     </ul>
+    {%- if section.settings.mobile_promo == 'bottom' -%}
+      <div class="es-mobile-menu__promos">{% render 'es-menu-promo', blocks: section.blocks, where: 'mobile', limit: 2, size: 'small' %}</div>
+    {%- endif -%}
     {%- if section.settings.cta_label != blank -%}
       <a href="{{ cta_href }}" class="es-button es-button--full es-mobile-menu__cta"{% if cta_external %} target="_blank" rel="noopener"{% endif %}>{% render 'icon', name: section.settings.cta_icon %}<span>{{ section.settings.cta_label }}</span></a>
     {%- endif -%}
@@ -121,7 +209,10 @@
         { "value": "logo-left", "label": "Logo à gauche, menu au centre" },
         { "value": "logo-center", "label": "Logo centré, menu dessous" },
         { "value": "split", "label": "Menu à gauche, logo centré" },
-        { "value": "minimal", "label": "Minimal (menu dans le tiroir)" }
+        { "value": "minimal", "label": "Minimal (menu dans le tiroir)" },
+        { "value": "menu-right", "label": "Logo à gauche, menu à droite" },
+        { "value": "nav-left", "label": "Logo et menu à gauche" },
+        { "value": "two-rows", "label": "Deux lignes (menu sur une barre dessous)" }
       ]
     },
     {
@@ -135,7 +226,32 @@
       ]
     },
     { "type": "select", "id": "icons", "label": "Icônes", "default": "circles", "options": [ { "value": "circles", "label": "Dans des pastilles rondes" }, { "value": "plain", "label": "Simples" } ] },
-    { "type": "select", "id": "mobile_menu", "label": "Menu sur téléphone", "default": "fullscreen", "options": [ { "value": "fullscreen", "label": "Plein écran" }, { "value": "drawer", "label": "Tiroir latéral" } ] },
+    { "type": "header", "content": "Sous-menus et méga menu" },
+    {
+      "type": "select", "id": "mega_menu", "label": "Méga menu", "default": "none",
+      "info": "S'ouvre au survol des liens qui ont des sous-liens. « Aucun » : simple liste déroulante.",
+      "options": [
+        { "value": "none", "label": "Aucun (liste déroulante simple)" },
+        { "value": "columns", "label": "Colonnes de liens" },
+        { "value": "columns-promo", "label": "Colonnes + encarts promo à droite" },
+        { "value": "cards", "label": "Cartes avec images + encarts promo" },
+        { "value": "featured", "label": "Grand encart promo à gauche + colonnes" }
+      ]
+    },
+    { "type": "checkbox", "id": "desktop_icons", "label": "Afficher les icônes devant les liens du menu principal", "default": false, "info": "Les icônes se choisissent avec les blocs « Icône ou image d'un lien »." },
+    { "type": "header", "content": "Menu sur téléphone (burger)" },
+    {
+      "type": "select", "id": "mobile_menu", "label": "Disposition du menu", "default": "fullscreen",
+      "options": [
+        { "value": "fullscreen", "label": "Plein écran, grands titres" },
+        { "value": "drawer", "label": "Tiroir à gauche" },
+        { "value": "drawer-right", "label": "Tiroir à droite" },
+        { "value": "sheet", "label": "Panneau qui monte du bas" },
+        { "value": "cards", "label": "Tuiles (grille de cases)" }
+      ]
+    },
+    { "type": "select", "id": "mobile_submenu", "label": "Sous-menus", "default": "accordion", "options": [ { "value": "accordion", "label": "Repliés (s'ouvrent au toucher)" }, { "value": "open", "label": "Toujours ouverts" } ] },
+    { "type": "select", "id": "mobile_promo", "label": "Encarts promo dans le menu", "default": "none", "options": [ { "value": "none", "label": "Aucun" }, { "value": "top", "label": "En haut du menu" }, { "value": "bottom", "label": "En bas du menu" } ] },
     { "type": "checkbox", "id": "sticky", "label": "Rester visible au défilement", "default": true },
     { "type": "checkbox", "id": "transparent_on_home", "label": "Transparent au-dessus de la première section de l'accueil", "default": false },
     { "type": "checkbox", "id": "show_search", "label": "Afficher la recherche", "default": true },
@@ -146,6 +262,34 @@
     { "type": "select", "id": "cta_icon", "label": "Icône du bouton", "default": "clock", "options": [{ "value": "clock", "label": "Horloge" }, { "value": "phone", "label": "Téléphone" }, { "value": "mail", "label": "E-mail" }, { "value": "chat", "label": "Message" }, { "value": "arrow", "label": "Flèche" }] },
     { "type": "text", "id": "phone", "label": "Téléphone affiché", "info": "Facultatif. Numéro cliquable pour appeler depuis un téléphone." },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
+  ],
+  "max_blocks": 24,
+  "blocks": [
+    {
+      "type": "link_extra", "name": "Icône ou image d'un lien",
+      "settings": [
+        { "type": "text", "id": "link_title", "label": "Titre du lien", "info": "Écrivez exactement le titre du lien ou du sous-lien du menu (ex. « Boutique »)." },
+        { "type": "select", "id": "icon", "label": "Icône devant le lien", "default": "none", "options": [{"value": "none", "label": "Aucune"}, {"value": "leaf", "label": "Feuille"}, {"value": "truck", "label": "Camion"}, {"value": "return", "label": "Retour"}, {"value": "sparkle", "label": "Étincelle"}, {"value": "drop", "label": "Goutte"}, {"value": "hand", "label": "Main"}, {"value": "shield", "label": "Bouclier"}, {"value": "star", "label": "Étoile"}, {"value": "bolt", "label": "Éclair"}, {"value": "heart", "label": "Cœur"}, {"value": "globe", "label": "Globe"}, {"value": "clock", "label": "Horloge"}, {"value": "waves", "label": "Vagues"}, {"value": "gift", "label": "Cadeau"}, {"value": "phone", "label": "Téléphone"}, {"value": "mail", "label": "E-mail"}, {"value": "chat", "label": "Message"}, {"value": "check", "label": "Coche"}, {"value": "account", "label": "Compte"}, {"value": "cart", "label": "Panier"}, {"value": "search", "label": "Loupe"}, {"value": "compare", "label": "Comparer"}, {"value": "sound", "label": "Son"}, {"value": "arrow", "label": "Flèche"}] },
+        { "type": "image_picker", "id": "image", "label": "Image (cartes du méga menu)" },
+        { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" }
+      ]
+    },
+    {
+      "type": "promo", "name": "Encart promo du menu",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+        { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus", "default": "Nouveauté" },
+        { "type": "text", "id": "heading", "label": "Titre", "default": "Découvrez la collection" },
+        { "type": "text", "id": "button_label", "label": "Texte du lien", "default": "Voir" },
+        { "type": "url", "id": "link", "label": "Lien" },
+        {
+          "type": "select", "id": "placement", "label": "Où l'afficher", "default": "both",
+          "options": [ { "value": "both", "label": "Méga menu et menu téléphone" }, { "value": "mega", "label": "Méga menu seulement" }, { "value": "mobile", "label": "Menu téléphone seulement" } ]
+        },
+        { "type": "text", "id": "menu_title", "label": "Seulement sous le lien", "info": "Facultatif. Titre d'un lien du menu principal : l'encart n'apparaît que dans son méga menu." }
+      ]
+    }
   ],
   "enabled_on": { "groups": ["header"] }
 }

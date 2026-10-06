@@ -13,14 +13,14 @@ import { ContentLangPicker, useContentLang } from "./content-lang";
 
 type ViewMode = "month" | "week" | "day";
 
-function PlanForm({ open, onClose }: { open: boolean; onClose: () => void }) {
+function PlanForm({ open, onClose, initialGoals = "" }: { open: boolean; onClose: () => void; initialGoals?: string }) {
   const { id, data } = useProject();
   const toast = useToast();
   const t = useT();
   const cl = useContentLang();
   const tz = data?.settings.timezone ?? "Europe/Paris";
   const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; linked: boolean; status: string }[] }>(open ? `/api/connections?project=${id}` : null);
-  const [f, setF] = useState({ startDate: format(addDays(new Date(), 1), "yyyy-MM-dd"), days: 7, perDay: 1, slots: ["11:30", "18:30", "08:30", "13:00", "21:00"], timezone: tz, goals: "", tone: "", photo: 60, video: 30, text: 10, link: "", approval: "manual" as "manual" | "auto" });
+  const [f, setF] = useState({ startDate: format(addDays(new Date(), 1), "yyyy-MM-dd"), days: 7, perDay: 1, slots: ["11:30", "18:30", "08:30", "13:00", "21:00"], timezone: tz, goals: initialGoals.slice(0, 600), tone: "", photo: 60, video: 30, text: 10, link: "", approval: "manual" as "manual" | "auto" });
   const [nets, setNets] = useState<Record<string, string | null | false>>({ instagram: null, facebook: false, tiktok: false, youtube: false, pinterest: false });
   const [busy, setBusy] = useState(false);
   const submit = async () => {
@@ -150,6 +150,7 @@ export default function TabCalendrier() {
   const [cursor, setCursor] = useState(() => toZonedTime(new Date(), tz));
   const [openPost, setOpenPost] = useState<PostView | null>(null);
   const [planOpen, setPlanOpen] = useState(false);
+  const [planGoals, setPlanGoals] = useState("");
   const [rulesOpen, setRulesOpen] = useState(false);
   const active = useActive(["calendar.plan", "video.render", "post."]);
   const range = useMemo(() => {
@@ -165,8 +166,11 @@ export default function TabCalendrier() {
   }, [active.length, reload]);
   useEffect(() => {
     try {
-      if (sessionStorage.getItem(`es-insert-calendrier-${id}`)) {
+      // Prompt de la bibliothèque : « Nouveau calendrier » s'ouvre avec le prompt dans « Objectifs ».
+      const pending = sessionStorage.getItem(`es-insert-calendrier-${id}`);
+      if (pending) {
         sessionStorage.removeItem(`es-insert-calendrier-${id}`);
+        setPlanGoals(pending.replace(/^#+\s*/gm, "").replace(/\n{2,}/g, "\n").trim());
         setPlanOpen(true);
       }
     } catch {}
@@ -269,7 +273,7 @@ export default function TabCalendrier() {
       <div className="flex flex-wrap gap-3 text-xs text-muted">
         {Object.entries(POST_STATUS).map(([k, v]) => <span key={k} className="flex items-center gap-1.5"><span className={cx("size-2.5 rounded-full", { ok: "bg-ok", warn: "bg-warn", bad: "bg-bad", info: "bg-info", ink: "bg-ink", neutral: "bg-line" }[v.tone as string])} /> {t(v.label, v.en)}</span>)}
       </div>
-      <PlanForm open={planOpen} onClose={() => setPlanOpen(false)} />
+      <PlanForm key={planGoals} open={planOpen} initialGoals={planGoals} onClose={() => setPlanOpen(false)} />
       <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
       <PostEditor post={openPost} onClose={() => setOpenPost(null)} onChanged={reload} />
     </div>

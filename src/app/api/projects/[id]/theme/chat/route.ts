@@ -18,7 +18,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     req,
     z.object({
       message: z.string().trim().min(1).max(4000),
-      selection: z.object({ template: z.string(), section: z.string(), block: z.string().optional(), text: z.string().max(400).optional(), tag: z.string().max(20).optional(), type: z.string().max(60).optional(), kind: z.string().max(20).optional(), path: z.string().max(600).optional(), role: z.enum(["heading", "text", "button", "other"]).optional() }).nullable().optional(),
+      selection: z.object({ template: z.string(), section: z.string(), block: z.string().optional(), text: z.string().max(400).optional(), tag: z.string().max(20).optional(), type: z.string().max(60).optional(), kind: z.string().max(20).optional(), path: z.string().max(600).optional(), role: z.enum(["heading", "text", "button", "other"]).optional(), src: z.string().max(600).optional() }).nullable().optional(),
       attachments: z.array(z.string()).max(6).default([]),
       page: z.string().max(40).default("index"),
       /** « Générer » de la bibliothèque : créer une section sur mesure et l'ajouter à cet endroit. */

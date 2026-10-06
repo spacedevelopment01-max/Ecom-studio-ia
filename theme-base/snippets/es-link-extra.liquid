@@ -1,0 +1,27 @@
+{%- comment -%}
+  Icône ou image associée à un lien de menu par un bloc « Icône ou image d'un lien » de l'en-tête
+  (rapprochement par le titre du lien, sans tenir compte des majuscules).
+  Paramètres : blocks (blocs de l'en-tête), title (titre du lien), mode ('icon' ou 'image'), class
+{%- endcomment -%}
+{%- liquid
+  assign wanted = title | strip | downcase
+  assign found = nil
+  for b in blocks
+    if b.type == 'link_extra'
+      assign name = b.settings.link_title | strip | downcase
+      if name != blank and name == wanted
+        assign found = b
+        break
+      endif
+    endif
+  endfor
+-%}
+{%- if found -%}
+  {%- if mode == 'image' -%}
+    {%- if found.settings.image != blank or found.settings.image_asset != blank -%}
+      <span class="es-link-img {{ class }}">{% render 'es-image', image: found.settings.image, asset: found.settings.image_asset, alt: title, sizes: '240px', class: 'es-cover', width: 480, height: 480 %}</span>
+    {%- endif -%}
+  {%- elsif found.settings.icon != 'none' -%}
+    <span class="es-link-icon {{ class }}" aria-hidden="true">{% render 'icon', name: found.settings.icon %}</span>
+  {%- endif -%}
+{%- endif -%}

@@ -239,7 +239,8 @@ function localServiceCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
   const services = (profile?.services ?? []).filter((s) => s.name.trim());
   const activity = product.name || brand.name || unknownText("nom de l'activité", "business name");
   const eyebrow = serviceEyebrow(product);
-  const facts = product.facts.filter(known).filter((f) => !["price", "name", "summary", "shipping", "returns"].includes(f.key));
+  // Rubriques de la description qui ont leur propre place (déroulé, questions, délais…) : pas reprises comme prestations.
+  const facts = product.facts.filter(known).filter((f) => !["price", "name", "summary", "shipping", "returns", "audience", "needs", "process", "delay", "quote_details", "cancellation", "faq", "site_goal", "look", "tone", "avoid"].includes(f.key));
   const area = profile?.area?.trim() || "";
   const areaTail = area && !areaMentioned(activity, area) ? `, ${area}` : "";
   const summary = product.summary || (services.length ? C(`${activity} : ${services.slice(0, 3).map((s) => s.name.toLowerCase()).join(", ")}${areaTail}.`, `${activity}: ${services.slice(0, 3).map((s) => s.name.toLowerCase()).join(", ")}${areaTail}.`) : unknownText("présentation de l'activité en une phrase", "one-sentence description of the business"));
@@ -256,7 +257,14 @@ function localServiceCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
     : facts.slice(0, 4).map((f, i) => ({ title: f.label, text: f.value, icon: icons[i % icons.length] }));
   while (offer.length < 2) offer.push({ title: offer.length ? C("Prestation", "Service") : C("Prestation principale", "Main service"), text: unknownText("nom et description de la prestation", "service name and description"), icon: icons[offer.length] });
 
-  const steps = [
+  // Ce que le client a écrit dans sa description (aide à la rédaction) : déroulé, délais, devis, annulation, questions.
+  const given = (key: string) => product.facts.find((f) => f.key === key && f.status === "confirmed" && f.value.trim())?.value.trim();
+  const process = (given("process") ?? "").split(/\n/).map((x) => x.trim()).filter(Boolean);
+  const stepOf = (x: string, i: number) => {
+    const m = x.match(/^(.{3,48}?)\s*[:—–]\s+(.+)$/);
+    return m ? { title: m[1], text: m[2] } : { title: x.length <= 48 ? x : C(`Étape ${i + 1}`, `Step ${i + 1}`), text: x.length <= 48 ? "" : x };
+  };
+  const steps = process.length >= 2 ? process.slice(0, 5).map(stepOf) : [
     { title: C("Votre demande", "Your request"), text: book },
     { title: profile?.contactMode === "quote" ? C("Le devis", "The quote") : C("Le rendez-vous", "The appointment"), text: profile?.contactMode === "quote" ? unknownText("comment le devis est établi et envoyé", "how the quote is prepared and sent") : unknownText("déroulé du premier rendez-vous", "how the first appointment works") },
     { title: C("La prestation", "The service"), text: unknownText("comment se déroule la prestation", "how the service is carried out") },
@@ -275,9 +283,14 @@ function localServiceCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
     { q: C("Quels sont vos horaires ?", "What are your opening hours?"), a: profile?.hours?.trim() || unknownText("horaires", "opening hours") },
     ...(durations.length ? [{ q: C("Combien de temps dure une prestation ?", "How long does a session take?"), a: durations.map((s) => C(`${s.name} : ${s.duration!.trim()}`, `${s.name}: ${s.duration!.trim()}`)).join(C(" ; ", "; ")) + "." }] : []),
     // Le délai est le premier frein d'un client local : question posée, réponse seulement si elle est fournie.
-    serviceIsMobile(product) ? { q: C("Sous quel délai pouvez-vous intervenir ?", "How soon can you come out?"), a: unknownText("délai habituel d'intervention", "usual response time") } : { q: C("Quand puis-je avoir un rendez-vous ?", "How soon can I get an appointment?"), a: profile?.bookingUrl?.trim() ? C("Les créneaux disponibles sont affichés en ligne, au moment de réserver.", "Available slots are shown online when you book.") : unknownText("délai habituel pour un rendez-vous", "usual wait for an appointment") },
-    profile?.contactMode === "quote" ? { q: C("Que comprend le devis ?", "What does the quote include?"), a: unknownText("contenu du devis, validité et acompte éventuel", "what the quote covers, how long it is valid, any deposit") } : { q: C("Comment annuler ou déplacer un rendez-vous ?", "How do I cancel or reschedule?"), a: unknownText("conditions d'annulation et de report", "cancellation and rescheduling terms") },
-  ].slice(0, 12);
+    serviceIsMobile(product) ? { q: C("Sous quel délai pouvez-vous intervenir ?", "How soon can you come out?"), a: given("delay") ?? unknownText("délai habituel d'intervention", "usual response time") } : { q: C("Quand puis-je avoir un rendez-vous ?", "How soon can I get an appointment?"), a: given("delay") ?? (profile?.bookingUrl?.trim() ? C("Les créneaux disponibles sont affichés en ligne, au moment de réserver.", "Available slots are shown online when you book.") : unknownText("délai habituel pour un rendez-vous", "usual wait for an appointment")) },
+    profile?.contactMode === "quote" ? { q: C("Que comprend le devis ?", "What does the quote include?"), a: given("quote_details") ?? unknownText("contenu du devis, validité et acompte éventuel", "what the quote covers, how long it is valid, any deposit") } : { q: C("Comment annuler ou déplacer un rendez-vous ?", "How do I cancel or reschedule?"), a: given("cancellation") ?? unknownText("conditions d'annulation et de report", "cancellation and rescheduling terms") },
+    // Questions posées par ses clients, choisies par le client (réponse seulement s'il l'a écrite).
+    ...(given("faq") ?? "").split(/\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
+      const m = l.match(/^(.+?\?)\s*(.*)$/);
+      return m ? { q: m[1], a: m[2].trim() || unknownText("réponse à cette question", "answer to this question") } : { q: l, a: unknownText("réponse à cette question", "answer to this question") };
+    }),
+  ].filter((x, i, all) => all.findIndex((y) => y.q.toLowerCase() === x.q.toLowerCase()) === i).slice(0, 12);
 
   const marquee: string[] = [];
   const addM = (t?: string) => {

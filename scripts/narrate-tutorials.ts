@@ -4,10 +4,14 @@
  * l'image de fin d'étape est tenue le temps qu'il faut (la voix n'est jamais coupée ni accélérée) ; les débuts
  * d'étapes (liste cliquable sous la vidéo) sont recalculés.
  *
+ * Voix « Kokoro » (modèle ouvert, sans service en ligne, nettement plus naturelle que Piper) :
+ *   pip install sherpa-onnx soundfile numpy
+ *   KOKORO=…/kokoro-multi-lang-v1_0 FORCE=1 npx tsx scripts/narrate-tutorials.ts
+ *   (voix : VOICE_FR / VOICE_EN, mélanges « nom:poids,… » ; par défaut ci-dessous)
+ * Ancienne voix Piper (repli) :
  *   PIPER=…/piper VOICE_FR=…/fr_FR-tom-medium.onnx VOICE_EN=…/en_US-ryan-high.onnx npx tsx scripts/narrate-tutorials.ts
  *   ONLY=marque,boutique LANGS=fr …            sélection ; FORCE=1 refait une vidéo qui a déjà une voix (depuis sa copie muette)
  *
- * Voix de synthèse locales (Piper, sans service en ligne) : « Tom » (français) et « Ryan » (anglais), voix d'hommes.
  * Entrée et sortie : public/tutorials/<id>[.en].mp4 et .json ; la vidéo muette d'origine est gardée en
  * scripts/tutorials/silent/ (hors du site) pour pouvoir refaire la voix.
  */
@@ -18,7 +22,10 @@ import { spawn, spawnSync } from "node:child_process";
 import { TUTORIALS, TUTORIAL_IDS, tutorialSlug, type TutorialId } from "../src/lib/tutorials";
 
 const PIPER = process.env.PIPER ?? "piper";
-const VOICES = { fr: process.env.VOICE_FR ?? "", en: process.env.VOICE_EN ?? "" };
+const KOKORO = process.env.KOKORO ?? "";
+/** Kokoro : voix d'homme au timbre grave, prononciation française de la voix française (mélange vérifié par transcription). */
+const KOKORO_VOICES = { fr: process.env.VOICE_FR ?? "ff_siwis:0.4,em_alex:0.6", en: process.env.VOICE_EN ?? "am_michael" };
+const VOICES = KOKORO ? KOKORO_VOICES : { fr: process.env.VOICE_FR ?? "", en: process.env.VOICE_EN ?? "" };
 const OUT = path.join(process.cwd(), "public", "tutorials");
 const SILENT = path.join(process.cwd(), "scripts", "tutorials", "silent");
 const ids = (process.env.ONLY?.split(",") as TutorialId[] | undefined) ?? TUTORIAL_IDS;
@@ -44,20 +51,41 @@ function run(cmd: string, args: string[], input?: string) {
 const duration = (file: string) => Number(spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file]).stdout.toString().trim());
 const hasAudio = (file: string) => spawnSync("ffprobe", ["-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", file]).stdout.toString().trim() !== "";
 
-/** Texte lu : guillemets et signes typographiques retirés, abréviations dites en entier. */
+/**
+ * Mots anglais ou techniques réécrits comme ils se prononcent en français (sinon la voix les lit « à la française »).
+ * Seuls les mots mal lus sont réécrits, et chaque graphie est vérifiée : une transcription automatique (Whisper) de la
+ * phrase lue redonne bien le mot d'origine. Shopify, CapCut, WordPress, YouTube, TikTok, Instagram… sont déjà bien lus.
+ */
+const SAY_FR: [RegExp, string][] = [
+  [/\bprompts\b/g, "prommptes"],
+  [/\bprompt\b/g, "prommpte"],
+  [/\bPinterest\b/g, "Pinntéreste"],
+  [/\be-?mails?\b/g, "i mèle"],
+  [/\bnewsletters?\b/g, "niouzelèteur"],
+  [/\bStripe\b/g, "Straille pe"],
+  [/\bPayPal\b/g, "Pèï pal"],
+  [/\bmock-?ups?\b/gi, "mokeupe"],
+  [/\blifestyle\b/gi, "laïfstaïle"],
+  [/\bcheckout\b/gi, "tchèkaoute"],
+];
+
+/** Texte lu : guillemets et signes typographiques retirés, abréviations dites en entier, mots anglais respelés. */
 function speakable(text: string, lang: "fr" | "en") {
   let s = text.replace(/[«»"“”]/g, "").replace(/\s+/g, " ").trim();
-  if (lang === "fr") s = s.replace(/\bEx\. ?/g, "Par exemple, ").replace(/\bIA\b/g, "I.A.").replace(/\bUGC\b/g, "U.G.C.").replace(/\bPDF\b/g, "P.D.F.");
-  else s = s.replace(/\bAI\b/g, "A.I.").replace(/\bUGC\b/g, "U.G.C.");
-  return s;
+  if (lang === "fr") {
+    s = s.replace(/\bEx\. ?/g, "Par exemple, ").replace(/\bIA\b/g, "I.A.").replace(/\bUGC\b/g, "U.G.C.").replace(/\bPDF\b/g, "P.D.F.").replace(/\bTTC\b/g, "T.T.C.");
+    for (const [re, said] of SAY_FR) s = s.replace(re, said);
+  } else s = s.replace(/\bAI\b/g, "A.I.").replace(/\bUGC\b/g, "U.G.C.");
+  return s.replace(/ \+ /g, " plus ").replace(/bouton \+/g, "bouton plus");
 }
 
 async function say(text: string, lang: "fr" | "en", out: string) {
-  await run(PIPER, ["-m", VOICES[lang], "-f", out, "--sentence-silence", "0.25", "--length-scale", lang === "fr" ? "1.0" : "1.0"], speakable(text, lang));
+  if (KOKORO) await run("python3", [path.join(process.cwd(), "scripts", "tts-kokoro.py"), "--model-dir", KOKORO, "--voice", VOICES[lang], "--lang", lang === "fr" ? "fr" : "en-us", "--out", out], speakable(text, lang));
+  else await run(PIPER, ["-m", VOICES[lang], "-f", out, "--sentence-silence", "0.25", "--length-scale", "1.0"], speakable(text, lang));
 }
 
 for (const lang of langs) {
-  if (!VOICES[lang] || !fs.existsSync(VOICES[lang])) throw new Error(`voix ${lang} absente : VOICE_${lang.toUpperCase()}`);
+  if (KOKORO ? !fs.existsSync(path.join(KOKORO, "model.onnx")) : !VOICES[lang] || !fs.existsSync(VOICES[lang])) throw new Error(KOKORO ? `modèle Kokoro absent : ${KOKORO}` : `voix ${lang} absente : VOICE_${lang.toUpperCase()}`);
   for (const id of ids) {
     const def = TUTORIALS[id];
     const name = `${tutorialSlug(id)}${lang === "en" ? ".en" : ""}`;

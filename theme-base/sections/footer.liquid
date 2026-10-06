@@ -22,7 +22,7 @@
       </div>
     {%- endif -%}
 
-    {%- if section.settings.show_wordmark and style != 'wordmark' and style != 'minimal' and style != 'centered' -%}
+    {%- if section.settings.show_wordmark and style != 'wordmark' and style != 'minimal' and style != 'centered' and style != 'brand-left' and style != 'split' -%}
       <p class="es-footer__wordmark" data-reveal="mask">{{ shop.name }}</p>
     {%- endif -%}
 
@@ -54,9 +54,47 @@
         {% render 'social-icons' %}
       </div>
     {%- else -%}
+      {%- liquid
+        assign has_brand_col = false
+        if style == 'brand-left' or style == 'split'
+          assign has_brand_col = true
+        endif
+      -%}
+      {%- if has_brand_col -%}<div class="es-footer__layout">{%- endif -%}
+      {%- if has_brand_col -%}
+        <div class="es-footer__brandcol">
+          <a href="{{ routes.root_url }}" class="es-footer__brand">
+            {%- liquid
+              assign footer_logo = settings.logo_asset
+              if section.settings.logo_asset != blank
+                assign footer_logo = section.settings.logo_asset
+              endif
+            -%}
+            {%- if footer_logo != blank -%}<img src="{{ footer_logo | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 }}" loading="lazy">{%- else -%}{{ shop.name }}{%- endif -%}
+          </a>
+          {%- if section.settings.tagline != blank -%}<p class="es-footer__tagline">{{ section.settings.tagline }}</p>{%- endif -%}
+          {%- if style == 'split' and news_block -%}
+            <div class="es-footer__brand-news">
+              <h2 class="es-footer__heading">{{ news_block.settings.heading }}</h2>
+              {%- form 'customer', class: 'es-newsletter-form', id: 'FooterNewsletterSplit' -%}
+                <input type="hidden" name="contact[tags]" value="newsletter">
+                <label class="visually-hidden" for="FooterEmailSplit">{{ 'newsletter.label' | t }}</label>
+                <div class="es-inline-field">
+                  <input id="FooterEmailSplit" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ 'newsletter.label' | t }}">
+                  <button type="submit" class="es-button es-button--small">{{ 'newsletter.button' | t }}</button>
+                </div>
+                {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
+              {%- endform -%}
+            </div>
+          {%- endif -%}
+          {% render 'social-icons' %}
+        </div>
+      {%- endif -%}
       <div class="es-footer__grid">
         {%- for block in section.blocks -%}
           {%- if style == 'card' and block.type == 'newsletter' -%}{%- continue -%}{%- endif -%}
+          {%- if style == 'split' and block.type == 'newsletter' -%}{%- continue -%}{%- endif -%}
+          {%- if has_brand_col and block.type == 'social' -%}{%- continue -%}{%- endif -%}
           <div class="es-footer__block es-footer__block--{{ block.type }}" {{ block.shopify_attributes }}>
             {%- case block.type -%}
               {%- when 'text' -%}
@@ -95,6 +133,7 @@
           </div>
         {%- endfor -%}
       </div>
+      {%- if has_brand_col -%}</div>{%- endif -%}
     {%- endif -%}
 
     {%- if style == 'wordmark' and section.settings.show_wordmark -%}
@@ -127,6 +166,25 @@
 .es-footer__contact .es-icon { width: 18px; height: 18px; flex: none; margin-top: 3px; color: var(--c-accent); }
 .es-footer__contact a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(var(--c-text-rgb), .25); }
 .es-footer__contact a:hover { border-color: currentColor; }
+/* Styles supplémentaires du pied de page */
+.es-footer__layout { display: grid; gap: clamp(36px, 5vw, 72px); }
+.es-footer__brandcol { display: grid; gap: 18px; align-content: start; justify-items: start; }
+.es-footer__brandcol .es-footer__brand { font-size: clamp(1.6rem, 3vw, 2.2rem); }
+.es-footer__tagline { margin: 0; max-width: 34ch; opacity: .8; font-size: 1rem; line-height: 1.5; }
+.es-footer__brand-news { width: 100%; max-width: 420px; }
+@media (min-width: 990px) {
+  .es-footer--brand-left .es-footer__layout { grid-template-columns: minmax(240px, .8fr) 2fr; }
+  .es-footer--split .es-footer__layout { grid-template-columns: 1fr 1.3fr; align-items: stretch; }
+}
+.es-footer--split .es-footer__brandcol { padding: clamp(24px, 4vw, 48px); border-radius: var(--radius-card, 20px); background: rgba(var(--c-accent-rgb), .12); border: 1px solid rgba(var(--c-accent-rgb), .25); }
+.es-footer--split .es-footer__grid { align-content: center; }
+.es-footer--stacked .es-footer__grid { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 32px; }
+.es-footer--stacked .es-footer__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 24px; }
+.es-footer--stacked .es-footer__contact li { justify-content: center; }
+.es-footer--stacked .es-footer__block--newsletter { width: min(100%, 460px); }
+.es-footer--stacked .es-footer__wordmark { text-align: center; }
+.es-footer--stacked .es-footer__bottom { justify-content: center; text-align: center; }
+.es-footer--boxed .es-footer__grid { padding: clamp(24px, 4vw, 48px); border-radius: var(--radius-card, 20px); border: 1px solid rgba(var(--c-text-rgb), .12); background: rgba(var(--c-text-rgb), .04); }
 {% endstylesheet %}
 
 {% schema %}
@@ -142,10 +200,15 @@
         { "value": "wordmark", "label": "Colonnes et nom géant en bas" },
         { "value": "card", "label": "Carte d'inscription puis colonnes" },
         { "value": "centered", "label": "Centré (logo, liens, réseaux)" },
-        { "value": "minimal", "label": "Minimal sur une ligne" }
+        { "value": "minimal", "label": "Minimal sur une ligne" },
+        { "value": "brand-left", "label": "Marque à gauche, colonnes à droite" },
+        { "value": "split", "label": "Deux panneaux (marque et inscription | liens)" },
+        { "value": "stacked", "label": "Empilé et centré" },
+        { "value": "boxed", "label": "Colonnes dans une carte arrondie" }
       ]
     },
-    { "type": "text", "id": "logo_asset", "label": "Logo du pied de page (fichier assets)", "info": "Style Centré : version du logo lisible sur le fond du pied de page. Vide : logo du thème." },
+    { "type": "text", "id": "tagline", "label": "Phrase sous le logo", "info": "Styles « Marque à gauche » et « Deux panneaux ». Facultatif." },
+    { "type": "text", "id": "logo_asset", "label": "Logo du pied de page (fichier assets)", "info": "Styles Centré, Marque à gauche et Deux panneaux : version du logo lisible sur le fond du pied de page. Vide : logo du thème." },
     { "type": "checkbox", "id": "show_wordmark", "label": "Grand nom de marque", "default": true },
     { "type": "checkbox", "id": "show_policies", "label": "Liens vers les politiques", "default": true },
     { "type": "checkbox", "id": "show_payment", "label": "Moyens de paiement", "default": true },

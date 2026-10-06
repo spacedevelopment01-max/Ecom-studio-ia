@@ -9,7 +9,7 @@ import { importedSectionSchema, schemaTranslator } from "./import";
 import path from "node:path";
 import { Drop, Hash, Liquid, Tokenizer, type Context, type Emitter, type TagToken, type TopLevelToken, type Template } from "liquidjs";
 import { compileTheme, type ThemeFiles } from "./compile";
-import { parseSchemaBlock, storeProducts, themeLang, withDefaults, type SectionInstance, type StoreProduct, type ThemeSpec } from "./spec";
+import { parseSchemaBlock, storeProducts, themeLang, withDefaults, type SectionInstance, type StoreProduct, type ThemeSpec, type MenuLink } from "./spec";
 import { intlLocale, pick, type Lang } from "../i18n";
 import { L } from "../i18n-server";
 import { sampleBlogs } from "./preview-samples";
@@ -214,7 +214,13 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
 
   const linklists: Record<string, any> = {};
   for (const [handle, menu] of Object.entries(spec.store.menus)) {
-    linklists[handle] = { title: menu.title, handle, links: menu.links.map((l) => ({ title: l.title, url: l.url.startsWith("/") ? base + (l.url === "/" ? "/" : l.url) : l.url, active: false })) };
+    const toLink = (l: MenuLink, depth: number): any => ({
+      title: l.title,
+      url: l.url.startsWith("/") ? base + (l.url === "/" ? "/" : l.url) : l.url,
+      active: false,
+      links: depth < 2 ? (l.links ?? []).map((c) => toLink(c, depth + 1)) : [],
+    });
+    linklists[handle] = { title: menu.title, handle, links: menu.links.map((l) => toLink(l, 0)) };
   }
 
   // Panier : chaque ligne référence une variante par son identifiant global.

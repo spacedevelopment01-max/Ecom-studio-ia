@@ -13,6 +13,7 @@ import { contactCta, isServicesBusiness, serviceDirection, serviceNames, service
 import { DIRECTIONS, type DirectionId } from "../theme/directions";
 import type { ThemeOp } from "../theme/ops";
 import type { ThemeSpec } from "../theme/spec";
+import { parseBrief } from "../activity-brief";
 import { availableSectionTypes, containerOf, sectionLabel, sectionSchema } from "../theme/spec";
 import { canvasFamily } from "../media/fonts";
 import { C, L, uiLang } from "../i18n-server";
@@ -291,6 +292,38 @@ export function localServiceAnalysis(input: { name?: string; brand?: string; des
     const name = cap(seg);
     if (!found.some((f) => f.name.toLowerCase() === name.toLowerCase())) found.push({ name, description: "" });
   }
+  // Description structurée (aide « M'aider à le rédiger », ou mêmes rubriques écrites à la main) : chaque rubrique est lue
+  // pour ce qu'elle est (prestations en liste, déroulé, délais, questions fréquentes…), rien n'est deviné.
+  const brief = parseBrief(desc);
+  if (brief) {
+    const S = brief.sections;
+    found.length = 0;
+    for (const raw of S.services ?? []) {
+      const [name, ...rest] = raw.split(/\s+[—–]\s+/);
+      if (!name || name.length > 160) continue;
+      const item: ServiceItem = { name: cap(name), description: "" };
+      for (const r of rest) {
+        if (/[€$£]|\beuros?\b|\bgratuit\b|\bfree\b/i.test(r)) item.price = r;
+        else if (/\d\s?(?:h|min|heures?|minutes?|jours?|hours?|days?)\b/i.test(r)) item.duration = r;
+        else item.description = item.description ? `${item.description} ${r}` : r;
+      }
+      found.push(item);
+    }
+    const join = (k: keyof typeof S, sep = C(" ; ", "; ")) => (S[k] ?? []).join(sep);
+    if (S.clients?.length) fact("audience", "Clientèle", "Customers", join("clients"));
+    if (S.needs?.length) fact("needs", "Pourquoi les clients nous contactent", "Why customers contact us", join("needs"));
+    if (S.steps?.length) fact("process", "Déroulé", "How it works", join("steps", "\n"));
+    if (S.delay?.length) fact("delay", "Délai habituel", "Usual lead time", join("delay"));
+    if (S.quote?.length) fact("quote_details", "Devis et tarifs", "Quotes and rates", join("quote"));
+    if (S.cancel?.length) fact("cancellation", "Annulation et report", "Cancellation and rescheduling", join("cancel"));
+    if (S.faq?.length) fact("faq", "Questions fréquentes", "Frequently asked questions", join("faq", "\n"));
+    if (S.strengths?.length) fact("strengths", "Points forts (indiqués par vous)", "Strengths (as stated by you)", join("strengths"));
+    if (S.proofs?.length) fact("credentials", "Qualifications (indiquées par vous)", "Qualifications (as stated by you)", join("proofs"));
+    if (S.goals?.length) fact("site_goal", "Objectif du site", "Website goal", join("goals"));
+    if (S.look?.length) fact("look", "Ambiance souhaitée", "Desired look", join("look"));
+    if (S.tone?.length) fact("tone", "Ton souhaité", "Desired tone", join("tone"));
+    if (S.avoid?.length) fact("avoid", "À éviter", "To avoid", join("avoid"));
+  }
   if (/devis (?:gratuit|offert)|free (?:quote|estimate)/i.test(desc)) fact("free_quote", "Devis", "Quote", C("Gratuit", "Free"));
   const avail = desc.match(/7\s?j(?:ours)?\s?\/\s?7|24\s?h\s?\/\s?24|24\/7|7 days a week/i)?.[0];
   if (avail) fact("availability", "Disponibilité", "Availability", avail.replace(/\s/g, ""));
@@ -562,6 +595,17 @@ function localServiceBrand(p: ProductProfile, biz: BusinessInfo, name: string, p
   const offer = (profile?.services ?? []).filter((x) => x.name.trim());
   const cta = contactCta(profile?.contactMode);
   const showcase = serviceShowcase(p);
+  // Ce que le client a écrit dans sa description (clientèle, raisons de contacter, points forts, ton, à éviter).
+  const given = (key: string) => p.facts.find((f) => f.key === key && f.status === "confirmed" && f.value.trim())?.value.trim();
+  const parts = [
+    given("audience") && C(`Pour : ${given("audience")}`, `For: ${given("audience")}`),
+    given("needs") && C(`Quand : ${given("needs")}`, `When: ${given("needs")}`),
+    offer.length ? C(`Prestations : ${offer.slice(0, 4).map((x) => x.name.toLowerCase()).join(", ")}`, `Services: ${offer.slice(0, 4).map((x) => x.name.toLowerCase()).join(", ")}`) : "",
+    profile?.area?.trim() ? C(`Zone : ${profile.area.trim()}`, `Area: ${profile.area.trim()}`) : "",
+    given("strengths") && C(`Différence : ${given("strengths")}`, `What sets us apart: ${given("strengths")}`),
+  ].filter(Boolean);
+  // Positionnement écrit à partir de ce que le client a donné (au moins 3 éléments), sinon à définir avec lui.
+  const positioning = parts.length >= 3 ? `${parts.join(". ")}.` : "";
   const angles: Strategy["angles"] = [
     ...offer.slice(0, 2).map((x) => ({ title: x.name, idea: x.description?.trim() || C("Présenter cette prestation : pour qui, comment elle se déroule, ce qu'il faut prévoir.", "Present this service: who it's for, how it works, what to plan for.") })),
     C({ title: "Le savoir-faire en action", idea: "Montrer le vrai travail : gestes, outils, coulisses d'une prestation." }, { title: "Skills in action", idea: "Show the real work: techniques, tools, behind the scenes of a job." }),
@@ -584,13 +628,17 @@ function localServiceBrand(p: ProductProfile, biz: BusinessInfo, name: string, p
       nameStatus: providedBrand ? "provided" : "proposed",
       alternatives: providedBrand ? [] : proposals.filter((x) => x !== name).slice(0, 4),
       tagline: serviceTaglines(p, profile)[0] ?? "",
-      positioning: C("[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]", "[To define with you: which clients, which services, which area, what sets you apart]"),
-      audience: C("[À compléter : clients visés]", "[To complete: target clients]"),
-      personality: [],
-      tone: C(
-        { voice: "Professionnel, rassurant et accessible", do: ["Expliquer simplement chaque prestation", "Donner les informations pratiques (zone, horaires, contact)", "Montrer le vrai travail"], dont: ["Inventer des tarifs, des délais ou des avis", "Promettre un résultat", "Jargon sans explication"] },
-        { voice: "Professional, reassuring and approachable", do: ["Explain each service simply", "Give the practical details (area, hours, contact)", "Show the real work"], dont: ["Making up rates, timelines or reviews", "Promising results", "Unexplained jargon"] },
-      ),
+      positioning: positioning || C("[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]", "[To define with you: which clients, which services, which area, what sets you apart]"),
+      audience: given("audience") ? `${given("audience")}${given("needs") ? C(` — ${given("needs")}`, ` — ${given("needs")}`) : ""}` : C("[À compléter : clients visés]", "[To complete: target clients]"),
+      personality: (given("look") ?? "").split(/;|,| et | and /).map((x) => x.trim()).filter(Boolean).slice(0, 4),
+      tone: (() => {
+        const base = C(
+          { voice: "Professionnel, rassurant et accessible", do: ["Expliquer simplement chaque prestation", "Donner les informations pratiques (zone, horaires, contact)", "Montrer le vrai travail"], dont: ["Inventer des tarifs, des délais ou des avis", "Promettre un résultat", "Jargon sans explication"] },
+          { voice: "Professional, reassuring and approachable", do: ["Explain each service simply", "Give the practical details (area, hours, contact)", "Show the real work"], dont: ["Making up rates, timelines or reviews", "Promising results", "Unexplained jargon"] },
+        );
+        // Ton et interdits écrits par le client : ils priment.
+        return { voice: given("tone") ? cap(given("tone")!) : base.voice, do: base.do, dont: [...(given("avoid") ? [cap(given("avoid")!)] : []), ...base.dont] };
+      })(),
       story: "",
       values: [],
       validated: [],

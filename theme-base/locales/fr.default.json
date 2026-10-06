@@ -133,7 +133,8 @@
     "header": {
       "menu": "Menu",
       "navigation": "Navigation principale",
-      "call": "Appeler le"
+      "call": "Appeler le",
+      "see_all": "Tout voir"
     },
     "reviews": {
       "app_hint": "Ajoutez ici le bloc de votre application d'avis : seuls de vrais avis clients s'afficheront.",

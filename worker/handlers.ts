@@ -13,6 +13,8 @@ import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/sho
 import { buildCustomTheme } from "../src/lib/engine/custom-theme";
 import { createContentPlan, attachVideoToPlan, NETWORK_FORMATS, quotedHeadline, rewritePostChecked } from "../src/lib/engine/calendar";
 import { honestChatNote } from "../src/lib/engine/shop-chat";
+import { localFirst } from "../src/lib/engine/local-first";
+import { REPLACE_INTENT, isMediaSelection, localMediaReplace, mediaTargetOf } from "../src/lib/theme/image-target";
 import { buildBrand } from "../src/lib/engine/brand";
 import { runLogoJob } from "../src/lib/engine/logo-job";
 import { loadProject, currentTheme, saveThemeVersion, themeVersion, listThemeVersions, remember, notify } from "../src/lib/projects";
@@ -104,12 +106,26 @@ export const handlers: Record<string, Handler> = {
     let revert = false;
     let switchTo: string | undefined;
     let mode: "ai" | "local" = "local";
-    if (llmConfigured()) {
+    // Image désignée + image jointe : l'emplacement exact (réglage *_asset) est retrouvé sans IA.
+    const firstMedia = atts.find((a) => a.kind === "image" || a.kind === "video" || a.kind === "logo");
+    const mediaTarget = firstMedia && isMediaSelection(selection) ? mediaTargetOf(cur.spec, selection, firstMedia.kind === "video" ? "video" : "image") : null;
+    const mediaFileOf = (assetId: string) => {
+      const a = getAsset(assetId);
+      return a && a.project_id === projectId ? { filename: themeFileName(a, a.role ?? "media") } : null;
+    };
+    // Le moteur local d'abord : une retouche simple qu'il sait faire à coup sûr ne consomme aucun crédit IA.
+    const quick = llmConfigured() ? localFirst(cur.spec, message, selection, atts.map((a) => ({ assetId: a.id, name: a.name, kind: a.kind })), p.business, mediaFileOf) : null;
+    if (quick) {
+      reply = `${quick.reply}\n\n${L("⚡ Fait par le moteur du studio, sans IA : aucun crédit utilisé.", "⚡ Done by the studio engine, without AI: no credits used.")}`;
+      ops = quick.ops;
+      revert = quick.revert;
+      switchTo = quick.direction;
+    } else if (llmConfigured()) {
       mode = "ai";
       const r = await ctx.step("ai", () =>
         aiThemeChat({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:chat` }, p, cur.spec, {
           message,
-          selection,
+          selection: selection && mediaTarget ? { ...selection, mediaKey: mediaTarget.key, mediaBlock: mediaTarget.block } : selection,
           attachments: atts.map((a) => ({ assetId: a.id, name: a.name, image: a.kind === "image" ? assetData(a) : undefined })),
           page: page || "index",
           history,
@@ -118,6 +134,10 @@ export const handlers: Record<string, Handler> = {
       reply = r.reply;
       ops = r.ops;
       revert = r.revert;
+      // Filet de sécurité : remplacement demandé sur une image désignée mais oublié par l'IA.
+      if (mediaTarget && firstMedia && !revert && REPLACE_INTENT.test(message) && !ops.some((o) => o.op === "use_media")) {
+        ops.push({ op: "use_media", template: mediaTarget.template, section: mediaTarget.section, ...(mediaTarget.block ? { block: mediaTarget.block } : {}), key: mediaTarget.key, assetId: firstMedia.id });
+      }
       // Sections sur mesure écrites par l'IA : forfaits Vendre et Dominer seulement (Créer : sections de la bibliothèque).
       const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
       if (owner && ops.some((o) => o.op === "custom_section") && !sectionGenerationAllowed(owner)) {
@@ -129,11 +149,17 @@ export const handlers: Record<string, Handler> = {
       }
       for (const m of r.remember) remember(projectId, { kind: "preference", key: m.key, value: m.value, scope: m.scope, source: "user" });
     } else {
-      const r = localThemeCommand(cur.spec, message, selection, p.business);
-      reply = r.reply;
-      ops = r.ops;
-      revert = r.revert;
-      switchTo = r.direction;
+      const media = localMediaReplace(cur.spec, message, selection, atts.map((a) => ({ assetId: a.id, name: a.name, kind: a.kind })));
+      if (media) {
+        reply = media.reply;
+        ops = media.ops;
+      } else {
+        const r = localThemeCommand(cur.spec, message, selection, p.business);
+        reply = r.reply;
+        ops = r.ops;
+        revert = r.revert;
+        switchTo = r.direction;
+      }
     }
     ctx.progress(0.7, L("Application des modifications", "Applying the changes"));
     let versionId: string | null = null;
@@ -155,11 +181,7 @@ export const handlers: Record<string, Handler> = {
     } else if (ops.length) {
       const targeted = new Set<string>();
       if (selection) targeted.add(`${selection.template}:${selection.section}`);
-      const mediaFile = (assetId: string) => {
-        const a = getAsset(assetId);
-        return a && a.project_id === projectId ? { filename: themeFileName(a, a.role ?? "media") } : null;
-      };
-      const res = applyOps(cur.spec, ops, { targeted, mediaFile });
+      const res = applyOps(cur.spec, ops, { targeted, mediaFile: mediaFileOf });
       let next = res.spec;
       applied = res.applied;
       let refused = res.rejected;
@@ -169,7 +191,7 @@ export const handlers: Record<string, Handler> = {
           ctx.progress(0.8, L("Correction des opérations refusées", "Fixing the rejected operations"));
           const fix = await ctx.step("repair", () => aiRepairOps({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:repair` }, p, next, { request: message, page: page || "index", rejected: refused }));
           if (fix.ops.length) {
-            const again = applyOps(next, fix.ops, { targeted, mediaFile });
+            const again = applyOps(next, fix.ops, { targeted, mediaFile: mediaFileOf });
             if (again.applied.length && !validateSpec(again.spec).length) {
               next = again.spec;
               applied = [...applied, ...again.applied];

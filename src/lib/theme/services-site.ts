@@ -297,7 +297,12 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
       title: t("Menu principal", "Main menu"),
       links: [
         { title: t("Accueil", "Home"), url: "/" },
-        { title: t("Prestations", "Services"), url: urls.services },
+        {
+          title: t("Prestations", "Services"),
+          url: urls.services,
+          // Sous-menu : chaque prestation (affiché en liste déroulante, méga menu ou accordéon mobile).
+          ...(services.length >= 2 ? { links: services.slice(0, 8).map((sv) => ({ title: sv.name.trim(), url: urls.services })) } : {}),
+        },
         { title: t("À propos", "About"), url: urls.about },
         { title: "FAQ", url: urls.faq },
         { title: pages[2].title, url: urls.contact },

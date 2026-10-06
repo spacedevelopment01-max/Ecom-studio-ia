@@ -93,9 +93,12 @@ function ProductImages() {
     try {
       const pending = sessionStorage.getItem(`es-insert-images-${id}`);
       if (pending) {
-        setForm((f) => ({ ...f, kind: "ad", headline: pending.split("\n").find((l) => l.trim() && !l.startsWith("#"))?.slice(0, 80) ?? "" }));
+        // Prompt de la bibliothèque : le bon type d'image est ouvert (le texte du prompt sert de référence, il n'est pas collé comme titre).
+        let kind = "scene";
+        try { kind = (JSON.parse(pending) as { kind?: string }).kind ?? kind; } catch {}
+        setForm((f) => ({ ...f, kind: ["packshot", "scene", "social", "ad", "banner"].includes(kind) ? kind : "scene" }));
         sessionStorage.removeItem(`es-insert-images-${id}`);
-        toast("info", t("Prompt inséré : ajustez le titre et lancez la création.", "Prompt inserted: adjust the headline and start creating."));
+        toast("info", t("Type d'image choisi d'après le prompt : vérifiez les options et lancez la création.", "Image type chosen from the prompt: check the options and start creating."));
       }
     } catch {}
   }, [id, toast, t]);

@@ -108,7 +108,7 @@ export type ThemeSpec = {
     /** Site d'une entreprise de services : pas de produit à vendre (exports et envoi à Shopify sans produits). */
     business?: "products" | "services";
     pages: StorePage[];
-    menus: Record<string, { title: string; links: { title: string; url: string }[] }>;
+    menus: Record<string, { title: string; links: MenuLink[] }>;
     policies: { handle: string; title: string; body_html: string }[];
   };
 };
@@ -312,4 +312,11 @@ export function* eachSection(spec: ThemeSpec): Generator<{ where: string; id: st
 export function containerOf(spec: ThemeSpec, where: string): TemplateJson | null {
   if (where.startsWith("group:")) return (spec.groups as any)[where.slice(6)] ?? null;
   return spec.templates[where] ?? null;
+}
+
+/** Lien de menu ; `links` : sous-liens (2 niveaux au plus sous le menu principal, comme Shopify). */
+export interface MenuLink {
+  title: string;
+  url: string;
+  links?: MenuLink[];
 }
