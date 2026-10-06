@@ -12,7 +12,7 @@ export type MediaTarget = { template: string; section: string; block?: string; k
 export type MediaAttachment = { assetId: string; name: string; kind: string };
 
 /** Demande de remplacement (« remplace », « mets celle-ci », « use this one »…). */
-export const REPLACE_INTENT = /(remplac|change|chang|mets|met |mettre|utilise|prends|à la place|a la place|celle[- ]ci|celle[- ]là|celle-la|cette (photo|image)|par (celle|cette|la mienne|ma photo)|replace|swap|use this|use my|put this|instead|this one)/i;
+export const REPLACE_INTENT = /(remplac|change|chang|mets|met |mettre|utilise|prends|à la place|a la place|celle[- ]ci|celle[- ]là|celle-la|par (celle|cette|la mienne|ma photo)|replace|swap|use this|use my|put this|instead|this one)/i;
 
 const isVideoKey = (k: string) => /video/.test(k);
 const fileOf = (src: string) => {
