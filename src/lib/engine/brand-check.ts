@@ -10,6 +10,7 @@ import { L } from "../i18n-server";
 import type { Brand, Strategy } from "../project-types";
 import type { BrandPalette } from "../theme/directions";
 import type { Project } from "../projects";
+import { json, one } from "../db";
 
 /**
  * Marques mondialement connues (ou très présentes en France) qu'un générateur de noms propose volontiers.
@@ -44,7 +45,38 @@ export function famousBrandClash(name: string): string | null {
   return core && FAMOUS.has(core) ? core : null;
 }
 
-export type BrandIssue = { code: "name_taken" | "name_generic" | "name_length" | "claim" | "hollow" | "tagline" | "palette"; field: string; message: string; blocking: boolean };
+/**
+ * Mots vus sur les photos, l'emballage ou la page du fournisseur (marque imprimée sur le produit, nom du vendeur,
+ * titre de l'annonce) : la marque créée par le studio est INVENTÉE, elle ne les reprend jamais.
+ * Exception : le site existant du client (c'est sa propre marque), et un nom fourni par le client lui-même.
+ */
+export function sourceWords(p: Pick<Project, "product"> & Partial<Project>): string[] {
+  if (p.settings?.existingSite) return [];
+  const texts: string[] = [...(p.product?.visual?.labelText ?? [])];
+  if (p.product?.nameStatus === "detected" && p.product.name) texts.push(p.product.name);
+  if (p.id) {
+    const link = json<any>(one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'link_import'", p.id)?.value, null);
+    for (const v of [link?.title, link?.product?.title, link?.product?.vendor, link?.product?.brand, link?.platform === "custom" ? null : null]) if (typeof v === "string") texts.push(v);
+  }
+  const words = new Set<string>();
+  for (const t of texts) for (const w of norm(t).split(" ")) if (w.length >= 3 && !WRAPPERS.has(w)) words.add(w);
+  return [...words];
+}
+
+/** Le nom reprend-il un mot vu chez le fournisseur ? (mot identique, ou mot de 4 lettres et plus contenu dans le nom) */
+export function copiesSource(name: string, words: string[]): string | null {
+  const n = norm(name);
+  if (!n) return null;
+  const parts = n.split(" ");
+  const joined = parts.join("");
+  for (const w of words) {
+    if (parts.includes(w) || joined === w) return w;
+    if (w.length >= 4 && (joined.includes(w) || (joined.length >= 4 && w.includes(joined)))) return w;
+  }
+  return null;
+}
+
+export type BrandIssue = { code: "name_copied" | "name_taken" | "name_generic" | "name_length" | "claim" | "hollow" | "tagline" | "palette"; field: string; message: string; blocking: boolean };
 
 /** Contraste minimal attendu : texte sombre sur fond clair (lecture longue) et couleur principale (boutons, liens). */
 const MIN_TEXT = 7;
@@ -55,6 +87,8 @@ export function brandIssues(brand: Pick<Brand, "name" | "nameStatus" | "tagline"
   const out: BrandIssue[] = [];
   const name = brand.name?.trim() ?? "";
   if (brand.nameStatus !== "provided" && brand.nameStatus !== "validated") {
+    const copied = copiesSource(name, sourceWords(p));
+    if (copied) out.push({ code: "name_copied", field: "name", blocking: true, message: L(`Le nom « ${name} » reprend « ${copied} », vu sur les photos ou la page du fournisseur : la marque doit être entièrement inventée.`, `The name "${name}" reuses "${copied}", seen on the supplier's photos or page: the brand must be entirely invented.`) });
     const clash = famousBrandClash(name);
     if (clash) out.push({ code: "name_taken", field: "name", blocking: true, message: L(`Le nom « ${name} » est déjà celui d'une marque connue (${clash}) : risque juridique et confusion.`, `The name "${name}" is already used by a well-known brand (${clash}): legal risk and confusion.`) });
     const generic = [p.product?.name, p.product?.category].filter(Boolean).map((x) => norm(String(x)));
@@ -126,14 +160,16 @@ const DEFAULT_PALETTE: BrandPalette = { primary: "#3A3F4B", secondary: "#E6E2DC"
  */
 export function finalizeBrand(brand: Brand, strategy: Strategy | null, p: Project): { brand: Brand; strategy: Strategy | null } {
   const out: Brand = { ...brand, palette: fixPalette(brand.palette) };
-  if (out.nameStatus === "proposed" && famousBrandClash(out.name)) {
-    const free = out.alternatives.find((a) => a.trim() && !famousBrandClash(a));
+  const words = sourceWords(p);
+  const bad = (n: string) => !!famousBrandClash(n) || !!copiesSource(n, words);
+  if (out.nameStatus === "proposed" && bad(out.name)) {
+    const free = out.alternatives.find((a) => a.trim() && !bad(a));
     if (free) {
-      out.alternatives = [out.name, ...out.alternatives.filter((a) => a !== free)].filter((a) => !famousBrandClash(a));
+      out.alternatives = [out.name, ...out.alternatives.filter((a) => a !== free)].filter((a) => !bad(a));
       out.name = free;
     }
   }
-  out.alternatives = out.alternatives.filter((a) => !famousBrandClash(a));
+  out.alternatives = out.alternatives.filter((a) => !bad(a));
   const texts = scrubClaims({ tagline: out.tagline, positioning: out.positioning, audience: out.audience, story: out.story, values: out.values, personality: out.personality }, p);
   Object.assign(out, texts.content);
   let strat = strategy;
