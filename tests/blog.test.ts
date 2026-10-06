@@ -110,7 +110,7 @@ describe("articles de blog écrits par l'IA", () => {
     Object.defineProperty(ai, "article", { configurable: true, writable: true, value: validArticle() });
   });
 
-  it("refuse sans forfait et avec Créer (inclus dans Vendre et Dominer) ; l'administrateur n'est jamais bloqué ; quota épuisé", async () => {
+  it("refuse sans forfait et avec Créer (inclus dans Vendre et Dominer) ; l'administrateur suit son forfait ; quota épuisé", async () => {
     const { assertBlogWrite, blogAccess, BlogAccessError } = await import("@/lib/engine/blog");
     const free = await account(null);
     const creer = await account("creer");
@@ -118,7 +118,9 @@ describe("articles de blog écrits par l'IA", () => {
     expect(() => fr(() => assertBlogWrite(creer.userId))).toThrow(/forfait Créer n'inclut pas/);
     expect(blogAccess(creer.userId).allowed).toBe(false);
     const admin = await account(null, "admin");
-    expect(() => fr(() => assertBlogWrite(admin.userId))).not.toThrow();
+    const admin2 = await account("vendre", "admin");
+    expect(() => fr(() => assertBlogWrite(admin.userId))).toThrow();
+    expect(() => fr(() => assertBlogWrite(admin2.userId))).not.toThrow();
     // Écriture refusée dans la tâche aussi (aucun appel IA, rien de décompté).
     const { writeBlogArticle } = await import("@/lib/engine/blog");
     await expect(fr(() => writeBlogArticle(new JobContext(enqueue({ userId: free.userId, projectId: free.projectId, type: "blog.write" })), free.projectId, {}))).rejects.toBeInstanceOf(BlogAccessError);

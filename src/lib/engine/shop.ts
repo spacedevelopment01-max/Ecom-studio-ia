@@ -5,7 +5,7 @@
  * direction artistique fournit une composition éprouvée.
  */
 import { all, json, one } from "../db";
-import type { Asset } from "../library";
+import { getAsset, type Asset } from "../library";
 import { loadProject, saveThemeVersion, currentTheme, type Project } from "../projects";
 import { buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
 import type { ShopCopy } from "../theme/copy";
@@ -18,7 +18,7 @@ import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
 import { FONT_HANDLES } from "../theme/render";
-import { effectivePalette } from "../route-palette";
+import { effectivePalette, paletteKey } from "../route-palette";
 import { SHOPIFY_TO_CANVAS } from "../media/fonts";
 import { tidyComposition } from "../theme/tidy";
 import { llmConfigured } from "../ai/llm";
@@ -52,10 +52,20 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
     slots[slot] = f;
   };
   // Préférence aux médias validés par le client, sinon les plus récents.
+  const brand = loadProject(projectId).brand;
+  const pal = effectivePalette(brand);
+  // Carte générée dessinée avec d'autres couleurs que celles de la piste retenue : elle n'illustre plus le site
+  // (dès qu'une version aux bonnes couleurs existe).
+  const stale = (a: Asset) => {
+    if (a.origin !== "generated" || !pal) return false;
+    const m = json<{ palette?: string; business?: string }>(a.meta, {});
+    return m.business === "services" && m.palette !== paletteKey(pal);
+  };
   const pick = (role: string, n = 0) => {
     const approved = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND status = 'approved' AND deleted_at IS NULL ORDER BY created_at DESC", projectId, role);
-    const list = approved.length ? [...approved, ...assetsByRole(projectId, role).filter((x) => !approved.some((y) => y.id === x.id))] : assetsByRole(projectId, role);
-    return list.filter((x) => x.status !== "rejected")[n];
+    let list = (approved.length ? [...approved, ...assetsByRole(projectId, role).filter((x) => !approved.some((y) => y.id === x.id))] : assetsByRole(projectId, role)).filter((x) => x.status !== "rejected");
+    if (list.some((x) => stale(x)) && list.some((x) => x.origin === "generated" && !stale(x))) list = list.filter((x) => !stale(x));
+    return list[n];
   };
   // Photos en situation (vie de tous les jours) : héros de la boutique et première scène.
   // Celles du marchand passent avant celles générées par l'IA.
@@ -90,7 +100,9 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
     });
   }
   // Le site prend la version horizontale du logo quand elle existe (l'emblème rond reste pour les étiquettes).
-  const logo = pick("logo");
+  // Logo de la piste choisie (pas le dernier logo validé d'une piste précédente).
+  const chosen = brand?.logo?.assetId ? getAsset(brand.logo.assetId) : undefined;
+  const logo = chosen && !chosen.deleted_at && chosen.role === "logo" ? chosen : pick("logo");
   const horizontal = logo ? all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo-horizontal' AND source_asset_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, logo.id)[0] : undefined;
   put("logo", horizontal ?? logo, "logo");
   put("logoLight", pick("logo-light"), "logo-clair");

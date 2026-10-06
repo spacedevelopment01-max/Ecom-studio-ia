@@ -195,7 +195,7 @@ export function EngineNotice({ what }: { what: string }) {
   return (
     <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
       <strong>{t("Découverte gratuite.", "Free discovery.")}</strong>{" "}
-      {t("L'IA analyse votre produit, crée votre marque, vos logos et un aperçu de votre page d'accueil. Les images, les vidéos et l'export de la boutique sont inclus dans les forfaits.", "AI analyzes your product, creates your brand, your logos and a preview of your home page. Images, videos and store export come with the plans.")}{" "}
+      {t("Le moteur du studio (sans IA) analyse votre produit, crée votre marque, vos logos et un aperçu de votre page d'accueil. L'IA, les images, les vidéos et l'export de la boutique sont inclus dans les forfaits.", "The studio engine (without AI) analyzes your product, creates your brand, your logos and a preview of your home page. AI, images, videos and store export come with the plans.")}{" "}
       <a href="/studio/compte#forfaits" className="font-semibold underline">{t("Choisir un forfait", "Choose a plan")}</a>
     </div>
   );

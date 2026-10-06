@@ -12,15 +12,16 @@ describe("forfaits et budget IA caché", () => {
     expect(monthlyAllowanceMicro({ status: "none", plan: "dominer" } as any)).toBe(0);
   });
 
-  it("découverte gratuite : petit budget unique ; une consommation n'est jamais débitée deux fois", async () => {
+  it("découverte gratuite : aucun budget IA ; une consommation n'est jamais débitée deux fois", async () => {
     const u = await createUser(`b${Date.now()}@test.fr`, "motdepasse-test", "B");
-    expect(balance(u.id).available).toBe(1.5 * EUR);
+    run("UPDATE users SET role = 'client' WHERE id = ?", u.id); // le premier compte de la base est administrateur
+    expect(balance(u.id).available).toBe(0);
     expect(() => assertCanSpend(u.id, 2 * EUR)).toThrow(/limite d'utilisation équitable/);
     creditTopup(u.id, 20, "pay_1"); // ancienne recharge : 50 % au budget
-    expect(balance(u.id).available).toBe(11.5 * EUR);
+    expect(balance(u.id).available).toBe(10 * EUR);
     recordUsage({ userId: u.id, task: "copywriting", provider: "anthropic", model: "m", unit: "tokens", inputUnits: 1, outputUnits: 1, costMicro: 8.5 * EUR, estimated: false, idempotencyKey: "u1" });
     recordUsage({ userId: u.id, task: "copywriting", provider: "anthropic", model: "m", unit: "tokens", inputUnits: 1, outputUnits: 1, costMicro: 8.5 * EUR, estimated: false, idempotencyKey: "u1" });
-    expect(balance(u.id).available).toBe(3 * EUR);
+    expect(balance(u.id).available).toBe(1.5 * EUR);
   });
 
   it("l'activation d'un forfait ajoute son budget mensuel et, une seule fois, le budget de création de la boutique", async () => {
@@ -54,7 +55,7 @@ describe("protection de la marge", () => {
 });
 
 describe("découverte gratuite, forfait et budget épuisé", () => {
-  it("découverte : l'IA écrit (marque, textes) mais ne crée ni images ni vidéos ; avec un forfait, tout est ouvert ; budget épuisé : moteur local", async () => {
+  it("découverte : aucun appel à l'IA (moteur local), ni images ni vidéos ; avec un forfait, tout est ouvert ; budget épuisé : moteur local", async () => {
     const { setSetting } = await import("@/lib/settings");
     const { runForUser } = await import("@/lib/ai/access");
     const { llmConfigured } = await import("@/lib/ai/llm");
@@ -62,10 +63,11 @@ describe("découverte gratuite, forfait et budget épuisé", () => {
     setSetting("provider.anthropic.apiKey", "sk-test", true);
     setSetting("provider.google.apiKey", "g-test", true);
     const free = await createUser(`essai${Date.now()}@test.fr`, "motdepasse-test", "Essai");
-    expect(await runForUser(free.id, async () => llmConfigured())).toBe(true);
+    expect(await runForUser(free.id, async () => llmConfigured())).toBe(false);
     expect(await runForUser(free.id, async () => imageProviderAvailable())).toBe(null);
     run("UPDATE subscriptions SET status = 'manual', plan = 'creer' WHERE user_id = ?", free.id);
     syncAllowance(free.id);
+    expect(await runForUser(free.id, async () => llmConfigured())).toBe(true);
     expect(await runForUser(free.id, async () => imageProviderAvailable())).not.toBe(null);
     run("UPDATE wallets SET monthly_used = monthly_allowance, topup_balance = 0 WHERE user_id = ?", free.id);
     expect(await runForUser(free.id, async () => llmConfigured())).toBe(false);
@@ -79,14 +81,14 @@ describe("avertissement avant une action IA gourmande", () => {
   it("estime la part des crédits et classe l'action (légère, gourmande, insuffisante)", async () => {
     const { estimateFor, estimateMicro } = await import("@/lib/ai/estimate");
     const u = await createUser(`estim${Date.now()}@test.fr`, "motdepasse-test", "Estimation");
-    creditTopup(u.id, 40, "pay_estim"); // 20 € de budget IA (+ 1,5 € de découverte)
+    creditTopup(u.id, 40, "pay_estim"); // 20 € de budget IA
     expect(estimateMicro("ugc", { beats: 3 })).toBeGreaterThan(estimateMicro("image"));
     expect(estimateMicro("ugc", { beats: 5 })).toBeGreaterThan(estimateMicro("ugc", { beats: 2 }));
     const ugc = estimateFor(u.id, "ugc", { beats: 3 });
     expect(["heavy", "very-heavy"]).toContain(ugc.level);
     expect(ugc.pctOfAvailable).toBeGreaterThan(25);
     expect(estimateFor(u.id, "ugc", { beats: 5 }).leftAfterPct).toBeLessThan(ugc.leftAfterPct);
-    const poor = await createUser(`pauvre${Date.now()}@test.fr`, "motdepasse-test", "Sans crédit"); // découverte seule (1,5 €)
+    const poor = await createUser(`pauvre${Date.now()}@test.fr`, "motdepasse-test", "Sans crédit"); // découverte seule (aucun budget IA)
     expect(estimateFor(poor.id, "ugc", { beats: 3 }).level).toBe("insufficient");
   });
 });

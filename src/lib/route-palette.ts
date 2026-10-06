@@ -37,3 +37,6 @@ export function effectivePalette(brand: Pick<Brand, "palette" | "logo"> | null |
   const src = paletteSources(brand);
   return Object.fromEntries(ROLES.map((k) => [k, brand.palette[src[k]]])) as Palette;
 }
+
+/** Empreinte d'une palette (couleurs principale et d'accent, celles qui donnent le ton d'une carte). */
+export const paletteKey = (pal: { primary: string; accent: string }) => `${pal.primary}/${pal.accent}`.toUpperCase();

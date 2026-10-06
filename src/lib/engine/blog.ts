@@ -89,11 +89,10 @@ export type ArticleView = ReturnType<typeof articleView>;
 
 // ---------------------------------------------------------------- accès (forfait, quota)
 
-const isAdmin = (userId: string) => one<{ role: string }>("SELECT role FROM users WHERE id = ?", userId)?.role === "admin";
-
-/** Ce que le compte peut faire avec le blog (l'administrateur n'est jamais bloqué). */
+/** Ce que le compte peut faire avec le blog (selon son forfait). */
 export function blogAccess(userId: string) {
-  const admin = isAdmin(userId);
+  // L'administrateur suit son forfait comme un client (il teste le studio en gratuit comme en payant).
+  const admin = false;
   const plan: PlanId | null = userPlan(userId);
   const q = quotaView(userId, "blog");
   // Forfait sans articles (Créer) : seuls des articles ajoutés autrement (pack) ouvriraient l'accès.
@@ -129,7 +128,6 @@ export class BlogAccessError extends UserFacingError {
 export function assertBlogWrite(userId: string) {
   const reason = blogPlanReason(userId);
   if (reason) throw new BlogAccessError(reason);
-  if (isAdmin(userId)) return;
   try {
     assertQuota(userId, "blog");
   } catch {

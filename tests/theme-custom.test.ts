@@ -215,9 +215,10 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
     }
     expect(customThemeAccess(user)).toMatchObject({ allowed: false, used: 2 });
     expect(customThemeAccess(user).reason).toMatch(/déjà créé 2 thèmes/);
-    // Une création échouée ne compte pas ; l'administrateur n'est jamais bloqué.
+    // Une création échouée ne compte pas ; l'administrateur suit son forfait comme un client (il teste en gratuit et en payant).
     const admin = await setup(null, "admin");
-    expect(customThemeAccess(admin.user).allowed).toBe(true);
+    expect(customThemeAccess(admin.user).allowed).toBe(false);
+    expect(customThemeAccess((await setup("dominer", "admin")).user).allowed).toBe(true);
 
     // Route : 402 clair pour le forfait Vendre.
     const vendre = await setup("vendre");
@@ -235,7 +236,8 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
     expect(() => assertSectionGeneration(creer.user)).toThrow(/Vendre et Dominer/);
     expect(sectionGenerationAllowed((await setup("vendre")).user)).toBe(true);
     expect(sectionGenerationAllowed((await setup("dominer")).user)).toBe(true);
-    expect(sectionGenerationAllowed((await setup(null, "admin")).user)).toBe(true);
+    expect(sectionGenerationAllowed((await setup(null, "admin")).user)).toBe(false);
+    expect(sectionGenerationAllowed((await setup("vendre", "admin")).user)).toBe(true);
 
     const { POST } = await import("@/app/api/projects/[id]/theme/chat/route");
     const send = (pid: string, generate: boolean) =>

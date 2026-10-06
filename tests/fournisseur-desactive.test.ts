@@ -1,5 +1,5 @@
 /** « Désactiver » un fournisseur dans l'administration coupe vraiment ses appels, même avec une clé venant de l'environnement. */
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { setSetting } from "@/lib/settings";
 import { activeProviderKey } from "@/lib/ai/config";
 import { llmConfigured } from "@/lib/ai/llm";
@@ -9,6 +9,9 @@ const saved = { ...process.env };
 afterEach(() => {
   process.env = { ...saved };
   for (const p of ["anthropic", "openai", "google"]) setSetting(`provider.${p}.disabled`, null);
+});
+beforeEach(() => {
+  for (const p of ["anthropic", "openai", "google"]) setSetting(`provider.${p}.apiKey`, null, true);
 });
 
 describe("fournisseur d'IA désactivé", () => {

@@ -13,7 +13,7 @@ import { L } from "../i18n-server";
 
 export { CUSTOM_THEMES_PER_MONTH };
 
-const planFor = (user: Pick<User, "id" | "role">): PlanId | null => (user.role === "admin" ? "dominer" : planOf(getSubscription(user.id)));
+const planFor = (user: Pick<User, "id" | "role">): PlanId | null => planOf(getSubscription(user.id));
 
 /** Génération d'une section par l'IA : forfaits Vendre et Dominer. */
 export function sectionGenerationAllowed(user: Pick<User, "id" | "role">): boolean {
