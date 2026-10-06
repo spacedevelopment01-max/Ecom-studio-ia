@@ -3,7 +3,7 @@
  * « Décrivez votre activité » avec une aide : repères de ce qui manque pendant la saisie, et un assistant de
  * quelques questions courtes qui rédige une description complète et structurée (sans IA, rien d'inventé).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Circle, Sparkles, X } from "lucide-react";
 import { Button, cx, Input, Textarea } from "../ui";
 import { useLang, useT } from "../i18n";
@@ -34,12 +34,22 @@ export function ActivityBrief({ invalid, area }: { invalid?: boolean; area?: str
   const [open, setOpen] = useState(false);
   const [a, setA] = useState<BriefAnswers>(emptyBrief);
   const set = (patch: Partial<BriefAnswers>) => setA((x) => ({ ...x, ...patch }));
-  const checks = briefChecklist(text, { area });
+  // Champ « Zone d'intervention » du formulaire : une zone saisie là compte aussi.
+  const [areaField, setAreaField] = useState("");
+  useEffect(() => {
+    const el = document.getElementById("area") as HTMLInputElement | null;
+    if (!el) return;
+    const sync = () => setAreaField(el.value);
+    sync();
+    el.addEventListener("input", sync);
+    return () => el.removeEventListener("input", sync);
+  }, []);
+  const checks = briefChecklist(text, { area: area || areaField });
   const missing = checks.filter((c) => !c.ok);
   const draft = composeBrief(a, lang);
 
   const start = () => {
-    setA({ ...emptyBrief(), ...briefFromText(text), area: briefFromText(text).area || area || "" });
+    setA({ ...emptyBrief(), ...briefFromText(text), area: briefFromText(text).area || area || areaField || "" });
     setOpen(true);
   };
 

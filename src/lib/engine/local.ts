@@ -302,6 +302,11 @@ export function localServiceAnalysis(input: { name?: string; brand?: string; des
   const areaM = desc.match(/(?:^|[\s,(])(?:à|sur|autour de|dans (?:le|la|les|l')?|in|around|across)\s+((?:[A-ZÀ-Ý][\p{L}'’-]+)(?:[\s-](?:[A-ZÀ-Ý][\p{L}'’-]+|et|sur|en|de|du|la|le|les|and)){0,4})/u);
   let area = areaM ? areaM[1].replace(/\s+(?:et|sur|en|de|du|la|le|les|and)$/u, "").trim() : "";
   if (/^(?:Domicile|Distance|Home)$/i.test(area)) area = "";
+  // Ville écrite sans majuscule (« carrossier à mâcon ») : reprise avec sa majuscule.
+  if (!area) {
+    const low = desc.match(/(?:^|[\s,(])(?:à|sur|autour de|près de)\s+(?!(?:domicile|distance|la|le|les|l'|un|une|des|votre|vos|notre|nos|partir|toute)\b)(\p{Ll}[\p{L}'’-]{2,}(?:-[\p{L}'’]+)*)/u);
+    if (low) area = low[1].split("-").map((w) => (["sur", "en", "de", "du", "la", "le", "les", "et"].includes(w) ? w : cap(w))).join("-");
+  }
   const fromDesc = contactsFromText(desc);
   const fromLink = input.link ? contactsFromText(linkText) : { phone: "", email: "", bookingUrl: "", hours: "" };
   const u = input.services;
