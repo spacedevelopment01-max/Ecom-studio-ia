@@ -8,6 +8,7 @@ import { CANVAS_FONTS } from "../media/fonts";
 import type { LogoSpec } from "../media/logo";
 import type { VideoSpec } from "../media/video";
 import { emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type Fact, type ProductProfile, type ProductSectorId, type SectorId, type ServiceItem, type ServiceProfile, type ServiceSectorId, type Strategy } from "../project-types";
+import { objectionAnswers } from "./local-copy";
 import { contactCta, isServicesBusiness, serviceDirection, serviceNames, serviceShowcase, serviceTaglines, type BusinessInfo } from "./services-text";
 import { DIRECTIONS, type DirectionId } from "../theme/directions";
 import type { ThemeOp } from "../theme/ops";
@@ -116,9 +117,60 @@ const KNOWN_QUESTIONS: Record<string, () => { question: string; why: string }> =
   returns: () => ({ question: L("Quelles sont vos conditions de retour ?", "What is your return policy?"), why: L("Obligatoire pour la page Livraison et retours.", "Required for the Shipping and returns page.") }),
 };
 
+/**
+ * Questions de consultant par secteur (moteur local) : les 2 informations qui décident l'achat dans ce secteur et
+ * qu'une photo ne donne pas. Chacune crée un fait « inconnu » (libellé dans la langue des contenus) que la réponse
+ * du commerçant viendra confirmer, et dont l'espace réservé dans les textes sera remplacé.
+ */
+type SectorQuestion = { id: string; key: string; label: [string, string]; ask: () => { question: string; why: string } };
+const SQ = (id: string, key: string, label: [string, string], q: [string, string], why: [string, string]): SectorQuestion => ({ id: `s-${id}`, key, label, ask: () => ({ question: L(q[0], q[1]), why: L(why[0], why[1]) }) });
+export const SECTOR_QUESTIONS: Record<ProductSectorId, SectorQuestion[]> = {
+  enfants: [
+    SQ("function", "function", ["Fonction", "What it does"], ["Que fait exactement le produit ? (ex. veilleuse, musique, son, piles ou recharge USB)", "What exactly does the product do? (e.g. night light, music, sounds, batteries or USB charging)"], ["C'est la première chose qu'un parent cherche : elle donne le titre de la fiche et ses bénéfices.", "It's the first thing a parent looks for: it sets the product page title and its benefits."]),
+    SQ("age", "age", ["Âge conseillé", "Recommended age"], ["À partir de quel âge est-il conseillé, et quels marquages figurent sur le produit ou l'emballage ? (ex. 3 ans et plus, CE)", "From what age is it recommended, and which markings are on the product or packaging? (e.g. 3+, CE)"], ["Obligatoire pour un produit pour enfants ; sans réponse, rien n'est affirmé sur l'âge ni la sécurité.", "Required for a children's product; without it, nothing is stated about age or safety."]),
+  ],
+  hightech: [
+    SQ("specs", "specs", ["Caractéristiques clés", "Key specs"], ["Quelles sont les caractéristiques qui comptent ? (ex. autonomie, poids, portée, résolution, compatibilité)", "Which specs matter most? (e.g. battery life, weight, range, resolution, compatibility)"], ["Ce sont les arguments qui décident l'achat d'un produit technique ; rien ne sera deviné.", "These are what decide a tech purchase; nothing will be guessed."]),
+    SQ("box", "box", ["Contenu du colis", "What's in the box"], ["Que contient la boîte ? (ex. 2 batteries, câble USB-C, housse)", "What's in the box? (e.g. 2 batteries, USB-C cable, case)"], ["Répond à une question fréquente et évite les retours déçus.", "Answers a frequent question and avoids disappointed returns."]),
+  ],
+  beaute: [
+    SQ("inci", "ingredients", ["Composition (INCI)", "Ingredients (INCI)"], ["Quelle est la liste des ingrédients (INCI) telle qu'elle figure sur l'emballage ?", "What is the ingredient list (INCI) as printed on the packaging?"], ["Obligatoire pour un cosmétique et première question des acheteuses.", "Required for cosmetics and the first thing shoppers check."]),
+    SQ("skin", "usage", ["Utilisation", "How to use"], ["Pour quel type de peau ou de cheveux, et comment s'utilise-t-il ? (ex. peaux sèches, matin et soir)", "For which skin or hair type, and how is it used? (e.g. dry skin, morning and night)"], ["Permet d'écrire pour la bonne personne, sans promesse d'efficacité.", "Lets us write for the right person, without efficacy promises."]),
+  ],
+  mode: [
+    SQ("fabric", "materials", ["Matière", "Fabric"], ["Quelle est la composition exacte ? (ex. 100 % coton, 280 g/m²)", "What is the exact composition? (e.g. 100% cotton, 280 gsm)"], ["Matière et toucher décident l'achat d'un vêtement.", "Fabric and feel decide a clothing purchase."]),
+    SQ("sizes", "sizes", ["Tailles et coupe", "Sizes and fit"], ["Quelles tailles, et la coupe taille-t-elle grand, normal ou petit ?", "Which sizes, and does it run large, true or small?"], ["Réduit les retours et rassure avant l'achat.", "Reduces returns and reassures before buying."]),
+  ],
+  bijoux: [
+    SQ("metal", "materials", ["Matière", "Material"], ["En quelle matière exactement ? (ex. argent 925, plaqué or 3 microns, acier inoxydable)", "What exact material? (e.g. sterling silver, 3-micron gold plating, stainless steel)"], ["La matière justifie le prix et répond à la question des allergies.", "The material justifies the price and answers allergy questions."]),
+    SQ("size", "dimensions", ["Dimensions", "Dimensions"], ["Quelles sont les dimensions ? (ex. chaîne 42 cm, pendentif 12 mm)", "What are the dimensions? (e.g. 42 cm chain, 12 mm pendant)"], ["Une photo trompe sur la taille : la dimension évite les déceptions.", "Photos mislead on size: dimensions prevent disappointment."]),
+  ],
+  maison: [
+    SQ("dims", "dimensions", ["Dimensions", "Dimensions"], ["Quelles sont les dimensions et le poids ? (ex. 30 × 20 cm, 1,2 kg)", "What are the dimensions and weight? (e.g. 30 × 20 cm, 1.2 kg)"], ["Indispensable pour savoir si l'objet trouve sa place.", "Essential to know whether it fits."]),
+    SQ("care", "care", ["Matières et entretien", "Materials and care"], ["En quelle matière, et comment s'entretient-il ? (ex. grès, lavable au lave-vaisselle)", "What is it made of, and how is it cared for? (e.g. stoneware, dishwasher safe)"], ["Rassure sur l'usage quotidien et la durée.", "Reassures on everyday use and durability."]),
+  ],
+  sport: [
+    SQ("use", "usage", ["Usage", "Use"], ["Pour quelle pratique et quelles conditions est-il conçu ? (ex. randonnée, pluie légère)", "What activity and conditions is it designed for? (e.g. hiking, light rain)"], ["Permet de parler au bon sportif, sans promesse de performance.", "Lets us talk to the right athlete, without performance promises."]),
+    SQ("size", "dimensions", ["Taille et poids", "Size and weight"], ["Quelles tailles ou dimensions, et quel poids ?", "Which sizes or dimensions, and what weight?"], ["Le poids et la taille décident souvent l'achat.", "Weight and size often decide the purchase."]),
+  ],
+  alimentation: [
+    SQ("ingr", "ingredients", ["Ingrédients et allergènes", "Ingredients and allergens"], ["Quelle est la liste des ingrédients et des allergènes telle qu'elle figure sur l'emballage ?", "What is the ingredient and allergen list as printed on the packaging?"], ["Obligatoire pour un produit alimentaire.", "Required for a food product."]),
+    SQ("origin", "origin", ["Origine et conservation", "Origin and storage"], ["D'où vient-il, et comment se conserve-t-il ? (ex. Drôme, 12 mois à l'abri de la lumière)", "Where does it come from, and how should it be stored? (e.g. 12 months away from light)"], ["L'origine est un argument fort, à condition d'être exacte.", "Origin is a strong argument, as long as it's accurate."]),
+  ],
+  animaux: [
+    SQ("animal", "usage", ["Pour quel animal", "Which pet"], ["Pour quel animal et quelle taille ? (ex. chats, chiens de moins de 10 kg)", "For which animal and size? (e.g. cats, dogs under 10 kg)"], ["Le maître doit savoir tout de suite si c'est pour son animal.", "Owners need to know right away if it suits their pet."]),
+    SQ("care", "care", ["Matière et entretien", "Material and care"], ["En quelle matière, et comment se nettoie-t-il ?", "What is it made of, and how is it cleaned?"], ["Question fréquente des maîtres, et argument de durée.", "A frequent owner question, and a durability argument."]),
+  ],
+  artisanat: [
+    SQ("making", "origin", ["Fabrication", "How it's made"], ["Qui le fabrique, où et comment ? (ex. dans notre atelier à Nantes, tourné à la main)", "Who makes it, where and how? (e.g. in our Nantes workshop, hand-thrown)"], ["La fabrication est l'histoire de la marque : elle doit être exacte pour être dite.", "The making is the brand story: it must be accurate to be told."]),
+    SQ("mat", "materials", ["Matières", "Materials"], ["Quelles matières sont utilisées ?", "Which materials are used?"], ["Les matières nommées rendent le texte concret et crédible.", "Named materials make the copy concrete and credible."]),
+  ],
+};
+
 /** Retraduit à l'affichage les questions connues (projets créés dans une autre langue d'interface). */
 export function localizeQuestions<Q extends { id: string; question: string; why?: string }>(questions: Q[]): Q[] {
-  return questions.map((q) => (KNOWN_QUESTIONS[q.id] ? { ...q, ...KNOWN_QUESTIONS[q.id]() } : q));
+  const bySector = new Map(Object.values(SECTOR_QUESTIONS).flat().map((x) => [x.id, x.ask] as const));
+  return questions.map((q) => (KNOWN_QUESTIONS[q.id] ? { ...q, ...KNOWN_QUESTIONS[q.id]() } : bySector.has(q.id) ? { ...q, ...bySector.get(q.id)!() } : q));
 }
 
 export function localAnalysis(input: { name?: string; brand?: string; description?: string; price?: number | null; colors: { hex: string; name: string; share: number }[]; link?: { title: string; description: string; product: any } | null; photos: number }): ProductProfile {
@@ -131,10 +183,14 @@ export function localAnalysis(input: { name?: string; brand?: string; descriptio
     if (!facts.some((f) => f.key === k[0])) facts.push({ key: k[0], label: k[1], value: "", status: "unknown", source: "ai" });
   }
   const price = input.price ?? input.link?.product?.price ?? null;
+  // Questions de consultant propres au secteur (fonction, âge, caractéristiques clés…) quand le fait manque.
+  const sectorQs = (sector && sector in SECTOR_QUESTIONS ? SECTOR_QUESTIONS[sector as ProductSectorId] : []).filter((x) => !facts.some((f) => f.key === x.key && f.value.trim()));
+  for (const x of sectorQs) if (!facts.some((f) => f.key === x.key)) facts.push({ key: x.key, label: C(x.label[0], x.label[1]), value: "", status: "unknown", source: "ai" });
   const colorLine = [...new Set(input.colors.slice(0, 4).map((c) => c.name))].slice(0, 3).join(", ");
   const questions = [
     ...(price === null ? [{ id: "price", ...KNOWN_QUESTIONS.price(), required: true, factKey: "price" }] : []),
     ...(!name ? [{ id: "name", ...KNOWN_QUESTIONS.name(), required: true, factKey: "name" }] : []),
+    ...sectorQs.map((x) => ({ id: x.id, ...x.ask(), required: x.key === "function", factKey: x.key })),
     { id: "shipping", ...KNOWN_QUESTIONS.shipping(), required: false, factKey: "shipping" },
     { id: "returns", ...KNOWN_QUESTIONS.returns(), required: false, factKey: "returns" },
   ];
@@ -143,9 +199,10 @@ export function localAnalysis(input: { name?: string; brand?: string; descriptio
     nameStatus: input.name ? "provided" : name ? "detected" : "unknown",
     category: "",
     sector,
-    summary: desc ? desc.split(/\n|\. /)[0].slice(0, 220) : input.photos ? C(`Produit présenté en photo${colorLine ? `, dominantes ${colorLine}` : ""}.`, `Product shown in photos${colorLine ? `, mainly ${colorLine}` : ""}.`) : "",
+    summary: desc ? desc.split(/\n|\. /)[0].slice(0, 220) : "",
     facts,
-    visual: { colors: input.colors, description: input.photos && colorLine ? C(`Teintes dominantes observées : ${colorLine}.`, `Main colors observed: ${colorLine}.`) : "" },
+    // Les couleurs mesurées restent des données internes : pas de phrase « teintes observées » montrée aux acheteurs.
+    visual: { colors: input.colors, description: "" },
     price: { amount: price, currency: input.link?.product?.currency ?? "EUR", status: price === null ? "unknown" : "confirmed" },
     variants: input.link?.product?.variants?.length > 1 ? [{ name: "Option", values: input.link!.product.variants.map((v: any) => v.title) }] : [],
     questions,
@@ -294,10 +351,34 @@ export function mergeServiceProfile(user: ServiceProfile, found: Partial<Service
   };
 }
 
-/** Palette de marque dérivée des couleurs mesurées du produit. */
-export function paletteFromColors(colors: { hex: string; share: number }[]) {
+/** Teinte d'accent par secteur, pour un produit sans couleur (gris, noir, blanc, métal). */
+const NEUTRAL_ACCENT_HUE: Record<string, number> = { hightech: 212, sport: 18, maison: 24, beaute: 340, mode: 8, bijoux: 42, alimentation: 140, enfants: 200, animaux: 32, artisanat: 28 };
+
+/** Saturation perçue (chroma 0 à 1) : stable pour les gris, contrairement à la saturation HSL des tons très clairs ou très sombres. */
+const chroma = (hex: string) => {
+  const v = hex.replace("#", "");
+  const c = [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) / 255);
+  return Math.max(...c) - Math.min(...c);
+};
+
+/**
+ * Palette de marque dérivée des couleurs mesurées du produit.
+ * Produit sans couleur (gris, noir, métal) : palette neutre graphite et un seul accent propre au secteur, plutôt
+ * qu'une teinte inventée à partir du reflet bleuté d'un gris. Rose pastel : la couleur principale reste un rose
+ * profond (framboise) au lieu de virer au brun brique.
+ */
+export function paletteFromColors(colors: { hex: string; share: number }[], sector?: string | null) {
   const vivid = [...colors].sort((a, b) => hsl(b.hex)[1] * (0.4 + b.share) - hsl(a.hex)[1] * (0.4 + a.share))[0]?.hex ?? "#6B5B4B";
-  const [h, s] = hsl(vivid);
+  if (colors.length && Math.max(...colors.map((c) => chroma(c.hex))) < 0.08) {
+    const h0 = hsl(vivid)[0];
+    const ah = NEUTRAL_ACCENT_HUE[sector ?? ""] ?? 212;
+    return { primary: hslToHex(h0, 0.08, 0.22), secondary: hslToHex(h0, 0.05, 0.88), accent: hslToHex(ah, 0.62, 0.5), light: hslToHex(h0, 0.04, 0.97), dark: hslToHex(h0, 0.08, 0.08) };
+  }
+  let [h, s] = hsl(vivid);
+  if ((h >= 335 || h <= 15) && hsl(vivid)[2] > 0.65) {
+    h = 346;
+    s = Math.max(s, 0.5);
+  }
   const primary = hslToHex(h, Math.min(0.62, Math.max(0.25, s)), 0.36);
   const secondary = hslToHex(h, Math.min(0.35, s * 0.6), 0.84);
   const accent = hslToHex((h + 28) % 360, Math.min(0.55, Math.max(0.3, s)), 0.58);
@@ -309,13 +390,13 @@ export function paletteFromColors(colors: { hex: string; share: number }[]) {
 /** Noms proposés par le moteur local : évocateurs, sans promesse, à valider par le marchand. */
 const NAME_WORDS_FR: Record<string, string[]> = {
   beaute: ["Aube", "Sève", "Lumen", "Nacre", "Brume", "Velours", "Iris", "Opaline"],
-  mode: ["Faubourg", "Ligne", "Trame", "Allure", "Écru", "Sillon", "Atelier Nord", "Lin"],
+  mode: ["Faubourg", "Ligne", "Trame", "Ourlet", "Écru", "Sillon", "Atelier Nord", "Lin"],
   bijoux: ["Éclat", "Orée", "Fil d'Or", "Constellation", "Perle", "Aurore", "Facette", "Lueur"],
   maison: ["Sillage", "Ardoise", "Braise", "Lueur", "Foyer", "Argile", "Terre d'Ombre", "Nuance"],
-  hightech: ["Pixel", "Onde", "Vecteur", "Nova", "Circuit", "Prisme", "Signal", "Orbite"],
+  hightech: ["Axiome", "Onde", "Vecteur", "Boréal", "Tangente", "Prisme", "Faisceau", "Orbite"],
   sport: ["Cap", "Élan", "Altitude", "Sentier", "Horizon", "Relief", "Boussole", "Crête"],
   alimentation: ["Récolte", "Terroir", "Fournil", "Verger", "Saveur", "Garrigue", "Moisson", "Cueillette"],
-  enfants: ["Petit Pas", "Câlin", "Nuage", "Grelot", "Pirouette", "Doudou", "Ritournelle", "Comptine"],
+  enfants: ["Petit Pas", "Câlin", "Nuage", "Grelot", "Pirouette", "Luciole", "Ritournelle", "Comptine"],
   animaux: ["Patte", "Museau", "Gamelle", "Truffe", "Compagnon", "Pelage", "Balade", "Moustache"],
   artisanat: ["Papier", "Encre", "Établi", "Copeau", "Plume", "Fusain", "Canevas", "Atelier"],
 };
@@ -328,20 +409,20 @@ const TAGLINES_FR: Record<string, string> = {
   hightech: "La technologie, sans détour.",
   sport: "Fait pour bouger.",
   alimentation: "Le goût des bonnes choses.",
-  enfants: "Grandir en douceur.",
+  enfants: "Pour les petits, avec soin.",
   animaux: "Pour nos compagnons.",
   artisanat: "Fait avec soin.",
 };
 
 const NAME_WORDS_EN: Record<string, string[]> = {
-  beaute: ["Dawn", "Sap", "Lumen", "Pearl", "Mist", "Velvet", "Iris", "Opal"],
-  mode: ["Thread", "Line", "Weave", "Poise", "Ecru", "Furrow", "North Loom", "Linen"],
-  bijoux: ["Gleam", "Halo", "Gold Thread", "Constellation", "Pearl", "Aurora", "Facet", "Glow"],
-  maison: ["Hearth", "Slate", "Ember", "Glow", "Nook", "Clay", "Umber", "Shade"],
-  hightech: ["Pixel", "Wave", "Vector", "Nova", "Circuit", "Prism", "Signal", "Orbit"],
+  beaute: ["Morrow", "Sap", "Lumen", "Pearl", "Mist", "Velvet", "Iris", "Opal"],
+  mode: ["Thread", "Seam", "Weave", "Selvedge", "Ecru", "Furrow", "North Loom", "Linen"],
+  bijoux: ["Gleam", "Lustre", "Gold Thread", "Constellation", "Pearl", "Aurora", "Facet", "Glow"],
+  maison: ["Hearth", "Slate", "Cinder", "Glow", "Alcove", "Clay", "Umber", "Shade"],
+  hightech: ["Tangent", "Wave", "Vector", "Axiom", "Arclight", "Prism", "Northbeam", "Meridian"],
   sport: ["Summit", "Stride", "Altitude", "Trail", "Horizon", "Ridge", "Compass", "Crest"],
   alimentation: ["Harvest", "Orchard", "Bakehouse", "Grove", "Savor", "Pantry", "Gather", "Meadow"],
-  enfants: ["Little Steps", "Cuddle", "Cloud", "Jingle", "Pirouette", "Snuggle", "Lullaby", "Rhyme"],
+  enfants: ["Little Steps", "Cuddle", "Cloud", "Jingle", "Pirouette", "Firefly", "Lullaby", "Rhyme"],
   animaux: ["Paw", "Snout", "Bowl", "Whisker", "Companion", "Fur", "Stroll", "Tail"],
   artisanat: ["Paper", "Ink", "Workbench", "Shaving", "Quill", "Charcoal", "Canvas", "Workshop"],
 };
@@ -354,7 +435,7 @@ const TAGLINES_EN: Record<string, string> = {
   hightech: "Tech, without the fuss.",
   sport: "Made to move.",
   alimentation: "A taste for good things.",
-  enfants: "Growing up gently.",
+  enfants: "For little ones, with care.",
   animaux: "For our companions.",
   artisanat: "Made with care.",
 };
@@ -396,7 +477,7 @@ export function localBrand(p: ProductProfile, providedBrand?: string, biz?: Busi
       logoSpec: { name, family: CANVAS_FONTS[logoFamily] ? logoFamily : "Cormorant", weight: d.id === "brut" || d.id === "elan" || d.id === "pop" ? 800 : 500, case: d.id === "terroir" || d.id === "pop" || d.id === "gourmand" ? "title" : "upper", tracking: d.id === "atelier" || d.id === "galerie" || d.id === "joaillerie" ? 0.18 : 0.04, layout: name.length > 12 && name.includes(" ") ? "stacked" : "wordmark", emblem: d.id === "elan" ? "line" : "none" },
     };
   }
-  const palette = paletteFromColors(p.visual.colors.length ? p.visual.colors : [{ hex: "#7A6552", share: 1 }]);
+  const palette = paletteFromColors(p.visual.colors.length ? p.visual.colors : [{ hex: "#7A6552", share: 1 }], sector);
   const logoFamily = canvasFamily(d.fonts.heading, "Cormorant");
   return {
     brand: {
@@ -428,6 +509,7 @@ export function localBrand(p: ProductProfile, providedBrand?: string, biz?: Busi
       ),
       pillars: C(["Produit", "Usage", "Coulisses"], ["Product", "In use", "Behind the scenes"]),
       keyMessages: [],
+      platform: localPlatform(p),
       generatedBy: "local",
     },
     logoSpec: {
@@ -439,6 +521,26 @@ export function localBrand(p: ProductProfile, providedBrand?: string, biz?: Busi
       layout: name.length > 12 && name.includes(" ") ? "stacked" : "wordmark",
       emblem: d.id === "elan" ? "line" : "none",
     },
+  };
+}
+
+/**
+ * Plateforme de marque du moteur local : rien n'est supposé sur la cible (à définir avec le client), les preuves
+ * sont les faits confirmés, les objections celles du secteur avec leur réponse si le fait est connu.
+ */
+export function localPlatform(p: ProductProfile): NonNullable<Strategy["platform"]> {
+  const confirmed = p.facts.filter((f) => f.status === "confirmed" && f.value.trim() && !["price", "name", "summary", "shipping", "returns"].includes(f.key));
+  const missing = p.facts.filter((f) => f.status === "unknown" && !["price", "name", "shipping", "returns"].includes(f.key));
+  return {
+    persona: C("[À définir avec vous : qui achète, pour quel moment d'usage]", "[To define with you: who buys it, for what moment of use]"),
+    problem: C("[À définir avec vous : ce que le produit aide à régler au quotidien]", "[To define with you: what the product helps with day to day]"),
+    alternatives: "",
+    difference: C("[À définir avec vous : ce qui le distingue des produits similaires, et la preuve]", "[To define with you: what sets it apart from similar products, and the proof]"),
+    proofs: [
+      ...confirmed.slice(0, 5).map((f) => ({ claim: f.label, proof: f.value, status: "available" as const })),
+      ...missing.slice(0, 3).map((f) => ({ claim: f.label, proof: "", status: "missing" as const })),
+    ],
+    objections: objectionAnswers(p).map((o) => ({ objection: o.q, answer: o.a })),
   };
 }
 
@@ -510,7 +612,13 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
   const pick = <T,>(xs: T[]) => xs[seed % xs.length];
   // Entreprise de services : la fin invite à prendre rendez-vous, demander un devis ou appeler.
   const end: VideoSpec["scenes"][number] = { kind: "end", duration: 3, headline: name, cta: isServicesBusiness(biz) ? contactCta(biz.services?.contactMode) : C("Découvrir", "Discover"), url };
-  const factScene = (): VideoSpec["scenes"] => facts.length >= 2 ? [pick<VideoSpec["scenes"][number]>([{ kind: "callouts", duration: 3.4, items: facts, heading: C("En détail", "In detail") }, { kind: "words", duration: Math.min(5.4, 1.8 * facts.length), items: facts }])] : [];
+  // Phrases plein écran seulement si chaque fait se lit d'un coup d'œil (6 mots au plus) ; sinon légendes autour du produit.
+  const wc = (t: string) => t.split(/\s+/).filter(Boolean).length;
+  const factScene = (): VideoSpec["scenes"] => facts.length >= 2 ? [facts.every((f) => wc(f) <= 6) ? pick<VideoSpec["scenes"][number]>([{ kind: "callouts", duration: 3.4, items: facts, heading: C("En détail", "In detail") }, { kind: "words", duration: Math.min(5.4, 1.8 * facts.length), items: facts }]) : { kind: "callouts", duration: 3.4, items: facts, heading: C("En détail", "In detail") }] : [];
+  /** Légende des gros plans (sous-titres façon réseaux) : le nom, sans promesse. */
+  const closeUp = C(`${name}, de près`, `${name}, up close`);
+  /** Accroche en phrase plein écran si elle est courte, sinon le produit sous projecteur avec la phrase en titre. */
+  const opener = (d: number): VideoSpec["scenes"][number] => (wc(line) <= 6 ? { kind: "words", duration: d, items: [line] } : { kind: "spotlight", duration: d + 0.4, headline: line });
   const scenes: VideoSpec["scenes"] = [];
   let transition: VideoSpec["transition"] = "panel";
   let music: VideoSpec["music"] = "calm";
@@ -521,16 +629,16 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
     transition = "push";
     music = "pulse";
     if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: line, tag: brand.name });
-    else scenes.push({ kind: "words", duration: 2.2, items: [line] });
-    scenes.push({ kind: "spotlight", duration: 3, headline: name });
+    else scenes.push(opener(2));
+    scenes.push(scenes[0].kind === "spotlight" ? { kind: "reveal", duration: 2.6, headline: name, motion: "zoom" } : { kind: "spotlight", duration: 2.6, headline: name });
     scenes.push(...factScene());
     const o = other([life]);
-    if (o >= 0) scenes.push({ kind: "detail", duration: 2.2, image: o });
+    if (o >= 0) scenes.push({ kind: "detail", duration: 2.2, image: o, caption: closeUp });
   } else if (sector === "mode" || sector === "bijoux" || sector === "beaute") {
     // Éditorial : phrase forte, photo plein cadre, écran partagé, détail.
     transition = pick<VideoSpec["transition"]>(["push", "fade"]);
     music = "pulse";
-    scenes.push({ kind: "words", duration: 2, items: [line] });
+    scenes.push(opener(2));
     if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: name });
     else scenes.push({ kind: "reveal", duration: 2.8, headline: name, motion: "zoom" });
     const o = other([life]);
@@ -540,22 +648,97 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
     // Chaleureux : la vie de tous les jours d'abord, le produit ensuite, ce qu'il apporte.
     transition = pick<VideoSpec["transition"]>(["fade", "panel"]);
     music = "calm";
-    if (life >= 0) scenes.push({ kind: "hook", duration: 2.8, image: life, headline: line, tag: brand.name });
-    else scenes.push({ kind: "title", duration: 2.4, text: line, sub: name, bg: "brand" });
+    // Accroche : jamais une carte de titre sur fond uni ; sans photo en situation, le produit sous projecteur.
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.2, image: life, headline: line, tag: brand.name });
+    else scenes.push({ kind: "spotlight", duration: 2.2, headline: line });
     const o = other([life]);
-    if (o >= 0 && life >= 0) scenes.push({ kind: "split", duration: 3, image: o === life2 ? o : life, headline: name });
+    // Écran partagé avec une autre photo que celle de l'ouverture (jamais deux fois la même image).
+    if (o >= 0 && life >= 0) scenes.push({ kind: "split", duration: 3, image: o, headline: name });
     else scenes.push({ kind: "reveal", duration: 2.8, headline: name, motion: pick(["rise", "zoom", "slide"] as const) });
     scenes.push(...factScene());
-    if (o >= 0 && o !== life2) scenes.push({ kind: "detail", duration: 2.2, image: o });
+    const d = other([life, ...(life >= 0 ? [o] : [])]);
+    if (d >= 0 && imageRoles[d] === "detail") scenes.push({ kind: "detail", duration: 2.2, image: d, caption: closeUp });
   } else {
     // Classique (alimentation, artisanat…) : titre, révélation, détails, photos.
     transition = pick<VideoSpec["transition"]>(["panel", "fade"]);
-    scenes.push({ kind: "title", duration: 2.4, text: line, sub: brand.tagline ? name : undefined, bg: pick(["brand", "dark"] as const) });
-    scenes.push({ kind: "reveal", duration: 3, headline: name, motion: pick(["rise", "zoom", "slide"] as const) });
+    // Accroche : la photo en situation si elle existe, sinon une phrase courte plein écran (jamais une carte de titre).
+    if (life >= 0) scenes.push({ kind: "hook", duration: 2.2, image: life, headline: line, tag: brand.name });
+    else scenes.push(opener(1.8));
+    scenes.push({ kind: "reveal", duration: 2.6, headline: name, motion: pick(["rise", "zoom", "slide"] as const) });
     scenes.push(...factScene());
-    if (life >= 0) scenes.push({ kind: "hook", duration: 2.6, image: life, headline: facts[0] ?? line });
+    if (life >= 0 && scenes[0].kind !== "hook") scenes.push({ kind: "hook", duration: 2.4, image: life, headline: facts[0] ?? line });
     const o = other([life]);
     if (o >= 0) scenes.push({ kind: "scene", duration: 2.2, image: o });
+  }
+  // Durée visée 12 à 15 s (assez pour installer le produit, assez court pour être vu en entier) : on complète
+  // avec des plans d'un genre pas encore utilisé et des images pas encore montrées, jamais deux fois le même plan.
+  const MIN = 12, MAX = 15;
+  const total = () => scenes.reduce((t, x) => t + x.duration, 0) + end.duration;
+  const used = new Set(scenes.map((x) => x.kind));
+  const shown = new Set(scenes.flatMap((x) => ("image" in x ? [x.image] : [])));
+  const unshown = (roles: string[]) => imageRoles.findIndex((r, i) => roles.includes(r) && !shown.has(i));
+  const extras: (() => VideoSpec["scenes"][number] | null)[] = [
+    () => {
+      const i = unshown(["scene", "lifestyle"]);
+      return i >= 0 && !used.has("scene") ? { kind: "scene", duration: 2.4, image: i } : null;
+    },
+    () => {
+      const i = unshown(["detail"]);
+      return i >= 0 && !used.has("detail") ? { kind: "detail", duration: 2.2, image: i, caption: closeUp } : null;
+    },
+    () => (facts.length >= 2 && !used.has("callouts") && !used.has("words") ? factScene()[0] ?? null : null),
+    // Peu d'images : le produit révélé, puis seul sous un projecteur (deux mises en scène différentes).
+    () => (!isServicesBusiness(biz) && !used.has("reveal") ? { kind: "reveal", duration: 2.8, headline: name, motion: pick(["rise", "zoom", "slide"] as const) } : null),
+    // Le produit seul sous un projecteur, une autre mise en scène que la révélation.
+    () => (!isServicesBusiness(biz) && !used.has("spotlight") ? { kind: "spotlight", duration: 2.6, headline: line !== name ? line : undefined } : null),
+    // Carte de marque au milieu du montage (jamais en ouverture) : relance le rythme quand les images manquent.
+    () => (!used.has("title") ? { kind: "title", duration: 2.4, text: name, sub: line !== name ? line : undefined, bg: pick(["brand", "dark"] as const) } : null),
+  ];
+  for (const make of extras) {
+    if (total() >= MIN) break;
+    const x = make();
+    if (!x || total() + x.duration > MAX) continue;
+    scenes.push(x);
+    used.add(x.kind);
+    if ("image" in x) shown.add(x.image);
+  }
+  // Encore court (peu d'images) : chaque plan est tenu un peu plus longtemps, sans dépasser 4 s.
+  if (total() < MIN) {
+    const k = Math.min(1.5, (MIN - end.duration) / Math.max(1, total() - end.duration));
+    for (const x of scenes) x.duration = Math.round(Math.min(4, x.duration * k) * 10) / 10;
+  }
+  // Trop long (beaucoup d'images et d'informations) : rythme resserré, chaque plan reste lisible (1,8 s au moins).
+  if (total() > MAX) {
+    const k = (MAX - end.duration) / Math.max(1, total() - end.duration);
+    for (const x of scenes) x.duration = Math.max(x.kind === "words" || x.kind === "callouts" ? Math.min(x.duration, 1.5 * x.items.length + 0.4) : 1.8, Math.floor(x.duration * k * 10) / 10);
+    while (total() > MAX + 0.05 && scenes.length > 3) {
+      // Encore trop long : le dernier plan photo (le moins important) est retiré.
+      const i = scenes.map((x) => x.kind).lastIndexOf(scenes.some((x) => x.kind === "scene") ? "scene" : "detail");
+      if (i < 0) break;
+      scenes.splice(i, 1);
+    }
+  }
+  // Un même titre n'apparaît qu'une fois (écran partagé puis révélation « Pompon », « Pompon ») : le plan suivant
+  // prend un fait confirmé encore jamais affiché, sinon se passe de titre (le produit parle seul).
+  const norm = (t: string) => t.trim().toLowerCase();
+  // Les cartes de titre et l'accroche gardent leur texte ; les autres plans cèdent la place.
+  const shownText = new Set<string>(scenes.flatMap((x) => (x.kind === "title" ? [norm(x.text)] : x.kind === "hook" ? [norm(x.headline)] : [])));
+  const seen = new Set<string>();
+  for (const x of scenes) {
+    if (x.kind === "title") {
+      if (x.sub && (seen.has(norm(x.sub)) || shownText.has(norm(x.sub)) && norm(x.sub) !== norm(x.text))) delete x.sub;
+      seen.add(norm(x.text));
+      if (x.sub) seen.add(norm(x.sub));
+      continue;
+    }
+    if (x.kind === "hook" || !("headline" in x) || !x.headline) {
+      if (x.kind === "hook") seen.add(norm(x.headline));
+      continue;
+    }
+    const h = norm(x.headline);
+    if (!seen.has(h) && !(shownText.has(h))) { seen.add(h); continue; }
+    const fresh = facts.find((f) => !seen.has(norm(f)) && !shownText.has(norm(f)) && !scenes.some((y) => "items" in y && y.items.some((it) => norm(it) === norm(f))) && f.split(/\s+/).length <= 6);
+    if (fresh) { (x as { headline?: string }).headline = fresh; seen.add(norm(fresh)); } else delete (x as { headline?: string }).headline;
   }
   scenes.push(end);
   return { format, scenes, transition, music, captions: true };

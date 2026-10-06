@@ -17,10 +17,14 @@ import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedi
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
+import { tidyComposition } from "../theme/tidy";
 import { llmConfigured } from "../ai/llm";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { C, L, contentLang, inBothLangs } from "../i18n-server";
 import type { Bi } from "../step-notes";
+
+/** Note de relecture visuelle en dessous de laquelle la composition de l'IA n'est pas gardée (défauts visibles). */
+export const MIN_DESIGN_SCORE = 5;
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "produit";
 
@@ -173,6 +177,10 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   // Résumé de la version enregistré dans les deux langues : affiché ensuite dans celle de l'interface.
   let summary: Bi = opts.summary ?? inBothLangs(() => (services ? L(`Site créé — direction ${directionById(direction).name}`, `Website created — ${directionById(direction).name} direction`) : L(`Boutique créée — direction ${directionById(direction).name}`, `Store created — ${directionById(direction).name} direction`)));
   const append = (b: Bi) => (summary = { fr: summary.fr + b.fr, en: summary.en + b.en });
+  // Composition éprouvée de la direction : reprise si la composition de l'IA est jugée ratée à la relecture visuelle.
+  const directionSpec = spec;
+  const directionSummary = summary;
+  let designedByAi = false;
   if (opts.useAi !== false && llmConfigured() && ctx) {
     try {
       const design = await ctx.step(`design:${direction}`, () => aiDesignHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:design:${direction}` }, p, spec));
@@ -187,10 +195,13 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
         const first = ops.findIndex((o) => o.op === "add_section");
         ops.splice(first + 1, 0, { op: "add_section", template: "index", type: "featured-collection", settings: { heading: p.storeType === "multi" ? C("Les incontournables", "Best sellers") : C("La sélection", "The selection"), collection: "all", limit: 8, columns: 4 } });
       }
+      // Finitions d'agence (doublons, sections d'espaces réservés, images inexistantes…) avant tout contrôle.
       const r = applyOps(fresh, ops);
+      r.spec = tidyComposition(r.spec, { strictAssets: true });
       if (r.spec.templates.index.order.length >= 4 && !validateSpec(r.spec).length) {
         spec = r.spec;
         author = "ai";
+        designedByAi = true;
         summary = inBothLangs(() => L(`Boutique conçue par l'IA — ${design.reasoning.slice(0, 160)}`, `Store designed by AI — ${design.reasoning.slice(0, 160)}`));
       }
     } catch (e) {
@@ -202,11 +213,23 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       ctx.progress(0.7, L("Relecture visuelle de la boutique", "Visual review of the store"));
       const review = await ctx.step(`review:${direction}`, async () => {
         const shots = await snapshotTheme(spec);
-        return shots ? aiReviewHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:review:${direction}` }, p, spec, shots) : null;
+        // La fiche produit est relue avec l'accueil (galerie, bloc d'achat, sections sous l'achat) ; jamais pour un site de services.
+        const product = shots && !services ? await snapshotTheme(spec, `/products/${spec.store.product.handle}`, { desktopSheets: 2, mobileSheets: 1 }).catch(() => null) : null;
+        return shots ? aiReviewHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:review:${direction}` }, p, spec, { ...shots, product }) : null;
       });
-      if (review?.ops.length) {
+      if (review && designedByAi && review.score < MIN_DESIGN_SCORE) {
+        // Défauts visibles sur la composition de l'IA : on ne la montre pas, la composition de la direction est gardée.
+        spec = directionSpec;
+        author = "system";
+        summary = directionSummary;
+        append(inBothLangs(() => L(` · composition de l'IA écartée à la relecture visuelle (${review.score}/10)`, ` · AI layout discarded at visual review (${review.score}/10)`)));
+      } else if (review?.ops.length) {
         const r = applyOps(spec, services ? review.ops.filter((o) => !("type" in o && typeof o.type === "string" && /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown)/.test(o.type))) : review.ops);
-        if (r.applied.length && !validateSpec(r.spec).length) {
+        r.spec = tidyComposition(r.spec, { strictAssets: true });
+        // Une relecture qui viderait l'accueil (moins de 4 sections) ou en retirerait l'ouverture n'est pas appliquée.
+        const opening = (t: ThemeSpec) => t.templates.index.sections[t.templates.index.order[0]]?.type ?? "";
+        const keepsOpening = !/^(hero-|video-|slideshow)/.test(opening(spec)) || /^(hero-|video-|slideshow)/.test(opening(r.spec));
+        if (r.applied.length && r.spec.templates.index.order.length >= 4 && keepsOpening && !validateSpec(r.spec).length) {
           spec = r.spec;
           author = "ai";
           append(inBothLangs(() => L(` · relue sur captures (${review.score}/10, ${r.applied.length} correction${r.applied.length > 1 ? "s" : ""})`, ` · reviewed on screenshots (${review.score}/10, ${r.applied.length} fix${r.applied.length > 1 ? "es" : ""})`)));

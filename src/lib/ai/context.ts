@@ -5,7 +5,7 @@
  */
 import { all } from "../db";
 import { memory, type Project } from "../projects";
-import { sectorLabel } from "../project-types";
+import { sectorLabel, type BrandPlatform } from "../project-types";
 import { contentLang } from "../i18n-server";
 import { placeholder } from "./prompts";
 
@@ -46,14 +46,27 @@ export function projectContext(p: Project, scope: "all" | "shop" | "images" | "v
     out.push(`Ton : ${b.tone.voice}. À faire : ${b.tone.do.join(" ; ")}. À éviter : ${b.tone.dont.join(" ; ")}.`);
     out.push(`Palette : principale ${b.palette.primary}, secondaire ${b.palette.secondary}, accent ${b.palette.accent}, clair ${b.palette.light}, sombre ${b.palette.dark}`);
     out.push(`Direction artistique de la boutique : ${b.direction}`);
+    // Piste créative retenue (logo) : les textes en reprennent l'idée et le ton, pour une seule voix de marque.
+    if (b.logo?.route) out.push(`Piste créative retenue : « ${b.logo.route.name} » (titres en ${b.logo.route.heading}, texte en ${b.logo.route.body})${b.logo.concept ? ` · idée : ${b.logo.concept.slice(0, 300)}` : ""}`);
     if (b.story) out.push(`Histoire : ${b.story}`);
     if (b.validated.length) out.push(`Éléments VALIDÉS par le client (ne pas changer sans demande) : ${b.validated.join(", ")}`);
+    // Ligne éditoriale des réseaux (kit de la marque) : reprise par le calendrier et les réécritures de publications.
+    if (b.social && (scope === "social" || scope === "all")) {
+      const s = b.social;
+      out.push(`Ligne éditoriale réseaux — piliers : ${s.pillars.map((x) => `${x.title} (${x.idea})`).join(" ; ")}`);
+      out.push(`On dit : ${s.say.join(" ; ")}. On ne dit pas : ${s.dontSay.join(" ; ")}.`);
+      out.push(`Emojis : ${s.emoji === "none" ? "aucun" : s.emoji === "sparing" ? `un au plus par légende${s.emojis.length ? ` (${s.emojis.join(" ")})` : ""}` : "libres"}.`);
+      if (s.series?.length) out.push(`Séries récurrentes : ${s.series.map((x) => `« ${x.name} » (${x.idea})`).join(" ; ")}`);
+    }
   }
   if (p.strategy) {
     out.push(`\n## Stratégie`);
     out.push(`Messages clés : ${p.strategy.keyMessages.join(" ; ")}`);
     out.push(`Angles : ${p.strategy.angles.map((a) => a.title).join(" ; ")}`);
     out.push(`Piliers : ${p.strategy.pillars.join(" ; ")}`);
+    const objections = p.strategy.audience.flatMap((a) => a.objections ?? []).filter(Boolean);
+    if (objections.length && !p.strategy.platform?.objections.length) out.push(`Objections de la cible : ${objections.join(" ; ")}`);
+    if (p.strategy.platform) out.push(platformContext(p.strategy.platform));
   }
   const mem = memory(p.id, scope === "all" ? undefined : scope).filter((m) => m.status !== "rejected" && ["decision", "correction", "preference", "goal"].includes(m.kind));
   if (mem.length) {
@@ -96,4 +109,19 @@ export function servicesContext(p: Pick<Project, "services" | "product">): strin
 - Les pages « livraison et retours » deviennent « Infos pratiques » (zone, adresse, horaires, accès, contact, prise de rendez-vous) ; les conditions générales de vente deviennent des conditions de prestation, rédigées en espaces réservés à faire valider par le professionnel.
 - Santé, juridique, finances : aucune promesse de résultat, de guérison ou de gain.`,
   ].join("\n");
+}
+
+/** Plateforme de marque transmise aux rédacteurs : persona, problème, concurrence, différence, preuves, objections. */
+export function platformContext(pf: BrandPlatform): string {
+  const out = [`Plateforme de marque :`];
+  if (pf.persona) out.push(`- Persona : ${pf.persona}`);
+  if (pf.problem) out.push(`- Problème du persona : ${pf.problem}`);
+  if (pf.alternatives) out.push(`- Alternatives et codes de la concurrence typique (à éviter) : ${pf.alternatives}`);
+  if (pf.difference) out.push(`- Différence : ${pf.difference}`);
+  const ok = pf.proofs.filter((x) => x.status === "available" && x.claim);
+  const missing = pf.proofs.filter((x) => x.status === "missing" && x.claim);
+  if (ok.length) out.push(`- Preuves DISPONIBLES (arguments utilisables) : ${ok.map((x) => `${x.claim} (preuve : ${x.proof})`).join(" ; ")}`);
+  if (missing.length) out.push(`- Arguments SANS PREUVE (ne jamais les affirmer ; « ${placeholder(contentLang())} » si un texte en a besoin) : ${missing.map((x) => x.claim).join(" ; ")}`);
+  if (pf.objections.length) out.push(`- Objections et réponses (à traiter dans la FAQ et la fiche) :\n${pf.objections.filter((o) => o.objection).map((o) => `  · ${o.objection} → ${o.answer || placeholder(contentLang())}`).join("\n")}`);
+  return out.join("\n");
 }

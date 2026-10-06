@@ -10,6 +10,7 @@ import { pick, type Lang } from "../i18n";
 import type { BlockInstance, GroupJson, SectionInstance, StoreCollection, StoreProduct, TemplateJson, ThemeSpec } from "./spec";
 import type { ServiceProfile } from "../project-types";
 import { servicesPlan } from "./services-site";
+import { tidyComposition } from "./tidy";
 
 export type DirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
 
@@ -773,7 +774,10 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   }
 
   // Bandeau : annonces confirmées, sinon les expressions courtes de la marque (jamais d'offre inventée).
-  const annItems = svc ? svc.announcements : c.announcement.length ? c.announcement : shortItems.slice(0, 3);
+  // Repli sur les expressions de la marque : jamais le nom de la boutique ni le titre du héros répétés, et rien
+  // dans une boutique multi-produit (une phrase sur le produit principal n'annonce rien pour tout le catalogue).
+  const annFallback = input.storeType === "multi" && isCatalog ? [] : shortItems.filter((x) => ![input.shopName, c.hero.heading, heroHead].some((y) => norm(y) === norm(x)));
+  const annItems = svc ? svc.announcements : c.announcement.length ? c.announcement : annFallback.length >= 2 ? annFallback.slice(0, 3) : [];
   const header: GroupJson = {
     type: "header",
     name: t("Groupe en-tête", "Header group"),
@@ -845,7 +849,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     social_pinterest: input.social?.pinterest ?? "",
   };
 
-  return {
+  return tidyComposition({
     v: 1,
     name: `${input.shopName} · ${d.name}`,
     direction: d.id,
@@ -895,5 +899,5 @@ export function buildSpec(input: BuildInput): ThemeSpec {
         { handle: "legal-notice", title: t("Mentions légales", "Legal notice"), body_html: todo },
       ],
     },
-  };
+  });
 }

@@ -17,14 +17,15 @@ import { renderVideo, srtFromSpec, checkVideoSpec, VIDEO_SIZES, type VideoFormat
 import { tmpDir } from "../storage";
 import { assetsByRole, brandTypo, ensureCutouts, latestAsset, palette } from "./images";
 import { localVideoPlan } from "./local";
-import { aiVideoPlan, aiQcImage } from "../ai/tasks";
+import { aiVideoPlan, aiQcImage, aiQcScene, qcPassed, qcScore, QC_MIN_SCORE } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
-import { videoProviderAvailable, veoClip, falClip } from "../ai/media-providers";
+import { videoProviderAvailable, veoClip, falClip, refundMediaQuota } from "../ai/media-providers";
 import { UserFacingError, type JobContext } from "../jobs";
 import { json, run } from "../db";
 import { logoPng } from "../media/logo";
 import { C, L } from "../i18n-server";
 import { activityPhotos, isServices, localServiceVideoPlan } from "./service-media";
+import { aiCraftReview, brandCraftBrief, craftLoop, paceVideoPlan, videoPlanIssues, type CraftQuality } from "./ad-craft";
 
 const exec = promisify(execFile);
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
@@ -48,6 +49,29 @@ export function videoStepNote(results: VideoStepResult[], aiRequested: boolean):
   return L(`${done} (plan IA : ${ai} sur ${n}, montage à partir des images pour ${n - ai === 1 ? "l'autre" : "les autres"}${why ? ` — ${why}` : ""})`, `${done} (AI shot: ${ai} of ${n}, edited from the images for the ${n - ai === 1 ? "other" : "others"}${why ? ` — ${why}` : ""})`);
 }
 
+/**
+ * Mouvement de caméra du plan IA, choisi comme un chef opérateur selon l'univers du produit (une seule consigne,
+ * précise, que les modèles image-vers-vidéo suivent bien). La fidélité du produit reste contrôlée sur 3 images.
+ */
+export function clipCamera(sector: string | null | undefined, format: VideoFormat): string {
+  const vertical = format !== "16:9";
+  switch (sector) {
+    case "hightech":
+    case "sport":
+      return `Fast, confident dolly-in toward the product with a light sweep crossing the set, energetic but smooth, ${vertical ? "vertical framing" : "wide framing"}.`;
+    case "bijoux":
+    case "beaute":
+    case "mode":
+      return "Slow macro slide along the product with a gentle rack focus from the foreground to the product and a soft specular glint traveling across it.";
+    case "enfants":
+    case "animaux":
+    case "maison":
+      return "Gentle handheld-feel push-in in warm natural daylight, soft bokeh drifting in the background, cozy and calm.";
+    default:
+      return "Slow cinematic push-in on the product set with a soft light shift and subtle depth of field.";
+  }
+}
+
 export async function produceVideo(ctx: JobContext, projectId: string, req: VideoRequest) {
   let project = loadProject(projectId);
   const services = isServices(project);
@@ -68,9 +92,11 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   const tmpDirs: string[] = [];
   /** Plan IA demandé, mais pas utilisé (indisponible ou refusé au contrôle) : dit dans la note d'étape. */
   let clipFallback: string | null = null;
-  const provider = req.useAiClip ? videoProviderAvailable() : null;
-  if (req.useAiClip && !provider) clipFallback = L("génération de plans vidéo non disponible", "video shot generation unavailable");
+  // Un plan IA n'est utilisé qu'après contrôle par l'IA de vision : sans elle, il n'est même pas généré (ni payé).
+  const provider = req.useAiClip && llmConfigured() ? videoProviderAvailable() : null;
+  if (req.useAiClip && !provider) clipFallback = !llmConfigured() && videoProviderAvailable() ? L("contrôle de fidélité des plans IA indisponible", "AI shot fidelity check unavailable") : L("génération de plans vidéo non disponible", "video shot generation unavailable");
   else if (provider && !imgs.length) clipFallback = L("aucune photo de scène pour le plan IA", "no scene photo for the AI shot");
+  const clipKey = `${ctx.job.id}:clip:${req.format}:${req.target ?? ""}`;
   if (provider && imgs.length) {
     // Un plan généré qui échoue (fournisseur indisponible, crédits insuffisants) ne bloque pas la vidéo : elle est montée sans lui.
     const clipFile = await ctx.step("ai-clip", async () => {
@@ -78,10 +104,10 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const scene = imgs.find((a) => a.role === "scene") ?? imgs[0];
       const prompt = services
         ? `Slow cinematic push-in on this real photo of the business, soft light shift, subtle depth of field. Keep every person, object and place exactly as they are; add no people, no text, no logo.`
-        : `Slow cinematic push-in on the product set, soft light shift, subtle depth of field, ${brand.palette.secondary} tones`;
+        : `${clipCamera(project.product.sector, req.format)} Motion starts on the very first frame (no static opening), ${brand.palette.secondary} color accents in the light, natural soft shadows, crisp focus on the product. The product stays perfectly still and exactly identical to the first frame (same shape, proportions, label, text and colors); it is never redrawn, duplicated, cropped or hidden. No text overlay, no new objects, no people.`;
       const buf = provider === "google"
-        ? await veoClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip:${req.format}:${req.target ?? ""}` }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m))
-        : await falClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clip:${req.format}:${req.target ?? ""}` }, { image: assetData(scene), prompt }, (m) => ctx.progress(0.15, m));
+        ? await veoClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m))
+        : await falClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt }, (m) => ctx.progress(0.15, m));
       const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name)}-${C("plan-genere", "generated-shot")}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: scene.id, meta: { provider, recipe: L("Plan d'ambiance généré (image vers vidéo)", "Generated mood shot (image to video)") }, status: "review" });
       return a.id;
     }).catch((e) => {
@@ -102,14 +128,31 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const frames = fs.readdirSync(dir).filter((f) => f.endsWith(".jpg")).sort().map((f) => path.join(dir, f));
       let ok = frames.length > 20;
       let reason = ok ? "" : L("plan trop court ou illisible", "shot too short or unreadable");
-      if (ok && llmConfigured() && !services) {
-        const ref = assetData(cutouts[0]);
+      // Contrôle obligatoire de 3 images du plan (début, milieu, fin) : produit identique, ou pour une activité
+      // de services, aucune personne déformée, aucun texte ou logo inventé.
+      if (ok && !llmConfigured()) {
+        ok = false;
+        reason = L("contrôle impossible", "check unavailable");
+      }
+      if (ok) {
+        const ref = services ? null : assetData(cutouts[0]);
         for (const idx of [0, Math.floor(frames.length / 2), frames.length - 1]) {
-          const r = await aiQcImage({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clipqc:${idx}` }, ref, fs.readFileSync(frames[idx]));
-          if (!r.sameProduct || r.score < 6) {
-            ok = false;
-            reason = !r.sameProduct ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : L(`fidélité insuffisante (${r.score}/10)`, `not faithful enough (${r.score}/10)`);
-            break;
+          const usage = { userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clipqc:${req.format}:${idx}` };
+          const frame = fs.readFileSync(frames[idx]);
+          if (ref) {
+            const r = await aiQcImage(usage, ref, frame);
+            if (!qcPassed(r)) {
+              ok = false;
+              reason = !r.sameProduct ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : L(`fidélité insuffisante (${qcScore(r.score)}/10)`, `not faithful enough (${qcScore(r.score)}/10)`);
+              break;
+            }
+          } else {
+            const r = await aiQcScene(usage, frame);
+            if (!r.ok || qcScore(r.score) < QC_MIN_SCORE) {
+              ok = false;
+              reason = L(`plan refusé (${r.issues.join(" ; ") || `${qcScore(r.score)}/10`})`, `shot rejected (${r.issues.join("; ") || `${qcScore(r.score)}/10`})`);
+              break;
+            }
           }
         }
       }
@@ -118,12 +161,15 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
         // Plan refusé au contrôle : écarté de la bibliothèque (statut « refusé », raison gardée).
         run("UPDATE assets SET status = 'rejected', meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), rejectedReason: reason }), clipAsset.id);
         clipFallback = L(`plan IA refusé au contrôle : ${reason}`, `AI shot rejected by the check: ${reason}`);
+        // Plan jamais montré : il ne compte pas dans les vidéos IA du forfait.
+        refundMediaQuota(project.userId, clipKey, "aiVideos");
         fs.rmSync(dir, { recursive: true, force: true });
       }
     }
   }
 
   // 2. Découpage.
+  let craftQuality: CraftQuality | null = null;
   const plan: VideoSpec = req.plan ?? (await ctx.step(`plan:${req.format}`, async () => {
     ctx.progress(0.3, L("Écriture du découpage", "Writing the shot list"));
     // Services : découpage écrit à partir de l'offre réelle (prestations, horaires, zone, contact).
@@ -133,16 +179,32 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       return sp;
     }
     if (llmConfigured()) {
-      const r = await aiVideoPlan({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:plan` }, project, { format: req.format, goal: req.goal ?? C("publicité courte qui donne envie d'acheter", "short ad that makes people want to buy"), images: descriptions, clips: clipDirs.length, url: req.url });
-      return { format: req.format, scenes: r.scenes, transition: r.transition, music: req.music ?? r.music, captions: true } as VideoSpec;
+      // Réalisateur (une passe forte) → contrôles de montage + directeur de création (grille notée, seuil 8/10)
+      // → au plus une reprise ciblée → la meilleure version est gardée.
+      const goal = req.goal ?? C("publicité courte qui donne envie d'acheter", "short ad that makes people want to buy");
+      const base = { userId: project.userId, projectId, jobId: ctx.job.id };
+      const craft = brandCraftBrief(project);
+      const asSpec = (r: Awaited<ReturnType<typeof aiVideoPlan>>) => ({ format: req.format, scenes: r.scenes, transition: r.transition, music: req.music ?? r.music, captions: true, concept: r.concept }) as VideoSpec & { concept: string };
+      const { best, quality } = await craftLoop("video", {
+        draft: async (feedback) => asSpec(await aiVideoPlan({ ...base, usageKey: `${ctx.job.id}:plan${feedback ? ":r2" : ""}` }, project, { format: req.format, goal, images: descriptions, clips: clipDirs.length, url: req.url, craft, feedback })),
+        lint: (spec) => videoPlanIssues(paceVideoPlan(spec)),
+        review: (spec, round) => aiCraftReview({ ...base, usageKey: `${ctx.job.id}:plan:cd${round}` }, project, "video", { concept: spec.concept, format: spec.format, music: spec.music, transition: spec.transition, scenes: spec.scenes, images: descriptions }, `Format ${req.format}. Objectif : ${goal}.`),
+      });
+      craftQuality = quality;
+      return best;
     }
     return localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url, project);
   }));
   plan.format = req.format;
   if (req.music) plan.music = req.music;
+  // Rythme de publicité sociale (accroche courte, rupture toutes les 1,5 à 2,5 s, coupes sur le temps avec « pulse »).
+  // Un découpage fourni par le client (req.plan) est respecté tel quel.
+  if (!req.plan) plan.scenes = paceVideoPlan(plan).scenes;
   // Bornes de sécurité (lecture sur téléphone) et références d'images valides.
   plan.scenes = plan.scenes
     .map((s) => ({ ...s, duration: Math.max(1.6, Math.min(6, s.duration)) }))
+    // Un plan IA ne dure pas plus que les images extraites (sinon image figée à la fin).
+    .map((s) => (s.kind === "clip" && clipDirs[s.clip] ? { ...s, duration: Math.min(s.duration, Math.max(1.6, clipDirs[s.clip].length / 30)) } : s))
     .filter((s) => (s.kind === "detail" || s.kind === "scene" || s.kind === "hook" || s.kind === "split" ? s.image < imgs.length : s.kind === "clip" ? s.clip < clipDirs.length : true))
     // Sans produit, les plans qui le montrent n'ont rien à révéler.
     .filter((s) => !services || !["reveal", "callouts", "spotlight", "split"].includes(s.kind));
@@ -184,7 +246,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       folderKey: folder,
       origin: "generated",
       sourceAssetId: cutouts[0]?.id ?? imgs[0]?.id ?? null,
-      meta: { format: req.format, plan, technical, issues, ...(services ? { business: "services" } : {}), method: clipDirs.length ? L("Motion design + plan généré", "Motion design + generated shot") : services ? (imgs.length ? L("Motion design : présentation de l'activité à partir de vos photos", "Motion design: business presentation from your photos") : L("Motion design : typographie animée à la marque (sans photo)", "Motion design: animated brand typography (no photo)")) : L("Motion design à partir des photos réelles", "Motion design from the real photos"), delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : L(", sans son", ", no audio")}` },
+      meta: { format: req.format, plan, technical, issues, ...(craftQuality ? { quality: craftQuality } : {}), ...(services ? { business: "services" } : {}), method: clipDirs.length ? L("Motion design + plan généré", "Motion design + generated shot") : services ? (imgs.length ? L("Motion design : présentation de l'activité à partir de vos photos", "Motion design: business presentation from your photos") : L("Motion design : typographie animée à la marque (sans photo)", "Motion design: animated brand typography (no photo)")) : L("Motion design à partir des photos réelles", "Motion design from the real photos"), delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : L(", sans son", ", no audio")}` },
       status: "review",
     });
     const posterFrame = path.join(dir, "poster.jpg");

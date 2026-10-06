@@ -15,14 +15,25 @@ import type { ServiceItem } from "../project-types";
 import { FORMATS, renderServiceCard, type Format } from "../media/compose";
 import { renderServiceCreatives, SERVICE_SIZES, type ServiceCard, type ServiceFormat, type ServiceIcon } from "../media/creative-html";
 import type { VideoFormat, VideoScene, VideoSpec } from "../media/video";
-import { ambianceImage, imageProviderAvailable } from "../ai/media-providers";
+import { ambianceImage, imageProviderAvailable, refundMediaQuota } from "../ai/media-providers";
+import { aiQcScene, qcScore, QC_MIN_SCORE } from "../ai/tasks";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { projectContext } from "../ai/context";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { brandTypo, palette } from "./images";
+import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo-line";
 
 // ---------------------------------------------------------------- textes (purs, testables)
+
+
+/** Contrôle obligatoire d'une image d'ambiance générée (aucun texte ou logo inventé, aucune personne déformée). */
+async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer): Promise<{ ok: boolean; reason: string }> {
+  if (!llmConfigured()) return { ok: false, reason: L("contrôle indisponible", "check unavailable") };
+  const r = await aiQcScene(b, img);
+  const ok = r.ok && qcScore(r.score) >= QC_MIN_SCORE;
+  return { ok, reason: ok ? "" : r.issues.join(L(" ; ", "; ")) || `${qcScore(r.score)}/10` };
+}
 
 export const isServices = (p: Pick<Project, "business"> | null | undefined) => p?.business === "services";
 
@@ -175,9 +186,12 @@ export function ambiancePrompts(p: Project): string[] {
   const what = [p.product.category, p.product.summary || activityName(p)].filter(Boolean).join(" — ");
   const services = serviceItems(p).slice(0, 4).map((s) => s.name).join(", ");
   const base = `Business activity: ${what}.${services ? ` Services offered: ${services}.` : ""}${placeLine(p) ? ` Location: ${placeLine(p)}.` : ""}`;
+  // Ligne photographique de la marque : ambiances, bannières et visuels forment une même campagne.
+  const line = photoLine(photoLineInput(p));
+  const look = `${photoLinePrompt(line)} ${avoidPrompt(line)}`;
   return [
-    `${base} The place where this activity happens (workshop, practice room, studio, salon or venue), tidy, warm and inviting, nobody looking at the camera.`,
-    `${base} Close-up of skilled hands at work with the real tools and materials of this activity, shallow depth of field.`,
+    `${base} The place where this activity happens (workshop, practice room, studio, salon or venue), tidy, lived-in and inviting, seen at eye level with a 35mm lens, nobody looking at the camera, real tools and materials of the trade visible. ${look}`,
+    `${base} Close-up of skilled hands at work with the real tools and materials of this activity, 50mm lens slightly above, shallow depth of field, the gesture sharp and the background soft. ${look}`,
   ];
 }
 
@@ -326,6 +340,13 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
         ctx.progress(0.2 + i * 0.1, L("Images d'ambiance de l'activité (IA)", "Business mood images (AI)"));
         try {
           const img = await ambianceImage({ ...ictx, usageKey: `${ctx.job.id}:ambiance:${i}` }, { prompt, aspect: i === 0 ? "16:9" : "4:5", reference: originals[i] ? assetData(originals[i]) : null });
+          const check = await checkAmbiance({ ...ictx, usageKey: `${ctx.job.id}:ambianceqc:${i}` }, img);
+          if (!check.ok) {
+            // Image refusée (texte inventé, visage, mains déformées…) ou impossible à vérifier : ni montrée ni décomptée.
+            console.warn("[services] image d'ambiance écartée :", check.reason);
+            refundMediaQuota(ictx.userId, `${ctx.job.id}:ambiance:${i}`);
+            return [] as string[];
+          }
           const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: i === 0 ? "16:9" : "4:5" }, status: "review" });
           return [a.id];
         } catch (e) {
@@ -392,7 +413,15 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
     if (!imageProviderAvailable() || req.useAi === false) throw new UserFacingError(L("Les images d'ambiance sont créées par l'IA d'images (non disponible ici). Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "Mood images are created by the AI image generator (not available here). Upload photos of your work, team or premises instead."));
     const f = FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
     const prompts = ambiancePrompts(p);
-    const img = await ctx.step("ambiance", async () => (await ambianceImage({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ambiance` }, { prompt: req.subline ? `${prompts[0]} ${req.subline}` : prompts[Date.now() % 2], aspect: aspectFor(f), reference: photo && photo.origin !== "generated" ? assetData(photo) : null })).toString("base64"));
+    const img = await ctx.step("ambiance", async () => {
+      const buf = await ambianceImage({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ambiance` }, { prompt: req.subline ? `${prompts[0]} ${req.subline}` : prompts[Date.now() % 2], aspect: aspectFor(f), reference: photo && photo.origin !== "generated" ? assetData(photo) : null });
+      const check = await checkAmbiance({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ambianceqc` }, buf);
+      if (!check.ok) {
+        refundMediaQuota(p.userId, `${ctx.job.id}:ambiance`);
+        throw new UserFacingError(L(`L'image d'ambiance générée a été écartée au contrôle qualité (${check.reason}). Elle ne vous est pas décomptée ; relancez-la.`, `The generated mood image was rejected by the quality check (${check.reason}). It isn't counted; try again.`));
+      }
+      return buf.toString("base64");
+    });
     const a = await saveAsset({ projectId, userId: p.userId, data: await sharp(Buffer.from(img, "base64")).jpeg({ quality: 92 }).toBuffer(), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspectFor(f) }, status: "review" });
     return { assetId: a.id };
   }

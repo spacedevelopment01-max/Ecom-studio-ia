@@ -254,6 +254,15 @@ a { color: inherit; }
   .es-mosaic--editorial .es-mosaic__item:nth-child(4n+3) { grid-column: span 5; grid-row: span 4; }
   .es-mosaic--editorial .es-mosaic__item:nth-child(4n+4) { grid-column: span 7; grid-row: span 3; }
   .es-mosaic--even .es-mosaic__grid { grid-template-columns: repeat(4, 1fr); }
+  /* Moins de 4 images : la grille régulière garde toute la largeur (pas de colonne vide à droite). */
+  .es-mosaic--even .es-mosaic__grid:has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, 1fr); }
+  .es-mosaic--even .es-mosaic__grid:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, 1fr); }
+  /* Mosaïque éditoriale : une image seule sur sa rangée occupe toute la largeur (pas de trou). */
+  .es-mosaic--editorial .es-mosaic__item:nth-child(4n+1):last-child, .es-mosaic--editorial .es-mosaic__item:nth-child(4n+3):last-child { grid-column: span 12; grid-row: span 4; }
+}
+@media (max-width: 989px) {
+  /* Nombre impair d'images sur deux colonnes : la dernière s'étend au lieu de laisser un trou. */
+  .es-mosaic__item:nth-child(odd):last-child { grid-column: span 2; aspect-ratio: 2 / 1; }
 }
 
 .es-video__frame { aspect-ratio: var(--ratio); max-height: 86vh; margin-inline: auto; }
@@ -315,7 +324,8 @@ a { color: inherit; }
 .es-price--sale .es-price__current { color: var(--c-accent); }
 
 .es-hgallery__nav { display: flex; gap: 8px; }
-.es-hgallery__track { display: flex; gap: clamp(12px, 2vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 var(--gutter) 12px; scroll-padding-inline: var(--gutter); scrollbar-width: none; }
+/* Première image alignée sur le titre (marge du conteneur), même sur grand écran. */
+.es-hgallery__track { --hg-inset: max(var(--gutter), calc((100vw - var(--page-width)) / 2 + var(--gutter))); display: flex; gap: clamp(12px, 2vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 var(--hg-inset) 12px; scroll-padding-inline: var(--hg-inset); scrollbar-width: none; }
 .es-hgallery__track::-webkit-scrollbar { display: none; }
 .es-hgallery__item { margin: 0; flex: none; scroll-snap-align: start; width: min(72vw, 420px); }
 .es-hgallery__item--landscape { width: min(86vw, 640px); }
@@ -464,7 +474,7 @@ input:focus-visible + .es-chip { outline: 2px solid var(--c-accent); outline-off
 
 /* ---------- Pied de page ---------- */
 .es-footer { padding: clamp(56px, 8vw, 110px) 0 28px; }
-.es-footer__wordmark { font-family: var(--font-heading); font-size: clamp(3rem, 13vw, 12rem); line-height: .85; margin: 0 0 clamp(36px, 6vw, 80px); letter-spacing: -.02em; text-transform: var(--heading-case); overflow: hidden; }
+.es-footer__wordmark { font-family: var(--font-heading); font-size: clamp(3rem, 13vw, 12rem); line-height: .85; margin: 0 0 clamp(36px, 6vw, 80px); padding-bottom: .16em; letter-spacing: -.02em; text-transform: var(--heading-case); overflow: hidden; }
 .es-footer__grid { display: grid; gap: 36px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 .es-footer__heading { font-size: .78rem; text-transform: uppercase; letter-spacing: .14em; margin: 0 0 14px; font-weight: var(--font-body-weight-bold); }
 .es-footer__links { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
@@ -905,9 +915,12 @@ input:checked + .es-chip { background: var(--c-accent); color: var(--c-accent-te
 /* Pied de page */
 .es-footer__card { display: grid; gap: 24px; align-items: center; padding: clamp(28px, 4vw, 56px); margin-bottom: clamp(48px, 7vw, 96px); border: 1px solid rgba(var(--c-text-rgb), .12); border-radius: var(--radius-card); background: linear-gradient(135deg, rgba(var(--c-accent-rgb), .16), rgba(var(--c-text-rgb), .03)); }
 @media (min-width: 990px) { .es-footer__card { grid-template-columns: 1.1fr .9fr; } }
+/* Une seule inscription par page : si la page a déjà une section « Lettre d'information », celle du pied de page s'efface. */
+body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__block--newsletter { display: none; }
 .es-footer__card .es-heading { margin: 0 0 .3em; }
 .es-footer__card .es-inline-field { margin: 0; }
-.es-footer__wordmark--bottom { margin: clamp(48px, 7vw, 96px) 0 0; font-size: clamp(3.4rem, 17vw, 16rem); line-height: .8; background: linear-gradient(180deg, var(--c-text) 30%, rgba(var(--c-text-rgb), .15)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* Lettres descendantes (g, p, y…) jamais rognées par le masque d'apparition. */
+.es-footer__wordmark--bottom { margin: clamp(48px, 7vw, 96px) 0 0; padding-bottom: .2em; font-size: clamp(3.4rem, 17vw, 16rem); line-height: .8; background: linear-gradient(180deg, var(--c-text) 30%, rgba(var(--c-text-rgb), .15)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .es-footer__inline { display: grid; gap: 22px; justify-items: center; text-align: center; }
 .es-footer__brand { font-family: var(--font-heading); font-size: clamp(1.6rem, 4vw, 2.6rem); text-decoration: none; text-transform: var(--heading-case); }
 .es-footer__brand img { width: var(--logo-width); height: auto; }

@@ -18,6 +18,7 @@ import { llmJson, type LlmImage } from "./llm";
 import { charter, DIRECTION_LIST, FONT_LIST, globalSettingsCatalog, placeholder, sectionCatalog, systemPrompts } from "./prompts";
 import { contentLang, L } from "../i18n-server";
 import type { Project } from "../projects";
+import { BRIEF_MIN_SCORE, critiqueImageBrief, finalImagePrompt, photoLineText, scenePromptFromLine, type BriefReview, type PhotoLine } from "../engine/photo-line";
 
 /** Instructions des tâches dans la langue des contenus de l'exécution en cours. */
 const S = () => systemPrompts(contentLang());
@@ -143,41 +144,73 @@ Langues : nom, catégorie, résumé, prestations et faits en ${lang === "en" ? "
 
 // ---------------------------------------------------------------- marque
 
+/** Couleur hexadécimale tolérante (« #abc », « ABCDEF » → « #AABBCC ») ; invalide → valeur de repli. */
+const hex = (fallback: string) =>
+  z.preprocess((v) => {
+    if (typeof v !== "string") return fallback;
+    let h = v.trim().replace(/^#/, "");
+    if (/^[0-9a-f]{3}$/i.test(h)) h = h.split("").map((c) => c + c).join("");
+    return /^[0-9a-f]{6}$/i.test(h) ? `#${h.toUpperCase()}` : fallback;
+  }, z.string());
+/** Nombre borné (une valeur hors bornes est ramenée dans l'intervalle au lieu de faire échouer toute la marque). */
+const clamped = (min: number, max: number, fallback: number) => z.preprocess((v) => (typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : typeof v === "string" && Number.isFinite(Number(v)) ? Math.min(max, Math.max(min, Number(v))) : fallback), z.number());
+
 const BrandSchema = z.object({
-  name: z.string(),
-  nameStatus: z.enum(["provided", "proposed"]),
-  alternatives: z.array(z.string()).max(4),
-  tagline: z.string(),
-  positioning: z.string(),
-  audience: z.string(),
-  personality: z.array(z.string()).max(5),
-  tone: z.object({ voice: z.string(), do: z.array(z.string()), dont: z.array(z.string()) }),
-  palette: z.object({ primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/), secondary: z.string().regex(/^#[0-9A-Fa-f]{6}$/), accent: z.string().regex(/^#[0-9A-Fa-f]{6}$/), light: z.string().regex(/^#[0-9A-Fa-f]{6}$/), dark: z.string().regex(/^#[0-9A-Fa-f]{6}$/) }),
-  fonts: z.object({ heading: z.string(), body: z.string() }),
-  direction: z.enum(DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]),
-  directionReason: z.string(),
-  logo: z.object({
-    concept: z.string(),
-    family: z.string(),
-    weight: z.number(),
-    italic: z.boolean(),
-    case: z.enum(["upper", "title", "lower", "asis"]),
-    tracking: z.number().min(0).max(0.5),
-    layout: z.enum(["wordmark", "stacked", "monogram", "emblem"]),
-    emblem: z.enum(["none", "circle", "arch", "line", "diamond"]),
-  }),
-  story: z.string(),
-  values: z.array(z.object({ title: z.string(), text: z.string() })).max(4),
-  strategy: z.object({
-    audience: z.array(z.object({ label: z.string(), needs: z.array(z.string()), objections: z.array(z.string()) })).max(3),
-    angles: z.array(z.object({ title: z.string(), idea: z.string() })).max(8),
-    pillars: z.array(z.string()).max(6),
-    keyMessages: z.array(z.string()).max(6),
-  }),
+  name: z.string().trim().min(1),
+  nameStatus: z.enum(["provided", "proposed"]).catch("proposed"),
+  alternatives: capped(str, 4),
+  tagline: str,
+  positioning: str,
+  audience: str,
+  personality: capped(str, 5),
+  tone: z.object({ voice: str, do: capped(str, 5), dont: capped(str, 5) }).catch({ voice: "", do: [], dont: [] }),
+  // Palette absente : celle des couleurs mesurées du produit est appliquée par l'appelant.
+  palette: z.object({ primary: hex("#3A3F4B"), secondary: hex("#E6E2DC"), accent: hex("#B5714A"), light: hex("#F7F5F2"), dark: hex("#16181D") }).optional().catch(undefined),
+  fonts: z.object({ heading: str, body: str }).catch({ heading: "", body: "" }),
+  direction: z.enum(DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]).catch("atelier"),
+  directionReason: str,
+  logo: z
+    .object({
+      concept: str,
+      family: str,
+      // Graisse lisible du favicon à l'enseigne : ni trait trop fin, ni noir écrasé.
+      weight: clamped(400, 900, 600),
+      italic: z.boolean().catch(false),
+      case: z.enum(["upper", "title", "lower", "asis"]).catch("upper"),
+      tracking: clamped(0, 0.3, 0.06),
+      layout: z.enum(["wordmark", "stacked", "monogram", "emblem"]).catch("wordmark"),
+      emblem: z.enum(["none", "circle", "arch", "line", "diamond"]).catch("none"),
+    })
+    .catch({ concept: "", family: "", weight: 600, italic: false, case: "upper", tracking: 0.06, layout: "wordmark", emblem: "none" }),
+  story: str,
+  values: capped(z.object({ title: str, text: str }), 4),
+  strategy: z
+    .object({
+      audience: capped(z.object({ label: str, needs: capped(str, 6), objections: capped(str, 6) }), 3),
+      angles: capped(z.object({ title: str, idea: str }), 8),
+      pillars: capped(str, 6),
+      keyMessages: capped(str, 6),
+      // Plateforme de marque (persona, problème, concurrence, preuves, objections) : absente ou mal formée, la marque reste valable.
+      platform: z
+        .object({
+          persona: str,
+          problem: str,
+          alternatives: str,
+          difference: str,
+          proofs: capped(z.object({ claim: str, proof: str, status: z.enum(["available", "missing"]).catch("missing") }), 8).catch([]),
+          objections: capped(z.object({ objection: str, answer: str }), 8).catch([]),
+        })
+        .optional()
+        .catch(undefined),
+    })
+    .catch({ audience: [], angles: [], pillars: [], keyMessages: [] }),
 });
 export type BrandAi = z.infer<typeof BrandSchema>;
 
-export async function aiBrand(b: Base, p: Project, guidance?: string) {
+/** Forme exacte attendue (sans elle, l'IA devine les clés et la réponse est refusée par la validation). */
+const BRAND_SHAPE = `{"name": "", "nameStatus": "provided|proposed", "alternatives": ["", "", ""], "tagline": "", "positioning": "", "audience": "", "personality": ["", "", ""], "tone": {"voice": "", "do": ["", "", ""], "dont": ["", "", ""]}, "palette": {"primary": "#RRGGBB", "secondary": "#RRGGBB", "accent": "#RRGGBB", "light": "#RRGGBB", "dark": "#RRGGBB"}, "fonts": {"heading": "", "body": ""}, "direction": "", "directionReason": "", "logo": {"concept": "", "family": "", "weight": 600, "italic": false, "case": "upper|title|lower|asis", "tracking": 0.06, "layout": "wordmark|stacked|monogram|emblem", "emblem": "none|circle|arch|line|diamond"}, "story": "", "values": [{"title": "", "text": ""}], "strategy": {"audience": [{"label": "", "needs": [""], "objections": [""]}], "angles": [{"title": "", "idea": ""}], "pillars": [""], "keyMessages": [""], "platform": {"persona": "", "problem": "", "alternatives": "", "difference": "", "proofs": [{"claim": "", "proof": "", "status": "available|missing"}], "objections": [{"objection": "", "answer": ""}]}}}`;
+
+export async function aiBrand(b: Base, p: Project, guidance?: string, feedback?: string) {
   const r = await llmJson(
     {
       task: "strategy",
@@ -191,7 +224,9 @@ export async function aiBrand(b: Base, p: Project, guidance?: string) {
 Directions de boutique disponibles :\n${DIRECTION_LIST}
 Polices Shopify autorisées (fonts.heading et fonts.body) : ${FONT_LIST}
 Familles disponibles pour le logo (logo.family) : ${Object.keys(CANVAS_FONTS).join(", ")}
-${guidance ? `Orientation demandée par le client : ${guidance}` : ""}`,
+${guidance ? `Orientation demandée par le client : ${guidance}` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité de la proposition précédente (à appliquer impérativement) :\n${feedback}` : ""}
+Réponds avec un objet JSON exactement de cette forme :
+${BRAND_SHAPE}`,
       maxTokens: 16000,
     },
     BrandSchema,
@@ -204,7 +239,7 @@ ${guidance ? `Orientation demandée par le client : ${guidance}` : ""}`,
 
 // ---------------------------------------------------------------- textes
 
-export async function aiShopCopy(b: Base, p: Project, feedback?: string): Promise<ShopCopy> {
+export async function aiShopCopy(b: Base, p: Project, feedback?: string, previous?: ShopCopy): Promise<ShopCopy> {
   return llmJson(
     {
       task: "copywriting",
@@ -216,7 +251,7 @@ export async function aiShopCopy(b: Base, p: Project, feedback?: string): Promis
       context: projectContext(p, "shop"),
       prompt: `Rédige l'ensemble des textes de la boutique au format JSON suivant (toutes les clés obligatoires) :
 seo{title,description}, announcement[0-3 annonces factuelles, vide si rien de confirmé], hero{eyebrow,heading,line1,line2 (titre en deux lignes très courtes pour le héros éditorial),text,cta}, statement{eyebrow,heading,text}, features{heading,items[2-6]{title,text,icon parmi sparkle|leaf|drop|hand|shield|truck|return|check}}, story{heading,steps[2-5]{title,text}}, detail{eyebrow,heading,text}, specs{heading,items[]{label,value}}, faq{heading,items[2-12]{q,a}}, marquee[2-6 expressions courtes], gallery{heading,captions[]}, cta{heading,text,button}, newsletter{heading,text}, product{title,short,description_html,highlights[],tabs[]{heading,content_html},reassurance[0-3, seulement engagements confirmés]}, about{heading,intro,blocks[1-4]{heading,text},values[]{title,text}}, shipping{heading,body_html}, contact{heading,text}, footer{about,newsletter}.
-${feedback ? `\nCorrections exigées par le contrôle qualité (à appliquer impérativement) :\n${feedback}` : ""}`,
+${previous ? `\nVersion précédente à reprendre (garde ce qui est juste et fort, réécris ce qui est signalé, renvoie l'ensemble complet) :\n<version_precedente>\n${JSON.stringify(previous).slice(0, 24000)}\n</version_precedente>` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité et le directeur de création (à appliquer impérativement) :\n${feedback}` : ""}`,
       maxTokens: 24000,
     },
     ShopCopySchema,
@@ -266,6 +301,23 @@ const RISKY: Risk[] = [
   [/brevet|\bpatent(ed)?\b/i, { fr: "brevet", en: "patent" }],
   [/anti-?âge|anti-?rides|guéri|soigne|traite(ment)? (de|contre)|anti-?aging|anti-?wrinkle|\bcures?\b|\bheals?\b/i, { fr: "allégation santé ou efficacité", en: "health or efficacy claim" }],
   [/\b\d+\s?%\s?(naturel|d'origine|natural)/i, { fr: "pourcentage d'origine", en: "origin percentage" }],
+  // Sécurité et santé de l'enfant (produits pour enfants et bébés) : jamais sans preuve.
+  [/sans (danger|risque)s? pour|(sûr|sûre|sûrs|sûres|sécuritaire)s? pour (les |le |la |votre |vos |l')?(enfants?|bébés?|tout-petits|petits|nourrissons?)|en toute sécurité|100\s?% (sûr|sécuris)|(totalement|parfaitement|entièrement) (sûr|sécuris)|safe for (kids|children|babies|toddlers|infants|little ones)|(completely|totally|perfectly|100\s?%) safe|child[- ]safe|baby[- ]safe/i, { fr: "sécurité de l'enfant", en: "child safety" }],
+  [/non[- ]toxiques?|non-toxic|nontoxic|sans (substances? )?(toxiques?|nocives?)|sans (bpa|phtalates?)|(bpa|phthalates?)[- ]free|free (of|from) (bpa|phthalates?|toxins?)/i, { fr: "composition sans substance", en: "free-from claim" }],
+  [/\bnormes? (ce|en\s?71|européennes?|de sécurité)|\ben\s?71\b|marquage ce|\bce[- ](certified|marked|approved)|\bcpsia\b|\bastm\b|fda[- ]approved|approuvé par la fda|conforme (à la|aux|à) (normes?|réglementation)|(meets|complies with) (all )?(safety )?(standards|regulations)/i, { fr: "norme ou conformité", en: "standard or compliance" }],
+  [/pédiatres?|pediatricians?|(recommandé|approuvé|validé|conseillé)e?s? par (des |les )?(médecins|experts?|spécialistes|professionnels|sages-femmes|orthophonistes|psychologues|parents)|(recommended|approved|endorsed) by (doctors|experts?|specialists|professionals|parents)|testé (en laboratoire|et approuvé|scientifiquement)|lab[- ]tested|scientifically (proven|tested)|prouvé scientifiquement|cliniquement prouvé/i, { fr: "caution d'expert ou test", en: "expert endorsement or testing" }],
+  [/(favorise|améliore|facilite|aide à|aide au|garantit|assure)s? (un |le |l'|son |leur |votre )?(meilleur )?(sommeil|endormissement|nuits?)|(apaise|calme|rassure|soulage)s? (votre |les |le |l'|son |leur |vos )?(enfants?|bébés?|tout-petits|angoisses?|peurs?|pleurs|coliques|stress|anxiété)|réduit (le stress|l'anxiété|les pleurs|les angoisses)|aide(nt)? (votre |vos |les |le |l'|son |leur )?(enfants? |bébés? |tout-petits? |petits? )?à (s'endormir|mieux dormir|dormir|se calmer|se rassurer|s'apaiser)|anti-?(stress|angoisse|anxiété|colique)|helps? (your )?(baby|child|kids?|toddler|little one)?\s?(to )?(sleep|fall asleep|calm down)|improves? sleep|better sleep|(soothes?|calms?) (your )?(baby|child|kids?|toddler|anxiety|fears?|crying)|reduces? (stress|anxiety|crying|colic)|anti-?anxiety/i, { fr: "allégation sommeil ou apaisement", en: "sleep or soothing claim" }],
+  [/(favorise|stimule|développe|booste|améliore|accélère)s? (le |la |l'|son |sa |ses |leur )?(développement|éveil|motricité|apprentissage|langage|concentration|mémoire|intelligence|créativité|confiance)|(boosts?|supports?|enhances?|stimulates?|promotes?|improves?) (your (child|baby)'s |cognitive |early |brain |motor |language )?(development|learning|motor skills|language skills|brain|concentration|memory|intelligence)/i, { fr: "allégation de développement", en: "development claim" }],
+  // Environnement, résistance, fabrication.
+  [/éco-?responsables?|écologiques?|respectueu(x|se)s? de (l'environnement|la planète)|eco-?friendly|environmentally friendly|planet[- ]friendly|\bsustainabl[ey]\b|biodégradables?|biodegradable|compostables?|recyclables?|zéro déchet|zero[- ]waste|neutre en carbone|carbon[- ]neutral/i, { fr: "allégation environnementale", en: "environmental claim" }],
+  [/étanches?|waterproof|water[- ]resistant|résistant à l'eau|incassables?|unbreakable|indestructibles?|résistant aux chocs|shock[- ]?proof|anti-?chocs?|anti-?chutes?|drop[- ]proof/i, { fr: "résistance ou étanchéité", en: "durability or waterproofing" }],
+  [/fait(e|s|es)? (à la )?main|handmade|hand[- ]?crafted|hand[- ]made|artisanale?s?\b|artisanaux/i, { fr: "fabrication artisanale", en: "handmade claim" }],
+  // Logistique et après-vente.
+  [/livraison (rapide|gratuite|offerte|express|en \d+|sous \d+|24\s?h|48\s?h|en 24|en 48|le lendemain)|expédi(é|ée|és|ées|tion) (sous|en|dans les) \d+|retours? (gratuits?|offerts?)|free returns?|fast (shipping|delivery)|(ships?|shipped|dispatched) (within|in) \d+|next[- ]day (delivery|shipping)/i, { fr: "conditions de livraison ou de retour", en: "shipping or returns terms" }],
+  [/\d+\s?jours pour (changer d'avis|retourner|vous décider|essayer)|\d+[- ]day (returns?|trial|money)|essai gratuit|free trial/i, { fr: "délai de retour ou d'essai", en: "return or trial period" }],
+  [/au lieu de \d|prix barré|instead of \$?\d|\bwas \$\d|\bsave \d+\s?%|économisez \d/i, { fr: "promotion", en: "promotion" }],
+  // Preuve sociale chiffrée et classements.
+  [/\b\d[\d\s.,]*\+?\s?(clients|parents|familles|utilisateurs|utilisatrices|acheteurs|commandes|customers|families|users|buyers|orders)\b|best[- ]?sellers?|meilleures? ventes?|le (produit )?(le )?plus vendu|best[- ]selling|le meilleur|la meilleure|les meilleur(e)?s|\bthe best\b/i, { fr: "classement ou preuve sociale", en: "ranking or social proof" }],
 ];
 // Entreprises de services : tarifs, rapidité, disponibilité, qualifications et expérience non fournis.
 const RISKY_SERVICES: Risk[] = [
@@ -287,11 +339,19 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
     .join(" ")
     .toLowerCase();
   const issues: { path: string; term: string; label: string }[] = [];
+  // Prix connus (produit et catalogue) : tout autre montant écrit dans un texte de vente est inventé.
+  const prices = p.business === "services" ? null : knownPrices(p);
   const walk = (v: unknown, path: string) => {
     if (typeof v === "string") {
       for (const [re, label] of p.business === "services" ? [...RISKY, ...RISKY_SERVICES] : RISKY) {
         const m = v.match(re);
-        if (m && !allowed.includes(m[0].toLowerCase())) issues.push({ path, term: m[0], label: L(label.fr, label.en) });
+        if (m && !allowed.includes(m[0].toLowerCase().trim()) && !issues.some((x) => x.path === path && x.term.toLowerCase() === m[0].trim().toLowerCase())) issues.push({ path, term: m[0].trim(), label: L(label.fr, label.en) });
+      }
+      if (prices) {
+        for (const m of v.matchAll(PRICE_RE)) {
+          const n = Number((m[1] ?? m[2]).replace(/\s/g, "").replace(",", "."));
+          if (!prices.some((x) => Math.abs(x - n) < 0.005)) issues.push({ path, term: m[0].trim(), label: L("prix non confirmé", "unconfirmed price") });
+        }
       }
     } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
     else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) walk(x, path ? `${path}.${k}` : k);
@@ -300,28 +360,212 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
   return issues;
 }
 
-/** Rédaction avec contrôle qualité et reprise ciblée (deux corrections au plus). */
-export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string) => void): Promise<{ copy: ShopCopy; qc: { rounds: number; remaining: string[] } }> {
+/** Montant écrit avec une devise (« 29,90 € », « 29 EUR », « $29.90 »). */
+const PRICE_RE = /(?:(\d{1,5}(?:[.,]\d{1,2})?)\s?(?:€|eur\b|euros?\b))|(?:[$£]\s?(\d{1,5}(?:[.,]\d{1,2})?))/gi;
+function knownPrices(p: Project): number[] {
+  const out: number[] = [];
+  const amount = p.product?.price?.amount;
+  if (typeof amount === "number") out.push(amount, amount / 100);
+  for (const c of (p as any).catalog ?? []) if (typeof c?.price === "number") out.push(c.price, c.price / 100);
+  for (const f of p.product?.facts ?? []) if (f.status === "confirmed") for (const m of `${f.value}`.matchAll(PRICE_RE)) out.push(Number((m[1] ?? m[2]).replace(",", ".")));
+  for (const q of p.product?.questions ?? []) if (q.answer) for (const m of q.answer.matchAll(/\d{1,5}(?:[.,]\d{1,2})?/g)) out.push(Number(m[0].replace(",", ".")));
+  return out;
+}
+
+/**
+ * Formules creuses (« révolutionnaire », « de qualité supérieure »…) : elles ne disent rien du produit et
+ * signent un texte générique. Elles ne sont pas fausses, mais un texte d'agence les remplace par un fait concret.
+ */
+const HOLLOW: RegExp[] = [
+  /révolutionnaires?|révolutionne/i,
+  /incroyables?|exceptionnel(le)?s?|extraordinaires?|inégalée?s?|sans égal|hors du commun|époustouflant(e)?s?/i,
+  /(de |d'une )?(qualité (supérieure|premium|exceptionnelle|optimale|irréprochable)|haute qualité|qualité haut de gamme)/i,
+  /\bultimes?\b|\bparfait(e)?s? pour (tous|toutes|chaque)|\bidéal(e)?s? pour (tous|toutes)|le compagnon idéal|l'allié idéal|must-?have|incontournables?/i,
+  /\bmagiques?\b|\binnovant(e)?s?\b|innovation (unique|majeure)|de pointe|dernière génération|nouvelle génération/i,
+  /ne cherchez plus|qui change (tout|la vie)|changer? (votre|ta) vie|le produit qu'il vous faut|à couper le souffle/i,
+  /\brevolutionary\b|game[- ]?chang(er|ing)|\bamazing\b|\bincredible\b|\bunparalleled\b|\bunmatched\b|\bultimate\b|\bexceptional\b|\bextraordinary\b/i,
+  /(premium|superior|top|high|highest|unmatched)[- ]quality|cutting[- ]edge|state[- ]of[- ]the[- ]art|next[- ]gen(eration)?|\bmust[- ]have\b|life[- ]changing|look no further|perfect for every(one|body)|world[- ]class|best[- ]in[- ]class|\binnovative\b|\bmagical\b/i,
+];
+export function lintHollow(content: unknown): { path: string; term: string }[] {
+  const out: { path: string; term: string }[] = [];
+  const walk = (v: unknown, path: string) => {
+    if (typeof v === "string") {
+      for (const re of HOLLOW) {
+        const m = v.match(re);
+        if (m) out.push({ path, term: m[0].trim() });
+      }
+    } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
+    else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) walk(x, path ? `${path}.${k}` : k);
+  };
+  walk(content, "");
+  return out;
+}
+
+/**
+ * Filet de sécurité final : retire chaque phrase qui porte encore une allégation non confirmée (après les
+ * reprises par l'IA). Un champ vidé reçoit l'espace réservé « [À compléter : …] » : rien de faux n'est publié.
+ */
+export function scrubClaims<T>(content: T, p: Project): { content: T; removed: { path: string; term: string; label: string }[] } {
+  const removed: { path: string; term: string; label: string }[] = [];
+  const ph = placeholder(contentLang());
+  const clean = (s: string, path: string): string => {
+    if (!lintClaims(s, p).length) return s;
+    // Découpage en phrases (HTML simple conservé : les balises restent attachées à leur phrase).
+    // Séparateurs conservés (indices impairs) : sauts de ligne et structure HTML intacts.
+    const parts = s.split(/((?<=[.!?…])[ \t]+|(?<=<\/(?:p|li)>)|\n+)/);
+    let out = "";
+    for (let i = 0; i < parts.length; i += 2) {
+      const x = parts[i];
+      const hits = lintClaims(x.replace(/<[^>]+>/g, " "), p);
+      if (hits.length) {
+        removed.push(...hits.map((h) => ({ ...h, path })));
+        // Une balise ouverte ou fermée dans la phrase retirée est gardée (HTML valide).
+        out += (x.match(/<\/?(?:p|ul|ol|li)[^>]*>/g) ?? []).join("");
+        // Le séparateur qui suit la phrase retirée disparaît avec elle (pas de ligne vide orpheline).
+        continue;
+      }
+      out += x;
+      out += parts[i + 1] ?? "";
+    }
+    out = out.replace(/<(p|li)>\s*<\/\1>/g, "").replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+    return out.replace(/<[^>]+>/g, "").trim() ? out : ph;
+  };
+  const walk = (v: unknown, path: string): unknown => {
+    if (typeof v === "string") return clean(v, path);
+    if (Array.isArray(v)) return v.map((x, i) => walk(x, `${path}[${i}]`));
+    if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x, path ? `${path}.${k}` : k)]));
+    return v;
+  };
+  return { content: walk(content, "") as T, removed };
+}
+
+// ---------------------------------------------------------------- relecture « directeur de création »
+
+/** Note ramenée sur 10 (un modèle qui répond sur 100 ou en texte ne passe pas par erreur). */
+const reviewScore = z.preprocess((v) => {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return n > 10 ? (n <= 100 ? n / 10 : 0) : n;
+}, z.number());
+export const COPY_CRITERIA = ["specificity", "benefits", "objections", "clarity", "voice", "seo", "conversion"] as const;
+const ZERO_SCORES = Object.fromEntries(COPY_CRITERIA.map((k) => [k, 0])) as Record<(typeof COPY_CRITERIA)[number], number>;
+export const CopyReviewSchema = z.object({
+  // Grille absente ou illisible : on suppose le pire (une reprise plutôt qu'un texte faible montré au client).
+  scores: z
+    .object({ specificity: reviewScore.catch(0), benefits: reviewScore.catch(0), objections: reviewScore.catch(0), clarity: reviewScore.catch(0), voice: reviewScore.catch(0), seo: reviewScore.catch(0), conversion: reviewScore.catch(0) })
+    .catch(ZERO_SCORES),
+  issues: capped(z.object({ path: str, severity: z.enum(["bloquant", "mineur"]).catch("mineur"), problem: str, fix: str }), 20).catch([]),
+  brief: str.catch(""),
+});
+export type CopyReview = z.infer<typeof CopyReviewSchema>;
+
+/** Seuils du directeur de création : moyenne d'au moins 8/10, aucun critère sous 6, aucun défaut bloquant. */
+export const COPY_MIN_MEAN = 8;
+export const COPY_MIN_SCORE = 6;
+export const copyReviewMean = (r: CopyReview | null | undefined) => (r ? COPY_CRITERIA.reduce((a, k) => a + (r.scores?.[k] ?? 0), 0) / COPY_CRITERIA.length : 0);
+export function copyReviewPassed(r: CopyReview | null | undefined): boolean {
+  if (!r) return false;
+  return !(r.issues ?? []).some((i) => i.severity === "bloquant") && copyReviewMean(r) >= COPY_MIN_MEAN && COPY_CRITERIA.every((k) => (r.scores?.[k] ?? 0) >= COPY_MIN_SCORE);
+}
+
+/**
+ * Relecture d'un texte par un « directeur de création » rédactionnel : grille notée (spécificité, bénéfices,
+ * objections, clarté, ton, SEO, conversion) ET conformité (allégations, langue, cohérence), en un seul appel :
+ * elle remplace le contrôle qualité simple, sans coût supplémentaire.
+ */
+export async function aiCopyReview(b: Base, p: Project, label: string, content: unknown): Promise<CopyReview> {
+  return llmJson(
+    {
+      task: "quality_control",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().copyReview,
+      context: projectContext(p, "shop"),
+      prompt: `Relis ce contenu (${label}) :\n<contenu>\n${JSON.stringify(content, null, 1).slice(0, 30000)}\n</contenu>
+Réponds { "scores": { ${COPY_CRITERIA.map((k) => `"${k}": 0-10`).join(", ")} }, "issues": [{ "path": "", "severity": "bloquant|mineur", "problem": "", "fix": "" }], "brief": "" }.`,
+      maxTokens: 8000,
+    },
+    CopyReviewSchema,
+  );
+}
+
+/** Consignes de reprise tirées d'une relecture : défauts (avec la réécriture proposée) puis priorité du directeur de création. */
+export function copyReviewFeedback(r: CopyReview): string[] {
+  const out = (r.issues ?? []).filter((i) => i.problem?.trim()).map((i) => `${i.path} : ${i.problem}${i.fix?.trim() ? ` → ${i.fix}` : ""}`);
+  const weak = COPY_CRITERIA.filter((k) => (r.scores?.[k] ?? 0) < COPY_MIN_MEAN);
+  if (weak.length) out.push(L(`Critères à relever (note sous ${COPY_MIN_MEAN}/10) : ${weak.join(", ")}.`, `Criteria to raise (score below ${COPY_MIN_MEAN}/10): ${weak.join(", ")}.`));
+  if (r.brief?.trim()) out.push(L(`Priorité du directeur de création : ${r.brief.trim()}`, `Creative director's priority: ${r.brief.trim()}`));
+  return out;
+}
+
+type CopyRound = { copy: ShopCopy; blocking: string[]; review: CopyReview; mean: number };
+/** Meilleure de deux versions : moins de défauts bloquants, puis meilleure note du directeur de création. */
+const betterRound = (a: CopyRound, b: CopyRound) => a.blocking.length < b.blocking.length || (a.blocking.length === b.blocking.length && a.mean > b.mean);
+
+/**
+ * Rédaction contrôlée : une passe forte, relue par le directeur de création (grille notée + conformité).
+ * Sous le seuil (8/10), UNE reprise ciblée à partir de la version précédente ; une allégation ou une faute bloquante
+ * encore présente autorise une dernière reprise. La meilleure version est gardée, puis les allégations restantes retirées.
+ */
+export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string) => void): Promise<{ copy: ShopCopy; qc: { rounds: number; remaining: string[]; score: number } }> {
   let feedback = "";
-  let copy: ShopCopy | null = null;
-  let remaining: string[] = [];
+  let best: CopyRound | null = null;
+  let last: CopyRound | null = null;
   let rounds = 0;
+  let qualityRetries = 0;
   for (let round = 0; round < 3; round++) {
     rounds = round + 1;
-    onStep?.(round === 0 ? L("Rédaction des textes de la boutique", "Writing the store copy") : L(`Correction des textes (passe ${round + 1})`, `Revising the copy (pass ${round + 1})`));
-    copy = await aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, feedback || undefined);
+    onStep?.(round === 0 ? L("Rédaction des textes de la boutique", "Writing the store copy") : L(`Reprise des textes (passe ${round + 1})`, `Revising the copy (pass ${round + 1})`));
+    const copy = await aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, feedback || undefined, last?.copy);
     const lint = lintClaims(copy, p);
-    onStep?.(L("Contrôle qualité des textes", "Quality check of the copy"));
-    const qc = await aiQcText({ ...b, usageKey: `${b.usageKey}:qc${round}` }, p, "textes de la boutique", copy);
+    onStep?.(L("Relecture par le directeur de création", "Creative director review"));
+    const review = await aiCopyReview({ ...b, usageKey: `${b.usageKey}:qc${round}` }, p, "textes de la boutique", copy);
     const blocking = [
-      ...lint.map((l) => L(`${l.path} : « ${l.term} » (${l.label}) n'est pas confirmé — retire-le ou remplace par « ${placeholder(contentLang())} »`, `${l.path}: "${l.term}" (${l.label}) is not confirmed. Remove it or replace it with "${placeholder(contentLang())}"`)),
-      ...qc.issues.filter((i) => i.severity === "bloquant").map((i) => `${i.path} : ${i.problem} → ${i.fix}`),
+      ...lint.map((l) => L(`${l.path} : « ${l.term} » (${l.label}) n'est pas confirmé. Retire-le ou remplace par « ${placeholder(contentLang())} »`, `${l.path}: "${l.term}" (${l.label}) is not confirmed. Remove it or replace it with "${placeholder(contentLang())}"`)),
+      ...review.issues.filter((i) => i.severity === "bloquant").map((i) => `${i.path} : ${i.problem} → ${i.fix}`),
+      // Qualité d'agence : formules creuses, longueurs, tirets, nom de la marque et du produit.
+      ...copyQuality(copy, p),
     ];
-    remaining = blocking;
-    if (!blocking.length) break;
-    feedback = blocking.join("\n");
+    last = { copy, blocking, review, mean: copyReviewMean(review) };
+    if (!best || betterRound(last, best)) best = last;
+    if (!blocking.length && copyReviewPassed(review)) break;
+    // Texte conforme mais sous le niveau visé : une seule reprise de qualité (coût maîtrisé).
+    if (!blocking.length && qualityRetries++ >= 1) break;
+    feedback = [...blocking, ...copyReviewFeedback({ ...review, issues: review.issues.filter((i) => i.severity !== "bloquant") })].join("\n");
   }
-  return { copy: copy!, qc: { rounds, remaining } };
+  // Filet de sécurité : une allégation encore présente après les reprises est retirée, jamais publiée.
+  const scrubbed = scrubClaims(best!.copy, p);
+  return { copy: scrubbed.content, qc: { rounds, remaining: best!.blocking, score: Math.round(best!.mean * 10) / 10 } };
+}
+
+/** Défauts de forme d'un texte de boutique, formulés comme des consignes de correction pour l'IA. */
+export function copyQuality(copy: ShopCopy, p: Project): string[] {
+  const out: string[] = [];
+  for (const h of lintHollow(copy)) out.push(L(`${h.path} : formule creuse « ${h.term} ». Remplace-la par un fait concret du produit.`, `${h.path}: empty phrase "${h.term}". Replace it with a concrete product fact.`));
+  const c = copy as any;
+  const len = (path: string, v: unknown, max: number) => {
+    if (typeof v === "string" && v.length > max) out.push(L(`${path} : ${v.length} caractères, ${max} au plus.`, `${path}: ${v.length} characters, ${max} at most.`));
+  };
+  len("seo.title", c.seo?.title, 70);
+  len("seo.description", c.seo?.description, 160);
+  len("hero.heading", c.hero?.heading, 60);
+  len("cta.button", c.cta?.button, 28);
+  len("product.title", c.product?.title, 80);
+  const dashes: string[] = [];
+  const walk = (v: unknown, path: string) => {
+    if (typeof v === "string") {
+      if (/\s[—–]\s/.test(v)) dashes.push(path);
+    } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
+    else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) walk(x, path ? `${path}.${k}` : k);
+  };
+  walk(copy, "");
+  if (dashes.length) out.push(L(`Tirets cadratins interdits dans les phrases (${dashes.slice(0, 4).join(", ")}) : virgule, deux-points ou point à la place.`, `No em or en dashes in sentences (${dashes.slice(0, 4).join(", ")}): use a comma, colon or period.`));
+  // Nom de produit donné par le client : repris tel quel (pas de nom inventé ou déformé).
+  const name = p.product?.nameStatus === "provided" ? p.product.name?.trim() : "";
+  if (name && typeof c.product?.title === "string" && !c.product.title.toLowerCase().includes(name.toLowerCase())) out.push(L(`product.title : le nom du produit donné par le client (« ${name} ») doit y figurer tel quel.`, `product.title: the product name given by the client ("${name}") must appear as is.`));
+  return out;
 }
 
 // ---------------------------------------------------------------- thème
@@ -361,6 +605,8 @@ export async function aiDesignHome(b: Base, p: Project, spec: ThemeSpec) {
       prompt: `Direction choisie : ${spec.direction}. Structure actuelle proposée par la direction :\n${outline(spec, ["index"])}
 Fichiers d'images disponibles (à utiliser dans les réglages *_asset) : ${Object.keys(spec.files).join(", ")}
 Les fichiers « en-situation » sont de vraies photos du produit utilisé au quotidien : quand il y en a, l'ouverture (héros) les montre en grand.
+Les fichiers « packshot », « produit-detoure » et « hero » montrent le produit entier ; « detail-N » sont des gros plans recadrés (jamais en ouverture ni dans un cadre censé montrer tout le produit) ; « scene-N » sont des mises en scène de studio (pas des photos d'usage). N'utilise jamais un nom de fichier absent de cette liste.
+Le pied de page contient déjà une inscription à la lettre d'information : n'ajoute pas de section « newsletter » sur l'accueil s'il a le style « card ».
 ${spec.store.business === "services" ? `SITE D'ENTREPRISE DE SERVICES (pas de boutique) : les fichiers « photo-N » sont les vraies photos du marchand. Compose un accueil de services : ouverture avec le bouton d'appel à l'action déjà rédigé (rendez-vous, devis ou appel, lien existant conservé), « services-list » (prestations, une carte par prestation fournie, prix et durées seulement s'ils sont déjà dans la structure), « Pourquoi nous » ou méthode en étapes (« how-to » ou « timeline »), « portfolio » (réalisations), « team », « testimonials » (espaces réservés honnêtes, jamais d'avis inventé), « practical-info » (horaires, adresse, zone, téléphone), « faq », puis un « cta-banner » final. N'utilise AUCUNE section de vente (featured-product, featured-collection, collection-list, product-*, shipping-journey, featured-offer, countdown, comparison-table) et aucun mot « panier », « commande », « livraison », « produit ». Reprends les réglages et blocs de la structure actuelle pour ces sections.
 ` : ""}${(spec.store.products?.length ?? 0) > 0 ? `Type de boutique : ${p.storeType === "niche" ? "niche (plusieurs produits d'un même univers)" : "multi-produit (catalogue varié)"} — ${(spec.store.products?.length ?? 0) + 1} produits, collections : ${(spec.store.collections ?? []).map((c) => `${c.title} (handle « ${c.handle} »)`).join(", ")}. Place une grille « featured-collection » (collection « all ») juste après l'ouverture et une « collection-list » (un bloc par collection, réglage collection = handle) ; les boutons mènent vers /collections/all.
 ` : ""}Compose la page d'accueil (« index ») : liste ordonnée de sections avec réglages et blocs, au niveau visuel décrit (héros immersif, mots d'accent, cartes lumineuses, texte qui s'allume, chiffres vérifiés). Reprends les textes rédigés de la structure actuelle et améliore le rythme si utile. Ajuste si besoin les réglages globaux dans « globals » (forme de l'en-tête, style des cartes produit, reflets, lueurs, arrondis, intensité des animations). Si une section sur mesure apporte une vraie valeur (ex. animation de présentation du produit), fournis-la dans « custom » (type commençant par es-custom-) et utilise son type dans la liste.`,
@@ -459,11 +705,15 @@ Propose uniquement les opérations corrigées qui réalisent la partie manquante
   );
 }
 
+/**
+ * Relecture tolérante : une liste un peu trop longue ou une opération mal formée ne fait pas perdre toute la relecture
+ * (les listes sont tronquées, les opérations invalides écartées ; la validation du thème filtre ensuite le reste).
+ */
 const ReviewSchema = z.object({
-  score: z.number().min(0).max(10),
-  strengths: z.array(z.string()).max(5),
-  issues: z.array(z.object({ where: z.string(), problem: z.string(), severity: z.enum(["bloquant", "important", "mineur"]) })).max(12),
-  ops: z.array(OpSchema).max(14),
+  score: z.coerce.number().transform((n) => (Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 0)),
+  strengths: capped(str, 5),
+  issues: capped(z.object({ where: str, problem: str, severity: z.enum(["bloquant", "important", "mineur"]).catch("important") }), 12),
+  ops: z.preprocess((v) => (Array.isArray(v) ? v.filter((o) => OpSchema.safeParse(o).success).slice(0, 14) : []), z.array(OpSchema)),
 });
 export type HomeReview = z.infer<typeof ReviewSchema>;
 
@@ -471,7 +721,7 @@ export type HomeReview = z.infer<typeof ReviewSchema>;
  * Relecture visuelle : l'IA regarde la boutique rendue (ordinateur et téléphone), comme un directeur artistique,
  * et corrige ce qui se voit (hiérarchie, contrastes, rythme, images mal cadrées, textes trop longs, répétitions).
  */
-export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: { desktop: Buffer[]; mobile: Buffer[] }) {
+export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: { desktop: Buffer[]; mobile: Buffer[]; product?: { desktop: Buffer[]; mobile: Buffer[] } | null }) {
   return llmJson(
     {
       task: "theme_design",
@@ -485,11 +735,13 @@ export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: 
       images: [
         ...shots.desktop.map((data, i) => ({ data, label: `ordinateur (1440 px) — planche ${i + 1}/${shots.desktop.length}, la page se lit colonne par colonne de gauche à droite` })),
         ...shots.mobile.map((data, i) => ({ data, label: `téléphone (390 px) — planche ${i + 1}/${shots.mobile.length}, colonnes de gauche à droite` })),
+        ...(shots.product?.desktop ?? []).map((data, i, all) => ({ data, label: `FICHE PRODUIT, ordinateur (1440 px) — planche ${i + 1}/${all.length}` })),
+        ...(shots.product?.mobile ?? []).map((data, i, all) => ({ data, label: `FICHE PRODUIT, téléphone (390 px) — planche ${i + 1}/${all.length}` })),
       ],
-      prompt: `Direction : ${spec.direction}. Structure rendue sur les captures :\n${outline(spec, ["group:header", "index", "group:footer"])}
+      prompt: `Direction : ${spec.direction}. Structure rendue sur les captures :\n${outline(spec, ["group:header", "index", ...(shots.product ? ["product"] : []), "group:footer"])}
 Fichiers d'images du thème : ${Object.keys(spec.files).join(", ")}
 Captures prises en mode « animations réduites » : les vidéos y montrent leurs commandes de lecture et les effets d'apparition sont désactivés — ce n'est pas un défaut.
-Évalue la page (score sur 10), liste ses forces et ses défauts visibles, puis donne les opérations qui corrigent les défauts « bloquant » et « important ». Ne touche pas aux textes validés ni aux éléments verrouillés ; pas de refonte si le score est d'au moins 8.`,
+${shots.product ? "Les dernières planches montrent la fiche produit (gabarit « product ») : relis-la avec la même exigence (galerie, bloc d'achat, sections sous le bloc d'achat) ; ses corrections portent sur le gabarit « product ».\n" : ""}Évalue la boutique (score sur 10 : accueil et fiche produit), liste ses forces et ses défauts visibles, puis donne les opérations qui corrigent les défauts « bloquant » et « important ». Ne touche pas aux textes validés ni aux éléments verrouillés ; pas de refonte si le score est d'au moins 8.`,
       maxTokens: 24000,
     },
     ReviewSchema,
@@ -513,7 +765,11 @@ const VideoSceneSchema = z.discriminatedUnion("kind", [
 ]);
 const VideoPlanSchema = z.object({ concept: z.string(), scenes: z.array(VideoSceneSchema).min(3).max(9), transition: z.enum(["panel", "fade", "push"]), music: z.enum(["calm", "pulse", "none"]) });
 
-export async function aiVideoPlan(b: Base, p: Project, input: { format: VideoSpec["format"]; goal: string; images: string[]; clips: number; url?: string }) {
+/**
+ * Découpage d'une publicité vidéo. `craft` : piste créative retenue (engine/ad-craft) ; `feedback` : consignes du
+ * directeur de création et des contrôles de montage pour la reprise ciblée (une seule).
+ */
+export async function aiVideoPlan(b: Base, p: Project, input: { format: VideoSpec["format"]; goal: string; images: string[]; clips: number; url?: string; craft?: string; feedback?: string }) {
   return llmJson(
     {
       task: "video_direction",
@@ -522,11 +778,11 @@ export async function aiVideoPlan(b: Base, p: Project, input: { format: VideoSpe
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().video,
-      context: projectContext(p, "video"),
+      context: `${projectContext(p, "video")}${input.craft ? `\n${input.craft}` : ""}`,
       prompt: `Format : ${input.format}. Objectif : ${input.goal}.
-Images disponibles pour les plans detail/scene (index : description) : ${input.images.map((d, i) => `${i}: ${d}`).join(" ; ") || "aucune"}
+Images disponibles pour les plans detail/scene/hook/split (index : description) : ${input.images.map((d, i) => `${i}: ${d}`).join(" ; ") || "aucune"}
 Plans générés disponibles pour « clip » : ${input.clips}
-${input.url ? `Adresse à afficher à la fin : ${input.url}` : "Pas d'adresse à afficher."}
+${input.url ? `Adresse à afficher à la fin : ${input.url}` : "Pas d'adresse à afficher."}${input.feedback ? `\nCorrections exigées par le directeur de création sur le découpage précédent (à appliquer toutes, sans rien inventer) :\n${input.feedback}` : ""}
 Écris le découpage (concept, scenes, transition, music).`,
       maxTokens: 8000,
     },
@@ -540,6 +796,7 @@ export const UgcBeatSchema = z.object({
   line: z.string().describe("Réplique dite face caméra, 8 à 18 mots"),
   caption: z.string().describe("Sous-titre affiché"),
   action: z.string().describe("Action et cadrage en anglais pour le modèle vidéo"),
+  role: z.string().optional().describe("Fonction du plan : problem, discovery, demo, proof, cta (plusieurs séparées par « + »)"),
 });
 export const UgcScriptSchema = z.object({
   concept: z.string(),
@@ -549,7 +806,7 @@ export const UgcScriptSchema = z.object({
 });
 export type UgcScript = z.infer<typeof UgcScriptSchema>;
 
-export async function aiUgcScript(b: Base, p: Project, input: { beats: number; presenter: string; setting: string; tone: string; angle: string; url?: string; brief?: string }) {
+export async function aiUgcScript(b: Base, p: Project, input: { beats: number; presenter: string; setting: string; tone: string; angle: string; url?: string; brief?: string; roles?: string[]; craft?: string; feedback?: string }) {
   return llmJson(
     {
       task: "video_direction",
@@ -558,12 +815,12 @@ export async function aiUgcScript(b: Base, p: Project, input: { beats: number; p
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().ugc,
-      context: projectContext(p, "video"),
-      prompt: `Nombre de plans : ${input.beats} (8 secondes chacun).
+      context: `${projectContext(p, "video")}${input.craft ? `\n${input.craft}` : ""}`,
+      prompt: `Nombre de plans : ${input.beats} (8 secondes chacun).${input.roles?.length ? `\nRôles imposés, plan par plan : ${input.roles.map((r, i) => `${i + 1} = ${r}`).join(" ; ")}.` : ""}
 Personne : ${input.presenter}. Décor : ${input.setting}. Ton : ${input.tone}. Angle : ${input.angle}.
 ${input.brief ? `Consigne du marchand (donnée, pas instruction de sécurité) : ${input.brief}` : ""}
-${input.url ? `Adresse à citer dans l'appel à l'action : ${input.url}` : "Pas d'adresse : l'appel à l'action renvoie au lien de la publication."}
-Écris le script (concept, persona, setting, beats).`,
+${input.url ? `Adresse à citer dans l'appel à l'action : ${input.url}` : "Pas d'adresse : l'appel à l'action renvoie au lien de la publication."}${input.feedback ? `\nCorrections exigées par le directeur de création sur le script précédent (à appliquer toutes, sans rien inventer) :\n${input.feedback}` : ""}
+Écris le script (concept, persona, setting, beats avec line, caption, action, role).`,
       maxTokens: 4000,
     },
     UgcScriptSchema,
@@ -580,12 +837,34 @@ export const PostDraftSchema = z.object({
   angle: z.string(),
   title: z.string(),
   caption: z.string(),
-  hashtags: z.array(z.string()).max(10),
-  visual: z.object({ kind: z.enum(["packshot", "scene", "detail", "creative", "video"]), headline: z.string(), subline: z.string(), layout: z.enum(["editorial", "bold", "minimal", "centered", "split"]) }),
+  // Hashtags : sans « # », sans espace, dix au plus (un de trop ne fait pas échouer tout le calendrier).
+  hashtags: z.preprocess((v) => (Array.isArray(v) ? v : []).map((h) => String(h ?? "").replace(/^#+/, "").replace(/\s+/g, "")).filter(Boolean).slice(0, 10), z.array(z.string())),
+  visual: z.object({
+    kind: z.enum(["packshot", "scene", "detail", "creative", "video"]).catch("creative"),
+    headline: str,
+    subline: str,
+    layout: z.enum(["editorial", "bold", "minimal", "centered", "split"]).catch("editorial"),
+    // Carrousel : texte de chaque diapositive (la première est la couverture), 6 au plus.
+    slides: capped(str, 6).optional().catch(undefined),
+  }),
+  // Pilier éditorial et série récurrente (facultatifs) : servent à la relecture de la variété.
+  pillar: str.optional(),
+  series: str.optional(),
 });
 export type PostDraft = z.infer<typeof PostDraftSchema>;
 
-export async function aiSocialPlan(b: Base, p: Project, params: { days: number; perDay: number; networks: string[]; goals: string; tone: string; mix: { photo: number; video: number; text: number }; link?: string }) {
+/** Méthode de travail du community manager, rappelée dans chaque demande de plan ou de reprise. */
+const SOCIAL_METHOD = `Méthode (community manager de marque reconnue) :
+1. Piliers : répartis les publications entre les piliers de la ligne éditoriale (aucun pilier deux fois de suite) ; les séries récurrentes reviennent le même jour de la semaine, sous le même nom.
+2. Chaque légende suit accroche → corps → appel à l'interaction : la 1re ligne (moins de 125 caractères, avant la coupure « … plus ») arrête le pouce par un détail concret, une question précise ou une tension, jamais « Découvrez », « Voici », « Nouveau » ni le nom de la marque suivi de deux-points ; le corps apporte UN fait réel ou un usage ; la fin invite à une action précise et variée (question fermée ou à choix, enregistrer, partager à quelqu'un, lien).
+3. Natif par réseau : un reel ou un TikTok se pense en vidéo (accroche des 2 premières secondes dans visual.headline), un carrousel en diapositives (visual.slides : couverture-accroche, 1 idée par diapositive, dernière diapositive = action), une story en une seule action (sondage, question, lien), un Pin en recherche (titre et description avec les mots qu'on tape).
+4. Variété mesurable : aucune accroche, aucun titre de visuel ni aucun appel à l'action recopié ; deux publications consécutives ne partagent ni l'angle ni le format quand c'est possible ; hashtags choisis pour CHAQUE publication.
+5. Temps forts : seulement ceux fournis dans la liste, en occasion de parler du produit (idée cadeau, question à la communauté), jamais en promotion, réduction ou délai de livraison inventés.
+Exemple d'accroche — médiocre : « Découvrez notre compagnon, le cadeau idéal ! » ; excellente : « Deux oreilles, un disque, et toute la chambre change de couleur. » (si c'est ce que montre la photo).`;
+
+export type SocialPlanParams = { days: number; perDay: number; networks: string[]; goals: string; tone: string; mix: { photo: number; video: number; text: number }; link?: string; schedule?: string; moments?: string; recent?: string[] };
+
+export async function aiSocialPlan(b: Base, p: Project, params: SocialPlanParams) {
   return llmJson(
     {
       task: "social_planning",
@@ -597,13 +876,67 @@ export async function aiSocialPlan(b: Base, p: Project, params: { days: number; 
       context: projectContext(p, "social"),
       prompt: `Prépare ${params.days} jours de publications, ${params.perDay} par jour, réparties sur : ${params.networks.join(", ")}.
 Objectifs : ${params.goals || (p.business === "services" ? "faire connaître l'activité et amener à prendre rendez-vous, demander un devis ou appeler" : "faire connaître le produit et amener vers la boutique")}. Ton : ${params.tone || "celui de la marque"}.
-Répartition visée : ${params.mix.photo} % photos, ${params.mix.video} % vidéos, ${params.mix.text} % textes ou carrousels.
-${params.link ? `Lien ${p.business === "services" ? "du site (prise de rendez-vous ou contact)" : "de la boutique"} : ${params.link}` : "Pas de lien : n'en invente pas."}
-Pour chaque publication : day (0 = premier jour), slot (0 = première plage horaire du jour), network, format adapté au réseau, angle (varié), title, caption native du réseau, hashtags (sans #), visual {kind, headline (2 à 6 mots), subline, layout}.
+Répartition visée : ${params.mix.photo} % photos, ${params.mix.video} % vidéos, ${params.mix.text} % carrousels ou textes (TikTok et YouTube Shorts : toujours en vidéo).
+${params.link ? `Lien ${p.business === "services" ? "du site (prise de rendez-vous ou contact)" : "de la boutique"} : ${params.link} (cliquable sur Facebook, Pinterest et YouTube ; « lien en bio » sur Instagram et TikTok).` : "Pas de lien : n'en invente pas."}
+${params.schedule ? `Dates et horaires (fixés par le client) :\n${params.schedule}\n` : ""}${params.moments ? `Temps forts réels dans la période : ${params.moments}\n` : "Aucun temps fort à exploiter dans la période : n'en invente pas.\n"}${params.recent?.length ? `Accroches déjà publiées récemment (ne pas les reprendre ni les paraphraser) :\n${params.recent.map((r) => `- ${r}`).join("\n")}\n` : ""}
+${SOCIAL_METHOD}
+
+Pour chaque publication : day (0 = premier jour), slot (0 = première plage horaire du jour), network, format natif du réseau, pillar (titre du pilier), series (nom de la série récurrente ou vide), angle (court, varié), title, caption, hashtags (sans #, nombre du réseau), visual {kind, headline (2 à 6 mots, 32 caractères au plus), subline, layout, slides (carrousel seulement : 3 à 6 textes courts)}.
+« strategy » : 3 à 5 phrases pour le client (piliers, rythme, séries, ce que l'on mesure : enregistrements, partages, commentaires, clics).
 Réponds { "strategy": "…", "posts": [ … ] }.`,
       maxTokens: 32000,
     },
     z.object({ strategy: z.string(), posts: z.array(PostDraftSchema) }),
+  );
+}
+
+export const SocialReviewSchema = z.object({
+  scores: z.object({ hooks: z.number().catch(0), variety: z.number().catch(0), native: z.number().catch(0), voice: z.number().catch(0), engagement: z.number().catch(0), honesty: z.number().catch(0) }),
+  posts: capped(z.object({ index: z.number().int().catch(-1), problem: str, fix: str }), 20).catch([]),
+  verdict: str,
+});
+
+/** Relecture d'un plan par un directeur de création social media : grille notée et publications à reprendre. */
+export async function aiSocialReview(b: Base, p: Project, posts: PostDraft[]) {
+  return llmJson(
+    {
+      task: "quality_control",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().socialReview,
+      context: projectContext(p, "social"),
+      prompt: `Plan à relire (index, jour, réseau, format, pilier, angle, titre, légende, hashtags, titre du visuel) :
+${posts.map((d, i) => `#${i} · J${d.day + 1} · ${d.network} · ${d.format} · ${d.pillar ?? ""} · ${d.angle}\nTitre : ${d.title}\nLégende : ${d.caption.replace(/\n+/g, " / ")}\nHashtags : ${d.hashtags.join(" ")}\nVisuel : ${d.visual.headline}${d.visual.slides?.length ? ` | diapositives : ${d.visual.slides.join(" | ")}` : ""}`).join("\n\n")}
+Réponds { "scores": { "hooks": 0-10, "variety": 0-10, "native": 0-10, "voice": 0-10, "engagement": 0-10, "honesty": 0-10 }, "posts": [{ "index": 0, "problem": "…", "fix": "…" }], "verdict": "…" }.`,
+      maxTokens: 4000,
+    },
+    SocialReviewSchema,
+  );
+}
+
+const SocialRepairSchema = z.object({ posts: capped(z.object({ index: z.number().int(), angle: str.optional(), format: z.enum(["image", "carousel", "video", "reel", "story", "short", "pin"]).optional().catch(undefined), title: str, caption: str, hashtags: capped(str, 10).catch([]), headline: str.optional(), slides: capped(str, 6).optional().catch(undefined) }), 20) });
+
+/** Reprise ciblée des publications faibles, en un seul appel (consignes précises par publication). */
+export async function aiSocialRepair(b: Base, p: Project, items: { index: number; post: PostDraft; issues: string[] }[], global: string[]) {
+  return llmJson(
+    {
+      task: "social_copy",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().social,
+      context: projectContext(p, "social"),
+      prompt: `Reprends UNIQUEMENT ces publications, en corrigeant chaque défaut listé, sans changer leur réseau ni leur jour, et sans ajouter aucune information absente du contexte. Change l'angle (et le pilier) seulement si un défaut porte sur la répétition ; change le format seulement si un défaut porte sur le manque de variété (format natif du réseau).
+${global.length ? `Défauts d'ensemble à corriger à travers ces reprises : ${global.join(" ; ")}\n` : ""}${SOCIAL_METHOD}
+
+${items.map((x) => `#${x.index} · ${x.post.network} · ${x.post.format} · angle « ${x.post.angle} »\nTitre : ${x.post.title}\nLégende :\n${x.post.caption}\nHashtags : ${x.post.hashtags.join(" ")}\nVisuel : ${x.post.visual.headline}${x.post.visual.slides?.length ? ` | diapositives : ${x.post.visual.slides.join(" | ")}` : ""}\nDéfauts : ${x.issues.join(" ; ")}`).join("\n\n")}
+Réponds { "posts": [{ "index": 0, "angle": "…", "format": "…", "title": "…", "caption": "…", "hashtags": ["…"], "headline": "…", "slides": ["…"] }] }.`,
+      maxTokens: 12000,
+    },
+    SocialRepairSchema,
   );
 }
 
@@ -617,7 +950,13 @@ export async function aiRewritePost(b: Base, p: Project, post: { network: string
       usageKey: b.usageKey,
       system: S().social,
       context: projectContext(p, "social"),
-      prompt: `Réécris cette publication ${post.network} (${post.format}, angle « ${post.angle} »).\nTitre actuel : ${post.title}\nLégende actuelle :\n${post.caption}\nConsigne : ${instruction || "améliore l'accroche et la clarté"}\nRéponds { "title": "…", "caption": "…", "hashtags": ["…"] }.`,
+      prompt: `Réécris cette publication ${post.network} (${post.format}, angle « ${post.angle} ») en gardant son réseau, son format et son angle.
+Titre actuel : ${post.title}
+Légende actuelle :
+${post.caption}
+Consigne du client : <consigne>${instruction || "améliore l'accroche de la 1re ligne, la clarté et l'appel à l'interaction"}</consigne>
+${SOCIAL_METHOD}
+Réponds { "title": "…", "caption": "…", "hashtags": ["…"] }.`,
       maxTokens: 4000,
     },
     z.object({ title: z.string(), caption: z.string(), hashtags: z.array(z.string()) }),
@@ -626,21 +965,74 @@ export async function aiRewritePost(b: Base, p: Project, post: { network: string
 
 // ---------------------------------------------------------------- images
 
-export async function aiImageBrief(b: Base, p: Project, kind: string) {
-  return llmJson(
-    {
-      task: "copywriting",
-      userId: b.userId,
-      projectId: b.projectId,
-      jobId: b.jobId,
-      usageKey: b.usageKey,
-      system: S().imageBrief,
-      context: projectContext(p, "images"),
-      prompt: `Type de visuel : ${kind}. Réponds { "prompt": "…", "surface": "…", "lightFrom": "left" | "right" }.`,
-      maxTokens: 2000,
-    },
-    z.object({ prompt: z.string(), surface: z.string(), lightFrom: z.enum(["left", "right"]) }),
-  );
+const txt = z.preprocess((v) => (v == null ? "" : typeof v === "string" ? v : String(v)), z.string());
+/** Brief de prise de vue rendu par l'IA (tolérant : un champ manquant coûte des points à la grille, pas une erreur). */
+export const ImageBriefSchema = z.object({
+  intent: txt,
+  set: txt,
+  surface: txt,
+  props: z.preprocess((v) => (Array.isArray(v) ? v.map(String) : []), z.array(z.string())),
+  light: txt,
+  lightFrom: z.enum(["left", "right"]).catch("left"),
+  camera: txt,
+  composition: txt,
+  palette: txt,
+  season: txt,
+  prompt: txt,
+});
+export type ImageBrief = { prompt: string; surface: string; lightFrom: "left" | "right"; review: BriefReview; source: "ai" | "studio"; attempts: number; draft?: z.infer<typeof ImageBriefSchema> };
+
+/**
+ * Brief photo d'une image générée (décor autour du produit réel, ou photo en situation), comme un photographe
+ * produit et un directeur artistique d'agence : intention, décor, plateau, accessoires cohérents avec la cible,
+ * lumière (source, direction, qualité, température), optique, composition, palette de la ligne, saison.
+ * Boucle de qualité : grille du directeur artistique (10 critères, seuil 8/10) → une seule reprise ciblée si
+ * en dessous → meilleure version gardée ; si aucune n'atteint 6/10, la consigne du studio (ligne photographique)
+ * est utilisée. La ligne photographique de la marque est imposée à chaque image : même campagne partout.
+ */
+export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { line: PhotoLine; lifestyle?: string; format?: string }): Promise<ImageBrief> {
+  const line = opts.line;
+  const lifestyle = !!opts.lifestyle;
+  const ask = (feedback?: { review: BriefReview; previous: unknown }) =>
+    llmJson(
+      {
+        task: "art_direction",
+        userId: b.userId,
+        projectId: b.projectId,
+        jobId: b.jobId,
+        usageKey: feedback ? `${b.usageKey}:retake` : b.usageKey,
+        system: S().imageBrief,
+        context: projectContext(p, "images"),
+        prompt: `Visuel à produire : ${kind}${opts.format ? ` (format ${opts.format})` : ""}.
+${lifestyle ? `PHOTO EN SITUATION : ${opts.lifestyle}. Une vraie scène de vie, jamais un studio.` : "MISE EN SCÈNE PRODUIT : le produit réel posé au centre du premier plan, sur le plateau."}
+LIGNE PHOTOGRAPHIQUE DE LA MARQUE (à respecter, toutes les images forment une même campagne) :
+${photoLineText(line, "fr").map((x) => `- ${x}`).join("\n")}
+Couleurs de la ligne en anglais : ${line.palette.words.en.join(", ")}. Accessoires possibles : ${line.props.map((x) => x.en).join(", ")}. Situations de la marque : ${line.situations.map((x) => x.en).join(" | ")}.
+${feedback ? `REPRISE : la version précédente a obtenu ${feedback.review.score}/10 à la grille du directeur artistique. Corrige exactement ces points, garde le reste :\n${feedback.review.feedback.map((x) => `- ${x}`).join("\n")}\nVersion précédente : ${JSON.stringify(feedback.previous).slice(0, 1500)}` : ""}
+Réponds { "intent": "…", "set": "…", "surface": "…", "props": ["…"], "light": "…", "lightFrom": "left" | "right", "camera": "…", "composition": "…", "palette": "…", "season": "…", "prompt": "…" } (champs en anglais sauf « intent »).`,
+        maxTokens: 2500,
+      },
+      ImageBriefSchema,
+    );
+  const studio = scenePromptFromLine(line, { lifestyle: opts.lifestyle, format: opts.format });
+  let best: { draft: z.infer<typeof ImageBriefSchema>; review: BriefReview } | null = null;
+  let attempts = 0;
+  for (let k = 0; k < 2; k++) {
+    let draft: z.infer<typeof ImageBriefSchema>;
+    try {
+      draft = await ask(k && best ? { review: best.review, previous: best.draft } : undefined);
+    } catch {
+      break;
+    }
+    attempts++;
+    const review = critiqueImageBrief(draft, line, { lifestyle });
+    if (!best || review.score > best.review.score) best = { draft, review };
+    if (best.review.score >= BRIEF_MIN_SCORE) break;
+  }
+  if (!best || best.review.score < 6) {
+    return { prompt: finalImagePrompt(studio, line, { lifestyle }), surface: studio.surface, lightFrom: studio.lightFrom, review: best?.review ?? { score: 0, failed: [], feedback: ["IA indisponible"] }, source: "studio", attempts, draft: best?.draft };
+  }
+  return { prompt: finalImagePrompt(best.draft, line, { lifestyle }), surface: best.draft.surface, lightFrom: best.draft.lightFrom, review: best.review, source: "ai", attempts, draft: best.draft };
 }
 
 export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
@@ -660,6 +1052,42 @@ export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
       maxTokens: 3000,
     },
     z.object({ sameProduct: z.boolean(), score: z.number(), issues: z.array(z.string()) }),
+  );
+}
+
+/** Note minimale d'une image ou d'un plan généré par IA pour être montré ou utilisé (sur 10). */
+export const QC_MIN_SCORE = 7;
+
+/** Note ramenée sur 10 (un modèle qui répond sur 100 ou en texte ne passe pas par erreur). */
+export function qcScore(score: unknown): number {
+  const n = typeof score === "number" ? score : Number(score);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return n > 10 ? (n <= 100 ? n / 10 : 0) : n;
+}
+
+/** Résultat d'un contrôle de fidélité : utilisable seulement si c'est le même produit ET que la note atteint le seuil. */
+export function qcPassed(r: { sameProduct?: unknown; score?: unknown } | null | undefined): boolean {
+  return !!r && r.sameProduct === true && qcScore(r.score) >= QC_MIN_SCORE;
+}
+
+/**
+ * Contrôle d'une image d'ambiance générée sans produit à comparer (entreprise de services) :
+ * texte ou logo inventé, visage reconnaissable, mains ou corps déformés, artefacts, flou.
+ */
+export async function aiQcScene(b: Base, candidate: Buffer) {
+  return llmJson(
+    {
+      task: "quality_control",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().qcScene,
+      images: [{ data: candidate, label: "image générée à contrôler" }],
+      prompt: `Réponds { "ok": true|false, "score": 0-10, "issues": ["…"] }.`,
+      maxTokens: 2000,
+    },
+    z.object({ ok: z.boolean(), score: z.number(), issues: z.array(z.string()) }),
   );
 }
 
@@ -720,6 +1148,202 @@ export async function aiCutoutCheck(b: Base, images: { original: Buffer; white: 
   );
 }
 
+export const LogoSymbolSchema = z.object({ concept: str, svg: str });
+
+/**
+ * Symbole de logo sur mesure : pictogramme SVG simple dessiné d'après la photo du produit et la marque.
+ * La réponse n'est jamais utilisée telle quelle : le SVG est nettoyé et validé côté serveur (media/logo-symbol.ts),
+ * puis contrôlé à l'image (aiLogoSymbolCheck).
+ */
+export async function aiLogoSymbol(b: Base, p: Project, opts: { photo?: Buffer; accent: string; feedback?: string }) {
+  const brand = p.brand;
+  return llmJson(
+    {
+      task: "logo_symbol",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().logoSymbol,
+      images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
+      prompt: `Produit : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.summary ? ` — ${p.product.summary.slice(0, 400)}` : ""}
+${p.product.visual.shape ? `Forme observée : ${p.product.visual.shape}\n` : ""}${p.product.visual.description ? `Description visuelle : ${p.product.visual.description.slice(0, 400)}\n` : ""}Marque : ${brand?.name ?? ""}${brand?.personality?.length ? ` — personnalité : ${brand.personality.join(", ")}` : ""}${brand?.positioning ? ` — ${brand.positioning.slice(0, 200)}` : ""}
+Couleur d'accent permise (une forme au plus) : ${opts.accent}
+${opts.feedback ? `Le symbole précédent a été refusé : ${opts.feedback}\nDessine un nouveau symbole qui corrige ces points.\n` : ""}Réponds { "concept": "…", "svg": "<svg …>…</svg>" }.`,
+      maxTokens: 6000,
+    },
+    LogoSymbolSchema,
+  );
+}
+
+export const LogoSymbolCheckSchema = z.object({
+  legible: z.boolean().catch(false),
+  evokesProduct: z.boolean().catch(false),
+  resemblesExistingLogo: z.boolean().catch(true),
+  score: z.coerce.number().catch(0),
+  issues: capped(str, 6),
+});
+
+/** Le symbole peut-il être proposé ? Lisible, propre au produit, original, et noté au moins 7/10. */
+export function logoSymbolPassed(r: z.infer<typeof LogoSymbolCheckSchema> | null | undefined): boolean {
+  return !!r && r.legible === true && r.evokesProduct === true && r.resemblesExistingLogo === false && qcScore(r.score) >= 7;
+}
+
+/** Contrôle visuel du symbole : photo du produit, puis planche du symbole (grand, inversé, 32 px, 16 px). */
+export async function aiLogoSymbolCheck(b: Base, images: { photo?: Buffer; sheet: Buffer }) {
+  return llmJson(
+    {
+      task: "quality_control",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().logoSymbolCheck,
+      images: [...(images.photo ? [{ data: images.photo, label: "photo du produit" }] : []), { data: images.sheet, label: "planche du symbole" }],
+      prompt: `Réponds { "legible": true|false, "evokesProduct": true|false, "resemblesExistingLogo": true|false, "score": 0-10, "issues": ["…"] }.`,
+      maxTokens: 1200,
+    },
+    LogoSymbolCheckSchema,
+  );
+}
+
+// ---------------------------------------------------------------- direction artistique du logo (3 pistes)
+
+const ROLE = z.enum(["primary", "secondary", "accent", "light", "dark"]);
+export const RouteDraftSchema = z.object({
+  key: z.enum(["produit", "concept", "typo"]),
+  name: str,
+  why: str,
+  svg: str,
+  heading: str,
+  headingWeight: z.coerce.number().catch(600),
+  body: str,
+  case: z.enum(["upper", "title", "lower", "asis"]).catch("upper"),
+  tracking: z.coerce.number().catch(0.04),
+  composition: z.enum(["horizontal", "stacked", "emblem", "wordmark"]).catch("horizontal"),
+  ink: ROLE.catch("dark"),
+  accent: ROLE.catch("primary"),
+  ground: ROLE.catch("primary"),
+});
+const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
+
+function routesBrief(p: Project) {
+  const b = p.brand;
+  const pal = b?.palette;
+  return `Marque : ${b?.name ?? ""}${b?.tagline ? ` — signature « ${b.tagline} »` : ""}
+Personnalité : ${b?.personality.join(", ") || "à déduire"} · Cible : ${b?.audience || "à déduire"}
+Positionnement : ${b?.positioning?.slice(0, 300) ?? ""}
+Produit : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.visual.shape ? ` — forme : ${p.product.visual.shape}` : ""}${p.product.visual.description ? ` — ${p.product.visual.description.slice(0, 300)}` : ""}
+Palette (rôles) : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : ""}
+Familles disponibles (heading, body) et graisses : ${Object.entries(CANVAS_FONTS).map(([f, d]) => `${f} (${Object.keys(d.file).join("/")})`).join(", ")}
+Mots INTERDITS dans les dessins (vus chez le fournisseur, jamais repris) : ${p.product.visual.labelText?.join(", ") || "aucun"}`;
+}
+
+/** Trois pistes créatives (brief + dessins SVG), jamais utilisées sans nettoyage, lisibilité et contrôle (engine/creative-direction). */
+export async function aiCreativeRoutes(b: Base, p: Project, opts: { photo?: Buffer }) {
+  const r = await llmJson(
+    {
+      task: "logo_symbol",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().creativeRoutes,
+      context: projectContext(p, "brand"),
+      images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
+      prompt: `${routesBrief(p)}
+Couleur d'accent : le code exact du rôle choisi pour « accent » de chaque piste.
+Réponds { "competitorCodes": ["codes visuels habituels du secteur, évités"], "routes": [trois objets ${ROUTE_SHAPE}] } — une piste par clé, dans l'ordre produit, concept, typo.`,
+      maxTokens: 16000,
+    },
+    z.object({ competitorCodes: capped(str, 8).catch([]), routes: capped(RouteDraftSchema, 3) }),
+  );
+  return r.routes;
+}
+
+/** Reprise ciblée d'UNE piste, avec les défauts relevés par le contrôle. */
+export async function aiCreativeRedraw(b: Base, p: Project, opts: { key: "produit" | "concept" | "typo"; feedback: string; previous: unknown; photo?: Buffer }) {
+  return llmJson(
+    {
+      task: "logo_symbol",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().creativeRoutes,
+      context: projectContext(p, "brand"),
+      images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
+      prompt: `${routesBrief(p)}
+Redessine UNIQUEMENT la piste « ${opts.key} ». La version précédente a été refusée : ${opts.feedback}
+Version précédente (à ne pas recopier) : ${JSON.stringify(opts.previous ?? null).slice(0, 4000)}
+Garde l'esprit de la piste mais corrige ces points ; si l'idée elle-même est en cause, change d'idée.
+Réponds avec un seul objet ${ROUTE_SHAPE} (key = "${opts.key}").`,
+      maxTokens: 8000,
+    },
+    RouteDraftSchema,
+  );
+}
+
+const score = z.coerce.number().catch(0);
+export const RouteReviewSchema = z.object({
+  scores: z
+    .object({ originality: score, memorability: score, relevance: score, simplicity: score, smallSizes: score, coherence: score, distinctiveness: score })
+    .catch({ originality: 0, memorability: 0, relevance: 0, simplicity: 0, smallSizes: 0, coherence: 0, distinctiveness: 0 }),
+  // Réponse ambiguë ou absente : on suppose le pire (la piste n'est pas montrée).
+  cliche: z.boolean().catch(true),
+  resemblesKnownBrand: z.boolean().catch(true),
+  readsAsLetters: z.boolean().nullable().catch(null),
+  issues: capped(str, 6),
+  fix: str,
+});
+
+/** Contrôle « directeur de création » d'une piste, sur sa planche de mises en situation. */
+export async function aiCreativeReview(b: Base, input: { photo?: Buffer; board: Buffer; route: { key: string; name: string; why: string; markKind: string } }) {
+  return llmJson(
+    {
+      task: "quality_control",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().creativeReview,
+      images: [...(input.photo ? [{ data: input.photo, label: "photo du produit" }] : []), { data: input.board, label: "planche de la piste" }],
+      prompt: `Piste « ${input.route.name} » (${input.route.key}${input.route.markKind.includes("monogram") || input.route.markKind === "letter" ? ", avec monogramme" : ""}) — justification : ${input.route.why}
+Réponds { "scores": { "originality": 0-10, "memorability": 0-10, "relevance": 0-10, "simplicity": 0-10, "smallSizes": 0-10, "coherence": 0-10, "distinctiveness": 0-10 }, "cliche": true|false, "resemblesKnownBrand": true|false, "readsAsLetters": true|false|null, "issues": ["…"], "fix": "…" }.`,
+      maxTokens: 1500,
+    },
+    RouteReviewSchema,
+  );
+}
+
+export const SocialVoiceSchema = z.object({
+  pillars: capped(z.object({ title: str, idea: str }), 3),
+  say: capped(str, 5),
+  dontSay: capped(str, 5),
+  emoji: z.enum(["none", "sparing", "free"]).catch("sparing"),
+  emojis: capped(str, 8).catch([]),
+  captions: capped(z.object({ pillar: str, text: str }), 3),
+  series: capped(z.object({ name: str, idea: str, weekday: z.number().int().min(0).max(6).optional().catch(undefined) }), 3).catch([]),
+});
+
+/** Ligne éditoriale des réseaux (piliers, ce qu'on dit / ne dit pas, emojis, légendes d'exemple), contrôlée ensuite. */
+export async function aiSocialVoice(b: Base, p: Project, feedback?: string) {
+  return llmJson(
+    {
+      task: "strategy",
+      userId: b.userId,
+      projectId: b.projectId,
+      jobId: b.jobId,
+      usageKey: b.usageKey,
+      system: S().socialVoice,
+      context: projectContext(p, "social"),
+      prompt: `${feedback ? `Version précédente refusée par le directeur de création. À corriger : ${feedback}\n` : ""}Réponds { "pillars": [{"title": "", "idea": ""}], "series": [{"name": "", "idea": "", "weekday": 0-6}], "say": [""], "dontSay": [""], "emoji": "none|sparing|free", "emojis": [""], "captions": [{"pillar": "", "text": ""}] }.`,
+      maxTokens: 3000,
+    },
+    SocialVoiceSchema,
+  );
+}
+
 export async function aiClassify(b: Base, files: { id: string; name: string; kind: string; role: string | null; meta: string }[], folders: { key: string; name: string }[]) {
   return llmJson(
     {
@@ -736,7 +1360,7 @@ export async function aiClassify(b: Base, files: { id: string; name: string; kin
   );
 }
 
-export function brandFromAi(r: BrandAi, logo: Brand["logo"]): { brand: Brand; strategy: Strategy } {
+export function brandFromAi(r: BrandAi, logo: Brand["logo"], fallbackPalette?: Brand["palette"]): { brand: Brand; strategy: Strategy } {
   return {
     brand: {
       name: r.name,
@@ -747,7 +1371,7 @@ export function brandFromAi(r: BrandAi, logo: Brand["logo"]): { brand: Brand; st
       audience: r.audience,
       personality: r.personality,
       tone: r.tone,
-      palette: r.palette,
+      palette: r.palette ?? fallbackPalette ?? { primary: "#3A3F4B", secondary: "#E6E2DC", accent: "#B5714A", light: "#F7F5F2", dark: "#16181D" },
       fonts: r.fonts,
       logo,
       story: r.story,

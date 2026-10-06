@@ -61,7 +61,7 @@ function grain(ctx: SKRSContext2D, w: number, h: number, amount = 0.035, seed = 
   ctx.restore();
 }
 
-function studioBackdrop(ctx: SKRSContext2D, w: number, h: number, base: string, horizon = 0.68) {
+function studioBackdrop(ctx: SKRSContext2D, w: number, h: number, base: string, horizon = 0.68, lightX = 0.28) {
   // Mur + sol avec raccord doux (cyclo), lumière principale en haut à gauche.
   const wall = ctx.createLinearGradient(0, 0, 0, h * horizon);
   wall.addColorStop(0, withLightness(base, Math.min(0.97, hsl(base)[2] + 0.05)));
@@ -73,7 +73,7 @@ function studioBackdrop(ctx: SKRSContext2D, w: number, h: number, base: string, 
   floor.addColorStop(1, withLightness(base, Math.max(0.05, hsl(base)[2] - 0.08)));
   ctx.fillStyle = floor;
   ctx.fillRect(0, h * (horizon - 0.08), w, h);
-  const light = ctx.createRadialGradient(w * 0.28, h * 0.2, 0, w * 0.28, h * 0.2, Math.max(w, h) * 0.9);
+  const light = ctx.createRadialGradient(w * lightX, h * 0.2, 0, w * lightX, h * 0.2, Math.max(w, h) * 0.9);
   light.addColorStop(0, "rgba(255,255,255,0.32)");
   light.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = light;
@@ -111,7 +111,7 @@ function gobo(ctx: SKRSContext2D, w: number, h: number, seed: number, strength =
   // Inversion : on assombrit hors de la tache lumineuse.
   ctx.save();
   ctx.globalAlpha = strength;
-  ctx.filter = `blur(${Math.round(w * 0.012)}px)`;
+  ctx.filter = `blur(${Math.round(w * 0.05)}px)`;
   ctx.drawImage(layer as any, 0, 0);
   ctx.restore();
 }
@@ -153,7 +153,16 @@ function arch(ctx: SKRSContext2D, cx: number, bottom: number, w: number, h: numb
 
 // ---------------------------------------------------------------- produit
 
-export type ProductPlacement = { cx: number; baseY: number; height: number; maxWidth?: number };
+export type ProductPlacement = { cx: number; baseY: number; height: number; maxWidth?: number; maxUpscale?: number };
+
+/**
+ * Agrandissement maximal du détourage : au-delà, le produit devient flou ou pixelisé. On préfère un produit
+ * un peu plus petit dans le cadre, mais net (le détourage garde la résolution de la photo d'origine).
+ */
+export const MAX_PRODUCT_UPSCALE = 1.6;
+
+/** Agrandissement réel du détourage pour une hauteur d'affichage donnée (> 1 : agrandi). */
+export const productUpscale = (product: { width: number; height: number }, drawHeight: number) => drawHeight / Math.max(1, product.height);
 
 /**
  * Dessine le produit avec ombre de contact et ombre portée. Retourne le
@@ -165,6 +174,12 @@ export function drawProduct(ctx: SKRSContext2D, product: Image, p: ProductPlacem
   if (p.maxWidth && pw > p.maxWidth) {
     pw = p.maxWidth;
     ph = (product.height / product.width) * pw;
+  }
+  // Jamais agrandi au point d'être flou : la taille est plafonnée par la résolution du détourage.
+  const maxUp = p.maxUpscale ?? MAX_PRODUCT_UPSCALE;
+  if (ph > product.height * maxUp) {
+    ph = product.height * maxUp;
+    pw = (product.width / product.height) * ph;
   }
   const x = p.cx - pw / 2;
   const y = p.baseY - ph;
@@ -203,34 +218,39 @@ export function drawProduct(ctx: SKRSContext2D, product: Image, p: ProductPlacem
     ctx.setTransform(1, 0, -dir * (opts.shadow === "hard" ? 0.5 : 0.32), opts.shadow === "hard" ? 0.16 : 0.1, p.cx, p.baseY);
     ctx.drawImage(sil as any, -pw / 2, -ph, pw, ph);
     ctx.restore();
-    // Ombre de contact.
-    const g = ctx.createRadialGradient(p.cx, p.baseY, 0, p.cx, p.baseY, pw * 0.62);
-    g.addColorStop(0, `${sc}0.42)`);
-    g.addColorStop(0.45, `${sc}0.16)`);
+    // Ombre de contact : dégradé réellement elliptique (aucun bord net), aplatie et proportionnée à la hauteur
+    // du produit (un produit large et bas — drone, coussin — n'a pas une grande tache sous lui).
+    const rx = pw * 0.56;
+    const ry = Math.max(4, Math.min(rx * 0.14, ph * 0.06));
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+    g.addColorStop(0, `${sc}0.4)`);
+    g.addColorStop(0.4, `${sc}0.15)`);
     g.addColorStop(1, `${sc}0)`);
     ctx.save();
+    ctx.translate(p.cx, p.baseY);
+    ctx.scale(1, ry / rx);
     ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.ellipse(p.cx, p.baseY, pw * 0.62, pw * 0.1, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(-rx, -rx, rx * 2, rx * 2);
     ctx.restore();
   }
   if (opts.reflection) {
+    // Reflet dessiné sur son propre calque puis estompé : le fond de la scène n'est jamais effacé (pas de rectangle noir).
+    const rh = Math.ceil(ph * 0.45);
+    const ref = createCanvas(Math.ceil(pw), rh);
+    const rc = ref.getContext("2d");
+    rc.translate(0, 0);
+    rc.scale(1, -1);
+    rc.drawImage(product as any, 0, -ph, pw, ph);
+    rc.setTransform(1, 0, 0, 1, 0, 0);
+    rc.globalCompositeOperation = "destination-in";
+    const f2 = rc.createLinearGradient(0, 0, 0, rh);
+    f2.addColorStop(0, "rgba(0,0,0,1)");
+    f2.addColorStop(1, "rgba(0,0,0,0)");
+    rc.fillStyle = f2;
+    rc.fillRect(0, 0, pw, rh);
     ctx.save();
     ctx.globalAlpha = 0.14;
-    ctx.translate(x, p.baseY);
-    ctx.scale(1, -1);
-    ctx.drawImage(product as any, 0, -ph, pw, ph);
-    ctx.restore();
-    const fade = ctx.createLinearGradient(0, p.baseY, 0, p.baseY + ph * 0.45);
-    fade.addColorStop(0, "rgba(0,0,0,0)");
-    ctx.save();
-    ctx.globalCompositeOperation = "destination-out";
-    const f2 = ctx.createLinearGradient(0, p.baseY, 0, p.baseY + ph * 0.35);
-    f2.addColorStop(0, "rgba(0,0,0,0.2)");
-    f2.addColorStop(1, "rgba(0,0,0,1)");
-    ctx.fillStyle = f2;
-    ctx.fillRect(x - 10, p.baseY + 1, pw + 20, ph * 0.5);
+    ctx.drawImage(ref as any, x, p.baseY);
     ctx.restore();
   }
   ctx.drawImage(product as any, x, y, pw, ph);
@@ -308,11 +328,12 @@ export function drawButton(ctx: SKRSContext2D, label: string, x: number, y: numb
  * plateau en pierre claire (travertin) avec profondeur de champ. Retourne la ligne de pose et le calque d'ombres
  * (réutilisé sur le produit pour l'intégrer à la même lumière).
  */
-function everyday(ctx: SKRSContext2D, w: number, h: number, pal: Palette, seed: number): { baseY: number; shade: Canvas } {
+function everyday(ctx: SKRSContext2D, w: number, h: number, pal: Palette, seed: number, look: SceneLook = {}): { baseY: number; shade: Canvas } {
   const r = rng(seed);
   const tableY = h * 0.68;
   // Mur : enduit chaud, plus clair côté fenêtre.
-  const wall = mix("#E9DFD2", withLightness(pal.light, 0.88, 0.3), 0.25);
+  // Mur et plateau dans la ligne photographique de la marque (repli : enduit chaud et travertin).
+  const wall = look.wall ?? mix("#E9DFD2", withLightness(pal.light, 0.88, 0.3), 0.25);
   const wg = ctx.createLinearGradient(0, 0, w, tableY);
   wg.addColorStop(0, mix(wall, "#FFF6E8", 0.5));
   wg.addColorStop(1, mix(wall, "#A8957F", 0.32));
@@ -378,7 +399,7 @@ function everyday(ctx: SKRSContext2D, w: number, h: number, pal: Palette, seed: 
     }
   }
   // Plateau en travertin : base claire, veines horizontales douces, pores, dégradé de profondeur.
-  const stone = mix("#E3D2BC", pal.light, 0.12);
+  const stone = look.top ?? mix("#E3D2BC", pal.light, 0.12);
   const tg = ctx.createLinearGradient(0, tableY, 0, h);
   tg.addColorStop(0, mix(stone, "#C9B79F", 0.25));
   tg.addColorStop(0.25, stone);
@@ -422,13 +443,13 @@ function everyday(ctx: SKRSContext2D, w: number, h: number, pal: Palette, seed: 
 }
 
 /** Intègre le produit à la lumière de la scène : soleil côté fenêtre, ombre de l'autre côté, ombres de feuillage. */
-function lightProduct(ctx: SKRSContext2D, box: { x: number; y: number; w: number; h: number }, product: Image, shade: Canvas, w: number, h: number) {
+function lightProduct(ctx: SKRSContext2D, box: { x: number; y: number; w: number; h: number }, product: Image, shade: Canvas, w: number, h: number, fromRight = false) {
   const L = createCanvas(w, h);
   const lc = L.getContext("2d");
   // Masque du produit.
   lc.drawImage(product as any, box.x, box.y, box.w, box.h);
   lc.globalCompositeOperation = "source-in";
-  const g = lc.createLinearGradient(box.x, 0, box.x + box.w, 0);
+  const g = fromRight ? lc.createLinearGradient(box.x + box.w, 0, box.x, 0) : lc.createLinearGradient(box.x, 0, box.x + box.w, 0);
   g.addColorStop(0, "rgba(255,228,180,0.35)");
   g.addColorStop(0.45, "rgba(255,228,180,0)");
   g.addColorStop(0.7, "rgba(40,24,12,0)");
@@ -455,7 +476,26 @@ export const SCENE_STYLES: { id: SceneStyle; label: string; en: string }[] = [
   { id: "everyday", label: "Vie quotidienne", en: "Everyday life" },
 ];
 
-export type SceneInput = { product: Image; palette: Palette; style: SceneStyle; format: Format; productScale?: number; offsetX?: number; seed?: number; background?: Image | null; baseYRatio?: number };
+export type SceneInput = {
+  product: Image;
+  palette: Palette;
+  style: SceneStyle;
+  format: Format;
+  productScale?: number;
+  offsetX?: number;
+  seed?: number;
+  background?: Image | null;
+  baseYRatio?: number;
+  /** Largeur maximale du produit (zone libre à côté d'un texte). */
+  maxProductWidth?: number;
+  /** Côté d'où vient la lumière du décor généré (ombre portée du bon côté). */
+  lightFrom?: "left" | "right";
+  /** Ligne photographique de la marque : couleurs du décor, côté de la lumière, étalonnage (rendus locaux). */
+  look?: SceneLook;
+};
+
+/** Réglages de la ligne photographique appliqués aux décors locaux (le produit lui-même n'est jamais teinté). */
+export type SceneLook = { wall?: string; top?: string; tint?: string; tintAlpha?: number; lightFrom?: "left" | "right"; grain?: number };
 
 /** Mise en scène de studio (sans texte). */
 export async function renderScene(s: SceneInput): Promise<{ png: Buffer; productBox: { x: number; y: number; w: number; h: number } }> {
@@ -471,7 +511,12 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
   let shadow: "soft" | "hard" | "natural" = "soft";
   let shadowColor = "rgba(20,14,10,";
   let everydayShade: Canvas | null = null;
-  const ph = h / w > 1.6 ? h * scale : Math.min(h * scale, w * scale * 1.15);
+  // Hauteur plafonnée par la résolution du détourage (décor — arche, podium — dimensionné sur le produit net).
+  const ph = Math.min(h / w > 1.6 ? h * scale : Math.min(h * scale, w * scale * 1.15), s.product.height * MAX_PRODUCT_UPSCALE);
+  const look = s.look ?? {};
+  // Lumière de la ligne venant de droite : le décor local est dessiné en miroir (centre du produit conservé).
+  const mirror = !s.background && look.lightFrom === "right";
+  const bx = mirror ? w - cx : cx;
 
   if (s.background) {
     // Décor généré (fournisseur d'image) : le produit réel est posé dessus.
@@ -482,27 +527,28 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
   } else {
     switch (s.style) {
       case "studio":
-        studioBackdrop(ctx, w, h, light, 0.7);
+        studioBackdrop(ctx, w, h, look.wall ? mix(light, look.wall, 0.5) : light, 0.7);
         baseY = h * 0.8;
         break;
       case "podium": {
         studioBackdrop(ctx, w, h, mix(light, pal.secondary, 0.35), 0.62);
-        const top = podium(ctx, cx, h * 0.9, Math.min(w * 0.3, ph * 0.55), h * 0.16, mix(pal.secondary, "#FFFFFF", 0.35));
+        const top = podium(ctx, bx, h * 0.9, Math.min(w * 0.3, ph * 0.55), h * 0.16, mix(pal.secondary, "#FFFFFF", 0.35));
         baseY = top + Math.min(w * 0.3, ph * 0.55) * 0.02;
         break;
       }
       case "arch": {
         ctx.fillStyle = mix(light, pal.secondary, 0.25);
         ctx.fillRect(0, 0, w, h);
-        arch(ctx, cx, h * 0.84, Math.min(w * (Math.abs(s.offsetX ?? 0) > 0 ? 0.44 : 0.62), ph * 0.95), Math.min(h * 0.74, ph * 1.3), mix(pal.primary, light, 0.55));
+        arch(ctx, bx, h * 0.84, Math.min(w * (Math.abs(s.offsetX ?? 0) > 0 ? 0.44 : 0.62), ph * 0.95), Math.min(h * 0.74, ph * 1.3), mix(pal.primary, light, 0.55));
         ctx.fillStyle = mix(pal.secondary, pal.dark, 0.12);
         ctx.fillRect(0, h * 0.84, w, h * 0.16);
         baseY = h * 0.86;
         break;
       }
       case "window": {
-        studioBackdrop(ctx, w, h, mix(light, pal.secondary, 0.18), 0.7);
-        gobo(ctx, w, h, s.seed ?? 11, 0.18);
+        studioBackdrop(ctx, w, h, look.wall ? mix(light, look.wall, 0.6) : mix(light, pal.secondary, 0.18), 0.7);
+        // Ombre de fenêtre très diffuse et légère (~8 %) : une lumière, pas des taches reconnaissables.
+        gobo(ctx, w, h, s.seed ?? 11, 0.08);
         shadow = "hard";
         baseY = h * 0.82;
         break;
@@ -511,12 +557,12 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
         const dark = withLightness(pal.dark, 0.08, 0.6);
         ctx.fillStyle = dark;
         ctx.fillRect(0, 0, w, h);
-        const spot = ctx.createRadialGradient(cx, h * 0.55, 0, cx, h * 0.55, Math.max(w, h) * 0.55);
+        const spot = ctx.createRadialGradient(bx, h * 0.55, 0, bx, h * 0.55, Math.max(w, h) * 0.55);
         spot.addColorStop(0, withLightness(pal.dark, 0.28, 0.7));
         spot.addColorStop(1, dark);
         ctx.fillStyle = spot;
         ctx.fillRect(0, 0, w, h);
-        const rim = ctx.createRadialGradient(cx, h * 0.82, 0, cx, h * 0.82, w * 0.45);
+        const rim = ctx.createRadialGradient(bx, h * 0.82, 0, bx, h * 0.82, w * 0.45);
         rim.addColorStop(0, `${withLightness(pal.accent, 0.6, 1)}55`);
         rim.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = rim;
@@ -542,7 +588,7 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
         break;
       }
       case "everyday": {
-        const e = everyday(ctx, w, h, pal, s.seed ?? 5);
+        const e = everyday(ctx, w, h, pal, s.seed ?? 5, look);
         baseY = e.baseY;
         everydayShade = e.shade;
         shadow = "natural";
@@ -562,10 +608,40 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
       }
     }
   }
+  if (!s.background) {
+    // Étalonnage de la ligne (chaud, froid) sur le décor seulement : les couleurs du produit restent les siennes.
+    if (look.tint && look.tintAlpha) {
+      ctx.save();
+      ctx.globalCompositeOperation = "soft-light";
+      ctx.globalAlpha = Math.min(0.2, look.tintAlpha * 2.5);
+      ctx.fillStyle = look.tint;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+    }
+    if (mirror) {
+      const copy = createCanvas(w, h);
+      copy.getContext("2d").drawImage(c as any, 0, 0);
+      ctx.save();
+      ctx.setTransform(-1, 0, 0, 1, w, 0);
+      ctx.drawImage(copy as any, 0, 0);
+      ctx.restore();
+      if (everydayShade) {
+        const sh = createCanvas(w, h);
+        const shc = sh.getContext("2d");
+        shc.setTransform(-1, 0, 0, 1, w, 0);
+        shc.drawImage(everydayShade as any, 0, 0);
+        everydayShade = sh;
+      }
+    }
+  }
   if (s.baseYRatio) baseY = h * s.baseYRatio;
-  const box = drawProduct(ctx, s.product, { cx, baseY, height: ph, maxWidth: w * 0.8 }, { shadow, shadowColor, reflection: s.style === "spotlight" });
-  if (everydayShade) lightProduct(ctx, box, s.product, everydayShade, w, h);
-  if (!s.background) grain(ctx, w, h, 0.03, s.seed ?? 3);
+  // Le produit tient entièrement dans le cadre (même décalé sur le côté) avec une marge : jamais coupé.
+  const room = 2 * Math.min(cx, w - cx) - w * 0.08;
+  const maxWidth = Math.max(w * 0.2, Math.min(w * 0.8, room, s.maxProductWidth ?? Infinity));
+  // Décor généré : ni reflet miroir (un lit, une table en bois ne reflètent pas), ombre selon la lumière du décor.
+  const box = drawProduct(ctx, s.product, { cx, baseY, height: ph, maxWidth }, { shadow, shadowColor, reflection: s.style === "spotlight" && !s.background, lightFrom: s.lightFrom ?? look.lightFrom });
+  if (everydayShade) lightProduct(ctx, box, s.product, everydayShade, w, h, look.lightFrom === "right");
+  if (!s.background) grain(ctx, w, h, look.grain ?? 0.03, s.seed ?? 3);
   return { png: await c.encode("png"), productBox: box };
 }
 
@@ -597,6 +673,8 @@ export type CreativeInput = {
   background?: Image | null;
   badge?: string;
   seed?: number;
+  /** Ligne photographique de la marque (décor, lumière, étalonnage). */
+  look?: SceneLook;
 };
 
 /**
@@ -615,10 +693,12 @@ export async function renderCreative(input: CreativeInput): Promise<{ jpg: Buffe
   const textOnLeft = input.layout === "editorial" || input.layout === "split";
   const sceneStyle: SceneStyle = input.scene ?? (input.layout === "bold" ? "color" : input.layout === "minimal" ? "studio" : input.layout === "split" ? "split" : "arch");
   const productScale = isStory ? 0.46 : input.layout === "centered" ? 0.5 : 0.6;
-  const offsetX = textOnLeft && !isStory ? 0.21 : 0;
+  // Texte à gauche (jusqu'à 53 % de la largeur) : le produit occupe la zone libre de droite, sans chevaucher le texte.
+  const sideZone = textOnLeft && !isStory ? { from: 0.56, to: 0.95 } : null;
+  const offsetX = sideZone ? (sideZone.from + sideZone.to) / 2 - 0.5 : 0;
   // En 9:16, le produit se pose au-dessus de la zone du bouton et de l'interface.
   const baseYRatio = isStory ? (h - safe.bottom - Math.max(w * 0.028, 26) * 4.2) / h : undefined;
-  const scene = await renderScene({ product: input.product, palette: pal, style: sceneStyle, format: { ...input.format }, productScale, offsetX, seed: input.seed, background: input.background, baseYRatio });
+  const scene = await renderScene({ product: input.product, palette: pal, style: sceneStyle, format: { ...input.format }, productScale, offsetX, seed: input.seed, background: input.background, baseYRatio, maxProductWidth: sideZone ? w * (sideZone.to - sideZone.from) : undefined, look: input.look });
   const sceneImg = await loadImage(scene.png);
   ctx.drawImage(sceneImg as any, 0, 0);
 
@@ -692,8 +772,8 @@ export async function renderCreative(input: CreativeInput): Promise<{ jpg: Buffe
 }
 
 /** Bannière de boutique (sans texte : les textes sont dans le thème, modifiables). */
-export async function renderBanner(product: Image, palette: Palette, style: SceneStyle, format: Format = FORMATS.banner, seed = 5, background?: Image | null) {
-  const s = await renderScene({ product, palette, style, format, productScale: 0.66, offsetX: 0.18, seed, background });
+export async function renderBanner(product: Image, palette: Palette, style: SceneStyle, format: Format = FORMATS.banner, seed = 5, background?: Image | null, look?: SceneLook) {
+  const s = await renderScene({ product, palette, style, format, productScale: 0.66, offsetX: 0.18, seed, background, look });
   return sharpJpeg(s.png);
 }
 

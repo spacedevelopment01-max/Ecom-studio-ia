@@ -23,11 +23,12 @@ import { UserFacingError, type JobContext } from "../jobs";
 import { llmConfigured } from "../ai/llm";
 import { hasAiCredits, withQuotaScope } from "../ai/access";
 import { assertQuota, consumeQuota } from "../quotas";
-import { aiQcImage, aiUgcScript, type UgcScript } from "../ai/tasks";
+import { aiQcImage, aiQcScene, aiUgcScript, qcPassed, qcScore, QC_MIN_SCORE, type UgcScript } from "../ai/tasks";
 import { imageProviderAvailable, ugcFrame, veoClip, falClip, videoProviderAvailable } from "../ai/media-providers";
 import { brandTypo, confirmedFacts, ensureCutouts, palette } from "./images";
 import { FONT_DIR, font } from "../media/fonts";
 import { cleanUgcScript, ugcIssues } from "../ugc-rules";
+import { aiCraftReview, brandCraftBrief, craftLoop, ugcCraftIssues, ugcStructure, type CraftQuality, type UgcRole } from "./ad-craft";
 import { C, L, contentLang, uiLang } from "../i18n-server";
 import { activityName, contactLine, realActivityPhotos, isServices, placeLine, serviceCta, serviceItems } from "./service-media";
 
@@ -94,28 +95,47 @@ export type { UgcScript };
 
 const pick = <T,>(map: Record<string, T>, k: string, d: string) => map[k] ?? map[d];
 
-/** Script sans IA : présentation à partir des seuls faits confirmés (langue des contenus). */
+/**
+ * Script sans IA (version du studio) : structure de créateur problème → découverte → démonstration → preuve → appel,
+ * condensée selon le nombre de plans, à partir des seuls faits confirmés (langue des contenus). L'accroche est un geste
+ * et une phrase de 9 mots au plus ; la « preuve » est ce qu'on voit à l'image ou un fait confirmé, jamais un vécu.
+ */
 export function localUgcScript(p: Project, o: UgcOptions): UgcScript {
   if (isServices(p)) return localServiceUgcScript(p, o);
   const n = Math.max(1, Math.min(5, o.beats));
   const name = p.product.name || p.brand?.name || C("ce produit", "this product");
+  const brand = p.brand?.name && p.brand.name !== name ? p.brand.name : "";
   const facts = confirmedFacts(p).filter((f) => !name.toLowerCase().startsWith(f.toLowerCase()));
   const angle = pick(UGC_ANGLES, o.angle, "presentation");
   const lower = (f: string) => `${f.charAt(0).toLowerCase()}${f.slice(1)}`;
-  const lines: string[] = [];
-  lines.push(o.angle === "deballage"
-    ? C(`On l'ouvre ensemble ? Voici ${name}, je vous montre tout de près.`, `Let's open it together. Here's ${name}, up close.`)
-    : C(`Regardez bien ça : voici ${name}, je vous le montre en quelques secondes.`, `Take a look at this: here's ${name}, a quick tour in a few seconds.`));
-  const middles = facts.map((f, i) => (i === 0 ? C(`Premier détail à voir : ${lower(f)}.`, `First thing to notice: ${lower(f)}.`) : C(`Et regardez ici : ${lower(f)}.`, `And look right here: ${lower(f)}.`)));
-  middles.push(C(`Regardez la forme, les finitions, la taille dans la main : tout est là.`, `Check out the shape, the finish, how it sits in the hand: it's all right here.`));
-  for (let i = 1; i < n - 1; i++) lines.push(middles[(i - 1) % middles.length]);
-  if (n > 1) lines.push(o.url ? C(`Pour le découvrir, tout est sur ${o.url}.`, `Want to see more? It's all on ${o.url}.`) : C(`Le lien pour le découvrir est juste en dessous de la vidéo.`, `The link to check it out is right below this video.`));
+  const roles = ugcStructure(n);
+  const say: Record<UgcRole, string> = {
+    problem: o.angle === "deballage"
+      ? C(`On l'ouvre ensemble ? Dedans, il y a ${name}.`, `Let's open it together. Inside, there's ${name}.`)
+      : C(`Attendez, regardez ce que j'ai dans la main : ${name}.`, `Wait, look at what's in my hand: ${name}.`),
+    discovery: C(`Voici ${name}${brand ? `, de ${brand}` : ""}, je vous le montre de près.`, `This is ${name}${brand ? ` from ${brand}` : ""}, let me show you up close.`),
+    demo: facts[0] ? C(`Premier détail à voir : ${lower(facts[0])}.`, `First thing to notice: ${lower(facts[0])}.`) : C(`Regardez la forme, les finitions, la taille dans la main.`, `Check out the shape, the finish, how it sits in the hand.`),
+    proof: facts[1] ? C(`Et ce qu'on voit ici : ${lower(facts[1])}.`, `And what you can see right here: ${lower(facts[1])}.`) : C(`Prenez le temps de regarder chaque détail à l'image.`, `Take a moment to look at every detail on screen.`),
+    cta: o.url ? C(`Pour le découvrir, tout est sur ${o.url}.`, `Want to see more? It's all on ${o.url}.`) : C(`Le lien pour le découvrir est juste en dessous de la vidéo.`, `The link to check it out is right below this video.`),
+  };
+  const words = (t: string) => t.split(/\s+/).filter(Boolean).length;
+  const lines = roles.map((rs) => {
+    // Plan qui cumule plusieurs rôles : on retire la découverte, la preuve puis la démonstration si la réplique dépasse ~20 mots (8 s).
+    // L'accroche nomme déjà le produit : la découverte n'est pas répétée dans le même plan.
+    let keep = rs.includes("problem") ? rs.filter((r) => r !== "discovery") : [...rs];
+    for (const drop of ["discovery", "proof", "demo"] as UgcRole[]) if (keep.length > 1 && words(keep.map((r) => say[r]).join(" ")) > 20) keep = keep.filter((r) => r !== drop);
+    return keep.map((r) => say[r]).join(" ");
+  });
+  const act: Record<UgcRole, number> = { problem: 0, discovery: 1, demo: 2, proof: 3, cta: 4 };
   const caption = (l: string) => (l.length <= 64 ? l : `${l.slice(0, 61).replace(/\s+\S*$/, "")}…`);
   return {
-    concept: C(`${angle.fr}, ${n} plan${n > 1 ? "s" : ""} face caméra`, `${angle.en}, ${n} on-camera shot${n > 1 ? "s" : ""}`),
+    concept: C(`${angle.fr}, ${n} plan${n > 1 ? "s" : ""} face caméra : accroche, découverte, démonstration, preuve visible, appel`, `${angle.en}, ${n} on-camera shot${n > 1 ? "s" : ""}: hook, discovery, demo, visible proof, call to action`),
     persona: `${pick(UGC_PRESENTERS, o.presenter, "auto")} ${pick(UGC_AGES, o.age, "25-35")}, casual everyday outfit`,
     setting: pick(UGC_SETTINGS, o.setting, "salon"),
-    beats: lines.slice(0, n).map((line, i) => ({ line, caption: caption(line), action: i === n - 1 && n > 1 ? angle.actions[4] : angle.actions[i % 4] })),
+    beats: lines.map((line, i) => {
+      const main = roles[i].includes("cta") && n > 1 ? "cta" : roles[i][roles[i].length > 1 && roles[i][0] === "problem" ? 0 : roles[i].length - 1];
+      return { line, caption: caption(line), action: angle.actions[act[main]], role: roles[i].join("+") };
+    }),
   };
 }
 
@@ -173,7 +193,7 @@ export function serviceUgcIssues(script: Pick<UgcScript, "beats">): string[] {
   return out;
 }
 
-export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcOptions): Promise<{ script: UgcScript; issues: string[]; engine: "ia" | "local" }> {
+export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcOptions): Promise<{ script: UgcScript; issues: string[]; engine: "ia" | "local"; quality?: CraftQuality }> {
   const p = loadProject(projectId);
   const services = isServices(p);
   const check = (s: UgcScript) => [...ugcIssues(s, contentLang(), uiLang()), ...(services ? serviceUgcIssues(s) : [])];
@@ -185,9 +205,21 @@ export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcO
           `SERVICE BUSINESS (no product): the person presents the business ${activityName(p)} and its real services (${serviceItems(p).map((s) => s.name).join(", ") || "see context"}) in the third person ("Meet…", "On offer…"). They are neither a customer nor the professional: never "I hired", "my coach", "my name is". No product in hand; presenting gestures. Final call to action: ${serviceCta(p)}.`,
         )
       : "";
-    const r = await aiUgcScript({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ugc` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, services ? "activite" : "salon"), tone: C(pick(UGC_TONES, o.tone, "naturel").fr, pick(UGC_TONES, o.tone, "naturel").en), angle: services ? C("présentation de l'activité face caméra", "on-camera business presentation") : C(pick(UGC_ANGLES, o.angle, "presentation").fr, pick(UGC_ANGLES, o.angle, "presentation").en), url: o.url, brief: [serviceBrief, o.brief].filter(Boolean).join(" ") || undefined });
-    const script = cleanUgcScript({ ...r, beats: r.beats.slice(0, o.beats) });
-    return { script, issues: check(script), engine: "ia" };
+    // Scénariste (une passe forte) → règles UGC + directeur de création (grille notée, seuil 8/10) → au plus une
+    // reprise ciblée → la meilleure version est gardée. Services : présentation à la troisième personne, sans arc produit.
+    const n = Math.max(1, Math.min(5, o.beats));
+    const roles = services ? undefined : ugcStructure(n).map((r) => r.join("+"));
+    const base = { userId: p.userId, projectId, jobId: ctx.job.id };
+    const craft = brandCraftBrief(p);
+    const { best, quality } = await craftLoop("ugc", {
+      draft: async (feedback) => {
+        const r = await aiUgcScript({ ...base, usageKey: `${ctx.job.id}:ugc${feedback ? ":r2" : ""}` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, services ? "activite" : "salon"), tone: C(pick(UGC_TONES, o.tone, "naturel").fr, pick(UGC_TONES, o.tone, "naturel").en), angle: services ? C("présentation de l'activité face caméra", "on-camera business presentation") : C(pick(UGC_ANGLES, o.angle, "presentation").fr, pick(UGC_ANGLES, o.angle, "presentation").en), url: o.url, brief: [serviceBrief, o.brief].filter(Boolean).join(" ") || undefined, roles, craft, feedback });
+        return cleanUgcScript({ ...r, beats: r.beats.slice(0, o.beats) });
+      },
+      lint: (sc) => [...check(sc), ...ugcCraftIssues(sc)],
+      review: (sc, round) => aiCraftReview({ ...base, usageKey: `${ctx.job.id}:ugc:cd${round}` }, p, "ugc", sc, roles ? `Structure demandée, plan par plan : ${roles.map((r, i) => `${i + 1} = ${r}`).join(" ; ")}.` : "Entreprise de services : présentation de l'activité à la troisième personne (le critère « structure » juge l'enchaînement accroche → activité → prestations → infos → appel)."),
+    });
+    return { script: best, issues: check(best), engine: "ia", quality };
   }
   const script = localUgcScript(p, o);
   return { script, issues: check(script), engine: "local" };
@@ -324,6 +356,34 @@ async function hasAudio(file: string) {
   const { stdout } = await exec("ffprobe", ["-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", file]);
   return stdout.trim().length > 0;
 }
+/**
+ * Contrôle d'une image générée (ouverture ou image extraite d'un plan) : même produit, non déformé (produits) ;
+ * aucune personne déformée, aucun texte ni logo inventé (services). Note ramenée sur 10.
+ */
+async function ugcCheck(base: { userId: string; projectId: string; jobId?: string | null }, usageKey: string, services: boolean, reference: Buffer, image: Buffer): Promise<{ ok: boolean; score: number; issues: string[] }> {
+  if (services) {
+    const r = await aiQcScene({ ...base, usageKey }, image);
+    const score = r.ok ? qcScore(r.score) : 0;
+    return { ok: r.ok && score >= QC_MIN_SCORE, score, issues: r.issues };
+  }
+  const r = await aiQcImage({ ...base, usageKey }, reference, image);
+  return { ok: qcPassed(r), score: r.sameProduct ? qcScore(r.score) : 0, issues: r.issues };
+}
+
+/** Images du milieu et de la fin d'un plan généré (le produit peut se déformer en cours de plan). */
+async function clipStills(buf: Buffer, dir: string, tag: string): Promise<Buffer[]> {
+  const src = path.join(dir, `${tag}.mp4`);
+  fs.writeFileSync(src, buf);
+  const d = await duration(src);
+  const out: Buffer[] = [];
+  for (const [k, t] of [d * 0.5, Math.max(0, d - 0.3)].entries()) {
+    const f = path.join(dir, `${tag}-${k}.jpg`);
+    await exec("ffmpeg", ["-y", "-loglevel", "error", "-ss", t.toFixed(2), "-i", src, "-frames:v", "1", "-q:v", "3", f]);
+    if (fs.existsSync(f)) out.push(fs.readFileSync(f));
+  }
+  return out;
+}
+
 async function duration(file: string) {
   const { stdout } = await exec("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file]);
   return Number(stdout.trim()) || 0;
@@ -375,6 +435,8 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
   const video = videoProviderAvailable();
   if (!video) throw new UserFacingError(L("Aucun fournisseur vidéo configuré (Google Veo ou fal.ai) : la vidéo UGC ne peut pas être générée.", "No video provider configured (Google Veo or fal.ai): the UGC video can't be generated."));
   if (!imageProviderAvailable()) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.", "No image provider configured (Google Gemini or OpenAI): the person in the video can't be created."));
+  // Personne et produit sont générés par l'IA : sans IA de vision pour les contrôler, rien n'est généré ni payé.
+  if (!llmConfigured()) throw new UserFacingError(L("Le contrôle des images générées n'est pas disponible : la vidéo UGC n'est pas créée, car la fidélité du produit ne pourrait pas être vérifiée.", "Checking generated images isn't available: the UGC video isn't created, because product fidelity couldn't be verified."));
   const script = cleanUgcScript(req.script);
   const services = isServices(project);
   const subject = services ? "service" : "product";
@@ -407,15 +469,14 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       let best: { buf: Buffer; score: number } | null = null;
       for (let attempt = 0; attempt < 2; attempt++) {
         const buf = await ugcFrame({ ...base, usageKey: `${ctx.job.id}:frame:${i}:${attempt}` }, { prompt: framePrompt(script, i, subject), product, persona, aspect: o.format, subject });
-        if (!llmConfigured() || services) {
-          best = { buf, score: 10 };
-          break;
-        }
-        const qc = await aiQcImage({ ...base, usageKey: `${ctx.job.id}:frameqc:${i}:${attempt}` }, product, buf);
-        const score = qc.sameProduct ? qc.score : 0;
-        if (!best || score > best.score) best = { buf, score };
-        if (qc.sameProduct && qc.score >= 7) break;
+        const qc = await ugcCheck(base, `${ctx.job.id}:frameqc:${i}:${attempt}`, services, product, buf);
+        if (!best || qc.score > best.score) best = { buf, score: qc.score };
+        if (qc.ok) break;
       }
+      // Deux essais refusés au contrôle : la vidéo n'est pas montée avec un produit réinventé (ni décomptée).
+      if (best!.score < QC_MIN_SCORE) throw new UserFacingError(services
+        ? L(`Plan ${i + 1} : l'image générée n'a pas passé le contrôle qualité (${best!.score}/10). La vidéo n'est pas créée et ne vous est pas décomptée ; relancez-la ou modifiez le décor.`, `Shot ${i + 1}: the generated image failed the quality check (${best!.score}/10). The video isn't created and isn't counted; try again or change the setting.`)
+        : L(`Plan ${i + 1} : le produit n'a pas pu être reproduit fidèlement (contrôle ${best!.score}/10). La vidéo n'est pas créée et ne vous est pas décomptée ; essayez avec une autre photo du produit, nette et sur fond uni.`, `Shot ${i + 1}: the product couldn't be reproduced faithfully (check ${best!.score}/10). The video isn't created and isn't counted; try another sharp product photo on a plain background.`));
       const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(best!.buf).jpeg({ quality: 92 }).toBuffer(), name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.jpg`, mime: "image/jpeg", role: "ugc-frame", folderKey: "videos.social", origin: "generated", sourceAssetId: sourceId, meta: { recipe: services ? L("Image d'ouverture d'une présentation face caméra : personne et décor générés (ni client, ni professionnel réel)", "Opening frame of an on-camera presentation: generated person and set (neither a customer nor the real professional)") : L("Image d'ouverture d'un plan UGC : personne et décor générés, produit réel en référence", "Opening frame of a UGC shot: generated person and set, real product as reference"), aiGenerated: true, qcScore: best!.score }, status: "review" });
       return { id: a.id, score: best!.score };
     });
@@ -431,9 +492,27 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       const frame = assetData(getAsset(frameIds[i])!);
       const prompt = beatPrompt(script, i, o, withVoice, subject);
       const usage = { ...base, usageKey: `${ctx.job.id}:clip:${i}` };
-      const buf = video === "google"
-        ? await veoClip(usage, { image: frame, prompt, aspect: o.format, people: true }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)))
-        : await falClip(usage, { image: frame, prompt, seconds: 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
+      // Le plan animé est contrôlé (milieu et fin) : un produit qui se déforme en cours de plan est refusé ; un second essai.
+      let buf: Buffer | null = null;
+      const qdir = tmpDir("ugcqc");
+      try {
+        for (let attempt = 0; attempt < 2 && !buf; attempt++) {
+          const u = attempt ? { ...usage, usageKey: `${usage.usageKey}:${attempt}` } : usage;
+          const b = video === "google"
+            ? await veoClip(u, { image: frame, prompt, aspect: o.format, people: true }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)))
+            : await falClip(u, { image: frame, prompt, seconds: 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
+          const stills = await clipStills(b, qdir, `c${attempt}`);
+          let ok = stills.length > 0;
+          for (const [k, st] of stills.entries()) {
+            if (!ok) break;
+            ok = (await ugcCheck(base, `${ctx.job.id}:clipqc:${i}:${attempt}:${k}`, services, product, st)).ok;
+          }
+          if (ok) buf = b;
+        }
+      } finally {
+        fs.rmSync(qdir, { recursive: true, force: true });
+      }
+      if (!buf) throw new UserFacingError(L(`Plan ${i + 1} : le plan animé n'a pas passé le contrôle (produit ou personne déformés en cours de plan). La vidéo n'est pas créée et ne vous est pas décomptée.`, `Shot ${i + 1}: the animated shot failed the check (product or person distorted during the shot). The video isn't created and isn't counted.`));
       const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.social", origin: "generated", sourceAssetId: frameIds[i], meta: { provider: video, recipe: withVoice ? L("Plan UGC généré (image, voix et son)", "Generated UGC shot (picture, voice and sound)") : L("Plan UGC généré (image, sans voix)", "Generated UGC shot (picture, no voice)"), aiGenerated: true, line: script.beats[i].line }, status: "review" });
       return a.id;
     });

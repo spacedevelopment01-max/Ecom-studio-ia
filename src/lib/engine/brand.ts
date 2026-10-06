@@ -10,9 +10,11 @@ import { assetData, getAsset } from "../library";
 import { sectorLabel } from "../project-types";
 import { C, L, contentLang } from "../i18n-server";
 import { generateLogos, proposeTaglines } from "./identity";
-import { aiBrand, brandFromAi } from "../ai/tasks";
+import { latestSocialKit } from "./social-kit";
+import { brandFromAi } from "../ai/tasks";
+import { aiBrandChecked, finalizeBrand } from "./brand-check";
 import { llmConfigured } from "../ai/llm";
-import { localBrand } from "./local";
+import { localBrand, paletteFromColors } from "./local";
 import { applySiteIdentity, loadSiteImport } from "./existing-site";
 import type { JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
@@ -27,8 +29,9 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   const site = p.settings.existingSite?.status === "read" ? loadSiteImport(projectId) : null;
   if (llmConfigured()) {
     ctx.progress(0.1, L("Direction de marque (IA)", "Brand direction (AI)"));
-    const r = await ctx.step("brand-ai", () => aiBrand({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand` }, p, opts.guidance));
-    const out = brandFromAi(r, { concept: r.logo.concept, status: "proposed" });
+    // Proposition contrôlée (nom, signature, allégations, formules creuses) avec une reprise ciblée au besoin.
+    const r = await ctx.step("brand-ai", () => aiBrandChecked({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand` }, p, opts.guidance));
+    const out = brandFromAi(r, { concept: r.logo.concept, status: "proposed" }, paletteFromColors(p.product.visual.colors.length ? p.product.visual.colors : [{ hex: "#7A6552", share: 1 }], p.product.sector));
     brand = out.brand;
     saveStrategy(projectId, out.strategy);
     logoSpec = { name: r.name, family: r.logo.family, weight: r.logo.weight, italic: r.logo.italic, case: r.logo.case, tracking: r.logo.tracking, layout: r.logo.layout, emblem: r.logo.emblem };
@@ -52,6 +55,16 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     logoSpec.name = opts.providedBrand;
   }
 
+  // Contrôle final sans IA (palette lisible, nom déjà pris, allégations) ; un site existant garde son identité.
+  if (!site) {
+    const fin = finalizeBrand(brand, loadProject(projectId).strategy, p);
+    // Les éléments validés par le client ne sont jamais modifiés.
+    for (const k of keepValidated) (fin.brand as any)[k] = (brand as any)[k];
+    if (fin.brand.name !== brand.name) logoSpec.name = fin.brand.name;
+    brand = fin.brand;
+    if (fin.strategy) saveStrategy(projectId, fin.strategy);
+  }
+
   // Signatures : la proposition retenue et d'autres pistes au choix (une signature validée est conservée).
   const lines = proposeTaglines({ ...p, brand });
   // Site existant : seule la signature du site est reprise ; les pistes restent de simples propositions.
@@ -64,7 +77,7 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   if (clientLogo && !site) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
   saveBrand(projectId, brand);
   // Site existant : jamais de logo généré (celui du site ou du client est conservé).
-  if (!site && !clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name } });
+  if (!site && !clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name }, redrawSymbol: true });
   await saveBrandGuide(projectId);
   ctx.progress(0.9, L("Charte de marque (PDF)", "Brand guidelines (PDF)"));
   await saveBrandBook(projectId);
@@ -81,11 +94,16 @@ export async function saveBrandBook(projectId: string) {
   const derived = (role: string) => (main ? all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND source_asset_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role, main.id)[0] : undefined) ?? latest(role);
   const img = async (a?: Asset) => (a ? loadImage(assetData(a)) : null);
   const d = directionById(b.direction);
+  // Piste de logo retenue : la charte reprend ses typographies (logo, kit et charte parlent d'une seule voix).
+  const route = b.logo.route;
+  const kit = latestSocialKit(projectId);
   const { pages, pdf } = renderBrandBook({
     brand: b,
     strategy: p.strategy,
-    headingFamily: canvasFamily(b.fonts.heading ?? d.fonts.heading, "Cormorant"),
-    bodyFamily: canvasFamily(b.fonts.body ?? d.fonts.body, "Jost"),
+    headingFamily: route?.heading ?? canvasFamily(b.fonts.heading ?? d.fonts.heading, "Cormorant"),
+    bodyFamily: route?.body ?? canvasFamily(b.fonts.body ?? d.fonts.body, "Jost"),
+    social: kit ? await img(kit.sheet) : null,
+    voice: b.social ?? null,
     logo: await img(main),
     logoLight: await img(derived("logo-light")),
     logoWeb: await img(derived("logo-horizontal") ?? main),
@@ -143,6 +161,7 @@ ${d.name} — ${d.description}
 
 ${b.story ? `## Histoire\n${b.story}\n` : ""}
 ${b.values.length ? `## Valeurs\n${b.values.map((v) => `- **${v.title}** : ${v.text}`).join("\n")}\n` : ""}
+${b.checks?.length ? `## Points à vérifier\n${b.checks.map((c) => `- ${c}`).join("\n")}\n` : ""}
 _Document généré par E-COM STUDIO IA (${b.generatedBy === "ai" ? "IA" : "version simplifiée"}). Les éléments « À compléter » restent à confirmer._
 `, `# Brand guidelines — ${b.name}
 
@@ -179,6 +198,7 @@ ${d.name} — ${d.description}
 
 ${b.story ? `## Story\n${b.story}\n` : ""}
 ${b.values.length ? `## Values\n${b.values.map((v) => `- **${v.title}**: ${v.text}`).join("\n")}\n` : ""}
+${b.checks?.length ? `## To check\n${b.checks.map((c) => `- ${c}`).join("\n")}\n` : ""}
 _Document generated by E-COM STUDIO IA (${b.generatedBy === "ai" ? "AI" : "simplified version"}). Items marked "To complete" still need to be confirmed._
 `);
   const prev = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'brand-guide' AND deleted_at IS NULL ORDER BY version DESC LIMIT 1", projectId)[0];

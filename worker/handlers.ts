@@ -11,7 +11,8 @@ import { withQuotaScope } from "../src/lib/ai/access";
 import { consumeQuota } from "../src/lib/quotas";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
 import { buildCustomTheme } from "../src/lib/engine/custom-theme";
-import { createContentPlan, attachVideoToPlan, NETWORK_FORMATS } from "../src/lib/engine/calendar";
+import { createContentPlan, attachVideoToPlan, NETWORK_FORMATS, quotedHeadline, rewritePostChecked } from "../src/lib/engine/calendar";
+import { honestChatNote } from "../src/lib/engine/shop-chat";
 import { buildBrand } from "../src/lib/engine/brand";
 import { loadProject, currentTheme, saveThemeVersion, themeVersion, listThemeVersions, remember, notify } from "../src/lib/projects";
 import { aiThemeChat, aiRewritePost, aiClassify, aiShopCopyChecked, aiRepairOps } from "../src/lib/ai/tasks";
@@ -185,7 +186,9 @@ export const handlers: Record<string, Handler> = {
         for (const op of ops) if (op.op === "use_media") addUsage(op.assetId, "theme_section", `${op.template}:${op.section}`, L("Section de boutique", "Store section"));
       }
     }
-    const note = [reply, applied.length ? L(`\n\nModifié : ${applied.join(" ; ")}.`, `\n\nChanged: ${applied.join("; ")}.`) : "", rejected.length ? L(`\n\nNon appliqué : ${rejected.map((r) => r.reason).join(" ; ")}.`, `\n\nNot applied: ${rejected.map((r) => r.reason).join("; ")}.`) : ""].join("");
+    // Jamais de fausse affirmation : l'IA décrit ce qu'elle compte faire ; seul ce qui a été appliqué et validé est
+    // annoncé comme fait (rien d'appliqué → on le dit ; en partie → on le dit, avec ce qui ne l'a pas été).
+    const note = honestChatNote({ reply, mode, revert, opsCount: ops.length + (switchTo ? 1 : 0), applied, rejected: rejected.map((r) => r.reason) });
     run("INSERT INTO chat_messages (id, project_id, thread, role, content, theme_version_id, job_id, created_at) VALUES (?,?,?,?,?,?,?,?)", `${messageId}-r`, projectId, "shop", "assistant", note.trim(), versionId, ctx.job.id, now());
     return { versionId, applied, rejected, mode };
   },
@@ -201,8 +204,10 @@ export const handlers: Record<string, Handler> = {
     const p = loadProject(post.project_id);
     if (part !== "media") {
       if (!llmConfigured()) throw new UserFacingError(L("La réécriture des légendes nécessite l'IA : elle est disponible avec l'abonnement et l'IA connectée.", "Rewriting captions requires AI: it is available with a subscription and a connected AI provider."));
-      const r = await aiRewritePost({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:rewrite` }, p, post, instruction ?? "");
-      run("UPDATE posts SET title = ?, caption = ?, hashtags = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", r.title, r.caption, r.hashtags.join(" "), now(), postId);
+      let n = 0;
+      const r = await rewritePostChecked(post, p, (fix) => aiRewritePost({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:rewrite${n++ ? `:${n}` : ""}` }, p, post, fix ?? instruction ?? ""));
+      const brief = { ...json<any>(post.brief, {}), claims: r.claims?.length ? r.claims : undefined };
+      run("UPDATE posts SET title = ?, caption = ?, hashtags = ?, brief = ?, error = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", r.title, r.caption, r.hashtags.join(" "), JSON.stringify(brief), r.claims?.length ? L(`À vérifier avant publication : ${r.claims.join(", ")}`, `Check before publishing: ${r.claims.join(", ")}`) : null, now(), postId);
     }
     if (part !== "text") {
       const cut = (await ensureCutouts(ctx, p))[0];
@@ -211,7 +216,7 @@ export const handlers: Record<string, Handler> = {
         const fmt = NETWORK_FORMATS[post.network] ?? NETWORK_FORMATS.instagram;
         const logoA = latestAsset(p.id, "logo");
         const layouts = ["editorial", "bold", "minimal", "centered", "split"] as const;
-        const r = await renderCreative({ product: await loadImage(assetData(cut)), palette: palette(p), typo: brandTypo(p), format: FORMATS[fmt.image], layout: layouts[Math.floor(Math.random() * layouts.length)], headline: instruction || visual.headline || p.product.name, brand: p.brand?.name ?? p.name, logo: logoA ? await loadImage(assetData(logoA)) : null, seed: Date.now() % 997 });
+        const r = await renderCreative({ product: await loadImage(assetData(cut)), palette: palette(p), typo: brandTypo(p), format: FORMATS[fmt.image], layout: layouts[Math.floor(Math.random() * layouts.length)], headline: quotedHeadline(instruction) || visual.headline || p.product.name, brand: p.brand?.name ?? p.name, logo: logoA ? await loadImage(assetData(logoA)) : null, seed: Date.now() % 997 });
         const a = await saveAsset({ projectId: p.id, userId: p.userId, data: r.jpg, name: L(`publication-${post.network}-regeneree-${Date.now().toString(36)}.jpg`, `post-${post.network}-regenerated-${Date.now().toString(36)}.jpg`), mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", meta: { post: postId, recipe: L("Visuel régénéré", "Regenerated visual") } });
         run("UPDATE posts SET media = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", JSON.stringify([a.id]), now(), postId);
         addUsage(a.id, "post", postId, L("Publication", "Post"));

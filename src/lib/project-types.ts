@@ -94,13 +94,38 @@ export type Brand = {
   tone: { voice: string; do: string[]; dont: string[] };
   palette: BrandPalette;
   fonts: { heading: string; body: string };
-  logo: { assetId?: string; markAssetId?: string; concept: string; status: "proposed" | "validated" | "provided"; proposal?: "logotype" | "symbole" | "embleme" };
+  logo: {
+    assetId?: string;
+    markAssetId?: string;
+    concept: string;
+    status: "proposed" | "validated" | "provided";
+    /** Piste créative retenue (produit, concept, typo) ; anciennes propositions : logotype, symbole, emblème. */
+    proposal?: "logotype" | "symbole" | "embleme" | "produit" | "concept" | "typo";
+    /** Typographies et couleurs de la piste retenue (kit réseaux sociaux, charte, visuels). */
+    route?: { key: string; name: string; heading: string; headingWeight: number; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; source: "ai" | "local" };
+  };
+  /** Ligne éditoriale des réseaux sociaux (approche community manager). */
+  social?: SocialVoice;
   /** Autres signatures proposées (au choix du client). */
   taglineAlternatives?: string[];
+  /** Points que le contrôle qualité n'a pas pu corriger seul : à vérifier par le client (nom, signature, palette…). */
+  checks?: string[];
   story: string;
   values: { title: string; text: string }[];
   direction: DirectionId;
   validated: string[];
+  generatedBy: "ai" | "local";
+};
+
+export type SocialVoice = {
+  pillars: { title: string; idea: string }[];
+  say: string[];
+  dontSay: string[];
+  emoji: "none" | "sparing" | "free";
+  emojis: string[];
+  captions: { pillar: string; text: string }[];
+  /** Séries récurrentes (rendez-vous hebdomadaires reconnaissables) : nom, idée, jour conseillé (0 = dimanche). */
+  series?: { name: string; idea: string; weekday?: number }[];
   generatedBy: "ai" | "local";
 };
 
@@ -109,7 +134,23 @@ export type Strategy = {
   angles: { title: string; idea: string }[];
   pillars: string[];
   keyMessages: string[];
+  /** Plateforme de marque (stratège) : persona, problème, concurrence typique, preuves, objections et réponses. */
+  platform?: BrandPlatform;
   generatedBy: "ai" | "local";
+};
+
+/**
+ * Plateforme de marque, base de toute la rédaction : pour qui (persona), quel problème, face à quoi
+ * (alternatives et codes de la concurrence typique), quelle différence crédible, quelles preuves
+ * (disponibles ou manquantes : une preuve manquante n'est jamais affirmée), quelles objections et leurs réponses.
+ */
+export type BrandPlatform = {
+  persona: string;
+  problem: string;
+  alternatives: string;
+  difference: string;
+  proofs: { claim: string; proof: string; status: "available" | "missing" }[];
+  objections: { objection: string; answer: string }[];
 };
 
 /**

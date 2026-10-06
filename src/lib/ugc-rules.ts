@@ -4,7 +4,7 @@
  */
 import { pick, type Lang } from "./i18n";
 
-export type UgcBeat = { line: string; caption: string; action: string };
+export type UgcBeat = { line: string; caption: string; action: string; role?: string };
 export type UgcScriptLike = { concept: string; persona: string; setting: string; beats: UgcBeat[] };
 
 /** Répliques interdites : une personne générée ne peut pas témoigner d'un usage ou d'un résultat. */
@@ -55,6 +55,6 @@ export function ugcIssues(script: Pick<UgcScriptLike, "beats">, lang: Lang = "fr
 /** Nettoyage typographique (tirets longs, espaces) sans changer le sens. */
 export function cleanUgcScript<T extends UgcScriptLike>(s: T): T {
   const tidy = (t: string) => t.replace(/\s*[—–]\s*/g, ", ").replace(/\s+/g, " ").trim();
-  return { ...s, beats: s.beats.map((b) => ({ line: tidy(b.line), caption: tidy(b.caption || b.line), action: b.action.trim() })) };
+  return { ...s, beats: s.beats.map((b) => ({ line: tidy(b.line), caption: tidy(b.caption || b.line), action: b.action.trim(), ...(b.role ? { role: b.role.trim() } : {}) })) };
 }
 

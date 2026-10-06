@@ -7,7 +7,7 @@ import { createCanvas, type Canvas, type Image, type SKRSContext2D } from "@napi
 import { contrast, hexToRgb, isDark, mix, onColor } from "../color";
 import { font } from "./fonts";
 import { jpegPagesToPdf } from "./pdf";
-import type { Brand, Strategy } from "../project-types";
+import type { Brand, SocialVoice, Strategy } from "../project-types";
 import { C, contentLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
 
@@ -23,6 +23,9 @@ export type BookInput = {
   product: Image | null; // produit détouré (applications)
   sectorLabel: string;
   date: Date;
+  /** Planche d'ensemble du kit réseaux sociaux et ligne éditoriale (planche « Réseaux sociaux »). */
+  social?: Image | null;
+  voice?: SocialVoice | null;
 };
 
 const W = 1754, H = 1240, M = 110;
@@ -84,7 +87,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   const paper = isDark(pal.light) ? "#F7F4EF" : pal.light;
   const accent = pal.primary;
   const HF = inp.headingFamily, BF = inp.bodyFamily;
-  const total = 10;
+  const total = inp.social || inp.voice ? 11 : 10;
   const canvases: Canvas[] = [];
   // Langue des contenus : toute la charte (titres, explications, dates) suit la langue du projet.
   const locale = intlLocale(contentLang());
@@ -105,14 +108,23 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     ctx.textBaseline = "alphabetic";
     ctx.fillText(s, x, y);
   };
-  const para = (ctx: SKRSContext2D, s: string, x: number, y: number, maxW: number, size = 26, color = ink, lh = 1.5, weight = 400) => {
+  // Paragraphe borné : au-delà de maxY (pied de planche par défaut), le texte s'arrête sur « … » au lieu de déborder.
+  const para = (ctx: SKRSContext2D, s: string, x: number, y: number, maxW: number, size = 26, color = ink, lh = 1.5, weight = 400, maxY = H - 110) => {
     ctx.font = font(BF, weight, size);
     ctx.fillStyle = color;
     ctx.textAlign = "left";
     let yy = y;
-    for (const l of wrap(ctx, s, maxW)) {
-      ctx.fillText(l, x, yy);
+    const lines = wrap(ctx, s, maxW);
+    for (const [i, l] of lines.entries()) {
+      const last = i < lines.length - 1 && yy + size * lh > maxY;
+      let t = l;
+      if (last) {
+        while (t && ctx.measureText(`${t}…`).width > maxW) t = t.slice(0, -1);
+        t = `${t.trimEnd()}…`;
+      }
+      ctx.fillText(t, x, yy);
       yy += size * lh;
+      if (last) break;
     }
     return yy;
   };
@@ -134,6 +146,32 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
       ctx.stroke();
     }
   };
+  // Puces dessinées (coche verte, croix rouge) : les glyphes ✓ et ✕ manquent dans la plupart des polices de texte.
+  const marks = (ctx: SKRSContext2D, items: string[], x: number, y: number, maxW: number, kind: "do" | "dont") => {
+    let yy = y;
+    for (const it of items.slice(0, 5)) {
+      ctx.save();
+      ctx.strokeStyle = kind === "do" ? "#1F7A4D" : "#B42318";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      if (kind === "do") {
+        ctx.moveTo(x, yy - 9);
+        ctx.lineTo(x + 7, yy - 2);
+        ctx.lineTo(x + 20, yy - 17);
+      } else {
+        ctx.moveTo(x + 2, yy - 17);
+        ctx.lineTo(x + 17, yy - 2);
+        ctx.moveTo(x + 17, yy - 17);
+        ctx.lineTo(x + 2, yy - 2);
+      }
+      ctx.stroke();
+      ctx.restore();
+      if (yy > 760) break;
+      yy = para(ctx, it, x + 36, yy, maxW - 36, 26, ink, 1.5, 400, 770) + 6;
+    }
+  };
   const label = (ctx: SKRSContext2D, s: string, x: number, y: number, color = mix(ink, paper, 0.4)) => text(ctx, s.toLocaleUpperCase(locale), x, y, font(BF, 600, 17), color);
 
   // 1 · Couverture
@@ -144,6 +182,10 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
       ctx.fillStyle = c;
       ctx.fillRect((W / bands.length) * i, H - 46, W / bands.length + 1, 46);
     });
+    // La couleur claire se confond avec le papier : un filet la rend visible.
+    ctx.strokeStyle = mix(ink, paper, 0.82);
+    ctx.lineWidth = 2;
+    ctx.strokeRect((W / bands.length) * 3 + 1, H - 45, W / bands.length - 2, 44);
     contain(ctx, inp.logo, W / 2 - 430, 300, 860, 400);
     if (b.tagline && b.logo.proposal !== "embleme") text(ctx, b.tagline, W / 2, 800, font(HF, 500, 44, true), ink, "center");
     text(ctx, BOOK.toLocaleUpperCase(locale), W / 2, 940, font(BF, 600, 24), accent, "center");
@@ -157,7 +199,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     const col = (W - M * 2 - 60) / 2;
     let y = 330;
     label(ctx, C("Positionnement", "Positioning"), M, y);
-    y = para(ctx, b.positioning || C("[À définir]", "[To be defined]"), M, y + 44, col, 28);
+    y = para(ctx, b.positioning || C("[À définir]", "[To be defined]"), M, y + 44, col, 28, ink, 1.5, 400, 760);
     y += 30;
     label(ctx, C("Cible", "Audience"), M, y);
     para(ctx, b.audience || C("[À définir]", "[To be defined]"), M, y + 44, col, 28);
@@ -171,7 +213,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     if (b.values.length) {
       y2 += 30;
       label(ctx, C("Valeurs", "Values"), x2, y2);
-      para(ctx, b.values.map((v) => `${v.title} — ${v.text}`).join("\n"), x2, y2 + 44, col, 24);
+      para(ctx, b.values.map((v) => `${v.title}${C(" : ", ": ")}${v.text}`).join("\n"), x2, y2 + 44, col, 24);
     }
   }
 
@@ -179,7 +221,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   {
     const ctx = page();
     head(ctx, 3, "Logo", C("Le logo et ses versions", "The logo and its versions"));
-    para(ctx, b.logo.concept, M, 300, W - M * 2, 26, mix(ink, paper, 0.25));
+    para(ctx, b.logo.concept, M, 300, W - M * 2, 26, mix(ink, paper, 0.25), 1.5, 400, 345);
     const cw = (W - M * 2 - 40) / 2;
     card(ctx, M, 380, cw, 440, "#FFFFFF", mix(ink, paper, 0.85));
     contain(ctx, inp.logo, M + 60, 430, cw - 120, 340);
@@ -318,7 +360,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     label(ctx, `${C("Texte", "Body")} — ${BF}`, x2, 330);
     text(ctx, "Aa", x2, 560, font(BF, 500, 220));
     para(ctx, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 € & ! ?", x2, 640, cw, 30, ink, 1.45);
-    para(ctx, b.positioning && !b.positioning.startsWith("[") ? b.positioning : C("Le texte courant reste sobre et lisible : 16 px minimum à l'écran, interlignage généreux, une seule idée par paragraphe.", "Body text stays simple and readable: 16 px minimum on screen, generous line spacing, one idea per paragraph."), x2, 880, cw, 24, mix(ink, paper, 0.2));
+    para(ctx, b.positioning && !b.positioning.startsWith("[") ? b.positioning : C("Le texte courant reste sobre et lisible : 16 px minimum à l'écran, interlignage généreux, une seule idée par paragraphe.", "Body text stays simple and readable: 16 px minimum on screen, generous line spacing, one idea per paragraph."), x2, 880, cw, 24, mix(ink, paper, 0.2), 1.5, 400, 1040);
     label(ctx, C("Hiérarchie : titre 1 · titre 2 · texte · légende — jamais plus de deux familles", "Hierarchy: heading 1 · heading 2 · body · caption — never more than two families"), M, 1080);
   }
 
@@ -327,14 +369,14 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     const ctx = page();
     head(ctx, 8, C("Ton", "Tone"), C("Notre façon de parler", "How we speak"));
     label(ctx, C("Voix", "Voice"), M, 330);
-    para(ctx, b.tone.voice, M, 380, W - M * 2, 34, ink, 1.4, 500);
+    para(ctx, b.tone.voice, M, 380, W - M * 2, 34, ink, 1.4, 500, 400);
     const cw = (W - M * 2 - 60) / 2;
     card(ctx, M, 460, cw, 330, mix(paper, "#FFFFFF", 0.6));
     label(ctx, C("À faire", "Do"), M + 36, 510, "#1F7A4D");
-    para(ctx, b.tone.do.map((x) => `✓  ${x}`).join("\n"), M + 36, 560, cw - 72, 26);
+    marks(ctx, b.tone.do, M + 36, 560, cw - 72, "do");
     card(ctx, M + cw + 60, 460, cw, 330, mix(paper, "#FFFFFF", 0.6));
     label(ctx, C("À éviter", "Don't"), M + cw + 96, 510, "#B42318");
-    para(ctx, b.tone.dont.map((x) => `✕  ${x}`).join("\n"), M + cw + 96, 560, cw - 72, 26);
+    marks(ctx, b.tone.dont, M + cw + 96, 560, cw - 72, "dont");
     label(ctx, C("Signature et pistes", "Tagline and alternatives"), M, 860);
     const lines = [b.tagline, ...(b.taglineAlternatives ?? [])].filter(Boolean).slice(0, 4);
     para(ctx, lines.map((l, i) => (i === 0 ? C(`« ${l} »  (retenue)`, `"${l}"  (chosen)`) : C(`« ${l} »`, `"${l}"`))).join("\n"), M, 910, cw, 28);
@@ -431,6 +473,34 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     ctx.fillRect(px, 340 + ps - 90, ps, 90);
     text(ctx, b.tagline || b.name, px + ps / 2, 340 + ps - 34, font(HF, 600, 30), onColor(ink), "center");
     para(ctx, C("Les visuels du studio reprennent ces règles automatiquement : couleurs, typographies, marges et logo.", "The studio's visuals apply these rules automatically: colors, typefaces, margins and logo."), px, 880, ps, 22, mix(ink, paper, 0.3));
+  }
+
+  // 11 · Réseaux sociaux : kit (profil, stories à la une, modèles, bannières) et ligne éditoriale.
+  if (inp.social || inp.voice) {
+    const ctx = page();
+    head(ctx, 11, C("Réseaux sociaux", "Social media"), C("Le kit et la ligne éditoriale", "The kit and the editorial line"));
+    const kw = 1000;
+    if (inp.social) {
+      card(ctx, M, 300, kw, kw * 0.625 + 20, "#FFFFFF");
+      contain(ctx, inp.social, M + 10, 310, kw - 20, kw * 0.625);
+    }
+    const v = inp.voice;
+    if (v) {
+      const x = M + kw + 50, w = W - M - x;
+      let y = 320;
+      label(ctx, C("Piliers de contenu", "Content pillars"), x, y);
+      y = para(ctx, v.pillars.map((p, i) => `${i + 1}. ${p.title}`).join("\n"), x, y + 40, w, 24, ink, 1.45, 600, 560) + 16;
+      label(ctx, C("Ce qu'on dit", "What we say"), x, y, "#1F7A4D");
+      y = para(ctx, v.say.slice(0, 3).map((s) => `— ${s}`).join("\n"), x, y + 36, w, 21, ink, 1.4, 400, 800) + 12;
+      label(ctx, C("Ce qu'on ne dit pas", "What we don't say"), x, y, "#B42318");
+      y = para(ctx, v.dontSay.slice(0, 3).map((s) => `— ${s}`).join("\n"), x, y + 36, w, 21, ink, 1.4, 400, 1010) + 12;
+      label(ctx, "Emojis", x, y);
+      para(ctx, v.emoji === "none" ? C("Aucun emoji.", "No emoji.") : v.emoji === "sparing" ? C("Un au plus par légende, jamais à la place d'un mot.", "One at most per caption, never instead of a word.") : C("Libres, avec goût.", "Welcome, with taste."), x, y + 36, w, 21, ink, 1.4, 400, 1110);
+      if (v.captions[0]) {
+        label(ctx, C("Exemple de légende", "Sample caption"), M, 980);
+        para(ctx, v.captions[0].text.replace(/\n+/g, " "), M, 1020, kw, 22, mix(ink, paper, 0.2), 1.45, 400, 1120);
+      }
+    }
   }
 
   const pages = canvases.map((c) => c.toBuffer("image/jpeg", 88));

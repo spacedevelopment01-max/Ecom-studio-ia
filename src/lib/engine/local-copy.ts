@@ -7,7 +7,7 @@
 import type { ShopCopy } from "../theme/copy";
 import { C } from "../i18n-server";
 import type { Brand, Fact, ProductProfile, ProductSectorId } from "../project-types";
-import { areaMentioned, contactCta, howToBook, isServicesBusiness, practicalInfo, pricesText, serviceAboutHeading, serviceEyebrow, serviceGalleryHeading, serviceLine, serviceTermsHtml, unknownText, type BusinessInfo } from "./services-text";
+import { areaMentioned, contactCta, howToBook, isServicesBusiness, practicalInfo, pricesText, serviceAboutHeading, serviceEyebrow, serviceGalleryHeading, serviceIsMobile, serviceLine, serviceTermsHtml, unknownText, type BusinessInfo } from "./services-text";
 
 type SectorVoice = { eyebrow: string; marquee: string[]; usageTitle: string; careTitle: string; aboutHeading: string; values: { title: string; text: string }[] };
 
@@ -19,7 +19,7 @@ const VOICES_FR: Record<ProductSectorId, SectorVoice> = {
   hightech: { eyebrow: "Technologie", marquee: ["Fiche technique complète", "Prise en main rapide", "Compatibilités indiquées"], usageTitle: "Prise en main", careTitle: "Caractéristiques techniques", aboutHeading: "La technologie, expliquée clairement", values: [{ title: "Clarté", text: "Chaque caractéristique est indiquée précisément." }, { title: "Usage", text: "Des explications pour bien démarrer." }] },
   sport: { eyebrow: "Performance", marquee: ["Pensé pour bouger", "Prêt pour l'extérieur", "Facile à emporter"], usageTitle: "Utilisation", careTitle: "Caractéristiques", aboutHeading: "Du matériel pour sortir plus souvent", values: [{ title: "Terrain", text: "Des produits décrits pour l'usage réel." }, { title: "Durabilité", text: "Des conseils d'entretien pour durer." }] },
   alimentation: { eyebrow: "Épicerie", marquee: ["Ingrédients listés", "Origine indiquée", "À partager"], usageTitle: "Dégustation", careTitle: "Ingrédients et allergènes", aboutHeading: "Le goût, et rien à cacher", values: [{ title: "Ingrédients", text: "La composition est indiquée sur la fiche dès qu'elle est connue." }, { title: "Origine", text: "La provenance est précisée lorsqu'elle est connue." }] },
-  enfants: { eyebrow: "Enfants", marquee: ["Pensé pour les petits", "Pratique pour les parents", "Informations claires"], usageTitle: "Âge et usage", careTitle: "Matériaux et sécurité", aboutHeading: "Des produits choisis pour les familles", values: [{ title: "Clarté", text: "Âges et usages indiqués précisément." }, { title: "Usage", text: "Des conseils d'utilisation simples." }] },
+  enfants: { eyebrow: "Enfants", marquee: ["Pensé pour les petits", "Pratique pour les parents", "Informations claires"], usageTitle: "Âge et usage", careTitle: "Matériaux et entretien", aboutHeading: "Des produits choisis pour les familles", values: [{ title: "Clarté", text: "Âges et usages indiqués précisément." }, { title: "Usage", text: "Des conseils d'utilisation simples." }] },
   animaux: { eyebrow: "Compagnons", marquee: ["Pensé pour eux", "Facile au quotidien", "Tailles détaillées"], usageTitle: "Utilisation", careTitle: "Composition et entretien", aboutHeading: "Pour le quotidien avec eux", values: [{ title: "Usage", text: "Des produits décrits selon l'animal et sa taille." }, { title: "Entretien", text: "Des conseils simples et précis." }] },
   artisanat: { eyebrow: "Atelier", marquee: ["Fait avec soin", "Petites séries", "Détails visibles"], usageTitle: "Dimensions", careTitle: "Matières et fabrication", aboutHeading: "Le geste, la matière, le temps", values: [{ title: "Savoir-faire", text: "Les étapes de fabrication sont décrites." }, { title: "Matières", text: "Des matières nommées et expliquées." }] },
 };
@@ -32,7 +32,7 @@ const VOICES_EN: Record<ProductSectorId, SectorVoice> = {
   hightech: { eyebrow: "Tech", marquee: ["Full tech specs", "Quick setup", "Compatibility listed"], usageTitle: "Getting started", careTitle: "Technical specs", aboutHeading: "Technology, clearly explained", values: [{ title: "Clarity", text: "Every spec is stated precisely." }, { title: "Use", text: "Clear guidance to get started." }] },
   sport: { eyebrow: "Performance", marquee: ["Made to move", "Ready for the outdoors", "Easy to carry"], usageTitle: "How to use", careTitle: "Specs", aboutHeading: "Gear to get you outside more often", values: [{ title: "Real-world use", text: "Products described for how you will actually use them." }, { title: "Durability", text: "Care tips to keep your gear going." }] },
   alimentation: { eyebrow: "Pantry", marquee: ["Ingredients listed", "Origin stated", "Made for sharing"], usageTitle: "Serving", careTitle: "Ingredients and allergens", aboutHeading: "All the taste, nothing to hide", values: [{ title: "Ingredients", text: "The full ingredient list goes on the product page as soon as it is known." }, { title: "Origin", text: "Where it comes from is stated whenever it is known." }] },
-  enfants: { eyebrow: "Kids", marquee: ["Made for little ones", "Practical for parents", "Clear information"], usageTitle: "Age and use", careTitle: "Materials and safety", aboutHeading: "Products chosen for families", values: [{ title: "Clarity", text: "Ages and uses stated precisely." }, { title: "Use", text: "Simple, practical usage tips." }] },
+  enfants: { eyebrow: "Kids", marquee: ["Made for little ones", "Practical for parents", "Clear information"], usageTitle: "Age and use", careTitle: "Materials and care", aboutHeading: "Products chosen for families", values: [{ title: "Clarity", text: "Ages and uses stated precisely." }, { title: "Use", text: "Simple, practical usage tips." }] },
   animaux: { eyebrow: "Companions", marquee: ["Made for them", "Easy every day", "Sizes in detail"], usageTitle: "How to use", careTitle: "Composition and care", aboutHeading: "For everyday life together", values: [{ title: "Use", text: "Products described by animal and size." }, { title: "Care", text: "Simple, precise care tips." }] },
   artisanat: { eyebrow: "Workshop", marquee: ["Made with care", "Small batches", "Visible details"], usageTitle: "Dimensions", careTitle: "Materials and making", aboutHeading: "Craft, material, time", values: [{ title: "Craftsmanship", text: "Every making step is described." }, { title: "Materials", text: "Materials named and explained." }] },
 };
@@ -45,6 +45,53 @@ const unkLabel = (label: string) => C(`[À compléter : ${label.toLowerCase()}]`
 const known = (f: Fact) => f.status !== "unknown" && f.value.trim() !== "";
 
 /**
+ * Objections typiques d'un acheteur, par secteur (ce qu'un concepteur-rédacteur traite en FAQ et sur la fiche).
+ * Chaque objection renvoie au fait qui y répond : la réponse est ce fait s'il est confirmé, sinon un espace réservé
+ * que la réponse du commerçant (question posée à l'analyse) viendra remplacer.
+ */
+type Objection = { q: [string, string]; keys: string[]; unknown: [string, string] };
+const O = (fr: string, en: string, keys: string[], ufr: string, uen: string): Objection => ({ q: [fr, en], keys, unknown: [ufr, uen] });
+export const SECTOR_OBJECTIONS: Record<ProductSectorId, Objection[]> = {
+  enfants: [O("À partir de quel âge ?", "What age is it for?", ["age"], "âge conseillé", "recommended age"), O("Comment fonctionne-t-il ?", "How does it work?", ["function", "usage"], "fonctionnement (piles, recharge, boutons)", "how it works (batteries, charging, buttons)"), O("Comment le nettoyer ?", "How do I clean it?", ["care"], "conseils de nettoyage", "cleaning instructions")],
+  hightech: [O("Est-ce facile à prendre en main ?", "Is it easy to get started?", ["usage"], "prise en main et réglages", "setup and getting started"), O("Quelles sont ses caractéristiques ?", "What are the specs?", ["specs", "weight", "dimensions", "camera", "autonomy", "battery", "range", "resolution"], "caractéristiques techniques", "technical specs"), O("Que contient la boîte ?", "What's in the box?", ["box"], "contenu du colis", "what's in the box"), O("Est-il compatible avec mon matériel ?", "Is it compatible with my devices?", ["compatibility"], "compatibilités", "compatibility")],
+  beaute: [O("Convient-il à mon type de peau ?", "Is it right for my skin type?", ["usage"], "types de peau concernés", "suitable skin types"), O("Que contient-il ?", "What's in it?", ["ingredients", "materials"], "liste des ingrédients (INCI)", "ingredient list (INCI)"), O("Comment l'utiliser ?", "How do I use it?", ["usage"], "mode d'emploi", "instructions for use")],
+  mode: [O("Quelle taille choisir ?", "Which size should I pick?", ["sizes", "dimensions"], "guide des tailles", "size guide"), O("En quelle matière ?", "What is it made of?", ["materials"], "composition", "fabric composition"), O("Comment l'entretenir ?", "How do I care for it?", ["care"], "conseils d'entretien", "care instructions")],
+  bijoux: [O("En quelle matière ?", "What is it made of?", ["materials"], "matière et finition", "material and finish"), O("Quelles sont ses dimensions ?", "What size is it?", ["dimensions"], "dimensions", "dimensions"), O("Comment l'entretenir ?", "How do I care for it?", ["care"], "conseils d'entretien", "care instructions")],
+  maison: [O("Quelles sont ses dimensions ?", "What are the dimensions?", ["dimensions"], "dimensions", "dimensions"), O("En quelle matière ?", "What is it made of?", ["materials"], "matière", "material"), O("Comment l'entretenir ?", "How do I care for it?", ["care"], "conseils d'entretien", "care instructions")],
+  sport: [O("Pour quel usage est-il conçu ?", "What is it designed for?", ["usage"], "usage prévu", "intended use"), O("Quelle taille et quel poids ?", "What size and weight?", ["dimensions", "weight"], "taille et poids", "size and weight"), O("Comment l'entretenir ?", "How do I care for it?", ["care"], "conseils d'entretien", "care instructions")],
+  alimentation: [O("Quels sont les ingrédients et allergènes ?", "What are the ingredients and allergens?", ["ingredients", "materials"], "ingrédients et allergènes", "ingredients and allergens"), O("D'où vient-il ?", "Where does it come from?", ["origin"], "origine", "origin"), O("Comment le conserver ?", "How should I store it?", ["care", "origin"], "conservation", "storage")],
+  animaux: [O("Convient-il à mon animal ?", "Is it right for my pet?", ["usage"], "animaux et tailles concernés", "suitable animals and sizes"), O("En quelle matière ?", "What is it made of?", ["materials"], "matière", "material"), O("Comment le nettoyer ?", "How do I clean it?", ["care"], "conseils de nettoyage", "cleaning instructions")],
+  artisanat: [O("Comment est-il fabriqué ?", "How is it made?", ["origin"], "fabrication", "how it's made"), O("En quelles matières ?", "What materials are used?", ["materials"], "matières", "materials"), O("Comment l'entretenir ?", "How do I care for it?", ["care"], "conseils d'entretien", "care instructions")],
+};
+
+/** Questions et réponses d'objections pour un produit : réponse = fait confirmé, sinon espace réservé. */
+export function objectionAnswers(product: ProductProfile): { q: string; a: string }[] {
+  const list = SECTOR_OBJECTIONS[(product.sector ?? "maison") as ProductSectorId] ?? SECTOR_OBJECTIONS.maison;
+  const facts = product.facts.filter(known);
+  return list.map((o) => {
+    const found = o.keys.map((k) => facts.find((x) => x.key === k)).filter((x): x is Fact => !!x);
+    // Une seule information : la valeur ; plusieurs (fiche technique) : « Libellé : valeur » pour chacune, trois au plus.
+    const a = !found.length ? unk(o.unknown[0], o.unknown[1]) : found.length === 1 ? sentence(found[0].value) : found.slice(0, 3).map((f) => C(`${f.label} : ${f.value.trim().replace(/[.;]+$/, "")}`, `${f.label}: ${f.value.trim().replace(/[.;]+$/, "")}`)).join(C(" ; ", "; ")) + ".";
+    return { q: C(o.q[0], o.q[1]), a };
+  });
+}
+/** Valeur d'un fait rendue en phrase (majuscule, point final). */
+const sentence = (v: string) => {
+  const t = v.trim();
+  const up = t.charAt(0).toLocaleUpperCase() + t.slice(1);
+  return /[.!?…\]]$/.test(up) ? up : `${up}.`;
+};
+/** Texte coupé proprement à la fin d'un mot (méta-description, extraits), sans points de suspension. */
+export function clip(text: string, max: number): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max + 1);
+  const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+  if (end >= max * 0.6) return t.slice(0, end + 1);
+  return `${cut.replace(/[\s,;:]+\S*$/, "").replace(/[\s,;:]+$/, "")}.`;
+}
+
+/**
  * Expressions courtes du bandeau et du texte défilant : uniquement des informations confirmées du produit
  * (contenance, coloris, matière…), jamais de promesse générique (« fait pour durer », « origine indiquée »).
  */
@@ -52,7 +99,7 @@ export function factMarquee(product: ProductProfile, brand: Pick<Brand, "name" |
   const out: string[] = [];
   const add = (t: string | undefined) => {
     const v = t?.replace(/\s+/g, " ").trim().replace(/[.;,]+$/, "");
-    if (v && v.length <= 32 && !out.some((x) => x.toLowerCase() === v.toLowerCase())) out.push(v);
+    if (v && v.length <= 32 && !out.some((x) => x.toLowerCase() === v.toLowerCase())) out.push(v.charAt(0).toLocaleUpperCase() + v.slice(1));
   };
   for (const v of product.variants) if (v.values.length > 1) add(C(`${v.values.length} ${v.name.toLowerCase()}${/s$/i.test(v.name) ? "" : "s"} au choix`, `${v.values.length} ${v.name.toLowerCase()}${/s$/i.test(v.name) ? "" : "s"} to choose from`));
   for (const f of product.facts.filter((f) => f.status === "confirmed" && f.value.trim() && !["price", "name", "summary", "shipping", "returns"].includes(f.key))) {
@@ -85,6 +132,8 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
   const lead = heroLead(firstSentence);
 
   const featureFacts = facts.filter((f) => !["price", "name"].includes(f.key)).slice(0, 4);
+  // Informations importantes encore inconnues (hors logistique) : signalées sur la fiche, jamais devinées.
+  const toConfirm = product.facts.filter((f) => f.status === "unknown" && !["price", "name", "shipping", "returns"].includes(f.key)).slice(0, 2);
   const icons = ["sparkle", "leaf", "hand", "shield"] as const;
   const features = featureFacts.length >= 2
     ? featureFacts.map((f, i) => ({ title: f.label, text: f.value, icon: icons[i % icons.length] }))
@@ -104,9 +153,15 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
 
   const delivery = fact("shipping") ?? unk("délais et tarifs de livraison", "shipping times and rates");
   const returns = fact("returns") ?? unk("conditions de retour", "return policy");
+  // SEO : mot-clé de la catégorie (ce que tape l'acheteur) avec le nom et la marque, dans la limite de 60 caractères.
+  const cat = product.category?.trim() ?? "";
+  const withCat = `${name}, ${cat.charAt(0).toLocaleLowerCase()}${cat.slice(1)} | ${brand.name}`;
+  const seoTitle = cat && !name.toLowerCase().includes(cat.toLowerCase()) && withCat.length <= 60 ? withCat : `${name} | ${brand.name}`;
+  const objections = objectionAnswers(product);
+  const specsHtml = specs.length ? `<ul>${specs.map((x) => `<li><strong>${x.label}${C(" :", ":")}</strong> ${x.value}</li>`).join("")}</ul>` : `<p>${unk("caractéristiques", "specifications")}</p>`;
 
   return {
-    seo: { title: `${name} | ${brand.name}`, description: summary.slice(0, 155) },
+    seo: { title: seoTitle, description: clip(summary, 155) },
     announcement: [],
     hero: {
       eyebrow: v.eyebrow,
@@ -114,9 +169,13 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
       line1: name.split(" ").slice(0, 2).join(" ") || brand.name,
       line2: brand.tagline ? brand.tagline.split(" ").slice(0, 4).join(" ") : C("par ", "by ") + brand.name,
       text: lead,
-      cta: C("Découvrir", "Discover"),
+      // Bouton qui dit où il mène (le produit nommé) plutôt qu'un « Découvrir » passe-partout.
+      cta: product.name && product.name.length <= 14 ? C(`Voir ${product.name}`, `See ${product.name}`) : C("Voir le produit", "See the product"),
     },
-    statement: { eyebrow: brand.name, heading: brand.tagline || summary, text: brand.story || "" },
+    // Pas de doublon avec le héros (qui porte déjà la signature) : le fait le plus parlant, ou le résumé.
+    statement: brand.tagline && featureFacts[0] && featureFacts[0].value.length <= 110
+      ? { eyebrow: featureFacts[0].label, heading: sentence(featureFacts[0].value).replace(/\.$/, ""), text: brand.story || (summary !== lead ? summary : "") }
+      : { eyebrow: brand.name, heading: brand.tagline ? heroLead(firstSentence, 90) : summary, text: brand.story || "" },
     features: { heading: C("Ce qu'il faut savoir", "Good to know"), items: features.slice(0, 4) },
     story: { heading: C(`${name}, en détail`, `${name}, in detail`), steps },
     detail: { eyebrow: v.eyebrow, heading: name, text: summary },
@@ -124,10 +183,12 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
     faq: {
       heading: C("Questions fréquentes", "FAQ"),
       items: [
+        // Objections de l'acheteur dans ce secteur d'abord, puis la logistique.
+        ...objections,
+        ...((SECTOR_OBJECTIONS[(product.sector ?? "maison") as ProductSectorId] ?? []).some((o) => o.keys.includes("usage") || o.keys.includes("function")) ? [] : [{ q: C("Comment l'utiliser ?", "How do I use it?"), a: fact("usage") ? sentence(fact("usage")!) : unk("mode d'emploi", "instructions for use") }]),
         { q: C("Quels sont les délais de livraison ?", "How long does shipping take?"), a: delivery },
         { q: C("Puis-je retourner ma commande ?", "Can I return my order?"), a: returns },
-        { q: C(`Comment utiliser ${name} ?`, `How do I use ${name}?`), a: fact("usage") ?? unk("mode d'emploi", "instructions for use") },
-      ],
+      ].slice(0, 8),
     },
     marquee: factMarquee(product, brand),
     gallery: { heading: C("En images", "Gallery"), captions: [] },
@@ -136,10 +197,17 @@ export function localCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
     product: {
       title: name,
       short: summary,
-      description_html: `<p>${summary}</p>`,
-      highlights: featureFacts.slice(0, 4).map((f) => C(`${f.label} : ${f.value}`, `${f.label}: ${f.value}`)),
+      // Accroche, puis les faits confirmés en liste, puis ce qui reste à préciser (honnêtement visible).
+      description_html: `<p>${summary}</p>${featureFacts.length ? `<ul>${featureFacts.map((f) => `<li><strong>${f.label}</strong>${C(" : ", ": ")}${f.value}</li>`).join("")}</ul>` : ""}${toConfirm.length ? `<p><strong>${C("Bon à savoir", "Good to know")}${C(" :", ":")}</strong> ${toConfirm.map((f) => unkLabel(f.label)).join(" ")}</p>` : ""}`,
+      // Points forts courts (2 à 6 mots) : la valeur seule quand elle est brève, sinon le libellé et une valeur courte.
+      highlights: featureFacts.map((f) => {
+        const head = f.value.split(/[,:;(]/)[0].trim();
+        return head.length >= 3 && head.length <= 40 ? sentence(head).replace(/\.$/, "") : f.label;
+      }).slice(0, 4),
       tabs: [
-        { heading: v.careTitle, content_html: `<p>${fact("materials") ?? fact("composition") ?? unkLabel(v.careTitle)}</p>` },
+        { heading: C("Caractéristiques", "Specifications"), content_html: specsHtml },
+        ...(/caractéristiques|specs/i.test(v.careTitle) ? [] : [{ heading: v.careTitle, content_html: `<p>${fact("materials") ?? fact("composition") ?? unkLabel(v.careTitle)}</p>` }]),
+        ...(fact("box") ? [{ heading: C("Contenu du colis", "What's in the box"), content_html: `<p>${sentence(fact("box")!)}</p>` }] : []),
         { heading: C("Livraison et retours", "Shipping and returns"), content_html: `<p>${delivery}</p><p>${returns}</p>` },
       ],
       reassurance: [],
@@ -206,6 +274,8 @@ function localServiceCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
     { q: serviceAreaQuestion(info), a: info[0].value },
     { q: C("Quels sont vos horaires ?", "What are your opening hours?"), a: profile?.hours?.trim() || unknownText("horaires", "opening hours") },
     ...(durations.length ? [{ q: C("Combien de temps dure une prestation ?", "How long does a session take?"), a: durations.map((s) => C(`${s.name} : ${s.duration!.trim()}`, `${s.name}: ${s.duration!.trim()}`)).join(C(" ; ", "; ")) + "." }] : []),
+    // Le délai est le premier frein d'un client local : question posée, réponse seulement si elle est fournie.
+    serviceIsMobile(product) ? { q: C("Sous quel délai pouvez-vous intervenir ?", "How soon can you come out?"), a: unknownText("délai habituel d'intervention", "usual response time") } : { q: C("Quand puis-je avoir un rendez-vous ?", "How soon can I get an appointment?"), a: profile?.bookingUrl?.trim() ? C("Les créneaux disponibles sont affichés en ligne, au moment de réserver.", "Available slots are shown online when you book.") : unknownText("délai habituel pour un rendez-vous", "usual wait for an appointment") },
     profile?.contactMode === "quote" ? { q: C("Que comprend le devis ?", "What does the quote include?"), a: unknownText("contenu du devis, validité et acompte éventuel", "what the quote covers, how long it is valid, any deposit") } : { q: C("Comment annuler ou déplacer un rendez-vous ?", "How do I cancel or reschedule?"), a: unknownText("conditions d'annulation et de report", "cancellation and rescheduling terms") },
   ].slice(0, 12);
 
@@ -224,7 +294,7 @@ function localServiceCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
   const practicalHtml = info.map((r) => `<p><strong>${r.label}${C(" :", ":")}</strong> ${r.value}</p>`).join("");
 
   return {
-    seo: { title: `${brand.name}${activity !== brand.name ? ` | ${activity}` : ""}${areaTail ? ` | ${area}` : ""}`.slice(0, 70), description: summary.slice(0, 155) },
+    seo: { title: localSeoTitle(product, activity, brand.name, area), description: clip(`${summary.replace(/[.\s]+$/, "")}. ${cta}.`.length <= 155 ? `${summary.replace(/[.\s]+$/, "")}. ${cta}.` : summary, 155) },
     announcement: [],
     hero: {
       eyebrow,
@@ -234,7 +304,8 @@ function localServiceCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
       text: lead,
       cta,
     },
-    statement: { eyebrow: brand.name, heading: brand.tagline || summary, text: brand.story || "" },
+    // Le héros porte déjà la signature : la déclaration dit le métier (résumé), sans doublon.
+    statement: { eyebrow: brand.name, heading: brand.tagline ? heroLead(summary.split(/(?<=[.!?])\s/)[0], 90) : summary, text: brand.story || "" },
     features: { heading: C("Nos prestations", "Our services"), items: offer.slice(0, 6) },
     story: { heading: C("Comment ça se passe", "How it works"), steps },
     detail: { eyebrow, heading: activity, text: summary },
@@ -275,6 +346,25 @@ function localServiceCopy(product: ProductProfile, brand: Pick<Brand, "name" | "
     contact: { heading: profile?.contactMode === "booking" ? C("Prendre rendez-vous", "Book an appointment") : profile?.contactMode === "quote" ? C("Demander un devis", "Request a quote") : C("Contact", "Contact"), text: C("Une question, un projet ? ", "A question, a project? ") + book },
     footer: { about: brand.tagline || summary.slice(0, 120), newsletter: C("Conseils et actualités, sans excès.", "Tips and news, never too often.") },
   };
+}
+
+/**
+ * Titre SEO local : « Métier à Ville | Nom » (la requête que tape un client de la zone), 60 caractères au plus ;
+ * à défaut, l'activité puis le nom. Rien n'est ajouté qui n'a pas été saisi.
+ */
+export function localSeoTitle(product: Pick<ProductProfile, "category">, activity: string, brandName: string, area: string): string {
+  const cat = product.category?.trim() ?? "";
+  const city = area.split(/[,(/]| et | and /)[0].trim();
+  const fits = (x: string) => x.length <= 60;
+  const named = (x: string) => new RegExp(`(^|[^\\p{L}])${brandName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}])`, "iu").test(x);
+  const tail = (x: string) => (brandName && !named(x) ? `${x} | ${brandName}` : x);
+  if (cat && city && !areaMentioned(cat, city)) {
+    const t = tail(C(`${cat.charAt(0).toLocaleUpperCase()}${cat.slice(1)} à ${city}`, `${cat.charAt(0).toLocaleUpperCase()}${cat.slice(1)} in ${city}`));
+    if (fits(t)) return t;
+  }
+  const a = tail(activity);
+  if (fits(a)) return a;
+  return clip(brandName || activity, 60);
 }
 
 const serviceAreaQuestion = (info: { label: string }[]) => (info[0].label === C("Adresse", "Address") ? C("Où nous trouver ?", "Where can I find you?") : C("Où intervenez-vous ?", "Which areas do you cover?"));

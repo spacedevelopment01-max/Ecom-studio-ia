@@ -1,0 +1,369 @@
+/**
+ * Direction artistique du logo, comme en agence : trois PISTES créatives vraiment différentes, chacune avec
+ * un concept nommé, sa justification, sa typographie, sa palette, sa composition et ses déclinaisons.
+ *  (a) « produit »  : symbole inspiré de la forme du produit (silhouette, détail signature) ;
+ *  (b) « concept »  : symbole conceptuel issu de l'idée de marque (métaphore, geste, émotion — jamais une icône cliché) ;
+ *  (c) « typo »     : logotype travaillé, avec un monogramme dessiné (formes, jamais de texte).
+ *
+ * Avec l'IA : brief des trois pistes → SVG nettoyés par liste blanche → lisibilité 16/32 px → planche de mises en
+ * situation → contrôle « directeur de création » (grille notée, seuil exigeant) → une reprise ciblée par piste
+ * ratée → sinon la piste est REMPLACÉE par une version du studio (contrôlée elle aussi), jamais montrée.
+ * Sans IA : silhouette du produit (ou pictogramme de bibliothèque), monogramme géométrique construit localement,
+ * logotype soigné — présentés comme tels, sans prétendre à une création par IA.
+ */
+import type { BrandPalette } from "../theme/directions";
+import { contrast } from "../color";
+import { CANVAS_FONTS } from "../media/fonts";
+import { fitSymbol, sanitizeSymbolSvg, silhouetteSymbol, symbolLegibility, type CustomSymbol } from "../media/logo-symbol";
+import { buildMonogram, monogramLetter, type MonogramFrame } from "../media/monogram";
+import { ROUTE_CRITERIA, ROUTE_KEYS, routeBoard, safeColors, type CreativeRoute, type RouteColors, type RouteKey, type RouteReview } from "../media/brand-mockups";
+import type { SymbolKind } from "../media/logo";
+import { C, L } from "../i18n-server";
+
+export type PaletteRole = keyof BrandPalette;
+const ROLES: PaletteRole[] = ["primary", "secondary", "accent", "light", "dark"];
+
+/** Paires de polices disponibles (assets/fonts) : titre (logo) + texte. */
+export const FONT_PAIRS: { heading: string; weight: number; body: string; mood: string }[] = [
+  { heading: "Playfair Display", weight: 700, body: "Inter", mood: "éditorial, contrasté" },
+  { heading: "Cormorant", weight: 600, body: "Jost", mood: "raffiné, luxe discret" },
+  { heading: "Instrument Serif", weight: 400, body: "DM Sans", mood: "contemporain, sensible" },
+  { heading: "Libre Baskerville", weight: 700, body: "Karla", mood: "classique, rassurant" },
+  { heading: "Lora", weight: 600, body: "Work Sans", mood: "chaleureux, artisanal" },
+  { heading: "Montserrat", weight: 800, body: "Inter", mood: "affirmé, direct" },
+  { heading: "Archivo", weight: 800, body: "Work Sans", mood: "robuste, technique" },
+  { heading: "Space Grotesk", weight: 700, body: "Inter", mood: "tech, précis" },
+  { heading: "Bricolage Grotesque", weight: 800, body: "DM Sans", mood: "joyeux, singulier" },
+  { heading: "Jost", weight: 600, body: "Lora", mood: "géométrique, doux" },
+  { heading: "Chivo", weight: 800, body: "Karla", mood: "sportif, énergique" },
+];
+
+/** Brief d'une piste rédigé par l'IA (avant nettoyage et contrôle). */
+export type RouteDraft = {
+  key: RouteKey;
+  name: string;
+  why: string;
+  svg: string;
+  heading: string;
+  headingWeight: number;
+  body: string;
+  case: CreativeRoute["case"];
+  tracking: number;
+  composition: CreativeRoute["composition"];
+  ink: PaletteRole;
+  accent: PaletteRole;
+  ground: PaletteRole;
+};
+
+/** Accès à l'IA (injecté : réel dans le studio, simulé dans les tests). */
+export type CreativeAi = {
+  routes(): Promise<RouteDraft[]>;
+  redraw(key: RouteKey, feedback: string, previous: RouteDraft | null): Promise<RouteDraft>;
+  review(route: CreativeRoute, board: Buffer): Promise<RouteReview>;
+};
+
+export type BrandInput = {
+  name: string;
+  tagline?: string;
+  palette: BrandPalette;
+  direction: string;
+  sector?: string | null;
+};
+
+export const MAX_ROUTE_DRAWS = 2;
+/** Seuil d'exigence d'une piste de l'IA : aucune note sous 6, moyenne d'au moins 7,5. */
+export const ROUTE_MIN_SCORE = 6;
+export const ROUTE_MIN_MEAN = 7.5;
+
+const clamp10 = (n: unknown) => {
+  const x = typeof n === "number" ? n : Number(n);
+  return Number.isFinite(x) ? Math.max(0, Math.min(10, x)) : 0;
+};
+
+/**
+ * Une piste peut-elle être montrée ? Défauts rédhibitoires : cliché, ressemblance avec une marque connue,
+ * monogramme illisible comme lettres. Piste de l'IA : toutes les notes ≥ 6 et moyenne ≥ 7,5.
+ * Version du studio (repli) : on n'en attend pas d'originalité, mais elle doit être nette en petit, simple et cohérente.
+ */
+export function routePassed(r: RouteReview | null | undefined, source: "ai" | "local"): boolean {
+  if (!r || r.cliche !== false || r.resemblesKnownBrand !== false || r.readsAsLetters === false) return false;
+  const s = ROUTE_CRITERIA.map((k) => clamp10(r.scores?.[k]));
+  if (source === "local") return ["smallSizes", "simplicity", "coherence"].every((k) => clamp10(r.scores?.[k as keyof RouteReview["scores"]]) >= ROUTE_MIN_SCORE);
+  return s.every((x) => x >= ROUTE_MIN_SCORE) && s.reduce((a, b) => a + b, 0) / s.length >= ROUTE_MIN_MEAN;
+}
+
+const CRITERION_FR: Record<string, string> = { originality: "originalité", memorability: "mémorisation", relevance: "pertinence", simplicity: "simplicité", smallSizes: "lisibilité à 16 px et en noir et blanc", coherence: "cohérence typo/couleur", distinctiveness: "singularité (pas de cliché du secteur)" };
+
+/** Consignes de reprise ciblée tirées de la grille. */
+export function reviewFeedback(r: RouteReview): string {
+  const low = ROUTE_CRITERIA.filter((k) => clamp10(r.scores?.[k]) < 7).map((k) => `${CRITERION_FR[k]} ${clamp10(r.scores?.[k])}/10`);
+  return [
+    r.cliche && "cliché du secteur : à remplacer par une idée propre à la marque",
+    r.resemblesKnownBrand && "ressemble à un logo existant : changer de forme",
+    r.readsAsLetters === false && "le monogramme ne se lit pas comme les lettres voulues",
+    low.length && `notes faibles : ${low.join(", ")}`,
+    ...(r.issues ?? []),
+    r.fix && `piste de correction : ${r.fix}`,
+  ]
+    .filter(Boolean)
+    .join(" ; ");
+}
+
+const ELEGANT = ["atelier", "galerie", "joaillerie"];
+const BOLD = ["brut", "elan", "flux", "pop", "nocturne"];
+const pair = (h: string) => FONT_PAIRS.find((p) => p.heading === h)!;
+
+/** Couleurs d'une piste et rôles d'origine (pour suivre un changement de palette). */
+export function colorsOf(pal: BrandPalette, ink: PaletteRole, accent: PaletteRole, ground: PaletteRole, tint: PaletteRole = "secondary") {
+  return { colors: roleColors(pal, ink, accent, ground, tint), roles: { ink, accent, ground, tint } };
+}
+
+/** Couleurs d'une piste à partir des rôles de la palette de la marque (la boutique reste cohérente). */
+export function roleColors(pal: BrandPalette, ink: PaletteRole, accent: PaletteRole, ground: PaletteRole, tint: PaletteRole = "secondary"): RouteColors {
+  return safeColors({ ink: pal[ink], accent: pal[accent], ground: pal[ground], tint: pal[tint] });
+}
+
+const LIB_LABEL: Record<SymbolKind, [string, string]> = {
+  leaf: ["feuille", "leaf"], drop: ["goutte", "drop"], hanger: ["cintre", "hanger"], orbit: ["orbite", "orbit"], bean: ["grain", "bean"], paw: ["patte", "paw"], arch: ["arche", "arch"], wave: ["vague", "wave"], facet: ["facette", "facet"], sun: ["soleil", "sun"], cup: ["tasse", "cup"], spark: ["étoile", "star"],
+};
+
+/**
+ * Pistes du studio, sans IA, dans l'ordre des emplacements : silhouette du produit (sinon pictogramme de la
+ * bibliothèque, signalé comme générique), monogramme géométrique construit localement, logotype soigné.
+ */
+export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | null; library: SymbolKind }): Promise<Record<RouteKey, CreativeRoute[]>> {
+  const pal = brand.palette;
+  const elegant = ELEGANT.includes(brand.direction);
+  const bold = BOLD.includes(brand.direction);
+  const soft = ["enfants", "animaux", "alimentation"].includes(brand.sector ?? "");
+  const A = pair(bold ? "Archivo" : soft ? "Jost" : elegant ? "Jost" : "Montserrat");
+  const B = pair(elegant ? "Cormorant" : bold ? "Bricolage Grotesque" : soft ? "Bricolage Grotesque" : "Playfair Display");
+  const Cp = pair(elegant ? "Instrument Serif" : bold ? "Chivo" : soft ? "Lora" : "Libre Baskerville");
+  const notes: string[] = [];
+  const produit: CreativeRoute[] = [];
+  if (opts.cutout) {
+    const sil = await silhouetteSymbol(opts.cutout).catch((e) => ({ ok: false as const, reason: (e as Error).message }));
+    if (sil.ok)
+      produit.push({
+        key: "produit",
+        name: C("Silhouette", "Silhouette"),
+        why: C(`Le symbole reprend la silhouette réelle du produit, simplifiée en aplat : on reconnaît l'objet d'un coup d'œil, jusque dans un onglet de navigateur. Le nom, en ${A.heading}, l'accompagne sans lui voler la vedette.`, `The symbol is the product's real silhouette, simplified into a solid shape: the object is recognizable at a glance, down to a browser tab. The name, set in ${A.heading}, supports it without stealing the show.`),
+        source: "local",
+        markKind: "silhouette",
+        mark: sil.symbol,
+        heading: A.heading,
+        headingWeight: bold ? 800 : 600,
+        body: A.body,
+        case: "upper",
+        tracking: 0.1,
+        composition: "horizontal",
+        ...colorsOf(pal, "dark", "primary", "primary"),
+        notes: [],
+      });
+    else notes.push(`silhouette écartée : ${sil.reason}`);
+  }
+  const [fr, en] = LIB_LABEL[opts.library];
+  produit.push({
+    key: "produit",
+    name: C("Pictogramme", "Pictogram"),
+    why: C(`Version de secours : un pictogramme simple de la bibliothèque du studio (« ${fr} »), choisi d'après l'univers du produit. Il n'est pas propre à la marque : à remplacer par un symbole sur mesure dès que possible.`, `Fallback version: a simple pictogram from the studio library ("${en}"), chosen from the product's world, It isn't unique to the brand: replace it with a custom symbol when possible.`),
+    source: "local",
+    markKind: "library",
+    mark: null,
+    library: opts.library,
+    heading: A.heading,
+    headingWeight: bold ? 800 : 600,
+    body: A.body,
+    case: "upper",
+    tracking: 0.08,
+    composition: "horizontal",
+    ...colorsOf(pal, "dark", "primary", "primary"),
+    notes,
+  });
+
+  const concept: CreativeRoute[] = [];
+  const frames: MonogramFrame[] = CANVAS_FONTS[B.heading]?.kind === "serif" ? ["arch", "inversion", "disc"] : ["corner", "disc"];
+  for (const frame of frames) {
+    const mark = buildMonogram(brand.name, { family: B.heading, weight: B.weight, frame, tone: "accent" });
+    if (!mark) continue;
+    const letter = monogramLetter(brand.name);
+    concept.push({
+      key: "concept",
+      name: C(`Monogramme ${letter}`, `${letter} monogram`),
+      why: C(`L'initiale de ${brand.name}, en ${B.heading}, est découpée dans une forme géométrique : une marque compacte qui tient dans un avatar rond comme dans un onglet. Monogramme construit automatiquement par le studio, sans création par IA.`, `The initial of ${brand.name}, set in ${B.heading}, is cut out of a geometric shape: a compact mark that fits a round avatar as well as a browser tab. Monogram built automatically by the studio, not created by AI.`),
+      source: "local",
+      markKind: "monogram",
+      mark,
+      heading: B.heading,
+      headingWeight: B.weight,
+      body: B.body,
+      case: elegant ? "upper" : "title",
+      tracking: elegant ? 0.16 : 0.02,
+      composition: "stacked",
+      ...colorsOf(pal, "dark", "primary", "dark", "light"),
+      notes: [],
+    });
+    break;
+  }
+
+  const typo: CreativeRoute[] = [];
+  const letterMark = buildMonogram(brand.name, { family: Cp.heading, weight: Cp.weight, frame: "none", tone: "main", dot: true }) ?? buildMonogram(brand.name, { family: "Montserrat", weight: 800, frame: "none", tone: "main", dot: true });
+  const tcase: CreativeRoute["case"] = bold ? "upper" : elegant ? "title" : brand.name.length <= 8 ? "upper" : "title";
+  typo.push({
+    key: "typo",
+    name: C("Logotype", "Wordmark"),
+    why: C(`Le nom seul, en ${Cp.heading}${tcase === "upper" ? " capitales" : ""}, ponctué d'un point dans la couleur d'accent : la marque s'impose par son nom, comme une affirmation. Dans les petits formats (avatar, favicon), l'initiale et son point prennent le relais.`, `The name alone, set in ${Cp.heading}${tcase === "upper" ? " capitals" : ""}, closed by a dot in the accent color: the brand stands on its name, like a statement. In small formats (avatar, favicon), the initial and its dot take over.`),
+    source: "local",
+    markKind: "letter",
+    mark: letterMark,
+    heading: Cp.heading,
+    headingWeight: Cp.weight,
+    body: Cp.body,
+    case: tcase,
+    tracking: tcase === "upper" ? (bold ? 0.04 : 0.14) : 0.01,
+    composition: "wordmark",
+    dot: true,
+    // Fond de couleur : l'accent s'il porte le blanc sans être assombri (sinon il tournerait au brun), sinon la principale.
+    ...colorsOf(pal, "dark", "accent", contrast(pal.accent, "#FFFFFF") >= 3.5 ? "accent" : "primary"),
+    notes: [],
+  });
+  return { produit, concept, typo };
+}
+
+/** Piste construite à partir du brief de l'IA, ou raison du refus (consigne de reprise). */
+export function routeFromDraft(d: RouteDraft, brand: BrandInput): { ok: true; route: CreativeRoute } | { ok: false; reason: string } {
+  const no = (reason: string) => ({ ok: false as const, reason });
+  if (!d || !ROUTE_KEYS.includes(d.key)) return no("piste inconnue");
+  const name = (d.name ?? "").trim();
+  const why = (d.why ?? "").trim();
+  if (name.length < 2 || name.length > 40) return no("nom du concept absent ou trop long (40 caractères au plus)");
+  if (why.length < 40 || why.length > 360) return no("« pourquoi ce logo » : deux phrases, 360 caractères au plus");
+  if (!CANVAS_FONTS[d.heading]) return no(`police de titre indisponible (${d.heading}) : choisir dans la liste`);
+  if (!CANVAS_FONTS[d.body]) return no(`police de texte indisponible (${d.body}) : choisir dans la liste`);
+  if (!ROLES.includes(d.ink) || !ROLES.includes(d.accent) || !ROLES.includes(d.ground)) return no("couleurs : utiliser les rôles de la palette (primary, secondary, accent, light, dark)");
+  const accentHex = brand.palette[d.accent];
+  const typo = d.key === "typo";
+  const clean = sanitizeSymbolSvg(d.svg, { accent: accentHex, maxShapes: typo ? 5 : 3 });
+  if (!clean.ok) return no(`SVG refusé par la validation : ${clean.reason}`);
+  const mark: CustomSymbol = fitSymbol(clean.symbol, 0.04);
+  const leg = symbolLegibility(mark);
+  if (!leg.ok) return no(`illisible en petit : ${leg.issues.join(" ; ")} — formes plus grandes et plus simples, traits plus épais`);
+  const composition = (["horizontal", "stacked", "emblem", "wordmark"] as const).includes(d.composition) ? d.composition : typo ? "wordmark" : "horizontal";
+  const weights = Object.keys(CANVAS_FONTS[d.heading].file).map(Number);
+  const weight = weights.reduce((a, b) => (Math.abs(b - d.headingWeight) < Math.abs(a - d.headingWeight) ? b : a), weights[0]);
+  return {
+    ok: true,
+    route: {
+      key: d.key,
+      name,
+      why,
+      source: "ai",
+      markKind: typo ? "ai-monogram" : "ai-symbol",
+      mark,
+      heading: d.heading,
+      headingWeight: weight,
+      body: d.body,
+      case: (["upper", "title", "lower", "asis"] as const).includes(d.case) ? d.case : "upper",
+      tracking: Math.max(0, Math.min(0.3, Number(d.tracking) || 0.04)),
+      composition,
+      // Logotype seul d'une piste typographique dont le monogramme a un détail d'accent : le nom reprend ce détail (point final).
+      dot: typo && composition === "wordmark" && mark.shapes.some((x) => x.tone === "accent"),
+      ...colorsOf(brand.palette, d.ink, d.accent, d.ground, d.ground === "secondary" ? "light" : "secondary"),
+      notes: [],
+    },
+  };
+}
+
+export type RoutesDesign = { routes: CreativeRoute[]; notes: string[]; ai: "used" | "unavailable" | "off" };
+
+/**
+ * Trois pistes contrôlées. Une piste refusée n'est jamais montrée : elle est reprise une fois (consignes ciblées),
+ * puis remplacée par la version du studio de son emplacement, contrôlée elle aussi quand l'IA est disponible.
+ */
+export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; ai: CreativeAi | null; textIssues?: (text: string) => string[] }): Promise<RoutesDesign> {
+  const { brand, ai } = input;
+  const notes: string[] = [];
+  const fallback = await localRoutes(brand, { cutout: input.cutout, library: input.library });
+  const board = (route: CreativeRoute) => routeBoard({ route, brand, product: input.cutout });
+  const out: CreativeRoute[] = [];
+  let aiState: RoutesDesign["ai"] = ai ? "used" : "off";
+  let drafts: RouteDraft[] = [];
+  if (ai) {
+    try {
+      drafts = await ai.routes();
+    } catch (e) {
+      notes.push(`IA indisponible pour les pistes : ${(e as Error).message}`);
+      aiState = "unavailable";
+    }
+  }
+  let reviewDown = false;
+  for (const key of ROUTE_KEYS) {
+    let accepted: CreativeRoute | null = null;
+    if (ai && aiState === "used") {
+      let draft: RouteDraft | null = drafts.find((d) => d?.key === key) ?? null;
+      let feedback = "";
+      for (let attempt = 0; attempt < MAX_ROUTE_DRAWS && !accepted; attempt++) {
+        // Reprise ciblée : seule cette piste est redessinée, avec les défauts relevés.
+        if (attempt > 0 || !draft) {
+          try {
+            draft = await ai.redraw(key, feedback || "piste absente de la première réponse", draft);
+          } catch (e) {
+            notes.push(`${key} : reprise impossible (${(e as Error).message})`);
+            break;
+          }
+        }
+        const built = routeFromDraft(draft!, brand);
+        if (!built.ok) {
+          notes.push(`${key} : piste de l'IA refusée (${built.reason})`);
+          feedback = built.reason;
+          continue;
+        }
+        const words = input.textIssues?.(`${built.route.name}. ${built.route.why}`) ?? [];
+        if (words.length) {
+          notes.push(`${key} : texte refusé (${words.join(", ")})`);
+          feedback = `texte à corriger : ${words.join(", ")} (aucune promesse, aucune formule creuse)`;
+          continue;
+        }
+        let review: RouteReview;
+        try {
+          review = await ai.review(built.route, await board(built.route));
+        } catch (e) {
+          notes.push(`${key} : contrôle de direction artistique impossible (${(e as Error).message}) — piste de l'IA non montrée`);
+          reviewDown = true;
+          break;
+        }
+        if (routePassed(review, "ai")) accepted = { ...built.route, review };
+        else {
+          notes.push(`${key} : piste « ${built.route.name} » refusée au contrôle (${reviewFeedback(review)})`);
+          feedback = reviewFeedback(review);
+        }
+      }
+    }
+    if (!accepted) {
+      for (const cand of fallback[key]) {
+        if (ai && aiState === "used" && !reviewDown) {
+          let review: RouteReview | null = null;
+          try {
+            review = await ai.review(cand, await board(cand));
+          } catch (e) {
+            notes.push(`${key} : contrôle de la version du studio impossible (${(e as Error).message})`);
+            reviewDown = true;
+          }
+          if (review && !routePassed(review, "local")) {
+            notes.push(`${key} : version du studio « ${cand.name} » refusée au contrôle (${reviewFeedback(review)})`);
+            continue;
+          }
+          accepted = { ...cand, review };
+        } else accepted = cand;
+        break;
+      }
+    }
+    if (accepted) out.push(accepted);
+    else notes.push(L(`${key} : aucune piste n'a atteint le niveau exigé ; elle n'est pas présentée.`, `${key}: no route reached the required standard; it isn't shown.`));
+  }
+  // Jamais aucune piste : le logotype du studio (pure typographie) reste montré, avec la raison.
+  if (!out.length) {
+    out.push({ ...fallback.typo[0], notes: [...fallback.typo[0].notes, L("Seule proposition restante après contrôle.", "Only proposal left after review.")] });
+  }
+  return { routes: out, notes: [...notes, ...fallback.produit.flatMap((r) => r.notes)], ai: aiState };
+}

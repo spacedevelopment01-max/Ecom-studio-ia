@@ -9,6 +9,7 @@ import sharp from "sharp";
 import { ensureFonts, font } from "./fonts";
 import { contentLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
+import { drawCustomSymbol, type CustomSymbol } from "./logo-symbol";
 
 /** Locale des capitales : langue des contenus (« fr-FR » en français, comme avant). */
 const loc = () => intlLocale(contentLang());
@@ -21,14 +22,23 @@ export type LogoSpec = {
   italic?: boolean;
   case: "upper" | "title" | "lower" | "asis";
   tracking: number; // en em (0 à 0,4)
-  layout: "wordmark" | "stacked" | "monogram" | "emblem" | "lockup" | "badge";
+  /** vertical : symbole centré au-dessus du nom (et de la signature). */
+  layout: "wordmark" | "stacked" | "monogram" | "emblem" | "lockup" | "badge" | "vertical";
   emblem: "none" | "circle" | "arch" | "line" | "diamond";
   monogram?: string;
   /** Symbole dessiné (lockup, badge) : une forme simple liée à l'univers du produit. */
   symbol?: SymbolKind;
+  /** Symbole sur mesure (dessiné par l'IA ou tiré de la silhouette du produit) : prioritaire sur `symbol`. */
+  custom?: CustomSymbol;
   color: string;
   /** Couleur d'accent du symbole (sinon couleur du logo). */
   accent?: string;
+  /** Logotype : point final dessiné dans la couleur d'accent. */
+  dot?: boolean;
+  /** Police de la signature (sinon Jost). */
+  taglineFamily?: string;
+  /** Marque réduite : cercle autour du symbole (par défaut) ; false pour un symbole qui a déjà son contenant. */
+  markFrame?: boolean;
 };
 
 export type SymbolKind = "leaf" | "drop" | "hanger" | "orbit" | "bean" | "paw" | "arch" | "wave" | "facet" | "sun" | "cup" | "spark";
@@ -82,13 +92,17 @@ export function drawSymbol(ctx: SKRSContext2D, kind: SymbolKind, x: number, y: n
       break;
     }
     case "orbit": {
-      ctx.arc(cx, cy, s * 0.24, 0, Math.PI * 2);
+      // Planète et anneau complet (lecture immédiate « orbite »), satellite posé sur l'anneau.
+      const rot = -Math.PI / 8, rx = s * 0.46, ry = s * 0.15;
+      ctx.arc(cx, cy, s * 0.22, 0, Math.PI * 2);
       stroke();
       ctx.beginPath();
-      ctx.ellipse(cx, cy, s * 0.46, s * 0.12, -Math.PI / 7, Math.PI * 0.08, Math.PI * 0.92, true);
+      ctx.ellipse(cx, cy, rx, ry, rot, 0, Math.PI * 2);
       stroke();
+      const t = -Math.PI * 0.2;
+      const ex = rx * Math.cos(t), ey = ry * Math.sin(t);
       ctx.beginPath();
-      ctx.arc(cx + s * 0.3, cy - s * 0.32, s * 0.06, 0, Math.PI * 2);
+      ctx.arc(cx + ex * Math.cos(rot) - ey * Math.sin(rot), cy + ex * Math.sin(rot) + ey * Math.cos(rot), s * 0.065, 0, Math.PI * 2);
       ctx.fill();
       break;
     }
@@ -194,6 +208,18 @@ export function drawSymbol(ctx: SKRSContext2D, kind: SymbolKind, x: number, y: n
   ctx.restore();
 }
 
+/** Symbole du logo : le symbole sur mesure s'il existe (couleur du logo + accent), sinon celui de la bibliothèque. */
+function drawMark(ctx: SKRSContext2D, spec: LogoSpec, x: number, y: number, s: number, color: string) {
+  if (spec.custom) return drawCustomSymbol(ctx, spec.custom, x, y, s, color, spec.accent);
+  drawSymbol(ctx, spec.symbol ?? "spark", x, y, s, spec.accent ?? color);
+}
+
+/** Signature telle qu'elle s'écrit dans un logo : capitales, sans ponctuation finale ; vide si trop longue. */
+export function logoTagline(tagline: string | undefined, max: number): string {
+  const t = (tagline ?? "").trim().replace(/[\s.。!…]+$/u, "");
+  return t && t.length <= max ? t.toLocaleUpperCase(loc()) : "";
+}
+
 function applyCase(s: string, c: LogoSpec["case"]) {
   if (c === "upper") return s.toLocaleUpperCase(loc());
   if (c === "lower") return s.toLocaleLowerCase(loc());
@@ -250,8 +276,27 @@ export function buildLogo(spec: LogoSpec) {
     const symY = P + (H - P * 2 - sym) / 2;
     const base = P + (H - P * 2 - (m.ascent + m.descent)) / 2 + m.ascent;
     return render(W, H, (ctx) => {
-      drawSymbol(ctx, spec.symbol ?? "spark", P, symY, sym, spec.accent ?? color);
+      drawMark(ctx, spec, P, symY, sym, color);
       text(ctx, name, P + sym + gap, base, fam, wt, size, spec.tracking, color, spec.italic);
+    });
+  }
+  // Symbole centré au-dessus du nom, signature dessous (composition empilée).
+  if (spec.layout === "vertical") {
+    const size = 110;
+    const m = measure(name, fam, wt, size, spec.tracking, spec.italic);
+    const sym = Math.round(m.ascent * 2.6);
+    const tf = spec.taglineFamily ?? "Jost";
+    const tag = logoTagline(spec.tagline, 40);
+    const tagSize = 26;
+    const tm = tag ? measure(tag, tf, 500, tagSize, 0.22) : null;
+    const gap = Math.round(size * 0.42);
+    const W = Math.max(sym, m.width, tm?.width ?? 0) + P * 2;
+    const H = P + sym + gap + m.ascent + m.descent + (tm ? tagSize * 2.2 : 0) + P;
+    return render(W, H, (ctx) => {
+      drawMark(ctx, spec, (W - sym) / 2, P, sym, color);
+      const base = P + sym + gap + m.ascent;
+      text(ctx, name, (W - m.width) / 2, base, fam, wt, size, spec.tracking, color, spec.italic);
+      if (tm) text(ctx, tag, (W - tm.width) / 2, base + m.descent + tagSize * 1.75, tf, 500, tagSize, 0.22, color);
     });
   }
   // Emblème : symbole dans un cercle, nom et signature centrés dessous.
@@ -261,9 +306,10 @@ export function buildLogo(spec: LogoSpec) {
     const words = name.split(/\s+/).filter(Boolean);
     const lines = name.length > 14 && words.length > 1 ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")] : [name];
     const ms = lines.map((l) => measure(l, fam, wt, nameSize, spec.tracking, spec.italic));
-    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase(loc()) : "";
+    // Signature de l'emblème : sans point final, et omise si elle est trop longue pour rester lisible en petit.
+    const tag = logoTagline(spec.tagline, 34);
     const tagSize = 22;
-    const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.26) : null;
+    const tm = tag ? measure(tag, spec.taglineFamily ?? "Jost", 500, tagSize, 0.26) : null;
     const W = Math.max(ring, ...ms.map((x) => x.width), tm?.width ?? 0) + P * 2;
     const lineGap = nameSize * 1.04;
     const H = P + ring + 44 + ms[0].ascent + lineGap * (lines.length - 1) + ms[ms.length - 1].descent + (tm ? tagSize * 2.6 : 0) + P;
@@ -278,13 +324,13 @@ export function buildLogo(spec: LogoSpec) {
       ctx.beginPath();
       ctx.arc(ox + ring / 2, P + ring / 2, ring / 2 - 18, 0, Math.PI * 2);
       ctx.stroke();
-      drawSymbol(ctx, spec.symbol ?? "spark", ox + ring * 0.27, P + ring * 0.27, ring * 0.46, spec.accent ?? color);
+      drawMark(ctx, spec, ox + ring * 0.27, P + ring * 0.27, ring * 0.46, color);
       let y = P + ring + 44 + ms[0].ascent;
       lines.forEach((l, i) => {
         text(ctx, l, (W - ms[i].width) / 2, y, fam, wt, nameSize, spec.tracking, color, spec.italic);
         if (i < lines.length - 1) y += lineGap;
       });
-      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 2, "Jost", 500, tagSize, 0.26, color);
+      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 2, spec.taglineFamily ?? "Jost", 500, tagSize, 0.26, color);
     });
   }
 
@@ -318,10 +364,12 @@ export function buildLogo(spec: LogoSpec) {
       ctx.stroke();
     };
     const mono = (ctx: SKRSContext2D, ox: number) =>
-      spec.symbol && spec.layout === "monogram" && spec.monogram === "@symbol"
-        ? drawSymbol(ctx, spec.symbol, ox + box * 0.25, box * 0.25, box * 0.5, spec.accent ?? color)
+      (spec.symbol || spec.custom) && spec.layout === "monogram" && spec.monogram === "@symbol"
+        ? drawMark(ctx, spec, ox + box * 0.25, box * 0.25, box * 0.5, color)
         : text(ctx, letters, ox + (box - m.width) / 2, box / 2 + (m.ascent - m.descent) / 2, fam, wt, size, 0.02, color, spec.italic);
     if (spec.layout === "monogram") {
+      // Symbole qui a déjà son contenant (disque, arche) : il remplit la marque réduite, sans cercle autour.
+      if (spec.markFrame === false && spec.monogram === "@symbol") return render(box, box, (ctx) => drawMark(ctx, spec, box * 0.06, box * 0.06, box * 0.88, color));
       return render(box, box, (ctx) => {
         frame(ctx, 0);
         mono(ctx, 0);
@@ -344,8 +392,8 @@ export function buildLogo(spec: LogoSpec) {
     const lines = words.length > 1 ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")] : [name];
     const ms = lines.map((l) => measure(l, fam, wt, size, spec.tracking, spec.italic));
     const tagSize = 30;
-    const tag = spec.tagline ? spec.tagline.toLocaleUpperCase(loc()) : "";
-    const tm = tag ? measure(tag, "Jost", 500, tagSize, 0.24) : null;
+    const tag = logoTagline(spec.tagline, 44);
+    const tm = tag ? measure(tag, spec.taglineFamily ?? "Jost", 500, tagSize, 0.24) : null;
     const W = Math.max(...ms.map((m) => m.width), tm?.width ?? 0) + P * 2;
     const lineGap = size * 1.02;
     const H = P + ms[0].ascent + lineGap * (lines.length - 1) + ms[ms.length - 1].descent + (tm ? tagSize * 2.4 : 0) + P;
@@ -355,15 +403,24 @@ export function buildLogo(spec: LogoSpec) {
         text(ctx, l, (W - ms[i].width) / 2, y, fam, wt, size, spec.tracking, color, spec.italic);
         if (i < lines.length - 1) y += lineGap;
       });
-      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 1.9, "Jost", 500, tagSize, 0.24, color);
+      if (tm) text(ctx, tag, (W - tm.width) / 2, y + ms[ms.length - 1].descent + tagSize * 1.9, spec.taglineFamily ?? "Jost", 500, tagSize, 0.24, color);
     });
   }
   const m = measure(name, fam, wt, size, spec.tracking, spec.italic);
   const ruled = spec.emblem === "line";
-  const W = m.width + P * 2;
+  // Point final dessiné, couleur d'accent : le détail qui signe un logotype (épaisseur proche du fût des lettres).
+  const dotR = spec.dot ? size * (wt >= 700 ? 0.085 : wt >= 500 ? 0.07 : 0.055) : 0;
+  const dotGap = spec.dot ? size * (0.05 + spec.tracking) : 0;
+  const W = m.width + (spec.dot ? dotGap + dotR * 2 : 0) + P * 2;
   const H = P + m.ascent + m.descent + P + (ruled ? 26 : 0);
   return render(W, H, (ctx) => {
     text(ctx, name, P, P + m.ascent, fam, wt, size, spec.tracking, color, spec.italic);
+    if (spec.dot) {
+      ctx.fillStyle = spec.accent ?? color;
+      ctx.beginPath();
+      ctx.arc(P + m.width + dotGap + dotR, P + m.ascent - dotR, dotR, 0, Math.PI * 2);
+      ctx.fill();
+    }
     if (ruled) {
       ctx.fillStyle = color;
       ctx.fillRect(P, P + m.ascent + m.descent + 20, m.width, 5);
@@ -390,7 +447,8 @@ export async function logoPng(spec: LogoSpec, width: number): Promise<Buffer> {
 /** Ensemble livrable : logo principal (SVG + PNG), version claire, monogramme et favicon. */
 export async function logoSet(spec: LogoSpec, lightColor = "#FFFFFF") {
   // Avec un symbole, la marque réduite (monogramme, favicon) reprend le symbole plutôt que les initiales.
-  const withSymbol = !!spec.symbol && (spec.layout === "lockup" || spec.layout === "badge");
+  // Un symbole sur mesure (y compris le monogramme dessiné d'un logotype) sert toujours de marque réduite.
+  const withSymbol = !!spec.custom || (!!spec.symbol && (spec.layout === "lockup" || spec.layout === "badge" || spec.layout === "vertical"));
   const monoSpec: LogoSpec = { ...spec, layout: "monogram", emblem: spec.emblem === "none" || spec.emblem === "line" ? "circle" : spec.emblem, ...(withSymbol ? { monogram: "@symbol" } : {}) };
   const lightSpec = { ...spec, color: lightColor, accent: lightColor };
   return {
@@ -400,6 +458,18 @@ export async function logoSet(spec: LogoSpec, lightColor = "#FFFFFF") {
     lightPng: await logoPng(lightSpec, 1200),
     monoSvg: buildLogo(monoSpec).svg,
     monoPng: await logoPng(monoSpec, 800),
-    faviconPng: await sharp(await logoPng(monoSpec, 384)).resize(192, 192).png().toBuffer(),
+    faviconPng: withSymbol ? await symbolFavicon(spec) : await sharp(await logoPng(monoSpec, 384)).resize(192, 192).png().toBuffer(),
   };
+}
+
+/**
+ * Favicon d'un logo à symbole : le symbole seul, qui remplit l'icône (dans un cercle, il ne ferait que 6 px
+ * de haut dans un onglet de 16 px et deviendrait illisible).
+ */
+async function symbolFavicon(spec: LogoSpec): Promise<Buffer> {
+  const c = createCanvas(384, 384);
+  const ctx = c.getContext("2d");
+  const m = spec.custom ? 14 : 24;
+  drawMark(ctx, spec, m, m, 384 - m * 2, spec.color);
+  return sharp(await c.encode("png")).resize(192, 192).png().toBuffer();
 }

@@ -46,7 +46,8 @@ export default function TabMarque() {
   const [guidance, setGuidance] = useState("");
   const active = useActive("brand.build");
   const { data: logos, reload: reloadLogos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=logo,logo-svg,logo-light,logo-light-svg,logo-mark,logo-mark-svg,logo-horizontal,logo-horizontal-svg,favicon,brand-guide,brand-book`);
-  const { data: ident, reload: reloadIdent } = useApi<{ proposals: { id: string; key: string; label: string; concept: string; url: string }[]; current: string | null; provided: boolean; taglines: string[] }>(`/api/projects/${id}/brand/logo`);
+  const { data: ident, reload: reloadIdent } = useApi<{ proposals: Proposal[]; current: string | null; provided: boolean; taglines: string[] }>(`/api/projects/${id}/brand/logo`);
+  const [kitTick, setKitTick] = useState(0);
   const [choosing, setChoosing] = useState<string | null>(null);
   const chooseLogo = async (b: { choice?: string; regenerate?: boolean }) => {
     setChoosing(b.choice ?? "regenerate");
@@ -55,6 +56,7 @@ export default function TabMarque() {
       toast("ok", b.regenerate ? t("Nouvelles propositions de logo prêtes.", "New logo proposals are ready.") : t("Logo appliqué : déclinaisons créées et boutique mise à jour (nouvelle version).", "Logo applied: variations created and store updated (new version)."));
       reloadIdent();
       reloadLogos();
+      setKitTick((k) => k + 1);
       reload();
     } catch (e) {
       toast("bad", (e as Error).message);
@@ -92,10 +94,12 @@ export default function TabMarque() {
     </button>
   );
   const byRole = (r: string) => (logos?.assets ?? []).find((a) => a.role === r);
+  const routes = (ident?.proposals ?? []).filter((x) => x.route);
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
       {active[0] && <JobProgress job={active[0]} />}
+      {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ choice: k })} onRegenerate={() => chooseLogo({ regenerate: true })} />}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <Card className="p-5 sm:p-7">
           <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2">{site?.status !== "read" && <Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button>}<Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
@@ -108,9 +112,16 @@ export default function TabMarque() {
               <>{b.generatedBy === "ai" ? t("Proposée par l'IA à partir du produit.", "Proposed by the AI based on the product.") : t("Base proposée automatiquement : à affiner.", "Automatically suggested starting point: refine as needed.")} {t("Les éléments validés sont conservés lors des nouvelles propositions.", "Approved elements are kept in new proposals.")}</>
             )}
           </SectionTitle>
+          {(b.checks?.length ?? 0) > 0 && (
+            <div className="mb-5 rounded-xl border border-line bg-paper-2 p-3 text-sm" role="note">
+              <p className="font-medium">{t("À vérifier par vous", "For you to check")}</p>
+              <ul className="mt-1 list-disc pl-5 text-muted">{b.checks!.map((c) => <li key={c}>{c}</li>)}</ul>
+            </div>
+          )}
           <div className="grid gap-5">
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between"><label htmlFor="bname" className="text-sm font-medium">{t("Nom de marque", "Brand name")}</label>{V("name")}</div>
+              {b.nameStatus === "proposed" && site?.status !== "read" && <p className="text-xs text-muted">{t("Nom proposé : vérifiez qu'il est libre (INPI, EUIPO, nom de domaine, réseaux sociaux) avant de l'adopter.", "Suggested name: check that it's available (trademark offices, domain name, social handles) before adopting it.")}</p>}
               <Input id="bname" value={b.name} onChange={(e) => set({ name: e.target.value })} className="font-display text-xl" />
               {b.alternatives.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -157,7 +168,7 @@ export default function TabMarque() {
           <Card className="p-5">
             <div className="flex items-center justify-between"><h3 className="flex items-center gap-2 font-display text-lg font-semibold">{t("Logo", "Logo")} {b.logo.status === "provided" && b.logo.assetId && <Badge tone="ok">{t("fourni", "provided")}</Badge>}</h3>{V("logo")}</div>
             <p className="mt-1 text-xs text-muted">{b.logo.concept}</p>
-            {!ident?.provided && (ident?.proposals.length ?? 0) > 0 && (
+            {!ident?.provided && (ident?.proposals.length ?? 0) > 0 && !routes.length && (
               <div className="mt-4">
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">{t("Trois propositions", "Three proposals")}</p>
                 <div className="grid gap-2">
@@ -178,7 +189,7 @@ export default function TabMarque() {
                 {validated.has("logo") && <p className="mt-1 text-[11px] text-muted">{t("Logo validé : déverrouillez-le pour en changer.", "Logo approved: unlock it to change it.")}</p>}
               </div>
             )}
-            <p className="mb-2 mt-5 text-xs font-medium uppercase tracking-wider text-muted">{t("Déclinaisons", "Variations")}</p>
+            <p className="mb-2 mt-5 text-xs font-medium uppercase tracking-wider text-muted">{routes.length ? t("Déclinaisons de la piste choisie", "Variations of the chosen route") : t("Déclinaisons", "Variations")}</p>
             <div className="grid grid-cols-2 gap-2">
               {byRole("logo") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo")!.url} alt={t("Logo principal", "Main logo")} className="max-h-20 object-contain" /></div>}
               {byRole("logo-light") && <div className="grid place-items-center rounded-2xl bg-[#141210] p-4"><img src={byRole("logo-light")!.url} alt={t("Logo clair", "Light logo")} className="max-h-20 object-contain" /></div>}
@@ -206,6 +217,7 @@ export default function TabMarque() {
           <BrandBook />
         </div>
       </div>
+      {routes.length > 0 && <SocialKit tick={kitTick} />}
       {data.strategy && (
         <Card className="p-5 sm:p-7">
           <SectionTitle title={t("Stratégie", "Strategy")}>{t("Angles et messages réutilisés pour les publications et les campagnes.", "Angles and messages reused for posts and campaigns.")}</SectionTitle>
@@ -214,6 +226,31 @@ export default function TabMarque() {
             <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Angles", "Angles")}</p><ul className="mt-2 grid gap-2 text-sm">{data.strategy.angles.map((a) => <li key={a.title}><strong>{a.title}</strong>{t(" : ", ": ")}<span className="text-ink-2">{a.idea}</span></li>)}</ul></div>
             <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Piliers", "Pillars")}</p><div className="mt-2 flex flex-wrap gap-1.5">{data.strategy.pillars.map((p) => <Badge key={p}>{p}</Badge>)}</div></div>
           </div>
+          {data.strategy.platform && (
+            <div className="mt-6 grid gap-6 border-t border-line pt-6 md:grid-cols-2">
+              <div className="grid gap-3 text-sm">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Plateforme de marque", "Brand platform")}</p>
+                {[
+                  [t("Pour qui", "Who it's for"), data.strategy.platform.persona],
+                  [t("Problème résolu", "Problem solved"), data.strategy.platform.problem],
+                  [t("Face à la concurrence", "Versus the competition"), data.strategy.platform.alternatives],
+                  [t("Différence", "What sets it apart"), data.strategy.platform.difference],
+                ].filter(([, v]) => v).map(([k, v]) => <p key={k}><strong>{k}</strong>{t(" : ", ": ")}<span className="text-ink-2">{v}</span></p>)}
+                {data.strategy.platform.proofs.some((x) => x.status === "missing") && (
+                  <p className="rounded-xl bg-paper-2 p-3 text-xs text-ink-2">
+                    <strong>{t("Arguments à prouver avant de les utiliser", "Claims to prove before using them")}{t(" : ", ": ")}</strong>
+                    {data.strategy.platform.proofs.filter((x) => x.status === "missing").map((x) => x.claim).join(t(" ; ", "; "))}
+                  </p>
+                )}
+              </div>
+              {data.strategy.platform.objections.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Objections et réponses", "Objections and answers")}</p>
+                  <ul className="mt-2 grid gap-2 text-sm">{data.strategy.platform.objections.map((o) => <li key={o.objection}><strong>{o.objection}</strong><br /><span className="text-ink-2">{o.answer}</span></li>)}</ul>
+                </div>
+              )}
+            </div>
+          )}
         </Card>
       )}
       <Modal open={regen} onClose={() => setRegen(false)} title={t("Nouvelle proposition de marque", "New brand proposal")}>
@@ -238,6 +275,138 @@ export default function TabMarque() {
         </Button>
       </Modal>
     </div>
+  );
+}
+
+type Proposal = {
+  id: string;
+  key: string;
+  label: string;
+  concept: string;
+  url: string;
+  board: string | null;
+  route: { name: string; why: string; source: "ai" | "local"; markKind: string; heading: string; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; score: number | null } | null;
+  ai: "used" | "unavailable" | "off" | null;
+};
+
+/**
+ * Présentation des trois pistes, comme en agence : concept nommé, « pourquoi ce logo », typographie et couleurs,
+ * planche de mises en situation (avatar, favicon, étiquette, boutique sur téléphone, blanc sur couleur), choix en un clic.
+ */
+function LogoRoutes({ routes, current, choosing, locked, onChoose, onRegenerate }: { routes: Proposal[]; current: string | null; choosing: string | null; locked: boolean; onChoose: (k: string) => void; onRegenerate: () => void }) {
+  const t = useT();
+  const [zoom, setZoom] = useState<Proposal | null>(null);
+  const anyLocal = routes.some((r) => r.route!.source === "local");
+  const aiState = routes[0]?.ai;
+  return (
+    <Card className="p-5 sm:p-7">
+      <SectionTitle
+        title={t("Pistes créatives du logo", "Logo creative routes")}
+        action={<Button size="sm" variant="ghost" icon={<Sparkles className="size-4" />} loading={choosing === "regenerate"} disabled={locked || !!choosing} onClick={onRegenerate}>{t("Nouvelles pistes", "New routes")}</Button>}
+      >
+        {t(`${routes.length} pistes différentes, chacune avec son idée, sa typographie et ses couleurs, présentées en situation. Choisissez celle qui vous ressemble : ses déclinaisons et votre kit réseaux sociaux sont créés aussitôt.`, `${routes.length} different routes, each with its own idea, typeface and colors, shown in real situations. Pick the one that feels like you: its variations and your social media kit are created right away.`)}
+      </SectionTitle>
+      {anyLocal && (
+        <p className="mb-4 rounded-xl border border-line bg-paper-2 p-3 text-xs text-muted" role="note">
+          {aiState === "off"
+            ? t("Sans IA, les pistes sont construites par le studio (silhouette du produit, monogramme géométrique, logotype) : soignées, mais pas créées sur mesure.", "Without AI, the routes are built by the studio (product silhouette, geometric monogram, wordmark): carefully made, but not custom-designed.")
+            : t("Les pistes marquées « version du studio » remplacent une piste de l'IA qui n'a pas passé le contrôle de direction artistique : elles ne sont pas créées sur mesure.", "Routes marked \"studio version\" replace an AI route that failed the art direction review: they aren't custom-designed.")}
+        </p>
+      )}
+      <div className="grid gap-5 md:grid-cols-3">
+        {routes.map((pr, i) => {
+          const r = pr.route!;
+          const on = current === pr.key;
+          return (
+            <div key={pr.id} className={cx("flex flex-col rounded-2xl border p-3", on ? "border-signal ring-2 ring-signal/30" : "border-line")}>
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted">{t(`Piste ${String.fromCharCode(65 + i)}`, `Route ${String.fromCharCode(65 + i)}`)} · {pr.key === "produit" ? t("inspirée du produit", "product-inspired") : pr.key === "concept" ? t("conceptuelle", "conceptual") : t("typographique", "typographic")}</p>
+              <h4 className="mt-1 font-display text-xl font-semibold">{r.name}</h4>
+              <p className="mt-1 text-sm text-ink-2">{r.why}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {r.source === "ai" ? <Badge tone="ok">{t("Création IA contrôlée", "Reviewed AI design")}{r.score != null ? ` · ${r.score.toLocaleString()}/10` : ""}</Badge> : <Badge>{t("Version du studio", "Studio version")}</Badge>}
+                <span className="text-[11px] text-muted">{r.heading} + {r.body}</span>
+                <span className="ml-auto flex gap-1" aria-label={t("Couleurs de la piste", "Route colors")}>{[r.colors.ink, r.colors.accent, r.colors.ground, r.colors.tint].map((c, k) => <span key={k} className="size-4 rounded-full border border-line" style={{ background: c }} title={c} />)}</span>
+              </div>
+              <button type="button" onClick={() => setZoom(pr)} className="mt-3 overflow-hidden rounded-xl border border-line bg-paper-2" aria-label={t(`Agrandir la planche de ${r.name}`, `Enlarge the ${r.name} board`)}>
+                {pr.board ? <img src={pr.board} alt={t(`Mises en situation : ${r.name}`, `Mockups: ${r.name}`)} className="w-full" loading="lazy" /> : <img src={pr.url} alt={r.name} className="h-40 w-full bg-white object-contain p-4" />}
+              </button>
+              <Button className="mt-3" size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || locked} loading={choosing === pr.key} onClick={() => onChoose(pr.key)}>{on ? t("Piste choisie", "Chosen route") : t("Choisir cette piste", "Choose this route")}</Button>
+            </div>
+          );
+        })}
+      </div>
+      {locked && <p className="mt-2 text-[11px] text-muted">{t("Logo validé : déverrouillez-le pour changer de piste.", "Logo approved: unlock it to change routes.")}</p>}
+      <Modal open={!!zoom} onClose={() => setZoom(null)} title={zoom?.route?.name ?? ""}>
+        {zoom?.board && <img src={zoom.board} alt="" className="w-full rounded-xl" />}
+      </Modal>
+    </Card>
+  );
+}
+
+/** Kit réseaux sociaux : visuels aux couleurs de la piste choisie, ligne éditoriale, export PNG et ZIP. */
+function SocialKit({ tick }: { tick: number }) {
+  const { id } = useProject();
+  const t = useT();
+  const toast = useToast();
+  const { data, reload } = useApi<{ kit: { sheet: string; zip: string | null; items: { id: string; item: string; label: string; url: string; download: string }[] } | null; voice: import("@/lib/project-types").SocialVoice | null }>(`/api/projects/${id}/brand/social`);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (tick) reload();
+  }, [tick, reload]);
+  const redo = async (voice: boolean) => {
+    setBusy(true);
+    try {
+      await api(`/api/projects/${id}/brand/social`, { body: { voice } });
+      toast("ok", t("Kit réseaux sociaux mis à jour.", "Social media kit updated."));
+      reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const kit = data?.kit;
+  const v = data?.voice;
+  return (
+    <Card className="p-5 sm:p-7">
+      <SectionTitle
+        title={t("Kit réseaux sociaux", "Social media kit")}
+        action={<div className="flex flex-wrap gap-2">{kit?.zip && <a href={kit.zip} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-paper"><Download className="size-4" /> ZIP</a>}<Button size="sm" variant="secondary" loading={busy} onClick={() => redo(false)}>{kit ? t("Recréer", "Recreate") : t("Créer le kit", "Create the kit")}</Button></div>}
+      >
+        {t("Photo de profil, stories à la une, modèles de publication et bannières, aux couleurs et typographies de la piste choisie. Les textes entre crochets sont à compléter avec des faits réels.", "Profile picture, highlight covers, post templates and banners, in the chosen route's colors and typefaces. Text in brackets must be completed with real facts.")}
+      </SectionTitle>
+      {kit ? (
+        <>
+          <img src={kit.sheet} alt={t("Aperçu du kit", "Kit preview")} className="w-full rounded-2xl border border-line" />
+          <div className="mt-3 flex flex-wrap gap-2">
+            {kit.items.map((it) => <a key={it.id} href={it.download} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink"><Download className="size-3.5" /> {it.label}</a>)}
+          </div>
+        </>
+      ) : (
+        <p className="text-sm text-muted">{t("Le kit apparaît dès qu'une piste de logo est choisie.", "The kit appears as soon as a logo route is chosen.")}</p>
+      )}
+      {v && (
+        <div className="mt-6 grid gap-6 md:grid-cols-3">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Piliers de contenu", "Content pillars")}</p>
+            <ol className="mt-2 grid gap-2 text-sm">{v.pillars.map((p, i) => <li key={i}><strong>{p.title}</strong> <span className="text-ink-2">— {p.idea}</span></li>)}</ol>
+            <p className="mt-4 text-xs font-medium uppercase tracking-wider text-muted">Emojis</p>
+            <p className="mt-1 text-sm">{v.emoji === "none" ? t("Aucun emoji.", "No emoji.") : v.emoji === "sparing" ? t("Un au plus par légende, jamais à la place d'un mot.", "One at most per caption, never instead of a word.") : t("Libres, avec goût.", "Welcome, with taste.")} {v.emojis.join(" ")}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Ce qu'on dit", "What we say")}</p>
+            <ul className="mt-2 grid gap-1.5 text-sm">{v.say.map((s) => <li key={s} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-ok" />{s}</li>)}</ul>
+            <p className="mt-4 text-xs font-medium uppercase tracking-wider text-muted">{t("Ce qu'on ne dit pas", "What we don't say")}</p>
+            <ul className="mt-2 grid gap-1.5 text-sm text-ink-2">{v.dontSay.map((s) => <li key={s}>— {s}</li>)}</ul>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Exemples de légendes", "Sample captions")}</p>
+            <div className="mt-2 grid gap-2">{v.captions.map((c, i) => <div key={i} className="rounded-xl bg-paper-2 p-3 text-sm"><p className="text-[11px] font-medium text-muted">{c.pillar}</p><p className="mt-1 whitespace-pre-line">{c.text}</p></div>)}</div>
+            <Button size="sm" variant="ghost" className="mt-2" icon={<Sparkles className="size-4" />} loading={busy} onClick={() => redo(true)}>{t("Refaire la ligne éditoriale", "Redo the editorial line")}</Button>
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
 

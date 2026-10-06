@@ -41,6 +41,7 @@ const CATALOG: Record<string, (p: Record<string, string | number>, lang: Lang) =
       : `${services} prestation${s(+services)}, ${facts} information${s(+facts)} établie${s(+facts)}${missing ? ` ; à compléter : ${missing}` : ""}${by}`;
   },
   "brand.done": ({ name, direction }, l) => (l === "en" ? `${name} — ${direction} direction` : `${name} — direction ${direction}`),
+  "brand.toCheck": ({ name, direction, n }, l) => (l === "en" ? `${name} — ${direction} direction; ${n} point${s(+n)} for you to check (Brand tab)` : `${name} — direction ${direction} ; ${n} point${s(+n)} à vérifier par vous (onglet Marque)`),
   "copy.checked": (_, l) => (l === "en" ? "Copy written and checked" : "Textes rédigés et contrôlés"),
   "copy.toCheck": ({ n }, l) => (l === "en" ? `Copy written; ${n} point${s(+n)} for you to check` : `Textes rédigés ; ${n} point${s(+n)} à vérifier par vous`),
   "copy.base": (_, l) => (l === "en" ? "Base copy assembled — to be enriched" : "Textes de base assemblés — à enrichir"),
