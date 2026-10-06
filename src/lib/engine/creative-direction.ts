@@ -128,17 +128,76 @@ const LIB_LABEL: Record<SymbolKind, [string, string]> = {
 };
 
 /**
- * Pistes du studio, sans IA, dans l'ordre des emplacements : silhouette du produit (sinon pictogramme de la
- * bibliothèque, signalé comme générique), monogramme géométrique construit localement, logotype soigné.
+ * Pistes déjà montrées au client. « Nouvelles pistes » = changement radical : autre idée, autre typographie,
+ * autre construction ou autre traitement des couleurs, jamais une simple variante de la série précédente.
  */
-export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | null; library: SymbolKind }): Promise<Record<RouteKey, CreativeRoute[]>> {
-  const pal = brand.palette;
+export type RouteAvoid = { name: string; why: string; heading: string; markKind: CreativeRoute["markKind"]; composition: CreativeRoute["composition"]; ground?: PaletteRole; accent?: PaletteRole };
+export const avoidOf = (routes: CreativeRoute[]): RouteAvoid[] => routes.map((r) => ({ name: r.name, why: r.why, heading: r.heading, markKind: r.markKind, composition: r.composition, ground: r.roles?.ground, accent: r.roles?.accent }));
+const norm = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+/** Trop proche d'une piste déjà montrée ? Raison (consigne de reprise), sinon null. */
+export function tooClose(r: CreativeRoute, avoid: RouteAvoid[]): string | null {
+  for (const a of avoid) {
+    if (r.source === "ai" && norm(r.name) === norm(a.name)) return `même nom que la piste « ${a.name} » déjà montrée : il faut une idée nouvelle`;
+    if (r.heading === a.heading) return `même typographie (${a.heading}) que la piste « ${a.name} » déjà montrée : changer de famille de caractères`;
+    if (r.markKind === a.markKind && r.composition === a.composition && r.roles?.ground === a.ground && r.roles?.accent === a.accent) return `même construction et mêmes couleurs que « ${a.name} » : changer la composition ou le traitement des couleurs`;
+  }
+  return null;
+}
+
+/** Ordre de préférence des typographies selon l'univers, décalé à chaque nouvelle série et sans celles déjà montrées. */
+function fontOrder(brand: BrandInput, variant: number, avoid: RouteAvoid[]): string[] {
   const elegant = ELEGANT.includes(brand.direction);
   const bold = BOLD.includes(brand.direction);
   const soft = ["enfants", "animaux", "alimentation"].includes(brand.sector ?? "");
-  const A = pair(bold ? "Archivo" : soft ? "Jost" : elegant ? "Jost" : "Montserrat");
-  const B = pair(elegant ? "Cormorant" : bold ? "Bricolage Grotesque" : soft ? "Bricolage Grotesque" : "Playfair Display");
-  const Cp = pair(elegant ? "Instrument Serif" : bold ? "Chivo" : soft ? "Lora" : "Libre Baskerville");
+  const pref = bold
+    ? ["Archivo", "Bricolage Grotesque", "Chivo", "Montserrat", "Space Grotesk", "Playfair Display", "Jost", "Libre Baskerville"]
+    : elegant
+      ? ["Jost", "Cormorant", "Instrument Serif", "Playfair Display", "Libre Baskerville", "Lora", "Montserrat", "Space Grotesk"]
+      : soft
+        ? ["Jost", "Bricolage Grotesque", "Lora", "Instrument Serif", "Montserrat", "Playfair Display", "Chivo", "Libre Baskerville"]
+        : ["Montserrat", "Playfair Display", "Libre Baskerville", "Space Grotesk", "Lora", "Archivo", "Instrument Serif", "Chivo", "Cormorant"];
+  const shown = new Set(avoid.map((a) => a.heading));
+  const free = pref.filter((h) => !shown.has(h));
+  const list = free.length >= 3 ? free : pref;
+  const k = variant ? (variant * 3) % list.length : 0;
+  return [...list.slice(k), ...list.slice(0, k)];
+}
+
+/** Traitements de couleur (encre, accent, fond, teinte), dans l'ordre essayé ; décalés à chaque série. */
+const TREATMENTS: [PaletteRole, PaletteRole, PaletteRole, PaletteRole][] = [
+  ["dark", "primary", "primary", "secondary"],
+  ["dark", "primary", "dark", "light"],
+  ["dark", "accent", "accent", "secondary"],
+  ["primary", "accent", "light", "secondary"],
+  ["dark", "accent", "dark", "primary"],
+  ["primary", "secondary", "primary", "light"],
+];
+
+/**
+ * Pistes du studio, sans IA, dans l'ordre des emplacements : silhouette du produit (sinon pictogramme de la
+ * bibliothèque, signalé comme générique), monogramme géométrique construit localement, logotype soigné.
+ */
+export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | null; library: SymbolKind; variant?: number; avoid?: RouteAvoid[] }): Promise<Record<RouteKey, CreativeRoute[]>> {
+  const pal = brand.palette;
+  const elegant = ELEGANT.includes(brand.direction);
+  const bold = BOLD.includes(brand.direction);
+  // Nouvelle série (« Nouvelles pistes ») : autres typographies, autres cadres, autres traitements de couleur.
+  const variant = opts.variant ?? 0;
+  const avoid = opts.avoid ?? [];
+  const fonts = fontOrder(brand, variant, avoid);
+  const serifFirst = fonts.find((h) => CANVAS_FONTS[h]?.kind === "serif" && h !== fonts[0]) ?? fonts[1];
+  const A = pair(fonts[0]);
+  const B = pair(variant % 2 ? serifFirst : fonts[1]);
+  const Cp = pair(fonts.find((h) => h !== A.heading && h !== B.heading)!);
+  const treat = (slot: number, markKind: CreativeRoute["markKind"], composition: CreativeRoute["composition"]) => {
+    for (let i = 0; i < TREATMENTS.length; i++) {
+      const [ink, accent, ground, tint] = TREATMENTS[(variant + slot + i) % TREATMENTS.length];
+      if (!avoid.some((a) => a.markKind === markKind && a.composition === composition && a.ground === ground && a.accent === accent)) return colorsOf(pal, ink, accent, ground, tint);
+    }
+    return colorsOf(pal, ...TREATMENTS[(variant + slot) % TREATMENTS.length]);
+  };
+  const produitComp: CreativeRoute["composition"] = variant % 2 ? "stacked" : "horizontal";
   const notes: string[] = [];
   const produit: CreativeRoute[] = [];
   if (opts.cutout) {
@@ -156,8 +215,8 @@ export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | nu
         body: A.body,
         case: "upper",
         tracking: 0.1,
-        composition: "horizontal",
-        ...colorsOf(pal, "dark", "primary", "primary"),
+        composition: produitComp,
+        ...treat(0, "silhouette", produitComp),
         notes: [],
       });
     else notes.push(`silhouette écartée : ${sil.reason}`);
@@ -174,15 +233,18 @@ export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | nu
     heading: A.heading,
     headingWeight: bold ? 800 : 600,
     body: A.body,
-    case: "upper",
+    case: variant % 2 ? "title" : "upper",
     tracking: 0.08,
-    composition: "horizontal",
-    ...colorsOf(pal, "dark", "primary", "primary"),
+    composition: produitComp,
+    ...treat(0, "library", produitComp),
     notes,
   });
 
   const concept: CreativeRoute[] = [];
-  const frames: MonogramFrame[] = CANVAS_FONTS[B.heading]?.kind === "serif" ? ["arch", "inversion", "disc"] : ["corner", "disc"];
+  const baseFrames: MonogramFrame[] = CANVAS_FONTS[B.heading]?.kind === "serif" ? ["arch", "inversion", "disc", "corner"] : ["corner", "disc", "inversion"];
+  const shift = variant % baseFrames.length;
+  const frames: MonogramFrame[] = [...baseFrames.slice(shift), ...baseFrames.slice(0, shift)];
+  const conceptComp: CreativeRoute["composition"] = variant % 2 ? "emblem" : "stacked";
   for (const frame of frames) {
     const mark = buildMonogram(brand.name, { family: B.heading, weight: B.weight, frame, tone: "accent" });
     if (!mark) continue;
@@ -197,10 +259,10 @@ export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | nu
       heading: B.heading,
       headingWeight: B.weight,
       body: B.body,
-      case: elegant ? "upper" : "title",
+      case: (elegant ? 1 : 0) ^ (variant % 2) ? "upper" : "title",
       tracking: elegant ? 0.16 : 0.02,
-      composition: "stacked",
-      ...colorsOf(pal, "dark", "primary", "dark", "light"),
+      composition: conceptComp,
+      ...treat(1, "monogram", conceptComp),
       notes: [],
     });
     break;
@@ -208,7 +270,8 @@ export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | nu
 
   const typo: CreativeRoute[] = [];
   const letterMark = buildMonogram(brand.name, { family: Cp.heading, weight: Cp.weight, frame: "none", tone: "main", dot: true }) ?? buildMonogram(brand.name, { family: "Montserrat", weight: 800, frame: "none", tone: "main", dot: true });
-  const tcase: CreativeRoute["case"] = bold ? "upper" : elegant ? "title" : brand.name.length <= 8 ? "upper" : "title";
+  const baseCase: CreativeRoute["case"] = bold ? "upper" : elegant ? "title" : brand.name.length <= 8 ? "upper" : "title";
+  const tcase: CreativeRoute["case"] = variant % 2 ? (baseCase === "upper" ? "title" : "upper") : baseCase;
   typo.push({
     key: "typo",
     name: C("Logotype", "Wordmark"),
@@ -223,8 +286,9 @@ export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | nu
     tracking: tcase === "upper" ? (bold ? 0.04 : 0.14) : 0.01,
     composition: "wordmark",
     dot: true,
-    // Fond de couleur : l'accent s'il porte le blanc sans être assombri (sinon il tournerait au brun), sinon la principale.
-    ...colorsOf(pal, "dark", "accent", contrast(pal.accent, "#FFFFFF") >= 3.5 ? "accent" : "primary"),
+    // Première série — fond de couleur : l'accent s'il porte le blanc sans être assombri (sinon il tournerait au brun),
+    // sinon la principale. Séries suivantes : autres traitements.
+    ...(variant ? treat(2, "letter", "wordmark") : colorsOf(pal, "dark", "accent", contrast(pal.accent, "#FFFFFF") >= 3.5 ? "accent" : "primary")),
     notes: [],
   });
   return { produit, concept, typo };
@@ -280,10 +344,11 @@ export type RoutesDesign = { routes: CreativeRoute[]; notes: string[]; ai: "used
  * Trois pistes contrôlées. Une piste refusée n'est jamais montrée : elle est reprise une fois (consignes ciblées),
  * puis remplacée par la version du studio de son emplacement, contrôlée elle aussi quand l'IA est disponible.
  */
-export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; ai: CreativeAi | null; textIssues?: (text: string) => string[] }): Promise<RoutesDesign> {
+export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; ai: CreativeAi | null; textIssues?: (text: string) => string[]; variant?: number; avoid?: RouteAvoid[] }): Promise<RoutesDesign> {
   const { brand, ai } = input;
+  const avoid = input.avoid ?? [];
   const notes: string[] = [];
-  const fallback = await localRoutes(brand, { cutout: input.cutout, library: input.library });
+  const fallback = await localRoutes(brand, { cutout: input.cutout, library: input.library, variant: input.variant, avoid });
   const board = (route: CreativeRoute) => routeBoard({ route, brand, product: input.cutout });
   const out: CreativeRoute[] = [];
   let aiState: RoutesDesign["ai"] = ai ? "used" : "off";
@@ -318,6 +383,12 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
           feedback = built.reason;
           continue;
         }
+        const close = tooClose(built.route, [...avoid, ...avoidOf(out)]);
+        if (close) {
+          notes.push(`${key} : piste de l'IA trop proche d'une piste déjà montrée (${close})`);
+          feedback = close;
+          continue;
+        }
         const words = input.textIssues?.(`${built.route.name}. ${built.route.why}`) ?? [];
         if (words.length) {
           notes.push(`${key} : texte refusé (${words.join(", ")})`);
@@ -340,7 +411,9 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
       }
     }
     if (!accepted) {
-      for (const cand of fallback[key]) {
+      // Versions du studio : d'abord celles qui ne reprennent pas une piste déjà montrée.
+      const cands = [...fallback[key].filter((c) => !tooClose(c, avoid)), ...fallback[key].filter((c) => tooClose(c, avoid))];
+      for (const cand of cands) {
         if (ai && aiState === "used" && !reviewDown) {
           let review: RouteReview | null = null;
           try {

@@ -16,7 +16,7 @@ import { serviceSymbol, serviceTaglines } from "./services-text";
 import type { CustomSymbol } from "../media/logo-symbol";
 import { llmConfigured } from "../ai/llm";
 import { aiCreativeRedraw, aiCreativeReview, aiCreativeRoutes, lintClaims, lintHollow } from "../ai/tasks";
-import { designRoutes, localRoutes, roleColors, type BrandInput, type CreativeAi, type RouteDraft } from "./creative-direction";
+import { avoidOf, designRoutes, localRoutes, roleColors, type BrandInput, type CreativeAi, type RouteAvoid, type RouteDraft } from "./creative-direction";
 import { routeBoard, routeLogoSpec, type CreativeRoute, type RouteReview } from "../media/brand-mockups";
 import { monogramLetter } from "../media/monogram";
 import { saveSocialKit } from "./social-kit";
@@ -131,15 +131,18 @@ export const PROPOSAL_KEYS = ["produit", "concept", "typo", "logotype", "symbole
 export type ProposalKey = (typeof PROPOSAL_KEYS)[number];
 
 /** Accès à l'IA de la direction artistique, branché sur les tâches réelles. */
-function realRouteAi(p: Project, cutout: Buffer | null): CreativeAi {
+function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = []): CreativeAi {
   const base = { userId: p.userId, projectId: p.id };
   const k = (what: string) => `${what}:${p.id}:${Date.now().toString(36)}`;
   return {
-    routes: () => aiCreativeRoutes({ ...base, usageKey: k("logo-routes") }, p, { photo: cutout ?? undefined }) as Promise<RouteDraft[]>,
-    redraw: (key, feedback, previous) => aiCreativeRedraw({ ...base, usageKey: k(`logo-route-${key}`) }, p, { key, feedback, previous, photo: cutout ?? undefined }) as Promise<RouteDraft>,
+    routes: () => aiCreativeRoutes({ ...base, usageKey: k("logo-routes") }, p, { photo: cutout ?? undefined, avoid }) as Promise<RouteDraft[]>,
+    redraw: (key, feedback, previous) => aiCreativeRedraw({ ...base, usageKey: k(`logo-route-${key}`) }, p, { key, feedback, previous, photo: cutout ?? undefined, avoid }) as Promise<RouteDraft>,
     review: (route, board) => aiCreativeReview({ ...base, usageKey: k(`logo-route-review-${route.key}`) }, { photo: cutout ?? undefined, board, route }) as Promise<RouteReview>,
   };
 }
+
+/** Nombre de séries de pistes déjà créées (chaque « Nouvelles pistes » en ajoute une). */
+const logoBatches = (projectId: string) => one<{ n: number }>("SELECT COUNT(DISTINCT json_extract(meta, '$.batch')) n FROM assets WHERE project_id = ? AND role = 'logo-proposal'", projectId)?.n ?? 0;
 
 /** Allégations et formules creuses dans le nom ou la justification d'une piste. */
 const routeTextIssues = (p: Project) => (text: string) => [...lintClaims({ t: text }, p).map((c) => c.term), ...lintHollow({ t: text }).map((h) => h.term)];
@@ -172,8 +175,11 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
     });
   } else {
     ctx?.progress(0.55, L("Pistes créatives du logo", "Logo creative routes"));
-    const ai = opts.routeAi !== undefined ? opts.routeAi : llmConfigured() ? realRouteAi(p, cutout) : null;
-    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), ai, textIssues: routeTextIssues(p) });
+    // « Nouvelles pistes » : refonte radicale, sans reprendre les pistes déjà montrées (série précédente).
+    const avoid = opts.redrawSymbol && previous.length ? avoidOf(previous.map((x) => x.info.route as CreativeRoute)) : [];
+    const variant = opts.redrawSymbol ? logoBatches(projectId) : 0;
+    const ai = opts.routeAi !== undefined ? opts.routeAi : llmConfigured() ? realRouteAi(p, cutout, avoid) : null;
+    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), ai, textIssues: routeTextIssues(p), avoid, variant });
     routes = design.routes;
     notes = design.notes;
     aiState = design.ai;

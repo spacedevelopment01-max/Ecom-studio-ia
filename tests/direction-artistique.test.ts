@@ -350,3 +350,35 @@ describe("dans le studio : pistes, choix, déclinaisons, kit (PNG + ZIP) et char
     });
   });
 });
+
+describe("« Nouvelles pistes » : refonte radicale, jamais une variante", () => {
+  it("sans IA : chaque nouvelle série change de typographies (aucune reprise de la série précédente)", async () => {
+    const { avoidOf } = await import("@/lib/engine/creative-direction");
+    const first = await fr(() => designRoutes({ brand: BRAND, cutout: null, library: "spark", ai: null }));
+    const avoid = avoidOf(first.routes);
+    const second = await fr(() => designRoutes({ brand: BRAND, cutout: null, library: "spark", ai: null, avoid, variant: 1 }));
+    const before = new Set(first.routes.map((r) => r.heading));
+    expect(second.routes.length).toBe(first.routes.length);
+    for (const r of second.routes) expect(before.has(r.heading), `${r.key} ${r.heading}`).toBe(false);
+    // Composition ou traitement des couleurs changent aussi.
+    const sig = (r: CreativeRoute) => `${r.key}:${r.composition}:${r.roles?.ground}:${r.roles?.accent}`;
+    expect(second.routes.map(sig)).not.toEqual(first.routes.map(sig));
+    const third = await fr(() => designRoutes({ brand: BRAND, cutout: null, library: "spark", ai: null, avoid: avoidOf(second.routes), variant: 2 }));
+    for (const r of third.routes) expect(new Set(second.routes.map((x) => x.heading)).has(r.heading)).toBe(false);
+  });
+
+  it("avec l'IA : une piste trop proche de la série précédente est refusée et redessinée avec la consigne", async () => {
+    const { avoidOf } = await import("@/lib/engine/creative-direction");
+    const shown = await fr(() => designRoutes({ brand: BRAND, cutout: null, library: "spark", ai: fakeAi({}).ai }));
+    const avoid = avoidOf(shown.routes);
+    const fresh: RouteDraft = { ...D_CONCEPT, name: "Le phare de poche", why: "Un phare minuscule dont le faisceau devient une bulle : la marque veille et répond. Une idée neuve, loin de la lune.", heading: "Libre Baskerville", composition: "emblem", ground: "light", accent: "accent" };
+    // Même série que la précédente : refusée (même typographie / même nom), puis reprise avec une idée neuve.
+    const { ai, calls } = fakeAi({ redraws: { concept: [fresh], produit: [{ ...D_PRODUIT, name: "Le nid", heading: "Archivo", composition: "stacked" }], typo: [{ ...D_TYPO, name: "Lettre ouverte", heading: "Space Grotesk", ground: "dark" }] } });
+    const next = await fr(() => designRoutes({ brand: BRAND, cutout: null, library: "spark", ai, avoid, variant: 1 }));
+    expect(calls.redraw.map((c) => c.key).sort()).toEqual(["concept", "produit", "typo"]);
+    expect(calls.redraw.every((c) => /déjà montrée/.test(c.feedback))).toBe(true);
+    const concept = next.routes.find((r) => r.key === "concept")!;
+    expect(concept.name).toBe("Le phare de poche");
+    for (const r of next.routes) expect(avoid.some((a) => a.heading === r.heading), r.name).toBe(false);
+  });
+});

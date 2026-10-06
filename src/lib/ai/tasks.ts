@@ -1240,7 +1240,19 @@ Mots INTERDITS dans les dessins (vus chez le fournisseur, jamais repris) : ${p.p
 }
 
 /** Trois pistes créatives (brief + dessins SVG), jamais utilisées sans nettoyage, lisibilité et contrôle (engine/creative-direction). */
-export async function aiCreativeRoutes(b: Base, p: Project, opts: { photo?: Buffer }) {
+/**
+ * « Nouvelles pistes » : le client attend une refonte, pas une variante. Pistes déjà montrées, à ne pas reprendre.
+ */
+function avoidBrief(avoid: { name: string; why: string; heading: string; markKind: string; composition: string; ground?: string; accent?: string }[] | undefined): string {
+  if (!avoid?.length) return "";
+  return `
+NOUVELLE SÉRIE DEMANDÉE PAR LE CLIENT : il veut un CHANGEMENT RADICAL, une vraie refonte, pas une variante.
+Pistes déjà montrées (ne reprendre NI leur idée, NI leur type de symbole, NI leur typographie de titre, NI leur traitement des couleurs) :
+${avoid.map((a) => `- « ${a.name} » (${a.markKind}, composition ${a.composition}, titre en ${a.heading}${a.ground ? `, fond ${a.ground}, accent ${a.accent}` : ""}) : ${a.why.slice(0, 220)}`).join("\n")}
+Exigences : chaque nouvelle piste part d'une autre idée de marque (autre métaphore, autre geste, autre angle), utilise une autre famille de caractères que toutes celles ci-dessus, et change la composition OU le rôle des couleurs (fond, accent). Une piste qui ressemble à l'une d'elles sera refusée.`;
+}
+
+export async function aiCreativeRoutes(b: Base, p: Project, opts: { photo?: Buffer; avoid?: Parameters<typeof avoidBrief>[0] }) {
   const r = await llmJson(
     {
       task: "logo_symbol",
@@ -1251,7 +1263,7 @@ export async function aiCreativeRoutes(b: Base, p: Project, opts: { photo?: Buff
       system: S().creativeRoutes,
       context: projectContext(p, "brand"),
       images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
-      prompt: `${routesBrief(p)}
+      prompt: `${routesBrief(p)}${avoidBrief(opts.avoid)}
 Couleur d'accent : le code exact du rôle choisi pour « accent » de chaque piste.
 Réponds { "competitorCodes": ["codes visuels habituels du secteur, évités"], "routes": [trois objets ${ROUTE_SHAPE}] } — une piste par clé, dans l'ordre produit, concept, typo.`,
       maxTokens: 16000,
@@ -1262,7 +1274,7 @@ Réponds { "competitorCodes": ["codes visuels habituels du secteur, évités"], 
 }
 
 /** Reprise ciblée d'UNE piste, avec les défauts relevés par le contrôle. */
-export async function aiCreativeRedraw(b: Base, p: Project, opts: { key: "produit" | "concept" | "typo"; feedback: string; previous: unknown; photo?: Buffer }) {
+export async function aiCreativeRedraw(b: Base, p: Project, opts: { key: "produit" | "concept" | "typo"; feedback: string; previous: unknown; photo?: Buffer; avoid?: Parameters<typeof avoidBrief>[0] }) {
   return llmJson(
     {
       task: "logo_symbol",
@@ -1273,7 +1285,7 @@ export async function aiCreativeRedraw(b: Base, p: Project, opts: { key: "produi
       system: S().creativeRoutes,
       context: projectContext(p, "brand"),
       images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
-      prompt: `${routesBrief(p)}
+      prompt: `${routesBrief(p)}${avoidBrief(opts.avoid)}
 Redessine UNIQUEMENT la piste « ${opts.key} ». La version précédente a été refusée : ${opts.feedback}
 Version précédente (à ne pas recopier) : ${JSON.stringify(opts.previous ?? null).slice(0, 4000)}
 Garde l'esprit de la piste mais corrige ces points ; si l'idée elle-même est en cause, change d'idée.
