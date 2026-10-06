@@ -13,6 +13,7 @@ import { LogoutButton } from "../password-forms";
 import { PLANS } from "@/lib/plans";
 import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type PlatformId } from "./platform-picker";
 import { cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
+import { DeleteProjectButton } from "./delete-project";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
 
@@ -416,7 +417,7 @@ function ExistingSiteFields({ url, onUrl, owner, onOwner, errors, showLanguage }
 export function StudioHome() {
   const t = useT();
   const { lang } = useLang();
-  const { data, error } = useApi<{ projects: ProjectCard[]; subscription: { status: string; stores: number } }>("/api/projects", { poll: 8000 });
+  const { data, error, reload: reloadProjects } = useApi<{ projects: ProjectCard[]; subscription: { status: string; stores: number } }>("/api/projects", { poll: 8000 });
   const { data: me } = useApi<{ user: { role: string; name: string } }>("/api/me");
   const [creating, setCreating] = useState(false);
   const { billing } = useBilling({ poll: 60000 });
@@ -483,7 +484,8 @@ export function StudioHome() {
             </div>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((p) => (
-                <Link key={p.id} href={`/studio/${p.id}/pilote`} className="group overflow-hidden rounded-3xl border border-line bg-card transition hover:-translate-y-1 hover:shadow-soft">
+                <div key={p.id} className="group relative">
+                <Link href={`/studio/${p.id}/pilote`} className="block overflow-hidden rounded-3xl border border-line bg-card transition hover:-translate-y-1 hover:shadow-soft">
                   <div className="relative aspect-[4/3] bg-paper-2">
                     {p.cover ? <img src={p.cover} alt="" className="size-full object-cover transition duration-700 group-hover:scale-105" /> : p.business === "services" ? <Briefcase className="absolute inset-0 m-auto size-8 text-muted" /> : <Store className="absolute inset-0 m-auto size-8 text-muted" />}
                     <Badge tone={STATUS[p.status]?.tone ?? "neutral"} dot className="absolute left-3 top-3">{(lang === "en" ? STATUS[p.status]?.labelEn : STATUS[p.status]?.label) ?? p.status}</Badge>
@@ -504,6 +506,8 @@ export function StudioHome() {
                     )}
                   </div>
                 </Link>
+                <DeleteProjectButton compact projectId={p.id} name={p.brand ?? p.name} onDeleted={() => reloadProjects()} className="absolute right-3 top-12 opacity-100 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover:opacity-100" />
+                </div>
               ))}
             </div>
           </>

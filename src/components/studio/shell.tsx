@@ -9,6 +9,7 @@ import { useProject } from "./project-context";
 import { missingActivity } from "./services-editor";
 import { TutorialButton, TutorialsMenuLink } from "./tutorial";
 import { PlanLink, QuotaBanner, useBilling } from "../billing-client";
+import { DeleteProjectButton } from "./delete-project";
 
 export const TABS = [
   { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass, group: "Création", groupEn: "Create" },
@@ -48,6 +49,7 @@ function ProjectSwitcher({ current }: { current: string }) {
   const [open, setOpen] = useState(false);
   const { data } = useApi<{ projects: { id: string; name: string; status: string; cover: string | null }[] }>(open ? "/api/projects" : null);
   const { data: p } = useProject();
+  const router = useRouter();
   return (
     <div className="relative">
       <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center gap-3 rounded-2xl border border-line bg-card p-2 text-left hover:border-ink" aria-expanded={open}>
@@ -71,6 +73,7 @@ function ProjectSwitcher({ current }: { current: string }) {
           <Link href="/studio" className="mt-1 flex items-center gap-2 rounded-xl p-2 text-sm font-medium text-signal hover:bg-paper-2">
             <LayoutGrid className="size-4" /> {t("Tous mes projets", "All my projects")}
           </Link>
+          {p && <div className="mt-1 border-t border-line pt-1"><DeleteProjectButton projectId={current} name={p.brand?.name ?? p.project.name} onDeleted={() => { setOpen(false); router.push("/studio"); }} /></div>}
         </div>
       )}
     </div>

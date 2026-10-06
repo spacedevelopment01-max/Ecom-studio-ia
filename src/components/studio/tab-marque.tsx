@@ -142,10 +142,12 @@ export default function TabMarque() {
             </div>
             <Field label={t("Positionnement", "Positioning")} htmlFor="bpos"><Textarea autoGrow id="bpos" rows={3} value={b.positioning} onChange={(e) => set({ positioning: e.target.value })} /></Field>
             <Field label={t("Cible", "Audience")} htmlFor="baud"><Textarea autoGrow id="baud" rows={2} value={b.audience} onChange={(e) => set({ audience: e.target.value })} /></Field>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4">
               <Field label={t("Voix", "Voice")} htmlFor="bvoice"><Textarea autoGrow rows={1} id="bvoice" value={b.tone.voice} onChange={(e) => set({ tone: { ...b.tone, voice: e.target.value } })} /></Field>
-              <Field label={t("À faire", "Do")} htmlFor="bdo"><Textarea autoGrow rows={1} id="bdo" value={b.tone.do.join(" ; ")} onChange={(e) => set({ tone: { ...b.tone, do: e.target.value.split(";").map((x) => x.trim()).filter(Boolean) } })} /></Field>
-              <Field label={t("À éviter", "Don't")} htmlFor="bdont"><Textarea autoGrow rows={1} id="bdont" value={b.tone.dont.join(" ; ")} onChange={(e) => set({ tone: { ...b.tone, dont: e.target.value.split(";").map((x) => x.trim()).filter(Boolean) } })} /></Field>
+              <div className="grid items-start gap-4 sm:grid-cols-2">
+              <Field label={t("À faire", "Do")} htmlFor="bdo" hint={t("Un conseil par ligne.", "One tip per line.")}><LinesArea id="bdo" value={b.tone.do} onChange={(v) => set({ tone: { ...b.tone, do: v } })} /></Field>
+              <Field label={t("À éviter", "Don't")} htmlFor="bdont" hint={t("Un point par ligne.", "One point per line.")}><LinesArea id="bdont" value={b.tone.dont} onChange={(v) => set({ tone: { ...b.tone, dont: v } })} /></Field>
+              </div>
             </div>
             <Field label={t("Histoire de la marque", "Brand story")} htmlFor="bstory" hint={t("N'écrivez que des faits réels (origine, fondateurs, fabrication).", "Only write real facts (origin, founders, manufacturing).")}><Textarea autoGrow id="bstory" rows={4} value={b.story} onChange={(e) => set({ story: e.target.value })} /></Field>
             <div>
@@ -476,4 +478,16 @@ function DirectionThumb({ projectId, direction, fallback }: { projectId: string;
       {state !== "error" && <img src={`/api/projects/${projectId}/theme/direction-thumb?d=${direction}`} alt="" className={cx("absolute inset-0 size-full object-cover object-top transition-opacity duration-500", state === "ok" ? "opacity-100" : "opacity-0")} loading="lazy" onLoad={() => setState("ok")} onError={() => setState("error")} />}
     </span>
   );
+}
+
+/** Liste éditable, un élément par ligne (texte libre gardé tel quel pendant la saisie, lignes vides ignorées). */
+function LinesArea({ id, value, onChange }: { id: string; value: string[]; onChange: (v: string[]) => void }) {
+  const [text, setText] = useState(value.join("\n"));
+  const clean = (s: string) => s.split(/\n|;/).map((x) => x.trim()).filter(Boolean);
+  // Valeur changée ailleurs (nouvelle proposition de marque) : on la reprend.
+  useEffect(() => {
+    if (clean(text).join("\n") !== value.join("\n")) setText(value.join("\n"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value.join("\n")]);
+  return <Textarea autoGrow rows={2} id={id} value={text} onChange={(e) => { setText(e.target.value); onChange(clean(e.target.value)); }} />;
 }
