@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { DirectionThumb } from "./direction-thumb";
-import { effectivePalette } from "@/lib/route-palette";
+import { paletteSources } from "@/lib/route-palette";
 import { Check, Download, Lock, Sparkles, Trash2, Unlock } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
@@ -178,31 +178,28 @@ export default function TabMarque() {
               </div>
             </div>
             <Field label={t("Histoire de la marque", "Brand story")} htmlFor="bstory" hint={t("N'écrivez que des faits réels (origine, fondateurs, fabrication).", "Only write real facts (origin, founders, manufacturing).")}><Textarea autoGrow id="bstory" rows={4} value={b.story} onChange={(e) => set({ story: e.target.value })} /></Field>
-            <div>
-              <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">{t("Palette", "Palette")}</p>{V("palette")}</div>
-              <div className="grid grid-cols-5 gap-2">
-                {(Object.keys(b.palette) as (keyof Brand["palette"])[]).map((k) => (
-                  <label key={k} className="grid gap-1.5 text-center text-xs">
-                    <span className="relative h-16 overflow-hidden rounded-2xl border border-line" style={{ background: b.palette[k] }}>
-                      <input type="color" value={b.palette[k]} onChange={(e) => set({ palette: { ...b.palette, [k]: e.target.value.toUpperCase() } })} className="absolute inset-0 size-full cursor-pointer opacity-0" aria-label={t(`Couleur ${PALETTE_LABEL[k].fr}`, `${PALETTE_LABEL[k].en} color`)} />
-                    </span>
-                    <span className="text-muted">{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)}</span>
-                    <span className="font-mono text-[10px]">{b.palette[k]}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
             {(() => {
-              // Piste de logo retenue : ses couleurs donnent le ton au site, aux visuels et aux vignettes.
-              const eff = effectivePalette(data.brand);
-              const route = data.brand?.logo.route;
-              if (!eff || !route || (eff.primary === b.palette.primary && eff.accent === b.palette.accent)) return null;
+              // Piste de logo retenue : la palette affichée est la sienne (celle du site, des visuels et des vignettes) ;
+              // modifier une couleur change la couleur d'origine qui l'alimente.
+              const logo = data.brand?.logo ?? b.logo;
+              const src = paletteSources({ palette: b.palette, logo });
+              const route = logo?.route;
+              const shown = (k: keyof Brand["palette"]) => b.palette[src[k]];
               return (
-                <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-paper-2 p-3 text-xs text-ink-2">
-                  <span>{t(`Couleurs appliquées par la piste « ${route.name} » :`, `Colors applied by the "${route.name}" route:`)}</span>
-                  {(["primary", "accent"] as const).map((k) => (
-                    <span key={k} className="inline-flex items-center gap-1.5"><span className="size-4 rounded-full border border-line" style={{ background: eff[k] }} />{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)} <span className="font-mono">{eff[k]}</span></span>
-                  ))}
+                <div>
+                  <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">{t("Palette", "Palette")}</p>{V("palette")}</div>
+                  {route && <p className="mb-2 text-xs text-muted">{t(`Couleurs de la piste « ${route.name} », appliquées au site, aux visuels et aux vignettes.`, `Colors of the "${route.name}" route, applied to the site, visuals and thumbnails.`)}</p>}
+                  <div className="grid grid-cols-5 gap-2">
+                    {(Object.keys(b.palette) as (keyof Brand["palette"])[]).map((k) => (
+                      <label key={k} className="grid gap-1.5 text-center text-xs">
+                        <span className="relative h-16 overflow-hidden rounded-2xl border border-line" style={{ background: shown(k) }}>
+                          <input type="color" value={shown(k)} onChange={(e) => set({ palette: { ...b.palette, [src[k]]: e.target.value.toUpperCase() } })} className="absolute inset-0 size-full cursor-pointer opacity-0" aria-label={t(`Couleur ${PALETTE_LABEL[k].fr}`, `${PALETTE_LABEL[k].en} color`)} />
+                        </span>
+                        <span className="text-muted">{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)}</span>
+                        <span className="font-mono text-[10px]">{shown(k)}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               );
             })()}
