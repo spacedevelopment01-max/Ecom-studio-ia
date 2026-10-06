@@ -50,19 +50,35 @@ export default function TabMarque() {
   const { data: ident, reload: reloadIdent } = useApi<{ proposals: Proposal[]; current: string | null; provided: boolean; taglines: string[] }>(`/api/projects/${id}/brand/logo`);
   const [kitTick, setKitTick] = useState(0);
   const [choosing, setChoosing] = useState<string | null>(null);
+  // Logo : nouvelles pistes ou piste choisie, en tâche de fond (plusieurs minutes avec l'IA) ; l'écran suit la tâche
+  // et se met à jour à la fin (aucune requête longue que le relais d'un codespace pourrait couper).
+  const logoJobs = useActive("brand.logo");
   const chooseLogo = async (b: { choice?: string; regenerate?: boolean }) => {
     setChoosing(b.choice ?? "regenerate");
     try {
-      await api(`/api/projects/${id}/brand/logo`, { body: b });
-      toast("ok", b.regenerate ? t("Nouvelles propositions de logo prêtes.", "New logo proposals are ready.") : t("Logo appliqué : déclinaisons créées et boutique mise à jour (nouvelle version).", "Logo applied: variations created and store updated (new version)."));
-      reloadIdent();
-      reloadLogos();
-      setKitTick((k) => k + 1);
+      const r = await api<{ jobId: string }>(`/api/projects/${id}/brand/logo`, { body: b });
+      toast("ok", b.regenerate ? t("Création de nouvelles pistes lancée : elles apparaissent ici dès qu'elles sont prêtes (quelques minutes avec l'IA).", "New routes are being created: they appear here as soon as they're ready (a few minutes with AI).") : t("Logo en cours d'application : déclinaisons, kit réseaux sociaux et boutique mis à jour dans un instant.", "Applying the logo: variations, social kit and store updated in a moment."));
       reload();
+      for (let i = 0; i < 600; i++) {
+        await new Promise((res) => setTimeout(res, 2500));
+        const { job } = await api<{ job: { status: string; error: string | null } }>(`/api/jobs/${r.jobId}`);
+        if (job.status === "done") {
+          toast("ok", b.regenerate ? t("Nouvelles pistes prêtes.", "New routes are ready.") : t("Logo appliqué : déclinaisons créées et boutique mise à jour (nouvelle version).", "Logo applied: variations created and store updated (new version)."));
+          break;
+        }
+        if (job.status === "failed" || job.status === "cancelled") {
+          if (job.status === "failed") toast("bad", job.error || t("La création n'a pas abouti. Réessayez.", "It didn't work out. Please try again."));
+          break;
+        }
+      }
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
       setChoosing(null);
+      reloadIdent();
+      reloadLogos();
+      setKitTick((k) => k + 1);
+      reload();
     }
   };
   useEffect(() => {
@@ -100,6 +116,7 @@ export default function TabMarque() {
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
       {active[0] && <JobProgress job={active[0]} />}
+      {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
       {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ choice: k })} onRegenerate={() => chooseLogo({ regenerate: true })} />}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <Card className="p-5 sm:p-7">
@@ -307,7 +324,7 @@ function LogoRoutes({ routes, current, choosing, locked, onChoose, onRegenerate 
         title={t("Pistes créatives du logo", "Logo creative routes")}
         action={<Button size="sm" variant="ghost" icon={<Sparkles className="size-4" />} loading={choosing === "regenerate"} disabled={locked || !!choosing} onClick={onRegenerate}>{t("Nouvelles pistes", "New routes")}</Button>}
       >
-        {t(`${routes.length} pistes différentes, chacune avec son idée, sa typographie et ses couleurs, présentées en situation. Choisissez celle qui vous ressemble : ses déclinaisons et votre kit réseaux sociaux sont créés aussitôt.`, `${routes.length} different routes, each with its own idea, typeface and colors, shown in real situations. Pick the one that feels like you: its variations and your social media kit are created right away.`)}
+        {routes.length > 1 ? t(`${routes.length} pistes différentes, chacune avec son idée, sa typographie et ses couleurs, présentées en situation. Choisissez celle qui vous ressemble : ses déclinaisons et votre kit réseaux sociaux sont créés aussitôt.`, `${routes.length} different routes, each with its own idea, typeface and colors, shown in real situations. Pick the one that feels like you: its variations and your social media kit are created right away.`) : t("Une piste, avec son idée, sa typographie et ses couleurs, présentée en situation. « Nouvelles pistes » en propose d'autres.", "One route, with its idea, typeface and colors, shown in real situations. \"New routes\" suggests others.")}
       </SectionTitle>
       {anyLocal && (
         <p className="mb-4 rounded-xl border border-line bg-paper-2 p-3 text-xs text-muted" role="note">

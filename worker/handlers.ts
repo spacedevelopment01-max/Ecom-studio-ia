@@ -14,6 +14,7 @@ import { buildCustomTheme } from "../src/lib/engine/custom-theme";
 import { createContentPlan, attachVideoToPlan, NETWORK_FORMATS, quotedHeadline, rewritePostChecked } from "../src/lib/engine/calendar";
 import { honestChatNote } from "../src/lib/engine/shop-chat";
 import { buildBrand } from "../src/lib/engine/brand";
+import { runLogoJob } from "../src/lib/engine/logo-job";
 import { loadProject, currentTheme, saveThemeVersion, themeVersion, listThemeVersions, remember, notify } from "../src/lib/projects";
 import { aiThemeChat, aiRewritePost, aiClassify, aiShopCopyChecked, aiRepairOps } from "../src/lib/ai/tasks";
 import { llmConfigured } from "../src/lib/ai/llm";
@@ -64,6 +65,9 @@ export const handlers: Record<string, Handler> = {
 
   /** Article de blog écrit (ou réécrit) par l'IA : 1 article du forfait, décompté une fois l'article enregistré. */
   "blog.write": async (ctx) => writeBlogArticle(ctx, ctx.job.project_id!, { topic: ctx.payload.topic, brief: ctx.payload.brief, articleId: ctx.payload.articleId, instruction: ctx.payload.instruction }),
+
+  /** Logo : nouvelles pistes (IA, plusieurs minutes) ou application de la piste choisie. */
+  "brand.logo": async (ctx) => runLogoJob(ctx, ctx.payload.projectId, { choice: ctx.payload.choice ?? null, regenerate: !!ctx.payload.regenerate, redrawSymbol: ctx.payload.redrawSymbol }),
 
   "brand.build": async (ctx) => {
     const b = await buildBrand(ctx, ctx.payload.projectId, { guidance: ctx.payload.guidance });

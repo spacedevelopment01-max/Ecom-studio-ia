@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { loadProject } from "@/lib/projects";
-import { applyLogo, generateLogos, latestProposals, PROPOSAL_KEYS, proposeTaglines } from "@/lib/engine/identity";
+import { latestProposals, PROPOSAL_KEYS, proposeTaglines } from "@/lib/engine/identity";
+import { enqueue } from "@/lib/jobs";
 import { one } from "@/lib/db";
-import { saveBrandGuide } from "@/lib/engine/brand";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
 
@@ -49,16 +48,21 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 /** Choix d'une proposition (déclinaisons + mise à jour de la boutique), ou nouvelles propositions. */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
-  const { project: p } = await projectFromCtx(ctx);
+  const { user, project: p } = await projectFromCtx(ctx);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (p.brand.logo.status === "provided") throw new HttpError(409, L("Votre logo est conservé tel quel. Supprimez-le des fichiers pour recevoir des propositions.", "Your logo is kept as is. Delete it from your files to receive proposals."));
   const b = await body(req, z.object({ choice: z.enum(PROPOSAL_KEYS).optional(), regenerate: z.boolean().optional() }));
-  if (b.regenerate || !latestProposals(p.id).length) await generateLogos(null, p.id, { choice: b.choice, redrawSymbol: !!b.regenerate });
-  else if (b.choice) {
-    const pr = latestProposals(p.id).find((x) => x.info.key === b.choice);
-    if (!pr) throw new HttpError(404, L("Proposition introuvable.", "Proposal not found."));
-    await applyLogo(null, p.id, { key: pr.info.key, label: pr.info.label, concept: pr.info.concept, spec: pr.info.spec, colors: pr.info.colors, route: pr.info.route });
-  }
-  await saveBrandGuide(p.id);
-  return ok({ proposals: list(p.id), current: loadProject(p.id).brand?.logo.proposal ?? null });
+  const regenerate = !!b.regenerate || !latestProposals(p.id).length;
+  if (!regenerate && !b.choice) throw new HttpError(400, L("Choisissez une proposition.", "Pick a proposal."));
+  if (!regenerate && !latestProposals(p.id).some((x) => x.info.key === b.choice)) throw new HttpError(404, L("Proposition introuvable.", "Proposal not found."));
+  // En tâche de fond : avec l'IA, de nouvelles pistes prennent plusieurs minutes, plus que ce que tolèrent certains
+  // relais (GitHub Codespaces coupe la requête et renvoie une page 404). L'écran suit la tâche et se met à jour à la fin.
+  const job = enqueue({
+    userId: user.id,
+    projectId: p.id,
+    type: "brand.logo",
+    label: regenerate ? L("Nouvelles pistes de logo", "New logo routes") : L("Application du logo choisi", "Applying the chosen logo"),
+    payload: { projectId: p.id, choice: b.choice ?? null, regenerate, redrawSymbol: !!b.regenerate },
+  });
+  return ok({ jobId: job.id, proposals: list(p.id), current: p.brand.logo.proposal ?? null });
 });
