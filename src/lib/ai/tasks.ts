@@ -660,7 +660,7 @@ Demande du client : <demande>${input.message}</demande>`,
   );
 }
 
-const OPS_HELP = `Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value}, add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
+const OPS_HELP = `Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value} (TOUT le site : chaque section sur ce schéma change), section_colors{template,section,colors{background?,text?,accent?,…}} (couleurs d'UNE seule section, schéma dédié), add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
 Le gabarit d'une section du groupe d'en-tête est « group:header », du pied de page « group:footer ».`;
 
 /** Référence stable du thème (mise en cache entre les appels) : sections, réglages, couleurs, opérations. */

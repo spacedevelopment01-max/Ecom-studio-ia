@@ -31,6 +31,8 @@ export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("set_setting"), template: z.string(), section: z.string(), block: z.string().optional(), key: z.string(), value: Value }),
   z.object({ op: z.literal("set_global"), key: z.string(), value: Value }),
   z.object({ op: z.literal("set_scheme_color"), scheme: z.string().regex(/^[\w-]{1,40}$/), key: z.string().regex(/^[a-z0-9_]{1,40}$/), value: z.string() }),
+  /** Couleurs propres à UNE section (fond, texte…) : schéma dédié copié de celui de la section, les autres sections ne changent pas. */
+  z.object({ op: z.literal("section_colors"), template: z.string(), section: z.string(), colors: z.record(z.string().regex(/^[a-z0-9_]{1,40}$/), z.string()) }),
   z.object({ op: z.literal("add_section"), template: z.string(), type: z.string(), settings: Settings.optional(), blocks: z.array(z.object({ type: z.string(), settings: Settings.optional() })).optional(), position: Position }),
   z.object({ op: z.literal("remove_section"), template: z.string(), section: z.string() }),
   z.object({ op: z.literal("move_section"), template: z.string(), section: z.string(), position: z.object({ after: z.string().optional(), before: z.string().optional(), index: z.number().int().optional() }) }),
@@ -153,6 +155,16 @@ export function validateCustomSection(liquid: string): string | null {
   return null;
 }
 
+/** Contraste WCAG entre deux couleurs #RRGGBB. */
+function contrast(a: string, b: string): number {
+  const lum = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+}
+
 export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {}): ApplyResult {
   const spec = cloneSpec(input);
   const applied: string[] = [];
@@ -201,6 +213,41 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           }
           schemes[op.scheme].settings[op.key] = op.value.toUpperCase();
           applied.push(L(`Couleur ${op.key} du ${op.scheme} → ${op.value.toUpperCase()}`, `${op.scheme} ${op.key} color → ${op.value.toUpperCase()}`));
+          break;
+        }
+        case "section_colors": {
+          const c = containerOf(spec, op.template);
+          const s = c?.sections[op.section];
+          if (!c || !s) {
+            reject(L(`section ${op.section} introuvable dans ${op.template}`, `section ${op.section} not found in ${op.template}`));
+            break;
+          }
+          if (isLocked(op.template, op.section)) {
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
+            break;
+          }
+          const schemes = (spec.settings.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
+          const current = typeof s.settings.color_scheme === "string" && schemes[s.settings.color_scheme] ? s.settings.color_scheme : schemes["scheme-1"] ? "scheme-1" : Object.keys(schemes)[0];
+          if (!current) {
+            reject(L("ce thème n'a pas de schéma de couleurs", "this theme has no color scheme"));
+            break;
+          }
+          const bad = Object.entries(op.colors).find(([k, v]) => !/^#[0-9a-fA-F]{6}$/.test(v) || (spec.imported ? typeof schemes[current].settings[k] !== "string" : !SCHEME_KEYS.includes(k)));
+          if (bad || !Object.keys(op.colors).length) {
+            reject(L(`couleur invalide pour la section (${bad?.[0] ?? "aucune"})`, `invalid color for the section (${bad?.[0] ?? "none"})`));
+            break;
+          }
+          const own = `es-${op.section}`.replace(/[^\w-]/g, "-").slice(0, 40);
+          if (!schemes[own]) schemes[own] = { settings: { ...schemes[current].settings } };
+          const target = schemes[own].settings;
+          for (const [k, v] of Object.entries(op.colors)) target[k] = v.toUpperCase();
+          // Fond changé sans couleur de texte : texte lisible garanti (noir ou blanc selon le contraste).
+          if (op.colors.background && !op.colors.text && typeof target.text === "string" && contrast(target.text, target.background) < 4.5) {
+            target.text = contrast("#111111", target.background) >= contrast("#FFFFFF", target.background) ? "#111111" : "#FFFFFF";
+          }
+          spec.settings.color_schemes = schemes as any;
+          s.settings.color_scheme = own;
+          applied.push(L(`Couleurs de la section ${op.section} (elle seule) : ${Object.entries(op.colors).map(([k, v]) => `${k} ${v.toUpperCase()}`).join(", ")}`, `Colors of section ${op.section} (only): ${Object.entries(op.colors).map(([k, v]) => `${k} ${v.toUpperCase()}`).join(", ")}`));
           break;
         }
         case "set_setting":
