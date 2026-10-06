@@ -34,7 +34,7 @@ function run(cmd: string, args: string[], input?: string) {
   return new Promise<void>((resolve, reject) => {
     const p = spawn(cmd, args, { stdio: [input ? "pipe" : "ignore", "ignore", "pipe"] });
     let err = "";
-    p.stderr.on("data", (d) => (err = (err + d).slice(-3000)));
+    p.stderr?.on("data", (d) => (err = (err + d).slice(-3000)));
     p.on("error", reject);
     p.on("close", (c) => (c === 0 ? resolve() : reject(new Error(`${cmd} ${c}: ${err}`))));
     if (input) p.stdin!.end(input);
