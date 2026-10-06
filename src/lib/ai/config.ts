@@ -192,8 +192,15 @@ export function usdToEur(): number {
   return getJsonSetting<number>("billing.usdToEur", 0.86);
 }
 
+/**
+ * Clés lues aussi dans l'environnement (ex. secrets GitHub Codespaces) : elles survivent à un codespace recréé,
+ * sans passer par la base. La clé saisie dans l'administration reste prioritaire.
+ */
+const ENV_KEYS: Record<ProviderId, string[]> = { anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"] };
+export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map((k) => process.env[k]?.trim()).find(Boolean) ?? null;
+
 export function providerKey(p: ProviderId): string | null {
-  return getSetting(`provider.${p}.apiKey`);
+  return getSetting(`provider.${p}.apiKey`) || providerEnvKey(p);
 }
 
 export function providerEnabled(p: ProviderId): boolean {
