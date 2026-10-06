@@ -1,6 +1,6 @@
 /** La piste de logo retenue donne le ton à tout : couleurs (site, visuels, vignettes) et typographies du site. */
 import { describe, expect, it } from "vitest";
-import { effectivePalette } from "@/lib/route-palette";
+import { effectivePalette, paletteSources } from "@/lib/route-palette";
 import { routeFonts } from "@/lib/engine/shop";
 
 const pal = { primary: "#1F3A5F", secondary: "#E3E6EA", accent: "#C8402A", light: "#F5F4F1", dark: "#14171C" };
@@ -18,6 +18,17 @@ describe("identité corrélée à la piste choisie", () => {
     const eff = effectivePalette({ palette: pal, logo: { route: route(pal.accent, pal.accent) } as any })!;
     expect(eff.accent).toBe(pal.accent);
     expect(eff.primary).toBe(pal.accent);
+  });
+
+  it("palette affichée = celle de la piste (logotype bleu nuit, point gris) : le rouge de départ n'apparaît plus", () => {
+    const brand = { palette: pal, logo: { route: route(pal.secondary, pal.primary, { ink: "primary", accent: "secondary", ground: "primary", tint: "light" }) } } as any;
+    const eff = effectivePalette(brand)!;
+    expect(Object.values(eff)).not.toContain(pal.accent);
+    expect(eff.primary).toBe(pal.primary);
+    expect(eff.accent).toBe(pal.secondary);
+    // Modifier l'accent affiché change la couleur d'origine de la piste (la secondaire), pas le rouge caché.
+    expect(paletteSources(brand).accent).toBe("secondary");
+    expect(paletteSources({ palette: pal, logo: {} } as any).accent).toBe("accent");
   });
 
   it("sans piste : palette de la marque inchangée", () => {

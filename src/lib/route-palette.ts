@@ -18,15 +18,22 @@ function rolesOf(pal: Palette, route: NonNullable<Brand["logo"]["route"]>): { ac
   return accent && ground ? { accent, ground } : null;
 }
 
+/**
+ * Pour chaque couleur de la palette affichée, le rôle de la palette enregistrée d'où elle vient avec la piste retenue
+ * (sans piste : chaque couleur vient d'elle-même). Sert à afficher la palette de la piste et à modifier la bonne couleur.
+ */
+export function paletteSources(brand: Pick<Brand, "palette" | "logo"> | null | undefined): Record<Role, Role> {
+  const same = Object.fromEntries(ROLES.map((k) => [k, k])) as Record<Role, Role>;
+  const route = brand?.logo?.route;
+  const r = brand && route ? rolesOf(brand.palette, route) : null;
+  if (!r) return same;
+  // Couleur d'accent du site = celle de la piste ; couleur principale = son fond s'il est soutenu, sinon son accent.
+  const primary: Role = r.ground === "light" || r.ground === "secondary" ? (r.accent === "accent" ? "primary" : r.accent) : r.ground;
+  return { ...same, primary, accent: r.accent };
+}
+
 export function effectivePalette(brand: Pick<Brand, "palette" | "logo"> | null | undefined): Palette | null {
   if (!brand) return null;
-  const pal = brand.palette;
-  const route = brand.logo?.route;
-  if (!route) return pal;
-  const r = rolesOf(pal, route);
-  if (!r) return pal;
-  // Couleur d'accent du site = celle de la piste ; couleur principale = son fond s'il est soutenu, sinon son accent.
-  const accent = pal[r.accent];
-  const primary = r.ground === "light" || r.ground === "secondary" ? (r.accent === "accent" ? pal.primary : pal[r.accent]) : pal[r.ground];
-  return { ...pal, primary, accent };
+  const src = paletteSources(brand);
+  return Object.fromEntries(ROLES.map((k) => [k, brand.palette[src[k]]])) as Palette;
 }
