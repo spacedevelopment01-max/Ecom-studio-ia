@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { DirectionThumb } from "./direction-thumb";
+import { effectivePalette } from "@/lib/route-palette";
 import { Check, Download, Lock, Sparkles, Unlock } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
@@ -59,9 +60,18 @@ export default function TabMarque() {
       const r = await api<{ jobId: string }>(`/api/projects/${id}/brand/logo`, { body: b });
       toast("ok", b.regenerate ? t("Création de nouvelles pistes lancée : elles apparaissent ici dès qu'elles sont prêtes (quelques minutes avec l'IA).", "New routes are being created: they appear here as soon as they're ready (a few minutes with AI).") : t("Logo en cours d'application : déclinaisons, kit réseaux sociaux et boutique mis à jour dans un instant.", "Applying the logo: variations, social kit and store updated in a moment."));
       reload();
+      let misses = 0;
       for (let i = 0; i < 600; i++) {
         await new Promise((res) => setTimeout(res, 2500));
-        const { job } = await api<{ job: { status: string; error: string | null } }>(`/api/jobs/${r.jobId}`);
+        // Coupure passagère (relais d'un codespace : 502, 504…) : la tâche continue, on réessaie sans rien afficher.
+        let job: { status: string; error: string | null };
+        try {
+          ({ job } = await api<{ job: { status: string; error: string | null } }>(`/api/jobs/${r.jobId}`));
+          misses = 0;
+        } catch (e) {
+          if (++misses < 40) continue;
+          throw e;
+        }
         if (job.status === "done") {
           toast("ok", b.regenerate ? t("Nouvelles pistes prêtes.", "New routes are ready.") : t("Logo appliqué : déclinaisons créées et boutique mise à jour (nouvelle version).", "Logo applied: variations created and store updated (new version)."));
           break;
@@ -182,6 +192,20 @@ export default function TabMarque() {
                 ))}
               </div>
             </div>
+            {(() => {
+              // Piste de logo retenue : ses couleurs donnent le ton au site, aux visuels et aux vignettes.
+              const eff = effectivePalette(data.brand);
+              const route = data.brand?.logo.route;
+              if (!eff || !route || (eff.primary === b.palette.primary && eff.accent === b.palette.accent)) return null;
+              return (
+                <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-paper-2 p-3 text-xs text-ink-2">
+                  <span>{t(`Couleurs appliquées par la piste « ${route.name} » :`, `Colors applied by the "${route.name}" route:`)}</span>
+                  {(["primary", "accent"] as const).map((k) => (
+                    <span key={k} className="inline-flex items-center gap-1.5"><span className="size-4 rounded-full border border-line" style={{ background: eff[k] }} />{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)} <span className="font-mono">{eff[k]}</span></span>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </Card>
         <div className="grid content-start gap-6">
@@ -227,7 +251,7 @@ export default function TabMarque() {
             <div className="mt-3 grid grid-cols-2 gap-2">
               {DIRECTIONS.map((d) => (
                 <button key={d.id} onClick={() => set({ direction: d.id })} className={cx("overflow-hidden rounded-2xl border text-left transition", b.direction === d.id ? "border-signal ring-2 ring-signal" : "border-line hover:border-ink")} aria-pressed={b.direction === d.id}>
-                  <DirectionThumb className="aspect-[4/3]" projectId={id} direction={d.id} sandbox={data?.previewSandbox} fallback={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} />
+                  <DirectionThumb className="aspect-[4/3]" projectId={id} direction={d.id} version={`${data?.brand?.logo.assetId ?? ""}-${data?.project.updatedAt ?? ""}`} sandbox={data?.previewSandbox} fallback={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} />
                   <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTION_TAGLINE_EN[d.id] ?? d.tagline)}</span></span>
                 </button>
               ))}

@@ -5,6 +5,7 @@
  * Entreprise de services : pas de détourage ni de packshot — voir ./service-media
  * (photos réelles de l'activité ou visuels typographiques, offre réelle).
  */
+import { effectivePalette } from "../route-palette";
 import { dedupeCreativeText, renderProCreatives } from "../media/creative-html";
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
@@ -57,8 +58,9 @@ export function brandTypo(p: Project): Typo {
   return { heading, body, headingWeight: heavy ? 800 : 500, uppercase: d.id === "brut" || d.id === "elan" };
 }
 
+/** Palette des visuels : celle de la piste de logo retenue (voir route-palette.ts), sinon celle de la marque. */
 export function palette(p: Project) {
-  return p.brand?.palette ?? { primary: "#6E5644", secondary: "#E6DACB", accent: "#B98B5E", light: "#F6F2EC", dark: "#1C1713" };
+  return effectivePalette(p.brand) ?? { primary: "#6E5644", secondary: "#E6DACB", accent: "#B98B5E", light: "#F6F2EC", dark: "#1C1713" };
 }
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
