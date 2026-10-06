@@ -6,7 +6,6 @@
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import { balance, EUR, getSubscription, planOf } from "../billing";
-import { isAdminUser } from "../owner";
 
 /**
  * Portée du décompte des quotas pendant une tâche :
@@ -39,8 +38,6 @@ export function currentQuotaScope(): QuotaScope {
 
 /** L'IA sera réellement utilisée pour ce client (budget suffisant). */
 export function aiActiveFor(userId: string): boolean {
-  // Le propriétaire utilise ses propres clés : jamais coupé par un budget.
-  if (isAdminUser(userId)) return true;
   // Découverte gratuite (aucun forfait) : tout est fait par le moteur local, aucun appel à l'IA.
   if (!planOf(getSubscription(userId))) return false;
   return hasAiCredits(userId);

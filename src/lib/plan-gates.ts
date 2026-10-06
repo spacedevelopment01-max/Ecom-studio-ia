@@ -1,7 +1,8 @@
 /**
  * Ce que chaque forfait ouvre (côté serveur) : export et publication, jours de calendrier,
  * publication automatique, campagnes actives. Messages simples qui disent quel forfait débloque quoi.
- * L'administrateur n'est jamais bloqué (tests, démonstrations).
+ * L'administrateur suit son forfait comme un client : il teste le studio en gratuit comme en payant
+ * (forfait attribué à la main dans Administration › Clients).
  */
 import { HttpError, type User } from "./auth";
 import { one } from "./db";
@@ -9,7 +10,7 @@ import { getSubscription, planOf } from "./billing";
 import { PLANS, type PlanId } from "./plans";
 import { L } from "./i18n-server";
 
-const planFor = (user: User): PlanId | null => (user.role === "admin" ? "dominer" : planOf(getSubscription(user.id)));
+const planFor = (user: User): PlanId | null => planOf(getSubscription(user.id));
 const name = (p: PlanId) => L(PLANS[p].name.fr, PLANS[p].name.en);
 
 /** Export du thème, envoi vers Shopify, publication : réservés aux forfaits (la découverte gratuite reste un aperçu). */
