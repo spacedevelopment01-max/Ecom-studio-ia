@@ -22,6 +22,7 @@ import { projectContext } from "../ai/context";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { brandTypo, palette } from "./images";
+import { paletteKey } from "../route-palette";
 import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo-line";
 
 // ---------------------------------------------------------------- textes (purs, testables)
@@ -176,6 +177,19 @@ export function realActivityPhotos(projectId: string): Asset[] {
 }
 
 /** Photos réelles d'abord, puis ambiances générées par IA. */
+/**
+ * Nouvelle piste de logo : les bannières du site sans photo (compositions typographiques) sont redessinées
+ * aux nouvelles couleurs, sans IA. Celles faites avec une photo réelle gardent leur photo et sont aussi refaites.
+ */
+export async function refreshSiteBanners(projectId: string) {
+  const p = loadProject(projectId);
+  if (p.business !== "services" || !p.brand) return [];
+  const photos = activityPhotos(projectId);
+  const plan = serviceCardPlan(p, photos.length, null).filter((x) => x.role === "banner");
+  const saved = await saveCards(p, plan.map((x) => ({ ...x, photoAsset: x.card.photo !== undefined ? photos[x.card.photo] : undefined })), `piste-${Date.now().toString(36)}`);
+  return saved.map((s) => s.id);
+}
+
 export function activityPhotos(projectId: string): Asset[] {
   const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin = 'generated' AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 4", projectId);
   return [...realActivityPhotos(projectId), ...amb];
@@ -295,6 +309,8 @@ async function saveCards(p: Project, plans: (CardPlan & { photoAsset?: Asset })[
         text: { headline: x.card.title, sub: x.card.text, cta: x.card.cta },
         ...(x.group ? { carousel: { group: `${jobId}:${x.group}`, index: x.card.index, total: x.card.total } } : {}),
         engine: r.engine,
+        // Couleurs avec lesquelles la carte a été dessinée : une carte d'une autre palette n'illustre plus le site.
+        palette: paletteKey(palette(p)),
       },
       status: "review",
     });

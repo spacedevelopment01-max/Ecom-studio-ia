@@ -19,6 +19,7 @@ import { applySiteIdentity, loadSiteImport } from "./existing-site";
 import type { JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 import type { Brand } from "../project-types";
+import { effectivePalette } from "../route-palette";
 
 export async function buildBrand(ctx: JobContext, projectId: string, opts: { providedBrand?: string; guidance?: string } = {}) {
   const p = loadProject(projectId);
@@ -98,7 +99,8 @@ export async function saveBrandBook(projectId: string) {
   const route = b.logo.route;
   const kit = latestSocialKit(projectId);
   const { pages, pdf } = renderBrandBook({
-    brand: b,
+    // Couleurs de la piste de logo retenue (celles du site et des visuels), pas la palette de départ.
+    brand: { ...b, palette: effectivePalette(b) ?? b.palette },
     strategy: p.strategy,
     headingFamily: route?.heading ?? canvasFamily(b.fonts.heading ?? d.fonts.heading, "Cormorant"),
     bodyFamily: route?.body ?? canvasFamily(b.fonts.body ?? d.fonts.body, "Jost"),
@@ -123,8 +125,10 @@ export async function saveBrandBook(projectId: string) {
 /** Charte de marque au format Markdown (rangée dans « Charte & palette »). */
 export async function saveBrandGuide(projectId: string) {
   const p = loadProject(projectId);
-  const b = p.brand;
-  if (!b) return;
+  const b0 = p.brand;
+  if (!b0) return;
+  // Couleurs de la piste de logo retenue.
+  const b = { ...b0, palette: effectivePalette(b0) ?? b0.palette };
   const d = directionById(b.direction);
   const md = C(`# Charte de marque — ${b.name}
 

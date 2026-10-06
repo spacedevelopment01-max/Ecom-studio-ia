@@ -25,7 +25,7 @@ import { effectivePalette } from "../route-palette";
 import { colorSchemes, type BrandPalette, type DirectionId } from "../theme/directions";
 import sharp from "sharp";
 import { validCutouts } from "./cutouts";
-import { assetData } from "../library";
+import { assetData, getAsset } from "../library";
 
 export type LogoProposal = {
   /** Identifiant du fichier de la piste (réserve de pistes). */
@@ -265,17 +265,25 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   const r = pr.route;
   const route = r ? { key: r.key, name: r.name, heading: r.heading, headingWeight: r.headingWeight, body: r.body, colors: r.colors, roles: r.roles, source: r.source } : undefined;
   saveBrand(projectId, { ...brand, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, proposalId: pr.id, route } });
-  swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id }, routeFonts(route), effectivePalette(loadProject(projectId).brand));
+  // Site de services : bannières sans photo redessinées aux couleurs de la piste (sans IA), reprises par le site.
+  const { refreshSiteBanners } = await import("./service-media");
+  const banners = await refreshSiteBanners(projectId).catch((e) => (console.error(`[bannières] ${projectId} : ${(e as Error).message}`), []));
+  swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id }, routeFonts(route), effectivePalette(loadProject(projectId).brand), banners);
   // Kit réseaux sociaux aux couleurs et typographies de la piste choisie (sans nouvel appel à l'IA).
   if (r) {
     ctx?.progress(0.82, L("Kit réseaux sociaux", "Social media kit"));
     await saveSocialKit(projectId, { route: r }).catch((e) => console.error(`[kit social] ${projectId} : ${(e as Error).message}`));
   }
+  // Charte de marque refaite avec le logo, les typographies et les couleurs de la piste choisie.
+  ctx?.progress(0.9, L("Charte de marque", "Brand guidelines"));
+  const { saveBrandBook, saveBrandGuide } = await import("./brand");
+  await saveBrandGuide(projectId).catch((e) => console.error(`[charte] ${projectId} : ${(e as Error).message}`));
+  await saveBrandBook(projectId).catch((e) => console.error(`[charte] ${projectId} : ${(e as Error).message}`));
   return { main, proposal: pr.key };
 }
 
 /** Remplace les fichiers du logo dans la version actuelle du thème (nouvelle version, retouches conservées). */
-export function swapThemeLogos(projectId: string, ids: { logo: string; light: string; favicon: string }, fonts?: { heading: string; body: string } | null, pal?: BrandPalette | null) {
+export function swapThemeLogos(projectId: string, ids: { logo: string; light: string; favicon: string }, fonts?: { heading: string; body: string } | null, pal?: BrandPalette | null, banners: string[] = []) {
   const cur = currentTheme(projectId);
   if (!cur) return null;
   const spec = structuredClone(cur.spec);
@@ -294,8 +302,17 @@ export function swapThemeLogos(projectId: string, ids: { logo: string; light: st
       changed = true;
     }
   }
+  // Bannières générées d'un site de services : remplacées par leur version aux nouvelles couleurs (même modèle).
+  const templateOf = (id: string) => {
+    const a = getAsset(id);
+    if (!a || a.role !== "banner" || a.origin !== "generated") return null;
+    const m = JSON.parse(a.meta || "{}") as { business?: string; template?: string };
+    return m.business === "services" ? m.template ?? null : null;
+  };
+  const fresh = new Map(banners.map((id) => [templateOf(id), id] as const).filter(([t]) => t));
   for (const f of Object.keys(spec.files)) {
-    const next = /^es-logo-clair-/.test(f) ? ids.light : /^es-logo-/.test(f) ? ids.logo : /^es-favicon-/.test(f) ? ids.favicon : null;
+    const tpl = fresh.size ? templateOf(spec.files[f]) : null;
+    const next = /^es-logo-clair-/.test(f) ? ids.light : /^es-logo-/.test(f) ? ids.logo : /^es-favicon-/.test(f) ? ids.favicon : tpl ? fresh.get(tpl) ?? null : null;
     if (next && spec.files[f] !== next) {
       spec.files[f] = next;
       changed = true;
