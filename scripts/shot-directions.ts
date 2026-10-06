@@ -12,6 +12,7 @@ const DIRS = (process.env.DIRS ?? "atelier,clinique,brut,terroir,nocturne,pop,ga
 fs.mkdirSync(OUT, { recursive: true });
 const b = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const ctx = await b.newContext({ reducedMotion: "reduce" });
+await ctx.addInitScript(() => { try { sessionStorage.setItem("ecsSeen", "1"); } catch {} }); // intro d'ouverture déjà vue : rien ne couvre la page filmée
 await ctx.request.post(`${BASE}/api/auth/login`, { data: { email: process.env.EMAIL, password: process.env.PASSWORD } });
 const P = process.env.PROJECT!;
 const idle = async () => { for (let i = 0; i < 200; i++) { const r = await (await ctx.request.get(`${BASE}/api/projects/${P}`)).json(); if (!r.active?.length) return; await new Promise((x) => setTimeout(x, 1500)); } };

@@ -2,6 +2,7 @@ import { chromium, devices } from "playwright";
 const [email, project] = process.argv.slice(2);
 const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
 const ctx = await b.newContext({ ...devices["iPhone 13"] });
+await ctx.addInitScript(() => { try { sessionStorage.setItem("ecsSeen", "1"); } catch {} }); // intro d'ouverture déjà vue : rien ne couvre la page filmée
 const p = await ctx.newPage();
 await p.goto("http://localhost:3000/connexion");
 await p.fill("#email", email); await p.fill("#password", "motdepasse-solide");
