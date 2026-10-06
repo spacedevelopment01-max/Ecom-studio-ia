@@ -5,6 +5,7 @@ const b = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/
 const errors: string[] = [];
 for (const [name, opts] of [["bureau", { viewport: { width: 1440, height: 900 } }], ["mobile", devices["iPhone 13"]], ["sombre", { viewport: { width: 1440, height: 900 }, colorScheme: "dark" as const }]] as const) {
   const ctx = await b.newContext(opts as any);
+  await ctx.addInitScript(() => { try { sessionStorage.setItem("ecsSeen", "1"); } catch {} }); // intro d'ouverture déjà vue : rien ne couvre la page filmée
   const p = await ctx.newPage();
   p.on("pageerror", (e) => errors.push(`${name}: ${e.message}`));
   p.on("response", (r) => r.status() >= 400 && errors.push(`${name}: ${r.status()} ${r.url()}`));

@@ -3,6 +3,7 @@ import "./globals.css";
 import { LangProvider } from "@/components/i18n";
 import { serverLang } from "@/lib/i18n-server";
 import { pick } from "@/lib/i18n";
+import { IntroSplash } from "@/components/intro/intro-splash";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await serverLang();
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
       <body className="min-h-dvh">
+        <IntroSplash />
         <LangProvider initial={lang}>{children}</LangProvider>
       </body>
     </html>

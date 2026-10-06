@@ -229,6 +229,7 @@ async function shot(ctx: BrowserContext, url: string, dest: string, viewport: { 
 const ONLY_DIRECTIONS = process.env.ONLY_DIRECTIONS; // identifiant d'un projet existant : ne refait que les vignettes
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const ctx = await browser.newContext({ reducedMotion: "reduce" });
+await ctx.addInitScript(() => { try { sessionStorage.setItem("ecsSeen", "1"); } catch {} }); // intro d'ouverture déjà vue : rien ne couvre la page filmée
 // Langue de l'interface du studio (cookie « ecs-lang ») : anglais pour LANG=en.
 if (EN) await ctx.addCookies([{ name: "ecs-lang", value: "en", url: BASE }]);
 async function shootDirections(pid: string) {

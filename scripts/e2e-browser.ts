@@ -16,6 +16,7 @@ const errors: string[] = [];
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const desk = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+await desk.addInitScript(() => { try { sessionStorage.setItem("ecsSeen", "1"); } catch {} }); // intro d'ouverture déjà vue : rien ne couvre la page filmée
 const page = await desk.newPage();
 page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
 page.on("console", (m) => m.type() === "error" && errors.push(`console: ${m.text()}`));
@@ -70,6 +71,7 @@ await shot(page, "21-admin");
 
 // Mobile
 const mob = await browser.newContext({ ...devices["iPhone 13"], storageState: await desk.storageState() });
+await mob.addInitScript(() => { try { sessionStorage.setItem("ecsSeen", "1"); } catch {} }); // intro d'ouverture déjà vue : rien ne couvre la page filmée
 const m = await mob.newPage();
 m.on("pageerror", (e) => errors.push(`mobile pageerror: ${e.message}`));
 await m.goto(BASE, { waitUntil: "networkidle" });

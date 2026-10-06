@@ -35,6 +35,7 @@ for (const id of ids) {
   const scene = mod.default as (c: SceneCtx) => Promise<void>;
   const cleanup = mod.cleanup as ((c: SceneCtx) => Promise<void>) | undefined;
   const ctx = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1, locale: LANG === "en" ? "en-US" : "fr-FR", colorScheme: "light" });
+  await ctx.addInitScript(() => { try { sessionStorage.setItem("ecsSeen", "1"); } catch {} }); // intro d'ouverture déjà vue : rien ne couvre la page filmée
   await ctx.addCookies([{ name: "ecs-lang", value: LANG, url: BASE }]);
   const login = await ctx.request.post(`${BASE}/api/auth/login`, { data: { email: EMAIL, password: PASSWORD } });
   if (!login.ok()) throw new Error(`connexion : ${await login.text()}`);

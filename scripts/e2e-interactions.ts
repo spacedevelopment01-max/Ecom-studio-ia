@@ -20,6 +20,7 @@ const check = (name: string, okv: boolean, detail = "") => {
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+await ctx.addInitScript(() => { try { sessionStorage.setItem("ecsSeen", "1"); } catch {} }); // intro d'ouverture déjà vue : rien ne couvre la page filmée
 const page = await ctx.newPage();
 const errors: string[] = [];
 page.on("pageerror", (e) => errors.push(e.message));
