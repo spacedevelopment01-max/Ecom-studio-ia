@@ -814,7 +814,7 @@ function buttonColorTargets(spec: ThemeSpec): { key: string; schemes: string[] }
  * Les demandes sont comprises en français comme en anglais, quelle que soit la langue :
  * la réponse suit la langue de l'interface (L), les textes ajoutés au thème celle des contenus (C).
  */
-export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string } | null, business: BusinessType = "products"): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
+export function localThemeCommand(spec: ThemeSpec, message: string, selection: { template: string; section: string; block?: string; kind?: string; path?: string; role?: string; text?: string } | null, business: BusinessType = "products"): { ops: ThemeOp[]; reply: string; revert: boolean; direction?: DirectionId } {
   const services = business === "services";
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|\bundo\b|go back|revert|previous version|roll ?back)/.test(m)) return { ops: [], reply: L("Je reviens à la version précédente.", "Going back to the previous version."), revert: true };
@@ -839,6 +839,20 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   const dir = DIRECTIONS.find((d) => m.includes(d.name.toLowerCase()) || m.includes(d.id));
   if (dir && /(style|direction|thème|theme|passe|switch|apply)/.test(m)) return { ops: [], reply: L(`J'applique la direction ${dir.name} en conservant vos textes et images.`, `Applying the ${dir.name} direction while keeping your copy and images.`), revert: false, direction: dir.id };
   // Élément ou section désigné dans l'aperçu : la couleur ne touche QUE lui, jamais tout le site.
+  // Élément précis désigné (titre, texte, bouton…) : ses couleurs à lui seul (texte, fond).
+  if (color && selection?.path && (!selection.kind || selection.kind !== "Section") && !/(tous les boutons|tout le site|toute la page|all buttons|whole site|entire site)/.test(m)) {
+    const role = (["heading", "text", "button", "other"].includes(selection.role ?? "") ? selection.role : "other") as "heading" | "text" | "button" | "other";
+    const textWords = /(texte|écrit|ecrit|titre|police|lettres|text|font|title|letters)/.test(m);
+    let colorV = textColor;
+    let backgroundV = bgColor;
+    // Une seule couleur : le fond pour un bouton (« bouton rouge »), le texte pour un titre ou un texte.
+    if (!bgColor && textColor && role === "button" && !textWords) (backgroundV = textColor), (colorV = undefined);
+    const what = (selection.kind ?? L("élément", "element")).toLowerCase();
+    const name = selection.text ? ` « ${selection.text.slice(0, 40)} »` : "";
+    ops.push({ op: "element_style", template: selection.template, section: selection.section, path: selection.path, role, text: selection.text?.slice(0, 200), color: colorV, background: backgroundV });
+    const parts = [colorV && L(`texte ${colorV}`, `text ${colorV}`), backgroundV && L(`fond ${backgroundV}`, `background ${backgroundV}`)].filter(Boolean).join(", ");
+    return { ops, reply: L(`${what.charAt(0).toUpperCase() + what.slice(1)}${name} uniquement : ${parts}. Rien d'autre ne change.`, `${what.charAt(0).toUpperCase() + what.slice(1)}${name} only: ${parts}. Nothing else changes.`), revert: false };
+  }
   if (color && selection && !/(bouton|button|cta|tout le site|toute la page|whole site|entire site)/.test(m)) {
     const c = containerOf(spec, selection.template);
     const s = c?.sections[selection.section];

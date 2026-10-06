@@ -22,6 +22,9 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
   var picking=false, hovered=null, label=null;
   var SEL='a,button,img,video,h1,h2,h3,h4,h5,p,li,summary,label,[data-es-block],[data-es-section]';
   function kind(tag){ return /^(a|button|summary)$/.test(tag)?'${t("Bouton", "Button")}':/^h[1-5]$/.test(tag)?'${t("Titre", "Heading")}':/^(img|video)$/.test(tag)?'Image':/^(p|li|label)$/.test(tag)?'${t("Texte", "Text")}':'${t("Bloc", "Block")}'; }
+  function role(tag){ return /^(a|button|summary)$/.test(tag)?'button':/^h[1-5]$/.test(tag)?'heading':/^(p|li|label)$/.test(tag)?'text':'other'; }
+  /* Adresse précise de l'élément dans sa section (balises et rangs) : seul lui reçoit un style. */
+  function pathOf(el, sec){ var segs=[]; var n=el; while(n && n!==sec){ var p=n.parentElement; if(!p) return ''; segs.unshift(n.tagName.toLowerCase()+':nth-child('+(Array.prototype.indexOf.call(p.children,n)+1)+')'); n=p; } return n===sec && segs.length<=25 ? segs.join(' > ') : ''; }
   function post(m){ try{ parent.postMessage(Object.assign({source:'es-preview'},m),'*'); }catch(e){} }
   function info(el){
     var sec=el.closest('[data-es-section]'); if(!sec) return null;
@@ -29,7 +32,7 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
     var blk=el.closest('[data-es-block]');
     var txt=(el.innerText||el.alt||'').trim().slice(0,200);
     var tag=el.tagName.toLowerCase(); var whole=el===sec;
-    return {template: tpl, section:id, block: !whole && blk && sec.contains(blk) ? blk.getAttribute('data-es-block') : undefined, text: whole?undefined:txt, tag: whole?undefined:tag, kind: whole?'Section':kind(tag), type: sec.getAttribute('data-es-type')};
+    return {template: tpl, section:id, block: !whole && blk && sec.contains(blk) ? blk.getAttribute('data-es-block') : undefined, text: whole?undefined:txt, tag: whole?undefined:tag, kind: whole?'Section':kind(tag), type: sec.getAttribute('data-es-type'), path: whole?undefined:pathOf(el, sec), role: whole?undefined:role(tag)};
   }
   function clearHover(){ if(hovered){ hovered.classList.remove('es-pv-hover'); hovered=null; } if(label){ label.remove(); label=null; } }
   document.addEventListener('mouseover', function(e){

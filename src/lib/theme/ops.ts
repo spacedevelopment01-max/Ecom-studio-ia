@@ -11,6 +11,7 @@ import {
   cloneSpec,
   coerceSetting,
   containerOf,
+  ELEMENT_PATH,
   globalSettingDefaults,
   parseSchemaBlock,
   sectionSchema,
@@ -32,6 +33,8 @@ export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("set_global"), key: z.string(), value: Value }),
   z.object({ op: z.literal("set_scheme_color"), scheme: z.string().regex(/^[\w-]{1,40}$/), key: z.string().regex(/^[a-z0-9_]{1,40}$/), value: z.string() }),
   /** Couleurs propres à UNE section (fond, texte…) : schéma dédié copié de celui de la section, les autres sections ne changent pas. */
+  /** Couleurs d'UN élément désigné dans l'aperçu (chemin fourni par la sélection) : texte et/ou fond, rien d'autre ne change. */
+  z.object({ op: z.literal("element_style"), template: z.string(), section: z.string(), path: z.string().max(600), role: z.enum(["heading", "text", "button", "other"]).optional(), text: z.string().max(200).optional(), color: z.string().optional(), background: z.string().optional() }),
   z.object({ op: z.literal("section_colors"), template: z.string(), section: z.string(), colors: z.record(z.string().regex(/^[a-z0-9_]{1,40}$/), z.string()) }),
   z.object({ op: z.literal("add_section"), template: z.string(), type: z.string(), settings: Settings.optional(), blocks: z.array(z.object({ type: z.string(), settings: Settings.optional() })).optional(), position: Position }),
   z.object({ op: z.literal("remove_section"), template: z.string(), section: z.string() }),
@@ -213,6 +216,36 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           }
           schemes[op.scheme].settings[op.key] = op.value.toUpperCase();
           applied.push(L(`Couleur ${op.key} du ${op.scheme} → ${op.value.toUpperCase()}`, `${op.scheme} ${op.key} color → ${op.value.toUpperCase()}`));
+          break;
+        }
+        case "element_style": {
+          const c = containerOf(spec, op.template);
+          if (!c?.sections[op.section]) {
+            reject(L(`section ${op.section} introuvable dans ${op.template}`, `section ${op.section} not found in ${op.template}`));
+            break;
+          }
+          if (isLocked(op.template, op.section)) {
+            reject(L(`la section ${op.section} est validée et verrouillée`, `section ${op.section} is approved and locked`));
+            break;
+          }
+          if (!ELEMENT_PATH.test(op.path)) {
+            reject(L("élément désigné introuvable (chemin invalide)", "selected element not found (invalid path)"));
+            break;
+          }
+          const hex = (v?: string) => (v && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toUpperCase() : undefined);
+          if ((op.color && !hex(op.color)) || (op.background && !hex(op.background)) || (!op.color && !op.background)) {
+            reject(L("couleur attendue au format #RRGGBB", "color expected in #RRGGBB format"));
+            break;
+          }
+          const list = (spec.elementStyles ??= []);
+          const i = list.findIndex((e) => e.template === op.template && e.section === op.section && e.path === op.path);
+          const prev = i >= 0 ? list[i] : undefined;
+          const next = { template: op.template, section: op.section, path: op.path, role: op.role ?? prev?.role ?? "other", text: op.text ?? prev?.text, color: hex(op.color) ?? prev?.color, background: hex(op.background) ?? prev?.background };
+          // Bouton recoloré sans couleur de texte : texte lisible garanti.
+          if (next.role === "button" && next.background && !hex(op.color) && (!next.color || contrast(next.color, next.background) < 4.5)) next.color = contrast("#111111", next.background) >= contrast("#FFFFFF", next.background) ? "#111111" : "#FFFFFF";
+          if (i >= 0) list[i] = next;
+          else list.push(next);
+          applied.push(L(`Élément « ${(next.text ?? op.path).slice(0, 40)} » (lui seul) : ${[next.color && `texte ${next.color}`, next.background && `fond ${next.background}`].filter(Boolean).join(", ")}`, `Element "${(next.text ?? op.path).slice(0, 40)}" (only): ${[next.color && `text ${next.color}`, next.background && `background ${next.background}`].filter(Boolean).join(", ")}`));
           break;
         }
         case "section_colors": {

@@ -9,7 +9,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { zipSync, strToU8 } from "fflate";
 import { DATA_DIR } from "../db";
-import { THEME_BASE, themeLang, type ThemeSpec } from "./spec";
+import { elementStylesCss, THEME_BASE, themeLang, type ThemeSpec } from "./spec";
 import { importedArchive } from "./imported";
 import { L } from "../i18n-server";
 import type { Lang } from "../i18n";
@@ -97,6 +97,13 @@ export function compileTheme(spec: ThemeSpec): ThemeFiles {
     files.set(`sections/${g}-group.json`, HEADER + JSON.stringify({ type: json.type, name: json.name, sections: json.sections, order: json.order.filter((id) => json.sections[id]) }, null, 2));
   }
   files.set("config/settings_data.json", HEADER + JSON.stringify({ current: spec.settings, presets: imp?.presets ?? {} }, null, 2));
+  // Couleurs propres à un élément désigné (un titre, un bouton…) : petite feuille chargée dans le <head>.
+  const css = elementStylesCss(spec);
+  if (css) {
+    files.set("snippets/es-element-styles.liquid", `{%- comment -%} E-COM STUDIO IA : couleurs propres à un élément désigné dans le studio. {%- endcomment -%}\n<style id="es-element-styles">\n${css}\n</style>\n`);
+    const layout = files.get("layout/theme.liquid");
+    if (layout && !layout.includes("es-element-styles") && layout.includes("</head>")) files.set("layout/theme.liquid", layout.replace("</head>", "  {% render 'es-element-styles' %}\n  </head>"));
+  }
   return files;
 }
 

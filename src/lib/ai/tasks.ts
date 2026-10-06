@@ -628,11 +628,11 @@ export async function aiThemeChat(
   b: Base,
   p: Project,
   spec: ThemeSpec,
-  input: { message: string; selection?: { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string } | null; attachments: { assetId: string; name: string; image?: Buffer }[]; page: string; history: { role: string; content: string }[] },
+  input: { message: string; selection?: { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string; path?: string; role?: string } | null; attachments: { assetId: string; name: string; image?: Buffer }[]; page: string; history: { role: string; content: string }[] },
 ): Promise<ChatResult> {
   const templates = ["group:header", input.page, "group:footer"].filter((v, i, a) => a.indexOf(v) === i);
   const sel = input.selection
-    ? `Élément désigné dans l'aperçu : gabarit ${input.selection.template}, section ${input.selection.section}${input.selection.type ? ` (type ${input.selection.type})` : ""}${input.selection.kind === "Section" ? " — toute la section" : ""}${input.selection.block ? `, bloc ${input.selection.block}` : ""}${input.selection.tag ? `, balise <${input.selection.tag}>` : ""}${input.selection.text ? `, texte « ${input.selection.text.slice(0, 160)} »` : ""}.`
+    ? `Élément désigné dans l'aperçu : gabarit ${input.selection.template}, section ${input.selection.section}${input.selection.type ? ` (type ${input.selection.type})` : ""}${input.selection.kind === "Section" ? " — toute la section" : ""}${input.selection.block ? `, bloc ${input.selection.block}` : ""}${input.selection.tag ? `, balise <${input.selection.tag}>` : ""}${input.selection.text ? `, texte « ${input.selection.text.slice(0, 160)} »` : ""}${input.selection.path && input.selection.kind !== "Section" ? `. Chemin de l'élément (pour element_style) : ${input.selection.path} ; nature : ${input.selection.role ?? "other"}` : ""}.`
     : "Aucun élément désigné.";
   return llmJson(
     {
@@ -660,7 +660,7 @@ Demande du client : <demande>${input.message}</demande>`,
   );
 }
 
-const OPS_HELP = `Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value} (TOUT le site : chaque section sur ce schéma change), section_colors{template,section,colors{background?,text?,accent?,…}} (couleurs d'UNE seule section, schéma dédié), add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
+const OPS_HELP = `Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value} (TOUT le site : chaque section sur ce schéma change), section_colors{template,section,colors{background?,text?,accent?,…}} (couleurs d'UNE seule section, schéma dédié), element_style{template,section,path,role,text,color?,background?} (couleurs d'UN seul élément désigné : reprends exactement son chemin), add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
 Le gabarit d'une section du groupe d'en-tête est « group:header », du pied de page « group:footer ».`;
 
 /** Référence stable du thème (mise en cache entre les appels) : sections, réglages, couleurs, opérations. */
