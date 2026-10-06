@@ -107,7 +107,7 @@ export default async function Page() {
       </section>
       <section>
         <h2>4. Découverte gratuite</h2>
-        <p>Sans abonnement ni carte bancaire, chaque compte peut faire une découverte gratuite : analyse du produit par l'IA, marque, logos et aperçu de la page d'accueil marqué « Aperçu ». Elle ne comprend ni images ni vidéos IA, ni l'export ou la publication de la boutique.</p>
+        <p>Sans abonnement ni carte bancaire, chaque compte peut faire une découverte gratuite, réalisée par le moteur du studio sans intelligence artificielle : analyse du produit, marque, logos et aperçu de la page d'accueil marqué « Aperçu ». Elle ne comprend ni l'IA, ni images ni vidéos, ni l'export ou la publication de la boutique.</p>
       </section>
       <section>
         <h2>5. Changement de forfait et résiliation</h2>

@@ -99,11 +99,11 @@ export const PLAN_IDS = Object.keys(PLANS) as PlanId[];
 /** Thèmes entièrement sur mesure par compte et par mois, forfait Dominer (garde-fou : chaque thème mobilise beaucoup d'IA). */
 export const CUSTOM_THEMES_PER_MONTH = 2;
 
-/** Découverte gratuite : la vraie qualité IA, limitée à l'aperçu (pas d'export, pas d'images ni de vidéos IA). */
+/** Découverte gratuite : faite par le moteur du studio, sans IA (pas d'export, pas d'images ni de vidéos). */
 export const DISCOVERY = {
   includes: ["analysis", "brand", "logos", "homePreview"] as const,
-  /** Garde-fou interne : dépense IA maximale pour une découverte. */
-  aiBudgetEur: 1.5,
+  /** Aucune dépense IA pour une découverte : tout est fait par le moteur local. */
+  aiBudgetEur: 0,
   /** Une découverte par compte (e-mail vérifié). */
   perAccount: 1,
 };

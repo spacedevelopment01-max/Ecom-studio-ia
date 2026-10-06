@@ -101,7 +101,7 @@ function ensureWallet(userId: string): Wallet {
     w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
   }
   w = renewIfDue(w);
-  if (!planOf(getSubscription(userId)) && grantOnce(userId, "discovery", Math.round(DISCOVERY.aiBudgetEur * EUR), "Découverte gratuite", "Free discovery")) {
+  if (DISCOVERY.aiBudgetEur > 0 && !planOf(getSubscription(userId)) && grantOnce(userId, "discovery", Math.round(DISCOVERY.aiBudgetEur * EUR), "Découverte gratuite", "Free discovery")) {
     w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
   }
   return w;
