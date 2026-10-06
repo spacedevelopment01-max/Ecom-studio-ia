@@ -48,7 +48,7 @@ type BlogData = {
   ai: boolean;
   links: { title: string; url: string; kind: string }[];
 };
-type Topic = { title: string; kind: "question" | "usage" | "guide" | "comparison"; why: string };
+type Topic = { title: string; kind: "question" | "usage" | "guide" | "comparison"; why: string; keyword?: string };
 
 const STATUS: Record<Article["status"], { fr: string; en: string; tone: "neutral" | "info" | "ok" }> = {
   draft: { fr: "Brouillon", en: "Draft", tone: "neutral" },
@@ -317,6 +317,7 @@ function WriteDialog({ open, onClose, onStarted, confirm }: { open: boolean; onC
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{t(KIND[tp.kind].fr, KIND[tp.kind].en)}</span>
                   <span className="font-medium">{tp.title}</span>
                   {tp.why && <span className="text-xs text-muted">{tp.why}</span>}
+                  {tp.keyword && <span className="text-xs text-ink-2">{t("Recherche visée : ", "Target search: ")}<span className="font-medium">{t(`« ${tp.keyword} »`, `"${tp.keyword}"`)}</span></span>}
                 </button>
               );
             })}

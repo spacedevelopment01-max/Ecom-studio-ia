@@ -118,7 +118,7 @@ export async function openaiScene(ctx: Ctx, input: { composite: Buffer; productM
       model,
       image: await toFile(input.composite, "scene.png", { type: "image/png" }),
       mask: await toFile(maskPng, "mask.png", { type: "image/png" }),
-      prompt: `${input.prompt}. Keep the existing product exactly as it is; only paint the surrounding environment, surface and lighting. No text, no extra products.`,
+      prompt: `${input.prompt} Keep the existing product exactly as it is (shape, colours, label, proportions); only paint the surrounding environment, surface and lighting. The product stands on the surface with a natural contact shadow, the camera height and perspective match the product photo. No text, no extra products.`,
       size: input.size,
       quality: "high",
       n: 1,

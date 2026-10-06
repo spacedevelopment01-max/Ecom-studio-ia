@@ -102,7 +102,7 @@ export function brandIssues(brand: Pick<Brand, "name" | "nameStatus" | "tagline"
   const tag = brand.tagline?.trim() ?? "";
   if (tag.length > 60 || tag.split(/\s+/).length > 9) out.push({ code: "tagline", field: "tagline", blocking: true, message: L(`Signature trop longue (${tag.length} caractères) : 9 mots et 60 caractères au plus.`, `Tagline too long (${tag.length} characters): 9 words and 60 characters at most.`) });
   if (/\s[—–]\s/.test(tag)) out.push({ code: "tagline", field: "tagline", blocking: true, message: L("Signature : pas de tiret cadratin.", "Tagline: no em dash.") });
-  const texts = { tagline: brand.tagline, positioning: brand.positioning, audience: brand.audience, story: brand.story, values: brand.values, personality: brand.personality, keyMessages: strategy?.keyMessages, angles: strategy?.angles };
+  const texts = { tagline: brand.tagline, positioning: brand.positioning, audience: brand.audience, story: brand.story, values: brand.values, personality: brand.personality, keyMessages: strategy?.keyMessages, angles: strategy?.angles, platform: strategy?.platform ? { persona: strategy.platform.persona, problem: strategy.platform.problem, difference: strategy.platform.difference, answers: strategy.platform.objections.map((o) => o.answer) } : undefined };
   for (const c of lintClaims(texts, p as Project)) out.push({ code: "claim", field: c.path, blocking: true, message: L(`${c.path} : « ${c.term} » (${c.label}) n'est pas confirmé par le client.`, `${c.path}: "${c.term}" (${c.label}) is not confirmed by the client.`) });
   for (const h of lintHollow(texts)) out.push({ code: "hollow", field: h.path, blocking: true, message: L(`${h.path} : formule creuse « ${h.term} », à remplacer par un trait concret.`, `${h.path}: empty phrase "${h.term}", replace it with a concrete trait.`) });
   out.push(...paletteIssues(brand.palette));
@@ -174,6 +174,14 @@ export function finalizeBrand(brand: Brand, strategy: Strategy | null, p: Projec
   Object.assign(out, texts.content);
   let strat = strategy;
   if (strategy) strat = { ...strategy, ...scrubClaims({ keyMessages: strategy.keyMessages, angles: strategy.angles, pillars: strategy.pillars }, p).content };
+  // Plateforme : persona, problème, différence et réponses aux objections ne portent aucune allégation non prouvée
+  // (les arguments « sans preuve » restent listés tels quels : ce sont des questions pour le client, jamais publiées).
+  if (strat?.platform) {
+    const pf = strat.platform;
+    // Les objections sont des questions de la cible (« Est-ce sans danger ? ») : seules les réponses sont nettoyées.
+    const clean = scrubClaims({ persona: pf.persona, problem: pf.problem, difference: pf.difference, answers: pf.objections.map((o) => o.answer) }, p).content;
+    strat = { ...strat, platform: { ...pf, persona: clean.persona, problem: clean.problem, difference: clean.difference, objections: pf.objections.map((o, i) => ({ ...o, answer: clean.answers[i] ?? o.answer })) } };
+  }
   const left = brandIssues(out, p, strat).filter((i) => i.code !== "claim");
   out.checks = [...new Set([...texts.removed.map((r) => L(`Allégation non confirmée retirée (${r.path}) : « ${r.term} ». Ajoutez la preuve dans la fiche produit pour la réutiliser.`, `Unconfirmed claim removed (${r.path}): "${r.term}". Add the proof to the product sheet to use it.`)), ...left.map((i) => i.message)])];
   return { brand: out, strategy: strat };

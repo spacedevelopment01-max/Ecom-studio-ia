@@ -226,6 +226,31 @@ export default function TabMarque() {
             <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Angles", "Angles")}</p><ul className="mt-2 grid gap-2 text-sm">{data.strategy.angles.map((a) => <li key={a.title}><strong>{a.title}</strong>{t(" : ", ": ")}<span className="text-ink-2">{a.idea}</span></li>)}</ul></div>
             <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Piliers", "Pillars")}</p><div className="mt-2 flex flex-wrap gap-1.5">{data.strategy.pillars.map((p) => <Badge key={p}>{p}</Badge>)}</div></div>
           </div>
+          {data.strategy.platform && (
+            <div className="mt-6 grid gap-6 border-t border-line pt-6 md:grid-cols-2">
+              <div className="grid gap-3 text-sm">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Plateforme de marque", "Brand platform")}</p>
+                {[
+                  [t("Pour qui", "Who it's for"), data.strategy.platform.persona],
+                  [t("Problème résolu", "Problem solved"), data.strategy.platform.problem],
+                  [t("Face à la concurrence", "Versus the competition"), data.strategy.platform.alternatives],
+                  [t("Différence", "What sets it apart"), data.strategy.platform.difference],
+                ].filter(([, v]) => v).map(([k, v]) => <p key={k}><strong>{k}</strong>{t(" : ", ": ")}<span className="text-ink-2">{v}</span></p>)}
+                {data.strategy.platform.proofs.some((x) => x.status === "missing") && (
+                  <p className="rounded-xl bg-paper-2 p-3 text-xs text-ink-2">
+                    <strong>{t("Arguments à prouver avant de les utiliser", "Claims to prove before using them")}{t(" : ", ": ")}</strong>
+                    {data.strategy.platform.proofs.filter((x) => x.status === "missing").map((x) => x.claim).join(t(" ; ", "; "))}
+                  </p>
+                )}
+              </div>
+              {data.strategy.platform.objections.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Objections et réponses", "Objections and answers")}</p>
+                  <ul className="mt-2 grid gap-2 text-sm">{data.strategy.platform.objections.map((o) => <li key={o.objection}><strong>{o.objection}</strong><br /><span className="text-ink-2">{o.answer}</span></li>)}</ul>
+                </div>
+              )}
+            </div>
+          )}
         </Card>
       )}
       <Modal open={regen} onClose={() => setRegen(false)} title={t("Nouvelle proposition de marque", "New brand proposal")}>

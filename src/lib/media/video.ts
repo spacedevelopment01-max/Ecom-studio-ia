@@ -180,6 +180,60 @@ function pill(ctx: Ctx, x: number, y: number, w: number, h: number) {
   ctx.closePath();
 }
 
+/**
+ * Sous-titres façon réseaux sociaux (lecture sans le son) : mots en gras, blancs cernés de noir, qui apparaissent un à
+ * un avec un léger rebond ; le dernier mot apparu passe dans la couleur d'accent de la marque. Centrés, au-dessus de
+ * la zone réservée aux boutons des applications (bas de l'écran en 9:16).
+ */
+export function socialCaption(ctx: Ctx, text: string, o: { cx: number; y: number; maxW: number; size: number; family: string; t: number; accent: string; uppercase?: boolean }) {
+  const s = o.uppercase ? upper(text) : text;
+  ctx.font = font(o.family, 800, o.size);
+  const lines = wrapLines(ctx, s, o.maxW).slice(0, 3);
+  const lh = o.size * 1.18;
+  const step = 0.13;
+  let wi = 0;
+  ctx.save();
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = Math.max(4, o.size * 0.16);
+  ctx.strokeStyle = "rgba(0,0,0,0.92)";
+  const hi = contrast(o.accent, "#000000") >= 3 ? o.accent : "#FFE14D";
+  lines.forEach((line, li) => {
+    const words = line.split(" ");
+    const lineW = ctx.measureText(line).width;
+    let x = o.cx - lineW / 2;
+    const base = o.y + o.size + li * lh;
+    for (const w of words) {
+      const start = wi * step;
+      const p = clamp((o.t - start) / 0.18);
+      const ww = ctx.measureText(w).width;
+      if (p > 0) {
+        const k = 0.82 + 0.18 * easeOutBack(p);
+        const active = o.t - start < step * 2.2;
+        ctx.save();
+        ctx.globalAlpha = clamp(p * 2);
+        ctx.translate(x + ww / 2, base - o.size * 0.35);
+        ctx.scale(k, k);
+        ctx.strokeText(w, -ww / 2, o.size * 0.35);
+        ctx.fillStyle = active ? hi : "#FFFFFF";
+        ctx.fillText(w, -ww / 2, o.size * 0.35);
+        ctx.restore();
+      }
+      x += ctx.measureText(w + " ").width;
+      wi++;
+    }
+  });
+  ctx.restore();
+  return lines.length * lh;
+}
+
+/**
+ * Coupe « punch-in » : au milieu d'un plan photo de plus de 2,2 s, le cadre se resserre d'un coup (+12 %), comme un
+ * monteur qui recadre pour relancer l'attention. Une rupture visuelle toutes les 1,5 à 2,5 s, sans changer d'image.
+ */
+export const punchIn = (duration: number, local: number) => (duration > 2.2 && local >= duration / 2 ? 1.12 : 1);
+
 /** Pictogrammes simples (trait), centrés sur l'origine, pour les infos pratiques. */
 function drawIcon(ctx: Ctx, k: "clock" | "pin" | "phone" | "mail" | "web", size: number, color: string) {
   const s = size / 24;
@@ -331,6 +385,16 @@ function sampleColor(ctx: Ctx, x: number, y: number, w: number, h: number) {
   return `#${[r, g, b].map((v) => Math.round(v / Math.max(1, n)).toString(16).padStart(2, "0")).join("")}`;
 }
 
+/** Légende d'un plan photo ou filmé : sous-titres façon réseaux, centrés au-dessus de la zone des boutons. */
+function captionOnPhoto(ctx: Ctx, text: string, t: number, P: Prepared, a: VideoAssets) {
+  const { W, H, safe } = P;
+  const isTall = H / W > 1.6;
+  const size = Math.round(W * (isTall ? 0.068 : W > H ? 0.04 : 0.058));
+  const y = H - safe.bottom - size * 3.2;
+  onPhotoText(ctx, W, H, y, () => {});
+  socialCaption(ctx, text, { cx: W / 2, y, maxW: W - safe.side * 2.4, size, family: a.typo.body, t, accent: a.palette.accent, uppercase: false });
+}
+
 function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Prepared, a: VideoAssets, clipFrames: Map<string, Image>) {
   const { W, H, safe, pal } = P;
   const typo = a.typo;
@@ -339,6 +403,8 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
   const headSize = Math.round(W * (isTall ? 0.105 : W > H ? 0.06 : 0.085));
   const bodySize = Math.round(Math.max(W * (W > H ? 0.024 : 0.036), 30));
   const progress = local / scene.duration;
+  // Premier plan (accroche) : texte lisible dès la première image, sans attendre l'animation.
+  const first = t - local < 1e-6;
 
   switch (scene.kind) {
     case "title": {
@@ -464,13 +530,10 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
     case "scene": {
       const im = a.images[scene.image] ?? a.images[0];
       if (im) {
-        const z = scene.kind === "detail" ? 1.16 - 0.12 * easeInOut(progress) : 1.04 + 0.08 * easeInOut(progress);
+        const z = (scene.kind === "detail" ? 1.16 - 0.12 * easeInOut(progress) : 1.04 + 0.08 * easeInOut(progress)) * punchIn(scene.duration, local);
         drawPhoto(ctx, im, W, H, z, scene.kind === "scene" ? (progress - 0.5) * W * 0.04 : 0);
       } else ctx.drawImage(P.bgLight as any, 0, 0);
-      if (scene.caption) {
-        const cap = scene.caption;
-        onPhotoText(ctx, W, H, H - safe.bottom - headSize * 2.4, () => kinetic(ctx, cap, { x: safe.side, y: H - safe.bottom - headSize * 2.4, maxW: W - safe.side * 2, size: Math.round(headSize * 0.72), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.2, uppercase: typo.uppercase }));
-      }
+      if (scene.caption) captionOnPhoto(ctx, scene.caption, local - (first ? -0.3 : 0.15), P, a);
       break;
     }
     case "clip": {
@@ -478,19 +541,16 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       const idx = Math.min(frames.length - 1, Math.floor(local * 30));
       const f = frames[idx] ? clipFrames.get(frames[idx]) : null;
       if (f) {
-        const r = Math.max(W / f.width, H / f.height);
+        const r = Math.max(W / f.width, H / f.height) * punchIn(scene.duration, local);
         ctx.drawImage(f as any, (W - f.width * r) / 2, (H - f.height * r) / 2, f.width * r, f.height * r);
       } else ctx.drawImage(P.bgDark as any, 0, 0);
-      if (scene.caption) {
-        const cap = scene.caption;
-        onPhotoText(ctx, W, H, H - safe.bottom - headSize * 2.4, () => kinetic(ctx, cap, { x: safe.side, y: H - safe.bottom - headSize * 2.4, maxW: W - safe.side * 2, size: Math.round(headSize * 0.72), family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.2, uppercase: typo.uppercase }));
-      }
+      if (scene.caption) captionOnPhoto(ctx, scene.caption, local - (first ? -0.3 : 0.15), P, a);
       break;
     }
     case "hook": {
       const im = a.images[scene.image] ?? a.images[0];
       if (im) {
-        drawPhoto(ctx, im, W, H, 1.14 - 0.1 * easeOut(progress), 0, -(1 - progress) * H * 0.015);
+        drawPhoto(ctx, im, W, H, (1.14 - 0.1 * easeOut(progress)) * punchIn(scene.duration, local), 0, -(1 - progress) * H * 0.015);
       } else ctx.drawImage(P.bgDark as any, 0, 0);
       if (scene.tag) {
         ctx.globalAlpha = easeOut(seg(local, 0.2, 0.5));
@@ -509,7 +569,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       const hs = Math.round(headSize * 0.95);
       ctx.font = font(typo.heading, headW, hs);
       const n = Math.min(3, wrapLines(ctx, typo.uppercase ? upper(scene.headline) : scene.headline, W - safe.side * 2).length);
-      onPhotoText(ctx, W, H, H - safe.bottom - n * hs * 1.08, () => kinetic(ctx, scene.headline, { x: safe.side, y: H - safe.bottom - n * hs * 1.08, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: "#FFFFFF", t: local - 0.35, uppercase: typo.uppercase }));
+      onPhotoText(ctx, W, H, H - safe.bottom - n * hs * 1.08, () => kinetic(ctx, scene.headline, { x: safe.side, y: H - safe.bottom - n * hs * 1.08, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: "#FFFFFF", t: first ? local + 0.25 : local - 0.35, uppercase: typo.uppercase }));
       break;
     }
     case "spotlight": {
@@ -549,7 +609,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
         // Le halo de la couleur de marque peut être clair (jaune, rose pâle) : couleur du titre selon le fond réel.
         const hs = Math.round(headSize * 0.85);
         const under = sampleColor(ctx, safe.side, safe.top, W - safe.side * 2, hs * 2.4);
-        kinetic(ctx, scene.headline, { x: W / 2, y: safe.top, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: textColorFor(under), t: local - 0.6, align: "center", uppercase: typo.uppercase });
+        kinetic(ctx, scene.headline, { x: W / 2, y: safe.top, maxW: W - safe.side * 2, size: hs, family: typo.heading, weight: headW, color: textColorFor(under), t: first ? local + 0.25 : local - 0.6, align: "center", uppercase: typo.uppercase });
       }
       break;
     }
@@ -599,7 +659,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       const size = Math.round(headSize * (it.length > 28 ? 0.85 : 1.1));
       ctx.font = font(typo.heading, headW, size);
       const n = wrapLines(ctx, typo.uppercase ? upper(it) : it, W - safe.side * 2).length;
-      kinetic(ctx, it, { x: W / 2, y: H / 2 - (n * size * 1.08) / 2 - size * 0.1, maxW: W - safe.side * 2, size, family: typo.heading, weight: headW, color, t: local - i * per - 0.05, align: "center", uppercase: typo.uppercase });
+      kinetic(ctx, it, { x: W / 2, y: H / 2 - (n * size * 1.08) / 2 - size * 0.1, maxW: W - safe.side * 2, size, family: typo.heading, weight: headW, color, t: local - i * per + (first && i === 0 ? 0.25 : -0.05), align: "center", uppercase: typo.uppercase });
       // Compteur « 01 / 03 » seulement s'il y a plusieurs phrases (« 01 / 01 » n'a pas de sens).
       if (items.length > 1) {
         ctx.globalAlpha = 0.7;
@@ -723,7 +783,8 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
         ctx.globalAlpha = 1;
         y += lh + H * 0.03;
       }
-      kinetic(ctx, scene.headline, { x: W / 2, y, maxW: W - safe.side * 2, size: Math.round(headSize * 0.8), family: typo.heading, weight: headW, color, t: local - 0.3, align: "center", uppercase: typo.uppercase });
+      // Logo déjà affiché : le titre ne répète pas le nom de la marque (une seule signature à l'écran).
+      if (!(a.logo && scene.headline.trim().toLowerCase() === a.brand.trim().toLowerCase())) kinetic(ctx, scene.headline, { x: W / 2, y, maxW: W - safe.side * 2, size: Math.round(headSize * 0.8), family: typo.heading, weight: headW, color, t: local - 0.3, align: "center", uppercase: typo.uppercase });
       const ctaSize = Math.round(bodySize * 1.05);
       ctx.font = font(typo.body, 600, ctaSize);
       const tw = ctx.measureText(scene.cta).width;
@@ -760,8 +821,12 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
 function drawTransition(ctx: Ctx, kind: VideoSpec["transition"], p: number, P: Prepared) {
   const { W, H, pal } = P;
   if (kind === "fade") {
-    ctx.fillStyle = `rgba(0,0,0,${Math.sin(p * Math.PI) * 0.9})`;
+    // Fondu bref vers la couleur sombre de la marque, jamais jusqu'au noir complet (pas d'image « morte » à la coupe).
+    ctx.save();
+    ctx.globalAlpha = Math.sin(p * Math.PI) * 0.6;
+    ctx.fillStyle = pal.bgDark;
     ctx.fillRect(0, 0, W, H);
+    ctx.restore();
     return;
   }
   if (kind === "push") {
@@ -914,7 +979,8 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
 
   const canvas = createCanvas(P.W, P.H);
   const ctx = canvas.getContext("2d");
-  const TR = 0.5; // durée de transition (s)
+  // Durée de transition (s) : plus sèche avec une musique rythmée (coupes sur le temps).
+  const TR = spec.music === "pulse" ? 0.34 : 0.48;
   for (let i = 0; i < frames; i++) {
     const t = i / fps;
     let si = starts.findIndex((s, k) => t >= s && t < s + spec.scenes[k].duration);

@@ -30,6 +30,8 @@ export type ProInput = {
   keyword?: string; // grand mot en fond (saveur, modèle…)
   facts: string[]; // informations confirmées, très courtes
   cta?: string;
+  /** Ligne photographique de la marque (fond, encre, accent, côté de la lumière) : même campagne que les photos. */
+  look?: CreativeLook;
 };
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -65,115 +67,150 @@ export function dedupeCreativeText(i: ProInput): ProInput {
   return { ...i, subline, facts };
 }
 
+/** Couleurs d'un visuel : ligne photographique de la marque si fournie, sinon dérivées de la palette. */
+export type CreativeLook = { mode: "tonal" | "deep" | "light"; ground: string; ink: string; accent: string; soft: string; lightFrom?: "left" | "right" };
+
+/** Pas de mot seul en dernière ligne (veuve) : les deux derniers mots restent ensemble. */
+export function noWidow(text: string): string {
+  const m = text.trim().match(/^(.*\S)\s+(\S{1,9})$/);
+  return m && m[1].includes(" ") ? `${m[1]} ${m[2]}` : text.trim();
+}
+
+/**
+ * Système typographique d'affiche (unité u = 1 % du petit côté) : marges de 7u, interlignage et espacements en
+ * multiples de 0,8u, échelle modulaire (surtitre 2,2u → texte 3u → titre 8 à 11u). Hiérarchie unique : un titre,
+ * un texte d'appui, une ligne d'informations confirmées, un appel à l'action.
+ */
 function page(t: ProTemplate, f: ProFormat, i0: ProInput, productUri: string, logoUri: string | null, wide: boolean) {
   const i = dedupeCreativeText(i0);
   const { w, h } = SIZES[f];
+  const u = Math.min(w, h) / 100;
   const p = i.palette;
-  const deep = isDark(p.primary) ? p.primary : withLightness(p.primary, Math.min(0.42, hsl(p.primary)[2]));
+  const deepFromPal = isDark(p.primary) ? p.primary : withLightness(p.primary, Math.min(0.42, hsl(p.primary)[2]));
+  const look: CreativeLook = i.look ?? { mode: "deep", ground: deepFromPal, ink: onColor(deepFromPal), accent: p.accent, soft: mix(deepFromPal, "#FFFFFF", 0.16) };
   const cream = mix(p.light, "#FFFFFF", 0.35);
-  const ink = withLightness(p.dark, 0.12);
-  const accent = p.accent;
+  const inkDark = withLightness(p.dark, 0.12);
+  // Fond du visuel principal (« signature ») : celui de la ligne ; le visuel éditorial reste clair.
+  const sig = look.mode === "light" ? { bg: deepFromPal, fg: onColor(deepFromPal) } : { bg: look.ground, fg: look.ink };
   const H = i.typo.heading, B = i.typo.body;
   const hw = i.typo.headingWeight ?? 500;
+  const serif = CANVAS_FONTS[H]?.kind === "serif";
   const upper = i.typo.uppercase ? "uppercase" : "none";
   const tall = f === "story";
+  const from = look.lightFrom ?? "left";
+  const sx = from === "left" ? 1 : -1;
+  const headline = esc(noWidow(i.headline));
   const facts = i.facts.slice(0, 3).map((x) => `<li>${esc(x)}</li>`).join("");
   const kw = esc((i.keyword ?? "").toLocaleUpperCase(intlLocale(contentLang())));
-  const cta = i.cta ? `<span class="cta">${esc(i.cta)} <b>→</b></span>` : "";
+  const cta = i.cta ? `<span class="cta">${esc(i.cta)}<b aria-hidden="true">→</b></span>` : "";
   const logo = logoUri ? `<img class="logo" src="${logoUri}" alt="">` : `<span class="wordmark">${esc(i.brand)}</span>`;
+  const M = 7 * u;
   const base = `
-    *{box-sizing:border-box;margin:0}
+    *{box-sizing:border-box;margin:0;padding:0}
     html,body{width:${w}px;height:${h}px;overflow:hidden}
-    body{font-family:"${B}",sans-serif;-webkit-font-smoothing:antialiased}
+    body{font-family:"${B}",sans-serif;-webkit-font-smoothing:antialiased;font-kerning:normal;font-feature-settings:"kern","liga"}
     .stage{position:relative;width:${w}px;height:${h}px;overflow:hidden}
-    .h{font-family:"${H}",serif;font-weight:${hw};text-transform:${upper};letter-spacing:-.02em;line-height:1.02;text-wrap:balance}
-    .prod{position:absolute;object-fit:contain;filter:drop-shadow(0 ${h * 0.03}px ${h * 0.03}px rgba(0,0,0,.22)) drop-shadow(0 ${h * 0.006}px ${h * 0.006}px rgba(0,0,0,.18))}
-    .floor{position:absolute;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.34),rgba(0,0,0,0));filter:blur(${w * 0.01}px)}
-    .chips{display:flex;flex-wrap:wrap;gap:${w * 0.012}px;list-style:none;padding:0}
-    .chips li{padding:${w * 0.011}px ${w * 0.022}px;border-radius:999px;font-size:${w * 0.024}px;font-weight:600;letter-spacing:.02em}
-    .cta{display:inline-flex;align-items:center;gap:${w * 0.012}px;padding:${w * 0.02}px ${w * 0.04}px;border-radius:999px;font-size:${w * 0.03}px;font-weight:600}
-    .logo{height:${w * 0.05}px;width:auto;object-fit:contain}
-    .wordmark{font-family:"${H}",serif;font-weight:${Math.max(hw, 500)};font-size:${w * 0.034}px;letter-spacing:.14em;text-transform:uppercase}
+    .h{font-family:"${H}",serif;font-weight:${hw};text-transform:${upper};letter-spacing:${serif ? "-.012em" : "-.028em"};line-height:${serif ? 1.02 : 0.98};text-wrap:balance}
+    .eyebrow{display:flex;align-items:center;gap:${1.6 * u}px;font-size:${2.2 * u}px;letter-spacing:.24em;text-transform:uppercase;font-weight:600}
+    .eyebrow::before{content:"";display:block;width:${5 * u}px;height:${Math.max(2, 0.25 * u)}px;background:currentColor;opacity:.7}
+    .sub{font-size:${3 * u}px;line-height:1.4;max-width:32ch;text-wrap:pretty}
+    .prod{position:absolute;object-fit:contain;filter:drop-shadow(${sx * h * 0.012}px ${h * 0.026}px ${h * 0.028}px rgba(0,0,0,.24)) drop-shadow(0 ${h * 0.005}px ${h * 0.005}px rgba(0,0,0,.18))}
+    .floor{position:absolute;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.32),rgba(0,0,0,0));filter:blur(${w * 0.01}px)}
+    .facts{display:flex;flex-wrap:wrap;list-style:none;font-size:${2.2 * u}px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;row-gap:${0.8 * u}px}
+    .facts li{padding:0 ${1.6 * u}px;border-left:${Math.max(1, 0.15 * u)}px solid currentColor}
+    .facts li:first-child{padding-left:0;border-left:0}
+    .cta{display:inline-flex;align-items:center;gap:${1.6 * u}px;height:${6.4 * u}px;padding:0 ${3.6 * u}px;border-radius:999px;font-size:${2.8 * u}px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+    .logo{height:${4.4 * u}px;width:auto;object-fit:contain}
+    .wordmark{font-family:"${H}",serif;font-weight:${Math.max(hw, 500)};font-size:${3 * u}px;letter-spacing:.16em;text-transform:uppercase}
     .fit{display:block}`;
+  const lightGrad = (bg: string) => `radial-gradient(120% 90% at ${from === "left" ? 22 : 78}% 18%, ${mix(bg, "#FFFFFF", 0.2)} 0%, ${bg} 52%, ${withLightness(bg, Math.max(0.06, hsl(bg)[2] - 0.1))} 100%)`;
   if (f === "landscape") {
     const dark = t === "signature";
-    const bg = dark ? deep : cream;
-    const fg = dark ? onColor(deep) : ink;
+    const bg = dark ? sig.bg : cream;
+    const fg = dark ? sig.fg : inkDark;
     return `<style>${base}
-      .stage{background:${dark ? `radial-gradient(90% 120% at 72% 50%, ${mix(deep, "#FFFFFF", 0.2)} 0%, ${deep} 60%, ${withLightness(deep, Math.max(0.08, hsl(deep)[2] - 0.12))} 100%)` : `linear-gradient(90deg, ${cream} 0%, ${cream} 46%, ${mix(p.secondary, cream, 0.2)} 46%, ${mix(p.secondary, deep, 0.18)} 100%)`};color:${fg}}
-      .kw{position:absolute;left:46%;right:0;top:${h * 0.2}px;text-align:center;font-family:"${H}",serif;font-weight:700;font-size:${h * 0.34}px;line-height:1;letter-spacing:-.03em;color:${fg};opacity:${dark ? 0.1 : 0.12};white-space:nowrap;overflow:hidden}
-      .prod{left:${w * 0.5}px;width:${w * 0.44}px;top:${h * 0.12}px;height:${h * 0.72}px}
-      .floor{left:${w * 0.6}px;width:${w * 0.24}px;top:${h * 0.82}px;height:${h * 0.05}px}
-      .col{position:absolute;left:${w * 0.06}px;width:${w * 0.37}px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:${h * 0.035}px}
-      .eyebrow{font-size:${h * 0.024}px;letter-spacing:.22em;text-transform:uppercase;font-weight:600;color:${dark ? fg : deep};opacity:${dark ? 0.8 : 1}}
-      .col .h{font-size:${h * 0.095}px;max-height:${h * 0.095 * 3.3}px}
-      .sub{font-size:${h * 0.03}px;opacity:.75}
-      .chips li{font-size:${h * 0.024}px;padding:${h * 0.011}px ${h * 0.022}px;background:${dark ? mix(deep, "#FFFFFF", 0.16) : "#fff"};color:${fg}}
-      .cta{font-size:${h * 0.03}px;padding:${h * 0.02}px ${h * 0.042}px;background:${dark ? fg : ink};color:${dark ? deep : cream};align-self:flex-start}
+      .stage{background:${dark ? lightGrad(bg) : `linear-gradient(90deg, ${cream} 0%, ${cream} 46%, ${mix(p.secondary, cream, 0.2)} 46%, ${mix(p.secondary, deepFromPal, 0.18)} 100%)`};color:${fg}}
+      .kw{position:absolute;left:46%;right:${M}px;top:${h * 0.08}px;text-align:center;font-family:"${H}",serif;font-weight:700;font-size:${h * 0.3}px;line-height:1;letter-spacing:-.03em;color:${fg};opacity:${dark ? 0.09 : 0.1};white-space:nowrap;overflow:hidden}
+      .prod{left:${w * 0.5}px;width:${w * 0.42}px;top:${h * 0.2}px;height:${h * 0.66}px}
+      .floor{left:${w * 0.6}px;width:${w * 0.24}px;top:${h * 0.84}px;height:${h * 0.05}px}
+      .col{position:absolute;left:${w * 0.07}px;width:${w * 0.37}px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:${2.8 * u}px}
+      .eyebrow{color:${dark ? look.accent : deepFromPal}}
+      .col .h{font-size:${h * 0.1}px;max-height:${h * 0.1 * 3.3}px}
+      .sub{opacity:.78}
+      .facts{opacity:.86}
+      .cta{background:${dark ? fg : inkDark};color:${dark ? bg : cream};align-self:flex-start;margin-top:${0.8 * u}px}
       </style><div class="stage"><div class="kw"><span>${kw}</span></div><div class="floor"></div><img class="prod" src="${productUri}" alt="">
-      <div class="col"><p class="eyebrow">${esc(i.brand)}</p><p class="h fit">${esc(i.headline)}</p>${i.subline ? `<p class="sub">${esc(i.subline)}</p>` : ""}<ul class="chips">${facts}</ul>${cta}</div></div>`;
+      <div class="col"><p class="eyebrow">${esc(i.brand)}</p><p class="h fit">${headline}</p>${i.subline ? `<p class="sub">${esc(i.subline)}</p>` : ""}${facts ? `<ul class="facts">${facts}</ul>` : ""}${cta}</div></div>`;
   }
   if (t === "signature") {
-    // Fond de marque, grand mot en filigrane, produit au centre, texte en bas.
-    const fg = onColor(deep);
+    // Affiche : grand mot en tête (entièrement lisible), produit qui le chevauche par le bas, texte en pied de page.
+    const { bg, fg } = sig;
+    const top = tall ? h * 0.12 : M;
+    const kwTop = top + 7 * u;
+    const prodTop = tall ? h * 0.2 : h * 0.17;
+    const prodH = tall ? h * 0.42 : h * (f === "square" ? 0.48 : 0.52);
     return `<style>${base}
-      .stage{background:radial-gradient(120% 80% at 50% 38%, ${mix(deep, "#FFFFFF", 0.22)} 0%, ${deep} 55%, ${withLightness(deep, Math.max(0.08, hsl(deep)[2] - 0.12))} 100%);color:${fg}}
-      .top{position:absolute;left:${w * 0.07}px;right:${w * 0.07}px;top:${h * 0.05}px;display:flex;justify-content:space-between;align-items:center}
-      .tag{font-size:${w * 0.022}px;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
-      .kw{position:absolute;left:0;right:0;overflow:hidden;top:${tall ? h * 0.2 : h * 0.15}px;text-align:center;font-family:"${H}",serif;font-weight:700;font-size:${w * (kw.length > 7 ? 0.2 : 0.28)}px;line-height:1;letter-spacing:-.03em;color:${fg};opacity:.1;white-space:nowrap}
-      .prod{left:${w * 0.18}px;width:${w * 0.64}px;top:${tall ? h * 0.15 : h * 0.12}px;height:${tall ? h * 0.5 : h * (f === "square" ? 0.52 : 0.56)}px}
-      .floor{left:${w * 0.3}px;width:${w * 0.4}px;top:${tall ? h * 0.63 : h * (f === "square" ? 0.62 : 0.66)}px;height:${w * 0.05}px}
-      .bottom{position:absolute;left:${w * 0.07}px;right:${w * 0.07}px;bottom:${tall ? h * 0.12 : h * 0.06}px;display:grid;gap:${w * 0.024}px}
-      .bottom .h{font-size:${w * (tall ? 0.085 : 0.07)}px;max-height:${w * (tall ? 0.085 : 0.07) * 2.2}px}
-      .row{display:flex;justify-content:space-between;align-items:center;gap:${w * 0.03}px}
-      .chips li{background:${mix(deep, "#FFFFFF", 0.16)};color:${fg}}
-      .cta{background:${fg};color:${deep}}
+      .stage{background:${lightGrad(bg)};color:${fg}}
+      .top{position:absolute;left:${M}px;right:${M}px;top:${top}px;display:flex;justify-content:space-between;align-items:center}
+      .tag{font-size:${2.2 * u}px;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
+      .kw{position:absolute;left:${M}px;right:${M}px;overflow:hidden;top:${kwTop}px;text-align:center;font-family:"${H}",serif;font-weight:700;font-size:${w * 0.26}px;line-height:.86;letter-spacing:-.03em;color:${fg};opacity:.13;white-space:nowrap}
+      .prod{left:${w * 0.16}px;width:${w * 0.68}px;top:${prodTop}px;height:${prodH}px}
+      .floor{left:${w * 0.3}px;width:${w * 0.4}px;top:${prodTop + prodH - w * 0.02}px;height:${w * 0.05}px}
+      .bottom{position:absolute;left:${M}px;right:${M}px;bottom:${tall ? h * 0.2 : M}px;display:grid;gap:${2.4 * u}px}
+      .bottom .h{font-size:${(tall ? 11 : 8.4) * u}px;max-height:${(tall ? 11 : 8.4) * u * 2.15}px}
+      .row{display:flex;justify-content:space-between;align-items:center;gap:${3.2 * u}px}
+      .facts{opacity:.85}
+      .cta{background:${fg};color:${bg}}
       </style><div class="stage"><div class="top">${logo}<span class="tag">${esc(i.subline ?? "")}</span></div>
       <div class="kw"><span>${kw}</span></div><div class="floor"></div><img class="prod" src="${productUri}" alt="">
-      <div class="bottom"><p class="h fit">${esc(i.headline)}</p><div class="row"><ul class="chips">${facts}</ul>${cta}</div></div></div>`;
+      <div class="bottom"><p class="h fit">${headline}</p><div class="row">${facts ? `<ul class="facts">${facts}</ul>` : "<span></span>"}${cta}</div></div></div>`;
   }
   if (t === "editorial") {
-    // Crème, grand titre en haut à gauche, produit posé sur un panneau de couleur arrondi.
+    // Page de magazine : grand titre en haut à gauche, produit posé sur un panneau à la couleur de la ligne.
+    const panelBg = look.mode === "light" ? mix(p.secondary, cream, 0.1) : look.mode === "tonal" ? look.ground : mix(p.secondary, cream, 0.1);
+    const panelFg = onColor(panelBg, inkDark, "#FFFFFF");
+    const panelH = tall ? h * 0.56 : h * (f === "square" ? 0.44 : 0.48);
     return `<style>${base}
-      .stage{background:${cream};color:${ink}}
-      .head{position:absolute;left:${w * 0.07}px;right:${w * 0.07}px;top:${h * 0.06}px;display:grid;gap:${w * 0.02}px}
-      .eyebrow{font-size:${w * 0.022}px;letter-spacing:.22em;text-transform:uppercase;color:${deep};font-weight:600}
-      .head .h{font-size:${w * (tall ? 0.1 : 0.082)}px;max-height:${w * (tall ? 0.1 : 0.082) * 3.3}px;max-width:${w * 0.8}px}
-      .sub{font-size:${w * 0.03}px;color:${mix(ink, cream, 0.35)};max-width:${w * 0.7}px;line-height:1.35}
-      .panel{position:absolute;right:${w * 0.07}px;left:${w * 0.07}px;bottom:${h * 0.06}px;height:${tall ? h * 0.6 : h * (f === "square" ? 0.42 : 0.47)}px;border-radius:${w * 0.05}px;background:linear-gradient(160deg, ${mix(p.secondary, cream, 0.1)}, ${mix(p.secondary, deep, 0.25)})}
-      .prod{right:${w * (wide ? (tall ? 0.1 : 0.09) : tall ? 0.08 : 0.12)}px;width:${w * (wide ? (tall ? 0.8 : 0.66) : tall ? 0.54 : 0.46)}px;bottom:${h * 0.09}px;height:${tall ? h * (wide ? 0.42 : 0.6) : h * (wide ? (f === "square" ? 0.2 : 0.27) : f === "square" ? 0.5 : 0.52)}px;object-position:bottom}
+      .stage{background:${cream};color:${inkDark}}
+      .head{position:absolute;left:${M}px;right:${M}px;top:${tall ? h * 0.12 : M}px;display:grid;gap:${2.4 * u}px}
+      .eyebrow{color:${withLightness(look.accent, Math.min(0.42, hsl(look.accent)[2]))}}
+      .head .h{font-size:${(tall ? 11 : 8.8) * u}px;max-height:${(tall ? 11 : 8.8) * u * 3.3}px;max-width:${w * 0.8}px}
+      .sub{color:${mix(inkDark, cream, 0.3)}}
+      .panel{position:absolute;right:${M}px;left:${M}px;bottom:${tall ? h * 0.2 : M}px;height:${panelH}px;border-radius:${2 * u}px;background:linear-gradient(${from === "left" ? 160 : 200}deg, ${mix(panelBg, "#FFFFFF", 0.14)}, ${mix(panelBg, "#000000", 0.08)})}
+      .prod{right:${w * (wide ? 0.1 : 0.12)}px;width:${w * (wide ? 0.56 : tall ? 0.5 : 0.44)}px;bottom:${(tall ? h * 0.2 : M) + panelH * 0.1}px;height:${panelH * (wide ? 0.66 : 1.08)}px;object-position:bottom}
       .floor{right:${w * 0.19}px;width:${w * 0.32}px;bottom:${h * 0.075}px;height:${w * 0.04}px}
-      .side{position:absolute;left:${w * 0.12}px;${wide ? `top:${h - h * 0.06 - (tall ? h * 0.6 : h * (f === "square" ? 0.42 : 0.47)) + w * 0.05}px` : `bottom:${h * 0.11}px`};display:grid;gap:${w * 0.025}px;max-width:${w * (wide ? 0.7 : 0.34)}px}
-      .chips{${wide ? "" : "flex-direction:column;align-items:flex-start"}}
-      .chips li{background:${cream};color:${ink}}
-      .cta{background:${ink};color:${cream};justify-self:start}
-      .brandmark{position:absolute;right:${w * 0.07}px;top:${h * 0.06}px}
-      </style><div class="stage"><div class="head"><p class="eyebrow">${esc(i.brand)}</p><p class="h fit">${esc(i.headline)}</p>${i.subline ? `<p class="sub">${esc(i.subline)}</p>` : ""}</div>
+      .side{position:absolute;left:${M + 4 * u}px;${wide ? `top:${h - (tall ? h * 0.2 : M) - panelH + 4 * u}px` : `bottom:${(tall ? h * 0.2 : M) + 4 * u}px`};display:grid;gap:${2.4 * u}px;max-width:${w * (wide ? 0.7 : 0.36)}px;color:${panelFg}}
+      .side .facts{${wide ? "" : "flex-direction:column;align-items:flex-start"}}
+      .side .facts li{${wide ? "" : `padding:${0.8 * u}px 0;border-left:0;border-top:${Math.max(1, 0.15 * u)}px solid currentColor;width:100%`}}
+      .side .facts li:first-child{${wide ? "" : "border-top:0"}}
+      .cta{background:${panelFg};color:${panelBg};justify-self:start}
+      </style><div class="stage"><div class="head"><p class="eyebrow">${esc(i.brand)}</p><p class="h fit">${headline}</p>${i.subline ? `<p class="sub">${esc(i.subline)}</p>` : ""}</div>
       <div class="panel"></div><div class="floor"></div><img class="prod" src="${productUri}" alt="">
-      <div class="side"><ul class="chips">${facts}</ul>${cta}</div></div>`;
+      <div class="side">${facts ? `<ul class="facts">${facts}</ul>` : ""}${cta}</div></div>`;
   }
-  // Arguments : produit au centre, cartes d'arguments autour, titre en haut.
+  // Arguments : produit au centre, trois informations confirmées numérotées, titre en haut.
   const cards = i.facts.slice(0, 3);
   const pos = tall
-    ? [[0.07, 0.58], [0.6, 0.66], [0.07, 0.76]]
+    ? [[0.07, 0.56], [0.58, 0.64], [0.07, 0.72]]
     : f === "square"
-      ? [[0.06, 0.44], [0.66, 0.56], [0.06, 0.7]]
-      : [[0.06, 0.46], [0.64, 0.58], [0.06, 0.72]];
+      ? [[0.06, 0.44], [0.64, 0.56], [0.06, 0.7]]
+      : [[0.06, 0.46], [0.62, 0.58], [0.06, 0.72]];
+  const ringBg = look.mode === "tonal" ? look.ground : mix(p.secondary, "#FFFFFF", 0.3);
   return `<style>${base}
-    .stage{background:linear-gradient(180deg, ${cream} 0%, ${mix(p.secondary, cream, 0.45)} 100%);color:${ink}}
-    .head{position:absolute;left:${w * 0.07}px;right:${w * 0.07}px;top:${h * 0.06}px;text-align:center;display:grid;gap:${w * 0.016}px;justify-items:center}
-    .head .h{font-size:${w * (tall ? 0.09 : 0.072)}px;max-height:${w * (tall ? 0.09 : 0.072) * 2.2}px}
-    .eyebrow{font-size:${w * 0.022}px;letter-spacing:.22em;text-transform:uppercase;color:${deep};font-weight:600}
-    .ring{position:absolute;left:50%;top:${tall ? h * 0.52 : h * 0.6}px;width:${w * 0.62}px;height:${w * 0.62}px;margin:-${w * 0.31}px;border-radius:50%;background:${mix(p.secondary, "#FFFFFF", 0.3)}}
-    .prod{left:${w * 0.25}px;width:${w * 0.5}px;top:${tall ? h * 0.3 : h * 0.3}px;height:${tall ? h * 0.42 : h * 0.55}px}
-    .floor{left:${w * 0.33}px;width:${w * 0.34}px;top:${tall ? h * 0.7 : h * 0.83}px;height:${w * 0.04}px}
-    .card{position:absolute;display:flex;align-items:center;gap:${w * 0.014}px;padding:${w * 0.016}px ${w * 0.026}px;border-radius:${w * 0.024}px;background:#fff;box-shadow:0 ${w * 0.012}px ${w * 0.03}px -${w * 0.012}px rgba(0,0,0,.25);font-size:${w * 0.028}px;font-weight:600;max-width:${w * 0.34}px}
-    .card i{display:grid;place-items:center;width:${w * 0.036}px;height:${w * 0.036}px;border-radius:50%;background:${accent};color:${onColor(accent)};font-style:normal;font-size:${w * 0.02}px;flex:none}
-    .foot{position:absolute;left:0;right:0;bottom:${tall ? h * 0.1 : h * 0.05}px;display:flex;justify-content:center}
-    .cta{background:${ink};color:${cream}}
-    </style><div class="stage"><div class="head"><p class="eyebrow">${esc(i.brand)}</p><p class="h fit">${esc(i.headline)}</p></div>
+    .stage{background:linear-gradient(180deg, ${cream} 0%, ${mix(look.mode === "tonal" ? look.ground : p.secondary, cream, 0.45)} 100%);color:${inkDark}}
+    .head{position:absolute;left:${M}px;right:${M}px;top:${tall ? h * 0.12 : M}px;text-align:center;display:grid;gap:${2 * u}px;justify-items:center}
+    .head .h{font-size:${(tall ? 10 : 7.6) * u}px;max-height:${(tall ? 10 : 7.6) * u * 2.2}px}
+    .eyebrow{color:${withLightness(look.accent, Math.min(0.42, hsl(look.accent)[2]))}}
+    .ring{position:absolute;left:50%;top:${tall ? h * 0.5 : h * 0.6}px;width:${w * 0.62}px;height:${w * 0.62}px;margin:-${w * 0.31}px;border-radius:50%;background:${ringBg}}
+    .prod{left:${w * 0.25}px;width:${w * 0.5}px;top:${h * 0.3}px;height:${tall ? h * 0.4 : h * 0.55}px}
+    .floor{left:${w * 0.33}px;width:${w * 0.34}px;top:${tall ? h * 0.68 : h * 0.83}px;height:${w * 0.04}px}
+    .card{position:absolute;display:flex;align-items:baseline;gap:${1.6 * u}px;padding:${1.8 * u}px ${2.6 * u}px;border-radius:${1.6 * u}px;background:#fff;box-shadow:0 ${1.2 * u}px ${3 * u}px -${1.2 * u}px rgba(0,0,0,.22);font-size:${2.8 * u}px;font-weight:600;max-width:${w * 0.34}px;line-height:1.25}
+    .card i{font-family:"${H}",serif;font-style:normal;font-weight:${Math.max(hw, 600)};font-size:${2.4 * u}px;color:${withLightness(look.accent, Math.min(0.42, hsl(look.accent)[2]))};flex:none}
+    .foot{position:absolute;left:0;right:0;bottom:${tall ? h * 0.2 : M}px;display:flex;justify-content:center}
+    .cta{background:${inkDark};color:${cream}}
+    </style><div class="stage"><div class="head"><p class="eyebrow">${esc(i.brand)}</p><p class="h fit">${headline}</p></div>
     <div class="ring"></div><div class="floor"></div><img class="prod" src="${productUri}" alt="">
-    ${cards.map((c, k) => `<div class="card" style="left:${w * pos[k][0]}px;top:${h * pos[k][1]}px"><i>✓</i>${esc(c)}</div>`).join("")}
+    ${cards.map((c, k) => `<div class="card" style="left:${w * pos[k][0]}px;top:${h * pos[k][1]}px"><i>${String(k + 1).padStart(2, "0")}</i>${esc(c)}</div>`).join("")}
     <div class="foot">${cta}</div></div>`;
 }
 

@@ -124,6 +124,8 @@ export type SocialVoice = {
   emoji: "none" | "sparing" | "free";
   emojis: string[];
   captions: { pillar: string; text: string }[];
+  /** Séries récurrentes (rendez-vous hebdomadaires reconnaissables) : nom, idée, jour conseillé (0 = dimanche). */
+  series?: { name: string; idea: string; weekday?: number }[];
   generatedBy: "ai" | "local";
 };
 

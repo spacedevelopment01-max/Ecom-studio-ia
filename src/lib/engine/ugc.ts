@@ -28,6 +28,7 @@ import { imageProviderAvailable, ugcFrame, veoClip, falClip, videoProviderAvaila
 import { brandTypo, confirmedFacts, ensureCutouts, palette } from "./images";
 import { FONT_DIR, font } from "../media/fonts";
 import { cleanUgcScript, ugcIssues } from "../ugc-rules";
+import { aiCraftReview, brandCraftBrief, craftLoop, ugcCraftIssues, ugcStructure, type CraftQuality, type UgcRole } from "./ad-craft";
 import { C, L, contentLang, uiLang } from "../i18n-server";
 import { activityName, contactLine, realActivityPhotos, isServices, placeLine, serviceCta, serviceItems } from "./service-media";
 
@@ -94,28 +95,47 @@ export type { UgcScript };
 
 const pick = <T,>(map: Record<string, T>, k: string, d: string) => map[k] ?? map[d];
 
-/** Script sans IA : présentation à partir des seuls faits confirmés (langue des contenus). */
+/**
+ * Script sans IA (version du studio) : structure de créateur problème → découverte → démonstration → preuve → appel,
+ * condensée selon le nombre de plans, à partir des seuls faits confirmés (langue des contenus). L'accroche est un geste
+ * et une phrase de 9 mots au plus ; la « preuve » est ce qu'on voit à l'image ou un fait confirmé, jamais un vécu.
+ */
 export function localUgcScript(p: Project, o: UgcOptions): UgcScript {
   if (isServices(p)) return localServiceUgcScript(p, o);
   const n = Math.max(1, Math.min(5, o.beats));
   const name = p.product.name || p.brand?.name || C("ce produit", "this product");
+  const brand = p.brand?.name && p.brand.name !== name ? p.brand.name : "";
   const facts = confirmedFacts(p).filter((f) => !name.toLowerCase().startsWith(f.toLowerCase()));
   const angle = pick(UGC_ANGLES, o.angle, "presentation");
   const lower = (f: string) => `${f.charAt(0).toLowerCase()}${f.slice(1)}`;
-  const lines: string[] = [];
-  lines.push(o.angle === "deballage"
-    ? C(`On l'ouvre ensemble ? Voici ${name}, je vous montre tout de près.`, `Let's open it together. Here's ${name}, up close.`)
-    : C(`Regardez bien ça : voici ${name}, je vous le montre en quelques secondes.`, `Take a look at this: here's ${name}, a quick tour in a few seconds.`));
-  const middles = facts.map((f, i) => (i === 0 ? C(`Premier détail à voir : ${lower(f)}.`, `First thing to notice: ${lower(f)}.`) : C(`Et regardez ici : ${lower(f)}.`, `And look right here: ${lower(f)}.`)));
-  middles.push(C(`Regardez la forme, les finitions, la taille dans la main : tout est là.`, `Check out the shape, the finish, how it sits in the hand: it's all right here.`));
-  for (let i = 1; i < n - 1; i++) lines.push(middles[(i - 1) % middles.length]);
-  if (n > 1) lines.push(o.url ? C(`Pour le découvrir, tout est sur ${o.url}.`, `Want to see more? It's all on ${o.url}.`) : C(`Le lien pour le découvrir est juste en dessous de la vidéo.`, `The link to check it out is right below this video.`));
+  const roles = ugcStructure(n);
+  const say: Record<UgcRole, string> = {
+    problem: o.angle === "deballage"
+      ? C(`On l'ouvre ensemble ? Dedans, il y a ${name}.`, `Let's open it together. Inside, there's ${name}.`)
+      : C(`Attendez, regardez ce que j'ai dans la main : ${name}.`, `Wait, look at what's in my hand: ${name}.`),
+    discovery: C(`Voici ${name}${brand ? `, de ${brand}` : ""}, je vous le montre de près.`, `This is ${name}${brand ? ` from ${brand}` : ""}, let me show you up close.`),
+    demo: facts[0] ? C(`Premier détail à voir : ${lower(facts[0])}.`, `First thing to notice: ${lower(facts[0])}.`) : C(`Regardez la forme, les finitions, la taille dans la main.`, `Check out the shape, the finish, how it sits in the hand.`),
+    proof: facts[1] ? C(`Et ce qu'on voit ici : ${lower(facts[1])}.`, `And what you can see right here: ${lower(facts[1])}.`) : C(`Prenez le temps de regarder chaque détail à l'image.`, `Take a moment to look at every detail on screen.`),
+    cta: o.url ? C(`Pour le découvrir, tout est sur ${o.url}.`, `Want to see more? It's all on ${o.url}.`) : C(`Le lien pour le découvrir est juste en dessous de la vidéo.`, `The link to check it out is right below this video.`),
+  };
+  const words = (t: string) => t.split(/\s+/).filter(Boolean).length;
+  const lines = roles.map((rs) => {
+    // Plan qui cumule plusieurs rôles : on retire la découverte, la preuve puis la démonstration si la réplique dépasse ~20 mots (8 s).
+    // L'accroche nomme déjà le produit : la découverte n'est pas répétée dans le même plan.
+    let keep = rs.includes("problem") ? rs.filter((r) => r !== "discovery") : [...rs];
+    for (const drop of ["discovery", "proof", "demo"] as UgcRole[]) if (keep.length > 1 && words(keep.map((r) => say[r]).join(" ")) > 20) keep = keep.filter((r) => r !== drop);
+    return keep.map((r) => say[r]).join(" ");
+  });
+  const act: Record<UgcRole, number> = { problem: 0, discovery: 1, demo: 2, proof: 3, cta: 4 };
   const caption = (l: string) => (l.length <= 64 ? l : `${l.slice(0, 61).replace(/\s+\S*$/, "")}…`);
   return {
-    concept: C(`${angle.fr}, ${n} plan${n > 1 ? "s" : ""} face caméra`, `${angle.en}, ${n} on-camera shot${n > 1 ? "s" : ""}`),
+    concept: C(`${angle.fr}, ${n} plan${n > 1 ? "s" : ""} face caméra : accroche, découverte, démonstration, preuve visible, appel`, `${angle.en}, ${n} on-camera shot${n > 1 ? "s" : ""}: hook, discovery, demo, visible proof, call to action`),
     persona: `${pick(UGC_PRESENTERS, o.presenter, "auto")} ${pick(UGC_AGES, o.age, "25-35")}, casual everyday outfit`,
     setting: pick(UGC_SETTINGS, o.setting, "salon"),
-    beats: lines.slice(0, n).map((line, i) => ({ line, caption: caption(line), action: i === n - 1 && n > 1 ? angle.actions[4] : angle.actions[i % 4] })),
+    beats: lines.map((line, i) => {
+      const main = roles[i].includes("cta") && n > 1 ? "cta" : roles[i][roles[i].length > 1 && roles[i][0] === "problem" ? 0 : roles[i].length - 1];
+      return { line, caption: caption(line), action: angle.actions[act[main]], role: roles[i].join("+") };
+    }),
   };
 }
 
@@ -173,7 +193,7 @@ export function serviceUgcIssues(script: Pick<UgcScript, "beats">): string[] {
   return out;
 }
 
-export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcOptions): Promise<{ script: UgcScript; issues: string[]; engine: "ia" | "local" }> {
+export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcOptions): Promise<{ script: UgcScript; issues: string[]; engine: "ia" | "local"; quality?: CraftQuality }> {
   const p = loadProject(projectId);
   const services = isServices(p);
   const check = (s: UgcScript) => [...ugcIssues(s, contentLang(), uiLang()), ...(services ? serviceUgcIssues(s) : [])];
@@ -185,9 +205,21 @@ export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcO
           `SERVICE BUSINESS (no product): the person presents the business ${activityName(p)} and its real services (${serviceItems(p).map((s) => s.name).join(", ") || "see context"}) in the third person ("Meet…", "On offer…"). They are neither a customer nor the professional: never "I hired", "my coach", "my name is". No product in hand; presenting gestures. Final call to action: ${serviceCta(p)}.`,
         )
       : "";
-    const r = await aiUgcScript({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ugc` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, services ? "activite" : "salon"), tone: C(pick(UGC_TONES, o.tone, "naturel").fr, pick(UGC_TONES, o.tone, "naturel").en), angle: services ? C("présentation de l'activité face caméra", "on-camera business presentation") : C(pick(UGC_ANGLES, o.angle, "presentation").fr, pick(UGC_ANGLES, o.angle, "presentation").en), url: o.url, brief: [serviceBrief, o.brief].filter(Boolean).join(" ") || undefined });
-    const script = cleanUgcScript({ ...r, beats: r.beats.slice(0, o.beats) });
-    return { script, issues: check(script), engine: "ia" };
+    // Scénariste (une passe forte) → règles UGC + directeur de création (grille notée, seuil 8/10) → au plus une
+    // reprise ciblée → la meilleure version est gardée. Services : présentation à la troisième personne, sans arc produit.
+    const n = Math.max(1, Math.min(5, o.beats));
+    const roles = services ? undefined : ugcStructure(n).map((r) => r.join("+"));
+    const base = { userId: p.userId, projectId, jobId: ctx.job.id };
+    const craft = brandCraftBrief(p);
+    const { best, quality } = await craftLoop("ugc", {
+      draft: async (feedback) => {
+        const r = await aiUgcScript({ ...base, usageKey: `${ctx.job.id}:ugc${feedback ? ":r2" : ""}` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, services ? "activite" : "salon"), tone: C(pick(UGC_TONES, o.tone, "naturel").fr, pick(UGC_TONES, o.tone, "naturel").en), angle: services ? C("présentation de l'activité face caméra", "on-camera business presentation") : C(pick(UGC_ANGLES, o.angle, "presentation").fr, pick(UGC_ANGLES, o.angle, "presentation").en), url: o.url, brief: [serviceBrief, o.brief].filter(Boolean).join(" ") || undefined, roles, craft, feedback });
+        return cleanUgcScript({ ...r, beats: r.beats.slice(0, o.beats) });
+      },
+      lint: (sc) => [...check(sc), ...ugcCraftIssues(sc)],
+      review: (sc, round) => aiCraftReview({ ...base, usageKey: `${ctx.job.id}:ugc:cd${round}` }, p, "ugc", sc, roles ? `Structure demandée, plan par plan : ${roles.map((r, i) => `${i + 1} = ${r}`).join(" ; ")}.` : "Entreprise de services : présentation de l'activité à la troisième personne (le critère « structure » juge l'enchaînement accroche → activité → prestations → infos → appel)."),
+    });
+    return { script: best, issues: check(best), engine: "ia", quality };
   }
   const script = localUgcScript(p, o);
   return { script, issues: check(script), engine: "local" };

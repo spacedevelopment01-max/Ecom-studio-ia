@@ -22,6 +22,22 @@ import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 import { C, L } from "../i18n-server";
 import { generateServiceImageSet, generateServiceSingleImage, isServices, type ServiceSingleRequest } from "./service-media";
+import { finalImagePrompt, photoLine, photoLineInput, scenePromptFromLine, type PhotoLine } from "./photo-line";
+import type { CreativeLook } from "../media/creative-html";
+import type { SceneLook } from "../media/compose";
+
+/** Ligne photographique de la marque (piste créative choisie, secteur, cible) : toutes les images en découlent. */
+export function brandPhotoLine(p: Project): PhotoLine {
+  return photoLine(photoLineInput(p));
+}
+/** Réglages des décors locaux tirés de la ligne (mur, plateau, côté de la lumière, étalonnage). */
+export function sceneLook(l: PhotoLine): SceneLook {
+  return { wall: l.local.wall, top: l.local.top, tint: l.local.tint, tintAlpha: l.local.tintAlpha, lightFrom: l.light.from, grain: l.grade.grain };
+}
+/** Couleurs des visuels avec texte tirées de la ligne (même campagne que les photos). */
+export function creativeLook(l: PhotoLine): CreativeLook {
+  return { ...l.creative, lightFrom: l.light.from };
+}
 
 export function latestAsset(projectId: string, role: string): Asset | undefined {
   return one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId, role);
@@ -77,11 +93,15 @@ export async function verifyAiImage(ictx: ImgCtx & { usageKey: string }, referen
 async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string): Promise<{ image: Buffer; provider: string; lightFrom?: "left" | "right" } | null> {
   const provider = imageProviderAvailable();
   if (!provider) return null;
+  // Brief de directeur artistique (grille notée, une reprise au plus) ; sans IA de rédaction, consigne du studio
+  // tirée de la ligne photographique — dans les deux cas, la même ligne de campagne pour toutes les images.
+  const line = brandPhotoLine(project);
   const brief = llmConfigured()
-    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}, format ${FORMATS[formatId].label}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}, ${FORMATS[formatId].label} format`) : C(`${style}, format ${FORMATS[formatId].label}`, `${style}, ${FORMATS[formatId].label} format`))
-    : lifestyle
-      ? { prompt: `Authentic everyday lifestyle photograph: ${lifestyle}. Natural daylight, real home or outdoor setting, candid editorial style, shallow depth of field. People may appear naturally around the product without covering it. No text, no logos, no other branded products.`, surface: "", lightFrom: "left" as const }
-      : { prompt: `${style} product photography set, soft natural light, ${project.brand?.palette.secondary ?? "neutral"} tones`, surface: "", lightFrom: "left" as const };
+    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}`) : C(`mise en scène produit (style ${style})`, `product staging (${style} style)`), { line, lifestyle, format: FORMATS[formatId].label })
+    : (() => {
+        const st = scenePromptFromLine(line, { lifestyle, format: FORMATS[formatId].label });
+        return { ...st, prompt: finalImagePrompt(st, line) };
+      })();
   const f = FORMATS[formatId];
   if (provider === "openai") {
     // Cadre à la taille OpenAI la plus proche, produit placé, masque du produit.
@@ -104,20 +124,6 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
   return { image: plate, provider: "google-plate", lightFrom: brief.lightFrom };
 }
 
-/** Situations de la vie de tous les jours, par secteur (consignes pour le modèle d'image). */
-const LIFESTYLE: Record<string, [string, string]> = {
-  beaute: ["on a sunlit bathroom shelf among everyday toiletries, morning routine", "held near a vanity mirror in a bright bedroom, getting ready"],
-  mode: ["laid on a bed next to sneakers and a tote bag, bright apartment, getting dressed", "hanging in an entryway by the door, keys and plants nearby, city apartment"],
-  bijoux: ["on a wooden dresser next to a hand, soft morning light through linen curtains", "on a café table beside a cup of coffee and a notebook, city morning"],
-  maison: ["in a cosy lived-in bedroom on an unmade bed with linen sheets, warm morning light", "in a bright living room on a sofa with a throw blanket and a book, afternoon light"],
-  hightech: ["outdoors on a wooden picnic table with a backpack, hills in the background, golden hour", "on a tidy home desk next to a laptop and a coffee mug, daylight"],
-  sport: ["on a forest trail next to running shoes and a backpack, early morning", "on a gym bench beside a towel and a water bottle, natural light"],
-  alimentation: ["on a sunny café terrace table next to a glass with ice, summer afternoon", "in a picnic basket on a blanket in a park, friends blurred in the background"],
-  enfants: ["on a playroom rug among wooden toys, soft daylight", "on a child's bedside table next to a picture book, evening lamp light"],
-  animaux: ["on a light grey sofa with a relaxed cat nearby, cosy living room, daylight", "on a wooden floor in a bright living room with a dog resting nearby"],
-  artisanat: ["on a wooden workshop table among tools and paper, window light", "on a shelf in a bright home studio next to plants and ceramics"],
-};
-
 export type ImageSetOptions = { scenes?: SceneStyle[]; withAi?: boolean; social?: boolean; banner?: boolean };
 
 /**
@@ -136,6 +142,9 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   const product = await loadImage(cutBuf);
   const pal = palette(project);
   const typo = brandTypo(project);
+  const line = brandPhotoLine(project);
+  const look = sceneLook(line);
+  const lineMeta = { photoLine: L(line.name.fr, line.name.en) };
   const base = slug(project.product.name || project.name);
   const created: string[] = [];
   const originalPhoto = () => assetData(one<Asset>("SELECT * FROM assets WHERE id = ?", main.source_asset_id) ?? main);
@@ -149,7 +158,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     ctx.progress(0.38, L("Packshots fond blanc et fond de marque", "Packshots on white and on brand background"));
     const ids = [
       await save(await renderPackshot(product), `${base}-packshot-${C("blanc", "white")}.jpg`, "packshot", "images.packshots", { recipe: L("Packshot fond blanc, ombre de contact", "Packshot on white, contact shadow"), fidelity: L("pixels d'origine du produit", "original product pixels") }),
-      await save(await renderPackshot(product, { background: pal.light }), `${base}-packshot-${C("fond-marque", "brand-background")}.jpg`, "packshot", "images.packshots", { recipe: L("Packshot fond de marque", "Packshot on brand background"), fidelity: L("pixels d'origine du produit", "original product pixels") }),
+      await save(await renderPackshot(product, { background: line.creative.mode === "tonal" ? line.creative.ground : pal.light }), `${base}-packshot-${C("fond-marque", "brand-background")}.jpg`, "packshot", "images.packshots", { recipe: L("Packshot fond de marque", "Packshot on brand background"), fidelity: L("pixels d'origine du produit", "original product pixels") }),
     ];
     return ids;
   });
@@ -165,7 +174,8 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     return ids;
   });
 
-  const styles = opts.scenes ?? (["everyday", "arch", "studio"] as SceneStyle[]);
+  // Mises en scène de la ligne photographique (même lumière, mêmes matières, même étalonnage).
+  const styles = opts.scenes ?? (line.local.scenes as SceneStyle[]);
   const withAi = opts.withAi !== false && !!imageProviderAvailable();
   for (const [i, style] of styles.entries()) {
     await ctx.step(`scene:${style}`, async () => {
@@ -191,14 +201,15 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           qc = { fallback: (e as Error).message };
         }
       }
-      const s = await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i });
-      return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}.jpg`, "scene", "images.scenes", { recipe: L(`Mise en scène ${style}`, `Staging: ${style}`), provider, qc })];
+      const s = await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, look });
+      return [await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}.jpg`, "scene", "images.scenes", { recipe: L(`Mise en scène ${style}`, `Staging: ${style}`), provider, qc, ...lineMeta })];
     });
   }
 
   // Photos en situation, dans la vie de tous les jours (IA d'image requise) : elles ouvrent la boutique.
   if (withAi) {
-    const contexts = LIFESTYLE[project.product.sector ?? ""] ?? LIFESTYLE.maison;
+    // Situations de la ligne photographique : secteur, cible, lumière et matières de la marque.
+    const contexts = line.situations.map((x) => x.en);
     for (const [i, situation] of contexts.entries()) {
       await ctx.step(`lifestyle:${i}`, async () => {
         ctx.progress(0.7 + i * 0.02, L("Photos du produit en situation", "Lifestyle product photos"));
@@ -227,15 +238,15 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
 
   // Bannière publicitaire 16:9 de niveau agence (texte, produit, informations confirmées).
   const proBanner = async () => {
-    const r = await renderProCreatives({ product: cutBuf, palette: pal, typo: brandTypo(project), brand: project.brand?.name ?? project.name, headline: project.brand?.tagline || project.product.name || project.name, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: C("Découvrir", "Shop now") }, [{ template: "signature", format: "landscape" }]).catch(() => null);
+    const r = await renderProCreatives({ product: cutBuf, palette: pal, typo: brandTypo(project), brand: project.brand?.name ?? project.name, headline: project.brand?.tagline || project.product.name || project.name, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: C("Découvrir", "Shop now"), look: creativeLook(line) }, [{ template: "signature", format: "landscape" }]).catch(() => null);
     return r?.length ? [await save(r[0].jpg, `${base}-${C("banniere-publicite", "ad-banner")}-16x9.jpg`, "banner", "images.banners", { recipe: L("Bannière publicitaire 16:9 (mise en page agence)", "16:9 ad banner (agency layout)") })] : [];
   };
   if (opts.banner !== false) {
     await ctx.step("banner", async () => {
       ctx.progress(0.75, L("Bannières de boutique", "Store banners"));
       return [
-        await save(await renderBanner(product, pal, "studio", FORMATS.banner, 21), `${base}-${C("banniere", "banner")}-studio.jpg`, "banner", "images.banners", { recipe: L("Bannière 2:1 sans texte (textes dans le thème)", "2:1 banner without text (text lives in the theme)") }),
-        await save(await renderBanner(product, pal, "color", FORMATS.landscape, 22), `${base}-${C("banniere-couleur", "banner-color")}.jpg`, "banner", "images.banners", { recipe: L("Bannière 16:9 fond de marque", "16:9 banner on brand background") }),
+        await save(await renderBanner(product, pal, line.local.scenes[0] === "spotlight" || line.local.scenes[0] === "window" ? line.local.scenes[0] : "studio", FORMATS.banner, 21, null, look), `${base}-${C("banniere", "banner")}-studio.jpg`, "banner", "images.banners", { recipe: L("Bannière 2:1 sans texte (textes dans le thème)", "2:1 banner without text (text lives in the theme)") }),
+        await save(await renderBanner(product, pal, "color", FORMATS.landscape, 22, null, look), `${base}-${C("banniere-couleur", "banner-color")}.jpg`, "banner", "images.banners", { recipe: L("Bannière 16:9 fond de marque", "16:9 banner on brand background") }),
         ...(await proBanner()),
       ];
     });
@@ -258,7 +269,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
       const ids: string[] = [];
       // Visuels de niveau agence (mise en page HTML) quand un navigateur est disponible.
       // Textes dédoublonnés avant de choisir la mise en page : la mise en page « arguments » demande 3 informations distinctes.
-      const proIn = dedupeCreativeText({ product: cutBuf, palette: pal, typo, brand: brandName, logo: null, headline, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: C("Découvrir", "Shop now") });
+      const proIn = dedupeCreativeText({ product: cutBuf, palette: pal, typo, brand: brandName, logo: null, headline, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: C("Découvrir", "Shop now"), look: creativeLook(line) });
       const args = proIn.facts.length >= 3;
       const pro = await renderProCreatives(
         proIn,
@@ -277,7 +288,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
         return ids;
       }
       for (const [fmt, layout, folder, role] of variants) {
-        const r = await renderCreative({ product, palette: pal, typo, format: FORMATS[fmt], layout, headline, subline: sub, cta: role === "ad" ? C("Découvrir", "Shop now") : undefined, brand: brandName, logo, seed: ids.length + 3 });
+        const r = await renderCreative({ product, palette: pal, typo, format: FORMATS[fmt], layout, headline, subline: sub, cta: role === "ad" ? C("Découvrir", "Shop now") : undefined, brand: brandName, logo, seed: ids.length + 3, look });
         ids.push(await save(r.jpg, `${base}-${role === "ad" ? C("publicite", "ad") : "post"}-${FORMATS[fmt].label.replace(":", "x")}-${layout}.jpg`, role, folder, { recipe: L(`Visuel ${FORMATS[fmt].label} (${layout})`, `${FORMATS[fmt].label} visual (${layout})`), text: { headline, sub }, safeArea: r.safe, minFontPx: r.minFontPx, format: FORMATS[fmt].label }));
       }
       return ids;
@@ -326,6 +337,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
   if (!cut) throw new Error(L("Importez d'abord une photo du produit.", "Upload a product photo first."));
   const product = await loadImage(assetData(cut));
   const pal = palette(project);
+  const look = sceneLook(brandPhotoLine(project));
   const fmt = FORMATS[req.format ?? (req.kind === "banner" ? "banner" : req.kind === "packshot" ? "packshot" : "portrait")];
   const base = slug(project.product.name || project.name);
   const ictx: ImgCtx = { userId: project.userId, projectId, jobId: ctx.job.id };
@@ -368,13 +380,13 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
       // Image IA refusée au contrôle (ou indisponible) : scène composée localement, la raison est gardée et affichée.
       aiNote = r && "rejected" in r ? r.rejected ?? null : L("génération d'image IA indisponible", "AI image generation unavailable");
     }
-    const s = await renderScene({ product, palette: pal, style: req.style ?? "studio", format: fmt, seed: Date.now() % 1000, offsetX: req.kind === "banner" ? 0.18 : 0 });
+    const s = await renderScene({ product, palette: pal, style: req.style ?? "studio", format: fmt, seed: Date.now() % 1000, offsetX: req.kind === "banner" ? 0.18 : 0, look });
     data = await sharp(s.png).jpeg({ quality: 92 }).toBuffer();
     folder = req.kind === "banner" ? "images.banners" : "images.scenes";
     meta = { recipe: L(`Scène ${req.style ?? "studio"}`, `Scene: ${req.style ?? "studio"}`), provider: "local", ...(aiNote ? { aiFallback: L(`Image IA non utilisée : ${aiNote}. Scène composée à partir de votre photo.`, `AI image not used: ${aiNote}. Scene composed from your photo.`) } : {}) };
   } else {
     const logoAsset = latestAsset(projectId, "logo");
-    const r = await renderCreative({ product, palette: pal, typo: brandTypo(project), format: fmt, layout: req.layout ?? "editorial", headline: req.headline || project.brand?.tagline || project.product.name, subline: req.subline, cta: req.cta, brand: project.brand?.name ?? project.name, logo: logoAsset ? await loadImage(assetData(logoAsset)) : null, scene: req.style, seed: Date.now() % 1000 });
+    const r = await renderCreative({ product, palette: pal, typo: brandTypo(project), format: fmt, layout: req.layout ?? "editorial", headline: req.headline || project.brand?.tagline || project.product.name, subline: req.subline, cta: req.cta, brand: project.brand?.name ?? project.name, logo: logoAsset ? await loadImage(assetData(logoAsset)) : null, scene: req.style, seed: Date.now() % 1000, look });
     data = r.jpg;
     folder = req.kind === "ad" ? "images.ads" : "images.social";
     role = req.kind;

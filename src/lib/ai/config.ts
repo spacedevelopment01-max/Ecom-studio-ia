@@ -65,6 +65,8 @@ export type TaskId =
   | "social_copy"
   | "classification"
   | "video_direction"
+  | "art_direction"
+  | "ad_creative"
   | "blog_topics"
   | "blog_writing"
   | "image_generation"
@@ -93,6 +95,8 @@ export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "imag
   social_copy: task("Textes des publications", "Social post copy", "llm"),
   classification: task("Classement des fichiers", "File organization", "llm"),
   video_direction: task("Réalisation vidéo (concept, storyboard)", "Video direction (concept, storyboard)", "llm"),
+  art_direction: task("Direction artistique des images (briefs photo)", "Image art direction (photo briefs)", "llm"),
+  ad_creative: task("Publicités (audiences, accroches, annonces, plan de test)", "Ads (audiences, hooks, ad copy, test plan)", "llm"),
   blog_topics: task("Sujets d'articles de blog", "Blog post topics", "llm"),
   blog_writing: task("Rédaction des articles de blog", "Blog post writing", "llm"),
   image_generation: task("Génération d'images (décors)", "Image generation (backgrounds)", "image"),
@@ -104,7 +108,8 @@ export type Route = { provider: ProviderId; model: string; effort?: "low" | "med
 export const DEFAULT_ROUTES: Record<TaskId, Route> = {
   vision_analysis: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   strategy: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
-  copywriting: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" },
+  // Textes de vente (accueil, fiche produit, FAQ) : enjeu direct sur la conversion, réflexion plus poussée.
+  copywriting: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "high" },
   theme_design: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
   theme_edit: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   theme_custom: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
@@ -113,10 +118,16 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = {
   cutout_check: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
   logo_symbol: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   social_planning: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  social_copy: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
+  // Reprises ciblées du calendrier et réécritures de l'éditeur : rédaction de community manager, effort moyen.
+  social_copy: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" },
   classification: { provider: "anthropic", model: "claude-haiku-4-5" },
   video_direction: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  blog_topics: { provider: "anthropic", model: "claude-haiku-4-5" },
+  // Brief photo : quelques centaines de mots, mais il conditionne une image payante (~0,17 $) — modèle fort, effort moyen.
+  art_direction: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
+  // Campagne de test complète (stratégie + annonces) : modèle fort, effort moyen ; une relecture notée et au plus une reprise.
+  ad_creative: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
+  // Sujets d'articles : stratégie de mots-clés et intention de recherche (Haiku trop superficiel), appel court.
+  blog_topics: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
   blog_writing: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" },
   image_generation: { provider: "openai", model: "gpt-image-1" },
   video_generation: { provider: "google", model: "veo-3.0-generate-001" },

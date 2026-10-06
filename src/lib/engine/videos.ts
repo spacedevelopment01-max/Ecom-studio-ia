@@ -25,6 +25,7 @@ import { json, run } from "../db";
 import { logoPng } from "../media/logo";
 import { C, L } from "../i18n-server";
 import { activityPhotos, isServices, localServiceVideoPlan } from "./service-media";
+import { aiCraftReview, brandCraftBrief, craftLoop, paceVideoPlan, videoPlanIssues, type CraftQuality } from "./ad-craft";
 
 const exec = promisify(execFile);
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
@@ -46,6 +47,29 @@ export function videoStepNote(results: VideoStepResult[], aiRequested: boolean):
   if (ai === n) return L(`${done} (avec plan IA)`, `${done} (with an AI shot)`);
   if (ai === 0) return L(`${done} à partir des images : plan IA non utilisé${why ? ` (${why})` : ""}`, `${done} from the images: AI shot not used${why ? ` (${why})` : ""}`);
   return L(`${done} (plan IA : ${ai} sur ${n}, montage à partir des images pour ${n - ai === 1 ? "l'autre" : "les autres"}${why ? ` — ${why}` : ""})`, `${done} (AI shot: ${ai} of ${n}, edited from the images for the ${n - ai === 1 ? "other" : "others"}${why ? ` — ${why}` : ""})`);
+}
+
+/**
+ * Mouvement de caméra du plan IA, choisi comme un chef opérateur selon l'univers du produit (une seule consigne,
+ * précise, que les modèles image-vers-vidéo suivent bien). La fidélité du produit reste contrôlée sur 3 images.
+ */
+export function clipCamera(sector: string | null | undefined, format: VideoFormat): string {
+  const vertical = format !== "16:9";
+  switch (sector) {
+    case "hightech":
+    case "sport":
+      return `Fast, confident dolly-in toward the product with a light sweep crossing the set, energetic but smooth, ${vertical ? "vertical framing" : "wide framing"}.`;
+    case "bijoux":
+    case "beaute":
+    case "mode":
+      return "Slow macro slide along the product with a gentle rack focus from the foreground to the product and a soft specular glint traveling across it.";
+    case "enfants":
+    case "animaux":
+    case "maison":
+      return "Gentle handheld-feel push-in in warm natural daylight, soft bokeh drifting in the background, cozy and calm.";
+    default:
+      return "Slow cinematic push-in on the product set with a soft light shift and subtle depth of field.";
+  }
 }
 
 export async function produceVideo(ctx: JobContext, projectId: string, req: VideoRequest) {
@@ -80,7 +104,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const scene = imgs.find((a) => a.role === "scene") ?? imgs[0];
       const prompt = services
         ? `Slow cinematic push-in on this real photo of the business, soft light shift, subtle depth of field. Keep every person, object and place exactly as they are; add no people, no text, no logo.`
-        : `Slow cinematic push-in on the product set, soft light shift, subtle depth of field, ${brand.palette.secondary} tones. The product stays perfectly still and exactly identical to the first frame (same shape, proportions, label, text and colors); it is never redrawn, duplicated, cropped or hidden. No text overlay, no new objects, no people.`;
+        : `${clipCamera(project.product.sector, req.format)} Motion starts on the very first frame (no static opening), ${brand.palette.secondary} color accents in the light, natural soft shadows, crisp focus on the product. The product stays perfectly still and exactly identical to the first frame (same shape, proportions, label, text and colors); it is never redrawn, duplicated, cropped or hidden. No text overlay, no new objects, no people.`;
       const buf = provider === "google"
         ? await veoClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m))
         : await falClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt }, (m) => ctx.progress(0.15, m));
@@ -145,6 +169,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   }
 
   // 2. Découpage.
+  let craftQuality: CraftQuality | null = null;
   const plan: VideoSpec = req.plan ?? (await ctx.step(`plan:${req.format}`, async () => {
     ctx.progress(0.3, L("Écriture du découpage", "Writing the shot list"));
     // Services : découpage écrit à partir de l'offre réelle (prestations, horaires, zone, contact).
@@ -154,13 +179,27 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       return sp;
     }
     if (llmConfigured()) {
-      const r = await aiVideoPlan({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:plan` }, project, { format: req.format, goal: req.goal ?? C("publicité courte qui donne envie d'acheter", "short ad that makes people want to buy"), images: descriptions, clips: clipDirs.length, url: req.url });
-      return { format: req.format, scenes: r.scenes, transition: r.transition, music: req.music ?? r.music, captions: true } as VideoSpec;
+      // Réalisateur (une passe forte) → contrôles de montage + directeur de création (grille notée, seuil 8/10)
+      // → au plus une reprise ciblée → la meilleure version est gardée.
+      const goal = req.goal ?? C("publicité courte qui donne envie d'acheter", "short ad that makes people want to buy");
+      const base = { userId: project.userId, projectId, jobId: ctx.job.id };
+      const craft = brandCraftBrief(project);
+      const asSpec = (r: Awaited<ReturnType<typeof aiVideoPlan>>) => ({ format: req.format, scenes: r.scenes, transition: r.transition, music: req.music ?? r.music, captions: true, concept: r.concept }) as VideoSpec & { concept: string };
+      const { best, quality } = await craftLoop("video", {
+        draft: async (feedback) => asSpec(await aiVideoPlan({ ...base, usageKey: `${ctx.job.id}:plan${feedback ? ":r2" : ""}` }, project, { format: req.format, goal, images: descriptions, clips: clipDirs.length, url: req.url, craft, feedback })),
+        lint: (spec) => videoPlanIssues(paceVideoPlan(spec)),
+        review: (spec, round) => aiCraftReview({ ...base, usageKey: `${ctx.job.id}:plan:cd${round}` }, project, "video", { concept: spec.concept, format: spec.format, music: spec.music, transition: spec.transition, scenes: spec.scenes, images: descriptions }, `Format ${req.format}. Objectif : ${goal}.`),
+      });
+      craftQuality = quality;
+      return best;
     }
     return localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url, project);
   }));
   plan.format = req.format;
   if (req.music) plan.music = req.music;
+  // Rythme de publicité sociale (accroche courte, rupture toutes les 1,5 à 2,5 s, coupes sur le temps avec « pulse »).
+  // Un découpage fourni par le client (req.plan) est respecté tel quel.
+  if (!req.plan) plan.scenes = paceVideoPlan(plan).scenes;
   // Bornes de sécurité (lecture sur téléphone) et références d'images valides.
   plan.scenes = plan.scenes
     .map((s) => ({ ...s, duration: Math.max(1.6, Math.min(6, s.duration)) }))
@@ -207,7 +246,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       folderKey: folder,
       origin: "generated",
       sourceAssetId: cutouts[0]?.id ?? imgs[0]?.id ?? null,
-      meta: { format: req.format, plan, technical, issues, ...(services ? { business: "services" } : {}), method: clipDirs.length ? L("Motion design + plan généré", "Motion design + generated shot") : services ? (imgs.length ? L("Motion design : présentation de l'activité à partir de vos photos", "Motion design: business presentation from your photos") : L("Motion design : typographie animée à la marque (sans photo)", "Motion design: animated brand typography (no photo)")) : L("Motion design à partir des photos réelles", "Motion design from the real photos"), delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : L(", sans son", ", no audio")}` },
+      meta: { format: req.format, plan, technical, issues, ...(craftQuality ? { quality: craftQuality } : {}), ...(services ? { business: "services" } : {}), method: clipDirs.length ? L("Motion design + plan généré", "Motion design + generated shot") : services ? (imgs.length ? L("Motion design : présentation de l'activité à partir de vos photos", "Motion design: business presentation from your photos") : L("Motion design : typographie animée à la marque (sans photo)", "Motion design: animated brand typography (no photo)")) : L("Motion design à partir des photos réelles", "Motion design from the real photos"), delivered: `MP4 H.264 ${technical.width}×${technical.height}, ${technical.duration.toFixed(1)} s${technical.audio ? L(", son AAC", ", AAC audio") : L(", sans son", ", no audio")}` },
       status: "review",
     });
     const posterFrame = path.join(dir, "poster.jpg");

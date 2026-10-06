@@ -22,6 +22,7 @@ import { projectContext } from "../ai/context";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { brandTypo, palette } from "./images";
+import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo-line";
 
 // ---------------------------------------------------------------- textes (purs, testables)
 
@@ -185,9 +186,12 @@ export function ambiancePrompts(p: Project): string[] {
   const what = [p.product.category, p.product.summary || activityName(p)].filter(Boolean).join(" — ");
   const services = serviceItems(p).slice(0, 4).map((s) => s.name).join(", ");
   const base = `Business activity: ${what}.${services ? ` Services offered: ${services}.` : ""}${placeLine(p) ? ` Location: ${placeLine(p)}.` : ""}`;
+  // Ligne photographique de la marque : ambiances, bannières et visuels forment une même campagne.
+  const line = photoLine(photoLineInput(p));
+  const look = `${photoLinePrompt(line)} ${avoidPrompt(line)}`;
   return [
-    `${base} The place where this activity happens (workshop, practice room, studio, salon or venue), tidy, warm and inviting, nobody looking at the camera.`,
-    `${base} Close-up of skilled hands at work with the real tools and materials of this activity, shallow depth of field.`,
+    `${base} The place where this activity happens (workshop, practice room, studio, salon or venue), tidy, lived-in and inviting, seen at eye level with a 35mm lens, nobody looking at the camera, real tools and materials of the trade visible. ${look}`,
+    `${base} Close-up of skilled hands at work with the real tools and materials of this activity, 50mm lens slightly above, shallow depth of field, the gesture sharp and the background soft. ${look}`,
   ];
 }
 

@@ -9,7 +9,7 @@ import { AssetThumb, MediaPicker, type AssetView } from "./common";
 import { useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 
-export type PostView = { id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null; angle: string | null; media: AssetView[]; connectionId: string | null; connectionName: string | null; error: string | null; remoteUrl: string | null; publishedAt: number | null; autoApproved: boolean };
+export type PostView = { id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null; angle: string | null; media: AssetView[]; connectionId: string | null; connectionName: string | null; error: string | null; remoteUrl: string | null; publishedAt: number | null; autoApproved: boolean; advice?: string[] };
 
 /** Statuts d'une publication : `label` (français) et `en` (anglais) ; choisir avec t(s.label, s.en). */
 export const POST_STATUS: Record<string, { label: string; en: string; tone: any }> = {
@@ -110,6 +110,12 @@ export function PostEditor({ post, onClose, onChanged }: { post: PostView | null
           <Field label={t("Légende", "Caption")} htmlFor="pcap" hint={`${fullLength} / ${limit} ${t("caractères", "characters")}`} error={fullLength > limit ? t("Trop long pour ce réseau.", "Too long for this network.") : null}>
             <Textarea id="pcap" rows={7} value={f.caption} disabled={locked} onChange={(e) => setF({ ...f, caption: e.target.value })} />
           </Field>
+          {!locked && post.advice?.length ? (
+            <div className="rounded-2xl bg-paper-2 px-4 py-3 text-xs">
+              <p className="font-medium">{t("Relecture du studio", "Studio review")}</p>
+              <ul className="mt-1 list-disc pl-4 text-muted">{post.advice.map((a) => <li key={a}>{a}</li>)}</ul>
+            </div>
+          ) : null}
           <Field label={t("Hashtags (sans #, séparés par des espaces)", "Hashtags (without #, separated by spaces)")} htmlFor="ptags"><Input id="ptags" value={f.hashtags} disabled={locked} onChange={(e) => setF({ ...f, hashtags: e.target.value })} /></Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t(`Date et heure (${tz})`, `Date and time (${tz})`)} htmlFor="pdate"><Input id="pdate" type="datetime-local" value={date} disabled={locked} onChange={(e) => setDate(e.target.value)} /></Field>

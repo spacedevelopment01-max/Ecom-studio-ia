@@ -39,8 +39,9 @@ describe("médias créés en anglais", () => {
     const { localUgcScript, aiLabel } = await import("@/lib/engine/ugc");
     const p = { product: productEn, brand: { name: "Lumen" } } as any;
     const s = localUgcScript(p, { format: "9:16", beats: 2, presenter: "femme", age: "25-35", setting: "salon", tone: "naturel", angle: "presentation" });
-    expect(s.beats[0].line).toBe("Regardez bien ça : voici Glow Serum, je vous le montre en quelques secondes.");
-    expect(s.beats[1].line).toBe("Le lien pour le découvrir est juste en dessous de la vidéo.");
+    // Accroche de créateur (geste + produit nommé), puis démonstration et appel (structure UGC du studio).
+    expect(s.beats[0].line).toBe("Attendez, regardez ce que j'ai dans la main : Glow Serum.");
+    expect(s.beats[1].line).toBe("Premier détail à voir : 30 ml. Le lien pour le découvrir est juste en dessous de la vidéo.");
     expect(aiLabel()).toBe("Vidéo générée par IA");
   });
 

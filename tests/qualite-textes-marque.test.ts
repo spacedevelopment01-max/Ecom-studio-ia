@@ -240,7 +240,8 @@ describe("publicités : réponses médiocres de l'IA rattrapées", () => {
     llm.calls = 0;
     llm.replies = [bad, bad];
     const r = await runWithLang({ content: "fr", ui: "fr" }, () => draftAds(p, { userId: "u", count: 1 }));
-    expect(llm.calls).toBe(2);
+    // Rédaction, relecture du directeur de création, reprise ciblée, relecture de la reprise (engine/ad-craft).
+    expect(llm.calls).toBe(4);
     expect(r.ads[0].primary).toBe("Un boîtier rose aux oreilles de lapin.");
     expect(lintClaims(r.ads, p)).toEqual([]);
   });

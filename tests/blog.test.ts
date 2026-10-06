@@ -16,7 +16,8 @@ vi.mock("@/lib/ai/llm", () => ({
   llmJson: async (call: { task: string }) => {
     calls.push(call.task);
     if (call.task === "blog_writing") return ai.article;
-    if (call.task === "quality_control") return { verdict: "ok", issues: [] };
+    // Relecture du directeur de création : article au niveau (8/10 et plus sur chaque critère).
+    if (call.task === "quality_control") return { scores: { specificity: 9, benefits: 9, objections: 8, clarity: 9, voice: 9, seo: 9, conversion: 8 }, issues: [], brief: "" };
     if (call.task === "blog_topics") return { topics: [{ title: "Comment appliquer le Sérum Éclat", kind: "usage", why: "Usage concret." }] };
     throw new Error(`tâche inattendue ${call.task}`);
   },
