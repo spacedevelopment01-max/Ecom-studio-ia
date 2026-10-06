@@ -45,6 +45,7 @@ export function SectionLibrary({
   aiAvailable,
   onGenerate,
   generateLocked,
+  sameOrigin,
 }: {
   open: boolean;
   onClose: () => void;
@@ -58,6 +59,8 @@ export function SectionLibrary({
   onGenerate: (description: string) => Promise<void>;
   /** Forfait Créer : la génération d'une section par l'IA est réservée à Vendre et Dominer. */
   generateLocked?: boolean;
+  /** Aperçu avec son origine (Codespaces), comme l'aperçu de la boutique. */
+  sameOrigin?: boolean;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -132,7 +135,7 @@ export function SectionLibrary({
           {sel === GENERATE || !current ? (
             <GeneratePane aiAvailable={aiAvailable} onGenerate={onGenerate} locked={!!generateLocked} />
           ) : (
-            <PreviewPane key={current.type} item={current} projectId={projectId} versionId={versionId} onAdd={() => onPick(current.type)} adding={busy === current.type} disabled={!!busy} />
+            <PreviewPane key={current.type} item={current} projectId={projectId} versionId={versionId} onAdd={() => onPick(current.type)} adding={busy === current.type} disabled={!!busy} sameOrigin={sameOrigin} />
           )}
         </div>
       </div>
@@ -141,7 +144,7 @@ export function SectionLibrary({
 }
 
 /** Aperçu en direct : la section rendue seule dans le thème du projet, mise à l'échelle du panneau. */
-function PreviewPane({ item, projectId, versionId, onAdd, adding, disabled }: { item: LibraryItem; projectId: string; versionId?: string; onAdd: () => void; adding: boolean; disabled: boolean }) {
+function PreviewPane({ item, projectId, versionId, onAdd, adding, disabled, sameOrigin }: { item: LibraryItem; projectId: string; versionId?: string; onAdd: () => void; adding: boolean; disabled: boolean; sameOrigin?: boolean }) {
   const t = useT();
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
@@ -181,7 +184,7 @@ function PreviewPane({ item, projectId, versionId, onAdd, adding, disabled }: { 
             title={t(`Aperçu : ${item.name}`, `Preview: ${item.name}`)}
             src={src}
             loading="lazy"
-            sandbox="allow-scripts"
+            sandbox={sameOrigin ? "allow-scripts allow-same-origin" : "allow-scripts"}
             onLoad={() => setLoaded(true)}
             className={cx("absolute left-0 top-0 origin-top-left border-0 transition-opacity duration-300", loaded ? "opacity-100" : "opacity-0")}
             style={{ width: FRAME_W, height: Math.min(height, FRAME_H * 1.6), transform: `scale(${scale})` }}

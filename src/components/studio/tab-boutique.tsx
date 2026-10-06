@@ -19,9 +19,13 @@ import { KeptSiteCard, ReproductionBanner, SiteReading } from "./existing-site";
 import { useBilling } from "../billing-client";
 import { CustomThemeButton, useCustomThemeStatus } from "./custom-theme";
 
+const PREVIEW_SANDBOX = "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals";
+
 type TFn = <T>(fr: T, en: T) => T;
 
 type ThemeData = {
+  /** Attribut « sandbox » des aperçus, fourni par le serveur (Codespaces : avec l'origine). */
+  sandbox?: string;
   current: null | {
     versionId: string;
     number: number;
@@ -511,10 +515,10 @@ export default function TabBoutique() {
         {/* L'aperçu n'est créé qu'une fois la largeur mesurée : sinon l'iframe est recréée (double chargement). */}
         {src && (device !== "desktop" || boxW !== 0) && (desktopScale < 1 ? (
           <div className="mx-auto overflow-hidden rounded-none bg-white shadow-soft sm:rounded-2xl" style={{ width: DESKTOP_W * desktopScale, height: "100%" }}>
-            <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals" title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
+            <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox={theme.sandbox ?? PREVIEW_SANDBOX} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
           </div>
         ) : (
-          <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals" title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
+          <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox={theme.sandbox ?? PREVIEW_SANDBOX} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
         ))}
         {src && discovery && (
           <div className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden" aria-hidden>
@@ -560,7 +564,7 @@ export default function TabBoutique() {
         </ul>
       </Modal>
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
-      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} />
+      <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} />
       <ThemeGallery services={isServices} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} />
     </div>

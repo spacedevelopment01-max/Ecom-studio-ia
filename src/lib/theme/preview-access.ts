@@ -48,10 +48,31 @@ export function splitPreviewSegment(seg: string): { vid: string; token: string |
 }
 
 /**
+ * Cloisonnement strict (origine opaque) : partout, sauf derrière un proxy qui exige ses propres cookies pour
+ * chaque fichier. GitHub Codespaces (adresse *.app.github.dev) refuse les requêtes d'une origine opaque
+ * (CSS, scripts, images de l'aperçu) : l'aperçu s'affichait sans mise en forme. Là, l'aperçu garde le bac à
+ * sable mais avec son origine. Réglable par PREVIEW_ISOLATION=on|off.
+ */
+export function previewIsolated(): boolean {
+  const v = (process.env.PREVIEW_ISOLATION ?? "").trim().toLowerCase();
+  if (["off", "0", "false", "no"].includes(v)) return false;
+  if (["on", "1", "true", "yes"].includes(v)) return true;
+  return process.env.CODESPACES !== "true";
+}
+
+const SANDBOX_TOKENS = "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals";
+
+/** Attribut `sandbox` de l'iframe d'aperçu (le même que l'en-tête CSP). */
+export const previewSandbox = (tokens = SANDBOX_TOKENS) => (previewIsolated() ? tokens : `${tokens} allow-same-origin`);
+
+/**
  * Bac à sable de la page d'aperçu (même ouverte hors du studio) : scripts permis, mais origine opaque,
  * donc ni cookies du studio, ni stockage, ni appels à l'API avec la session du client.
  */
-export const PREVIEW_SANDBOX_CSP = "sandbox allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals; frame-ancestors 'self'";
+export const previewCsp = (tokens = SANDBOX_TOKENS) => `sandbox ${previewSandbox(tokens)}; frame-ancestors 'self'`;
+
+/** Valeur stricte (référence ; préférer previewCsp(), qui suit l'environnement). */
+export const PREVIEW_SANDBOX_CSP = `sandbox ${SANDBOX_TOKENS}; frame-ancestors 'self'`;
 
 /** Le document de l'aperçu (origine « null ») lit ses propres fichiers et le panier de démonstration. */
 export function previewCors(req: Request, headers: Headers): Headers {

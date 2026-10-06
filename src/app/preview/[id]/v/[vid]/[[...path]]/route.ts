@@ -12,7 +12,7 @@ import { fontFilePath, renderNamedSections, renderPage, variantId, type PreviewC
 import { storeProducts } from "@/lib/theme/spec";
 import { previewTools } from "@/lib/theme/preview-tools";
 import { L, uiLang } from "@/lib/i18n-server";
-import { PREVIEW_SANDBOX_CSP, previewCors, previewSegment, splitPreviewSegment, verifyPreview } from "@/lib/theme/preview-access";
+import { previewCsp, previewCors, previewSegment, splitPreviewSegment, verifyPreview } from "@/lib/theme/preview-access";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
 export const runtime = "nodejs";
@@ -83,7 +83,7 @@ async function sectionsFor(spec: ThemeSpec, base: string, cart: PreviewCartLine[
  */
 function withCors(req: Request, res: Response) {
   previewCors(req, res.headers);
-  if (!res.headers.has("Content-Security-Policy")) res.headers.set("Content-Security-Policy", PREVIEW_SANDBOX_CSP);
+  if (!res.headers.has("Content-Security-Policy")) res.headers.set("Content-Security-Policy", previewCsp());
   res.headers.set("X-Content-Type-Options", "nosniff");
   return res;
 }
@@ -128,7 +128,7 @@ async function get(req: Request, ctx: P): Promise<Response> {
   if (url.searchParams.get("sections")) return Response.json(await sectionsFor(spec, base, cart, url.searchParams.get("sections")));
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
   const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business)}</body>`);
-  return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": PREVIEW_SANDBOX_CSP, "Referrer-Policy": "no-referrer" } });
+  return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": previewCsp(), "Referrer-Policy": "no-referrer" } });
 }
 
 async function post(req: Request, ctx: P): Promise<Response> {
