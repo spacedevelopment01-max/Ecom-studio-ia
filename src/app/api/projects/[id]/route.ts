@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { all, json, now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
-import { publicJob, type Job } from "@/lib/jobs";
+import { cancelJob, publicJob, type Job } from "@/lib/jobs";
 import { currentTheme, saveProduct, saveServices, saveSettings } from "@/lib/projects";
 import { pipelineState } from "@/lib/engine/pipeline";
 import { localizeQuestions } from "@/lib/engine/local";
@@ -10,7 +10,7 @@ import { hasAiCredits } from "@/lib/ai/access";
 import { assertAutopublish } from "@/lib/plan-gates";
 import { aiAvailability } from "@/lib/ai/config";
 import { balance } from "@/lib/billing";
-import { FactSchema, sectorLabel } from "@/lib/project-types";
+import { contactModesOf, FactSchema, sectorLabel } from "@/lib/project-types";
 import { HttpError } from "@/lib/auth";
 import { L, uiLang } from "@/lib/i18n-server";
 
@@ -81,6 +81,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
           hours: z.string().max(400),
           bookingUrl: z.string().max(500),
           contactMode: z.enum(["booking", "quote", "call", "form"]),
+          contactModes: z.array(z.enum(["booking", "quote", "call", "form"])).max(4).optional(),
         })
         .optional(),
       /** Description de l'activité (services) : nom, catégorie, résumé, informations confirmées. */
@@ -108,6 +109,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       hours: sv.hours.trim(),
       bookingUrl,
       contactMode: sv.contactMode,
+      contactModes: contactModesOf(sv),
     });
   }
   if (b.activity) {
@@ -138,5 +140,8 @@ export const DELETE = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   run("UPDATE projects SET archived = 1, updated_at = ? WHERE id = ?", now(), p.id);
   run("UPDATE posts SET status = 'cancelled' WHERE project_id = ? AND status IN ('scheduled','review','draft')", p.id);
+  // Créations en cours ou en pause du projet : arrêtées (une tâche en cours s'arrête à son prochain point d'avancement).
+  for (const j of all<{ id: string }>("SELECT id FROM jobs WHERE project_id = ? AND status IN ('queued','running','blocked','paused')", p.id)) cancelJob(j.id);
+  run("UPDATE jobs SET status = 'cancelled', finished_at = ?, updated_at = ? WHERE project_id = ? AND status = 'paused'", now(), now(), p.id);
   return ok();
 });

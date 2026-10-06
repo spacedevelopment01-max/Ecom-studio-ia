@@ -5,7 +5,7 @@ import { json, now, one, run } from "./db";
 import { enqueue } from "./jobs";
 import { saveAsset } from "./library";
 import { setStatus } from "./projects";
-import { emptyServiceProfile, type ServiceItem, type ServiceProfile } from "./project-types";
+import { contactModesOf, emptyServiceProfile, type ContactMode, type ServiceItem, type ServiceProfile } from "./project-types";
 import { L } from "./i18n-server";
 
 export const MAX_FILE = 25 * 1024 * 1024;
@@ -32,6 +32,8 @@ export const StartInput = z.object({
   hours: z.string().max(400).optional(),
   bookingUrl: z.string().max(500).optional(),
   contactMode: z.enum(["booking", "quote", "call", "form"]).optional(),
+  /** Toutes les façons de contacter, séparées par des virgules (« quote,call »). */
+  contactModes: z.string().max(60).optional(),
   /** Vidéos de la création complète : avec plans filmés par l'IA (gourmand), montées à partir des images, ou aucune. */
   videos: z.enum(["ai", "edited", "none"]).default("ai"),
   /** « J'ai déjà mon site et mon logo » : le studio lit le site du client (plateforme et type d'activité détectés). */
@@ -101,6 +103,7 @@ export function serviceProfileFromInput(input: StartInput): ServiceProfile {
     hours: (input.hours ?? "").trim(),
     bookingUrl,
     contactMode: input.contactMode ?? (bookingUrl ? "booking" : "form"),
+    contactModes: contactModesOf({ contactMode: input.contactMode ?? (bookingUrl ? "booking" : "form"), contactModes: (input.contactModes ?? "").split(",").map((m) => m.trim()) as ContactMode[] }),
   };
 }
 

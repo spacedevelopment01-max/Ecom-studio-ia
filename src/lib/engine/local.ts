@@ -7,7 +7,7 @@ import { hsl, hslToHex, mix, withLightness, contrast } from "../color";
 import { CANVAS_FONTS } from "../media/fonts";
 import type { LogoSpec } from "../media/logo";
 import type { VideoSpec } from "../media/video";
-import { emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type Fact, type ProductProfile, type ProductSectorId, type SectorId, type ServiceItem, type ServiceProfile, type ServiceSectorId, type Strategy } from "../project-types";
+import { contactModesOf, emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type Fact, type ProductProfile, type ProductSectorId, type SectorId, type ServiceItem, type ServiceProfile, type ServiceSectorId, type Strategy } from "../project-types";
 import { objectionAnswers } from "./local-copy";
 import { contactCta, isServicesBusiness, serviceDirection, serviceNames, serviceShowcase, serviceTaglines, type BusinessInfo } from "./services-text";
 import { DIRECTIONS, type DirectionId } from "../theme/directions";
@@ -314,8 +314,9 @@ export function localServiceAnalysis(input: { name?: string; brand?: string; des
     email: u.email || fromDesc.email || fromLink.email,
     hours: u.hours || fromDesc.hours || fromLink.hours,
     bookingUrl: u.bookingUrl || fromDesc.bookingUrl || fromLink.bookingUrl,
-    contactMode: u.contactMode !== "form" ? u.contactMode : u.bookingUrl || fromDesc.bookingUrl ? "booking" : facts.some((f) => f.key === "free_quote") || /devis|quote/i.test(desc) ? "quote" : u.contactMode,
+    contactMode: contactChosen(u) ? u.contactMode : u.bookingUrl || fromDesc.bookingUrl ? "booking" : facts.some((f) => f.key === "free_quote") || /devis|quote/i.test(desc) ? "quote" : u.contactMode,
   };
+  services.contactModes = contactModesOf({ contactMode: services.contactMode, contactModes: u.contactModes });
   const linkName = input.link?.title ? clean(input.link.title.split(/\s[|–—-]\s|\s·\s/)[0]) : "";
   const name = input.name?.trim() || (headline && headline.length <= 70 ? cap(headline) : "") || linkName || input.brand?.trim() || "";
   const firstSentence = desc ? desc.split(/\n|(?<=\.)\s/)[0].slice(0, 260) : "";
@@ -347,9 +348,15 @@ export function mergeServiceProfile(user: ServiceProfile, found: Partial<Service
     email: pickS(user.email, found.email),
     hours: pickS(user.hours, found.hours),
     bookingUrl: pickS(user.bookingUrl, found.bookingUrl),
-    contactMode: user.contactMode !== "form" ? user.contactMode : found.contactMode ?? user.contactMode,
+    ...(() => {
+      const contactMode = contactChosen(user) ? user.contactMode : found.contactMode ?? user.contactMode;
+      return { contactMode, contactModes: contactModesOf({ contactMode, contactModes: user.contactModes }) };
+    })(),
   };
 }
+
+/** Le client a choisi lui-même ses façons de contacter (autre chose que le formulaire seul, par défaut) : on n'y touche pas. */
+const contactChosen = (s: ServiceProfile) => s.contactMode !== "form" || contactModesOf(s).length > 1;
 
 /** Teinte d'accent par secteur, pour un produit sans couleur (gris, noir, blanc, métal). */
 const NEUTRAL_ACCENT_HUE: Record<string, number> = { hightech: 212, sport: 18, maison: 24, beaute: 340, mode: 8, bijoux: 42, alimentation: 140, enfants: 200, animaux: 32, artisanat: 28 };

@@ -5,7 +5,7 @@
  */
 import { all } from "../db";
 import { memory, type Project } from "../projects";
-import { sectorLabel, type BrandPlatform } from "../project-types";
+import { contactModesOf, sectorLabel, type BrandPlatform } from "../project-types";
 import { contentLang } from "../i18n-server";
 import { placeholder } from "./prompts";
 
@@ -91,7 +91,9 @@ export function servicesContext(p: Pick<Project, "services" | "product">): strin
   const s = p.services;
   const ph = placeholder(contentLang());
   const val = (v: string | undefined) => (v?.trim() ? v.trim() : `inconnu (écrire « ${ph} » si un texte en a besoin)`);
-  const mode = { booking: "rendez-vous en ligne (lien de réservation)", quote: "demande de devis", call: "appel téléphonique", form: "formulaire de contact" }[s?.contactMode ?? "form"];
+  const modeLabel = { booking: "rendez-vous en ligne (lien de réservation)", quote: "demande de devis", call: "appel téléphonique", form: "formulaire de contact" };
+  const mode = modeLabel[s?.contactMode ?? "form"];
+  const others = contactModesOf(s).slice(1).map((m) => modeLabel[m]);
   const list = (s?.services ?? []).filter((x) => x.name.trim());
   return [
     `## Type d'activité : ENTREPRISE DE SERVICES (site vitrine pour prendre rendez-vous, demander un devis ou contacter ; ce n'est pas une boutique de produits)`,
@@ -102,6 +104,7 @@ export function servicesContext(p: Pick<Project, "services" | "product">): strin
     `Téléphone : ${val(s?.phone)} · E-mail : ${val(s?.email)}`,
     `Lien de prise de rendez-vous : ${val(s?.bookingUrl)}`,
     `Mode de contact principal : ${mode}`,
+    ...(others.length ? [`Autres façons de contacter acceptées (à proposer aussi, sans les mettre au premier plan) : ${others.join(", ")}`] : []),
     `Consignes propres aux services :
 - Vocabulaire du métier : prestations, rendez-vous, séance, consultation, intervention, devis, zone d'intervention, horaires, clients accompagnés, réalisations, équipe. N'emploie jamais « produit », « panier », « livraison », « commande », « stock », « expédition », « retours », « packshot » ou « détourage ».
 - Appels à l'action adaptés au mode de contact : « Prendre rendez-vous », « Demander un devis », « Appeler », « Nous contacter » (ou leurs équivalents dans la langue des contenus).

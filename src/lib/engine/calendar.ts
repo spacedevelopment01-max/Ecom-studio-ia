@@ -12,7 +12,8 @@ import { loadProject, notify, type Project } from "../projects";
 import { aiRewritePost, aiSocialPlan, aiSocialRepair, aiSocialReview, lintClaims, lintHollow, scrubClaims, type PostDraft } from "../ai/tasks";
 import { placeholder } from "../ai/prompts";
 import { llmConfigured } from "../ai/llm";
-import { FORMATS, renderCreative, type FormatId } from "../media/compose";
+import { FORMATS, renderCreative, renderServiceCard, type FormatId } from "../media/compose";
+import { activityName, activityPhotos, isServices, placeLine, serviceCta } from "./service-media";
 import { brandTypo, ensureCutouts, latestAsset, palette, assetsByRole } from "./images";
 import { enqueue, type JobContext } from "../jobs";
 import { C, L, contentLang, uiLang } from "../i18n-server";
@@ -734,6 +735,8 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
   const logoAsset = latestAsset(projectId, "logo");
   const logo = logoAsset ? await loadImage(assetData(logoAsset)) : null;
   const videos = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC", projectId);
+  const services = isServices(p);
+  const svcPhotos = services ? activityPhotos(projectId) : [];
   const pools: Record<string, Asset[]> = { packshot: assetsByRole(projectId, "packshot"), scene: assetsByRole(projectId, "scene"), detail: assetsByRole(projectId, "detail") };
   let needVideo = 0;
   for (const [i, postId] of postIds.entries()) {
@@ -750,6 +753,18 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
     } else if ((visual.kind === "packshot" || visual.kind === "scene" || visual.kind === "detail") && pools[visual.kind]?.length) {
       const pool = pools[visual.kind];
       mediaIds = [pool[i % pool.length].id];
+    } else if (services) {
+      // Entreprise de services (pas de produit détouré) : visuel à la marque par publication, sur une photo réelle de
+      // l'activité quand il y en a (à tour de rôle), sinon fond graphique ; titre de la publication et appel à l'action.
+      const imgFmt: FormatId = post.format === "story" ? "story" : fmt.image;
+      const slides = post.format === "carousel" && visual.slides?.length ? visual.slides.slice(0, 6) : [visual.headline || activityName(p)];
+      for (const [j, text] of slides.entries()) {
+        const photoAsset = svcPhotos.length ? svcPhotos[(i + j) % svcPhotos.length] : null;
+        const photo = photoAsset ? await loadImage(assetData(photoAsset)).catch(() => null) : null;
+        const jpg = await renderServiceCard({ palette: palette(p), typo: brandTypo(p), format: FORMATS[imgFmt], brand: p.brand?.name ?? p.name, eyebrow: placeLine(p) && !(visual.subline ?? "").includes(placeLine(p)) ? placeLine(p) : undefined, title: text, text: j === 0 ? visual.subline || undefined : undefined, cta: j === slides.length - 1 ? serviceCta(p, true) : undefined, photo });
+        const a = await saveAsset({ projectId, userId: p.userId, data: jpg, name: `${C("publication", "post")}-${post.network}-${new Date(post.scheduled_at).toISOString().slice(0, 10)}-${i + 1}${slides.length > 1 ? `-${j + 1}` : ""}.jpg`, mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", sourceAssetId: photoAsset?.id, meta: { recipe: photoAsset ? L(`Photo de votre activité mise en page pour ${fmt.label}`, `Your business photo laid out for ${fmt.label}`) : L(`Visuel à la marque pour ${fmt.label} (aucune photo fournie)`, `Branded visual for ${fmt.label} (no photo provided)`), post: postId, business: "services" } });
+        mediaIds.push(a.id);
+      }
     } else if (product) {
       // Story en 9:16 ; carrousel : une diapositive par texte (couverture, idées, action), même typographie et palette.
       const imgFmt: FormatId = post.format === "story" ? "story" : fmt.image;

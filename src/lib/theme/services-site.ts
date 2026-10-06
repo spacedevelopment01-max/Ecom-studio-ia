@@ -7,7 +7,7 @@
  * - Rien n'est inventé : prestations, prix, durées, horaires, zone et coordonnées viennent du projet ;
  *   ce qui manque reste un espace réservé « [À compléter : …] » court (avis, équipe, réalisations…).
  */
-import type { ServiceProfile } from "../project-types";
+import { contactModesOf, type ServiceProfile } from "../project-types";
 import type { ShopCopy } from "./copy";
 import { pick, type Lang } from "../i18n";
 import type { ImageSlots } from "./directions";
@@ -43,6 +43,17 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
   const address = sv.address.trim();
   const bookingUrl = /^https?:\/\//i.test(sv.bookingUrl.trim()) ? sv.bookingUrl.trim() : "";
   const mode = sv.contactMode;
+  // Toutes les façons de contacter cochées (la principale en premier) : les autres sont proposées en complément.
+  const modes = contactModesOf(sv);
+  const has = (m: (typeof modes)[number]) => modes.includes(m);
+  const alsoList = (text: string) =>
+    [
+      mode !== "booking" && has("booking") && bookingUrl ? t("Vous pouvez aussi réserver un créneau en ligne.", "You can also book a slot online.") : "",
+      mode !== "quote" && has("quote") ? t("Pour un devis, décrivez votre projet dans le formulaire.", "For a quote, describe your project in the form.") : "",
+      mode !== "call" && has("call") && phone && !text.includes(phone) ? t(`Vous pouvez aussi nous appeler au ${phone}.`, `You can also call us on ${phone}.`) : "",
+      mode !== "form" && has("form") && mode !== "quote" && !/formulaire|message|form\b/i.test(text) ? t("Ou laissez-nous simplement un message.", "Or simply leave us a message.") : "",
+    ].filter(Boolean).join(" ");
+  const withAlso = (s: string) => [s, alsoList(s)].filter(Boolean).join(" ");
 
   // Pages du site (adresses dans la langue du site).
   const urls = {
@@ -120,6 +131,7 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
     { q: t("Comment se déroule une première prestation ?", "What happens the first time?"), a: todo("le déroulement d'une première prestation", "how a first appointment or job goes") },
     { q: t("Quels moyens de paiement acceptez-vous ?", "Which payment methods do you accept?"), a: todo("les moyens de paiement acceptés", "the payment methods you accept") },
   ];
+  faqItems[0] = { ...faqItems[0], a: withAlso(faqItems[0].a) };
   const norm = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
   for (const f of c0.faq.items) {
     if (faqItems.length >= 8) break;
@@ -217,15 +229,15 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
       {
         eyebrow: cta.page,
         heading: mode === "booking" ? t("Prendre rendez-vous", "Book an appointment") : mode === "quote" ? t("Demander un devis", "Request a quote") : mode === "call" ? t("Appelez-nous", "Give us a call") : t("Écrivez-nous", "Write to us"),
-        text: p(mode === "booking" ? (bookingUrl ? t("Choisissez la prestation et le créneau qui vous conviennent.", "Choose the service and the time that suit you.") : t("Indiquez la prestation et vos disponibilités, nous vous proposons un créneau.", "Tell us the service and when you are free, and we will suggest a time.")) : mode === "quote" ? t("Décrivez votre projet : nous revenons vers vous avec une proposition détaillée.", "Describe your project and we will come back to you with a detailed proposal.") : mode === "call" ? t("Le plus simple est de nous appeler. Vous pouvez aussi laisser un message ci-contre.", "The easiest way is to call us. You can also leave a message here.") : t("Laissez-nous un message, nous vous répondons.", "Leave us a message and we will get back to you.")),
-        booking_url: mode === "booking" ? bookingUrl : "",
+        text: p(withAlso(mode === "booking" ? (bookingUrl ? t("Choisissez la prestation et le créneau qui vous conviennent.", "Choose the service and the time that suit you.") : t("Indiquez la prestation et vos disponibilités, nous vous proposons un créneau.", "Tell us the service and when you are free, and we will suggest a time.")) : mode === "quote" ? t("Décrivez votre projet : nous revenons vers vous avec une proposition détaillée.", "Describe your project and we will come back to you with a detailed proposal.") : mode === "call" ? t("Le plus simple est de nous appeler. Vous pouvez aussi laisser un message ci-contre.", "The easiest way is to call us. You can also leave a message here.") : t("Laissez-nous un message, nous vous répondons.", "Leave us a message and we will get back to you."))),
+        booking_url: has("booking") ? bookingUrl : "",
         display: "auto",
         embed_height: 700,
         button_label: mode === "booking" ? t("Prendre rendez-vous", "Book an appointment") : mode === "quote" ? t("Envoyer ma demande", "Send my request") : t("Envoyer", "Send"),
         panel_title: t("Réservation en ligne", "Online booking"),
         panel_text: p(t("Choisissez votre prestation et votre créneau ; la confirmation vous parvient directement.", "Pick your service and time slot; you receive the confirmation directly.")),
         services: services.map((s) => s.name).join("\n"),
-        ask_date: mode === "booking",
+        ask_date: has("booking"),
         form_note: "",
         phone,
         email,
@@ -238,7 +250,8 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
       const items = [
         ...(area ? [{ icon: "globe", title: t("Zone d'intervention", "Service area"), text: clip(area, 60) }] : address ? [{ icon: "globe", title: t("Adresse", "Address"), text: clip(address.replace(/\n+/g, ", "), 60) }] : []),
         ...(hours ? [{ icon: "clock", title: t("Horaires", "Opening hours"), text: clip(hours.replace(/\n+/g, " · "), 60) }] : []),
-        ...(mode === "booking" && bookingUrl ? [{ icon: "check", title: t("Réservation en ligne", "Online booking"), text: t("Votre créneau en quelques clics", "Your slot in a few clicks") }] : phone ? [{ icon: "chat", title: t("Par téléphone", "By phone"), text: phone }] : email ? [{ icon: "chat", title: t("Par e-mail", "By email"), text: email }] : []),
+        ...(has("booking") && bookingUrl ? [{ icon: "check", title: t("Réservation en ligne", "Online booking"), text: t("Votre créneau en quelques clics", "Your slot in a few clicks") }] : []),
+        ...(phone && (has("call") || !(has("booking") && bookingUrl)) ? [{ icon: "chat", title: t("Par téléphone", "By phone"), text: phone }] : email && !(has("booking") && bookingUrl) ? [{ icon: "chat", title: t("Par e-mail", "By email"), text: email }] : []),
       ];
       return items.length >= 2 ? [["trust-bar", { heading: "", color_scheme: scheme(sch), ...pad(40) }, items.map((x) => ({ type: "item", settings: x }))]] : [];
     },

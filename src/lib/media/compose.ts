@@ -862,6 +862,9 @@ export async function renderServiceCard(input: ServiceCardInput): Promise<Buffer
       const accent = pal.accent;
       y -= size * 2.6;
       drawButton(ctx, input.cta, side, y, size, accent, onColor(accent), input.typo.body);
+      // Le bouton centre son texte : on revient à l'alignement des textes qui suivent.
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
       y -= size * 1.2;
     }
     const lines = (input.lines ?? []).filter(Boolean).slice(0, 5);
