@@ -133,7 +133,8 @@
     "header": {
       "menu": "Menu",
       "navigation": "Main navigation",
-      "call": "Call"
+      "call": "Call",
+      "see_all": "See all"
     },
     "reviews": {
       "app_hint": "Add your reviews app block here: only genuine customer reviews will be shown.",

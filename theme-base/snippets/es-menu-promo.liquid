@@ -1,0 +1,34 @@
+{%- comment -%}
+  Encarts promotionnels du menu (blocs « Encart promo » de l'en-tête).
+  Paramètres : blocks (blocs de l'en-tête), where ('mega' ou 'mobile'), menu_title (lien principal du méga menu ; vide pour le menu mobile),
+  limit (nombre d'encarts au plus), size ('large' ou 'small')
+{%- endcomment -%}
+{%- liquid
+  assign wanted = menu_title | strip | downcase
+  assign shown = 0
+  assign max = limit | default: 2
+-%}
+{%- for b in blocks -%}
+  {%- if b.type == 'promo' and shown < max -%}
+    {%- liquid
+      assign ok = false
+      if b.settings.placement == 'both' or b.settings.placement == where
+        assign target = b.settings.menu_title | strip | downcase
+        if where == 'mobile' or target == blank or target == wanted
+          assign ok = true
+        endif
+      endif
+    -%}
+    {%- if ok -%}
+      {%- assign shown = shown | plus: 1 -%}
+      <a href="{{ b.settings.link | default: routes.all_products_collection_url }}" class="es-menu-promo es-menu-promo--{{ size | default: 'small' }}" {{ b.shopify_attributes }}>
+        <span class="es-menu-promo__media">{% render 'es-image', image: b.settings.image, asset: b.settings.image_asset, alt: b.settings.heading, sizes: '(min-width: 990px) 360px, 90vw', class: 'es-cover', width: 900, height: 700 %}</span>
+        <span class="es-menu-promo__body">
+          {%- if b.settings.eyebrow != blank -%}<span class="es-menu-promo__eyebrow">{{ b.settings.eyebrow }}</span>{%- endif -%}
+          {%- if b.settings.heading != blank -%}<span class="es-menu-promo__title">{{ b.settings.heading }}</span>{%- endif -%}
+          {%- if b.settings.button_label != blank -%}<span class="es-menu-promo__cta">{{ b.settings.button_label }} {% render 'icon', name: 'arrow' %}</span>{%- endif -%}
+        </span>
+      </a>
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}

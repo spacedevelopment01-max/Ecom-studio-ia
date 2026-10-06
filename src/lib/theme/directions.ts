@@ -876,8 +876,12 @@ export function buildSpec(input: BuildInput): ThemeSpec {
           title: t("Menu principal", "Main menu"),
           links: [
             { title: t("Accueil", "Home"), url: "/" },
-            { title: t("Boutique", "Shop"), url: "/collections/all" },
-            ...(isCatalog ? (input.collections ?? []).slice(0, 3).map((col) => ({ title: col.title, url: `/collections/${col.handle}` })) : []),
+            {
+              title: t("Boutique", "Shop"),
+              url: "/collections/all",
+              // Sous-menu : les collections (liste déroulante, méga menu ou accordéon mobile selon l'en-tête).
+              ...(isCatalog && (input.collections ?? []).length ? { links: (input.collections ?? []).slice(0, 8).map((col) => ({ title: col.title, url: `/collections/${col.handle}` })) } : {}),
+            },
             { title: t("Notre histoire", "Our story"), url: `/pages/${storyHandle}` },
             { title: "FAQ", url: "/pages/faq" },
             { title: "Contact", url: "/pages/contact" },
