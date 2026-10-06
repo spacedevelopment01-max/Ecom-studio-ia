@@ -19,7 +19,7 @@ import { ActivityBrief } from "./activity-brief";
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
 
 /** Formulaire de départ. Sans « projectId » : crée un projet ; avec : démarre la création d'un projet existant. */
-export function NewProject({ onDone, compact, projectId, existingPhotos = 0, initialBusiness = "products", initialPlatform }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number; initialBusiness?: BusinessType; initialPlatform?: string }) {
+export function NewProject({ onDone, compact, projectId, existingPhotos = 0, initialBusiness = "products", initialPlatform, initialServices }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number; initialBusiness?: BusinessType; initialPlatform?: string; initialServices?: Partial<ServiceProfile> }) {
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
@@ -54,8 +54,10 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   const [drag, setDrag] = useState(false);
   const [typed, setTyped] = useState(false);
   const [storeType, setStoreType] = useState<StoreType>("mono");
-  const [services, setServices] = useState<ServiceItem[]>([]);
-  const [contactModes, setContactModes] = useState<ContactMode[]>(["form"]);
+  // Projet déjà créé : ce que le client a déjà saisi (prestations, coordonnées) est repris, jamais redemandé.
+  const known = initialServices ?? {};
+  const [services, setServices] = useState<ServiceItem[]>(known.services ?? []);
+  const [contactModes, setContactModes] = useState<ContactMode[]>(known.contactModes?.length ? known.contactModes : known.contactMode ? [known.contactMode] : ["form"]);
   // Tant que le client n'a rien choisi, « Formulaire » n'est qu'une valeur par défaut : son premier choix la remplace.
   const [contactTouched, setContactTouched] = useState(false);
   const [needDesc, setNeedDesc] = useState(false);
@@ -244,11 +246,11 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("Nom de l'entreprise", "Business name")} htmlFor="brandName"><Input id="brandName" name="brandName" maxLength={80} autoComplete="organization" placeholder={t("Vide : le studio vous en propose", "Empty: the studio suggests some")} /></Field>
-            <Field label={t("Zone d'intervention", "Service area")} htmlFor="area"><Input id="area" name="area" placeholder={t("Ex. Lyon et 30 km autour", "E.g. Leeds and 20 miles around")} maxLength={300} /></Field>
-            <Field label={t("Adresse (si vous recevez du public)", "Address (if customers visit you)")} htmlFor="address"><Input id="address" name="address" maxLength={300} autoComplete="street-address" /></Field>
-            <Field label={t("Horaires", "Opening hours")} htmlFor="hours"><Input id="hours" name="hours" placeholder={t("Ex. Lun–Ven 8 h–19 h", "E.g. Mon–Fri 8am–7pm")} maxLength={400} /></Field>
-            <Field label={t("Téléphone", "Phone")} htmlFor="phone"><Input id="phone" name="phone" type="tel" maxLength={40} autoComplete="tel" /></Field>
-            <Field label={t("E-mail", "Email")} htmlFor="email"><Input id="email" name="email" type="email" maxLength={160} autoComplete="email" /></Field>
+            <Field label={t("Zone d'intervention", "Service area")} htmlFor="area"><Input id="area" name="area" defaultValue={known.area ?? ""} placeholder={t("Ex. Lyon et 30 km autour", "E.g. Leeds and 20 miles around")} maxLength={300} /></Field>
+            <Field label={t("Adresse (si vous recevez du public)", "Address (if customers visit you)")} htmlFor="address"><Input id="address" name="address" defaultValue={known.address ?? ""} maxLength={300} autoComplete="street-address" /></Field>
+            <Field label={t("Horaires", "Opening hours")} htmlFor="hours"><Input id="hours" name="hours" defaultValue={known.hours ?? ""} placeholder={t("Ex. Lun–Ven 8 h–19 h", "E.g. Mon–Fri 8am–7pm")} maxLength={400} /></Field>
+            <Field label={t("Téléphone", "Phone")} htmlFor="phone"><Input id="phone" name="phone" defaultValue={known.phone ?? ""} type="tel" maxLength={40} autoComplete="tel" /></Field>
+            <Field label={t("E-mail", "Email")} htmlFor="email"><Input id="email" name="email" defaultValue={known.email ?? ""} type="email" maxLength={160} autoComplete="email" /></Field>
           </div>
           <fieldset className="grid gap-2">
             <legend className="mb-1 text-sm font-medium">{t("Vos prestations", "Your services")} <span className="font-normal text-muted">{t("(facultatif : sinon le studio les reprend de votre description)", "(optional: otherwise the studio takes them from your description)")}</span></legend>
