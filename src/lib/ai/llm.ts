@@ -13,7 +13,7 @@ import type { z } from "zod";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
 import { currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
-import { priceFor, providerKey, requirePrice, routeFor, usdToEur, type TaskId } from "./config";
+import { activeProviderKey, priceFor, requirePrice, routeFor, usdToEur, type TaskId } from "./config";
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 
@@ -39,7 +39,7 @@ export type LlmCall = {
 
 let cached: { key: string; client: Anthropic } | null = null;
 function client(): Anthropic {
-  const key = providerKey("anthropic");
+  const key = activeProviderKey("anthropic");
   if (!key) throw new UserFacingError(L("Aucun fournisseur d'IA de langage n'est configuré. L'administration doit renseigner la clé Anthropic.", "No language AI provider is configured. An administrator needs to add the Anthropic key."));
   if (cached?.key !== key) cached = { key, client: new Anthropic({ apiKey: key, maxRetries: 3, timeout: 10 * 60_000 }) };
   return cached.client;
@@ -47,7 +47,7 @@ function client(): Anthropic {
 
 /** IA texte utilisable pour la tâche en cours : fournisseur configuré et crédits disponibles (sinon moteur local). */
 export function llmConfigured() {
-  return !!providerKey("anthropic") && currentUserHasAiCredits();
+  return !!activeProviderKey("anthropic") && currentUserHasAiCredits();
 }
 
 async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {

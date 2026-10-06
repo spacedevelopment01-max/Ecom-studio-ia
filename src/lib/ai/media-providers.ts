@@ -16,7 +16,7 @@ import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
-import { providerKey, requirePrice, routeFor, usdToEur } from "./config";
+import { activeProviderKey, requirePrice, routeFor, usdToEur } from "./config";
 import { L } from "../i18n-server";
 
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string };
@@ -75,18 +75,18 @@ function cost(provider: string, model: string, units: { input?: number; output?:
 export function imageProviderAvailable(): "openai" | "google" | null {
   if (!mediaAllowed()) return null;
   const r = routeFor("image_generation");
-  if (providerKey(r.provider)) return r.provider === "openai" || r.provider === "google" ? r.provider : null;
-  if (providerKey("openai")) return "openai";
-  if (providerKey("google")) return "google";
+  if (activeProviderKey(r.provider)) return r.provider === "openai" || r.provider === "google" ? r.provider : null;
+  if (activeProviderKey("openai")) return "openai";
+  if (activeProviderKey("google")) return "google";
   return null;
 }
 
 export function videoProviderAvailable(): "google" | "fal" | null {
   if (!mediaAllowed()) return null;
   const r = routeFor("video_generation");
-  if ((r.provider === "google" || r.provider === "fal") && providerKey(r.provider)) return r.provider;
-  if (providerKey("google")) return "google";
-  if (providerKey("fal")) return "fal";
+  if ((r.provider === "google" || r.provider === "fal") && activeProviderKey(r.provider)) return r.provider;
+  if (activeProviderKey("google")) return "google";
+  if (activeProviderKey("fal")) return "fal";
   return null;
 }
 
@@ -96,7 +96,7 @@ export function videoProviderAvailable(): "google" | "fal" | null {
  * `productMask` : PNG de même taille, opaque là où se trouve le produit.
  */
 export async function openaiScene(ctx: Ctx, input: { composite: Buffer; productMask: Buffer; prompt: string; size: "1024x1024" | "1024x1536" | "1536x1024" }) {
-  const key = providerKey("openai");
+  const key = activeProviderKey("openai");
   if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
@@ -138,7 +138,7 @@ export async function openaiScene(ctx: Ctx, input: { composite: Buffer; productM
 
 /** Décor vide généré par Gemini (le produit réel est composé ensuite). */
 export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?: Buffer; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
-  const key = providerKey("google");
+  const key = activeProviderKey("google");
   if (!key) throw new UserFacingError(L("Aucune clé Google Gemini configurée pour la génération d'images.", "No Google Gemini key configured for image generation."));
   const route = routeFor("image_generation");
   const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
@@ -175,7 +175,7 @@ export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "
 Editorial photograph that conveys the atmosphere of this activity, natural light, realistic, premium. Hands, tools, materials and the place are welcome; people only from behind, out of focus or partially framed, never a recognizable face presented as a customer. No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
   const ref = input.reference ? await sharp(input.reference).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
   if (provider === "google") {
-    const key = providerKey("google")!;
+    const key = activeProviderKey("google")!;
     const route = routeFor("image_generation");
     const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
     gate(ctx, cost("google", model, { images: 1 }).micro, "image");
@@ -196,7 +196,7 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
     recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
     return Buffer.from(b64, "base64");
   }
-  const key = providerKey("openai")!;
+  const key = activeProviderKey("openai")!;
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
   gate(ctx, cost("openai", model, { input: 300, imageOut: 6300 }).micro, "image");
@@ -224,7 +224,7 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
  * `people` : plan avec une personne (UGC) — le prompt est transmis tel quel et Veo 3 génère aussi la voix et le son.
  */
 export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean }, onWait?: (msg: string) => void) {
-  const key = providerKey("google");
+  const key = activeProviderKey("google");
   if (!key) throw new UserFacingError(L("Aucune clé Google configurée pour la vidéo.", "No Google key configured for video."));
   const route = routeFor("video_generation");
   const chosen = route.provider === "google" ? route.model : "veo-3.0-generate-001";
@@ -283,7 +283,7 @@ export async function ugcFrame(ctx: Ctx, input: { prompt: string; product: Buffe
 ${subject}${persona ? " Keep the same person, outfit and room as in the second reference image." : ""}
 Authentic smartphone video still, natural light, realistic skin and hands, no text overlay, no watermark. Aspect ratio ${input.aspect}.`;
   if (provider === "google") {
-    const key = providerKey("google")!;
+    const key = activeProviderKey("google")!;
     const route = routeFor("image_generation");
     const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
     gate(ctx, cost("google", model, { images: 1 }).micro, "image");
@@ -304,7 +304,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
     return Buffer.from(b64, "base64");
   }
-  const key = providerKey("openai")!;
+  const key = activeProviderKey("openai")!;
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
   gate(ctx, cost("openai", model, { input: 400, imageIn: 3000, imageOut: 6300 }).micro, "image");
@@ -328,7 +328,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
 
 /** Plan vidéo via fal.ai (file d'attente officielle). */
 export async function falClip(ctx: Ctx, input: { image: Buffer; prompt: string; seconds?: number }, onWait?: (msg: string) => void) {
-  const key = providerKey("fal");
+  const key = activeProviderKey("fal");
   if (!key) throw new UserFacingError(L("Aucune clé fal.ai configurée.", "No fal.ai key configured."));
   const route = routeFor("video_generation");
   const model = route.provider === "fal" ? route.model : "fal-ai/kling-video/v2.1/pro/image-to-video";
@@ -360,7 +360,7 @@ export async function falClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
 
 /** Vérification de clé depuis l'administration (appel léger, sans génération). */
 export async function pingProvider(p: "openai" | "google" | "fal"): Promise<string> {
-  const key = providerKey(p);
+  const key = activeProviderKey(p);
   if (!key) throw new Error(L("Aucune clé enregistrée.", "No key saved."));
   if (p === "openai") {
     const r = await fetch("https://api.openai.com/v1/models", { headers: { Authorization: `Bearer ${key}` } });
