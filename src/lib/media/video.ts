@@ -374,8 +374,17 @@ function photoBackdrop(im: Image, W: number, H: number): Canvas {
  * Photo plein cadre. Le mode (remplissage ou photo entière) est choisi une fois pour la photo (à zoom 1), pour ne
  * jamais basculer de l'un à l'autre au milieu d'un plan (zoom lent, recadrage « punch-in »).
  */
-function drawPhoto(ctx: Ctx, im: Image, W: number, H: number, zoom: number, dx = 0, dy = 0) {
+function drawPhoto(ctx: Ctx, im: Image, W: number, H: number, zoom: number, dx = 0, dy = 0, whole = false) {
   const base = photoFit(im, W, H, 1);
+  // Gros plan (`whole`) : si le remplissage couperait plus de 20 % de la photo, elle est montrée entière sur un fond
+  // propre plutôt que tronquée (le détail photographié reste lisible).
+  const kept = (Math.min(W, im.width * base.r) * Math.min(H, im.height * base.r)) / (im.width * base.r * im.height * base.r);
+  if (whole && base.mode === "cover" && kept < 0.8) {
+    const r = Math.min(W / im.width, H / im.height) * Math.min(zoom, 1.12);
+    ctx.drawImage(photoBackdrop(im, W, H) as any, 0, 0);
+    ctx.drawImage(im as any, (W - im.width * r) / 2, (H - im.height * r) / 2, im.width * r, im.height * r);
+    return;
+  }
   if (base.mode === "contain") {
     ctx.drawImage(photoBackdrop(im, W, H) as any, 0, 0);
     const r = base.r * Math.min(zoom, 1.12);
@@ -428,7 +437,7 @@ function captionOnPhoto(ctx: Ctx, text: string, t: number, P: Prepared, a: Video
   const isTall = H / W > 1.6;
   const size = Math.round(W * (isTall ? 0.068 : W > H ? 0.04 : 0.058));
   const y = H - safe.bottom - size * 3.2;
-  onPhotoText(ctx, W, H, y, () => {});
+  // Pas de voile gris : le contour noir des sous-titres suffit à la lecture sur tous les fonds.
   socialCaption(ctx, text, { cx: W / 2, y, maxW: W - safe.side * 2.4, size, family: a.typo.body, t, accent: a.palette.accent, uppercase: false });
 }
 
@@ -609,7 +618,7 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       const im = a.images[scene.image] ?? a.images[0];
       if (im) {
         const z = (scene.kind === "detail" ? 1.16 - 0.12 * easeInOut(progress) : 1.04 + 0.08 * easeInOut(progress)) * punchIn(scene.duration, local);
-        drawPhoto(ctx, im, W, H, z, scene.kind === "scene" ? (progress - 0.5) * W * 0.04 : 0);
+        drawPhoto(ctx, im, W, H, z, scene.kind === "scene" ? (progress - 0.5) * W * 0.04 : 0, 0, scene.kind === "detail");
       } else ctx.drawImage(P.bgLight as any, 0, 0);
       if (scene.caption) captionOnPhoto(ctx, scene.caption, local - (first ? -0.3 : 0.15), P, a);
       break;
@@ -702,8 +711,17 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
         ctx.beginPath();
         ctx.rect(0, 0, wide ? iw * open : iw, wide ? ih : ih * open);
         ctx.clip();
-        const r = Math.max(iw / im.width, ih / im.height) * (1.08 - 0.06 * progress);
-        ctx.drawImage(im as any, (iw - im.width * r) / 2, (ih - im.height * r) / 2, im.width * r, im.height * r);
+        const cover = Math.max(iw / im.width, ih / im.height);
+        const kept = (Math.min(iw, im.width * cover) * Math.min(ih, im.height * cover)) / (im.width * cover * im.height * cover);
+        if (kept < 0.8) {
+          // Remplir la moitié couperait trop la photo : photo entière sur son fond propre (couleur des bords ou flou coloré).
+          ctx.drawImage(photoBackdrop(im, iw, ih) as any, 0, 0);
+          const r = Math.min(iw / im.width, ih / im.height) * (1.04 - 0.04 * progress);
+          ctx.drawImage(im as any, (iw - im.width * r) / 2, (ih - im.height * r) / 2, im.width * r, im.height * r);
+        } else {
+          const r = cover * (1.08 - 0.06 * progress);
+          ctx.drawImage(im as any, (iw - im.width * r) / 2, (ih - im.height * r) / 2, im.width * r, im.height * r);
+        }
         ctx.restore();
       }
       const L = P.big;
