@@ -111,7 +111,7 @@ function gobo(ctx: SKRSContext2D, w: number, h: number, seed: number, strength =
   // Inversion : on assombrit hors de la tache lumineuse.
   ctx.save();
   ctx.globalAlpha = strength;
-  ctx.filter = `blur(${Math.round(w * 0.012)}px)`;
+  ctx.filter = `blur(${Math.round(w * 0.05)}px)`;
   ctx.drawImage(layer as any, 0, 0);
   ctx.restore();
 }
@@ -547,7 +547,8 @@ export async function renderScene(s: SceneInput): Promise<{ png: Buffer; product
       }
       case "window": {
         studioBackdrop(ctx, w, h, look.wall ? mix(light, look.wall, 0.6) : mix(light, pal.secondary, 0.18), 0.7);
-        gobo(ctx, w, h, s.seed ?? 11, 0.18);
+        // Ombre de fenêtre très diffuse et légère (~8 %) : une lumière, pas des taches reconnaissables.
+        gobo(ctx, w, h, s.seed ?? 11, 0.08);
         shadow = "hard";
         baseY = h * 0.82;
         break;

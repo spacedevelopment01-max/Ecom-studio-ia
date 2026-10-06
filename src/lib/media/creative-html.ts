@@ -262,6 +262,18 @@ export async function renderProCreatives(input: ProInput, jobs: { template: ProT
             size *= 0.95;
             el.style.fontSize = `${size}px`;
           }
+          // Lisible ou absent : si le produit (boîte réellement occupée) masque plus que le bas du mot, il disparaît.
+          const prod = document.querySelector<HTMLImageElement>(".prod");
+          if (prod && prod.naturalWidth) {
+            const r = prod.getBoundingClientRect();
+            const k = Math.min(r.width / prod.naturalWidth, r.height / prod.naturalHeight);
+            const iw = prod.naturalWidth * k, ih = prod.naturalHeight * k;
+            const pos = getComputedStyle(prod).objectPosition.includes("bottom") || getComputedStyle(prod).objectPosition.endsWith("100%") ? 1 : 0.5;
+            const px = r.left + (r.width - iw) / 2, py = r.top + (r.height - ih) * pos;
+            const t = span.getBoundingClientRect();
+            const overlapX = Math.max(0, Math.min(t.right, px + iw) - Math.max(t.left, px)) / Math.max(1, t.width);
+            if (overlapX > 0.15 && py < t.top + t.height * 0.6) el.style.display = "none";
+          }
         });
         // Titre trop long : on réduit la taille jusqu'à tenir dans sa zone.
         document.querySelectorAll<HTMLElement>(".fit").forEach((el) => {

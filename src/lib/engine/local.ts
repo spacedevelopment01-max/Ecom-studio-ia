@@ -720,15 +720,25 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
   }
   // Un même titre n'apparaît qu'une fois (écran partagé puis révélation « Pompon », « Pompon ») : le plan suivant
   // prend un fait confirmé encore jamais affiché, sinon se passe de titre (le produit parle seul).
-  const shownText = new Set<string>();
   const norm = (t: string) => t.trim().toLowerCase();
+  // Les cartes de titre et l'accroche gardent leur texte ; les autres plans cèdent la place.
+  const shownText = new Set<string>(scenes.flatMap((x) => (x.kind === "title" ? [norm(x.text)] : x.kind === "hook" ? [norm(x.headline)] : [])));
+  const seen = new Set<string>();
   for (const x of scenes) {
-    const h = "headline" in x ? x.headline : x.kind === "title" ? x.text : undefined;
-    if (!h) continue;
-    if (!shownText.has(norm(h))) { shownText.add(norm(h)); continue; }
-    if (x.kind === "title" || x.kind === "hook") continue;
-    const fresh = facts.find((f) => !shownText.has(norm(f)) && !scenes.some((y) => "items" in y && y.items.some((it) => norm(it) === norm(f))) && f.split(/\s+/).length <= 6);
-    if (fresh) { (x as { headline?: string }).headline = fresh; shownText.add(norm(fresh)); } else delete (x as { headline?: string }).headline;
+    if (x.kind === "title") {
+      if (x.sub && (seen.has(norm(x.sub)) || shownText.has(norm(x.sub)) && norm(x.sub) !== norm(x.text))) delete x.sub;
+      seen.add(norm(x.text));
+      if (x.sub) seen.add(norm(x.sub));
+      continue;
+    }
+    if (x.kind === "hook" || !("headline" in x) || !x.headline) {
+      if (x.kind === "hook") seen.add(norm(x.headline));
+      continue;
+    }
+    const h = norm(x.headline);
+    if (!seen.has(h) && !(shownText.has(h))) { seen.add(h); continue; }
+    const fresh = facts.find((f) => !seen.has(norm(f)) && !shownText.has(norm(f)) && !scenes.some((y) => "items" in y && y.items.some((it) => norm(it) === norm(f))) && f.split(/\s+/).length <= 6);
+    if (fresh) { (x as { headline?: string }).headline = fresh; seen.add(norm(fresh)); } else delete (x as { headline?: string }).headline;
   }
   scenes.push(end);
   return { format, scenes, transition, music, captions: true };
