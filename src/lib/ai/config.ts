@@ -207,6 +207,14 @@ export function providerEnabled(p: ProviderId): boolean {
   return !!providerKey(p) && getSetting(`provider.${p}.disabled`) !== "1";
 }
 
+/**
+ * Clé à utiliser pour un appel : aucune si le fournisseur est désactivé dans l'administration
+ * (le bouton « Désactiver » coupe vraiment les appels, y compris avec une clé venant de l'environnement).
+ */
+export function activeProviderKey(p: ProviderId): string | null {
+  return providerEnabled(p) ? providerKey(p) : null;
+}
+
 /** Le moteur local fonctionne sans fournisseur : il ne remplace pas l'IA, il l'outille. */
 export function aiAvailability() {
   const llm = providerEnabled("anthropic");
