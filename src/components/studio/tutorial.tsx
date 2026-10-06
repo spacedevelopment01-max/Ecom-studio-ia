@@ -8,8 +8,6 @@ import { TUTORIALS, TUTORIAL_IDS, tutorialBusiness, tutorialFile, tutorialFor, t
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const SEEN = (id: string) => `ecs-tuto-seen-${id}`;
-/** Tutoriel de l'onglet réellement ouvert (le bouton clignote tant qu'il ne l'a pas été). */
-const WATCHED = (id: string) => `ecs-tuto-watched-${id}`;
 
 /** Bouton « Tutoriel » de l'en-tête du studio, et conseil de première visite sous l'en-tête. */
 export function TutorialButton({ tab, business }: { tab: string; business?: "products" | "services" }) {
@@ -17,18 +15,16 @@ export function TutorialButton({ tab, business }: { tab: string; business?: "pro
   const id = tutorialFor(tab, business);
   const [open, setOpen] = useState<TutorialId | null>(null);
   const [nudge, setNudge] = useState(false);
-  const [blink, setBlink] = useState(false);
   useEffect(() => {
     if (!id) return;
     try { setNudge(!localStorage.getItem(SEEN(id))); } catch { setNudge(false); }
-    try { setBlink(!localStorage.getItem(WATCHED(id))); } catch { setBlink(true); }
   }, [id]);
   if (!id || !TUTORIALS[id].steps.length) return null;
   const seen = () => { try { localStorage.setItem(SEEN(id), "1"); } catch {} setNudge(false); };
-  const show = () => { seen(); try { localStorage.setItem(WATCHED(id), "1"); } catch {} setBlink(false); setOpen(id); };
+  const show = () => { seen(); setOpen(id); };
   return (
     <>
-      <button type="button" onClick={show} className={cx("flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-sm font-medium transition hover:border-ink", blink && "tuto-blink")} title={t("Comment fonctionne cet onglet ? Vidéo de 1 à 2 minutes", "How does this tab work? 1–2 minute video")}>
+      <button type="button" onClick={show} className="tuto-blink flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-sm font-medium transition hover:border-ink" title={t("Comment fonctionne cet onglet ? Vidéo de 1 à 2 minutes", "How does this tab work? 1–2 minute video")}>
         <PlayCircle className="size-4 text-signal" aria-hidden />
         <span className="hidden md:inline">{t("Tutoriel", "Tutorial")}</span>
         <span className="sr-only md:hidden">{t("Tutoriel", "Tutorial")}</span>

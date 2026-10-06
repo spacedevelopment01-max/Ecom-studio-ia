@@ -146,7 +146,7 @@ body { background: var(--paper); color: var(--ink); font-family: var(--font-sans
 .skeleton { background: linear-gradient(90deg, var(--paper-2) 0px, var(--card) 120px, var(--paper-2) 240px); background-size: 800px 100%; animation: shimmer 1.4s infinite linear; }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 .pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
-/* Bouton « Tutoriel » pas encore regardé : il clignote (fond de couleur + halo) pour qu'on le remarque. */
+/* Bouton « Tutoriel » : il clignote en permanence (fond de couleur + halo) pour qu'on le remarque. */
 @keyframes tuto-blink {
   0%, 100% { background: var(--signal); color: var(--signal-ink); border-color: var(--signal); box-shadow: 0 0 0 0 color-mix(in srgb, var(--signal) 55%, transparent); }
   50% { background: var(--card); color: var(--ink); border-color: var(--signal); box-shadow: 0 0 0 7px color-mix(in srgb, var(--signal) 0%, transparent); }
