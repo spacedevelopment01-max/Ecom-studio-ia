@@ -14,6 +14,7 @@ import { PLANS } from "@/lib/plans";
 import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type PlatformId } from "./platform-picker";
 import { cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
 import { DeleteProjectButton } from "./delete-project";
+import { ActivityBrief } from "./activity-brief";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
 
@@ -234,9 +235,9 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
             label={t("Décrivez votre activité", "Describe your business")}
             htmlFor="description"
             error={needDesc ? t("Indispensable : quelques lignes sur votre activité, ou le lien de votre site actuel ci-dessous.", "Required: a few lines about your business, or the link to your current website below.") : null}
-            hint={t("Votre métier, vos prestations, votre zone, ce qui vous distingue. Ce que vous écrivez est considéré comme confirmé ; rien n'est inventé.", "Your trade, your services, your area, what sets you apart. Whatever you write is treated as confirmed; nothing is made up.")}
+            hint={t("Quelques mots suffisent : votre métier, vos prestations, votre zone, ce qui vous distingue. Besoin d'aide ? « M'aider à le rédiger » pose quelques questions et écrit une description complète. Ce que vous écrivez est considéré comme confirmé ; rien n'est inventé.", "A few words are enough: your trade, your services, your area, what sets you apart. Need help? \"Help me write it\" asks a few questions and writes a complete description. Whatever you write is treated as confirmed; nothing is made up.")}
           >
-            <Textarea id="description" name="description" rows={5} aria-required="true" aria-invalid={needDesc || undefined} placeholder={t("Ex. : Plombier chauffagiste à Lyon, dépannage 7j/7, installation de chaudières, devis gratuit.", "E.g.: Plumber and heating engineer in Leeds, emergency call-outs 7 days a week, boiler installation, free quotes.")} />
+            <ActivityBrief invalid={needDesc} />
           </Field>
           <Field label={t("Votre site actuel (si vous en avez un)", "Your current website (if you have one)")} htmlFor="link" hint={t("Le studio y lit votre présentation, vos prestations et vos coordonnées, comme source d'information uniquement.", "The studio reads your introduction, services and contact details there, as a source of information only.")}>
             <Input id="link" name="link" type="url" placeholder="https://…" />
