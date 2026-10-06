@@ -13,6 +13,7 @@ import { getJsonSetting } from "./settings";
 import { pick } from "./i18n";
 import { L, userLang } from "./i18n-server";
 import { DISCOVERY, PLANS, type Billing, type PlanId } from "./plans";
+import { isAdminUser } from "./owner";
 
 /** Texte enregistré pour un compte (relevé, notification) : dans la langue mémorisée de ce compte. */
 const forUser = (userId: string, fr: string, en: string) => pick(userLang(userId), fr, en);
@@ -233,7 +234,7 @@ export function balance(userId: string): Balance {
 
 /** Vérifie qu'une génération payante peut démarrer (limite d'usage équitable de l'IA, sans montant affiché). */
 export function assertCanSpend(userId: string, estimateMicro: number) {
-  if (estimateMicro <= 0) return;
+  if (estimateMicro <= 0 || isAdminUser(userId)) return;
   const b = balance(userId);
   if (b.available < estimateMicro) {
     const end = new Date(b.periodEnd).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });

@@ -5,6 +5,7 @@
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import { balance, EUR } from "../billing";
+import { isAdminUser } from "../owner";
 
 /**
  * Portée du décompte des quotas pendant une tâche :
@@ -37,7 +38,8 @@ export function currentQuotaScope(): QuotaScope {
 
 /** L'IA sera réellement utilisée pour ce client (budget suffisant). */
 export function aiActiveFor(userId: string): boolean {
-  return hasAiCredits(userId);
+  // Le propriétaire utilise ses propres clés : jamais coupé par un budget de découverte.
+  return isAdminUser(userId) || hasAiCredits(userId);
 }
 
 /** Le budget IA caché du compte permet-il encore une génération ? */

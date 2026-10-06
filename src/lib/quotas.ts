@@ -12,10 +12,12 @@ import { UserFacingError } from "./jobs";
 import { L } from "./i18n-server";
 import { currentPeriod, getSubscription, planOf } from "./billing";
 import { PACKS, PLANS, type PackId, type QuotaKey, type QuotaView } from "./plans";
+import { isAdminUser } from "./owner";
 
 export const QUOTA_KEYS: QuotaKey[] = ["visuals", "aiVideos", "ugc", "blog"];
 
-export const userPlan = (userId: string) => planOf(getSubscription(userId));
+/** Forfait du compte ; le propriétaire (administrateur) a toujours le plus complet, comme dans plan-gates. */
+export const userPlan = (userId: string) => (isAdminUser(userId) ? "dominer" : planOf(getSubscription(userId)));
 
 type Row = { user_id: string; period_start: number; key: QuotaKey; included: number; rollover: number; used: number };
 
@@ -86,6 +88,7 @@ export function quotaMessage(userId: string, key: QuotaKey) {
 
 /** Vérifie qu'il reste au moins `n` unités (sinon message clair pour le client). */
 export function assertQuota(userId: string, key: QuotaKey, n = 1) {
+  if (isAdminUser(userId)) return;
   if (quotaView(userId, key).left < n) throw new UserFacingError(quotaMessage(userId, key));
 }
 

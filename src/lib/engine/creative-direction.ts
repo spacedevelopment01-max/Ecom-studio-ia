@@ -70,7 +70,8 @@ export type BrandInput = {
   sector?: string | null;
 };
 
-export const MAX_ROUTE_DRAWS = 2;
+/** Essais de l'IA par piste (première proposition + reprises ciblées avec les défauts relevés) avant la version du studio. */
+export const MAX_ROUTE_DRAWS = 3;
 /** Seuil d'exigence d'une piste de l'IA : aucune note sous 6, moyenne d'au moins 7,5. */
 export const ROUTE_MIN_SCORE = 6;
 export const ROUTE_MIN_MEAN = 7.5;
