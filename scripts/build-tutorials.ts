@@ -7,6 +7,7 @@
  * Sortie : public/tutorials/<id>[.en].mp4 (1280×800, H.264), <id>[.en].jpg (affiche) et <id>[.en].json
  * (durée et début de chaque étape, pour la liste cliquable sous la vidéo).
  * Chaque scène (scripts/tutorials/scenes/<id>.ts) joue les gestes ; les sous-titres viennent de src/lib/tutorials.
+ * Ensuite, la voix off (voix d'homme qui lit chaque étape) : scripts/narrate-tutorials.ts.
  */
 import fs from "node:fs";
 import os from "node:os";

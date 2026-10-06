@@ -67,7 +67,7 @@ export const handlers: Record<string, Handler> = {
   "blog.write": async (ctx) => writeBlogArticle(ctx, ctx.job.project_id!, { topic: ctx.payload.topic, brief: ctx.payload.brief, articleId: ctx.payload.articleId, instruction: ctx.payload.instruction }),
 
   /** Logo : nouvelles pistes (IA, plusieurs minutes) ou application de la piste choisie. */
-  "brand.logo": async (ctx) => runLogoJob(ctx, ctx.payload.projectId, { choice: ctx.payload.choice ?? null, regenerate: !!ctx.payload.regenerate, redrawSymbol: ctx.payload.redrawSymbol }),
+  "brand.logo": async (ctx) => runLogoJob(ctx, ctx.payload.projectId, { proposalId: ctx.payload.proposalId ?? null, regenerate: !!ctx.payload.regenerate }),
 
   "brand.build": async (ctx) => {
     const b = await buildBrand(ctx, ctx.payload.projectId, { guidance: ctx.payload.guidance });

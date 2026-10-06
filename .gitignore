@@ -10,3 +10,6 @@ tsconfig.tsbuildinfo
 test-results/
 .next-pages
 _site
+
+# Copies muettes des tutoriels (avant voix off), régénérables par scripts/build-tutorials.ts
+scripts/tutorials/silent/

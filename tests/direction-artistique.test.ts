@@ -341,6 +341,30 @@ describe("dans le studio : pistes, choix, déclinaisons, kit (PNG + ZIP) et char
     });
   });
 
+  it("réserve de 3 pistes : une suppression libère une place, « Nouvelles pistes » complète sans remplacer, jamais plus de 3", async () => {
+    await fr(async () => {
+      const { removeProposal } = await import("@/lib/engine/identity");
+      const pid = await newProject();
+      await generateLogos(null, pid, { redrawSymbol: true, routeAi: null });
+      const first = latestProposals(pid);
+      expect(first).toHaveLength(3);
+      const applied = loadProject(pid).brand!.logo.proposalId;
+      expect(first.map((x) => x.id)).toContain(applied);
+      // Pleine : pas de nouvelle piste tant qu'aucune n'est supprimée.
+      await expect(generateLogos(null, pid, { redrawSymbol: true, add: true, routeAi: null })).rejects.toThrow(/supprimez-en une/);
+      const gone = first.find((x) => x.id !== applied)!;
+      removeProposal(pid, gone.id);
+      expect(latestProposals(pid)).toHaveLength(2);
+      await generateLogos(null, pid, { redrawSymbol: true, add: true, routeAi: null });
+      const after = latestProposals(pid);
+      expect(after).toHaveLength(3);
+      // Les deux pistes gardées sont toujours là, la supprimée non ; le logo en place n'a pas changé.
+      for (const k of first.filter((x) => x.id !== gone.id)) expect(after.map((x) => x.id)).toContain(k.id);
+      expect(after.map((x) => x.id)).not.toContain(gone.id);
+      expect(loadProject(pid).brand!.logo.proposalId).toBe(applied);
+    });
+  });
+
   it("charte sans kit : 10 planches (pas de planche vide)", async () => {
     await fr(async () => {
       const product = { ...emptyProduct(), name: "X", sector: "maison" as const };
