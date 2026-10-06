@@ -20,6 +20,9 @@ import { avoidOf, designRoutes, localRoutes, roleColors, type BrandInput, type C
 import { routeBoard, routeLogoSpec, type CreativeRoute, type RouteReview } from "../media/brand-mockups";
 import { monogramLetter } from "../media/monogram";
 import { saveSocialKit } from "./social-kit";
+import { routeFonts } from "./shop";
+import { effectivePalette } from "../route-palette";
+import { colorSchemes, type BrandPalette, type DirectionId } from "../theme/directions";
 import sharp from "sharp";
 import { validCutouts } from "./cutouts";
 import { assetData } from "../library";
@@ -236,9 +239,9 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   await saveAsset({ ...base, data: Buffer.from(set.monoSvg), name: C("marque-reduite.svg", "brand-mark.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id });
   const fav = await saveAsset({ ...base, data: set.faviconPng, name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
   const r = pr.route;
-  const route = r ? { key: r.key, name: r.name, heading: r.heading, headingWeight: r.headingWeight, body: r.body, colors: r.colors, source: r.source } : undefined;
+  const route = r ? { key: r.key, name: r.name, heading: r.heading, headingWeight: r.headingWeight, body: r.body, colors: r.colors, roles: r.roles, source: r.source } : undefined;
   saveBrand(projectId, { ...brand, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, route } });
-  swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id });
+  swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id }, routeFonts(route), effectivePalette(loadProject(projectId).brand));
   // Kit réseaux sociaux aux couleurs et typographies de la piste choisie (sans nouvel appel à l'IA).
   if (r) {
     ctx?.progress(0.82, L("Kit réseaux sociaux", "Social media kit"));
@@ -248,11 +251,25 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
 }
 
 /** Remplace les fichiers du logo dans la version actuelle du thème (nouvelle version, retouches conservées). */
-export function swapThemeLogos(projectId: string, ids: { logo: string; light: string; favicon: string }) {
+export function swapThemeLogos(projectId: string, ids: { logo: string; light: string; favicon: string }, fonts?: { heading: string; body: string } | null, pal?: BrandPalette | null) {
   const cur = currentTheme(projectId);
   if (!cur) return null;
   const spec = structuredClone(cur.spec);
   let changed = false;
+  // Typographies de la piste retenue : le site les reprend (thème importé du client : on n'y touche pas).
+  if (fonts && !spec.imported && (spec.settings.type_heading_font !== fonts.heading || spec.settings.type_body_font !== fonts.body)) {
+    spec.settings.type_heading_font = fonts.heading;
+    spec.settings.type_body_font = fonts.body;
+    changed = true;
+  }
+  // Couleurs de la piste retenue : schémas de couleurs du site recalculés (retouches de mise en page conservées).
+  if (pal && !spec.imported && spec.direction) {
+    const schemes = colorSchemes(spec.direction as DirectionId, pal);
+    if (JSON.stringify(schemes) !== JSON.stringify(spec.settings.color_schemes)) {
+      spec.settings.color_schemes = schemes as any;
+      changed = true;
+    }
+  }
   for (const f of Object.keys(spec.files)) {
     const next = /^es-logo-clair-/.test(f) ? ids.light : /^es-logo-/.test(f) ? ids.logo : /^es-favicon-/.test(f) ? ids.favicon : null;
     if (next && spec.files[f] !== next) {
@@ -260,7 +277,7 @@ export function swapThemeLogos(projectId: string, ids: { logo: string; light: st
       changed = true;
     }
   }
-  return changed ? saveThemeVersion(projectId, spec, L("Logo mis à jour", "Logo updated"), "system") : null;
+  return changed ? saveThemeVersion(projectId, spec, fonts ? L("Logo et typographies mis à jour", "Logo and typography updated") : L("Logo mis à jour", "Logo updated"), "system") : null;
 }
 
 /** Dernières propositions enregistrées : celles du dernier lot (une par clé), pistes d'abord. */

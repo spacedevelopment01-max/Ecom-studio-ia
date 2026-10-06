@@ -17,6 +17,9 @@ import { attachVariantMedia, catalogStore, ensureCatalogMedia, ensureVariantMedi
 import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
+import { FONT_HANDLES } from "../theme/render";
+import { effectivePalette } from "../route-palette";
+import { SHOPIFY_TO_CANVAS } from "../media/fonts";
 import { tidyComposition } from "../theme/tidy";
 import { llmConfigured } from "../ai/llm";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
@@ -137,6 +140,27 @@ export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): Sto
   };
 }
 
+/** Police Shopify (identifiant « famille_nN ») la plus proche d'une famille locale et d'une graisse, si le thème la connaît. */
+function fontHandle(family: string, weight: number): string | null {
+  // Familles du logo sans équivalent dans les polices Shopify du thème : la plus proche en esprit.
+  const NEAREST: Record<string, string> = { "Bricolage Grotesque": "Archivo", "Instrument Serif": "Cormorant", Inter: "Inter" };
+  const fam = SHOPIFY_TO_CANVAS[family.toLowerCase().replace(/ /g, "_")] ? family : NEAREST[family] ?? family;
+  const key = Object.entries(SHOPIFY_TO_CANVAS).find(([, v]) => v === fam)?.[0] ?? (fam === "Inter" ? "inter" : null);
+  if (!key) return null;
+  const weights = FONT_HANDLES.filter((h) => h.startsWith(`${key}_n`)).map((h) => Number(h.slice(-1)) * 100);
+  if (!weights.length) return null;
+  const w = weights.sort((a, b) => Math.abs(a - weight) - Math.abs(b - weight))[0];
+  return `${key}_n${w / 100}`;
+}
+
+/** Typographies du site tirées de la piste de logo retenue (titres et texte), ou null si le thème ne les a pas. */
+export function routeFonts(route: { heading: string; headingWeight: number; body: string } | null | undefined): { heading: string; body: string } | null {
+  if (!route) return null;
+  const heading = fontHandle(route.heading, route.headingWeight);
+  const body = fontHandle(route.body, 400);
+  return heading && body ? { heading, body } : null;
+}
+
 /**
  * Boutique composée dans une direction, avec le contenu du projet (marque, textes, photos, prestations).
  * `ctx` présent : les médias manquants (variantes, catalogue) sont préparés d'abord ; sans `ctx` (vignettes
@@ -166,9 +190,11 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   const spec = buildSpec({
     direction,
     shopName: brand.name,
-    palette: brand.palette,
-    // Les polices de la marque ne priment que si elles ont été choisies (IA ou client), pas recopiées d'une direction.
-    fonts: (directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts,
+    // Couleurs de la piste de logo retenue : le site suit l'identité choisie.
+    palette: effectivePalette(brand) ?? brand.palette,
+    // Typographies de la piste de logo retenue (logo, site et réseaux parlent d'une seule voix), quelle que soit la
+    // direction ; à défaut, celles de la marque si elles ont été choisies (IA ou client), pas recopiées d'une direction.
+    fonts: routeFonts(brand.logo?.route) ?? ((directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts),
     copy,
     images: slots,
     files,

@@ -102,7 +102,7 @@ export type Brand = {
     /** Piste créative retenue (produit, concept, typo) ; anciennes propositions : logotype, symbole, emblème. */
     proposal?: "logotype" | "symbole" | "embleme" | "produit" | "concept" | "typo";
     /** Typographies et couleurs de la piste retenue (kit réseaux sociaux, charte, visuels). */
-    route?: { key: string; name: string; heading: string; headingWeight: number; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; source: "ai" | "local" };
+    route?: { key: string; name: string; heading: string; headingWeight: number; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; roles?: { ink: keyof Brand["palette"]; accent: keyof Brand["palette"]; ground: keyof Brand["palette"]; tint: keyof Brand["palette"] }; source: "ai" | "local" };
   };
   /** Ligne éditoriale des réseaux sociaux (approche community manager). */
   social?: SocialVoice;
