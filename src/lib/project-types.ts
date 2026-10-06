@@ -101,6 +101,8 @@ export type Brand = {
     status: "proposed" | "validated" | "provided";
     /** Piste créative retenue (produit, concept, typo) ; anciennes propositions : logotype, symbole, emblème. */
     proposal?: "logotype" | "symbole" | "embleme" | "produit" | "concept" | "typo";
+    /** Fichier de la piste choisie (plusieurs pistes peuvent avoir la même famille). */
+    proposalId?: string;
     /** Typographies et couleurs de la piste retenue (kit réseaux sociaux, charte, visuels). */
     route?: { key: string; name: string; heading: string; headingWeight: number; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; roles?: { ink: keyof Brand["palette"]; accent: keyof Brand["palette"]; ground: keyof Brand["palette"]; tint: keyof Brand["palette"] }; source: "ai" | "local" };
   };

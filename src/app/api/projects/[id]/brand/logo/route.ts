@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { latestProposals, PROPOSAL_KEYS, proposeTaglines } from "@/lib/engine/identity";
+import { latestProposals, MAX_ROUTES, proposeTaglines, removeProposal } from "@/lib/engine/identity";
 import { enqueue } from "@/lib/jobs";
 import { one } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
@@ -40,21 +40,30 @@ const list = (projectId: string) =>
     };
   });
 
+/** Piste choisie : par son fichier, ou (pistes enregistrées avant) par sa famille. */
+function currentId(p: { id: string; brand: { logo: { proposal?: string; proposalId?: string } } | null }) {
+  const props = latestProposals(p.id);
+  const byId = p.brand?.logo.proposalId && props.find((x) => x.id === p.brand!.logo.proposalId);
+  return byId ? byId.id : (props.find((x) => x.info.key === p.brand?.logo.proposal)?.id ?? null);
+}
+
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   const taglines = p.brand ? [...new Set([...(p.brand.taglineAlternatives ?? []), ...proposeTaglines(p)])].filter((t) => t !== p.brand!.tagline).slice(0, 6) : [];
-  return ok({ proposals: list(p.id), current: p.brand?.logo.proposal ?? null, provided: p.brand?.logo.status === "provided", taglines });
+  return ok({ proposals: list(p.id), current: currentId(p), max: MAX_ROUTES, provided: p.brand?.logo.status === "provided", taglines });
 });
 
-/** Choix d'une proposition (déclinaisons + mise à jour de la boutique), ou nouvelles propositions. */
+/** Choix d'une piste (déclinaisons + mise à jour de la boutique), ou nouvelles pistes ajoutées (au plus 3 en tout). */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (p.brand.logo.status === "provided") throw new HttpError(409, L("Votre logo est conservé tel quel. Supprimez-le des fichiers pour recevoir des propositions.", "Your logo is kept as is. Delete it from your files to receive proposals."));
-  const b = await body(req, z.object({ choice: z.enum(PROPOSAL_KEYS).optional(), regenerate: z.boolean().optional() }));
-  const regenerate = !!b.regenerate || !latestProposals(p.id).length;
-  if (!regenerate && !b.choice) throw new HttpError(400, L("Choisissez une proposition.", "Pick a proposal."));
-  if (!regenerate && !latestProposals(p.id).some((x) => x.info.key === b.choice)) throw new HttpError(404, L("Proposition introuvable.", "Proposal not found."));
+  const b = await body(req, z.object({ proposalId: z.string().max(40).optional(), regenerate: z.boolean().optional() }));
+  const props = latestProposals(p.id);
+  const regenerate = !!b.regenerate || !props.length;
+  if (regenerate && props.length >= MAX_ROUTES) throw new HttpError(409, L(`Vous avez déjà ${MAX_ROUTES} pistes : supprimez-en une pour en créer une nouvelle.`, `You already have ${MAX_ROUTES} routes: delete one to create a new one.`));
+  if (!regenerate && !props.some((x) => x.id === b.proposalId)) throw new HttpError(404, L("Piste introuvable.", "Route not found."));
+  if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'brand.logo' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine.", "A logo task is already running: wait for it to finish."));
   // En tâche de fond : avec l'IA, de nouvelles pistes prennent plusieurs minutes, plus que ce que tolèrent certains
   // relais (GitHub Codespaces coupe la requête et renvoie une page 404). L'écran suit la tâche et se met à jour à la fin.
   const job = enqueue({
@@ -62,7 +71,17 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     projectId: p.id,
     type: "brand.logo",
     label: regenerate ? L("Nouvelles pistes de logo", "New logo routes") : L("Application du logo choisi", "Applying the chosen logo"),
-    payload: { projectId: p.id, choice: b.choice ?? null, regenerate, redrawSymbol: !!b.regenerate },
+    payload: { projectId: p.id, proposalId: b.proposalId ?? null, regenerate },
   });
-  return ok({ jobId: job.id, proposals: list(p.id), current: p.brand.logo.proposal ?? null });
+  return ok({ jobId: job.id, proposals: list(p.id), current: currentId(p) });
+});
+
+/** Suppression d'une piste (la piste choisie se garde : choisissez-en d'abord une autre). */
+export const DELETE = handle(async (req: Request, ctx: Ctx) => {
+  const { project: p } = await projectFromCtx(ctx);
+  const pid = new URL(req.url).searchParams.get("proposal") ?? "";
+  if (!latestProposals(p.id).some((x) => x.id === pid)) throw new HttpError(404, L("Piste introuvable.", "Route not found."));
+  if (currentId(p) === pid) throw new HttpError(409, L("C'est la piste de votre logo actuel : choisissez d'abord une autre piste pour pouvoir la supprimer.", "This is your current logo's route: choose another route first to delete it."));
+  removeProposal(p.id, pid);
+  return ok({ proposals: list(p.id), current: currentId(p) });
 });

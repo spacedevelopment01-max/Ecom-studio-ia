@@ -151,6 +151,12 @@ export async function ensureSocialVoice(projectId: string, opts: { force?: boole
 export function chosenRoute(projectId: string): CreativeRoute | null {
   const p = loadProject(projectId);
   const key = p.brand?.logo.proposal;
+  const pid = p.brand?.logo.proposalId;
+  if (pid) {
+    const r = all<Asset>("SELECT * FROM assets WHERE id = ? AND project_id = ?", pid, projectId)[0];
+    const info = r ? json<any>(r.meta as any, {}) : null;
+    if (info?.route) return info.route as CreativeRoute;
+  }
   const rows = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo-proposal' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 12", projectId);
   for (const r of rows) {
     const info = json<any>(r.meta as any, {});

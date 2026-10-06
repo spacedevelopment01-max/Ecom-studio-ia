@@ -348,7 +348,7 @@ export type RoutesDesign = { routes: CreativeRoute[]; notes: string[]; ai: "used
  * Trois pistes contrôlées. Une piste refusée n'est jamais montrée : elle est reprise une fois (consignes ciblées),
  * puis remplacée par la version du studio de son emplacement, contrôlée elle aussi quand l'IA est disponible.
  */
-export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; ai: CreativeAi | null; textIssues?: (text: string) => string[]; variant?: number; avoid?: RouteAvoid[] }): Promise<RoutesDesign> {
+export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; ai: CreativeAi | null; textIssues?: (text: string) => string[]; variant?: number; avoid?: RouteAvoid[]; keys?: RouteKey[] }): Promise<RoutesDesign> {
   const { brand, ai } = input;
   const avoid = input.avoid ?? [];
   const notes: string[] = [];
@@ -366,7 +366,7 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
     }
   }
   let reviewDown = false;
-  for (const key of ROUTE_KEYS) {
+  for (const key of input.keys ?? ROUTE_KEYS) {
     let accepted: CreativeRoute | null = null;
     if (ai && aiState === "used") {
       let draft: RouteDraft | null = drafts.find((d) => d?.key === key) ?? null;

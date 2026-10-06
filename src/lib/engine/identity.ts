@@ -3,21 +3,21 @@
  * choix du client et déclinaisons livrables (SVG, PNG, version claire, marque réduite, favicon).
  * Le logo de la boutique existante est remplacé sans recomposer le thème (les retouches restent).
  */
-import { all, json, one } from "../db";
+import { all, json, now, one, run } from "../db";
 import { saveAsset, type Asset } from "../library";
 import { currentTheme, loadProject, saveBrand, saveThemeVersion, type Project } from "../projects";
 import { logoPng, logoSet, type LogoSpec, type SymbolKind } from "../media/logo";
 import { canvasFamily, CANVAS_FONTS } from "../media/fonts";
 import { directionById } from "../theme/directions";
 import { contrast, hsl, isDark, withLightness } from "../color";
-import type { JobContext } from "../jobs";
+import { UserFacingError, type JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { serviceSymbol, serviceTaglines } from "./services-text";
 import type { CustomSymbol } from "../media/logo-symbol";
 import { llmConfigured } from "../ai/llm";
 import { aiCreativeRedraw, aiCreativeReview, aiCreativeRoutes, lintClaims, lintHollow } from "../ai/tasks";
 import { avoidOf, designRoutes, localRoutes, roleColors, type BrandInput, type CreativeAi, type RouteAvoid, type RouteDraft } from "./creative-direction";
-import { routeBoard, routeLogoSpec, type CreativeRoute, type RouteReview } from "../media/brand-mockups";
+import { ROUTE_KEYS, routeBoard, routeLogoSpec, type CreativeRoute, type RouteReview } from "../media/brand-mockups";
 import { monogramLetter } from "../media/monogram";
 import { saveSocialKit } from "./social-kit";
 import { routeFonts } from "./shop";
@@ -28,6 +28,8 @@ import { validCutouts } from "./cutouts";
 import { assetData } from "../library";
 
 export type LogoProposal = {
+  /** Identifiant du fichier de la piste (réserve de pistes). */
+  id?: string;
   key: "logotype" | "symbole" | "embleme" | "produit" | "concept" | "typo";
   label: string;
   concept: string;
@@ -167,7 +169,7 @@ const routeTextIssues = (p: Project) => (text: string) => [...lintClaims({ t: te
  * sont reprises (changement de nom ou de palette : mêmes dessins, couleurs et monogrammes mis à jour, sans IA).
  * `choice` : clé de piste ; à défaut, celle déjà choisie, puis la première.
  */
-export async function generateLogos(ctx: JobContext | null, projectId: string, opts: { base?: Omit<LogoSpec, "color">; choice?: ProposalKey; redrawSymbol?: boolean; routeAi?: CreativeAi | null } = {}) {
+export async function generateLogos(ctx: JobContext | null, projectId: string, opts: { base?: Omit<LogoSpec, "color">; choice?: ProposalKey; redrawSymbol?: boolean; routeAi?: CreativeAi | null; add?: boolean } = {}) {
   const p = loadProject(projectId);
   if (!p.brand) throw new Error(L("La marque doit exister avant le logo.", "The brand must exist before the logo."));
   const brand = p.brand;
@@ -175,11 +177,17 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
   const cutout = best ? assetData(best) : null;
   const binput: BrandInput = { name: brand.name, tagline: brand.tagline, palette: brand.palette, direction: brand.direction, sector: p.product.sector };
   const previous = latestProposals(projectId).filter((x) => x.info.route);
+  // « Nouvelles pistes » (add) : les pistes gardées restent, on complète jusqu'à 3. Sinon (nouvelle marque) : série neuve.
+  const add = !!opts.add && previous.length > 0;
+  // Pistes enregistrées avant la réserve : elles y entrent (elles ne disparaissent pas à l'ajout).
+  if (add) for (const x of previous) if (!x.info.pool) run("UPDATE assets SET meta = json_set(meta, '$.pool', 1) WHERE id = ?", x.id);
+  const room = add ? MAX_ROUTES - previous.length : MAX_ROUTES;
+  if (room <= 0) throw new UserFacingError(L(`Vous avez déjà ${MAX_ROUTES} pistes : supprimez-en une pour en créer une nouvelle.`, `You already have ${MAX_ROUTES} routes: delete one to create a new one.`));
   let routes: CreativeRoute[];
   let notes: string[] = [];
   let aiState = "off";
   const sameInitial = previous.length && monogramLetter(previous[0].info.brandName ?? "") === monogramLetter(brand.name);
-  if (!opts.redrawSymbol && previous.length && sameInitial) {
+  if (!add && !opts.redrawSymbol && previous.length && sameInitial) {
     // Reprise : les dessins de l'IA restent, couleurs recalculées depuis la palette ; les versions du studio sont refaites.
     const local = await localRoutes(binput, { cutout, library: symbolFor(p) });
     routes = previous.map((x) => {
@@ -193,7 +201,10 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
     const avoid = opts.redrawSymbol && previous.length ? avoidOf(previous.map((x) => x.info.route as CreativeRoute)) : [];
     const variant = opts.redrawSymbol ? logoBatches(projectId) : 0;
     const ai = opts.routeAi !== undefined ? opts.routeAi : llmConfigured() ? realRouteAi(p, cutout, avoid) : null;
-    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), ai, textIssues: routeTextIssues(p), avoid, variant });
+    // Emplacements à créer : d'abord les familles absentes des pistes gardées (produit, concept, typo).
+    const have = new Set(add ? previous.map((x) => x.info.key) : []);
+    const keys = [...ROUTE_KEYS.filter((k) => !have.has(k)), ...ROUTE_KEYS.filter((k) => have.has(k))].slice(0, room);
+    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), ai, textIssues: routeTextIssues(p), avoid, variant, keys });
     routes = design.routes;
     notes = design.notes;
     aiState = design.ai;
@@ -209,12 +220,25 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
     const pr: LogoProposal = { key: route.key, label: route.name, concept: route.why, spec: { ...spec, accent }, colors: { color, accent: accent ?? color }, route };
     proposals.push(pr);
     const png = await logoPng(full, 900);
-    const asset = await saveAsset({ ...common, data: png, name: C(`piste-${route.key}.png`, `route-${route.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, colors: pr.colors, route, brandName: brand.name, batch, ai: aiState, notes } });
+    const asset = await saveAsset({ ...common, data: png, name: C(`piste-${route.key}.png`, `route-${route.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, colors: pr.colors, route, brandName: brand.name, batch, ai: aiState, notes, pool: 1 } });
+    pr.id = asset.id;
     const board = await routeBoard({ route, brand, product: cutout });
     await saveAsset({ ...common, data: await sharp(board).jpeg({ quality: 86 }).toBuffer(), name: C(`planche-piste-${route.key}.jpg`, `route-board-${route.key}.jpg`), mime: "image/jpeg", role: "logo-route-board", sourceAssetId: asset.id, meta: { key: route.key, batch } });
   }
+  // Série neuve ou reprise : les anciennes pistes sont remplacées. Ajout : elles restent à côté des nouvelles.
+  if (!add) for (const old of previous) removeProposal(projectId, old.id);
+  // Ajout : le logo en place ne change pas (le client choisit parmi ses pistes), sauf s'il n'y en avait aucun.
+  if (add && brand.logo.route) return { main: null, proposal: brand.logo.proposal ?? null, added: proposals.length };
   const wanted = opts.choice ?? brand.logo.proposal;
   return applyLogo(ctx, projectId, proposals.find((x) => x.key === wanted) ?? proposals[0]);
+}
+
+/** Pistes présentées au client : au plus 3 à la fois. */
+export const MAX_ROUTES = 3;
+
+/** Retire une piste (et sa planche) de celles présentées. Le logo déjà appliqué n'est pas touché. */
+export function removeProposal(projectId: string, proposalId: string) {
+  run("UPDATE assets SET deleted_at = ? WHERE project_id = ? AND deleted_at IS NULL AND (id = ? OR (role = 'logo-route-board' AND source_asset_id = ?))", now(), projectId, proposalId, proposalId);
 }
 
 /** Déclinaisons livrables d'une proposition, puis remplacement du logo dans la boutique et kit réseaux sociaux. */
@@ -240,7 +264,7 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   const fav = await saveAsset({ ...base, data: set.faviconPng, name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
   const r = pr.route;
   const route = r ? { key: r.key, name: r.name, heading: r.heading, headingWeight: r.headingWeight, body: r.body, colors: r.colors, roles: r.roles, source: r.source } : undefined;
-  saveBrand(projectId, { ...brand, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, route } });
+  saveBrand(projectId, { ...brand, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, proposalId: pr.id, route } });
   swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id }, routeFonts(route), effectivePalette(loadProject(projectId).brand));
   // Kit réseaux sociaux aux couleurs et typographies de la piste choisie (sans nouvel appel à l'IA).
   if (r) {
@@ -282,6 +306,10 @@ export function swapThemeLogos(projectId: string, ids: { logo: string; light: st
 
 /** Dernières propositions enregistrées : celles du dernier lot (une par clé), pistes d'abord. */
 export function latestProposals(projectId: string) {
+  // Réserve de pistes (au plus 3, dans l'ordre de création) : les pistes s'ajoutent, le client supprime celles qu'il ne veut pas.
+  const pooled = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo-proposal' AND deleted_at IS NULL AND json_extract(meta, '$.pool') = 1 ORDER BY created_at ASC", projectId);
+  if (pooled.length) return pooled.slice(-MAX_ROUTES).map((r) => ({ ...r, info: json<any>(r.meta as any, {}) }));
+  // Pistes enregistrées avant la réserve : le dernier lot.
   const rows = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo-proposal' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 12", projectId);
   const seen = new Map<string, Asset & { info: any }>();
   let batch: string | undefined;

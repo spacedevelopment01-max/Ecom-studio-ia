@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { DirectionThumb } from "./direction-thumb";
 import { effectivePalette } from "@/lib/route-palette";
-import { Check, Download, Lock, Sparkles, Unlock } from "lucide-react";
+import { Check, Download, Lock, Sparkles, Trash2, Unlock } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
@@ -48,14 +48,14 @@ export default function TabMarque() {
   const [guidance, setGuidance] = useState("");
   const active = useActive("brand.build");
   const { data: logos, reload: reloadLogos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=logo,logo-svg,logo-light,logo-light-svg,logo-mark,logo-mark-svg,logo-horizontal,logo-horizontal-svg,favicon,brand-guide,brand-book`);
-  const { data: ident, reload: reloadIdent } = useApi<{ proposals: Proposal[]; current: string | null; provided: boolean; taglines: string[] }>(`/api/projects/${id}/brand/logo`);
+  const { data: ident, reload: reloadIdent } = useApi<{ proposals: Proposal[]; current: string | null; max?: number; provided: boolean; taglines: string[] }>(`/api/projects/${id}/brand/logo`);
   const [kitTick, setKitTick] = useState(0);
   const [choosing, setChoosing] = useState<string | null>(null);
   // Logo : nouvelles pistes ou piste choisie, en tâche de fond (plusieurs minutes avec l'IA) ; l'écran suit la tâche
   // et se met à jour à la fin (aucune requête longue que le relais d'un codespace pourrait couper).
   const logoJobs = useActive("brand.logo");
-  const chooseLogo = async (b: { choice?: string; regenerate?: boolean }) => {
-    setChoosing(b.choice ?? "regenerate");
+  const chooseLogo = async (b: { proposalId?: string; regenerate?: boolean }) => {
+    setChoosing(b.proposalId ?? "regenerate");
     try {
       const r = await api<{ jobId: string }>(`/api/projects/${id}/brand/logo`, { body: b });
       toast("ok", b.regenerate ? t("Création de nouvelles pistes lancée : elles apparaissent ici dès qu'elles sont prêtes (quelques minutes avec l'IA).", "New routes are being created: they appear here as soon as they're ready (a few minutes with AI).") : t("Logo en cours d'application : déclinaisons, kit réseaux sociaux et boutique mis à jour dans un instant.", "Applying the logo: variations, social kit and store updated in a moment."));
@@ -127,7 +127,7 @@ export default function TabMarque() {
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
       {active[0] && <JobProgress job={active[0]} />}
       {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
-      {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ choice: k })} onRegenerate={() => chooseLogo({ regenerate: true })} />}
+      {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <Card className="p-5 sm:p-7">
           <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2">{site?.status !== "read" && <Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button>}<Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
@@ -217,13 +217,13 @@ export default function TabMarque() {
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">{t("Trois propositions", "Three proposals")}</p>
                 <div className="grid gap-2">
                   {ident!.proposals.map((pr) => {
-                    const on = ident!.current === pr.key;
+                    const on = ident!.current === pr.id;
                     return (
                       <div key={pr.id} className={cx("rounded-2xl border p-2", on ? "border-signal ring-2 ring-signal/30" : "border-line")}>
                         <div className="flex h-24 items-center justify-center overflow-hidden rounded-xl bg-white p-3"><img src={pr.url} alt={t(`Proposition ${pr.label}`, `Proposal ${pr.label}`)} className="h-full w-full object-contain" /></div>
                         <div className="mt-2 flex items-start justify-between gap-2 px-1">
                           <p className="min-w-0 text-xs"><span className="font-semibold">{pr.label}</span> <span className="text-muted">· {pr.concept}</span></p>
-                          <Button size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || validated.has("logo")} loading={choosing === pr.key} onClick={() => chooseLogo({ choice: pr.key })}>{on ? t("Choisi", "Selected") : t("Choisir", "Select")}</Button>
+                          <Button size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || validated.has("logo")} loading={choosing === pr.id} onClick={() => chooseLogo({ proposalId: pr.id })}>{on ? t("Choisi", "Selected") : t("Choisir", "Select")}</Button>
                         </div>
                       </div>
                     );
@@ -337,7 +337,7 @@ type Proposal = {
  * Présentation des trois pistes, comme en agence : concept nommé, « pourquoi ce logo », typographie et couleurs,
  * planche de mises en situation (avatar, favicon, étiquette, boutique sur téléphone, blanc sur couleur), choix en un clic.
  */
-function LogoRoutes({ routes, current, choosing, locked, onChoose, onRegenerate }: { routes: Proposal[]; current: string | null; choosing: string | null; locked: boolean; onChoose: (k: string) => void; onRegenerate: () => void }) {
+function LogoRoutes({ routes, max, current, choosing, locked, onChoose, onRegenerate, onDelete }: { routes: Proposal[]; max: number; current: string | null; choosing: string | null; locked: boolean; onChoose: (k: string) => void; onRegenerate: () => void; onDelete: (k: string) => void }) {
   const t = useT();
   const [zoom, setZoom] = useState<Proposal | null>(null);
   const anyLocal = routes.some((r) => r.route!.source === "local");
@@ -346,7 +346,14 @@ function LogoRoutes({ routes, current, choosing, locked, onChoose, onRegenerate 
     <Card className="p-5 sm:p-7">
       <SectionTitle
         title={t("Pistes créatives du logo", "Logo creative routes")}
-        action={<Button size="sm" variant="ghost" icon={<Sparkles className="size-4" />} loading={choosing === "regenerate"} disabled={locked || !!choosing} onClick={onRegenerate}>{t("Nouvelles pistes", "New routes")}</Button>}
+        action={
+          <div className="flex flex-col items-end gap-1">
+            <Button size="sm" variant="ghost" icon={<Sparkles className="size-4" />} loading={choosing === "regenerate"} disabled={locked || !!choosing || routes.length >= max} onClick={onRegenerate}>
+              {routes.length >= max ? t("Nouvelles pistes", "New routes") : t(`${max - routes.length > 1 ? "Nouvelles pistes" : "Nouvelle piste"} (+${max - routes.length})`, `New route${max - routes.length > 1 ? "s" : ""} (+${max - routes.length})`)}
+            </Button>
+            <span className="text-[11px] text-muted">{routes.length >= max ? t(`${routes.length}/${max} pistes : supprimez-en une pour en créer une nouvelle`, `${routes.length}/${max} routes: delete one to create a new one`) : t(`${routes.length}/${max} pistes · les pistes gardées restent`, `${routes.length}/${max} routes · kept routes stay`)}</span>
+          </div>
+        }
       >
         {routes.length > 1 ? t(`${routes.length} pistes différentes, chacune avec son idée, sa typographie et ses couleurs, présentées en situation. Choisissez celle qui vous ressemble : ses déclinaisons et votre kit réseaux sociaux sont créés aussitôt.`, `${routes.length} different routes, each with its own idea, typeface and colors, shown in real situations. Pick the one that feels like you: its variations and your social media kit are created right away.`) : t("Une piste, avec son idée, sa typographie et ses couleurs, présentée en situation. « Nouvelles pistes » en propose d'autres.", "One route, with its idea, typeface and colors, shown in real situations. \"New routes\" suggests others.")}
       </SectionTitle>
@@ -360,7 +367,7 @@ function LogoRoutes({ routes, current, choosing, locked, onChoose, onRegenerate 
       <div className="grid gap-5 md:grid-cols-3">
         {routes.map((pr, i) => {
           const r = pr.route!;
-          const on = current === pr.key;
+          const on = current === pr.id;
           return (
             <div key={pr.id} className={cx("flex flex-col rounded-2xl border p-3", on ? "border-signal ring-2 ring-signal/30" : "border-line")}>
               <p className="text-[11px] font-medium uppercase tracking-wider text-muted">{t(`Piste ${String.fromCharCode(65 + i)}`, `Route ${String.fromCharCode(65 + i)}`)} · {pr.key === "produit" ? t("inspirée du produit", "product-inspired") : pr.key === "concept" ? t("conceptuelle", "conceptual") : t("typographique", "typographic")}</p>
@@ -374,7 +381,14 @@ function LogoRoutes({ routes, current, choosing, locked, onChoose, onRegenerate 
               <button type="button" onClick={() => setZoom(pr)} className="mt-3 overflow-hidden rounded-xl border border-line bg-paper-2" aria-label={t(`Agrandir la planche de ${r.name}`, `Enlarge the ${r.name} board`)}>
                 {pr.board ? <img src={pr.board} alt={t(`Mises en situation : ${r.name}`, `Mockups: ${r.name}`)} className="w-full" loading="lazy" /> : <img src={pr.url} alt={r.name} className="h-40 w-full bg-white object-contain p-4" />}
               </button>
-              <Button className="mt-3" size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || locked} loading={choosing === pr.key} onClick={() => onChoose(pr.key)}>{on ? t("Piste choisie", "Chosen route") : t("Choisir cette piste", "Choose this route")}</Button>
+              <div className="mt-3 flex items-center gap-2">
+                <Button className="flex-1" size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || locked} loading={choosing === pr.id} onClick={() => onChoose(pr.id)}>{on ? t("Piste choisie", "Chosen route") : t("Choisir cette piste", "Choose this route")}</Button>
+                {!on && (
+                  <button type="button" disabled={!!choosing} onClick={() => { if (window.confirm(t(`Supprimer la piste « ${r.name} » ?`, `Delete the "${r.name}" route?`))) onDelete(pr.id); }} className="grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition hover:border-bad hover:text-bad disabled:opacity-40" aria-label={t(`Supprimer la piste ${r.name}`, `Delete the ${r.name} route`)} title={t("Supprimer cette piste", "Delete this route")}>
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
