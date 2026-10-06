@@ -252,6 +252,7 @@ describe("montage : accroche immédiate et rupture toutes les 1,5 à 2,5 s", () 
     expect(issues).toMatch(/mots à l'écran/);
     expect(issues).toMatch(/même photo/);
     expect(issues).toMatch(/écran d'appel à l'action/);
+    expect(videoPlanIssues({ ...GOOD_PLAN, scenes: [GOOD_PLAN.scenes[0], { kind: "reveal", duration: 2.4, headline: "Pompon" }, { kind: "split", duration: 2.4, image: 1, headline: "Pompon" }, GOOD_PLAN.scenes[5]] }).join(" ")).toMatch(/même titre/);
     expect(videoPlanIssues(GOOD_PLAN)).toEqual([]);
   });
 

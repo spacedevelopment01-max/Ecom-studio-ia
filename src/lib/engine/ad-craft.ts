@@ -278,7 +278,9 @@ export function videoPlanIssues(spec: Pick<VideoSpec, "scenes" | "format">): str
     if (x.kind === "words" && x.items.some((it) => it.split(/\s+/).length > 6)) out.push(L(`Plan ${n} : éléments trop longs ; 1 à 5 mots chacun.`, `Shot ${n}: items too long; 1 to 5 words each.`));
     if (i > 0 && s[i - 1].kind === x.kind && x.kind !== "scene" && x.kind !== "detail") out.push(L(`Plans ${i} et ${n} : deux plans « ${x.kind} » d'affilée ; alterne les mises en scène.`, `Shots ${i} and ${n}: two "${x.kind}" shots in a row; alternate the staging.`));
   });
-  const imgs = s.map(imageOf).filter((v): v is number => v !== null);
+  const heads = s.filter((x) => x.kind !== "end").map((x) => ("headline" in x ? x.headline : x.kind === "title" ? x.text : "")?.trim().toLowerCase()).filter(Boolean) as string[];
+  if (new Set(heads).size < heads.length) out.push(L("Le même titre revient sur deux plans ; chaque plan apporte un message nouveau.", "The same headline appears on two shots; each shot must bring a new message."));
+    const imgs = s.map(imageOf).filter((v): v is number => v !== null);
   if (new Set(imgs).size < imgs.length) out.push(L("La même photo revient deux fois ; chaque plan photo montre une image différente.", "The same photo appears twice; each photo shot shows a different image."));
   const last = s[s.length - 1];
   if (last.kind !== "end") out.push(L("La vidéo doit finir sur l'écran d'appel à l'action (end).", "The video must end on the call-to-action screen (end)."));

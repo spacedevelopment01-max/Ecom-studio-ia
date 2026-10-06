@@ -324,29 +324,66 @@ export function photoFit(im: { width: number; height: number }, W: number, H: nu
   return { mode: "contain", r: Math.min(W / im.width, H / im.height, 1.5) * Math.min(zoom, 1.06) };
 }
 
-const blurCache = new WeakMap<object, Canvas>();
+const fillCache = new WeakMap<object, Canvas>();
+
+/**
+ * Fond propre derrière une photo montrée entière : si les bords de la photo sont d'une couleur unie (packshot sur
+ * fond blanc, mur uni), on prolonge cette couleur (raccord invisible) ; sinon, la photo elle-même floutée, couleurs
+ * ravivées, sans voile gris. Calculé une fois par image.
+ */
+function photoBackdrop(im: Image, W: number, H: number): Canvas {
+  const hit = fillCache.get(im);
+  if (hit && hit.width === W && hit.height === H) return hit;
+  const sw = 64, sh = Math.max(8, Math.round((64 * im.height) / im.width));
+  const probe = layer(sw, sh);
+  probe.ctx.drawImage(im as any, 0, 0, sw, sh);
+  const d = probe.ctx.getImageData(0, 0, sw, sh).data;
+  // Bords utiles : haut et bas si la photo est moins haute que le cadre, gauche et droite sinon.
+  const tallFrame = H / W > im.height / im.width;
+  const px: number[][] = [];
+  const band = Math.max(1, Math.round((tallFrame ? sh : sw) * 0.04));
+  for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) {
+    const edge = tallFrame ? y < band || y >= sh - band : x < band || x >= sw - band;
+    if (edge) { const i = (y * sw + x) * 4; px.push([d[i], d[i + 1], d[i + 2]]); }
+  }
+  const mean = [0, 1, 2].map((k) => px.reduce((t, p) => t + p[k], 0) / Math.max(1, px.length));
+  const sd = Math.sqrt(px.reduce((t, p) => t + [0, 1, 2].reduce((u, k) => u + (p[k] - mean[k]) ** 2, 0) / 3, 0) / Math.max(1, px.length));
+  const hex = `#${mean.map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")}`;
+  const { c, ctx } = layer(W, H);
+  if (sd < 14) {
+    ctx.fillStyle = hex;
+    ctx.fillRect(0, 0, W, H);
+  } else {
+    const small = layer(Math.max(1, Math.round(W / 8)), Math.max(1, Math.round(H / 8)));
+    const r0 = Math.max(small.c.width / im.width, small.c.height / im.height);
+    small.ctx.drawImage(im as any, (small.c.width - im.width * r0) / 2, (small.c.height - im.height * r0) / 2, im.width * r0, im.height * r0);
+    ctx.filter = `blur(${Math.round(Math.min(W, H) * 0.03)}px) saturate(1.25)`;
+    ctx.drawImage(small.c as any, -W * 0.05, -H * 0.05, W * 1.1, H * 1.1);
+    ctx.filter = "none";
+    // Léger voile de la couleur des bords (et non gris) : la photo nette ressort sans assombrir le cadre.
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = hex;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+  fillCache.set(im, c);
+  return c;
+}
+
+/**
+ * Photo plein cadre. Le mode (remplissage ou photo entière) est choisi une fois pour la photo (à zoom 1), pour ne
+ * jamais basculer de l'un à l'autre au milieu d'un plan (zoom lent, recadrage « punch-in »).
+ */
 function drawPhoto(ctx: Ctx, im: Image, W: number, H: number, zoom: number, dx = 0, dy = 0) {
-  const f = photoFit(im, W, H, zoom);
-  if (f.mode === "contain") {
-    let bg = blurCache.get(im);
-    if (!bg) {
-      const small = layer(Math.max(1, Math.round(W / 8)), Math.max(1, Math.round(H / 8)));
-      const r0 = Math.max(small.c.width / im.width, small.c.height / im.height);
-      small.ctx.drawImage(im as any, (small.c.width - im.width * r0) / 2, (small.c.height - im.height * r0) / 2, im.width * r0, im.height * r0);
-      const big = layer(W, H);
-      big.ctx.filter = `blur(${Math.round(Math.min(W, H) * 0.03)}px)`;
-      big.ctx.drawImage(small.c as any, -W * 0.05, -H * 0.05, W * 1.1, H * 1.1);
-      big.ctx.filter = "none";
-      big.ctx.fillStyle = "rgba(0,0,0,0.28)";
-      big.ctx.fillRect(0, 0, W, H);
-      bg = big.c;
-      blurCache.set(im, bg);
-    }
-    ctx.drawImage(bg as any, 0, 0);
-    ctx.drawImage(im as any, (W - im.width * f.r) / 2, (H - im.height * f.r) / 2, im.width * f.r, im.height * f.r);
+  const base = photoFit(im, W, H, 1);
+  if (base.mode === "contain") {
+    ctx.drawImage(photoBackdrop(im, W, H) as any, 0, 0);
+    const r = base.r * Math.min(zoom, 1.12);
+    ctx.drawImage(im as any, (W - im.width * r) / 2, (H - im.height * r) / 2, im.width * r, im.height * r);
     return;
   }
-  ctx.drawImage(im as any, (W - im.width * f.r) / 2 + dx, (H - im.height * f.r) / 2 + dy, im.width * f.r, im.height * f.r);
+  const r = base.r * zoom;
+  ctx.drawImage(im as any, (W - im.width * r) / 2 + dx, (H - im.height * r) / 2 + dy, im.width * r, im.height * r);
 }
 
 /**
@@ -484,10 +521,53 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.drawImage(P.bgLight as any, 0, 0);
       const L = P.big;
       const wide = W > H;
-      const labelX = wide ? W * 0.55 : W * 0.58;
-      // Le produit tient dans la zone à gauche des légendes (un produit large n'est ni coupé ni sous le texte).
+      const items = scene.items.slice(0, 3);
+      let top = safe.top;
+      if (scene.heading) top += kinetic(ctx, scene.heading, { x: safe.side, y: safe.top, maxW: W - safe.side * 2, size: Math.round(headSize * 0.7), family: typo.heading, weight: headW, color: pal.text, t: local, uppercase: typo.uppercase }) + headSize * 0.3;
+      if (!wide) {
+        // Vertical et carré : le produit en grand au centre, les faits en lignes lisibles dessous (taille sous-titre),
+        // chacune reliée au produit par un trait qui se trace ; une ligne de plus toutes les 0,55 s.
+        const fs = Math.round(bodySize * (isTall ? 1.4 : 1.2));
+        const rowH = fs * 1.75;
+        const listH = rowH * items.length;
+        const bottom = H - safe.bottom * (isTall ? 0.8 : 1);
+        const baseY = bottom - listH - fs * 0.9;
+        const k = Math.min((baseY - top - H * 0.02) / L.height, (W * (isTall ? 0.78 : 0.62)) / L.pw);
+        const zoom = k * (1.04 - 0.04 * easeOut(seg(local, 0, 1.2)));
+        ctx.save();
+        ctx.translate(W / 2, baseY);
+        ctx.scale(zoom, zoom);
+        ctx.drawImage(L.canvas as any, -L.canvas.width / 2, -L.baseOffset);
+        ctx.restore();
+        items.forEach((item, i) => {
+          const p = easeOut(seg(local, 0.35 + i * 0.55, 0.5));
+          if (p <= 0) return;
+          const y = baseY + fs * 0.9 + i * rowH + rowH / 2;
+          ctx.globalAlpha = p;
+          ctx.fillStyle = pal.accent;
+          ctx.beginPath();
+          ctx.arc(safe.side + fs * 0.35, y, fs * 0.22, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = pal.text;
+          ctx.font = font(typo.body, 600, fs);
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          const line = wrapLines(ctx, item, W - safe.side * 2 - fs * 1.1)[0] ?? item;
+          ctx.fillText(line, safe.side + fs * 1.1 + (1 - p) * 30, y);
+          ctx.strokeStyle = mix(pal.text, pal.bg, 0.75);
+          ctx.lineWidth = Math.max(1, W * 0.0015);
+          ctx.beginPath();
+          ctx.moveTo(safe.side, y + rowH / 2);
+          ctx.lineTo(safe.side + (W - safe.side * 2) * p, y + rowH / 2);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        });
+        break;
+      }
+      const labelX = W * 0.55;
+      // Horizontal : produit à gauche, légendes à droite reliées par un trait.
       const zoneW = labelX - W * 0.04 - safe.side * 0.5;
-      const pScale = Math.min(wide ? 0.95 : 1, zoneW / L.pw);
+      const pScale = Math.min(0.95, zoneW / L.pw, (H - safe.bottom - top - H * 0.05) / L.height);
       const px = safe.side * 0.5 + zoneW / 2;
       const baseY = H - safe.bottom - H * 0.03;
       ctx.save();
@@ -496,32 +576,30 @@ function drawScene(ctx: Ctx, scene: VideoScene, t: number, local: number, P: Pre
       ctx.drawImage(L.canvas as any, -L.canvas.width / 2, -L.baseOffset);
       ctx.restore();
       const pw = L.pw * pScale, ph = L.height * pScale;
-      if (scene.heading) kinetic(ctx, scene.heading, { x: safe.side, y: safe.top, maxW: W - safe.side * 2, size: Math.round(headSize * 0.7), family: typo.heading, weight: headW, color: pal.text, t: local, uppercase: typo.uppercase });
-      const items = scene.items.slice(0, 3);
       const labelW = W - labelX - safe.side;
+      const fs = Math.round(bodySize * 1.2);
       items.forEach((item, i) => {
         const start = 0.4 + i * 0.55;
         const p = easeOut(seg(local, start, 0.6));
         if (p <= 0) return;
         const anchorY = baseY - ph * (0.78 - i * 0.26);
         const anchorX = px + pw * 0.32;
-        const ly = anchorY;
         ctx.strokeStyle = pal.text;
         ctx.lineWidth = Math.max(2, W * 0.0025);
         ctx.beginPath();
         ctx.moveTo(anchorX, anchorY);
-        ctx.lineTo(anchorX + (labelX - 16 - anchorX) * p, ly);
+        ctx.lineTo(anchorX + (labelX - 16 - anchorX) * p, anchorY);
         ctx.stroke();
         ctx.fillStyle = pal.text;
         ctx.beginPath();
         ctx.arc(anchorX, anchorY, Math.max(5, W * 0.007) * p, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = clamp((p - 0.4) / 0.6);
-        ctx.font = font(typo.body, 600, bodySize);
+        ctx.font = font(typo.body, 600, fs);
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        const lines = wrapLines(ctx, item, labelW).slice(0, 3);
-        lines.forEach((l, k) => ctx.fillText(l, labelX + (1 - p) * 30, ly + (k - (lines.length - 1) / 2) * bodySize * 1.25));
+        const lines = wrapLines(ctx, item, labelW).slice(0, 2);
+        lines.forEach((l, k) => ctx.fillText(l, labelX + (1 - p) * 30, anchorY + (k - (lines.length - 1) / 2) * fs * 1.2));
         ctx.globalAlpha = 1;
       });
       break;

@@ -718,6 +718,18 @@ export function localVideoPlan(p: ProductProfile, brand: Brand, format: VideoSpe
       scenes.splice(i, 1);
     }
   }
+  // Un même titre n'apparaît qu'une fois (écran partagé puis révélation « Pompon », « Pompon ») : le plan suivant
+  // prend un fait confirmé encore jamais affiché, sinon se passe de titre (le produit parle seul).
+  const shownText = new Set<string>();
+  const norm = (t: string) => t.trim().toLowerCase();
+  for (const x of scenes) {
+    const h = "headline" in x ? x.headline : x.kind === "title" ? x.text : undefined;
+    if (!h) continue;
+    if (!shownText.has(norm(h))) { shownText.add(norm(h)); continue; }
+    if (x.kind === "title" || x.kind === "hook") continue;
+    const fresh = facts.find((f) => !shownText.has(norm(f)) && !scenes.some((y) => "items" in y && y.items.some((it) => norm(it) === norm(f))) && f.split(/\s+/).length <= 6);
+    if (fresh) { (x as { headline?: string }).headline = fresh; shownText.add(norm(fresh)); } else delete (x as { headline?: string }).headline;
+  }
   scenes.push(end);
   return { format, scenes, transition, music, captions: true };
 }
