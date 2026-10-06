@@ -24,7 +24,7 @@ import { TUTORIALS, TUTORIAL_IDS, tutorialSlug, type TutorialId } from "../src/l
 const PIPER = process.env.PIPER ?? "piper";
 const KOKORO = process.env.KOKORO ?? "";
 /** Kokoro : voix d'homme au timbre grave, prononciation française de la voix française (mélange vérifié par transcription). */
-const KOKORO_VOICES = { fr: process.env.VOICE_FR ?? "ff_siwis:0.4,am_michael:0.6", en: process.env.VOICE_EN ?? "am_michael" };
+const KOKORO_VOICES = { fr: process.env.VOICE_FR ?? "ff_siwis:0.4,em_alex:0.6", en: process.env.VOICE_EN ?? "am_michael" };
 const VOICES = KOKORO ? KOKORO_VOICES : { fr: process.env.VOICE_FR ?? "", en: process.env.VOICE_EN ?? "" };
 const OUT = path.join(process.cwd(), "public", "tutorials");
 const SILENT = path.join(process.cwd(), "scripts", "tutorials", "silent");
@@ -53,16 +53,20 @@ const hasAudio = (file: string) => spawnSync("ffprobe", ["-v", "error", "-select
 
 /**
  * Mots anglais ou techniques réécrits comme ils se prononcent en français (sinon la voix les lit « à la française »).
- * Chaque graphie est vérifiée : une transcription automatique de la phrase lue redonne bien le mot d'origine.
+ * Seuls les mots mal lus sont réécrits, et chaque graphie est vérifiée : une transcription automatique (Whisper) de la
+ * phrase lue redonne bien le mot d'origine. Shopify, CapCut, WordPress, YouTube, TikTok, Instagram… sont déjà bien lus.
  */
 const SAY_FR: [RegExp, string][] = [
-  [/\bShopify\b/g, "Chopifaille"],
-  [/\bprompts\b/g, "promptes"],
-  [/\bprompt\b/g, "prompte"],
-  [/\bCapCut\b/g, "Cap Keute"],
-  [/\bWordPress\b/g, "Weurdprèsse"],
-  [/\bYouTube\b/g, "Youtioube"],
-  [/\be-mail\b/g, "imèle"],
+  [/\bprompts\b/g, "prommptes"],
+  [/\bprompt\b/g, "prommpte"],
+  [/\bPinterest\b/g, "Pinntéreste"],
+  [/\be-?mails?\b/g, "i mèle"],
+  [/\bnewsletters?\b/g, "niouzelèteur"],
+  [/\bStripe\b/g, "Straille pe"],
+  [/\bPayPal\b/g, "Pèï pal"],
+  [/\bmock-?ups?\b/gi, "mokeupe"],
+  [/\blifestyle\b/gi, "laïfstaïle"],
+  [/\bcheckout\b/gi, "tchèkaoute"],
 ];
 
 /** Texte lu : guillemets et signes typographiques retirés, abréviations dites en entier, mots anglais respelés. */
