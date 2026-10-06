@@ -140,14 +140,14 @@ export default function TabMarque() {
                 </div>
               )}
             </div>
-            <Field label={t("Positionnement", "Positioning")} htmlFor="bpos"><Textarea id="bpos" rows={3} value={b.positioning} onChange={(e) => set({ positioning: e.target.value })} /></Field>
-            <Field label={t("Cible", "Audience")} htmlFor="baud"><Textarea id="baud" rows={2} value={b.audience} onChange={(e) => set({ audience: e.target.value })} /></Field>
+            <Field label={t("Positionnement", "Positioning")} htmlFor="bpos"><Textarea autoGrow id="bpos" rows={3} value={b.positioning} onChange={(e) => set({ positioning: e.target.value })} /></Field>
+            <Field label={t("Cible", "Audience")} htmlFor="baud"><Textarea autoGrow id="baud" rows={2} value={b.audience} onChange={(e) => set({ audience: e.target.value })} /></Field>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label={t("Voix", "Voice")} htmlFor="bvoice"><Input id="bvoice" value={b.tone.voice} onChange={(e) => set({ tone: { ...b.tone, voice: e.target.value } })} /></Field>
-              <Field label={t("À faire", "Do")} htmlFor="bdo"><Input id="bdo" value={b.tone.do.join(" ; ")} onChange={(e) => set({ tone: { ...b.tone, do: e.target.value.split(";").map((x) => x.trim()).filter(Boolean) } })} /></Field>
-              <Field label={t("À éviter", "Don't")} htmlFor="bdont"><Input id="bdont" value={b.tone.dont.join(" ; ")} onChange={(e) => set({ tone: { ...b.tone, dont: e.target.value.split(";").map((x) => x.trim()).filter(Boolean) } })} /></Field>
+              <Field label={t("Voix", "Voice")} htmlFor="bvoice"><Textarea autoGrow rows={1} id="bvoice" value={b.tone.voice} onChange={(e) => set({ tone: { ...b.tone, voice: e.target.value } })} /></Field>
+              <Field label={t("À faire", "Do")} htmlFor="bdo"><Textarea autoGrow rows={1} id="bdo" value={b.tone.do.join(" ; ")} onChange={(e) => set({ tone: { ...b.tone, do: e.target.value.split(";").map((x) => x.trim()).filter(Boolean) } })} /></Field>
+              <Field label={t("À éviter", "Don't")} htmlFor="bdont"><Textarea autoGrow rows={1} id="bdont" value={b.tone.dont.join(" ; ")} onChange={(e) => set({ tone: { ...b.tone, dont: e.target.value.split(";").map((x) => x.trim()).filter(Boolean) } })} /></Field>
             </div>
-            <Field label={t("Histoire de la marque", "Brand story")} htmlFor="bstory" hint={t("N'écrivez que des faits réels (origine, fondateurs, fabrication).", "Only write real facts (origin, founders, manufacturing).")}><Textarea id="bstory" rows={4} value={b.story} onChange={(e) => set({ story: e.target.value })} /></Field>
+            <Field label={t("Histoire de la marque", "Brand story")} htmlFor="bstory" hint={t("N'écrivez que des faits réels (origine, fondateurs, fabrication).", "Only write real facts (origin, founders, manufacturing).")}><Textarea autoGrow id="bstory" rows={4} value={b.story} onChange={(e) => set({ story: e.target.value })} /></Field>
             <div>
               <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">{t("Palette", "Palette")}</p>{V("palette")}</div>
               <div className="grid grid-cols-5 gap-2">
@@ -207,7 +207,7 @@ export default function TabMarque() {
             <div className="mt-3 grid grid-cols-2 gap-2">
               {DIRECTIONS.map((d) => (
                 <button key={d.id} onClick={() => set({ direction: d.id })} className={cx("overflow-hidden rounded-2xl border text-left transition", b.direction === d.id ? "border-signal ring-2 ring-signal" : "border-line hover:border-ink")} aria-pressed={b.direction === d.id}>
-                  <img src={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} alt="" className="aspect-[4/3] w-full object-cover object-top" loading="lazy" />
+                  <DirectionThumb projectId={id} direction={d.id} fallback={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} />
                   <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTION_TAGLINE_EN[d.id] ?? d.tagline)}</span></span>
                 </button>
               ))}
@@ -463,5 +463,17 @@ function BrandBook() {
         </div>
       )}
     </Card>
+  );
+}
+
+/** Vignette d'une direction avec le contenu du projet (photos, nom, textes) ; capture d'exemple seulement en secours. */
+function DirectionThumb({ projectId, direction, fallback }: { projectId: string; direction: string; fallback: string }) {
+  const [state, setState] = useState<"loading" | "ok" | "error">("loading");
+  return (
+    <span className="relative block aspect-[4/3] w-full overflow-hidden bg-paper-2">
+      {state === "loading" && <span className="skeleton absolute inset-0" aria-hidden />}
+      {state === "error" && <img src={fallback} alt="" className="absolute inset-0 size-full object-cover object-top" loading="lazy" />}
+      {state !== "error" && <img src={`/api/projects/${projectId}/theme/direction-thumb?d=${direction}`} alt="" className={cx("absolute inset-0 size-full object-cover object-top transition-opacity duration-500", state === "ok" ? "opacity-100" : "opacity-0")} loading="lazy" onLoad={() => setState("ok")} onError={() => setState("error")} />}
+    </span>
   );
 }

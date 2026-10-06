@@ -33,7 +33,8 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     // Attribut « sandbox » des iframes d'aperçu (dépend de l'hébergement, voir preview-access.ts).
     sandbox: previewSandbox(),
     messages,
-    directions: directionCards(ui),
+    // Vignettes composées avec le contenu du projet (photos, nom, textes) plutôt que les captures d'exemple.
+    directions: directionCards(ui).map((d) => (p.brand ? { ...d, preview: `/api/projects/${p.id}/theme/direction-thumb?d=${d.id}` } : d)),
     // Thème importé : ses propres sections ajoutables (celles qui ont un préréglage, comme dans l'éditeur Shopify).
     library: cur.spec.imported
       ? availableSectionTypes(cur.spec)

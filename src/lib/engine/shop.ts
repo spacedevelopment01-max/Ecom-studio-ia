@@ -137,12 +137,17 @@ export function storeProduct(p: Project, copy: ShopCopy, gallery: string[]): Sto
   };
 }
 
-export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi } = {}) {
+/**
+ * Boutique composée dans une direction, avec le contenu du projet (marque, textes, photos, prestations).
+ * `ctx` présent : les médias manquants (variantes, catalogue) sont préparés d'abord ; sans `ctx` (vignettes
+ * d'aperçu des directions), on compose avec ce qui existe déjà, sans rien générer.
+ */
+export async function composeShop(projectId: string, directionOpt?: DirectionId, ctx?: JobContext | null, prepare = ctx !== undefined) {
   const p = loadProject(projectId);
   const brand = p.brand;
   if (!brand) throw new Error(L("La marque doit être définie avant la boutique.", "The brand must be defined before the store."));
   const copy = savedCopy(projectId) ?? localCopy(p.product, brand, p);
-  await ensureVariantMedia(ctx, projectId);
+  if (prepare) await ensureVariantMedia(ctx ?? null, projectId);
   const { slots, files, gallery } = collectImages(projectId);
   const services = p.business === "services";
   // Entreprise de services : les photos du marchand (rôle « lifestyle ») illustrent ouverture, prestations, méthode et réalisations.
@@ -152,18 +157,18 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
   // Boutique multi-produit ou niche : les autres produits sont détourés, mis en packshot et rangés en collections.
   let catalog: ReturnType<typeof catalogStore> | null = null;
   if (!services && p.storeType !== "mono" && p.catalog.length) {
-    await ensureCatalogMedia(ctx, projectId);
+    if (prepare) await ensureCatalogMedia(ctx ?? null, projectId);
     catalog = catalogStore(loadProject(projectId), main, themeFileName);
     Object.assign(files, catalog.files);
   }
-  const direction = opts.direction ?? brand.direction;
+  const direction = directionOpt ?? brand.direction;
   ctx?.progress(0.2, L(`Composition de la boutique (direction ${directionById(direction).name})`, `Composing the store (${directionById(direction).name} direction)`));
-  let spec = buildSpec({
+  const spec = buildSpec({
     direction,
     shopName: brand.name,
     palette: brand.palette,
     // Les polices de la marque ne priment que si elles ont été choisies (IA ou client), pas recopiées d'une direction.
-    fonts: (opts.direction && opts.direction !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts,
+    fonts: (directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts,
     copy,
     images: slots,
     files,
@@ -173,6 +178,12 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
     ...(services ? { business: "services" as const, services: p.services, servicesTermsHtml: serviceTermsHtml(p.services) } : {}),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
+  return { p, direction, services, catalog, spec };
+}
+
+export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi } = {}) {
+  const { p, direction, services, catalog, spec: built } = await composeShop(projectId, opts.direction, ctx);
+  let spec = built;
   let author: "ai" | "system" = "system";
   // Résumé de la version enregistré dans les deux langues : affiché ensuite dans celle de l'interface.
   let summary: Bi = opts.summary ?? inBothLangs(() => (services ? L(`Site créé — direction ${directionById(direction).name}`, `Website created — ${directionById(direction).name} direction`) : L(`Boutique créée — direction ${directionById(direction).name}`, `Store created — ${directionById(direction).name} direction`)));

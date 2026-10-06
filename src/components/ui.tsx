@@ -1,7 +1,7 @@
 "use client";
 /** Composants d'interface du studio (accessibles, clair/sombre). */
 import Link from "next/link";
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Moon, Sun, X, Loader2, Check, AlertTriangle, Info } from "lucide-react";
 import { currentLang, useT } from "./i18n";
 import { CONTENT_LANG_HEADER, intlLocale, type Lang } from "@/lib/i18n";
@@ -177,8 +177,22 @@ export const inputCls = "h-11 w-full min-w-0 rounded-2xl border border-line bg-c
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cx(inputCls, props.className)} />;
 }
-export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={cx(inputCls, "h-auto min-h-24 py-3 leading-relaxed", props.className)} />;
+/** `autoGrow` : la zone s'agrandit avec son texte (tout reste lisible, sans barre de défilement interne). */
+export function Textarea({ autoGrow, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { autoGrow?: boolean }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!autoGrow || !el) return;
+    const fit = () => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight + 2}px`;
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el.parentElement ?? el);
+    return () => ro.disconnect();
+  }, [autoGrow, props.value]);
+  return <textarea ref={ref} {...props} className={cx(inputCls, "h-auto py-3 leading-relaxed", autoGrow ? "min-h-0 resize-none overflow-hidden" : "min-h-24", props.className)} />;
 }
 export function Select({ className, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
