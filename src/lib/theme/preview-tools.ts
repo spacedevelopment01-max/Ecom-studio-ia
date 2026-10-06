@@ -20,7 +20,7 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
 <script>
 (function(){
   var picking=false, hovered=null, label=null;
-  var SEL='a,button,img,video,h1,h2,h3,h4,h5,p,li,summary,label,[data-es-block],[data-es-section]';
+  var SEL='img,video,.es-placeholder,a,button,h1,h2,h3,h4,h5,p,li,summary,label,[data-es-block],[data-es-section]';
   function kind(tag){ return /^(a|button|summary)$/.test(tag)?'${t("Bouton", "Button")}':/^h[1-5]$/.test(tag)?'${t("Titre", "Heading")}':/^(img|video)$/.test(tag)?'Image':/^(p|li|label)$/.test(tag)?'${t("Texte", "Text")}':'${t("Bloc", "Block")}'; }
   function role(tag){ return /^(a|button|summary)$/.test(tag)?'button':/^h[1-5]$/.test(tag)?'heading':/^(p|li|label)$/.test(tag)?'text':'other'; }
   /* Adresse précise de l'élément dans sa section (balises et rangs) : seul lui reçoit un style. */
@@ -32,18 +32,22 @@ export const previewTools = (lang: Lang, business: "products" | "services" = "pr
     var blk=el.closest('[data-es-block]');
     var txt=(el.innerText||el.alt||'').trim().slice(0,200);
     var tag=el.tagName.toLowerCase(); var whole=el===sec;
-    return {template: tpl, section:id, block: !whole && blk && sec.contains(blk) ? blk.getAttribute('data-es-block') : undefined, text: whole?undefined:txt, tag: whole?undefined:tag, kind: whole?'Section':kind(tag), type: sec.getAttribute('data-es-type'), path: whole?undefined:pathOf(el, sec), role: whole?undefined:role(tag)};
+    var media=/^(img|video)$/.test(tag)||(el.classList&&el.classList.contains('es-placeholder'));
+    var src=!whole&&media?(tag==='video'?(el.currentSrc||el.getAttribute('src')||(el.querySelector('source')&&el.querySelector('source').getAttribute('src'))||el.getAttribute('poster')||''):(el.currentSrc||el.getAttribute('src')||'')):'';
+    return {template: tpl, section:id, src: src?String(src).slice(0,600):undefined, block: !whole && blk && sec.contains(blk) ? blk.getAttribute('data-es-block') : undefined, text: whole?undefined:txt, tag: whole?undefined:tag, kind: whole?'Section':(media?'Image':kind(tag)), type: sec.getAttribute('data-es-type'), path: whole?undefined:pathOf(el, sec), role: whole?undefined:role(tag)};
   }
+  /* Image recouverte (dégradé, calque de texte) : sous le pointeur, l'image passe avant le conteneur. */
+  function pick(e){ var t=e.target.closest&&e.target.closest(SEL); if(t && t.matches('[data-es-block],[data-es-section]') && document.elementsFromPoint){ var st=document.elementsFromPoint(e.clientX,e.clientY); for(var k=0;k<st.length;k++){ var m=st[k]; if(m.matches&&m.matches('img,video,.es-placeholder')&&t.contains(m)) return m; if(m===t) break; } } return t; }
   function clearHover(){ if(hovered){ hovered.classList.remove('es-pv-hover'); hovered=null; } if(label){ label.remove(); label=null; } }
   document.addEventListener('mouseover', function(e){
-    if(!picking) return; var t=e.target.closest(SEL); if(!t) return;
+    if(!picking) return; var t=pick(e); if(!t) return;
     clearHover(); hovered=t; t.classList.add('es-pv-hover');
     var i=info(t); if(!i) return; label=document.createElement('div'); label.className='es-pv-label'; label.textContent=i.kind+(i.text?' · '+i.text.slice(0,32):'');
     var r=t.getBoundingClientRect(); label.style.left=Math.max(4,r.left)+'px'; label.style.top=Math.max(4,r.top-24)+'px'; document.body.appendChild(label);
   }, true);
   document.addEventListener('click', function(e){
     if(!picking) return; e.preventDefault(); e.stopPropagation();
-    var t=hovered||(e.target.closest&&e.target.closest(SEL))||e.target; var i=info(t); if(!i) return;
+    var t=hovered||pick(e)||e.target; var i=info(t); if(!i) return;
     document.querySelectorAll('.es-pv-picked').forEach(function(x){x.classList.remove('es-pv-picked')});
     t.classList.add('es-pv-picked'); clearHover(); picking=false; post({type:'selected', selection:i});
   }, true);

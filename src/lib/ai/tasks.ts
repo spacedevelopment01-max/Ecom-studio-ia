@@ -628,11 +628,11 @@ export async function aiThemeChat(
   b: Base,
   p: Project,
   spec: ThemeSpec,
-  input: { message: string; selection?: { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string; path?: string; role?: string } | null; attachments: { assetId: string; name: string; image?: Buffer }[]; page: string; history: { role: string; content: string }[] },
+  input: { message: string; selection?: { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string; path?: string; role?: string; src?: string; mediaKey?: string; mediaBlock?: string } | null; attachments: { assetId: string; name: string; image?: Buffer }[]; page: string; history: { role: string; content: string }[] },
 ): Promise<ChatResult> {
   const templates = ["group:header", input.page, "group:footer"].filter((v, i, a) => a.indexOf(v) === i);
   const sel = input.selection
-    ? `Élément désigné dans l'aperçu : gabarit ${input.selection.template}, section ${input.selection.section}${input.selection.type ? ` (type ${input.selection.type})` : ""}${input.selection.kind === "Section" ? " — toute la section" : ""}${input.selection.block ? `, bloc ${input.selection.block}` : ""}${input.selection.tag ? `, balise <${input.selection.tag}>` : ""}${input.selection.text ? `, texte « ${input.selection.text.slice(0, 160)} »` : ""}${input.selection.path && input.selection.kind !== "Section" ? `. Chemin de l'élément (pour element_style) : ${input.selection.path} ; nature : ${input.selection.role ?? "other"}` : ""}.`
+    ? `Élément désigné dans l'aperçu : gabarit ${input.selection.template}, section ${input.selection.section}${input.selection.type ? ` (type ${input.selection.type})` : ""}${input.selection.kind === "Section" ? " — toute la section" : ""}${input.selection.block ? `, bloc ${input.selection.block}` : ""}${input.selection.tag ? `, balise <${input.selection.tag}>` : ""}${input.selection.text ? `, texte « ${input.selection.text.slice(0, 160)} »` : ""}${input.selection.path && input.selection.kind !== "Section" ? `. Chemin de l'élément (pour element_style) : ${input.selection.path} ; nature : ${input.selection.role ?? "other"}` : ""}${input.selection.mediaKey ? `. C'est une image/vidéo affichée par le réglage « ${input.selection.mediaKey} »${input.selection.mediaBlock ? ` du bloc ${input.selection.mediaBlock}` : " de la section"} : pour la remplacer par une pièce jointe, use_media{template:${input.selection.template},section:${input.selection.section}${input.selection.mediaBlock ? `,block:${input.selection.mediaBlock}` : ""},key:${input.selection.mediaKey},assetId}` : ""}.`
     : "Aucun élément désigné.";
   return llmJson(
     {

@@ -45,7 +45,7 @@ type ThemeData = {
   directions: DirectionCard[];
   library: LibraryItem[];
 };
-type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string; path?: string; role?: string } | null;
+type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string; path?: string; role?: string; src?: string } | null;
 
 /** Noms lisibles des sections, pour la désignation d'un élément dans l'aperçu. */
 const SECTION_NAMES: Record<string, string> = {
@@ -218,6 +218,12 @@ export default function TabBoutique() {
     } catch {}
   }, [id]);
 
+  // Image désignée + nouvelle image jointe : la demande « Remplace cette image par celle-ci » est préremplie.
+  const addAttachments = (list: AssetView[]) => {
+    setAttachments((cur) => [...cur, ...list]);
+    if (selection?.kind === "Image" && list.length && !message.trim()) setMessage(t("Remplace cette image par celle-ci", "Replace this image with this one"));
+  };
+
   const send = useCallback(
     async (text?: string) => {
       const msg = (text ?? message).trim();
@@ -335,7 +341,7 @@ export default function TabBoutique() {
         {theme.messages.length === 0 && (
           <div className="rounded-2xl bg-paper-2 p-4 text-sm text-ink-2">
             <p className="font-medium text-ink">{t("Décrivez ce que vous voulez changer.", "Describe what you want to change.")}</p>
-            <p className="mt-1">{t("Désignez un élément dans l'aperçu avec", "Select an element in the preview with")} <Crosshair className="inline size-3.5" /> {t("pour une retouche ciblée, joignez une image ou une capture. Chaque modification crée une version restaurable.", "for a targeted edit, or attach an image or screenshot. Every change creates a version you can restore.")}</p>
+            <p className="mt-1">{t("Désignez un élément dans l'aperçu avec", "Select an element in the preview with")} <Crosshair className="inline size-3.5" /> {t("pour une retouche ciblée, joignez une image ou une capture. Pour changer une image : désignez-la, joignez la nouvelle et envoyez « Remplace cette image par celle-ci ». Chaque modification crée une version restaurable.", "for a targeted edit, or attach an image or screenshot. To change an image: select it, attach the new one and send “Replace this image with this one”. Every change creates a version you can restore.")}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {(isServices ? SUGGESTIONS_SERVICES : SUGGESTIONS).map(([fr, en]) => { const s = t(fr, en); return <button key={fr} onClick={() => setMessage(s)} className="rounded-full border border-line bg-card px-3 py-1 text-left text-xs hover:border-ink">{s}</button>; })}
             </div>
@@ -364,6 +370,16 @@ export default function TabBoutique() {
                 <Crosshair className="size-3.5 shrink-0" /> <span className="min-w-0 truncate">{describeSelection(selection, t)}</span>
                 <button onClick={() => { setSelection(null); iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "unpick" }, "*"); }} aria-label={t("Retirer la désignation", "Clear selection")}><X className="size-3.5" /></button>
               </span>
+            )}
+            {selection?.kind === "Image" && (
+              <>
+                <button onClick={() => setPickerOpen(true)} className="inline-flex items-center gap-1.5 rounded-full border border-signal px-3 py-1 text-xs text-signal hover:bg-signal-soft">
+                  <Paperclip className="size-3.5" /> {t("Remplacer par une image du projet", "Replace with a project image")}
+                </button>
+                <button onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-1.5 rounded-full border border-signal px-3 py-1 text-xs text-signal hover:bg-signal-soft">
+                  <Upload className="size-3.5" /> {t("Importer la nouvelle image", "Upload the new image")}
+                </button>
+              </>
             )}
             {selection && selection.kind !== "Section" && (
               <button onClick={() => setSelection({ template: selection.template, section: selection.section, type: selection.type, kind: "Section" })} className="rounded-full border border-line px-3 py-1 text-xs hover:border-ink">
@@ -395,7 +411,7 @@ export default function TabBoutique() {
                 fd.append("role", "reference");
                 try {
                   const r = await api<{ assets: AssetView[] }>(`/api/projects/${id}/files`, { form: fd });
-                  setAttachments([...attachments, ...r.assets]);
+                  addAttachments(r.assets);
                 } catch (err) {
                   toast("bad", (err as Error).message);
                 }
@@ -420,7 +436,7 @@ export default function TabBoutique() {
           <Button type="submit" variant="signal" size="md" loading={sending} className="size-11 shrink-0 !px-0" aria-label={t("Envoyer", "Send")}><Send className="size-4" /></Button>
         </form>
         <ContentLangPicker {...cl} compact className="mt-2 text-xs" />
-        {!data?.ai.llm && <p className="mt-2 text-[11px] text-muted">{t("IA non connectée : commandes simples uniquement (couleur des boutons, texte entre guillemets sur l'élément désigné, ajouter une FAQ, monter, supprimer, revenir en arrière, changer de direction).", "AI not connected: simple commands only (button color, quoted text on the selected element, add an FAQ, move up, delete, undo, change direction).")}</p>}
+        {!data?.ai.llm && <p className="mt-2 text-[11px] text-muted">{t("IA non connectée : commandes simples uniquement (couleur des boutons, texte entre guillemets sur l'élément désigné, remplacer une image désignée par une image jointe, ajouter une FAQ, monter, supprimer, revenir en arrière, changer de direction).", "AI not connected: simple commands only (button color, quoted text on the selected element, replace a selected image with an attached one, add an FAQ, move up, delete, undo, change direction).")}</p>}
       </div>
     </div>
   );
@@ -543,7 +559,7 @@ export default function TabBoutique() {
         <section className={cx("min-h-0", view !== "preview" && "hidden lg:block")} aria-label={t("Aperçu", "Preview")}>{Preview}</section>
         <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? "hidden xl:block" : "")} aria-label={t("Structure", "Structure")}>{Structure}</section>
       </div>
-      <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} multiple kinds={["image", "video", "logo"]} onPick={(a) => setAttachments([...attachments, ...a])} />
+      <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} multiple kinds={["image", "video", "logo"]} onPick={(a) => addAttachments(a)} />
       <Modal open={historyOpen} onClose={() => setHistoryOpen(false)} title={isServices ? t("Versions du site", "Website versions") : t("Versions de la boutique", "Store versions")}>
         <ul className="grid max-h-[60dvh] gap-2 overflow-y-auto">
           {theme.versions.map((v) => (
