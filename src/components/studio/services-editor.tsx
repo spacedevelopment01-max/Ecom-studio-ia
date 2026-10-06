@@ -1,8 +1,8 @@
 "use client";
-import { CalendarCheck, FileText, MessageSquare, Phone, Plus, Trash2 } from "lucide-react";
+import { CalendarCheck, Check, FileText, MessageSquare, Phone, Plus, Trash2 } from "lucide-react";
 import { Button, cx, Input } from "../ui";
 import { useT } from "../i18n";
-import type { ServiceItem, ServiceProfile } from "@/lib/project-types";
+import { contactModesOf, type ContactMode, type ServiceItem, type ServiceProfile } from "@/lib/project-types";
 
 /** Liste des prestations : nom, description courte, prix et durée facultatifs ; lignes ajoutées ou retirées librement. */
 export function ServicesEditor({ value, onChange, idPrefix = "svc" }: { value: ServiceItem[]; onChange: (v: ServiceItem[]) => void; idPrefix?: string }) {
@@ -36,22 +36,34 @@ export function ServicesEditor({ value, onChange, idPrefix = "svc" }: { value: S
   );
 }
 
-/** Façon dont le client prend contact : rendez-vous en ligne, devis, appel ou formulaire. */
-export function ContactModePicker({ value, onChange }: { value: ServiceProfile["contactMode"]; onChange: (v: ServiceProfile["contactMode"]) => void }) {
+/**
+ * Façons dont le client prend contact (plusieurs possibles) : rendez-vous en ligne, devis, appel, formulaire.
+ * La première choisie est la principale (bouton principal du site) ; au moins une reste cochée.
+ */
+export function ContactModePicker({ value, onChange }: { value: ContactMode[]; onChange: (v: ContactMode[]) => void }) {
   const t = useT();
-  const modes: [ServiceProfile["contactMode"], typeof Phone, string][] = [
+  const toggle = (id: ContactMode) => onChange(value.includes(id) ? (value.length > 1 ? value.filter((m) => m !== id) : value) : [...value, id]);
+  const modes: [ContactMode, typeof Phone, string][] = [
     ["booking", CalendarCheck, t("Rendez-vous en ligne", "Online booking")],
     ["quote", FileText, t("Demande de devis", "Quote request")],
     ["call", Phone, t("Appel", "Phone call")],
     ["form", MessageSquare, t("Formulaire de contact", "Contact form")],
   ];
   return (
-    <div role="radiogroup" aria-label={t("Mode de contact", "Contact method")} className="grid grid-cols-2 gap-2">
-      {modes.map(([id, Icon, label]) => (
-        <button key={id} type="button" role="radio" aria-checked={value === id} onClick={() => onChange(id)} className={cx("flex min-h-11 items-center gap-2 rounded-2xl border px-3 py-2 text-left text-[13px] transition", value === id ? "border-signal bg-signal-soft font-medium" : "border-line bg-card hover:border-ink")}>
-          <Icon className="size-4 shrink-0" aria-hidden /> {label}
-        </button>
-      ))}
+    <div className="grid gap-1.5">
+      <div role="group" aria-label={t("Façons de vous contacter", "Ways to get in touch")} className="grid grid-cols-2 gap-2">
+        {modes.map(([id, Icon, label]) => {
+          const on = value.includes(id);
+          return (
+            <button key={id} type="button" role="checkbox" aria-checked={on} onClick={() => toggle(id)} className={cx("flex min-h-11 items-center gap-2 rounded-2xl border px-3 py-2 text-left text-[13px] transition", on ? "border-signal bg-signal-soft font-medium" : "border-line bg-card hover:border-ink")}>
+              {on ? <Check className="size-4 shrink-0" aria-hidden /> : <Icon className="size-4 shrink-0" aria-hidden />}
+              <span className="min-w-0 flex-1">{label}</span>
+              {on && value[0] === id && value.length > 1 && <span className="shrink-0 rounded-full bg-card px-2 py-0.5 text-[10px] font-semibold text-muted">{t("Principal", "Main")}</span>}
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-xs text-muted">{t("Cochez-en autant que vous voulez. La première cochée devient le bouton principal du site.", "Tick as many as you like. The first one ticked becomes the site's main button.")}</p>
     </div>
   );
 }
@@ -70,6 +82,6 @@ export function missingActivity(s: ServiceProfile | undefined | null): ("service
   if (!s.area && !s.address) out.push("area");
   if (!s.phone && !s.email) out.push("contact");
   if (!s.hours) out.push("hours");
-  if (s.contactMode === "booking" && !s.bookingUrl) out.push("booking");
+  if (contactModesOf(s).includes("booking") && !s.bookingUrl) out.push("booking");
   return out;
 }

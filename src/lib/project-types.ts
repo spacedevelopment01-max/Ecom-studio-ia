@@ -172,9 +172,18 @@ export type ServiceProfile = {
   hours: string;
   /** Lien de prise de rendez-vous (Calendly, Planity, Doctolib…), facultatif. */
   bookingUrl: string;
-  /** Comment le client contacte ou réserve : appel, formulaire, rendez-vous en ligne, devis. */
-  contactMode: "booking" | "quote" | "call" | "form";
+  /** Façon de contacter PRINCIPALE (bouton principal du site) : appel, formulaire, rendez-vous en ligne, devis. */
+  contactMode: ContactMode;
+  /** Toutes les façons de contacter acceptées (la principale en premier). Absent sur les anciens projets. */
+  contactModes?: ContactMode[];
 };
+export type ContactMode = "booking" | "quote" | "call" | "form";
+export const CONTACT_MODES: ContactMode[] = ["booking", "quote", "call", "form"];
+/** Façons de contacter d'un profil, la principale en premier, sans doublon. */
+export function contactModesOf(s: Pick<ServiceProfile, "contactMode" | "contactModes"> | null | undefined): ContactMode[] {
+  if (!s) return ["form"];
+  return [...new Set([s.contactMode, ...(s.contactModes ?? [])])].filter((m): m is ContactMode => CONTACT_MODES.includes(m as ContactMode));
+}
 export const emptyServiceProfile = (): ServiceProfile => ({ services: [], area: "", address: "", phone: "", email: "", hours: "", bookingUrl: "", contactMode: "form" });
 
 /** Type de boutique : un produit phare, un catalogue varié, ou une niche (plusieurs produits d'un même univers). */

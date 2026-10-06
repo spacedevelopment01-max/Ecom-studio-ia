@@ -10,7 +10,7 @@ import { hasAiCredits } from "@/lib/ai/access";
 import { assertAutopublish } from "@/lib/plan-gates";
 import { aiAvailability } from "@/lib/ai/config";
 import { balance } from "@/lib/billing";
-import { FactSchema, sectorLabel } from "@/lib/project-types";
+import { contactModesOf, FactSchema, sectorLabel } from "@/lib/project-types";
 import { HttpError } from "@/lib/auth";
 import { L, uiLang } from "@/lib/i18n-server";
 
@@ -81,6 +81,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
           hours: z.string().max(400),
           bookingUrl: z.string().max(500),
           contactMode: z.enum(["booking", "quote", "call", "form"]),
+          contactModes: z.array(z.enum(["booking", "quote", "call", "form"])).max(4).optional(),
         })
         .optional(),
       /** Description de l'activité (services) : nom, catégorie, résumé, informations confirmées. */
@@ -108,6 +109,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       hours: sv.hours.trim(),
       bookingUrl,
       contactMode: sv.contactMode,
+      contactModes: contactModesOf(sv),
     });
   }
   if (b.activity) {

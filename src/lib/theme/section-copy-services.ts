@@ -8,7 +8,7 @@
  * - Aperçu de la bibliothèque (`ctx.sample`) : exemples réalistes, chacun marqué « Exemple ».
  * - Jamais de vocabulaire de vente en ligne (panier, commande, livraison) pour un service.
  */
-import type { ServiceItem } from "../project-types";
+import { contactModesOf, type ServiceItem } from "../project-types";
 import type { ContentContext, CopyFn } from "./section-content";
 import { exampleTag, todo, tr } from "./section-content";
 import type { SectionSchema } from "./spec";
@@ -58,6 +58,7 @@ function info(ctx: ContentContext) {
   return {
     services,
     mode,
+    modes: contactModesOf(sv),
     bookingUrl,
     cta,
     ctaUrl: mode === "booking" && bookingUrl && !embeddable ? bookingUrl : contactUrl,
@@ -156,7 +157,7 @@ const booking: CopyFn = (ctx, base, schema) => {
     set("button_label", tr(ctx, "Envoyer ma demande", "Send my request"));
     set("ask_date", false);
   }
-  if (d.mode === "booking" && d.bookingUrl) set("booking_url", d.bookingUrl);
+  if (d.modes.includes("booking") && d.bookingUrl) set("booking_url", d.bookingUrl);
   set("services", list.map((s) => s.name).join("\n"));
   set("phone", d.phone);
   set("email", d.email);

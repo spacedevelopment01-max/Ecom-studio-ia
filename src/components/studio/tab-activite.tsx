@@ -7,7 +7,7 @@ import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, SectionTitle, type AssetView } from "./common";
 import { FromSiteBadge } from "./existing-site";
 import { cleanServices, ContactModePicker, missingActivity, ServicesEditor } from "./services-editor";
-import { emptyServiceProfile, type Fact, type ServiceProfile } from "@/lib/project-types";
+import { contactModesOf, emptyServiceProfile, type Fact, type ServiceProfile } from "@/lib/project-types";
 import { useT } from "../i18n";
 
 const SOURCE: Record<string, { fr: string; en: string }> = { user: { fr: "vous", en: "you" }, photo: { fr: "photo", en: "photo" }, link: { fr: "site actuel", en: "current website" }, ai: { fr: "analyse", en: "analysis" }, description: { fr: "votre description", en: "your description" } };
@@ -129,8 +129,8 @@ export default function TabActivite() {
             </div>
             <div className="mt-5 grid gap-2">
               <p className="text-sm font-medium">{t("Comment vos clients vous contactent", "How customers get in touch")}</p>
-              <ContactModePicker value={offer.contactMode} onChange={(v) => change("contactMode", v)} />
-              {(offer.contactMode === "booking" || offer.bookingUrl) && (
+              <ContactModePicker value={contactModesOf(offer)} onChange={(v) => (setOffer({ ...offer, contactMode: v[0], contactModes: v }), setDirty(true))} />
+              {(contactModesOf(offer).includes("booking") || offer.bookingUrl) && (
                 <Field label={t("Lien de prise de rendez-vous", "Booking link")} htmlFor="act-booking" hint={t("Calendly, Planity, Doctolib… Le bouton « Prendre rendez-vous » du site y mène.", "Calendly, Fresha, Acuity… The site's “Book an appointment” button leads there.")}>
                   <Input id="act-booking" type="url" value={offer.bookingUrl} maxLength={500} onChange={(e) => change("bookingUrl", e.target.value)} placeholder="https://…" />
                 </Field>

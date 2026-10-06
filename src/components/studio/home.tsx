@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Briefcase, Camera, Film, Globe, ImagePlus, Link2, Palette, Plus, Settings, Shield, Sparkles, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
-import { STORE_TYPES, storeTypeInfo, type BusinessType, type ServiceItem, type ServiceProfile, type StoreType } from "@/lib/project-types";
+import { STORE_TYPES, storeTypeInfo, type BusinessType, type ContactMode, type ServiceItem, type ServiceProfile, type StoreType } from "@/lib/project-types";
 import { LANGS } from "@/lib/i18n";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useCostConfirm } from "./cost-confirm";
@@ -53,7 +53,9 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   const [typed, setTyped] = useState(false);
   const [storeType, setStoreType] = useState<StoreType>("mono");
   const [services, setServices] = useState<ServiceItem[]>([]);
-  const [contactMode, setContactMode] = useState<ServiceProfile["contactMode"]>("form");
+  const [contactModes, setContactModes] = useState<ContactMode[]>(["form"]);
+  // Tant que le client n'a rien choisi, « Formulaire » n'est qu'une valeur par défaut : son premier choix la remplace.
+  const [contactTouched, setContactTouched] = useState(false);
   const [needDesc, setNeedDesc] = useState(false);
   const svc = business === "services";
   const hasInput = (!svc && photos.length > 0) || typed;
@@ -252,9 +254,10 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           </fieldset>
           <fieldset className="grid gap-2">
             <legend className="mb-1 text-sm font-medium">{t("Comment vos clients vous contactent", "How customers get in touch")}</legend>
-            <input type="hidden" name="contactMode" value={contactMode} />
-            <ContactModePicker value={contactMode} onChange={setContactMode} />
-            {contactMode === "booking" && (
+            <input type="hidden" name="contactMode" value={contactModes[0]} />
+            <input type="hidden" name="contactModes" value={contactModes.join(",")} />
+            <ContactModePicker value={contactModes} onChange={(v) => { setContactModes(contactTouched || v.length < 2 ? v : v.slice(1)); setContactTouched(true); }} />
+            {contactModes.includes("booking") && (
               <Field label={t("Lien de prise de rendez-vous", "Booking link")} htmlFor="bookingUrl" hint={t("Calendly, Planity, Doctolib… Le bouton « Prendre rendez-vous » du site y mènera.", "Calendly, Fresha, Acuity… The site's “Book an appointment” button will lead there.")}>
                 <Input id="bookingUrl" name="bookingUrl" type="url" placeholder="https://…" maxLength={500} />
               </Field>
