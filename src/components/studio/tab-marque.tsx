@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { DirectionThumb } from "./direction-thumb";
 import { Check, Download, Lock, Sparkles, Unlock } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
@@ -209,7 +210,7 @@ export default function TabMarque() {
             <div className="mt-3 grid grid-cols-2 gap-2">
               {DIRECTIONS.map((d) => (
                 <button key={d.id} onClick={() => set({ direction: d.id })} className={cx("overflow-hidden rounded-2xl border text-left transition", b.direction === d.id ? "border-signal ring-2 ring-signal" : "border-line hover:border-ink")} aria-pressed={b.direction === d.id}>
-                  <DirectionThumb projectId={id} direction={d.id} fallback={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} />
+                  <DirectionThumb className="aspect-[4/3]" projectId={id} direction={d.id} sandbox={data?.previewSandbox} fallback={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} />
                   <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTION_TAGLINE_EN[d.id] ?? d.tagline)}</span></span>
                 </button>
               ))}
@@ -468,17 +469,6 @@ function BrandBook() {
   );
 }
 
-/** Vignette d'une direction avec le contenu du projet (photos, nom, textes) ; capture d'exemple seulement en secours. */
-function DirectionThumb({ projectId, direction, fallback }: { projectId: string; direction: string; fallback: string }) {
-  const [state, setState] = useState<"loading" | "ok" | "error">("loading");
-  return (
-    <span className="relative block aspect-[4/3] w-full overflow-hidden bg-paper-2">
-      {state === "loading" && <span className="skeleton absolute inset-0" aria-hidden />}
-      {state === "error" && <img src={fallback} alt="" className="absolute inset-0 size-full object-cover object-top" loading="lazy" />}
-      {state !== "error" && <img src={`/api/projects/${projectId}/theme/direction-thumb?d=${direction}`} alt="" className={cx("absolute inset-0 size-full object-cover object-top transition-opacity duration-500", state === "ok" ? "opacity-100" : "opacity-0")} loading="lazy" onLoad={() => setState("ok")} onError={() => setState("error")} />}
-    </span>
-  );
-}
 
 /** Liste éditable, un élément par ligne (texte libre gardé tel quel pendant la saisie, lignes vides ignorées). */
 function LinesArea({ id, value, onChange }: { id: string; value: string[]; onChange: (v: string[]) => void }) {

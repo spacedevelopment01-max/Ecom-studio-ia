@@ -7,6 +7,8 @@
 import sharp from "sharp";
 import { composeShop } from "../engine/shop";
 import { themeFingerprint } from "./compile";
+import type { ThemeSpec } from "./spec";
+import { one } from "../db";
 import { chromiumPath, themeContext } from "./snapshot";
 import type { DirectionId } from "./directions";
 import type { Lang } from "../i18n";
@@ -36,9 +38,29 @@ function releaseLater() {
   state.idle.unref?.();
 }
 
+/**
+ * Boutique du projet composée dans une direction (rien n'est enregistré). Gardée quelques minutes en mémoire :
+ * l'aperçu en direct (sans navigateur de captures) la demande pour la page puis pour chacun de ses fichiers.
+ */
+const specs: Map<string, { at: number; spec: ThemeSpec }> = ((globalThis as { __esDirSpecs?: Map<string, { at: number; spec: ThemeSpec }> }).__esDirSpecs ??= new Map());
+export async function composedDirectionSpec(projectId: string, direction: DirectionId, lang: Lang): Promise<ThemeSpec> {
+  const stamp = one<{ updated_at: number }>("SELECT updated_at FROM projects WHERE id = ?", projectId)?.updated_at ?? 0;
+  const key = `${projectId}:${direction}:${lang}:${stamp}`;
+  const hit = specs.get(key);
+  if (hit && Date.now() - hit.at < 5 * 60_000) return hit.spec;
+  const { spec } = await runWithLang({ ui: lang, content: lang }, () => composeShop(projectId, direction, undefined, false));
+  specs.set(key, { at: Date.now(), spec });
+  if (specs.size > 60) specs.delete(specs.keys().next().value!);
+  return spec;
+}
+
+/** Navigateur de captures disponible ici ? (sinon la vignette est un aperçu en direct, rendu par le serveur). */
+export const thumbsAvailable = () => !!chromiumPath();
+
 /** Capture du haut de la page d'accueil (format 16/11), en JPEG ; null sans navigateur. */
 export async function directionThumb(projectId: string, direction: DirectionId, lang: Lang): Promise<Buffer | null> {
-  const { spec } = await runWithLang({ ui: lang, content: lang }, () => composeShop(projectId, direction, undefined, false));
+  if (!chromiumPath()) return null;
+  const spec = await composedDirectionSpec(projectId, direction, lang);
   const key = `${projectId}:${direction}:${themeFingerprint(spec)}`;
   const hit = state.cache.get(key);
   if (hit) return hit;

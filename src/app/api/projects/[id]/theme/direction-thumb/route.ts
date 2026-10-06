@@ -16,14 +16,17 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const d = new URL(req.url).searchParams.get("d") ?? "";
   if (!DIRECTIONS.some((x) => x.id === d)) return new Response(null, { status: 404 });
   const lang = currentTheme(p.id)?.spec.language ?? uiLang();
+  // Sans marque : capture d'exemple. Sans navigateur de captures ou en cas d'échec : 503, l'écran montre alors
+  // l'aperçu en direct de la direction (rendu par le serveur), jamais l'exemple d'un autre projet.
   const fallback = () => new Response(null, { status: 307, headers: { Location: `/demo/directions/${d}${lang === "en" ? ".en" : ""}.jpg`, "Cache-Control": "no-store" } });
+  const unavailable = () => new Response(null, { status: 503, headers: { "Cache-Control": "no-store" } });
   if (!p.brand) return fallback();
   try {
     const jpg = await directionThumb(p.id, d as DirectionId, lang);
-    if (!jpg) return fallback();
+    if (!jpg) return unavailable();
     return new Response(new Uint8Array(jpg), { headers: { "Content-Type": "image/jpeg", "Cache-Control": "private, no-cache" } });
   } catch (e) {
     console.warn("[direction-thumb]", (e as Error).message);
-    return fallback();
+    return unavailable();
   }
 });

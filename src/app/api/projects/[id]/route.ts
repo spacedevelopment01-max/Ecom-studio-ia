@@ -11,6 +11,7 @@ import { assertAutopublish } from "@/lib/plan-gates";
 import { aiAvailability } from "@/lib/ai/config";
 import { balance } from "@/lib/billing";
 import { contactModesOf, FactSchema, sectorLabel } from "@/lib/project-types";
+import { previewSandbox } from "@/lib/theme/preview-access";
 import { HttpError } from "@/lib/auth";
 import { L, uiLang } from "@/lib/i18n-server";
 
@@ -36,6 +37,8 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     // Questions posées au commerçant : dans la langue de son interface, quelle que soit celle du projet.
     product: { ...p.product, questions: localizeQuestions(p.product.questions ?? []) },
     business: p.business,
+    // Attribut « sandbox » des aperçus en iframe (dépend de l'hébergement, voir preview-access.ts).
+    previewSandbox: previewSandbox(),
     services: p.services,
     brand: p.brand,
     strategy: p.strategy,

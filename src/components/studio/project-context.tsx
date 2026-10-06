@@ -9,6 +9,7 @@ export type Overview = {
   /** Pour un projet de services, `product` décrit l'activité et `services` l'offre. */
   product: ProductProfile;
   business: BusinessType;
+  previewSandbox?: string;
   services: ServiceProfile;
   brand: Brand | null;
   strategy: Strategy | null;

@@ -3,10 +3,11 @@ import { Check, Moon } from "lucide-react";
 import { useState } from "react";
 import { api, Badge, Button, cx, Modal, useToast } from "../ui";
 import type { DirectionCard } from "@/lib/theme/directions";
+import { DirectionThumb } from "./direction-thumb";
 import { useT } from "../i18n";
 
 /** Grille des onze directions : aperçu réel, ambiance, combinaison d'en-tête / pied de page. */
-export function ThemeGrid({ directions, current, onPick, busy }: { directions: DirectionCard[]; current?: string | null; onPick?: (d: DirectionCard) => void; busy?: string | null }) {
+export function ThemeGrid({ directions, current, onPick, busy, projectId, sandbox }: { directions: DirectionCard[]; current?: string | null; onPick?: (d: DirectionCard) => void; busy?: string | null; projectId?: string; sandbox?: string }) {
   const t = useT();
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -15,7 +16,11 @@ export function ThemeGrid({ directions, current, onPick, busy }: { directions: D
         return (
           <li key={d.id} className={cx("group flex flex-col overflow-hidden rounded-3xl border bg-card transition", on ? "border-signal ring-2 ring-signal/30" : "border-line hover:-translate-y-0.5 hover:shadow-soft")}>
             <div className="relative aspect-[16/11] overflow-hidden bg-paper-2">
-              <img src={d.preview} alt={t(`Aperçu de la direction ${d.name}`, `Preview of the ${d.name} direction`)} loading="lazy" className="size-full object-cover object-top transition duration-700 group-hover:scale-[1.03]" />
+              {projectId && d.preview.startsWith("/api/") ? (
+                <DirectionThumb className="size-full" projectId={projectId} direction={d.id} sandbox={sandbox} fallback={`/demo/directions/${d.id}.jpg`} />
+              ) : (
+                <img src={d.preview} alt={t(`Aperçu de la direction ${d.name}`, `Preview of the ${d.name} direction`)} loading="lazy" className="size-full object-cover object-top transition duration-700 group-hover:scale-[1.03]" />
+              )}
               <div className="absolute left-3 top-3 flex gap-1.5">
                 {on && <Badge tone="signal">{t("Thème actuel", "Current theme")}</Badge>}
                 {d.dark && <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white backdrop-blur"><Moon className="size-3" /> {t("Sombre", "Dark")}</span>}
@@ -41,7 +46,7 @@ export function ThemeGrid({ directions, current, onPick, busy }: { directions: D
 }
 
 /** Fenêtre « Thèmes » de l'éditeur de boutique : changer de direction crée une nouvelle version restaurable. */
-export function ThemeGallery({ open, onClose, projectId, directions, current, canApply, onApplied, services }: { open: boolean; onClose: () => void; projectId: string; directions: DirectionCard[]; current?: string | null; canApply: boolean; onApplied?: () => void; services?: boolean }) {
+export function ThemeGallery({ open, onClose, projectId, directions, current, canApply, onApplied, services, sandbox }: { open: boolean; onClose: () => void; projectId: string; directions: DirectionCard[]; current?: string | null; canApply: boolean; onApplied?: () => void; services?: boolean; sandbox?: string }) {
   const t = useT();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
@@ -50,8 +55,8 @@ export function ThemeGallery({ open, onClose, projectId, directions, current, ca
       <p className="mb-5 text-sm text-muted">
         {services
           ? t(
-              "Onze directions artistiques, chacune avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version du site : textes, prestations et images sont conservés, et l'ancienne version reste restaurable. Les vignettes sont des exemples ; votre site garde son contenu.",
-              "Eleven art directions, each with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the website: copy, services and images are kept, and the previous version can still be restored. The thumbnails are examples; your website keeps its own content.",
+              "Onze directions artistiques, chacune avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version du site : textes, prestations et images sont conservés, et l'ancienne version reste restaurable.",
+              "Eleven art directions, each with its own layout, typography, header, footer and animations. Applying a theme creates a new version of the website: copy, services and images are kept, and the previous version can still be restored.",
             )
           : t(
               "Onze directions artistiques, chacune avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. Appliquer un thème crée une nouvelle version de la boutique : textes, images et produit sont conservés, et l'ancienne version reste restaurable. Tout reste modifiable ensuite dans l'éditeur Shopify.",
@@ -61,6 +66,8 @@ export function ThemeGallery({ open, onClose, projectId, directions, current, ca
       </p>
       <ThemeGrid
         directions={directions}
+        projectId={projectId}
+        sandbox={sandbox}
         current={current}
         busy={busy}
         onPick={
