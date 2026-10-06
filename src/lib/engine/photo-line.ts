@@ -147,53 +147,63 @@ const MOODS: Record<DirectionId, Mood> = {
 };
 
 /** Accessoires et situations par secteur : objets réels, plausibles, jamais de marque concurrente (3 au plus). */
-const SECTOR: Record<string, { props: T[]; situations: T[]; season: T }> = {
+const SECTOR: Record<string, { props: T[]; situations: T[]; season: T; living?: T }> = {
   beaute: {
+    living: t("céramique blanche, coton", "white ceramic, cotton"),
     props: [t("serviette de coton plié", "folded cotton towel"), t("petit plateau en céramique", "small ceramic tray"), t("brosse à cheveux en bois", "wooden hairbrush")],
     situations: [t("sur le rebord d'un lavabo, routine du matin", "on the edge of a washbasin during the morning routine"), t("posé dans un sac à main ouvert sur un lit, avant de sortir", "inside an open handbag on a bed, just before going out")],
     season: t("intemporelle, sans marqueur de saison", "timeless, no seasonal markers"),
   },
   mode: {
+    living: t("chêne clair, lin", "light oak, linen"),
     props: [t("cintre en bois", "wooden hanger"), t("paire de baskets blanches portées", "pair of worn white sneakers"), t("sac en toile", "canvas tote bag")],
     situations: [t("sur une chaise près de la porte d'entrée, prêt à partir", "on a chair by the front door, ready to leave"), t("plié sur un lit défait, matin", "folded on an unmade bed in the morning")],
     season: t("mi-saison", "between seasons"),
   },
   bijoux: {
+    living: t("noyer, lin", "walnut wood, linen"),
     props: [t("coupelle en céramique", "small ceramic dish"), t("livre ouvert à la reliure toilée", "open cloth-bound book"), t("verre d'eau", "glass of water")],
     situations: [t("sur une table de chevet en bois, lumière du matin", "on a wooden bedside table in morning light"), t("sur le rebord d'une fenêtre, prêt à être porté", "on a windowsill, ready to be worn")],
     season: t("intemporelle", "timeless"),
   },
   maison: {
+    living: t("lin froissé, laine", "rumpled linen, wool"),
     props: [t("plaid en laine", "wool throw"), t("livre ouvert", "open book"), t("vase en grès sans fleurs", "empty stoneware vase")],
     situations: [t("sur un lit en lin froissé, lumière du matin", "on a bed with rumpled linen in morning light"), t("sur un canapé au salon, après-midi", "on a living-room sofa in the afternoon")],
     season: t("automne doux", "soft autumn"),
   },
   hightech: {
+    living: t("granite, bois brut", "granite rock, raw wood"),
     props: [t("sac à dos technique", "technical backpack"), t("carte topographique pliée", "folded topographic map"), t("gourde métallique", "metal water bottle")],
     situations: [t("sur un rocher en randonnée, vallée au loin", "on a rock during a hike, valley in the distance"), t("sur un bureau rangé à côté d'un ordinateur fermé", "on a tidy desk next to a closed laptop")],
     season: t("fin d'été", "late summer"),
   },
   sport: {
+    living: t("bois de banc, béton", "wooden bench, concrete"),
     props: [t("serviette technique", "technical towel"), t("chaussures de course usées", "worn running shoes"), t("gourde", "water bottle")],
     situations: [t("au bord d'un sentier forestier, tôt le matin", "beside a forest trail early in the morning"), t("sur un banc de vestiaire, après l'effort", "on a locker-room bench after a workout")],
     season: t("début d'automne, matin frais", "early autumn, crisp morning"),
   },
   alimentation: {
+    living: t("carreaux de céramique, bois", "glazed ceramic tiles, wood"),
     props: [t("verre avec des glaçons", "glass with ice cubes"), t("citrons entiers sur une planche", "whole lemons on a board"), t("nappe en lin rayé", "striped linen tablecloth")],
     situations: [t("sur une table de terrasse au soleil, l'après-midi", "on a sunny terrace table in the afternoon"), t("dans un panier de pique-nique sur une couverture, amis flous au loin", "in a picnic basket on a blanket, friends blurred in the distance")],
     season: t("début d'été", "early summer"),
   },
   enfants: {
+    living: t("coton, bois clair", "cotton, light wood"),
     props: [t("jouets en bois", "wooden toys"), t("livre d'images", "picture book"), t("couverture en coton", "cotton blanket")],
     situations: [t("sur le tapis d'une chambre d'enfant, lumière du jour", "on a playroom rug in daylight"), t("sur une table de chevet d'enfant, lampe du soir", "on a child's bedside table under an evening lamp")],
     season: t("intemporelle", "timeless"),
   },
   animaux: {
+    living: t("lin gris, parquet", "grey linen, wooden floor"),
     props: [t("panier en osier", "wicker basket"), t("plaid doux", "soft throw"), t("gamelle en céramique", "ceramic bowl")],
     situations: [t("sur un canapé gris clair, un chat détendu à côté", "on a light-grey sofa with a relaxed cat nearby"), t("sur un parquet clair, un chien qui se repose", "on a light wooden floor with a dog resting nearby")],
     season: t("intemporelle", "timeless"),
   },
   artisanat: {
+    living: t("bois d'établi, papier kraft", "workbench wood, kraft paper"),
     props: [t("outils en bois", "wooden tools"), t("papier kraft", "kraft paper"), t("pot de crayons", "pencil pot")],
     situations: [t("sur une table d'atelier, lumière de fenêtre", "on a workshop table in window light"), t("sur une étagère d'atelier à la maison", "on a shelf in a home studio")],
     season: t("intemporelle", "timeless"),
@@ -205,7 +215,7 @@ const AUDIENCE: { re: RegExp; prop: T; setting: T }[] = [
   { re: /étudiant|student|jeune|young|18|20 ans/i, prop: t("sac en toile de coton", "cotton tote bag"), setting: t("petit appartement lumineux en ville", "small bright city apartment") },
   { re: /randonn|hik|voyag|travel|outdoor|plein air|montagne|mountain/i, prop: t("sac à dos de randonnée", "hiking backpack"), setting: t("paysage de montagne au loin", "mountains in the distance") },
   { re: /parent|maman|papa|bébé|baby|famil/i, prop: t("couverture de coton", "cotton blanket"), setting: t("maison familiale lumineuse", "bright family home") },
-  { re: /actif|active|bureau|office|professionnel|professional|cadre/i, prop: t("carnet relié de cuir", "leather-bound notebook"), setting: t("bureau calme à la maison", "calm home office") },
+  { re: /actif|active|bureau|office|professionnel|professional|cadre/i, prop: t("housse d'ordinateur en feutre", "felt laptop sleeve"), setting: t("bureau calme à la maison", "calm home office") },
   { re: /sport|athl|coureur|runner|fitness/i, prop: t("gourde métallique", "metal water bottle"), setting: t("piste extérieure", "outdoor track") },
   { re: /apéro|apéritif|aperitif|pique-nique|picnic|ami|friend/i, prop: t("planche en bois", "wooden board"), setting: t("terrasse entre amis", "terrace with friends") },
 ];
@@ -246,6 +256,8 @@ export type PhotoLine = {
   sets: T[];
   props: T[];
   situations: T[];
+  /** Matières d'un vrai lieu de vie (photos en situation : jamais de papier de fond ni de studio). */
+  living: T;
   framing: Mood["framing"];
   palette: { hex: string[]; words: { fr: string[]; en: string[] } };
   season: T;
@@ -299,7 +311,7 @@ export function photoLine(input: PhotoLineInput): PhotoLine {
   // Palette de prise de vue : couleur dominante du produit (ton sur ton), puis couleurs de la piste retenue.
   const prodHex = (input.productColors ?? []).filter((c) => { const [, s, l] = hsl(c.hex); return s > 0.15 && l > 0.12 && l < 0.92; }).sort((a, b) => b.share - a.share)[0]?.hex;
   const hex = [...new Set([route?.tint ?? pal.secondary, route?.ground ?? pal.primary, route?.accent ?? pal.accent, pal.light].map((h) => h.toUpperCase()))];
-  const words = (lang: "fr" | "en") => [...new Set(hex.map((h) => colorName(h, lang)))];
+  const words = (lang: "fr" | "en") => [...new Set(hex.map((h) => paletteWord(h, lang)))];
   const season = direction === "gourmand" ? t("début d'été", "early summer") : direction === "elan" ? t("début d'automne, matin frais", "early autumn, crisp morning") : sector.season;
   const avoid = [...CLICHES, ...(SECTOR_CLICHES[input.sector ?? ""] ?? [])];
   // Décor local : mur et plateau dans la palette (plus de travertin beige identique pour toutes les marques).
@@ -322,6 +334,7 @@ export function photoLine(input: PhotoLineInput): PhotoLine {
     sets: m.sets,
     props,
     situations,
+    living: sector.living ?? t("bois, lin", "wood, linen"),
     framing: m.framing,
     palette: { hex, words: { fr: words("fr"), en: words("en") } },
     season,
@@ -341,6 +354,13 @@ function creativeGround(mode: CreativeMode, pal: BrandPalette, route: { ink: str
   // Ton sur ton : la couleur du produit (ou la teinte de la piste), claire et douce — le produit se fond dans sa couleur.
   const base = prodHex ?? route?.tint ?? pal.secondary;
   return withLightness(base, 0.84, 0.75);
+}
+
+/** Nom de couleur pour un photographe : les roses clairs sont des roses (pas des « rouges pâles »). */
+function paletteWord(hex: string, lang: "fr" | "en"): string {
+  const [h, s, l] = hsl(hex);
+  if (s > 0.25 && l > 0.5 && l <= 0.92 && (h >= 320 || h < 12)) return l > 0.8 ? (lang === "fr" ? "rose poudré" : "powder pink") : lang === "fr" ? "rose" : "pink";
+  return colorName(hex, lang);
 }
 
 const pick = (x: T, lang: "fr" | "en") => x[lang];
@@ -389,28 +409,31 @@ export function photoLineText(l: PhotoLine, lang: "fr" | "en" = "fr"): string[] 
 export function scenePromptFromLine(l: PhotoLine, opts: { lifestyle?: string; format?: string } = {}): { prompt: string; surface: string; lightFrom: "left" | "right" } {
   const surface = l.materials[0].en;
   const set = opts.lifestyle
-    ? `Authentic everyday editorial photograph, ${opts.lifestyle}; real lived-in place, ${l.materials.slice(0, 2).map((m) => m.en).join(" and ")} textures, props: ${l.props.slice(0, 2).map((p) => p.en).join(", ")}; people may appear naturally, partially framed or out of focus, never covering the product`
+    ? `Authentic everyday editorial photograph, ${opts.lifestyle}; real lived-in place with ${l.living.en} textures, props: ${l.props.slice(0, 2).map((p) => p.en).join(", ")}; people may appear naturally, partially framed or out of focus, never covering the product`
     : `Product photograph on ${surface}, set: ${l.sets[0].en}, a few real props kept secondary and out of focus (${l.props.slice(0, 2).map((p) => p.en).join(", ")})`;
   // La ligne complète et les clichés à éviter sont ajoutés par finalImagePrompt (une seule fois).
   return {
-    prompt: `${set}. ${l.light.source.en}, ${l.light.quality === "lowkey" ? "low-key" : l.light.quality} key light from the ${l.light.from}, ${l.light.time.en}, ${l.season.en}. ${l.framing.focal} lens, ${l.framing.angle.en}, ${l.framing.dof.en}. Composition: ${l.framing.composition.en}${opts.format ? `, ${opts.format} format` : ""}. Palette: ${l.palette.words.en.join(", ")}.`,
+    prompt: `${set}. ${opts.lifestyle ? lifeLight(l) : `${l.light.source.en}, ${l.light.quality === "lowkey" ? "low-key" : l.light.quality}`} key light from the ${l.light.from}, ${l.light.time.en}, ${l.season.en}. ${opts.lifestyle ? "35mm" : l.framing.focal} lens, ${l.framing.angle.en}, ${opts.lifestyle ? "f/2.8, background softly blurred" : l.framing.dof.en}. Composition: ${opts.lifestyle ? "product on a third, the place readable around it" : l.framing.composition.en}${opts.format ? `, ${opts.format} format` : ""}. Palette: ${l.palette.words.en.join(", ")}; grade: ${l.grade.words.en}.`,
     surface,
     lightFrom: l.light.from,
   };
 }
+
+/** Lumière naturelle d'un vrai lieu (photo en situation), dans l'esprit de la ligne. */
+const lifeLight = (l: PhotoLine) => (l.light.quality === "lowkey" ? "warm practical lamp light and cool window light, low-key" : l.light.quality === "hard" ? "direct sunlight through a window, crisp" : "soft daylight from a window, diffused");
 
 /** Brief du studio (sans IA) au format de la grille : il sert de repli et de référence minimale (≥ 8/10). */
 export function lineBriefDraft(l: PhotoLine, opts: { lifestyle?: string; format?: string } = {}): ImageBriefDraft {
   const st = scenePromptFromLine(l, opts);
   return {
     intent: l.name.fr,
-    set: opts.lifestyle ? `${opts.lifestyle}, ${l.sets[0].en}` : l.sets[0].en,
-    surface: l.materials[0].en,
+    set: opts.lifestyle ? `${opts.lifestyle}, real lived-in place` : l.sets[0].en,
+    surface: opts.lifestyle ? l.living.en : l.materials[0].en,
     props: l.props.slice(0, 2).map((p) => p.en),
-    light: `${l.light.source.en}, ${l.light.quality === "lowkey" ? "low-key" : l.light.quality}, key light from the ${l.light.from}, ${l.light.time.en}`,
+    light: `${opts.lifestyle ? lifeLight(l) : `${l.light.source.en}, ${l.light.quality === "lowkey" ? "low-key" : l.light.quality}`}, key light from the ${l.light.from}, ${l.light.time.en}`,
     lightFrom: l.light.from,
-    camera: `${l.framing.focal} lens, ${l.framing.angle.en}, ${l.framing.dof.en}`,
-    composition: l.framing.composition.en,
+    camera: opts.lifestyle ? `35mm lens, ${l.framing.angle.en}, f/2.8 shallow depth of field` : `${l.framing.focal} lens, ${l.framing.angle.en}, ${l.framing.dof.en}`,
+    composition: opts.lifestyle ? "product on a third, the place readable around it" : l.framing.composition.en,
     palette: l.palette.words.en.join(", "),
     season: l.season.en,
     prompt: st.prompt,
