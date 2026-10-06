@@ -80,6 +80,22 @@ export function briefFromText(text: string): Partial<BriefAnswers> {
   };
 }
 
+/**
+ * La description indique-t-elle une zone ? Ville après « à / sur / dans / autour de… » (avec ou sans majuscule),
+ * code postal ou département, rayon (« 30 km »), mots de zone (« alentours », « région »…), ou nom propre
+ * en milieu de phrase (« Carrossier Mâcon »).
+ */
+export function hasArea(text: string): boolean {
+  const s = text.replace(/\s+/g, " ");
+  if (/\b\d{5}\b|\b\d{1,3}\s?km\b|\b(?:alentours|environs|aux? alentours|région|département|secteur|agglomération|métropole|canton|toute la france|france entière|nearby|surrounding|county|nationwide|area)\b/i.test(s)) return true;
+  // Ville avec majuscule après une préposition : « à Mâcon », « en Saône-et-Loire », « in Leeds ».
+  if (/(?:^|[\s,(])(?:à|sur|dans|autour de|près de|vers|en|in|around|across|near)\s+\p{Lu}/u.test(s)) return true;
+  // Ville sans majuscule : « à mâcon » (hors « à domicile », « à distance », « à la demande »…).
+  if (/(?:^|[\s,(])(?:à|sur|autour de|près de|in|around|near)\s+(?!(?:domicile|distance|la|le|les|l'|un|une|des|votre|vos|notre|nos|partir|toute|home|your|our|the|a)\b)\p{Ll}[\p{L}'’-]{2,}/u.test(s)) return true;
+  // Nom propre au milieu d'une phrase (pas en début de phrase ni après une ponctuation) : « Carrossier peintre Mâcon ».
+  return /[\p{Ll}\d]\s+[\p{Lu}][\p{Ll}'’-]{2,}/u.test(s);
+}
+
 export type BriefCheck = { key: "trade" | "services" | "area" | "clients" | "strengths" | "tone"; ok: boolean; fr: string; en: string };
 
 /** Ce que la description couvre déjà (repères simples, pour guider la rédaction). */
@@ -91,7 +107,7 @@ export function briefChecklist(text: string, opts: { area?: string } = {}): Brie
   return [
     { key: "trade", ok: s.length >= 8, fr: "Votre métier", en: "Your trade" },
     { key: "services", ok: bullets >= 2 || segments >= 3, fr: "Vos prestations", en: "Your services" },
-    { key: "area", ok: !!opts.area?.trim() || /(?:^|[\s,(])(?:à|sur|autour de|in|around|across)\s+[A-ZÀ-Ý]/u.test(s), fr: "Votre zone", en: "Your area" },
+    { key: "area", ok: !!opts.area?.trim() || hasArea(s), fr: "Votre zone", en: "Your area" },
     { key: "clients", ok: /particuliers?|professionnels?|entreprises?|assurances?|collectivit|clientèle|individuals?|businesses|insurers?|customers?|clients?/i.test(s), fr: "Votre clientèle", en: "Your customers" },
     { key: "strengths", ok: /devis|garanti|depuis|\bans\b|certifi|agréé|qualifi|label|rapide|7\s?j|24\s?h|distingue|quote|guarantee|since|years|certified|licensed|fast|sets us apart/i.test(s), fr: "Ce qui vous distingue", en: "What sets you apart" },
     { key: "tone", ok: /\bton\b|chaleureu|rassurant|haut de gamme|premium|simple et direct|tone|warm|friendly|reassuring/i.test(s), fr: "Le ton souhaité", en: "Desired tone" },
