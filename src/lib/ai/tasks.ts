@@ -1030,9 +1030,9 @@ Réponds { "intent": "…", "set": "…", "surface": "…", "props": ["…"], "l
     if (best.review.score >= BRIEF_MIN_SCORE) break;
   }
   if (!best || best.review.score < 6) {
-    return { prompt: finalImagePrompt(studio, line), surface: studio.surface, lightFrom: studio.lightFrom, review: best?.review ?? { score: 0, failed: [], feedback: ["IA indisponible"] }, source: "studio", attempts, draft: best?.draft };
+    return { prompt: finalImagePrompt(studio, line, { lifestyle }), surface: studio.surface, lightFrom: studio.lightFrom, review: best?.review ?? { score: 0, failed: [], feedback: ["IA indisponible"] }, source: "studio", attempts, draft: best?.draft };
   }
-  return { prompt: finalImagePrompt(best.draft, line), surface: best.draft.surface, lightFrom: best.draft.lightFrom, review: best.review, source: "ai", attempts, draft: best.draft };
+  return { prompt: finalImagePrompt(best.draft, line, { lifestyle }), surface: best.draft.surface, lightFrom: best.draft.lightFrom, review: best.review, source: "ai", attempts, draft: best.draft };
 }
 
 export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {

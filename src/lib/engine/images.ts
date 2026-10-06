@@ -100,7 +100,7 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
     ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}`) : C(`mise en scène produit (style ${style})`, `product staging (${style} style)`), { line, lifestyle, format: FORMATS[formatId].label })
     : (() => {
         const st = scenePromptFromLine(line, { lifestyle, format: FORMATS[formatId].label });
-        return { ...st, prompt: finalImagePrompt(st, line) };
+        return { ...st, prompt: finalImagePrompt(st, line, { lifestyle: !!lifestyle }) };
       })();
   const f = FORMATS[formatId];
   if (provider === "openai") {

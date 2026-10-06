@@ -138,6 +138,9 @@ describe("grille du directeur artistique (briefs photo)", () => {
         expect(r.score, `${direction}/${sector} : ${r.feedback.join(" | ")}`).toBeGreaterThanOrEqual(8);
         const life = critiqueImageBrief(lineBriefDraft(l, { lifestyle: l.situations[0].en }), l, { lifestyle: true });
         expect(life.score, `${direction}/${sector} situation : ${life.feedback.join(" | ")}`).toBeGreaterThanOrEqual(8);
+        // Photo en situation : jamais de papier de fond ni d'optique de studio imposés par la ligne.
+        const { finalImagePrompt, scenePromptFromLine } = await import("@/lib/engine/photo-line");
+        expect(finalImagePrompt(scenePromptFromLine(l, { lifestyle: l.situations[0].en }), l, { lifestyle: true })).not.toMatch(/seamless|backdrop|plinth/i);
       }
     }
   });

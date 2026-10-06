@@ -88,7 +88,7 @@ const MOODS: Record<DirectionId, Mood> = {
     name: t("Plein soleil gourmand", "Sun-drenched and generous"),
     light: { source: t("soleil direct, ombres franches de feuillage", "direct sun with crisp foliage shadows"), quality: "hard", from: "left", kelvin: 5200, time: t("début d'après-midi d'été", "early summer afternoon") },
     materials: [t("carreaux de céramique émaillée", "glazed ceramic tiles"), t("bois peint", "painted wood"), t("lin rayé", "striped linen")],
-    sets: [t("table de terrasse ensoleillée", "sunny terrace table"), t("plan de travail de cuisine carrelé, fenêtre ouverte", "tiled kitchen counter by an open window")],
+    sets: [t("table de terrasse ensoleillée sous une treille", "sunny terrace table under a vine"), t("plan de travail de cuisine carrelé, fenêtre ouverte", "tiled kitchen counter by an open window")],
     framing: { focal: "50mm", angle: t("trois-quarts, légèrement au-dessus (15°)", "three-quarter, slightly above (15°)"), dof: t("f/4 : produit net, arrière-plan reconnaissable", "f/4: product sharp, background still readable"), composition: t("produit sur le tiers droit, ombres graphiques à gauche", "product on the right third, graphic shadows on the left") },
     grade: { tone: "warm", contrast: "high", grain: 0.025, words: t("couleurs franches, ombres nettes, chaleur d'été", "vivid colours, crisp shadows, summer warmth") },
     scenes: ["window", "everyday", "color"],
@@ -258,6 +258,8 @@ export type PhotoLine = {
   situations: T[];
   /** Matières d'un vrai lieu de vie (photos en situation : jamais de papier de fond ni de studio). */
   living: T;
+  /** Objets du lieu de vie (ceux du secteur : ils vont avec les situations). */
+  livingProps: T[];
   framing: Mood["framing"];
   palette: { hex: string[]; words: { fr: string[]; en: string[] } };
   season: T;
@@ -305,7 +307,8 @@ export function photoLine(input: PhotoLineInput): PhotoLine {
   const aud = AUDIENCE.filter((a) => a.re.test(input.audience ?? ""));
   // Accessoires : ceux de la cible d'abord (la scène parle à ces gens-là), puis ceux du secteur ; 3 au plus.
   const props: T[] = [];
-  for (const x of [...aud.map((a) => a.prop), ...sector.props]) if (props.length < 3 && !props.some((p) => p.en === x.en)) props.push(x);
+  const head = (x: T) => x.en.split(" ").at(-1);
+  for (const x of [...aud.map((a) => a.prop), ...sector.props]) if (props.length < 3 && !props.some((p) => p.en === x.en || head(p) === head(x))) props.push(x);
   const situations = sector.situations.map((s, i) => (aud[0] && i === 1 ? t(`${s.fr}, ${aud[0].setting.fr}`, `${s.en}, ${aud[0].setting.en}`) : s));
   const route = input.route?.colors;
   // Palette de prise de vue : couleur dominante du produit (ton sur ton), puis couleurs de la piste retenue.
@@ -335,6 +338,7 @@ export function photoLine(input: PhotoLineInput): PhotoLine {
     props,
     situations,
     living: sector.living ?? t("bois, lin", "wood, linen"),
+    livingProps: sector.props.slice(0, 2),
     framing: m.framing,
     palette: { hex, words: { fr: words("fr"), en: words("en") } },
     season,
@@ -359,6 +363,7 @@ function creativeGround(mode: CreativeMode, pal: BrandPalette, route: { ink: str
 /** Nom de couleur pour un photographe : les roses clairs sont des roses (pas des « rouges pâles »). */
 function paletteWord(hex: string, lang: "fr" | "en"): string {
   const [h, s, l] = hsl(hex);
+  if (s > 0.3 && l > 0.45 && l <= 0.92 && h >= 42 && h < 70) return l > 0.78 ? (lang === "fr" ? "jaune pâle" : "pale yellow") : lang === "fr" ? "jaune" : "yellow";
   if (s > 0.25 && l > 0.5 && l <= 0.92 && (h >= 320 || h < 12)) return l > 0.8 ? (lang === "fr" ? "rose poudré" : "powder pink") : lang === "fr" ? "rose" : "pink";
   return colorName(hex, lang);
 }
@@ -366,8 +371,12 @@ function paletteWord(hex: string, lang: "fr" | "en"): string {
 const pick = (x: T, lang: "fr" | "en") => x[lang];
 
 /** Moodboard écrit, en anglais, pour les modèles d'image (bloc réutilisé par toutes les consignes). */
-export function photoLinePrompt(l: PhotoLine): string {
+export function photoLinePrompt(l: PhotoLine, opts: { lifestyle?: boolean } = {}): string {
   const e = (x: T) => x.en;
+  // Photo en situation : on garde l'esprit de la campagne (côté et moment de la lumière, palette, saison, étalonnage)
+  // sans imposer les matières ni l'optique de studio (un vrai lieu n'a pas de papier de fond).
+  if (opts.lifestyle)
+    return `Campaign photographic line "${l.name.en}": natural light from the ${l.light.from}, ${e(l.light.time)}; palette: ${l.palette.words.en.join(", ")}; season: ${e(l.season)}; grade: ${e(l.grade.words)}.`;
   return [
     `Campaign photographic line "${l.name.en}":`,
     `light: ${e(l.light.source)}, ${l.light.quality === "lowkey" ? "low-key" : l.light.quality}, key light from the ${l.light.from}, about ${l.light.kelvin}K, ${e(l.light.time)};`,
@@ -409,7 +418,7 @@ export function photoLineText(l: PhotoLine, lang: "fr" | "en" = "fr"): string[] 
 export function scenePromptFromLine(l: PhotoLine, opts: { lifestyle?: string; format?: string } = {}): { prompt: string; surface: string; lightFrom: "left" | "right" } {
   const surface = l.materials[0].en;
   const set = opts.lifestyle
-    ? `Authentic everyday editorial photograph, ${opts.lifestyle}; real lived-in place with ${l.living.en} textures, props: ${l.props.slice(0, 2).map((p) => p.en).join(", ")}; people may appear naturally, partially framed or out of focus, never covering the product`
+    ? `Authentic everyday editorial photograph, ${opts.lifestyle}; real lived-in place with ${l.living.en} textures, props: ${l.livingProps.map((p) => p.en).join(", ")}; people may appear naturally, partially framed or out of focus, never covering the product`
     : `Product photograph on ${surface}, set: ${l.sets[0].en}, a few real props kept secondary and out of focus (${l.props.slice(0, 2).map((p) => p.en).join(", ")})`;
   // La ligne complète et les clichés à éviter sont ajoutés par finalImagePrompt (une seule fois).
   return {
@@ -429,7 +438,7 @@ export function lineBriefDraft(l: PhotoLine, opts: { lifestyle?: string; format?
     intent: l.name.fr,
     set: opts.lifestyle ? `${opts.lifestyle}, real lived-in place` : l.sets[0].en,
     surface: opts.lifestyle ? l.living.en : l.materials[0].en,
-    props: l.props.slice(0, 2).map((p) => p.en),
+    props: (opts.lifestyle ? l.livingProps : l.props.slice(0, 2)).map((p) => p.en),
     light: `${opts.lifestyle ? lifeLight(l) : `${l.light.source.en}, ${l.light.quality === "lowkey" ? "low-key" : l.light.quality}`}, key light from the ${l.light.from}, ${l.light.time.en}`,
     lightFrom: l.light.from,
     camera: opts.lifestyle ? `35mm lens, ${l.framing.angle.en}, f/2.8 shallow depth of field` : `${l.framing.focal} lens, ${l.framing.angle.en}, ${l.framing.dof.en}`,
@@ -518,6 +527,6 @@ export function critiqueImageBrief(d: ImageBriefDraft | null | undefined, l: Pho
  * Consigne finale envoyée au modèle d'image : le paragraphe du brief, complété par la ligne de campagne et les
  * garde-fous (le produit réel n'est jamais redessiné, aucun texte, aucun cliché).
  */
-export function finalImagePrompt(brief: { prompt: string }, l: PhotoLine): string {
-  return `${brief.prompt.trim().replace(/\s+/g, " ")} ${photoLinePrompt(l)} Photorealistic, real optics and real materials, no CGI look. ${avoidPrompt(l)} No text, no lettering, no logo, no other branded product.`;
+export function finalImagePrompt(brief: { prompt: string }, l: PhotoLine, opts: { lifestyle?: boolean } = {}): string {
+  return `${brief.prompt.trim().replace(/\s+/g, " ")} ${photoLinePrompt(l, opts)} Photorealistic, real optics and real materials, no CGI look. ${avoidPrompt(l)} No text, no lettering, no logo, no other branded product.`;
 }
