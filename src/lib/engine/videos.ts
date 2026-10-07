@@ -184,7 +184,11 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const items = project.services?.services ?? [];
       const taken = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND kind = 'video' AND json_extract(meta, '$.stock') IS NOT NULL", projectId).map((x) => x.k));
       const q = services
-        ? { lang: "fr" as const, queries: [trade, items[0]?.name ?? "", `${trade} chantier`] }
+        ? await (async () => {
+            // Scènes concrètes du métier reconnu (en anglais), sinon son nom : jamais un simple décor.
+            const known = (await import("../stock/trade-queries")).tradeStock(`${trade} ${items[0]?.name ?? ""}`);
+            return known ? { lang: "en" as const, queries: known.queries.slice(0, 3) } : { lang: "fr" as const, queries: [trade, items[0]?.name ?? "", `${trade} chantier`] };
+          })()
         : await (await import("./stock-universe")).universeQueries({ userId: project.userId, projectId, jobId: ctx.job.id }, project);
       const found = await searchStockVideos(q.queries, req.format === "16:9" ? "landscape" : "portrait", q.lang, taken).catch(() => []);
       for (const v of found.slice(0, 2)) {

@@ -11,6 +11,7 @@ import { z } from "zod";
 import { all, json, run } from "../db";
 import { assetData, saveAsset, type Asset } from "../library";
 import { downloadStock, searchStock, stockCredit } from "../stock/photos";
+import { rankStock, tradeStock } from "../stock/trade-queries";
 import { loadProject, type Project } from "../projects";
 import type { ServiceItem } from "../project-types";
 import { FORMATS, renderServiceCard, type Format } from "../media/compose";
@@ -30,11 +31,11 @@ import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo
 
 
 /** Contrôle obligatoire d'une image d'ambiance générée (aucun texte ou logo inventé, aucune personne déformée). */
-export async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer, subject?: string): Promise<{ ok: boolean; tier: QcTier; reason: string }> {
+export async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer, subject?: string, stock = false): Promise<{ ok: boolean; tier: QcTier; reason: string }> {
   if (!llmConfigured()) return { ok: false, tier: "warn", reason: L("contrôle indisponible : vérifiez l'image", "check unavailable: check the image") };
   let r: Awaited<ReturnType<typeof aiQcScene>>;
   try {
-    r = await aiQcScene(b, img, subject);
+    r = await aiQcScene(b, img, subject, stock);
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     return { ok: false, tier: "warn", reason: L("contrôle automatique impossible : vérifiez l'image", "automatic check unavailable: check the image") };
@@ -157,23 +158,25 @@ export async function earlyServicePhotos(ctx: JobContext, projectId: string): Pr
 /** Recherches de photos libres de droits pour un sujet de publication (IA légère si active, sinon le métier). */
 async function topicQueries(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, topic: string): Promise<{ lang: "fr" | "en"; queries: string[] }> {
   const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
-  if (!llmConfigured()) return { lang: "fr", queries: [trade] };
+  const known = tradeStock(`${topic} ${trade}`) ?? tradeStock(trade);
+  const local = known ? { lang: "en" as const, queries: known.queries.slice(0, 3) } : { lang: "fr" as const, queries: [trade] };
+  if (!llmConfigured()) return local;
   try {
     const r = await llmJson(
       {
         task: "classification",
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:topic-queries:${clip(topic, 40)}`,
-        system: "You write search queries for royalty-free photo libraries. Short English queries (2 to 4 words) for a concrete, photographable scene that illustrates the post: tools, materials, the work, the result, the place. No brand names, no people's names.",
+        system: "You write search queries for royalty-free photo libraries. Short English queries (2 to 4 words) for a concrete, photographable scene that illustrates the post and names the trade: the work being done, its tools or materials, a recognisable result. Never a bare wall, texture, background or building. No brand names, no people's names.",
         prompt: `Business: ${trade}.\nPost: ${clip(topic, 300)}\nAnswer { "queries": ["query 1", "query 2"] }.`,
         maxTokens: 400,
       },
       z.object({ queries: z.array(z.string()).max(3) }),
     );
-    return r.queries.length ? { lang: "en", queries: [...r.queries, trade] } : { lang: "fr", queries: [trade] };
+    return r.queries.length ? { lang: "en", queries: [...r.queries, ...(known ? known.queries.slice(0, 1) : [])] } : local;
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    return { lang: "fr", queries: [trade] };
+    return local;
   }
 }
 
@@ -181,52 +184,76 @@ async function topicQueries(ictx: { userId: string; projectId: string; jobId?: s
 async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }): Promise<Asset | null> {
   const { lang, queries } = await topicQueries(ictx, p, post.topic);
   const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
-  const found = await searchStock(queries, post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used);
-  for (const photo of found.slice(0, 3)) {
-    let img: Buffer;
-    try {
-      img = await downloadStock(photo);
-    } catch {
-      continue;
-    }
-    const check = llmConfigured() ? await checkAmbiance({ ...ictx, usageKey: `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${photo.source}:${photo.id}` }, img, clip(post.topic, 200)) : null;
-    if (check && check.tier === "bad") continue;
-    return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: post.aspect, ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) } });
-  }
-  return null;
+  const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
+  const must = (tradeStock(`${post.topic} ${trade}`) ?? tradeStock(trade))?.must ?? [];
+  const found = rankStock(await searchStock(queries, post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured());
+  const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`);
+  if (!pick) return null;
+  const { photo, img, check } = pick;
+  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: post.aspect, ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) } });
 }
 
 /** Recherches de photos libres de droits par emplacement : mots du métier (IA légère si disponible, sinon le texte du projet). */
-async function stockQueries(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, slots: PhotoSlot[]): Promise<{ lang: "fr" | "en"; bySlot: Partial<Record<PhotoSlot, string[]>> }> {
+type SlotQuery = { lang: "fr" | "en"; queries: string[]; must: string[] };
+
+async function stockQueries(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, slots: PhotoSlot[]): Promise<Partial<Record<PhotoSlot, SlotQuery>>> {
   const items = serviceItems(p);
   const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
-  const local: Partial<Record<PhotoSlot, string[]>> = {
-    hero: [trade, `${trade} atelier`],
-    banner: [`${trade} chantier`, trade],
-    ad: [`${trade} outils`, trade],
-  };
+  const known = tradeStock(`${trade} ${p.product.summary ?? ""}`) ?? tradeStock(trade);
+  const tradeMust = known?.must ?? [];
+  // Sans IA : scènes concrètes du métier (en anglais) quand il est reconnu, sinon son nom.
+  const tq = (i: number): SlotQuery => (known ? { lang: "en", queries: [known.queries[i % known.queries.length], ...known.queries.filter((_, k) => k !== i % known.queries.length)].slice(0, 2), must: tradeMust } : { lang: "fr", queries: [trade], must: [] });
+  const local: Partial<Record<PhotoSlot, SlotQuery>> = { hero: tq(0), banner: tq(1), ad: tq(2) };
   // Chaque prestation est cherchée par son propre nom (jamais la photo d'une autre prestation).
-  items.forEach((s, i) => (local[`service:${i}`] = [s.name]));
-  if (!llmConfigured()) return { lang: "fr", bySlot: local };
+  items.forEach((s, i) => {
+    const own = tradeStock(`${s.name} ${s.description ?? ""}`);
+    local[`service:${i}`] = own ? { lang: "en", queries: own.queries.slice(0, 2), must: own.must } : { lang: "fr", queries: [s.name, ...(known ? known.queries.slice(0, 1) : [])], must: tradeMust };
+  });
+  if (!llmConfigured()) return local;
   try {
     const r = await llmJson(
       {
         task: "classification",
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:stock-queries`,
-        system: "You write search queries for royalty-free photo libraries (Pexels, Pixabay). Short English queries (2 to 4 words) describing a concrete, photographable scene of the trade: tools, materials, the work being done, the finished result, the place. No people's names, no brand names, no abstract words.",
+        system: "You write search queries for royalty-free photo libraries (Pexels, Pixabay). Short English queries (2 to 4 words) describing a concrete, photographable scene of the trade that names it: the work being done, its tools, its materials, a recognisable finished result. Never a bare wall, texture, background or building alone. No people's names, no brand names, no abstract words.",
         prompt: `Business: ${trade}. ${p.product.summary ?? ""}\nSlots: ${slots.map((s) => { const m = /^service:(\d+)$/.exec(s); return m && items[Number(m[1])] ? `${s} = ONLY the service "${items[Number(m[1])].name}"${items[Number(m[1])].description ? ` (${clip(items[Number(m[1])].description, 120)})` : ""}` : s; }).join("; ")} (hero = the trade at a glance; banner = a finished job; ad = tools or work in progress). Each service query must show that exact service and nothing else (tiling is not painting).\nAnswer { "queries": { "<slot>": ["query 1", "query 2"] } }.`,
         maxTokens: 800,
       },
       z.object({ queries: z.record(z.string(), z.array(z.string()).max(3)) }),
     );
-    const bySlot: Partial<Record<PhotoSlot, string[]>> = {};
-    for (const s of slots) bySlot[s] = (r.queries[s] ?? []).filter(Boolean).slice(0, 2);
-    return slots.every((s) => bySlot[s]?.length) ? { lang: "en", bySlot } : { lang: "fr", bySlot: local };
+    const out: Partial<Record<PhotoSlot, SlotQuery>> = {};
+    for (const s of slots) {
+      const q = (r.queries[s] ?? []).filter(Boolean).slice(0, 2);
+      out[s] = q.length ? { lang: "en", queries: [...q, ...(local[s]?.lang === "en" ? local[s]!.queries.slice(0, 1) : [])], must: local[s]?.must ?? tradeMust } : local[s];
+    }
+    return out;
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    return { lang: "fr", bySlot: local };
+    return local;
   }
+}
+
+/**
+ * Première photo qui montre vraiment le sujet. Avec l'IA, chaque photo est regardée : une photo nette du métier est
+ * prise tout de suite ; à défaut, la meilleure « à vérifier » ; jamais une photo hors sujet (mur nu, texture…).
+ * Sans IA, la liste reçue ne contient déjà que des photos dont la description cite le métier.
+ */
+async function firstOnTopic<T extends Parameters<typeof downloadStock>[0]>(ictx: { userId: string; projectId: string; jobId?: string | null }, found: T[], subject: string, key: (ph: T) => string): Promise<{ photo: T; img: Buffer; check: Awaited<ReturnType<typeof checkAmbiance>> | null } | null> {
+  let fallback: { photo: T; img: Buffer; check: Awaited<ReturnType<typeof checkAmbiance>> } | null = null;
+  for (const photo of found.slice(0, 5)) {
+    let img: Buffer;
+    try {
+      img = await downloadStock(photo);
+    } catch {
+      continue;
+    }
+    if (!llmConfigured()) return { photo, img, check: null };
+    const check = await checkAmbiance({ ...ictx, usageKey: key(photo) }, img, subject, true);
+    if (check.tier === "good") return { photo, img, check };
+    if (check.tier === "warn" && !fallback) fallback = { photo, img, check };
+  }
+  return fallback;
 }
 
 /**
@@ -235,27 +262,21 @@ async function stockQueries(ictx: { userId: string; projectId: string; jobId?: s
  */
 export async function stockFill(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, slots: { slot: PhotoSlot; aspect: "16:9" | "4:5" | "1:1" }[], base: string): Promise<{ id: string; slot: PhotoSlot }[]> {
   if (!slots.length) return [];
-  const { lang, bySlot } = await stockQueries(ictx, p, slots.map((x) => x.slot));
+  const bySlot = await stockQueries(ictx, p, slots.map((x) => x.slot));
   const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
   const out: { id: string; slot: PhotoSlot }[] = [];
   for (const { slot, aspect } of slots) {
     const orientation = aspect === "16:9" ? "landscape" : aspect === "1:1" ? "square" : "portrait";
-    const found = await searchStock(bySlot[slot] ?? [], orientation, lang, used);
-    for (const photo of found.slice(0, 3)) {
-      let img: Buffer;
-      try {
-        img = await downloadStock(photo);
-      } catch {
-        continue;
-      }
-      used.add(`${photo.source}:${photo.id}`);
-      const want = slotSubject(p, slot);
-      const check = llmConfigured() ? await checkAmbiance({ ...ictx, usageKey: `${ictx.jobId ?? "stock"}:stockqc:${slot}:${photo.source}:${photo.id}` }, img, want.subject) : null;
-      if (check && check.tier === "bad") continue;
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) }, status: "review" });
-      out.push({ id: a.id, slot });
-      break;
-    }
+    const q = bySlot[slot];
+    if (!q) continue;
+    const found = rankStock(await searchStock(q.queries, orientation, q.lang, used), q.must, llmConfigured());
+    const want = slotSubject(p, slot);
+    const pick = await firstOnTopic(ictx, found, want.subject, (ph) => `${ictx.jobId ?? "stock"}:stockqc:${slot}:${ph.source}:${ph.id}`);
+    if (!pick) continue;
+    const { photo, img, check } = pick;
+    used.add(`${photo.source}:${photo.id}`);
+    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) }, status: "review" });
+    out.push({ id: a.id, slot });
   }
   return out;
 }
