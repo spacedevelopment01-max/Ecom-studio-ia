@@ -6,6 +6,7 @@
 import { getJsonSetting, getSetting } from "../settings";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
+import { POLICY_ROUTES } from "../orchestrator/policy";
 
 export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "pexels" | "pixabay";
 
@@ -117,34 +118,11 @@ export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "imag
 
 export type Route = { provider: ProviderId; model: string; effort?: "low" | "medium" | "high" | "xhigh" | "max" };
 
-export const DEFAULT_ROUTES: Record<TaskId, Route> = {
-  vision_analysis: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  strategy: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
-  // Textes de vente (accueil, fiche produit, FAQ) : enjeu direct sur la conversion, réflexion plus poussée.
-  copywriting: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "high" },
-  theme_design: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
-  theme_edit: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  theme_custom: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
-  // Contrôles (images, plans vidéo, relectures) : grille fixe, réponse courte — modèle solide mais moins cher que la création.
-  quality_control: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
-  photo_triage: { provider: "anthropic", model: "claude-haiku-4-5" },
-  cutout_check: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
-  logo_symbol: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  social_planning: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  // Reprises ciblées du calendrier et réécritures de l'éditeur : rédaction de community manager, effort moyen.
-  social_copy: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" },
-  classification: { provider: "anthropic", model: "claude-haiku-4-5" },
-  video_direction: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  // Brief photo : quelques centaines de mots, mais il conditionne une image payante (~0,17 $) — modèle fort, effort moyen.
-  art_direction: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  // Campagne de test complète (stratégie + annonces) : modèle fort, effort moyen ; une relecture notée et au plus une reprise.
-  ad_creative: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  // Sujets d'articles : stratégie de mots-clés et intention de recherche (Haiku trop superficiel), appel court.
-  blog_topics: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
-  blog_writing: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" },
-  image_generation: { provider: "openai", model: "gpt-image-1" },
-  video_generation: { provider: "google", model: "veo-3.0-generate-001" },
-};
+/**
+ * Routage par défaut de chaque tâche : dérivé de la politique centrale (src/lib/orchestrator/policy.ts), seul
+ * endroit qui décrit capacité, niveau et effort par tâche. Le réglage « ai.routes » de l'administration prime.
+ */
+export const DEFAULT_ROUTES: Record<TaskId, Route> = POLICY_ROUTES;
 
 /** Tarifs publics (USD) servant au calcul du coût. À vérifier et ajuster dans l'administration. */
 export type Price =

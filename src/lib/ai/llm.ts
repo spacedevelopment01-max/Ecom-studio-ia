@@ -19,6 +19,9 @@ import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { recordCall, redact, shortHash } from "./trace";
 import { brainMetaOf } from "../brain/facade";
+import { getJsonSetting } from "../settings";
+import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
+import type { Deliverable } from "../quality/policies";
 
 export type LlmImage = { data: Buffer; label?: string };
 
@@ -47,7 +50,32 @@ export type LlmCall = {
   volatile?: string;
   /** Portée, empreinte et version du Project Brain (trace) ; à défaut, déduites du contexte projectContext. */
   brain?: { scope: string; hash: string; version: string };
+  /**
+   * Router V2 : difficulté, livrable contrôlé et historique de l'étape (note précédente, verdict, cause d'échec).
+   * Absent : le routage par défaut de la tâche (identique à celui d'avant la phase 3).
+   */
+  routing?: { difficulty?: Difficulty; deliverable?: Deliverable; history?: RoutingHistory };
 };
+
+/**
+ * Modèle d'un appel, choisi par le Router V2 (politique centrale + route fixée par l'administration + historique).
+ * Un appel arrivé ici est déjà engagé vers l'IA : jamais de bascule silencieuse vers le moteur local.
+ */
+export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing">): RouteDecision {
+  const custom = getJsonSetting<Partial<Record<TaskId, unknown>>>("ai.routes", {});
+  return route({
+    task: call.task,
+    difficulty: call.routing?.difficulty,
+    deliverable: call.routing?.deliverable,
+    history: call.routing?.history,
+    inputType: call.images?.length ? "mixed" : "text",
+    aiActive: true,
+    allowLocal: false,
+    // Clé Anthropic absente : l'erreur explicite vient du client (message d'administration), pas d'un repli.
+    available: (p) => p === "anthropic" || !!activeProviderKey(p),
+    overrides: custom[call.task] ? { [call.task]: routeFor(call.task) } : undefined,
+  });
+}
 
 /** Contexte Brain d'un appel : explicite, sinon retrouvé à partir du bloc <contexte_projet> de projectContext. */
 function brainOf(call: LlmCall): { brain: LlmCall["brain"] | null; volatile: string } {
@@ -150,7 +178,8 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
 type RawResult = { text: string; stop: string | null; model: string };
 
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
-  const route = routeFor(call.task);
+  const decision = routeLlm(call);
+  const route = { provider: decision.provider, model: decision.model, effort: decision.effort };
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
   // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non.
   assertAiAllowed(call.userId);
@@ -194,6 +223,10 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     brainScope: brain?.scope ?? null,
     brainHash: brain?.hash ?? null,
     brainVersion: brain?.version ?? null,
+    // Router V2 : raison synthétique, repli, escalade (jamais de raisonnement détaillé).
+    routingReason: decision.reason,
+    fallback: decision.fallback,
+    escalation: decision.escalation,
   };
   try {
     msg = await httpCounter.run(counter, async () => {
