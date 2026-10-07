@@ -12,6 +12,7 @@ import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { FromSiteBadge } from "./existing-site";
 import { FullLogoPanel } from "./full-logo-panel";
+import { PalettePicker } from "./palette-picker";
 
 const PALETTE_LABEL: Record<string, { fr: string; en: string }> = {
   primary: { fr: "Principale", en: "Primary" },
@@ -205,6 +206,12 @@ export default function TabMarque() {
                 setExactPal({ ...base, [k]: v });
                 setDirty(true);
               };
+              // Les cinq couleurs d'un coup (palette prête, une couleur de départ, codes collés).
+              const replaceAll = (pal: Brand["palette"]) => {
+                if (!route) return set({ palette: pal });
+                setExactPal(pal);
+                setDirty(true);
+              };
               return (
                 <div>
                   <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">{t("Palette", "Palette")}</p>{V("palette")}</div>
@@ -220,6 +227,7 @@ export default function TabMarque() {
                       </label>
                     ))}
                   </div>
+                  <PalettePicker current={Object.fromEntries((Object.keys(b.palette) as (keyof Brand["palette"])[]).map((k) => [k, shown(k)])) as Brand["palette"]} onPick={replaceAll} />
                 </div>
               );
             })()}
