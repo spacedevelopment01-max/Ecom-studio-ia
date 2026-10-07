@@ -62,3 +62,23 @@ describe("vos photos reconnues", () => {
     expect(photoSlots(p)).toContain("service:1");
   });
 });
+
+import { paletteVariant, draftPalette } from "@/lib/engine/creative-direction";
+import { hsl } from "@/lib/color";
+describe("un code couleur par piste", () => {
+  it("variantes d'une autre dominante, structure lisible (fond clair, texte sombre)", () => {
+    const pal = { primary: "#8A3B26", secondary: "#E9DDD3", accent: "#B5714A", light: "#F7F3EF", dark: "#1C1714" };
+    const hues = [0, 1, 2].map((i) => hsl(paletteVariant(pal, i).accent)[0]);
+    const gap = (a: number, b: number) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+    expect(gap(hues[0], hues[1])).toBeGreaterThan(60);
+    expect(gap(hues[1], hues[2])).toBeGreaterThan(40);
+    const v = paletteVariant(pal, 1);
+    expect(hsl(v.light)[2]).toBeGreaterThan(0.9);
+    expect(hsl(v.dark)[2]).toBeLessThan(0.2);
+    expect(paletteVariant(pal, 0)).toEqual(pal);
+  });
+  it("palette proposée par l'IA : gardée si les 5 codes sont valides", () => {
+    expect(draftPalette({ primary: "#112233", secondary: "#DDEEFF", accent: "#AA5500", light: "#FAFAFA", dark: "#111111" })).toBeTruthy();
+    expect(draftPalette({ primary: "bleu" })).toBeNull();
+  });
+});

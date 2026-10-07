@@ -18,7 +18,7 @@ import { C, L } from "../i18n-server";
 type Ictx = { userId: string; projectId: string; jobId?: string | null };
 
 /** Deux briefs de logo complets, rédigés d'après tout le projet (métier, clientèle, ton, couleurs). */
-async function briefs(ictx: Ictx, p: Project): Promise<{ concept: string; brief: string }[]> {
+async function briefs(ictx: Ictx, p: Project): Promise<{ concept: string; brief: string; descriptor?: string }[]> {
   const pal = p.brand?.palette;
   const r = await llmJson(
     {
@@ -28,23 +28,24 @@ async function briefs(ictx: Ictx, p: Project): Promise<{ concept: string; brief:
       system: `Rôle : directeur artistique senior d'une agence de branding. Tu écris, pour un illustrateur (une IA d'images), deux briefs de LOGO COMPLET (symbole + nom de la marque) vraiment différents, comme un vrai designer : le symbole naît de la logique du métier ou du produit (fonction, geste, outil, matière, bénéfice, origine), jamais un cliché du secteur ; typographie décrite précisément (famille, graisse, casse, interlettrage) ; composition (symbole à gauche, au-dessus, emblème…) ; couleurs données en codes hexadécimaux de la palette. Aucune promesse, aucun slogan dans le logo. Briefs EN ANGLAIS, 70 à 140 mots chacun ; « concept » en français, une phrase.`,
       context: projectContext(p, "brand"),
       prompt: `Marque : « ${p.brand?.name ?? p.name} ». Palette : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : "à choisir"}. Direction : ${p.brand?.direction ?? ""}.
-Réponds { "logos": [ { "concept": "…", "brief": "…" }, { "concept": "…", "brief": "…" } ] }.`,
+Deux styles différents : par exemple un emblème illustré (outils, matière, lieu du métier) avec une belle typographie, et un logo plus épuré. « descriptor » : la ligne du métier sous le nom, en français, 1 à 3 mots en capitales (ex. « PLÂTRIER PEINTRE »), ou vide pour un logo sans cette ligne.
+Réponds { "logos": [ { "concept": "…", "brief": "…", "descriptor": "…" }, { "concept": "…", "brief": "…", "descriptor": "…" } ] }.`,
       maxTokens: 6000,
     },
-    z.object({ logos: z.array(z.object({ concept: z.string(), brief: z.string() })).min(1).max(2) }),
+    z.object({ logos: z.array(z.object({ concept: z.string(), brief: z.string(), descriptor: z.string().max(40).optional().catch(undefined) })).min(1).max(2) }),
   );
   return r.logos;
 }
 
 /** Le nom est-il écrit exactement, sans autre texte ? Logo propre et professionnel ? */
-async function checkFullLogo(ictx: Ictx & { usageKey: string }, img: Buffer, name: string) {
+async function checkFullLogo(ictx: Ictx & { usageKey: string }, img: Buffer, name: string, descriptor?: string) {
   return llmJson(
     {
       task: "quality_control",
       ...ictx,
       system: "Rôle : contrôleur qualité de logos (agence). Tu lis le texte du logo lettre par lettre et tu vérifies sa qualité.",
       images: [{ data: await sharp(img).flatten({ background: "#ffffff" }).resize(1024, 1024, { fit: "inside" }).png().toBuffer(), label: "logo à contrôler" }],
-      prompt: `Nom attendu, à l'identique (lettres, accents, espaces) : « ${name} ».
+      prompt: `Nom attendu, à l'identique (lettres, accents, espaces) : « ${name} ».${descriptor ? ` Ligne du métier autorisée, à l'identique : « ${descriptor} » (ce n'est pas du texte en trop).` : ""}
 Réponds { "text": "texte lu exactement", "nameExact": true|false, "extraText": true|false, "score": 0-10, "issues": ["…"] } — score : 9-10 logo d'agence ; 7-8 bon ; 5-6 défauts visibles ; 0-4 inutilisable (texte déformé, symbole confus, rendu amateur).`,
       maxTokens: 2500,
     },
@@ -83,14 +84,15 @@ export async function generateFullLogos(ctx: JobContext | null, projectId: strin
     ctx?.progress(0.25 + i * 0.35, L(`Logo complet ${i + 1} dessiné par l'IA d'images`, `Full logo ${i + 1} drawn by the image AI`));
     const key = `${ictx.jobId ?? "logo"}:full-logo:${i}:${Date.now().toString(36)}`;
     try {
-      let img = await fullLogoImage({ ...ictx, usageKey: key }, { brief: b.brief, name });
-      let qc = await checkFullLogo({ ...ictx, usageKey: `${key}:qc` }, img, name);
+      const descriptor = b.descriptor?.trim() || undefined;
+      let img = await fullLogoImage({ ...ictx, usageKey: key }, { brief: b.brief, name, descriptor });
+      let qc = await checkFullLogo({ ...ictx, usageKey: `${key}:qc` }, img, name, descriptor);
       if (!qc.nameExact || qc.extraText || qc.score < 5) {
         // Nom mal écrit ou rendu raté : une reprise avec le défaut précis ; le raté n'est ni gardé ni décompté.
         refundMediaQuota(p.userId, key);
         const fix = [!qc.nameExact && `the name was written "${qc.text}" instead of "${name}"`, qc.extraText && "remove every extra word or letter", ...qc.issues].filter(Boolean).join("; ");
-        img = await fullLogoImage({ ...ictx, usageKey: `${key}:retry` }, { brief: `${b.brief} Fix these defects of a previous attempt: ${fix}.`, name });
-        qc = await checkFullLogo({ ...ictx, usageKey: `${key}:retry:qc` }, img, name);
+        img = await fullLogoImage({ ...ictx, usageKey: `${key}:retry` }, { brief: `${b.brief} Fix these defects of a previous attempt: ${fix}.`, name, descriptor });
+        qc = await checkFullLogo({ ...ictx, usageKey: `${key}:retry:qc` }, img, name, descriptor);
       }
       const warning = !qc.nameExact ? L(`nom lu « ${qc.text} » au lieu de « ${name} »`, `name read "${qc.text}" instead of "${name}"`) : qc.extraText ? L("texte en trop dans le logo", "extra text in the logo") : qc.score < 7 ? qc.issues.join(L(" ; ", "; ")) : "";
       out.push(
