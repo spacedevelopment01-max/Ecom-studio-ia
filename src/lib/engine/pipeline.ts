@@ -6,6 +6,7 @@
  * marque avant la suite (mode guidé).
  */
 import { userPlan } from "../quotas";
+import { friendlyToolError } from "../tool-errors";
 import { all, id, json, now, one, run } from "../db";
 import { enqueue, JobCancelled, JobContext, JobPaused, type Job } from "../jobs";
 import { assetData, saveAsset, type Asset } from "../library";
@@ -139,7 +140,7 @@ export async function runPipeline(ctx: JobContext) {
       setStatus(projectId, "paused");
       throw e;
     }
-    if (cur) markStep(ctx, cur as StepId, "failed", (e as Error).message);
+    if (cur) markStep(ctx, cur as StepId, "failed", friendlyToolError((e as Error).message));
     setStatus(projectId, "error");
     throw e;
   }
@@ -151,8 +152,8 @@ async function serviceContent(fn: () => Promise<StepNote>): Promise<StepNote | {
     return await fn();
   } catch (e) {
     if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
-    const msg = (e as Error).message;
-    return { skipped: inBothLangs(() => L(`Non créé pour l'instant : ${msg}`, `Not created for now: ${msg}`)) };
+    const raw = (e as Error).message;
+    return { skipped: inBothLangs(() => L(`Non créé pour l'instant : ${friendlyToolError(raw)}`, `Not created for now: ${friendlyToolError(raw)}`)) };
   }
 }
 
