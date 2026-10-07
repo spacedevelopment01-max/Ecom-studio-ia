@@ -586,6 +586,10 @@ CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets(user_id);
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */
 const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
+  // Project Brain (phase 2.1) : portée, empreinte du contexte stable et version du Brain de chaque appel d'IA.
+  ["ai_calls", "brain_scope", "TEXT"],
+  ["ai_calls", "brain_hash", "TEXT"],
+  ["ai_calls", "brain_version", "TEXT"],
   ["projects", "store_type", "TEXT NOT NULL DEFAULT 'mono'"],
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
