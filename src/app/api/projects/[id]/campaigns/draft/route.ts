@@ -4,6 +4,8 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { runForUser } from "@/lib/ai/access";
 import { contentLang } from "@/lib/i18n-server";
 import { draftAds, localAdStrategy, localAds } from "@/lib/engine/ads";
+import { orchestrateNow } from "@/lib/orchestrator/execute";
+import { randomUUID } from "node:crypto";
 
 /**
  * Propose les annonces d'une campagne et leur plan de test (audiences, structure, budget honnête, accroches) dans la langue demandée (en-tête x-content-lang, sinon langue du projet).
@@ -15,7 +17,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const b = await body(req, z.object({ count: z.number().int().min(1).max(6).optional(), objective: z.string().max(80).optional(), audience: z.string().max(600).optional(), networks: z.array(z.string().max(20)).max(6).optional() }));
   const lang = contentLang();
   try {
-    const r = await runForUser(user.id, () => draftAds(p, { userId: user.id, count: b.count, objective: b.objective, audience: b.audience, networks: b.networks }));
+    // Intention CREATE_AD → plan d'une étape → Router V2 → moteur des publicités (tracé, rien d'autre lancé).
+    const r = await runForUser(user.id, () => orchestrateNow(p, "ads.draft", `ads:${randomUUID()}`, () => draftAds(p, { userId: user.id, count: b.count, objective: b.objective, audience: b.audience, networks: b.networks })));
     return ok({ ...r, lang });
   } catch (e) {
     // L'IA a échoué (fournisseur, refus, crédits) : propositions locales plutôt qu'une erreur.

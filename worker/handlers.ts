@@ -34,11 +34,19 @@ import { cutoutSummary, redoCutout } from "../src/lib/engine/cutouts";
 import { loadImage } from "@napi-rs/canvas";
 import { L } from "../src/lib/i18n-server";
 import { planOfUserId } from "../src/lib/plan-gates";
+import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../src/lib/orchestrator/execute";
 
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
 export const handlers: Record<string, Handler> = {
+  // Création complète : passe par le planner à l'intérieur (étapes déjà acquises sautées, marque existante gardée).
   "pipeline.run": runPipeline,
+
+  /** Demande libre du client : intention → plan → moteurs existants (Router V2, barrière de qualité). */
+  "plan.run": runRequestPlan,
+
+  /** Photos libres de droits (gratuites, contrôlées) avant toute image IA. */
+  "stock.search": async (ctx) => findStockPhotos(ctx, ctx.payload.projectId, ctx.payload.n ?? 2),
 
   /** Tri des photos du produit, détourage et contrôle (ajout d'une photo, « Refaire le détourage »). */
   "cutout.run": async (ctx) => {
@@ -369,3 +377,7 @@ export const handlers: Record<string, Handler> = {
 };
 
 export const HANDLER_TYPES = Object.keys(handlers);
+
+// Orchestration (phase 3B) : chaque action du studio devient un petit plan (ses seules étapes), routé, tracé et
+// repris sans rien repayer ; le moteur existant reste l'exécuteur (aucune logique dupliquée).
+for (const action of Object.keys(ACTION_STEPS)) if (handlers[action]) handlers[action] = orchestrated(action, handlers[action]);

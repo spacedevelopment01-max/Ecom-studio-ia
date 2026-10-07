@@ -30,6 +30,7 @@ import { llmConfigured } from "../ai/llm";
 import { emptyProduct, type BusinessType, type ProductProfile } from "../project-types";
 import { C, L, inBothLangs } from "../i18n-server";
 import { note, stepNoteText, type StepNote } from "../step-notes";
+import { pipelinePlan } from "../orchestrator/execute";
 
 export const STEPS = [
   { id: "sources", label: "Lecture des sources", detail: "Photos, lien importé, description", en: { label: "Reading sources", detail: "Photos, imported link, description" } },
@@ -107,11 +108,21 @@ export async function runPipeline(ctx: JobContext) {
   setStatus(projectId, "creating");
   const startIndex = payload.from ? STEPS.findIndex((s) => s.id === payload.from) : 0;
   const total = STEPS.length;
+  // Orchestrateur : plan de la création d'après l'état réel du projet (même clé que la tâche : reprise cohérente).
+  const orch = pipelinePlan(ctx, loadProject(projectId), payload);
   try {
     for (let i = Math.max(0, startIndex); i < total; i++) {
       const step = STEPS[i];
       const done = (ctx.checkpoint.__steps ?? {})[step.id]?.status;
       if (done === "done" || done === "skipped") continue;
+      // Étape inutile d'après le plan (marque existante gardée, textes déjà FINAL) : sautée, avec la raison.
+      const planSkip = orch.skipped(step.id);
+      if (planSkip) {
+        const kept = loadProject(projectId);
+        markStep(ctx, step.id, "skipped", planSkip === "brand" ? note("skip.brandKept", { name: kept.brand?.name ?? "" }) : note("skip.copyFinal"));
+        continue;
+      }
+      const since = orch.since(step.id);
       markStep(ctx, step.id, "running");
       // Le type d'activité peut être fixé en cours de route (lecture du site existant du client).
       const cur = loadProject(projectId);
@@ -121,6 +132,7 @@ export async function runPipeline(ctx: JobContext) {
       const res = await runStep(step.id, sc, payload);
       if (res && typeof res === "object" && "skipped" in res) markStep(ctx, step.id, "skipped", res.skipped);
       else markStep(ctx, step.id, res === "skipped" ? "skipped" : "done", res && res !== "skipped" ? res : undefined);
+      orch.record(step.id, since, res === "skipped" || (!!res && typeof res === "object" && "skipped" in res));
       if (step.id === "brand" && payload.mode === "guided") {
         setStatus(projectId, "awaiting_validation");
         const p = loadProject(projectId);
@@ -350,18 +362,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return note(services ? "shop.site" : "shop.theme", { n: r.number });
     }
     case "calendar": {
-      await ctx.step("plan", async () => {
-        const pid = id();
-        const fresh = loadProject(projectId);
-        const conns = all<{ id: string; provider: string }>("SELECT c.id, c.provider FROM connections c JOIN project_connections pc ON pc.connection_id = c.id WHERE pc.project_id = ? AND c.provider IN ('instagram','facebook','tiktok','youtube','pinterest')", projectId);
-        const networks = conns.length ? conns.map((c) => ({ network: c.provider, connectionId: c.id })) : [{ network: "instagram" }, { network: "facebook" }, { network: "pinterest" }];
-        const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
-        const params = { startDate: tomorrow, days: 7, perDay: 1, slots: ["11:30"], timezone: fresh.settings.timezone, networks, goals: fresh.business === "services" ? C("faire connaître l'activité et ses prestations, amener vers une prise de contact", "promote the business and its services, drive people to get in touch") : C("faire découvrir le produit et amener vers la boutique", "introduce the product and drive traffic to the store"), tone: "", mix: { photo: 70, video: 20, text: 10 }, approval: "manual" as const };
-        run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", pid, projectId, JSON.stringify(params), "planning", now());
-        const job = enqueue({ userId: p.userId, projectId, type: "calendar.plan", label: L("Calendrier de 7 jours", "7-day calendar"), payload: { projectId, planId: pid, params }, parentId: ctx.job.id, idempotencyKey: `pipeline-plan:${ctx.job.id}` });
-        run("UPDATE content_plans SET job_id = ? WHERE id = ?", job.id, pid);
-        return pid;
-      });
+      await startWeekCalendar(ctx, projectId, `pipeline-plan:${ctx.job.id}`);
       return note("calendar.started");
     }
     case "organize": {
@@ -371,6 +372,23 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return note("organize.done", { n, loose });
     }
   }
+}
+
+/** Calendrier de 7 jours (réseaux connectés, sinon Instagram, Facebook, Pinterest) lancé en tâche enfant, une seule fois. */
+export async function startWeekCalendar(ctx: JobContext, projectId: string, idempotencyKey: string) {
+  const p = loadProject(projectId);
+  return await ctx.step("plan", async () => {
+    const pid = id();
+    const fresh = loadProject(projectId);
+    const conns = all<{ id: string; provider: string }>("SELECT c.id, c.provider FROM connections c JOIN project_connections pc ON pc.connection_id = c.id WHERE pc.project_id = ? AND c.provider IN ('instagram','facebook','tiktok','youtube','pinterest')", projectId);
+    const networks = conns.length ? conns.map((c) => ({ network: c.provider, connectionId: c.id })) : [{ network: "instagram" }, { network: "facebook" }, { network: "pinterest" }];
+    const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
+    const params = { startDate: tomorrow, days: 7, perDay: 1, slots: ["11:30"], timezone: fresh.settings.timezone, networks, goals: fresh.business === "services" ? C("faire connaître l'activité et ses prestations, amener vers une prise de contact", "promote the business and its services, drive people to get in touch") : C("faire découvrir le produit et amener vers la boutique", "introduce the product and drive traffic to the store"), tone: "", mix: { photo: 70, video: 20, text: 10 }, approval: "manual" as const };
+    run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", pid, projectId, JSON.stringify(params), "planning", now());
+    const job = enqueue({ userId: p.userId, projectId, type: "calendar.plan", label: L("Calendrier de 7 jours", "7-day calendar"), payload: { projectId, planId: pid, params }, parentId: ctx.job.id, idempotencyKey });
+    run("UPDATE content_plans SET job_id = ? WHERE id = ?", job.id, pid);
+    return pid;
+  });
 }
 
 /** Sous-portée pour une étape interne (vidéos multiples). */

@@ -53,6 +53,8 @@ const CATALOG: Record<string, (p: Record<string, string | number>, lang: Lang) =
   "organize.done": ({ n, loose }, l) =>
     l === "en" ? `${n} file${s(+n)} organized into folders${+loose ? `, ${loose} to sort` : ""}` : `${n} fichier${s(+n)} rangé${s(+n)} par dossier${+loose ? `, ${loose} à classer` : ""}`,
   "skip.plan": (_, l) => (l === "en" ? "Included in the plans: choose a plan in “My account”, then run this step again" : "Inclus dans les forfaits : choisissez un forfait dans « Mon compte », puis relancez cette étape"),
+  "skip.brandKept": ({ name }, l) => (l === "en" ? `Existing brand kept${name ? ` (${name})` : ""}: not redone. Use “Redo the brand” to regenerate it.` : `Marque existante conservée${name ? ` (${name})` : ""} : pas refaite. « Refaire la marque » pour la régénérer.`),
+  "skip.copyFinal": (_, l) => (l === "en" ? "Store copy already validated by the quality check: not rewritten." : "Textes déjà validés par le contrôle qualité : pas réécrits."),
   "skip.videosNone": (_, l) => (l === "en" ? "Videos not requested at launch: create them whenever you like in the Videos tab" : "Vidéos non demandées au lancement : créez-les quand vous voulez dans l'onglet Vidéos"),
   "skip.servicePhotos": ({ n }, l) => (l === "en" ? `${n} business photo${s(+n)} kept as they are` : `${n} photo${s(+n)} de l'activité gardée${s(+n)} telle${s(+n)} quelle${s(+n)}`),
   "skip.serviceNoPhoto": (_, l) => (l === "en" ? "No photo provided: you can add some in the Business tab" : "Aucune photo fournie : vous pourrez en ajouter dans l'onglet Activité"),

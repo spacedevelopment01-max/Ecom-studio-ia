@@ -62,7 +62,7 @@ describe("Phase 3A — intention, plan, routeur", async () => {
 
   it("action déterministe → intention sans aucun appel à l'IA (bouton, tâche de fond, route)", async () => {
     const classify = vi.fn();
-    for (const [action, want] of [["brand.fulllogo", ["CREATE_LOGO"]], ["logo.create", ["CREATE_LOGO"]], ["blog.generate", ["BLOG"]], ["shop.chat", ["EDIT_THEME"]], ["ads.draft", ["CREATE_AD"]], ["pipeline.run", ["ANALYZE_PRODUCT", "CREATE_BRAND", "CREATE_SHOP"]]] as const) {
+    for (const [action, want] of [["brand.fulllogo", ["CREATE_LOGO"]], ["logo.create", ["CREATE_LOGO"]], ["blog.generate", ["BLOG"]], ["shop.chat", ["EDIT_THEME"]], ["ads.draft", ["CREATE_AD"]], ["pipeline.run", ["ANALYZE_PRODUCT", "CREATE_BRAND", "CREATE_SHOP", "CREATE_VIDEO", "SOCIAL", "ORGANIZE_FILES"]]] as const) {
       const r = await o.understand({ action }, { aiActive: true, classify });
       expect(r, action).toMatchObject({ intents: want, source: "action", confidence: 1 });
     }

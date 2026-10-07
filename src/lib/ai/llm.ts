@@ -21,6 +21,7 @@ import { recordCall, redact, shortHash } from "./trace";
 import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
 import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
+import { routingHistoryFor } from "../orchestrator/history";
 import type { Deliverable } from "../quality/policies";
 
 export type LlmImage = { data: Buffer; label?: string };
@@ -67,7 +68,8 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing">): Ro
     task: call.task,
     difficulty: call.routing?.difficulty,
     deliverable: call.routing?.deliverable,
-    history: call.routing?.history,
+    // Historique explicite de l'appel, sinon celui de la reprise en cours (candidat ou étape du plan).
+    history: call.routing?.history ?? routingHistoryFor(call.task),
     inputType: call.images?.length ? "mixed" : "text",
     aiActive: true,
     allowLocal: false,

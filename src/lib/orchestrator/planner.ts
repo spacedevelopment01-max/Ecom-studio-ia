@@ -43,6 +43,21 @@ export type StepResult = {
   score?: number | null;
   fatal?: boolean;
   fatalCodes?: string[];
+  /**
+   * Tentative déjà faite PAR LE MOTEUR (ses propres reprises ciblées) : le plan n'en rajoute jamais au-delà de la
+   * politique de qualité — aucune reprise repayée deux fois.
+   */
+  attempt?: number;
+  /**
+   * L'étape a été exécutée par un moteur existant qui fait lui-même ses reprises ciblées (avec l'historique transmis
+   * au routeur) : le plan ne relance jamais tout le moteur par-dessus (aucune dépense en double).
+   */
+  ownedRetries?: boolean;
+  /**
+   * Étapes du plan réalisées par le même moteur (ex. la création de marque fait aussi les pistes de logo et la
+   * charte) : leur résultat est enregistré sans relancer un second moteur.
+   */
+  covered?: Partial<Record<StepKind, StepResult>>;
   /** Le fournisseur a échoué (panne, délai) : rien n'est accepté ; repli ou reprise. */
   providerError?: boolean;
   note?: string;
@@ -188,17 +203,34 @@ function finalize(steps: PlanStep[], state: ProjectState) {
 }
 
 /** Plan d'une demande (intentions) pour un projet. Déterministe : même demande → même plan, même identifiant. */
-export function buildPlan(a: { projectId: string; userId: string; requestKey: string; intents: Intent[]; state: ProjectState; input?: Record<string, unknown> }): TaskPlan {
+export function buildPlan(a: {
+  projectId: string;
+  userId: string;
+  requestKey: string;
+  intents: Intent[];
+  state: ProjectState;
+  input?: Record<string, unknown>;
+  /** Étapes que l'action exécute réellement (une action simple reste un petit plan). */
+  only?: StepKind[];
+  /** Demande composite (création complète) : rien n'est « explicite », l'existant est respecté… */
+  implicit?: boolean;
+  /** …sauf ce que le client demande expressément de refaire (ex. « refaire la marque »). */
+  regenerate?: StepKind[];
+  /** Image générée demandée expressément : pas de recherche de photos libres d'abord. */
+  forceGenerate?: boolean;
+}): TaskPlan {
   const steps: PlanStep[] = [];
   for (const intent of a.intents)
     for (const kind of INTENT_STEPS[intent]) {
-      const explicit = !!EXPLICIT[intent]?.includes(kind);
+      if (a.only && !a.only.includes(kind)) continue;
+      if (a.forceGenerate && kind === "stock_search") continue;
+      const explicit = (!a.implicit && !!EXPLICIT[intent]?.includes(kind)) || !!a.regenerate?.includes(kind);
       const ex = steps.find((s) => s.kind === kind);
       if (ex) ex.explicit ||= explicit;
       else steps.push(makeStep(kind, explicit, { ...(a.input ?? {}), ...(intent === "IMPROVE_LOGO" && kind === "logo" ? { mode: "improve" } : {}) }));
     }
   // Relecture finale seulement quand plusieurs contenus sont produits ensemble.
-  if (steps.filter((s) => CONTENT.includes(s.kind)).length >= 2) steps.push(makeStep("quality_review", false, {}));
+  if (steps.filter((s) => CONTENT.includes(s.kind)).length >= 2 && (!a.only || a.only.includes("quality_review"))) steps.push(makeStep("quality_review", false, {}));
   const warnings: string[] = [];
   if (a.state.genericTrade && steps.some((s) => s.kind === "stock_search" || s.kind === "image_generate"))
     warnings.push("product category understood through the GENERIC trade fallback (Phase 2 limitation): stock queries and scene hints are not specific to this product");
@@ -261,10 +293,13 @@ export function applyResult(plan: TaskPlan, stepId: string, r: StepResult): Task
   if (!s.deliverable || !r.verdict) {
     Object.assign(s, { status: "done", reason: r.note ?? "done" });
   } else {
-    const next = nextAction({ deliverable: s.deliverable, verdict: r.verdict, score: r.score ?? null, fatal: !!r.fatal, attempt: s.attempts, fatalCodes: r.fatalCodes });
+    const next = nextAction({ deliverable: s.deliverable, verdict: r.verdict, score: r.score ?? null, fatal: !!r.fatal, attempt: Math.max(s.attempts, r.attempt ?? 0), fatalCodes: r.fatalCodes });
     s.reason = next.reason;
     if (next.action === "stop" || next.action === "keep_best") s.status = "done";
-    else if (next.action === "correct") s.status = "pending";
+    else if (next.action === "correct" && r.ownedRetries) {
+      s.status = "done";
+      s.reason = `${next.reason} done inside the engine; best kept`;
+    } else if (next.action === "correct") s.status = "pending";
     else {
       s.status = "rejected";
       blockDependents(plan, s);
@@ -323,7 +358,19 @@ export type StepExecutor = (step: PlanStep, decision: RouteDecision) => Promise<
  * reprendre, sauter, arrêter). Enregistré après chaque étape : une reprise ne refait (ni ne repaie) rien de fait.
  * Les appels d'IA d'une étape sont tracés avec l'intention, le plan et l'étape.
  */
-export async function runPlan(plan: TaskPlan, execute: StepExecutor, env: Pick<RouteRequest, "aiActive" | "available" | "overrides" | "policy">, opts: { maxRounds?: number } = {}): Promise<TaskPlan> {
+export async function runPlan(
+  plan: TaskPlan,
+  execute: StepExecutor,
+  env: Pick<RouteRequest, "aiActive" | "available" | "overrides" | "policy">,
+  opts: {
+    maxRounds?: number;
+    /**
+     * Aucun fournisseur capable : « fail » (l'étape n'est pas faite) ou « execute » (moteur existant qui a son propre
+     * repli local, ex. visuels composés sans IA d'images ; la raison reste tracée).
+     */
+    onNone?: "fail" | "execute";
+  } = {},
+): Promise<TaskPlan> {
   const max = opts.maxRounds ?? 50;
   for (let round = 0; round < max && plan.status === "active"; round++) {
     const ready = readySteps(plan);
@@ -339,13 +386,17 @@ export async function runPlan(plan: TaskPlan, execute: StepExecutor, env: Pick<R
             ? { mode: "search", provider: "stock", model: "stock-search", tier: "local", reason: "free stock search before any paid image", fallback: false, escalation: false, qualityTarget: s.qualityTarget }
             : route({ task: s.task, deliverable: s.deliverable ?? undefined, qualityTarget: s.qualityTarget ?? undefined, history: stepHistory(s), step: s.kind, ...env });
       s.route = { mode: decision.mode, provider: decision.provider, model: decision.model, reason: decision.reason, fallback: decision.fallback, escalation: decision.escalation };
-      if (decision.mode === "none") {
+      if (decision.mode === "none" && opts.onNone !== "execute") {
         Object.assign(s, { status: "failed", reason: decision.reason });
         blockDependents(plan, s);
         continue;
       }
-      const result = await withTrace({ intent: plan.intents.join("+"), planId: plan.id, stepId: s.id, routing: s.route }, () => execute(s, decision));
+      const result = await withTrace({ intent: plan.intents.join("+"), planId: plan.id, stepId: s.id, routing: s.route, history: stepHistory(s) }, () => execute(s, decision));
       applyResult(plan, s.id, result);
+      for (const [kind, r] of Object.entries(result.covered ?? {})) {
+        const c = plan.steps.find((x) => x.kind === kind && x.status === "pending");
+        if (c && r) applyResult(plan, c.id, { ...r, note: r.note ?? `done by ${s.kind}` });
+      }
       savePlan(plan);
     }
   }
