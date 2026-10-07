@@ -78,7 +78,16 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   if (clientLogo && !site) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
   saveBrand(projectId, brand);
   // Site existant : jamais de logo généré (celui du site ou du client est conservé).
-  if (!site && !clientLogo && !keepValidated.includes("logo")) await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name }, redrawSymbol: true });
+  if (!site && !clientLogo && !keepValidated.includes("logo")) {
+    await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name }, redrawSymbol: true });
+    // Avec l'IA d'images : deux logos complets (symbole et nom) dessinés en parallèle, proposés dans l'onglet Marque.
+    const { imageProviderAvailable } = await import("../ai/media-providers");
+    const { llmConfigured } = await import("../ai/llm");
+    if (llmConfigured() && imageProviderAvailable()) {
+      const { enqueue } = await import("../jobs");
+      enqueue({ userId: p.userId, projectId, type: "brand.fulllogo", label: L("Logos complets dessinés par l'IA", "Full logos drawn by AI"), payload: { projectId }, parentId: ctx.job.id, idempotencyKey: `full-logo:${ctx.job.id}` });
+    }
+  }
   await saveBrandGuide(projectId);
   ctx.progress(0.9, L("Charte de marque (PDF)", "Brand guidelines (PDF)"));
   await saveBrandBook(projectId);

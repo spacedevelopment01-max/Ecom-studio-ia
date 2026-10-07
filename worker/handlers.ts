@@ -69,6 +69,11 @@ export const handlers: Record<string, Handler> = {
   "blog.write": async (ctx) => writeBlogArticle(ctx, ctx.job.project_id!, { topic: ctx.payload.topic, brief: ctx.payload.brief, articleId: ctx.payload.articleId, instruction: ctx.payload.instruction }),
 
   /** Logo : nouvelles pistes (IA, plusieurs minutes) ou application de la piste choisie. */
+  "brand.fulllogo": async (ctx) => {
+    const { generateFullLogos } = await import("../src/lib/engine/full-logo");
+    return { created: (await generateFullLogos(ctx, ctx.payload.projectId)).length };
+  },
+
   "brand.logo": async (ctx) => runLogoJob(ctx, ctx.payload.projectId, { proposalId: ctx.payload.proposalId ?? null, regenerate: !!ctx.payload.regenerate }),
 
   "brand.build": async (ctx) => {

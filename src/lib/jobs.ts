@@ -159,7 +159,7 @@ export function claimNext(types?: string[]): Job | null {
  */
 export function jobQuotaScope(job: Pick<Job, "id" | "type" | "payload" | "project_id"> & { parent_id?: string | null }): "creation" | "normal" {
   // Le calendrier de 7 jours lancé par la première création en fait partie (ses images ne sont pas décomptées).
-  if (job.type === "calendar.plan" && job.parent_id) {
+  if ((job.type === "calendar.plan" || job.type === "brand.fulllogo") && job.parent_id) {
     const parent = one<Job>("SELECT * FROM jobs WHERE id = ?", job.parent_id);
     return parent && parent.type === "pipeline.run" ? jobQuotaScope(parent) : "normal";
   }
