@@ -23,7 +23,7 @@ export default function TabVideos() {
   const [mode, setMode] = useState<"motion" | "ugc">("motion");
   const cost = useCostConfirm();
   const locked = useCreationLocked();
-  const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=video,subtitles`);
+  const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=video,clip,subtitles`);
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [form, setForm] = useState({ format: "9:16", goal: "", music: "calm", useAiClip: false, target: "ads", url: "" });
   // Mode IA : les vidéos intègrent par défaut un plan filmé par l'IA (le client peut le décocher).
@@ -124,7 +124,8 @@ export default function TabVideos() {
                       <StatusBadge status={v.status} />
                       <span className="text-xs text-muted">{v.meta?.delivered}</span>
                     </div>
-                    <p className="mt-2 text-sm text-ink-2">{v.meta?.method}</p>
+                    <p className="mt-2 text-sm text-ink-2">{v.role === "clip" ? t("Plan vidéo complet généré par l'IA (utilisé en partie dans le montage)", "Full AI-generated video shot (partly used in the edit)") : v.meta?.method}</p>
+                    {v.meta?.qcWarning && <p className={cx("mt-2 rounded-xl px-3 py-2 text-xs", v.status === "rejected" ? "bg-bad-soft text-bad" : "bg-warn-soft text-warn")}>{v.status === "rejected" ? t("Écarté par le contrôle qualité (non utilisé, non décompté) : ", "Rejected by the quality check (not used, not counted): ") : t("À vérifier : ", "To check: ")}{v.meta.qcWarning}</p>}
                     {v.meta?.kind === "ugc" && (
                       <>
                         <p className="mt-2 inline-flex rounded-full bg-signal-soft px-2.5 py-0.5 text-[11px] font-medium text-signal">{v.meta.aiLabel ?? t("Vidéo générée par IA", "AI-generated video")} · {t("mention incrustée", "label burned in")}</p>
