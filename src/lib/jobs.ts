@@ -14,6 +14,7 @@ import { jobLiveness } from "./job-liveness";
 import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
 import { friendlyToolError } from "./tool-errors";
+import { withTrace } from "./ai/trace";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked" | "paused";
 
@@ -211,7 +212,8 @@ export class JobContext {
   async step<T>(key: string, fn: () => Promise<T>): Promise<T> {
     const cp = this.checkpoint;
     if (key in cp) return cp[key] as T;
-    const v = await fn();
+    // Les appels aux fournisseurs faits pendant l'étape lui sont rattachés (trace des coûts par étape).
+    const v = await withTrace({ jobId: this.job.id, projectId: this.job.project_id, step: key }, fn);
     this.save(key, v);
     return v;
   }

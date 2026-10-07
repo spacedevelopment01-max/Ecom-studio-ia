@@ -16,6 +16,8 @@ import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, priceFor, requirePrice, routeFor, usdToEur, type TaskId } from "./config";
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { recordCall, redact, shortHash } from "./trace";
 
 export type LlmImage = { data: Buffer; label?: string };
 
@@ -35,13 +37,23 @@ export type LlmCall = {
   maxTokens?: number;
   /** Clé d'idempotence de la consommation (reprise sans double débit). */
   usageKey?: string;
+  /** Nom du prompt système (trace) ; à défaut, la tâche. Le texte du prompt n'est jamais enregistré. */
+  promptKey?: string;
+};
+
+/** Requêtes HTTP réellement envoyées pendant un appel (relances automatiques du SDK comprises). */
+const httpCounter = new AsyncLocalStorage<{ n: number }>();
+const countingFetch: typeof fetch = (input, init) => {
+  const c = httpCounter.getStore();
+  if (c) c.n++;
+  return fetch(input, init);
 };
 
 let cached: { key: string; client: Anthropic } | null = null;
 function client(): Anthropic {
   const key = activeProviderKey("anthropic");
   if (!key) throw new UserFacingError(L("Aucun fournisseur d'IA de langage n'est configuré. L'administration doit renseigner la clé Anthropic.", "No language AI provider is configured. An administrator needs to add the Anthropic key."));
-  if (cached?.key !== key) cached = { key, client: new Anthropic({ apiKey: key, maxRetries: 3, timeout: 10 * 60_000 }) };
+  if (cached?.key !== key) cached = { key, client: new Anthropic({ apiKey: key, maxRetries: 3, timeout: 10 * 60_000, fetch: countingFetch }) };
   return cached.client;
 }
 
@@ -92,12 +104,13 @@ function estimateMicro(call: LlmCall, model: string) {
   return Math.round(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * EUR);
 }
 
-function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "") {
+function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = ""): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
   const p = priceFor("anthropic", model);
   const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * 1.25 + (usage.cache_read_input_tokens ?? 0) * 0.1;
   const output = usage.output_tokens ?? 0;
   const usd = p && p.unit === "tokens" ? (input * p.inputPerM + output * p.outputPerM) / 1e6 : 0;
-  recordUsage({
+  const costMicro = Math.round(usd * usdToEur() * EUR);
+  const billed = recordUsage({
     userId: call.userId,
     projectId: call.projectId,
     jobId: call.jobId,
@@ -107,15 +120,16 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
     unit: "tokens",
     inputUnits: (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0),
     outputUnits: output,
-    costMicro: Math.round(usd * usdToEur() * EUR),
+    costMicro,
     estimated: !p,
     idempotencyKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined,
   });
+  return { costMicro, estimated: !p, ...billed };
 }
 
 type RawResult = { text: string; stop: string | null; model: string };
 
-async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = ""): Promise<RawResult> {
+async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
   const route = routeFor(call.task);
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
   assertCanSpend(call.userId, estimateMicro(call, route.model));
@@ -137,17 +151,54 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     params.output_config = { format };
   }
   let msg: Anthropic.Beta.BetaMessage;
+  // Trace de l'appel (jamais le prompt ni les images : clé et empreinte du prompt système seulement).
+  const counter = { n: 0 };
+  const started = Date.now();
+  const trace = {
+    userId: call.userId,
+    projectId: call.projectId,
+    jobId: call.jobId,
+    task: call.task,
+    provider: "anthropic",
+    requestedModel: route.model,
+    unit: "tokens" as const,
+    effort: isHaiku ? null : (route.effort ?? "medium"),
+    usageKey: call.usageKey ? `${call.usageKey}${suffix}` : null,
+    promptKey: call.promptKey ?? call.task,
+    promptHash: shortHash(params.system[0].text),
+    callTry,
+  };
   try {
-    const stream = isHaiku ? client().messages.stream(params) : client().beta.messages.stream(params);
-    msg = (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
+    msg = await httpCounter.run(counter, async () => {
+      const stream = isHaiku ? client().messages.stream(params) : client().beta.messages.stream(params);
+      return (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
+    });
   } catch (e) {
+    recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
     if (e instanceof Anthropic.BadRequestError) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
     throw e; // 429 / 5xx / réseau : la file de tâches réessaie.
   }
   // Réponse d'un modèle de repli sans prix connu : coût compté au prix du modèle demandé (jamais 0 €).
-  account(call, msg.model && priceFor("anthropic", msg.model) ? msg.model : route.model, msg.usage, suffix);
+  const served = msg.model && priceFor("anthropic", msg.model) ? msg.model : route.model;
+  const billed = account(call, served, msg.usage, suffix);
+  recordCall({
+    ...trace,
+    servedModel: msg.model ?? null,
+    inputTokens: msg.usage?.input_tokens ?? 0,
+    cacheReadTokens: msg.usage?.cache_read_input_tokens ?? 0,
+    cacheWriteTokens: msg.usage?.cache_creation_input_tokens ?? 0,
+    outputTokens: msg.usage?.output_tokens ?? 0,
+    latencyMs: Date.now() - started,
+    httpAttempts: counter.n || null,
+    stopReason: msg.stop_reason ?? null,
+    costMicro: billed.costMicro,
+    estimated: billed.estimated,
+    usageEventId: billed.eventId,
+    billingDedup: billed.dedup,
+    status: msg.stop_reason === "refusal" ? "refused" : "ok",
+  });
   if (msg.stop_reason === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
   const text = msg.content.filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text").map((b) => b.text).join("");
   return { text, stop: msg.stop_reason, model: msg.model };
@@ -183,7 +234,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
   let fixes = 0;
   let lastIssue = "";
   for (let attempt = 0; attempt < 4; attempt++) {
-    const r = await rawCall({ ...call, maxTokens: budget }, messages, undefined, attempt ? `:fix${attempt}` : "");
+    const r = await rawCall({ ...call, maxTokens: budget }, messages, undefined, attempt ? `:fix${attempt}` : "", attempt);
     last = r.text;
     // Réponse coupée faute de place (réflexion longue, beaucoup de photos) : même demande avec plus de place,
     // sans renvoyer le début tronqué au modèle.

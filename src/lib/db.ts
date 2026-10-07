@@ -374,6 +374,80 @@ CREATE TABLE IF NOT EXISTS usage_events (
 );
 CREATE INDEX IF NOT EXISTS usage_user ON usage_events(user_id, created_at);
 
+-- Réalité physique des appels aux fournisseurs (une ligne par appel réellement envoyé, reprises comprises).
+-- usage_events reste la facturation (dédoublonnée) ; cette table sert à l'observabilité. Jamais de prompt, d'image
+-- ni de clé : seulement la clé du prompt système et son empreinte.
+CREATE TABLE IF NOT EXISTS ai_calls (
+  id TEXT PRIMARY KEY,
+  created_at INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
+  project_id TEXT,
+  job_id TEXT,
+  task TEXT NOT NULL,
+  step TEXT,                         -- étape du job (ctx.step), imbriquée « a/b »
+  candidate_id TEXT,                 -- candidat évalué (logo, image…) quand l'appel le concerne
+  attempt INTEGER NOT NULL DEFAULT 0, -- tentative du candidat (0 = premier essai, 1 = reprise…)
+  call_try INTEGER NOT NULL DEFAULT 0, -- essai technique de l'appel (réponse coupée, JSON réparé)
+  provider TEXT NOT NULL,
+  requested_model TEXT NOT NULL,
+  served_model TEXT,
+  unit TEXT NOT NULL,                -- tokens | image | video_second | request
+  input_tokens INTEGER NOT NULL DEFAULT 0,       -- jetons d'entrée non mis en cache
+  cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+  cache_write_tokens INTEGER NOT NULL DEFAULT 0,
+  output_tokens INTEGER NOT NULL DEFAULT 0,
+  quantity REAL NOT NULL DEFAULT 0,  -- images, secondes de vidéo
+  latency_ms INTEGER,
+  http_attempts INTEGER,             -- requêtes HTTP réellement envoyées (relances du SDK comprises), si connu
+  stop_reason TEXT,
+  effort TEXT,
+  cost INTEGER NOT NULL DEFAULT 0,   -- coût fournisseur, micro-euros
+  estimated INTEGER NOT NULL DEFAULT 0,
+  usage_key TEXT,
+  usage_event_id TEXT,               -- événement de facturation (NULL si déjà compté : reprise)
+  billing_dedup INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL,              -- ok | error | refused | timeout
+  error_kind TEXT,
+  prompt_key TEXT,
+  prompt_hash TEXT,
+  quality_check_id TEXT
+);
+CREATE INDEX IF NOT EXISTS ai_calls_project ON ai_calls(project_id, created_at);
+CREATE INDEX IF NOT EXISTS ai_calls_job ON ai_calls(job_id);
+CREATE INDEX IF NOT EXISTS ai_calls_candidate ON ai_calls(candidate_id);
+
+-- Verdicts de la barrière de qualité (un par contrôle d'un candidat). previous_check_id relie une reprise à
+-- l'essai précédent : gain de qualité = score − score précédent (calculé, non stocké).
+CREATE TABLE IF NOT EXISTS quality_checks (
+  id TEXT PRIMARY KEY,
+  created_at INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
+  project_id TEXT,
+  job_id TEXT,
+  step TEXT,
+  deliverable TEXT NOT NULL,
+  candidate_id TEXT,
+  asset_id TEXT,
+  attempt INTEGER NOT NULL DEFAULT 0,
+  checker TEXT NOT NULL,             -- ai | local | metadata | human | none
+  checked INTEGER NOT NULL,          -- 0 : contrôle en panne ou impossible
+  confidence REAL,                   -- confiance accordée au contrôle (0-1)
+  score REAL,
+  criteria_json TEXT NOT NULL DEFAULT '{}',
+  blocking_json TEXT NOT NULL DEFAULT '[]',
+  fatal_json TEXT NOT NULL DEFAULT '[]',
+  feedback TEXT NOT NULL DEFAULT '',  -- défauts relevés (consigne d'une reprise)
+  verdict TEXT NOT NULL,             -- FINAL | RETRY | PROVISIONAL | REJECTED
+  fatal INTEGER NOT NULL DEFAULT 0,
+  action TEXT NOT NULL,              -- regenerate | recheck | none
+  reason TEXT NOT NULL DEFAULT '',
+  policy_version TEXT NOT NULL,
+  previous_check_id TEXT
+);
+CREATE INDEX IF NOT EXISTS quality_checks_project ON quality_checks(project_id, created_at);
+CREATE INDEX IF NOT EXISTS quality_checks_candidate ON quality_checks(candidate_id);
+CREATE INDEX IF NOT EXISTS quality_checks_asset ON quality_checks(asset_id);
+
 -- Administration
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
@@ -528,6 +602,9 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["quota_events", "period_start", "INTEGER"],
   ["quota_events", "from_month", "INTEGER"],
   ["quota_events", "from_pack", "INTEGER"],
+  // Blog : requête visée et intention de recherche, conservées pour les réécritures.
+  ["blog_articles", "keyword", "TEXT"],
+  ["blog_articles", "search_intent", "TEXT"],
 ];
 
 function migrate(db: Database.Database) {

@@ -11,6 +11,7 @@ import { db, logError, now, run } from "../src/lib/db";
 import { enqueueDuePosts } from "../src/lib/engine/calendar";
 import { handlers, HANDLER_TYPES } from "./handlers";
 import { runForUser } from "../src/lib/ai/access";
+import { withTrace } from "../src/lib/ai/trace";
 import { runWithLang, userLang } from "../src/lib/i18n-server";
 import { isLang } from "../src/lib/i18n";
 import { json, one } from "../src/lib/db";
@@ -47,7 +48,7 @@ async function runOne() {
   (async () => {
     try {
       // Budget IA épuisé : les étapes IA basculent discrètement sur le moteur local (voir src/lib/ai/access.ts).
-      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => handlers[job.type](ctx), jobQuotaScope(job)));
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id }, () => handlers[job.type](ctx)), jobQuotaScope(job)));
       runWithLang({ ui: userLang(job.user_id) }, () => completeJob(job.id, result));
       console.log(`[worker] ✓ ${job.type} ${job.id} en ${((Date.now() - started) / 1000).toFixed(1)} s`);
     } catch (e) {
