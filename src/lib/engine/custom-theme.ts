@@ -10,6 +10,8 @@
  * bibliothèque qu'elle devait remplacer, et le client en est informé. Le résultat est une nouvelle version
  * du thème : la version précédente reste restaurable.
  */
+import { decide } from "../quality/gate";
+import { gateMeta, saveCheck } from "../quality/store";
 import { z } from "zod";
 import { loadProject, currentTheme, notify, saveThemeVersion, themeVersion, type Project } from "../projects";
 import { id as newId, now, run } from "../db";
@@ -480,6 +482,10 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
     }
   }
 
+  // Niveau de qualité dit honnêtement : 8/10 et plus FINAL ; de 5 à moins de 8 PROVISOIRE (à améliorer) ; sous 5
+  // refusé (comportement inchangé : non appliqué). Sans relecture visuelle : non contrôlé.
+  const quality = decide("theme_custom", score !== null ? { checker: "ai", score } : { checker: "none", score: null });
+  const qcId = saveCheck(quality, { userId: p.userId, projectId, jobId: ctx.job.id, candidateId: `theme-custom:${ctx.job.id}` });
   // Relecture sévère (note sous 5 : défauts visibles) : le thème n'est pas présenté comme prêt ; le thème actuel reste en place.
   if (score !== null && score < MIN_REVIEW_SCORE) {
     throw new UserFacingError(L(
@@ -501,10 +507,12 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
     checks: L(["structure", "schémas des sections", "Liquid", "allégations", "rendu de l'aperçu", tc.available ? "Theme Check" : "Theme Check indisponible"], ["structure", "section schemas", "Liquid", "claims", "preview rendering", tc.available ? "Theme Check" : "Theme Check unavailable"]),
     problems,
     custom: { written: built.written, fallbacks: built.fallbacks, score },
+    gate: gateMeta(quality, qcId),
   });
   // Compte rendu honnête dans la discussion de la boutique.
   const note = [
     L(`Votre thème entièrement sur mesure est prêt (version ${v.number}). ${written} section${written > 1 ? "s ont été écrites" : " a été écrite"} pour votre marque : ${built.written.join(", ")}.`, `Your fully custom theme is ready (version ${v.number}). ${written} section${written > 1 ? "s were" : " was"} written for your brand: ${built.written.join(", ")}.`),
+    quality.verdict === "PROVISIONAL" ? L(` Niveau provisoire, à améliorer : relecture visuelle à ${score}/10 (le niveau final attendu est 8/10).`, ` Provisional level, needs improvement: visual review at ${score}/10 (the expected final level is 8/10).`) : quality.verdict === "FINAL" ? "" : L(" Niveau non contrôlé (relecture visuelle indisponible).", " Level not checked (visual review unavailable)."),
     rawPlan.reasoning ? `\n\n${rawPlan.reasoning.slice(0, 600)}` : "",
     built.fallbacks.length
       ? L(

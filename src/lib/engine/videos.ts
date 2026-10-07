@@ -5,6 +5,9 @@
  * Entreprise de services : présentation de l'activité (photos réelles ou typographie animée),
  * prestations, zone et horaires, appel à prendre rendez-vous — sans produit.
  */
+import { decide } from "../quality/gate";
+import { gateSave } from "../quality/store";
+import { checkAmbiance } from "./service-media";
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -15,7 +18,8 @@ import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject } from "../projects";
 import { renderVideo, srtFromSpec, checkVideoSpec, VIDEO_SIZES, type VideoFormat, type VideoSpec } from "../media/video";
 import { tmpDir } from "../storage";
-import { assetsByRole, brandTypo, ensureCutouts, latestAsset, palette } from "./images";
+import { brandTypo, ensureCutouts, latestAsset, palette } from "./images";
+import { usableByRole } from "../quality/usable";
 import { localVideoPlan } from "./local";
 import { aiVideoPlan, aiQcImage, aiQcScene, qcScore, qcTier } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
@@ -73,6 +77,18 @@ export function clipCamera(sector: string | null | undefined, format: VideoForma
   }
 }
 
+/**
+ * Verdict d'un plan vidéo généré, d'après le contrôle de ses images (début, milieu, fin) : FINAL seulement si
+ * toutes ont été réellement contrôlées, qu'aucune n'est inutilisable et que la moyenne atteint le seuil (7/10).
+ * Une panne du contrôle, une image manquante ou une image inutilisable : jamais FINAL.
+ */
+export function clipDecision(r: { scores: number[]; bad: number; wrong: boolean; issues: string[]; error?: string; expected: number }) {
+  if (r.error) return decide("video_clip", { checker: "ai", score: null, error: r.error });
+  if (r.scores.length < r.expected && !r.bad && !r.wrong) return decide("video_clip", { checker: "ai", score: null, error: L("toutes les images du plan n'ont pas été contrôlées", "not every frame of the shot was checked") });
+  const mean = r.scores.length ? r.scores.reduce((a, b) => a + b, 0) / r.scores.length : null;
+  return decide("video_clip", { checker: "ai", score: r.bad ? Math.min(mean ?? 0, 6.9) : mean, codes: r.wrong ? ["wrong_product"] : [], issues: r.issues });
+}
+
 export async function produceVideo(ctx: JobContext, projectId: string, req: VideoRequest) {
   let project = loadProject(projectId);
   const services = isServices(project);
@@ -84,8 +100,9 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   if (!brand) throw new UserFacingError(L("Définissez la marque avant de produire une vidéo.", "Set up the brand before producing a video."));
   // Photos en situation d'abord (celles du marchand avant les générées) : elles ouvrent les vidéos.
   // Services : photos réelles de l'activité (réalisations, équipe, lieu), puis ambiances générées.
-  const life = assetsByRole(projectId, "lifestyle", 6).filter((a) => a.status !== "rejected").sort((x, y) => Number(y.origin === "upload") - Number(x.origin === "upload") || Number(y.origin !== "generated") - Number(x.origin !== "generated")).slice(0, 2);
-  const imgs: Asset[] = services ? activityPhotos(projectId).slice(0, 4) : [...life, ...assetsByRole(projectId, "detail", 2), ...assetsByRole(projectId, "scene", 3)].filter((a) => a.status !== "rejected");
+  // Seules les images réutilisables automatiquement (jamais un refusé ni un « à vérifier ») entrent dans le montage.
+  const life = usableByRole(projectId, "lifestyle", 6).sort((x, y) => Number(y.origin === "upload") - Number(x.origin === "upload") || Number(y.origin !== "generated") - Number(x.origin !== "generated")).slice(0, 2);
+  const imgs: Asset[] = services ? activityPhotos(projectId).slice(0, 4) : [...life, ...usableByRole(projectId, "detail", 2), ...usableByRole(projectId, "scene", 3)];
   const descriptions = imgs.map((a) => C(`${a.role === "lifestyle" ? "produit en situation" : a.role} : ${a.name}`, `${a.role === "lifestyle" ? "lifestyle shot" : a.role}: ${a.name}`));
 
   // 1. Plans générés (facultatif, coûteux) : à partir d'une scène réelle.
@@ -136,37 +153,45 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
         reason = L("contrôle impossible", "check unavailable");
       }
       if (ok) {
-        // Le plan est payé : il n'est écarté que si au moins 2 images sur 3 sont inutilisables. Une image
-        // seulement moyenne ou un contrôle en panne ne le fait pas perdre (il reste signalé à vérifier).
+        // Barrière de qualité : le plan n'est FINAL que si les 3 images (début, milieu, fin) ont réellement été
+        // contrôlées, qu'aucune n'est inutilisable et que la moyenne atteint le seuil. Une panne du contrôle : non utilisé.
         const ref = services ? null : assetData(cutouts[0]);
-        const bad: string[] = [];
-        const warn: string[] = [];
+        const subject = services ? [project.product.category, project.product.name, project.product.summary].filter(Boolean).join(" — ").slice(0, 200) : undefined;
+        const scores: number[] = [];
+        const issues: string[] = [];
+        let wrong = false;
+        let bad = 0;
+        let error = "";
         for (const idx of [0, Math.floor(frames.length / 2), frames.length - 1]) {
           const usage = { userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clipqc:${req.format}:${idx}` };
           const frame = fs.readFileSync(frames[idx]);
           try {
-            const r = ref ? await aiQcImage(usage, ref, frame) : await aiQcScene(usage, frame);
+            const r = ref ? await aiQcImage(usage, ref, frame) : await aiQcScene(usage, frame, subject);
             const tier = qcTier(r);
-            const why = ref && (r as { sameProduct?: boolean }).sameProduct === false ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : `${r.issues.join(L(" ; ", "; ")) || `${qcScore(r.score)}/10`}`;
-            if (tier === "bad") bad.push(why);
-            else if (tier === "warn") warn.push(why);
+            scores.push(qcScore(r.score));
+            if (ref && (r as { sameProduct?: boolean }).sameProduct === false) wrong = true;
+            if (tier === "bad") bad++;
+            if (tier !== "good") issues.push(...(r.issues.length ? r.issues : [`${qcScore(r.score)}/10`]));
           } catch (e) {
             if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-            warn.push(L("contrôle automatique impossible", "automatic check unavailable"));
+            error = (e as Error).message || L("contrôle automatique impossible", "automatic check unavailable");
+            break;
           }
-          if (bad.length >= 2) break;
+          if (bad >= 1 || wrong) break;
         }
-        if (bad.length >= 2) {
+        const d = clipDecision({ scores, bad, wrong, issues, error, expected: 3 });
+        const keep = gateSave({ userId: project.userId, projectId, jobId: ctx.job.id }, d);
+        run("UPDATE assets SET meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), ...keep.meta }), clipAsset.id);
+        if (d.verdict !== "FINAL") {
           ok = false;
-          reason = L(`plan refusé (${bad[0]})`, `shot rejected (${bad[0]})`);
-        } else if (bad.length || warn.length) {
-          run("UPDATE assets SET meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), qcWarning: [...bad, ...warn].join(L(" ; ", "; ")) }), clipAsset.id);
+          reason = wrong ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : [d.reason, d.feedback].filter(Boolean).join(L(" — ", " — "));
         }
       }
       if (ok) clipDirs.push(frames);
       else {
         // Plan refusé au contrôle : écarté de la bibliothèque (statut « refusé », raison gardée).
-        run("UPDATE assets SET status = 'rejected', meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), rejectedReason: reason, qcWarning: reason }), clipAsset.id);
+        const cur = (await import("../library")).getAsset(clipAsset.id) ?? clipAsset;
+        run("UPDATE assets SET status = 'rejected', meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(cur.meta, {}), rejectedReason: reason, qcWarning: reason }), clipAsset.id);
         clipFallback = L(`plan IA refusé au contrôle : ${reason}`, `AI shot rejected by the check: ${reason}`);
         // Plan jamais montré : il ne compte pas dans les vidéos IA du forfait.
         refundMediaQuota(project.userId, clipKey, "aiVideos");
@@ -190,11 +215,36 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
             return known ? { lang: "en" as const, queries: known.queries.slice(0, 3) } : { lang: "fr" as const, queries: [trade, items[0]?.name ?? "", `${trade} chantier`] };
           })()
         : await (await import("./stock-universe")).universeQueries({ userId: project.userId, projectId, jobId: ctx.job.id }, project);
-      const found = await searchStockVideos(q.queries, req.format === "16:9" ? "landscape" : "portrait", q.lang, taken).catch(() => []);
-      for (const v of found.slice(0, 2)) {
+      // Filtre gratuit d'abord (le métier doit être cité par la banque), puis au plus 3 candidats : une image du
+      // milieu du plan est contrôlée avec le sujet ; seul un plan FINAL est pris (jamais le premier téléchargeable).
+      const { rankStock, tradeStock } = await import("../stock/trade-queries");
+      const must = (tradeStock(`${trade} ${items[0]?.name ?? ""}`) ?? tradeStock(`${project.product.category ?? ""} ${project.product.sector ?? ""}`))?.must ?? [];
+      const ai = llmConfigured();
+      if (!ai && !must.length) return null;
+      const found = rankStock(await searchStockVideos(q.queries, req.format === "16:9" ? "landscape" : "portrait", q.lang, taken).catch(() => []), must, ai);
+      const subject = services ? [trade, items[0]?.name].filter(Boolean).join(" — ") : C(`univers du produit « ${project.product.name} » (sans le produit lui-même)`, `world of the product "${project.product.name}" (without the product itself)`);
+      for (const v of found.slice(0, 3)) {
         try {
           const buf = await downloadStockVideo(v);
-          const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name || project.name)}-${C("plan-libre", "stock-shot")}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: stockVideoCredit(v), stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license } }, status: "review" });
+          let d = decide("stock_video", { checker: "metadata", score: 7 });
+          if (ai) {
+            const dir = tmpDir("stockqc");
+            try {
+              fs.writeFileSync(path.join(dir, "in.mp4"), buf);
+              await exec("ffmpeg", ["-y", "-ss", String(Math.max(0.5, Math.min(3, (v.duration || 4) / 2))), "-i", path.join(dir, "in.mp4"), "-frames:v", "1", "-q:v", "3", path.join(dir, "f.jpg")]);
+              const frame = fs.readFileSync(path.join(dir, "f.jpg"));
+              d = (await checkAmbiance({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:stockclipqc:${v.source}:${v.id}` }, frame, subject, services)).decision;
+              if (d.deliverable !== "stock_video") d = decide("stock_video", d.checked ? { checker: "ai", score: d.score, issues: d.feedback ? [d.feedback] : [] } : { checker: "ai", score: null, error: d.reason });
+            } catch (e) {
+              if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+              d = decide("stock_video", { checker: "ai", score: null, error: (e as Error).message });
+            } finally {
+              fs.rmSync(dir, { recursive: true, force: true });
+            }
+          }
+          if (d.verdict !== "FINAL") continue;
+          const keep = gateSave({ userId: project.userId, projectId, jobId: ctx.job.id }, d);
+          const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name || project.name)}-${C("plan-libre", "stock-shot")}-${v.source}-${v.id}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", meta: { provider: v.source, recipe: stockVideoCredit(v), stock: { source: v.source, id: v.id, page: v.page, author: v.author, license: v.license }, ...keep.meta }, status: "review" });
           return a.id;
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;

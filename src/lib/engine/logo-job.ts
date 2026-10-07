@@ -12,6 +12,7 @@ export async function runLogoJob(ctx: JobContext, projectId: string, b: { propos
     if (!pr) throw new PermanentError(L("Piste introuvable (supprimée entre-temps ?).", "Route not found (deleted in the meantime?)."));
     await applyLogo(ctx, projectId, { id: pr.id, key: pr.info.key, label: pr.info.label, concept: pr.info.concept, spec: pr.info.spec, colors: pr.info.colors, route: pr.info.route });
   }
-  await saveBrandGuide(projectId);
+  // Charte : jamais sur un logo provisoire (version du studio appliquée faute de proposition validée).
+  if (!loadProject(projectId).brand?.logo.provisional) await saveBrandGuide(projectId);
   return { current: loadProject(projectId).brand?.logo.proposalId ?? null };
 }

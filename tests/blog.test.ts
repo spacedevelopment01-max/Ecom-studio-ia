@@ -10,11 +10,13 @@ import { product } from "./fixtures";
 
 // IA simulée : rédaction, contrôle qualité et sujets renvoient des réponses fixes (aucun appel réseau).
 const calls: string[] = [];
+const prompts: string[] = [];
 const ai = { article: null as any };
 vi.mock("@/lib/ai/llm", () => ({
   llmConfigured: () => true,
-  llmJson: async (call: { task: string }) => {
+  llmJson: async (call: { task: string; prompt?: string }) => {
     calls.push(call.task);
+    prompts.push(call.prompt ?? "");
     if (call.task === "blog_writing") return ai.article;
     // Relecture du directeur de création : article au niveau (8/10 et plus sur chaque critère).
     if (call.task === "quality_control") return { scores: { specificity: 9, benefits: 9, objections: 8, clarity: 9, voice: 9, seo: 9, conversion: 8 }, issues: [], brief: "" };
@@ -57,10 +59,41 @@ const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
 
 beforeEach(() => {
   calls.length = 0;
+  prompts.length = 0;
   ai.article = validArticle();
 });
 
 describe("articles de blog écrits par l'IA", () => {
+  it("requête visée et intention de recherche conservées de bout en bout (demande → tâche → base → réécriture) ; verdict enregistré", async () => {
+    const { writeBlogArticle, getArticle } = await import("@/lib/engine/blog");
+    const { userId, projectId } = await account("dominer");
+    const job = enqueue({ userId, projectId, type: "blog.write", payload: { topic: "Appliquer le sérum", keyword: "sérum", intent: "informationnelle" } });
+    const r = await fr(() => writeBlogArticle(new JobContext(job), projectId, { topic: "Appliquer le sérum", keyword: "sérum", intent: "informationnelle" }));
+    expect(prompts[0]).toMatch(/Requête principale visée : « sérum » \(intention informationnelle\)/);
+    const a = getArticle(projectId, (r as any).articleId)!;
+    expect(a.search_intent).toBe("informationnelle");
+    expect(a.keyword).toBeTruthy();
+    expect(one<{ verdict: string }>("SELECT verdict FROM quality_checks WHERE candidate_id = ?", `blog:${a.id}`)?.verdict).toBe("FINAL");
+    // Réécriture sans requête dans la demande : celle enregistrée avec l'article est reprise.
+    prompts.length = 0;
+    const kw = a.keyword!;
+    const job2 = enqueue({ userId, projectId, type: "blog.write", payload: { articleId: a.id } });
+    await fr(() => writeBlogArticle(new JobContext(job2), projectId, { articleId: a.id }));
+    expect(prompts.join("\n")).toContain(`« ${kw} »`);
+  });
+
+  it("article jamais relu au niveau (contrôles automatiques en échec à chaque passe) : brouillon technique, jamais FINAL", async () => {
+    const { writeBlogArticle, getArticle, blogAutoPublishable } = await import("@/lib/engine/blog");
+    const { userId, projectId } = await account("dominer");
+    ai.article = { ...validArticle(), bodyHtml: "<p>Trop court.</p>" };
+    const job = enqueue({ userId, projectId, type: "blog.write", payload: { topic: "Appliquer le sérum" } });
+    const r = await fr(() => writeBlogArticle(new JobContext(job), projectId, { topic: "Appliquer le sérum" }));
+    const a = getArticle(projectId, (r as any).articleId)!;
+    expect(a.status).toBe("draft");
+    expect(blogAutoPublishable(a.id)).toBe(false);
+    expect(a.qc_notes).toMatch(/Non validé par le contrôle de qualité/);
+  });
+
   it("écrit un article valide, contrôlé, enregistré, et décompte 1 article une seule fois", async () => {
     const { writeBlogArticle, getArticle, countWords } = await import("@/lib/engine/blog");
     const { userId, projectId } = await account("vendre");

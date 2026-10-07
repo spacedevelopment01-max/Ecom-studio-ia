@@ -29,6 +29,9 @@ import { colorSchemes, type BrandPalette, type DirectionId } from "../theme/dire
 import sharp from "sharp";
 import { validCutouts } from "./cutouts";
 import { assetData, getAsset } from "../library";
+import { stableKey } from "../ai/keys";
+import { withCandidate } from "../ai/trace";
+import { saveCheck } from "../quality/store";
 
 export type LogoProposal = {
   /** Identifiant du fichier de la piste (réserve de pistes). */
@@ -152,16 +155,22 @@ export function logoColors(p: Pick<Project, "brand">) {
 export const PROPOSAL_KEYS = ["produit", "concept", "typo", "logotype", "symbole", "embleme"] as const;
 export type ProposalKey = (typeof PROPOSAL_KEYS)[number];
 
-/** Accès à l'IA de la direction artistique, branché sur les tâches réelles. */
-function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = []): CreativeAi {
-  const base = { userId: p.userId, projectId: p.id };
-  const k = (what: string) => `${what}:${p.id}:${Date.now().toString(36)}`;
+/**
+ * Accès à l'IA de la direction artistique, branché sur les tâches réelles. Avec une tâche de fond (`ctx`), chaque
+ * appel est un point de reprise : une reprise réutilise les pistes, redessins et contrôles déjà payés. Clés d'usage
+ * stables (projet, série, piste, tentative) ; les appels sont rattachés à leur piste (trace des coûts par candidat).
+ */
+function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = [], ctx: JobContext | null = null, batch = "s0"): CreativeAi {
+  const base = { userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null };
+  const k = (...what: (string | number)[]) => stableKey(p.id, "logo", batch, ...what);
+  const step = <T,>(key: string, fn: () => Promise<T>) => (ctx ? ctx.step(key, fn) : fn());
+  const cand = (key: string) => stableKey(p.id, "logo", batch, key);
   // Chacun son métier : le modèle de texte pense l'idée et juge ; l'IA d'images dessine le symbole (pistes produit
   // et concept), vectorisé ensuite. Monogramme (piste typo) : dessiné à partir des vraies lettres de la police.
-  const drawn = async (d: RouteDraft, feedback = ""): Promise<RouteDraft> => {
+  const drawn = async (d: RouteDraft, attempt: number, feedback = ""): Promise<RouteDraft> => {
     if (!d || d.key === "typo") return d;
     if (!imageProviderAvailable()) return { ...d, imageNote: imageUnavailableReason() ?? undefined };
-    const usageKey = k(`logo-symbol-${d.key}`);
+    const usageKey = k("symbol", d.key, attempt);
     const activity = [p.product.name, p.product.category, p.product.summary].filter(Boolean).join(" — ");
     try {
       // Le dessin part de l'idée (brief du directeur artistique), pas d'un calque de la photo du produit.
@@ -180,9 +189,19 @@ function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = []
     }
   };
   return {
-    routes: async () => Promise.all(((await aiCreativeRoutes({ ...base, usageKey: k("logo-routes") }, p, { photo: cutout ?? undefined, avoid })) as RouteDraft[]).map((d) => drawn(d))),
-    redraw: async (key, feedback, previous) => drawn((await aiCreativeRedraw({ ...base, usageKey: k(`logo-route-${key}`) }, p, { key, feedback, previous, photo: cutout ?? undefined, avoid })) as RouteDraft, feedback),
-    review: (route, board) => aiCreativeReview({ ...base, usageKey: k(`logo-route-review-${route.key}`) }, { photo: cutout ?? undefined, board, route }) as Promise<RouteReview>,
+    routes: () =>
+      step(`logo:${batch}:routes`, async () => {
+        const drafts = (await aiCreativeRoutes({ ...base, usageKey: k("routes") }, p, { photo: cutout ?? undefined, avoid })) as RouteDraft[];
+        return Promise.all(drafts.map((d) => (d ? withCandidate(cand(d.key), 0, () => drawn(d, 0)) : d)));
+      }),
+    redraw: (key, feedback, previous, attempt = 1) =>
+      step(`logo:${batch}:${key}:redraw:${attempt}`, () =>
+        withCandidate(cand(key), attempt, async () => drawn((await aiCreativeRedraw({ ...base, usageKey: k("redraw", key, attempt) }, p, { key, feedback, previous, photo: cutout ?? undefined, avoid })) as RouteDraft, attempt, feedback)),
+      ),
+    review: (route, board, attempt = 0) =>
+      step(`logo:${batch}:${route.key}:review:${attempt}`, () =>
+        withCandidate(cand(route.key), attempt, () => aiCreativeReview({ ...base, usageKey: k("review", route.key, attempt) }, { photo: cutout ?? undefined, board, route }) as Promise<RouteReview>),
+      ),
   };
 }
 
@@ -227,13 +246,17 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
   } else {
     ctx?.progress(0.55, L("Pistes créatives du logo", "Logo creative routes"));
     // « Nouvelles pistes » : refonte radicale, sans reprendre les pistes déjà montrées (série précédente).
-    const avoid = opts.redrawSymbol && previous.length ? avoidOf(previous.map((x) => x.info.route as CreativeRoute)) : [];
-    const variant = opts.redrawSymbol ? logoBatches(projectId) : 0;
-    const ai = opts.routeAi !== undefined ? opts.routeAi : llmConfigured() ? realRouteAi(p, cutout, avoid) : null;
+    // Série (identifiant, variante, pistes à ne pas reprendre) figée au premier passage : une tâche reprise après une
+    // interruption retrouve exactement la même série et relit ses points de reprise au lieu de tout repayer.
+    const plan = async () => ({ series: `s${logoBatches(projectId) + 1}`, variant: opts.redrawSymbol ? logoBatches(projectId) : 0, avoid: opts.redrawSymbol && previous.length ? avoidOf(previous.map((x) => x.info.route as CreativeRoute)) : [] });
+    const { series, variant, avoid } = ctx ? await ctx.step("logo:series", plan) : await plan();
+    const ai = opts.routeAi !== undefined ? opts.routeAi : llmConfigured() ? realRouteAi(p, cutout, avoid, ctx, series) : null;
+    // Chaque verdict de la barrière est enregistré (historique de la piste : notes, défauts, gain d'une reprise).
+    const record = (d: Parameters<typeof saveCheck>[0], key: string, previousCheckId: string | null) => saveCheck(d, { userId: p.userId, projectId, jobId: ctx?.job.id ?? null, candidateId: stableKey(projectId, "logo", series, key), previousCheckId });
     // Emplacements à créer : d'abord les familles absentes des pistes gardées (produit, concept, typo).
     const have = new Set(add ? previous.map((x) => x.info.key) : []);
     const keys = [...ROUTE_KEYS.filter((k) => !have.has(k)), ...ROUTE_KEYS.filter((k) => have.has(k))].slice(0, room);
-    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), icon: await tradeIcon(tradeText(p)), ai, textIssues: routeTextIssues(p), avoid, variant, keys });
+    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), icon: await tradeIcon(tradeText(p)), ai, textIssues: routeTextIssues(p), avoid, variant, keys, record });
     routes = design.routes;
     notes = design.notes;
     aiState = design.ai;
@@ -241,7 +264,7 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
   }
   const common = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const };
   ctx?.progress(0.65, L("Planches de présentation", "Presentation boards"));
-  const batch = Date.now().toString(36);
+  const batch = Date.now().toString(36); // identifiant de série affiché (pas une clé d'usage)
   const proposals: LogoProposal[] = [];
   for (const route of routes) {
     const full = routeLogoSpec(route, brand);
@@ -249,17 +272,26 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
     const pr: LogoProposal = { key: route.key, label: route.name, concept: route.why, spec: { ...spec, accent }, colors: { color, accent: accent ?? color }, route };
     proposals.push(pr);
     const png = await logoPng(full, 900);
-    const asset = await saveAsset({ ...common, data: png, name: C(`piste-${route.key}.png`, `route-${route.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, colors: pr.colors, route, brandName: brand.name, batch, ai: aiState, notes, pool: 1 } });
+    const provisional = route.gate?.verdict !== "FINAL";
+    const gate = route.gate ? { verdict: route.gate.verdict, fatal: false, score: route.gate.score, checked: route.gate.verdict === "FINAL", deliverable: "logo_route", reason: route.gate.reason, checkId: route.gate.checkId ?? null, ...(route.gate.provisional ? { provisional: route.gate.provisional } : {}) } : undefined;
+    const asset = await saveAsset({ ...common, data: png, name: C(`piste-${route.key}.png`, `route-${route.key}.png`), mime: "image/png", role: "logo-proposal", meta: { key: pr.key, label: pr.label, concept: pr.concept, spec: pr.spec, colors: pr.colors, route, brandName: brand.name, batch, ai: aiState, notes, pool: 1, ...(gate ? { gate } : {}) } });
     pr.id = asset.id;
-    const board = await routeBoard({ route, brand, product: cutout });
-    await saveAsset({ ...common, data: await sharp(board).jpeg({ quality: 86 }).toBuffer(), name: C(`planche-piste-${route.key}.jpg`, `route-board-${route.key}.jpg`), mime: "image/jpeg", role: "logo-route-board", sourceAssetId: asset.id, meta: { key: route.key, batch } });
+    // Planche de mises en situation : seulement pour une proposition validée (un logo provisoire n'a pas de mockups).
+    if (!provisional) {
+      const board = await routeBoard({ route, brand, product: cutout });
+      await saveAsset({ ...common, data: await sharp(board).jpeg({ quality: 86 }).toBuffer(), name: C(`planche-piste-${route.key}.jpg`, `route-board-${route.key}.jpg`), mime: "image/jpeg", role: "logo-route-board", sourceAssetId: asset.id, meta: { key: route.key, batch } });
+    }
   }
   // Série neuve ou reprise : les anciennes pistes sont remplacées. Ajout : elles restent à côté des nouvelles.
   if (!add) for (const old of previous) removeProposal(projectId, old.id);
   // Ajout : le logo en place ne change pas (le client choisit parmi ses pistes), sauf s'il n'y en avait aucun.
   if (add && brand.logo.route) return { main: null, proposal: brand.logo.proposal ?? null, added: proposals.length };
-  const wanted = opts.choice ?? brand.logo.proposal;
-  return applyLogo(ctx, projectId, proposals.find((x) => x.key === wanted) ?? proposals[0]);
+  // Logo appliqué : le choix du client, sinon la piste qu'il avait validée, sinon la première proposition de l'IA
+  // validée par la barrière ; à défaut seulement, une version du studio comme remplacement technique PROVISOIRE
+  // (jamais présentée comme un logo final : ni planches, ni kit réseaux sociaux, ni charte finale).
+  const wanted = opts.choice ?? (brand.logo.status === "validated" ? brand.logo.proposal : undefined);
+  const chosen = proposals.find((x) => x.key === wanted) ?? proposals.find((x) => x.route?.gate?.verdict === "FINAL") ?? proposals.find((x) => x.key === brand.logo.proposal) ?? proposals[0];
+  return applyLogo(ctx, projectId, chosen, { provisional: !opts.choice && chosen.route?.gate?.verdict !== "FINAL" });
 }
 
 /**
@@ -300,7 +332,7 @@ export async function recolorChosenRoute(projectId: string, oldPalette: BrandPal
   removeProposal(projectId, row.id);
   // Logo validé par le client : il le reste (seules ses couleurs ont changé, à sa demande).
   const wasValidated = brand.logo.status === "validated";
-  await applyLogo(null, projectId, pr);
+  await applyLogo(null, projectId, pr, { provisional: !wasValidated && !!brand.logo.provisional });
   if (wasValidated) {
     const after = loadProject(projectId).brand!;
     saveBrand(projectId, { ...after, logo: { ...after.logo, status: "validated" } });
@@ -317,7 +349,7 @@ export function removeProposal(projectId: string, proposalId: string) {
 }
 
 /** Déclinaisons livrables d'une proposition, puis remplacement du logo dans la boutique et kit réseaux sociaux. */
-export async function applyLogo(ctx: JobContext | null, projectId: string, pr: LogoProposal) {
+export async function applyLogo(ctx: JobContext | null, projectId: string, pr: LogoProposal, opts: { provisional?: boolean } = {}) {
   const p = loadProject(projectId);
   const brand = p.brand!;
   const { color, accent } = pr.colors ?? logoColors(p);
@@ -341,12 +373,15 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   const route = r ? { key: r.key, name: r.name, heading: r.heading, headingWeight: r.headingWeight, body: r.body, colors: r.colors, roles: r.roles, source: r.source } : undefined;
   // Piste avec sa propre palette : elle devient la palette de la marque (sauf palette validée par le client).
   const palette = r?.palette && !(brand.validated ?? []).includes("palette") ? r.palette : brand.palette;
-  saveBrand(projectId, { ...brand, palette, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, proposalId: pr.id, route } });
+  saveBrand(projectId, { ...brand, palette, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, proposalId: pr.id, route, provisional: !!opts.provisional } });
   // Site de services : bannières sans photo redessinées aux couleurs de la piste (sans IA), reprises par le site.
   const { refreshSiteBanners } = await import("./service-media");
   const banners = await refreshSiteBanners(projectId).catch((e) => (console.error(`[bannières] ${projectId} : ${(e as Error).message}`), []));
   swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id }, routeFonts(route), effectivePalette(loadProject(projectId).brand), banners);
-  // Kit réseaux sociaux aux couleurs et typographies de la piste choisie (sans nouvel appel à l'IA).
+  // Logo provisoire (version du studio, aucune proposition validée) : pas de kit réseaux sociaux ni de charte finale ;
+  // ils seront faits quand un logo sera choisi ou validé.
+  if (opts.provisional) return { main, proposal: pr.key, provisional: true };
+  // Kit réseaux sociaux aux couleurs et typographies de la piste choisie (la ligne éditoriale peut appeler l'IA).
   if (r) {
     ctx?.progress(0.82, L("Kit réseaux sociaux", "Social media kit"));
     await saveSocialKit(projectId, { route: r }).catch((e) => console.error(`[kit social] ${projectId} : ${(e as Error).message}`));

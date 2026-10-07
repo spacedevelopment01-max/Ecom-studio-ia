@@ -58,7 +58,7 @@ export function decide(deliverable: Deliverable, check: CheckInput, opts: { atte
   const codes = check.codes ?? [];
   const issues = (check.issues ?? []).map((x) => x.trim()).filter(Boolean);
   const confidence = Math.max(0, Math.min(1, check.confidence ?? DEFAULT_CONFIDENCE[check.checker]));
-  const score = check.score == null || !Number.isFinite(check.score) ? null : Math.max(0, Math.min(10, check.score));
+  const score = check.score == null || !Number.isFinite(check.score) ? null : Math.round(Math.max(0, Math.min(10, check.score)) * 100) / 100;
   const fatalCodes = codes.filter((c) => p.fatal.includes(c));
   const blockingCodes = codes.filter((c) => p.blocking.includes(c));
   const weakCriteria = Object.entries(check.criteria ?? {})

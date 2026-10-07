@@ -36,7 +36,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   const b = await body(req, z.object({ voice: z.boolean().optional() }));
-  if (b.voice) await ensureSocialVoice(p.id, { force: true });
+  if (b.voice) await ensureSocialVoice(p.id, { force: true, requestId: crypto.randomUUID() });
   const r = await saveSocialKit(p.id);
   if (!r) throw new HttpError(409, L("Choisissez d'abord une piste de logo : le kit en reprend les couleurs et les typographies.", "Choose a logo route first: the kit uses its colors and typefaces."));
   return ok(view(p.id));

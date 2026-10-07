@@ -10,14 +10,14 @@ import { useProject } from "./project-context";
 import { SectionTitle } from "./common";
 import { useT } from "../i18n";
 
-type FullLogo = { id: string; url: string; concept: string; warning: string | null; score: number | null };
+type FullLogo = { id: string; url: string; concept: string; warning: string | null; score: number | null; verdict: string | null };
 
 export function FullLogoPanel({ onApplied }: { onApplied?: () => void }) {
   const { id, data } = useProject();
   const t = useT();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
-  const { data: list, reload } = useApi<{ logos: FullLogo[]; running: boolean; current: string | null }>(`/api/projects/${id}/brand/full-logo`, { poll: 4000 });
+  const { data: list, reload } = useApi<{ logos: FullLogo[]; rejected?: number; running: boolean; current: string | null }>(`/api/projects/${id}/brand/full-logo`, { poll: 4000 });
   if (!data?.ai?.image) return null;
   const running = !!list?.running || busy === "create";
   async function create() {
@@ -54,6 +54,7 @@ export function FullLogoPanel({ onApplied }: { onApplied?: () => void }) {
         {t("Le directeur artistique décrit votre entreprise en détail, l'IA d'images dessine le logo entier (symbole et nom), puis le nom est vérifié lettre par lettre. Fichier PNG haute définition.", "The art director describes your business in detail, the image AI draws the whole logo (symbol and name), then the name is checked letter by letter. High-resolution PNG file.")}
       </SectionTitle>
       {running && <p className="mb-3 text-sm text-ink-2" role="status">{t("Dessin en cours…", "Drawing…")}</p>}
+      {!!list?.rejected && <p className="mb-3 text-xs text-muted">{t(`${list.rejected} essai(s) refusé(s) par le contrôle de qualité (nom mal écrit, texte en trop ou niveau insuffisant) : ils ne sont pas proposés.`, `${list.rejected} attempt(s) rejected by the quality check (misspelled name, extra text or not good enough): they aren't offered.`)}</p>}
       <div className="grid gap-4 sm:grid-cols-3">
         {(list?.logos ?? []).map((l) => {
           const on = list?.current === l.id;
@@ -66,7 +67,7 @@ export function FullLogoPanel({ onApplied }: { onApplied?: () => void }) {
                 <span className="text-ink-2">{l.concept}</span>
                 {l.warning && <span className="flex items-start gap-1.5 rounded-lg bg-warn-soft px-2 py-1.5 text-warn"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden /> {t("À vérifier : ", "To check: ")}{l.warning}</span>}
                 <div className="flex items-center justify-between gap-2">
-                  {l.score !== null && <Badge>{t(`Contrôle ${l.score}/10`, `Check ${l.score}/10`)}</Badge>}
+                  {l.verdict === "FINAL" ? <Badge tone="ok">{t(`Contrôlé ${l.score ?? ""}/10`, `Checked ${l.score ?? ""}/10`)}</Badge> : <Badge tone="warn">{l.score !== null ? t(`Non validé ${l.score}/10`, `Not validated ${l.score}/10`) : t("Non validé", "Not validated")}</Badge>}
                   <Button size="sm" variant={on ? "secondary" : "primary"} icon={on ? <Check className="size-4" /> : undefined} disabled={on || !!busy} loading={busy === l.id} onClick={() => use(l)}>{on ? t("Utilisé", "In use") : t("Utiliser ce logo", "Use this logo")}</Button>
                 </div>
               </figcaption>

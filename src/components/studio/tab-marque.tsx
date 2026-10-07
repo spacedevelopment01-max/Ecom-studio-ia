@@ -354,7 +354,7 @@ type Proposal = {
   concept: string;
   url: string;
   board: string | null;
-  route: { name: string; why: string; source: "ai" | "local"; markKind: string; heading: string; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; score: number | null } | null;
+  route: { name: string; why: string; source: "ai" | "local"; markKind: string; heading: string; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; score: number | null; verdict?: "FINAL" | "PROVISIONAL" | null; provisional?: boolean } | null;
   ai: "used" | "unavailable" | "off" | null;
 };
 
@@ -407,7 +407,13 @@ function LogoRoutes({ routes, max, current, choosing, locked, onChoose, onRegene
               <h4 className="mt-1 font-display text-xl font-semibold">{r.name}</h4>
               <p className="mt-1 text-sm text-ink-2">{r.why}</p>
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {r.source === "ai" ? <Badge tone="ok">{t("Création IA contrôlée", "Reviewed AI design")}{r.score != null ? ` · ${r.score.toLocaleString()}/10` : ""}</Badge> : <Badge>{t("Version du studio", "Studio version")}</Badge>}
+                {r.verdict === "FINAL" ? (
+                  <Badge tone="ok">{t("Création IA contrôlée", "Reviewed AI design")}{r.score != null ? ` · ${r.score.toLocaleString()}/10` : ""}</Badge>
+                ) : r.provisional ? (
+                  <span title={t("Remplacement technique : aucune proposition de l'IA n'a franchi le contrôle de qualité. Ce n'est pas un logo final.", "Technical placeholder: no AI proposal passed the quality check. This isn't a final logo.")}><Badge tone="warn">{t("Provisoire — version du studio", "Provisional — studio version")}</Badge></span>
+                ) : (
+                  <Badge>{r.source === "ai" ? t("Piste IA (ancien contrôle)", "AI route (previous check)") : t("Version du studio", "Studio version")}</Badge>
+                )}
                 <span className="text-[11px] text-muted">{r.heading} + {r.body}</span>
                 <span className="ml-auto flex gap-1" aria-label={t("Couleurs de la piste", "Route colors")}>{[r.colors.ink, r.colors.accent, r.colors.ground, r.colors.tint].map((c, k) => <span key={k} className="size-4 rounded-full border border-line" style={{ background: c }} title={c} />)}</span>
               </div>

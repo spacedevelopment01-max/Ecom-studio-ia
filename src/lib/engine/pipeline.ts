@@ -298,7 +298,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
     case "copy": {
       const fresh = loadProject(projectId);
       if (llmConfigured()) {
-        const r = await ctx.step("ai", () => aiShopCopyChecked({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, fresh, (m) => ctx.progress(0.5, m)));
+        const r = await ctx.step("ai", () => aiShopCopyChecked({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, fresh, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn)));
         remember(projectId, { kind: "artifact", key: "shop_copy", value: JSON.stringify(r.copy), source: "ai", status: "confirmed" });
         return r.qc.remaining.length ? note("copy.toCheck", { n: r.qc.remaining.length }) : note("copy.checked");
       }

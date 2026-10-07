@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p1a";
+export const POLICY_VERSION = "2026-10-p1b";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -84,7 +84,7 @@ export const POLICIES: Record<Deliverable, Policy> = {
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
     fatal: ["resembles_known_brand", "unreadable_letters", "corrupt", "forbidden"],
-    blocking: ["cliche", "claim"],
+    blocking: ["cliche", "claim", "small_sizes"],
     provisional: { checkers: ["local"], floor: 0, use: "auto", label: "placeholder" },
   },
   logo_full: { final: 8, retryFloor: 6.5, maxRetries: 1, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["resembles_known_brand", "corrupt", "forbidden"], blocking: ["name_mismatch", "extra_text"] },

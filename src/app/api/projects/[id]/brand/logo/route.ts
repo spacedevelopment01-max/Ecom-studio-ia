@@ -33,7 +33,10 @@ const list = (projectId: string) =>
             heading: r.heading,
             body: r.body,
             colors: r.colors,
-            score: r.review ? Math.round((Object.values(r.review.scores as Record<string, number>).reduce((x, y) => x + y, 0) / Object.values(r.review.scores).length) * 10) / 10 : null,
+            // Note et verdict de la barrière de qualité (pas une simple moyenne) ; ancienne piste sans verdict : null.
+            score: typeof r.gate?.score === "number" ? Math.round(r.gate.score * 10) / 10 : null,
+            verdict: r.gate?.verdict ?? null,
+            provisional: r.gate ? r.gate.verdict !== "FINAL" : r.source === "local",
           }
         : null,
       ai: a.info.ai ?? null,

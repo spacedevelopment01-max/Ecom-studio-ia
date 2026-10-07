@@ -5,6 +5,8 @@
  * Entreprise de services : pas de détourage ni de packshot — voir ./service-media
  * (photos réelles de l'activité ou visuels typographiques, offre réelle).
  */
+import { decide, type GateDecision } from "../quality/gate";
+import { gateSave } from "../quality/store";
 import { effectivePalette } from "../route-palette";
 import { dedupeCreativeText, renderProCreatives } from "../media/creative-html";
 import sharp from "sharp";
@@ -82,39 +84,52 @@ type ImgCtx = { userId: string; projectId: string; jobId?: string | null };
 /**
  * Contrôle de fidélité OBLIGATOIRE d'une image produite avec l'IA (décor peint autour du produit, ou décor généré
  * puis produit composé) : même produit, non déformé, pas en double, ombre et échelle crédibles, aucun texte ajouté.
- * Sans IA de contrôle disponible, l'image n'est pas utilisée (jamais d'image IA non vérifiée montrée au client).
+ * Le verdict vient de la barrière de qualité : sans contrôle possible ou en panne, jamais FINAL (l'image n'est pas
+ * réutilisée automatiquement) ; produit différent : défaut fatal.
  */
-export async function verifyAiImage(ictx: ImgCtx & { usageKey: string }, reference: Buffer, image: Buffer): Promise<{ ok: boolean; tier: QcTier; qc: unknown; reason: string }> {
-  if (!llmConfigured()) return { ok: false, tier: "warn", qc: null, reason: L("contrôle de fidélité indisponible : vérifiez l'image", "fidelity check unavailable: check the image") };
+export async function verifyAiImage(ictx: ImgCtx & { usageKey: string }, reference: Buffer, image: Buffer, opts: { deliverable?: "image_product" | "image_lifestyle"; attempt?: number } = {}): Promise<{ ok: boolean; tier: QcTier; qc: unknown; reason: string; decision: GateDecision }> {
+  const deliverable = opts.deliverable ?? "image_product";
+  const done = (decision: GateDecision, qc: unknown) => {
+    const tier: QcTier = decision.verdict === "FINAL" ? "good" : decision.verdict === "REJECTED" || decision.action === "regenerate" ? "bad" : "warn";
+    return { ok: decision.verdict === "FINAL", tier, qc, reason: decision.verdict === "FINAL" ? "" : [decision.reason, decision.feedback].filter(Boolean).join(L(" — ", " — ")), decision };
+  };
+  if (!llmConfigured()) return done(decide(deliverable, { checker: "none", score: null }, { attempt: opts.attempt }), null);
   let check: Awaited<ReturnType<typeof aiQcImage>>;
   try {
     check = await aiQcImage(ictx, reference, image);
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    // Contrôle en panne : l'image payée est gardée, signalée à vérifier par le client.
-    return { ok: false, tier: "warn", qc: null, reason: L("contrôle automatique impossible : vérifiez l'image", "automatic check unavailable: check the image") };
+    // Contrôle en panne : l'image payée est gardée (à vérifier), jamais réutilisée automatiquement.
+    return done(decide(deliverable, { checker: "ai", score: null, error: (e as Error).message }, { attempt: opts.attempt }), null);
   }
-  const tier = qcTier(check);
-  const ok = tier === "good";
-  const reason = ok ? "" : !check.sameProduct ? L(`produit différent du vôtre${check.issues.length ? ` (${check.issues.join(" ; ")})` : ""}`, `product differs from yours${check.issues.length ? ` (${check.issues.join("; ")})` : ""}`) : L(`contrôle de fidélité insuffisant (${qcScore(check.score)}/10${check.issues.length ? ` : ${check.issues.join(" ; ")}` : ""})`, `fidelity check failed (${qcScore(check.score)}/10${check.issues.length ? `: ${check.issues.join("; ")}` : ""})`);
-  return { ok, tier, qc: check, reason };
+  const d = decide(deliverable, { checker: "ai", score: check.score, codes: check.sameProduct === false ? ["wrong_product"] : [], issues: check.issues }, { attempt: opts.attempt });
+  return done(d, check);
 }
 
-/** Statut et mention d'une image générée selon son contrôle (jamais perdue : écartée reste visible dans Images). */
+export { gateSave } from "../quality/store";
+
+/** Ancien format (statut et mention selon le palier) : conservé pour les appelants qui n'ont pas de verdict. */
 export const tierSave = (tier: QcTier, reason: string) => ({ status: (tier === "bad" ? "rejected" : "review") as "rejected" | "review", meta: tier === "good" ? {} : { qcWarning: reason } });
 
-async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string): Promise<{ image: Buffer; provider: string; lightFrom?: "left" | "right" } | null> {
-  const provider = imageProviderAvailable();
-  if (!provider) return null;
+type Brief = { prompt: string; lightFrom?: "left" | "right" };
+
+/** Brief de directeur artistique d'une image (payé une fois ; une reprise le réutilise avec les défauts à éviter). */
+async function imageBrief(ictx: ImgCtx, project: Project, style: string, formatId: FormatId, key: string, lifestyle?: string): Promise<Brief> {
   // Brief de directeur artistique (grille notée, une reprise au plus) ; sans IA de rédaction, consigne du studio
   // tirée de la ligne photographique — dans les deux cas, la même ligne de campagne pour toutes les images.
   const line = brandPhotoLine(project);
-  const brief = llmConfigured()
+  return llmConfigured()
     ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}`) : C(`mise en scène produit (style ${style})`, `product staging (${style} style)`), { line, lifestyle, format: FORMATS[formatId].label })
     : (() => {
         const st = scenePromptFromLine(line, { lifestyle, format: FORMATS[formatId].label });
         return { ...st, prompt: finalImagePrompt(st, line, { lifestyle: !!lifestyle }) };
       })();
+}
+
+async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string, given?: Brief): Promise<{ image: Buffer; provider: string; lightFrom?: "left" | "right"; brief: Brief } | null> {
+  const provider = imageProviderAvailable();
+  if (!provider) return null;
+  const brief = given ?? (await imageBrief(ictx, project, style, formatId, key, lifestyle));
   const f = FORMATS[formatId];
   if (provider === "openai") {
     // Cadre à la taille OpenAI la plus proche, produit placé, masque du produit.
@@ -130,11 +145,11 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
     const painted = await openaiScene({ ...ictx, usageKey: `${key}:openai` }, { composite, productMask: mask, prompt: brief.prompt, size: size as any });
     // On replace exactement les pixels du produit d'origine par-dessus.
     const restored = await sharp(painted).resize(W, H).composite([{ input: prod, left, top }]).png().toBuffer();
-    return { image: restored, provider: "openai" };
+    return { image: restored, provider: "openai", brief };
   }
   const aspect = f.w > f.h * 1.5 ? "16:9" : f.h > f.w * 1.5 ? "9:16" : f.h > f.w * 1.1 ? "4:5" : "1:1";
   const plate = await geminiPlate({ ...ictx, usageKey: `${key}:gemini` }, { prompt: brief.prompt, aspect });
-  return { image: plate, provider: "google-plate", lightFrom: brief.lightFrom };
+  return { image: plate, provider: "google-plate", lightFrom: brief.lightFrom, brief };
 }
 
 export type ImageSetOptions = { scenes?: SceneStyle[]; withAi?: boolean; social?: boolean; banner?: boolean };
@@ -189,7 +204,8 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
 
   // Mises en scène de la ligne photographique (même lumière, mêmes matières, même étalonnage).
   const styles = opts.scenes ?? (line.local.scenes as SceneStyle[]);
-  const withAi = opts.withAi !== false && !!imageProviderAvailable();
+  // Image payante seulement si son contrôle de fidélité est possible (sinon elle ne pourrait jamais être FINAL).
+  const withAi = opts.withAi !== false && !!imageProviderAvailable() && llmConfigured();
   for (const [i, style] of styles.entries()) {
     await ctx.step(`scene:${style}`, async () => {
       ctx.progress(0.5 + i * 0.08, L(`Mise en scène « ${style} »${withAi ? " (décor généré)" : ""}`, `Staging "${style}"${withAi ? " (generated set)" : ""}`));
@@ -201,13 +217,14 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           if (r) {
             // OpenAI : décor peint autour du produit (pixels d'origine replacés) ; Gemini : décor vide + produit réel composé.
             const image = r.provider === "openai" ? r.image : (await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
-            const check = await verifyAiImage({ ...ictx, usageKey: `${ctx.job.id}:qc:${style}` }, originalPhoto(), image);
+            const check = await verifyAiImage({ ...ictx, usageKey: `${ctx.job.id}:qc:${style}` }, originalPhoto(), image, { deliverable: "image_product", attempt: 1 });
             qc = check.qc;
-            const keep = tierSave(check.tier, check.reason);
+            const keep = gateSave(ictx, check.decision);
             const id = await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}-${C("ia", "ai")}.jpg`, "scene", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Décor peint par IA autour du produit réel (${style})`, `AI-painted set around the real product (${style})`), provider: "OpenAI", qc } : { recipe: L(`Décor généré par IA, produit réel composé (${style})`, `AI-generated set with the real product composited (${style})`), provider: L("Gemini (décor) + composition locale", "Gemini (set) + local compositing"), qc }), ...keep.meta }, "image/jpeg", keep.status);
-            if (check.tier === "good") return [id];
-            // Image de l'IA gardée (signalée ou écartée, visible dans Images) ; une scène du studio complète la série.
-            if (check.tier === "bad") refundMediaQuota(ictx.userId, `${ctx.job.id}:scene:${style}`);
+            if (check.decision.verdict === "FINAL") return [id];
+            // Image de l'IA gardée (à vérifier ou écartée, visible dans Images, jamais réutilisée automatiquement) ;
+            // une scène du studio complète la série.
+            if (check.decision.verdict === "REJECTED") refundMediaQuota(ictx.userId, `${ctx.job.id}:scene:${style}`);
             const s = await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, look });
             return [id, await save(await sharp(s.png).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}.jpg`, "scene", "images.scenes", { recipe: L(`Mise en scène ${style}`, `Staging: ${style}`), provider, qc: { fallback: check.reason }, ...lineMeta })];
           }
@@ -232,23 +249,26 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
         ctx.progress(0.7 + i * 0.02, L("Photos du produit en situation", "Lifestyle product photos"));
         try {
           // Gemini : décor de vie généré, produit réel posé dessus par la composition locale (ombres, sol).
-          const attempt = async (key: string, avoid?: string) => {
-            const r = await aiBackground(ictx, project, cutBuf, "lifestyle", i === 0 ? "landscape" : "product", key, avoid ? `${situation}. A previous attempt was rejected for: ${avoid}. Avoid exactly these defects.` : situation);
+          const fmt = i === 0 ? "landscape" : "product";
+          const attempt = async (key: string, n: number, brief?: Brief, avoid?: string) => {
+            // Reprise : le brief déjà payé est réutilisé, seuls les défauts à éviter s'ajoutent (pas de nouveau brief).
+            const given = brief ? { ...brief, prompt: avoid ? `${brief.prompt} A previous attempt was rejected for: ${avoid}. Avoid exactly these defects.` : brief.prompt } : undefined;
+            const r = await aiBackground(ictx, project, cutBuf, "lifestyle", fmt, key, situation, given);
             if (!r) return null;
             const image = r.provider === "openai" ? r.image : (await renderScene({ product, palette: pal, style: "spotlight", format: i === 0 ? FORMATS.landscape : FORMATS.product, seed: 31 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
-            return { r, image, check: await verifyAiImage({ ...ictx, usageKey: `${key}:qc` }, originalPhoto(), image) };
+            return { r, image, check: await verifyAiImage({ ...ictx, usageKey: `${key}:qc` }, originalPhoto(), image, { deliverable: "image_lifestyle", attempt: n }) };
           };
-          let got = await attempt(`${ctx.job.id}:lifestyle:${i}`);
+          let got = await attempt(`${ctx.job.id}:lifestyle:${i}`, 0);
           if (!got) return [];
-          // Photo ratée : une reprise qui reprend les défauts relevés (le raté n'est ni livré ni décompté).
-          if (got.check.tier === "bad") {
+          // Photo à reprendre (défauts précis relevés) : une reprise ciblée ; le raté n'est ni livré ni décompté.
+          if (got.check.decision.verdict === "RETRY" && got.check.decision.action === "regenerate") {
             refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}`);
-            got = (await attempt(`${ctx.job.id}:lifestyle:${i}:retry`, got.check.reason).catch((e) => { if (e instanceof JobCancelled || e instanceof JobPaused) throw e; return null; })) ?? got;
+            got = (await attempt(`${ctx.job.id}:lifestyle:${i}:retry`, 1, got.r.brief, got.check.decision.feedback || got.check.reason).catch((e) => { if (e instanceof JobCancelled || e instanceof JobPaused) throw e; return null; })) ?? got;
           }
           const { r, image, check } = got;
-          // Photo gardée dans tous les cas (payée) : signalée si défaut mineur, écartée (visible, non utilisée) si inutilisable.
-          if (check.tier === "bad") refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}:retry`);
-          const keep = tierSave(check.tier, check.reason);
+          // Photo gardée dans tous les cas (payée) : FINAL utilisable ; sinon à vérifier ou écartée (visible, non réutilisée).
+          if (check.decision.verdict === "REJECTED") refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}:retry`);
+          const keep = gateSave(ictx, check.decision);
           return [await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Photo en situation générée autour du produit réel : ${situation}`, `Lifestyle photo generated around the real product: ${situation}`), provider: "OpenAI", qc: check.qc } : { recipe: L(`Photo en situation : décor généré (${situation}) et produit réel composé`, `Lifestyle photo: generated set (${situation}) with the real product composited`), provider: L("Gemini + composition locale", "Gemini + local compositing"), qc: check.qc }), ...keep.meta }, "image/jpeg", keep.status)];
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -389,7 +409,9 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
     meta = { recipe: "Packshot" };
   } else if (req.kind === "scene" || req.kind === "banner") {
     let aiNote: string | null = null;
-    if (req.useAi) {
+    // Image payante seulement si son contrôle de fidélité est possible (sinon elle ne pourrait jamais être validée).
+    if (req.useAi && !llmConfigured()) aiNote = L("contrôle de fidélité indisponible : aucune image IA payée", "fidelity check unavailable: no AI image paid for");
+    else if (req.useAi) {
       const r = await ctx.step("ai-bg", async () => {
         try {
           const out = await aiBackground(ictx, project, assetData(cut), req.style ?? "studio", req.format ?? "product", `${ctx.job.id}:single`);
@@ -401,7 +423,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
             refundMediaQuota(ictx.userId, `${ctx.job.id}:single`);
             return { rejected: check.reason };
           }
-          return { b64: image.toString("base64"), provider: out.provider, qc: check.qc };
+          return { b64: image.toString("base64"), provider: out.provider, qc: check.qc, gate: gateSave(ictx, check.decision).meta.gate };
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           refundMediaQuota(ictx.userId, `${ctx.job.id}:single`);
@@ -411,7 +433,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
       if (r && "b64" in r && r.b64) {
         data = await sharp(Buffer.from(r.b64, "base64")).jpeg({ quality: 92 }).toBuffer();
         const recipe = r.provider === "openai" ? L("Décor peint par IA autour du produit réel", "AI-painted set around the real product") : L("Décor généré par IA, produit réel composé", "AI-generated set with the real product composited");
-        const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${req.kind === "banner" ? C("banniere", "banner") : "scene"}-${C("ia", "ai")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: req.kind, folderKey: req.kind === "banner" ? "images.banners" : "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe, provider: r.provider === "openai" ? "OpenAI" : L("Gemini (décor) + composition locale", "Gemini (set) + local compositing"), qc: r.qc, format: fmt.label }, status: "review" });
+        const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${req.kind === "banner" ? C("banniere", "banner") : "scene"}-${C("ia", "ai")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: req.kind, folderKey: req.kind === "banner" ? "images.banners" : "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe, provider: r.provider === "openai" ? "OpenAI" : L("Gemini (décor) + composition locale", "Gemini (set) + local compositing"), qc: r.qc, gate: r.gate, format: fmt.label }, status: "review" });
         return { assetId: a.id };
       }
       // Image IA refusée au contrôle (ou indisponible) : scène composée localement, la raison est gardée et affichée.

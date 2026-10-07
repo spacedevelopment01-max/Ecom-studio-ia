@@ -37,6 +37,8 @@ export type StoreProduct = {
   variants: { title: string; options: string[]; price: number | null; available: boolean; sku?: string; image?: string }[];
   images: string[]; // noms de fichiers d'assets (aperçu) — ordre de la galerie
   tags: string[];
+  /** Titre et méta-description du produit pour les moteurs de recherche (envoyés à la plateforme). */
+  seo?: { title: string; description: string };
 };
 
 /** Collection de la boutique : liste ordonnée de produits (par identifiant « handle »). */

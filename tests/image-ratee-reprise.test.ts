@@ -17,9 +17,10 @@ vi.mock("@/lib/ai/media-providers", () => ({
 }));
 vi.mock("@/lib/ai/llm", async (orig) => ({ ...(await orig<object>()), llmConfigured: () => true }));
 let reviews = 0;
+let nextReview = (n: number): any => (n === 0 ? { ok: false, score: 6, issues: ["lettres illisibles sur un panneau"] } : { ok: true, score: 8, issues: [] });
 vi.mock("@/lib/ai/tasks", async (orig) => ({
   ...(await orig<object>()),
-  aiQcScene: vi.fn(async () => (reviews++ === 0 ? { ok: false, score: 3, issues: ["lettres illisibles sur un panneau"] } : { ok: true, score: 8, issues: [] })),
+  aiQcScene: vi.fn(async () => nextReview(reviews++)),
 }));
 vi.mock("@/lib/library", async (orig) => ({ ...(await orig<object>()), saveAsset: vi.fn(async (a: any) => ({ id: "asset-1", ...a })) }));
 
@@ -33,11 +34,30 @@ const project: any = {
 };
 
 describe("image ratée refaite une fois", () => {
-  it("le défaut relevé est repris dans la consigne ; c'est la reprise réussie qui est livrée", async () => {
+  it("défaut corrigeable (6/10, défaut précis) : repris dans la consigne ; c'est la reprise validée (FINAL) qui est livrée", async () => {
     const a = await postAmbiance({ userId: "u", projectId: "p", jobId: "j" }, project, { key: "k", topic: "Rénover un plafond", aspect: "1:1", name: "x.jpg" });
     expect(prompts).toHaveLength(2);
     expect(prompts[1]).toMatch(/lettres illisibles sur un panneau/);
     expect(a?.status).toBe("review");
+    expect((a as any).meta.gate.verdict).toBe("FINAL");
+  });
+  it("mauvaise direction (3/10) : abandon sans nouvelle image payée ; rien n'est livré pour la publication", async () => {
+    prompts.length = 0;
+    reviews = 0;
+    nextReview = () => ({ ok: false, score: 3, issues: ["sujet hors métier"] });
+    const a = await postAmbiance({ userId: "u", projectId: "p", jobId: "j" }, project, { key: "k2", topic: "Rénover un plafond", aspect: "1:1", name: "y.jpg" });
+    expect(prompts).toHaveLength(1);
+    expect(a).toBeNull();
+  });
+  it("contrôle en panne : jamais livrée comme validée, aucune nouvelle image payée", async () => {
+    prompts.length = 0;
+    reviews = 0;
+    nextReview = () => {
+      throw new Error("délai dépassé");
+    };
+    const a = await postAmbiance({ userId: "u", projectId: "p", jobId: "j" }, project, { key: "k3", topic: "Rénover un plafond", aspect: "1:1", name: "z.jpg" });
+    expect(prompts).toHaveLength(1);
+    expect(a).toBeNull();
   });
   it("consignes d'ambiance : aucune main ni personne demandée", () => {
     for (const s of ambianceSlots(project)) expect(s.prompt).not.toMatch(/skilled hands|professional's hands|professional at work/i);

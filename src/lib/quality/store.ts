@@ -5,6 +5,7 @@
 import { all, id, now, one, run } from "../db";
 import { currentTrace } from "../ai/trace";
 import type { GateDecision } from "./gate";
+import { L } from "../i18n-server";
 
 export type CheckRefs = { userId: string; projectId?: string | null; jobId?: string | null; candidateId?: string | null; assetId?: string | null; previousCheckId?: string | null };
 
@@ -95,4 +96,14 @@ export function qualityTrail(candidateId: string): TrailStep[] {
       costMicro: cost,
     };
   });
+}
+
+/**
+ * Enregistre le verdict d'un asset produit (image, photo libre…) et renvoie son statut et ses mentions : meta.gate
+ * (lu par la réutilisation automatique) et, si le verdict n'est pas FINAL, un avertissement toujours explicite.
+ */
+export function gateSave(refs: Omit<CheckRefs, "previousCheckId">, d: GateDecision) {
+  const checkId = saveCheck(d, refs);
+  const reason = d.verdict === "FINAL" ? "" : [d.reason, d.feedback].filter(Boolean).join(L(" — ", " — "));
+  return { status: statusFor(d, "review") as "rejected" | "review", meta: { gate: gateMeta(d, checkId), ...(reason ? { qcWarning: reason } : {}) } };
 }

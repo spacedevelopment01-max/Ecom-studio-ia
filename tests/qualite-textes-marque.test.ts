@@ -20,7 +20,7 @@ import { copyQuality, lintClaims, lintHollow, scrubClaims } from "@/lib/ai/tasks
 import { brandIssues, famousBrandClash, finalizeBrand, fixPalette, paletteIssues } from "@/lib/engine/brand-check";
 import { localBrand, paletteFromColors } from "@/lib/engine/local";
 import { localCopy } from "@/lib/engine/local-copy";
-import { checkPostDrafts, localPlan, shortLine } from "@/lib/engine/calendar";
+import { POST_HEADLINE_MAX, checkPostDrafts, localPlan, shortLine } from "@/lib/engine/calendar";
 import { adProblems, draftAds, localAds } from "@/lib/engine/ads";
 import { logoColors, proposeTaglines } from "@/lib/engine/identity";
 import { logoTagline } from "@/lib/media/logo";
@@ -217,17 +217,36 @@ describe("moteur local : aucune allégation, aucun nom pris, palettes lisibles",
 describe("calendrier : aucune allégation ne part sans relecture", () => {
   const post = (caption: string, headline = "Un compagnon tout doux pour les nuits"): PostDraft => ({ day: 0, slot: 0, network: "instagram", format: "image", angle: "Produit", title: "SOVA", caption, hashtags: ["#sova", "doudou"], visual: { kind: "creative", headline, subline: "", layout: "editorial" } });
 
-  it("réécrite une fois ; si l'IA s'entête, l'allégation est retirée et la publication marquée « à vérifier »", async () => {
+  it("nettoyage gratuit d'abord : une allégation retirable sans abîmer le texte ne coûte aucune réécriture (publication « à vérifier »)", async () => {
     const p = sova();
-    const fixed = await runWithLang({ content: "fr", ui: "fr" }, () => checkPostDrafts([post("Livraison offerte ! Le compagnon rose de vos enfants.")], p, async () => ({ title: "SOVA", caption: "Le compagnon rose de vos enfants.", hashtags: ["sova"] })));
+    let calls = 0;
+    const fixed = await runWithLang({ content: "fr", ui: "fr" }, () => checkPostDrafts([post("Livraison offerte ! Le compagnon rose de vos enfants.")], p, async () => (calls++, { title: "SOVA", caption: "x", hashtags: [] })));
+    expect(calls).toBe(0);
+    expect(fixed[0].caption).toBe("Le compagnon rose de vos enfants.");
+    expect(fixed[0].claims?.length).toBeGreaterThan(0);
+    // Titre du visuel : 32 caractères au plus, coupé à un mot entier (même règle que le contrôle des publications).
+    expect(fixed[0].visual.headline.length).toBeLessThanOrEqual(32);
+    expect(fixed[0].visual.headline).toBe("Un compagnon tout doux pour les");
+    expect(POST_HEADLINE_MAX).toBe(32);
+  });
+
+  it("réécriture payante seulement si le nettoyage abîme la publication ; si l'IA s'entête, l'allégation est retirée", async () => {
+    const p = sova();
+    let calls = 0;
+    const fixed = await runWithLang({ content: "fr", ui: "fr" }, () => checkPostDrafts([post("Livraison offerte et retours gratuits pour toutes vos commandes passées.")], p, async () => (calls++, { title: "SOVA", caption: "Le compagnon rose de vos enfants.", hashtags: ["sova"] })));
+    expect(calls).toBe(1);
     expect(fixed[0].caption).toBe("Le compagnon rose de vos enfants.");
     expect(fixed[0].claims).toBeUndefined();
-    const stubborn = await runWithLang({ content: "fr", ui: "fr" }, () => checkPostDrafts([post("Sans danger pour bébé. Le compagnon rose.")], p, async () => ({ title: "SOVA", caption: "Sans danger pour bébé. Le compagnon rose.", hashtags: [] })));
-    expect(stubborn[0].caption).toBe("Le compagnon rose.");
+    const stubborn = await runWithLang({ content: "fr", ui: "fr" }, () => checkPostDrafts([post("Sans danger pour bébé.")], p, async () => ({ title: "SOVA", caption: "Sans danger pour bébé.", hashtags: [] })));
+    expect(stubborn[0].caption).not.toMatch(/danger/);
     expect(stubborn[0].claims?.length).toBeGreaterThan(0);
-    // Titre du visuel coupé à un mot entier.
-    expect(fixed[0].visual.headline).toBe("Un compagnon tout doux pour les nuits");
-    expect(shortLine("Un compagnon tout doux pour les nuits calmes et longues", 40)).toBe("Un compagnon tout doux pour les nuits");
+  });
+
+  it("formule creuse seule : aucune réécriture payante (signalée seulement)", async () => {
+    const p = sova();
+    let calls = 0;
+    await runWithLang({ content: "fr", ui: "fr" }, () => checkPostDrafts([post("Une qualité exceptionnelle pour vos enfants, le compagnon rose.")], p, async () => (calls++, { title: "SOVA", caption: "x", hashtags: [] })));
+    expect(calls).toBe(0);
   });
 });
 

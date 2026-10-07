@@ -6,8 +6,8 @@
  *  (c) « typo »     : logotype travaillé, avec un monogramme dessiné (formes, jamais de texte).
  *
  * Avec l'IA : brief des trois pistes → SVG nettoyés par liste blanche → lisibilité 16/32 px → planche de mises en
- * situation → contrôle « directeur de création » (grille notée, seuil exigeant) → une reprise ciblée par piste
- * ratée → sinon la piste est REMPLACÉE par une version du studio (contrôlée elle aussi), jamais montrée.
+ * situation → contrôle « directeur de création » → barrière de qualité (src/lib/quality) → reprises ciblées sur
+ * diagnostic → sinon la piste de l'IA n'est jamais proposée : la version du studio prend la place, PROVISOIRE.
  * Sans IA : silhouette du produit (ou pictogramme de bibliothèque), monogramme géométrique construit localement,
  * logotype soigné — présentés comme tels, sans prétendre à une création par IA.
  */
@@ -19,6 +19,7 @@ import { buildMonogram, monogramLetter, type MonogramFrame } from "../media/mono
 import { ROUTE_CRITERIA, ROUTE_KEYS, routeBoard, safeColors, type CreativeRoute, type RouteColors, type RouteKey, type RouteReview } from "../media/brand-mockups";
 import type { SymbolKind } from "../media/logo";
 import { C, L } from "../i18n-server";
+import { decide, type CheckInput, type GateDecision } from "../quality/gate";
 
 export type PaletteRole = keyof BrandPalette;
 const ROLES: PaletteRole[] = ["primary", "secondary", "accent", "light", "dark"];
@@ -59,12 +60,18 @@ export type RouteDraft = {
   ground: PaletteRole;
 };
 
-/** Accès à l'IA (injecté : réel dans le studio, simulé dans les tests). */
+/**
+ * Accès à l'IA (injecté : réel dans le studio, simulé dans les tests). `attempt` : tentative de la piste (0 = premier
+ * essai), pour des points de reprise et des clés d'usage stables.
+ */
 export type CreativeAi = {
   routes(): Promise<RouteDraft[]>;
-  redraw(key: RouteKey, feedback: string, previous: RouteDraft | null): Promise<RouteDraft>;
-  review(route: CreativeRoute, board: Buffer): Promise<RouteReview>;
+  redraw(key: RouteKey, feedback: string, previous: RouteDraft | null, attempt?: number): Promise<RouteDraft>;
+  review(route: CreativeRoute, board: Buffer, attempt?: number): Promise<RouteReview>;
 };
+
+/** Enregistrement d'un verdict de la barrière (injecté : base de données dans le studio, rien dans les tests). */
+export type GateRecorder = (d: GateDecision, key: RouteKey, previousCheckId: string | null) => string | null;
 
 export type BrandInput = {
   name: string;
@@ -124,6 +131,29 @@ export function reviewFeedback(r: RouteReview): string {
   ]
     .filter(Boolean)
     .join(" ; ");
+}
+
+/**
+ * Contrôle d'une piste de l'IA, traduit pour la barrière de qualité : note de la grille (pénalité de cliché et des
+ * défauts de lisibilité relevés par le studio), critères, défauts fatals (ressemblance avec une marque, monogramme
+ * illisible) et bloquants (cliché, promesse dans le texte), consignes de reprise.
+ */
+export function routeCheck(review: RouteReview, extra: { soft?: string[]; words?: string[] } = {}): CheckInput {
+  const soft = extra.soft ?? [];
+  const words = extra.words ?? [];
+  return {
+    checker: "ai",
+    score: Math.max(0, routeScore(review) - soft.length),
+    criteria: Object.fromEntries(ROUTE_CRITERIA.map((k) => [k, clamp10(review.scores?.[k])])),
+    codes: [review.resemblesKnownBrand === true && "resembles_known_brand", review.readsAsLetters === false && "unreadable_letters", review.cliche !== false && "cliche", words.length && "claim", soft.length && "small_sizes"].filter((x): x is string => !!x),
+    issues: [reviewFeedback(review), ...soft, words.length ? `texte à corriger : ${words.join(", ")} (aucune promesse, aucune formule creuse)` : ""].filter(Boolean),
+  };
+}
+
+/** Version du studio : remplacement technique provisoire (jamais présentée comme une proposition créative validée). */
+function placeholder(route: CreativeRoute): CreativeRoute {
+  const d = decide("logo_route", { checker: "local", score: null });
+  return { ...route, gate: { verdict: "PROVISIONAL", score: null, reason: d.reason, provisional: d.provisional } };
 }
 
 const ELEGANT = ["atelier", "galerie", "joaillerie"];
@@ -428,10 +458,13 @@ export function routeFromDraft(d: RouteDraft, brand: BrandInput): { ok: true; ro
 export type RoutesDesign = { routes: CreativeRoute[]; notes: string[]; ai: "used" | "unavailable" | "off" };
 
 /**
- * Trois pistes contrôlées. Une piste refusée n'est jamais montrée : elle est reprise une fois (consignes ciblées),
- * puis remplacée par la version du studio de son emplacement, contrôlée elle aussi quand l'IA est disponible.
+ * Trois pistes passées par la barrière de qualité. Une piste de l'IA n'est proposée que si elle est FINAL (grille du
+ * directeur de création au niveau, aucun défaut bloquant ni fatal). Sinon : reprise ciblée seulement avec un
+ * diagnostic précis et dans la limite de la politique ; défaut fatal ou note trop basse : direction abandonnée ;
+ * contrôle en panne : jamais proposée. L'emplacement reçoit alors la version du studio, marquée PROVISOIRE
+ * (remplacement technique, pas une création validée).
  */
-export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; icon?: { name: string; svg: string } | null; ai: CreativeAi | null; textIssues?: (text: string) => string[]; variant?: number; avoid?: RouteAvoid[]; keys?: RouteKey[] }): Promise<RoutesDesign> {
+export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; icon?: { name: string; svg: string } | null; ai: CreativeAi | null; textIssues?: (text: string) => string[]; variant?: number; avoid?: RouteAvoid[]; keys?: RouteKey[]; record?: GateRecorder }): Promise<RoutesDesign> {
   const { brand, ai } = input;
   const avoid = input.avoid ?? [];
   const notes: string[] = [];
@@ -448,20 +481,17 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
       aiState = "unavailable";
     }
   }
-  let reviewDown = false;
   for (const key of input.keys ?? ROUTE_KEYS) {
     let accepted: CreativeRoute | null = null;
-    // Meilleure proposition de l'IA pour cette piste, même si elle n'atteint pas le seuil : elle est comparée à la
-    // version du studio et montrée si elle fait au moins aussi bien (le travail payé ne disparaît pas sans raison).
-    let best: { route: CreativeRoute; score: number } | null = null;
     if (ai && aiState === "used") {
       let draft: RouteDraft | null = drafts.find((d) => d?.key === key) ?? null;
       let feedback = "";
+      let prevCheck: string | null = null;
       for (let attempt = 0; attempt < MAX_ROUTE_DRAWS && !accepted; attempt++) {
         // Reprise ciblée : seule cette piste est redessinée, avec les défauts relevés.
         if (attempt > 0 || !draft) {
           try {
-            draft = await ai.redraw(key, feedback || "piste absente de la première réponse", draft);
+            draft = await ai.redraw(key, feedback || "piste absente de la première réponse", draft, attempt);
           } catch (e) {
             notes.push(`${key} : reprise impossible (${(e as Error).message})`);
             break;
@@ -481,50 +511,39 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
           continue;
         }
         const words = input.textIssues?.(`${built.route.name}. ${built.route.why}`) ?? [];
-        if (words.length) {
-          // Aucune promesse affichée : le texte est repris, le dessin reste candidat avec un texte neutre.
-          notes.push(`${key} : texte repris (${words.join(", ")})`);
-          feedback = `texte à corriger : ${words.join(", ")} (aucune promesse, aucune formule creuse)`;
-          built.route.why = L(`Piste « ${built.route.name} » proposée par l'IA pour ${brand.name}.`, `“${built.route.name}” route proposed by the AI for ${brand.name}.`);
-        }
-        let review: RouteReview;
+        if (words.length) built.route.why = L(`Piste « ${built.route.name} » proposée par l'IA pour ${brand.name}.`, `“${built.route.name}” route proposed by the AI for ${brand.name}.`);
+        let review: RouteReview | null = null;
+        let error = "";
         try {
-          review = await ai.review(built.route, await board(built.route));
+          review = await ai.review(built.route, await board(built.route), attempt);
         } catch (e) {
-          notes.push(`${key} : contrôle de direction artistique impossible (${(e as Error).message})`);
-          reviewDown = true;
-          // Sans contrôle visuel : la piste de l'IA n'est montrée que si elle est nette en petit (contrôle du studio).
-          if (!built.soft.length) best = { route: built.route, score: 0 };
+          error = (e as Error).message;
+        }
+        // Barrière de qualité : un contrôle en panne n'est jamais FINAL ; la piste n'est pas proposée.
+        const d = decide("logo_route", review ? routeCheck(review, { soft: built.soft, words }) : { checker: "ai", score: null, error: error || "contrôle sans réponse" }, { attempt });
+        prevCheck = input.record?.(d, key, prevCheck) ?? null;
+        if (d.verdict === "FINAL") {
+          accepted = { ...built.route, review, gate: { verdict: "FINAL", score: d.score, reason: d.reason, checkId: prevCheck } };
           break;
         }
-        const candidate = { ...built.route, review };
-        // Un défaut de lisibilité en petit relevé par le studio compte, même si le contrôle visuel l'a laissé passer.
-        const score = routeScore(review) - built.soft.length;
-        if (routePassed(review, "ai") && !words.length && !built.soft.length) accepted = candidate;
-        else {
-          if (!hardFail(review) && (!best || score > best.score)) best = { route: candidate, score };
-          notes.push(`${key} : piste « ${built.route.name} » à améliorer (${[reviewFeedback(review), ...built.soft].filter(Boolean).join(" ; ")})`);
-          feedback = [reviewFeedback(review), ...built.soft, words.length ? feedback : ""].filter(Boolean).join(" ; ");
-        }
+        notes.push(`${key} : piste « ${built.route.name} » ${d.verdict === "RETRY" && d.action === "regenerate" ? "à reprendre" : "écartée"} (${d.reason}${d.feedback ? ` — ${d.feedback}` : ""})`);
+        // Reprise seulement sur diagnostic précis ; défaut fatal, note trop basse ou contrôle en panne : on s'arrête.
+        if (d.verdict !== "RETRY" || d.action !== "regenerate") break;
+        feedback = d.feedback;
       }
     }
     if (!accepted) {
-      // Version du studio : d'abord celles qui ne reprennent pas une piste déjà montrée.
+      // Version du studio : d'abord celles qui ne reprennent pas une piste déjà montrée. Provisoire.
       const cand = [...fallback[key].filter((c) => !tooClose(c, avoid)), ...fallback[key].filter((c) => tooClose(c, avoid))][0];
-      // C'est le client qui juge : la meilleure proposition de l'IA est toujours montrée (avec ses notes),
-      // la version du studio ne sert que de filet quand l'IA n'a rien produit d'exploitable.
-      if (best) {
-        accepted = best.route;
-        notes.push(`${key} : meilleure proposition de l'IA montrée « ${best.route.name} »${best.score > 0 ? ` (${best.score.toFixed(1)}/10)` : ""}`);
-      }
-      else if (cand) accepted = cand;
+      if (cand) accepted = placeholder(cand);
+      if (cand && ai && aiState === "used") notes.push(L(`${key} : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place.`, `${key}: no AI proposal passed the quality gate; PROVISIONAL studio version instead.`));
     }
     if (accepted) out.push(accepted);
     else notes.push(L(`${key} : aucune piste n'a atteint le niveau exigé ; elle n'est pas présentée.`, `${key}: no route reached the required standard; it isn't shown.`));
   }
-  // Jamais aucune piste : le logotype du studio (pure typographie) reste montré, avec la raison.
+  // Jamais aucune piste : le logotype du studio (pure typographie), provisoire.
   if (!out.length) {
-    out.push({ ...fallback.typo[0], notes: [...fallback.typo[0].notes, L("Seule proposition restante après contrôle.", "Only proposal left after review.")] });
+    out.push(placeholder({ ...fallback.typo[0], notes: [...fallback.typo[0].notes, L("Seule proposition restante après contrôle.", "Only proposal left after review.")] }));
   }
   // Chaque piste a son propre code couleur : la première garde la palette de la marque, les autres une palette de
   // l'IA ou une variante d'une autre dominante (choisie, la palette de la piste devient celle de la marque).

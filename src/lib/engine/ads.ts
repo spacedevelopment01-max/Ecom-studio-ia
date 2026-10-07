@@ -5,6 +5,9 @@
  * des faits produit confirmés, du nom de marque et des angles de la stratégie (aucun chiffre ni avis inventé).
  * Serveur uniquement.
  */
+import { randomUUID } from "node:crypto";
+import { stableKey } from "../ai/keys";
+import { currentTrace } from "../ai/trace";
 import { z } from "zod";
 import { pick, type Lang } from "../i18n";
 import { contentLang, L, uiLang, withContentLang } from "../i18n-server";
@@ -109,11 +112,15 @@ export async function draftAds(p: Project, opts: { userId: string; count?: numbe
     const ctas = adCtas(p, lang);
     const budget = honestTestBudget(p, uiLang());
     const b = { userId: opts.userId, projectId: p.id };
+    // Clés d'usage stables : la tâche en cours (reprise sans double débit), sinon cette demande ; un tour par appel.
+    const scope = currentTrace().jobId ?? randomUUID();
+    let drafts = 0;
     const brief = `${opts.objective ? `Objectif de la campagne : ${opts.objective}.\n` : ""}${opts.audience ? `Audience indiquée par le marchand : ${opts.audience}.\n` : ""}${opts.networks?.length ? `Réseaux : ${opts.networks.join(", ")}.\n` : ""}Budget de test calculé par le studio : ${budget.daily} ; ${budget.duration} ; ${budget.total}. Règle de décision : ${budget.rule}`;
     const ask = (feedback?: string) => llmJson(
       {
         task: "ad_creative",
         ...b,
+        usageKey: stableKey("ads", p.id, scope, "draft", drafts++),
         system: adSystem(p, lang, ctas),
         context: `${projectContext(p, "social")}\n${brandCraftBrief(p)}`,
         prompt: `Prépare la campagne de test : ${count} annonce(s).\n${brief}${feedback ? `\nCorrections exigées par le directeur de création et le contrôle qualité sur la proposition précédente (à appliquer toutes, sans rien inventer) :\n${feedback}` : ""}
@@ -126,7 +133,7 @@ Réponds { "strategy": { "summary": "…", "audiences": [ { "name": "…", "who"
     const { best: r, quality } = await craftLoop<AdPlan>("ads", {
       draft: ask,
       lint,
-      review: (r) => aiCraftReview({ ...b, usageKey: undefined }, p, "ads", { strategy: r.strategy, hooks: r.hooks, ads: r.ads.slice(0, count) }, `Objectif : ${opts.objective ?? "non précisé"}. Boutons autorisés : ${ctas.join(" | ")}.`),
+      review: (r, round) => aiCraftReview({ ...b, usageKey: stableKey("ads", p.id, scope, "review", round) }, p, "ads", { strategy: r.strategy, hooks: r.hooks, ads: r.ads.slice(0, count) }, `Objectif : ${opts.objective ?? "non précisé"}. Boutons autorisés : ${ctas.join(" | ")}.`),
     });
     const cut = (t: string, n: number) => (t.length > n ? t.slice(0, n + 1).replace(/\s+\S*$/, "").replace(/[\s,;:·-]+$/, "") : t);
     const ads = r.ads.slice(0, count).map((a) => {

@@ -57,7 +57,7 @@ async function stagedUpload(c: Connection, filename: string, mime: string, data:
   return t.resourceUrl;
 }
 
-export async function pushProduct(c: Connection, spec: ThemeSpec, product?: StoreProduct): Promise<{ productId: string; handle: string }> {
+export async function pushProduct(c: Connection, spec: ThemeSpec, product?: StoreProduct): Promise<{ productId: string; handle: string; seo: Awaited<ReturnType<typeof pushProductSeo>> }> {
   const p = product ?? spec.store.product;
   if (p.price === null) throw new UserFacingError(L(`Renseignez le prix de « ${p.title} » avant de l'envoyer à Shopify.`, `Enter the price of "${p.title}" before sending it to Shopify.`));
   const files: { originalSource: string; contentType: "IMAGE"; alt: string }[] = [];
@@ -87,20 +87,47 @@ export async function pushProduct(c: Connection, spec: ThemeSpec, product?: Stor
   if (existing) input.id = existing.id;
   const d = await gql(c, `mutation($input: ProductSetInput!){ productSet(synchronous: true, input: $input){ product{ id handle } userErrors{ field message } } }`, { input });
   userErrors(d, "productSet");
-  return { productId: d.productSet.product.id, handle: d.productSet.product.handle };
+  const productId = d.productSet.product.id as string;
+  const seo = await pushProductSeo(c, productId, p.seo);
+  return { productId, handle: d.productSet.product.handle, seo };
+}
+
+/**
+ * SEO de la fiche produit (titre et méta-description), envoyé APRÈS le produit et sans jamais le bloquer : mêmes
+ * champs que ceux déjà utilisés pour les articles de blog (métachamps « global.title_tag » et
+ * « global.description_tag », que Shopify affiche comme titre et description pour les moteurs de recherche).
+ * Refus de la boutique (définition différente, droits) : le produit reste envoyé, le refus est rendu tel quel.
+ */
+export async function pushProductSeo(c: Connection, productId: string, seo: { title: string; description: string } | undefined): Promise<"sent" | "none" | `refused: ${string}`> {
+  if (!seo?.title?.trim() && !seo?.description?.trim()) return "none";
+  const metafields = [
+    { ownerId: productId, namespace: "global", key: "title_tag", type: "single_line_text_field", value: (seo.title ?? "").trim() },
+    { ownerId: productId, namespace: "global", key: "description_tag", type: "single_line_text_field", value: (seo.description ?? "").trim() },
+  ].filter((m) => m.value);
+  try {
+    const d = await gql(c, `mutation($metafields: [MetafieldsSetInput!]!){ metafieldsSet(metafields: $metafields){ metafields{ key } userErrors{ field message } } }`, { metafields });
+    const errs = d?.metafieldsSet?.userErrors ?? [];
+    return errs.length ? `refused: ${errs.map((e: any) => e.message).join(" ; ").slice(0, 200)}` : "sent";
+  } catch (e) {
+    if (e instanceof PermanentError) throw e;
+    return `refused: ${(e as Error).message.slice(0, 200)}`;
+  }
 }
 
 /** Envoie tous les produits de la boutique (brouillons), puis crée les collections manuelles. */
 export async function pushCatalog(c: Connection, spec: ThemeSpec, onProgress?: (done: number, total: number) => void) {
   // Site d'entreprise de services : aucun produit à créer (le site repose sur les pages et le thème).
-  if (spec.store.business === "services") return { products: [] as string[], collections: [] as string[] };
+  if (spec.store.business === "services") return { products: [] as string[], collections: [] as string[], seo: {} as Record<string, string> };
   const products = storeProducts(spec);
   const missing = products.filter((p) => p.price === null).map((p) => p.title);
   if (missing.length) throw new UserFacingError(L(`Renseignez le prix de : ${missing.join(", ")} avant l'envoi à Shopify.`, `Enter the price of: ${missing.join(", ")} before sending to Shopify.`));
   const ids = new Map<string, string>();
+  // SEO de chaque fiche : envoyé, absent ou refusé par la boutique (rendu dans le résultat de l'envoi, jamais perdu).
+  const seo: Record<string, string> = {};
   for (const [i, p] of products.entries()) {
     const r = await pushProduct(c, spec, p);
     ids.set(p.handle, r.productId);
+    seo[p.handle] = r.seo;
     onProgress?.(i + 1, products.length);
   }
   const collections: string[] = [];
@@ -113,7 +140,7 @@ export async function pushCatalog(c: Connection, spec: ThemeSpec, onProgress?: (
     if (errs.length && !errs.some((e: any) => /taken|already/i.test(e.message))) throw new Error(L(`Collection ${col.title} : ${errs.map((e: any) => e.message).join(" ; ")}`, `Collection ${col.title}: ${errs.map((e: any) => e.message).join("; ")}`));
     collections.push(col.handle);
   }
-  return { products: [...ids.keys()], collections };
+  return { products: [...ids.keys()], collections, seo };
 }
 
 export async function pushPages(c: Connection, spec: ThemeSpec) {

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { randomUUID } from "node:crypto";
+import { stableKey } from "@/lib/ai/keys";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { fillPrompt } from "@/lib/prompts-library";
@@ -22,6 +24,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const b = await body(req, z.object({ body: z.string().min(10).max(12000) }));
   const prompt = fillPrompt(b.body, promptVars(p));
+  const requestId = randomUUID();
   const answer = await runForUser(user.id, async () => {
     if (!llmConfigured()) {
       throw new HttpError(402, L("Lancer un prompt utilise l'IA : c'est inclus dans les forfaits. En découverte gratuite, copiez-le et utilisez-le dans votre propre assistant IA.", "Running a prompt uses AI, which comes with the plans. In the free discovery, copy it and use it in your own AI assistant."));
@@ -39,6 +42,9 @@ Rôle : directeur de création et stratège e-commerce qui exécute la demande d
       context: projectContext(p),
       prompt,
       maxTokens: 6000,
+      // Clé stable de cette demande (trace des coûts ; pas de double débit si la demande est rejouée).
+      usageKey: stableKey("prompt-run", p.id, requestId),
+      promptKey: "prompt-run",
     });
   });
   return ok({ prompt, answer });

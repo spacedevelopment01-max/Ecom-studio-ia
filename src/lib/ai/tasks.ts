@@ -4,6 +4,9 @@
  * n'est configuré, l'appelant bascule sur le moteur local (engine/local.ts),
  * clairement signalé comme tel dans le studio.
  */
+import { decide } from "../quality/gate";
+import { saveCheck } from "../quality/store";
+import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "../seo-limits";
 import { z } from "zod";
 import { FactSchema, QuestionSchema, SECTOR_IDS, type Brand, type ProductProfile, type Strategy } from "../project-types";
 import { ShopCopySchema, type ShopCopy } from "../theme/copy";
@@ -510,7 +513,11 @@ const betterRound = (a: CopyRound, b: CopyRound) => a.blocking.length < b.blocki
  * Sous le seuil (8/10), UNE reprise ciblée à partir de la version précédente ; une allégation ou une faute bloquante
  * encore présente autorise une dernière reprise. La meilleure version est gardée, puis les allégations restantes retirées.
  */
-export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string) => void): Promise<{ copy: ShopCopy; qc: { rounds: number; remaining: string[]; score: number } }> {
+/**
+ * `run` : point de reprise de chaque tour (rédaction, relecture) — une tâche reprise après une interruption ne
+ * repaie pas les tours déjà faits. Par défaut, exécution directe (tests, appels hors tâche de fond).
+ */
+export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string) => void, run: <T>(key: string, fn: () => Promise<T>) => Promise<T> = (_k, fn) => fn()): Promise<{ copy: ShopCopy; qc: { rounds: number; remaining: string[]; score: number; verdict: string } }> {
   let feedback = "";
   let best: CopyRound | null = null;
   let last: CopyRound | null = null;
@@ -522,7 +529,9 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
     let copy: ShopCopy;
     let review: Awaited<ReturnType<typeof aiCopyReview>>;
     try {
-      copy = tidyCopy(await aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, feedback || undefined, last?.copy));
+      const prev = last?.copy;
+      const fb = feedback;
+      copy = tidyCopy(await run(`copy:r${round}:write`, () => aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, fb || undefined, prev)));
     } catch (e) {
       // Reprise en échec : la meilleure version déjà payée est gardée (seule la première rédaction est indispensable).
       if (!best || e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -532,7 +541,8 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
     const lint = lintClaims(copy, p);
     onStep?.(L("Relecture par le directeur de création", "Creative director review"));
     try {
-      review = await aiCopyReview({ ...b, usageKey: `${b.usageKey}:qc${round}` }, p, "textes de la boutique", copy);
+      const c = copy;
+      review = await run(`copy:r${round}:review`, () => aiCopyReview({ ...b, usageKey: `${b.usageKey}:qc${round}` }, p, "textes de la boutique", c));
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       // Relecture en panne : le texte payé est gardé (les allégations sont retirées par le code plus bas).
@@ -556,7 +566,11 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
   }
   // Filet de sécurité : une allégation encore présente après les reprises est retirée, jamais publiée.
   const scrubbed = scrubClaims(best!.copy, p);
-  return { copy: scrubbed.content, qc: { rounds, remaining: best!.blocking, score: Math.round(best!.mean * 10) / 10 } };
+  // Verdict de la barrière (enregistré) : FINAL seulement relu, au niveau (8/10) et sans défaut bloquant.
+  const reviewed = best!.mean > 0;
+  const gate = decide("copy_shop", reviewed ? { checker: "ai", score: best!.mean, codes: best!.blocking.length ? ["claim"] : [], issues: best!.blocking } : { checker: "none", score: null });
+  saveCheck(gate, { userId: b.userId, projectId: b.projectId, jobId: b.jobId, candidateId: `copy:${b.projectId}` });
+  return { copy: scrubbed.content, qc: { rounds, remaining: best!.blocking, score: Math.round(best!.mean * 10) / 10, verdict: gate.verdict } };
 }
 
 /** Défauts de forme d'un texte de boutique, formulés comme des consignes de correction pour l'IA. */
@@ -579,8 +593,8 @@ export function tidyCopy<T>(copy: T): T {
   const cap = (o: any, k: string, max: number) => {
     if (o && typeof o[k] === "string") o[k] = clipWord(o[k], max);
   };
-  cap(c.seo, "title", 70);
-  cap(c.seo, "description", 160);
+  cap(c.seo, "title", SEO_TITLE_MAX);
+  cap(c.seo, "description", SEO_DESCRIPTION_MAX);
   cap(c.hero, "heading", 60);
   cap(c.cta, "button", 28);
   cap(c.product, "title", 80);
@@ -591,11 +605,13 @@ export function copyQuality(copy: ShopCopy, p: Project): string[] {
   const out: string[] = [];
   for (const h of lintHollow(copy)) out.push(L(`${h.path} : formule creuse « ${h.term} ». Remplace-la par un fait concret du produit.`, `${h.path}: empty phrase "${h.term}". Replace it with a concrete product fact.`));
   const c = copy as any;
+  // Longueurs et tirets : mêmes limites que tidyCopy (qui les corrige gratuitement avant) ; gardés ici pour tout
+  // appelant qui n'aurait pas nettoyé le texte.
   const len = (path: string, v: unknown, max: number) => {
     if (typeof v === "string" && v.length > max) out.push(L(`${path} : ${v.length} caractères, ${max} au plus.`, `${path}: ${v.length} characters, ${max} at most.`));
   };
-  len("seo.title", c.seo?.title, 70);
-  len("seo.description", c.seo?.description, 160);
+  len("seo.title", c.seo?.title, SEO_TITLE_MAX);
+  len("seo.description", c.seo?.description, SEO_DESCRIPTION_MAX);
   len("hero.heading", c.hero?.heading, 60);
   len("cta.button", c.cta?.button, 28);
   len("product.title", c.product?.title, 80);

@@ -99,6 +99,8 @@ export type Brand = {
     markAssetId?: string;
     concept: string;
     status: "proposed" | "validated" | "provided";
+    /** Logo de remplacement technique (version du studio, aucune proposition validée par la barrière de qualité). */
+    provisional?: boolean;
     /** Piste créative retenue (produit, concept, typo) ; anciennes propositions : logotype, symbole, emblème. */
     proposal?: "logotype" | "symbole" | "embleme" | "produit" | "concept" | "typo";
     /** Fichier de la piste choisie (plusieurs pistes peuvent avoir la même famille). */

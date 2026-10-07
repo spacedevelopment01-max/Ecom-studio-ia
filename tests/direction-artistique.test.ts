@@ -188,23 +188,26 @@ describe("pistes de l'IA contrôlées", () => {
     });
   });
 
-  it("contrôle visuel en panne : les pistes de l'IA nettes en petit restent montrées (le travail payé ne disparaît pas)", async () => {
+  it("contrôle visuel en panne : aucune piste de l'IA n'est proposée (jamais FINAL) ; versions du studio PROVISOIRES, sans nouveau dessin", async () => {
     await fr(async () => {
-      const { ai } = fakeAi({ reviewThrows: true });
+      const { ai, calls } = fakeAi({ reviewThrows: true });
       const r = await designRoutes({ brand: BRAND, cutout: await bunny(), library: "sun", ai });
       expect(r.routes).toHaveLength(3);
-      expect(r.routes.some((x) => x.source === "ai")).toBe(true);
-      expect(r.notes.join(" ")).toMatch(/contrôle de direction artistique impossible/);
+      expect(r.routes.every((x) => x.source === "local" && x.gate?.verdict === "PROVISIONAL")).toBe(true);
+      // Une panne du contrôle ne déclenche jamais de nouveau dessin payant (on refait le contrôle, pas l'image).
+      expect(calls.redraw.every((c) => !/contrôle|vision/i.test(c.feedback))).toBe(true);
+      expect(r.notes.join(" ")).toMatch(/contrôle en panne/);
     });
   });
 
-  it("tout noté sévèrement : la meilleure proposition de l'IA reste montrée (le client juge), avec sa note", async () => {
+  it("tout noté sévèrement (cliché) : jamais proposé comme logo ; reprises ciblées puis versions du studio PROVISOIRES", async () => {
     await fr(async () => {
       const { ai } = fakeAi({ review: () => CLICHE });
       const r = await designRoutes({ brand: BRAND, cutout: await bunny(), library: "sun", ai });
       expect(r.routes).toHaveLength(3);
-      expect(r.routes.every((x) => x.source === "ai")).toBe(true);
-      expect(r.notes.join(" ")).toMatch(/meilleure proposition de l'IA montrée/);
+      expect(r.routes.some((x) => x.source === "ai")).toBe(false);
+      expect(r.routes.every((x) => x.gate?.verdict === "PROVISIONAL")).toBe(true);
+      expect(r.notes.join(" ")).toMatch(/barrière de qualité/);
     });
   });
 
