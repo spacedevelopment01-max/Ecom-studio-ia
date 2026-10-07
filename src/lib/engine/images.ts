@@ -231,13 +231,23 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
       await ctx.step(`lifestyle:${i}`, async () => {
         ctx.progress(0.7 + i * 0.02, L("Photos du produit en situation", "Lifestyle product photos"));
         try {
-          const r = await aiBackground(ictx, project, cutBuf, "lifestyle", i === 0 ? "landscape" : "product", `${ctx.job.id}:lifestyle:${i}`, situation);
-          if (!r) return [];
           // Gemini : décor de vie généré, produit réel posé dessus par la composition locale (ombres, sol).
-          const image = r.provider === "openai" ? r.image : (await renderScene({ product, palette: pal, style: "spotlight", format: i === 0 ? FORMATS.landscape : FORMATS.product, seed: 31 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
-          const check = await verifyAiImage({ ...ictx, usageKey: `${ctx.job.id}:qc:lifestyle:${i}` }, originalPhoto(), image);
+          const attempt = async (key: string, avoid?: string) => {
+            const r = await aiBackground(ictx, project, cutBuf, "lifestyle", i === 0 ? "landscape" : "product", key, avoid ? `${situation}. A previous attempt was rejected for: ${avoid}. Avoid exactly these defects.` : situation);
+            if (!r) return null;
+            const image = r.provider === "openai" ? r.image : (await renderScene({ product, palette: pal, style: "spotlight", format: i === 0 ? FORMATS.landscape : FORMATS.product, seed: 31 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
+            return { r, image, check: await verifyAiImage({ ...ictx, usageKey: `${key}:qc` }, originalPhoto(), image) };
+          };
+          let got = await attempt(`${ctx.job.id}:lifestyle:${i}`);
+          if (!got) return [];
+          // Photo ratée : une reprise qui reprend les défauts relevés (le raté n'est ni livré ni décompté).
+          if (got.check.tier === "bad") {
+            refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}`);
+            got = (await attempt(`${ctx.job.id}:lifestyle:${i}:retry`, got.check.reason).catch((e) => { if (e instanceof JobCancelled || e instanceof JobPaused) throw e; return null; })) ?? got;
+          }
+          const { r, image, check } = got;
           // Photo gardée dans tous les cas (payée) : signalée si défaut mineur, écartée (visible, non utilisée) si inutilisable.
-          if (check.tier === "bad") refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}`);
+          if (check.tier === "bad") refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}:retry`);
           const keep = tierSave(check.tier, check.reason);
           return [await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Photo en situation générée autour du produit réel : ${situation}`, `Lifestyle photo generated around the real product: ${situation}`), provider: "OpenAI", qc: check.qc } : { recipe: L(`Photo en situation : décor généré (${situation}) et produit réel composé`, `Lifestyle photo: generated set (${situation}) with the real product composited`), provider: L("Gemini + composition locale", "Gemini + local compositing"), qc: check.qc }), ...keep.meta }, "image/jpeg", keep.status)];
         } catch (e) {

@@ -170,7 +170,7 @@ export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?:
  */
 export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null }) {
   const text = `${input.prompt}
-Editorial photograph that conveys the atmosphere of this activity, natural light, realistic, premium. Hands, tools, materials and the place are welcome; people only from behind, out of focus or partially framed, never a recognizable face presented as a customer. No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
+Editorial photograph that conveys the atmosphere of this activity, natural light, realistic, premium. Tools, materials, the work and the place tell the story. No people, no hands, no faces (the most frequent source of defects). No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
   return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high" });
 }
 
