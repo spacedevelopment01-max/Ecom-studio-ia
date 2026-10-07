@@ -3,6 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
   "hostRequirements": { "cpus": 2, "memory": "8gb" },
   "postCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg chromium && npm ci && npm run setup",
+  "postStartCommand": "command -v ffmpeg >/dev/null || (sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg)",
   "postAttachCommand": { "studio": "npm run dev" },
   "forwardPorts": [3000],
   "portsAttributes": {

@@ -233,6 +233,50 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
   return applyLogo(ctx, projectId, proposals.find((x) => x.key === wanted) ?? proposals[0]);
 }
 
+/**
+ * Palette changée par le client sur la piste retenue : la même piste (même dessin, mêmes typographies) est recolorée
+ * avec les nouvelles couleurs, puis réappliquée partout — logo et déclinaisons, site, bannières, kit réseaux sociaux,
+ * charte. Les autres pistes ne bougent pas. Sans IA. Renvoie false s'il n'y a pas de piste retenue à recolorer.
+ * `oldPalette` : palette d'avant, pour retrouver d'où venaient les couleurs d'une piste ancienne sans rôles enregistrés.
+ */
+export async function recolorChosenRoute(projectId: string, oldPalette: BrandPalette): Promise<boolean> {
+  const p = loadProject(projectId);
+  const brand = p.brand;
+  const chosen = brand?.logo?.route;
+  if (!brand || !chosen || hasClientLogo(projectId)) return false;
+  const row = latestProposals(projectId).find((x) => x.id === brand.logo.proposalId) ?? latestProposals(projectId).find((x) => x.info.route?.key === chosen.key && x.info.key === brand.logo.proposal);
+  const route = row?.info.route as CreativeRoute | undefined;
+  if (!row || !route) return false;
+  // D'où viennent les couleurs de la piste : rôles enregistrés, sinon retrouvés dans l'ancienne palette.
+  const roleOf = (hex: string) => (Object.keys(oldPalette) as (keyof BrandPalette)[]).find((k) => oldPalette[k]?.toLowerCase() === hex?.toLowerCase());
+  const roles = route.roles ?? (() => {
+    const ink = roleOf(route.colors.ink), accent = roleOf(route.colors.accent), ground = roleOf(route.colors.ground), tint = roleOf(route.colors.tint);
+    return ink && accent && ground ? { ink, accent, ground, tint: tint ?? ("secondary" as const) } : null;
+  })();
+  if (!roles) return false;
+  const recolored: CreativeRoute = { ...route, roles, colors: roleColors(brand.palette, roles.ink, roles.accent, roles.ground, roles.tint) };
+  const full = routeLogoSpec(recolored, brand);
+  const { color, accent, ...spec } = full;
+  const pr: LogoProposal = { key: row.info.key, label: row.info.label ?? recolored.name, concept: row.info.concept ?? recolored.why, spec: { ...spec, accent }, colors: { color, accent: accent ?? color }, route: recolored };
+  // Vignette de la piste et planche refaites aux nouvelles couleurs ; la piste garde sa place dans la liste.
+  const common = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const };
+  const asset = await saveAsset({ ...common, data: await logoPng(full, 900), name: row.name, mime: "image/png", role: "logo-proposal", meta: { ...row.info, spec: pr.spec, colors: pr.colors, route: recolored } });
+  run("UPDATE assets SET created_at = ? WHERE id = ?", row.created_at, asset.id);
+  pr.id = asset.id;
+  const best = p.business === "services" ? undefined : validCutouts(p.id)[0];
+  const board = await routeBoard({ route: recolored, brand, product: best ? assetData(best) : null }).catch(() => null);
+  if (board) await saveAsset({ ...common, data: await sharp(board).jpeg({ quality: 86 }).toBuffer(), name: C(`planche-piste-${pr.key}.jpg`, `route-board-${pr.key}.jpg`), mime: "image/jpeg", role: "logo-route-board", sourceAssetId: asset.id, meta: { key: pr.key, batch: row.info.batch } });
+  removeProposal(projectId, row.id);
+  // Logo validé par le client : il le reste (seules ses couleurs ont changé, à sa demande).
+  const wasValidated = brand.logo.status === "validated";
+  await applyLogo(null, projectId, pr);
+  if (wasValidated) {
+    const after = loadProject(projectId).brand!;
+    saveBrand(projectId, { ...after, logo: { ...after.logo, status: "validated" } });
+  }
+  return true;
+}
+
 /** Pistes présentées au client : au plus 3 à la fois. */
 export const MAX_ROUTES = 3;
 

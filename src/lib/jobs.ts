@@ -12,6 +12,7 @@ import os from "node:os";
 import { all, id, json, now, one, run, tx } from "./db";
 import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
+import { friendlyToolError } from "./tool-errors";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked" | "paused";
 
@@ -155,7 +156,12 @@ export function claimNext(types?: string[]): Job | null {
  * décomptés) en profite. Une relance (`resume`), un nouveau départ sur un projet déjà construit ou toute autre
  * tâche décomptent normalement chaque visuel.
  */
-export function jobQuotaScope(job: Pick<Job, "id" | "type" | "payload" | "project_id">): "creation" | "normal" {
+export function jobQuotaScope(job: Pick<Job, "id" | "type" | "payload" | "project_id"> & { parent_id?: string | null }): "creation" | "normal" {
+  // Le calendrier de 7 jours lancé par la première création en fait partie (ses images ne sont pas décomptées).
+  if (job.type === "calendar.plan" && job.parent_id) {
+    const parent = one<Job>("SELECT * FROM jobs WHERE id = ?", job.parent_id);
+    return parent && parent.type === "pipeline.run" ? jobQuotaScope(parent) : "normal";
+  }
   if (job.type !== "pipeline.run") return "normal";
   if (json<{ initial?: boolean }>(job.payload, {}).initial !== true) return "normal";
   if (job.project_id && one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status = 'done' AND id != ?", job.project_id, job.id)) return "normal";
@@ -229,7 +235,7 @@ export function completeJob(jid: string, result: unknown) {
 
 /** Échec : nouvelle tentative avec attente exponentielle, sauf erreur définitive. */
 export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = {}) {
-  const message = err instanceof Error ? err.message : String(err);
+  const message = friendlyToolError(err instanceof Error ? err.message : String(err));
   const permanent = opts.permanent || (err as any)?.permanent === true || job.attempts >= job.max_attempts;
   // Seule une tâche encore tenue (ni annulée, ni mise en pause entre-temps) change d'état : une tâche annulée
   // pendant un appel puis interrompue par une erreur ne revient jamais en file.

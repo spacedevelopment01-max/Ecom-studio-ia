@@ -68,10 +68,14 @@ function Q({ label, hint, children }: { label: string; hint?: string; children: 
   );
 }
 
-export function ActivityBrief({ invalid, area }: { invalid?: boolean; area?: string }) {
+export function ActivityBrief({ invalid, area, onText }: { invalid?: boolean; area?: string; onText?: (text: string) => void }) {
   const t = useT();
   const { lang } = useLang();
   const [text, setText] = useState("");
+  // Le texte peut être rempli par l'assistant (sans frappe au clavier) : on prévient le formulaire à chaque changement.
+  useEffect(() => {
+    onText?.(text);
+  }, [text, onText]);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [a, setA] = useState<BriefAnswers>(emptyBrief);

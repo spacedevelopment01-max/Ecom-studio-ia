@@ -238,8 +238,9 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
-      instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
-      parameters: { aspectRatio: input.aspect, personGeneration: input.people ? "allow_adult" : "dont_allow" },
+      instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no people in frame; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
+      // Veo 3 n'accepte que « allow_adult » à partir d'une image (« dont_allow » est refusé) : l'absence de personnes passe par la consigne.
+      parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people) },
     }),
   });
   if (start.status === 401 || start.status === 403) throw new PermanentError(L("Clé Google refusée pour Veo.", "Google key rejected for Veo."));
@@ -326,6 +327,11 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   return Buffer.from(b64, "base64");
 }
 
+/** Réglage « personnes » de Veo en image → vidéo : Veo 3 n'accepte que « allow_adult ». */
+export function veoPersonGeneration(model: string, people: boolean): "allow_adult" | "dont_allow" {
+  return people || /^veo-3/.test(model) ? "allow_adult" : "dont_allow";
+}
+
 /** Plan vidéo via fal.ai (file d'attente officielle). */
 export async function falClip(ctx: Ctx, input: { image: Buffer; prompt: string; seconds?: number }, onWait?: (msg: string) => void) {
   const key = activeProviderKey("fal");
@@ -337,7 +343,7 @@ export async function falClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
   const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
   const headers = { Authorization: `Key ${key}`, "Content-Type": "application/json" };
   const r = await fetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
-  if (r.status === 401 || r.status === 403) throw new PermanentError(L("Clé fal.ai refusée.", "fal.ai key rejected."));
+  if (r.status === 401 || r.status === 403) throw new PermanentError(falRefusal(r.status, await r.text().catch(() => "")));
   if (!r.ok) throw new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300));
   const q: any = await r.json();
   for (let i = 0; i < 120; i++) {
@@ -372,7 +378,24 @@ export async function pingProvider(p: "openai" | "google" | "fal"): Promise<stri
     if (!r.ok) throw new Error(`Google ${r.status}`);
     return L("Clé Gemini valide.", "Gemini key is valid.");
   }
+  const shape = falKeyShapeProblem(key);
+  if (shape) throw new Error(shape);
   const r = await fetch("https://queue.fal.run/fal-ai/fast-sdxl/requests/00000000-0000-0000-0000-000000000000/status", { headers: { Authorization: `Key ${key}` } });
-  if (r.status === 401 || r.status === 403) throw new Error(L("Clé fal.ai refusée.", "fal.ai key rejected."));
+  if (r.status === 401 || r.status === 403) throw new Error(falRefusal(r.status, await r.text().catch(() => "")));
   return L("Clé fal.ai acceptée.", "fal.ai key accepted.");
+}
+
+/** Une clé fal.ai a la forme « identifiant:secret » : sans les deux-points, elle a été copiée en partie. */
+export function falKeyShapeProblem(key: string): string | null {
+  return /^[^:\s]+:[^:\s]+$/.test(key) ? null : L("Clé fal.ai incomplète : elle doit contenir deux parties séparées par « : » (identifiant:secret). Recopiez-la en entier depuis fal.ai › API Keys, ou créez-en une nouvelle.", "Incomplete fal.ai key: it must have two parts separated by \":\" (id:secret). Copy it in full from fal.ai › API Keys, or create a new one.");
+}
+
+/** Raison d'un refus de fal.ai, en clair : crédit épuisé (compte bloqué) ou clé invalide, avec le message de fal.ai. */
+export function falRefusal(status: number, body: string): string {
+  let detail = body;
+  try { const j = JSON.parse(body); detail = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail ?? j); } catch { /* texte brut */ }
+  detail = detail.replace(/\s+/g, " ").trim().slice(0, 200);
+  if (/balance|locked|billing|credit|payment/i.test(detail))
+    return L(`Clé fal.ai reconnue, mais le compte fal.ai est bloqué faute de crédit. Ajoutez du crédit sur fal.ai › Billing, puis testez à nouveau. (fal.ai : ${detail})`, `fal.ai key recognised, but the fal.ai account is locked for lack of credit. Add credit in fal.ai › Billing, then test again. (fal.ai: ${detail})`);
+  return L(`Clé fal.ai refusée (${status}${detail ? ` : ${detail}` : ""}). Vérifiez qu'elle est copiée en entier et qu'elle n'a pas été supprimée sur fal.ai.`, `fal.ai key rejected (${status}${detail ? `: ${detail}` : ""}). Check it is copied in full and has not been deleted on fal.ai.`);
 }

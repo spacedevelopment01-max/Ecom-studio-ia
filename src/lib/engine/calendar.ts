@@ -7,13 +7,13 @@ import { autopublishAllowed } from "../quotas";
 import { fromZonedTime } from "date-fns-tz";
 import { loadImage } from "@napi-rs/canvas";
 import { all, id, json, now, one, run, tx } from "../db";
-import { addUsage, assetData, saveAsset, type Asset } from "../library";
+import { addUsage, assetData, getAsset, saveAsset, type Asset } from "../library";
 import { loadProject, notify, type Project } from "../projects";
 import { aiRewritePost, aiSocialPlan, aiSocialRepair, aiSocialReview, lintClaims, lintHollow, scrubClaims, type PostDraft } from "../ai/tasks";
 import { placeholder } from "../ai/prompts";
 import { llmConfigured } from "../ai/llm";
 import { FORMATS, renderCreative, renderServiceCard, type FormatId } from "../media/compose";
-import { activityName, activityPhotos, isServices, placeLine, serviceCta } from "./service-media";
+import { activityName, activityPhotos, isServices, placeLine, postAmbiance, serviceCta } from "./service-media";
 import { brandTypo, ensureCutouts, latestAsset, palette, assetsByRole } from "./images";
 import { enqueue, type JobContext } from "../jobs";
 import { C, L, contentLang, uiLang } from "../i18n-server";
@@ -758,8 +758,13 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
       // l'activité quand il y en a (à tour de rôle), sinon fond graphique ; titre de la publication et appel à l'action.
       const imgFmt: FormatId = post.format === "story" ? "story" : fmt.image;
       const slides = post.format === "carousel" && visual.slides?.length ? visual.slides.slice(0, 6) : [visual.headline || activityName(p)];
+      // Avec l'IA d'images : une image propre à cette publication (jamais la même d'une publication à l'autre) ;
+      // sinon, photos existantes à tour de rôle.
+      const aspect = imgFmt === "story" ? "9:16" : FORMATS[imgFmt].w === FORMATS[imgFmt].h ? "1:1" : FORMATS[imgFmt].w > FORMATS[imgFmt].h ? "16:9" : "4:5";
+      const own = await ctx.step(`post-photo:${postId}`, async () => (await postAmbiance({ userId: p.userId, projectId, jobId: ctx.job.id }, p, { key: postId, topic: [visual.headline, visual.subline, post.caption].filter(Boolean).join(" — "), aspect, name: `${C("photo-publication", "post-photo")}-${post.network}-${i + 1}.jpg` }))?.id ?? null);
+      const ownAsset = own ? getAsset(own) ?? null : null;
       for (const [j, text] of slides.entries()) {
-        const photoAsset = svcPhotos.length ? svcPhotos[(i + j) % svcPhotos.length] : null;
+        const photoAsset = ownAsset ?? (svcPhotos.length ? svcPhotos[(i + j) % svcPhotos.length] : null);
         const photo = photoAsset ? await loadImage(assetData(photoAsset)).catch(() => null) : null;
         const jpg = await renderServiceCard({ palette: palette(p), typo: brandTypo(p), format: FORMATS[imgFmt], brand: p.brand?.name ?? p.name, eyebrow: placeLine(p) && !(visual.subline ?? "").includes(placeLine(p)) ? placeLine(p) : undefined, title: text, text: j === 0 ? visual.subline || undefined : undefined, cta: j === slides.length - 1 ? serviceCta(p, true) : undefined, photo });
         const a = await saveAsset({ projectId, userId: p.userId, data: jpg, name: `${C("publication", "post")}-${post.network}-${new Date(post.scheduled_at).toISOString().slice(0, 10)}-${i + 1}${slides.length > 1 ? `-${j + 1}` : ""}.jpg`, mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", sourceAssetId: photoAsset?.id, meta: { recipe: photoAsset ? L(`Photo de votre activité mise en page pour ${fmt.label}`, `Your business photo laid out for ${fmt.label}`) : L(`Visuel à la marque pour ${fmt.label} (aucune photo fournie)`, `Branded visual for ${fmt.label} (no photo provided)`), post: postId, business: "services" } });

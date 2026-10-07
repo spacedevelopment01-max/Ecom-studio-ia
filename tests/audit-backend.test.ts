@@ -253,6 +253,10 @@ describe("tâches", () => {
     run("INSERT INTO projects (id, user_id, name, status, platform, store_type, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", pid, u.id, "Projet I4", "draft", "shopify", "mono", "{}", "[]", now(), now());
     const first = enqueue({ userId: u.id, projectId: pid, type: "pipeline.run", payload: { projectId: pid, initial: true, input: {} } });
     expect(jobQuotaScope(first)).toBe("creation");
+    // Le calendrier de 7 jours lancé par la première création en fait partie ; un calendrier lancé à part décompte.
+    const cal = enqueue({ userId: u.id, projectId: pid, type: "calendar.plan", payload: {}, parentId: first.id });
+    expect(jobQuotaScope(cal)).toBe("creation");
+    expect(jobQuotaScope(enqueue({ userId: u.id, projectId: pid, type: "calendar.plan", payload: {} }))).toBe("normal");
     // Relance de la route resume pendant la création : 409.
     sessionUser = u;
     const resume = await import("@/app/api/projects/[id]/resume/route");

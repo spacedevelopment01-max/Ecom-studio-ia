@@ -104,8 +104,16 @@ export default function TabMarque() {
   async function save(extra: Record<string, unknown> = {}) {
     setBusy(true);
     try {
-      await api(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, palette: b!.palette, direction: b!.direction, ...extra } });
-      toast("ok", t("Marque enregistrée. Les prochaines créations utiliseront ces choix.", "Brand saved. Everything created next will use these choices."));
+      const r = await api<{ recolored?: boolean }>(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, palette: b!.palette, direction: b!.direction, ...extra } });
+      toast(
+        "ok",
+        r?.recolored
+          ? t("Nouvelles couleurs appliquées partout : logo de la piste, site, bannières, kit réseaux sociaux et charte.", "New colors applied everywhere: route logo, site, banners, social media kit and brand guide.")
+          : t("Marque enregistrée. Les prochaines créations utiliseront ces choix.", "Brand saved. Everything created next will use these choices."),
+      );
+      reloadLogos();
+      reloadIdent();
+      if (r?.recolored) setKitTick((k) => k + 1);
       setDirty(false);
       reload();
     } catch (e) {
@@ -188,7 +196,7 @@ export default function TabMarque() {
               return (
                 <div>
                   <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">{t("Palette", "Palette")}</p>{V("palette")}</div>
-                  {route && <p className="mb-2 text-xs text-muted">{t(`Couleurs de la piste « ${route.name} », appliquées au site, aux visuels et aux vignettes.`, `Colors of the "${route.name}" route, applied to the site, visuals and thumbnails.`)}</p>}
+                  {route && <p className="mb-2 text-xs text-muted">{t(`Couleurs de la piste « ${route.name} ». Cliquez sur une couleur pour la changer, puis enregistrez : la même piste est recolorée et tout se met à jour (logo, site, bannières, réseaux sociaux, charte).`, `Colors of the "${route.name}" route. Click a color to change it, then save: the same route is recolored and everything updates (logo, site, banners, social media, brand guide).`)}</p>}
                   <div className="grid grid-cols-5 gap-2">
                     {(Object.keys(b.palette) as (keyof Brand["palette"])[]).map((k) => (
                       <label key={k} className="grid gap-1.5 text-center text-xs">

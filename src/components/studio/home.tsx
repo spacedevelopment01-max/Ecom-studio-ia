@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, Briefcase, Camera, Film, Globe, ImagePlus, Link2, Palette, Plus, Settings, Shield, Sparkles, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
 import { STORE_TYPES, storeTypeInfo, type BusinessType, type ContactMode, type ServiceItem, type ServiceProfile, type StoreType } from "@/lib/project-types";
@@ -53,6 +53,13 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const [typed, setTyped] = useState(false);
+  // Texte rempli par l'assistant « M'aider à le rédiger » : compte comme saisi (aucun événement clavier dans ce cas).
+  const onBriefText = useCallback((text: string) => {
+    if (text.trim().length > 10) {
+      setTyped(true);
+      setNeedDesc(false);
+    }
+  }, []);
   const [storeType, setStoreType] = useState<StoreType>("mono");
   // Projet déjà créé : ce que le client a déjà saisi (prestations, coordonnées) est repris, jamais redemandé.
   const known = initialServices ?? {};
@@ -79,6 +86,12 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
     setNeedDesc(false);
     if (!platformTouched) setPlatform(recommendedPlatform(b));
   }
+  /** Description ou site actuel renseigné : lu dans le formulaire (le texte peut venir de l'assistant de rédaction). */
+  const describedIn = (f: HTMLFormElement) => {
+    const link = (f.elements.namedItem("link") as HTMLInputElement | null)?.value ?? "";
+    const desc = (f.elements.namedItem("description") as HTMLTextAreaElement | null)?.value ?? "";
+    return !!link.trim() || desc.trim().length > 10;
+  };
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (existing) {
@@ -90,7 +103,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
         (e.currentTarget.elements.namedItem(err.url ? "siteUrl" : "siteOwnership") as HTMLInputElement | null)?.focus();
         return;
       }
-    } else if (svc && !typed) {
+    } else if (svc && !describedIn(e.currentTarget)) {
       // Site de services : la description de l'activité (ou le site actuel) est indispensable.
       setNeedDesc(true);
       (e.currentTarget.elements.namedItem("description") as HTMLTextAreaElement | null)?.focus();
@@ -164,10 +177,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
     <form
       onSubmit={submit}
       onInput={(e) => {
-        const f = e.currentTarget;
-        const link = (f.elements.namedItem("link") as HTMLInputElement | null)?.value ?? "";
-        const desc = (f.elements.namedItem("description") as HTMLTextAreaElement | null)?.value ?? "";
-        const ok = !!link.trim() || desc.trim().length > 10;
+        const ok = describedIn(e.currentTarget);
         setTyped(ok);
         if (ok) setNeedDesc(false);
       }}
@@ -239,7 +249,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
             error={needDesc ? t("Indispensable : quelques lignes sur votre activité, ou le lien de votre site actuel ci-dessous.", "Required: a few lines about your business, or the link to your current website below.") : null}
             hint={t("Quelques mots suffisent : votre métier, vos prestations, votre zone, ce qui vous distingue. Besoin d'aide ? « M'aider à le rédiger » pose quelques questions et écrit une description complète. Ce que vous écrivez est considéré comme confirmé ; rien n'est inventé.", "A few words are enough: your trade, your services, your area, what sets you apart. Need help? \"Help me write it\" asks a few questions and writes a complete description. Whatever you write is treated as confirmed; nothing is made up.")}
           >
-            <ActivityBrief invalid={needDesc} />
+            <ActivityBrief invalid={needDesc} onText={onBriefText} />
           </Field>
           <Field label={t("Votre site actuel (si vous en avez un)", "Your current website (if you have one)")} htmlFor="link" hint={t("Le studio y lit votre présentation, vos prestations et vos coordonnées, comme source d'information uniquement.", "The studio reads your introduction, services and contact details there, as a source of information only.")}>
             <Input id="link" name="link" type="url" placeholder="https://…" />
