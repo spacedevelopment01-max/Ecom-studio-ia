@@ -461,23 +461,12 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
     if (!accepted) {
       // Version du studio : d'abord celles qui ne reprennent pas une piste déjà montrée.
       const cand = [...fallback[key].filter((c) => !tooClose(c, avoid)), ...fallback[key].filter((c) => tooClose(c, avoid))][0];
-      if (best && best.score > 0 && cand && !reviewDown) {
-        // Comparaison à armes égales : la version du studio est notée sur la même grille.
-        let local: RouteReview | null = null;
-        try {
-          local = await ai!.review(cand, await board(cand));
-        } catch (e) {
-          notes.push(`${key} : contrôle de la version du studio impossible (${(e as Error).message})`);
-        }
-        const localScore = local && !hardFail(local) ? routeScore(local) : -1;
-        if (best.score >= localScore) {
-          accepted = best.route;
-          notes.push(`${key} : piste de l'IA « ${best.route.name} » retenue (${best.score.toFixed(1)}/10 contre ${Math.max(0, localScore).toFixed(1)}/10 pour la version du studio)`);
-        } else {
-          accepted = { ...cand, review: local ?? undefined };
-          notes.push(`${key} : version du studio retenue (${localScore.toFixed(1)}/10 contre ${best.score.toFixed(1)}/10 pour la meilleure piste de l'IA)`);
-        }
-      } else if (best) accepted = best.route;
+      // C'est le client qui juge : la meilleure proposition de l'IA est toujours montrée (avec ses notes),
+      // la version du studio ne sert que de filet quand l'IA n'a rien produit d'exploitable.
+      if (best) {
+        accepted = best.route;
+        notes.push(`${key} : meilleure proposition de l'IA montrée « ${best.route.name} »${best.score > 0 ? ` (${best.score.toFixed(1)}/10)` : ""}`);
+      }
       else if (cand) accepted = cand;
     }
     if (accepted) out.push(accepted);

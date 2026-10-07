@@ -1071,6 +1071,20 @@ export function qcPassed(r: { sameProduct?: unknown; score?: unknown } | null | 
 }
 
 /**
+ * Sort d'une image générée après contrôle — jamais jetée sans trace, puisqu'elle est payée :
+ * « good » utilisée normalement ; « warn » (défaut mineur, 5-6/10) gardée et utilisable, signalée au client, placée
+ * après les bonnes ; « bad » (inutilisable) gardée « écartée » avec la raison, visible dans Images, non utilisée.
+ */
+export type QcTier = "good" | "warn" | "bad";
+export const QC_WARN_SCORE = 5;
+export function qcTier(r: { sameProduct?: unknown; ok?: unknown; score?: unknown } | null | undefined): QcTier {
+  if (!r) return "bad";
+  const fine = r.sameProduct === true || r.ok === true;
+  const s = qcScore(r.score);
+  return fine && s >= QC_MIN_SCORE ? "good" : fine && s >= QC_WARN_SCORE ? "warn" : "bad";
+}
+
+/**
  * Contrôle d'une image d'ambiance générée sans produit à comparer (entreprise de services) :
  * texte ou logo inventé, visage reconnaissable, mains ou corps déformés, artefacts, flou.
  */

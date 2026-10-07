@@ -198,13 +198,13 @@ describe("pistes de l'IA contrôlées", () => {
     });
   });
 
-  it("tout noté sévèrement : la meilleure proposition de l'IA reste montrée si elle vaut la version du studio, avec la raison", async () => {
+  it("tout noté sévèrement : la meilleure proposition de l'IA reste montrée (le client juge), avec sa note", async () => {
     await fr(async () => {
       const { ai } = fakeAi({ review: () => CLICHE });
       const r = await designRoutes({ brand: BRAND, cutout: await bunny(), library: "sun", ai });
       expect(r.routes).toHaveLength(3);
       expect(r.routes.every((x) => x.source === "ai")).toBe(true);
-      expect(r.notes.join(" ")).toMatch(/piste de l'IA « .+ » retenue/);
+      expect(r.notes.join(" ")).toMatch(/meilleure proposition de l'IA montrée/);
     });
   });
 
