@@ -1,6 +1,6 @@
 /**
  * Direction artistique du logo : trois pistes vraiment différentes (produit, concept, typo), SVG de l'IA nettoyés,
- * contrôle « directeur de création » noté avec seuil, reprise ciblée, piste ratée remplacée et jamais montrée,
+ * contrôle « directeur de création » noté avec seuil, reprise ciblée, meilleure proposition de l'IA gardée et comparée à la version du studio,
  * repli sans IA honnête ; présentation (planches), kit réseaux sociaux contrôlé, export ZIP et charte.
  */
 import { describe, expect, it } from "vitest";
@@ -151,7 +151,7 @@ describe("pistes de l'IA contrôlées", () => {
     });
   });
 
-  it("SVG malveillant ou hors règles (script, <text>, trait fin) refusé ; après deux échecs, version du studio contrôlée", async () => {
+  it("SVG malveillant ou hors règles (script, <text>, trait fin) refusé ; sans dessin exploitable, version du studio", async () => {
     await fr(async () => {
       const evil = { ...D_PRODUIT, svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><script>alert(1)</script><circle cx="50" cy="50" r="40"/></svg>` };
       const text = { ...D_TYPO, svg: svg(`<text x="10" y="80">L</text>`) };
@@ -162,14 +162,19 @@ describe("pistes de l'IA contrôlées", () => {
       expect(calls.redraw.find((c) => c.key === "typo")!.feedback).toMatch(/text/);
       expect(r.routes.map((x) => `${x.key}:${x.source}:${x.markKind}`)).toEqual(["produit:local:silhouette", "concept:ai:ai-symbol", "typo:local:letter"]);
       expect(JSON.stringify(r.routes)).not.toMatch(/script|alert|<text/);
-      // La version du studio a elle aussi été soumise au contrôle.
-      expect(calls.review.some((x) => x.startsWith("produit:local"))).toBe(true);
+      // Aucun dessin exploitable : version du studio, sans payer de contrôle pour rien comparer.
+      expect(r.notes.join(" ")).toMatch(/inexploitable/);
+      expect(calls.review.some((x) => x.startsWith("produit:local"))).toBe(false);
     });
   });
 
-  it("police inexistante, rôle de couleur inventé, justification vide → refus avec consigne", () => {
-    expect(routeFromDraft({ ...D_PRODUIT, heading: "Comic Sans" }, BRAND as any)).toMatchObject({ ok: false, reason: expect.stringMatching(/police/) });
-    expect(routeFromDraft({ ...D_PRODUIT, ink: "#000000" as any }, BRAND as any)).toMatchObject({ ok: false });
+  it("écarts de forme corrigés sans jeter le dessin (police, couleur, texte trop long) ; justification absente → reprise", () => {
+    const font = routeFromDraft({ ...D_PRODUIT, heading: "Comic Sans" }, BRAND as any);
+    expect(font).toMatchObject({ ok: true, route: { heading: "Playfair Display", notes: [expect.stringMatching(/police Comic Sans remplacée/)] } });
+    expect(routeFromDraft({ ...D_PRODUIT, ink: "#000000" as any }, BRAND as any)).toMatchObject({ ok: true, route: { colors: { ink: PAL.dark } } });
+    const long = routeFromDraft({ ...D_PRODUIT, why: `${D_PRODUIT.why} ${"Une troisième phrase qui allonge beaucoup trop la justification du symbole. ".repeat(6)}` }, BRAND as any);
+    expect(long.ok && long.route.why.length).toBeLessThanOrEqual(360);
+    expect(long.ok && long.route.why).toBe(D_PRODUIT.why);
     expect(routeFromDraft({ ...D_PRODUIT, why: "" }, BRAND as any)).toMatchObject({ ok: false });
   });
 
@@ -183,22 +188,31 @@ describe("pistes de l'IA contrôlées", () => {
     });
   });
 
-  it("contrôle visuel en panne : aucune piste de l'IA non contrôlée n'est montrée", async () => {
+  it("contrôle visuel en panne : les pistes de l'IA nettes en petit restent montrées (le travail payé ne disparaît pas)", async () => {
     await fr(async () => {
       const { ai } = fakeAi({ reviewThrows: true });
       const r = await designRoutes({ brand: BRAND, cutout: await bunny(), library: "sun", ai });
-      expect(r.routes.every((x) => x.source === "local")).toBe(true);
-      expect(r.notes.join(" ")).toMatch(/non montrée/);
+      expect(r.routes).toHaveLength(3);
+      expect(r.routes.some((x) => x.source === "ai")).toBe(true);
+      expect(r.notes.join(" ")).toMatch(/contrôle de direction artistique impossible/);
     });
   });
 
-  it("tout refusé, y compris les versions du studio : pistes retirées, seul le logotype reste, avec la raison", async () => {
+  it("tout noté sévèrement : la meilleure proposition de l'IA reste montrée si elle vaut la version du studio, avec la raison", async () => {
     await fr(async () => {
       const { ai } = fakeAi({ review: () => CLICHE });
       const r = await designRoutes({ brand: BRAND, cutout: await bunny(), library: "sun", ai });
-      expect(r.routes).toHaveLength(1);
-      expect(r.routes[0]).toMatchObject({ key: "typo", source: "local" });
-      expect(r.notes.join(" ")).toMatch(/n'est pas présentée/);
+      expect(r.routes).toHaveLength(3);
+      expect(r.routes.every((x) => x.source === "ai")).toBe(true);
+      expect(r.notes.join(" ")).toMatch(/piste de l'IA « .+ » retenue/);
+    });
+  });
+
+  it("ressemblance avec une marque existante : jamais montrée, version du studio à la place", async () => {
+    await fr(async () => {
+      const { ai } = fakeAi({ review: (x) => (x.source === "ai" ? { ...GOOD, resemblesKnownBrand: true } : GOOD) });
+      const r = await designRoutes({ brand: BRAND, cutout: await bunny(), library: "sun", ai });
+      expect(r.routes.every((x) => x.source === "local")).toBe(true);
     });
   });
 
