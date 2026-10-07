@@ -3,6 +3,7 @@
  * d'IA n'est configuré (ou en secours). Ils produisent une base de travail
  * honnête — sans inventer — et sont signalés « moteur local » dans le studio.
  */
+import { resolveTrade } from "../brain/trade";
 import { hsl, hslToHex, mix, withLightness, contrast } from "../color";
 import { CANVAS_FONTS } from "../media/fonts";
 import type { LogoSpec } from "../media/logo";
@@ -276,6 +277,11 @@ export function localServiceAnalysis(input: { name?: string; brand?: string; des
     const m = k.re.exec(`${input.name ?? ""} ${desc} ${input.link?.title ?? ""}`);
     if (m && m.index < at) (kind = k), (at = m.index);
   }
+  // Registre métier canonique : un métier composé déclaré (« plâtrier peintre ») ou un métier absent de la liste locale
+  // donne son libellé ; sinon la liste locale (inchangée) l'emporte.
+  const reg = resolveTrade(`${input.name ?? ""} ${desc}`);
+  const upper = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const tradeCategory = reg.source === "combo" || (!kind && reg.source === "core") ? C(upper(reg.labels.fr), upper(reg.labels.en)) : null;
   // Segments de la description : « Plombier chauffagiste à Lyon, dépannage 7j/7, installation de chaudières, devis gratuit ».
   const lines = desc.split(/\n+/).map((l) => l.trim()).filter(Boolean);
   const bullets = lines.filter((l) => /^[-–•*·]\s*/.test(l)).map(clean);
@@ -364,8 +370,8 @@ export function localServiceAnalysis(input: { name?: string; brand?: string; des
     ...emptyProduct(),
     name,
     nameStatus: input.name ? "provided" : name ? "detected" : "unknown",
-    category: kind ? C(kind.fr, kind.en) : "",
-    sector: kind?.sector ?? null,
+    category: tradeCategory ?? (kind ? C(kind.fr, kind.en) : ""),
+    sector: tradeCategory ? (reg.sector ?? kind?.sector ?? null) : (kind?.sector ?? null),
     summary,
     facts,
     questions: [],

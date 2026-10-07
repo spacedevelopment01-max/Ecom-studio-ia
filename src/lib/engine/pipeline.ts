@@ -5,6 +5,7 @@
  * repayer — les étapes terminées. Le client peut laisser faire ou valider la
  * marque avant la suite (mode guidé).
  */
+import { mergeProductProfile } from "../brain/facts";
 import { userPlan } from "../quotas";
 import { friendlyToolError } from "../tool-errors";
 import { all, id, json, now, one, run } from "../db";
@@ -285,6 +286,8 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       } else {
         product = localAnalysis({ name: inp.productName, brand: inp.brandName, description: inp.description, price, colors, link, photos: cutouts.length });
       }
+      // Relance d'analyse : les informations saisies ou confirmées par le client sont conservées (Project Brain).
+      product = mergeProductProfile(loadProject(projectId).product, product);
       saveProduct(projectId, product);
       if (product.name) run("UPDATE projects SET name = CASE WHEN name LIKE 'Nouveau projet%' THEN ? ELSE name END WHERE id = ?", product.name, projectId);
       const unknown = product.facts.filter((f) => f.status === "unknown").length;
@@ -448,6 +451,8 @@ async function analyzeService(ctx: JobContext, payload: PipelinePayload): Promis
     // Ce que le moteur local a lu mot pour mot complète encore les manques.
     offer = mergeServiceProfile(offer, local.services);
   }
+  // Relance d'analyse : les informations saisies ou confirmées par le client sont conservées (Project Brain).
+  product = mergeProductProfile(p.product, product);
   saveProduct(projectId, product);
   saveServices(projectId, offer);
   if (product.name) run("UPDATE projects SET name = CASE WHEN name LIKE 'Nouveau projet%' OR name LIKE 'New project%' THEN ? ELSE name END WHERE id = ?", inp.brandName || product.name, projectId);

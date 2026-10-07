@@ -3,6 +3,8 @@
  * banques d'images sont les mieux décrites) et les mots qui doivent figurer dans la description d'une photo pour
  * qu'elle soit retenue. Un mur, une texture ou un bâtiment sans le geste du métier n'y figurent pas.
  */
+import { GLOBAL_NEGATIVES, resolveTrade } from "../brain/trade";
+
 type Trade = { re: RegExp; queries: string[]; must: string[] };
 
 const TRADES: Trade[] = [
@@ -41,14 +43,30 @@ const TRADES: Trade[] = [
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
-/** Métiers reconnus dans un texte (plusieurs possibles : « plâtrier peintre »), dans l'ordre du texte. */
-export function tradeStock(text: string): { queries: string[]; must: string[] } | null {
+/** Table historique (secours) : métiers absents du registre canonique, et mots que la description d'une photo doit citer. */
+function legacyTradeStock(text: string): { queries: string[]; must: string[] } | null {
   const t = norm(text);
   const hits = TRADES.map((x) => ({ x, at: t.search(x.re) })).filter((h) => h.at >= 0).sort((a, b) => a.at - b.at).map((h) => h.x);
   if (!hits.length) return null;
   // Une requête de chaque métier reconnu d'abord, puis les suivantes.
   const queries = [...hits.map((h) => h.queries[0]), ...hits.flatMap((h) => h.queries.slice(1))];
   return { queries: [...new Set(queries)], must: [...new Set(hits.flatMap((h) => h.must))] };
+}
+
+/**
+ * Métiers reconnus dans un texte (plusieurs possibles : « plâtrier peintre »), dans l'ordre du texte.
+ * Le registre métier canonique (Project Brain) fournit les recherches ACTION + MÉTIER + LIEU et les concepts hors
+ * sujet ; la table historique reste le secours des métiers absents du registre et la source des mots « must ».
+ */
+export function tradeStock(text: string): { queries: string[]; must: string[]; negative: string[] } | null {
+  const legacy = legacyTradeStock(text);
+  const t = resolveTrade(text);
+  if (t.source === "core" || t.source === "combo") {
+    // Mots que la description d'une photo doit citer : ceux de la table historique, sinon le nom anglais du métier.
+    const must = legacy?.must.length ? legacy.must : [...new Set(t.labels.en.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3 && w !== "interior"))];
+    return { queries: t.search.queries, must, negative: t.search.negative };
+  }
+  return legacy ? { ...legacy, negative: GLOBAL_NEGATIVES } : null;
 }
 
 /** La description de la photo (mots-clés de la banque, titre) cite-t-elle le métier ? */
@@ -60,10 +78,16 @@ export function tagsMatch(alt: string, must: string[]): boolean {
 
 /**
  * Ordre d'essai des photos trouvées : celles dont la description cite le métier d'abord. Sans contrôle visuel (pas
- * d'IA), seules celles-là sont gardées — mieux vaut aucune photo qu'un mur nu pour un plâtrier.
+ * d'IA), seules celles-là sont gardées — mieux vaut aucune photo qu'un mur nu pour un plâtrier. Les photos dont la
+ * description ne parle que d'un concept hors sujet (mur de briques, texture, pièce vide…) passent en dernier ;
+ * citer le métier les rachète (« plasterer on a brick wall » reste pertinente).
  */
-export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean): T[] {
-  if (!must.length) return found;
-  const good = found.filter((p) => tagsMatch(p.alt, must));
-  return visualCheck ? [...good, ...found.filter((p) => !good.includes(p))] : good;
+export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean, negative: string[] = GLOBAL_NEGATIVES): T[] {
+  const off = (p: T) => negative.some((n) => ` ${norm(p.alt).replace(/[^a-z0-9]+/g, " ")} `.includes(` ${norm(n)} `));
+  const onTrade = (p: T) => must.length > 0 && tagsMatch(p.alt, must);
+  if (!must.length) return [...found.filter((p) => !off(p)), ...found.filter(off)];
+  const good = found.filter(onTrade);
+  if (!visualCheck) return good;
+  const rest = found.filter((p) => !good.includes(p));
+  return [...good, ...rest.filter((p) => !off(p)), ...rest.filter(off)];
 }

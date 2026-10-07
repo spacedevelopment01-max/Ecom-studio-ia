@@ -32,6 +32,8 @@ import { assetData, getAsset } from "../library";
 import { stableKey } from "../ai/keys";
 import { withCandidate } from "../ai/trace";
 import { saveCheck } from "../quality/store";
+import { isLocked, markBrandLogo } from "../brain/brand-locks";
+import { resolveTrade } from "../brain/trade";
 
 export type LogoProposal = {
   /** Identifiant du fichier de la piste (réserve de pistes). */
@@ -80,6 +82,11 @@ export function symbolFor(p: Project): SymbolKind {
   for (const [re, sym] of KEYWORD_SYMBOL) {
     const m = new RegExp(re.source, re.flags.replace("g", "")).exec(text);
     if (m && (!best || m.index < best.at)) best = { sym, at: m.index };
+  }
+  // Registre métier canonique : symbole du métier reconnu (après les mots-clés historiques, avant le repli secteur).
+  if (!best) {
+    const t = resolveTrade(text, p.product.sector ?? null);
+    if ((t.source === "core" || t.source === "combo") && t.symbol) return t.symbol;
   }
   if (!best && p.business === "services") return serviceSymbol(p.product);
   return best?.sym ?? SECTOR_SYMBOL[p.product.sector ?? ""] ?? "spark";
@@ -285,7 +292,8 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
   // Série neuve ou reprise : les anciennes pistes sont remplacées. Ajout : elles restent à côté des nouvelles.
   if (!add) for (const old of previous) removeProposal(projectId, old.id);
   // Ajout : le logo en place ne change pas (le client choisit parmi ses pistes), sauf s'il n'y en avait aucun.
-  if (add && brand.logo.route) return { main: null, proposal: brand.logo.proposal ?? null, added: proposals.length };
+  // Logo validé par le client (piste ou logo complet) : de nouvelles pistes s'ajoutent sans jamais le remplacer.
+  if (add && (brand.logo.route || isLocked(brand, "logo"))) return { main: null, proposal: brand.logo.proposal ?? null, added: proposals.length };
   // Logo appliqué : le choix du client, sinon la piste qu'il avait validée, sinon la première proposition de l'IA
   // validée par la barrière ; à défaut seulement, une version du studio comme remplacement technique PROVISOIRE
   // (jamais présentée comme un logo final : ni planches, ni kit réseaux sociaux, ni charte finale).
@@ -377,7 +385,9 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   // Site de services : bannières sans photo redessinées aux couleurs de la piste (sans IA), reprises par le site.
   const { refreshSiteBanners } = await import("./service-media");
   const banners = await refreshSiteBanners(projectId).catch((e) => (console.error(`[bannières] ${projectId} : ${(e as Error).message}`), []));
-  swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id }, routeFonts(route), effectivePalette(loadProject(projectId).brand), banners);
+  markBrandLogo(projectId, main.id);
+  // Typographies validées par le client : la piste ne les remplace pas sur le site (verrou « fonts »).
+  swapThemeLogos(projectId, { logo: horizontal.id, light: light.id, favicon: fav.id }, isLocked(brand, "fonts") ? null : routeFonts(route), effectivePalette(loadProject(projectId).brand), banners);
   // Logo provisoire (version du studio, aucune proposition validée) : pas de kit réseaux sociaux ni de charte finale ;
   // ils seront faits quand un logo sera choisi ou validé.
   if (opts.provisional) return { main, proposal: pr.key, provisional: true };

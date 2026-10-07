@@ -15,6 +15,7 @@ import { contentLang } from "../i18n-server";
 import { placeholder } from "../ai/prompts";
 import { servicesRulesText } from "./texts";
 import { BRAIN_VERSION, stableHash } from "./hash";
+import { json } from "../db";
 import type { BrainSnapshot } from "./snapshot";
 
 export const SCOPES = ["logo", "brand", "image", "stock", "theme", "shop_copy", "seo", "blog", "social", "advertising", "video", "qc", "all"] as const;
@@ -217,8 +218,9 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
       data: { p: b.palette, l: locked("palette") },
     });
     const route = b.logo?.route;
-    const heading = route?.heading ?? b.fonts?.heading;
-    const body = route?.body ?? b.fonts?.body;
+    // Typographies validées par le client : elles priment sur celles de la piste de logo.
+    const heading = locked("fonts") ? b.fonts?.heading : (route?.heading ?? b.fonts?.heading);
+    const body = locked("fonts") ? b.fonts?.body : (route?.body ?? b.fonts?.body);
     if (heading || body) add({ id: "brand.fonts", section: "brand", level: locked("fonts") ? "hard" : "soft", tier: locked("fonts") ? 2 : 4, scopes: ["logo", "brand", "theme", "social", "advertising", "video", "all"], source: "brand", text: `Typographies${locked("fonts") ? " VALIDÉES" : ""} : titres ${heading ?? "?"}, texte ${body ?? "?"}`, data: { h: heading, b: body, l: locked("fonts") } });
     add({ id: "brand.direction", section: "brand", level: "soft", tier: 4, scopes: ["logo", "brand", "image", "theme", "video", "all"], source: "brand", text: `Direction artistique : ${b.direction}`, data: b.direction });
     if (b.personality.length) add({ id: "brand.personality", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "social", "advertising", "video", "all"], source: "brand", text: `Personnalité : ${b.personality.join(", ")}`, data: b.personality });
@@ -267,7 +269,8 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
     const sc = memoryScopes(m.scope);
     const fromUser = m.source === "user";
     if (m.kind === "rejection") {
-      add({ id: `rejection.${m.key}`, section: "rejections", level: "hard", tier: 1, critical: true, scopes: sc, source: "memory", text: `REFUS du client — ${clip(m.value, 240)} : ne pas reproduire cette direction.`, data: { k: m.key, v: m.value, s: m.scope } });
+      const n = json<{ count?: number }>(m.evidence_json, {}).count ?? 1;
+      add({ id: `rejection.${m.key}`, section: "rejections", level: "hard", tier: 1, critical: true, scopes: sc, source: "memory", text: `REFUS du client — ${clip(m.value, 240)}${n > 1 ? ` (écarté ${n} fois)` : ""} : ne pas reproduire cette direction.`, data: { k: m.key, v: m.value, s: m.scope, n } });
       continue;
     }
     const level: Level = m.status === "inferred" || !fromUser ? (m.kind === "correction" ? "soft" : "advisory") : m.kind === "correction" || m.kind === "decision" ? "hard" : "soft";

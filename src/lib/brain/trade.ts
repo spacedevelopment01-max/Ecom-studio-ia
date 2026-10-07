@@ -42,6 +42,11 @@ type CoreTrade = {
   sector: SectorId;
   /** Alias FR/EN, sur un texte en minuscules sans accents. */
   match: RegExp;
+  /**
+   * Alias sur le texte AVEC accents, quand l'accent distingue le métier d'un autre mot (« maçon » ≠ la ville de
+   * « Mâcon » : sans accents, les deux s'écrivent « macon »). Remplace alors `match`.
+   */
+  matchAccented?: RegExp;
   actions: string[];
   positive: string[];
   negative?: string[];
@@ -88,7 +93,8 @@ const CORE: CoreTrade[] = [
     fr: "maçon",
     en: "mason",
     sector: "batiment",
-    match: /macon|maconnerie|mason|bricklay/,
+    match: /\bmason|bricklay/,
+    matchAccented: /maçon|\bmason|bricklay/,
     actions: ["bricklaying", "concrete work", "foundation work"],
     positive: ["mason laying bricks on a building site", "builder pouring concrete"],
     queries: ["mason laying bricks on building site", "builder pouring concrete foundation"],
@@ -319,7 +325,8 @@ const uniq = <T,>(a: T[]) => [...new Set(a)];
 /** Métiers canoniques présents dans le texte, dans l'ordre d'apparition. */
 function coreMatches(text: string): CoreTrade[] {
   const t = norm(text);
-  return CORE.map((c) => ({ c, i: t.search(c.match) }))
+  const raw = text.toLowerCase();
+  return CORE.map((c) => ({ c, i: c.matchAccented ? raw.search(c.matchAccented) : t.search(c.match) }))
     .filter((x) => x.i >= 0)
     .sort((a, b) => a.i - b.i)
     .map((x) => x.c);

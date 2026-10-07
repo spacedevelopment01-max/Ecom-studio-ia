@@ -4,6 +4,7 @@
  * bibliothèque du studio. Les icônes sont converties en un seul tracé et passent les mêmes contrôles que tout
  * symbole (nettoyage, lisibilité à 16 px). Ce sont des icônes génériques : le logo n'est pas exclusif à la marque.
  */
+import { resolveTrade } from "../brain/trade";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -58,6 +59,9 @@ export function tradeKeywords(text: string): string[] {
   const out: string[] = [];
   const hits = FR_EN.map(([re, words]) => ({ at: text.search(re), words })).filter((h) => h.at >= 0).sort((a, b) => a.at - b.at);
   for (const { words } of hits) for (const w of words) if (!out.includes(w)) out.push(w);
+  // Registre métier canonique (Project Brain) en premier : objets du métier, et objets à éviter (jamais un mur).
+  const t = resolveTrade(text);
+  if (t.source === "core" || t.source === "combo") return [...new Set([...t.icons.keywords, ...out])].filter((w) => !t.icons.avoid.includes(w));
   return out;
 }
 

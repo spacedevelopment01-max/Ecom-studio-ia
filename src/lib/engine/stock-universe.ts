@@ -49,7 +49,8 @@ export async function universePhotos(ictx: Ictx, p: Project, n = 2): Promise<Ass
   const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
   const known = tradeStock(`${p.product.category ?? ""} ${p.product.sector ?? ""} ${p.product.name ?? ""}`);
   const must = known?.must ?? [];
-  const found = rankStock(await searchStock(queries, "landscape", lang, used), must, llmConfigured());
+  // Univers d'un produit : une matière ou une texture peut être justement recherchée (aucun concept écarté ici).
+  const found = rankStock(await searchStock(queries, "landscape", lang, used), must, llmConfigured(), []);
   const subject = C(`univers du produit « ${p.product.name} » (${p.product.category ?? ""}) : lieu, matière, usage, sans le produit lui-même`, `world of the product "${p.product.name}" (${p.product.category ?? ""}): place, material, use, without the product itself`);
   const out: Asset[] = [];
   let rest = found;

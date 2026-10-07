@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { recordMediaRejection } from "@/lib/brain/rejections";
 import { z } from "zod";
 import { all, json, now, one, run } from "@/lib/db";
 import { body, handle, ok, parseRange } from "@/lib/http";
@@ -59,6 +60,8 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ fid: s
     run("UPDATE assets SET folder_id = ? WHERE id = ?", b.folderId, a.id);
   }
   if (b.status) run("UPDATE assets SET status = ? WHERE id = ?", b.status, a.id);
+  // Média créatif écarté par le client : refus mémorisé pour les prochains visuels et photos (Project Brain).
+  if (b.status === "rejected" && a.status !== "rejected" && a.project_id) recordMediaRejection(a.project_id, a);
   if (b.starred !== undefined) run("UPDATE assets SET starred = ? WHERE id = ?", b.starred ? 1 : 0, a.id);
   if (b.restore) run("UPDATE assets SET deleted_at = NULL WHERE id = ?", a.id);
   return ok({ asset: publicAssetSummary(getAsset(a.id)!) });
