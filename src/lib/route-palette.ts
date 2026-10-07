@@ -40,3 +40,18 @@ export function effectivePalette(brand: Pick<Brand, "palette" | "logo"> | null |
 
 /** Empreinte d'une palette (couleurs principale et d'accent, celles qui donnent le ton d'une carte). */
 export const paletteKey = (pal: { primary: string; accent: string }) => `${pal.primary}/${pal.accent}`.toUpperCase();
+
+/**
+ * Palette saisie par le client telle qu'elle est affichée (cinq couleurs indépendantes) : rôles de la piste
+ * ramenés sur les cases affichées, pour que la palette enregistrée soit exactement celle qu'il voit et que chaque
+ * couleur se règle seule (sans case liée à une autre).
+ */
+export function exactRoles<R extends Partial<Record<"ink" | "accent" | "ground" | "tint", Role>>>(brand: Pick<Brand, "palette" | "logo">, roles: R): R {
+  const src = paletteSources(brand);
+  const shownAs = (r: Role): Role => (src[r] === r ? r : ROLES.find((k) => src[k] === r) ?? r);
+  const out = Object.fromEntries(Object.entries(roles).map(([k, r]) => [k, r ? shownAs(r as Role) : r])) as R;
+  // Accent de la piste = case « accent » affichée ; fond soutenu = case « principale » (les deux deviennent indépendantes).
+  if (roles.accent) (out as any).accent = "accent";
+  if (roles.ground) (out as any).ground = roles.ground === "light" || roles.ground === "secondary" ? roles.ground : "primary";
+  return out;
+}

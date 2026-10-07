@@ -26,6 +26,8 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       story: z.string().max(3000).optional(),
       tone: z.object({ voice: z.string(), do: z.array(z.string()), dont: z.array(z.string()) }).optional(),
       palette: z.object({ primary: hex, secondary: hex, accent: hex, light: hex, dark: hex }).optional(),
+      /** La palette envoyée est celle affichée (cinq couleurs indépendantes), pas les couleurs d'origine. */
+      paletteExact: z.boolean().optional(),
       direction: z.enum(DIRECTIONS.map((d) => d.id) as [string, ...string[]]).optional(),
       validate: z.array(z.string()).optional(),
       unvalidate: z.array(z.string()).optional(),
@@ -51,7 +53,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   // Seule la palette change et une piste est retenue : la même piste est recolorée et réappliquée partout
   // (logo, site, bannières, kit réseaux sociaux, charte), même si le logo est validé — c'est le client qui le demande.
   const paletteOnly = b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette) && (b.name === undefined || b.name === p.brand.name) && (b.tagline === undefined || b.tagline === p.brand.tagline);
-  const recolored = paletteOnly && !!brand.logo?.route ? await recolorChosenRoute(p.id, p.brand.palette) : false;
+  const recolored = paletteOnly && !!brand.logo?.route ? await recolorChosenRoute(p.id, p.brand.palette, { exact: !!b.paletteExact }) : false;
   const regenerate = !recolored && touchesLogo && !hasClientLogo(p.id) && !logoLocked;
   if (regenerate) await generateLogos(null, p.id);
   if (!recolored) await saveBrandGuide(p.id);

@@ -43,6 +43,8 @@ export default function TabMarque() {
   const cl = useContentLang();
   const [b, setB] = useState<Brand | null>(null);
   const [dirty, setDirty] = useState(false);
+  // Palette réglée case par case sur une piste : la palette affichée devient exactement celle enregistrée.
+  const [exactPal, setExactPal] = useState<Brand["palette"] | null>(null);
   const [busy, setBusy] = useState(false);
   const [regen, setRegen] = useState(false);
   const [guidance, setGuidance] = useState("");
@@ -104,7 +106,7 @@ export default function TabMarque() {
   async function save(extra: Record<string, unknown> = {}) {
     setBusy(true);
     try {
-      const r = await api<{ recolored?: boolean }>(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, palette: b!.palette, direction: b!.direction, ...extra } });
+      const r = await api<{ recolored?: boolean }>(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, palette: exactPal ?? b!.palette, ...(exactPal ? { paletteExact: true } : {}), direction: b!.direction, ...extra } });
       toast(
         "ok",
         r?.recolored
@@ -114,6 +116,7 @@ export default function TabMarque() {
       reloadLogos();
       reloadIdent();
       if (r?.recolored) setKitTick((k) => k + 1);
+      setExactPal(null);
       setDirty(false);
       reload();
     } catch (e) {
@@ -192,7 +195,14 @@ export default function TabMarque() {
               const logo = data.brand?.logo ?? b.logo;
               const src = paletteSources({ palette: b.palette, logo });
               const route = logo?.route;
-              const shown = (k: keyof Brand["palette"]) => b.palette[src[k]];
+              const shown = (k: keyof Brand["palette"]) => (exactPal ? exactPal[k] : b.palette[src[k]]);
+              const edit = (k: keyof Brand["palette"], v: string) => {
+                if (!route) return set({ palette: { ...b.palette, [k]: v } });
+                // Piste retenue : on part de la palette affichée, chaque case se règle seule.
+                const base = exactPal ?? (Object.fromEntries((Object.keys(b.palette) as (keyof Brand["palette"])[]).map((x) => [x, b.palette[src[x]]])) as Brand["palette"]);
+                setExactPal({ ...base, [k]: v });
+                setDirty(true);
+              };
               return (
                 <div>
                   <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">{t("Palette", "Palette")}</p>{V("palette")}</div>
@@ -201,7 +211,7 @@ export default function TabMarque() {
                     {(Object.keys(b.palette) as (keyof Brand["palette"])[]).map((k) => (
                       <label key={k} className="grid gap-1.5 text-center text-xs">
                         <span className="relative h-16 overflow-hidden rounded-2xl border border-line" style={{ background: shown(k) }}>
-                          <input type="color" value={shown(k)} onChange={(e) => set({ palette: { ...b.palette, [src[k]]: e.target.value.toUpperCase() } })} className="absolute inset-0 size-full cursor-pointer opacity-0" aria-label={t(`Couleur ${PALETTE_LABEL[k].fr}`, `${PALETTE_LABEL[k].en} color`)} />
+                          <input type="color" value={shown(k)} onChange={(e) => edit(k, e.target.value.toUpperCase())} className="absolute inset-0 size-full cursor-pointer opacity-0" aria-label={t(`Couleur ${PALETTE_LABEL[k].fr}`, `${PALETTE_LABEL[k].en} color`)} />
                         </span>
                         <span className="text-muted">{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)}</span>
                         <span className="font-mono text-[10px]">{shown(k)}</span>

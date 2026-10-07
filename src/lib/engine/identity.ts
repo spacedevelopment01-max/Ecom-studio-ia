@@ -23,7 +23,7 @@ import { ROUTE_KEYS, routeBoard, routeLogoSpec, type CreativeRoute, type RouteRe
 import { monogramLetter } from "../media/monogram";
 import { saveSocialKit } from "./social-kit";
 import { routeFonts } from "./shop";
-import { effectivePalette } from "../route-palette";
+import { effectivePalette, exactRoles } from "../route-palette";
 import { colorSchemes, type BrandPalette, type DirectionId } from "../theme/directions";
 import sharp from "sharp";
 import { validCutouts } from "./cutouts";
@@ -263,7 +263,7 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
  * charte. Les autres pistes ne bougent pas. Sans IA. Renvoie false s'il n'y a pas de piste retenue à recolorer.
  * `oldPalette` : palette d'avant, pour retrouver d'où venaient les couleurs d'une piste ancienne sans rôles enregistrés.
  */
-export async function recolorChosenRoute(projectId: string, oldPalette: BrandPalette): Promise<boolean> {
+export async function recolorChosenRoute(projectId: string, oldPalette: BrandPalette, opts: { exact?: boolean } = {}): Promise<boolean> {
   const p = loadProject(projectId);
   const brand = p.brand;
   const chosen = brand?.logo?.route;
@@ -278,7 +278,9 @@ export async function recolorChosenRoute(projectId: string, oldPalette: BrandPal
     return ink && accent && ground ? { ink, accent, ground, tint: tint ?? ("secondary" as const) } : null;
   })();
   if (!roles) return false;
-  const recolored: CreativeRoute = { ...route, roles, colors: roleColors(brand.palette, roles.ink, roles.accent, roles.ground, roles.tint) };
+  // Palette saisie telle qu'affichée : les rôles de la piste pointent sur les cases que le client a réglées.
+  const finalRoles = opts.exact ? exactRoles({ palette: oldPalette, logo: { ...brand.logo, route: { ...chosen, roles } } as NonNullable<typeof brand>["logo"] }, roles) : roles;
+  const recolored: CreativeRoute = { ...route, roles: finalRoles, colors: roleColors(brand.palette, finalRoles.ink, finalRoles.accent, finalRoles.ground, finalRoles.tint) };
   const full = routeLogoSpec(recolored, brand);
   const { color, accent, ...spec } = full;
   const pr: LogoProposal = { key: row.info.key, label: row.info.label ?? recolored.name, concept: row.info.concept ?? recolored.why, spec: { ...spec, accent }, colors: { color, accent: accent ?? color }, route: recolored };
