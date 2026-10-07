@@ -154,6 +154,28 @@ body { background: var(--paper); color: var(--ink); font-family: var(--font-sans
 .tuto-blink { animation: tuto-blink 1.2s ease-in-out infinite; }
 .tuto-blink svg { color: currentColor !important; }
 
+/* « Choisir un forfait » : l'icône étoile scintille et deux petites étoiles s'allument autour du bouton. */
+.plan-sparkle { position: relative; isolation: isolate; overflow: visible; }
+.plan-sparkle svg { animation: plan-twinkle 1.8s ease-in-out infinite; transform-origin: center; filter: drop-shadow(0 0 0 transparent); }
+.plan-sparkle::before, .plan-sparkle::after {
+  content: ""; position: absolute; width: 9px; height: 9px; pointer-events: none; z-index: 1;
+  background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 3px rgba(255,255,255,.9)); opacity: 0; animation: plan-star 1.8s ease-in-out infinite;
+}
+.plan-sparkle::before { top: -3px; left: 9px; }
+.plan-sparkle::after { bottom: -2px; right: 12px; width: 7px; height: 7px; animation-delay: .9s; }
+@keyframes plan-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 transparent); }
+  25% { transform: scale(1.3) rotate(18deg); filter: drop-shadow(0 0 5px rgba(255,255,255,.95)); }
+  50% { transform: scale(.9) rotate(0deg); filter: drop-shadow(0 0 1px rgba(255,255,255,.4)); }
+  75% { transform: scale(1.18) rotate(-12deg); filter: drop-shadow(0 0 4px rgba(255,255,255,.8)); }
+}
+@keyframes plan-star {
+  0%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  30% { opacity: 1; transform: scale(1.15) rotate(45deg); }
+  60% { opacity: 0; transform: scale(.4) rotate(90deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .reveal { opacity: 1; transform: none; }
@@ -161,4 +183,6 @@ body { background: var(--paper); color: var(--ink); font-family: var(--font-sans
   .sfx-tilt, .sfx-rise, .sfx-fall { transform: none; }
   /* Sans animation : le bouton Tutoriel reste mis en avant (couleur pleine), sans clignoter. */
   .tuto-blink { animation: none !important; background: var(--signal); color: var(--signal-ink); border-color: var(--signal); }
+  .plan-sparkle svg, .plan-sparkle::before, .plan-sparkle::after { animation: none !important; }
+  .plan-sparkle::before, .plan-sparkle::after { opacity: 0; }
 }
