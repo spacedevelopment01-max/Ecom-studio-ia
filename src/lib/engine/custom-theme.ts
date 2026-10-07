@@ -26,7 +26,7 @@ import { tidyComposition } from "../theme/tidy";
 /** Note minimale de la relecture visuelle pour appliquer un thème sur mesure (en dessous : défauts visibles). */
 export const MIN_REVIEW_SCORE = 5;
 import { llmConfigured, llmJson } from "../ai/llm";
-import { projectContext } from "../ai/context";
+import { brainContext } from "../ai/context";
 import { charter, designBar, placeholder } from "../ai/prompts";
 import { aiReviewHome, lintClaims } from "../ai/tasks";
 import { contentLang, L, uiLang } from "../i18n-server";
@@ -136,7 +136,7 @@ export async function aiCustomThemePlan(b: Base, p: Project, spec: ThemeSpec): P
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: systemPrompt(),
-      context: projectContext(p, "shop"),
+      context: brainContext(p, "theme"),
       reference: sectionGuide(spec),
       prompt: `Conçois le PLAN d'un thème entièrement sur mesure pour cette marque (direction actuelle : ${spec.direction}).
 Composition actuelle (sections de bibliothèque, à remplacer ; leurs textes déjà rédigés et validés sont à reprendre) :
@@ -165,7 +165,7 @@ export async function aiCustomSection(b: Base, p: Project, spec: ThemeSpec, plan
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: systemPrompt(),
-      context: projectContext(p, "shop"),
+      context: brainContext(p, "theme"),
       reference: sectionGuide(spec),
       prompt: `Plan complet du thème (pour rester cohérent avec les autres sections) :
 ${others}

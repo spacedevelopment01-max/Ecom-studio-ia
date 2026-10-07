@@ -8,6 +8,7 @@ import { all } from "../db";
 import { saveAsset, type Asset } from "../library";
 import type { Project } from "../projects";
 import { llmConfigured, llmJson } from "../ai/llm";
+import { brainContext } from "../ai/context";
 import { JobCancelled, JobPaused } from "../jobs";
 import { C } from "../i18n-server";
 import { searchStock, stockCredit } from "../stock/photos";
@@ -27,7 +28,9 @@ export async function universeQueries(ictx: Ictx, p: Project): Promise<{ lang: "
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:universe-queries`,
         system: "You write search queries for royalty-free photo and video libraries. Short English queries (2 to 4 words) showing the WORLD of a product without the product itself: where and how it is used, its raw material, its origin, the mood of its customers' daily life. No brand names, never the product as such.",
-        prompt: `Product: ${p.product.name} — ${p.product.category}. ${(p.product.summary ?? "").slice(0, 300)}\nAudience: ${p.brand?.audience ?? ""}\nAnswer { "queries": ["…", "…", "…"] }.`,
+        // Produit, métier compris, scènes utiles et hors sujet : contexte du Brain (scope stock).
+        context: brainContext(p, "stock"),
+        prompt: `${p.product.summary ? `Summary: ${p.product.summary.slice(0, 300)}\n` : ""}${p.brand?.audience ? `Audience: ${p.brand.audience}\n` : ""}Answer { "queries": ["…", "…", "…"] }.`,
         maxTokens: 400,
       },
       z.object({ queries: z.array(z.string()).max(4) }),

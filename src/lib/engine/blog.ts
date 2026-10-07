@@ -16,7 +16,7 @@ import { L, contentLang } from "../i18n-server";
 import { pick, type Lang } from "../i18n";
 import { currentTheme, loadProject, type Project } from "../projects";
 import { storeProducts } from "../theme/spec";
-import { projectContext } from "../ai/context";
+import { brainContext } from "../ai/context";
 import { charter, placeholder } from "../ai/prompts";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { aiCopyReview, copyReviewFeedback, copyReviewMean, copyReviewPassed, lintClaims, lintHollow, scrubClaims } from "../ai/tasks";
@@ -259,7 +259,7 @@ export async function suggestTopics(p: Project, opts: { refresh?: boolean } = {}
         userId: p.userId,
         projectId: p.id,
         system: topicsSystem(),
-        context: projectContext(p),
+        context: brainContext(p, "blog"),
         prompt: `${links.length ? `Pages de la boutique :\n${links.map((l) => `- ${l.title}`).join("\n")}\n\n` : ""}${existing ? `Articles déjà écrits (ne pas répéter) :\n${existing}\n\n` : ""}Propose 6 sujets variés. Réponds { "topics": [{ "title": "…", "kind": "question|usage|guide|comparison", "why": "…", "keyword": "requête principale visée", "intent": "informationnelle|commerciale|transactionnelle" }] }.`,
         maxTokens: 2000,
       },
@@ -388,7 +388,7 @@ async function draftArticle(ctx: JobContext, p: Project, req: WriteRequest, link
         jobId: ctx.job.id,
         usageKey: `${ctx.job.id}:blog:draft${round}`,
         system: writerSystem(lang),
-        context: projectContext(p),
+        context: brainContext(p, "blog"),
         prompt: `Pages de la boutique (seuls liens permis) :\n${linkList}\n\n${subject}${feedback ? `\n\nCorrections exigées par le contrôle qualité (à appliquer impérativement) :\n${feedback}` : ""}\n\nRéponds { "keyword", "title", "slug", "metaTitle", "metaDescription", "excerpt", "bodyHtml", "tags": [] }.`,
         maxTokens: 12000,
       },

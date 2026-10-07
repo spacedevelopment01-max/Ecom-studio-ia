@@ -21,7 +21,9 @@ import { activeProviderKey, requirePrice, routeFor, usdToEur } from "./config";
 import { recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 
-type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string };
+/** brain : contexte du Brain d'où vient la consigne de la génération (portée, empreinte, version), tracé dans ai_calls. */
+type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string; brain?: { scope: string; hash: string; version: string } };
+const brainCols = (c?: Ctx) => ({ brainScope: c?.brain?.scope ?? null, brainHash: c?.brain?.hash ?? null, brainVersion: c?.brain?.version ?? null });
 
 /** Quota du forfait concerné par une génération (selon la portée de la tâche en cours), null si rien n'est décompté. */
 function quotaFor(media: "image" | "video") {
@@ -49,7 +51,7 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
         // Échec après le départ de la demande au fournisseur : l'appel a eu lieu, il est tracé (coût inconnu = 0, signalé).
         if (t.provider && !t.recorded) {
           const msg = String((e as Error)?.message ?? e);
-          recordCall({ userId: t.ctx!.userId, projectId: t.ctx!.projectId, jobId: t.ctx!.jobId, task, provider: t.provider, requestedModel: t.model ?? "", unit: t.unit ?? "image", latencyMs: t.started ? Date.now() - t.started : null, usageKey: t.ctx!.usageKey ?? null, estimated: true, status: /délai|timeout|timed out/i.test(msg) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(msg).slice(0, 200)}` });
+          recordCall({ userId: t.ctx!.userId, projectId: t.ctx!.projectId, jobId: t.ctx!.jobId, task, provider: t.provider, requestedModel: t.model ?? "", unit: t.unit ?? "image", latencyMs: t.started ? Date.now() - t.started : null, usageKey: t.ctx!.usageKey ?? null, estimated: true, status: /délai|timeout|timed out/i.test(msg) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(msg).slice(0, 200)}` , ...brainCols(t.ctx) });
         }
         throw e;
       }
@@ -73,7 +75,7 @@ function recordMedia(u: Parameters<typeof recordUsage>[0]) {
   const billed = recordUsage(u);
   const t = mediaTrace.getStore();
   if (t) t.recorded = true;
-  recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" });
+  recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx) });
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
   if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
 }

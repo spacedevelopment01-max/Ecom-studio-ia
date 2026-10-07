@@ -9,7 +9,7 @@ import type { Lang } from "../i18n";
 import { pick } from "../i18n";
 import { contentLang, L } from "../i18n-server";
 import { llmJson } from "../ai/llm";
-import { projectContext } from "../ai/context";
+import { brainView } from "../ai/context";
 import { langName } from "../ai/prompts";
 import type { Project } from "../projects";
 import type { VideoScene, VideoSpec } from "../media/video";
@@ -20,18 +20,21 @@ import type { VideoScene, VideoSpec } from "../media/video";
  * Piste créative retenue et règles de ton, rappelées à chaque tâche publicitaire ou vidéo :
  * une annonce, un montage ou un script UGC parlent avec la même voix que le logo, le kit et la boutique.
  */
-export function brandCraftBrief(p: Project): string {
+export function brandCraftBrief(p: Project, kept: readonly string[] = []): string {
   const b = p.brand;
   if (!b) return "";
   const r = b.logo.route;
+  // Ce que le contexte du Brain transmet déjà (kept) n'est pas répété ; le propre à la piste (graisse, rôles des
+  // couleurs de la piste) et la règle « produit pour enfants » restent toujours.
+  const has = (id: string) => kept.includes(id);
   const out = [
     `<piste_creative>`,
-    `Marque : ${b.name}${b.tagline ? ` · signature « ${b.tagline} »` : ""}`,
-    r ? `Piste retenue : « ${r.name} » · titres en ${r.heading} (graisse ${r.headingWeight}), textes en ${r.body} · encre ${r.colors.ink}, accent ${r.colors.accent}, fond ${r.colors.ground}, teinte ${r.colors.tint}` : `Typographies : ${b.fonts.heading} / ${b.fonts.body}`,
-    b.logo.concept ? `Concept du logo : ${b.logo.concept}` : "",
-    `Palette : ${b.palette.primary} (principale), ${b.palette.accent} (accent), ${b.palette.light} / ${b.palette.dark}`,
-    `Voix : ${b.tone.voice}${b.tone.do.length ? ` · à faire : ${b.tone.do.slice(0, 4).join(" ; ")}` : ""}${b.tone.dont.length ? ` · à éviter : ${b.tone.dont.slice(0, 4).join(" ; ")}` : ""}`,
-    b.social ? `Ce qu'on dit : ${b.social.say.slice(0, 4).join(" ; ")} · ce qu'on ne dit jamais : ${b.social.dontSay.slice(0, 4).join(" ; ")}` : "",
+    has("brand.name") && (!b.tagline || has("brand.tagline")) ? "" : `Marque : ${b.name}${b.tagline ? ` · signature « ${b.tagline} »` : ""}`,
+    r ? `Piste retenue : « ${r.name} » · titres en ${r.heading} (graisse ${r.headingWeight}), textes en ${r.body} · encre ${r.colors.ink}, accent ${r.colors.accent}, fond ${r.colors.ground}, teinte ${r.colors.tint}` : has("brand.fonts") ? "" : `Typographies : ${b.fonts.heading} / ${b.fonts.body}`,
+    b.logo.concept && !(has("logo.current") && b.logo.concept.trim().length <= 200) ? `Concept du logo : ${b.logo.concept}` : "",
+    has("brand.palette") ? "" : `Palette : ${b.palette.primary} (principale), ${b.palette.accent} (accent), ${b.palette.light} / ${b.palette.dark}`,
+    has("brand.tone") ? "" : `Voix : ${b.tone.voice}${b.tone.do.length ? ` · à faire : ${b.tone.do.slice(0, 4).join(" ; ")}` : ""}${b.tone.dont.length ? ` · à éviter : ${b.tone.dont.slice(0, 4).join(" ; ")}` : ""}`,
+    b.social && !has("brand.social") ? `Ce qu'on dit : ${b.social.say.slice(0, 4).join(" ; ")} · ce qu'on ne dit jamais : ${b.social.dontSay.slice(0, 4).join(" ; ")}` : "",
     p.product.sector === "enfants" ? `Produit pour enfants : la publicité s'adresse aux PARENTS et à l'entourage adulte (ciblage 18 ans et plus, jamais d'audience d'enfants) ; aucune promesse de sécurité, de sommeil, d'apaisement ou de développement.` : "",
     `</piste_creative>`,
   ];
@@ -109,6 +112,8 @@ type Base = { userId: string; projectId: string; jobId?: string | null; usageKey
 export async function aiCraftReview(b: Base, p: Project, kind: CraftKind, content: unknown, extra = ""): Promise<CraftReview> {
   const rubric = RUBRICS[kind];
   const ui = L("français", "anglais");
+  // Relecture = contrôle qualité : scope qc (faits, règles, ton, cible) ; la piste créative complète le reste.
+  const view = brainView(p, "qc");
   return llmJson(
     {
       task: "quality_control",
@@ -123,7 +128,7 @@ ${Object.entries(rubric).map(([k, v]) => `- ${k} : ${v}`).join("\n")}
 « fixes » : au plus 6 consignes de reprise précises et actionnables (quoi changer, où, comment), du plus important au moins important ; jamais d'ajout d'information absente du contexte (prix, avis, résultat, certification, délai) : un fait manquant reste « [À compléter : …] ».
 « strengths » : au plus 3 points forts à garder.
 Langue : « fixes » et « strengths » en ${ui}.`,
-      context: `${projectContext(p, kind === "ads" ? "social" : "video")}\n${brandCraftBrief(p)}`,
+      context: `${view.stable}\n${brandCraftBrief(p, view.kept)}`,
       prompt: `${extra ? `${extra}\n` : ""}Proposition à relire (langue des contenus : ${langName(contentLang())}) :\n<proposition>\n${JSON.stringify(content, null, 1).slice(0, 20000)}\n</proposition>\nRéponds { "scores": { ${Object.keys(rubric).map((k) => `"${k}": 0`).join(", ")} }, "strengths": ["…"], "fixes": ["…"] }.`,
       maxTokens: 3000,
     },

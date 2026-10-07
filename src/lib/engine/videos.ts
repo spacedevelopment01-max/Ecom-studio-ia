@@ -31,6 +31,7 @@ import { logoPng } from "../media/logo";
 import { C, L } from "../i18n-server";
 import { activityPhotos, isServices, localServiceVideoPlan } from "./service-media";
 import { aiCraftReview, brandCraftBrief, craftLoop, paceVideoPlan, videoPlanIssues, type CraftQuality } from "./ad-craft";
+import { brainView } from "../ai/context";
 
 const exec = promisify(execFile);
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
@@ -286,7 +287,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       // → au plus une reprise ciblée → la meilleure version est gardée.
       const goal = req.goal ?? C("publicité courte qui donne envie d'acheter", "short ad that makes people want to buy");
       const base = { userId: project.userId, projectId, jobId: ctx.job.id };
-      const craft = brandCraftBrief(project);
+      const craft = brandCraftBrief(project, brainView(project, "video").kept);
       const asSpec = (r: Awaited<ReturnType<typeof aiVideoPlan>>) => ({ format: req.format, scenes: r.scenes, transition: r.transition, music: req.music ?? r.music, captions: true, concept: r.concept }) as VideoSpec & { concept: string };
       const { best, quality } = await craftLoop("video", {
         draft: async (feedback) => asSpec(await aiVideoPlan({ ...base, usageKey: `${ctx.job.id}:plan${feedback ? ":r2" : ""}` }, project, { format: req.format, goal, images: descriptions, clips: clipDirs.length, url: req.url, craft, feedback })),

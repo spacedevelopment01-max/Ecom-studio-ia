@@ -14,7 +14,7 @@ vi.mock("@/lib/ai/llm", async (orig) => ({
   llmJson: async (_call: unknown, schema: { parse: (v: unknown) => unknown }) => schema.parse(llm.replies[Math.min(llm.calls++, llm.replies.length - 1)]),
 }));
 
-vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>" }));
+vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>", brainContext: () => "<contexte_projet></contexte_projet>", brainView: () => ({ stable: "<contexte_projet></contexte_projet>", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
 
 import { copyQuality, lintClaims, lintHollow, scrubClaims } from "@/lib/ai/tasks";
 import { brandIssues, famousBrandClash, finalizeBrand, fixPalette, paletteIssues } from "@/lib/engine/brand-check";

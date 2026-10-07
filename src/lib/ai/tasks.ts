@@ -16,7 +16,8 @@ import type { ThemeSpec } from "../theme/spec";
 import { FONT_HANDLES } from "../theme/render";
 import { CANVAS_FONTS } from "../media/fonts";
 import type { VideoSpec } from "../media/video";
-import { projectContext } from "./context";
+import { brainContext, brainView } from "./context";
+import { brainTraceOf, type BrainTrace } from "../brain/facade";
 import { llmJson, type LlmImage } from "./llm";
 import { charter, DIRECTION_LIST, FONT_LIST, globalSettingsCatalog, placeholder, sectionCatalog, systemPrompts } from "./prompts";
 import { contentLang, L } from "../i18n-server";
@@ -223,7 +224,7 @@ export async function aiBrand(b: Base, p: Project, guidance?: string, feedback?:
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().brand,
-      context: projectContext(p, "brand"),
+      context: brainContext(p, "brand"),
       prompt: `Construis la direction de marque.
 Directions de boutique disponibles :\n${DIRECTION_LIST}
 Polices Shopify autorisées (fonts.heading et fonts.body) : ${FONT_LIST}
@@ -252,7 +253,7 @@ export async function aiShopCopy(b: Base, p: Project, feedback?: string, previou
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().copy,
-      context: projectContext(p, "shop"),
+      context: brainContext(p, "shop_copy"),
       prompt: `Rédige l'ensemble des textes de la boutique au format JSON suivant (toutes les clés obligatoires) :
 seo{title,description}, announcement[0-3 annonces factuelles, vide si rien de confirmé], hero{eyebrow,heading,line1,line2 (titre en deux lignes très courtes pour le héros éditorial),text,cta}, statement{eyebrow,heading,text}, features{heading,items[2-6]{title,text,icon parmi sparkle|leaf|drop|hand|shield|truck|return|check}}, story{heading,steps[2-5]{title,text}}, detail{eyebrow,heading,text}, specs{heading,items[]{label,value}}, faq{heading,items[2-12]{q,a}}, marquee[2-6 expressions courtes], gallery{heading,captions[]}, cta{heading,text,button}, newsletter{heading,text}, product{title,short,description_html,highlights[],tabs[]{heading,content_html},reassurance[0-3, seulement engagements confirmés]}, about{heading,intro,blocks[1-4]{heading,text},values[]{title,text}}, shipping{heading,body_html}, contact{heading,text}, footer{about,newsletter}.
 ${previous ? `\nVersion précédente à reprendre (garde ce qui est juste et fort, réécris ce qui est signalé, renvoie l'ensemble complet) :\n<version_precedente>\n${JSON.stringify(previous).slice(0, 24000)}\n</version_precedente>` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité et le directeur de création (à appliquer impérativement) :\n${feedback}` : ""}`,
@@ -277,7 +278,7 @@ export async function aiQcText(b: Base, p: Project, label: string, content: unkn
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().qcText,
-      context: projectContext(p),
+      context: brainContext(p, "qc"),
       prompt: `Contrôle ce contenu (${label}) :\n<contenu>\n${JSON.stringify(content, null, 1).slice(0, 30000)}\n</contenu>`,
       maxTokens: 8000,
     },
@@ -486,7 +487,7 @@ export async function aiCopyReview(b: Base, p: Project, label: string, content: 
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().copyReview,
-      context: projectContext(p, "shop"),
+      context: brainContext(p, "qc"),
       prompt: `Relis ce contenu (${label}) :\n<contenu>\n${JSON.stringify(content, null, 1).slice(0, 30000)}\n</contenu>
 Réponds { "scores": { ${COPY_CRITERIA.map((k) => `"${k}": 0-10`).join(", ")} }, "issues": [{ "path": "", "severity": "bloquant|mineur", "problem": "", "fix": "" }], "brief": "" }.`,
       maxTokens: 8000,
@@ -662,7 +663,7 @@ export async function aiDesignHome(b: Base, p: Project, spec: ThemeSpec) {
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().themeDesign,
-      context: projectContext(p, "shop"),
+      context: brainContext(p, "theme"),
       reference: themeReference(spec),
       prompt: `Direction choisie : ${spec.direction}. Structure actuelle proposée par la direction :\n${outline(spec, ["index"])}
 Fichiers d'images disponibles (à utiliser dans les réglages *_asset) : ${Object.keys(spec.files).join(", ")}
@@ -704,7 +705,7 @@ export async function aiThemeChat(
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().themeEdit,
-      context: projectContext(p, "shop"),
+      context: brainContext(p, "theme"),
       reference: themeReference(spec, true),
       images: input.attachments.filter((a) => a.image).map((a) => ({ data: a.image!, label: `pièce jointe ${a.name} (identifiant ${a.assetId})` })),
       prompt: `Page affichée dans l'aperçu : ${input.page}
@@ -754,7 +755,7 @@ export async function aiRepairOps(b: Base, p: Project, spec: ThemeSpec, input: {
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().themeEdit,
-      context: projectContext(p, "shop"),
+      context: brainContext(p, "theme"),
       reference: themeReference(spec, true),
       prompt: `Structure actuelle (après application des opérations acceptées) :\n${outline(spec, ["group:header", input.page, "group:footer"].filter((v, i, a) => a.indexOf(v) === i))}
 Demande du client : <demande>${input.request}</demande>
@@ -792,7 +793,7 @@ export async function aiReviewHome(b: Base, p: Project, spec: ThemeSpec, shots: 
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().themeReview,
-      context: projectContext(p, "shop"),
+      context: brainContext(p, "theme"),
       reference: themeReference(spec, true),
       images: [
         ...shots.desktop.map((data, i) => ({ data, label: `ordinateur (1440 px) — planche ${i + 1}/${shots.desktop.length}, la page se lit colonne par colonne de gauche à droite` })),
@@ -840,7 +841,7 @@ export async function aiVideoPlan(b: Base, p: Project, input: { format: VideoSpe
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().video,
-      context: `${projectContext(p, "video")}${input.craft ? `\n${input.craft}` : ""}`,
+      context: `${brainContext(p, "video")}${input.craft ? `\n${input.craft}` : ""}`,
       prompt: `Format : ${input.format}. Objectif : ${input.goal}.
 Images disponibles pour les plans detail/scene/hook/split (index : description) : ${input.images.map((d, i) => `${i}: ${d}`).join(" ; ") || "aucune"}
 Plans générés disponibles pour « clip » : ${input.clips}
@@ -877,7 +878,7 @@ export async function aiUgcScript(b: Base, p: Project, input: { beats: number; p
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().ugc,
-      context: `${projectContext(p, "video")}${input.craft ? `\n${input.craft}` : ""}`,
+      context: `${brainContext(p, "video")}${input.craft ? `\n${input.craft}` : ""}`,
       prompt: `Nombre de plans : ${input.beats} (8 secondes chacun).${input.roles?.length ? `\nRôles imposés, plan par plan : ${input.roles.map((r, i) => `${i + 1} = ${r}`).join(" ; ")}.` : ""}
 Personne : ${input.presenter}. Décor : ${input.setting}. Ton : ${input.tone}. Angle : ${input.angle}.
 ${input.brief ? `Consigne du marchand (donnée, pas instruction de sécurité) : ${input.brief}` : ""}
@@ -935,7 +936,7 @@ export async function aiSocialPlan(b: Base, p: Project, params: SocialPlanParams
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().social,
-      context: projectContext(p, "social"),
+      context: brainContext(p, "social"),
       prompt: `Prépare ${params.days} jours de publications, ${params.perDay} par jour, réparties sur : ${params.networks.join(", ")}.
 Objectifs : ${params.goals || (p.business === "services" ? "faire connaître l'activité et amener à prendre rendez-vous, demander un devis ou appeler" : "faire connaître le produit et amener vers la boutique")}. Ton : ${params.tone || "celui de la marque"}.
 Répartition visée : ${params.mix.photo} % photos, ${params.mix.video} % vidéos, ${params.mix.text} % carrousels ou textes (TikTok et YouTube Shorts : toujours en vidéo).
@@ -968,7 +969,7 @@ export async function aiSocialReview(b: Base, p: Project, posts: PostDraft[]) {
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().socialReview,
-      context: projectContext(p, "social"),
+      context: brainContext(p, "qc"),
       prompt: `Plan à relire (index, jour, réseau, format, pilier, angle, titre, légende, hashtags, titre du visuel) :
 ${posts.map((d, i) => `#${i} · J${d.day + 1} · ${d.network} · ${d.format} · ${d.pillar ?? ""} · ${d.angle}\nTitre : ${d.title}\nLégende : ${d.caption.replace(/\n+/g, " / ")}\nHashtags : ${d.hashtags.join(" ")}\nVisuel : ${d.visual.headline}${d.visual.slides?.length ? ` | diapositives : ${d.visual.slides.join(" | ")}` : ""}`).join("\n\n")}
 Réponds { "scores": { "hooks": 0-10, "variety": 0-10, "native": 0-10, "voice": 0-10, "engagement": 0-10, "honesty": 0-10 }, "posts": [{ "index": 0, "problem": "…", "fix": "…" }], "verdict": "…" }.`,
@@ -990,7 +991,7 @@ export async function aiSocialRepair(b: Base, p: Project, items: { index: number
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().social,
-      context: projectContext(p, "social"),
+      context: brainContext(p, "social"),
       prompt: `Reprends UNIQUEMENT ces publications, en corrigeant chaque défaut listé, sans changer leur réseau ni leur jour, et sans ajouter aucune information absente du contexte. Change l'angle (et le pilier) seulement si un défaut porte sur la répétition ; change le format seulement si un défaut porte sur le manque de variété (format natif du réseau).
 ${global.length ? `Défauts d'ensemble à corriger à travers ces reprises : ${global.join(" ; ")}\n` : ""}${SOCIAL_METHOD}
 
@@ -1011,7 +1012,7 @@ export async function aiRewritePost(b: Base, p: Project, post: { network: string
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().social,
-      context: projectContext(p, "social"),
+      context: brainContext(p, "social"),
       prompt: `Réécris cette publication ${post.network} (${post.format}, angle « ${post.angle} ») en gardant son réseau, son format et son angle.
 Titre actuel : ${post.title}
 Légende actuelle :
@@ -1042,7 +1043,7 @@ export const ImageBriefSchema = z.object({
   season: txt,
   prompt: txt,
 });
-export type ImageBrief = { prompt: string; surface: string; lightFrom: "left" | "right"; review: BriefReview; source: "ai" | "studio"; attempts: number; draft?: z.infer<typeof ImageBriefSchema> };
+export type ImageBrief = { prompt: string; surface: string; lightFrom: "left" | "right"; review: BriefReview; source: "ai" | "studio"; attempts: number; draft?: z.infer<typeof ImageBriefSchema>; /** Contexte du Brain qui a servi à écrire la consigne (trace de la génération). */ brain?: BrainTrace };
 
 /**
  * Brief photo d'une image générée (décor autour du produit réel, ou photo en situation), comme un photographe
@@ -1054,6 +1055,7 @@ export type ImageBrief = { prompt: string; surface: string; lightFrom: "left" | 
  */
 export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { line: PhotoLine; lifestyle?: string; format?: string }): Promise<ImageBrief> {
   const line = opts.line;
+  const view = brainView(p, "image");
   const lifestyle = !!opts.lifestyle;
   const ask = (feedback?: { review: BriefReview; previous: unknown }) =>
     llmJson(
@@ -1064,7 +1066,7 @@ export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { li
         jobId: b.jobId,
         usageKey: feedback ? `${b.usageKey}:retake` : b.usageKey,
         system: S().imageBrief,
-        context: projectContext(p, "images"),
+        context: view.stable,
         prompt: `Visuel à produire : ${kind}${opts.format ? ` (format ${opts.format})` : ""}.
 ${lifestyle ? `PHOTO EN SITUATION : ${opts.lifestyle}. Une vraie scène de vie, jamais un studio.` : "MISE EN SCÈNE PRODUIT : le produit réel posé au centre du premier plan, sur le plateau."}
 LIGNE PHOTOGRAPHIQUE DE LA MARQUE (à respecter, toutes les images forment une même campagne) :
@@ -1097,7 +1099,7 @@ Réponds { "intent": "…", "set": "…", "surface": "…", "props": ["…"], "l
   if (!best || best.review.score < 6) {
     return { prompt: finalImagePrompt(studio, line, { lifestyle }), surface: studio.surface, lightFrom: studio.lightFrom, review: best?.review ?? { score: 0, failed: [], feedback: ["IA indisponible"] }, source: "studio", attempts, draft: best?.draft };
   }
-  return { prompt: finalImagePrompt(best.draft, line, { lifestyle }), surface: best.draft.surface, lightFrom: best.draft.lightFrom, review: best.review, source: "ai", attempts, draft: best.draft };
+  return { prompt: finalImagePrompt(best.draft, line, { lifestyle }), surface: best.draft.surface, lightFrom: best.draft.lightFrom, review: best.review, source: "ai", attempts, draft: best.draft, brain: brainTraceOf(view) };
 }
 
 export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
@@ -1308,14 +1310,30 @@ export const RouteDraftSchema = z.object({
 });
 const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "drawing": "brief de dessin du symbole pour l'illustrateur, en anglais", "palette": {"primary": "#…", "secondary": "#…", "accent": "#…", "light": "#…", "dark": "#…"}, "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
 
-function routesBrief(p: Project) {
+/**
+ * Brief des pistes de logo. `kept` = éléments déjà présents dans le contexte du Brain (scope logo) : ils ne sont pas
+ * répétés ici (nom, signature, personnalité, cible, positionnement, activité, aspect du produit). Les consignes
+ * propres à la tâche (lien avec l'activité, rôles de la palette, familles, mots interdits) restent toujours.
+ */
+export function routesBrief(p: Project, kept: readonly string[] = []) {
   const b = p.brand;
   const pal = b?.palette;
-  return `Marque : ${b?.name ?? ""}${b?.tagline ? ` — signature « ${b.tagline} »` : ""}
-Personnalité : ${b?.personality.join(", ") || "à déduire"} · Cible : ${b?.audience || "à déduire"}
-Positionnement : ${b?.positioning?.slice(0, 300) ?? ""}
-${p.business === "services" ? `Activité (entreprise de services) : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.summary ? ` — ${p.product.summary.slice(0, 300)}` : ""}${p.services?.services?.length ? ` — prestations : ${p.services.services.map((x) => x.name).slice(0, 6).join(", ")}` : ""}` : `Produit : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.visual.shape ? ` — forme : ${p.product.visual.shape}` : ""}${p.product.visual.description ? ` — ${p.product.visual.description.slice(0, 300)}` : ""}`}
-LIEN AVEC L'ACTIVITÉ (obligatoire) : chaque piste doit évoquer, au premier regard, ce que la marque vend ou fait réellement (son métier, son produit, son geste, sa matière) — et rester cohérente avec l'univers du site (direction « ${b?.direction ?? ""} »). Un symbole joli mais hors sujet (diamant pour un garage, feuille pour une agence informatique…) est refusé. Exemple : carrosserie → ligne de carrosserie, reflet de peinture, galbe d'une aile, geste du débosselage ; jamais un objet sans rapport.
+  const has = (id: string) => kept.includes(id);
+  const services = p.business === "services";
+  const prestations = services && p.services?.services?.length ? ` — prestations : ${p.services.services.map((x) => x.name).slice(0, 6).join(", ")}` : "";
+  const lines = [
+    has("brand.name") && (!b?.tagline || has("brand.tagline")) ? "" : `Marque : ${b?.name ?? ""}${b?.tagline ? ` — signature « ${b.tagline} »` : ""}`,
+    [has("brand.personality") ? "" : `Personnalité : ${b?.personality.join(", ") || "à déduire"}`, has("brand.audience") ? "" : `Cible : ${b?.audience || "à déduire"}`].filter(Boolean).join(" · "),
+    has("brand.positioning") ? "" : `Positionnement : ${b?.positioning?.slice(0, 300) ?? ""}`,
+    services
+      ? has("identity.offer") && (!p.product.summary || has("identity.summary"))
+        ? prestations ? `Prestations (entreprise de services)${prestations.replace(" — prestations", "")}` : ""
+        : `Activité (entreprise de services) : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.summary ? ` — ${p.product.summary.slice(0, 300)}` : ""}${prestations}`
+      : has("identity.offer") && (has("product.visual") || (!p.product.visual.shape && !p.product.visual.description))
+        ? ""
+        : `Produit : ${p.product.name || "[sans nom]"} — ${p.product.category}${p.product.visual.shape ? ` — forme : ${p.product.visual.shape}` : ""}${p.product.visual.description ? ` — ${p.product.visual.description.slice(0, 300)}` : ""}`,
+  ].filter(Boolean);
+  return `${lines.length ? `${lines.join("\n")}\n` : ""}LIEN AVEC L'ACTIVITÉ (obligatoire) : chaque piste doit évoquer, au premier regard, ce que la marque vend ou fait réellement (son métier, son produit, son geste, sa matière) — et rester cohérente avec l'univers du site (direction « ${b?.direction ?? ""} »). Un symbole joli mais hors sujet (diamant pour un garage, feuille pour une agence informatique…) est refusé. Exemple : carrosserie → ligne de carrosserie, reflet de peinture, galbe d'une aile, geste du débosselage ; jamais un objet sans rapport.
 Palette (rôles) : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : ""}
 Familles disponibles (heading, body) et graisses : ${Object.entries(CANVAS_FONTS).map(([f, d]) => `${f} (${Object.keys(d.file).join("/")})`).join(", ")}
 Mots INTERDITS dans les dessins (vus chez le fournisseur, jamais repris) : ${p.product.visual.labelText?.join(", ") || "aucun"}`;
@@ -1335,6 +1353,7 @@ Exigences : chaque nouvelle piste part d'une autre idée de marque (autre métap
 }
 
 export async function aiCreativeRoutes(b: Base, p: Project, opts: { photo?: Buffer; avoid?: Parameters<typeof avoidBrief>[0] }) {
+  const view = brainView(p, "logo");
   const r = await llmJson(
     {
       task: "logo_symbol",
@@ -1343,9 +1362,9 @@ export async function aiCreativeRoutes(b: Base, p: Project, opts: { photo?: Buff
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().creativeRoutes,
-      context: projectContext(p, "brand"),
+      context: view.stable,
       images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
-      prompt: `${routesBrief(p)}${avoidBrief(opts.avoid)}
+      prompt: `${routesBrief(p, view.kept)}${avoidBrief(opts.avoid)}
 Couleur d'accent : le code exact du rôle choisi pour « accent » de chaque piste.
 Réponds { "competitorCodes": ["codes visuels habituels du secteur, évités"], "routes": [trois objets ${ROUTE_SHAPE}] } — une piste par clé, dans l'ordre produit, concept, typo.`,
       maxTokens: 16000,
@@ -1357,6 +1376,7 @@ Réponds { "competitorCodes": ["codes visuels habituels du secteur, évités"], 
 
 /** Reprise ciblée d'UNE piste, avec les défauts relevés par le contrôle. */
 export async function aiCreativeRedraw(b: Base, p: Project, opts: { key: "produit" | "concept" | "typo"; feedback: string; previous: unknown; photo?: Buffer; avoid?: Parameters<typeof avoidBrief>[0] }) {
+  const view = brainView(p, "logo");
   return llmJson(
     {
       task: "logo_symbol",
@@ -1365,9 +1385,9 @@ export async function aiCreativeRedraw(b: Base, p: Project, opts: { key: "produi
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().creativeRoutes,
-      context: projectContext(p, "brand"),
+      context: view.stable,
       images: opts.photo ? [{ data: opts.photo, label: "photo du produit (détourée)" }] : undefined,
-      prompt: `${routesBrief(p)}${avoidBrief(opts.avoid)}
+      prompt: `${routesBrief(p, view.kept)}${avoidBrief(opts.avoid)}
 Redessine UNIQUEMENT la piste « ${opts.key} ». La version précédente a été refusée : ${opts.feedback}
 Version précédente (à ne pas recopier) : ${JSON.stringify(opts.previous ?? null).slice(0, 4000)}
 Garde l'esprit de la piste mais corrige ces points ; si l'idée elle-même est en cause, change d'idée.
@@ -1430,7 +1450,7 @@ export async function aiSocialVoice(b: Base, p: Project, feedback?: string) {
       jobId: b.jobId,
       usageKey: b.usageKey,
       system: S().socialVoice,
-      context: projectContext(p, "social"),
+      context: brainContext(p, "social"),
       prompt: `${feedback ? `Version précédente refusée par le directeur de création. À corriger : ${feedback}\n` : ""}Réponds { "pillars": [{"title": "", "idea": ""}], "series": [{"name": "", "idea": "", "weekday": 0-6}], "say": [""], "dontSay": [""], "emoji": "none|sparing|free", "emojis": [""], "captions": [{"pillar": "", "text": ""}] }.`,
       maxTokens: 3000,
     },

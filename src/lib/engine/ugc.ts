@@ -31,6 +31,7 @@ import { brandTypo, confirmedFacts, ensureCutouts, palette } from "./images";
 import { FONT_DIR, font } from "../media/fonts";
 import { cleanUgcScript, ugcIssues } from "../ugc-rules";
 import { aiCraftReview, brandCraftBrief, craftLoop, ugcCraftIssues, ugcStructure, type CraftQuality, type UgcRole } from "./ad-craft";
+import { brainView } from "../ai/context";
 import { C, L, contentLang, uiLang } from "../i18n-server";
 import { activityName, contactLine, realActivityPhotos, isServices, placeLine, serviceCta, serviceItems } from "./service-media";
 
@@ -212,7 +213,7 @@ export async function writeUgcScript(ctx: JobContext, projectId: string, o: UgcO
     const n = Math.max(1, Math.min(5, o.beats));
     const roles = services ? undefined : ugcStructure(n).map((r) => r.join("+"));
     const base = { userId: p.userId, projectId, jobId: ctx.job.id };
-    const craft = brandCraftBrief(p);
+    const craft = brandCraftBrief(p, brainView(p, "video").kept);
     const { best, quality } = await craftLoop("ugc", {
       draft: async (feedback) => {
         const r = await aiUgcScript({ ...base, usageKey: `${ctx.job.id}:ugc${feedback ? ":r2" : ""}` }, p, { beats: o.beats, presenter, setting: pick(UGC_SETTINGS, o.setting, services ? "activite" : "salon"), tone: C(pick(UGC_TONES, o.tone, "naturel").fr, pick(UGC_TONES, o.tone, "naturel").en), angle: services ? C("présentation de l'activité face caméra", "on-camera business presentation") : C(pick(UGC_ANGLES, o.angle, "presentation").fr, pick(UGC_ANGLES, o.angle, "presentation").en), url: o.url, brief: [serviceBrief, o.brief].filter(Boolean).join(" ") || undefined, roles, craft, feedback });

@@ -13,7 +13,7 @@ import { assetData, getAsset, saveAsset, type Asset } from "../library";
 import { loadProject, saveBrand, type Project } from "../projects";
 import { fullLogoImage, imageProviderAvailable, imageUnavailableReason, refundMediaQuota } from "../ai/media-providers";
 import { llmConfigured, llmJson } from "../ai/llm";
-import { projectContext } from "../ai/context";
+import { brainView } from "../ai/context";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { stableKey } from "../ai/keys";
@@ -27,14 +27,18 @@ type Ictx = { userId: string; projectId: string; jobId?: string | null };
 /** Trois briefs de logo complets, rédigés d'après tout le projet (métier, clientèle, ton, couleurs). */
 async function briefs(ictx: Ictx, p: Project, usageKey: string): Promise<{ concept: string; brief: string; descriptor?: string }[]> {
   const pal = p.brand?.palette;
+  const view = brainView(p, "logo");
+  // Palette et direction déjà dans le contexte du Brain (scope logo) : pas répétées dans la demande.
+  const palette = view.kept.includes("brand.palette") ? "" : ` Palette : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : "à choisir"}.`;
+  const direction = view.kept.includes("brand.direction") ? "" : ` Direction : ${p.brand?.direction ?? ""}.`;
   const r = await llmJson(
     {
       task: "logo_symbol",
       ...ictx,
       usageKey,
       system: `Rôle : directeur artistique senior d'une agence de branding. Tu écris, pour un illustrateur (une IA d'images), trois briefs de LOGO COMPLET (symbole + nom de la marque) vraiment différents, comme un vrai designer : le symbole naît de la logique du métier ou du produit (fonction, geste, outil, matière, bénéfice, origine), jamais un cliché du secteur ; typographie décrite précisément (famille, graisse, casse, interlettrage) ; composition (symbole à gauche, au-dessus, emblème…) ; couleurs : UNIQUEMENT celles de la palette de la marque (codes hexadécimaux donnés), le logo doit correspondre à la charte graphique. Aucune promesse, aucun slogan dans le logo. Briefs EN ANGLAIS, 70 à 140 mots chacun ; « concept » en français, une phrase.`,
-      context: projectContext(p, "brand"),
-      prompt: `Marque : « ${p.brand?.name ?? p.name} ». Palette : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : "à choisir"}. Direction : ${p.brand?.direction ?? ""}.
+      context: view.stable,
+      prompt: `Marque : « ${p.brand?.name ?? p.name} ».${palette}${direction}
 Trois propositions ORIGINALES et vraiment différentes (idée, composition, typographie, couleurs), du niveau des logos professionnels de commerçants et d'artisans, par exemple : 1) une icône illustrée et colorée qui montre le métier au premier regard, au-dessus du nom ; 2) un emblème ou un badge ; 3) une typographie travaillée (script élégant ou capitales fortes) avec un petit symbole. Choisis ce qui sert le mieux cette entreprise ; jamais la copie d'un logo existant. « descriptor » : la ligne du métier sous le nom, en français, 1 à 3 mots en capitales (ex. « PLÂTRIER PEINTRE »), ou vide pour un logo sans cette ligne.
 Réponds { "logos": [ { "concept": "…", "brief": "…", "descriptor": "…" }, { "concept": "…", "brief": "…", "descriptor": "…" }, { "concept": "…", "brief": "…", "descriptor": "…" } ] }.`,
       maxTokens: 6000,

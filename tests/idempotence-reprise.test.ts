@@ -29,7 +29,7 @@ vi.mock("@/lib/ai/llm", async (orig) => ({
     throw new Error(`appel inattendu ${call.task}`);
   }),
 }));
-vi.mock("@/lib/ai/context", () => ({ projectContext: () => "" }));
+vi.mock("@/lib/ai/context", () => ({ projectContext: () => "", brainContext: () => "", brainView: () => ({ stable: "", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
 
 const { generateFullLogos } = await import("@/lib/engine/full-logo");
 const { JobContext } = await import("@/lib/jobs");
@@ -109,7 +109,7 @@ describe("idempotence des reprises", () => {
         return { verdict: "ok", scores: { specificity: 9, benefits: 9, objections: 9, clarity: 9, voice: 9, seo: 9, conversion: 9 }, issues: [] };
       }),
     }));
-    vi.doMock("@/lib/ai/context", () => ({ projectContext: () => "" }));
+    vi.doMock("@/lib/ai/context", () => ({ projectContext: () => "", brainContext: () => "", brainView: () => ({ stable: "", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
     const { aiShopCopyChecked } = await import("@/lib/ai/tasks");
     const { JobContext: JC } = await import("@/lib/jobs");
     const { emptyProduct } = await import("@/lib/project-types");

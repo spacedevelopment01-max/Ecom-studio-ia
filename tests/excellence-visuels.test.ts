@@ -17,7 +17,7 @@ vi.mock("@/lib/ai/llm", async (orig) => ({
     return schema.parse(r);
   },
 }));
-vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>" }));
+vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>", brainContext: () => "<contexte_projet></contexte_projet>", brainView: () => ({ stable: "<contexte_projet></contexte_projet>", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
 
 const PINK = { primary: "#D98A97", secondary: "#F6D9DC", accent: "#E25C77", light: "#FFF6F4", dark: "#3A2226" };
 const NAVY = { primary: "#1F3A5F", secondary: "#C9D6E3", accent: "#F2A33A", light: "#EEF3F7", dark: "#0E1621" };

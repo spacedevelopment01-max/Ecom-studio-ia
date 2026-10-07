@@ -4,7 +4,8 @@
  * Mapping legacy : brand → brand · shop → theme · images → image · video → video · social → social · all → all.
  * Chaque vue legacy = le scope du Brain + ce que l'ancien contexte transmettait toujours (offre, faits, inconnues,
  * prix, variantes, prestations et leurs règles, marque, messages clés, règles de véracité), pour que les modules
- * actuels gardent les informations nécessaires. La réduction fine par module (logo, blog, publicité…) viendra en 2.7.
+ * actuels gardent les informations nécessaires. Depuis la phase 2C, les moteurs reçoivent leur scope EXPLICITE
+ * (brainView / brainContext) ; la vue legacy ne sert plus qu'aux outils d'administration (essai d'un prompt).
  *
  * Le contexte VOLATIL (créations récentes) n'est jamais dans le texte renvoyé : il est mémorisé à côté, avec la
  * portée et l'empreinte, et llm.ts le place APRÈS le point de cache. Ce registre n'est pas un cache de contexte :
@@ -49,6 +50,24 @@ export function legacyView(p: Project, scope: LegacyScope = "all"): ContextView 
   remember(view.stable, { projectId: p.id, scope: view.label, hash: view.hash, version: view.brainVersion, volatile: view.volatile });
   return view;
 }
+
+/**
+ * Vue EXPLICITE d'un scope du Brain (phase 2C) : seulement ce qui sert au moteur, budget du scope, empreinte et
+ * portée tracées dans ai_calls. « all » est refusé : un moteur reçoit toujours un scope précis.
+ */
+export function brainView(p: Project, scope: Exclude<Scope, "all">): ContextView {
+  if ((scope as Scope) === "all") throw new Error("brainView : un moteur reçoit un scope précis, jamais « all ».");
+  const view = contextFor(brainSnapshot(p), scope);
+  remember(view.stable, { projectId: p.id, scope: view.label, hash: view.hash, version: view.brainVersion, volatile: view.volatile });
+  return view;
+}
+
+/** Contexte stable d'un scope explicite (le volatil passe après le point de cache, via le registre). */
+export const brainContext = (p: Project, scope: Exclude<Scope, "all">) => brainView(p, scope).stable;
+
+/** Trace Brain d'une génération média dont la consigne a été écrite à partir d'un contexte du Brain. */
+export type BrainTrace = { scope: string; hash: string; version: string };
+export const brainTraceOf = (v: Pick<ContextView, "label" | "hash" | "brainVersion">): BrainTrace => ({ scope: v.label, hash: v.hash, version: v.brainVersion });
 
 function remember(stable: string, meta: BrainMeta) {
   registry.delete(stable);
