@@ -184,7 +184,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       if (clipDirs.length) sp.scenes.splice(1, 0, { kind: "clip", duration: 3, clip: 0 });
       return sp;
     }
-    if (llmConfigured()) {
+    if (llmConfigured()) try {
       // Réalisateur (une passe forte) → contrôles de montage + directeur de création (grille notée, seuil 8/10)
       // → au plus une reprise ciblée → la meilleure version est gardée.
       const goal = req.goal ?? C("publicité courte qui donne envie d'acheter", "short ad that makes people want to buy");
@@ -198,6 +198,10 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       });
       craftQuality = quality;
       return best;
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      // Découpage de l'IA inexploitable : celui du studio prend le relais (la vidéo est quand même livrée).
+      console.warn("[vidéo] découpage de l'IA indisponible :", (e as Error).message);
     }
     return localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url, project);
   }));
