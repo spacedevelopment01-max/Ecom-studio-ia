@@ -8,7 +8,7 @@
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { z } from "zod";
-import { all } from "../db";
+import { all, json } from "../db";
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, type Project } from "../projects";
 import type { ServiceItem } from "../project-types";
@@ -121,7 +121,7 @@ export type CardPlan = { card: Omit<ServiceCard, "photo"> & { photo?: number }; 
  * (réalisations, équipe, lieu, ambiances) ; une carte référence une photo par son index.
  * `tips` : conseils d'expert (écrits par l'IA ou le client) ; sans eux, le carrousel détaille les prestations.
  */
-export function serviceCardPlan(p: Project, photos: number, tips?: { title: string; items: { title: string; text: string }[] } | null): CardPlan[] {
+export function serviceCardPlan(p: Project, photos: number, tips?: { title: string; items: { title: string; text: string }[] } | null, assign?: Partial<Record<PhotoSlot, number>>): CardPlan[] {
   const out: CardPlan[] = [];
   const name = activityName(p);
   const items = serviceItems(p);
@@ -130,16 +130,18 @@ export function serviceCardPlan(p: Project, photos: number, tips?: { title: stri
   const contact = contactLine(p);
   const place = placeLine(p);
   const ph = (i: number) => (photos ? i % photos : undefined);
+  // Emplacement d'image de chaque visuel (une image différente par visuel ; mêmes formats d'une publicité = même image).
+  const at = (slot: PhotoSlot, i: number) => (assign && assign[slot] !== undefined ? assign[slot] : ph(i));
   const tagline = p.brand?.tagline || name;
   const summary = clip(p.product.summary, 140);
 
   // Bannières du site : prestations (avec texte), puis ouverture (sans texte, enregistrée en dernier = choisie par le site).
-  if (items.length) out.push({ role: "banner", folder: "images.banners", name: C("banniere-prestations", "services-banner"), card: { template: "services", format: "landscape", eyebrow: name, title: C("Nos prestations", "Our services"), items: items.map((s) => ({ name: clip(s.name, 48), meta: serviceMeta(s).join(" · ") })), cta, contact, photo: ph(1) } });
-  else out.push({ role: "banner", folder: "images.banners", name: C("banniere-activite", "business-banner"), card: { template: "announce", format: "landscape", eyebrow: name, title: tagline, text: summary, cta, contact, photo: ph(1) } });
+  if (items.length) out.push({ role: "banner", folder: "images.banners", name: C("banniere-prestations", "services-banner"), card: { template: "services", format: "landscape", eyebrow: name, title: C("Nos prestations", "Our services"), items: items.map((s) => ({ name: clip(s.name, 48), meta: serviceMeta(s).join(" · ") })), cta, contact, photo: at("banner", 1) } });
+  else out.push({ role: "banner", folder: "images.banners", name: C("banniere-activite", "business-banner"), card: { template: "announce", format: "landscape", eyebrow: name, title: tagline, text: summary, cta, contact, photo: at("banner", 1) } });
 
   // Réseaux : annonce d'une prestation (deux au plus), carrousel, citation, infos pratiques.
   const announce = items.length ? items.slice(0, 2) : [null];
-  announce.forEach((s, i) => out.push({ role: "social", folder: "images.social", name: s ? `${C("prestation", "service")}-${slug(s.name)}` : C("annonce-activite", "business-post"), card: s ? { template: "announce", format: "portrait", eyebrow: C("Prestation", "Service"), title: clip(s.name, 60), text: clip(s.description, 150), chips: serviceMeta(s), cta, photo: ph(i) } : { template: "announce", format: "portrait", eyebrow: name, title: tagline, text: summary, cta, photo: ph(0) } }));
+  announce.forEach((s, i) => out.push({ role: "social", folder: "images.social", name: s ? `${C("prestation", "service")}-${slug(s.name)}` : C("annonce-activite", "business-post"), card: s ? { template: "announce", format: "portrait", eyebrow: C("Prestation", "Service"), title: clip(s.name, 60), text: clip(s.description, 150), chips: serviceMeta(s), cta, photo: at(`service:${i}` as PhotoSlot, i) } : { template: "announce", format: "portrait", eyebrow: name, title: tagline, text: summary, cta, photo: at("service:0", 0) } }));
 
   const slides = tips?.items.length ? tips.items.slice(0, 4).map((t) => ({ title: clip(t.title, 70), text: clip(t.text, 260) })) : items.slice(0, 4).map((s) => ({ title: clip(s.name, 70), text: clip([s.description, serviceMeta(s).join(" · ")].filter(Boolean).join(" · "), 260) }));
   if (slides.length) {
@@ -158,11 +160,11 @@ export function serviceCardPlan(p: Project, photos: number, tips?: { title: stri
 
   // Publicités : « Prenez rendez-vous » aux formats des régies (9:16, 1:1, 16:9).
   const adText = [name, place].filter(Boolean).join(" · ");
-  out.push({ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-9x16`, card: { template: "booking", format: "story", eyebrow: modeLabel(p) || name, title: cta, text: adText, contact, cta: ctaShort, photo: ph(0) } });
-  out.push({ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-1x1`, card: { template: "booking", format: "square", eyebrow: name, title: items[0] ? clip(items[0].name, 60) : tagline, text: items[0] ? clip(items[0].description, 110) : summary, chips: items[0] ? serviceMeta(items[0]) : [], cta: ctaShort, photo: ph(1) } });
-  out.push({ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-16x9`, card: { template: "booking", format: "landscape", eyebrow: name, title: cta, text: [summary || tagline, place].filter(Boolean).join(" · "), contact, cta: ctaShort, photo: ph(2) } });
+  out.push({ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-9x16`, card: { template: "booking", format: "story", eyebrow: modeLabel(p) || name, title: cta, text: adText, contact, cta: ctaShort, photo: at("ad", 0) } });
+  out.push({ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-1x1`, card: { template: "booking", format: "square", eyebrow: name, title: items[0] ? clip(items[0].name, 60) : tagline, text: items[0] ? clip(items[0].description, 110) : summary, chips: items[0] ? serviceMeta(items[0]) : [], cta: ctaShort, photo: at("ad", 1) } });
+  out.push({ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-16x9`, card: { template: "booking", format: "landscape", eyebrow: name, title: cta, text: [summary || tagline, place].filter(Boolean).join(" · "), contact, cta: ctaShort, photo: at("ad", 2) } });
 
-  out.push({ role: "banner", folder: "images.banners", name: C("banniere-ouverture", "hero-banner"), card: { template: "graphic", format: "banner", photo: ph(0) } });
+  out.push({ role: "banner", folder: "images.banners", name: C("banniere-ouverture", "hero-banner"), card: { template: "graphic", format: "banner", photo: at("hero", 0) } });
   return out;
 }
 
@@ -185,18 +187,84 @@ export async function refreshSiteBanners(projectId: string) {
   const p = loadProject(projectId);
   if (p.business !== "services" || !p.brand) return [];
   const photos = activityPhotos(projectId);
-  const plan = serviceCardPlan(p, photos.length, null).filter((x) => x.role === "banner");
+  const plan = serviceCardPlan(p, photos.length, null, assignPhotoSlots(p, photos)).filter((x) => x.role === "banner");
   const saved = await saveCards(p, plan.map((x) => ({ ...x, photoAsset: x.card.photo !== undefined ? photos[x.card.photo] : undefined })), `piste-${Date.now().toString(36)}`);
   return saved.map((s) => s.id);
 }
 
 export function activityPhotos(projectId: string): Asset[] {
-  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin = 'generated' AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 4", projectId);
+  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin = 'generated' AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 8", projectId);
   return [...realActivityPhotos(projectId), ...amb];
+}
+
+/**
+ * Emplacements d'image des visuels d'une activité de services : chaque visuel a sa propre image (une même image
+ * n'est reprise que pour les formats d'un même visuel : la publicité en 9:16, 1:1 et 16:9).
+ */
+export type PhotoSlot = "hero" | "banner" | "service:0" | "service:1" | "ad";
+
+/** Emplacements à illustrer, dans l'ordre d'importance (les vraies photos du client les remplissent en premier). */
+export function photoSlots(p: Project): PhotoSlot[] {
+  const announced = Math.max(1, Math.min(2, serviceItems(p).length));
+  return ["hero", "banner", ...(["service:0", "service:1"] as PhotoSlot[]).slice(0, announced), "ad"];
+}
+
+/**
+ * Image de chaque emplacement : les vraies photos du client d'abord (une par visuel), puis l'image d'ambiance
+ * générée pour cet emplacement, puis une image encore inutilisée ; en dernier recours seulement, une image déjà prise.
+ */
+export function assignPhotoSlots(p: Project, pool: Asset[]): Partial<Record<PhotoSlot, number>> {
+  const slots = photoSlots(p);
+  const out: Partial<Record<PhotoSlot, number>> = {};
+  if (!pool.length) return out;
+  const used = new Set<number>();
+  const slotOf = (a: Asset) => (a.origin === "generated" ? (json<any>(a.meta as any, {}).slot as PhotoSlot | undefined) : undefined);
+  const real = pool.map((a, i) => (a.origin !== "generated" ? i : -1)).filter((i) => i >= 0);
+  let r = 0;
+  for (const slot of slots) {
+    if (r < real.length) {
+      out[slot] = real[r++];
+      used.add(out[slot]!);
+      continue;
+    }
+    const own = pool.findIndex((a, i) => !used.has(i) && slotOf(a) === slot);
+    const free = own >= 0 ? own : pool.findIndex((a, i) => !used.has(i) && !slotOf(a));
+    const any = free >= 0 ? free : pool.findIndex((_, i) => !used.has(i));
+    out[slot] = any >= 0 ? any : slots.indexOf(slot) % pool.length;
+    used.add(out[slot]!);
+  }
+  return out;
+}
+
+/** Consignes d'ambiance par emplacement (une image IA par visuel), pour ceux que les vraies photos ne couvrent pas. */
+export function ambianceSlots(p: Project): { slot: PhotoSlot; aspect: "16:9" | "4:5" | "1:1"; prompt: string }[] {
+  const [place, hands, base, look] = ambianceParts(p);
+  const items = serviceItems(p);
+  const serviceShot = (i: number) => {
+    const s = items[i];
+    return s
+      ? `${base} The service "${s.name}"${s.description ? ` (${clip(s.description, 160)})` : ""} being carried out: the professional's hands and tools doing this specific job, the result taking shape, 50mm lens, natural light. ${look}`
+      : `${base} The professional at work on a typical job of this activity, three-quarter view from behind or side so no face is identifiable, 35mm lens, natural light. ${look}`;
+  };
+  const all: { slot: PhotoSlot; aspect: "16:9" | "4:5" | "1:1"; prompt: string }[] = [
+    { slot: "hero", aspect: "16:9", prompt: place },
+    { slot: "banner", aspect: "16:9", prompt: `${base} Wide view of a finished, high-quality job typical of this activity, clean and well lit, nobody in frame, real materials visible, 24mm lens. ${look}` },
+    { slot: "service:0", aspect: "4:5", prompt: serviceShot(0) },
+    { slot: "service:1", aspect: "4:5", prompt: serviceShot(1) },
+    { slot: "ad", aspect: "1:1", prompt: hands },
+  ];
+  const wanted = new Set(photoSlots(p));
+  return all.filter((x) => wanted.has(x.slot));
 }
 
 /** Consignes d'ambiance pour l'IA d'images (anglais pour les modèles), à partir de l'activité réelle. */
 export function ambiancePrompts(p: Project): string[] {
+  const [place, hands] = ambianceParts(p);
+  return [place, hands];
+}
+
+/** Lieu, gestes, contexte de l'activité et ligne photographique de la marque (communs à toutes les ambiances). */
+function ambianceParts(p: Project): [string, string, string, string] {
   const what = [p.product.category, p.product.summary || activityName(p)].filter(Boolean).join(" — ");
   const services = serviceItems(p).slice(0, 4).map((s) => s.name).join(", ");
   const base = `Business activity: ${what}.${services ? ` Services offered: ${services}.` : ""}${placeLine(p) ? ` Location: ${placeLine(p)}.` : ""}`;
@@ -206,6 +274,8 @@ export function ambiancePrompts(p: Project): string[] {
   return [
     `${base} The place where this activity happens (workshop, practice room, studio, salon or venue), tidy, lived-in and inviting, seen at eye level with a 35mm lens, nobody looking at the camera, real tools and materials of the trade visible. ${look}`,
     `${base} Close-up of skilled hands at work with the real tools and materials of this activity, 50mm lens slightly above, shallow depth of field, the gesture sharp and the background soft. ${look}`,
+    base,
+    look,
   ];
 }
 
@@ -351,11 +421,13 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
   // 2. Images d'ambiance (IA d'images disponible) : consignes honnêtes, aucun faux client identifiable.
   const withAi = opts.withAi !== false && !!imageProviderAvailable();
   if (withAi) {
-    for (const [i, prompt] of ambiancePrompts(project).entries()) {
-      const ids = await ctx.step(`svc:ambiance:${i}`, async () => {
-        ctx.progress(0.2 + i * 0.1, L("Images d'ambiance de l'activité (IA)", "Business mood images (AI)"));
+    // Une image par visuel : les vraies photos du client couvrent les premiers emplacements, l'IA complète les autres.
+    const todo = ambianceSlots(project).slice(realActivityPhotos(projectId).length);
+    for (const [i, { slot, aspect, prompt }] of todo.entries()) {
+      const ids = await ctx.step(`svc:ambiance:${slot}`, async () => {
+        ctx.progress(0.2 + (i / Math.max(1, todo.length)) * 0.3, L("Images d'ambiance de l'activité (IA)", "Business mood images (AI)"));
         try {
-          const img = await ambianceImage({ ...ictx, usageKey: `${ctx.job.id}:ambiance:${i}` }, { prompt, aspect: i === 0 ? "16:9" : "4:5", reference: originals[i] ? assetData(originals[i]) : null });
+          const img = await ambianceImage({ ...ictx, usageKey: `${ctx.job.id}:ambiance:${i}` }, { prompt, aspect, reference: originals[i] ? assetData(originals[i]) : null });
           const check = await checkAmbiance({ ...ictx, usageKey: `${ctx.job.id}:ambianceqc:${i}` }, img);
           if (!check.ok) {
             // Image refusée (texte inventé, visage, mains déformées…) ou impossible à vérifier : ni montrée ni décomptée.
@@ -363,7 +435,7 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
             refundMediaQuota(ictx.userId, `${ctx.job.id}:ambiance:${i}`);
             return [] as string[];
           }
-          const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: i === 0 ? "16:9" : "4:5" }, status: "review" });
+          const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspect, slot }, status: "review" });
           return [a.id];
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -389,7 +461,7 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
 
   // 4. Visuels : bannières, réseaux, publicités.
   const photos = activityPhotos(projectId);
-  const plan = serviceCardPlan(project, photos.length, tips).filter((x) => (opts.banner === false ? x.role !== "banner" : true) && (opts.social === false ? x.role === "banner" : true));
+  const plan = serviceCardPlan(project, photos.length, tips, assignPhotoSlots(project, photos)).filter((x) => (opts.banner === false ? x.role !== "banner" : true) && (opts.social === false ? x.role === "banner" : true));
   const ids = await ctx.step("svc:visuals", async () => {
     ctx.progress(0.55, L("Bannières, visuels réseaux et publicités", "Banners, social visuals and ads"));
     const saved = await saveCards(project, plan.map((x) => ({ ...x, photoAsset: x.card.photo !== undefined ? photos[x.card.photo] : undefined })), ctx.job.id);
