@@ -82,3 +82,56 @@ export async function pingStock(source: "pexels" | "pixabay"): Promise<string> {
   }
   return L(`Clé ${source === "pexels" ? "Pexels" : "Pixabay"} valide.`, `${source === "pexels" ? "Pexels" : "Pixabay"} key is valid.`);
 }
+
+// ---------------------------------------------------------------- vidéos libres de droits
+
+export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string; page: string; author: string; license: string; width: number; height: number; duration: number };
+
+/** Vidéos libres de droits (Pexels, Pixabay : clés gratuites) ; fichier HD de taille raisonnable choisi. */
+export async function searchStockVideos(queries: string[], orientation: "landscape" | "portrait", lang: "fr" | "en", exclude: Set<string>): Promise<StockVideo[]> {
+  const out: StockVideo[] = [];
+  const pick = (files: { width: number; height: number; link: string }[]) =>
+    files.filter((f) => f.link && Math.max(f.width, f.height) >= 1080 && Math.max(f.width, f.height) <= 2160).sort((a, b) => a.width * a.height - b.width * b.height)[0] ?? files.filter((f) => f.link).sort((a, b) => b.width * b.height - a.width * a.height)[0];
+  for (const query of queries.filter(Boolean)) {
+    const q = encodeURIComponent(query);
+    const pexels = activeProviderKey("pexels");
+    if (pexels) {
+      try {
+        const j = await get(`https://api.pexels.com/videos/search?query=${q}&per_page=10&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: pexels });
+        for (const v of j.videos ?? []) {
+          const f = pick((v.video_files ?? []).filter((x: any) => /mp4/.test(x.file_type ?? "video/mp4")).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.link })));
+          if (f && v.duration >= 4 && !exclude.has(`pexels:${v.id}`)) out.push({ source: "pexels", id: String(v.id), url: f.link, page: v.url, author: v.user?.name ?? "", license: "Pexels", width: f.width, height: f.height, duration: v.duration });
+        }
+      } catch (e) {
+        console.warn("[vidéos libres] pexels indisponible :", (e as Error).message);
+      }
+    }
+    const pixabay = activeProviderKey("pixabay");
+    if (pixabay) {
+      try {
+        const j = await get(`https://pixabay.com/api/videos/?key=${encodeURIComponent(pixabay)}&q=${q}&per_page=10&safesearch=true&lang=${lang}`);
+        for (const v of j.hits ?? []) {
+          const f = pick(["large", "medium", "small"].map((k) => v.videos?.[k]).filter(Boolean).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.url })));
+          const wantTall = orientation === "portrait";
+          if (f && v.duration >= 4 && (f.height > f.width) === wantTall && !exclude.has(`pixabay:${v.id}`)) out.push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration });
+        }
+      } catch (e) {
+        console.warn("[vidéos libres] pixabay indisponible :", (e as Error).message);
+      }
+    }
+    if (out.length >= 3) break;
+  }
+  return out;
+}
+
+/** Télécharge une vidéo libre de droits (MP4, 80 Mo au plus). */
+export async function downloadStockVideo(v: StockVideo): Promise<Buffer> {
+  const r = await fetch(v.url, { headers: { "User-Agent": "E-COM-STUDIO-IA" }, signal: AbortSignal.timeout(90_000) });
+  if (!r.ok) throw new Error(`${v.source} ${r.status}`);
+  const buf = Buffer.from(await r.arrayBuffer());
+  if (buf.length > 80_000_000) throw new Error(L("vidéo trop lourde", "video too large"));
+  return buf;
+}
+
+export const stockVideoCredit = (v: Pick<StockVideo, "license" | "author">) =>
+  L(`Vidéo libre de droits (${v.license})${v.author ? `, ${v.author}` : ""} — illustration du métier, pas une vidéo de vos réalisations`, `Royalty-free video (${v.license})${v.author ? `, ${v.author}` : ""} — illustrates the trade, not a video of your work`);

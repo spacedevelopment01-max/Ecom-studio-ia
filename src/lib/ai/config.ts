@@ -51,12 +51,12 @@ export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly rol
   pexels: provider(
     { fr: "Pexels (photos libres de droits)", en: "Pexels (royalty-free photos)" },
     { fr: "Vraies photos du métier, gratuites, avant toute image payante (entreprises de services)", en: "Real trade photos, free, before any paid image (service businesses)" },
-    { fr: "Clé API Pexels (gratuite)", en: "Pexels API key (free)" },
+    { fr: "Clé API Pexels (gratuite ; nouvelles clés parfois suspendues par Pexels : Pixabay fait aussi photos et vidéos)", en: "Pexels API key (free; Pexels sometimes suspends new keys: Pixabay also provides photos and videos)" },
     "https://www.pexels.com/api/",
   ),
   pixabay: provider(
     { fr: "Pixabay (photos libres de droits)", en: "Pixabay (royalty-free photos)" },
-    { fr: "Deuxième banque de photos gratuites, en complément de Pexels", en: "Second free photo library, alongside Pexels" },
+    { fr: "Photos et vidéos libres de droits, gratuites (montages vidéo, visuels)", en: "Free royalty-free photos and videos (video edits, visuals)" },
     { fr: "Clé API Pixabay (gratuite)", en: "Pixabay API key (free)" },
     "https://pixabay.com/api/docs/",
   ),

@@ -13,6 +13,7 @@ import { contrast, hsl, isDark, withLightness } from "../color";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { imageProviderAvailable, imageUnavailableReason, logoSymbolImage, refundMediaQuota } from "../ai/media-providers";
 import { traceSymbol } from "../media/trace-symbol";
+import { tradeIcon } from "../media/icon-library";
 import { C, L } from "../i18n-server";
 import { serviceSymbol, serviceTaglines } from "./services-text";
 import type { CustomSymbol } from "../media/logo-symbol";
@@ -66,6 +67,9 @@ const KEYWORD_SYMBOL: [RegExp, SymbolKind][] = [
 ];
 
 /** Symbole cohérent avec l'univers : d'abord les mots du produit, puis le secteur. */
+/** Texte qui décrit le métier ou le produit (recherche d'icône du métier). */
+const tradeText = (p: Project) => `${p.product.category} ${p.product.name} ${p.product.summary} ${(p.services?.services ?? []).map((s) => s.name).join(" ")}`;
+
 export function symbolFor(p: Project): SymbolKind {
   const text = `${p.product.name} ${p.product.category} ${p.product.summary} ${p.catalog.map((c) => `${c.name} ${c.category}`).join(" ")}`;
   // Le mot-clé cité en premier l'emporte (« gant pour poils de chat… sur les vêtements » → patte, pas cintre).
@@ -214,7 +218,7 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
   const sameInitial = previous.length && monogramLetter(previous[0].info.brandName ?? "") === monogramLetter(brand.name);
   if (!add && !opts.redrawSymbol && previous.length && sameInitial) {
     // Reprise : les dessins de l'IA restent, couleurs recalculées depuis la palette ; les versions du studio sont refaites.
-    const local = await localRoutes(binput, { cutout, library: symbolFor(p) });
+    const local = await localRoutes(binput, { cutout, library: symbolFor(p), icon: await tradeIcon(tradeText(p)) });
     routes = previous.map((x) => {
       const r = x.info.route as CreativeRoute;
       if (r.source === "local") return local[r.key].find((c) => c.markKind === r.markKind) ?? local[r.key][0] ?? r;
@@ -229,7 +233,7 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
     // Emplacements à créer : d'abord les familles absentes des pistes gardées (produit, concept, typo).
     const have = new Set(add ? previous.map((x) => x.info.key) : []);
     const keys = [...ROUTE_KEYS.filter((k) => !have.has(k)), ...ROUTE_KEYS.filter((k) => have.has(k))].slice(0, room);
-    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), ai, textIssues: routeTextIssues(p), avoid, variant, keys });
+    const design = await designRoutes({ brand: binput, cutout, library: symbolFor(p), icon: await tradeIcon(tradeText(p)), ai, textIssues: routeTextIssues(p), avoid, variant, keys });
     routes = design.routes;
     notes = design.notes;
     aiState = design.ai;

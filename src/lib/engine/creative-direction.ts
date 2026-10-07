@@ -196,7 +196,7 @@ const TREATMENTS: [PaletteRole, PaletteRole, PaletteRole, PaletteRole][] = [
  * Pistes du studio, sans IA, dans l'ordre des emplacements : silhouette du produit (sinon pictogramme de la
  * bibliothèque, signalé comme générique), monogramme géométrique construit localement, logotype soigné.
  */
-export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | null; library: SymbolKind; variant?: number; avoid?: RouteAvoid[] }): Promise<Record<RouteKey, CreativeRoute[]>> {
+export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | null; library: SymbolKind; variant?: number; avoid?: RouteAvoid[]; icon?: { name: string; svg: string } | null }): Promise<Record<RouteKey, CreativeRoute[]>> {
   const pal = brand.palette;
   const elegant = ELEGANT.includes(brand.direction);
   const bold = BOLD.includes(brand.direction);
@@ -239,6 +239,25 @@ export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | nu
       });
     else notes.push(`silhouette écartée : ${sil.reason}`);
   }
+  // Symbole du métier tiré de la bibliothèque d'icônes libres (Tabler, licence MIT) : rouleau, truelle, ciseaux…
+  const icon = opts.icon ? sanitizeSymbolSvg(opts.icon.svg, { maxShapes: 3 }) : null;
+  if (icon?.ok)
+    produit.push({
+      key: "produit",
+      name: C("Symbole du métier", "Trade symbol"),
+      why: C(`Un symbole qui dit votre métier au premier regard (icône libre « ${opts.icon!.name} », licence MIT), posé avec le nom en ${A.heading}. Lisible jusque dans un onglet de navigateur ; c'est une icône générique, pas un dessin exclusif à la marque.`, `A symbol that tells your trade at a glance (free icon "${opts.icon!.name}", MIT license), set with the name in ${A.heading}. Readable down to a browser tab; it is a generic icon, not a drawing exclusive to the brand.`),
+      source: "local",
+      markKind: "library",
+      mark: fitSymbol(icon.symbol, 0.04),
+      heading: A.heading,
+      headingWeight: bold ? 800 : 600,
+      body: A.body,
+      case: variant % 2 ? "title" : "upper",
+      tracking: 0.08,
+      composition: produitComp,
+      ...treat(0, "library", produitComp),
+      notes: [],
+    });
   const [fr, en] = LIB_LABEL[opts.library];
   produit.push({
     key: "produit",
@@ -384,11 +403,11 @@ export type RoutesDesign = { routes: CreativeRoute[]; notes: string[]; ai: "used
  * Trois pistes contrôlées. Une piste refusée n'est jamais montrée : elle est reprise une fois (consignes ciblées),
  * puis remplacée par la version du studio de son emplacement, contrôlée elle aussi quand l'IA est disponible.
  */
-export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; ai: CreativeAi | null; textIssues?: (text: string) => string[]; variant?: number; avoid?: RouteAvoid[]; keys?: RouteKey[] }): Promise<RoutesDesign> {
+export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | null; library: SymbolKind; icon?: { name: string; svg: string } | null; ai: CreativeAi | null; textIssues?: (text: string) => string[]; variant?: number; avoid?: RouteAvoid[]; keys?: RouteKey[] }): Promise<RoutesDesign> {
   const { brand, ai } = input;
   const avoid = input.avoid ?? [];
   const notes: string[] = [];
-  const fallback = await localRoutes(brand, { cutout: input.cutout, library: input.library, variant: input.variant, avoid });
+  const fallback = await localRoutes(brand, { cutout: input.cutout, library: input.library, icon: input.icon, variant: input.variant, avoid });
   const board = (route: CreativeRoute) => routeBoard({ route, brand, product: input.cutout });
   const out: CreativeRoute[] = [];
   let aiState: RoutesDesign["ai"] = ai ? "used" : "off";
