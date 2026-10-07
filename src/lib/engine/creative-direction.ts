@@ -43,6 +43,8 @@ export type RouteDraft = {
   key: RouteKey;
   name: string;
   why: string;
+  /** Brief de dessin du symbole (formes, composition, parti pris), transmis à l'IA d'images. */
+  drawing?: string;
   svg: string;
   heading: string;
   headingWeight: number;
@@ -97,6 +99,15 @@ export function routePassed(r: RouteReview | null | undefined, source: "ai" | "l
 }
 
 const CRITERION_FR: Record<string, string> = { originality: "originalité", memorability: "mémorisation", relevance: "pertinence", simplicity: "simplicité", smallSizes: "lisibilité à 16 px et en noir et blanc", coherence: "cohérence typo/couleur", distinctiveness: "singularité (pas de cliché du secteur)" };
+
+/** Défauts rédhibitoires : ressemblance avec une marque existante, monogramme qui ne se lit pas comme des lettres. */
+export const hardFail = (r: RouteReview) => r.resemblesKnownBrand === true || r.readsAsLetters === false;
+
+/** Note globale d'une piste sur la grille (moyenne), pénalisée si c'est un cliché du secteur. */
+export function routeScore(r: RouteReview): number {
+  const s = ROUTE_CRITERIA.map((k) => clamp10(r.scores?.[k]));
+  return s.reduce((a, b) => a + b, 0) / s.length - (r.cliche ? 1.5 : 0);
+}
 
 /** Consignes de reprise ciblée tirées de la grille. */
 export function reviewFeedback(r: RouteReview): string {
@@ -299,29 +310,51 @@ export async function localRoutes(brand: BrandInput, opts: { cutout: Buffer | nu
   return { produit, concept, typo };
 }
 
-/** Piste construite à partir du brief de l'IA, ou raison du refus (consigne de reprise). */
-export function routeFromDraft(d: RouteDraft, brand: BrandInput): { ok: true; route: CreativeRoute } | { ok: false; reason: string } {
+/** Coupe un texte à `max` caractères au plus, en fin de phrase si possible, sinon sur un mot. */
+function clipText(t: string, max: number, sentences = 2): string {
+  const parts = t.match(/[^.!?…]+[.!?…]+["»”)]*\s*/g) ?? [t];
+  let out = parts.slice(0, sentences).join("").trim() || t;
+  if (out.length <= max) return out;
+  out = out.slice(0, max);
+  const cut = Math.max(out.lastIndexOf(". "), out.lastIndexOf(" "));
+  return `${out.slice(0, cut > max * 0.6 ? cut : max).replace(/[\s,;:]+$/, "")}${/[.!?…]$/.test(out.slice(0, cut)) ? "" : "…"}`;
+}
+
+/**
+ * Piste construite à partir du brief de l'IA. Les écarts de forme (texte trop long, police ou rôle de couleur hors
+ * liste) sont corrigés sans jeter le dessin : seuls un SVG dangereux ou inexploitable font refuser la piste.
+ * `soft` : défauts à signaler (lisibilité en petit) sans refuser — le contrôle visuel tranche.
+ */
+export function routeFromDraft(d: RouteDraft, brand: BrandInput): { ok: true; route: CreativeRoute; soft: string[] } | { ok: false; reason: string } {
   const no = (reason: string) => ({ ok: false as const, reason });
   if (!d || !ROUTE_KEYS.includes(d.key)) return no("piste inconnue");
-  const name = (d.name ?? "").trim();
-  const why = (d.why ?? "").trim();
-  if (name.length < 2 || name.length > 40) return no("nom du concept absent ou trop long (40 caractères au plus)");
-  if (why.length < 40 || why.length > 360) return no("« pourquoi ce logo » : deux phrases, 360 caractères au plus");
-  if (!CANVAS_FONTS[d.heading]) return no(`police de titre indisponible (${d.heading}) : choisir dans la liste`);
-  if (!CANVAS_FONTS[d.body]) return no(`police de texte indisponible (${d.body}) : choisir dans la liste`);
-  if (!ROLES.includes(d.ink) || !ROLES.includes(d.accent) || !ROLES.includes(d.ground)) return no("couleurs : utiliser les rôles de la palette (primary, secondary, accent, light, dark)");
-  const accentHex = brand.palette[d.accent];
   const typo = d.key === "typo";
+  const fixes: string[] = [];
+  let name = (d.name ?? "").trim();
+  if (name.length > 40) { name = clipText(name, 40, 1).replace(/…$/, ""); fixes.push("nom raccourci"); }
+  if (name.length < 2) name = typo ? L("Monogramme", "Monogram") : L("Proposition de l'IA", "AI proposal");
+  let why = (d.why ?? "").trim();
+  if (why.length > 360) { why = clipText(why, 360); fixes.push("justification raccourcie"); }
+  if (why.length < 20) return no("« pourquoi ce logo » absent : deux phrases sur l'idée du symbole");
+  const fallback = FONT_PAIRS[0];
+  const heading = CANVAS_FONTS[d.heading] ? d.heading : (fixes.push(`police ${d.heading} remplacée`), fallback.heading);
+  const body = CANVAS_FONTS[d.body] ? d.body : (fixes.push(`police ${d.body} remplacée`), fallback.body);
+  const role = (r: PaletteRole, def: PaletteRole) => (ROLES.includes(r) ? r : (fixes.push("couleur hors palette remplacée"), def));
+  const ink = role(d.ink, "dark");
+  const accent = role(d.accent, "accent");
+  const ground = role(d.ground, "light");
+  const accentHex = brand.palette[accent];
   const clean = sanitizeSymbolSvg(d.svg, { accent: accentHex, maxShapes: typo ? 5 : 3 });
   if (!clean.ok) return no(`SVG refusé par la validation : ${clean.reason}`);
   const mark: CustomSymbol = fitSymbol(clean.symbol, 0.04);
   const leg = symbolLegibility(mark);
-  if (!leg.ok) return no(`illisible en petit : ${leg.issues.join(" ; ")} — formes plus grandes et plus simples, traits plus épais`);
+  const soft = leg.ok ? [] : [`lisibilité en petit à améliorer : ${leg.issues.join(" ; ")} — formes plus grandes et plus simples, traits plus épais`];
   const composition = (["horizontal", "stacked", "emblem", "wordmark"] as const).includes(d.composition) ? d.composition : typo ? "wordmark" : "horizontal";
-  const weights = Object.keys(CANVAS_FONTS[d.heading].file).map(Number);
+  const weights = Object.keys(CANVAS_FONTS[heading].file).map(Number);
   const weight = weights.reduce((a, b) => (Math.abs(b - d.headingWeight) < Math.abs(a - d.headingWeight) ? b : a), weights[0]);
   return {
     ok: true,
+    soft,
     route: {
       key: d.key,
       name,
@@ -329,16 +362,16 @@ export function routeFromDraft(d: RouteDraft, brand: BrandInput): { ok: true; ro
       source: "ai",
       markKind: typo ? "ai-monogram" : "ai-symbol",
       mark,
-      heading: d.heading,
+      heading,
       headingWeight: weight,
-      body: d.body,
+      body,
       case: (["upper", "title", "lower", "asis"] as const).includes(d.case) ? d.case : "upper",
       tracking: Math.max(0, Math.min(0.3, Number(d.tracking) || 0.04)),
       composition,
       // Logotype seul d'une piste typographique dont le monogramme a un détail d'accent : le nom reprend ce détail (point final).
       dot: typo && composition === "wordmark" && mark.shapes.some((x) => x.tone === "accent"),
-      ...colorsOf(brand.palette, d.ink, d.accent, d.ground, d.ground === "secondary" ? "light" : "secondary"),
-      notes: [],
+      ...colorsOf(brand.palette, ink, accent, ground, ground === "secondary" ? "light" : "secondary"),
+      notes: fixes.length ? [`Corrigé automatiquement : ${fixes.join(", ")}.`] : [],
     },
   };
 }
@@ -369,6 +402,9 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
   let reviewDown = false;
   for (const key of input.keys ?? ROUTE_KEYS) {
     let accepted: CreativeRoute | null = null;
+    // Meilleure proposition de l'IA pour cette piste, même si elle n'atteint pas le seuil : elle est comparée à la
+    // version du studio et montrée si elle fait au moins aussi bien (le travail payé ne disparaît pas sans raison).
+    let best: { route: CreativeRoute; score: number } | null = null;
     if (ai && aiState === "used") {
       let draft: RouteDraft | null = drafts.find((d) => d?.key === key) ?? null;
       let feedback = "";
@@ -384,7 +420,7 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
         }
         const built = routeFromDraft(draft!, brand);
         if (!built.ok) {
-          notes.push(`${key} : piste de l'IA refusée (${built.reason})`);
+          notes.push(`${key} : piste de l'IA inexploitable (${built.reason})`);
           feedback = built.reason;
           continue;
         }
@@ -396,45 +432,42 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
         }
         const words = input.textIssues?.(`${built.route.name}. ${built.route.why}`) ?? [];
         if (words.length) {
-          notes.push(`${key} : texte refusé (${words.join(", ")})`);
+          // Aucune promesse affichée : le texte est repris, le dessin reste candidat avec un texte neutre.
+          notes.push(`${key} : texte repris (${words.join(", ")})`);
           feedback = `texte à corriger : ${words.join(", ")} (aucune promesse, aucune formule creuse)`;
-          continue;
+          built.route.why = L(`Piste « ${built.route.name} » proposée par l'IA pour ${brand.name}.`, `“${built.route.name}” route proposed by the AI for ${brand.name}.`);
         }
         let review: RouteReview;
         try {
           review = await ai.review(built.route, await board(built.route));
         } catch (e) {
-          notes.push(`${key} : contrôle de direction artistique impossible (${(e as Error).message}) — piste de l'IA non montrée`);
+          notes.push(`${key} : contrôle de direction artistique impossible (${(e as Error).message})`);
           reviewDown = true;
+          // Sans contrôle visuel : la piste de l'IA n'est montrée que si elle est nette en petit (contrôle du studio).
+          if (!built.soft.length) best = { route: built.route, score: 0 };
           break;
         }
-        if (routePassed(review, "ai")) accepted = { ...built.route, review };
+        const candidate = { ...built.route, review };
+        // Un défaut de lisibilité en petit relevé par le studio compte, même si le contrôle visuel l'a laissé passer.
+        const score = routeScore(review) - built.soft.length;
+        if (routePassed(review, "ai") && !words.length && !built.soft.length) accepted = candidate;
         else {
-          notes.push(`${key} : piste « ${built.route.name} » refusée au contrôle (${reviewFeedback(review)})`);
-          feedback = reviewFeedback(review);
+          if (!hardFail(review) && (!best || score > best.score)) best = { route: candidate, score };
+          notes.push(`${key} : piste « ${built.route.name} » à améliorer (${[reviewFeedback(review), ...built.soft].filter(Boolean).join(" ; ")})`);
+          feedback = [reviewFeedback(review), ...built.soft, words.length ? feedback : ""].filter(Boolean).join(" ; ");
         }
       }
     }
     if (!accepted) {
-      // Versions du studio : d'abord celles qui ne reprennent pas une piste déjà montrée.
-      const cands = [...fallback[key].filter((c) => !tooClose(c, avoid)), ...fallback[key].filter((c) => tooClose(c, avoid))];
-      for (const cand of cands) {
-        if (ai && aiState === "used" && !reviewDown) {
-          let review: RouteReview | null = null;
-          try {
-            review = await ai.review(cand, await board(cand));
-          } catch (e) {
-            notes.push(`${key} : contrôle de la version du studio impossible (${(e as Error).message})`);
-            reviewDown = true;
-          }
-          if (review && !routePassed(review, "local")) {
-            notes.push(`${key} : version du studio « ${cand.name} » refusée au contrôle (${reviewFeedback(review)})`);
-            continue;
-          }
-          accepted = { ...cand, review };
-        } else accepted = cand;
-        break;
+      // Version du studio : d'abord celles qui ne reprennent pas une piste déjà montrée.
+      const cand = [...fallback[key].filter((c) => !tooClose(c, avoid)), ...fallback[key].filter((c) => tooClose(c, avoid))][0];
+      // C'est le client qui juge : la meilleure proposition de l'IA est toujours montrée (avec ses notes),
+      // la version du studio ne sert que de filet quand l'IA n'a rien produit d'exploitable.
+      if (best) {
+        accepted = best.route;
+        notes.push(`${key} : meilleure proposition de l'IA montrée « ${best.route.name} »${best.score > 0 ? ` (${best.score.toFixed(1)}/10)` : ""}`);
       }
+      else if (cand) accepted = cand;
     }
     if (accepted) out.push(accepted);
     else notes.push(L(`${key} : aucune piste n'a atteint le niveau exigé ; elle n'est pas présentée.`, `${key}: no route reached the required standard; it isn't shown.`));

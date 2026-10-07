@@ -3,7 +3,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe, Image as ImageIcon } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Input, Progress, Select, Textarea, useApi, useToast } from "../ui";
-import { useProject } from "./project-context";
+import { useProject, type JobView } from "./project-context";
+import { shortDuration } from "@/lib/job-liveness";
 import { EngineNotice, SectionTitle } from "./common";
 import { StartCreation } from "./start-creation";
 import { useT } from "../i18n";
@@ -19,6 +20,23 @@ function StepIcon({ status }: { status: string }) {
   if (status === "paused") return <span className="grid size-7 place-items-center rounded-full bg-warn-soft text-warn"><Pause className="size-3.5" /></span>;
   if (status === "skipped") return <span className="grid size-7 place-items-center rounded-full bg-paper-2 text-muted"><SkipForward className="size-3.5" /></span>;
   return <span className="grid size-7 place-items-center rounded-full border border-line text-muted"><Circle className="size-2.5" /></span>;
+}
+
+/** Signe de vie pendant la création : le studio travaille-t-il encore, et depuis quand n'a-t-il pas avancé ? */
+function LiveStatus({ job }: { job: JobView }) {
+  const t = useT();
+  const idle = shortDuration(job.idleMs ?? 0);
+  if (job.status === "queued")
+    return <p className="mt-2 flex items-center gap-2 text-xs text-muted"><Loader2 className="size-3.5 animate-spin" aria-hidden /> {t(`En attente de démarrage (${idle}). Si rien ne bouge après une minute, vérifiez que le terminal où tourne « npm run dev » est toujours ouvert.`, `Waiting to start (${idle}). If nothing moves after a minute, check that the terminal running “npm run dev” is still open.`)}</p>;
+  if (!job.alive)
+    return <p className="mt-2 flex items-start gap-2 rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn" role="alert"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden /> {t(`Le studio ne répond plus depuis ${idle}. Vérifiez que le terminal où tourne « npm run dev » est toujours ouvert (relancez-le si besoin) : la création reprendra d'elle-même là où elle s'était arrêtée.`, `The studio has stopped responding for ${idle}. Check that the terminal running “npm run dev” is still open (restart it if needed): creation will resume by itself where it stopped.`)}</p>;
+  return (
+    <p className="mt-2 flex items-center gap-2 text-xs text-muted" aria-live="off">
+      <span className="relative flex size-2.5" aria-hidden><span className="absolute inline-flex size-full animate-ping rounded-full bg-ok opacity-60" /><span className="relative inline-flex size-2.5 rounded-full bg-ok" /></span>
+      {t(`Le studio travaille · dernière avancée il y a ${idle}`, `The studio is working · last progress ${idle} ago`)}
+      {(job.idleMs ?? 0) > 60_000 && <span>{t(" — l'IA prépare une étape longue, c'est normal.", " — the AI is working on a long step, this is normal.")}</span>}
+    </p>
+  );
 }
 
 function Questions() {
@@ -265,7 +283,10 @@ export default function TabPilote() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm text-muted">{t("Avancement de la création", "Creation progress")}</p>
-              <p className="mt-1 font-display text-3xl font-semibold">{pl ? t(`${done} / ${pl.steps.length} étapes`, `${done} / ${pl.steps.length} steps`) : t("Aucune création lancée", "No creation started")}</p>
+              <p className="mt-1 flex flex-wrap items-baseline gap-x-3 font-display text-3xl font-semibold">
+                {running && <span className="tabular-nums text-signal">{Math.round(pl.job.progress * 100)} %</span>}
+                <span className={cx(running && "text-xl text-ink-2")}>{t(`${done} / ${pl.steps.length} étapes`, `${done} / ${pl.steps.length} steps`)}</span>
+              </p>
             </div>
             {running && (
               <div className="flex flex-wrap gap-2">
@@ -277,6 +298,7 @@ export default function TabPilote() {
           </div>
           {pl && <Progress value={running ? pl.job.progress : done / pl.steps.length} className="mt-4" />}
           {running && <p className="mt-3 text-sm text-ink-2" role="status">{pl!.job.message}</p>}
+          {running && <LiveStatus job={pl!.job} />}
           {paused && (
             <p className="mt-4 flex items-center gap-2 rounded-2xl bg-warn-soft p-4 text-sm text-warn" role="status">
               <Pause className="size-4 shrink-0" /> {t("Création en pause. Les étapes terminées sont conservées ; la reprise repart de l'étape interrompue.", "Creation paused. Completed steps are kept; resuming restarts from the interrupted step.")}

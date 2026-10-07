@@ -17,6 +17,7 @@ import { projectContext } from "./context";
 import { llmJson, type LlmImage } from "./llm";
 import { charter, DIRECTION_LIST, FONT_LIST, globalSettingsCatalog, placeholder, sectionCatalog, systemPrompts } from "./prompts";
 import { contentLang, L } from "../i18n-server";
+import { JobCancelled, JobPaused } from "../jobs";
 import type { Project } from "../projects";
 import { BRIEF_MIN_SCORE, critiqueImageBrief, finalImagePrompt, photoLineText, scenePromptFromLine, type BriefReview, type PhotoLine } from "../engine/photo-line";
 
@@ -518,10 +519,28 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
   for (let round = 0; round < 3; round++) {
     rounds = round + 1;
     onStep?.(round === 0 ? L("Rédaction des textes de la boutique", "Writing the store copy") : L(`Reprise des textes (passe ${round + 1})`, `Revising the copy (pass ${round + 1})`));
-    const copy = await aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, feedback || undefined, last?.copy);
+    let copy: ShopCopy;
+    let review: Awaited<ReturnType<typeof aiCopyReview>>;
+    try {
+      copy = tidyCopy(await aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, feedback || undefined, last?.copy));
+    } catch (e) {
+      // Reprise en échec : la meilleure version déjà payée est gardée (seule la première rédaction est indispensable).
+      if (!best || e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      console.warn("[textes] reprise impossible, meilleure version gardée :", (e as Error).message);
+      break;
+    }
     const lint = lintClaims(copy, p);
     onStep?.(L("Relecture par le directeur de création", "Creative director review"));
-    const review = await aiCopyReview({ ...b, usageKey: `${b.usageKey}:qc${round}` }, p, "textes de la boutique", copy);
+    try {
+      review = await aiCopyReview({ ...b, usageKey: `${b.usageKey}:qc${round}` }, p, "textes de la boutique", copy);
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      // Relecture en panne : le texte payé est gardé (les allégations sont retirées par le code plus bas).
+      console.warn("[textes] relecture impossible :", (e as Error).message);
+      const keep: CopyRound = { copy, blocking: lint.map((l) => `${l.path} : ${l.term}`), review: { verdict: "ok", issues: [] } as any, mean: 0 };
+      if (!best || betterRound(keep, best)) best = keep;
+      break;
+    }
     const blocking = [
       ...lint.map((l) => L(`${l.path} : « ${l.term} » (${l.label}) n'est pas confirmé. Retire-le ou remplace par « ${placeholder(contentLang())} »`, `${l.path}: "${l.term}" (${l.label}) is not confirmed. Remove it or replace it with "${placeholder(contentLang())}"`)),
       ...review.issues.filter((i) => i.severity === "bloquant").map((i) => `${i.path} : ${i.problem} → ${i.fix}`),
@@ -541,6 +560,33 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
 }
 
 /** Défauts de forme d'un texte de boutique, formulés comme des consignes de correction pour l'IA. */
+/** Coupe un texte sur un mot, sans ponctuation pendante. */
+const clipWord = (v: string, max: number) => {
+  if (v.length <= max) return v;
+  const cut = v.slice(0, max);
+  const word = cut.replace(/\s+\S*$/, "");
+  return (word.length > max * 0.6 ? word : cut).replace(/[\s,;:–—-]+$/, "");
+};
+
+/**
+ * Corrections de forme faites par le code, gratuitement, au lieu de redemander toute une rédaction à l'IA :
+ * tirets cadratins remplacés par une virgule, titres et descriptions ramenés à leur longueur maximale.
+ */
+export function tidyCopy<T>(copy: T): T {
+  const walk = (v: unknown): unknown =>
+    typeof v === "string" ? v.replace(/\s[—–]\s/g, ", ") : Array.isArray(v) ? v.map(walk) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)])) : v;
+  const c = walk(copy) as any;
+  const cap = (o: any, k: string, max: number) => {
+    if (o && typeof o[k] === "string") o[k] = clipWord(o[k], max);
+  };
+  cap(c.seo, "title", 70);
+  cap(c.seo, "description", 160);
+  cap(c.hero, "heading", 60);
+  cap(c.cta, "button", 28);
+  cap(c.product, "title", 80);
+  return c as T;
+}
+
 export function copyQuality(copy: ShopCopy, p: Project): string[] {
   const out: string[] = [];
   for (const h of lintHollow(copy)) out.push(L(`${h.path} : formule creuse « ${h.term} ». Remplace-la par un fait concret du produit.`, `${h.path}: empty phrase "${h.term}". Replace it with a concrete product fact.`));
@@ -1025,6 +1071,9 @@ Réponds { "intent": "…", "set": "…", "surface": "…", "props": ["…"], "l
       break;
     }
     attempts++;
+    // Excès de forme corrigés par le code avant la grille (pas de reprise payée pour ça) : 3 accessoires, 170 mots.
+    const words = (draft.prompt ?? "").split(/\s+/);
+    draft = { ...draft, props: (draft.props ?? []).slice(0, 3), prompt: words.length > 170 ? words.slice(0, 170).join(" ").replace(/[,;:]$/, "") + "." : draft.prompt };
     const review = critiqueImageBrief(draft, line, { lifestyle });
     if (!best || review.score > best.review.score) best = { draft, review };
     if (best.review.score >= BRIEF_MIN_SCORE) break;
@@ -1068,6 +1117,20 @@ export function qcScore(score: unknown): number {
 /** Résultat d'un contrôle de fidélité : utilisable seulement si c'est le même produit ET que la note atteint le seuil. */
 export function qcPassed(r: { sameProduct?: unknown; score?: unknown } | null | undefined): boolean {
   return !!r && r.sameProduct === true && qcScore(r.score) >= QC_MIN_SCORE;
+}
+
+/**
+ * Sort d'une image générée après contrôle — jamais jetée sans trace, puisqu'elle est payée :
+ * « good » utilisée normalement ; « warn » (défaut mineur, 5-6/10) gardée et utilisable, signalée au client, placée
+ * après les bonnes ; « bad » (inutilisable) gardée « écartée » avec la raison, visible dans Images, non utilisée.
+ */
+export type QcTier = "good" | "warn" | "bad";
+export const QC_WARN_SCORE = 5;
+export function qcTier(r: { sameProduct?: unknown; ok?: unknown; score?: unknown } | null | undefined): QcTier {
+  if (!r) return "bad";
+  const fine = r.sameProduct === true || r.ok === true;
+  const s = qcScore(r.score);
+  return fine && s >= QC_MIN_SCORE ? "good" : fine && s >= QC_WARN_SCORE ? "warn" : "bad";
 }
 
 /**
@@ -1224,8 +1287,9 @@ export const RouteDraftSchema = z.object({
   ink: ROLE.catch("dark"),
   accent: ROLE.catch("primary"),
   ground: ROLE.catch("primary"),
+  drawing: z.string().optional().catch(undefined),
 });
-const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
+const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "drawing": "brief de dessin du symbole pour l'illustrateur, en anglais", "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
 
 function routesBrief(p: Project) {
   const b = p.brand;

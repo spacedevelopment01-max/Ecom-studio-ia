@@ -1,0 +1,45 @@
+/**
+ * Image d'ambiance ratée : refaite une fois avec les défauts relevés dans la consigne ; le raté n'est pas livré.
+ * Consignes sans mains ni personnes (premier défaut des IA d'images).
+ */
+import { describe, expect, it, vi } from "vitest";
+import sharp from "sharp";
+
+const prompts: string[] = [];
+vi.mock("@/lib/ai/media-providers", () => ({
+  imageProviderAvailable: () => "openai",
+  ambianceImage: vi.fn(async (_ctx: unknown, req: { prompt: string }) => {
+    prompts.push(req.prompt);
+    return sharp({ create: { width: 64, height: 64, channels: 3, background: "#888" } }).png().toBuffer();
+  }),
+  refundMediaQuota: vi.fn(),
+}));
+vi.mock("@/lib/ai/llm", async (orig) => ({ ...(await orig<object>()), llmConfigured: () => true }));
+let reviews = 0;
+vi.mock("@/lib/ai/tasks", async (orig) => ({
+  ...(await orig<object>()),
+  aiQcScene: vi.fn(async () => (reviews++ === 0 ? { ok: false, score: 3, issues: ["lettres illisibles sur un panneau"] } : { ok: true, score: 8, issues: [] })),
+}));
+vi.mock("@/lib/library", async (orig) => ({ ...(await orig<object>()), saveAsset: vi.fn(async (a: any) => ({ id: "asset-1", ...a })) }));
+
+const { postAmbiance, ambianceSlots } = await import("@/lib/engine/service-media");
+const { emptyProduct, emptyServiceProfile } = await import("@/lib/project-types");
+const project: any = {
+  id: "p", userId: "u", name: "Blanc", business: "services",
+  product: { ...emptyProduct(), name: "Sébastien Blanc", category: "Plâtrerie peinture", summary: "Plâtrerie et peinture." },
+  brand: { name: "Sébastien Blanc", tagline: "", story: "", palette: { primary: "#446274", secondary: "#D0D8DD", accent: "#446274", light: "#F2F5F7", dark: "#14181F" } },
+  services: { ...emptyServiceProfile(), services: [{ name: "Peinture", description: "Intérieur." }, { name: "Carrelage", description: "Sols." }], area: "Ain" },
+};
+
+describe("image ratée refaite une fois", () => {
+  it("le défaut relevé est repris dans la consigne ; c'est la reprise réussie qui est livrée", async () => {
+    const a = await postAmbiance({ userId: "u", projectId: "p", jobId: "j" }, project, { key: "k", topic: "Rénover un plafond", aspect: "1:1", name: "x.jpg" });
+    expect(prompts).toHaveLength(2);
+    expect(prompts[1]).toMatch(/lettres illisibles sur un panneau/);
+    expect(a?.status).toBe("review");
+  });
+  it("consignes d'ambiance : aucune main ni personne demandée", () => {
+    for (const s of ambianceSlots(project)) expect(s.prompt).not.toMatch(/skilled hands|professional's hands|professional at work/i);
+    expect(ambianceSlots(project).filter((s) => s.slot !== "hero").every((s) => /no people|nobody in frame/i.test(s.prompt))).toBe(true);
+  });
+});

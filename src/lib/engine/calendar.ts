@@ -15,7 +15,7 @@ import { llmConfigured } from "../ai/llm";
 import { FORMATS, renderCreative, renderServiceCard, type FormatId } from "../media/compose";
 import { activityName, activityPhotos, isServices, placeLine, postAmbiance, serviceCta } from "./service-media";
 import { brandTypo, ensureCutouts, latestAsset, palette, assetsByRole } from "./images";
-import { enqueue, type JobContext } from "../jobs";
+import { enqueue, JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { C, L, contentLang, uiLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
 
@@ -669,7 +669,8 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
   const planId = ctx.payload.planId as string;
   ctx.progress(0.05, L("Stratégie éditoriale", "Editorial strategy"));
   const drafts = await ctx.step("drafts", async (): Promise<(PostDraft & { claims?: string[] })[]> => {
-    if (llmConfigured()) {
+    let aiFailed = "";
+    if (llmConfigured()) try {
       const base = (k: string) => ({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:${k}` });
       const r = await aiSocialPlan(base("plan"), p, { days: params.days, perDay: params.perDay, networks: params.networks.map((n) => n.network), goals: params.goals, tone: params.tone, mix: params.mix, link: params.link, schedule: scheduleLines(params), moments: momentsLine(p, params), recent: recentHooks(projectId, planId) });
       // Relecture « directeur de création social media » (grille notée, seuil 8/10) et une reprise ciblée des publications faibles.
@@ -679,9 +680,14 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
       const rp = refined.report;
       run("UPDATE content_plans SET strategy = ? WHERE id = ?", `${r.strategy.trim()}\n\n${L(`Relecture du directeur de création : ${rp.review !== null ? `${rp.review.toFixed(1).replace(".", ",")}/10` : "indisponible"} ; grille du studio ${rp.scoreBefore.toFixed(1).replace(".", ",")} → ${rp.scoreAfter.toFixed(1).replace(".", ",")}/10${rp.kept ? ` (${rp.kept} publication${rp.kept > 1 ? "s" : ""} reprise${rp.kept > 1 ? "s" : ""})` : ""}.`, `Creative director review: ${rp.review !== null ? `${rp.review.toFixed(1)}/10` : "unavailable"}; studio checklist ${rp.scoreBefore.toFixed(1)} → ${rp.scoreAfter.toFixed(1)}/10${rp.kept ? ` (${rp.kept} post${rp.kept > 1 ? "s" : ""} reworked)` : ""}.`)}`, planId);
       return checkPostDrafts(refined.posts, p, (post, issues) => aiRewritePost({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:fix:${post.day}:${post.slot}` }, p, post, L(`Retire ces allégations non confirmées (ou remplace-les par « ${placeholder(contentLang())} ») : ${issues.join(" ; ")}. Garde l'angle et le ton.`, `Remove these unconfirmed claims (or replace them with "${placeholder(contentLang())}"): ${issues.join("; ")}. Keep the angle and tone.`)));
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      // Calendrier de l'IA inexploitable : le calendrier du studio prend le relais (jamais d'étape bloquée), en le disant.
+      console.warn("[calendrier] plan de l'IA indisponible :", (e as Error).message);
+      aiFailed = (e as Error).message;
     }
     const local = localPlan(p, params);
-    run("UPDATE content_plans SET strategy = ? WHERE id = ?", localStrategy(p, params, local), planId);
+    run("UPDATE content_plans SET strategy = ? WHERE id = ?", `${localStrategy(p, params, local)}${aiFailed ? `\n\n${L(`Calendrier rédigé par le studio : la proposition de l'IA n'a pas pu être utilisée (${aiFailed.slice(0, 160)}).`, `Calendar written by the studio: the AI proposal could not be used (${aiFailed.slice(0, 160)}).`)}` : ""}`, planId);
     return local;
   });
 

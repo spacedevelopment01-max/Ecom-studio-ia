@@ -4,6 +4,7 @@
  * l'accueil est confiée à l'IA lorsqu'elle est disponible ; sinon la
  * direction artistique fournit une composition éprouvée.
  */
+import { sectionSchema } from "../theme/spec";
 import { all, json, one } from "../db";
 import { getAsset, type Asset } from "../library";
 import { loadProject, saveThemeVersion, currentTheme, type Project } from "../projects";
@@ -69,7 +70,7 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   };
   // Photos en situation (vie de tous les jours) : héros de la boutique et première scène.
   // Celles du marchand passent avant celles générées par l'IA.
-  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, created_at DESC", projectId);
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId);
   put("lifestyle", life[0], "en-situation-1");
   put("lifestyle2", life[1], "en-situation-2");
   put("cutout", pick("cutout"), "produit-detoure");
@@ -123,7 +124,7 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
  * passent avant les scènes générées dans les emplacements de la composition (méthode, réalisations…).
  */
 function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string, string>) {
-  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, created_at DESC LIMIT 8", projectId);
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC LIMIT 8", projectId);
   const order: Exclude<keyof ImageSlots, "reels">[] = ["lifestyle", "scene1", "scene2", "scene3", "detail1", "detail2", "lifestyle2"];
   life.slice(0, order.length).forEach((a, i) => {
     const f = themeFileName(a, `photo-${i + 1}`);
@@ -238,7 +239,8 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
       const fresh: ThemeSpec = { ...spec, settings: { ...spec.settings, ...Object.fromEntries(Object.entries(design.globals ?? {}).filter(([, v]) => v !== undefined)) }, templates: { ...spec.templates, index: { sections: {}, order: [] } } };
       // Site de services : aucune section de vente, même si l'IA en propose.
       const SALES = /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown|main-)/;
-      for (const s of design.index) if (!(services && SALES.test(s.type))) ops.push({ op: "add_section", template: "index", type: s.type, settings: s.settings, blocks: s.blocks });
+      // Section d'un type inconnu proposée par l'IA : retirée seule (le reste de la composition payée est gardé).
+      for (const s of design.index) if (!(services && SALES.test(s.type)) && sectionSchema(fresh, s.type)) ops.push({ op: "add_section", template: "index", type: s.type, settings: s.settings, blocks: s.blocks });
       // Catalogue : la grille de produits figure toujours juste après l'ouverture.
       if (catalog && !design.index.some((s) => s.type === "featured-collection")) {
         const first = ops.findIndex((o) => o.op === "add_section");

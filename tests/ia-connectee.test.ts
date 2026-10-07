@@ -16,3 +16,15 @@ describe("IA connectée", () => {
     expect(isSimpleRequest("mets le titre en rouge")).toBe(true);
   });
 });
+
+import { qcTier } from "@/lib/ai/tasks";
+describe("images payées jamais perdues", () => {
+  it("contrôle : bonne (≥ 7), à vérifier (5-6), écartée (< 5 ou autre produit)", () => {
+    expect(qcTier({ sameProduct: true, score: 8 })).toBe("good");
+    expect(qcTier({ sameProduct: true, score: 6 })).toBe("warn");
+    expect(qcTier({ ok: true, score: 5 })).toBe("warn");
+    expect(qcTier({ sameProduct: false, score: 9 })).toBe("bad");
+    expect(qcTier({ ok: false, score: 3 })).toBe("bad");
+    expect(qcTier(null)).toBe("bad");
+  });
+});

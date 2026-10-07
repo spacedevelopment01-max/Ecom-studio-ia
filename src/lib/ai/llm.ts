@@ -122,7 +122,9 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   const isHaiku = route.model.startsWith("claude-haiku");
   const params: any = {
     model: route.model,
-    max_tokens: call.maxTokens ?? 32000,
+    // Avec réflexion, la limite couvre aussi la réflexion : une limite trop basse coupe la réponse et la fait repayer.
+    // Seuls les jetons produits sont facturés, une limite plus haute ne coûte rien de plus.
+    max_tokens: isHaiku ? (call.maxTokens ?? 32000) : Math.max(call.maxTokens ?? 32000, 8000),
     system: [{ type: "text", text: systemText(call), cache_control: { type: "ephemeral" } }],
     messages,
   };
@@ -192,6 +194,13 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     const parsed = extractJson(r.text);
     const res = schema.safeParse(parsed);
     if (res.success) return res.data;
+    // Écarts de forme (liste trop longue, texte trop long, valeur hors liste, nombre en texte) : réparés ici,
+    // gratuitement, plutôt que de repayer une réponse ou de faire échouer l'étape.
+    const saved = salvage(schema as z.ZodType<z.output<S>>, parsed);
+    if (saved.ok) {
+      console.info(`[ia] ${call.task} : réponse réparée sans nouvel appel (${saved.fixes.slice(0, 5).join(" ; ")})`);
+      return saved.data;
+    }
     lastIssue = res.error.issues.slice(0, 3).map((i) => `${i.path.join(".") || "racine"} : ${i.message}`).join(" ; ");
     if (fixes++ >= 1) break;
     const issue = res.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
@@ -201,6 +210,93 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
   // Détail complet dans les journaux du serveur ; au client, la raison courte (pas le JSON brut).
   console.error(`[ia] ${call.task} : réponse inexploitable (${lastIssue || "JSON illisible"})\n${last.slice(0, 4000)}`);
   throw new PermanentError(L(`L'IA a renvoyé une réponse incomplète (${lastIssue || "format illisible"}). Cliquez sur « Reprendre » pour relancer cette étape.`, `The AI returned an incomplete response (${lastIssue || "unreadable format"}). Click "Resume" to run this step again.`));
+}
+
+type Path = (string | number)[];
+const getAt = (root: any, path: Path) => path.reduce((o, k) => (o == null ? o : o[k]), root);
+const setAt = (root: any, path: Path, v: unknown) => {
+  const parent = getAt(root, path.slice(0, -1));
+  if (parent != null) parent[path[path.length - 1] as any] = v;
+};
+
+/**
+ * Répare une réponse de l'IA qui ne respecte pas le schéma pour des détails de forme : liste tronquée au maximum,
+ * texte coupé sur un mot, nombre ramené dans ses bornes, valeur hors liste remplacée par la valeur permise la plus
+ * proche (casse) ou retirée de sa liste, nombre ou texte converti. Ne touche pas au fond ; échoue s'il reste un écart.
+ */
+export function salvage<T>(schema: z.ZodType<T>, data: unknown, rounds = 15): { ok: true; data: T; fixes: string[] } | { ok: false } {
+  if (data == null || typeof data !== "object") return { ok: false };
+  const root = structuredClone(data) as any;
+  const fixes: string[] = [];
+  for (let round = 0; round < rounds; round++) {
+    const res = schema.safeParse(root);
+    if (res.success) return { ok: true, data: res.data, fixes };
+    let changed = false;
+    const removals: { arr: Path; index: number }[] = [];
+    for (const issue of res.error.issues as any[]) {
+      const path = issue.path as Path;
+      const value = getAt(root, path);
+      const where = path.join(".") || "racine";
+      // Une liste trop longue n'est tronquée qu'une fois ses éléments invalides retirés (on garde les bons).
+      const hasBadItems = (res.error.issues as any[]).some((o) => o !== issue && o.path.length > path.length && path.every((k, i) => o.path[i] === k));
+      if (issue.code === "too_big" && issue.origin === "array" && Array.isArray(value)) {
+        if (hasBadItems) continue;
+        value.length = Number(issue.maximum);
+        fixes.push(`${where} tronqué à ${issue.maximum}`);
+        changed = true;
+      } else if (issue.code === "too_big" && issue.origin === "string" && typeof value === "string") {
+        const max = Number(issue.maximum);
+        const cut = value.slice(0, max);
+        const word = cut.replace(/\s+\S*$/, "");
+        setAt(root, path, (word.length > max * 0.6 ? word : cut).replace(/[\s,;:–-]+$/, ""));
+        fixes.push(`${where} raccourci`);
+        changed = true;
+      } else if ((issue.code === "too_big" || issue.code === "too_small") && issue.origin === "number" && typeof value === "number") {
+        setAt(root, path, Number(issue.code === "too_big" ? issue.maximum : issue.minimum));
+        fixes.push(`${where} ramené dans ses bornes`);
+        changed = true;
+      } else if (issue.code === "invalid_type" && issue.expected === "number" && typeof value === "string" && value.trim() && Number.isFinite(Number(value.replace(",", ".")))) {
+        setAt(root, path, Number(value.replace(",", ".")));
+        changed = true;
+      } else if (issue.code === "invalid_type" && value === undefined && (issue.expected === "string" || issue.expected === "array")) {
+        // Champ oublié : vide plutôt qu'un échec (un champ vide reste « à compléter », rien n'est inventé).
+        setAt(root, path, issue.expected === "string" ? "" : []);
+        fixes.push(`${where} absent, laissé vide`);
+        changed = true;
+      } else if (issue.code === "invalid_type" && issue.expected === "string" && (typeof value === "number" || typeof value === "boolean")) {
+        setAt(root, path, String(value));
+        changed = true;
+      } else if (issue.code === "invalid_value" && Array.isArray(issue.values) && typeof value === "string" && issue.values.some((v: unknown) => typeof v === "string" && v.toLowerCase() === value.trim().toLowerCase())) {
+        setAt(root, path, issue.values.find((v: unknown) => typeof v === "string" && v.toLowerCase() === value.trim().toLowerCase()));
+        changed = true;
+      } else {
+        // Élément d'une liste qui ne convient pas : retiré de la liste (le reste de la réponse est gardé).
+        const at = path.map((k, i) => (typeof k === "number" ? i : -1)).filter((i) => i >= 0).pop();
+        if (at !== undefined && Array.isArray(getAt(root, path.slice(0, at)))) removals.push({ arr: path.slice(0, at), index: path[at] as number });
+        else if (issue.code === "invalid_value" && Array.isArray(issue.values) && issue.values.length) {
+          setAt(root, path, issue.values[0]);
+          fixes.push(`${where} remplacé par « ${issue.values[0]} »`);
+          changed = true;
+        }
+      }
+    }
+    // Retraits du plus grand indice au plus petit (les indices restent justes), un retrait par élément.
+    const seen = new Set<string>();
+    for (const r of removals.sort((a, b) => b.index - a.index)) {
+      const key = `${r.arr.join(".")}#${r.index}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const arr = getAt(root, r.arr) as unknown[];
+      if (Array.isArray(arr) && r.index < arr.length) {
+        arr.splice(r.index, 1);
+        fixes.push(`${r.arr.join(".")}[${r.index}] retiré`);
+        changed = true;
+      }
+    }
+    if (!changed) return { ok: false };
+  }
+  const last = schema.safeParse(root);
+  return last.success ? { ok: true, data: last.data, fixes } : { ok: false };
 }
 
 export function extractJson(text: string): unknown {

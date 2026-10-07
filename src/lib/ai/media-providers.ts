@@ -169,10 +169,26 @@ export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?:
  * aucun texte, logo, diplôme, certificat ni récompense. `reference` : photo réelle de l'activité (ambiance seulement).
  */
 export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null }) {
+  const text = `${input.prompt}
+Editorial photograph that conveys the atmosphere of this activity, natural light, realistic, premium. Tools, materials, the work and the place tell the story. No people, no hands, no faces (the most frequent source of defects). No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
+  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high" });
+}
+
+/**
+ * Symbole de logo dessiné par l'IA d'images (meilleure en dessin que le modèle de texte) : forme plate d'une seule
+ * couleur sur fond blanc, sans texte, pensée pour être vectorisée. `reference` : photo du produit (silhouette à styliser).
+ */
+export async function logoSymbolImage(ctx: Ctx, input: { concept: string; reference?: Buffer | null }) {
+  const text = `Design a single flat vector-style logo symbol (brand mark): ${input.concept}
+Rules: one solid black shape (or up to three bold black shapes) on a pure white background, centered, generous margins. Bold, simple geometric forms that stay recognizable at 16 pixels: thick strokes, no thin lines, no gradients, no shading, no texture, no outlines of the canvas, no 3D, no mockup. Absolutely no text, no letters, no numbers, no words. Think like a senior brand designer: a meaningful sign drawn from the idea, not a literal illustration of an object. Timeless, distinctive, not a cliché of the sector.${input.reference ? " The reference photo is context only: do not copy it." : ""}`;
+  return generateImage(ctx, { text, aspect: "1:1", reference: input.reference ?? null, quality: "medium" });
+}
+
+/** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */
+async function generateImage(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high" }) {
   const provider = imageProviderAvailable();
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI).", "No image provider configured (Google Gemini or OpenAI)."));
-  const text = `${input.prompt}
-Editorial photograph that conveys the atmosphere of this activity, natural light, realistic, premium. Hands, tools, materials and the place are welcome; people only from behind, out of focus or partially framed, never a recognizable face presented as a customer. No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
+  const text = input.text;
   const ref = input.reference ? await sharp(input.reference).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
   if (provider === "google") {
     const key = activeProviderKey("google")!;
@@ -205,8 +221,8 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
   let res: any;
   try {
     res = ref
-      ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: "high" } as any)
-      : await client.images.generate({ model, prompt: text, size, quality: "high" } as any);
+      ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: input.quality } as any)
+      : await client.images.generate({ model, prompt: text, size, quality: input.quality } as any);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel."));
     if (e?.status === 400) throw new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`));

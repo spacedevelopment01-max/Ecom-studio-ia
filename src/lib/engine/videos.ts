@@ -17,10 +17,10 @@ import { renderVideo, srtFromSpec, checkVideoSpec, VIDEO_SIZES, type VideoFormat
 import { tmpDir } from "../storage";
 import { assetsByRole, brandTypo, ensureCutouts, latestAsset, palette } from "./images";
 import { localVideoPlan } from "./local";
-import { aiVideoPlan, aiQcImage, aiQcScene, qcPassed, qcScore, QC_MIN_SCORE } from "../ai/tasks";
+import { aiVideoPlan, aiQcImage, aiQcScene, qcScore, qcTier } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { videoProviderAvailable, veoClip, falClip, refundMediaQuota } from "../ai/media-providers";
-import { UserFacingError, type JobContext } from "../jobs";
+import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { json, run } from "../db";
 import { logoPng } from "../media/logo";
 import { C, L } from "../i18n-server";
@@ -135,31 +135,37 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
         reason = L("contrôle impossible", "check unavailable");
       }
       if (ok) {
+        // Le plan est payé : il n'est écarté que si au moins 2 images sur 3 sont inutilisables. Une image
+        // seulement moyenne ou un contrôle en panne ne le fait pas perdre (il reste signalé à vérifier).
         const ref = services ? null : assetData(cutouts[0]);
+        const bad: string[] = [];
+        const warn: string[] = [];
         for (const idx of [0, Math.floor(frames.length / 2), frames.length - 1]) {
           const usage = { userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clipqc:${req.format}:${idx}` };
           const frame = fs.readFileSync(frames[idx]);
-          if (ref) {
-            const r = await aiQcImage(usage, ref, frame);
-            if (!qcPassed(r)) {
-              ok = false;
-              reason = !r.sameProduct ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : L(`fidélité insuffisante (${qcScore(r.score)}/10)`, `not faithful enough (${qcScore(r.score)}/10)`);
-              break;
-            }
-          } else {
-            const r = await aiQcScene(usage, frame);
-            if (!r.ok || qcScore(r.score) < QC_MIN_SCORE) {
-              ok = false;
-              reason = L(`plan refusé (${r.issues.join(" ; ") || `${qcScore(r.score)}/10`})`, `shot rejected (${r.issues.join("; ") || `${qcScore(r.score)}/10`})`);
-              break;
-            }
+          try {
+            const r = ref ? await aiQcImage(usage, ref, frame) : await aiQcScene(usage, frame);
+            const tier = qcTier(r);
+            const why = ref && (r as { sameProduct?: boolean }).sameProduct === false ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : `${r.issues.join(L(" ; ", "; ")) || `${qcScore(r.score)}/10`}`;
+            if (tier === "bad") bad.push(why);
+            else if (tier === "warn") warn.push(why);
+          } catch (e) {
+            if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+            warn.push(L("contrôle automatique impossible", "automatic check unavailable"));
           }
+          if (bad.length >= 2) break;
+        }
+        if (bad.length >= 2) {
+          ok = false;
+          reason = L(`plan refusé (${bad[0]})`, `shot rejected (${bad[0]})`);
+        } else if (bad.length || warn.length) {
+          run("UPDATE assets SET meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), qcWarning: [...bad, ...warn].join(L(" ; ", "; ")) }), clipAsset.id);
         }
       }
       if (ok) clipDirs.push(frames);
       else {
         // Plan refusé au contrôle : écarté de la bibliothèque (statut « refusé », raison gardée).
-        run("UPDATE assets SET status = 'rejected', meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), rejectedReason: reason }), clipAsset.id);
+        run("UPDATE assets SET status = 'rejected', meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), rejectedReason: reason, qcWarning: reason }), clipAsset.id);
         clipFallback = L(`plan IA refusé au contrôle : ${reason}`, `AI shot rejected by the check: ${reason}`);
         // Plan jamais montré : il ne compte pas dans les vidéos IA du forfait.
         refundMediaQuota(project.userId, clipKey, "aiVideos");
@@ -178,7 +184,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       if (clipDirs.length) sp.scenes.splice(1, 0, { kind: "clip", duration: 3, clip: 0 });
       return sp;
     }
-    if (llmConfigured()) {
+    if (llmConfigured()) try {
       // Réalisateur (une passe forte) → contrôles de montage + directeur de création (grille notée, seuil 8/10)
       // → au plus une reprise ciblée → la meilleure version est gardée.
       const goal = req.goal ?? C("publicité courte qui donne envie d'acheter", "short ad that makes people want to buy");
@@ -192,6 +198,10 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       });
       craftQuality = quality;
       return best;
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      // Découpage de l'IA inexploitable : celui du studio prend le relais (la vidéo est quand même livrée).
+      console.warn("[vidéo] découpage de l'IA indisponible :", (e as Error).message);
     }
     return localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url, project);
   }));

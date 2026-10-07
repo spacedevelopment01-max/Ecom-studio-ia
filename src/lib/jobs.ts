@@ -10,6 +10,7 @@
  */
 import os from "node:os";
 import { all, id, json, now, one, run, tx } from "./db";
+import { jobLiveness } from "./job-liveness";
 import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
 import { friendlyToolError } from "./tool-errors";
@@ -322,5 +323,6 @@ export function publicJob(j: Job) {
     createdAt: j.created_at,
     updatedAt: j.updated_at,
     finishedAt: j.finished_at,
+    ...jobLiveness(j),
   };
 }

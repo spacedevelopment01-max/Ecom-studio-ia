@@ -3,7 +3,7 @@ import { createContext, useContext, type ReactNode } from "react";
 import { useApi } from "../ui";
 import type { Brand, BusinessType, ProductProfile, ProjectSettings, ServiceProfile, Strategy } from "@/lib/project-types";
 
-export type JobView = { id: string; type: string; label: string; status: string; progress: number; message: string; error: string | null; result: any; createdAt: number; updatedAt: number; finishedAt: number | null };
+export type JobView = { id: string; type: string; label: string; status: string; progress: number; message: string; error: string | null; result: any; createdAt: number; updatedAt: number; finishedAt: number | null; alive?: boolean; idleMs?: number };
 export type Overview = {
   project: { id: string; name: string; status: string; platform: string; storeUrl: string | null; createdAt: number; updatedAt: number; sectorLabel: string; business: BusinessType };
   /** Pour un projet de services, `product` décrit l'activité et `services` l'offre. */

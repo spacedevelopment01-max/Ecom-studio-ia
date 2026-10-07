@@ -138,11 +138,33 @@ export const brandFeedback = (issues: BrandIssue[]) => issues.filter((i) => i.bl
  * Direction de marque par l'IA avec contrôle qualité : une reprise ciblée si la première proposition a un défaut
  * bloquant (nom pris, allégation, formule creuse, signature trop longue). La palette est corrigée sans IA.
  */
+/**
+ * Corrections faites par le code, gratuitement, avant de juger s'il faut redemander la marque à l'IA : tiret de la
+ * signature remplacé, signature trop longue remplacée par une alternative courte proposée par l'IA elle-même.
+ * (Les allégations sont retirées par finalizeBrand ; le nom déjà pris est remplacé par une alternative libre.)
+ */
+export function tidyBrand<T extends { tagline?: string; taglineAlternatives?: string[] }>(r: T): T {
+  const clean = (t: string) => t.replace(/\s[—–]\s/g, ", ").trim();
+  const fits = (t: string) => t.length <= 60 && t.split(/\s+/).length <= 9;
+  let tagline = clean(r.tagline ?? "");
+  const alts = (r.taglineAlternatives ?? []).map(clean);
+  if (tagline && !fits(tagline)) {
+    const short = alts.find((a) => a && fits(a));
+    if (short) tagline = short;
+  }
+  return { ...r, tagline, taglineAlternatives: alts };
+}
+
 export async function aiBrandChecked(b: Parameters<typeof aiBrand>[0], p: Project, guidance?: string) {
-  let r = await aiBrand(b, p, guidance);
+  let r = tidyBrand(await aiBrand(b, p, guidance));
   let issues = brandIssues({ ...r, palette: r.palette ?? fixPalette(DEFAULT_PALETTE) }, p, r.strategy as Strategy);
-  if (issues.some((i) => i.blocking && i.code !== "palette")) {
-    const retry = await aiBrand({ ...b, usageKey: `${b.usageKey}:fix` }, p, guidance, brandFeedback(issues));
+  // Seuls les défauts que le code ne sait pas corriger justifient une nouvelle demande payée : nom inutilisable sans
+  // alternative libre, formule creuse. Allégations (retirées plus loin) et palette (corrigée) n'en coûtent pas.
+  const words = sourceWords(p);
+  const freeAlt = (r.alternatives ?? []).some((a: string) => a.trim() && !famousBrandClash(a) && !copiesSource(a, words) && a.length >= 2 && a.length <= 22);
+  const worth = issues.some((i) => i.blocking && (i.code === "hollow" || i.code === "tagline" || (i.code.startsWith("name_") && !(freeAlt && (i.code === "name_taken" || i.code === "name_copied")))));
+  if (worth) {
+    const retry = tidyBrand(await aiBrand({ ...b, usageKey: `${b.usageKey}:fix` }, p, guidance, brandFeedback(issues)));
     const after = brandIssues({ ...retry, palette: retry.palette ?? fixPalette(DEFAULT_PALETTE) }, p, retry.strategy as Strategy);
     // On garde la meilleure des deux propositions (moins de défauts bloquants).
     if (after.filter((i) => i.blocking).length <= issues.filter((i) => i.blocking).length) {

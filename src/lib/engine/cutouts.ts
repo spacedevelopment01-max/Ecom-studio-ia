@@ -177,7 +177,8 @@ async function judge(base: Base, cut: Pick<Cutout, "png" | "bbox" | "sourceW" | 
       const orig = await sharp(original, { failOn: "none" }).rotate().flatten({ background: "#ffffff" }).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
       const r = await aiCutoutCheck({ ...base, usageKey: base.jobId ? `${base.jobId}:cutout-check:${key}` : undefined }, { original: orig, white: prev.white, dark: prev.dark });
       const score = Math.max(0, Math.min(10, r.score));
-      const ok = r.verdict === "ok" && score >= MIN_AI_SCORE && r.problems.length === 0;
+      // Verdict et note font foi : une remarque mineure listée avec un « ok » bien noté ne fait pas perdre le détourage.
+      const ok = r.verdict === "ok" && score >= MIN_AI_SCORE;
       return { verdict: ok ? "ok" : "rejected", reasons: ok ? [] : r.problems.length ? [...r.problems] : ["product_cut"], score, by: "ai", ...(r.note ? { note: r.note } : {}), checkedAt: at };
     } catch (e) {
       if (isStop(e)) throw e;

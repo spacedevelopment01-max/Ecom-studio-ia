@@ -16,7 +16,7 @@ import { FORMATS, renderServiceCard, type Format } from "../media/compose";
 import { renderServiceCreatives, SERVICE_SIZES, type ServiceCard, type ServiceFormat, type ServiceIcon } from "../media/creative-html";
 import type { VideoFormat, VideoScene, VideoSpec } from "../media/video";
 import { ambianceImage, imageProviderAvailable, refundMediaQuota } from "../ai/media-providers";
-import { aiQcScene, qcScore, QC_MIN_SCORE } from "../ai/tasks";
+import { aiQcScene, qcScore, qcTier, type QcTier } from "../ai/tasks";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { projectContext } from "../ai/context";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
@@ -29,11 +29,38 @@ import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo
 
 
 /** Contrôle obligatoire d'une image d'ambiance générée (aucun texte ou logo inventé, aucune personne déformée). */
-async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer): Promise<{ ok: boolean; reason: string }> {
-  if (!llmConfigured()) return { ok: false, reason: L("contrôle indisponible", "check unavailable") };
-  const r = await aiQcScene(b, img);
-  const ok = r.ok && qcScore(r.score) >= QC_MIN_SCORE;
-  return { ok, reason: ok ? "" : r.issues.join(L(" ; ", "; ")) || `${qcScore(r.score)}/10` };
+async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer): Promise<{ ok: boolean; tier: QcTier; reason: string }> {
+  if (!llmConfigured()) return { ok: false, tier: "warn", reason: L("contrôle indisponible : vérifiez l'image", "check unavailable: check the image") };
+  let r: Awaited<ReturnType<typeof aiQcScene>>;
+  try {
+    r = await aiQcScene(b, img);
+  } catch (e) {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    return { ok: false, tier: "warn", reason: L("contrôle automatique impossible : vérifiez l'image", "automatic check unavailable: check the image") };
+  }
+  const tier = qcTier(r);
+  return { ok: tier === "good", tier, reason: tier === "good" ? "" : r.issues.join(L(" ; ", "; ")) || `${qcScore(r.score)}/10` };
+}
+
+/**
+ * Image d'ambiance contrôlée, avec UNE reprise corrigée si elle est ratée : la consigne reprend les défauts relevés
+ * pour qu'ils ne se reproduisent pas. Le raté n'est ni gardé ni décompté au client ; seule la meilleure des deux
+ * images est rendue (le but : pas de raté livré, pas de dépense sans image utilisable).
+ */
+async function ambianceChecked(ictx: { userId: string; projectId: string; jobId?: string | null }, usageKey: string, input: Parameters<typeof ambianceImage>[1]): Promise<{ img: Buffer; check: Awaited<ReturnType<typeof checkAmbiance>>; usageKey: string }> {
+  const img = await ambianceImage({ ...ictx, usageKey }, input);
+  const check = await checkAmbiance({ ...ictx, usageKey: `${usageKey}:qc` }, img);
+  if (check.tier !== "bad") return { img, check, usageKey };
+  refundMediaQuota(ictx.userId, usageKey);
+  const retryKey = `${usageKey}:retry`;
+  try {
+    const img2 = await ambianceImage({ ...ictx, usageKey: retryKey }, { ...input, prompt: `${input.prompt} A previous attempt was rejected for: ${check.reason}. Avoid exactly these defects.` });
+    const check2 = await checkAmbiance({ ...ictx, usageKey: `${retryKey}:qc` }, img2);
+    return { img: img2, check: check2, usageKey: retryKey };
+  } catch (e) {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    return { img, check, usageKey };
+  }
 }
 
 export const isServices = (p: Pick<Project, "business"> | null | undefined) => p?.business === "services";
@@ -249,15 +276,15 @@ export async function postAmbiance(ictx: { userId: string; projectId: string; jo
   const usageKey = `${ictx.jobId ?? "post"}:post-ambiance:${post.key}`;
   let generated = false;
   try {
-    const img = await ambianceImage({ ...ictx, usageKey }, { prompt, aspect: post.aspect });
+    const { img, check, usageKey: finalKey } = await ambianceChecked(ictx, usageKey, { prompt, aspect: post.aspect });
     generated = true;
-    const check = await checkAmbiance({ ...ictx, usageKey: `${usageKey}:qc` }, img);
-    if (!check.ok) {
-      console.warn("[calendrier] image de publication écartée :", check.reason);
-      refundMediaQuota(ictx.userId, usageKey);
+    // Image payée gardée : utilisée si bonne ou à défaut mineur (signalé) ; inutilisable → écartée mais visible.
+    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "generated", meta: { recipe: L("Image générée par IA pour cette publication (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated image for this post (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: post.aspect, ...(check.tier === "good" ? {} : { qcWarning: check.reason }) }, status: check.tier === "bad" ? "rejected" : "review" });
+    if (check.tier === "bad") {
+      refundMediaQuota(ictx.userId, finalKey);
       return null;
     }
-    return await saveAsset({ projectId: p.id, userId: p.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "generated", meta: { recipe: L("Image générée par IA pour cette publication (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated image for this post (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: post.aspect } });
+    return a;
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     console.warn("[calendrier] image de publication indisponible :", (e as Error).message);
@@ -274,8 +301,8 @@ export function ambianceSlots(p: Project): { slot: PhotoSlot; aspect: "16:9" | "
   const serviceShot = (i: number) => {
     const s = items[i];
     return s
-      ? `${base} The service "${s.name}"${s.description ? ` (${clip(s.description, 160)})` : ""} being carried out: the professional's hands and tools doing this specific job, the result taking shape, 50mm lens, natural light. ${look}`
-      : `${base} The professional at work on a typical job of this activity, three-quarter view from behind or side so no face is identifiable, 35mm lens, natural light. ${look}`;
+      ? `${base} The service "${s.name}"${s.description ? ` (${clip(s.description, 160)})` : ""} in progress: the tools and materials of this specific job on site, the result taking shape, 50mm lens, natural light, no people, no hands. ${look}`
+      : `${base} A typical job of this activity in progress, tools and materials in place, 35mm lens, natural light, no people, no hands. ${look}`;
   };
   const all: { slot: PhotoSlot; aspect: "16:9" | "4:5" | "1:1"; prompt: string }[] = [
     { slot: "hero", aspect: "16:9", prompt: place },
@@ -304,7 +331,7 @@ function ambianceParts(p: Project): [string, string, string, string] {
   const look = `${photoLinePrompt(line)} ${avoidPrompt(line)}`;
   return [
     `${base} The place where this activity happens (workshop, practice room, studio, salon or venue), tidy, lived-in and inviting, seen at eye level with a 35mm lens, nobody looking at the camera, real tools and materials of the trade visible. ${look}`,
-    `${base} Close-up of skilled hands at work with the real tools and materials of this activity, 50mm lens slightly above, shallow depth of field, the gesture sharp and the background soft. ${look}`,
+    `${base} Close-up of the real tools and materials of this activity on the work surface, a job in progress, 50mm lens slightly above, shallow depth of field, the tools sharp and the background soft. No people, no hands. ${look}`,
     base,
     look,
   ];
@@ -459,17 +486,13 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
         ctx.progress(0.2 + (i / Math.max(1, todo.length)) * 0.3, L("Images d'ambiance de l'activité (IA)", "Business mood images (AI)"));
         let generated = false;
         try {
-          const img = await ambianceImage({ ...ictx, usageKey: `${ctx.job.id}:ambiance:${i}` }, { prompt, aspect, reference: originals[i] ? assetData(originals[i]) : null });
+          const { img, check, usageKey: finalKey } = await ambianceChecked(ictx, `${ctx.job.id}:ambiance:${i}`, { prompt, aspect, reference: originals[i] ? assetData(originals[i]) : null });
           generated = true;
-          const check = await checkAmbiance({ ...ictx, usageKey: `${ctx.job.id}:ambianceqc:${i}` }, img);
-          if (!check.ok) {
-            // Image refusée (texte inventé, visage, mains déformées…) ou impossible à vérifier : ni montrée ni décomptée.
-            console.warn("[services] image d'ambiance écartée :", check.reason);
-            refundMediaQuota(ictx.userId, `${ctx.job.id}:ambiance:${i}`);
-            return [] as string[];
-          }
-          const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspect, slot }, status: "review" });
-          return [a.id];
+          // Image payée toujours gardée : défaut mineur signalé ; inutilisable (texte inventé, mains déformées…)
+          // écartée mais visible dans Images, non utilisée et non décomptée.
+          if (check.tier === "bad") refundMediaQuota(ictx.userId, finalKey);
+          const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspect, slot, ...(check.tier === "good" ? {} : { qcWarning: check.reason }) }, status: check.tier === "bad" ? "rejected" : "review" });
+          return check.tier === "bad" ? ([] as string[]) : [a.id];
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[services] image d'ambiance indisponible :", (e as Error).message);
@@ -536,15 +559,13 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
     const f = FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
     const prompts = ambiancePrompts(p);
     const img = await ctx.step("ambiance", async () => {
-      const buf = await ambianceImage({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ambiance` }, { prompt: req.subline ? `${prompts[0]} ${req.subline}` : prompts[Date.now() % 2], aspect: aspectFor(f), reference: photo && photo.origin !== "generated" ? assetData(photo) : null });
-      const check = await checkAmbiance({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:ambianceqc` }, buf);
-      if (!check.ok) {
-        refundMediaQuota(p.userId, `${ctx.job.id}:ambiance`);
-        throw new UserFacingError(L(`L'image d'ambiance générée a été écartée au contrôle qualité (${check.reason}). Elle ne vous est pas décomptée ; relancez-la.`, `The generated mood image was rejected by the quality check (${check.reason}). It isn't counted; try again.`));
-      }
-      return buf.toString("base64");
+      const { img: buf, check, usageKey: finalKey } = await ambianceChecked({ userId: p.userId, projectId, jobId: ctx.job.id }, `${ctx.job.id}:ambiance`, { prompt: req.subline ? `${prompts[0]} ${req.subline}` : prompts[Date.now() % 2], aspect: aspectFor(f), reference: photo && photo.origin !== "generated" ? assetData(photo) : null });
+      if (check.tier === "bad") refundMediaQuota(p.userId, finalKey);
+      return JSON.stringify({ b64: buf.toString("base64"), tier: check.tier, reason: check.reason });
     });
-    const a = await saveAsset({ projectId, userId: p.userId, data: await sharp(Buffer.from(img, "base64")).jpeg({ quality: 92 }).toBuffer(), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspectFor(f) }, status: "review" });
+    // Image payée toujours livrée : signalée (défaut mineur) ou écartée (visible, non décomptée) selon le contrôle.
+    const got = JSON.parse(img) as { b64: string; tier: QcTier; reason: string };
+    const a = await saveAsset({ projectId, userId: p.userId, data: await sharp(Buffer.from(got.b64, "base64")).jpeg({ quality: 92 }).toBuffer(), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspectFor(f), ...(got.tier === "good" ? {} : { qcWarning: got.reason }) }, status: got.tier === "bad" ? "rejected" : "review" });
     return { assetId: a.id };
   }
 
