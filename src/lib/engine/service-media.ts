@@ -247,8 +247,10 @@ export async function postAmbiance(ictx: { userId: string; projectId: string; jo
   const [, , base, look] = ambianceParts(p);
   const prompt = `${base} Photograph illustrating this social media post: "${clip(post.topic, 220)}". Show the real work, tools, materials or place it talks about, a fresh angle and framing specific to this subject. ${look}`;
   const usageKey = `${ictx.jobId ?? "post"}:post-ambiance:${post.key}`;
+  let generated = false;
   try {
     const img = await ambianceImage({ ...ictx, usageKey }, { prompt, aspect: post.aspect });
+    generated = true;
     const check = await checkAmbiance({ ...ictx, usageKey: `${usageKey}:qc` }, img);
     if (!check.ok) {
       console.warn("[calendrier] image de publication écartée :", check.reason);
@@ -259,6 +261,8 @@ export async function postAmbiance(ictx: { userId: string; projectId: string; jo
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     console.warn("[calendrier] image de publication indisponible :", (e as Error).message);
+    // Image faite mais non montrée (contrôle qualité ou enregistrement en échec) : le visuel n'est pas décompté.
+    if (generated) refundMediaQuota(ictx.userId, usageKey);
     return null;
   }
 }
@@ -453,8 +457,10 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
     for (const [i, { slot, aspect, prompt }] of todo.entries()) {
       const ids = await ctx.step(`svc:ambiance:${slot}`, async () => {
         ctx.progress(0.2 + (i / Math.max(1, todo.length)) * 0.3, L("Images d'ambiance de l'activité (IA)", "Business mood images (AI)"));
+        let generated = false;
         try {
           const img = await ambianceImage({ ...ictx, usageKey: `${ctx.job.id}:ambiance:${i}` }, { prompt, aspect, reference: originals[i] ? assetData(originals[i]) : null });
+          generated = true;
           const check = await checkAmbiance({ ...ictx, usageKey: `${ctx.job.id}:ambianceqc:${i}` }, img);
           if (!check.ok) {
             // Image refusée (texte inventé, visage, mains déformées…) ou impossible à vérifier : ni montrée ni décomptée.
@@ -467,6 +473,7 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[services] image d'ambiance indisponible :", (e as Error).message);
+          if (generated) refundMediaQuota(ictx.userId, `${ctx.job.id}:ambiance:${i}`);
           return [] as string[];
         }
       });

@@ -16,7 +16,7 @@ export type LocalFirst = { ops: ThemeOp[]; reply: string; revert: boolean; direc
 
 /** Plusieurs actions dans une même demande (« mets le titre en rouge et ajoute une FAQ »). */
 const ACTIONS =
-  /\b(mets|met|mettre|change|changer|modifie|modifier|ajoute|ajouter|insère|supprime|supprimer|retire|enlève|masque|cache|affiche|monte|remonte|descends|déplace|remplace|remplacer|agrandis|réduis|centre|aligne|écris|réécris|traduis|passe|add|remove|delete|hide|show|move|replace|change|make|put|set|write|rewrite|translate|resize|center|align)\b/giu;
+  /(?<![\p{L}\p{N}_])(mets|met|mettre|change|changer|modifie|modifier|ajoute|ajouter|insère|supprime|supprimer|retire|enlève|masque|cache|affiche|monte|remonte|descends|déplace|remplace|remplacer|agrandis|réduis|centre|aligne|écris|réécris|traduis|passe|add|remove|delete|hide|show|move|replace|change|make|put|set|write|rewrite|translate|resize|center|align)(?![\p{L}\p{N}_])/giu;
 /** Demandes créatives ou de jugement : l'IA fait mieux. */
 const CREATIVE =
   /(plus (moderne|pro|professionnel|élégant|chic|premium|vendeur|attractif|joli|beau|dynamique|sobre|lisible|impactant|percutant)|améliore|optimise|réécris|rédige|invente|propose|imagine|inspire|comme sur|comme le site|à la manière|dans le style de|harmonise|refais|redesign|more (modern|professional|elegant|premium|attractive)|improve|optimi[sz]e|rewrite|write me|come up with|inspired|like the site|in the style of|make it (look|feel))/i;

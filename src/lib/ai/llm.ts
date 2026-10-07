@@ -144,7 +144,8 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
     throw e; // 429 / 5xx / réseau : la file de tâches réessaie.
   }
-  account(call, msg.model || route.model, msg.usage, suffix);
+  // Réponse d'un modèle de repli sans prix connu : coût compté au prix du modèle demandé (jamais 0 €).
+  account(call, msg.model && priceFor("anthropic", msg.model) ? msg.model : route.model, msg.usage, suffix);
   if (msg.stop_reason === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
   const text = msg.content.filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text").map((b) => b.text).join("");
   return { text, stop: msg.stop_reason, model: msg.model };

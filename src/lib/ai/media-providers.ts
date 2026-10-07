@@ -238,8 +238,9 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
-      instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
-      parameters: { aspectRatio: input.aspect, personGeneration: input.people ? "allow_adult" : "dont_allow" },
+      instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no people in frame; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
+      // Veo 3 n'accepte que « allow_adult » à partir d'une image (« dont_allow » est refusé) : l'absence de personnes passe par la consigne.
+      parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people) },
     }),
   });
   if (start.status === 401 || start.status === 403) throw new PermanentError(L("Clé Google refusée pour Veo.", "Google key rejected for Veo."));
@@ -324,6 +325,11 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   const u = res.usage ?? {};
   recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
+}
+
+/** Réglage « personnes » de Veo en image → vidéo : Veo 3 n'accepte que « allow_adult ». */
+export function veoPersonGeneration(model: string, people: boolean): "allow_adult" | "dont_allow" {
+  return people || /^veo-3/.test(model) ? "allow_adult" : "dont_allow";
 }
 
 /** Plan vidéo via fal.ai (file d'attente officielle). */
