@@ -79,7 +79,8 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   saveBrand(projectId, brand);
   // Site existant : jamais de logo généré (celui du site ou du client est conservé).
   if (!site && !clientLogo && !keepValidated.includes("logo")) {
-    await generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name }, redrawSymbol: true });
+    // Point de reprise : une création reprise après une interruption ne repaie pas les pistes déjà faites.
+    await ctx.step("logos", () => generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name }, redrawSymbol: true }));
     // Avec l'IA d'images : deux logos complets (symbole et nom) dessinés en parallèle, proposés dans l'onglet Marque.
     const { imageProviderAvailable } = await import("../ai/media-providers");
     const { llmConfigured } = await import("../ai/llm");
@@ -88,9 +89,12 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
       enqueue({ userId: p.userId, projectId, type: "brand.fulllogo", label: L("Logos dessinés par l'IA", "Logos drawn by AI"), payload: { projectId }, parentId: ctx.job.id, idempotencyKey: `full-logo:${ctx.job.id}` });
     }
   }
-  await saveBrandGuide(projectId);
-  ctx.progress(0.9, L("Charte de marque (PDF)", "Brand guidelines (PDF)"));
-  await saveBrandBook(projectId);
+  // Charte finale seulement avec un logo réel (fourni, choisi ou validé par la barrière), jamais sur un logo provisoire.
+  if (!loadProject(projectId).brand?.logo.provisional) {
+    await saveBrandGuide(projectId);
+    ctx.progress(0.9, L("Charte de marque (PDF)", "Brand guidelines (PDF)"));
+    await saveBrandBook(projectId);
+  }
   return loadProject(projectId).brand!;
 }
 

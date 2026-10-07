@@ -5,7 +5,7 @@ import { enqueue } from "@/lib/jobs";
 import { one } from "@/lib/db";
 import { json } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { fullLogos, useFullLogo } from "@/lib/engine/full-logo";
+import { fullLogos, rejectedFullLogos, useFullLogo } from "@/lib/engine/full-logo";
 import { L } from "@/lib/i18n-server";
 
 export const runtime = "nodejs";
@@ -13,14 +13,14 @@ export const runtime = "nodejs";
 const list = (projectId: string) =>
   fullLogos(projectId).map((a) => {
     const m = json<Record<string, any>>(a.meta, {});
-    return { id: a.id, url: `/api/files/${a.id}`, concept: m.concept ?? "", warning: m.qcWarning ?? null, score: typeof m.qc?.score === "number" ? m.qc.score : null };
+    return { id: a.id, url: `/api/files/${a.id}`, concept: m.concept ?? "", warning: m.qcWarning ?? null, score: typeof m.qc?.score === "number" ? m.qc.score : null, verdict: (m.gate?.verdict as string | undefined) ?? null };
   });
 
 /** Logos complets dessinés par l'IA d'images : liste, création (tâche de fond), utilisation. */
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   const running = !!one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'brand.fulllogo' AND status IN ('queued','running','paused')", p.id);
-  return ok({ logos: list(p.id), running, current: p.brand?.logo.proposalId ?? null });
+  return ok({ logos: list(p.id), rejected: rejectedFullLogos(p.id), running, current: p.brand?.logo.proposalId ?? null });
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {

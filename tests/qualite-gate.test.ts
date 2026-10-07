@@ -70,6 +70,8 @@ describe("barrière de qualité", () => {
     expect(mid).toMatchObject({ verdict: "PROVISIONAL", action: "none" });
     expect(mid.provisional?.label).toBe("needs_improvement");
     expect(decide("theme_home", ai(5)).verdict).toBe("PROVISIONAL");
+    expect(decide("theme_home", ai(6.5))).toMatchObject({ verdict: "PROVISIONAL", provisional: { use: "auto", label: "needs_improvement" } });
+    expect(decide("theme_custom", ai(6.5)).verdict).toBe("PROVISIONAL");
     expect(decide("theme_home", ai(4.9)).verdict).toBe("REJECTED");
   });
   it("photo libre : contrôle par métadonnées accepté (forfait sans IA), hors sujet fatal", () => {

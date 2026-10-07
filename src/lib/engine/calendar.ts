@@ -3,6 +3,8 @@
  * complètes (texte, légende, média au bon format, date), puis programmation
  * réelle exécutée par le worker — même navigateur fermé.
  */
+import { decide } from "../quality/gate";
+import { saveCheck } from "../quality/store";
 import { autopublishAllowed } from "../quotas";
 import { fromZonedTime } from "date-fns-tz";
 import { loadImage } from "@napi-rs/canvas";
@@ -14,7 +16,8 @@ import { placeholder } from "../ai/prompts";
 import { llmConfigured } from "../ai/llm";
 import { FORMATS, renderCreative, renderServiceCard, type FormatId } from "../media/compose";
 import { activityName, activityPhotos, isServices, placeLine, postAmbiance, serviceCta } from "./service-media";
-import { brandTypo, ensureCutouts, latestAsset, palette, assetsByRole } from "./images";
+import { brandTypo, ensureCutouts, latestAsset, palette } from "./images";
+import { isAutoUsable, usableByRole } from "../quality/usable";
 import { enqueue, JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { C, L, contentLang, uiLang } from "../i18n-server";
 import { intlLocale } from "../i18n";
@@ -541,45 +544,50 @@ function localServicePlan(p: Project, params: PlanParams): PostDraft[] {
   return posts;
 }
 
+/** Titre du visuel d'une publication : 32 caractères au plus (même règle que le contrôle et la consigne). */
+export const POST_HEADLINE_MAX = 32;
+
 /**
  * Contrôle des publications rédigées par l'IA : allégations non confirmées (livraison, sécurité, santé, avis…),
- * formules creuses et longueurs. Une publication fautive est réécrite une fois ; si le défaut persiste, elle garde
- * la mention des points à vérifier et ne peut pas partir sans validation humaine.
+ * formules creuses et longueurs. Nettoyage gratuit d'abord (les phrases d'allégation sont retirées) ; une réécriture
+ * payante seulement si ce nettoyage abîme la publication (champ vidé, légende amputée de plus de moitié). Une formule
+ * creuse seule ne déclenche aucun appel (elle reste signalée). Une publication nettoyée garde la mention des points
+ * retirés et ne peut pas partir sans validation humaine.
  */
 export async function checkPostDrafts(
   drafts: PostDraft[],
   p: Project,
   rewrite: (post: PostDraft, issues: string[]) => Promise<{ title: string; caption: string; hashtags: string[] }>,
 ): Promise<(PostDraft & { claims?: string[] })[]> {
-  const issuesOf = (d: Pick<PostDraft, "title" | "caption" | "visual">) => [
-    ...lintClaims({ title: d.title, caption: d.caption, headline: d.visual.headline, subline: d.visual.subline, slides: d.visual.slides ?? [] }, p).map((c) => L(`« ${c.term} » (${c.label})`, `"${c.term}" (${c.label})`)),
-    ...lintHollow({ title: d.title, caption: d.caption, headline: d.visual.headline }).map((h) => L(`formule creuse « ${h.term} »`, `empty phrase "${h.term}"`)),
-  ];
+  const claimsOf = (d: Pick<PostDraft, "title" | "caption" | "visual">) => lintClaims({ title: d.title, caption: d.caption, headline: d.visual.headline, subline: d.visual.subline, slides: d.visual.slides ?? [] }, p).map((c) => L(`« ${c.term} » (${c.label})`, `"${c.term}" (${c.label})`));
+  const hollowOf = (d: Pick<PostDraft, "title" | "caption" | "visual">) => lintHollow({ title: d.title, caption: d.caption, headline: d.visual.headline }).map((h) => L(`formule creuse « ${h.term} »`, `empty phrase "${h.term}"`));
+  const scrubbed = (post: PostDraft) => scrubClaims({ title: post.title, caption: post.caption, headline: post.visual.headline, subline: post.visual.subline, slides: post.visual.slides ?? [] }, p);
+  const ph = placeholder(contentLang());
   const out: (PostDraft & { claims?: string[] })[] = [];
   let rewrites = 0;
   for (const d of drafts) {
-    // Titre de visuel lisible sur téléphone : 6 mots au plus, coupé à un mot entier.
-    const visual = { ...d.visual, headline: shortLine(d.visual.headline, 40), subline: shortLine(d.visual.subline, 60) };
+    // Titre de visuel lisible sur téléphone, coupé à un mot entier.
+    const visual = { ...d.visual, headline: shortLine(d.visual.headline, POST_HEADLINE_MAX), subline: shortLine(d.visual.subline, 60) };
     let post: PostDraft = { ...d, visual };
-    let issues = issuesOf(post);
-    // Au plus 12 réécritures par calendrier (coût maîtrisé) ; au-delà, la publication reste signalée.
-    if (issues.length && rewrites < 12) {
-      rewrites++;
-      try {
-        const r = await rewrite(post, issues);
-        const next = { ...post, title: r.title, caption: r.caption, hashtags: r.hashtags.map((h) => h.replace(/^#+/, "").replace(/\s+/g, "")).filter(Boolean).slice(0, 10) };
-        const left = issuesOf(next);
-        if (left.length < issues.length) {
-          post = next;
-          issues = left;
+    const claims = claimsOf(post);
+    if (claims.length) {
+      // Le nettoyage gratuit suffit-il ? Sinon (texte vidé ou amputé), une réécriture payante est vraiment utile.
+      const c = scrubbed(post).content;
+      const broken = [c.title, c.caption, c.headline].some((x) => x === ph) || c.caption.length < post.caption.length * 0.5;
+      if (broken && rewrites < 12) {
+        rewrites++;
+        try {
+          const r = await rewrite(post, [...claims, ...hollowOf(post)]);
+          const next = { ...post, title: r.title, caption: r.caption, hashtags: r.hashtags.map((h) => h.replace(/^#+/, "").replace(/\s+/g, "")).filter(Boolean).slice(0, 10) };
+          if (claimsOf(next).length < claims.length) post = next;
+        } catch {
+          // Réécriture impossible : le nettoyage s'applique et la publication reste signalée.
         }
-      } catch {
-        // Réécriture impossible : la publication reste signalée.
       }
     }
     // Les allégations encore présentes sont retirées du texte ; la publication garde la mention « à vérifier »
     // et attend une validation humaine (une formule creuse seule ne bloque pas la programmation).
-    const scrub = scrubClaims({ title: post.title, caption: post.caption, headline: post.visual.headline, subline: post.visual.subline, slides: post.visual.slides ?? [] }, p);
+    const scrub = scrubbed(post);
     if (scrub.removed.length) {
       const c = scrub.content;
       post = { ...post, title: c.title, caption: c.caption, visual: { ...post.visual, headline: c.headline, subline: c.subline, slides: post.visual.slides ? c.slides : undefined } };
@@ -672,14 +680,17 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
     let aiFailed = "";
     if (llmConfigured()) try {
       const base = (k: string) => ({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:${k}` });
-      const r = await aiSocialPlan(base("plan"), p, { days: params.days, perDay: params.perDay, networks: params.networks.map((n) => n.network), goals: params.goals, tone: params.tone, mix: params.mix, link: params.link, schedule: scheduleLines(params), moments: momentsLine(p, params), recent: recentHooks(projectId, planId) });
+      // Points de reprise : plan, relecture, réparation et chaque réécriture (une reprise ne repaie rien de fait).
+      const r = await ctx.step("calendar:plan", () => aiSocialPlan(base("plan"), p, { days: params.days, perDay: params.perDay, networks: params.networks.map((n) => n.network), goals: params.goals, tone: params.tone, mix: params.mix, link: params.link, schedule: scheduleLines(params), moments: momentsLine(p, params), recent: recentHooks(projectId, planId) }));
       // Relecture « directeur de création social media » (grille notée, seuil 8/10) et une reprise ciblée des publications faibles.
       ctx.progress(0.12, L("Relecture du calendrier", "Reviewing the calendar"));
       const posts = r.posts.filter((d) => d.day < params.days && d.slot < params.perDay);
-      const refined = await refinePlan(posts, p, { review: (xs) => aiSocialReview(base("review"), p, xs), repair: (items, global) => aiSocialRepair(base("repair"), p, items, global) });
+      const refined = await refinePlan(posts, p, { review: (xs) => ctx.step("calendar:review", () => aiSocialReview(base("review"), p, xs)), repair: (items, global) => ctx.step("calendar:repair", () => aiSocialRepair(base("repair"), p, items, global)) });
       const rp = refined.report;
+      // Verdict de la barrière (enregistré) : le calendrier relu au niveau (8/10) est FINAL ; sinon à revoir.
+      saveCheck(decide("social_plan", rp.review !== null ? { checker: "ai", score: rp.passed ? Math.max(rp.review, 8) : Math.min(rp.review, 7.9) } : { checker: "none", score: null }), { userId: p.userId, projectId, jobId: ctx.job.id, candidateId: `calendar:${planId}` });
       run("UPDATE content_plans SET strategy = ? WHERE id = ?", `${r.strategy.trim()}\n\n${L(`Relecture du directeur de création : ${rp.review !== null ? `${rp.review.toFixed(1).replace(".", ",")}/10` : "indisponible"} ; grille du studio ${rp.scoreBefore.toFixed(1).replace(".", ",")} → ${rp.scoreAfter.toFixed(1).replace(".", ",")}/10${rp.kept ? ` (${rp.kept} publication${rp.kept > 1 ? "s" : ""} reprise${rp.kept > 1 ? "s" : ""})` : ""}.`, `Creative director review: ${rp.review !== null ? `${rp.review.toFixed(1)}/10` : "unavailable"}; studio checklist ${rp.scoreBefore.toFixed(1)} → ${rp.scoreAfter.toFixed(1)}/10${rp.kept ? ` (${rp.kept} post${rp.kept > 1 ? "s" : ""} reworked)` : ""}.`)}`, planId);
-      return checkPostDrafts(refined.posts, p, (post, issues) => aiRewritePost({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:fix:${post.day}:${post.slot}` }, p, post, L(`Retire ces allégations non confirmées (ou remplace-les par « ${placeholder(contentLang())} ») : ${issues.join(" ; ")}. Garde l'angle et le ton.`, `Remove these unconfirmed claims (or replace them with "${placeholder(contentLang())}"): ${issues.join("; ")}. Keep the angle and tone.`)));
+      return checkPostDrafts(refined.posts, p, (post, issues) => ctx.step(`calendar:fix:${post.day}:${post.slot}:${post.network}`, () => aiRewritePost({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:fix:${post.day}:${post.slot}` }, p, post, L(`Retire ces allégations non confirmées (ou remplace-les par « ${placeholder(contentLang())} ») : ${issues.join(" ; ")}. Garde l'angle et le ton.`, `Remove these unconfirmed claims (or replace them with "${placeholder(contentLang())}"): ${issues.join("; ")}. Keep the angle and tone.`))));
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       // Calendrier de l'IA inexploitable : le calendrier du studio prend le relais (jamais d'étape bloquée), en le disant.
@@ -740,10 +751,11 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
   const product = cutouts[0] ? await loadImage(assetData(cutouts[0])) : null;
   const logoAsset = latestAsset(projectId, "logo");
   const logo = logoAsset ? await loadImage(assetData(logoAsset)) : null;
-  const videos = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC", projectId);
+  // Seuls les médias réutilisables automatiquement (jamais un refusé ni un « à vérifier ») vont dans les publications.
+  const videos = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC", projectId).filter(isAutoUsable);
   const services = isServices(p);
   const svcPhotos = services ? activityPhotos(projectId) : [];
-  const pools: Record<string, Asset[]> = { packshot: assetsByRole(projectId, "packshot"), scene: assetsByRole(projectId, "scene"), detail: assetsByRole(projectId, "detail") };
+  const pools: Record<string, Asset[]> = { packshot: usableByRole(projectId, "packshot"), scene: usableByRole(projectId, "scene"), detail: usableByRole(projectId, "detail") };
   let needVideo = 0;
   for (const [i, postId] of postIds.entries()) {
     const post = one<any>("SELECT * FROM posts WHERE id = ?", postId);

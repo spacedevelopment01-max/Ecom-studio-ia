@@ -23,7 +23,8 @@ function load() {
 /** Mots du métier en français → mots-clés anglais des icônes (complété par l'IA légère quand elle est active). */
 const FR_EN: [RegExp, string[]][] = [
   [/peint|peinture/i, ["paint", "brush", "roller"]],
-  [/pl[âa]tr|plaquist|enduit|cloison/i, ["wall", "trowel", "bricks", "ruler"]],
+  // Jamais « wall » ni « bricks » : un mur de briques n'est pas le métier d'un plâtrier (geste et outil d'abord).
+  [/pl[âa]tr|plaquist|enduit|cloison/i, ["trowel", "ruler", "paint", "brush"]],
   [/carrel|carreau|fa[ïi]ence/i, ["grid", "tiles", "layout-grid"]],
   [/plomb|chauffag|chaudi|sanitaire/i, ["droplet", "tool", "flame", "pipe"]],
   [/[ée]lectric/i, ["bolt", "plug", "bulb"]],
@@ -52,9 +53,11 @@ const FR_EN: [RegExp, string[]][] = [
   [/couture|retouche|textile/i, ["needle-thread", "scissors", "shirt"]],
 ];
 
+/** Mots-clés des métiers cités, dans l'ordre où ils apparaissent dans le texte (le premier métier cité compte le plus). */
 export function tradeKeywords(text: string): string[] {
   const out: string[] = [];
-  for (const [re, words] of FR_EN) if (re.test(text)) for (const w of words) if (!out.includes(w)) out.push(w);
+  const hits = FR_EN.map(([re, words]) => ({ at: text.search(re), words })).filter((h) => h.at >= 0).sort((a, b) => a.at - b.at);
+  for (const { words } of hits) for (const w of words) if (!out.includes(w)) out.push(w);
   return out;
 }
 

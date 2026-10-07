@@ -864,7 +864,8 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     locks: [],
     store: {
       shopName: input.shopName,
-      product: input.product,
+      // SEO de la fiche produit rédigé avec les textes de la boutique : envoyé à la plateforme (jamais perdu).
+      product: input.copy.seo?.title?.trim() ? { ...input.product, seo: { title: input.copy.seo.title.trim(), description: (input.copy.seo.description ?? "").trim() } } : input.product,
       ...(isCatalog ? { products: catalogProducts, collections: input.collections ?? [] } : {}),
       ...(svc ? { business: "services" as const } : {}),
       pages: svc ? svc.pages : [

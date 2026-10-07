@@ -89,7 +89,10 @@ export async function pingStock(source: "pexels" | "pixabay"): Promise<string> {
 
 // ---------------------------------------------------------------- vidéos libres de droits
 
-export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string; page: string; author: string; license: string; width: number; height: number; duration: number };
+export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string; page: string; author: string; license: string; width: number; height: number; duration: number; /** Description de la banque (mots-clés Pixabay, titre de la page Pexels) : filtre du métier sans IA. */ alt: string };
+
+/** Mots du titre d'une page Pexels (« /video/a-man-painting-a-wall-123/ » → « a man painting a wall »). */
+const slugWords = (url: string) => (url.match(/\/video\/([^/?#]+)/)?.[1] ?? "").replace(/-\d+$/, "").replace(/-/g, " ");
 
 /** Vidéos libres de droits (Pexels, Pixabay : clés gratuites) ; fichier HD de taille raisonnable choisi. */
 export async function searchStockVideos(queries: string[], orientation: "landscape" | "portrait", lang: "fr" | "en", exclude: Set<string>): Promise<StockVideo[]> {
@@ -105,7 +108,7 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
         const j = await get(`https://api.pexels.com/videos/search?query=${q}&per_page=10&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: pexels });
         for (const v of j.videos ?? []) {
           const f = pick((v.video_files ?? []).filter((x: any) => /mp4/.test(x.file_type ?? "video/mp4")).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.link })));
-          if (f && v.duration >= 4 && !exclude.has(`pexels:${v.id}`)) out.push({ source: "pexels", id: String(v.id), url: f.link, page: v.url, author: v.user?.name ?? "", license: "Pexels", width: f.width, height: f.height, duration: v.duration });
+          if (f && v.duration >= 4 && !exclude.has(`pexels:${v.id}`)) out.push({ source: "pexels", id: String(v.id), url: f.link, page: v.url, author: v.user?.name ?? "", license: "Pexels", width: f.width, height: f.height, duration: v.duration, alt: slugWords(v.url ?? "") });
         }
       } catch (e) {
         console.warn("[vidéos libres] pexels indisponible :", (e as Error).message);
@@ -118,13 +121,14 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
         for (const v of j.hits ?? []) {
           const f = pick(["large", "medium", "small"].map((k) => v.videos?.[k]).filter(Boolean).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.url })));
           const wantTall = orientation === "portrait";
-          if (f && v.duration >= 4 && (f.height > f.width) === wantTall && !exclude.has(`pixabay:${v.id}`)) out.push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration });
+          if (f && v.duration >= 4 && (f.height > f.width) === wantTall && !exclude.has(`pixabay:${v.id}`)) out.push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration, alt: String(v.tags ?? "") });
         }
       } catch (e) {
         console.warn("[vidéos libres] pixabay indisponible :", (e as Error).message);
       }
     }
-    if (out.length >= 3) break;
+    // Présélection plus large : le filtre du métier (gratuit) et le contrôle d'une image choisissent ensuite.
+    if (out.length >= 6) break;
   }
   return out;
 }

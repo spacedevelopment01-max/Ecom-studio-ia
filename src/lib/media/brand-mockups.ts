@@ -58,6 +58,11 @@ export type CreativeRoute = {
   /** Palette propre à la piste (chaque piste a sa dominante) ; choisie, elle devient celle de la marque. */
   palette?: { primary: string; secondary: string; accent: string; light: string; dark: string };
   review?: RouteReview | null;
+  /**
+   * Verdict de la barrière de qualité : FINAL (proposition de l'IA contrôlée) ou PROVISIONAL (version du studio,
+   * remplacement technique : jamais présentée comme une création validée).
+   */
+  gate?: { verdict: "FINAL" | "PROVISIONAL"; score: number | null; reason: string; checkId?: string | null; provisional?: { use: "auto" | "manual"; label: "placeholder" | "needs_improvement" } };
   notes: string[];
 };
 

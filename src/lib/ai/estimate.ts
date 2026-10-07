@@ -46,7 +46,9 @@ export function estimateMicro(action: CostAction, opts: { beats?: number; videos
   // Découpage vidéo ou script UGC : réalisateur + relecture notée du directeur de création ; reprise ciblée (et sa
   // relecture) dans la moitié des cas environ.
   const direction = (output: number) => 1.5 * (usd("video_direction", { input: 9000, output }) + usd("quality_control", { input: 9000, output: 1200 }));
-  const theme = usd("theme_design", { input: 60000, output: 16000 }) + usd("quality_control", { input: 20000, output: 2000 });
+  // Composition de l'accueil puis relecture visuelle sur captures : les deux passent par la tâche « theme_design »
+  // (aiReviewHome), donc par le même modèle que la composition — l'estimation suit le modèle réellement appelé.
+  const theme = usd("theme_design", { input: 60000, output: 16000 }) + usd("theme_design", { input: 20000, output: 2000 });
   let total = 0;
   switch (action) {
     case "theme":

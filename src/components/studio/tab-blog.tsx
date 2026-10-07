@@ -48,7 +48,7 @@ type BlogData = {
   ai: boolean;
   links: { title: string; url: string; kind: string }[];
 };
-type Topic = { title: string; kind: "question" | "usage" | "guide" | "comparison"; why: string; keyword?: string };
+type Topic = { title: string; kind: "question" | "usage" | "guide" | "comparison"; why: string; keyword?: string; intent?: "informationnelle" | "commerciale" | "transactionnelle" };
 
 const STATUS: Record<Article["status"], { fr: string; en: string; tone: "neutral" | "info" | "ok" }> = {
   draft: { fr: "Brouillon", en: "Draft", tone: "neutral" },
@@ -286,7 +286,9 @@ function WriteDialog({ open, onClose, onStarted, confirm }: { open: boolean; onC
     if (!(await confirm("blog"))) return;
     setSending(true);
     try {
-      const r = await api<{ jobId: string }>(`/api/projects/${id}/blog`, { body: { topic: topic || undefined, brief: brief.trim() || undefined }, lang: cl.lang });
+      // Sujet proposé choisi : sa requête et son intention de recherche partent avec la demande.
+      const picked = !free.trim() ? topics?.find((x) => x.title === chosen) : undefined;
+      const r = await api<{ jobId: string }>(`/api/projects/${id}/blog`, { body: { topic: topic || undefined, brief: brief.trim() || undefined, keyword: picked?.keyword || undefined, intent: picked?.intent }, lang: cl.lang });
       toast("ok", t("L'article est en cours d'écriture : comptez une à deux minutes.", "The post is being written: allow one to two minutes."));
       setChosen("");
       setFree("");

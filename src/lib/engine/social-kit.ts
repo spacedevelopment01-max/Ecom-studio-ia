@@ -3,6 +3,8 @@
  * dit / ne dit pas, emojis, légendes d'exemple sans allégation) et visuels aux couleurs de la piste de logo
  * retenue (profil, stories à la une, modèles de publication, bannières), exportables en PNG et en ZIP.
  */
+import { stableKey } from "../ai/keys";
+import { currentTrace, shortHash } from "../ai/trace";
 import { zipSync, strToU8 } from "fflate";
 import { all, json } from "../db";
 import { saveAsset, assetData, type Asset } from "../library";
@@ -129,12 +131,15 @@ export function checkSocialVoice(v: Omit<SocialVoice, "generatedBy">, p: Project
 }
 
 /** Ligne éditoriale du projet : celle déjà enregistrée, sinon IA contrôlée (si disponible), sinon celle du studio. */
-export async function ensureSocialVoice(projectId: string, opts: { force?: boolean; ai?: ((p: Project, feedback?: string) => Promise<Omit<SocialVoice, "generatedBy">>) | null } = {}): Promise<SocialVoice | null> {
+export async function ensureSocialVoice(projectId: string, opts: { force?: boolean; requestId?: string; ai?: ((p: Project, feedback?: string) => Promise<Omit<SocialVoice, "generatedBy">>) | null } = {}): Promise<SocialVoice | null> {
   const p = loadProject(projectId);
   if (!p.brand) return null;
   if (p.brand.social && !opts.force) return p.brand.social;
   let voice = localSocialVoice(p);
-  const ai = opts.ai !== undefined ? opts.ai : llmConfigured() ? (pp: Project, feedback?: string) => aiSocialVoice({ userId: pp.userId, projectId: pp.id, usageKey: `social-voice:${pp.id}:${Date.now().toString(36)}${feedback ? ":fix" : ""}` }, pp, feedback) : null;
+  // Clé d'usage stable : la tâche en cours (reprise sans double débit), sinon la demande du client, sinon l'empreinte
+  // de ce qui définit la ligne éditoriale (même marque, même piste = même travail).
+  const scope = currentTrace().jobId ?? opts.requestId ?? shortHash(JSON.stringify([p.brand.name, p.brand.tone, p.brand.logo.proposal, p.brand.palette]));
+  const ai = opts.ai !== undefined ? opts.ai : llmConfigured() ? (pp: Project, feedback?: string) => aiSocialVoice({ userId: pp.userId, projectId: pp.id, usageKey: stableKey("social-voice", pp.id, scope, feedback ? "fix" : "first") }, pp, feedback) : null;
   if (ai) {
     try {
       const r = checkSocialVoice(await ai(p), p);

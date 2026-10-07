@@ -6,7 +6,12 @@ import { runWithLang } from "@/lib/i18n-server";
 
 describe("icônes du métier", () => {
   it("métier en français → icônes parlantes, sans logo de marque ni icône hors sujet", () => {
-    expect(tradeKeywords("Plâtrerie peinture")).toEqual(expect.arrayContaining(["paint", "brush", "wall"]));
+    expect(tradeKeywords("Plâtrerie peinture")).toEqual(expect.arrayContaining(["paint", "brush", "trowel"]));
+    // Jamais un mur (de briques) pour un plâtrier peintre : le geste et l'outil du métier.
+    expect(tradeKeywords("Plâtrier peintre")).not.toContain("wall");
+    expect(tradeKeywords("Plâtrier peintre")).not.toContain("bricks");
+    expect(searchIcons(tradeKeywords("Plâtrier peintre"), 6)).not.toContain("wall");
+    expect(tradeKeywords("Plâtrier peintre")[0]).toBe("trowel");
     const names = searchIcons(tradeKeywords("Menuiserie"), 6);
     expect(names).toContain("hammer");
     expect(names.some((n) => n.startsWith("brand-") || n.startsWith("binary"))).toBe(false);

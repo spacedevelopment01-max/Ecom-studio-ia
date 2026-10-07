@@ -10,6 +10,8 @@
  * Entreprise de services : « présentation face caméra » — la personne générée présente l'activité et
  * ses prestations à la troisième personne ; elle ne se dit ni cliente, ni le professionnel lui-même.
  */
+import { decide } from "../quality/gate";
+import { gateSave, saveCheck } from "../quality/store";
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -477,11 +479,10 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       if (best!.score < QC_MIN_SCORE) throw new UserFacingError(services
         ? L(`Plan ${i + 1} : l'image générée n'a pas passé le contrôle qualité (${best!.score}/10). La vidéo n'est pas créée et ne vous est pas décomptée ; relancez-la ou modifiez le décor.`, `Shot ${i + 1}: the generated image failed the quality check (${best!.score}/10). The video isn't created and isn't counted; try again or change the setting.`)
         : L(`Plan ${i + 1} : le produit n'a pas pu être reproduit fidèlement (contrôle ${best!.score}/10). La vidéo n'est pas créée et ne vous est pas décomptée ; essayez avec une autre photo du produit, nette et sur fond uni.`, `Shot ${i + 1}: the product couldn't be reproduced faithfully (check ${best!.score}/10). The video isn't created and isn't counted; try another sharp product photo on a plain background.`));
-      const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(best!.buf).jpeg({ quality: 92 }).toBuffer(), name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.jpg`, mime: "image/jpeg", role: "ugc-frame", folderKey: "videos.social", origin: "generated", sourceAssetId: sourceId, meta: { recipe: services ? L("Image d'ouverture d'une présentation face caméra : personne et décor générés (ni client, ni professionnel réel)", "Opening frame of an on-camera presentation: generated person and set (neither a customer nor the real professional)") : L("Image d'ouverture d'un plan UGC : personne et décor générés, produit réel en référence", "Opening frame of a UGC shot: generated person and set, real product as reference"), aiGenerated: true, qcScore: best!.score }, status: "review" });
+      const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(best!.buf).jpeg({ quality: 92 }).toBuffer(), name: `${slug(project.product.name || brand.name)}-ugc-${C("plan", "shot")}-${i + 1}.jpg`, mime: "image/jpeg", role: "ugc-frame", folderKey: "videos.social", origin: "generated", sourceAssetId: sourceId, meta: { recipe: services ? L("Image d'ouverture d'une présentation face caméra : personne et décor générés (ni client, ni professionnel réel)", "Opening frame of an on-camera presentation: generated person and set (neither a customer nor the real professional)") : L("Image d'ouverture d'un plan UGC : personne et décor générés, produit réel en référence", "Opening frame of a UGC shot: generated person and set, real product as reference"), aiGenerated: true, qcScore: best!.score, ...gateSave({ ...base, projectId }, decide("ugc_frame", { checker: "ai", score: best!.score })).meta }, status: "review" });
       return { id: a.id, score: best!.score };
     });
     frameIds.push(fid.id);
-    if (fid.score < 7) notes.push(L(`Plan ${i + 1} : vérifiez que le produit est fidèle (contrôle ${fid.score}/10).`, `Shot ${i + 1}: check that the product is accurate (check score ${fid.score}/10).`));
   }
 
   // 2. Plans animés.
@@ -505,7 +506,10 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
           let ok = stills.length > 0;
           for (const [k, st] of stills.entries()) {
             if (!ok) break;
-            ok = (await ugcCheck(base, `${ctx.job.id}:clipqc:${i}:${attempt}:${k}`, services, product, st)).ok;
+            const qc = await ugcCheck(base, `${ctx.job.id}:clipqc:${i}:${attempt}:${k}`, services, product, st);
+            ok = qc.ok;
+            // Verdict enregistré (historique des contrôles) ; la règle stricte du plan UGC reste la même.
+            saveCheck(decide("ugc_clip", { checker: "ai", score: qc.ok ? Math.max(qc.score, 7) : Math.min(qc.score, 6.9), issues: qc.issues }, { attempt }), { userId: base.userId, projectId, jobId: ctx.job.id, candidateId: `${ctx.job.id}:ugc-clip:${i}` });
           }
           if (ok) buf = b;
         }

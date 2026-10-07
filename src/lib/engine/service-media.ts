@@ -5,6 +5,9 @@
  * réelle (`project.services`) : jamais d'avis, de chiffres, de tarifs ou de diplômes inventés.
  * Avec une IA d'images : images d'ambiance de l'activité, sous consignes d'honnêteté.
  */
+import { decide, type GateDecision } from "../quality/gate";
+import { gateSave, saveCheck } from "../quality/store";
+import { isAutoUsable } from "../quality/usable";
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { z } from "zod";
@@ -30,34 +33,44 @@ import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo
 // ---------------------------------------------------------------- textes (purs, testables)
 
 
-/** Contrôle obligatoire d'une image d'ambiance générée (aucun texte ou logo inventé, aucune personne déformée). */
-export async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer, subject?: string, stock = false): Promise<{ ok: boolean; tier: QcTier; reason: string }> {
-  if (!llmConfigured()) return { ok: false, tier: "warn", reason: L("contrôle indisponible : vérifiez l'image", "check unavailable: check the image") };
+/**
+ * Contrôle obligatoire d'une image d'ambiance générée (aucun texte ou logo inventé, aucune personne déformée) ou d'une
+ * photo libre (stock = true : le métier doit se voir). Le verdict vient de la barrière de qualité : contrôle impossible
+ * ou en panne → jamais FINAL ; photo libre « à vérifier » → refusée (on passe à la suivante).
+ */
+export async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer, subject?: string, stock = false, attempt = 0): Promise<{ ok: boolean; tier: QcTier; reason: string; decision: GateDecision }> {
+  const deliverable = stock ? "stock_photo" : "image_ambiance";
+  const done = (decision: GateDecision) => {
+    const tier: QcTier = decision.verdict === "FINAL" ? "good" : decision.verdict === "REJECTED" || decision.action === "regenerate" ? "bad" : "warn";
+    return { ok: decision.verdict === "FINAL", tier, reason: decision.verdict === "FINAL" ? "" : [decision.reason, decision.feedback].filter(Boolean).join(L(" — ", " — ")), decision };
+  };
+  if (!llmConfigured()) return done(decide(deliverable, { checker: "none", score: null }, { attempt }));
   let r: Awaited<ReturnType<typeof aiQcScene>>;
   try {
     r = await aiQcScene(b, img, subject, stock);
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-    return { ok: false, tier: "warn", reason: L("contrôle automatique impossible : vérifiez l'image", "automatic check unavailable: check the image") };
+    return done(decide(deliverable, { checker: "ai", score: null, error: (e as Error).message }, { attempt }));
   }
-  const tier = qcTier(r);
-  return { ok: tier === "good", tier, reason: tier === "good" ? "" : r.issues.join(L(" ; ", "; ")) || `${qcScore(r.score)}/10` };
+  // Refus explicite du contrôleur (« ok » faux) : jamais FINAL, même avec une note haute.
+  const score = r.ok === false ? Math.min(qcScore(r.score), 6.9) : qcScore(r.score);
+  return done(decide(deliverable, { checker: "ai", score, issues: r.issues }, { attempt }));
 }
 
 /**
- * Image d'ambiance contrôlée, avec UNE reprise corrigée si elle est ratée : la consigne reprend les défauts relevés
- * pour qu'ils ne se reproduisent pas. Le raté n'est ni gardé ni décompté au client ; seule la meilleure des deux
- * images est rendue (le but : pas de raté livré, pas de dépense sans image utilisable).
+ * Image d'ambiance contrôlée, avec UNE reprise ciblée si la barrière la demande (défauts précis relevés) : la consigne
+ * reprend les défauts pour qu'ils ne se reproduisent pas. Le raté n'est ni gardé ni décompté au client.
+ * Une panne du contrôle ne déclenche pas de nouvelle image (on ne repaie pas une image pour refaire un contrôle).
  */
 async function ambianceChecked(ictx: { userId: string; projectId: string; jobId?: string | null }, usageKey: string, input: Parameters<typeof ambianceImage>[1], subject?: string): Promise<{ img: Buffer; check: Awaited<ReturnType<typeof checkAmbiance>>; usageKey: string }> {
   const img = await ambianceImage({ ...ictx, usageKey }, input);
-  const check = await checkAmbiance({ ...ictx, usageKey: `${usageKey}:qc` }, img, subject);
-  if (check.tier !== "bad") return { img, check, usageKey };
+  const check = await checkAmbiance({ ...ictx, usageKey: `${usageKey}:qc` }, img, subject, false, 0);
+  if (!(check.decision.verdict === "RETRY" && check.decision.action === "regenerate")) return { img, check, usageKey };
   refundMediaQuota(ictx.userId, usageKey);
   const retryKey = `${usageKey}:retry`;
   try {
-    const img2 = await ambianceImage({ ...ictx, usageKey: retryKey }, { ...input, prompt: `${input.prompt} A previous attempt was rejected for: ${check.reason}. Avoid exactly these defects.` });
-    const check2 = await checkAmbiance({ ...ictx, usageKey: `${retryKey}:qc` }, img2, subject);
+    const img2 = await ambianceImage({ ...ictx, usageKey: retryKey }, { ...input, prompt: `${input.prompt} A previous attempt was rejected for: ${check.decision.feedback || check.reason}. Avoid exactly these defects.` });
+    const check2 = await checkAmbiance({ ...ictx, usageKey: `${retryKey}:qc` }, img2, subject, false, 1);
     return { img: img2, check: check2, usageKey: retryKey };
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -187,10 +200,10 @@ async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?:
   const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
   const must = (tradeStock(`${post.topic} ${trade}`) ?? tradeStock(trade))?.must ?? [];
   const found = rankStock(await searchStock(queries, post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured());
-  const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`);
+  const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`, must.length > 0);
   if (!pick) return null;
-  const { photo, img, check } = pick;
-  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: post.aspect, ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) } });
+  const { photo, img, gate } = pick;
+  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: post.aspect, ...gate.meta } });
 }
 
 /** Recherches de photos libres de droits par emplacement : mots du métier (IA légère si disponible, sinon le texte du projet). */
@@ -235,12 +248,14 @@ async function stockQueries(ictx: { userId: string; projectId: string; jobId?: s
 }
 
 /**
- * Première photo qui montre vraiment le sujet. Avec l'IA, chaque photo est regardée : une photo nette du métier est
- * prise tout de suite ; à défaut, la meilleure « à vérifier » ; jamais une photo hors sujet (mur nu, texture…).
- * Sans IA, la liste reçue ne contient déjà que des photos dont la description cite le métier.
+ * Première photo qui montre vraiment le sujet, passée par la barrière de qualité (photo libre : FINAL ou rien).
+ * Filtre gratuit d'abord (mots du métier dans la description de la banque, rankStock), puis au plus 5 candidats
+ * regardés par l'IA ; jamais le premier résultat pris au hasard, jamais une photo « à vérifier » ou hors sujet.
+ * Sans IA (forfait sans IA) : seule une description qui cite le métier (`metadataOk`) vaut contrôle ; sinon rien.
  */
-async function firstOnTopic<T extends Parameters<typeof downloadStock>[0]>(ictx: { userId: string; projectId: string; jobId?: string | null }, found: T[], subject: string, key: (ph: T) => string): Promise<{ photo: T; img: Buffer; check: Awaited<ReturnType<typeof checkAmbiance>> | null } | null> {
-  let fallback: { photo: T; img: Buffer; check: Awaited<ReturnType<typeof checkAmbiance>> } | null = null;
+export async function firstOnTopic<T extends Parameters<typeof downloadStock>[0]>(ictx: { userId: string; projectId: string; jobId?: string | null }, found: T[], subject: string, key: (ph: T) => string, metadataOk: boolean, opts: { stockPrompt?: boolean } = {}): Promise<{ photo: T; img: Buffer; decision: GateDecision; gate: ReturnType<typeof gateSave> } | null> {
+  const ai = llmConfigured();
+  if (!ai && !metadataOk) return null;
   for (const photo of found.slice(0, 5)) {
     let img: Buffer;
     try {
@@ -248,12 +263,13 @@ async function firstOnTopic<T extends Parameters<typeof downloadStock>[0]>(ictx:
     } catch {
       continue;
     }
-    if (!llmConfigured()) return { photo, img, check: null };
-    const check = await checkAmbiance({ ...ictx, usageKey: key(photo) }, img, subject, true);
-    if (check.tier === "good") return { photo, img, check };
-    if (check.tier === "warn" && !fallback) fallback = { photo, img, check };
+    // Photo d'un métier : consigne « le métier doit se voir » ; univers d'un produit : contrôle d'ambiance avec le sujet.
+    const checked = ai ? (await checkAmbiance({ ...ictx, usageKey: key(photo) }, img, subject, opts.stockPrompt !== false)).decision : null;
+    const decision = checked ? (checked.deliverable === "stock_photo" ? checked : decide("stock_photo", { checker: checked.checked ? "ai" : "none", score: checked.score, issues: checked.feedback ? [checked.feedback] : [], ...(checked.checked ? {} : { error: checked.reason }) })) : decide("stock_photo", { checker: "metadata", score: 7 });
+    if (decision.verdict === "FINAL") return { photo, img, decision, gate: gateSave(ictx, decision) };
+    saveCheck(decision, { userId: ictx.userId, projectId: ictx.projectId, jobId: ictx.jobId, candidateId: `${photo.source}:${photo.id}` });
   }
-  return fallback;
+  return null;
 }
 
 /**
@@ -271,11 +287,11 @@ export async function stockFill(ictx: { userId: string; projectId: string; jobId
     if (!q) continue;
     const found = rankStock(await searchStock(q.queries, orientation, q.lang, used), q.must, llmConfigured());
     const want = slotSubject(p, slot);
-    const pick = await firstOnTopic(ictx, found, want.subject, (ph) => `${ictx.jobId ?? "stock"}:stockqc:${slot}:${ph.source}:${ph.id}`);
+    const pick = await firstOnTopic(ictx, found, want.subject, (ph) => `${ictx.jobId ?? "stock"}:stockqc:${slot}:${ph.source}:${ph.id}`, q.must.length > 0);
     if (!pick) continue;
-    const { photo, img, check } = pick;
+    const { photo, img, gate } = pick;
     used.add(`${photo.source}:${photo.id}`);
-    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) }, status: "review" });
+    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...gate.meta }, status: "review" });
     out.push({ id: a.id, slot });
   }
   return out;
@@ -420,7 +436,7 @@ export function serviceCardPlan(p: Project, photos: number, tips?: { title: stri
  * l'activité, ou originaux), sans les photos refusées.
  */
 export function realActivityPhotos(projectId: string): Asset[] {
-  return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND (role = 'original' OR (role = 'lifestyle' AND origin != 'generated' AND json_extract(meta, '$.stock') IS NULL)) ORDER BY created_at LIMIT 8", projectId);
+  return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND (role = 'original' OR (role = 'lifestyle' AND origin != 'generated' AND json_extract(meta, '$.stock') IS NULL)) ORDER BY created_at LIMIT 24", projectId).filter(isAutoUsable).slice(0, 8);
 }
 
 /** Photos réelles d'abord, puis ambiances générées par IA. */
@@ -439,7 +455,7 @@ export async function refreshSiteBanners(projectId: string) {
 
 export function activityPhotos(projectId: string): Asset[] {
   // Images faites pour un emplacement : photos libres de droits (gratuites) d'abord, puis ambiances générées par IA.
-  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND (origin = 'generated' OR json_extract(meta, '$.stock') IS NOT NULL) AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (json_extract(meta, '$.stock') IS NOT NULL) DESC, created_at DESC LIMIT 8", projectId);
+  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND (origin = 'generated' OR json_extract(meta, '$.stock') IS NOT NULL) AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (json_extract(meta, '$.stock') IS NOT NULL) DESC, created_at DESC LIMIT 24", projectId).filter(isAutoUsable).slice(0, 8);
   return [...realActivityPhotos(projectId), ...amb];
 }
 
@@ -524,7 +540,8 @@ export async function postAmbiance(ictx: { userId: string; projectId: string; jo
     return null;
   });
   if (free) return free;
-  if (!imageProviderAvailable()) return null;
+  // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).
+  if (!imageProviderAvailable() || !llmConfigured()) return null;
   const [, , base, look] = ambianceParts(p);
   const prompt = `${base} Photograph illustrating this social media post: "${clip(post.topic, 220)}". Show the real work, tools, materials or place it talks about, a fresh angle and framing specific to this subject. ${look}`;
   const usageKey = `${ictx.jobId ?? "post"}:post-ambiance:${post.key}`;
@@ -532,13 +549,11 @@ export async function postAmbiance(ictx: { userId: string; projectId: string; jo
   try {
     const { img, check, usageKey: finalKey } = await ambianceChecked(ictx, usageKey, { prompt, aspect: post.aspect }, clip(post.topic, 200));
     generated = true;
-    // Image payée gardée : utilisée si bonne ou à défaut mineur (signalé) ; inutilisable → écartée mais visible.
-    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "generated", meta: { recipe: L("Image générée par IA pour cette publication (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated image for this post (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: post.aspect, ...(check.tier === "good" ? {} : { qcWarning: check.reason }) }, status: check.tier === "bad" ? "rejected" : "review" });
-    if (check.tier === "bad") {
-      refundMediaQuota(ictx.userId, finalKey);
-      return null;
-    }
-    return a;
+    // Image payée gardée (visible dans Images) ; utilisée seulement si elle a franchi la barrière (FINAL).
+    const keep = gateSave(ictx, check.decision);
+    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "generated", meta: { recipe: L("Image générée par IA pour cette publication (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated image for this post (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: post.aspect, ...keep.meta }, status: keep.status });
+    if (check.decision.verdict === "REJECTED") refundMediaQuota(ictx.userId, finalKey);
+    return check.decision.verdict === "FINAL" ? a : null;
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     console.warn("[calendrier] image de publication indisponible :", (e as Error).message);
@@ -759,7 +774,8 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
   const filled = new Set(stockIds.map((x) => x.slot));
 
   // 3. Images d'ambiance (IA d'images disponible) pour les emplacements encore vides : consignes honnêtes, aucun faux client.
-  const withAi = opts.withAi !== false && !!imageProviderAvailable();
+  // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).
+  const withAi = opts.withAi !== false && !!imageProviderAvailable() && llmConfigured();
   if (withAi) {
     // Une image par visuel : vraies photos du client, puis photos libres de droits ; l'IA complète ce qui manque.
     const todo = open.filter((x) => !filled.has(x.slot));
@@ -773,9 +789,11 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
           generated = true;
           // Image payée toujours gardée : défaut mineur signalé ; inutilisable (texte inventé, mains déformées…)
           // écartée mais visible dans Images, non utilisée et non décomptée.
-          if (check.tier === "bad") refundMediaQuota(ictx.userId, finalKey);
-          const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...(check.tier === "good" ? {} : { qcWarning: check.reason }) }, status: check.tier === "bad" ? "rejected" : "review" });
-          return check.tier === "bad" ? ([] as string[]) : [a.id];
+          if (check.decision.verdict === "REJECTED") refundMediaQuota(ictx.userId, finalKey);
+          const keep = gateSave(ictx, check.decision);
+          const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...keep.meta }, status: keep.status });
+          // Seule une image FINAL compte comme remplie (une image à vérifier ou refusée reste visible, non réutilisée).
+          return check.decision.verdict === "FINAL" ? [a.id] : ([] as string[]);
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[services] image d'ambiance indisponible :", (e as Error).message);
@@ -838,17 +856,18 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
   ctx.progress(0.2, L("Composition de l'image", "Composing the image"));
 
   if (kind === "ambiance") {
-    if (!imageProviderAvailable() || req.useAi === false) throw new UserFacingError(L("Les images d'ambiance sont créées par l'IA d'images (non disponible ici). Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "Mood images are created by the AI image generator (not available here). Upload photos of your work, team or premises instead."));
+    if (!imageProviderAvailable() || req.useAi === false || !llmConfigured()) throw new UserFacingError(L("Les images d'ambiance sont créées par l'IA d'images (non disponible ici). Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "Mood images are created by the AI image generator (not available here). Upload photos of your work, team or premises instead."));
     const f = FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
     const prompts = ambiancePrompts(p);
     const img = await ctx.step("ambiance", async () => {
-      const { img: buf, check, usageKey: finalKey } = await ambianceChecked({ userId: p.userId, projectId, jobId: ctx.job.id }, `${ctx.job.id}:ambiance`, { prompt: req.subline ? `${prompts[0]} ${req.subline}` : prompts[Date.now() % 2], aspect: aspectFor(f), reference: photo && photo.origin !== "generated" ? assetData(photo) : null });
-      if (check.tier === "bad") refundMediaQuota(p.userId, finalKey);
-      return JSON.stringify({ b64: buf.toString("base64"), tier: check.tier, reason: check.reason });
+      const { img: buf, check, usageKey: finalKey } = await ambianceChecked({ userId: p.userId, projectId, jobId: ctx.job.id }, `${ctx.job.id}:ambiance`, { prompt: req.subline ? `${prompts[0]} ${req.subline}` : prompts[ctx.job.id.length % 2], aspect: aspectFor(f), reference: photo && photo.origin !== "generated" ? assetData(photo) : null });
+      if (check.decision.verdict === "REJECTED") refundMediaQuota(p.userId, finalKey);
+      const keep = gateSave({ userId: p.userId, projectId, jobId: ctx.job.id }, check.decision);
+      return JSON.stringify({ b64: buf.toString("base64"), keep });
     });
-    // Image payée toujours livrée : signalée (défaut mineur) ou écartée (visible, non décomptée) selon le contrôle.
-    const got = JSON.parse(img) as { b64: string; tier: QcTier; reason: string };
-    const a = await saveAsset({ projectId, userId: p.userId, data: await sharp(Buffer.from(got.b64, "base64")).jpeg({ quality: 92 }).toBuffer(), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspectFor(f), ...(got.tier === "good" ? {} : { qcWarning: got.reason }) }, status: got.tier === "bad" ? "rejected" : "review" });
+    // Image payée toujours livrée dans Images : FINAL utilisable ; sinon à vérifier ou écartée (non réutilisée).
+    const got = JSON.parse(img) as { b64: string; keep: ReturnType<typeof gateSave> };
+    const a = await saveAsset({ projectId, userId: p.userId, data: await sharp(Buffer.from(got.b64, "base64")).jpeg({ quality: 92 }).toBuffer(), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspectFor(f), ...got.keep.meta }, status: got.keep.status });
     return { assetId: a.id };
   }
 

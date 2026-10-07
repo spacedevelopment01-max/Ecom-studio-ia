@@ -1,4 +1,5 @@
 /** Gestionnaires des tâches d'arrière-plan. */
+import { isAutoUsable } from "../src/lib/quality/usable";
 import { all, json, now, one, run } from "../src/lib/db";
 import { sectionGenerationAllowed } from "../src/lib/theme/custom-access";
 import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
@@ -66,7 +67,7 @@ export const handlers: Record<string, Handler> = {
   },
 
   /** Article de blog écrit (ou réécrit) par l'IA : 1 article du forfait, décompté une fois l'article enregistré. */
-  "blog.write": async (ctx) => writeBlogArticle(ctx, ctx.job.project_id!, { topic: ctx.payload.topic, brief: ctx.payload.brief, articleId: ctx.payload.articleId, instruction: ctx.payload.instruction }),
+  "blog.write": async (ctx) => writeBlogArticle(ctx, ctx.job.project_id!, { topic: ctx.payload.topic, brief: ctx.payload.brief, articleId: ctx.payload.articleId, instruction: ctx.payload.instruction, keyword: ctx.payload.keyword, intent: ctx.payload.intent }),
 
   /** Logo : nouvelles pistes (IA, plusieurs minutes) ou application de la piste choisie. */
   "brand.fulllogo": async (ctx) => {
@@ -84,7 +85,7 @@ export const handlers: Record<string, Handler> = {
   "copy.build": async (ctx) => {
     const p = loadProject(ctx.payload.projectId);
     if (llmConfigured()) {
-      const r = await aiShopCopyChecked({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, p, (m) => ctx.progress(0.5, m));
+      const r = await aiShopCopyChecked({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, p, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn));
       remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(r.copy), source: "ai" });
       return r.qc;
     }
@@ -241,7 +242,8 @@ export const handlers: Record<string, Handler> = {
       run("UPDATE posts SET title = ?, caption = ?, hashtags = ?, brief = ?, error = ?, status = CASE WHEN status = 'scheduled' THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", r.title, r.caption, r.hashtags.join(" "), JSON.stringify(brief), r.claims?.length ? L(`À vérifier avant publication : ${r.claims.join(", ")}`, `Check before publishing: ${r.claims.join(", ")}`) : null, now(), postId);
     }
     if (part !== "text") {
-      const cut = (await ensureCutouts(ctx, p))[0];
+      // Détourage réutilisable automatiquement seulement (jamais un refusé ni un « à vérifier »).
+      const cut = (await ensureCutouts(ctx, p)).filter(isAutoUsable)[0];
       if (cut) {
         const visual = json<any>(post.brief, {});
         const fmt = NETWORK_FORMATS[post.network] ?? NETWORK_FORMATS.instagram;

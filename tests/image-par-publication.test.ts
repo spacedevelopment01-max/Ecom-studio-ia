@@ -1,12 +1,14 @@
 /**
  * Calendrier d'une activité de services : avec l'IA, chaque publication reçoit sa propre image, faite d'après
- * son sujet ; sans fournisseur d'images (Découverte, IA coupée), rien n'est généré et le calendrier reprend
- * les images déjà créées.
+ * son sujet ; sans fournisseur d'images (Découverte, IA coupée) ou sans contrôle visuel possible, rien n'est
+ * généré (une image payée qui ne pourrait jamais être validée) et le calendrier reprend les images déjà créées.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const calls: { prompt: string; aspect: string }[] = [];
 let available = true;
+let checkable = true;
+vi.mock("@/lib/ai/llm", async (orig) => ({ ...(await orig<object>()), llmConfigured: () => checkable }));
 vi.mock("@/lib/stock/photos", () => ({ searchStock: async () => [], downloadStock: async () => Buffer.alloc(0), stockCredit: () => "" }));
 vi.mock("@/lib/ai/media-providers", () => ({
   imageProviderAvailable: () => available,
@@ -29,7 +31,13 @@ const project: any = {
 const ictx = { userId: "u", projectId: "p", jobId: "j" };
 
 describe("une image IA par publication", () => {
-  beforeEach(() => { calls.length = 0; available = true; });
+  beforeEach(() => { calls.length = 0; available = true; checkable = true; });
+
+  it("contrôle visuel impossible : aucune image payée (elle ne pourrait jamais être validée)", async () => {
+    checkable = false;
+    expect(await postAmbiance(ictx, project, { key: "c", topic: "Rénover une cuisine", aspect: "1:1", name: "x.jpg" })).toBeNull();
+    expect(calls).toHaveLength(0);
+  });
 
   it("sans fournisseur d'images : aucune génération (repli sur les images existantes)", async () => {
     available = false;
