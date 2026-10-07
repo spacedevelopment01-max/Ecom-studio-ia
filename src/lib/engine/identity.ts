@@ -10,7 +10,9 @@ import { logoPng, logoSet, type LogoSpec, type SymbolKind } from "../media/logo"
 import { canvasFamily, CANVAS_FONTS } from "../media/fonts";
 import { directionById } from "../theme/directions";
 import { contrast, hsl, isDark, withLightness } from "../color";
-import { UserFacingError, type JobContext } from "../jobs";
+import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
+import { imageProviderAvailable, logoSymbolImage, refundMediaQuota } from "../ai/media-providers";
+import { traceSymbol } from "../media/trace-symbol";
 import { C, L } from "../i18n-server";
 import { serviceSymbol, serviceTaglines } from "./services-text";
 import type { CustomSymbol } from "../media/logo-symbol";
@@ -150,9 +152,31 @@ export type ProposalKey = (typeof PROPOSAL_KEYS)[number];
 function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = []): CreativeAi {
   const base = { userId: p.userId, projectId: p.id };
   const k = (what: string) => `${what}:${p.id}:${Date.now().toString(36)}`;
+  // Chacun son métier : le modèle de texte pense l'idée et juge ; l'IA d'images dessine le symbole (pistes produit
+  // et concept), vectorisé ensuite. Monogramme (piste typo) : dessiné à partir des vraies lettres de la police.
+  const drawn = async (d: RouteDraft, feedback = ""): Promise<RouteDraft> => {
+    if (!d || d.key === "typo" || !imageProviderAvailable()) return d;
+    const usageKey = k(`logo-symbol-${d.key}`);
+    const activity = [p.product.name, p.product.category, p.product.summary].filter(Boolean).join(" — ");
+    try {
+      // Le dessin part de l'idée (brief du directeur artistique), pas d'un calque de la photo du produit.
+      const img = await logoSymbolImage({ ...base, usageKey }, { concept: `"${d.name}" for the brand ${p.brand?.name ?? p.name} (${activity.slice(0, 200)}). ${d.drawing ? `Drawing brief: ${d.drawing.slice(0, 600)}` : ""} Idea behind it: ${d.why}${feedback ? ` Fix these issues from the previous version: ${feedback}` : ""}` });
+      const traced = await traceSymbol(img);
+      if (!traced.ok) {
+        console.warn(`[logo] symbole de l'IA d'images non vectorisable (${traced.reason}) : dessin du modèle de texte gardé`);
+        refundMediaQuota(p.userId, usageKey);
+        return d;
+      }
+      return { ...d, svg: traced.svg };
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      console.warn("[logo] IA d'images indisponible pour le symbole :", (e as Error).message);
+      return d;
+    }
+  };
   return {
-    routes: () => aiCreativeRoutes({ ...base, usageKey: k("logo-routes") }, p, { photo: cutout ?? undefined, avoid }) as Promise<RouteDraft[]>,
-    redraw: (key, feedback, previous) => aiCreativeRedraw({ ...base, usageKey: k(`logo-route-${key}`) }, p, { key, feedback, previous, photo: cutout ?? undefined, avoid }) as Promise<RouteDraft>,
+    routes: async () => Promise.all(((await aiCreativeRoutes({ ...base, usageKey: k("logo-routes") }, p, { photo: cutout ?? undefined, avoid })) as RouteDraft[]).map((d) => drawn(d))),
+    redraw: async (key, feedback, previous) => drawn((await aiCreativeRedraw({ ...base, usageKey: k(`logo-route-${key}`) }, p, { key, feedback, previous, photo: cutout ?? undefined, avoid })) as RouteDraft, feedback),
     review: (route, board) => aiCreativeReview({ ...base, usageKey: k(`logo-route-review-${route.key}`) }, { photo: cutout ?? undefined, board, route }) as Promise<RouteReview>,
   };
 }

@@ -43,6 +43,8 @@ export type RouteDraft = {
   key: RouteKey;
   name: string;
   why: string;
+  /** Brief de dessin du symbole (formes, composition, parti pris), transmis à l'IA d'images. */
+  drawing?: string;
   svg: string;
   heading: string;
   headingWeight: number;

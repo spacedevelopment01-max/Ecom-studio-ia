@@ -1224,8 +1224,9 @@ export const RouteDraftSchema = z.object({
   ink: ROLE.catch("dark"),
   accent: ROLE.catch("primary"),
   ground: ROLE.catch("primary"),
+  drawing: z.string().optional().catch(undefined),
 });
-const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
+const ROUTE_SHAPE = `{"key": "produit|concept|typo", "name": "", "why": "", "drawing": "brief de dessin du symbole pour l'illustrateur, en anglais", "svg": "<svg …>…</svg>", "heading": "", "headingWeight": 700, "body": "", "case": "upper|title|lower|asis", "tracking": 0.06, "composition": "horizontal|stacked|emblem|wordmark", "ink": "dark", "accent": "primary", "ground": "primary"}`;
 
 function routesBrief(p: Project) {
   const b = p.brand;
