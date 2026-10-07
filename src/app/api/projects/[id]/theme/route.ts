@@ -9,6 +9,7 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { containerOf, sectionSchema, baseSectionTypes, availableSectionTypes } from "@/lib/theme/spec";
 import { directionCards } from "@/lib/theme/directions";
 import { themeFingerprint } from "@/lib/theme/compile";
+import { layoutChoices } from "@/lib/theme/layout-choices";
 import { previewSandbox } from "@/lib/theme/preview-access";
 
 export const runtime = "nodejs";
@@ -24,7 +25,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     const c = containerOf(cur.spec, t)!;
     return {
       template: t,
-      sections: c.order.filter((id) => c.sections[id]).map((id) => ({ id, type: c.sections[id].type, name: sectionSchema(cur.spec, c.sections[id].type, ui)?.name ?? c.sections[id].type, disabled: !!c.sections[id].disabled, locked: cur.spec.locks.includes(`${t}:${id}`), heading: String(c.sections[id].settings?.heading ?? c.sections[id].settings?.heading_line1 ?? "").slice(0, 80) })),
+      sections: c.order.filter((id) => c.sections[id]).map((id) => ({ id, type: c.sections[id].type, name: sectionSchema(cur.spec, c.sections[id].type, ui)?.name ?? c.sections[id].type, disabled: !!c.sections[id].disabled, locked: cur.spec.locks.includes(`${t}:${id}`), heading: String(c.sections[id].settings?.heading ?? c.sections[id].settings?.heading_line1 ?? "").slice(0, 80), layout: layoutChoices(cur.spec, c.sections[id], ui) })),
     };
   });
   return ok({

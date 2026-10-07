@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Crosshair, Maximize2, Minimize2, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Crosshair, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
@@ -12,6 +12,7 @@ import { SortableList } from "./sortable";
 import type { DirectionCard } from "@/lib/theme/directions";
 import type { ImportReport } from "@/lib/theme/import";
 import { useT } from "../i18n";
+import { LayoutPanel, type LayoutChoice, type LayoutSection } from "./layout-panel";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId } from "./platform-picker";
 import type { BusinessType } from "@/lib/project-types";
@@ -34,7 +35,7 @@ type ThemeData = {
     name: string;
     summary: string;
     fingerprint: string;
-    structure: { template: string; sections: { id: string; type: string; name: string; disabled: boolean; locked: boolean; heading: string }[] }[];
+    structure: { template: string; sections: { id: string; type: string; name: string; disabled: boolean; locked: boolean; heading: string; layout?: LayoutChoice[] }[] }[];
     pages: { handle: string; title: string; template_suffix: string }[];
     product: { handle: string; title: string; price: number | null };
     motion?: { enabled: boolean; intensity: string; parallax: boolean };
@@ -120,6 +121,9 @@ export default function TabBoutique() {
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
   // Plein écran : l'aperçu couvre tout l'écran (même aperçu, sans rechargement), pour juger la mise en page.
   const [full, setFull] = useState(false);
+  // Panneau « Disposition » (en-tête et pied de page), flottant au-dessus de l'aperçu.
+  const [layoutOpen, setLayoutOpen] = useState(false);
+  const [layoutBusy, setLayoutBusy] = useState(false);
   useEffect(() => {
     if (!full) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
@@ -267,6 +271,19 @@ export default function TabBoutique() {
       reloadProject();
     } catch (e) {
       toast("bad", (e as Error).message);
+    }
+  }
+
+  // Sections de l'en-tête et du pied de page avec leurs choix de disposition (panneau « Disposition »).
+  const layoutSections: LayoutSection[] = (theme?.current?.structure ?? [])
+    .filter((tp) => tp.template === "group:header" || tp.template === "group:footer")
+    .flatMap((tp) => tp.sections.filter((x) => x.layout?.length).map((x) => ({ template: tp.template, id: x.id, type: x.type, name: x.name, locked: x.locked, layout: x.layout })));
+  async function applyLayout(sec: LayoutSection, key: string, value: string | boolean, label: string) {
+    setLayoutBusy(true);
+    try {
+      await ops([{ op: "set_setting", template: sec.template, section: sec.id, key, value }], label);
+    } finally {
+      setLayoutBusy(false);
     }
   }
 
@@ -456,7 +473,15 @@ export default function TabBoutique() {
     </div>
   );
 
-  const Structure = (
+  const Structure = layoutOpen && layoutSections.length > 0 ? (
+    <div className="h-full overflow-y-auto p-4">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <p className="font-display text-lg font-semibold">{t("Disposition", "Layout")}</p>
+        <button onClick={() => setLayoutOpen(false)} className="inline-flex h-8 items-center gap-1 rounded-full border border-line px-3 text-xs hover:border-ink">{t("← Structure", "← Structure")}</button>
+      </div>
+      <LayoutPanel sections={layoutSections} onApply={applyLayout} busy={layoutBusy} />
+    </div>
+  ) : (
     <div className="h-full overflow-y-auto p-4">
       <p className="mb-4 text-xs leading-relaxed text-muted">{t("Glissez les sections par la poignée pour les réordonner. Le « + » entre deux sections en ajoute une à cet endroit.", "Drag sections by their handle to reorder them. The “+” between two sections adds one at that spot.")}</p>
       {cur.structure.filter((tp) => ["group:header", pageTemplate(page, theme), "group:footer"].includes(tp.template)).map((tp) => {
@@ -479,6 +504,9 @@ export default function TabBoutique() {
                     </button>
                     <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`))} disabled={i === 0} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Monter", "Move up")}><ArrowUp className="size-3.5" /></button>
                     <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`))} disabled={i === tp.sections.length - 1} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Descendre", "Move down")}><ArrowDown className="size-3.5" /></button>
+                    {!isPage && s.layout?.length ? (
+                      <button onClick={() => setLayoutOpen(true)} className="grid size-7 place-items-center rounded-lg text-signal hover:bg-signal-soft" title={t("Choisir la disposition", "Choose the layout")} aria-label={t(`Disposition : ${s.name}`, `Layout: ${s.name}`)}><PanelTop className="size-3.5" /></button>
+                    ) : null}
                     <button onClick={() => ops([{ op: "toggle_section", template: tp.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? t("affichée", "shown") : t("masquée", "hidden")}`)} className="grid size-7 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? t("Afficher", "Show") : t("Masquer", "Hide")}>{s.disabled ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</button>
                     <button onClick={() => ops([{ op: "lock", template: tp.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? t("déverrouillée", "unlocked") : t("validée", "approved")}`)} className={cx("grid size-7 place-items-center rounded-full hover:bg-paper-2", s.locked && "text-ok")} aria-label={s.locked ? t("Déverrouiller", "Unlock") : t("Valider et verrouiller", "Approve and lock")} title={s.locked ? t("Validée : protégée des modifications non ciblées", "Approved: protected from non-targeted changes") : t("Valider cette section", "Approve this section")}>{s.locked ? <Lock className="size-3.5" /> : <Unlock className="size-3.5" />}</button>
                     {isPage && <button onClick={() => { if (confirm(t(`Supprimer la section « ${s.name} » ? Vous pourrez revenir à la version précédente.`, `Delete the “${s.name}” section? You can go back to the previous version.`))) ops([{ op: "remove_section", template: tp.template, section: s.id }], t(`${s.name} supprimée`, `${s.name} deleted`)); }} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-bad" aria-label={t("Supprimer la section", "Delete section")}><Trash2 className="size-3.5" /></button>}
@@ -503,7 +531,16 @@ export default function TabBoutique() {
   );
 
   const Preview = (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="relative flex h-full min-h-0 flex-col">
+      {layoutOpen && !full && layoutSections.length > 0 && (
+        <div id="layout-panel" className="absolute right-3 top-[3.75rem] z-30 hidden max-h-[calc(100%-4.5rem)] w-[min(400px,calc(100%-1.5rem))] overflow-y-auto rounded-2xl border border-line bg-card p-4 shadow-soft lg:block xl:hidden" role="dialog" aria-label={t("Disposition de l'en-tête et du pied de page", "Header and footer layout")}>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <p className="font-display text-lg font-semibold">{t("Disposition", "Layout")}</p>
+            <button onClick={() => setLayoutOpen(false)} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink" aria-label={t("Fermer", "Close")}><X className="size-4" /></button>
+          </div>
+          <LayoutPanel sections={layoutSections} onApply={applyLayout} busy={layoutBusy} />
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2 border-b border-line p-2.5">
         <div className="w-44 shrink-0">
           <Select value={pages.some((p) => p.path === page) ? page : "/"} onChange={(e) => setPage(e.target.value)} className="h-9 text-sm" aria-label={t("Page affichée", "Page shown")}>
@@ -523,6 +560,11 @@ export default function TabBoutique() {
         {cur.motion && <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />}
 {!full && (
           <>
+{layoutSections.length > 0 && (
+            <button onClick={() => { const open = !layoutOpen; setLayoutOpen(open); if (open && window.innerWidth < 1024) setView("structure"); }} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", layoutOpen ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} aria-pressed={layoutOpen} aria-controls="layout-panel" data-layout-open>
+              <PanelTop className="size-3.5" /> {t("En-tête et pied de page", "Header & footer")}
+            </button>
+          )}
 <button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: t("En bas de la page", "At the bottom of the page") })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> {t("Section", "Section")}</button>
                 <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> {t("Thèmes", "Themes")}</button>
                 <CustomThemeButton projectId={id} status={custom.data} reload={custom.reload} onDone={() => (reload(), reloadProject())} />
