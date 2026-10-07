@@ -30,11 +30,11 @@ import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo
 
 
 /** Contrôle obligatoire d'une image d'ambiance générée (aucun texte ou logo inventé, aucune personne déformée). */
-export async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer): Promise<{ ok: boolean; tier: QcTier; reason: string }> {
+export async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer, subject?: string): Promise<{ ok: boolean; tier: QcTier; reason: string }> {
   if (!llmConfigured()) return { ok: false, tier: "warn", reason: L("contrôle indisponible : vérifiez l'image", "check unavailable: check the image") };
   let r: Awaited<ReturnType<typeof aiQcScene>>;
   try {
-    r = await aiQcScene(b, img);
+    r = await aiQcScene(b, img, subject);
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     return { ok: false, tier: "warn", reason: L("contrôle automatique impossible : vérifiez l'image", "automatic check unavailable: check the image") };
@@ -48,15 +48,15 @@ export async function checkAmbiance(b: { userId: string; projectId: string; jobI
  * pour qu'ils ne se reproduisent pas. Le raté n'est ni gardé ni décompté au client ; seule la meilleure des deux
  * images est rendue (le but : pas de raté livré, pas de dépense sans image utilisable).
  */
-async function ambianceChecked(ictx: { userId: string; projectId: string; jobId?: string | null }, usageKey: string, input: Parameters<typeof ambianceImage>[1]): Promise<{ img: Buffer; check: Awaited<ReturnType<typeof checkAmbiance>>; usageKey: string }> {
+async function ambianceChecked(ictx: { userId: string; projectId: string; jobId?: string | null }, usageKey: string, input: Parameters<typeof ambianceImage>[1], subject?: string): Promise<{ img: Buffer; check: Awaited<ReturnType<typeof checkAmbiance>>; usageKey: string }> {
   const img = await ambianceImage({ ...ictx, usageKey }, input);
-  const check = await checkAmbiance({ ...ictx, usageKey: `${usageKey}:qc` }, img);
+  const check = await checkAmbiance({ ...ictx, usageKey: `${usageKey}:qc` }, img, subject);
   if (check.tier !== "bad") return { img, check, usageKey };
   refundMediaQuota(ictx.userId, usageKey);
   const retryKey = `${usageKey}:retry`;
   try {
     const img2 = await ambianceImage({ ...ictx, usageKey: retryKey }, { ...input, prompt: `${input.prompt} A previous attempt was rejected for: ${check.reason}. Avoid exactly these defects.` });
-    const check2 = await checkAmbiance({ ...ictx, usageKey: `${retryKey}:qc` }, img2);
+    const check2 = await checkAmbiance({ ...ictx, usageKey: `${retryKey}:qc` }, img2, subject);
     return { img: img2, check: check2, usageKey: retryKey };
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
@@ -99,7 +99,7 @@ async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?:
     } catch {
       continue;
     }
-    const check = llmConfigured() ? await checkAmbiance({ ...ictx, usageKey: `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${photo.source}:${photo.id}` }, img) : null;
+    const check = llmConfigured() ? await checkAmbiance({ ...ictx, usageKey: `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${photo.source}:${photo.id}` }, img, clip(post.topic, 200)) : null;
     if (check && check.tier === "bad") continue;
     return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: post.aspect, ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) } });
   }
@@ -113,10 +113,10 @@ async function stockQueries(ictx: { userId: string; projectId: string; jobId?: s
   const local: Partial<Record<PhotoSlot, string[]>> = {
     hero: [trade, `${trade} atelier`],
     banner: [`${trade} chantier`, trade],
-    "service:0": [items[0]?.name ?? trade, trade],
-    "service:1": [items[1]?.name ?? trade, trade],
     ad: [`${trade} outils`, trade],
   };
+  // Chaque prestation est cherchée par son propre nom (jamais la photo d'une autre prestation).
+  items.forEach((s, i) => (local[`service:${i}`] = [s.name]));
   if (!llmConfigured()) return { lang: "fr", bySlot: local };
   try {
     const r = await llmJson(
@@ -125,7 +125,7 @@ async function stockQueries(ictx: { userId: string; projectId: string; jobId?: s
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:stock-queries`,
         system: "You write search queries for royalty-free photo libraries (Pexels, Pixabay). Short English queries (2 to 4 words) describing a concrete, photographable scene of the trade: tools, materials, the work being done, the finished result, the place. No people's names, no brand names, no abstract words.",
-        prompt: `Business: ${trade}. ${p.product.summary ?? ""}\nServices: ${items.map((s) => s.name).join(", ")}\nSlots: ${slots.join(", ")} (hero = the trade at a glance; banner = a finished job; service:N = that service; ad = tools or work in progress).\nAnswer { "queries": { "<slot>": ["query 1", "query 2"] } }.`,
+        prompt: `Business: ${trade}. ${p.product.summary ?? ""}\nSlots: ${slots.map((s) => { const m = /^service:(\d+)$/.exec(s); return m && items[Number(m[1])] ? `${s} = ONLY the service "${items[Number(m[1])].name}"${items[Number(m[1])].description ? ` (${clip(items[Number(m[1])].description, 120)})` : ""}` : s; }).join("; ")} (hero = the trade at a glance; banner = a finished job; ad = tools or work in progress). Each service query must show that exact service and nothing else (tiling is not painting).\nAnswer { "queries": { "<slot>": ["query 1", "query 2"] } }.`,
         maxTokens: 800,
       },
       z.object({ queries: z.record(z.string(), z.array(z.string()).max(3)) }),
@@ -159,9 +159,10 @@ export async function stockFill(ictx: { userId: string; projectId: string; jobId
         continue;
       }
       used.add(`${photo.source}:${photo.id}`);
-      const check = llmConfigured() ? await checkAmbiance({ ...ictx, usageKey: `${ictx.jobId ?? "stock"}:stockqc:${slot}:${photo.source}:${photo.id}` }, img) : null;
+      const want = slotSubject(p, slot);
+      const check = llmConfigured() ? await checkAmbiance({ ...ictx, usageKey: `${ictx.jobId ?? "stock"}:stockqc:${slot}:${photo.source}:${photo.id}` }, img, want.subject) : null;
       if (check && check.tier === "bad") continue;
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: aspect, slot, ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) }, status: "review" });
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) }, status: "review" });
       out.push({ id: a.id, slot });
       break;
     }
@@ -335,9 +336,24 @@ export function activityPhotos(projectId: string): Asset[] {
  * Emplacements d'image des visuels d'une activité de services : chaque visuel a sa propre image (une même image
  * n'est reprise que pour les formats d'un même visuel : la publicité en 9:16, 1:1 et 16:9).
  */
-export type PhotoSlot = "hero" | "banner" | "service:0" | "service:1" | "ad";
+export type PhotoSlot = "hero" | "banner" | `service:${number}` | "ad";
 
 /** Emplacements à illustrer, dans l'ordre d'importance (les vraies photos du client les remplissent en premier). */
+/** Sujet qu'une image d'emplacement doit montrer (contrôle visuel et choix des sections du site). */
+export function slotSubject(p: Project, slot: PhotoSlot): { subject: string; service?: string } {
+  const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
+  const m = /^service:(\d+)$/.exec(slot);
+  const s = m ? serviceItems(p)[Number(m[1])] : undefined;
+  if (s) return { subject: `${trade} — ${s.name}${s.description ? ` (${clip(s.description, 140)})` : ""}`, service: s.name };
+  return { subject: slot === "banner" ? `${trade} — un travail terminé` : slot === "ad" ? `${trade} — outils ou travail en cours` : trade };
+}
+
+/** Photos libres de droits : une par prestation (jusqu'à 6), en plus des emplacements des visuels. */
+export function stockPhotoSlots(p: Project): PhotoSlot[] {
+  const extra = serviceItems(p).slice(0, 6).map((_, i) => `service:${i}` as PhotoSlot);
+  return [...new Set([...photoSlots(p), ...extra])];
+}
+
 export function photoSlots(p: Project): PhotoSlot[] {
   const announced = Math.max(1, Math.min(2, serviceItems(p).length));
   return ["hero", "banner", ...(["service:0", "service:1"] as PhotoSlot[]).slice(0, announced), "ad"];
@@ -390,7 +406,7 @@ export async function postAmbiance(ictx: { userId: string; projectId: string; jo
   const usageKey = `${ictx.jobId ?? "post"}:post-ambiance:${post.key}`;
   let generated = false;
   try {
-    const { img, check, usageKey: finalKey } = await ambianceChecked(ictx, usageKey, { prompt, aspect: post.aspect });
+    const { img, check, usageKey: finalKey } = await ambianceChecked(ictx, usageKey, { prompt, aspect: post.aspect }, clip(post.topic, 200));
     generated = true;
     // Image payée gardée : utilisée si bonne ou à défaut mineur (signalé) ; inutilisable → écartée mais visible.
     const a = await saveAsset({ projectId: p.id, userId: p.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "generated", meta: { recipe: L("Image générée par IA pour cette publication (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated image for this post (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: post.aspect, ...(check.tier === "good" ? {} : { qcWarning: check.reason }) }, status: check.tier === "bad" ? "rejected" : "review" });
@@ -594,7 +610,8 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
   const open = ambianceSlots(project).slice(realActivityPhotos(projectId).length);
   const stockIds = await ctx.step("svc:stock", async () => {
     ctx.progress(0.15, L("Recherche de photos libres de droits du métier", "Searching royalty-free photos of the trade"));
-    return stockFill(ictx, project, open.map((x) => ({ slot: x.slot, aspect: x.aspect })), base).catch((e) => {
+    const stockOpen = stockPhotoSlots(project).slice(realActivityPhotos(projectId).length).map((slot) => ({ slot, aspect: (slot === "ad" ? "1:1" : slot.startsWith("service:") ? "4:5" : "16:9") as "16:9" | "4:5" | "1:1" }));
+    return stockFill(ictx, project, stockOpen, base).catch((e) => {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[photos libres] indisponibles :", (e as Error).message);
       return [] as { id: string; slot: PhotoSlot }[];
@@ -613,12 +630,13 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
         ctx.progress(0.2 + (i / Math.max(1, todo.length)) * 0.3, L("Images d'ambiance de l'activité (IA)", "Business mood images (AI)"));
         let generated = false;
         try {
-          const { img, check, usageKey: finalKey } = await ambianceChecked(ictx, `${ctx.job.id}:ambiance:${i}`, { prompt, aspect, reference: originals[i] ? assetData(originals[i]) : null });
+          const want = slotSubject(project, slot);
+          const { img, check, usageKey: finalKey } = await ambianceChecked(ictx, `${ctx.job.id}:ambiance:${i}`, { prompt, aspect, reference: originals[i] ? assetData(originals[i]) : null }, want.subject);
           generated = true;
           // Image payée toujours gardée : défaut mineur signalé ; inutilisable (texte inventé, mains déformées…)
           // écartée mais visible dans Images, non utilisée et non décomptée.
           if (check.tier === "bad") refundMediaQuota(ictx.userId, finalKey);
-          const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspect, slot, ...(check.tier === "good" ? {} : { qcWarning: check.reason }) }, status: check.tier === "bad" ? "rejected" : "review" });
+          const a = await saveAsset({ projectId, userId: project.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: `${base}-${C("ambiance", "mood")}-${i + 1}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...(check.tier === "good" ? {} : { qcWarning: check.reason }) }, status: check.tier === "bad" ? "rejected" : "review" });
           return check.tier === "bad" ? ([] as string[]) : [a.id];
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;

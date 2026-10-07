@@ -1137,7 +1137,7 @@ export function qcTier(r: { sameProduct?: unknown; ok?: unknown; score?: unknown
  * Contrôle d'une image d'ambiance générée sans produit à comparer (entreprise de services) :
  * texte ou logo inventé, visage reconnaissable, mains ou corps déformés, artefacts, flou.
  */
-export async function aiQcScene(b: Base, candidate: Buffer) {
+export async function aiQcScene(b: Base, candidate: Buffer, subject?: string) {
   return llmJson(
     {
       task: "quality_control",
@@ -1147,7 +1147,7 @@ export async function aiQcScene(b: Base, candidate: Buffer) {
       usageKey: b.usageKey,
       system: S().qcScene,
       images: [{ data: candidate, label: "image générée à contrôler" }],
-      prompt: `Réponds { "ok": true|false, "score": 0-10, "issues": ["…"] }.`,
+      prompt: `${subject ? `Sujet que l'image doit montrer : ${subject}. Une image d'un autre sujet, même du même métier (par exemple de la peinture au lieu du carrelage), est un échec : « ok » faux et note de 4 au plus.\n` : ""}Réponds { "ok": true|false, "score": 0-10, "issues": ["…"] }.`,
       maxTokens: 2000,
     },
     z.object({ ok: z.boolean(), score: z.number(), issues: z.array(z.string()) }),

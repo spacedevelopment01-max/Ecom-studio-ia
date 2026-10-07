@@ -142,13 +142,19 @@ export function servicesPlan(input: { lang: Lang; shopName: string; services: Se
   // Photos du projet (réalisations, prestations, À propos).
   // (Bannières et packshots exclus : ce sont des visuels publicitaires ou de produit.)
   const photos = [im.scene1, im.scene2, im.scene3, im.lifestyle2, im.detail1, im.detail2].filter((x, i, a): x is string => !!x && a.indexOf(x) === i);
+  // Image d'une carte de prestation : la photo faite pour cette prestation ; sinon une photo générale du métier qui
+  // n'est la photo d'aucune autre prestation (jamais de peinture sur la carte « Carrelage ») ; sinon pas d'image.
+  const tagged = new Set(Object.values(im.byService ?? {}));
+  const general = photos.filter((f) => !tagged.has(f));
+  const serviceNorm = (n: string) => n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const serviceImage = (name: string, i: number) => im.byService?.[serviceNorm(name)] ?? (im.byService && Object.keys(im.byService).length ? general[i % Math.max(1, general.length)] : photos[i % Math.max(1, photos.length)]) ?? "";
   const ICONS = ["sparkle", "hand", "heart", "shield", "leaf", "star", "check", "bolt"];
   const pad = (top: number, bottom = top) => ({ padding_top: top, padding_bottom: bottom });
   const scheme = (n: number) => `scheme-${n}`;
 
   const serviceBlocks = (withImages: boolean): Block[] =>
     (services.length
-      ? services.slice(0, 12).map((s, i) => ({ type: "service", settings: { title: s.name, text: s.description ? p(s.description) : "", price: s.price?.trim() ?? "", duration: s.duration?.trim() ?? "", icon: ICONS[i % ICONS.length], image_asset: withImages ? photos[i % Math.max(1, photos.length)] ?? "" : "" } }))
+      ? services.slice(0, 12).map((s, i) => ({ type: "service", settings: { title: s.name, text: s.description ? p(s.description) : "", price: s.price?.trim() ?? "", duration: s.duration?.trim() ?? "", icon: ICONS[i % ICONS.length], image_asset: withImages ? serviceImage(s.name, i) : "" } }))
       : [0, 1, 2].map((i) => ({ type: "service", settings: { title: todo("nom de la prestation", "service name"), text: p(todo("ce que comprend la prestation", "what the service includes")), icon: ICONS[i], image_asset: withImages ? photos[i] ?? "" : "" } })));
 
   const R = {
