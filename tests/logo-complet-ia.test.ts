@@ -28,7 +28,7 @@ vi.mock("@/lib/ai/llm", async (orig) => ({
     return nextQc(qcCalls++);
   }),
 }));
-vi.mock("@/lib/ai/context", () => ({ projectContext: () => "" }));
+vi.mock("@/lib/ai/context", () => ({ projectContext: () => "", brainContext: () => "", brainView: () => ({ stable: "", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
 vi.mock("@/lib/projects", async (orig) => ({ ...(await orig<object>()), loadProject: () => ({ id: "p", userId: "u", name: "Blanc", brand: { name: "Sébastien Blanc", palette: { primary: "#8A3B26" }, direction: "atelier" } }) }));
 const saved: any[] = [];
 vi.mock("@/lib/library", async (orig) => ({ ...(await orig<object>()), saveAsset: vi.fn(async (a: any) => (saved.push(a), { id: `a${saved.length}`, ...a })) }));

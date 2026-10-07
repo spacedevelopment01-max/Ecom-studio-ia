@@ -1,6 +1,6 @@
 /**
- * Project Brain (phase 2.0) : lecture seule. Rien ici n'est encore branché sur les moteurs du studio
- * (projectContext, mémoire, recherches de photos restent inchangés jusqu'à la phase 2.1).
+ * Project Brain : lecture seule des données du projet, vues ciblées par scope. Depuis la phase 2C, chaque moteur
+ * reçoit son scope explicite (brainView / brainContext, voir measure.ts : ENGINE_SCOPES).
  */
 export { brainSnapshot, currentLogoOf, type BrainSnapshot, type CurrentLogo } from "./snapshot";
 export { BUDGETS, SCOPES, brainItems, contextFor, type BrainItem, type ContextView, type Level, type Scope } from "./views";

@@ -1,5 +1,5 @@
 /**
- * Project Brain — vues ciblées par scope (phase 2.0, lecture seule, branchées sur aucun moteur).
+ * Project Brain — vues ciblées par scope (phase 2.0 ; chaque moteur reçoit sa vue depuis la phase 2C).
  *
  * Chaque information devient un élément typé :
  *  - niveau : HARD (fait confirmé, correction, décision validée, refus explicite du client, règle de véracité),
@@ -37,7 +37,11 @@ export type BrainItem = {
   data: unknown;
 };
 
-/** Budgets en caractères (≈ 3,2 caractères par jeton). Souple : hypothèse initiale ; plafond : garde-fou. */
+/**
+ * Budgets en caractères (≈ 3,2 caractères par jeton). Souple : hypothèse initiale ; plafond : garde-fou.
+ * 2C (mesures sur les fixtures) : seo 1 800 → 2 800 (la zone d'intervention était écartée), social 3 000 → 4 000
+ * (messages clés écartés), video 3 000 → 4 500 (positionnement et cible écartés).
+ */
 export const BUDGETS: Record<Scope, { soft: number; hard: number }> = {
   logo: { soft: 2500, hard: 8000 },
   brand: { soft: 5000, hard: 14000 },
@@ -45,11 +49,11 @@ export const BUDGETS: Record<Scope, { soft: number; hard: number }> = {
   stock: { soft: 1200, hard: 5000 },
   theme: { soft: 6000, hard: 18000 },
   shop_copy: { soft: 6000, hard: 18000 },
-  seo: { soft: 1800, hard: 6000 },
+  seo: { soft: 2800, hard: 7000 },
   blog: { soft: 3500, hard: 10000 },
-  social: { soft: 3000, hard: 10000 },
+  social: { soft: 4000, hard: 10000 },
   advertising: { soft: 3500, hard: 10000 },
-  video: { soft: 3000, hard: 10000 },
+  video: { soft: 4500, hard: 10000 },
   qc: { soft: 3000, hard: 10000 },
   all: { soft: 12000, hard: 30000 },
 };
@@ -71,6 +75,8 @@ export type ContextView = {
   budgetExceeded: boolean;
   hardCeilingReached: boolean;
   sections: string[];
+  /** Éléments présents dans le contexte stable (après budget) : un brief local ne les répète pas. */
+  kept: string[];
   dropped: string[];
   /** Éléments critiques retirés au plafond de sécurité (doit rester vide ; sinon signal explicite). */
   criticalDropped: string[];
@@ -81,16 +87,17 @@ export type ContextView = {
 // Groupes de scopes réutilisés.
 const TEXT: Scope[] = ["theme", "shop_copy", "seo", "blog", "social", "advertising", "video", "qc"];
 const VISUAL_BRAND: Scope[] = ["logo", "brand", "image", "theme", "social", "advertising", "video"];
-const CONTACT: Scope[] = ["theme", "shop_copy"];
+// Coordonnées : site, textes de la boutique et leur relecture (vérifier qu'aucune coordonnée n'est inventée ni déformée).
+const CONTACT: Scope[] = ["theme", "shop_copy", "qc"];
 
 /** Scope d'une ligne de mémoire (colonne scope actuelle : all | shop | images | video | social | brand, ou un scope du Brain). */
 const MEMORY_SCOPE: Record<string, readonly Scope[] | "*"> = {
   all: "*",
   brand: ["logo", "brand", "image", "theme", "social", "advertising", "video"],
-  shop: ["theme", "shop_copy", "seo", "blog"],
+  shop: ["theme", "shop_copy", "seo", "blog", "qc"],
   images: ["image", "stock"],
   video: ["video"],
-  social: ["social", "advertising"],
+  social: ["social", "advertising", "qc"],
 };
 const memoryScopes = (s: string): readonly Scope[] | "*" => MEMORY_SCOPE[s] ?? ((SCOPES as readonly string[]).includes(s) ? [s as Scope] : "*");
 
@@ -175,7 +182,7 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
   for (const q of pr.questions.filter((x) => x.answer).slice(0, 12)) add({ id: `answer.${q.id}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "brand", "all"], source: "project", text: `Réponse du client — ${clip(q.question, 160)} → ${clip(q.answer, 300)}`, data: { q: q.id, a: q.answer } });
   if (pr.claimsToAvoid.length) add({ id: "claims.avoid", section: "facts", level: "hard", tier: 4, critical: true, scopes: [...TEXT, "image", "all"], source: "project", text: `Allégations interdites : ${pr.claimsToAvoid.join(" ; ")}`, data: pr.claimsToAvoid });
   if (!services) {
-    add({ id: "product.price", section: "offer", level: "hard", tier: 3, critical: true, scopes: ["theme", "shop_copy", "advertising", "qc", "seo", "all"], source: "project", text: pr.price.amount !== null ? `Prix confirmé : ${(pr.price.amount / 100).toFixed(2)} ${pr.price.currency}` : "Prix : inconnu (ne jamais en inventer).", data: pr.price });
+    add({ id: "product.price", section: "offer", level: "hard", tier: 3, critical: true, scopes: ["theme", "shop_copy", "advertising", "qc", "seo", "social", "video", "blog", "all"], source: "project", text: pr.price.amount !== null ? `Prix confirmé : ${(pr.price.amount / 100).toFixed(2)} ${pr.price.currency}` : "Prix : inconnu (ne jamais en inventer).", data: pr.price });
     if (pr.variants.length) add({ id: "product.variants", section: "offer", level: "hard", tier: 3, scopes: ["theme", "shop_copy", "advertising", "image", "all"], source: "project", text: `Variantes : ${pr.variants.map((v) => `${v.name} (${v.values.join(", ")})`).join(" ; ")}`, data: pr.variants });
     if (pr.visual.colors.length || pr.visual.description || pr.visual.shape)
       add({ id: "product.visual", section: "offer", level: "soft", tier: 6, scopes: ["image", "logo", "brand", "video", "advertising", "all"], source: "project", text: `Aspect du produit : ${[pr.visual.shape, clip(pr.visual.description, 300), pr.visual.colors.length ? `couleurs mesurées ${pr.visual.colors.map((c) => `${c.hex} ${c.name} ${Math.round(c.share * 100)} %`).join(", ")}` : ""].filter(Boolean).join(" · ")}`, data: pr.visual });
@@ -185,7 +192,7 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
     const sv = p.services;
     const list = (sv.services ?? []).filter((x) => x.name.trim());
     add({ id: "services.offer", section: "offer", level: "soft", tier: 3, critical: true, scopes: [...TEXT, "brand", "stock", "image", "all"], source: "project", text: list.length ? `Prestations (saisies par le client) : ${list.slice(0, 12).map((x) => `${x.name}${x.description?.trim() ? ` (${clip(x.description, 120)})` : ""}${x.duration?.trim() ? ` · durée : ${x.duration.trim()}` : ""} · tarif : ${x.price?.trim() || "non communiqué"}`).join(" ; ")}` : `Prestations : aucune liste fournie (ne pas en inventer ; écrire « ${ph} »).`, data: list });
-    if (sv.area?.trim()) add({ id: "services.area", section: "offer", level: "soft", tier: 4, scopes: [...TEXT, "stock", "all"], source: "project", text: `Zone d'intervention : ${clip(sv.area, 200)}`, data: sv.area });
+    if (sv.area?.trim()) add({ id: "services.area", section: "offer", level: "soft", tier: 4, critical: true, scopes: [...TEXT, "stock", "all"], source: "project", text: `Zone d'intervention : ${clip(sv.area, 200)}`, data: sv.area });
     add({
       id: "services.contact",
       section: "offer",
@@ -197,6 +204,8 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
       text: `Contact — mode principal : ${MODE_LABEL[sv.contactMode] ?? sv.contactMode}${contactModesOf(sv).length > 1 ? ` (aussi accepté : ${contactModesOf(sv).slice(1).map((m) => MODE_LABEL[m] ?? m).join(", ")})` : ""} · adresse : ${sv.address?.trim() || `inconnue (« ${ph} »)`} · horaires : ${sv.hours?.trim() || `inconnus (« ${ph} »)`} · téléphone : ${sv.phone?.trim() || `inconnu (« ${ph} »)`} · e-mail : ${sv.email?.trim() || `inconnu (« ${ph} »)`} · rendez-vous en ligne : ${sv.bookingUrl?.trim() || "aucun lien"}`,
       data: { m: contactModesOf(sv), a: sv.address, h: sv.hours, p: sv.phone, e: sv.email, b: sv.bookingUrl },
     });
+    // Publications, publicités et vidéos : le MODE de contact (appel à l'action), jamais les coordonnées elles-mêmes.
+    add({ id: "services.cta", section: "offer", level: "soft", tier: 4, critical: true, scopes: ["social", "advertising", "video"], source: "project", text: `Appel à l'action — mode de contact principal : ${MODE_LABEL[sv.contactMode] ?? sv.contactMode}${contactModesOf(sv).length > 1 ? ` (aussi accepté : ${contactModesOf(sv).slice(1).map((m) => MODE_LABEL[m] ?? m).join(", ")})` : ""}${sv.bookingUrl?.trim() ? " · lien de rendez-vous en ligne disponible" : ""}.`, data: { m: contactModesOf(sv), b: !!sv.bookingUrl?.trim() } });
     add({ id: "services.rules", section: "rules", level: "hard", tier: 4, critical: true, scopes: [...TEXT, "all"], source: "project", text: `Règles des services — ${servicesRulesText(ph)}`, data: "services.rules.v2" });
   }
 
@@ -225,11 +234,11 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
     add({ id: "brand.direction", section: "brand", level: "soft", tier: 4, scopes: ["logo", "brand", "image", "theme", "video", "all"], source: "brand", text: `Direction artistique : ${b.direction}`, data: b.direction });
     if (b.personality.length) add({ id: "brand.personality", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "social", "advertising", "video", "all"], source: "brand", text: `Personnalité : ${b.personality.join(", ")}`, data: b.personality });
     if (b.positioning) add({ id: "brand.positioning", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "theme", "shop_copy", "blog", "social", "advertising", "video", "all"], source: "brand", text: `Positionnement : ${clip(b.positioning, 300)}`, data: b.positioning });
-    if (b.audience) add({ id: "brand.audience", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "theme", "shop_copy", "seo", "blog", "social", "advertising", "video", "all"], source: "brand", text: `Cible : ${clip(b.audience, 300)}`, data: b.audience });
-    add({ id: "brand.tone", section: "brand", level: "soft", tier: 4, scopes: ["brand", "theme", "shop_copy", "blog", "social", "advertising", "video", "all"], source: "brand", text: `Ton : ${b.tone.voice}. À faire : ${b.tone.do.join(" ; ")}. À éviter : ${b.tone.dont.join(" ; ")}.`, data: b.tone });
+    if (b.audience) add({ id: "brand.audience", section: "brand", level: "soft", tier: 5, scopes: ["logo", "brand", "theme", "shop_copy", "seo", "blog", "social", "advertising", "video", "qc", "all"], source: "brand", text: `Cible : ${clip(b.audience, 300)}`, data: b.audience });
+    add({ id: "brand.tone", section: "brand", level: "soft", tier: 4, scopes: ["brand", "theme", "shop_copy", "blog", "social", "advertising", "video", "qc", "all"], source: "brand", text: `Ton : ${b.tone.voice}. À faire : ${b.tone.do.join(" ; ")}. À éviter : ${b.tone.dont.join(" ; ")}.`, data: b.tone });
     if (b.story) add({ id: "brand.story", section: "brand", level: "soft", tier: 7, scopes: ["brand", "blog", "all"], source: "brand", text: `Histoire : ${clip(b.story, 600)}`, data: b.story });
     if (b.validated.length) add({ id: "brand.validated", section: "brand", level: "hard", tier: 2, critical: true, scopes: ["logo", "brand", "theme", "image", "social", "advertising", "video", "all"], source: "brand", text: `Éléments VALIDÉS par le client (ne pas changer sans demande explicite) : ${b.validated.join(", ")}`, data: [...b.validated].sort() });
-    if (b.social) add({ id: "brand.social", section: "brand", level: "soft", tier: 4, scopes: ["social", "advertising", "all"], source: "brand", text: `Ligne éditoriale — piliers : ${b.social.pillars.map((x) => x.title).join(" ; ")}. On dit : ${b.social.say.join(" ; ")}. On ne dit pas : ${b.social.dontSay.join(" ; ")}.`, data: { p: b.social.pillars, s: b.social.say, d: b.social.dontSay, e: b.social.emoji } });
+    if (b.social) add({ id: "brand.social", section: "brand", level: "soft", tier: 4, scopes: ["social", "advertising", "qc", "all"], source: "brand", text: `Ligne éditoriale — piliers : ${b.social.pillars.map((x) => x.title).join(" ; ")}. On dit : ${b.social.say.join(" ; ")}. On ne dit pas : ${b.social.dontSay.join(" ; ")}.`, data: { p: b.social.pillars, s: b.social.say, d: b.social.dontSay, e: b.social.emoji } });
   }
   const logo = s.currentLogo;
   if (logo) {
@@ -252,11 +261,11 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
       if (pf.persona || pf.difference || pf.problem || pf.alternatives)
         add({ id: "strategy.platform", section: "strategy", level: "soft", tier: 6, scopes: ["brand", "theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Plateforme de marque — ${[pf.persona && `persona : ${clip(pf.persona, 200)}`, pf.problem && `problème : ${clip(pf.problem, 200)}`, pf.alternatives && `alternatives et codes de la concurrence (à éviter) : ${clip(pf.alternatives, 200)}`, pf.difference && `différence : ${clip(pf.difference, 200)}`].filter(Boolean).join(" · ")}`, data: { p: pf.persona, pb: pf.problem, a: pf.alternatives, d: pf.difference } });
       const obj = pf.objections.filter((o) => o.objection);
-      if (obj.length) add({ id: "strategy.objections", section: "strategy", level: "soft", tier: 6, scopes: ["theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Objections et réponses (FAQ, fiche) : ${obj.map((o) => `${o.objection} → ${o.answer || ph}`).join(" ; ")}`, data: obj });
+      if (obj.length) add({ id: "strategy.objections", section: "strategy", level: "soft", tier: 6, scopes: ["theme", "shop_copy", "blog", "advertising", "qc", "all"], source: "strategy", text: `Objections et réponses (FAQ, fiche) : ${obj.map((o) => `${o.objection} → ${o.answer || ph}`).join(" ; ")}`, data: obj });
     }
     const audienceObjections = st.audience.flatMap((a) => a.objections ?? []).filter(Boolean);
     if (audienceObjections.length && !pf?.objections.length) {
-      add({ id: "strategy.objections", section: "strategy", level: "soft", tier: 6, scopes: ["theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Objections de la cible : ${audienceObjections.join(" ; ")}`, data: audienceObjections });
+      add({ id: "strategy.objections", section: "strategy", level: "soft", tier: 6, scopes: ["theme", "shop_copy", "blog", "advertising", "qc", "all"], source: "strategy", text: `Objections de la cible : ${audienceObjections.join(" ; ")}`, data: audienceObjections });
     }
   }
 
@@ -385,6 +394,7 @@ export function contextFor(
     budgetExceeded,
     hardCeilingReached,
     sections: [...new Set(kept.map((x) => x.section))],
+    kept: kept.map((x) => x.id),
     dropped,
     criticalDropped,
     levels,

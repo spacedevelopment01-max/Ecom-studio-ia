@@ -18,7 +18,7 @@ vi.mock("@/lib/ai/llm", async (orig) => ({
     return schema.parse(q.length > 1 ? q.shift() : q[0]);
   },
 }));
-vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>" }));
+vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>", brainContext: () => "<contexte_projet></contexte_projet>", brainView: () => ({ stable: "<contexte_projet></contexte_projet>", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
 
 import { draftAds, localAdStrategy, localAds } from "@/lib/engine/ads";
 import { adPolicyIssues, audienceIssues, craftLoop, craftPassed, craftScore, honestTestBudget, paceVideoPlan, RUBRICS, ugcCraftIssues, ugcStructure, videoPlanIssues } from "@/lib/engine/ad-craft";

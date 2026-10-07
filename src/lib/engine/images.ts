@@ -111,7 +111,7 @@ export { gateSave } from "../quality/store";
 /** Ancien format (statut et mention selon le palier) : conservé pour les appelants qui n'ont pas de verdict. */
 export const tierSave = (tier: QcTier, reason: string) => ({ status: (tier === "bad" ? "rejected" : "review") as "rejected" | "review", meta: tier === "good" ? {} : { qcWarning: reason } });
 
-type Brief = { prompt: string; lightFrom?: "left" | "right" };
+type Brief = { prompt: string; lightFrom?: "left" | "right"; brain?: { scope: string; hash: string; version: string } };
 
 /** Brief de directeur artistique d'une image (payé une fois ; une reprise le réutilise avec les défauts à éviter). */
 async function imageBrief(ictx: ImgCtx, project: Project, style: string, formatId: FormatId, key: string, lifestyle?: string): Promise<Brief> {
@@ -142,13 +142,13 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
     const base = sharp({ create: { width: W, height: H, channels: 4, background: { r: 235, g: 230, b: 224, alpha: 1 } } });
     const composite = await base.composite([{ input: prod, left, top }]).png().toBuffer();
     const mask = await sharp({ create: { width: W, height: H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: prod, left, top }]).png().toBuffer();
-    const painted = await openaiScene({ ...ictx, usageKey: `${key}:openai` }, { composite, productMask: mask, prompt: brief.prompt, size: size as any });
+    const painted = await openaiScene({ ...ictx, usageKey: `${key}:openai`, brain: brief.brain }, { composite, productMask: mask, prompt: brief.prompt, size: size as any });
     // On replace exactement les pixels du produit d'origine par-dessus.
     const restored = await sharp(painted).resize(W, H).composite([{ input: prod, left, top }]).png().toBuffer();
     return { image: restored, provider: "openai", brief };
   }
   const aspect = f.w > f.h * 1.5 ? "16:9" : f.h > f.w * 1.5 ? "9:16" : f.h > f.w * 1.1 ? "4:5" : "1:1";
-  const plate = await geminiPlate({ ...ictx, usageKey: `${key}:gemini` }, { prompt: brief.prompt, aspect });
+  const plate = await geminiPlate({ ...ictx, usageKey: `${key}:gemini`, brain: brief.brain }, { prompt: brief.prompt, aspect });
   return { image: plate, provider: "google-plate", lightFrom: brief.lightFrom, brief };
 }
 

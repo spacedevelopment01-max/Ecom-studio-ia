@@ -5,6 +5,7 @@
  */
 import type { Project } from "../projects";
 import { legacyView, type LegacyScope } from "../brain/facade";
+export { brainContext, brainView } from "../brain/facade";
 import { contactModesOf, sectorLabel, type BrandPlatform } from "../project-types";
 import { contentLang } from "../i18n-server";
 import { placeholder } from "./prompts";

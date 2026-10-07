@@ -18,7 +18,7 @@ vi.mock("@/lib/ai/llm", async (orig) => ({
     throw new Error(`tâche inattendue ${call.task}`);
   },
 }));
-vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>" }));
+vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>", brainContext: () => "<contexte_projet></contexte_projet>", brainView: () => ({ stable: "<contexte_projet></contexte_projet>", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
 
 import { aiShopCopyChecked, copyQuality, CopyReviewSchema, copyReviewPassed, lintClaims, lintHollow } from "@/lib/ai/tasks";
 import { platformContext } from "@/lib/ai/context";

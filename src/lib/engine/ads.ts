@@ -14,7 +14,7 @@ import { contentLang, L, uiLang, withContentLang } from "../i18n-server";
 import { lintClaims, lintHollow, scrubClaims } from "../ai/tasks";
 import { areaMentioned, howToBook, unknownText } from "./services-text";
 import { llmConfigured, llmJson } from "../ai/llm";
-import { projectContext } from "../ai/context";
+import { brainView } from "../ai/context";
 import { charter, langName, placeholder } from "../ai/prompts";
 import type { Project } from "../projects";
 import { adPolicyIssues, aiCraftReview, audienceIssues, brandCraftBrief, craftLoop, honestTestBudget, type CraftQuality } from "./ad-craft";
@@ -115,6 +115,7 @@ export async function draftAds(p: Project, opts: { userId: string; count?: numbe
     // Clés d'usage stables : la tâche en cours (reprise sans double débit), sinon cette demande ; un tour par appel.
     const scope = currentTrace().jobId ?? randomUUID();
     let drafts = 0;
+    const adView = brainView(p, "advertising");
     const brief = `${opts.objective ? `Objectif de la campagne : ${opts.objective}.\n` : ""}${opts.audience ? `Audience indiquée par le marchand : ${opts.audience}.\n` : ""}${opts.networks?.length ? `Réseaux : ${opts.networks.join(", ")}.\n` : ""}Budget de test calculé par le studio : ${budget.daily} ; ${budget.duration} ; ${budget.total}. Règle de décision : ${budget.rule}`;
     const ask = (feedback?: string) => llmJson(
       {
@@ -122,7 +123,7 @@ export async function draftAds(p: Project, opts: { userId: string; count?: numbe
         ...b,
         usageKey: stableKey("ads", p.id, scope, "draft", drafts++),
         system: adSystem(p, lang, ctas),
-        context: `${projectContext(p, "social")}\n${brandCraftBrief(p)}`,
+        context: `${adView.stable}\n${brandCraftBrief(p, adView.kept)}`,
         prompt: `Prépare la campagne de test : ${count} annonce(s).\n${brief}${feedback ? `\nCorrections exigées par le directeur de création et le contrôle qualité sur la proposition précédente (à appliquer toutes, sans rien inventer) :\n${feedback}` : ""}
 Réponds { "strategy": { "summary": "…", "audiences": [ { "name": "…", "who": "…", "signals": "…", "why": "…" } ], "structure": ["…"], "tests": [ { "variable": "…", "hypothesis": "…" } ], "kpis": ["…"] }, "hooks": [ { "text": "…", "visual": "…", "lever": "…" } ], "ads": [ { "angle": "…", "lever": "…", "hook": "…", "primary": "…", "headline": "…", "description": "…", "cta": "…", "visual": "…" } ] }.`,
         maxTokens: 9000,

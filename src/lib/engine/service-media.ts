@@ -23,7 +23,7 @@ import type { VideoFormat, VideoScene, VideoSpec } from "../media/video";
 import { ambianceImage, imageProviderAvailable, refundMediaQuota } from "../ai/media-providers";
 import { aiQcScene, qcScore, qcTier, type QcTier } from "../ai/tasks";
 import { llmConfigured, llmJson } from "../ai/llm";
-import { projectContext } from "../ai/context";
+import { brainContext } from "../ai/context";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { C, L } from "../i18n-server";
 import { brandTypo, palette } from "./images";
@@ -181,7 +181,9 @@ async function topicQueries(ictx: { userId: string; projectId: string; jobId?: s
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:topic-queries:${clip(topic, 40)}`,
         system: "You write search queries for royalty-free photo libraries. Short English queries (2 to 4 words) for a concrete, photographable scene that illustrates the post and names the trade: the work being done, its tools or materials, a recognisable result. Never a bare wall, texture, background or building. No brand names, no people's names.",
-        prompt: `Business: ${trade}.\nPost: ${clip(topic, 300)}\nAnswer { "queries": ["query 1", "query 2"] }.`,
+        // Métier, gestes, scènes utiles et hors sujet, prestations, zone : contexte du Brain (scope stock).
+        context: brainContext(p, "stock"),
+        prompt: `Post: ${clip(topic, 300)}\nAnswer { "queries": ["query 1", "query 2"] }.`,
         maxTokens: 400,
       },
       z.object({ queries: z.array(z.string()).max(3) }),
@@ -232,7 +234,8 @@ async function stockQueries(ictx: { userId: string; projectId: string; jobId?: s
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:stock-queries`,
         system: "You write search queries for royalty-free photo libraries (Pexels, Pixabay). Short English queries (2 to 4 words) describing a concrete, photographable scene of the trade that names it: the work being done, its tools, its materials, a recognisable finished result. Never a bare wall, texture, background or building alone. No people's names, no brand names, no abstract words.",
-        prompt: `Business: ${trade}. ${p.product.summary ?? ""}\nSlots: ${slots.map((s) => { const m = /^service:(\d+)$/.exec(s); return m && items[Number(m[1])] ? `${s} = ONLY the service "${items[Number(m[1])].name}"${items[Number(m[1])].description ? ` (${clip(items[Number(m[1])].description, 120)})` : ""}` : s; }).join("; ")} (hero = the trade at a glance; banner = a finished job; ad = tools or work in progress). Each service query must show that exact service and nothing else (tiling is not painting).\nAnswer { "queries": { "<slot>": ["query 1", "query 2"] } }.`,
+        context: brainContext(p, "stock"),
+        prompt: `${p.product.summary ? `Summary: ${p.product.summary}\n` : ""}Slots: ${slots.map((s) => { const m = /^service:(\d+)$/.exec(s); return m && items[Number(m[1])] ? `${s} = ONLY the service "${items[Number(m[1])].name}"${items[Number(m[1])].description ? ` (${clip(items[Number(m[1])].description, 120)})` : ""}` : s; }).join("; ")} (hero = the trade at a glance; banner = a finished job; ad = tools or work in progress). Each service query must show that exact service and nothing else (tiling is not painting).\nAnswer { "queries": { "<slot>": ["query 1", "query 2"] } }.`,
         maxTokens: 800,
       },
       z.object({ queries: z.record(z.string(), z.array(z.string()).max(3)) }),
@@ -627,7 +630,7 @@ export async function aiServiceTips(b: { userId: string; projectId: string; jobI
         "Tu écris des carrousels « conseil d'expert » pour une entreprise de services. Conseils pratiques, généraux et vérifiables, utiles au client final. Interdits : chiffres, statistiques, pourcentages, délais, tarifs, promesses de résultat, avis ou témoignages, diplômes, labels, certifications, comparaison avec des concurrents, conseil médical ou juridique personnalisé. Phrases courtes, ton de la marque, en français.",
         "You write \"expert tip\" carousels for a service business. Practical, general, verifiable advice that helps the end customer. Forbidden: figures, statistics, percentages, timeframes, prices, promises of results, reviews or testimonials, diplomas, labels, certifications, comparisons with competitors, personalized medical or legal advice. Short sentences, in the brand's tone, in English.",
       ),
-      context: projectContext(p, "images"),
+      context: brainContext(p, "social"),
       prompt: C(
         `Sujet : ${topic || "un conseil utile lié aux prestations"}. Réponds { "title": "titre de couverture (8 mots max)", "tips": [{ "title": "6 mots max", "text": "2 phrases max" }] } avec 3 conseils.`,
         `Topic: ${topic || "a useful tip related to the services"}. Reply { "title": "cover title (8 words max)", "tips": [{ "title": "6 words max", "text": "2 sentences max" }] } with 3 tips.`,
