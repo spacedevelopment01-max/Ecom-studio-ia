@@ -113,7 +113,8 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = {
   theme_design: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
   theme_edit: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
   theme_custom: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" },
-  quality_control: { provider: "anthropic", model: "claude-opus-5-5", effort: "low" },
+  // Contrôles (images, plans vidéo, relectures) : grille fixe, réponse courte — modèle solide mais moins cher que la création.
+  quality_control: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
   photo_triage: { provider: "anthropic", model: "claude-haiku-4-5" },
   cutout_check: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "low" },
   logo_symbol: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },

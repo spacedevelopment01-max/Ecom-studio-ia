@@ -122,7 +122,9 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   const isHaiku = route.model.startsWith("claude-haiku");
   const params: any = {
     model: route.model,
-    max_tokens: call.maxTokens ?? 32000,
+    // Avec réflexion, la limite couvre aussi la réflexion : une limite trop basse coupe la réponse et la fait repayer.
+    // Seuls les jetons produits sont facturés, une limite plus haute ne coûte rien de plus.
+    max_tokens: isHaiku ? (call.maxTokens ?? 32000) : Math.max(call.maxTokens ?? 32000, 8000),
     system: [{ type: "text", text: systemText(call), cache_control: { type: "ephemeral" } }],
     messages,
   };
