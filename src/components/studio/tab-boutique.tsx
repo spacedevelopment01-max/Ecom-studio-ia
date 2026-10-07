@@ -14,7 +14,7 @@ import type { ImportReport } from "@/lib/theme/import";
 import { useT } from "../i18n";
 import { LayoutPanel, type LayoutChoice, type LayoutSection } from "./layout-panel";
 import { ContentLangPicker, useContentLang } from "./content-lang";
-import { isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId } from "./platform-picker";
+import { deliveryLabel, deliveryTone, isPlatform, platformInfo, PlatformPill, PLATFORM_IDS, type PlatformId } from "./platform-picker";
 import type { BusinessType } from "@/lib/project-types";
 import { KeptSiteCard, ReproductionBanner, SiteReading } from "./existing-site";
 import { useBilling } from "../billing-client";
@@ -673,8 +673,9 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, platfor
   const t = useT();
   const { reload } = useProject();
   const [others, setOthers] = useState(false);
-  const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; linked: boolean }[]; publicUrl: boolean }>(open && platform === "shopify" ? `/api/connections?project=${projectId}` : null);
-  const shop = conns?.connections.find((c) => c.provider === "shopify");
+  const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; linked: boolean; status: string }[]; publicUrl: boolean }>(open && platform === "shopify" ? `/api/connections?project=${projectId}` : null);
+  // Seule une connexion active compte (comme côté serveur, shopifyConnection) : sinon « Export », jamais « Connecté ».
+  const shop = conns?.connections.find((c) => c.provider === "shopify" && c.status === "active");
   const svc = business === "services";
   const q = versionId ? `&version=${versionId}` : "";
   // Fichier principal de chaque plateforme, plus le CSV des produits pour une boutique.
@@ -686,13 +687,13 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, platfor
     squarespace: t("Ouvrez le guide du kit : il indique, page par page, quoi reprendre dans Squarespace (médias, couleurs, polices, textes).", "Open the kit's guide: it lists, page by page, what to rebuild in Squarespace (media, colors, fonts, text)."),
   };
   const csv = !svc && (platform === "shopify" || platform === "woocommerce") ? ([platform === "shopify" ? "shopify-csv" : "woocommerce-csv", platform === "shopify" ? t("Produits Shopify (CSV)", "Shopify products (CSV)") : t("Produits WooCommerce (CSV)", "WooCommerce products (CSV)"), platform === "shopify" ? t("Tous les produits de la boutique, au format d'import Shopify (Produits › Importer)", "All store products, in Shopify import format (Products › Import)") : t("Tous les produits, au format d'import WooCommerce (Produits › Importer)", "All products, in WooCommerce import format (Products › Import)")] as const) : null;
-  const main = platformInfo(platform, business, t);
+  const main = platformInfo(platform, business, t, platform === "shopify" && !!shop);
   const rest = PLATFORM_IDS.filter((x) => x !== platform);
   return (
     <Modal open={open} onClose={onClose} title={t("Exporter et installer", "Export and install")}>
       <p className="text-sm text-muted">{t("L'export contient exactement les fichiers affichés dans l'aperçu (empreinte", "The export contains exactly the files shown in the preview (fingerprint")} <code className="rounded bg-paper-2 px-1.5 text-xs">{fingerprint}</code>{t("). Une copie est rangée dans Fichiers › Boutique › Exports.", "). A copy is saved in Files › Store › Exports.")}</p>
       <div className="mt-4 rounded-2xl border-2 border-signal/50 bg-signal-soft/40 p-4">
-        <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">{main.name} <Badge tone="signal">{t("Votre plateforme", "Your platform")}</Badge> <Badge tone={main.kind === "theme" ? "ok" : "warn"}>{main.kind === "theme" ? t("Thème installable", "Installable theme") : t("Kit de reprise", "Rebuild kit")}</Badge></p>
+        <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">{main.name} <Badge tone="signal">{t("Votre plateforme", "Your platform")}</Badge> <Badge tone={deliveryTone(main.delivery)}>{deliveryLabel(main.delivery, t)}</Badge></p>
         <p className="mt-1 text-xs text-ink-2">{main.text}</p>
         <a href={`/api/projects/${projectId}/theme/export?platform=${platform}${q}`} className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper">
           <Download className="size-4" aria-hidden /> {main.kind === "theme" ? t(`Télécharger le thème ${main.short}`, `Download the ${main.short} theme`) : t(`Télécharger le kit ${main.short}`, `Download the ${main.short} kit`)}
@@ -732,7 +733,7 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, platfor
                 <li key={k}>
                   <a href={`/api/projects/${projectId}/theme/export?platform=${k}${q}`} className="flex items-center gap-3 rounded-2xl border border-line p-3 hover:border-ink">
                     <Download className="size-4 shrink-0" aria-hidden />
-                    <span className="min-w-0"><span className="block text-sm font-medium">{info.name} · {info.kind === "theme" ? t("thème installable", "installable theme") : t("kit de reprise", "rebuild kit")}</span><span className="block text-xs text-muted">{info.text}</span></span>
+                    <span className="min-w-0"><span className="block text-sm font-medium">{info.name} · {deliveryLabel(info.delivery, t)}</span><span className="block text-xs text-muted">{info.text}</span></span>
                   </a>
                 </li>
               );

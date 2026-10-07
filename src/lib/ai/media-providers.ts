@@ -12,7 +12,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
 import sharp from "sharp";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
-import { currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
+import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
 import { PLANS } from "../plans";
@@ -59,6 +59,8 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
 
 /** Avant une génération : quota du forfait (message clair s'il est épuisé), puis budget IA caché. */
 function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: string, model: string) {
+  // Droits du compte vérifiés à chaque génération (forfait, budget), dans une tâche de fond ou non.
+  assertAiAllowed(ctx.userId);
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
   assertCanSpend(ctx.userId, micro);

@@ -6,6 +6,7 @@
  * Ce qui n'est JAMAIS enregistré : texte du prompt, images, clés, jetons d'accès. Seuls la clé du prompt système
  * et son empreinte le sont.
  */
+import { redact } from "../redact";
 import { AsyncLocalStorage } from "node:async_hooks";
 import crypto from "node:crypto";
 import { id, now, run } from "../db";
@@ -33,13 +34,7 @@ export function withCandidate<T>(candidateId: string, attempt: number, fn: () =>
 export const shortHash = (text: string) => crypto.createHash("sha256").update(text).digest("hex").slice(0, 12);
 
 /** Masque les secrets connus dans un texte destiné aux journaux (clés API, jetons, paramètres « key= »). */
-export function redact(text: string): string {
-  return text
-    .replace(/\bsk-[A-Za-z0-9_-]{8,}/g, "sk-***")
-    .replace(/\bAIza[0-9A-Za-z_-]{10,}/g, "AIza***")
-    .replace(/\b(key|api_key|apikey|token|access_token|secret)=([^&\s"']+)/gi, "$1=***")
-    .replace(/\b(Bearer|Key)\s+[A-Za-z0-9._:-]{8,}/g, "$1 ***");
-}
+export { redact };
 
 export type CallRow = {
   userId: string;

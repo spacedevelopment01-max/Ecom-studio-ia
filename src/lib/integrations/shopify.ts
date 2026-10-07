@@ -3,6 +3,7 @@
  * OAuth du marchand) : thème non publié, produit (brouillon) avec images et
  * variantes, pages liées aux gabarits du thème.
  */
+import { redact } from "../redact";
 import { getSetting } from "../settings";
 import { decrypt } from "../secrets";
 import { one } from "../db";
@@ -93,37 +94,71 @@ export async function pushProduct(c: Connection, spec: ThemeSpec, product?: Stor
 }
 
 /**
+ * Résultat de l'envoi du SEO d'une fiche : jamais présenté comme « vérifié ».
+ *  - sent : requête transmise, mais la réponse ne confirme pas l'enregistrement des deux champs ;
+ *  - accepted : Shopify renvoie les métachamps enregistrés, sans erreur (affichage réel côté boutique NON VÉRIFIÉ) ;
+ *  - refused : Shopify refuse (userErrors, droits…) — le produit reste envoyé ;
+ *  - unknown : pas de réponse exploitable (réseau, délai) — on ne sait pas ;
+ *  - none : aucun titre ni description SEO à envoyer.
+ */
+export type SeoPushStatus = "none" | "sent" | "accepted" | "refused" | "unknown";
+export type SeoPushResult = { status: SeoPushStatus; detail?: string; verified: false; mechanism: typeof SEO_MECHANISM };
+/** Mécanisme NON VÉRIFIÉ (documentation officielle inaccessible depuis le studio, aucun test sur une vraie boutique). */
+export const SEO_MECHANISM = "metafieldsSet global.title_tag / global.description_tag (UNVERIFIED)" as const;
+const seoResult = (status: SeoPushStatus, detail?: string): SeoPushResult => ({ status, ...(detail ? { detail: detail.slice(0, 200) } : {}), verified: false, mechanism: SEO_MECHANISM });
+
+/**
  * SEO de la fiche produit (titre et méta-description), envoyé APRÈS le produit et sans jamais le bloquer : mêmes
  * champs que ceux déjà utilisés pour les articles de blog (métachamps « global.title_tag » et
  * « global.description_tag », que Shopify affiche comme titre et description pour les moteurs de recherche).
- * Refus de la boutique (définition différente, droits) : le produit reste envoyé, le refus est rendu tel quel.
+ * MÉCANISME NON VÉRIFIÉ : à confirmer par la documentation officielle ou un vrai test Shopify avant d'être présenté
+ * comme fiable. Refus de la boutique : le produit reste envoyé, le refus est rendu tel quel.
  */
-export async function pushProductSeo(c: Connection, productId: string, seo: { title: string; description: string } | undefined): Promise<"sent" | "none" | `refused: ${string}`> {
-  if (!seo?.title?.trim() && !seo?.description?.trim()) return "none";
+export async function pushProductSeo(c: Connection, productId: string, seo: { title: string; description: string } | undefined): Promise<SeoPushResult> {
+  if (!seo?.title?.trim() && !seo?.description?.trim()) return seoResult("none");
   const metafields = [
     { ownerId: productId, namespace: "global", key: "title_tag", type: "single_line_text_field", value: (seo.title ?? "").trim() },
     { ownerId: productId, namespace: "global", key: "description_tag", type: "single_line_text_field", value: (seo.description ?? "").trim() },
   ].filter((m) => m.value);
+  let d: any;
   try {
-    const d = await gql(c, `mutation($metafields: [MetafieldsSetInput!]!){ metafieldsSet(metafields: $metafields){ metafields{ key } userErrors{ field message } } }`, { metafields });
-    const errs = d?.metafieldsSet?.userErrors ?? [];
-    return errs.length ? `refused: ${errs.map((e: any) => e.message).join(" ; ").slice(0, 200)}` : "sent";
+    d = await gql(c, `mutation($metafields: [MetafieldsSetInput!]!){ metafieldsSet(metafields: $metafields){ metafields{ key } userErrors{ field message } } }`, { metafields });
   } catch (e) {
     if (e instanceof PermanentError) throw e;
-    return `refused: ${(e as Error).message.slice(0, 200)}`;
+    const msg = redact((e as Error).message);
+    // Réponse d'erreur de Shopify (droits, champ) = refus ; panne réseau ou délai = on ne sait pas.
+    return /fetch failed|network|timeout|ETIMEDOUT|ECONNRESET|aborted|socket/i.test(msg) ? seoResult("unknown", msg) : seoResult("refused", msg);
   }
+  const errs = d?.metafieldsSet?.userErrors ?? [];
+  if (errs.length) return seoResult("refused", errs.map((e: any) => e.message).join(" ; "));
+  const saved = new Set<string>((d?.metafieldsSet?.metafields ?? []).map((m: { key: string }) => m.key));
+  if (!d?.metafieldsSet) return seoResult("unknown", "réponse sans metafieldsSet");
+  return metafields.every((m) => saved.has(m.key)) ? seoResult("accepted") : seoResult("sent", `confirmés : ${[...saved].join(", ") || "aucun"}`);
+}
+
+/** Résumé honnête du SEO envoyé (comptes par statut), affiché au client et repris par le diagnostic. */
+export function seoSummary(seo: Record<string, SeoPushResult>): { counts: Record<SeoPushStatus, number>; text: string } {
+  const counts: Record<SeoPushStatus, number> = { none: 0, sent: 0, accepted: 0, refused: 0, unknown: 0 };
+  for (const r of Object.values(seo)) counts[r.status]++;
+  const parts = [
+    counts.accepted && L(`${counts.accepted} accepté(s)`, `${counts.accepted} accepted`),
+    counts.sent && L(`${counts.sent} envoyé(s) sans confirmation`, `${counts.sent} sent without confirmation`),
+    counts.refused && L(`${counts.refused} refusé(s)`, `${counts.refused} refused`),
+    counts.unknown && L(`${counts.unknown} état inconnu`, `${counts.unknown} unknown`),
+  ].filter(Boolean);
+  return { counts, text: parts.length ? L(`SEO des fiches : ${parts.join(", ")} (affichage dans Shopify non vérifié)`, `Product SEO: ${parts.join(", ")} (display in Shopify not verified)`) : "" };
 }
 
 /** Envoie tous les produits de la boutique (brouillons), puis crée les collections manuelles. */
 export async function pushCatalog(c: Connection, spec: ThemeSpec, onProgress?: (done: number, total: number) => void) {
   // Site d'entreprise de services : aucun produit à créer (le site repose sur les pages et le thème).
-  if (spec.store.business === "services") return { products: [] as string[], collections: [] as string[], seo: {} as Record<string, string> };
+  if (spec.store.business === "services") return { products: [] as string[], collections: [] as string[], seo: {} as Record<string, SeoPushResult> };
   const products = storeProducts(spec);
   const missing = products.filter((p) => p.price === null).map((p) => p.title);
   if (missing.length) throw new UserFacingError(L(`Renseignez le prix de : ${missing.join(", ")} avant l'envoi à Shopify.`, `Enter the price of: ${missing.join(", ")} before sending to Shopify.`));
   const ids = new Map<string, string>();
   // SEO de chaque fiche : envoyé, absent ou refusé par la boutique (rendu dans le résultat de l'envoi, jamais perdu).
-  const seo: Record<string, string> = {};
+  const seo: Record<string, SeoPushResult> = {};
   for (const [i, p] of products.entries()) {
     const r = await pushProduct(c, spec, p);
     ids.set(p.handle, r.productId);

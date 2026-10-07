@@ -1,17 +1,59 @@
 /**
  * Chiffrement AES-256-GCM des clés fournisseurs et jetons OAuth.
- * La clé maître provient de APP_SECRET (générée par `npm run setup`).
+ * Secret maître unique (`masterSecret`) : APP_SECRET (généré par `npm run setup`), obligatoire en production.
+ * En développement sans APP_SECRET : un secret aléatoire propre à l'installation, gardé dans `data/.app-secret`
+ * (dossier exclu de Git) — jamais une constante connue. Les données chiffrées autrefois avec l'ancienne constante de
+ * développement restent lisibles (`decrypt`) et sont rechiffrées avec le secret actuel (`reencryptLegacy`).
  */
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+
+/** Ancienne constante de développement : uniquement pour relire (jamais pour chiffrer) les données d'avant 1C. */
+const LEGACY_DEV_SECRET = "dev-only-secret-ecom-studio-ia";
+const MIN_SECRET = 32;
+
+let devSecret: { file: string; value: string } | null = null;
+function devSecretFile(): string {
+  return path.join(process.env.DATA_DIR || path.join(process.cwd(), "data"), ".app-secret");
+}
+
+/** Secret maître de l'application (chiffrement, signatures des liens d'aperçu et des médias publics, jetons). */
+export function masterSecret(): string {
+  const s = process.env.APP_SECRET;
+  if (s && s.length >= MIN_SECRET) return s;
+  if (process.env.NODE_ENV === "production") throw new Error(`APP_SECRET manquant (${MIN_SECRET} caractères minimum).`);
+  const file = devSecretFile();
+  if (devSecret?.file === file) return devSecret.value;
+  let value = "";
+  try {
+    value = fs.readFileSync(file, "utf8").trim();
+  } catch {
+    /* premier lancement : créé ci-dessous */
+  }
+  if (value.length < MIN_SECRET) {
+    value = crypto.randomBytes(32).toString("base64url");
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    // « wx » : si un autre processus (worker / serveur) l'a créé entre-temps, on relit le sien.
+    try {
+      fs.writeFileSync(file, value + "\n", { mode: 0o600, flag: "wx" });
+    } catch {
+      value = fs.readFileSync(file, "utf8").trim();
+    }
+  }
+  devSecret = { file, value };
+  return value;
+}
+
+/** Clé dérivée du secret maître pour un usage donné (chiffrement, aperçu, médias publics…). */
+export function derivedKey(purpose?: string): Buffer {
+  return crypto.createHash("sha256").update(purpose ? `${purpose}:${masterSecret()}` : masterSecret()).digest();
+}
 
 function masterKey(): Buffer {
-  const s = process.env.APP_SECRET;
-  if (!s || s.length < 32) {
-    if (process.env.NODE_ENV === "production") throw new Error("APP_SECRET manquant (32 caractères minimum).");
-    return crypto.createHash("sha256").update("dev-only-secret-ecom-studio-ia").digest();
-  }
-  return crypto.createHash("sha256").update(s).digest();
+  return derivedKey();
 }
+const legacyKey = () => crypto.createHash("sha256").update(LEGACY_DEV_SECRET).digest();
 
 export function encrypt(plain: string | null | undefined): string | null {
   if (plain == null || plain === "") return null;
@@ -21,17 +63,32 @@ export function encrypt(plain: string | null | undefined): string | null {
   return ["v1", iv.toString("base64"), c.getAuthTag().toString("base64"), enc.toString("base64")].join(".");
 }
 
-export function decrypt(box: string | null | undefined): string | null {
-  if (!box) return null;
+function open(box: string, key: Buffer): string | null {
   const [v, iv, tag, data] = box.split(".");
-  if (v !== "v1") return null;
+  if (v !== "v1" || !iv || !tag || data == null) return null;
   try {
-    const d = crypto.createDecipheriv("aes-256-gcm", masterKey(), Buffer.from(iv, "base64"));
+    const d = crypto.createDecipheriv("aes-256-gcm", key, Buffer.from(iv, "base64"));
     d.setAuthTag(Buffer.from(tag, "base64"));
     return Buffer.concat([d.update(Buffer.from(data, "base64")), d.final()]).toString("utf8");
   } catch {
     return null;
   }
+}
+
+/** Déchiffre avec le secret actuel, sinon avec l'ancienne constante de développement (aucune clé perdue). */
+export function decrypt(box: string | null | undefined): string | null {
+  if (!box) return null;
+  return open(box, masterKey()) ?? (masterSecret() === LEGACY_DEV_SECRET ? null : open(box, legacyKey()));
+}
+
+/**
+ * Rechiffre avec le secret actuel une valeur chiffrée avec l'ancienne constante de développement.
+ * Renvoie la nouvelle valeur, ou null s'il n'y a rien à faire (déjà au secret actuel, ou illisible : laissée intacte).
+ */
+export function reencryptLegacy(box: string | null | undefined): string | null {
+  if (!box || open(box, masterKey()) != null) return null;
+  const plain = open(box, legacyKey());
+  return plain == null ? null : encrypt(plain);
 }
 
 export function mask(secret: string | null | undefined): string {

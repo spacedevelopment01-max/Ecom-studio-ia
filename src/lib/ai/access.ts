@@ -6,6 +6,8 @@
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import { balance, EUR, getSubscription, planOf } from "../billing";
+import { UserFacingError } from "../jobs";
+import { L } from "../i18n-server";
 
 /**
  * Portée du décompte des quotas pendant une tâche :
@@ -52,4 +54,22 @@ export function hasAiCredits(userId: string): boolean {
 export function currentUserHasAiCredits(): boolean {
   const u = currentAiUser();
   return !u || aiActiveFor(u);
+}
+
+/**
+ * Contrôle central avant TOUT appel payant à un fournisseur d'IA (texte, image, vidéo) : le compte doit avoir un
+ * forfait et un budget IA suffisant, que l'appel soit fait dans une tâche de fond (runForUser) ou non. Le compte
+ * administrateur suit la même règle (pas de passe-droit). Lève une erreur claire, sans rien dépenser.
+ */
+export function assertAiAllowed(userId: string | null | undefined): void {
+  if (!userId) throw new UserFacingError(L("Appel à l'IA refusé : aucun compte n'est associé à la demande.", "AI call refused: no account is attached to the request."));
+  let sub;
+  try {
+    sub = getSubscription(userId);
+  } catch {
+    // Compte inexistant (ou supprimé) : refus net, sans appel.
+    throw new UserFacingError(L("Appel à l'IA refusé : compte introuvable.", "AI call refused: account not found."));
+  }
+  if (!planOf(sub)) throw new UserFacingError(L("L'IA n'est pas incluse dans la découverte gratuite : le moteur local du studio est utilisé.", "AI isn't included in the free discovery: the studio's local engine is used."));
+  if (!hasAiCredits(userId)) throw new UserFacingError(L("Le budget IA de votre forfait est épuisé pour cette période : le moteur local du studio prend le relais.", "Your plan's AI budget is used up for this period: the studio's local engine takes over."));
 }

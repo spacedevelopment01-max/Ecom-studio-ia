@@ -27,7 +27,7 @@ import { localCopy } from "../src/lib/engine/local-copy";
 import { assetData, getAsset, saveAsset, listFolders, addUsage, type Asset } from "../src/lib/library";
 import { publishPost, alreadyPublished, connectionFor, markConnection, type PostRow } from "../src/lib/social/publish";
 import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
-import { pushCatalog, pushPages, pushTheme, shopifyConnection } from "../src/lib/integrations/shopify";
+import { pushCatalog, pushPages, pushTheme, seoSummary, shopifyConnection, type SeoPushResult } from "../src/lib/integrations/shopify";
 import { renderCreative, FORMATS } from "../src/lib/media/compose";
 import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engine/images";
 import { cutoutSummary, redoCutout } from "../src/lib/engine/cutouts";
@@ -359,7 +359,10 @@ export const handlers: Record<string, Handler> = {
     if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
     if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, L("Création des pages", "Creating the pages")), pushPages(c, cur.spec)));
     if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, L("Installation du thème (non publié)", "Installing the theme (unpublished)")), pushTheme(c, projectId, cur.version.id, cur.spec.name)));
-    notify(ctx.job.user_id, projectId, L("Envoi vers Shopify terminé", "Sending to Shopify complete"), Object.keys(out).join(", "), "success");
+    // SEO des fiches : envoyé / accepté / refusé / inconnu, jamais présenté comme vérifié.
+    const seo = out.product ? seoSummary((out.product as { seo: Record<string, SeoPushResult> }).seo) : null;
+    if (seo) (out as Record<string, unknown>).seoStatus = seo.counts;
+    notify(ctx.job.user_id, projectId, L("Envoi vers Shopify terminé", "Sending to Shopify complete"), [Object.keys(out).filter((k) => k !== "seoStatus").join(", "), seo?.text].filter(Boolean).join(" · "), "success");
     return out;
   },
 };

@@ -4,6 +4,7 @@ import { Check, ChevronDown } from "lucide-react";
 import { api, Badge, cx, useToast } from "../ui";
 import { useT } from "../i18n";
 import type { BusinessType } from "@/lib/project-types";
+import { deliveryLabel, deliveryMode, deliveryTone } from "@/lib/delivery";
 
 /** Plateformes livrées par le studio (mêmes identifiants que le serveur : src/lib/theme/platforms.ts). */
 export const PLATFORM_IDS = ["shopify", "woocommerce", "prestashop", "wix", "squarespace"] as const;
@@ -15,8 +16,17 @@ export const recommendedPlatform = (business: BusinessType): PlatformId => (busi
 
 type T = ReturnType<typeof useT>;
 
-/** Nom, mode de livraison et explication honnête de ce que le studio fournit pour chaque plateforme. */
-export function platformInfo(id: PlatformId, business: BusinessType, t: T) {
+export { deliveryLabel, deliveryTone };
+
+/**
+ * Nom, mode de livraison et explication honnête de ce que le studio fournit pour chaque plateforme.
+ * `connected` : le client a une vraie connexion active à cette plateforme (sinon jamais « Connecté »).
+ */
+export function platformInfo(id: PlatformId, business: BusinessType, t: T, connected = false) {
+  return { ...platformText(id, business, t), delivery: deliveryMode(id, connected) };
+}
+
+function platformText(id: PlatformId, business: BusinessType, t: T) {
   const svc = business === "services";
   switch (id) {
     case "shopify":
@@ -87,7 +97,7 @@ export function PlatformCards({ value, onChange, business, name, compact }: { va
                 <span className="text-sm font-semibold">{info.name}</span>
                 {id === rec && <Badge tone="signal" className="!px-2 !py-0 text-[10px]">{t("Conseillé", "Recommended")}</Badge>}
               </span>
-              <span className={cx("text-[11px] font-medium uppercase tracking-[.08em]", info.kind === "theme" ? "text-ok" : "text-warn")}>{info.kind === "theme" ? t("Thème installable", "Installable theme") : t("Kit de reprise", "Rebuild kit")}</span>
+              <span className={cx("text-[11px] font-medium uppercase tracking-[.08em]", info.delivery === "kit" ? "text-warn" : "text-ok")}>{deliveryLabel(info.delivery, t)}</span>
               <span className="text-xs leading-snug text-muted">{info.text}</span>
               {on && <Check className="absolute right-3 top-3 size-4 text-signal" aria-hidden />}
             </button>

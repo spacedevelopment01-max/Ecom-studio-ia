@@ -8,6 +8,7 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 import { customAlphabet } from "nanoid";
+import { redact, redactDeep } from "./redact";
 
 export const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -656,14 +657,15 @@ export function json<T = any>(v: string | null | undefined, fallback: T): T {
 }
 
 export function logError(scope: string, err: unknown, ctx: { userId?: string; projectId?: string; details?: unknown } = {}) {
-  const message = err instanceof Error ? err.message : String(err);
+  // Jamais de clé d'API, jeton OAuth, en-tête Authorization ni secret de l'application dans le journal.
+  const message = redact(err instanceof Error ? err.message : String(err));
   try {
     run(
       "INSERT INTO error_log (id, scope, message, details, user_id, project_id, created_at) VALUES (?,?,?,?,?,?,?)",
       id(),
       scope,
       message.slice(0, 2000),
-      JSON.stringify({ stack: err instanceof Error ? err.stack?.slice(0, 4000) : undefined, ...(ctx.details ? { ctx: ctx.details } : {}) }),
+      JSON.stringify({ stack: err instanceof Error && err.stack ? redact(err.stack).slice(0, 4000) : undefined, ...(ctx.details ? { ctx: redactDeep(ctx.details) } : {}) }),
       ctx.userId ?? null,
       ctx.projectId ?? null,
       now(),

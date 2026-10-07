@@ -4,13 +4,10 @@
  */
 import crypto from "node:crypto";
 import { appUrl } from "./settings";
+import { derivedKey } from "./secrets";
 
-function key() {
-  const s = process.env.APP_SECRET;
-  // Comme secrets.ts : en production, pas de secret de secours connu de tous pour signer les liens publics.
-  if ((!s || s.length < 32) && process.env.NODE_ENV === "production") throw new Error("APP_SECRET manquant (32 caractères minimum).");
-  return crypto.createHash("sha256").update(`public-media:${s || "dev-only-secret-ecom-studio-ia"}`).digest();
-}
+// Secret maître unique : en production APP_SECRET est obligatoire (aucun secret de secours connu de tous).
+const key = () => derivedKey("public-media");
 
 export function signMedia(kind: "asset" | "theme", ref: string, ttlSeconds = 3 * 3600): string {
   const exp = Math.floor(Date.now() / 1000) + ttlSeconds;

@@ -40,7 +40,9 @@ describe("SEO produit réellement utilisé", () => {
     }));
     const c: any = { external_id: "lune.myshopify.com", access_token: encrypt("jeton-test") };
     const r = await runWithLang({ ui: "fr" }, () => pushProduct(c, spec()));
-    expect(r.seo).toBe("sent");
+    // Les deux champs ne sont pas tous confirmés dans la réponse (title_tag seul) : « envoyé », pas « accepté ».
+    expect(r.seo).toMatchObject({ status: "sent", verified: false });
+    expect(r.seo.mechanism).toMatch(/UNVERIFIED/);
     const mf = bodies.find((b) => b.query.includes("metafieldsSet"));
     expect(mf.variables.metafields).toEqual([
       { ownerId: "gid://shopify/Product/1", namespace: "global", key: "title_tag", type: "single_line_text_field", value: "Veilleuse Lune pour chambre d'enfant | Lune" },
@@ -58,7 +60,7 @@ describe("SEO produit réellement utilisé", () => {
     const c: any = { external_id: "lune.myshopify.com", access_token: encrypt("jeton-test") };
     const r = await runWithLang({ ui: "fr" }, () => pushProduct(c, spec()));
     expect(r.productId).toBe("gid://shopify/Product/2");
-    expect(r.seo).toMatch(/^refused: Access denied/);
+    expect(r.seo).toMatchObject({ status: "refused", detail: expect.stringMatching(/Access denied/), verified: false });
   });
 
   it("limites SEO uniques (60 / 155) pour la boutique et le blog", () => {

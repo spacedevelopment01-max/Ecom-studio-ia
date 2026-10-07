@@ -64,6 +64,7 @@ export default function TabPrompts() {
   const [busy, setBusy] = useState(false);
   const [missing, setMissing] = useState<string[]>([]);
   const [answer, setAnswer] = useState("");
+  const [claims, setClaims] = useState<{ term: string; label: string }[]>([]);
   const [running, setRunning] = useState(false);
   const fav = new Set(data?.favorites ?? []);
   const results = useMemo(() => {
@@ -104,11 +105,13 @@ export default function TabPrompts() {
     if (!sel) return;
     setRunning(true);
     setAnswer("");
+    setClaims([]);
     try {
-      const r = await api<{ prompt: string; answer: string }>(`/api/projects/${id}/prompt-run`, { body: { body: text }, lang: cl.lang });
+      const r = await api<{ prompt: string; answer: string; claims?: { term: string; label: string }[] }>(`/api/projects/${id}/prompt-run`, { body: { body: text }, lang: cl.lang });
       setText(r.prompt);
       setFilled(true);
       setAnswer(r.answer);
+      setClaims(r.claims ?? []);
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
@@ -242,6 +245,11 @@ export default function TabPrompts() {
                     <Button size="sm" variant="secondary" icon={<ArrowRight className="size-4" />} onClick={() => router.push(`/studio/${id}/${TARGET_TAB[sel.target] ?? "marque"}`)}>{t("Ouvrir", "Open")} {targetLabel(sel.target)}</Button>
                   </div>
                 </div>
+                {claims.length > 0 && (
+                  <p className="rounded-xl bg-warn-soft p-3 text-xs text-warn">
+                    {t("À vérifier avant de publier (affirmations non confirmées par votre projet) :", "Check before publishing (claims not confirmed by your project):")} {claims.map((c) => `« ${c.term} » (${c.label})`).join(", ")}
+                  </p>
+                )}
                 <div className="whitespace-pre-wrap text-sm leading-relaxed">{answer}</div>
               </div>
             )}
