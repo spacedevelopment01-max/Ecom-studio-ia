@@ -71,7 +71,7 @@ export const handlers: Record<string, Handler> = {
   /** Logo : nouvelles pistes (IA, plusieurs minutes) ou application de la piste choisie. */
   "brand.fulllogo": async (ctx) => {
     const { generateFullLogos } = await import("../src/lib/engine/full-logo");
-    return { created: (await generateFullLogos(ctx, ctx.payload.projectId)).length };
+    return { created: (await generateFullLogos(ctx, ctx.payload.projectId, { autoApply: !!ctx.job.parent_id })).length };
   },
 
   "brand.logo": async (ctx) => runLogoJob(ctx, ctx.payload.projectId, { proposalId: ctx.payload.proposalId ?? null, regenerate: !!ctx.payload.regenerate }),

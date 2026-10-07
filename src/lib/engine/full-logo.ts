@@ -25,14 +25,14 @@ async function briefs(ictx: Ictx, p: Project): Promise<{ concept: string; brief:
       task: "logo_symbol",
       ...ictx,
       usageKey: `${ictx.jobId ?? "logo"}:full-logo-briefs:${Date.now().toString(36)}`,
-      system: `Rôle : directeur artistique senior d'une agence de branding. Tu écris, pour un illustrateur (une IA d'images), deux briefs de LOGO COMPLET (symbole + nom de la marque) vraiment différents, comme un vrai designer : le symbole naît de la logique du métier ou du produit (fonction, geste, outil, matière, bénéfice, origine), jamais un cliché du secteur ; typographie décrite précisément (famille, graisse, casse, interlettrage) ; composition (symbole à gauche, au-dessus, emblème…) ; couleurs données en codes hexadécimaux de la palette. Aucune promesse, aucun slogan dans le logo. Briefs EN ANGLAIS, 70 à 140 mots chacun ; « concept » en français, une phrase.`,
+      system: `Rôle : directeur artistique senior d'une agence de branding. Tu écris, pour un illustrateur (une IA d'images), trois briefs de LOGO COMPLET (symbole + nom de la marque) vraiment différents, comme un vrai designer : le symbole naît de la logique du métier ou du produit (fonction, geste, outil, matière, bénéfice, origine), jamais un cliché du secteur ; typographie décrite précisément (famille, graisse, casse, interlettrage) ; composition (symbole à gauche, au-dessus, emblème…) ; couleurs données en codes hexadécimaux de la palette. Aucune promesse, aucun slogan dans le logo. Briefs EN ANGLAIS, 70 à 140 mots chacun ; « concept » en français, une phrase.`,
       context: projectContext(p, "brand"),
       prompt: `Marque : « ${p.brand?.name ?? p.name} ». Palette : ${pal ? Object.entries(pal).map(([k, v]) => `${k} ${v}`).join(", ") : "à choisir"}. Direction : ${p.brand?.direction ?? ""}.
-Deux styles différents : par exemple un emblème illustré (outils, matière, lieu du métier) avec une belle typographie, et un logo plus épuré. « descriptor » : la ligne du métier sous le nom, en français, 1 à 3 mots en capitales (ex. « PLÂTRIER PEINTRE »), ou vide pour un logo sans cette ligne.
-Réponds { "logos": [ { "concept": "…", "brief": "…", "descriptor": "…" }, { "concept": "…", "brief": "…", "descriptor": "…" } ] }.`,
+Trois propositions différentes, toutes dans le style des logos professionnels de commerçants et d'artisans : une ICÔNE ILLUSTRÉE ET COLORÉE qui montre le métier au premier regard (outil, matière, objet, lieu), le nom en grand, la ligne du métier dessous. Varie l'idée de l'icône et les couleurs d'une proposition à l'autre. « descriptor » : la ligne du métier sous le nom, en français, 1 à 3 mots en capitales (ex. « PLÂTRIER PEINTRE »), ou vide pour un logo sans cette ligne.
+Réponds { "logos": [ { "concept": "…", "brief": "…", "descriptor": "…" }, { "concept": "…", "brief": "…", "descriptor": "…" }, { "concept": "…", "brief": "…", "descriptor": "…" } ] }.`,
       maxTokens: 6000,
     },
-    z.object({ logos: z.array(z.object({ concept: z.string(), brief: z.string(), descriptor: z.string().max(40).optional().catch(undefined) })).min(1).max(2) }),
+    z.object({ logos: z.array(z.object({ concept: z.string(), brief: z.string(), descriptor: z.string().max(40).optional().catch(undefined) })).min(1).max(3) }),
   );
   return r.logos;
 }
@@ -71,7 +71,7 @@ export function fullLogos(projectId: string): Asset[] {
 }
 
 /** Crée deux logos complets (avec une reprise corrigée si le nom est mal écrit). Renvoie les fichiers créés. */
-export async function generateFullLogos(ctx: JobContext | null, projectId: string): Promise<Asset[]> {
+export async function generateFullLogos(ctx: JobContext | null, projectId: string, opts: { autoApply?: boolean } = {}): Promise<Asset[]> {
   const p = loadProject(projectId);
   if (!p.brand) throw new UserFacingError(L("La marque doit exister avant le logo.", "The brand must exist before the logo."));
   if (!llmConfigured() || !imageProviderAvailable()) throw new UserFacingError(L(`Logo complet par IA indisponible : ${imageUnavailableReason() ?? "IA de rédaction non active"}.`, `AI full logo unavailable: ${imageUnavailableReason() ?? "writing AI not active"}.`));
@@ -115,11 +115,17 @@ export async function generateFullLogos(ctx: JobContext | null, projectId: strin
       if (!out.length && i === list.length - 1) throw new UserFacingError(L(`Logo complet par IA impossible : ${(e as Error).message}`, `AI full logo failed: ${(e as Error).message}`));
     }
   }
+  // Pendant la création : le meilleur logo (nom exact, bien noté) devient le logo de la marque, sauf choix du client.
+  if (opts.autoApply && out.length) {
+    const fresh = loadProject(projectId).brand;
+    const best = out.map((a) => ({ a, m: json(a.meta) })).filter((x) => !x.m.qcWarning).sort((x, y) => (y.m.qc?.score ?? 0) - (x.m.qc?.score ?? 0))[0];
+    if (best && fresh && fresh.logo.status !== "validated" && fresh.logo.status !== "provided" && !(fresh.validated ?? []).includes("logo")) await useFullLogo(projectId, best.a.id, { validate: false });
+  }
   return out;
 }
 
 /** Utiliser un logo complet de l'IA : il devient le logo de la marque partout (site, favicon, charte). */
-export async function useFullLogo(projectId: string, assetId: string) {
+export async function useFullLogo(projectId: string, assetId: string, opts: { validate?: boolean } = {}) {
   const p = loadProject(projectId);
   const a = getAsset(assetId);
   if (!p.brand || !a || a.project_id !== projectId || a.role !== "logo-ai-full") throw new UserFacingError(L("Logo introuvable.", "Logo not found."));
@@ -132,7 +138,7 @@ export async function useFullLogo(projectId: string, assetId: string) {
   const light = await saveAsset({ ...base, data: await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer(), name: C("logo-clair.png", "logo-light.png"), mime: "image/png", role: "logo-light", sourceAssetId: main.id });
   // Favicon : le logo centré dans un carré (lisible surtout grâce au symbole).
   const fav = await saveAsset({ ...base, data: await sharp(src).resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer(), name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
-  saveBrand(projectId, { ...p.brand, logo: { ...p.brand.logo, assetId: main.id, concept: `${C("Logo complet dessiné par l'IA", "Full logo drawn by AI")} — ${json(a.meta).concept ?? ""}`, status: "validated", proposal: undefined, proposalId: a.id, route: undefined } });
+  saveBrand(projectId, { ...p.brand, logo: { ...p.brand.logo, assetId: main.id, concept: `${C("Logo complet dessiné par l'IA", "Full logo drawn by AI")} — ${json(a.meta).concept ?? ""}`, status: opts.validate === false ? "proposed" : "validated", proposal: undefined, proposalId: a.id, route: undefined } });
   const { swapThemeLogos } = await import("./identity");
   swapThemeLogos(projectId, { logo: main.id, light: light.id, favicon: fav.id });
   const { saveBrandBook, saveBrandGuide } = await import("./brand");

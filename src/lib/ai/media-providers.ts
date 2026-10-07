@@ -201,8 +201,8 @@ Rules: one solid black shape (or up to three bold black shapes) on a pure white 
 export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: string; descriptor?: string }) {
   const text = `Design a complete, professional logo as a top branding agency would deliver it (logo artwork only, not a mockup): ${input.brief}
 Text in the logo, spelled EXACTLY, same accents: the name "${input.name}"${input.descriptor ? ` and, smaller, the trade line "${input.descriptor}"` : ""}. No other words, no slogan, no fake letters.
-Rich but clean: a clear emblem or symbol tied to the trade can be combined with elegant typography (badge, emblem or horizontal lockup). Crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo background, no frame around the canvas.`;
-  return generateImage(ctx, { text, aspect: "16:9", reference: null, quality: "high", transparent: true });
+Style: modern professional small-business logo, like the best logo sheets for craftsmen, shops and local services — a colorful, illustrated icon that instantly shows the trade (tools, materials, the object, the place; polished vector illustration with a few flat colors and subtle shading), placed above the name or to its left, then the name in bold clean or elegant typography, then the small uppercase trade line in widely spaced letters. Crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo background, no frame around the canvas.`;
+  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true });
 }
 
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */
