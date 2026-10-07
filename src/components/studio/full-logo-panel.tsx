@@ -48,18 +48,18 @@ export function FullLogoPanel({ onApplied }: { onApplied?: () => void }) {
   return (
     <Card className="p-5 sm:p-7">
       <SectionTitle
-        title={t("Logo complet dessiné par l'IA", "Full logo drawn by AI")}
-        action={<Button size="sm" variant="secondary" icon={<Sparkles className="size-4" />} loading={running} onClick={create}>{list?.logos.length ? t("Deux autres logos", "Two more logos") : t("Créer deux logos complets", "Create two full logos")}</Button>}
+        title={t("Logos dessinés par l'IA (icône, nom et métier)", "Logos drawn by AI (icon, name and trade)")}
+        action={<Button size="sm" variant="secondary" icon={<Sparkles className="size-4" />} loading={running} onClick={create}>{list?.logos.length ? t("Trois autres logos", "Three more logos") : t("Créer trois logos complets", "Create three full logos")}</Button>}
       >
         {t("Le directeur artistique décrit votre entreprise en détail, l'IA d'images dessine le logo entier (symbole et nom), puis le nom est vérifié lettre par lettre. Fichier PNG haute définition.", "The art director describes your business in detail, the image AI draws the whole logo (symbol and name), then the name is checked letter by letter. High-resolution PNG file.")}
       </SectionTitle>
       {running && <p className="mb-3 text-sm text-ink-2" role="status">{t("Dessin en cours…", "Drawing…")}</p>}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         {(list?.logos ?? []).map((l) => {
           const on = list?.current === l.id;
           return (
             <figure key={l.id} className="overflow-hidden rounded-2xl border border-line bg-card">
-              <div className="grid aspect-[3/2] place-items-center bg-[repeating-conic-gradient(#f3f3f3_0_25%,#fff_0_50%)] bg-[length:16px_16px] p-4">
+              <div className="grid aspect-square place-items-center bg-[repeating-conic-gradient(#f3f3f3_0_25%,#fff_0_50%)] bg-[length:16px_16px] p-4">
                 <img src={l.url} alt={t("Logo complet", "Full logo")} className="max-h-full max-w-full object-contain" />
               </div>
               <figcaption className="grid gap-2 p-3 text-xs">

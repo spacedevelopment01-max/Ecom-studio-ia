@@ -228,7 +228,19 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return note("cutout.sorted", sum);
     }
     case "analysis": {
-      if (services) return analyzeService(ctx, payload);
+      if (services) {
+        const done = await analyzeService(ctx, payload);
+        // Photos dès maintenant (gratuites) : le site et ses aperçus ne restent pas vides jusqu'aux images.
+        await ctx.step("early-photos", async () => {
+          ctx.progress(0.9, L("Photos du métier (libres de droits)", "Trade photos (royalty-free)"));
+          const { earlyServicePhotos } = await import("./service-media");
+          return earlyServicePhotos(ctx, projectId).catch((e) => {
+            if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+            return 0;
+          });
+        });
+        return done;
+      }
       const cutouts = validCutouts(projectId);
       const colors = cutouts.length ? json<any>(cutouts[0].meta, {}).colors ?? [] : [];
       const link = json<any>(one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'link_import'", projectId)?.value, null);

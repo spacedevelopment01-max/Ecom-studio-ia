@@ -126,6 +126,34 @@ export function coveredSlots(p: Project, slots: PhotoSlot[], reals: Asset[]): Se
   return covered;
 }
 
+/** Emplacements déjà remplis par une image faite pour eux (photo libre ou image IA, non écartée). */
+export function filledSlots(projectId: string): Set<PhotoSlot> {
+  return new Set(all<{ s: string }>("SELECT json_extract(meta, '$.slot') s FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.slot') IS NOT NULL", projectId).map((x) => x.s as PhotoSlot));
+}
+
+/**
+ * Photos dès l'analyse (gratuites) : sujet de vos photos reconnu, puis photos libres de droits du métier pour les
+ * emplacements vides. Le site et ses aperçus ont de vraies photos avant même la validation de la marque.
+ */
+export async function earlyServicePhotos(ctx: JobContext, projectId: string): Promise<number> {
+  const project = loadProject(projectId);
+  const ictx = { userId: project.userId, projectId, jobId: ctx.job.id };
+  await tagRealPhotos(ictx, project).catch((e) => {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    return 0;
+  });
+  const reals = realActivityPhotos(projectId);
+  const covered = coveredSlots(project, stockPhotoSlots(project), reals);
+  const filled = filledSlots(projectId);
+  const open = stockPhotoSlots(project).filter((s) => !covered.has(s) && !filled.has(s)).map((slot) => ({ slot, aspect: (slot === "ad" ? "1:1" : slot.startsWith("service:") ? "4:5" : "16:9") as "16:9" | "4:5" | "1:1" }));
+  const got = await stockFill(ictx, project, open, slug(activityName(project))).catch((e) => {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    console.warn("[photos libres] indisponibles :", (e as Error).message);
+    return [] as { id: string; slot: PhotoSlot }[];
+  });
+  return got.length;
+}
+
 /** Recherches de photos libres de droits pour un sujet de publication (IA légère si active, sinon le métier). */
 async function topicQueries(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, topic: string): Promise<{ lang: "fr" | "en"; queries: string[] }> {
   const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
@@ -694,11 +722,12 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
 
   // 2. Photos libres de droits (gratuites, vraies photos du métier) pour les emplacements sans photo du client.
   const aiCovered = coveredSlots(project, ambianceSlots(project).map((x) => x.slot), reals);
-  const open = ambianceSlots(project).filter((x) => !aiCovered.has(x.slot));
+  const already = filledSlots(projectId);
+  const open = ambianceSlots(project).filter((x) => !aiCovered.has(x.slot) && !already.has(x.slot));
   const stockIds = await ctx.step("svc:stock", async () => {
     ctx.progress(0.15, L("Recherche de photos libres de droits du métier", "Searching royalty-free photos of the trade"));
     const stockCovered = coveredSlots(project, stockPhotoSlots(project), reals);
-    const stockOpen = stockPhotoSlots(project).filter((s) => !stockCovered.has(s)).map((slot) => ({ slot, aspect: (slot === "ad" ? "1:1" : slot.startsWith("service:") ? "4:5" : "16:9") as "16:9" | "4:5" | "1:1" }));
+    const stockOpen = stockPhotoSlots(project).filter((s) => !stockCovered.has(s) && !already.has(s)).map((slot) => ({ slot, aspect: (slot === "ad" ? "1:1" : slot.startsWith("service:") ? "4:5" : "16:9") as "16:9" | "4:5" | "1:1" }));
     return stockFill(ictx, project, stockOpen, base).catch((e) => {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[photos libres] indisponibles :", (e as Error).message);

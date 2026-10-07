@@ -222,7 +222,7 @@ export async function generateLogos(ctx: JobContext | null, projectId: string, o
     routes = previous.map((x) => {
       const r = x.info.route as CreativeRoute;
       if (r.source === "local") return local[r.key].find((c) => c.markKind === r.markKind) ?? local[r.key][0] ?? r;
-      return r.roles ? { ...r, colors: roleColors(brand.palette, r.roles.ink, r.roles.accent, r.roles.ground, r.roles.tint) } : r;
+      return r.roles ? { ...r, colors: roleColors(r.palette ?? brand.palette, r.roles.ink, r.roles.accent, r.roles.ground, r.roles.tint) } : r;
     });
   } else {
     ctx?.progress(0.55, L("Pistes créatives du logo", "Logo creative routes"));
@@ -285,7 +285,7 @@ export async function recolorChosenRoute(projectId: string, oldPalette: BrandPal
   if (!roles) return false;
   // Palette saisie telle qu'affichée : les rôles de la piste pointent sur les cases que le client a réglées.
   const finalRoles = opts.exact ? exactRoles({ palette: oldPalette, logo: { ...brand.logo, route: { ...chosen, roles } } as NonNullable<typeof brand>["logo"] }, roles) : roles;
-  const recolored: CreativeRoute = { ...route, roles: finalRoles, colors: roleColors(brand.palette, finalRoles.ink, finalRoles.accent, finalRoles.ground, finalRoles.tint) };
+  const recolored: CreativeRoute = { ...route, palette: brand.palette, roles: finalRoles, colors: roleColors(brand.palette, finalRoles.ink, finalRoles.accent, finalRoles.ground, finalRoles.tint) };
   const full = routeLogoSpec(recolored, brand);
   const { color, accent, ...spec } = full;
   const pr: LogoProposal = { key: row.info.key, label: row.info.label ?? recolored.name, concept: row.info.concept ?? recolored.why, spec: { ...spec, accent }, colors: { color, accent: accent ?? color }, route: recolored };
@@ -339,7 +339,9 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   const fav = await saveAsset({ ...base, data: set.faviconPng, name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
   const r = pr.route;
   const route = r ? { key: r.key, name: r.name, heading: r.heading, headingWeight: r.headingWeight, body: r.body, colors: r.colors, roles: r.roles, source: r.source } : undefined;
-  saveBrand(projectId, { ...brand, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, proposalId: pr.id, route } });
+  // Piste avec sa propre palette : elle devient la palette de la marque (sauf palette validée par le client).
+  const palette = r?.palette && !(brand.validated ?? []).includes("palette") ? r.palette : brand.palette;
+  saveBrand(projectId, { ...brand, palette, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, proposalId: pr.id, route } });
   // Site de services : bannières sans photo redessinées aux couleurs de la piste (sans IA), reprises par le site.
   const { refreshSiteBanners } = await import("./service-media");
   const banners = await refreshSiteBanners(projectId).catch((e) => (console.error(`[bannières] ${projectId} : ${(e as Error).message}`), []));

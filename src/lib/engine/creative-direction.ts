@@ -12,7 +12,7 @@
  * logotype soigné — présentés comme tels, sans prétendre à une création par IA.
  */
 import type { BrandPalette } from "../theme/directions";
-import { contrast } from "../color";
+import { contrast, hsl, hslToHex } from "../color";
 import { CANVAS_FONTS } from "../media/fonts";
 import { fitSymbol, sanitizeSymbolSvg, silhouetteSymbol, symbolLegibility, type CustomSymbol } from "../media/logo-symbol";
 import { buildMonogram, monogramLetter, type MonogramFrame } from "../media/monogram";
@@ -133,6 +133,30 @@ const pair = (h: string) => FONT_PAIRS.find((p) => p.heading === h)!;
 /** Couleurs d'une piste et rôles d'origine (pour suivre un changement de palette). */
 export function colorsOf(pal: BrandPalette, ink: PaletteRole, accent: PaletteRole, ground: PaletteRole, tint: PaletteRole = "secondary") {
   return { colors: roleColors(pal, ink, accent, ground, tint), roles: { ink, accent, ground, tint } };
+}
+
+/**
+ * Palette d'une autre piste : même structure que celle de la marque (principale, secondaire douce, accent, fond clair,
+ * texte sombre), autre dominante (teinte tournée), pour que chaque piste ait son propre code couleur.
+ */
+export function paletteVariant(pal: BrandPalette, i: number): BrandPalette {
+  if (!i) return pal;
+  const shift = [0, 150, 215, 70][i % 4];
+  const rot = (hex: string) => {
+    const [h, s, l] = hsl(hex);
+    return hslToHex(h + shift, Math.max(s, 0.4), Math.min(Math.max(l, 0.28), 0.55));
+  };
+  const primary = rot(pal.primary);
+  const accent = rot(pal.accent);
+  const [ph, ps] = hsl(primary);
+  return { primary, secondary: hslToHex(ph, Math.min(0.35, ps), 0.86), accent, light: hslToHex(ph, 0.25, 0.965), dark: hslToHex(ph, 0.3, 0.1) };
+}
+
+const HEX = /^#[0-9a-f]{6}$/i;
+/** Palette proposée par l'IA pour une piste (cinq codes valides), ou null. */
+export function draftPalette(p: unknown): BrandPalette | null {
+  const x = p as Partial<BrandPalette> | null;
+  return x && (["primary", "secondary", "accent", "light", "dark"] as const).every((k) => HEX.test(String(x[k] ?? ""))) ? ({ primary: x.primary!, secondary: x.secondary!, accent: x.accent!, light: x.light!, dark: x.dark! } as BrandPalette) : null;
 }
 
 /** Couleurs d'une piste à partir des rôles de la palette de la marque (la boutique reste cohérente). */
@@ -364,7 +388,10 @@ export function routeFromDraft(d: RouteDraft, brand: BrandInput): { ok: true; ro
   const ink = role(d.ink, "dark");
   const accent = role(d.accent, "accent");
   const ground = role(d.ground, "light");
-  const accentHex = brand.palette[accent];
+  // Palette propre à la piste quand l'IA en propose une (sinon celle de la marque, variée plus loin).
+  const own = draftPalette((d as { palette?: unknown }).palette);
+  const pal = own ?? brand.palette;
+  const accentHex = pal[accent];
   const clean = sanitizeSymbolSvg(d.svg, { accent: accentHex, maxShapes: typo ? 5 : 3 });
   if (!clean.ok) return no(`SVG refusé par la validation : ${clean.reason}`);
   const mark: CustomSymbol = fitSymbol(clean.symbol, 0.04);
@@ -391,7 +418,8 @@ export function routeFromDraft(d: RouteDraft, brand: BrandInput): { ok: true; ro
       composition,
       // Logotype seul d'une piste typographique dont le monogramme a un détail d'accent : le nom reprend ce détail (point final).
       dot: typo && composition === "wordmark" && mark.shapes.some((x) => x.tone === "accent"),
-      ...colorsOf(brand.palette, ink, accent, ground, ground === "secondary" ? "light" : "secondary"),
+      ...colorsOf(pal, ink, accent, ground, ground === "secondary" ? "light" : "secondary"),
+      ...(own ? { palette: own } : {}),
       notes: fixes.length ? [`Corrigé automatiquement : ${fixes.join(", ")}.`] : [],
     },
   };
@@ -498,5 +526,16 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
   if (!out.length) {
     out.push({ ...fallback.typo[0], notes: [...fallback.typo[0].notes, L("Seule proposition restante après contrôle.", "Only proposal left after review.")] });
   }
-  return { routes: out, notes: [...notes, ...fallback.produit.flatMap((r) => r.notes)], ai: aiState };
+  // Chaque piste a son propre code couleur : la première garde la palette de la marque, les autres une palette de
+  // l'IA ou une variante d'une autre dominante (choisie, la palette de la piste devient celle de la marque).
+  const used: number[] = [];
+  const colored = out.map((r, i) => {
+    let pal = r.palette ?? paletteVariant(brand.palette, i);
+    const hue = hsl(pal.accent)[0];
+    if (used.some((u) => Math.min(Math.abs(u - hue), 360 - Math.abs(u - hue)) < 35)) pal = paletteVariant(brand.palette, i + 1);
+    used.push(hsl(pal.accent)[0]);
+    const roles = r.roles;
+    return roles ? { ...r, palette: pal, colors: roleColors(pal, roles.ink, roles.accent, roles.ground, roles.tint) } : { ...r, palette: pal };
+  });
+  return { routes: colored, notes: [...notes, ...fallback.produit.flatMap((r) => r.notes)], ai: aiState };
 }

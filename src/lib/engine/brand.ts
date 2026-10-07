@@ -85,7 +85,7 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
     const { llmConfigured } = await import("../ai/llm");
     if (llmConfigured() && imageProviderAvailable()) {
       const { enqueue } = await import("../jobs");
-      enqueue({ userId: p.userId, projectId, type: "brand.fulllogo", label: L("Logos complets dessinés par l'IA", "Full logos drawn by AI"), payload: { projectId }, parentId: ctx.job.id, idempotencyKey: `full-logo:${ctx.job.id}` });
+      enqueue({ userId: p.userId, projectId, type: "brand.fulllogo", label: L("Logos dessinés par l'IA", "Logos drawn by AI"), payload: { projectId }, parentId: ctx.job.id, idempotencyKey: `full-logo:${ctx.job.id}` });
     }
   }
   await saveBrandGuide(projectId);

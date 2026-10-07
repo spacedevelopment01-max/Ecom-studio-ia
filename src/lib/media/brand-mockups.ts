@@ -55,6 +55,8 @@ export type CreativeRoute = {
   colors: RouteColors;
   /** Rôles de la palette de la marque d'où viennent les couleurs. */
   roles?: { ink: PaletteRole; accent: PaletteRole; ground: PaletteRole; tint: PaletteRole };
+  /** Palette propre à la piste (chaque piste a sa dominante) ; choisie, elle devient celle de la marque. */
+  palette?: { primary: string; secondary: string; accent: string; light: string; dark: string };
   review?: RouteReview | null;
   notes: string[];
 };
