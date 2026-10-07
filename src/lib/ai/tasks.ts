@@ -1071,6 +1071,9 @@ Réponds { "intent": "…", "set": "…", "surface": "…", "props": ["…"], "l
       break;
     }
     attempts++;
+    // Excès de forme corrigés par le code avant la grille (pas de reprise payée pour ça) : 3 accessoires, 170 mots.
+    const words = (draft.prompt ?? "").split(/\s+/);
+    draft = { ...draft, props: (draft.props ?? []).slice(0, 3), prompt: words.length > 170 ? words.slice(0, 170).join(" ").replace(/[,;:]$/, "") + "." : draft.prompt };
     const review = critiqueImageBrief(draft, line, { lifestyle });
     if (!best || review.score > best.review.score) best = { draft, review };
     if (best.review.score >= BRIEF_MIN_SCORE) break;

@@ -263,10 +263,23 @@ describe("boucles de contrôle avec une IA simulée", () => {
     expect(lintClaims(r.copy, p)).toEqual([]);
   });
 
-  it("marque : une proposition au nom déjà pris est reprise une fois avec les corrections", async () => {
+  it("marque : nom déjà pris mais alternative libre → aucune nouvelle demande payée, l'alternative est retenue", async () => {
+    const { aiBrandChecked, finalizeBrand } = await import("@/lib/engine/brand-check");
+    const p = sova();
+    const brand = (name: string, tagline: string, alternatives: string[]) => ({ name, nameStatus: "proposed", alternatives, tagline, positioning: "Pour les parents.", audience: "Parents", personality: [], tone: { voice: "", do: [], dont: [] }, palette: { primary: "#8A2E43", secondary: "#E2CAD0", accent: "#C9775E", light: "#F7F2F3", dark: "#1F1417" }, fonts: { heading: "x", body: "y" }, direction: "pop", directionReason: "", logo: { concept: "", family: "Jost", weight: 700, italic: false, case: "upper", tracking: 0.1, layout: "wordmark", emblem: "none" }, story: "", values: [], strategy: { audience: [], angles: [], pillars: [], keyMessages: [] } });
+    llm.calls = 0;
+    llm.replies = [brand("Kinder", "Des nuits apaisées, garanties.", ["Luciole"])];
+    const r = await runWithLang({ content: "fr", ui: "fr" }, () => aiBrandChecked({ userId: "u", projectId: "p", usageKey: "k" }, p));
+    expect(llm.calls).toBe(1);
+    const f = runWithLang({ content: "fr", ui: "fr" }, () => finalizeBrand(r as any, null, p));
+    expect(f.brand.name).toBe("Luciole");
+    expect(lintClaims({ t: f.brand.tagline }, p)).toEqual([]);
+  });
+
+  it("marque : nom déjà pris sans alternative libre → reprise une fois avec les corrections", async () => {
     const { aiBrandChecked } = await import("@/lib/engine/brand-check");
     const p = sova();
-    const brand = (name: string, tagline: string) => ({ name, nameStatus: "proposed", alternatives: ["Luciole"], tagline, positioning: "Pour les parents.", audience: "Parents", personality: [], tone: { voice: "", do: [], dont: [] }, palette: { primary: "#8A2E43", secondary: "#E2CAD0", accent: "#C9775E", light: "#F7F2F3", dark: "#1F1417" }, fonts: { heading: "x", body: "y" }, direction: "pop", directionReason: "", logo: { concept: "", family: "Jost", weight: 1200, italic: false, case: "upper", tracking: 0.9, layout: "wordmark", emblem: "none" }, story: "", values: [], strategy: { audience: [], angles: [], pillars: [], keyMessages: [] } });
+    const brand = (name: string, tagline: string) => ({ name, nameStatus: "proposed", alternatives: ["Nike"], tagline, positioning: "Pour les parents.", audience: "Parents", personality: [], tone: { voice: "", do: [], dont: [] }, palette: { primary: "#8A2E43", secondary: "#E2CAD0", accent: "#C9775E", light: "#F7F2F3", dark: "#1F1417" }, fonts: { heading: "x", body: "y" }, direction: "pop", directionReason: "", logo: { concept: "", family: "Jost", weight: 1200, italic: false, case: "upper", tracking: 0.9, layout: "wordmark", emblem: "none" }, story: "", values: [], strategy: { audience: [], angles: [], pillars: [], keyMessages: [] } });
     llm.calls = 0;
     llm.replies = [brand("Kinder", "Des nuits apaisées, garanties."), brand("Ourson", "Le compagnon rose aux oreilles.")];
     const r = await runWithLang({ content: "fr", ui: "fr" }, () => aiBrandChecked({ userId: "u", projectId: "p", usageKey: "k" }, p));

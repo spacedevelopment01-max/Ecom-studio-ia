@@ -11,7 +11,7 @@ import type { SocialVoice } from "../project-types";
 import { renderSocialKit, socialKitSheet, highlightThemes, HIGHLIGHT_LABEL } from "../media/social-kit";
 import type { CreativeRoute } from "../media/brand-mockups";
 import { placeholder } from "../ai/prompts";
-import { aiSocialVoice, lintClaims, lintHollow } from "../ai/tasks";
+import { aiSocialVoice, lintClaims, lintHollow, scrubClaims } from "../ai/tasks";
 import { GENERIC_PILLAR, voiceIssues } from "./social-quality";
 import { llmConfigured } from "../ai/llm";
 import { validCutouts } from "./cutouts";
@@ -73,6 +73,14 @@ export function localSocialVoice(p: Project): SocialVoice {
   };
 }
 
+/** Coupe un texte sur un mot (fin de phrase si possible), sans ponctuation pendante. */
+const clipWords = (t: string, max: number) => {
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+  return end > max * 0.6 ? cut.slice(0, end + 1) : cut.replace(/\s+\S*$/, "").replace(/[\s,;:–—-]+$/, "");
+};
+
 /** Problèmes d'un texte du kit : allégation non confirmée ou formule creuse. */
 const textIssues = (p: Project, t: string) => [...lintClaims({ t }, p).map((c) => c.term), ...lintHollow({ t }).map((h) => h.term)];
 
@@ -85,24 +93,28 @@ export function checkSocialVoice(v: Omit<SocialVoice, "generatedBy">, p: Project
   const fixed: string[] = [];
   const pillars = [0, 1, 2].map((i) => {
     const x = v.pillars[i];
-    if (!x?.title?.trim() || x.title.length > 60) return local.pillars[i];
-    const bad = textIssues(p, `${x.title}. ${x.idea}`);
-    if (bad.length) {
-      fixed.push(`pilier ${i + 1} : ${bad.join(", ")}`);
+    if (!x?.title?.trim()) return local.pillars[i];
+    // Texte de l'IA gardé : titre trop long raccourci, allégation retirée par le code (pas de remplacement payé perdu).
+    const title = clipWords(x.title, 60);
+    const claims = lintClaims({ t: `${title}. ${x.idea}` }, p).map((c) => c.term);
+    if (lintHollow({ t: title }).length) {
+      fixed.push(`pilier ${i + 1} : formule creuse`);
       return local.pillars[i];
     }
-    return x;
+    if (claims.length) fixed.push(`pilier ${i + 1} : ${claims.join(", ")} retiré`);
+    return claims.length ? { ...x, title: scrubClaims({ t: title }, p).content.t, idea: scrubClaims({ t: x.idea }, p).content.t } : { ...x, title };
   });
   const stripEmoji = (s: string) => s.replace(/\p{Extended_Pictographic}️?/gu, "").replace(/ {2,}/g, " ").trim();
   const captions = [0, 1, 2].map((i) => {
     const x = v.captions[i];
-    if (!x?.text?.trim() || x.text.length > 600) return local.captions[i];
-    const bad = textIssues(p, x.text);
-    if (bad.length) {
-      fixed.push(`légende ${i + 1} : ${bad.join(", ")}`);
-      return local.captions[i];
+    if (!x?.text?.trim()) return local.captions[i];
+    let text = x.text.length > 600 ? clipWords(x.text, 600) : x.text;
+    const claims = lintClaims({ t: text }, p).map((c) => c.term);
+    if (claims.length) {
+      fixed.push(`légende ${i + 1} : ${claims.join(", ")} retiré`);
+      text = scrubClaims({ t: text }, p).content.t;
     }
-    return { pillar: pillars[i].title, text: v.emoji === "none" ? stripEmoji(x.text) : x.text };
+    return { pillar: pillars[i].title, text: v.emoji === "none" ? stripEmoji(text) : text };
   });
   const clean = (xs: string[], fb: string[]) => {
     const ok = xs.map((s) => s.trim()).filter((s) => s && s.length <= 160);
