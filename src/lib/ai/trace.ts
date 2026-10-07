@@ -65,6 +65,10 @@ export type CallRow = {
   promptHash?: string | null;
   callTry?: number;
   qualityCheckId?: string | null;
+  /** Project Brain : portée (ex. « legacy:images »), empreinte du contexte stable et version du Brain. */
+  brainScope?: string | null;
+  brainHash?: string | null;
+  brainVersion?: string | null;
 };
 
 /**
@@ -76,8 +80,8 @@ export function recordCall(c: CallRow): string | null {
   const rid = id();
   try {
     run(
-      `INSERT INTO ai_calls (id, created_at, user_id, project_id, job_id, task, step, candidate_id, attempt, call_try, provider, requested_model, served_model, unit, input_tokens, cache_read_tokens, cache_write_tokens, output_tokens, quantity, latency_ms, http_attempts, stop_reason, effort, cost, estimated, usage_key, usage_event_id, billing_dedup, status, error_kind, prompt_key, prompt_hash, quality_check_id)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO ai_calls (id, created_at, user_id, project_id, job_id, task, step, candidate_id, attempt, call_try, provider, requested_model, served_model, unit, input_tokens, cache_read_tokens, cache_write_tokens, output_tokens, quantity, latency_ms, http_attempts, stop_reason, effort, cost, estimated, usage_key, usage_event_id, billing_dedup, status, error_kind, prompt_key, prompt_hash, quality_check_id, brain_scope, brain_hash, brain_version)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       rid,
       now(),
       c.userId,
@@ -111,6 +115,9 @@ export function recordCall(c: CallRow): string | null {
       c.promptKey ?? null,
       c.promptHash ?? null,
       c.qualityCheckId ?? null,
+      c.brainScope ?? null,
+      c.brainHash ?? null,
+      c.brainVersion ?? null,
     );
     return rid;
   } catch (e) {

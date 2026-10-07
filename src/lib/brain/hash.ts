@@ -5,7 +5,7 @@
 import crypto from "node:crypto";
 
 /** À incrémenter quand la composition des vues change (invalide les empreintes et donc le cache). */
-export const BRAIN_VERSION = "2.0.0";
+export const BRAIN_VERSION = "2.1.0";
 
 /** JSON canonique : clés d'objets triées, pour une empreinte indépendante de l'ordre d'écriture. */
 export function canonicalJSON(v: unknown): string {

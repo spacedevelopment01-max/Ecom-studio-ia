@@ -10,7 +10,10 @@
  * critique retiré est signalé explicitement). Le contexte VOLATIL (créations récentes) est séparé du contexte stable.
  */
 import type { Project } from "../projects";
-import { sectorLabel } from "../project-types";
+import { contactModesOf, sectorLabel } from "../project-types";
+import { contentLang } from "../i18n-server";
+import { placeholder } from "../ai/prompts";
+import { servicesRulesText } from "./texts";
 import { BRAIN_VERSION, stableHash } from "./hash";
 import type { BrainSnapshot } from "./snapshot";
 
@@ -50,8 +53,13 @@ export const BUDGETS: Record<Scope, { soft: number; hard: number }> = {
   all: { soft: 12000, hard: 30000 },
 };
 
+/** Scopes qui reçoivent les créations récentes (hors contexte stable). */
+export const VOLATILE_SCOPES: readonly Scope[] = ["image", "theme", "social", "all"];
+
 export type ContextView = {
   scope: Scope;
+  /** Nom effectif (scope pur, ou vue de compatibilité « legacy:<scope> »). */
+  label: string;
   brainVersion: string;
   hash: string;
   stable: string;
@@ -106,6 +114,8 @@ const CODE_LABEL: Record<string, string> = {
 };
 const codeLabel = (c: string) => CODE_LABEL[c] ?? c.replace(/_/g, " ");
 
+const MODE_LABEL: Record<string, string> = { booking: "rendez-vous en ligne (lien de réservation)", quote: "demande de devis", call: "appel téléphonique", form: "formulaire de contact" };
+
 const clip = (s: string | undefined | null, n: number) => {
   const t = (s ?? "").trim();
   return t.length > n ? `${t.slice(0, n - 1)}…` : t;
@@ -116,6 +126,8 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
   const p: Project = s.project;
   const pr = p.product;
   const services = p.business === "services";
+  // Espace réservé dans la langue des contenus (« [À compléter : …] » / « [To complete: …] »), comme le contexte actuel.
+  const ph = placeholder(contentLang());
   const items: BrainItem[] = [];
   const add = (it: Omit<BrainItem, "stable" | "critical"> & { stable?: boolean; critical?: boolean }) => items.push({ stable: true, critical: false, ...it });
 
@@ -157,7 +169,7 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
   const inferred = pr.facts.filter((f) => f.status === "inferred").slice(0, 20);
   const unknown = pr.facts.filter((f) => f.status === "unknown").slice(0, 20);
   for (const f of confirmed) add({ id: `fact.${f.key}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "brand", "all"], source: "project", text: `Fait CONFIRMÉ — ${f.label} : ${clip(f.value, 300)}`, data: { k: f.key, v: f.value, s: f.status } });
-  for (const f of unknown) add({ id: `unknown.${f.key}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "all"], source: "project", text: `INCONNU — ${f.label} : ne jamais l'inventer (« [À compléter : …] »).`, data: { k: f.key, s: f.status } });
+  for (const f of unknown) add({ id: `unknown.${f.key}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "all"], source: "project", text: `INCONNU — ${f.label} : ne jamais l'inventer (écrire « ${ph} » si un texte en a besoin).`, data: { k: f.key, s: f.status } });
   for (const f of inferred) add({ id: `inferred.${f.key}`, section: "facts", level: "advisory", tier: 6, scopes: [...TEXT, "image", "all"], source: "project", text: `Observation (à formuler avec prudence, jamais comme une promesse) — ${f.label} : ${clip(f.value, 200)}`, data: { k: f.key, v: f.value, s: f.status } });
   for (const q of pr.questions.filter((x) => x.answer).slice(0, 12)) add({ id: `answer.${q.id}`, section: "facts", level: "hard", tier: 3, critical: true, scopes: [...TEXT, "brand", "all"], source: "project", text: `Réponse du client — ${clip(q.question, 160)} → ${clip(q.answer, 300)}`, data: { q: q.id, a: q.answer } });
   if (pr.claimsToAvoid.length) add({ id: "claims.avoid", section: "facts", level: "hard", tier: 4, critical: true, scopes: [...TEXT, "image", "all"], source: "project", text: `Allégations interdites : ${pr.claimsToAvoid.join(" ; ")}`, data: pr.claimsToAvoid });
@@ -165,12 +177,13 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
     add({ id: "product.price", section: "offer", level: "hard", tier: 3, critical: true, scopes: ["theme", "shop_copy", "advertising", "qc", "seo", "all"], source: "project", text: pr.price.amount !== null ? `Prix confirmé : ${(pr.price.amount / 100).toFixed(2)} ${pr.price.currency}` : "Prix : inconnu (ne jamais en inventer).", data: pr.price });
     if (pr.variants.length) add({ id: "product.variants", section: "offer", level: "hard", tier: 3, scopes: ["theme", "shop_copy", "advertising", "image", "all"], source: "project", text: `Variantes : ${pr.variants.map((v) => `${v.name} (${v.values.join(", ")})`).join(" ; ")}`, data: pr.variants });
     if (pr.visual.colors.length || pr.visual.description || pr.visual.shape)
-      add({ id: "product.visual", section: "offer", level: "soft", tier: 6, scopes: ["image", "logo", "brand", "video", "advertising", "all"], source: "project", text: `Aspect du produit : ${[pr.visual.shape, clip(pr.visual.description, 300), pr.visual.colors.map((c) => `${c.hex} ${c.name}`).join(", ")].filter(Boolean).join(" · ")}`, data: pr.visual });
+      add({ id: "product.visual", section: "offer", level: "soft", tier: 6, scopes: ["image", "logo", "brand", "video", "advertising", "all"], source: "project", text: `Aspect du produit : ${[pr.visual.shape, clip(pr.visual.description, 300), pr.visual.colors.length ? `couleurs mesurées ${pr.visual.colors.map((c) => `${c.hex} ${c.name} ${Math.round(c.share * 100)} %`).join(", ")}` : ""].filter(Boolean).join(" · ")}`, data: pr.visual });
+    if (pr.visual.labelText?.length) add({ id: "product.label", section: "offer", level: "hard", tier: 4, scopes: ["image", "theme", "shop_copy", "advertising", "video", "qc", "all"], source: "project", text: `Texte lisible sur le produit : ${pr.visual.labelText.join(" | ")}`, data: pr.visual.labelText });
     if (p.catalog.length > 1) add({ id: "product.catalog", section: "offer", level: "soft", tier: 4, scopes: ["theme", "shop_copy", "advertising", "seo", "all"], source: "project", text: `Catalogue (${p.catalog.length} produits) : ${p.catalog.slice(0, 8).map((c) => c.name).join(" ; ")}`, data: p.catalog.map((c) => [c.key, c.name, c.price]) });
   } else {
     const sv = p.services;
     const list = (sv.services ?? []).filter((x) => x.name.trim());
-    add({ id: "services.offer", section: "offer", level: "soft", tier: 3, critical: true, scopes: [...TEXT, "brand", "stock", "image", "all"], source: "project", text: list.length ? `Prestations : ${list.slice(0, 12).map((x) => `${x.name}${x.description?.trim() ? ` (${clip(x.description, 120)})` : ""}${x.price?.trim() ? ` · ${x.price.trim()}` : ""}${x.duration?.trim() ? ` · ${x.duration.trim()}` : ""}`).join(" ; ")}` : "Prestations : aucune liste fournie (ne pas en inventer).", data: list });
+    add({ id: "services.offer", section: "offer", level: "soft", tier: 3, critical: true, scopes: [...TEXT, "brand", "stock", "image", "all"], source: "project", text: list.length ? `Prestations (saisies par le client) : ${list.slice(0, 12).map((x) => `${x.name}${x.description?.trim() ? ` (${clip(x.description, 120)})` : ""}${x.duration?.trim() ? ` · durée : ${x.duration.trim()}` : ""} · tarif : ${x.price?.trim() || "non communiqué"}`).join(" ; ")}` : `Prestations : aucune liste fournie (ne pas en inventer ; écrire « ${ph} »).`, data: list });
     if (sv.area?.trim()) add({ id: "services.area", section: "offer", level: "soft", tier: 4, scopes: [...TEXT, "stock", "all"], source: "project", text: `Zone d'intervention : ${clip(sv.area, 200)}`, data: sv.area });
     add({
       id: "services.contact",
@@ -180,10 +193,10 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
       critical: true,
       scopes: [...CONTACT, "all"],
       source: "project",
-      text: `Contact — mode principal : ${sv.contactMode} · adresse : ${sv.address?.trim() || "inconnue"} · horaires : ${sv.hours?.trim() || "inconnus"} · téléphone : ${sv.phone?.trim() || "inconnu"} · e-mail : ${sv.email?.trim() || "inconnu"} · rendez-vous : ${sv.bookingUrl?.trim() || "aucun lien"}`,
-      data: { m: sv.contactMode, a: sv.address, h: sv.hours, p: sv.phone, e: sv.email, b: sv.bookingUrl },
+      text: `Contact — mode principal : ${MODE_LABEL[sv.contactMode] ?? sv.contactMode}${contactModesOf(sv).length > 1 ? ` (aussi accepté : ${contactModesOf(sv).slice(1).map((m) => MODE_LABEL[m] ?? m).join(", ")})` : ""} · adresse : ${sv.address?.trim() || `inconnue (« ${ph} »)`} · horaires : ${sv.hours?.trim() || `inconnus (« ${ph} »)`} · téléphone : ${sv.phone?.trim() || `inconnu (« ${ph} »)`} · e-mail : ${sv.email?.trim() || `inconnu (« ${ph} »)`} · rendez-vous en ligne : ${sv.bookingUrl?.trim() || "aucun lien"}`,
+      data: { m: contactModesOf(sv), a: sv.address, h: sv.hours, p: sv.phone, e: sv.email, b: sv.bookingUrl },
     });
-    add({ id: "services.rules", section: "rules", level: "hard", tier: 4, critical: true, scopes: [...TEXT, "all"], source: "project", text: "Règles des services : vocabulaire de prestations (jamais panier, livraison, stock) ; ne jamais inventer tarif, délai, disponibilité, diplôme, certification, assurance, années d'expérience, nombre de clients, avis ou résultat garanti.", data: "services.rules.v1" });
+    add({ id: "services.rules", section: "rules", level: "hard", tier: 4, critical: true, scopes: [...TEXT, "all"], source: "project", text: `Règles des services — ${servicesRulesText(ph)}`, data: "services.rules.v2" });
   }
 
   // ------------------------------------------------------------------ marque
@@ -234,9 +247,14 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
       const ok = pf.proofs.filter((x) => x.status === "available" && x.claim);
       if (missing.length) add({ id: "strategy.unproven", section: "rules", level: "hard", tier: 4, critical: true, scopes: [...TEXT, "all"], source: "strategy", text: `Arguments SANS PREUVE (ne jamais les affirmer) : ${missing.map((x) => x.claim).join(" ; ")}`, data: missing.map((x) => x.claim) });
       if (ok.length) add({ id: "strategy.proofs", section: "strategy", level: "soft", tier: 5, scopes: ["theme", "shop_copy", "blog", "advertising", "qc", "all"], source: "strategy", text: `Preuves disponibles : ${ok.map((x) => `${x.claim} (${x.proof})`).join(" ; ")}`, data: ok });
-      if (pf.persona || pf.difference) add({ id: "strategy.platform", section: "strategy", level: "soft", tier: 6, scopes: ["brand", "theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Persona : ${clip(pf.persona, 200)} · différence : ${clip(pf.difference, 200)}`, data: { p: pf.persona, d: pf.difference } });
+      if (pf.persona || pf.difference || pf.problem || pf.alternatives)
+        add({ id: "strategy.platform", section: "strategy", level: "soft", tier: 6, scopes: ["brand", "theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Plateforme de marque — ${[pf.persona && `persona : ${clip(pf.persona, 200)}`, pf.problem && `problème : ${clip(pf.problem, 200)}`, pf.alternatives && `alternatives et codes de la concurrence (à éviter) : ${clip(pf.alternatives, 200)}`, pf.difference && `différence : ${clip(pf.difference, 200)}`].filter(Boolean).join(" · ")}`, data: { p: pf.persona, pb: pf.problem, a: pf.alternatives, d: pf.difference } });
       const obj = pf.objections.filter((o) => o.objection);
-      if (obj.length) add({ id: "strategy.objections", section: "strategy", level: "soft", tier: 6, scopes: ["theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Objections : ${obj.map((o) => `${o.objection} → ${o.answer || "[À compléter]"}`).join(" ; ")}`, data: obj });
+      if (obj.length) add({ id: "strategy.objections", section: "strategy", level: "soft", tier: 6, scopes: ["theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Objections et réponses (FAQ, fiche) : ${obj.map((o) => `${o.objection} → ${o.answer || ph}`).join(" ; ")}`, data: obj });
+    }
+    const audienceObjections = st.audience.flatMap((a) => a.objections ?? []).filter(Boolean);
+    if (audienceObjections.length && !pf?.objections.length) {
+      add({ id: "strategy.objections", section: "strategy", level: "soft", tier: 6, scopes: ["theme", "shop_copy", "blog", "advertising", "all"], source: "strategy", text: `Objections de la cible : ${audienceObjections.join(" ; ")}`, data: audienceObjections });
     }
   }
 
@@ -289,9 +307,22 @@ const HEADERS: Record<Level, string> = {
 const inScope = (it: BrainItem, scope: Scope) => scope === "all" || it.scopes === "*" || it.scopes.includes(scope);
 
 /** Vue ciblée d'un scope : contexte stable (budgété, empreinte), contexte volatil séparé, diagnostic. */
-export function contextFor(s: BrainSnapshot, scope: Scope, opts: { budget?: { soft: number; hard: number } } = {}): ContextView {
+export function contextFor(
+  s: BrainSnapshot,
+  scope: Scope,
+  opts: {
+    budget?: { soft: number; hard: number };
+    /** Éléments ajoutés au scope (façade de compatibilité : ce que l'ancien contexte transmettait toujours). */
+    extra?: (it: BrainItem) => boolean;
+    /** Nom du scope dans l'empreinte et la balise (ex. « legacy:images ») quand la vue n'est pas le scope pur. */
+    label?: string;
+    /** Scopes qui reçoivent les créations récentes (contexte volatil). */
+    volatileFor?: readonly string[];
+  } = {},
+): ContextView {
   const budget = opts.budget ?? BUDGETS[scope];
-  const candidates = brainItems(s).filter((it) => inScope(it, scope));
+  const label = opts.label ?? scope;
+  const candidates = brainItems(s).filter((it) => inScope(it, scope) || !!opts.extra?.(it));
   const order = (a: BrainItem, b: BrainItem) => a.tier - b.tier || Number(b.critical) - Number(a.critical);
   const sorted = [...candidates].sort(order);
 
@@ -320,7 +351,7 @@ export function contextFor(s: BrainSnapshot, scope: Scope, opts: { budget?: { so
     (v.critical ? criticalDropped : dropped).push(v.id);
   }
 
-  const body: string[] = [`<contexte_projet scope="${scope}">`];
+  const body: string[] = [`<contexte_projet scope="${label}">`];
   for (const lvl of ["hard", "soft", "advisory"] as Level[]) {
     const group = kept.filter((x) => x.level === lvl).sort(order);
     if (group.length) body.push(HEADERS[lvl], ...group.map((x) => `- ${x.text}`));
@@ -330,7 +361,7 @@ export function contextFor(s: BrainSnapshot, scope: Scope, opts: { budget?: { so
 
   // Empreinte : données des éléments stables du scope (avant budget), hors constats automatiques.
   const hashData = candidates.filter((x) => x.stable).map((x) => [x.id, x.level, x.data]).sort((a, b) => String(a[0]).localeCompare(String(b[0])));
-  const volatile = ["image", "theme", "social", "all"].includes(scope) && s.recentAssets.length ? `<creations_recentes>\n${s.recentAssets.map((a) => `- ${a.kind}/${a.role ?? "?"} : ${a.name} (${a.status}${a.gate_verdict ? `, ${a.gate_verdict}` : ""})`).join("\n")}\n</creations_recentes>` : "";
+  const volatile = (opts.volatileFor ?? VOLATILE_SCOPES).includes(scope) && s.recentAssets.length ? `<creations_recentes>\n${s.recentAssets.map((a) => `- ${a.kind}/${a.role ?? "?"} : ${a.name} (${a.status}${a.gate_verdict ? `, ${a.gate_verdict}` : ""})`).join("\n")}\n</creations_recentes>` : "";
 
   const levels = { hard: 0, soft: 0, advisory: 0 } as Record<Level, number>;
   const sources: Record<string, number> = {};
@@ -340,8 +371,9 @@ export function contextFor(s: BrainSnapshot, scope: Scope, opts: { budget?: { so
   }
   return {
     scope,
+    label,
     brainVersion: BRAIN_VERSION,
-    hash: stableHash(scope, hashData),
+    hash: stableHash(label, hashData),
     stable,
     volatile,
     chars: stable.length,

@@ -65,6 +65,8 @@ table("Par étape", d.byStep);
 table("Par tâche IA", d.byTask);
 table("Par fournisseur / modèle demandé", d.byProviderModel);
 table("Par modèle réellement servi", d.byServedModel);
+table("Par portée du Project Brain", d.byBrainScope);
+table("Par version du Project Brain", d.byBrainVersion);
 
 if (d.candidates.length) {
   console.log("\n--- Candidats (notes par tentative, gain de qualité, coût) ---");

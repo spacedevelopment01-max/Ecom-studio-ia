@@ -18,6 +18,7 @@ import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { recordCall, redact, shortHash } from "./trace";
+import { brainMetaOf } from "../brain/facade";
 
 export type LlmImage = { data: Buffer; label?: string };
 
@@ -39,7 +40,23 @@ export type LlmCall = {
   usageKey?: string;
   /** Nom du prompt système (trace) ; à défaut, la tâche. Le texte du prompt n'est jamais enregistré. */
   promptKey?: string;
+  /**
+   * Contexte VOLATIL (créations récentes…) : placé après le point de cache, il ne change jamais le préfixe mis en
+   * cache. À défaut, celui du Project Brain associé au contexte (projectContext) est utilisé.
+   */
+  volatile?: string;
+  /** Portée, empreinte et version du Project Brain (trace) ; à défaut, déduites du contexte projectContext. */
+  brain?: { scope: string; hash: string; version: string };
 };
+
+/** Contexte Brain d'un appel : explicite, sinon retrouvé à partir du bloc <contexte_projet> de projectContext. */
+function brainOf(call: LlmCall): { brain: LlmCall["brain"] | null; volatile: string } {
+  const meta = brainMetaOf(call.context, call.projectId);
+  return {
+    brain: call.brain ?? (meta ? { scope: meta.scope, hash: meta.hash, version: meta.version } : null),
+    volatile: call.volatile ?? meta?.volatile ?? "",
+  };
+}
 
 /** Requêtes HTTP réellement envoyées pendant un appel (relances automatiques du SDK comprises). */
 const httpCounter = new AsyncLocalStorage<{ n: number }>();
@@ -78,6 +95,9 @@ async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[
   // contrôles, retouches successives), ils sont mis en cache — réponses plus rapides et moins coûteuses.
   const stable = [call.context, call.reference].filter(Boolean) as string[];
   stable.forEach((text, i) => content.push(i === stable.length - 1 ? { type: "text", text, cache_control: { type: "ephemeral" } } : { type: "text", text }));
+  // Après le point de cache : le contexte volatil (créations récentes) peut changer sans invalider le préfixe.
+  const { volatile } = brainOf(call);
+  if (volatile) content.push({ type: "text", text: volatile });
   for (const [i, img] of (call.images ?? []).entries()) {
     content.push({ type: "text", text: `Image ${i + 1}${img.label ? ` — ${img.label}` : ""} :` });
     content.push(await imageBlock(img));
@@ -99,7 +119,7 @@ function estimateMicro(call: LlmCall, model: string) {
   // Sans tarif « jetons » connu, l'appel est refusé (sinon il serait compté 0 € hors enveloppe).
   const p = requirePrice("anthropic", model);
   if (p.unit !== "tokens") throw new UserFacingError(L(`Tarif « jetons » attendu pour anthropic:${model} : corrigez-le dans l'administration.`, `A per-token price is expected for anthropic:${model}. Fix it in the admin settings.`));
-  const inTok = (systemText(call).length + (call.context?.length ?? 0) + (call.reference?.length ?? 0) + call.prompt.length) / 3.2 + (call.images?.length ?? 0) * 1600;
+  const inTok = (systemText(call).length + (call.context?.length ?? 0) + (call.reference?.length ?? 0) + brainOf(call).volatile.length + call.prompt.length) / 3.2 + (call.images?.length ?? 0) * 1600;
   const outTok = Math.min(call.maxTokens ?? 16000, 6000);
   return Math.round(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * EUR);
 }
@@ -136,6 +156,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   assertAiAllowed(call.userId);
   assertCanSpend(call.userId, estimateMicro(call, route.model));
   const isHaiku = route.model.startsWith("claude-haiku");
+  const { brain } = brainOf(call);
   const params: any = {
     model: route.model,
     // Avec réflexion, la limite couvre aussi la réflexion : une limite trop basse coupe la réponse et la fait repayer.
@@ -169,6 +190,10 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     promptKey: call.promptKey ?? call.task,
     promptHash: shortHash(params.system[0].text),
     callTry,
+    // Project Brain : comparer coût, cache et qualité par portée et par version du contexte.
+    brainScope: brain?.scope ?? null,
+    brainHash: brain?.hash ?? null,
+    brainVersion: brain?.version ?? null,
   };
   try {
     msg = await httpCounter.run(counter, async () => {

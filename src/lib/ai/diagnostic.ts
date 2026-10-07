@@ -29,6 +29,7 @@ type CallRow = {
   latency_ms: number | null; http_attempts: number | null; stop_reason: string | null; cost: number; estimated: number;
   usage_event_id: string | null; billing_dedup: number; status: string; error_kind: string | null;
   prompt_key: string | null; prompt_hash: string | null; quality_check_id: string | null;
+  brain_scope: string | null; brain_hash: string | null; brain_version: string | null;
 };
 type CheckRow = {
   id: string; created_at: number; project_id: string | null; job_id: string | null; step: string | null; deliverable: string;
@@ -81,7 +82,7 @@ export function aiDiagnostic(f: DiagFilter = {}) {
     `SELECT c.id, c.created_at, c.user_id, c.project_id, c.job_id, j.type AS job_type, c.task, c.step, c.candidate_id, c.attempt, c.call_try,
             c.provider, c.requested_model, c.served_model, c.unit, c.input_tokens, c.cache_read_tokens, c.cache_write_tokens, c.output_tokens,
             c.quantity, c.latency_ms, c.http_attempts, c.stop_reason, c.cost, c.estimated, c.usage_event_id, c.billing_dedup, c.status,
-            c.error_kind, c.prompt_key, c.prompt_hash, c.quality_check_id
+            c.error_kind, c.prompt_key, c.prompt_hash, c.quality_check_id, c.brain_scope, c.brain_hash, c.brain_version
        FROM ai_calls c LEFT JOIN jobs j ON j.id = c.job_id ${wc.sql} ORDER BY c.created_at, c.id LIMIT ?`,
     ...wc.args,
     Math.min(Math.max(f.limit ?? 5000, 1), 20000),
@@ -153,6 +154,9 @@ export function aiDiagnostic(f: DiagFilter = {}) {
       error: clip(c.error_kind, 200),
       promptKey: c.prompt_key,
       promptHash: c.prompt_hash,
+      brainScope: c.brain_scope,
+      brainHash: c.brain_hash,
+      brainVersion: c.brain_version,
       qualityScore: q?.score ?? null,
       verdict: q?.verdict ?? null,
       finalVerdict: fin?.verdict ?? null,
@@ -164,7 +168,7 @@ export function aiDiagnostic(f: DiagFilter = {}) {
   });
 
   // Agrégats.
-  const by = { project: new Map<string, Agg>(), job: new Map<string, Agg>(), step: new Map<string, Agg>(), task: new Map<string, Agg>(), module: new Map<string, Agg>(), providerModel: new Map<string, Agg>(), servedModel: new Map<string, Agg>() };
+  const by = { project: new Map<string, Agg>(), job: new Map<string, Agg>(), step: new Map<string, Agg>(), task: new Map<string, Agg>(), module: new Map<string, Agg>(), providerModel: new Map<string, Agg>(), servedModel: new Map<string, Agg>(), brainScope: new Map<string, Agg>(), brainVersion: new Map<string, Agg>() };
   calls.forEach((c, i) => {
     add(by.project, c.project_id ?? "(sans projet)", c);
     add(by.job, c.job_id ? `${c.job_id} (${c.job_type ?? "?"})` : "(hors tâche de fond)", c);
@@ -173,6 +177,8 @@ export function aiDiagnostic(f: DiagFilter = {}) {
     add(by.module, rows[i].module, c);
     add(by.providerModel, `${c.provider}/${c.requested_model}`, c);
     add(by.servedModel, `${c.provider}/${c.served_model ?? c.requested_model}`, c);
+    add(by.brainScope, c.brain_scope ?? "(sans Project Brain)", c);
+    add(by.brainVersion, c.brain_version ?? "(sans Project Brain)", c);
   });
 
   const sum = (pred: (r: (typeof rows)[number]) => boolean) => rows.filter(pred).reduce((s, r) => ({ calls: s.calls + 1, costMicro: s.costMicro + r.costMicro }), { calls: 0, costMicro: 0 });
@@ -254,6 +260,9 @@ export function aiDiagnostic(f: DiagFilter = {}) {
     byModule: finish(by.module),
     byProviderModel: finish(by.providerModel),
     byServedModel: finish(by.servedModel),
+    // Project Brain : coût, cache et erreurs par portée de contexte et par version du Brain.
+    byBrainScope: finish(by.brainScope),
+    byBrainVersion: finish(by.brainVersion),
     candidates,
     calls: rows,
     shopifySeo: shopifySeoStatus(f),
