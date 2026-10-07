@@ -75,10 +75,20 @@ function cost(provider: string, model: string, units: { input?: number; output?:
 export function imageProviderAvailable(): "openai" | "google" | null {
   if (!mediaAllowed()) return null;
   const r = routeFor("image_generation");
-  if (activeProviderKey(r.provider)) return r.provider === "openai" || r.provider === "google" ? r.provider : null;
+  // Fournisseur réglé pour les images (s'il en est un) ; sinon le premier fournisseur d'images qui a une clé active.
+  if ((r.provider === "openai" || r.provider === "google") && activeProviderKey(r.provider)) return r.provider;
   if (activeProviderKey("openai")) return "openai";
   if (activeProviderKey("google")) return "google";
   return null;
+}
+
+/** Pourquoi aucune image IA ne peut être faite maintenant (affiché au client et dans le diagnostic). */
+export function imageUnavailableReason(): string | null {
+  if (imageProviderAvailable()) return null;
+  if (!currentUserHasAiCredits()) return L("IA non active pour ce compte (forfait ou budget IA épuisé)", "AI not active for this account (plan or AI budget used up)");
+  const u = currentAiUser();
+  if (u && !userPlan(u)) return L("aucun forfait actif : les images IA sont réservées aux forfaits", "no active plan: AI images come with the plans");
+  return L("aucune clé OpenAI ou Gemini active dans Administration › Fournisseurs IA", "no active OpenAI or Gemini key in Admin › AI providers");
 }
 
 export function videoProviderAvailable(): "google" | "fal" | null {
@@ -184,8 +194,19 @@ Rules: one solid black shape (or up to three bold black shapes) on a pure white 
   return generateImage(ctx, { text, aspect: "1:1", reference: input.reference ?? null, quality: "medium" });
 }
 
+/**
+ * Logo complet (symbole + nom) dessiné par l'IA d'images, d'après le brief détaillé du directeur artistique.
+ * Fond transparent (OpenAI) ; avec Gemini, fond blanc retiré ensuite.
+ */
+export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: string }) {
+  const text = `Design a complete, professional brand logo (logo design, not a mockup): ${input.brief}
+The logo text must read EXACTLY: "${input.name}" — every letter spelled exactly like this, same accents, nothing else written (no tagline, no slogan, no extra words, no letters as decoration).
+Flat vector style, crisp edges, generous margins, centered, on a plain transparent or pure white background. No mockup, no paper, no wall, no shadow, no 3D, no gradient background, no frame around the canvas.`;
+  return generateImage(ctx, { text, aspect: "16:9", reference: null, quality: "high", transparent: true });
+}
+
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */
-async function generateImage(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high" }) {
+async function generateImage(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean }) {
   const provider = imageProviderAvailable();
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI).", "No image provider configured (Google Gemini or OpenAI)."));
   const text = input.text;
@@ -222,7 +243,7 @@ async function generateImage(ctx: Ctx, input: { text: string; aspect: "1:1" | "4
   try {
     res = ref
       ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: input.quality } as any)
-      : await client.images.generate({ model, prompt: text, size, quality: input.quality } as any);
+      : await client.images.generate({ model, prompt: text, size, quality: input.quality, ...(input.transparent ? { background: "transparent", output_format: "png" } : {}) } as any);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel."));
     if (e?.status === 400) throw new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`));

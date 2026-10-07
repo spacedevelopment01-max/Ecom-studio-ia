@@ -37,6 +37,7 @@ const list = (projectId: string) =>
           }
         : null,
       ai: a.info.ai ?? null,
+      notes: Array.isArray(a.info.notes) ? (a.info.notes as string[]).slice(0, 12) : [],
     };
   });
 

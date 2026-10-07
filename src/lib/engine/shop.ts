@@ -46,7 +46,7 @@ export function savedCopy(projectId: string): ShopCopy | null {
 export function collectImages(projectId: string): { slots: ImageSlots; files: Record<string, string>; gallery: string[] } {
   const files: Record<string, string> = {};
   const slots: ImageSlots = {};
-  const put = (slot: Exclude<keyof ImageSlots, "reels">, a: Asset | undefined, hint?: string) => {
+  const put = (slot: Exclude<keyof ImageSlots, "reels" | "byService">, a: Asset | undefined, hint?: string) => {
     if (!a) return;
     const f = themeFileName(a, hint ?? slot);
     files[f] = a.id;
@@ -72,14 +72,16 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   // Celles du marchand passent avant celles générées par l'IA.
   const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId);
   put("lifestyle", life[0], "en-situation-1");
-  put("lifestyle2", life[1], "en-situation-2");
+  // Ambiances de l'univers (photos libres, sans le produit) : seulement pour les emplacements d'ambiance encore vides.
+  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'ambiance' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (status = 'approved') DESC, created_at DESC LIMIT 2", projectId);
+  put("lifestyle2", life[1] ?? amb[0], "en-situation-2");
   put("cutout", pick("cutout"), "produit-detoure");
   put("packshot", pick("packshot"), "packshot");
   put("detail1", pick("detail", 0), "detail-1");
   put("detail2", pick("detail", 1), "detail-2");
   put("scene1", life[1] ?? pick("scene", 0), "scene-1");
   put("scene2", pick("scene", 1), "scene-2");
-  put("scene3", pick("scene", 2), "scene-3");
+  put("scene3", pick("scene", 2) ?? amb[1] ?? amb[0], "scene-3");
   put("banner", pick("banner"), "banniere");
   put("hero", pick("scene", 0) ?? pick("banner") ?? pick("packshot"), "hero");
   const video = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND (json_extract(meta, '$.format') = '16:9') ORDER BY created_at DESC LIMIT 1", projectId)[0];
@@ -123,14 +125,27 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
  * Site de services : les vraies photos du marchand (rôle « lifestyle », dossier « Scènes & usages »)
  * passent avant les scènes générées dans les emplacements de la composition (méthode, réalisations…).
  */
+/** Nom de prestation comparable (casse, accents et espaces ignorés). */
+export const serviceKey = (name: string) => name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+
 function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string, string>) {
   const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC LIMIT 8", projectId);
-  const order: Exclude<keyof ImageSlots, "reels">[] = ["lifestyle", "scene1", "scene2", "scene3", "detail1", "detail2", "lifestyle2"];
+  const order: Exclude<keyof ImageSlots, "reels" | "byService">[] = ["lifestyle", "scene1", "scene2", "scene3", "detail1", "detail2", "lifestyle2"];
   life.slice(0, order.length).forEach((a, i) => {
     const f = themeFileName(a, `photo-${i + 1}`);
     files[f] = a.id;
     slots[order[i]] = f;
   });
+  // Photo propre à chaque prestation (votre photo d'abord, puis photo libre, puis image IA) : la carte « Carrelage » montre du
+  // carrelage, jamais la photo d'une autre prestation.
+  const tagged = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role IN ('lifestyle','original') AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.service') IS NOT NULL ORDER BY (origin IN ('upload','site')) DESC, (json_extract(meta, '$.stock') IS NOT NULL) DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId);
+  for (const a of tagged) {
+    const key = serviceKey(json<{ service?: string }>(a.meta, {}).service ?? "");
+    if (!key || slots.byService?.[key]) continue;
+    const f = themeFileName(a, `prestation-${a.id.slice(0, 6)}`);
+    files[f] = a.id;
+    slots.byService = { ...(slots.byService ?? {}), [key]: f };
+  }
   if (!slots.hero && slots.lifestyle) slots.hero = slots.lifestyle;
 }
 

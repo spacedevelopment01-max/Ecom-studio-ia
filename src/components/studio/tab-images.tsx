@@ -11,11 +11,12 @@ import { ContentLangPicker, useContentLang } from "./content-lang";
 import { PlanRequired, useCreationLocked } from "../billing-client";
 
 const GROUPS = [
-  { id: "all", label: "Tout", en: "All", roles: "packshot,detail,scene,lifestyle,banner,social,ad,cutout" },
+  { id: "all", label: "Tout", en: "All", roles: "packshot,detail,scene,lifestyle,ambiance,banner,social,ad,cutout" },
   { id: "packshot", label: "Packshots", en: "Packshots", roles: "packshot" },
   { id: "detail", label: "Détails", en: "Details", roles: "detail" },
   { id: "scene", label: "Scènes", en: "Scenes", roles: "scene" },
   { id: "lifestyle", label: "En situation", en: "Lifestyle", roles: "lifestyle" },
+  { id: "ambiance", label: "Univers (libres de droits)", en: "World (royalty-free)", roles: "ambiance" },
   { id: "banner", label: "Bannières", en: "Banners", roles: "banner" },
   { id: "social", label: "Réseaux", en: "Social", roles: "social" },
   { id: "ad", label: "Publicités", en: "Ads", roles: "ad" },

@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const calls: { prompt: string; aspect: string }[] = [];
 let available = true;
+vi.mock("@/lib/stock/photos", () => ({ searchStock: async () => [], downloadStock: async () => Buffer.alloc(0), stockCredit: () => "" }));
 vi.mock("@/lib/ai/media-providers", () => ({
   imageProviderAvailable: () => available,
   ambianceImage: vi.fn(async (_ctx: unknown, req: { prompt: string; aspect: string }) => {

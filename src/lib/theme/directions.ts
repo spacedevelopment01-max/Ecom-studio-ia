@@ -311,6 +311,8 @@ function tpl(ids: Ids, sections: [string, Record<string, unknown>, { type: strin
 }
 
 export type ImageSlots = {
+  /** Site de services : photo propre à chaque prestation (nom de la prestation normalisé → fichier). */
+  byService?: Record<string, string>;
   /** Photo du produit en situation, dans la vie de tous les jours (fournie par le marchand) : ouvre la boutique. */
   lifestyle?: string;
   lifestyle2?: string;

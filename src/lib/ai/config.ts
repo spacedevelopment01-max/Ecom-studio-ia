@@ -7,7 +7,7 @@ import { getJsonSetting, getSetting } from "../settings";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
 
-export type ProviderId = "anthropic" | "openai" | "google" | "fal";
+export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "pexels" | "pixabay";
 
 // Libellés affichés dans l'administration : accesseurs évalués à la lecture, dans la langue de l'interface.
 const provider = (name: { fr: string; en: string }, role: { fr: string; en: string }, keyHelp: { fr: string; en: string }, docs: string) => ({
@@ -47,6 +47,18 @@ export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly rol
     { fr: "Alternative pour la vidéo image-vers-vidéo", en: "Alternative for image-to-video generation" },
     { fr: "Clé fal.ai (Key …)", en: "fal.ai key (Key …)" },
     "https://fal.ai/models",
+  ),
+  pexels: provider(
+    { fr: "Pexels (photos libres de droits)", en: "Pexels (royalty-free photos)" },
+    { fr: "Vraies photos du métier, gratuites, avant toute image payante (entreprises de services)", en: "Real trade photos, free, before any paid image (service businesses)" },
+    { fr: "Clé API Pexels (gratuite ; nouvelles clés parfois suspendues par Pexels : Pixabay fait aussi photos et vidéos)", en: "Pexels API key (free; Pexels sometimes suspends new keys: Pixabay also provides photos and videos)" },
+    "https://www.pexels.com/api/",
+  ),
+  pixabay: provider(
+    { fr: "Pixabay (photos libres de droits)", en: "Pixabay (royalty-free photos)" },
+    { fr: "Photos et vidéos libres de droits, gratuites (montages vidéo, visuels)", en: "Free royalty-free photos and videos (video edits, visuals)" },
+    { fr: "Clé API Pixabay (gratuite)", en: "Pixabay API key (free)" },
+    "https://pixabay.com/api/docs/",
   ),
 };
 
@@ -197,7 +209,7 @@ export function usdToEur(): number {
  * Clés lues aussi dans l'environnement (ex. secrets GitHub Codespaces) : elles survivent à un codespace recréé,
  * sans passer par la base. La clé saisie dans l'administration reste prioritaire.
  */
-const ENV_KEYS: Record<ProviderId, string[]> = { anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"] };
+const ENV_KEYS: Record<ProviderId, string[]> = { anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
 export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map((k) => process.env[k]?.trim()).find(Boolean) ?? null;
 
 export function providerKey(p: ProviderId): string | null {
