@@ -68,7 +68,8 @@ for (const [device, viewport] of [["ordinateur", { width: 1440, height: 900 }], 
         await page.click("[data-menu-open]").catch(() => {});
         await page.waitForTimeout(300);
         await page.screenshot({ path: `${out}/menu-${device}.png` });
-      } else if (await page.locator(".es-nav__item--parent").count()) {
+      } else if (await page.locator(".es-nav__item--parent .es-nav__link").first().isVisible()) {
+        // Menu visible sur ordinateur (pas en disposition « minimal », où il est rangé dans le tiroir).
         await page.hover(".es-nav__item--parent .es-nav__link");
         await page.waitForTimeout(400);
         await page.screenshot({ path: `${out}/menu-${device}.png` });
