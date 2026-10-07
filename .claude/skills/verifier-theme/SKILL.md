@@ -1,6 +1,6 @@
 ---
 name: verifier-theme
-description: Vérifie le thème Shopify d'E-COM STUDIO IA avant d'envoyer une modification (theme-base/, src/lib/theme/, sections, snippets, CSS, schémas, traductions du thème) : compilation des directions, Theme Check officiel de Shopify comme la CI, captures ordinateur et téléphone, contrôle des débordements. À utiliser après toute modification du thème, ou quand on demande de « vérifier le thème », « tester le thème », « faire des captures du thème ».
+description: "Vérifie le thème Shopify d'E-COM STUDIO IA avant d'envoyer une modification (theme-base/, src/lib/theme/, sections, snippets, CSS, schémas, traductions du thème) : compilation des directions, Theme Check officiel de Shopify comme la CI, captures ordinateur et téléphone, contrôle des débordements. À utiliser après toute modification du thème, ou quand on demande de « vérifier le thème », « tester le thème », « faire des captures du thème »."
 ---
 
 # Vérifier le thème
