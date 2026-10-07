@@ -42,7 +42,7 @@ describe("publications : photo libre avant l'IA", () => {
     vi.doMock("@/lib/ai/llm", async (orig) => ({ ...(await orig<object>()), llmConfigured: () => false }));
     const sharp = (await import("sharp")).default;
     const jpg = await sharp({ create: { width: 64, height: 64, channels: 3, background: "#777" } }).jpeg().toBuffer();
-    vi.doMock("@/lib/stock/photos", () => ({ searchStock: async () => [{ source: "openverse", id: "z9", url: "https://x/z.jpg", page: "https://x/z", author: "Bob", license: "CC0", width: 2000, height: 2000, alt: "" }], downloadStock: async () => jpg, stockCredit: () => "Photo libre de droits (CC0), Bob" }));
+    vi.doMock("@/lib/stock/photos", () => ({ searchStock: async () => [{ source: "openverse", id: "z9", url: "https://x/z.jpg", page: "https://x/z", author: "Bob", license: "CC0", width: 2000, height: 2000, alt: "plasterer plastering a ceiling" }], downloadStock: async () => jpg, stockCredit: () => "Photo libre de droits (CC0), Bob" }));
     const saved: any[] = [];
     vi.doMock("@/lib/library", async (orig) => ({ ...(await orig<object>()), saveAsset: vi.fn(async (a: any) => (saved.push(a), { id: "s1", ...a })) }));
     const { postAmbiance } = await import("@/lib/engine/service-media");
