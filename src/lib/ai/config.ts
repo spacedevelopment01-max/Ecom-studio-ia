@@ -200,7 +200,8 @@ const ENV_KEYS: Record<ProviderId, string[]> = { anthropic: ["ANTHROPIC_API_KEY"
 export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map((k) => process.env[k]?.trim()).find(Boolean) ?? null;
 
 export function providerKey(p: ProviderId): string | null {
-  return getSetting(`provider.${p}.apiKey`) || providerEnvKey(p);
+  // Espaces ou retour à la ligne copiés avec la clé : retirés (sinon le fournisseur la refuse).
+  return getSetting(`provider.${p}.apiKey`)?.trim() || providerEnvKey(p);
 }
 
 export function providerEnabled(p: ProviderId): boolean {
