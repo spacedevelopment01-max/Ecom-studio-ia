@@ -136,9 +136,9 @@ function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string
     files[f] = a.id;
     slots[order[i]] = f;
   });
-  // Photo propre à chaque prestation (photo libre ou image IA faite pour elle) : la carte « Carrelage » montre du
+  // Photo propre à chaque prestation (votre photo d'abord, puis photo libre, puis image IA) : la carte « Carrelage » montre du
   // carrelage, jamais la photo d'une autre prestation.
-  const tagged = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.service') IS NOT NULL ORDER BY (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId);
+  const tagged = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role IN ('lifestyle','original') AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.service') IS NOT NULL ORDER BY (origin IN ('upload','site')) DESC, (json_extract(meta, '$.stock') IS NOT NULL) DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId);
   for (const a of tagged) {
     const key = serviceKey(json<{ service?: string }>(a.meta, {}).service ?? "");
     if (!key || slots.byService?.[key]) continue;

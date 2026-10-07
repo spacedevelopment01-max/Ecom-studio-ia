@@ -8,7 +8,7 @@
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { z } from "zod";
-import { all, json } from "../db";
+import { all, json, run } from "../db";
 import { assetData, saveAsset, type Asset } from "../library";
 import { downloadStock, searchStock, stockCredit } from "../stock/photos";
 import { loadProject, type Project } from "../projects";
@@ -62,6 +62,68 @@ async function ambianceChecked(ictx: { userId: string; projectId: string; jobId?
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     return { img, check, usageKey };
   }
+}
+
+/**
+ * Sujet des vraies photos du client, reconnu par l'IA de vision (légère) : la prestation qu'elle montre, ou une photo
+ * générale du métier. Enregistré avec la photo (meta.service, meta.subject) ; une photo déjà reconnue n'est pas refaite.
+ */
+export async function tagRealPhotos(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project): Promise<number> {
+  const items = serviceItems(p);
+  if (!llmConfigured() || !items.length) return 0;
+  const todo = realActivityPhotos(p.id).filter((a) => json<any>(a.meta as any, {}).subjectChecked !== true).slice(0, 8);
+  if (!todo.length) return 0;
+  const imgs = await Promise.all(todo.map((a) => sharp(assetData(a), { failOn: "none" }).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 80 }).toBuffer()));
+  const r = await llmJson(
+    {
+      task: "photo_triage",
+      ...ictx,
+      usageKey: `${ictx.jobId ?? "photos"}:photo-subjects:${todo.map((a) => a.id).join(",").slice(0, 60)}`,
+      system: "Tu regardes des photos fournies par un artisan ou un professionnel et tu dis ce que chacune montre. Tu ne devines pas : si la prestation n'est pas clairement visible, réponds null.",
+      images: imgs.map((data, i) => ({ data, label: `photo ${i + 1}` })),
+      prompt: `Prestations : ${items.map((s, i) => `${i + 1}. ${s.name}${s.description ? ` (${clip(s.description, 80)})` : ""}`).join(" ; ")}.
+Pour chaque photo, dans l'ordre : le numéro de la prestation clairement montrée (ou null si c'est une photo générale : équipe, lieu, outils, logo…) et une courte description en français (8 mots au plus).
+Réponds { "photos": [ { "index": 1, "service": 2 | null, "subject": "…" } ] }.`,
+      maxTokens: 1500,
+    },
+    z.object({ photos: z.array(z.object({ index: z.coerce.number(), service: z.coerce.number().nullable().catch(null), subject: z.string().catch("") })) }),
+  );
+  let n = 0;
+  for (const x of r.photos) {
+    const a = todo[x.index - 1];
+    if (!a) continue;
+    const s = x.service ? items[x.service - 1] : undefined;
+    const meta = { ...json<Record<string, unknown>>(a.meta as any, {}), subjectChecked: true, subject: x.subject || undefined, ...(s ? { service: s.name } : {}) };
+    run("UPDATE assets SET meta = ? WHERE id = ?", JSON.stringify(meta), a.id);
+    n++;
+  }
+  return n;
+}
+
+/**
+ * Emplacements déjà couverts par les vraies photos : d'abord la prestation que chaque photo montre, puis, pour les
+ * photos générales, les emplacements restants dans l'ordre. Les autres sont à remplir (photos libres, puis IA).
+ */
+export function coveredSlots(p: Project, slots: PhotoSlot[], reals: Asset[]): Set<PhotoSlot> {
+  const covered = new Set<PhotoSlot>();
+  const items = serviceItems(p);
+  let general = 0;
+  for (const a of reals) {
+    const svc = json<any>(a.meta as any, {}).service as string | undefined;
+    const i = svc ? items.findIndex((s) => s.name === svc) : -1;
+    const slot = i >= 0 ? (`service:${i}` as PhotoSlot) : null;
+    if (slot && slots.includes(slot) && !covered.has(slot)) covered.add(slot);
+    else general++;
+  }
+  // Photos générales (équipe, lieu, outils) : emplacements généraux d'abord (ouverture, bannière, publicité) ;
+  // une prestation n'est couverte que par une photo qui la montre — sinon une photo libre ou IA de cette prestation.
+  for (const s of slots.filter((x) => !x.startsWith("service:"))) {
+    if (general <= 0) break;
+    if (covered.has(s)) continue;
+    covered.add(s);
+    general--;
+  }
+  return covered;
 }
 
 /** Recherches de photos libres de droits pour un sujet de publication (IA légère si active, sinon le métier). */
@@ -371,10 +433,23 @@ export function assignPhotoSlots(p: Project, pool: Asset[]): Partial<Record<Phot
   const stock = (a: Asset) => !!json<any>(a.meta as any, {}).stock;
   const slotOf = (a: Asset) => (a.origin === "generated" || stock(a) ? (json<any>(a.meta as any, {}).slot as PhotoSlot | undefined) : undefined);
   const real = pool.map((a, i) => (a.origin !== "generated" && !stock(a) ? i : -1)).filter((i) => i >= 0);
+  // Vraie photo reconnue comme montrant une prestation : elle va sur l'emplacement de cette prestation.
+  const items = serviceItems(p);
+  for (const i of real) {
+    const svc = json<any>(pool[i].meta as any, {}).service as string | undefined;
+    const k = svc ? items.findIndex((s) => s.name === svc) : -1;
+    const slot = k >= 0 ? (`service:${k}` as PhotoSlot) : null;
+    if (slot && slots.includes(slot) && out[slot] === undefined) {
+      out[slot] = i;
+      used.add(i);
+    }
+  }
+  const restReal = real.filter((i) => !used.has(i));
   let r = 0;
   for (const slot of slots) {
-    if (r < real.length) {
-      out[slot] = real[r++];
+    if (out[slot] !== undefined) continue;
+    if (r < restReal.length) {
+      out[slot] = restReal[r++];
       used.add(out[slot]!);
       continue;
     }
@@ -606,11 +681,24 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
     created.push(...ids);
   }
 
+  // 1 bis. Sujet des vraies photos reconnu (quelle prestation chacune montre) : elles vont au bon endroit.
+  await ctx.step("svc:photo-subjects", async () => {
+    ctx.progress(0.12, L("Reconnaissance du sujet de vos photos", "Recognizing what your photos show"));
+    return tagRealPhotos(ictx, project).catch((e) => {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      console.warn("[photos] sujet non reconnu :", (e as Error).message);
+      return 0;
+    });
+  });
+  const reals = realActivityPhotos(projectId);
+
   // 2. Photos libres de droits (gratuites, vraies photos du métier) pour les emplacements sans photo du client.
-  const open = ambianceSlots(project).slice(realActivityPhotos(projectId).length);
+  const aiCovered = coveredSlots(project, ambianceSlots(project).map((x) => x.slot), reals);
+  const open = ambianceSlots(project).filter((x) => !aiCovered.has(x.slot));
   const stockIds = await ctx.step("svc:stock", async () => {
     ctx.progress(0.15, L("Recherche de photos libres de droits du métier", "Searching royalty-free photos of the trade"));
-    const stockOpen = stockPhotoSlots(project).slice(realActivityPhotos(projectId).length).map((slot) => ({ slot, aspect: (slot === "ad" ? "1:1" : slot.startsWith("service:") ? "4:5" : "16:9") as "16:9" | "4:5" | "1:1" }));
+    const stockCovered = coveredSlots(project, stockPhotoSlots(project), reals);
+    const stockOpen = stockPhotoSlots(project).filter((s) => !stockCovered.has(s)).map((slot) => ({ slot, aspect: (slot === "ad" ? "1:1" : slot.startsWith("service:") ? "4:5" : "16:9") as "16:9" | "4:5" | "1:1" }));
     return stockFill(ictx, project, stockOpen, base).catch((e) => {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[photos libres] indisponibles :", (e as Error).message);

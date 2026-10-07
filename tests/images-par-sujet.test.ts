@@ -44,3 +44,21 @@ describe("images par sujet", () => {
     expect(slotSubject(p, "service:1").subject).toMatch(/Carrelage/);
   });
 });
+
+import { assignPhotoSlots, coveredSlots, photoSlots } from "@/lib/engine/service-media";
+describe("vos photos reconnues", () => {
+  const p: any = { product: { ...emptyProduct(), category: "Plâtrerie peinture", name: "Blanc" }, services: { ...emptyServiceProfile(), services: services.services }, business: "services", name: "Blanc" };
+  const real = (service?: string) => ({ origin: "upload", meta: JSON.stringify(service ? { service } : {}) }) as any;
+  it("une photo de carrelage va sur l'emplacement Carrelage, une photo générale sur l'ouverture", () => {
+    const pool = [real(), real("Carrelage")];
+    const a = assignPhotoSlots(p, pool);
+    expect(a["service:1"]).toBe(1);
+    expect(a.hero).toBe(0);
+  });
+  it("emplacements couverts : la prestation montrée, et les emplacements généraux pour les photos générales (jamais une autre prestation)", () => {
+    const c = coveredSlots(p, stockPhotoSlots(p), [real("Carrelage"), real(), real()]);
+    expect([...c].sort()).toEqual(["banner", "hero", "service:1"].sort());
+    expect(c.has("service:0")).toBe(false);
+    expect(photoSlots(p)).toContain("service:1");
+  });
+});
