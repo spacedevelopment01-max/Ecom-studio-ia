@@ -198,9 +198,10 @@ Rules: one solid black shape (or up to three bold black shapes) on a pure white 
  * Logo complet (symbole + nom) dessiné par l'IA d'images, d'après le brief détaillé du directeur artistique.
  * Fond transparent (OpenAI) ; avec Gemini, fond blanc retiré ensuite.
  */
-export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: string; descriptor?: string }) {
+export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: string; descriptor?: string; colors?: string[] }) {
   const text = `Design a complete, professional logo as a top branding agency would deliver it (logo artwork only, not a mockup): ${input.brief}
-Text in the logo, spelled EXACTLY, same accents: the name "${input.name}"${input.descriptor ? ` and, smaller, the trade line "${input.descriptor}"` : ""}. No other words, no slogan, no fake letters.
+${input.colors?.length ? `Colors: use ONLY the brand's colors ${input.colors.join(", ")} (plus white or near-black if needed) — the logo must match the brand guidelines.
+` : ""}Text in the logo, spelled EXACTLY, same accents: the name "${input.name}"${input.descriptor ? ` and, smaller, the trade line "${input.descriptor}"` : ""}. No other words, no slogan, no fake letters.
 Quality bar: a modern, professional logo for a real small business — original, made for this brand only, never a copy of an existing logo. Follow the composition and style chosen in the brief. Crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo background, no frame around the canvas.`;
   return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true });
 }
