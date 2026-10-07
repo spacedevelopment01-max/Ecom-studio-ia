@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { runForUser } from "@/lib/ai/access";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { loadProject } from "@/lib/projects";
@@ -33,11 +34,15 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 /** Recrée le kit (piste retenue) ; `voice: true` refait aussi la ligne éditoriale. */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
-  const { project: p } = await projectFromCtx(ctx);
+  const { user, project: p } = await projectFromCtx(ctx);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   const b = await body(req, z.object({ voice: z.boolean().optional() }));
-  if (b.voice) await ensureSocialVoice(p.id, { force: true, requestId: crypto.randomUUID() });
-  const r = await saveSocialKit(p.id);
+  // Opérations exécutées « pour » le client : l'IA n'est utilisée que si son forfait et son budget le permettent
+  // (sinon la ligne éditoriale du studio, sans aucun appel).
+  const r = await runForUser(user.id, async () => {
+    if (b.voice) await ensureSocialVoice(p.id, { force: true, requestId: crypto.randomUUID() });
+    return saveSocialKit(p.id);
+  });
   if (!r) throw new HttpError(409, L("Choisissez d'abord une piste de logo : le kit en reprend les couleurs et les typographies.", "Choose a logo route first: the kit uses its colors and typefaces."));
   return ok(view(p.id));
 });

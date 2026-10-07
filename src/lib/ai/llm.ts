@@ -11,7 +11,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
-import { currentUserHasAiCredits } from "./access";
+import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, priceFor, requirePrice, routeFor, usdToEur, type TaskId } from "./config";
 import { contentLang, L, uiLang } from "../i18n-server";
@@ -132,6 +132,8 @@ type RawResult = { text: string; stop: string | null; model: string };
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
   const route = routeFor(call.task);
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
+  // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non.
+  assertAiAllowed(call.userId);
   assertCanSpend(call.userId, estimateMicro(call, route.model));
   const isHaiku = route.model.startsWith("claude-haiku");
   const params: any = {

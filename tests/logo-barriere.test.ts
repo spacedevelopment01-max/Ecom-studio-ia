@@ -56,7 +56,9 @@ const count = (pid: string, role: string) => all<{ n: number }>("SELECT COUNT(*)
 
 beforeEach(() => Object.assign(calls, { routes: 0, redraw: 0, review: 0, voice: 0 }));
 
-describe("logos : barrière de qualité branchée", () => {
+// Génération et rendu réels des pistes (SVG → PNG, planches) : quelques secondes en local, mais bien plus sur la CI
+// quand les fichiers de test tournent en parallèle — même marge que les autres tests de rendu de logo (piste-partout).
+describe("logos : barrière de qualité branchée", { timeout: 180_000 }, () => {
   it("pistes notées 4,4 et 5,9 : jamais proposées ; version du studio PROVISOIRE, sans planche, kit, ligne éditoriale ni charte", async () => {
     nextReview = (key) => review(key === "produit" ? 4.4 : 5.9, ["symbole générique"]);
     await fr(async () => {

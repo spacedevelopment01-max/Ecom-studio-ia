@@ -15,6 +15,7 @@ import { withTrace } from "../src/lib/ai/trace";
 import { runWithLang, userLang } from "../src/lib/i18n-server";
 import { isLang } from "../src/lib/i18n";
 import { json, one } from "../src/lib/db";
+import { migrateLegacySecrets } from "../src/lib/secrets-migration";
 
 /** Langue des contenus d'une tâche : celle choisie pour l'action, sinon celle du projet. */
 function jobLangs(job: { user_id: string | null; project_id: string | null; payload: string }) {
@@ -90,6 +91,13 @@ async function tick() {
 
 async function loop() {
   db();
+  // Clés d'API et jetons chiffrés avec l'ancienne constante de développement : rechiffrés avec le secret actuel.
+  try {
+    const migrated = migrateLegacySecrets();
+    if (migrated) console.log(`[worker] ${migrated} secret(s) rechiffré(s) avec le secret maître actuel`);
+  } catch (e) {
+    logError("worker:secrets", e);
+  }
   console.log(`[worker] démarré (${WORKER_ID}, ${CONCURRENCY} tâche(s) en parallèle)`);
   await tick();
   let lastTick = Date.now();

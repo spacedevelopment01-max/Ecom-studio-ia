@@ -10,12 +10,12 @@
  */
 import crypto from "node:crypto";
 import { one } from "../db";
+import { derivedKey } from "../secrets";
 
 const TTL_SECONDS = 12 * 3600;
 
-function key() {
-  return crypto.createHash("sha256").update(`theme-preview:${process.env.APP_SECRET || "dev-only-secret-ecom-studio-ia"}`).digest();
-}
+// Secret maître unique (APP_SECRET, ou secret aléatoire de l'installation en développement).
+const key = () => derivedKey("theme-preview");
 
 const sign = (payload: string) => crypto.createHmac("sha256", key()).update(payload).digest("base64url").slice(0, 32);
 

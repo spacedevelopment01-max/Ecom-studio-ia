@@ -3,6 +3,7 @@
  * Partagée entre les processus et conservée au redémarrage ; les entrées anciennes sont purgées.
  */
 import { now, one, run } from "./db";
+import { getSetting } from "./settings";
 
 const KEEP_MS = 2 * 86400_000;
 
@@ -42,4 +43,15 @@ export const LIMITS = {
   forgotPerIp: { max: 10, windowMs: 3600_000 },
   resetPerIp: { max: 20, windowMs: 10 * 60_000 },
   passwordChangePerUser: { max: 5, windowMs: 10 * 60_000 },
+  /** Prompts de la bibliothèque lancés avec l'IA (onglet Prompts), par compte : valeur par défaut. */
+  promptRunPerUser: { max: 20, windowMs: 3600_000 },
 } as const;
+
+/**
+ * Limite effective des prompts lancés avec l'IA, par compte et par heure : réglage d'administration
+ * `limits.promptRunPerHour` (ou variable d'environnement LIMITS_PROMPTRUNPERHOUR), sinon LIMITS.promptRunPerUser.
+ */
+export function promptRunLimit(): { max: number; windowMs: number } {
+  const n = Number(getSetting("limits.promptRunPerHour"));
+  return { max: Number.isInteger(n) && n > 0 ? n : LIMITS.promptRunPerUser.max, windowMs: LIMITS.promptRunPerUser.windowMs };
+}

@@ -33,6 +33,10 @@ const billed = new Set<string>();
 vi.mock("@/lib/billing", async (orig) => ({
   ...(await orig<object>()),
   assertCanSpend: () => undefined,
+  // Comptes de test « u-… » : un forfait actif et du budget IA (assertAiAllowed les laisse passer, comme un client payant).
+  getSubscription: () => ({ user_id: "u", status: "active", plan: "creer", stores: 1 }),
+  planOf: () => "creer",
+  balance: () => ({ available: 1e12, used: 0, capacity: 1e12, usedPct: 0 }),
   recordUsage: (u: any) => (u.idempotencyKey && billed.has(u.idempotencyKey) ? { eventId: null, dedup: true } : (u.idempotencyKey && billed.add(u.idempotencyKey), { eventId: `ev-${billed.size}`, dedup: false })),
 }));
 vi.mock("@/lib/quotas", async (orig) => ({ ...(await orig<object>()), assertQuota: () => undefined, consumeQuota: () => undefined }));
