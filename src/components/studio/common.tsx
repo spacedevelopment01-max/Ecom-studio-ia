@@ -37,6 +37,8 @@ const ROLE_LABELS: Record<string, [string, string]> = {
   original: ["Photo originale", "Original photo"],
   cutout: ["Détourage", "Cutout"],
   packshot: ["Packshot", "Packshot"],
+  ambiance: ["Univers (photo libre)", "World (free photo)"],
+  "post-photo": ["Image de publication", "Post image"],
   detail: ["Détail", "Detail"],
   scene: ["Scène", "Scene"],
   banner: ["Bannière", "Banner"],

@@ -1,11 +1,12 @@
 /** Photos libres de droits : lecture des réponses Pexels, Pixabay et Openverse (sans réseau), crédit affiché. */
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { searchSource, searchStock, stockCredit } from "@/lib/stock/photos";
 
 vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeProviderKey: (p: string) => (p === "pexels" ? "cle-pexels" : null) }));
 
 const reply = (body: unknown) => vi.fn(async () => new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } }));
-afterEach(() => vi.unstubAllGlobals());
+beforeEach(() => vi.stubEnv("STOCK_OFFLINE", "0"));
+afterEach(() => (vi.unstubAllGlobals(), vi.unstubAllEnvs()));
 
 describe("photos libres de droits", () => {
   it("Pexels : photo, auteur, page et lien de téléchargement ; clé envoyée", async () => {
@@ -30,5 +31,26 @@ describe("photos libres de droits", () => {
   });
   it("crédit : source et auteur, et précision que ce n'est pas une photo du client", () => {
     expect(stockCredit({ source: "pexels", author: "Ana", license: "Pexels" })).toMatch(/Pexels.*Ana.*pas une photo de vos réalisations/);
+  });
+});
+
+describe("publications : photo libre avant l'IA", () => {
+  it("une photo libre trouvée → enregistrée pour la publication, aucune image IA payée", async () => {
+    vi.resetModules();
+    const ai = vi.fn();
+    vi.doMock("@/lib/ai/media-providers", () => ({ imageProviderAvailable: () => "openai", ambianceImage: ai, refundMediaQuota: vi.fn() }));
+    vi.doMock("@/lib/ai/llm", async (orig) => ({ ...(await orig<object>()), llmConfigured: () => false }));
+    const sharp = (await import("sharp")).default;
+    const jpg = await sharp({ create: { width: 64, height: 64, channels: 3, background: "#777" } }).jpeg().toBuffer();
+    vi.doMock("@/lib/stock/photos", () => ({ searchStock: async () => [{ source: "openverse", id: "z9", url: "https://x/z.jpg", page: "https://x/z", author: "Bob", license: "CC0", width: 2000, height: 2000, alt: "" }], downloadStock: async () => jpg, stockCredit: () => "Photo libre de droits (CC0), Bob" }));
+    const saved: any[] = [];
+    vi.doMock("@/lib/library", async (orig) => ({ ...(await orig<object>()), saveAsset: vi.fn(async (a: any) => (saved.push(a), { id: "s1", ...a })) }));
+    const { postAmbiance } = await import("@/lib/engine/service-media");
+    const { emptyProduct, emptyServiceProfile } = await import("@/lib/project-types");
+    const p: any = { id: `p-${Date.now()}`, userId: "u", name: "Blanc", business: "services", product: { ...emptyProduct(), category: "Plâtrerie" }, brand: { name: "Blanc", palette: { primary: "#446274", secondary: "#D0D8DD", accent: "#446274", light: "#F2F5F7", dark: "#14181F" } }, services: { ...emptyServiceProfile(), services: [] } };
+    const a = await postAmbiance({ userId: "u", projectId: p.id, jobId: "j" }, p, { key: "k", topic: "Rénover un plafond", aspect: "1:1", name: "x.jpg" });
+    expect(a?.id).toBe("s1");
+    expect(saved[0]).toMatchObject({ role: "post-photo", origin: "import", meta: { stock: { source: "openverse", id: "z9" } } });
+    expect(ai).not.toHaveBeenCalled();
   });
 });

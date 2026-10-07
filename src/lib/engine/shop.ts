@@ -72,14 +72,16 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   // Celles du marchand passent avant celles générées par l'IA.
   const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId);
   put("lifestyle", life[0], "en-situation-1");
-  put("lifestyle2", life[1], "en-situation-2");
+  // Ambiances de l'univers (photos libres, sans le produit) : seulement pour les emplacements d'ambiance encore vides.
+  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'ambiance' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (status = 'approved') DESC, created_at DESC LIMIT 2", projectId);
+  put("lifestyle2", life[1] ?? amb[0], "en-situation-2");
   put("cutout", pick("cutout"), "produit-detoure");
   put("packshot", pick("packshot"), "packshot");
   put("detail1", pick("detail", 0), "detail-1");
   put("detail2", pick("detail", 1), "detail-2");
   put("scene1", life[1] ?? pick("scene", 0), "scene-1");
   put("scene2", pick("scene", 1), "scene-2");
-  put("scene3", pick("scene", 2), "scene-3");
+  put("scene3", pick("scene", 2) ?? amb[1] ?? amb[0], "scene-3");
   put("banner", pick("banner"), "banniere");
   put("hero", pick("scene", 0) ?? pick("banner") ?? pick("packshot"), "hero");
   const video = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND (json_extract(meta, '$.format') = '16:9') ORDER BY created_at DESC LIMIT 1", projectId)[0];

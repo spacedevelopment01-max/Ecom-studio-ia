@@ -19,6 +19,9 @@ const get = async (url: string, headers: Record<string, string> = {}) => {
   return r.json() as Promise<any>;
 };
 
+/** Tests automatiques : jamais d'appel aux banques d'images réelles (réseau lent ou absent, résultats changeants). */
+const offline = () => process.env.STOCK_OFFLINE === "1";
+
 export const stockSources = (): StockSource[] => [...(activeProviderKey("pexels") ? (["pexels"] as const) : []), ...(activeProviderKey("pixabay") ? (["pixabay"] as const) : []), "openverse"];
 
 export async function searchSource(source: StockSource, query: string, orientation: Orientation, lang: "fr" | "en"): Promise<StockPhoto[]> {
@@ -44,6 +47,7 @@ export async function searchSource(source: StockSource, query: string, orientati
 /** Recherche dans les banques disponibles, dans l'ordre (Pexels, Pixabay, Openverse), sans les photos déjà prises. */
 export async function searchStock(queries: string[], orientation: Orientation, lang: "fr" | "en", exclude: Set<string>): Promise<StockPhoto[]> {
   const out: StockPhoto[] = [];
+  if (offline()) return out;
   for (const source of stockSources()) {
     for (const query of queries.filter(Boolean)) {
       try {
@@ -90,6 +94,7 @@ export type StockVideo = { source: "pexels" | "pixabay"; id: string; url: string
 /** Vidéos libres de droits (Pexels, Pixabay : clés gratuites) ; fichier HD de taille raisonnable choisi. */
 export async function searchStockVideos(queries: string[], orientation: "landscape" | "portrait", lang: "fr" | "en", exclude: Set<string>): Promise<StockVideo[]> {
   const out: StockVideo[] = [];
+  if (offline()) return out;
   const pick = (files: { width: number; height: number; link: string }[]) =>
     files.filter((f) => f.link && Math.max(f.width, f.height) >= 1080 && Math.max(f.width, f.height) <= 2160).sort((a, b) => a.width * a.height - b.width * b.height)[0] ?? files.filter((f) => f.link).sort((a, b) => b.width * b.height - a.width * a.height)[0];
   for (const query of queries.filter(Boolean)) {

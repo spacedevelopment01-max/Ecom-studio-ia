@@ -175,14 +175,18 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
     }
   }
 
-  // 1 bis. Entreprise de services sans plan IA : un plan vidéo libre de droits du métier (Pexels, Pixabay), gratuit.
-  if (!clipDirs.length && services) {
+  // 1 bis. Plan vidéo libre de droits (Pexels, Pixabay), gratuit : le métier pour une entreprise de services (sans
+  // plan IA), l'univers du produit (plan de coupe, jamais le produit lui-même) pour une boutique.
+  if (services ? !clipDirs.length : true) {
     const stockId = await ctx.step(`stock-clip:${req.format}`, async () => {
-      ctx.progress(0.2, L("Recherche d'un plan vidéo libre de droits du métier", "Searching a royalty-free video shot of the trade"));
+      ctx.progress(0.2, L("Recherche d'un plan vidéo libre de droits", "Searching a royalty-free video shot"));
       const trade = [project.product.category, project.product.name].filter(Boolean)[0] ?? "";
       const items = project.services?.services ?? [];
       const taken = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND kind = 'video' AND json_extract(meta, '$.stock') IS NOT NULL", projectId).map((x) => x.k));
-      const found = await searchStockVideos([trade, items[0]?.name ?? "", `${trade} chantier`], req.format === "16:9" ? "landscape" : "portrait", "fr", taken).catch(() => []);
+      const q = services
+        ? { lang: "fr" as const, queries: [trade, items[0]?.name ?? "", `${trade} chantier`] }
+        : await (await import("./stock-universe")).universeQueries({ userId: project.userId, projectId, jobId: ctx.job.id }, project);
+      const found = await searchStockVideos(q.queries, req.format === "16:9" ? "landscape" : "portrait", q.lang, taken).catch(() => []);
       for (const v of found.slice(0, 2)) {
         try {
           const buf = await downloadStockVideo(v);
@@ -242,7 +246,10 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       // Découpage de l'IA inexploitable : celui du studio prend le relais (la vidéo est quand même livrée).
       console.warn("[vidéo] découpage de l'IA indisponible :", (e as Error).message);
     }
-    return localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url, project);
+    const lp = localVideoPlan(project.product, brand, req.format, imgs.map((a) => a.role ?? ""), req.url, project);
+    // Plan de coupe (IA ou libre de droits) après l'ouverture : la vidéo respire entre deux plans du produit.
+    if (clipDirs.length) lp.scenes.splice(1, 0, { kind: "clip", duration: 3, clip: clipDirs.length - 1 });
+    return lp;
   }));
   plan.format = req.format;
   if (req.music) plan.music = req.music;

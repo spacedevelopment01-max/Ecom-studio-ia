@@ -260,6 +260,19 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
     }
   }
 
+  // Univers du produit en photos libres de droits (gratuites) : sections du site sans produit, plans de coupe vidéo.
+  await ctx.step("universe", async () => {
+    ctx.progress(0.73, L("Photos libres de droits de l'univers du produit", "Royalty-free photos of the product's world"));
+    const { universePhotos } = await import("./stock-universe");
+    const got = await universePhotos(ictx, project, 2).catch((e) => {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      console.warn("[univers] photos libres indisponibles :", (e as Error).message);
+      return [] as Asset[];
+    });
+    created.push(...got.map((a) => a.id));
+    return got.map((a) => a.id);
+  });
+
   // Bannière publicitaire 16:9 de niveau agence (texte, produit, informations confirmées).
   const proBanner = async () => {
     const r = await renderProCreatives({ product: cutBuf, palette: pal, typo: brandTypo(project), brand: project.brand?.name ?? project.name, headline: project.brand?.tagline || project.product.name || project.name, subline: shortLine(project.product.name || ""), keyword: keywordFor(project), facts: confirmedFacts(project), cta: C("Découvrir", "Shop now"), look: creativeLook(line) }, [{ template: "signature", format: "landscape" }]).catch(() => null);

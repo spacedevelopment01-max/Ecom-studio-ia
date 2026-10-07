@@ -30,7 +30,7 @@ import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo
 
 
 /** Contrôle obligatoire d'une image d'ambiance générée (aucun texte ou logo inventé, aucune personne déformée). */
-async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer): Promise<{ ok: boolean; tier: QcTier; reason: string }> {
+export async function checkAmbiance(b: { userId: string; projectId: string; jobId?: string | null; usageKey: string }, img: Buffer): Promise<{ ok: boolean; tier: QcTier; reason: string }> {
   if (!llmConfigured()) return { ok: false, tier: "warn", reason: L("contrôle indisponible : vérifiez l'image", "check unavailable: check the image") };
   let r: Awaited<ReturnType<typeof aiQcScene>>;
   try {
@@ -62,6 +62,48 @@ async function ambianceChecked(ictx: { userId: string; projectId: string; jobId?
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     return { img, check, usageKey };
   }
+}
+
+/** Recherches de photos libres de droits pour un sujet de publication (IA légère si active, sinon le métier). */
+async function topicQueries(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, topic: string): Promise<{ lang: "fr" | "en"; queries: string[] }> {
+  const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
+  if (!llmConfigured()) return { lang: "fr", queries: [trade] };
+  try {
+    const r = await llmJson(
+      {
+        task: "classification",
+        ...ictx,
+        usageKey: `${ictx.jobId ?? "stock"}:topic-queries:${clip(topic, 40)}`,
+        system: "You write search queries for royalty-free photo libraries. Short English queries (2 to 4 words) for a concrete, photographable scene that illustrates the post: tools, materials, the work, the result, the place. No brand names, no people's names.",
+        prompt: `Business: ${trade}.\nPost: ${clip(topic, 300)}\nAnswer { "queries": ["query 1", "query 2"] }.`,
+        maxTokens: 400,
+      },
+      z.object({ queries: z.array(z.string()).max(3) }),
+    );
+    return r.queries.length ? { lang: "en", queries: [...r.queries, trade] } : { lang: "fr", queries: [trade] };
+  } catch (e) {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    return { lang: "fr", queries: [trade] };
+  }
+}
+
+/** Photo libre de droits propre à une publication (jamais reprise d'une autre publication ni des visuels du site). */
+async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }): Promise<Asset | null> {
+  const { lang, queries } = await topicQueries(ictx, p, post.topic);
+  const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
+  const found = await searchStock(queries, post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used);
+  for (const photo of found.slice(0, 3)) {
+    let img: Buffer;
+    try {
+      img = await downloadStock(photo);
+    } catch {
+      continue;
+    }
+    const check = llmConfigured() ? await checkAmbiance({ ...ictx, usageKey: `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${photo.source}:${photo.id}` }, img) : null;
+    if (check && check.tier === "bad") continue;
+    return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: post.aspect, ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) } });
+  }
+  return null;
 }
 
 /** Recherches de photos libres de droits par emplacement : mots du métier (IA légère si disponible, sinon le texte du projet). */
@@ -336,6 +378,12 @@ export function assignPhotoSlots(p: Project, pool: Asset[]): Partial<Record<Phot
  * des images des visuels de l'onglet Images.
  */
 export async function postAmbiance(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }): Promise<Asset | null> {
+  // D'abord une photo libre de droits du sujet (gratuite, une différente par publication) ; l'IA d'images seulement à défaut.
+  const free = await postStockPhoto(ictx, p, post).catch((e) => {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    return null;
+  });
+  if (free) return free;
   if (!imageProviderAvailable()) return null;
   const [, , base, look] = ambianceParts(p);
   const prompt = `${base} Photograph illustrating this social media post: "${clip(post.topic, 220)}". Show the real work, tools, materials or place it talks about, a fresh angle and framing specific to this subject. ${look}`;
