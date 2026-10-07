@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Crosshair, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Crosshair, Maximize2, Minimize2, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
@@ -118,6 +118,19 @@ export default function TabBoutique() {
   const custom = useCustomThemeStatus(id);
   const [view, setView] = useState<"chat" | "preview" | "structure">("chat");
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
+  // Plein écran : l'aperçu couvre tout l'écran (même aperçu, sans rechargement), pour juger la mise en page.
+  const [full, setFull] = useState(false);
+  useEffect(() => {
+    if (!full) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [full]);
   // Sur téléphone, l'aperçu s'ouvre au format téléphone (lisible et désignable au doigt).
   useEffect(() => {
     if (window.innerWidth < 640) setDevice("mobile");
@@ -169,6 +182,8 @@ export default function TabBoutique() {
       if (d.type === "selected") {
         setSelection(d.selection);
         setPicking(false);
+        // Élément désigné : retour à la discussion pour écrire la demande.
+        setFull(false);
         setView("chat");
       }
       if (d.type === "pick-cancel") setPicking(false);
@@ -490,28 +505,37 @@ export default function TabBoutique() {
   const Preview = (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b border-line p-2.5">
-        <Select value={pages.some((p) => p.path === page) ? page : "/"} onChange={(e) => setPage(e.target.value)} className="h-9 w-44 text-sm" aria-label={t("Page affichée", "Page shown")}>
-          {pages.map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}
-        </Select>
+        <div className="w-44 shrink-0">
+          <Select value={pages.some((p) => p.path === page) ? page : "/"} onChange={(e) => setPage(e.target.value)} className="h-9 text-sm" aria-label={t("Page affichée", "Page shown")}>
+            {pages.map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}
+          </Select>
+        </div>
         <div className="flex rounded-full border border-line bg-card p-0.5" role="group" aria-label={t("Appareil", "Device")}>
           {(Object.keys(DEVICES) as (keyof typeof DEVICES)[]).map((d) => {
             const I = DEVICES[d].icon;
             return <button key={d} onClick={() => setDevice(d)} className={cx("grid h-8 w-9 place-items-center rounded-full", device === d && "bg-ink text-paper")} aria-pressed={device === d} title={t(DEVICES[d].label, DEVICES[d].en)}><I className="size-4" /></button>;
           })}
         </div>
+        <button onClick={() => setFull(!full)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", full ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} aria-pressed={full} title={full ? t("Quitter le plein écran (Échap)", "Exit full screen (Esc)") : t("Voir le thème en plein écran", "View the theme full screen")} data-preview-full>
+          {full ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />} {full ? t("Quitter", "Exit") : t("Plein écran", "Full screen")}
+        </button>
         <button onClick={() => setPicking(!picking)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", picking ? "border-signal bg-signal text-signal-ink" : "border-line bg-card")} aria-pressed={picking}><Crosshair className="size-3.5" /> {picking ? t("Cliquez un élément", "Click an element") : t("Désigner", "Select")}</button>
         {cur.motion && <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />}
+{!full && (
+          <>
 <button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: t("En bas de la page", "At the bottom of the page") })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> {t("Section", "Section")}</button>
                 <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> {t("Thèmes", "Themes")}</button>
                 <CustomThemeButton projectId={id} status={custom.data} reload={custom.reload} onDone={() => (reload(), reloadProject())} />
                 <button onClick={() => setImportOpen("upload")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" title={t("Importer le thème de votre boutique Shopify", "Import your Shopify store theme")}><Upload className="size-3.5" /> {t("Importer mon thème", "Import my theme")}</button>
                 {cur.imported && <button onClick={() => setImportOpen("report")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-signal/40 bg-signal-soft px-3 text-xs text-signal" title={t("Analyse de votre thème importé", "Analysis of your imported theme")}><Layers className="size-3.5" /> {cur.imported.name} · {t("analyse", "analysis")}</button>}
-        <div className="ml-auto flex items-center gap-1.5">
+          </>
+        )}
+        <div className={cx("ml-auto flex items-center gap-1.5", full && "hidden")}>
           <Badge tone={viewVersion ? "warn" : "neutral"}>v{theme.versions.find((v) => v.id === versionId)?.number ?? cur.number}{viewVersion ? t(" (consultation)", " (viewing)") : ""}</Badge>
           <button onClick={() => setHistoryOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Versions", "Versions")}><History className="size-4" /></button>
           {data && <PlatformPill projectId={id} platform={data.project.platform} business={data.business} onChanged={reloadProject} />}
           {discovery ? (
-            <a href="/studio/compte#forfaits" className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink"><Lock className="size-3.5" aria-hidden /> {t("Choisir un forfait pour publier", "Choose a plan to publish")}</a>
+            <a href="/studio/compte#forfaits" className="plan-sparkle inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink"><Lock className="size-3.5" aria-hidden /> {t("Choisir un forfait pour publier", "Choose a plan to publish")}</a>
           ) : (
             <button onClick={() => setExportOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={data && isPlatform(data.project.platform) ? t(`Exporter pour ${platformInfo(data.project.platform, data.business, t).short}`, `Export for ${platformInfo(data.project.platform, data.business, t).short}`) : t("Exporter", "Export")}><Download className="size-4" aria-hidden /><span className="sr-only">{t("Exporter et installer", "Export and install")}</span></button>
           )}
@@ -556,7 +580,7 @@ export default function TabBoutique() {
       </div>
       <div className="grid h-[calc(100dvh-9.5rem)] grid-cols-1 lg:h-[calc(100dvh-4rem)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]">
         <section className={cx("min-h-0 border-r border-line bg-paper", view !== "chat" && "hidden lg:block")} aria-label={t("Discussion", "Chat")}>{Chat}</section>
-        <section className={cx("min-h-0", view !== "preview" && "hidden lg:block")} aria-label={t("Aperçu", "Preview")}>{Preview}</section>
+        <section className={cx("min-h-0", full ? "fixed inset-0 z-[80] bg-paper" : view !== "preview" && "hidden lg:block")} aria-label={t("Aperçu", "Preview")} aria-modal={full || undefined} role={full ? "dialog" : undefined}>{Preview}</section>
         <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? "hidden xl:block" : "")} aria-label={t("Structure", "Structure")}>{Structure}</section>
       </div>
       <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} multiple kinds={["image", "video", "logo"]} onPick={(a) => addAttachments(a)} />

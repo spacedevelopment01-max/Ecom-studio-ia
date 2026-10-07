@@ -1,7 +1,7 @@
 "use client";
 /** Éléments partagés entre les espaces du studio. */
 import { useState } from "react";
-import { Check, Search, Film, FileText } from "lucide-react";
+import { Check, Search, Film, FileText, Sparkles } from "lucide-react";
 import { Badge, Button, cx, formatBytes, Input, Modal, Progress, Spinner, useApi } from "../ui";
 import { useProject, type JobView } from "./project-context";
 import { currentLang, useLang, useT } from "../i18n";
@@ -185,18 +185,27 @@ export function EngineNotice({ what }: { what: string }) {
   const { data } = useProject();
   const { billing } = useBilling();
   if (!data) return null;
-  if (!data.ai.llm)
+  // Forfait payant sur une installation sans IA : problème de configuration, pas une question de forfait.
+  if (!data.ai.llm && billing?.plan)
     return (
       <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
         {t(<>L'IA n'est pas encore connectée sur cette installation : version simplifiée pour {what}.</>, <>AI isn't connected on this installation yet: simplified version for {what}.</>)}
       </div>
     );
   if (!billing || billing.plan) return null;
+  // Sans forfait (ou sans IA) : on dit franchement que le rendu reste basique, et comment passer à la version complète.
   return (
-    <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
-      <strong>{t("Découverte gratuite.", "Free discovery.")}</strong>{" "}
-      {t("Le moteur du studio (sans IA) analyse votre produit, crée votre marque, vos logos et un aperçu de votre page d'accueil. L'IA, les images, les vidéos et l'export de la boutique sont inclus dans les forfaits.", "The studio engine (without AI) analyzes your product, creates your brand, your logos and a preview of your home page. AI, images, videos and store export come with the plans.")}{" "}
-      <a href="/studio/compte#forfaits" className="font-semibold underline">{t("Choisir un forfait", "Choose a plan")}</a>
+    <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-info/30 bg-info-soft px-4 py-3.5 text-sm text-info sm:flex-row sm:items-center" data-engine-notice>
+      <p className="min-w-0 flex-1">
+        <strong>{t("Version de base, sans IA : le rendu final reste très basique.", "Basic version, without AI: the final result stays very basic.")}</strong>{" "}
+        {t(
+          <>Pour {what}, le studio utilise son moteur simple : textes génériques, peu de personnalisation, aucune photo ni vidéo générée par l'IA. Avec un forfait, l'IA analyse vraiment votre activité, rédige des textes sur mesure, crée de nouveaux visuels et des vidéos, et vous pouvez publier votre boutique.</>,
+          <>For {what}, the studio uses its simple engine: generic copy, little personalisation, no AI-generated photos or videos. With a plan, AI truly analyses your business, writes tailored copy, creates new visuals and videos, and you can publish your store.</>,
+        )}
+      </p>
+      <a href="/studio/compte#forfaits" className="plan-sparkle inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink sm:self-auto">
+        <Sparkles className="size-4" aria-hidden /> {t("Passer à la version complète", "Get the full version")}
+      </a>
     </div>
   );
 }

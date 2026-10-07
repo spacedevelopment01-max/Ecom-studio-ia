@@ -87,7 +87,7 @@ export function PlanLink({ billing, className }: { billing: BillingView | null; 
         {plan ? plan.name[lang] : t("Découverte", "Discovery")}
       </Link>
       {!plan && (
-        <Link href="/studio/compte#forfaits" aria-label={t("Choisir un forfait", "Choose a plan")} title={t("Choisir un forfait", "Choose a plan")} className="inline-flex size-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-signal text-xs font-semibold text-signal-ink sm:w-auto sm:px-3">
+        <Link href="/studio/compte#forfaits" aria-label={t("Choisir un forfait", "Choose a plan")} title={t("Choisir un forfait", "Choose a plan")} className="plan-sparkle inline-flex size-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-signal text-xs font-semibold text-signal-ink sm:w-auto sm:px-3">
           <Sparkles className="size-4 sm:size-3.5" aria-hidden /> <span className="hidden sm:inline">{t("Choisir un forfait", "Choose a plan")}</span>
         </Link>
       )}
