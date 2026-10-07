@@ -300,7 +300,8 @@ export type UsageInput = {
   idempotencyKey?: string;
 };
 
-export function recordUsage(u: UsageInput) {
+/** Facturation d'un usage. Renvoie l'événement créé, ou `dedup: true` s'il était déjà compté (reprise, même clé). */
+export function recordUsage(u: UsageInput): { eventId: string | null; dedup: boolean } {
   const markup = getJsonSetting<number>("billing.markup", 1);
   const billed = Math.round(u.costMicro * markup);
   const uid = id();
@@ -326,8 +327,9 @@ export function recordUsage(u: UsageInput) {
       now(),
     );
   } catch (e: any) {
-    if (String(e?.message).includes("UNIQUE")) return; // déjà comptabilisé (reprise)
+    if (String(e?.message).includes("UNIQUE")) return { eventId: null, dedup: true }; // déjà comptabilisé (reprise)
     throw e;
   }
   charge(u.userId, billed, `usage:${uid}`, `${u.task} · ${u.provider}/${u.model}`);
+  return { eventId: uid, dedup: false };
 }

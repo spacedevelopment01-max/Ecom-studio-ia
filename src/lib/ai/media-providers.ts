@@ -8,6 +8,7 @@
  *  - Vidéo (Veo / fal) : plans d'ambiance générés à partir d'une scène
  *    contenant le produit réel ; ils sont vérifiés puis intégrés au montage.
  */
+import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
 import sharp from "sharp";
 import { assertCanSpend, EUR, recordUsage } from "../billing";
@@ -17,6 +18,7 @@ import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, requirePrice, routeFor, usdToEur } from "./config";
+import { recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string };
@@ -29,16 +31,47 @@ function quotaFor(media: "image" | "video") {
   return "aiVideos";
 }
 
+/**
+ * Trace d'une génération (observabilité) : ouverte par `traced()`, complétée par `gate()` (fournisseur, modèle,
+ * départ du chronomètre) puis par `recordMedia()` (succès) ; une génération partie puis échouée (refus, délai
+ * dépassé) est tracée aussi. Aucune image ni consigne n'est enregistrée.
+ */
+type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean };
+const mediaTrace = new AsyncLocalStorage<MediaTrace>();
+
+function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...a: A) => Promise<R>): (...a: A) => Promise<R> {
+  return (...args: A) => {
+    const t: MediaTrace = { task, ctx: args[0] };
+    return mediaTrace.run(t, async () => {
+      try {
+        return await fn(...args);
+      } catch (e) {
+        // Échec après le départ de la demande au fournisseur : l'appel a eu lieu, il est tracé (coût inconnu = 0, signalé).
+        if (t.provider && !t.recorded) {
+          const msg = String((e as Error)?.message ?? e);
+          recordCall({ userId: t.ctx!.userId, projectId: t.ctx!.projectId, jobId: t.ctx!.jobId, task, provider: t.provider, requestedModel: t.model ?? "", unit: t.unit ?? "image", latencyMs: t.started ? Date.now() - t.started : null, usageKey: t.ctx!.usageKey ?? null, estimated: true, status: /délai|timeout|timed out/i.test(msg) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(msg).slice(0, 200)}` });
+        }
+        throw e;
+      }
+    });
+  };
+}
+
 /** Avant une génération : quota du forfait (message clair s'il est épuisé), puis budget IA caché. */
-function gate(ctx: Ctx, micro: number, media: "image" | "video") {
+function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: string, model: string) {
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
   assertCanSpend(ctx.userId, micro);
+  const t = mediaTrace.getStore();
+  if (t) Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : provider === "openai" ? "tokens" : "image", started: Date.now() });
 }
 
 /** Après une génération : consommation réelle (budget caché) et décompte du quota. */
 function recordMedia(u: Parameters<typeof recordUsage>[0]) {
-  recordUsage(u);
+  const billed = recordUsage(u);
+  const t = mediaTrace.getStore();
+  if (t) t.recorded = true;
+  recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" });
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
   if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
 }
@@ -105,12 +138,12 @@ export function videoProviderAvailable(): "google" | "fal" | null {
  * `composite` : image PNG du cadre avec le produit déjà placé ;
  * `productMask` : PNG de même taille, opaque là où se trouve le produit.
  */
-export async function openaiScene(ctx: Ctx, input: { composite: Buffer; productMask: Buffer; prompt: string; size: "1024x1024" | "1024x1536" | "1536x1024" }) {
+async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask: Buffer; prompt: string; size: "1024x1024" | "1024x1536" | "1536x1024" }) {
   const key = activeProviderKey("openai");
   if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  gate(ctx, cost("openai", model, { input: 400, imageIn: 1500, imageOut: 6300 }).micro, "image");
+  gate(ctx, cost("openai", model, { input: 400, imageIn: 1500, imageOut: 6300 }).micro, "image", "openai", model);
   // Le masque OpenAI : zones transparentes = zones à peindre. On rend donc
   // transparent tout ce qui n'est pas le produit.
   const { data, info } = await sharp(input.productMask).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -147,12 +180,12 @@ export async function openaiScene(ctx: Ctx, input: { composite: Buffer; productM
 }
 
 /** Décor vide généré par Gemini (le produit réel est composé ensuite). */
-export async function geminiPlate(ctx: Ctx, input: { prompt: string; reference?: Buffer; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
+async function geminiPlateImpl(ctx: Ctx, input: { prompt: string; reference?: Buffer; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
   const key = activeProviderKey("google");
   if (!key) throw new UserFacingError(L("Aucune clé Google Gemini configurée pour la génération d'images.", "No Google Gemini key configured for image generation."));
   const route = routeFor("image_generation");
   const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-  gate(ctx, cost("google", model, { images: 1 }).micro, "image");
+  gate(ctx, cost("google", model, { images: 1 }).micro, "image", "google", model);
   // Aucune image du produit n'est envoyée : les modèles d'image la redessinent presque toujours dans le décor,
   // ce qui donnerait un second produit (réinventé) à côté du vrai. Le décor est décrit par le texte seul.
   const parts: any[] = [{ text: `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.` }];
@@ -207,7 +240,7 @@ Quality bar: a modern, professional logo for a real small business — original,
 }
 
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */
-async function generateImage(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean }) {
+async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean }) {
   const provider = imageProviderAvailable();
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI).", "No image provider configured (Google Gemini or OpenAI)."));
   const text = input.text;
@@ -216,7 +249,7 @@ async function generateImage(ctx: Ctx, input: { text: string; aspect: "1:1" | "4
     const key = activeProviderKey("google")!;
     const route = routeFor("image_generation");
     const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-    gate(ctx, cost("google", model, { images: 1 }).micro, "image");
+    gate(ctx, cost("google", model, { images: 1 }).micro, "image", "google", model);
     const parts: any[] = [{ text }];
     if (ref) parts.push({ inline_data: { mime_type: "image/jpeg", data: ref.toString("base64") } });
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
@@ -237,7 +270,7 @@ async function generateImage(ctx: Ctx, input: { text: string; aspect: "1:1" | "4
   const key = activeProviderKey("openai")!;
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  gate(ctx, cost("openai", model, { input: 300, imageOut: 6300 }).micro, "image");
+  gate(ctx, cost("openai", model, { input: 300, imageOut: 6300 }).micro, "image", "openai", model);
   const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
   const size = input.aspect === "16:9" ? "1536x1024" : input.aspect === "1:1" ? "1024x1024" : "1024x1536";
   let res: any;
@@ -261,7 +294,7 @@ async function generateImage(ctx: Ctx, input: { text: string; aspect: "1:1" | "4
  * Plan vidéo image-vers-vidéo (Veo via l'API Gemini). Retourne un MP4.
  * `people` : plan avec une personne (UGC) — le prompt est transmis tel quel et Veo 3 génère aussi la voix et le son.
  */
-export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean }, onWait?: (msg: string) => void) {
+async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean }, onWait?: (msg: string) => void) {
   const key = activeProviderKey("google");
   if (!key) throw new UserFacingError(L("Aucune clé Google configurée pour la vidéo.", "No Google key configured for video."));
   const route = routeFor("video_generation");
@@ -270,7 +303,7 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
   const plan = userPlan(ctx.userId);
   const model = plan && PLANS[plan].videoQuality === "fast" && chosen === "veo-3.0-generate-001" ? "veo-3.0-fast-generate-001" : chosen;
   const seconds = input.seconds ?? 8;
-  gate(ctx, cost("google", model, { seconds }).micro, "video");
+  gate(ctx, cost("google", model, { seconds }).micro, "video", "google", model);
   const jpeg = await sharp(input.image).jpeg({ quality: 90 }).toBuffer();
   const start = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:predictLongRunning`, {
     method: "POST",
@@ -309,7 +342,7 @@ export async function veoClip(ctx: Ctx, input: { image: Buffer; prompt: string; 
  * Le détourage du produit est fourni en référence (forme, étiquette, couleurs à conserver) ;
  * `persona` (image du premier plan) garde la même personne et le même décor d'un plan à l'autre.
  */
-export async function ugcFrame(ctx: Ctx, input: { prompt: string; product: Buffer; persona?: Buffer; aspect: "9:16" | "16:9"; subject?: "product" | "service" }) {
+async function ugcFrameImpl(ctx: Ctx, input: { prompt: string; product: Buffer; persona?: Buffer; aspect: "9:16" | "16:9"; subject?: "product" | "service" }) {
   const provider = imageProviderAvailable();
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) pour créer la personne de la vidéo UGC.", "No image provider configured (Google Gemini or OpenAI) to create the person in the UGC video."));
   const product = await sharp(input.product).flatten({ background: "#ffffff" }).resize(1024, 1024, { fit: "contain", background: "#ffffff" }).jpeg({ quality: 90 }).toBuffer();
@@ -325,7 +358,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     const key = activeProviderKey("google")!;
     const route = routeFor("image_generation");
     const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-    gate(ctx, cost("google", model, { images: 1 }).micro, "image");
+    gate(ctx, cost("google", model, { images: 1 }).micro, "image", "google", model);
     const parts: any[] = [{ text }, { inline_data: { mime_type: "image/jpeg", data: product.toString("base64") } }];
     if (persona) parts.push({ inline_data: { mime_type: "image/jpeg", data: persona.toString("base64") } });
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
@@ -346,7 +379,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   const key = activeProviderKey("openai")!;
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  gate(ctx, cost("openai", model, { input: 400, imageIn: 3000, imageOut: 6300 }).micro, "image");
+  gate(ctx, cost("openai", model, { input: 400, imageIn: 3000, imageOut: 6300 }).micro, "image", "openai", model);
   const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
   const images = [await toFile(product, "produit.jpg", { type: "image/jpeg" })];
   if (persona) images.push(await toFile(persona, "personne.jpg", { type: "image/jpeg" }));
@@ -371,13 +404,13 @@ export function veoPersonGeneration(model: string, people: boolean): "allow_adul
 }
 
 /** Plan vidéo via fal.ai (file d'attente officielle). */
-export async function falClip(ctx: Ctx, input: { image: Buffer; prompt: string; seconds?: number }, onWait?: (msg: string) => void) {
+async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; seconds?: number }, onWait?: (msg: string) => void) {
   const key = activeProviderKey("fal");
   if (!key) throw new UserFacingError(L("Aucune clé fal.ai configurée.", "No fal.ai key configured."));
   const route = routeFor("video_generation");
   const model = route.provider === "fal" ? route.model : "fal-ai/kling-video/v2.1/pro/image-to-video";
   const seconds = input.seconds ?? 5;
-  gate(ctx, cost("fal", model, { seconds }).micro, "video");
+  gate(ctx, cost("fal", model, { seconds }).micro, "video", "fal", model);
   const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
   const headers = { Authorization: `Key ${key}`, "Content-Type": "application/json" };
   const r = await fetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
@@ -437,3 +470,10 @@ export function falRefusal(status: number, body: string): string {
     return L(`Clé fal.ai reconnue, mais le compte fal.ai est bloqué faute de crédit. Ajoutez du crédit sur fal.ai › Billing, puis testez à nouveau. (fal.ai : ${detail})`, `fal.ai key recognised, but the fal.ai account is locked for lack of credit. Add credit in fal.ai › Billing, then test again. (fal.ai: ${detail})`);
   return L(`Clé fal.ai refusée (${status}${detail ? ` : ${detail}` : ""}). Vérifiez qu'elle est copiée en entier et qu'elle n'a pas été supprimée sur fal.ai.`, `fal.ai key rejected (${status}${detail ? `: ${detail}` : ""}). Check it is copied in full and has not been deleted on fal.ai.`);
 }
+
+export const openaiScene = traced("image_generation", openaiSceneImpl);
+export const geminiPlate = traced("image_generation", geminiPlateImpl);
+export const veoClip = traced("video_generation", veoClipImpl);
+export const ugcFrame = traced("image_generation", ugcFrameImpl);
+export const falClip = traced("video_generation", falClipImpl);
+const generateImage = traced("image_generation", generateImageImpl);
