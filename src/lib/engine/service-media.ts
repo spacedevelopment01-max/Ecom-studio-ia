@@ -236,6 +236,33 @@ export function assignPhotoSlots(p: Project, pool: Asset[]): Partial<Record<Phot
   return out;
 }
 
+/**
+ * Image IA propre à une publication du calendrier (une image différente par publication), d'après son sujet, au
+ * format du réseau. Contrôle qualité comme les ambiances ; refusée ou impossible (pas d'IA d'images, quota épuisé) :
+ * null, et la publication reprend une photo existante. Rôle à part (« post-photo ») : elle ne prend jamais la place
+ * des images des visuels de l'onglet Images.
+ */
+export async function postAmbiance(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }): Promise<Asset | null> {
+  if (!imageProviderAvailable()) return null;
+  const [, , base, look] = ambianceParts(p);
+  const prompt = `${base} Photograph illustrating this social media post: "${clip(post.topic, 220)}". Show the real work, tools, materials or place it talks about, a fresh angle and framing specific to this subject. ${look}`;
+  const usageKey = `${ictx.jobId ?? "post"}:post-ambiance:${post.key}`;
+  try {
+    const img = await ambianceImage({ ...ictx, usageKey }, { prompt, aspect: post.aspect });
+    const check = await checkAmbiance({ ...ictx, usageKey: `${usageKey}:qc` }, img);
+    if (!check.ok) {
+      console.warn("[calendrier] image de publication écartée :", check.reason);
+      refundMediaQuota(ictx.userId, usageKey);
+      return null;
+    }
+    return await saveAsset({ projectId: p.id, userId: p.userId, data: await sharp(img).jpeg({ quality: 92 }).toBuffer(), name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "generated", meta: { recipe: L("Image générée par IA pour cette publication (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated image for this post (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: post.aspect } });
+  } catch (e) {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    console.warn("[calendrier] image de publication indisponible :", (e as Error).message);
+    return null;
+  }
+}
+
 /** Consignes d'ambiance par emplacement (une image IA par visuel), pour ceux que les vraies photos ne couvrent pas. */
 export function ambianceSlots(p: Project): { slot: PhotoSlot; aspect: "16:9" | "4:5" | "1:1"; prompt: string }[] {
   const [place, hands, base, look] = ambianceParts(p);
