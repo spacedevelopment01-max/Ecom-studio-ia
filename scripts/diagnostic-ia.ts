@@ -67,6 +67,8 @@ table("Par fournisseur / modèle demandé", d.byProviderModel);
 table("Par modèle réellement servi", d.byServedModel);
 table("Par portée du Project Brain", d.byBrainScope);
 table("Par version du Project Brain", d.byBrainVersion);
+table("Par intention (Router V2)", d.byIntent);
+table("Routage : défaut, repli, escalade", d.byRouting);
 
 if (d.candidates.length) {
   console.log("\n--- Candidats (notes par tentative, gain de qualité, coût) ---");

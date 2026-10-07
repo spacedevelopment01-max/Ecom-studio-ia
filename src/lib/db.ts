@@ -582,6 +582,22 @@ CREATE TABLE IF NOT EXISTS password_resets (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets(user_id);
+
+-- Plans de tâches (phase 3A) : étapes, dépendances, statuts et routage choisi ; une reprise repart du plan
+-- enregistré (rien de fait n'est refait). Aucun prompt ni contenu généré n'y est stocké.
+CREATE TABLE IF NOT EXISTS task_plans (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  request_key TEXT NOT NULL,
+  intents_json TEXT NOT NULL DEFAULT '[]',
+  steps_json TEXT NOT NULL DEFAULT '[]',
+  warnings_json TEXT NOT NULL DEFAULT '[]',
+  status TEXT NOT NULL,              -- active | done | stopped
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS task_plans_project ON task_plans(project_id, updated_at);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */
@@ -590,6 +606,13 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["ai_calls", "brain_scope", "TEXT"],
   ["ai_calls", "brain_hash", "TEXT"],
   ["ai_calls", "brain_version", "TEXT"],
+  // Orchestration (phase 3A) : intention, plan, étape et raison synthétique du routage de chaque appel.
+  ["ai_calls", "intent", "TEXT"],
+  ["ai_calls", "plan_id", "TEXT"],
+  ["ai_calls", "step_id", "TEXT"],
+  ["ai_calls", "routing_reason", "TEXT"],
+  ["ai_calls", "routing_fallback", "INTEGER NOT NULL DEFAULT 0"],
+  ["ai_calls", "routing_escalation", "INTEGER NOT NULL DEFAULT 0"],
   ["projects", "store_type", "TEXT NOT NULL DEFAULT 'mono'"],
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
