@@ -10,6 +10,7 @@ import { loadImage } from "@napi-rs/canvas";
 import { z } from "zod";
 import { all, json } from "../db";
 import { assetData, saveAsset, type Asset } from "../library";
+import { downloadStock, searchStock, stockCredit } from "../stock/photos";
 import { loadProject, type Project } from "../projects";
 import type { ServiceItem } from "../project-types";
 import { FORMATS, renderServiceCard, type Format } from "../media/compose";
@@ -61,6 +62,69 @@ async function ambianceChecked(ictx: { userId: string; projectId: string; jobId?
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     return { img, check, usageKey };
   }
+}
+
+/** Recherches de photos libres de droits par emplacement : mots du métier (IA légère si disponible, sinon le texte du projet). */
+async function stockQueries(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, slots: PhotoSlot[]): Promise<{ lang: "fr" | "en"; bySlot: Partial<Record<PhotoSlot, string[]>> }> {
+  const items = serviceItems(p);
+  const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
+  const local: Partial<Record<PhotoSlot, string[]>> = {
+    hero: [trade, `${trade} atelier`],
+    banner: [`${trade} chantier`, trade],
+    "service:0": [items[0]?.name ?? trade, trade],
+    "service:1": [items[1]?.name ?? trade, trade],
+    ad: [`${trade} outils`, trade],
+  };
+  if (!llmConfigured()) return { lang: "fr", bySlot: local };
+  try {
+    const r = await llmJson(
+      {
+        task: "classification",
+        ...ictx,
+        usageKey: `${ictx.jobId ?? "stock"}:stock-queries`,
+        system: "You write search queries for royalty-free photo libraries (Pexels, Pixabay). Short English queries (2 to 4 words) describing a concrete, photographable scene of the trade: tools, materials, the work being done, the finished result, the place. No people's names, no brand names, no abstract words.",
+        prompt: `Business: ${trade}. ${p.product.summary ?? ""}\nServices: ${items.map((s) => s.name).join(", ")}\nSlots: ${slots.join(", ")} (hero = the trade at a glance; banner = a finished job; service:N = that service; ad = tools or work in progress).\nAnswer { "queries": { "<slot>": ["query 1", "query 2"] } }.`,
+        maxTokens: 800,
+      },
+      z.object({ queries: z.record(z.string(), z.array(z.string()).max(3)) }),
+    );
+    const bySlot: Partial<Record<PhotoSlot, string[]>> = {};
+    for (const s of slots) bySlot[s] = (r.queries[s] ?? []).filter(Boolean).slice(0, 2);
+    return slots.every((s) => bySlot[s]?.length) ? { lang: "en", bySlot } : { lang: "fr", bySlot: local };
+  } catch (e) {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    return { lang: "fr", bySlot: local };
+  }
+}
+
+/**
+ * Remplit les emplacements avec des photos libres de droits (une photo différente par emplacement). Avec l'IA, chaque
+ * photo passe le même contrôle que les ambiances (texte, logo, visage, hors sujet) ; sinon la première trouvée est prise.
+ */
+export async function stockFill(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, slots: { slot: PhotoSlot; aspect: "16:9" | "4:5" | "1:1" }[], base: string): Promise<{ id: string; slot: PhotoSlot }[]> {
+  if (!slots.length) return [];
+  const { lang, bySlot } = await stockQueries(ictx, p, slots.map((x) => x.slot));
+  const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
+  const out: { id: string; slot: PhotoSlot }[] = [];
+  for (const { slot, aspect } of slots) {
+    const orientation = aspect === "16:9" ? "landscape" : aspect === "1:1" ? "square" : "portrait";
+    const found = await searchStock(bySlot[slot] ?? [], orientation, lang, used);
+    for (const photo of found.slice(0, 3)) {
+      let img: Buffer;
+      try {
+        img = await downloadStock(photo);
+      } catch {
+        continue;
+      }
+      used.add(`${photo.source}:${photo.id}`);
+      const check = llmConfigured() ? await checkAmbiance({ ...ictx, usageKey: `${ictx.jobId ?? "stock"}:stockqc:${slot}:${photo.source}:${photo.id}` }, img) : null;
+      if (check && check.tier === "bad") continue;
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: aspect, slot, ...(check && check.tier === "warn" ? { qcWarning: check.reason } : {}) }, status: "review" });
+      out.push({ id: a.id, slot });
+      break;
+    }
+  }
+  return out;
 }
 
 export const isServices = (p: Pick<Project, "business"> | null | undefined) => p?.business === "services";
@@ -202,7 +266,7 @@ export function serviceCardPlan(p: Project, photos: number, tips?: { title: stri
  * l'activité, ou originaux), sans les photos refusées.
  */
 export function realActivityPhotos(projectId: string): Asset[] {
-  return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND (role = 'original' OR (role = 'lifestyle' AND origin != 'generated')) ORDER BY created_at LIMIT 8", projectId);
+  return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND (role = 'original' OR (role = 'lifestyle' AND origin != 'generated' AND json_extract(meta, '$.stock') IS NULL)) ORDER BY created_at LIMIT 8", projectId);
 }
 
 /** Photos réelles d'abord, puis ambiances générées par IA. */
@@ -220,7 +284,8 @@ export async function refreshSiteBanners(projectId: string) {
 }
 
 export function activityPhotos(projectId: string): Asset[] {
-  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND origin = 'generated' AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 8", projectId);
+  // Images faites pour un emplacement : photos libres de droits (gratuites) d'abord, puis ambiances générées par IA.
+  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND (origin = 'generated' OR json_extract(meta, '$.stock') IS NOT NULL) AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (json_extract(meta, '$.stock') IS NOT NULL) DESC, created_at DESC LIMIT 8", projectId);
   return [...realActivityPhotos(projectId), ...amb];
 }
 
@@ -245,8 +310,9 @@ export function assignPhotoSlots(p: Project, pool: Asset[]): Partial<Record<Phot
   const out: Partial<Record<PhotoSlot, number>> = {};
   if (!pool.length) return out;
   const used = new Set<number>();
-  const slotOf = (a: Asset) => (a.origin === "generated" ? (json<any>(a.meta as any, {}).slot as PhotoSlot | undefined) : undefined);
-  const real = pool.map((a, i) => (a.origin !== "generated" ? i : -1)).filter((i) => i >= 0);
+  const stock = (a: Asset) => !!json<any>(a.meta as any, {}).stock;
+  const slotOf = (a: Asset) => (a.origin === "generated" || stock(a) ? (json<any>(a.meta as any, {}).slot as PhotoSlot | undefined) : undefined);
+  const real = pool.map((a, i) => (a.origin !== "generated" && !stock(a) ? i : -1)).filter((i) => i >= 0);
   let r = 0;
   for (const slot of slots) {
     if (r < real.length) {
@@ -476,11 +542,24 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
     created.push(...ids);
   }
 
-  // 2. Images d'ambiance (IA d'images disponible) : consignes honnêtes, aucun faux client identifiable.
+  // 2. Photos libres de droits (gratuites, vraies photos du métier) pour les emplacements sans photo du client.
+  const open = ambianceSlots(project).slice(realActivityPhotos(projectId).length);
+  const stockIds = await ctx.step("svc:stock", async () => {
+    ctx.progress(0.15, L("Recherche de photos libres de droits du métier", "Searching royalty-free photos of the trade"));
+    return stockFill(ictx, project, open.map((x) => ({ slot: x.slot, aspect: x.aspect })), base).catch((e) => {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      console.warn("[photos libres] indisponibles :", (e as Error).message);
+      return [] as { id: string; slot: PhotoSlot }[];
+    });
+  });
+  created.push(...stockIds.map((x) => x.id));
+  const filled = new Set(stockIds.map((x) => x.slot));
+
+  // 3. Images d'ambiance (IA d'images disponible) pour les emplacements encore vides : consignes honnêtes, aucun faux client.
   const withAi = opts.withAi !== false && !!imageProviderAvailable();
   if (withAi) {
-    // Une image par visuel : les vraies photos du client couvrent les premiers emplacements, l'IA complète les autres.
-    const todo = ambianceSlots(project).slice(realActivityPhotos(projectId).length);
+    // Une image par visuel : vraies photos du client, puis photos libres de droits ; l'IA complète ce qui manque.
+    const todo = open.filter((x) => !filled.has(x.slot));
     for (const [i, { slot, aspect, prompt }] of todo.entries()) {
       const ids = await ctx.step(`svc:ambiance:${slot}`, async () => {
         ctx.progress(0.2 + (i / Math.max(1, todo.length)) * 0.3, L("Images d'ambiance de l'activité (IA)", "Business mood images (AI)"));

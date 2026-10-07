@@ -75,10 +75,20 @@ function cost(provider: string, model: string, units: { input?: number; output?:
 export function imageProviderAvailable(): "openai" | "google" | null {
   if (!mediaAllowed()) return null;
   const r = routeFor("image_generation");
-  if (activeProviderKey(r.provider)) return r.provider === "openai" || r.provider === "google" ? r.provider : null;
+  // Fournisseur réglé pour les images (s'il en est un) ; sinon le premier fournisseur d'images qui a une clé active.
+  if ((r.provider === "openai" || r.provider === "google") && activeProviderKey(r.provider)) return r.provider;
   if (activeProviderKey("openai")) return "openai";
   if (activeProviderKey("google")) return "google";
   return null;
+}
+
+/** Pourquoi aucune image IA ne peut être faite maintenant (affiché au client et dans le diagnostic). */
+export function imageUnavailableReason(): string | null {
+  if (imageProviderAvailable()) return null;
+  if (!currentUserHasAiCredits()) return L("IA non active pour ce compte (forfait ou budget IA épuisé)", "AI not active for this account (plan or AI budget used up)");
+  const u = currentAiUser();
+  if (u && !userPlan(u)) return L("aucun forfait actif : les images IA sont réservées aux forfaits", "no active plan: AI images come with the plans");
+  return L("aucune clé OpenAI ou Gemini active dans Administration › Fournisseurs IA", "no active OpenAI or Gemini key in Admin › AI providers");
 }
 
 export function videoProviderAvailable(): "google" | "fal" | null {

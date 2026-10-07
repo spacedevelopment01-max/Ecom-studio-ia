@@ -45,6 +45,8 @@ export type RouteDraft = {
   why: string;
   /** Brief de dessin du symbole (formes, composition, parti pris), transmis à l'IA d'images. */
   drawing?: string;
+  /** Dessin par l'IA d'images impossible : raison (montrée au client), le dessin du modèle de texte est gardé. */
+  imageNote?: string;
   svg: string;
   heading: string;
   headingWeight: number;
@@ -418,6 +420,7 @@ export async function designRoutes(input: { brand: BrandInput; cutout: Buffer | 
             break;
           }
         }
+        if (draft?.imageNote && !notes.some((n) => n.includes(draft!.imageNote!))) notes.push(`${key} : symbole non dessiné par l'IA d'images (${draft.imageNote})`);
         const built = routeFromDraft(draft!, brand);
         if (!built.ok) {
           notes.push(`${key} : piste de l'IA inexploitable (${built.reason})`);

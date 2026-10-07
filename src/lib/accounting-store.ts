@@ -128,7 +128,7 @@ export function expenseToEntry(e: ExpenseRow): Entry {
   };
 }
 
-const PROVIDERS: Record<string, string> = { anthropic: "Anthropic", openai: "OpenAI", google: "Google", fal: "fal.ai" };
+const PROVIDERS: Record<string, string> = { anthropic: "Anthropic", openai: "OpenAI", google: "Google", fal: "fal.ai", pexels: "Pexels", pixabay: "Pixabay" };
 
 /** Toutes les écritures d'une période : dépenses saisies + recettes Stripe + lignes automatiques (selon les réglages). */
 export function entriesFor(r: Range, s: AccountingSettings = accountingSettings()): Entry[] {

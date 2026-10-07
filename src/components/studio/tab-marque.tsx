@@ -373,11 +373,19 @@ function LogoRoutes({ routes, max, current, choosing, locked, onChoose, onRegene
         {routes.length > 1 ? t(`${routes.length} pistes différentes, chacune avec son idée, sa typographie et ses couleurs, présentées en situation. Choisissez celle qui vous ressemble : ses déclinaisons et votre kit réseaux sociaux sont créés aussitôt.`, `${routes.length} different routes, each with its own idea, typeface and colors, shown in real situations. Pick the one that feels like you: its variations and your social media kit are created right away.`) : t("Une piste, avec son idée, sa typographie et ses couleurs, présentée en situation. « Nouvelles pistes » en propose d'autres.", "One route, with its idea, typeface and colors, shown in real situations. \"New routes\" suggests others.")}
       </SectionTitle>
       {anyLocal && (
-        <p className="mb-4 rounded-xl border border-line bg-paper-2 p-3 text-xs text-muted" role="note">
+        <div className="mb-4 rounded-xl border border-line bg-paper-2 p-3 text-xs text-muted" role="note">
           {aiState === "off"
             ? t("Sans IA, les pistes sont construites par le studio (silhouette du produit, monogramme géométrique, logotype) : soignées, mais pas créées sur mesure.", "Without AI, the routes are built by the studio (product silhouette, geometric monogram, wordmark): carefully made, but not custom-designed.")
-            : t("Les pistes marquées « version du studio » remplacent une piste de l'IA qui n'a pas passé le contrôle de direction artistique : elles ne sont pas créées sur mesure.", "Routes marked \"studio version\" replace an AI route that failed the art direction review: they aren't custom-designed.")}
-        </p>
+            : aiState === "unavailable"
+              ? t("L'IA n'a pas pu proposer de pistes cette fois : les pistes affichées sont celles du studio.", "The AI couldn't propose routes this time: the routes shown are the studio's.")
+              : t("Les pistes marquées « version du studio » remplacent une piste de l'IA inexploitable.", "Routes marked \"studio version\" replace an unusable AI route.")}
+          {aiState !== "off" && (routes[0] as any)?.notes?.length > 0 && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-ink-2">{t("Pourquoi ?", "Why?")}</summary>
+              <ul className="mt-1 list-disc pl-5">{((routes[0] as any).notes as string[]).map((n, i) => <li key={i}>{n}</li>)}</ul>
+            </details>
+          )}
+        </div>
       )}
       <div className="grid gap-5 md:grid-cols-3">
         {routes.map((pr, i) => {

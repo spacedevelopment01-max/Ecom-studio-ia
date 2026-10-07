@@ -11,7 +11,7 @@ import { canvasFamily, CANVAS_FONTS } from "../media/fonts";
 import { directionById } from "../theme/directions";
 import { contrast, hsl, isDark, withLightness } from "../color";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
-import { imageProviderAvailable, logoSymbolImage, refundMediaQuota } from "../ai/media-providers";
+import { imageProviderAvailable, imageUnavailableReason, logoSymbolImage, refundMediaQuota } from "../ai/media-providers";
 import { traceSymbol } from "../media/trace-symbol";
 import { C, L } from "../i18n-server";
 import { serviceSymbol, serviceTaglines } from "./services-text";
@@ -155,7 +155,8 @@ function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = []
   // Chacun son métier : le modèle de texte pense l'idée et juge ; l'IA d'images dessine le symbole (pistes produit
   // et concept), vectorisé ensuite. Monogramme (piste typo) : dessiné à partir des vraies lettres de la police.
   const drawn = async (d: RouteDraft, feedback = ""): Promise<RouteDraft> => {
-    if (!d || d.key === "typo" || !imageProviderAvailable()) return d;
+    if (!d || d.key === "typo") return d;
+    if (!imageProviderAvailable()) return { ...d, imageNote: imageUnavailableReason() ?? undefined };
     const usageKey = k(`logo-symbol-${d.key}`);
     const activity = [p.product.name, p.product.category, p.product.summary].filter(Boolean).join(" — ");
     try {
@@ -165,13 +166,13 @@ function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = []
       if (!traced.ok) {
         console.warn(`[logo] symbole de l'IA d'images non vectorisable (${traced.reason}) : dessin du modèle de texte gardé`);
         refundMediaQuota(p.userId, usageKey);
-        return d;
+        return { ...d, imageNote: L(`dessin non vectorisable : ${traced.reason}`, `drawing could not be vectorized: ${traced.reason}`) };
       }
       return { ...d, svg: traced.svg };
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       console.warn("[logo] IA d'images indisponible pour le symbole :", (e as Error).message);
-      return d;
+      return { ...d, imageNote: (e as Error).message.slice(0, 200) };
     }
   };
   return {
