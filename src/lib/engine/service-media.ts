@@ -198,8 +198,10 @@ async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?:
   const { lang, queries } = await topicQueries(ictx, p, post.topic);
   const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
   const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
-  const must = (tradeStock(`${post.topic} ${trade}`) ?? tradeStock(trade))?.must ?? [];
-  const found = rankStock(await searchStock(queries, post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured());
+  const ts = tradeStock(`${post.topic} ${trade}`) ?? tradeStock(trade);
+  const must = ts?.must ?? [];
+  // Concepts hors sujet du métier (registre) : les photos qui ne montrent que ça passent en dernier.
+  const found = rankStock(await searchStock(queries, post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured(), ts?.negative);
   const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`, must.length > 0);
   if (!pick) return null;
   const { photo, img, gate } = pick;

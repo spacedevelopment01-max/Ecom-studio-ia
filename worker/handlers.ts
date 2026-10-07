@@ -153,7 +153,8 @@ export const handlers: Record<string, Handler> = {
           "\n\nPart of the request needed a custom section written by AI: it's included in the Sell and Dominate plans. I did the rest with the library sections.",
         );
       }
-      for (const m of r.remember) remember(projectId, { kind: "preference", key: m.key, value: m.value, scope: m.scope, source: "user" });
+      // Préférences DÉDUITES par l'IA de la demande du client : provenance honnête (déduction, priorité inférieure).
+      for (const m of r.remember) remember(projectId, { kind: "preference", key: m.key, value: m.value, scope: m.scope, source: "ai", status: "inferred", origin: "inference" });
     } else {
       const media = localMediaReplace(cur.spec, message, selection, atts.map((a) => ({ assetId: a.id, name: a.name, kind: a.kind })));
       if (media) {

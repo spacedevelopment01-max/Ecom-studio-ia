@@ -65,8 +65,13 @@ describe("registre métier", () => {
     expect(resolveTrade("", null)).toMatchObject({ id: "generic", search: { queries: [] } });
   });
 
-  it("2.0 ne change rien en production : les recherches de photos actuelles sont inchangées", () => {
-    // Le registre existe et est testé, mais n'est pas encore branché (phase 2.4).
-    expect(tradeStock("Plâtrier peintre")?.queries).toEqual(["plasterer plastering wall", "painter paint roller wall", "drywall plasterboard installation", "house painter painting room"]);
+  it("2B : les recherches de photos de production passent par le registre (action + métier + lieu), mots « must » conservés", () => {
+    const r = tradeStock("Plâtrier peintre")!;
+    expect(r.queries).toEqual(resolveTrade("Plâtrier peintre").search.queries);
+    expect(r.queries).not.toContain("plasterer plastering wall");
+    expect(r.must).toEqual(expect.arrayContaining(["plasterer", "drywall", "painter", "paint roller"]));
+    expect(r.negative).toEqual(expect.arrayContaining(["brick wall", "bare wall"]));
+    // Métier absent du registre : la table historique reste le secours (comportement inchangé).
+    expect(tradeStock("Serrurier à Lyon")?.queries[0]).toBe("locksmith door lock");
   });
 });

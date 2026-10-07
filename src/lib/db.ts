@@ -610,6 +610,13 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   // Blog : requête visée et intention de recherche, conservées pour les réécritures.
   ["blog_articles", "keyword", "TEXT"],
   ["blog_articles", "search_intent", "TEXT"],
+  // Mémoire du projet (Project Brain 2B) : clé normalisée (déduplication), état (active / remplacée / rejetée),
+  // remplaçante, provenance (utilisateur, contrôle qualité, import, déduction…) et preuves (nombre, dernière fois).
+  ["memory", "norm_key", "TEXT"],
+  ["memory", "state", "TEXT NOT NULL DEFAULT 'active'"],
+  ["memory", "superseded_by", "TEXT"],
+  ["memory", "origin", "TEXT"],
+  ["memory", "evidence_json", "TEXT NOT NULL DEFAULT '{}'"],
 ];
 
 function migrate(db: Database.Database) {
@@ -617,6 +624,8 @@ function migrate(db: Database.Database) {
     const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
     if (!cols.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
   }
+  // Index sur des colonnes ajoutées : créés après elles.
+  db.exec("CREATE INDEX IF NOT EXISTS memory_active ON memory(project_id, state, norm_key)");
 }
 
 function open(): Database.Database {

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { runForUser } from "@/lib/ai/access";
+import { recordBrandDecision } from "@/lib/brain/brand-locks";
 import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { loadProject, remember, saveBrand } from "@/lib/projects";
@@ -45,6 +46,8 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   }
   brand.validated = [...new Set([...(brand.validated ?? []), ...(b.validate ?? [])])].filter((x: string) => !(b.unvalidate ?? []).includes(x));
   if (b.validate?.includes("logo")) brand.logo = { ...brand.logo, status: "validated" };
+  // Verrous posés ou levés par le client : décision mémorisée (l'état précédent reste dans l'historique).
+  if (b.validate?.length || b.unvalidate?.length) recordBrandDecision(p.id, "verrous", [...brand.validated].sort().join(", ") || "aucun");
   // Points à vérifier recalculés sur la version du client (ses choix sont gardés, seulement signalés).
   brand.checks = brandIssues(brand, p, p.strategy).filter((i) => i.blocking).map((i) => i.message);
   saveBrand(p.id, brand);

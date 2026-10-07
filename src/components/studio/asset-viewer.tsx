@@ -121,7 +121,7 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
           {(data?.usages.length ?? 0) > 0 && (
             <div>
               <p className="text-xs font-medium text-muted">{t("Utilisé dans", "Used in")}</p>
-              <ul className="mt-1 grid gap-1 text-xs">{data!.usages.map((u) => <li key={u.target_type + u.target_id}>• {u.target_type === "post" ? t("Publication", "Post") : u.target_type === "theme_section" ? t("Boutique", "Store") : u.target_type} · {u.label || u.target_id}</li>)}</ul>
+              <ul className="mt-1 grid gap-1 text-xs">{data!.usages.map((u) => <li key={u.target_type + u.target_id}>• {u.target_type === "post" ? t("Publication", "Post") : u.target_type === "theme_section" ? t("Boutique", "Store") : u.target_type === "brand" ? t("Marque", "Brand") : u.target_type} · {u.label || u.target_id}</li>)}</ul>
             </div>
           )}
           {data && (data.versions.length > 1 || data.derived.length > 0 || data.source) && (

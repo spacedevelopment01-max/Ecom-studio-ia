@@ -5,6 +5,7 @@ import { emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type 
 import type { ThemeSpec } from "./theme/spec";
 import { L, uiLang } from "./i18n-server";
 import { storedText } from "./step-notes";
+import { normalizeMemory, oppositeKey } from "./brain/memory-norm";
 
 export type Project = {
   row: ProjectRow;
@@ -81,32 +82,78 @@ export function setStatus(projectId: string, status: string) {
 
 // ---------------------------------------------------------------- mémoire
 
-export type MemoryItem = { id: string; kind: string; key: string; value: string; status: string; source: string; scope: string; created_at: number; updated_at: number };
+export type MemoryItem = { id: string; kind: string; key: string; value: string; status: string; source: string; scope: string; created_at: number; updated_at: number; state?: string; norm_key?: string | null; origin?: string | null; evidence_json?: string };
+export type MemoryOrigin = "user" | "ai_quality" | "fatal" | "import" | "inference" | "system";
 
+/** Entrées ACTIVES (les décisions remplacées restent en base comme historique, sans être relues comme contraintes). */
 export function memory(projectId: string, scope?: string): MemoryItem[] {
   return scope
-    ? all<MemoryItem>("SELECT * FROM memory WHERE project_id = ? AND status != 'rejected' AND (scope = 'all' OR scope = ?) ORDER BY created_at", projectId, scope)
-    : all<MemoryItem>("SELECT * FROM memory WHERE project_id = ? ORDER BY created_at", projectId);
+    ? all<MemoryItem>("SELECT * FROM memory WHERE project_id = ? AND status != 'rejected' AND state = 'active' AND (scope = 'all' OR scope = ?) ORDER BY created_at", projectId, scope)
+    : all<MemoryItem>("SELECT * FROM memory WHERE project_id = ? AND state = 'active' ORDER BY created_at", projectId);
 }
 
-/** Ajoute ou met à jour une entrée (clé unique par type). */
-export function remember(projectId: string, item: { kind: string; key: string; value: string; status?: string; source: string; scope?: string }) {
-  const existing = one<{ id: string }>("SELECT id FROM memory WHERE project_id = ? AND kind = ? AND key = ?", projectId, item.kind, item.key);
-  if (existing) {
-    run("UPDATE memory SET value = ?, status = ?, source = ?, scope = ?, updated_at = ? WHERE id = ?", item.value, item.status ?? "confirmed", item.source, item.scope ?? "all", now(), existing.id);
-    return existing.id;
+const originOf = (source: string): MemoryOrigin => (source === "user" ? "user" : source === "ai" ? "inference" : source === "local" ? "system" : "import");
+
+/**
+ * Ajoute une entrée à la mémoire du projet.
+ *  - artefacts (copies de travail) et journal des faits : une ligne par clé, mise à jour sur place (inchangé) ;
+ *  - décisions : une nouvelle valeur REMPLACE l'ancienne, qui reste en base (state = superseded, superseded_by) ;
+ *  - préférences, refus, corrections, objectifs : dédupliqués par clé normalisée (« pas de badge » = « badge refusé ») ;
+ *    une même entrée répétée renforce les preuves (evidence_json.count) ; la préférence contraire remplace l'ancienne.
+ * Provenance honnête : origin (user, inference, import, system…) déduit de la source si non fourni.
+ */
+export function remember(projectId: string, item: { kind: string; key: string; value: string; status?: string; source: string; scope?: string; origin?: MemoryOrigin; normKey?: string }) {
+  const scope = item.scope ?? "all";
+  const status = item.status ?? "confirmed";
+  const origin = item.origin ?? originOf(item.source);
+  if (item.kind === "artifact" || item.kind === "fact") {
+    const existing = one<{ id: string }>("SELECT id FROM memory WHERE project_id = ? AND kind = ? AND key = ?", projectId, item.kind, item.key);
+    if (existing) {
+      run("UPDATE memory SET value = ?, status = ?, source = ?, scope = ?, origin = ?, updated_at = ? WHERE id = ?", item.value, status, item.source, scope, origin, now(), existing.id);
+      return existing.id;
+    }
+    return insertMemory(projectId, { ...item, scope, status, origin, normKey: null });
   }
+  const n = item.normKey ? { normKey: item.normKey, concept: null, polarity: null } : normalizeMemory(item.kind, scope, item.key, item.value);
+  return tx(() => {
+    // Même entrée active (même clé normalisée, ou ancienne ligne sans clé normalisée pour la même clé) : déduplication.
+    const same = one<{ id: string; value: string; evidence_json: string }>(
+      "SELECT id, value, evidence_json FROM memory WHERE project_id = ? AND kind = ? AND state = 'active' AND (norm_key = ? OR (norm_key IS NULL AND key = ?)) ORDER BY created_at DESC LIMIT 1",
+      projectId,
+      item.kind,
+      n.normKey,
+      item.key,
+    );
+    if (same && (item.kind !== "decision" || same.value === item.value)) {
+      const ev = json<{ count?: number }>(same.evidence_json, {});
+      run("UPDATE memory SET norm_key = ?, status = ?, scope = ?, evidence_json = ?, updated_at = ? WHERE id = ?", n.normKey, status, scope, JSON.stringify({ ...ev, count: (ev.count ?? 1) + 1, lastAt: now() }), now(), same.id);
+      return same.id;
+    }
+    const mid = insertMemory(projectId, { ...item, scope, status, origin, normKey: n.normKey });
+    // Décision remplacée, ou préférence contraire (« je préfère les badges » après « pas de badge ») : historique.
+    const opposite = oppositeKey(n);
+    const replaced = [...(same ? [same.id] : []), ...(opposite ? all<{ id: string }>("SELECT id FROM memory WHERE project_id = ? AND state = 'active' AND norm_key = ?", projectId, opposite).map((r) => r.id) : [])];
+    for (const old of replaced) run("UPDATE memory SET state = 'superseded', superseded_by = ?, updated_at = ? WHERE id = ?", mid, now(), old);
+    return mid;
+  });
+}
+
+function insertMemory(projectId: string, m: { kind: string; key: string; value: string; status: string; source: string; scope: string; origin: string; normKey: string | null }) {
   const mid = id();
   run(
-    "INSERT INTO memory (id, project_id, kind, key, value, status, source, scope, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+    "INSERT INTO memory (id, project_id, kind, key, value, status, source, scope, norm_key, state, origin, evidence_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     mid,
     projectId,
-    item.kind,
-    item.key,
-    item.value,
-    item.status ?? "confirmed",
-    item.source,
-    item.scope ?? "all",
+    m.kind,
+    m.key,
+    m.value,
+    m.status,
+    m.source,
+    m.scope,
+    m.normKey,
+    "active",
+    m.origin,
+    JSON.stringify({ count: 1, lastAt: now() }),
     now(),
     now(),
   );

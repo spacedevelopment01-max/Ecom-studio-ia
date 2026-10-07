@@ -14,7 +14,7 @@ import { resolveTrade, tradeText, type TradeProfile } from "./trade";
 
 export const QUALITY_WINDOW_MS = 90 * 86400_000;
 
-export type MemoryRow = { kind: string; key: string; value: string; status: string; source: string; scope: string };
+export type MemoryRow = { kind: string; key: string; value: string; status: string; source: string; scope: string; origin: string | null; evidence_json: string | null };
 export type QualityRow = { deliverable: string; verdict: string; fatal: number; checked: number; checker: string; blocking_json: string; fatal_json: string };
 export type AssetRow = { id: string; name: string; role: string | null; kind: string; status: string; origin: string; gate_verdict: string | null; route_key: string | null; route_label: string | null };
 
@@ -49,7 +49,7 @@ const LIMIT_ASSETS = 80;
 export function brainSnapshot(projectOrId: string | Project): BrainSnapshot {
   const project = typeof projectOrId === "string" ? loadProject(projectOrId) : projectOrId;
   const pid = project.id;
-  const memory = all<MemoryRow>("SELECT kind, key, value, status, source, scope FROM memory WHERE project_id = ? AND kind != 'artifact' ORDER BY created_at, id", pid);
+  const memory = all<MemoryRow>("SELECT kind, key, value, status, source, scope, origin, evidence_json FROM memory WHERE project_id = ? AND kind != 'artifact' AND state = 'active' ORDER BY created_at, id", pid);
   const checks = all<QualityRow>(
     "SELECT deliverable, verdict, fatal, checked, checker, blocking_json, fatal_json FROM quality_checks WHERE project_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 500",
     pid,

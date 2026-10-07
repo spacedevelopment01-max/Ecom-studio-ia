@@ -6,6 +6,9 @@ import { enqueue } from "@/lib/jobs";
 import { one } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
+import { recordLogoRouteRejection } from "@/lib/brain/rejections";
+import { isLocked, recordBrandDecision } from "@/lib/brain/brand-locks";
+import { saveBrand } from "@/lib/projects";
 
 export const runtime = "nodejs";
 
@@ -62,8 +65,14 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (p.brand.logo.status === "provided") throw new HttpError(409, L("Votre logo est conservé tel quel. Supprimez-le des fichiers pour recevoir des propositions.", "Your logo is kept as is. Delete it from your files to receive proposals."));
-  const b = await body(req, z.object({ proposalId: z.string().max(40).optional(), regenerate: z.boolean().optional() }));
+  const b = await body(req, z.object({ proposalId: z.string().max(40).optional(), regenerate: z.boolean().optional(), replace: z.boolean().optional() }));
   const props = latestProposals(p.id);
+  // Logo validé : une autre piste ne le remplace que sur demande explicite (replace), et l'ancien choix devient historique.
+  if (b.proposalId && !b.regenerate && isLocked(p.brand, "logo") && b.proposalId !== currentId(p)) {
+    if (!b.replace) throw new HttpError(409, L("Votre logo est validé : confirmez que vous voulez le remplacer par cette piste.", "Your logo is validated: confirm that you want to replace it with this route."));
+    saveBrand(p.id, { ...p.brand, validated: (p.brand.validated ?? []).filter((x) => x !== "logo"), logo: { ...p.brand.logo, status: "proposed" } });
+    recordBrandDecision(p.id, "logo.remplacement", `Remplacement demandé par la piste ${b.proposalId}`);
+  }
   const regenerate = !!b.regenerate || !props.length;
   if (regenerate && props.length >= MAX_ROUTES) throw new HttpError(409, L(`Vous avez déjà ${MAX_ROUTES} pistes : supprimez-en une pour en créer une nouvelle.`, `You already have ${MAX_ROUTES} routes: delete one to create a new one.`));
   if (!regenerate && !props.some((x) => x.id === b.proposalId)) throw new HttpError(404, L("Piste introuvable.", "Route not found."));
@@ -86,6 +95,8 @@ export const DELETE = handle(async (req: Request, ctx: Ctx) => {
   const pid = new URL(req.url).searchParams.get("proposal") ?? "";
   if (!latestProposals(p.id).some((x) => x.id === pid)) throw new HttpError(404, L("Piste introuvable.", "Route not found."));
   if (currentId(p) === pid) throw new HttpError(409, L("C'est la piste de votre logo actuel : choisissez d'abord une autre piste pour pouvoir la supprimer.", "This is your current logo's route: choose another route first to delete it."));
+  // Suppression par le client : la forme de la piste devient un refus mémorisé (contrainte des prochaines pistes).
+  recordLogoRouteRejection(p.id, latestProposals(p.id).find((x) => x.id === pid)?.info.route);
   removeProposal(p.id, pid);
   return ok({ proposals: list(p.id), current: currentId(p) });
 });

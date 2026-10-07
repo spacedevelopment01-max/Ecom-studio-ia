@@ -1,4 +1,5 @@
 /** Marque : direction (IA ou locale), logo vectoriel et charte. */
+import { isLocked } from "../brain/brand-locks";
 import { all, one } from "../db";
 import { saveAsset, type Asset } from "../library";
 import { loadProject, saveBrand, saveStrategy, remember } from "../projects";
@@ -75,7 +76,9 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
 
   // Logo : celui du client est conservé ; sinon trois propositions vectorielles, la plus adaptée appliquée.
   const clientLogo = one<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo' AND origin = 'upload' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", projectId);
-  if (clientLogo && !site) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
+  // Un logo validé par le client (autre que ce fichier) n'est jamais remplacé automatiquement par une reconstruction.
+  const logoKept = isLocked(p.brand, "logo") && p.brand?.logo.assetId && p.brand.logo.assetId !== clientLogo?.id;
+  if (clientLogo && !site && !logoKept) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
   saveBrand(projectId, brand);
   // Site existant : jamais de logo généré (celui du site ou du client est conservé).
   if (!site && !clientLogo && !keepValidated.includes("logo")) {
