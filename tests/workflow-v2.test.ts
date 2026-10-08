@@ -147,6 +147,24 @@ describe("Studio Workflow V2", async () => {
     run("UPDATE jobs SET status = 'cancelled' WHERE id IN (?, ?)", pipe.id, w!.jobId);
   });
 
+  it("demande en liste : « … et ma boutique Shopify » loin du verbe → boutique et export Shopify", () => {
+    const { intents } = wf.parseWorkflowRequest("Crée ma marque high-tech, mon logo, mes visuels et ma boutique Shopify.", ["CREATE_BRAND", "GENERATE_IMAGE"]);
+    expect(intents).toEqual(expect.arrayContaining(["CREATE_SHOP", "EXPORT_CMS"]));
+    expect(wf.parseWorkflowRequest("Améliore la photo de ma boutique", ["GENERATE_IMAGE"]).intents).not.toContain("CREATE_SHOP");
+  });
+
+  it("calendrier sauté par la création complète (remplacé par la demande) : la demande le fait bien", async () => {
+    const { enqueue } = await import("@/lib/jobs");
+    const pipe = enqueue({ userId: vendre.id, projectId: cosmetic, type: "pipeline.run", payload: { projectId: cosmetic, skip: ["calendar"] } });
+    run("UPDATE jobs SET status = 'done', checkpoint = ? WHERE id = ?", JSON.stringify({ __steps: { brand: { status: "done" }, calendar: { status: "skipped" } } }), pipe.id);
+    const w = await fr(() => wf.prepareWorkflow(cosmetic, vendre.id, "Prépare mes publications Facebook pour les 7 prochains jours", { aiActive: false }));
+    const s = wf.startWorkflow(w.id, {});
+    run("UPDATE workflows SET pipeline_job_id = ? WHERE id = ?", pipe.id, w.id);
+    const r = await fr(() => wf.runWorkflow(ctxOf(s.jobId!)));
+    expect(r.steps.find((x) => x.kind === "social")?.status).toBe("done");
+    expect(one<{ n: number }>("SELECT COUNT(*) n FROM posts WHERE plan_id = ?", `wf-social-${w.id}`)!.n).toBe(7);
+  }, 120_000);
+
   it("demande incomprise : question de clarification, rien de lancé", async () => {
     const w = await fr(() => wf.prepareWorkflow(cosmetic, vendre.id, "Bonjour", { aiActive: false }));
     expect(w.status).toBe("needs_clarification");

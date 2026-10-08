@@ -213,6 +213,15 @@ export type PropagationResult = { updated: { key: string; kind: ImpactKind; deta
  * Met à jour les créations CHOISIES (clés de brandImpact), localement et gratuitement. Une création modifiée par le
  * client n'est mise à jour que si `includeEdited` est vrai ; ce qui n'est pas « updatable » est seulement signalé.
  */
+/** Résumé lisible de la mise à jour (mémoire du projet) : nombre de créations par type, mises à jour et laissées. */
+function propagationSummary(res: PropagationResult) {
+  const NAMES: Record<ImpactKind, [string, string]> = { theme: ["boutique / site", "store / website"], ad: ["publicité(s)", "ad(s)"], post: ["publication(s)", "post(s)"], export: ["export(s)", "export(s)"], video: ["vidéo(s)", "video(s)"], text: ["texte(s)", "text(s)"] };
+  const count = new Map<ImpactKind, number>();
+  for (const u of res.updated) count.set(u.kind, (count.get(u.kind) ?? 0) + 1);
+  const parts = [...count].map(([k, n]) => `${n} ${L(NAMES[k][0], NAMES[k][1])}`);
+  return L(`Nouvelle identité appliquée : ${parts.join(", ") || "aucune création"} ; ${res.skipped.length} laissée(s) telle(s) quelle(s).`, `New identity applied: ${parts.join(", ") || "no creation"}; ${res.skipped.length} left as is.`);
+}
+
 export async function applyBrandUpdate(projectId: string, keys: string[], o: { includeEdited?: boolean; userId?: string } = {}): Promise<PropagationResult> {
   const p = loadProject(projectId);
   const impact = brandImpact(p);
@@ -275,6 +284,6 @@ export async function applyBrandUpdate(projectId: string, keys: string[], o: { i
       }
     }
   }
-  remember(p.id, { kind: "decision", key: "marque.propagation", value: JSON.stringify({ updated: res.updated.map((u) => u.key), skipped: res.skipped.map((s) => s.key) }), source: "user", scope: "brand" });
+  remember(p.id, { kind: "decision", key: "marque.propagation", value: propagationSummary(res), source: "user", scope: "brand" });
   return res;
 }

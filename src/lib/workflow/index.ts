@@ -90,6 +90,9 @@ const sameAsk = (a: string, b: string) => norm(a).replace(/[\s.!]+/g, " ").trim(
 export function parseWorkflowRequest(text: string, intents: Intent[]): { intents: Intent[]; params: WorkflowParams } {
   const t = norm(text);
   const out = [...intents];
+  // Demande en liste (« Crée ma marque, mon logo, mes visuels et ma boutique Shopify ») : la boutique peut être loin
+  // du verbe ; elle est demandée dès qu'un verbe de création et « ma boutique / mon site » figurent dans la phrase.
+  if (!out.includes("CREATE_SHOP") && !out.includes("EDIT_THEME") && /\b(cree|creer|creez|fais|faites|construis|monte|lance|create|build|make)\b/.test(t) && /\b(ma|mon|une|un|my|a)\s+(nouvelle\s+|nouveau\s+|new\s+)?(boutique|site|shop|store|vitrine|website)\b/.test(t)) out.push("CREATE_SHOP");
   const cms = CMS_PLATFORMS.filter((pf) => t.includes(pf) || (pf === "woocommerce" && /\bwordpress\b/.test(t)));
   // « Ma boutique Shopify » : le thème est livré prêt à importer dans Shopify (export contrôlé, jamais envoyé seul).
   if (cms.length && !out.includes("EXPORT_CMS") && (out.includes("CREATE_SHOP") || out.includes("CREATE_THEME"))) out.push("EXPORT_CMS");
@@ -410,7 +413,7 @@ function markCoveredByCreation(plan: TaskPlan, pipelineJobId: string | null) {
     const s = plan.steps.find((x) => x.kind === kind && x.status === "pending");
     if (!s) continue;
     if (st.status === "done") applyResult(plan, s.id, { note: `done by the full creation (job ${pipelineJobId.slice(0, 8)})` });
-    else if (st.status === "skipped") Object.assign(s, { status: "skipped", reason: "skipped by the full creation" });
+    // Étape sautée par la création (ex. calendrier de 7 jours remplacé par celui de la demande) : la demande la fait.
   }
   // Photos libres : la création complète a déjà cherché et composé les visuels.
   if (steps.images?.status === "done") {

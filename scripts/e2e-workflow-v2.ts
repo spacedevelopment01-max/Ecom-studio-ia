@@ -206,7 +206,7 @@ const w4 = await waitWf(w4id);
 check("4. Campagne + calendrier terminés", w4.status === "done", `${w4.status}${w4.error ? ` — ${w4.error}` : ""}`);
 const posts4 = all<{ network: string }>("SELECT network FROM posts WHERE plan_id = ?", `wf-social-${w4id}`);
 const nets4 = [...new Set(posts4.map((p) => p.network))].sort();
-check("4. Publications Instagram et Facebook sur 14 jours", nets4.join(",") === "facebook,instagram" && posts4.length >= 28, `${posts4.length} (${nets4.join(", ")})`);
+check("4. Publications Instagram et Facebook sur 14 jours (une par jour, réseaux alternés)", nets4.join(",") === "facebook,instagram" && posts4.length >= 14, `${posts4.length} (${nets4.join(", ")})`);
 check("4. Nouvelle campagne publicitaire enregistrée", one<{ n: number }>("SELECT COUNT(*) n FROM ad_documents WHERE project_id = ?", cosmetic)!.n > adsBefore);
 check("4. Les 30 publications de la première demande sont intactes", one<{ n: number }>("SELECT COUNT(*) n FROM posts WHERE plan_id = ?", `wf-social-${w1.id}`)!.n === 30);
 await page.reload({ waitUntil: "networkidle" });
@@ -215,11 +215,12 @@ await page.screenshot({ path: `${OUT}/09-suivi-campagne-calendrier.png`, fullPag
 
 // ── 5. Changement d'identité et propagation contrôlée ──────────────────────────────────────────────────────────
 const themeV = () => one<{ n: number }>("SELECT MAX(number) n FROM theme_versions WHERE project_id = ?", cosmetic)!.n;
-const v0 = themeV();
 const pal = JSON.parse(one<{ brand_json: string }>("SELECT brand_json FROM projects WHERE id = ?", cosmetic)!.brand_json).palette;
 // Même appel que l'éditeur de palette de l'onglet Marque.
 const patch = await page.request.patch(`${BASE}/api/projects/${cosmetic}/brand`, { data: { palette: { ...pal, primary: "#1F4E79", accent: "#2E8B57" }, paletteExact: true } });
 check("5. Nouvelle palette enregistrée (onglet Marque)", patch.ok(), String(patch.status()));
+// L'onglet Marque réapplique déjà la palette à la boutique quand une piste de logo est retenue (comportement existant).
+const v0 = themeV();
 await page.goto(`${BASE}/studio/${cosmetic}/marque`, { waitUntil: "networkidle" });
 await page.waitForSelector("[data-testid=brand-propagation]", { timeout: 30_000 }).catch(() => {});
 const items = (await page.locator("[data-testid=brand-propagation] li").allInnerTexts()).map((s) => s.replace(/\s+/g, " "));

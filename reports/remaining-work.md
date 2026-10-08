@@ -4,10 +4,11 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 11A (CMS Integration Engine V2) terminée techniquement, **non fusionnée**, en attente
-de la validation du propriétaire ; 11B non commencée. Phase 10A validée techniquement et fusionnée (PR #62) ;
-**qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée techniquement, 9B reportée ; 8A validée techniquement,
-8B reportée.
+Dernière mise à jour : phase 12A (Studio Integration & AI Workflow V2) terminée techniquement, **non fusionnée**, en
+attente de la validation du propriétaire ; 12B et Phase 13 non commencées. Phase 11A validée techniquement et
+fusionnée (PR #63, commit 6cce305) ; 11B non commencée. Phase 10A fusionnée (PR #62) ; **qualité visuelle finale avec
+les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée techniquement, 9B reportée ; 8A validée
+techniquement, 8B reportée.
 
 **Règle pour la Phase 10 (Theme Engine V2) et les suivantes** : tests visuels réels dans un navigateur, avec
 captures ordinateur ET téléphone, dès le développement technique. Les tests de code seuls ne suffisent pas.
@@ -202,6 +203,22 @@ Reste à faire (limites de 10A) :
   projets dont la version actuelle est V1 tant qu'ils ne sont pas recomposés ; réglage de projet `themeEngine: "v1"`.
 - La CI GitHub vérifie le thème V2 par `tests/theme-v2.test.ts` (Theme Check d'un ZIP V2) ; `scripts/verify-theme.sh`
   couvre les directions V1.
+
+## Studio Workflow V2 (phase 12A) — fait et ce qui reste
+
+Fait (100 % local, 0 €) : demande unique (formulaire de création ou Pilote) → plan de l'orchestrateur existant → devis
+par module → accord + plafond si payant → exécution par les moteurs V2 (création complète, Ads V2, Social V2, CMS V2,
+SEO, Theme, Quality Gate) → suivi (étapes, verdicts, coûts réels, reprises) → éléments à valider → éditeurs. Propagation
+contrôlée d'un changement d'identité (pubs, boutique, visuels de publications, exports). Rapport :
+`reports/phase-12A-report.md` ; parcours navigateur `scripts/e2e-workflow-v2.ts` (36/36).
+
+Reste à faire (limites de 12A) :
+- Devis, accord, plafond et arrêt au plafond **jamais testés avec un vrai fournisseur d'IA** (fournisseurs simulés).
+- Changement d'identité : vidéos et textes seulement signalés (pas refaits) ; liste non regroupée par type.
+- Pas de demande récurrente programmée (automatisation) ; la reprise d'une demande identique couvre 24 h.
+- Pas de dossier dédié par demande (rangement existant réutilisé).
+- Reprise après coupure du worker testée en navigateur pendant la création complète seulement.
+- Parcours testés avec recherche de photos hors ligne, photo cosmétique synthétique ; Chromium seulement.
 
 ## CMS Integration Engine V2 (phase 11A) — fait et ce qui reste
 

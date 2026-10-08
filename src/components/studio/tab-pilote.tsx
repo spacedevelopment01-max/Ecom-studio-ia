@@ -119,7 +119,7 @@ function Memory() {
             <Brain className="mt-0.5 size-4 shrink-0 text-signal" />
             <div className="min-w-0 flex-1">
               <p><Badge tone="neutral">{KIND[m.kind] ?? m.kind}</Badge> <span className="font-medium">{m.key}</span></p>
-              <p className="mt-1 break-words text-ink-2">{m.value}</p>
+              <p className="mt-1 min-w-0 text-ink-2 [overflow-wrap:anywhere]">{m.value}</p>
             </div>
             <button onClick={async () => { await api(`/api/projects/${id}/memory?item=${m.id}`, { method: "DELETE" }); reload(); }} className="grid size-8 place-items-center rounded-full hover:bg-paper-2" aria-label={t("Oublier", "Forget")}><Trash2 className="size-4 text-muted" /></button>
           </li>
