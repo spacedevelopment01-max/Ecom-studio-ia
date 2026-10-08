@@ -42,7 +42,8 @@ export type IntentResult = {
 
 /** Actions du studio (tâches de fond, boutons, routes) → intentions, sans IA. */
 export const ACTION_INTENTS: Record<string, Intent[]> = {
-  "pipeline.run": ["ANALYZE_PRODUCT", "CREATE_BRAND", "CREATE_SHOP"],
+  // Création complète : analyse, marque, boutique, visuels, vidéos, calendrier, rangement (ce que fait le pipeline).
+  "pipeline.run": ["ANALYZE_PRODUCT", "CREATE_BRAND", "CREATE_SHOP", "CREATE_VIDEO", "SOCIAL", "ORGANIZE_FILES"],
   "cutout.run": ["ANALYZE_PRODUCT"],
   "images.generate": ["GENERATE_IMAGE"],
   "image.single": ["GENERATE_IMAGE"],
@@ -83,13 +84,17 @@ export function intentsFromAction(action: string, payload?: { regenerate?: boole
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+/** Verbes de création (FR/EN, sans accents). */
+const CREATE = "\\b(cree|creer|creez|fais|faire|faites|construis|construire|monte|monter|lance|lancer|veux|voudrais|besoin|nouvelle|nouveau|refais|refaire|create|build|make|launch|want|need|new|set up)\\b";
+
 /** Règles de lecture d'une demande libre (ordre = priorité d'affichage ; plusieurs intentions possibles). */
 const RULES: [Intent, RegExp][] = [
   ["IMPROVE_LOGO", /\b(ameliore|retouche|modifie|change|corrige|refai[st]|improve|fix|tweak|redo)\w*\b[^.]{0,30}\blogos?\b|\blogos?\b[^.]{0,30}\b(plus|trop|moins|more|less|too)\b/],
   ["CREATE_LOGO", /\blogos?\b/],
-  ["CREATE_BRAND", /\b(marque|identite|branding|brand|charte)\b/],
+  // Marque et boutique : seulement avec un verbe de création (« pour ma boutique » n'est pas une demande de boutique).
+  ["CREATE_BRAND", new RegExp(`${CREATE}[^.]{0,40}\\b(marque|identite|branding|brand|charte)\\b|\\b(branding|identite visuelle)\\b`)],
   ["EDIT_THEME", /\b(ameliore|modifie|change|corrige|deplace|agrandi|retouche|edit|move|change|fix)\w*\b[^.]{0,40}\b(page|section|bouton|banniere|accueil|menu|header|footer|button|banner|homepage|site)\b/],
-  ["CREATE_SHOP", /\b(boutique|site|shop|store|vitrine|website)\b/],
+  ["CREATE_SHOP", new RegExp(`${CREATE}[^.]{0,40}\\b(boutique|site|shop|store|vitrine|website)\\b`)],
   ["WRITE_PRODUCT_COPY", /\b(fiche produit|description|textes?|copy|copywriting|redige|redaction|product page)\b/],
   ["SEO", /\b(seo|referencement|meta|google ranking|mots?[- ]cles?|keywords?)\b/],
   ["BLOG", /\b(blog|articles?)\b/],

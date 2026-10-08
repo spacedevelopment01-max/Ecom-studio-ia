@@ -22,6 +22,8 @@ export type TraceScope = {
   planId?: string;
   stepId?: string;
   routing?: { reason: string; fallback: boolean; escalation: boolean };
+  /** Historique de qualité de l'étape du plan en cours (reprise) : transmis au Router V2. */
+  history?: { attempt?: number; lastScore?: number | null; lastVerdict?: "FINAL" | "RETRY" | "PROVISIONAL" | "REJECTED"; lastProvider?: string; lastModel?: string; failure?: "quality" | "provider_error" | "parse" | "refusal" };
 };
 const store = new AsyncLocalStorage<TraceScope>();
 
