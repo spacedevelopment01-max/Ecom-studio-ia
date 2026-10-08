@@ -35,7 +35,7 @@ export const STEP_DELIVERABLES: Record<StepKind, Deliverable[]> = {
   blog: ["blog_article"],
   social: ["social_plan", "social_post"],
   ad: ["ad_copy", "ad_v2"],
-  video: ["video_clip", "ugc_clip", "ugc_frame"],
+  video: ["video_clip", "ugc_clip", "ugc_frame", "video_v2", "video_shot_v2"],
   quality_review: [],
   organize: [],
   publish: [],
@@ -65,6 +65,7 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "post.regenerate": ["social"],
   "ads.draft": ["ad"],
   "ads.v2": ["ad"],
+  "video.v2": ["video"],
 };
 
 /** Actions qui demandent EXPRESSÉMENT une image générée (aucune recherche de photo libre imposée avant). */
@@ -313,11 +314,12 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     remember(p.id, { kind: "artifact", key: "ad_drafts", value: JSON.stringify(r), source: r.by === "ai" ? "ai" : "local" });
     return outcome(ctx.job.id, "ad", since);
   },
+  // Vidéo (phase 7A) : Video Engine V2 — intention, script, storyboard, plans (génération seulement si utile et
+  // dans le plafond), document éditable, barrière vidéo. Même consentement que l'ancien moteur (plan IA demandé).
   video: async (ctx, p, s) => {
     const since = Date.now();
-    const { produceVideo } = await import("../engine/videos");
-    const { C } = await import("../i18n-server");
-    await ctx.step(`plan:${s.id}`, async () => (await produceVideo(ctx, p.id, { format: "9:16", target: "ads", useAiClip: true, goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })).assetId);
+    const { runVideoEngineV2 } = await import("../video-v2/engine");
+    await ctx.step(`plan:${s.id}`, async () => (await runVideoEngineV2(ctx, p.id, { ask: { text: String(s.input.text ?? ""), platform: "reels" }, approveGeneration: true })).videoAssetId);
     return outcome(ctx.job.id, "video", since);
   },
 };

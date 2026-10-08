@@ -73,6 +73,8 @@ export const ACTION_INTENTS: Record<string, Intent[]> = {
   "social.voice": ["SOCIAL"],
   "ads.draft": ["CREATE_AD"],
   "ads.v2": ["CREATE_AD"],
+  "video.v2": ["CREATE_VIDEO"],
+  "video.v2.clip": ["CREATE_VIDEO"],
   "files.classify": ["ORGANIZE_FILES"],
   "post.publish": ["PUBLISH"],
   "shopify.push": ["PUBLISH"],

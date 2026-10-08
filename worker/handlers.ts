@@ -70,6 +70,24 @@ export const handlers: Record<string, Handler> = {
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
   },
 
+  /** Vidéo V2 : intention, stratégie, script, storyboard, plans, document éditable, rendu, barrière vidéo. */
+  "video.v2": async (ctx) => {
+    const { runVideoEngineV2 } = await import("../src/lib/video-v2/engine");
+    const r = await runVideoEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    return { docKey: r.docKey, videoAssetId: r.videoAssetId, verdict: r.verdict, codes: r.codes, estimateMicro: r.estimateMicro, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20) };
+  },
+  /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */
+  "video.v2.render": async (ctx) => {
+    const { renderLatest } = await import("../src/lib/video-v2/engine");
+    return renderLatest(ctx, ctx.payload.projectId, ctx.payload.docKey);
+  },
+  /** Vidéo V2 : un seul plan remplacé (génération acceptée par le client), les autres plans intacts. */
+  "video.v2.clip": async (ctx) => {
+    const { regenerateClip } = await import("../src/lib/video-v2/engine");
+    const r = await regenerateClip(ctx, ctx.payload.projectId, ctx.payload.docKey, ctx.payload.clipId, { approve: !!ctx.payload.approve, maxCostEur: ctx.payload.maxCostEur, instruction: ctx.payload.instruction });
+    return { outcome: r.outcome, notes: r.notes };
+  },
+
   "video.render": async (ctx) => {
     const projectId = ctx.job.project_id!;
     const r = await produceVideo(ctx, projectId, { format: ctx.payload.format, goal: ctx.payload.goal, useAiClip: !!ctx.payload.useAiClip, music: ctx.payload.music, url: ctx.payload.url, target: ctx.payload.target });
