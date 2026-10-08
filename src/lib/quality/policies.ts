@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p7a";
+export const POLICY_VERSION = "2026-10-p8a";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -32,6 +32,14 @@ export const DELIVERABLES = [
   "ad_v2",
   "video_v2",
   "video_shot_v2",
+  "seo_product_v2",
+  "seo_service_v2",
+  "seo_category_v2",
+  "seo_home_v2",
+  "seo_article_v2",
+  "seo_metadata_v2",
+  "seo_strategy_v2",
+  "seo_tech_audit_v2",
   "theme_home",
   "theme_custom",
   "cutout",
@@ -67,6 +75,18 @@ export type Policy = {
 const TEXT: Policy = { final: 8, retryFloor: 6, maxRetries: 2, minCriterion: 6, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: [], blocking: ["claim"] };
 const IMAGE: Policy = { final: 7, retryFloor: 5, maxRetries: 1, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["wrong_product", "corrupt", "forbidden"], blocking: ["deformed", "text_in_image"] };
 const STOCK: Policy = { final: 7, retryFloor: 7, maxRetries: 0, finalCheckers: ["ai", "human", "metadata"], minConfidence: 0.5, fatal: ["off_topic", "corrupt", "forbidden"], blocking: [] };
+const SEO_V2 = (criteriaFloors: Record<string, number>): Policy => ({
+  final: 7.5,
+  retryFloor: 5,
+  maxRetries: 2,
+  minCriterion: 6,
+  criteriaFloors,
+  finalCheckers: ["ai", "human"],
+  minConfidence: 0.7,
+  fatal: [],
+  blocking: ["invented_claim", "invented_source", "wrong_fact", "unconfirmed_commercial", "forbidden_claim", "invented_link", "hollow_copy", "keyword_stuffing", "duplicate_content", "bad_structure", "missing_meta", "intent_mismatch"],
+  provisional: { checkers: ["local", "ai"], floor: 0, use: "manual", label: "needs_improvement" },
+});
 const THEME: Policy = {
   final: 8,
   retryFloor: 5,
@@ -192,6 +212,20 @@ export const POLICIES: Record<Deliverable, Policy> = {
     fatal: ["product_altered", "wrong_product", "corrupt", "forbidden"],
     blocking: ["character_inconsistent", "off_topic", "major_artifacts"],
   },
+  // SEO & Copywriting V2 (phase 8A) : une politique par type de contenu. Affirmation inventée, source inexistante,
+  // caractéristique fausse, information commerciale non confirmée, affirmation à éviter, lien inventé, formule
+  // creuse, sur-optimisation, doublon, structure ou métadonnées absentes : bloquants (reprise ciblée sur les blocs
+  // fautifs, jamais FINAL). Sans relecture éditoriale IA : au mieux PROVISOIRE, à valider par le client.
+  seo_product_v2: SEO_V2({ accuracy: 8, relevance: 7, intent_fit: 7, commercial: 6.5 }),
+  seo_service_v2: SEO_V2({ accuracy: 8, relevance: 7, intent_fit: 7, clarity: 7 }),
+  seo_category_v2: SEO_V2({ accuracy: 8, relevance: 7, originality: 6.5 }),
+  seo_home_v2: SEO_V2({ accuracy: 8, relevance: 7, brand: 7, intent_fit: 7 }),
+  seo_article_v2: SEO_V2({ accuracy: 8, relevance: 7, usefulness: 7, originality: 6.5, intent_fit: 7 }),
+  seo_metadata_v2: { ...SEO_V2({ accuracy: 8, relevance: 7 }), maxRetries: 1 },
+  // Stratégie et audit technique : produits par des règles (pas d'IA) ; ils restent des recommandations à valider
+  // par le client (PROVISOIRE), jamais présentés comme vérifiés sur le web réel.
+  seo_strategy_v2: { final: 8, retryFloor: 5, maxRetries: 0, finalCheckers: ["human"], minConfidence: 0.7, fatal: [], blocking: ["unsourced_metrics", "invented_link", "cannibalization"], provisional: { checkers: ["local"], floor: 5, use: "auto", label: "needs_improvement" } },
+  seo_tech_audit_v2: { final: 8, retryFloor: 0, maxRetries: 0, finalCheckers: ["human"], minConfidence: 0.7, fatal: [], blocking: [], provisional: { checkers: ["local"], floor: 0, use: "auto", label: "needs_improvement" } },
   theme_home: THEME,
   theme_custom: THEME,
   // Détourage : le contrôle local (pixels) est un vrai contrôle ; il peut conclure.

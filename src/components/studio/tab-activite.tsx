@@ -1,4 +1,5 @@
 "use client";
+import { ContentPanel } from "./content-panel";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, ImagePlus, Plus, RefreshCw, Save, Store, Trash2 } from "lucide-react";
@@ -181,6 +182,7 @@ export default function TabActivite() {
           </Card>
         </div>
       </div>
+      <ContentPanel types={["home_page", "service_page", "local_page", "brand_page", "faq", "metadata"]} />
     </div>
   );
 }

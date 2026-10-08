@@ -17,6 +17,7 @@ import { useCostConfirm } from "./cost-confirm";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { countWords, sanitizeBlogHtml } from "@/lib/blog-html";
+import { ContentPanel } from "./content-panel";
 
 type Article = {
   id: string;
@@ -201,6 +202,7 @@ export default function TabBlog() {
 
       <WriteDialog open={writeOpen} onClose={() => setWriteOpen(false)} left={left} admin={access.admin} confirm={cost.confirm} onStarted={(j) => { setWriteOpen(false); startJob(j); }} />
       {current && <ArticleEditor key={current.id} article={current} data={data} busy={busy} confirm={cost.confirm} onClose={() => setOpenId(null)} onChanged={reload} onStarted={(j) => { setOpenId(null); startJob(j); }} />}
+      <ContentPanel types={["blog_article"]} title={t("Blog V2 : stratégie, sujets et brouillons éditables", "Blog V2: strategy, topics and editable drafts")} />
     </div>
   );
 }
@@ -242,6 +244,7 @@ function BlogPresentation({ reason }: { reason: string | null }) {
           </div>
         </div>
       </Card>
+      <ContentPanel types={["blog_article"]} title={t("Brouillons d'articles sans IA (gratuit)", "Post drafts without AI (free)")} />
     </div>
   );
 }

@@ -29,10 +29,10 @@ export const STEP_DELIVERABLES: Record<StepKind, Deliverable[]> = {
   stock_search: ["stock_photo", "stock_v2"],
   image_generate: ["image_product", "image_lifestyle", "image_ambiance", "image_v2"],
   copy: ["copy_shop"],
-  seo: ["seo_meta"],
+  seo: ["seo_meta", "seo_product_v2", "seo_service_v2", "seo_category_v2", "seo_home_v2", "seo_metadata_v2"],
   theme: ["theme_home", "theme_custom"],
   theme_edit: [],
-  blog: ["blog_article"],
+  blog: ["blog_article", "seo_article_v2"],
   social: ["social_plan", "social_post"],
   ad: ["ad_copy", "ad_v2"],
   video: ["video_clip", "ugc_clip", "ugc_frame", "video_v2", "video_shot_v2"],
@@ -66,6 +66,7 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "ads.draft": ["ad"],
   "ads.v2": ["ad"],
   "video.v2": ["video"],
+  "content.v2": ["seo"],
 };
 
 /** Actions qui demandent EXPRESSÉMENT une image générée (aucune recherche de photo libre imposée avant). */
@@ -300,6 +301,14 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     assertBlogWrite(p.userId);
     await ctx.step(`plan:${s.id}`, async () => ((await writeBlogArticle(ctx, p.id, { topic: String(s.input.text ?? "") })) as { id?: string } | undefined)?.id ?? null);
     return outcome(ctx.job.id, "blog", since);
+  },
+  // SEO & Copywriting (phase 8A) : SEO Engine V2 — page principale (fiche produit ou accueil d'une entreprise de
+  // services) rédigée à partir des seuls faits vérifiés, contrôlée, versionnée et éditable.
+  seo: async (ctx, p, s) => {
+    const since = Date.now();
+    const { runContentEngineV2 } = await import("../seo-v2/engine");
+    await ctx.step(`plan:${s.id}`, async () => (await runContentEngineV2(ctx, p.id, { type: p.business === "services" ? "home_page" : "product_page", request: String(s.input.text ?? "") })).docKey);
+    return outcome(ctx.job.id, "seo", since);
   },
   // Publicités (phase 6A) : Advertising Engine V2 — textes contrôlés ET créations composées (Image Engine V2).
   ad: async (ctx, p, s) => {

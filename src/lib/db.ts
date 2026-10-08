@@ -662,6 +662,39 @@ CREATE TABLE IF NOT EXISTS video_shots (
   created_at INTEGER NOT NULL,
   PRIMARY KEY (project_id, shot_key)
 );
+
+-- SEO & Copywriting V2 : documents texte éditables (fiches, pages, articles, FAQ, métadonnées). Chaque
+-- enregistrement est une version (rien n'est perdu, restaurer recopie une ancienne version) ; une version du
+-- client (source user / ai_local / ai) n'est jamais écrasée par une régénération du moteur.
+CREATE TABLE IF NOT EXISTS content_documents (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  doc_key TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  lang TEXT NOT NULL,
+  title TEXT NOT NULL DEFAULT '',
+  source TEXT NOT NULL,              -- engine | user | ai_local | ai
+  verdict TEXT,
+  note TEXT NOT NULL DEFAULT '',
+  doc_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS content_documents_version ON content_documents(doc_key, version);
+CREATE INDEX IF NOT EXISTS content_documents_project ON content_documents(project_id, created_at);
+
+-- SEO V2 : mémoire des rédactions (empreinte brief + faits → document produit). Même demande, mêmes faits :
+-- rien n'est refait ni repayé (idempotence) ; aucune consigne d'IA stockée ici.
+CREATE TABLE IF NOT EXISTS content_runs (
+  project_id TEXT NOT NULL,
+  run_key TEXT NOT NULL,
+  doc_key TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  verdict TEXT NOT NULL,
+  cost_micro INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (project_id, run_key)
+);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */

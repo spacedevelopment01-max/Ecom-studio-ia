@@ -136,6 +136,26 @@ export async function pushProductSeo(c: Connection, productId: string, seo: { ti
   return metafields.every((m) => saved.has(m.key)) ? seoResult("accepted") : seoResult("sent", `confirmés : ${[...saved].join(", ") || "aucun"}`);
 }
 
+/**
+ * Relecture du SEO d'une fiche dans la boutique (lecture seule, phase 8B) : métachamps global.title_tag /
+ * description_tag ET champ `seo` du produit tel que Shopify le rend. Sert à VÉRIFIER le mécanisme sur une vraie
+ * boutique (scripts/verify-shopify-seo.ts) ; tant que ce n'est pas fait, le mécanisme reste « NON VÉRIFIÉ ».
+ */
+export async function readProductSeo(c: Connection, productId: string): Promise<{ metafields: { title: string | null; description: string | null }; seo: { title: string | null; description: string | null } }> {
+  const d = await gql(c, `query($id: ID!){ product(id: $id){ seo{ title description } t: metafield(namespace: "global", key: "title_tag"){ value } m: metafield(namespace: "global", key: "description_tag"){ value } } }`, { id: productId });
+  const pr = d?.product;
+  if (!pr) throw new Error(L("Produit introuvable dans la boutique.", "Product not found in the store."));
+  return { metafields: { title: pr.t?.value ?? null, description: pr.m?.value ?? null }, seo: { title: pr.seo?.title ?? null, description: pr.seo?.description ?? null } };
+}
+
+/** Compare ce qui a été envoyé à ce que la boutique rend : « vérifié » seulement si le champ `seo` reprend les deux valeurs. */
+export function compareSeo(sent: { title: string; description: string }, read: Awaited<ReturnType<typeof readProductSeo>>): { stored: boolean; displayed: boolean; detail: string } {
+  const eq = (a: string | null, b: string) => (a ?? "").trim() === b.trim();
+  const stored = eq(read.metafields.title, sent.title) && eq(read.metafields.description, sent.description);
+  const displayed = eq(read.seo.title, sent.title) && eq(read.seo.description, sent.description);
+  return { stored, displayed, detail: displayed ? "le champ SEO du produit reprend les valeurs envoyées" : stored ? "métachamps enregistrés, mais le champ SEO du produit ne les reprend pas" : "valeurs absentes ou différentes dans la boutique" };
+}
+
 /** Résumé honnête du SEO envoyé (comptes par statut), affiché au client et repris par le diagnostic. */
 export function seoSummary(seo: Record<string, SeoPushResult>): { counts: Record<SeoPushStatus, number>; text: string } {
   const counts: Record<SeoPushStatus, number> = { none: 0, sent: 0, accepted: 0, refused: 0, unknown: 0 };
