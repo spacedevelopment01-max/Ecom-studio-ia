@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p6a";
+export const POLICY_VERSION = "2026-10-p7a";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -30,6 +30,8 @@ export const DELIVERABLES = [
   "social_post",
   "ad_copy",
   "ad_v2",
+  "video_v2",
+  "video_shot_v2",
   "theme_home",
   "theme_custom",
   "cutout",
@@ -162,6 +164,33 @@ export const POLICIES: Record<Deliverable, Policy> = {
     fatal: ["forbidden_claim", "product_altered", "wrong_product", "corrupt", "forbidden"],
     blocking: ["unverified_claim", "copy_policy", "illegible", "safe_zone", "product_overlap", "too_much_text", "generic", "duplicate_concept"],
     provisional: { checkers: ["local"], floor: 0, use: "manual", label: "needs_improvement" },
+  },
+  // Vidéo V2 (phase 7A) : vidéo complète jugée sur 13 critères. Produit transformé, affirmation inventée ou fichier
+  // corrompu = fatal ; personnage incohérent, séquence hors sujet, artefacts majeurs, audio inutilisable, texte
+  // illisible ou désynchronisé bloquent. Une vidéo exportable mais médiocre n'est jamais FINAL ; sans relecture IA
+  // (contrôles locaux seuls) : au mieux PROVISOIRE, à valider par le client.
+  video_v2: {
+    final: 7.5,
+    retryFloor: 5.5,
+    maxRetries: 2,
+    minCriterion: 6,
+    criteriaFloors: { relevance: 7, narrative: 6.5, product_fidelity: 8, continuity: 6.5, audio: 6, subtitles: 6.5, commercial: 6.5 },
+    finalCheckers: ["ai", "human"],
+    minConfidence: 0.7,
+    fatal: ["product_altered", "wrong_product", "invented_claim", "corrupt", "forbidden"],
+    blocking: ["character_inconsistent", "off_topic", "major_artifacts", "audio_unusable", "illegible_text", "out_of_sync", "duration_mismatch", "safe_zone", "missing_disclosure", "repetitive_editing"],
+    provisional: { checkers: ["local"], floor: 0, use: "manual", label: "needs_improvement" },
+  },
+  // Plan vidéo V2 (un plan généré) : jugé sur ses images (début, milieu, fin). Produit transformé = fatal (le plan
+  // est écarté, jamais réutilisé) ; une reprise ciblée au plus ; sans contrôle : jamais FINAL.
+  video_shot_v2: {
+    final: 7,
+    retryFloor: 5,
+    maxRetries: 1,
+    finalCheckers: ["ai", "human"],
+    minConfidence: 0.7,
+    fatal: ["product_altered", "wrong_product", "corrupt", "forbidden"],
+    blocking: ["character_inconsistent", "off_topic", "major_artifacts"],
   },
   theme_home: THEME,
   theme_custom: THEME,

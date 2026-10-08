@@ -4,7 +4,7 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 6A + éditeur visuel des publicités (interface livrée, testée en navigateur).
+Dernière mise à jour : phase 7A (Video & UGC Engine V2, fournisseurs simulés).
 
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
@@ -13,8 +13,11 @@ Dernière mise à jour : phase 6A + éditeur visuel des publicités (interface l
 | 4B | Logos (Brand & Logo Engine V2) | `scripts/benchmark-logo-v2.ts` | en attente |
 | 5B | Images et recherche (Image Engine V2) | `scripts/benchmark-image-v2.ts` | en attente |
 | 6B | Publicités (Advertising Engine V2) | `scripts/benchmark-ads-v2.ts` | en attente |
+| 7B | Vidéos et UGC (Video Engine V2) | `scripts/benchmark-video-v2.ts` | en attente |
 
-La qualité visuelle réelle de ces trois moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
+La qualité visuelle réelle de ces quatre moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
+En 7A, toutes les vidéos ont été produites avec des fournisseurs SIMULÉS (mires, images de test) : aucune vidéo
+réelle n'a été générée ni jugée.
 
 ## FONCTIONNALITÉ OBLIGATOIRE — ÉDITEUR VISUEL DES PUBLICITÉS (avant la validation finale de l'Advertising Engine V2)
 
@@ -56,6 +59,30 @@ Limites connues de l'éditeur (à traiter plus tard) :
 - aperçu du navigateur non identique à l'octet près à l'export (lissage), composition identique ;
 - tests faits avec des images de test, pas de vraies photos.
 
+## Video & UGC Engine V2 (phase 7A) — fait et ce qui reste
+
+| Élément | État |
+|---|---|
+| Intention, stratégie créative, script (local + IA contrôlée), storyboard, planification des plans | **fait**, testé (fournisseurs simulés) |
+| Router V2 vidéo : capacités déclarées ET vérifiées, repli sur un fournisseur compatible, estimation avant envoi | **fait**, testé ; capacités « annoncées » (texte vers vidéo de Veo) **non utilisées** tant que non vérifiées (7B) |
+| Plans générés contrôlés (produit, personnage, sujet, artefacts), reprise ciblée d'un plan, mémoire des plans payés | **fait**, testé avec des relectures simulées |
+| Document vidéo éditable (timeline, calques de l'éditeur publicitaire, sous-titres, pistes audio), opérations gratuites, historique, versions | **fait**, testé |
+| Retouches par conversation (raccourcir, musique, sous-titres, rythme, supprimer ; remplacement et nouvelle version annoncés) | **fait**, testé |
+| Rendu MP4 (H.264/AAC), sous-titres incrustés + SRT/VTT, affiche, mixage audio (atténuation sous la voix, normalisation) | **fait**, testé (rendu réduit dans les tests) |
+| API (`/api/projects/[id]/videos/v2`, `/videos/v2/[docKey]`), tâches `video.v2`, `video.v2.render`, `video.v2.clip`, étape « vidéo » des plans | **fait** (API non testée par un navigateur) |
+| **Interface de montage** (timeline visuelle dans le studio) | **À FAIRE** (7A : modèle, opérations et API seulement, comme demandé) |
+| **Voix off synthétique** | **À FAIRE** : aucun fournisseur de synthèse vocale branché ; la voix est préparée (texte, timing) et portée par les sous-titres |
+| Musique de bibliothèque sous licence | modèle prêt (licence obligatoire), **aucune bibliothèque musicale branchée** ; seule la musique composée par le studio est utilisée |
+| Benchmark réel 7B (qualité, coûts réels, continuité réelle des personnages) | **en attente** (`scripts/benchmark-video-v2.ts`) |
+
+**Reportés par décision du propriétaire (après la Phase 8, non développés pendant la Phase 8)** : finalisation de
+l'éditeur vidéo (interface de montage dans le studio, bascule de l'onglet Vidéos sur le V2) et voix off
+synthétique (fournisseur de synthèse vocale, test d'écoute).
+
+Chemins vidéo encore ANCIENS (conservés pour compatibilité) : onglet Vidéos → `video.render` (`engine/videos.ts`,
+`produceVideo`) et `video.ugc` (`engine/ugc.ts`, `produceUgc`). L'étape « vidéo » des plans passe déjà par le
+Video Engine V2 ; l'onglet Vidéos sera basculé avec l'interface de montage.
+
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 
 | Parcours | Code | Ce qu'il fait aujourd'hui | Phase prévue pour la reprise |
@@ -67,8 +94,8 @@ Limites connues de l'éditeur (à traiter plus tard) :
 | Visuels des publications (calendrier) | `src/lib/engine/calendar.ts` (`renderCreative`) | composition locale à partir du détourage | phase 7 |
 | Retouche d'un visuel de publication | `worker/handlers.ts` (`post.regenerate`, `renderCreative`) | composition locale | phase 7 |
 | Kit réseaux sociaux, maquettes de marque | `src/lib/media/social-kit.ts`, `src/lib/media/brand-mockups.ts` | compositions locales | à évaluer |
-| Vidéos (plans libres, images de départ) | `src/lib/engine/videos.ts` (`searchStockVideos`, `rankStock`) | recherche de vidéos libres (tri par scène V2 partagé) | phase vidéo |
-| Images UGC | `src/lib/engine/ugc.ts` (`ugcFrame`) | images de personnes générées | phase vidéo |
+| Vidéos (plans libres, images de départ) | `src/lib/engine/videos.ts` (`searchStockVideos`, `rankStock`) | ancien moteur vidéo (onglet Vidéos) ; le Video Engine V2 demande ses images à l'Image Engine V2 | bascule de l'onglet Vidéos |
+| Images UGC | `src/lib/engine/ugc.ts` (`ugcFrame`) | ancien moteur UGC (onglet Vidéos) ; le Video Engine V2 part d'images de l'Image Engine V2 | bascule de l'onglet Vidéos |
 | Univers produit (ancienne fonction) | `src/lib/engine/stock-universe.ts` → `universePhotos` | requêtes locales V2 (catégories), contrôle existant | remplacée dans les plans par l'Image V2 ; fonction encore utilisée par d'anciens appels |
 
 Déjà sur l'Image Engine V2 : étape « photos libres » des plans (`findStockPhotos`), action `image.v2` (API

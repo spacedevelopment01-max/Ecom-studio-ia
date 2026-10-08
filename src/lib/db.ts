@@ -630,6 +630,38 @@ CREATE TABLE IF NOT EXISTS ad_documents (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ad_documents_version ON ad_documents(doc_key, version);
 CREATE INDEX IF NOT EXISTS ad_documents_project ON ad_documents(project_id, created_at);
+
+-- Video Engine V2 : documents vidéo (timeline éditable) versionnés, comme les documents publicitaires.
+CREATE TABLE IF NOT EXISTS video_documents (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  doc_key TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  source TEXT NOT NULL,              -- engine | user | ai_local | ai
+  note TEXT NOT NULL DEFAULT '',
+  doc_json TEXT NOT NULL,
+  rendered_asset_id TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS video_documents_version ON video_documents(doc_key, version);
+CREATE INDEX IF NOT EXISTS video_documents_project ON video_documents(project_id, created_at);
+
+-- Video Engine V2 : plans produits (empreinte du plan → asset, verdict, coût). Un plan FINAL déjà payé est
+-- réutilisé tel quel (reprise, régénération partielle) ; jamais de consigne d'IA ni d'image stockée ici.
+CREATE TABLE IF NOT EXISTS video_shots (
+  project_id TEXT NOT NULL,
+  shot_key TEXT NOT NULL,
+  asset_id TEXT,
+  method TEXT NOT NULL,
+  verdict TEXT NOT NULL,
+  provider TEXT,
+  model TEXT,
+  cost_micro INTEGER NOT NULL DEFAULT 0,
+  attempts INTEGER NOT NULL DEFAULT 1,
+  reason TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (project_id, shot_key)
+);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */
@@ -677,7 +709,14 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
 function migrate(db: Database.Database) {
   for (const [table, column, ddl] of ADDED_COLUMNS) {
     const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
-    if (!cols.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+    if (cols.some((c) => c.name === column)) continue;
+    try {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+    } catch (e) {
+      // Deux processus (site et worker, ou tests en parallèle) ouvrent la même base neuve : l'autre a déjà ajouté
+      // la colonne entre la lecture et l'ajout. Seule cette erreur est ignorée.
+      if (!/duplicate column name/i.test((e as Error).message)) throw e;
+    }
   }
   // Index sur des colonnes ajoutées : créés après elles.
   db.exec("CREATE INDEX IF NOT EXISTS memory_active ON memory(project_id, state, norm_key)");
