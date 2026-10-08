@@ -41,8 +41,20 @@ régénérer son texte. Architecture : `reports/ad-editor-architecture.md`.
 | Polices de la marque chargées dans le navigateur (@font-face) pour un aperçu identique à l'export | **fait** (`/api/fonts`, mêmes fichiers et mêmes noms que le serveur) ; mesuré : écart moyen aperçu / export ≈ 0,6 à 1,4 sur 255 (lissage des bords), composition identique |
 | Tests de l'interface (captures ordinateur et téléphone) | **fait** (`reports/screenshots/ad-editor/`, `reports/ad-editor-final-report.md`) |
 
-Reste à faire pour l'éditeur : voir « Limites » dans `reports/ad-editor-final-report.md` (sélection multiple,
-pincer pour zoomer, test sur tablette réelle, génération payante vérifiée avec un vrai fournisseur).
+Éditeur validé techniquement par le propriétaire (810 tests automatisés, 28 tests navigateur). **La qualité
+esthétique réelle des publicités reste NON VALIDÉE** jusqu'au benchmark 6B avec les API du propriétaire.
+
+Limites connues de l'éditeur (à traiter plus tard) :
+- génération payante après accord (photo IA, nouvelle version IA) : branchée, jamais exécutée avec un vrai fournisseur ;
+- pas de sélection multiple ni de groupes ;
+- pas de « pincer pour zoomer » sur téléphone (boutons de zoom à la place) ; un tiroir ouvert cache le bas de la publicité ;
+- tablette réelle, Safari et Firefox non testés (Chromium seulement) ;
+- polices du studio uniquement (pas d'import de police personnelle) ;
+- l'historique « annuler » ne survit pas au rechargement (les versions enregistrées et le brouillon local, si) ;
+- exports PNG, JPEG, JSON seulement (pas de PDF, SVG, vidéo) ;
+- relancer la création avec les mêmes angles met à jour les créations existantes (nouvelle version) au lieu d'ajouter des doublons ;
+- aperçu du navigateur non identique à l'octet près à l'export (lissage), composition identique ;
+- tests faits avec des images de test, pas de vraies photos.
 
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 
