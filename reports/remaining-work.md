@@ -4,8 +4,11 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 9A développée (Social Media & Automatisation Engine V2), en attente de votre examen ;
-8A validée techniquement ; 8B reportée ; 9B non commencée.
+Dernière mise à jour : phase 9A validée techniquement (Social Media & Automatisation Engine V2) ; 9B reportée ;
+8A validée techniquement ; 8B reportée.
+
+**Règle pour la Phase 10 (Theme Engine V2) et les suivantes** : tests visuels réels dans un navigateur, avec
+captures ordinateur ET téléphone, dès le développement technique. Les tests de code seuls ne suffisent pas.
 
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
@@ -17,7 +20,7 @@ Dernière mise à jour : phase 9A développée (Social Media & Automatisation En
 | 7B | Vidéos et UGC (Video Engine V2) | `scripts/benchmark-video-v2.ts` | en attente |
 | 8B | Textes SEO, fiches, pages, articles (SEO Engine V2) | `scripts/benchmark-seo-v2.ts` | **reporté** par décision du propriétaire |
 | 8B | SEO des fiches Shopify (métachamps) | `scripts/verify-shopify-seo.ts` | **reporté** — mécanisme NON VÉRIFIÉ |
-| 9B | Réseaux sociaux : production réelle (textes, visuels, vidéos) et publication réelle de test | `scripts/benchmark-social-v2.ts` + comptes de test reliés dans le studio | en attente (publication réelle seulement avec votre autorisation explicite) |
+| 9B | Réseaux sociaux : production réelle (textes, visuels, vidéos), publication réelle de test, statistiques réelles | `scripts/benchmark-social-v2.ts` + comptes de test reliés dans le studio | **reporté** par décision du propriétaire (publication réelle seulement avec son autorisation explicite) |
 
 La qualité visuelle réelle de ces quatre moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
 En 7A, toutes les vidéos ont été produites avec des fournisseurs SIMULÉS (mires, images de test) : aucune vidéo
@@ -132,6 +135,12 @@ par version, programmation, envoi avec verrou et journal, état « À vérifier 
 reprise après arrêt, automatisations persistantes, statistiques sans chiffre inventé, retouches en conversation),
 studio social dans les onglets Calendrier et Publications (mois / semaine / jour / liste, glisser-déposer, éditeur,
 comptes, statistiques), test navigateur ordinateur + téléphone. Rapport : `reports/phase-9A-report.md`.
+
+Validé techniquement par le propriétaire (8 octobre 2026) : Social Media & Automatisation V2, calendrier interactif,
+programmation de 1 à 5 publications par jour, versions approuvées, automatisations persistantes, protections contre
+les doublons, intégration des moteurs V2, interface ordinateur et téléphone (904/904 tests, 28/28 tests navigateur,
+TypeScript et build OK). **NON VALIDÉS** : publication réelle, statistiques des réseaux, qualité des contenus IA.
+**Phase 9B reportée** par décision du propriétaire.
 
 Reste à faire :
 - **9B — publication réelle** (avec votre autorisation explicite, sur des comptes de test) : Facebook, Instagram,
