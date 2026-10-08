@@ -614,6 +614,22 @@ CREATE TABLE IF NOT EXISTS image_candidates (
   created_at INTEGER NOT NULL,
   PRIMARY KEY (project_id, candidate_key, brief_hash)
 );
+
+-- Éditeur visuel des publicités : documents en calques versionnés (aucune consigne d'IA, aucune clé). Une lignée
+-- (doc_key) = une création ; chaque enregistrement crée une version ; restaurer = recopier une ancienne version.
+CREATE TABLE IF NOT EXISTS ad_documents (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  doc_key TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  source TEXT NOT NULL,              -- engine | user | ai_local | ai
+  note TEXT NOT NULL DEFAULT '',
+  doc_json TEXT NOT NULL,
+  rendered_asset_id TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ad_documents_version ON ad_documents(doc_key, version);
+CREATE INDEX IF NOT EXISTS ad_documents_project ON ad_documents(project_id, created_at);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */

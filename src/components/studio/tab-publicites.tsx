@@ -8,6 +8,7 @@ import { NETWORKS } from "./post-editor";
 import { useT } from "../i18n";
 import { ContentLangPicker } from "./content-lang";
 import { pick, type Lang } from "@/lib/i18n";
+import { AdCreatives } from "./ad-editor/ad-creatives";
 
 type Ad = { angle: string; primary: string; headline: string; cta: string; hook?: string; description?: string; visual?: string; lever?: string; media: AssetView[] };
 /** Plan de test proposé avec les annonces (src/lib/engine/ads.ts) : rédigé pour le marchand, aucun résultat promis. */
@@ -147,6 +148,8 @@ export default function TabPublicites() {
       <div className="rounded-2xl border border-line bg-card p-4 text-sm text-ink-2">
         {t("Le studio prépare vos campagnes : angles, audiences, textes et créations aux bons formats.", "The studio prepares your campaigns: angles, audiences, copy and creatives in the right formats.")} <strong className="text-ink">{t("Aucune dépense publicitaire n'est engagée depuis le studio", "No ad spend is committed from the studio")}</strong>{t(" : le budget et le lancement se règlent dans le gestionnaire de publicités de chaque réseau, avec l'export ci-dessous.", ": budget and launch are set in each network's ads manager, using the export below.")}
       </div>
+      <AdCreatives />
+      <h2 className="font-display text-2xl font-semibold">{t("Campagnes", "Campaigns")}</h2>
       <div className="flex justify-end"><Button variant="signal" icon={<Plus className="size-4" />} onClick={() => setEdit(blank())}>{t("Nouvelle campagne", "New campaign")}</Button></div>
       {(list?.campaigns ?? []).length === 0 ? (
         <Empty title={t("Aucune campagne", "No campaigns")} icon={<Megaphone className="size-5" />}>{t("Créez une campagne : les angles de votre stratégie de marque sont proposés comme point de départ.", "Create a campaign: the angles from your brand strategy are suggested as a starting point.")}</Empty>

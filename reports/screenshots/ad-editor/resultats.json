@@ -1,0 +1,142 @@
+[
+  {
+    "name": "Onglet Publicités : créations V2 listées avec « Modifier »",
+    "ok": true,
+    "detail": "6 création(s)"
+  },
+  {
+    "name": "Onglet Publicités : bouton « Créer des publicités »",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "« Créer des publicités » : nouvelles propositions affichées (sans IA)",
+    "ok": true,
+    "detail": "6 → 9 création(s)"
+  },
+  {
+    "name": "Éditeur ouvert : canevas, calques, propriétés",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Fidélité : aperçu du navigateur ≈ export du serveur",
+    "ok": true,
+    "detail": "écart moyen 0.59/255, pixels très différents 0.25 %"
+  },
+  {
+    "name": "Titre modifié par double-clic + clavier",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Produit (pas de logo dans cette mise en page) déplacé en le glissant",
+    "ok": true,
+    "detail": "(390.292, 810.412) → (492, 960)"
+  },
+  {
+    "name": "Couleur du bouton changée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Annuler / rétablir",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Enregistré : nouvelle version créée",
+    "ok": true,
+    "detail": "v1 → v2"
+  },
+  {
+    "name": "Enregistré : titre",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Enregistré : élément déplacé",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Enregistré : couleur du bouton",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Enregistré : photo remplacée",
+    "ok": true,
+    "detail": "fybext7sqsvu5ifx → 1z380f0eevdrd3gk"
+  },
+  {
+    "name": "Enregistré : forme ajoutée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Enregistré : aucun appel d'IA",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Après rechargement : version enregistrée rouverte",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Liste : badge « Modifiée »",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Export PNG téléchargé aux dimensions du format",
+    "ok": true,
+    "detail": "1080×1920"
+  },
+  {
+    "name": "Export JPEG",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "« Agrandis le titre » : fait localement, sans IA",
+    "ok": true,
+    "detail": "113 → 136 px"
+  },
+  {
+    "name": "Demandes IA (photo, nouvelle version) : choix proposé, rien lancé sans accord",
+    "ok": true,
+    "detail": "1 → 1 tâche(s)"
+  },
+  {
+    "name": "Téléphone : interface tactile (barre d'outils en bas, pas de panneaux latéraux)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Téléphone : aucun défilement horizontal",
+    "ok": true,
+    "detail": "390px"
+  },
+  {
+    "name": "Téléphone : texte saisi au clavier enregistré",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Téléphone : élément déplacé au doigt",
+    "ok": true,
+    "detail": "(405.164, 418.404) → (540, 713)"
+  },
+  {
+    "name": "Téléphone : forme ajoutée et enregistrée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Aucune erreur JavaScript dans la page",
+    "ok": true,
+    "detail": ""
+  }
+]
