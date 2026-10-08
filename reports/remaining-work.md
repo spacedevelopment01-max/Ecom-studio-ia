@@ -4,8 +4,8 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 10A terminée (Theme Engine V2), **en attente de la validation du propriétaire**
-(technique et artistique) ; 10B non commencée ; 9A validée techniquement, 9B reportée ; 8A validée techniquement,
+Dernière mise à jour : phase 10A validée techniquement par le propriétaire et fusionnée (PR #62, CI verte) ;
+**qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; phase 11A en cours ; 9A validée techniquement, 9B reportée ; 8A validée techniquement,
 8B reportée.
 
 **Règle pour la Phase 10 (Theme Engine V2) et les suivantes** : tests visuels réels dans un navigateur, avec
@@ -179,8 +179,9 @@ ciblées), V2 par défaut dans `buildShop`, panneau V2 dans l'onglet Boutique, b
 APRÈS, ordinateur + téléphone), parcours de l'éditeur en navigateur 24/24, exports Shopify (Theme Check 0 erreur),
 WooCommerce, PrestaShop, kits. Rapports : `reports/phase-10A-report.md`, `reports/theme-v2-visual-review.md`.
 
-**NON VALIDÉS** : qualité artistique (en attente du propriétaire, captures dans `reports/screenshots/theme-v2/`) ;
-rendu sur une vraie boutique installée (10B).
+Validé techniquement par le propriétaire (8 octobre 2026 : 919 tests, 44 vérifications navigateur, build, Theme
+Check) et fusionné (PR #62). **NON VALIDÉS** : qualité visuelle finale avec les vrais fournisseurs d'IA ; rendu sur une
+vraie boutique installée (10B).
 
 Reste à faire (limites de 10A) :
 - **Validation artistique** des 5 sites par le propriétaire (aucun verdict « agence » n'est donné par la machine).
