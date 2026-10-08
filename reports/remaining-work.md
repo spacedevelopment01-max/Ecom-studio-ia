@@ -75,6 +75,10 @@ Limites connues de l'éditeur (à traiter plus tard) :
 | Musique de bibliothèque sous licence | modèle prêt (licence obligatoire), **aucune bibliothèque musicale branchée** ; seule la musique composée par le studio est utilisée |
 | Benchmark réel 7B (qualité, coûts réels, continuité réelle des personnages) | **en attente** (`scripts/benchmark-video-v2.ts`) |
 
+**Reportés par décision du propriétaire (après la Phase 8, non développés pendant la Phase 8)** : finalisation de
+l'éditeur vidéo (interface de montage dans le studio, bascule de l'onglet Vidéos sur le V2) et voix off
+synthétique (fournisseur de synthèse vocale, test d'écoute).
+
 Chemins vidéo encore ANCIENS (conservés pour compatibilité) : onglet Vidéos → `video.render` (`engine/videos.ts`,
 `produceVideo`) et `video.ugc` (`engine/ugc.ts`, `produceUgc`). L'étape « vidéo » des plans passe déjà par le
 Video Engine V2 ; l'onglet Vidéos sera basculé avec l'interface de montage.
