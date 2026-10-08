@@ -1,0 +1,57 @@
+{
+  "artisan": {
+    "version": 11,
+    "blocking": 0,
+    "warnings": 0,
+    "home": [
+      "v2-hero",
+      "v2-index",
+      "v2-steps",
+      "v2-facts",
+      "v2-faq",
+      "v2-cta"
+    ]
+  },
+  "cosmetic": {
+    "version": 13,
+    "blocking": 0,
+    "warnings": 0,
+    "home": [
+      "v2-hero",
+      "v2-split",
+      "v2-cta"
+    ]
+  },
+  "hightech": {
+    "version": 12,
+    "blocking": 0,
+    "warnings": 0,
+    "home": [
+      "v2-hero",
+      "v2-media",
+      "v2-split",
+      "v2-cta"
+    ]
+  },
+  "restaurant": {
+    "version": 15,
+    "blocking": 0,
+    "warnings": 0,
+    "home": [
+      "v2-hero",
+      "v2-split",
+      "v2-facts",
+      "v2-cta"
+    ]
+  },
+  "saas": {
+    "version": 11,
+    "blocking": 0,
+    "warnings": 0,
+    "home": [
+      "v2-hero",
+      "v2-split",
+      "v2-cta"
+    ]
+  }
+}

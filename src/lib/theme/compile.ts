@@ -134,15 +134,17 @@ export async function themeAssetBinary(spec: ThemeSpec, filename: string, load: 
   const src = load(assetId);
   if (!src) return null;
   const ext = filename.split(".").pop()!.toLowerCase();
-  const key = crypto.createHash("sha1").update(`${assetId}:${filename}:${src.updated}:${src.data.length}`).digest("hex");
+  // « r2 » : version de la conversion (logos SVG convertis en PNG depuis la phase 10A) — les anciens fichiers en cache ne servent plus.
+  const key = crypto.createHash("sha1").update(`r2:${assetId}:${filename}:${src.updated}:${src.data.length}`).digest("hex");
   const cached = path.join(ASSET_CACHE, `${key}.${ext}`);
   const mimeByExt: Record<string, string> = { webp: "image/webp", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", mp4: "video/mp4", svg: "image/svg+xml", gif: "image/gif" };
   const mime = mimeByExt[ext] ?? src.mime;
   if (fs.existsSync(cached)) return { data: fs.readFileSync(cached), mime };
   let data = src.data;
-  if (["webp", "jpg", "jpeg", "png"].includes(ext) && src.mime.startsWith("image/") && src.mime !== "image/svg+xml") {
+  // Un logo vectoriel (SVG) rangé sous un nom .png est converti en vraie image PNG (sinon l'image ne s'affiche pas).
+  if (["webp", "jpg", "jpeg", "png"].includes(ext) && src.mime.startsWith("image/") && (src.mime !== "image/svg+xml" || ext === "png")) {
     const isFavicon = filename.includes("favicon");
-    let img = sharp(src.data, { failOn: "none" }).rotate().resize(isFavicon ? 96 : 2400, isFavicon ? 96 : 2400, { fit: "inside", withoutEnlargement: true });
+    let img = sharp(src.data, { failOn: "none", ...(src.mime === "image/svg+xml" ? { density: 300 } : {}) }).rotate().resize(isFavicon ? 96 : 2400, isFavicon ? 96 : 2400, { fit: "inside", withoutEnlargement: true });
     if (ext === "webp") img = img.webp({ quality: 84, alphaQuality: 90 });
     else if (ext === "png") img = img.png({ compressionLevel: 9, palette: false });
     else img = img.flatten({ background: "#ffffff" }).jpeg({ quality: 84, mozjpeg: true, progressive: true });

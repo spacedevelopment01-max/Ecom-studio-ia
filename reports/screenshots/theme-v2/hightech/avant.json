@@ -1,0 +1,132 @@
+{
+  "scenario": "hightech",
+  "engine": "v1",
+  "label": "avant",
+  "projectId": "ozq2vjbhjgqmt3zl",
+  "version": 10,
+  "secondary": "/products/ostral",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Ostral » est coupé"
+        }
+      ],
+      "perf": {
+        "cls": 0.0010475907523282105,
+        "lcp": 272,
+        "height": 6854,
+        "sections": 8,
+        "loadMs": 675,
+        "requests": 26,
+        "kb": 2797,
+        "jsKb": 66,
+        "imagesKb": 556
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 164,
+        "height": 6443,
+        "sections": 8,
+        "loadMs": 667,
+        "requests": 13,
+        "kb": 1398,
+        "jsKb": 33,
+        "imagesKb": 278
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/products/ostral",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Ostral » est coupé"
+        },
+        {
+          "check": "empty-section",
+          "severity": "blocking",
+          "detail": "section vide : shopify-section-template--es__product_reviews_1"
+        }
+      ],
+      "perf": {
+        "cls": 0.00037158551418895743,
+        "lcp": 196,
+        "height": 3958,
+        "sections": 6,
+        "loadMs": 644,
+        "requests": 19,
+        "kb": 1535,
+        "jsKb": 33,
+        "imagesKb": 559
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/products/ostral",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 172,
+        "height": 4583,
+        "sections": 6,
+        "loadMs": 681,
+        "requests": 18,
+        "kb": 1515,
+        "jsKb": 33,
+        "imagesKb": 559
+      }
+    }
+  },
+  "interaction": "faq",
+  "interactionCart": true,
+  "blocking": 1,
+  "warnings": 2,
+  "structure": {
+    "home": [
+      "hero-fullbleed",
+      "rich-text",
+      "features-grid",
+      "image-with-text",
+      "scroll-story",
+      "horizontal-gallery",
+      "faq",
+      "cta-banner"
+    ],
+    "header": [
+      "header:logo-left"
+    ],
+    "footer": [
+      "footer:columns"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "page.shipping",
+      "blog",
+      "article",
+      "password"
+    ],
+    "fonts": [
+      "lora_n6",
+      "inter_n4"
+    ],
+    "direction": "nocturne",
+    "v2": null
+  }
+}

@@ -173,7 +173,8 @@ async function runBuild() {
   const { pid, userId } = await setupProject();
   enqueue({ userId, projectId: pid, type: "shop.build", payload: { projectId: pid } });
   const job = claimNext(["shop.build"])!;
-  await buildShop(new JobContext(job), pid);
+  // Composition de l'accueil par l'IA et relecture visuelle : parcours du moteur V1 (le Theme Engine V2 compose localement).
+  await buildShop(new JobContext(job), pid, { engine: "v1" });
   return currentTheme(pid)!;
 }
 const hero = { type: "hero-split", settings: { heading: "Grandir en", heading_accent: "douceur", button_label: "Découvrir", button_link: "/products/sova", image_asset: "es-photo-inventee.jpg", badge: "SOVA • Grandir en douceur" } };

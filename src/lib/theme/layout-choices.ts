@@ -18,6 +18,15 @@ export type LayoutChoice = {
 const KEYS: Record<string, string[]> = {
   header: ["layout", "mega_menu", "mobile_menu", "mobile_submenu", "mobile_promo", "shape", "icons", "desktop_icons", "sticky"],
   footer: ["style", "show_wordmark"],
+  // Sections du Theme Engine V2 : chaque composition se change sans IA.
+  "v2-hero": ["layout", "texture"],
+  "v2-index": ["layout"],
+  "v2-split": ["layout", "fit"],
+  "v2-steps": ["layout"],
+  "v2-facts": ["layout"],
+  "v2-faq": ["layout"],
+  "v2-cta": ["layout"],
+  "v2-media": ["layout"],
 };
 
 export function layoutChoices(spec: ThemeSpec, section: SectionInstance, lang: Lang): LayoutChoice[] | undefined {

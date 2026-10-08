@@ -1,0 +1,155 @@
+{
+  "scenario": "cosmetic",
+  "engine": "v1",
+  "label": "avant",
+  "projectId": "msq2qinsbram51qt",
+  "version": 11,
+  "secondary": "/products/serum-eclat",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Sérum Éclat » est coupé"
+        },
+        {
+          "check": "hero-cta",
+          "severity": "warning",
+          "detail": "aucun bouton dans l'ouverture"
+        }
+      ],
+      "perf": {
+        "cls": 0.00003383367091049383,
+        "lcp": 308,
+        "height": 7478,
+        "sections": 8,
+        "loadMs": 728,
+        "requests": 20,
+        "kb": 2372,
+        "jsKb": 66,
+        "imagesKb": 148
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Sérum Éclat » est coupé"
+        },
+        {
+          "check": "hero-cta",
+          "severity": "warning",
+          "detail": "le bouton de l'ouverture est sous la ligne de flottaison (848 px > 844 px)"
+        }
+      ],
+      "perf": {
+        "cls": 0,
+        "lcp": 196,
+        "height": 6137,
+        "sections": 8,
+        "loadMs": 649,
+        "requests": 10,
+        "kb": 1186,
+        "jsKb": 33,
+        "imagesKb": 74
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/products/serum-eclat",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Sérum Éclat » est coupé"
+        },
+        {
+          "check": "empty-section",
+          "severity": "blocking",
+          "detail": "section vide : shopify-section-template--es__product_reviews_1"
+        }
+      ],
+      "perf": {
+        "cls": 0.0006022189000342936,
+        "lcp": 188,
+        "height": 5202,
+        "sections": 6,
+        "loadMs": 689,
+        "requests": 14,
+        "kb": 1131,
+        "jsKb": 33,
+        "imagesKb": 162
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/products/serum-eclat",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Sérum Éclat » est coupé"
+        }
+      ],
+      "perf": {
+        "cls": 0,
+        "lcp": 128,
+        "height": 4980,
+        "sections": 6,
+        "loadMs": 647,
+        "requests": 13,
+        "kb": 1111,
+        "jsKb": 33,
+        "imagesKb": 162
+      }
+    }
+  },
+  "interaction": "faq",
+  "interactionCart": true,
+  "blocking": 1,
+  "warnings": 6,
+  "structure": {
+    "home": [
+      "hero-editorial",
+      "image-with-text",
+      "features-grid",
+      "rich-text",
+      "scroll-story",
+      "horizontal-gallery",
+      "faq",
+      "newsletter"
+    ],
+    "header": [
+      "announcement-bar:",
+      "header:logo-center"
+    ],
+    "footer": [
+      "footer:wordmark"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "page.shipping",
+      "blog",
+      "article",
+      "password"
+    ],
+    "fonts": [
+      "playfair_display_n6",
+      "inter_n4"
+    ],
+    "direction": "atelier",
+    "v2": null
+  }
+}

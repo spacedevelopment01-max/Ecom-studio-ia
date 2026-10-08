@@ -1,4 +1,6 @@
 import fs from "node:fs";
+import { LANGUAGES } from "@/lib/theme-v2/art-direction";
+import { LANGUAGE_LABEL_EN } from "@/lib/theme-v2/engine";
 import path from "node:path";
 import { addable, libraryEntry } from "@/lib/theme/section-library";
 import { L, uiLang } from "@/lib/i18n-server";
@@ -31,6 +33,8 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   return ok({
     current: { versionId: cur.version.id, number: cur.version.number, direction: cur.spec.direction, name: cur.spec.name, language: cur.spec.language ?? "fr", summary: cur.version.summary, fingerprint: themeFingerprint(cur.spec), structure, pages: cur.spec.store.pages, product: { handle: cur.spec.store.product.handle, title: cur.spec.store.product.title, price: cur.spec.store.product.price }, motion: cur.spec.imported ? undefined : { enabled: cur.spec.settings.motion_enabled !== false, intensity: String(cur.spec.settings.motion_intensity ?? "normal"), parallax: cur.spec.settings.motion_parallax !== false }, imported: cur.spec.imported ? { name: cur.spec.imported.name, report: cur.spec.imported.report } : undefined },
     versions: listThemeVersions(p.id),
+    // Theme Engine V2 : langage visuel, plan des pages (complètes ou à compléter), informations manquantes.
+    v2: cur.spec.meta?.engine === "v2" ? { language: cur.spec.meta.v2?.language, site: cur.spec.meta.v2?.site, plan: cur.spec.meta.v2?.plan ?? [], todo: cur.spec.meta.v2?.todo ?? [], languages: LANGUAGES.map((l) => ({ id: l.id, label: ui === "en" ? LANGUAGE_LABEL_EN[l.id] : l.label })) } : null,
     // Attribut « sandbox » des iframes d'aperçu (dépend de l'hébergement, voir preview-access.ts).
     sandbox: previewSandbox(),
     messages,

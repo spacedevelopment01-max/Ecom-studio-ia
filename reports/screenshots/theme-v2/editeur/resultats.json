@@ -1,0 +1,126 @@
+{
+  "passed": 24,
+  "total": 24,
+  "results": [
+    {
+      "name": "Projet ouvert : aperçu du site V2 affiché (ouverture V2 rendue dans l'aperçu)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Panneau Theme Engine V2 : langage visuel et plan des pages",
+      "ok": true,
+      "detail": "SITE — MOTEUR V2 Atelier précis Maison éditoriale Précision technique Bistrot Produit numérique Recomposer Gratuit, sans IA. Vos textes et images sont repris ; "
+    },
+    {
+      "name": "Aperçu par appareil (ordinateur, tablette, téléphone)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Choix de la page affichée (fiche produit)",
+      "ok": true,
+      "detail": "Accueil | Fiche produit | Panier | Questions (à compléter) | Livraison et retours (à compléter) | Contact (à compléter) | Mentions légales (à compléter) | Page 404"
+    },
+    {
+      "name": "Texte désigné modifié sans IA, nouvelle version enregistrée",
+      "ok": true,
+      "detail": "Texte remplacé par « Votre sérum vous attend ».\n\nModifié : Section v2_cta_1 : «  · titre = Votre sérum vous attend"
+    },
+    {
+      "name": "Image désignée remplacée par une image du projet (sans IA)",
+      "ok": true,
+      "detail": "C'est fait : l'image désignée est remplacée par « packshot.jpg ».\n\nModifié : Sec · es-detail-1-3aetk2.jpg → es-packshot-v8slec.jpg"
+    },
+    {
+      "name": "Couleur des boutons changée (moteur local)",
+      "ok": true,
+      "detail": "#855220 → #1F7A4D · Couleur des boutons (tout le site) : #1F7A4D.\n\nModifié : Cou"
+    },
+    {
+      "name": "Typographie changée (association V2, sans IA)",
+      "ok": true,
+      "detail": "cormorant_n5 → space_grotesk_n7 · Typographies remplacées : Space Grotesk / Inter. Redemandez "
+    },
+    {
+      "name": "Disposition d'une section changée (cette section seulement)",
+      "ok": true,
+      "detail": "card → split · Disposition changée (split) — cette section seulement.\n\nModi"
+    },
+    {
+      "name": "Section ajoutée (FAQ V2, contenu « À compléter »)",
+      "ok": true,
+      "detail": "Section ajoutée au style du site, avec un contenu de départ  · v2-hero › v2-split › v2-cta › v2-faq"
+    },
+    {
+      "name": "Section déplacée depuis le panneau Structure",
+      "ok": true,
+      "detail": "v2-hero>v2-split>v2-cta>v2-faq → v2-hero>v2-split>v2-faq>v2-cta"
+    },
+    {
+      "name": "Section supprimée (versionnée, réversible)",
+      "ok": true,
+      "detail": "4 → 3"
+    },
+    {
+      "name": "Bouton désigné modifié (libellé)",
+      "ok": true,
+      "detail": "Texte remplacé par « Découvrir le sérum ».\n\nModifié : Sectio · Découvrir le sérum"
+    },
+    {
+      "name": "Après rechargement, les modifications sont conservées (aperçu)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Restaurer une version (une nouvelle version est créée)",
+      "ok": true,
+      "detail": "10 version(s) listée(s), version actuelle n°11"
+    },
+    {
+      "name": "Découverte gratuite : export refusé (réservé aux forfaits)",
+      "ok": true,
+      "detail": "402"
+    },
+    {
+      "name": "Export Shopify : ZIP OS 2.0 avec les sections et le design system V2",
+      "ok": true,
+      "detail": "200 · 492 Ko"
+    },
+    {
+      "name": "Export woocommerce (ce qui est implémenté)",
+      "ok": true,
+      "detail": "200 application/zip · 25 fichier(s) : es-serum-eclat/theme.json, es-serum-eclat/style.css, es-serum-eclat/functions.php, es-serum-eclat/patterns/accueil.php, es-serum-eclat/templates/front-page.html, es-serum-eclat/templates/index.html"
+    },
+    {
+      "name": "Export prestashop (ce qui est implémenté)",
+      "ok": true,
+      "detail": "200 application/zip · 16 fichier(s) : config/theme.yml, assets/css/es-theme.css, templates/index.tpl, assets/img/es-produit-detoure-kwmjwb.png, assets/img/es-packshot-v8slec.jpg, assets/img/es-detail-1-3aetk2.jpg"
+    },
+    {
+      "name": "Export wix (kit, pas un thème natif)",
+      "ok": true,
+      "detail": "200 application/zip · 15 fichier(s) : medias/es-produit-detoure-kwmjwb.png, medias/es-packshot-v8slec.jpg, medias/es-detail-1-3aetk2.jpg, medias/es-hero-v8slec.jpg, medias/es-galerie-packshot-v8slec.jpg, medias/es-galerie-detail-3aet-3aetk2.jpg"
+    },
+    {
+      "name": "Export squarespace (kit, pas un thème natif)",
+      "ok": true,
+      "detail": "200 application/zip · 15 fichier(s) : medias/es-produit-detoure-kwmjwb.png, medias/es-packshot-v8slec.jpg, medias/es-detail-1-3aetk2.jpg, medias/es-hero-v8slec.jpg, medias/es-galerie-packshot-v8slec.jpg, medias/es-galerie-detail-3aet-3aetk2.jpg"
+    },
+    {
+      "name": "Téléphone : éditeur sans débordement horizontal",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Aucun appel d'IA pendant tout le parcours",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "Aucune erreur JavaScript dans le studio",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p9a";
+export const POLICY_VERSION = "2026-10-p10a";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -43,6 +43,7 @@ export const DELIVERABLES = [
   "social_post_v2",
   "theme_home",
   "theme_custom",
+  "theme_v2",
   "cutout",
 ] as const;
 export type Deliverable = (typeof DELIVERABLES)[number];
@@ -242,6 +243,19 @@ export const POLICIES: Record<Deliverable, Policy> = {
   },
   theme_home: THEME,
   theme_custom: THEME,
+  // Theme Engine V2 (phase 10A) : un thème techniquement valide n'est JAMAIS FINAL automatiquement — seule la validation
+  // du propriétaire (humain) conclut. Le contrôle local (structure, contrastes, contenus, navigateur) donne PROVISOIRE ;
+  // un défaut grave (navigation inutilisable, texte illisible, thème cassé) rejette le thème.
+  theme_v2: {
+    final: 8,
+    retryFloor: 0,
+    maxRetries: 0,
+    finalCheckers: ["human"],
+    minConfidence: 0.8,
+    fatal: ["broken", "theme_check_error", "navigation_unusable", "unreadable_text"],
+    blocking: ["empty_section", "overflow", "overlap", "missing_image", "distorted_image", "js_error", "broken_link", "invented_claim", "missing_h1"],
+    provisional: { checkers: ["local", "ai"], floor: 0, use: "manual", label: "needs_improvement" },
+  },
   // Détourage : le contrôle local (pixels) est un vrai contrôle ; il peut conclure.
   cutout: { final: 7, retryFloor: 7, maxRetries: 0, finalCheckers: ["ai", "local", "human"], minConfidence: 0.5, fatal: ["wrong_object", "corrupt"], blocking: [] },
 };

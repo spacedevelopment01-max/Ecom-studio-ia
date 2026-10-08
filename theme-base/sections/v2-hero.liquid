@@ -1,0 +1,133 @@
+{%- comment -%}
+  Ouverture (Theme Engine V2). Cinq compositions réellement différentes :
+  - stage : produit détouré en grand sur une scène teintée, texte à gauche, faits confirmés dessous ;
+  - split : photo pleine hauteur d'un côté, texte de l'autre ;
+  - type : typographie seule (aucune photo authentique), carte de contact et matière en aplat ;
+  - frame : titre centré puis capture d'interface dans un cadre de navigateur ;
+  - board : enseigne (nom en très grand), phrase de positionnement, ardoise des formules et des infos pratiques.
+  Les blocs « Fait » n'affichent que des informations confirmées par le client.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign has_media = false
+  if s.image != blank or s.image_asset != blank
+    assign has_media = true
+  endif
+  assign layout = s.layout
+  if has_media == false
+    if layout == 'stage' or layout == 'split' or layout == 'frame'
+      assign layout = 'type'
+    endif
+  endif
+-%}
+<section class="v2-hero v2-hero--{{ layout }} v2-texture--{{ s.texture }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;" data-v2-hero>
+  <div class="es-container v2-hero__grid">
+    <div class="v2-hero__copy">
+      {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
+      <h1 class="v2-display" data-reveal="up" style="--d: 1">{{ s.heading }}{% if s.heading_em != blank %} <span class="v2-em">{{ s.heading_em }}</span>{% endif %}</h1>
+      {%- if s.text != blank -%}<div class="v2-lead" data-reveal="up" style="--d: 2">{{ s.text }}</div>{%- endif -%}
+      <div class="v2-actions" data-reveal="up" style="--d: 3">
+        {%- if s.button_label != blank -%}<a class="v2-btn v2-btn--primary" href="{{ s.button_link | default: '#' }}">{{ s.button_label }}<span class="v2-btn__arrow" aria-hidden="true">{% render 'icon', name: 'arrow' %}</span></a>{%- endif -%}
+        {%- if s.button2_label != blank -%}<a class="v2-btn v2-btn--ghost" href="{{ s.button2_link | default: '#' }}">{{ s.button2_label }}</a>{%- endif -%}
+      </div>
+      {%- if layout != 'type' and layout != 'board' -%}
+        {%- assign facts = section.blocks | where: 'type', 'fact' -%}
+        {%- if facts.size > 0 -%}
+          <dl class="v2-hero__facts" data-reveal="up" style="--d: 4">
+            {%- for block in facts -%}<div class="v2-hero__fact" {{ block.shopify_attributes }}><dt>{{ block.settings.label }}</dt><dd>{{ block.settings.value }}</dd></div>{%- endfor -%}
+          </dl>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+
+    {%- case layout -%}
+      {%- when 'stage' -%}
+        <div class="v2-hero__stage" data-reveal="zoom" style="--d: 1">
+          <span class="v2-hero__halo" aria-hidden="true"></span>
+          <div class="v2-hero__object" data-parallax>{% render 'es-image', image: s.image, asset: s.image_asset, alt: s.image_alt, class: 'v2-contain', loading: 'eager', fetchpriority: 'high', sizes: '(min-width: 990px) 46vw, 90vw' %}</div>
+          {%- if s.caption != blank -%}<p class="v2-hero__caption">{{ s.caption }}</p>{%- endif -%}
+        </div>
+      {%- when 'split' -%}
+        <div class="v2-hero__media" data-reveal="zoom" style="--d: 1">{% render 'es-image', image: s.image, asset: s.image_asset, alt: s.image_alt, class: 'v2-cover', loading: 'eager', fetchpriority: 'high', sizes: '(min-width: 990px) 50vw, 100vw' %}</div>
+      {%- when 'frame' -%}
+        <figure class="v2-hero__frame" data-reveal="up" style="--d: 4">
+          <div class="v2-frame__bar" aria-hidden="true"><i></i><i></i><i></i><span>{{ shop.name }}</span></div>
+          {% render 'es-image', image: s.image, asset: s.image_asset, alt: s.image_alt, class: 'v2-frame__img', loading: 'eager', fetchpriority: 'high', sizes: '(min-width: 990px) 1100px, 96vw' %}
+          {%- if s.caption != blank -%}<figcaption class="v2-hero__caption">{{ s.caption }}</figcaption>{%- endif -%}
+        </figure>
+      {%- else -%}
+        {%- assign facts = section.blocks | where: 'type', 'fact' -%}
+        {%- assign items = section.blocks | where: 'type', 'item' -%}
+        {%- if facts.size > 0 or items.size > 0 -%}
+          <aside class="v2-hero__card" data-reveal="up" style="--d: 2">
+            {%- if s.card_title != blank -%}<p class="v2-hero__card-title">{{ s.card_title }}</p>{%- endif -%}
+            {%- if items.size > 0 -%}
+              <ul class="v2-hero__items">
+                {%- for block in items -%}<li {{ block.shopify_attributes }}><span>{{ block.settings.label }}</span><span class="v2-dots" aria-hidden="true"></span><span>{{ block.settings.value }}</span></li>{%- endfor -%}
+              </ul>
+            {%- endif -%}
+            {%- if facts.size > 0 -%}
+              <dl class="v2-hero__card-facts">
+                {%- for block in facts -%}
+                  <div {{ block.shopify_attributes }}><dt>{{ block.settings.label }}</dt><dd>{% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{{ block.settings.value }}</a>{% else %}{{ block.settings.value }}{% endif %}</dd></div>
+                {%- endfor -%}
+              </dl>
+            {%- endif -%}
+          </aside>
+        {%- endif -%}
+    {%- endcase -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture V2",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition", "default": "split", "options": [
+      { "value": "stage", "label": "Produit en scène" },
+      { "value": "split", "label": "Photo et texte" },
+      { "value": "type", "label": "Typographique (sans photo)" },
+      { "value": "frame", "label": "Capture d'interface" },
+      { "value": "board", "label": "Enseigne et ardoise" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Votre titre principal" },
+    { "type": "text", "id": "heading_em", "label": "Fin du titre mise en valeur" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton principal" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton principal" },
+    { "type": "text", "id": "button2_label", "label": "Second bouton" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de l'image" },
+    { "type": "text", "id": "caption", "label": "Légende de l'image" },
+    { "type": "text", "id": "card_title", "label": "Titre de la carte d'informations" },
+    { "type": "select", "id": "texture", "label": "Matière du fond", "default": "none", "options": [
+      { "value": "none", "label": "Aucune" },
+      { "value": "plaster", "label": "Enduit" },
+      { "value": "paper", "label": "Papier" },
+      { "value": "grid", "label": "Trame" },
+      { "value": "glow", "label": "Halo" }
+    ] },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 64 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "fact", "name": "Information confirmée", "settings": [
+      { "type": "text", "id": "label", "label": "Libellé", "default": "Information" },
+      { "type": "text", "id": "value", "label": "Valeur", "default": "[À compléter]" },
+      { "type": "url", "id": "link", "label": "Lien (facultatif)" }
+    ] },
+    { "type": "item", "name": "Ligne de l'ardoise", "settings": [
+      { "type": "text", "id": "label", "label": "Libellé", "default": "Formule" },
+      { "type": "text", "id": "value", "label": "Valeur", "default": "[À compléter]" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Ouverture V2" }]
+}
+{% endschema %}

@@ -38,7 +38,44 @@ export const commentSafe = (s: unknown) => String(s ?? "").replace(/\*\//g, "* /
 /** Liste ordonnée des sections de l'accueil avec leurs contenus (indépendant de la plateforme). */
 function homeBlocks(spec: ThemeSpec) {
   const t = spec.templates.index;
-  return t.order.map((id) => ({ id, s: t.sections[id] })).filter((x) => x.s && !x.s.disabled);
+  return t.order.map((id) => ({ id, s: t.sections[id] ? fromV2(t.sections[id]) : t.sections[id] })).filter((x) => x.s && !x.s.disabled);
+}
+
+/**
+ * Sections du Theme Engine V2 (phase 10A) traduites en leur équivalent connu des exports WordPress / PrestaShop /
+ * kits : le CONTENU (titres, textes, boutons, faits, questions, images) est repris ; la mise en page V2 propre à
+ * Shopify (compositions, langage visuel) ne l'est pas — ces exports restent des bases à finir sur la plateforme.
+ */
+export function fromV2(s: SectionInstance): SectionInstance {
+  if (!s.type.startsWith("v2-")) return s;
+  const st = s.settings as Record<string, any>;
+  const bl = blocksOf(s);
+  const blocks = (list: { type: string; settings: Record<string, unknown> }[]) => ({
+    blocks: Object.fromEntries(list.map((b, i) => [`b${i + 1}`, b])) as SectionInstance["blocks"],
+    block_order: list.map((_, i) => `b${i + 1}`),
+  });
+  const heading = [st.heading, st.heading_em].filter(Boolean).join(" ");
+  switch (s.type) {
+    case "v2-hero":
+      return { ...s, type: "hero-split", settings: { ...st, heading, text: [strip(st.text), ...bl.map((b) => [b.settings.label, b.settings.value].filter(Boolean).join(" : "))].filter(Boolean).join(" · ") } };
+    case "v2-split":
+      return { ...s, type: "image-with-text", settings: { ...st, heading, text: [strip(st.text), ...bl.map((b) => String(b.settings.text ?? ""))].filter(Boolean).join(" · ") } };
+    case "v2-index":
+      return { ...s, type: "features-grid", settings: { ...st, heading }, ...blocks(bl.map((b) => ({ type: "feature", settings: { title: b.settings.title, text: [strip(b.settings.text), b.settings.meta].filter(Boolean).join(" — ") } }))) };
+    case "v2-steps":
+      return { ...s, type: "scroll-story", settings: { ...st, heading }, ...blocks(bl.map((b) => ({ type: "step", settings: { title: b.settings.title, text: b.settings.text ?? "" } }))) };
+    case "v2-facts":
+    case "v2-specs":
+      return { ...s, type: "specs-list", settings: { ...st, heading }, ...blocks(bl.map((b) => ({ type: "spec", settings: { label: b.settings.label, value: b.settings.value } }))) };
+    case "v2-faq":
+      return { ...s, type: "faq", settings: { ...st, heading } };
+    case "v2-media":
+      return { ...s, type: "gallery-mosaic", settings: { ...st, heading }, ...blocks(bl.map((b) => ({ type: "image", settings: { image_asset: b.settings.image_asset ?? "" } }))) };
+    case "v2-cta":
+      return { ...s, type: "rich-text", settings: { ...st }, ...blocks([{ type: "heading", settings: { text: heading } }, ...(strip(st.text) ? [{ type: "text", settings: { text: st.text } }] : []), ...(st.button_label ? [{ type: "button", settings: { label: st.button_label, link: st.button_link } }] : [])]) };
+    default:
+      return s;
+  }
 }
 const blocksOf = (s: SectionInstance) => (s.block_order ?? Object.keys(s.blocks ?? {})).map((b) => s.blocks?.[b]).filter(Boolean) as { type: string; settings: Record<string, any> }[];
 
@@ -81,7 +118,8 @@ function wpStyle(styles: ElementStyle[], role: ElementStyle["role"], text: unkno
   };
 }
 
-function wpBlocksForSection(s: SectionInstance, img: (f: string) => string, lang: Lang = "fr", services = false, styles: ElementStyle[] = []): string {
+function wpBlocksForSection(v2OrV1: SectionInstance, img: (f: string) => string, lang: Lang = "fr", services = false, styles: ElementStyle[] = []): string {
+  const s = fromV2(v2OrV1);
   const shopUrl = services ? "/contact/" : pick(lang, "/boutique/", "/shop/");
   const st = s.settings as Record<string, any>;
   const h = (t: unknown, lvl = 2) => {

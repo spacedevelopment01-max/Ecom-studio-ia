@@ -1,0 +1,115 @@
+{
+  "scenario": "hightech",
+  "engine": "v2",
+  "label": "apres",
+  "projectId": "ozq2vjbhjgqmt3zl",
+  "version": 12,
+  "secondary": "/products/ostral",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0.0009099896215117026,
+        "lcp": 188,
+        "height": 3709,
+        "sections": 4,
+        "loadMs": 664,
+        "requests": 24,
+        "kb": 2724,
+        "jsKb": 66,
+        "imagesKb": 926
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 124,
+        "height": 3649,
+        "sections": 4,
+        "loadMs": 622,
+        "requests": 12,
+        "kb": 1362,
+        "jsKb": 33,
+        "imagesKb": 463
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/products/ostral",
+      "findings": [],
+      "perf": {
+        "cls": 0.00048538809149680634,
+        "lcp": 156,
+        "height": 2569,
+        "sections": 4,
+        "loadMs": 651,
+        "requests": 17,
+        "kb": 1348,
+        "jsKb": 33,
+        "imagesKb": 419
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/products/ostral",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 124,
+        "height": 3057,
+        "sections": 4,
+        "loadMs": 645,
+        "requests": 16,
+        "kb": 1329,
+        "jsKb": 33,
+        "imagesKb": 419
+      }
+    }
+  },
+  "interactionCart": true,
+  "blocking": 0,
+  "warnings": 0,
+  "structure": {
+    "home": [
+      "v2-hero",
+      "v2-media",
+      "v2-split",
+      "v2-cta"
+    ],
+    "header": [
+      "header:menu-right"
+    ],
+    "footer": [
+      "footer:split"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "page.shipping",
+      "blog",
+      "article",
+      "password",
+      "page.v2-faq",
+      "page.v2-contact"
+    ],
+    "fonts": [
+      "space_grotesk_n7",
+      "inter_n4"
+    ],
+    "direction": "nocturne",
+    "v2": {
+      "site": "shop_mono",
+      "language": "precision"
+    }
+  }
+}

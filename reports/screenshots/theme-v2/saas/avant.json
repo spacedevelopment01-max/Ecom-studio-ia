@@ -1,0 +1,132 @@
+{
+  "scenario": "saas",
+  "engine": "v1",
+  "label": "avant",
+  "projectId": "yiwp790aih2vs1hp",
+  "version": 9,
+  "secondary": "/products/nuvia",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Nuvia » est coupé"
+        }
+      ],
+      "perf": {
+        "cls": 0.0014533053844226894,
+        "lcp": 264,
+        "height": 6967,
+        "sections": 8,
+        "loadMs": 752,
+        "requests": 20,
+        "kb": 2560,
+        "jsKb": 66,
+        "imagesKb": 320
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 180,
+        "height": 6424,
+        "sections": 8,
+        "loadMs": 660,
+        "requests": 10,
+        "kb": 1280,
+        "jsKb": 33,
+        "imagesKb": 160
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/products/nuvia",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Nuvia » est coupé"
+        },
+        {
+          "check": "empty-section",
+          "severity": "blocking",
+          "detail": "section vide : shopify-section-template--es__product_reviews_1"
+        }
+      ],
+      "perf": {
+        "cls": 0.0005553912546081961,
+        "lcp": 276,
+        "height": 3673,
+        "sections": 5,
+        "loadMs": 729,
+        "requests": 13,
+        "kb": 1290,
+        "jsKb": 33,
+        "imagesKb": 319
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/products/nuvia",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 180,
+        "height": 4120,
+        "sections": 5,
+        "loadMs": 676,
+        "requests": 12,
+        "kb": 1271,
+        "jsKb": 33,
+        "imagesKb": 319
+      }
+    }
+  },
+  "interaction": "faq",
+  "interactionCart": true,
+  "blocking": 1,
+  "warnings": 2,
+  "structure": {
+    "home": [
+      "hero-fullbleed",
+      "rich-text",
+      "features-grid",
+      "image-with-text",
+      "scroll-story",
+      "horizontal-gallery",
+      "faq",
+      "cta-banner"
+    ],
+    "header": [
+      "header:logo-left"
+    ],
+    "footer": [
+      "footer:columns"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "page.shipping",
+      "blog",
+      "article",
+      "password"
+    ],
+    "fonts": [
+      "lora_n6",
+      "inter_n4"
+    ],
+    "direction": "nocturne",
+    "v2": null
+  }
+}

@@ -4,8 +4,9 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 9A validée techniquement (Social Media & Automatisation Engine V2) ; 9B reportée ;
-8A validée techniquement ; 8B reportée.
+Dernière mise à jour : phase 10A terminée (Theme Engine V2), **en attente de la validation du propriétaire**
+(technique et artistique) ; 10B non commencée ; 9A validée techniquement, 9B reportée ; 8A validée techniquement,
+8B reportée.
 
 **Règle pour la Phase 10 (Theme Engine V2) et les suivantes** : tests visuels réels dans un navigateur, avec
 captures ordinateur ET téléphone, dès le développement technique. Les tests de code seuls ne suffisent pas.
@@ -20,6 +21,7 @@ captures ordinateur ET téléphone, dès le développement technique. Les tests 
 | 7B | Vidéos et UGC (Video Engine V2) | `scripts/benchmark-video-v2.ts` | en attente |
 | 8B | Textes SEO, fiches, pages, articles (SEO Engine V2) | `scripts/benchmark-seo-v2.ts` | **reporté** par décision du propriétaire |
 | 8B | SEO des fiches Shopify (métachamps) | `scripts/verify-shopify-seo.ts` | **reporté** — mécanisme NON VÉRIFIÉ |
+| 10B | Sites : installation réelle des thèmes V2 (boutique Shopify de développement, WordPress + WooCommerce, PrestaShop), rendu réel, éventuelles retouches IA réelles | `scripts/theme-v2-check.ts` (ZIP + Theme Check), `scripts/e2e-theme-v2.ts`, puis installation sur des boutiques de test | **non commencée** (avec l'autorisation du propriétaire) |
 | 9B | Réseaux sociaux : production réelle (textes, visuels, vidéos), publication réelle de test, statistiques réelles | `scripts/benchmark-social-v2.ts` + comptes de test reliés dans le studio | **reporté** par décision du propriétaire (publication réelle seulement avec son autorisation explicite) |
 
 La qualité visuelle réelle de ces quatre moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
@@ -167,6 +169,35 @@ Reste à faire :
 - **Ancien calendrier V1** toujours présent (sous le studio V2) pour les anciens calendriers ; ancien éditeur
   `post-editor.tsx` et API `/api/projects/[id]/plans` conservés. À retirer après validation du V2.
 - Glisser-déposer sur ordinateur seulement ; tablette, Safari, Firefox non testés.
+
+## Theme Engine V2 (phase 10A) — fait et ce qui reste
+
+Fait (100 % local, 0 €) : moteur `src/lib/theme-v2/` (intention du site, 5 langages visuels, design system en vrais
+réglages du thème, contenu confirmé seulement, planificateur de pages avec pages « à compléter » signalées, 9 sections
+V2 à variantes, Quality Gate `theme_v2` jamais FINAL sans le propriétaire, mesure de diversité, retouches locales
+ciblées), V2 par défaut dans `buildShop`, panneau V2 dans l'onglet Boutique, banc visuel réel (5 projets, AVANT /
+APRÈS, ordinateur + téléphone), parcours de l'éditeur en navigateur 24/24, exports Shopify (Theme Check 0 erreur),
+WooCommerce, PrestaShop, kits. Rapports : `reports/phase-10A-report.md`, `reports/theme-v2-visual-review.md`.
+
+**NON VALIDÉS** : qualité artistique (en attente du propriétaire, captures dans `reports/screenshots/theme-v2/`) ;
+rendu sur une vraie boutique installée (10B).
+
+Reste à faire (limites de 10A) :
+- **Validation artistique** des 5 sites par le propriétaire (aucun verdict « agence » n'est donné par la machine).
+- **10B** : installation réelle sur Shopify (boutique de développement), WordPress + WooCommerce, PrestaShop.
+- Sites artisan et restaurant de référence **sans photo authentique** : rendu avec de vraies photos du client non vu.
+- Médias de démonstration dessinés (sérum, logiciel) : pas de vraies photos dans le banc.
+- **WooCommerce / PrestaShop** : contenu des sections V2 repris, **mise en page V2 non reproduite** ; jamais installés.
+  **Wix / Squarespace** : kits seulement (pas de thème natif).
+- Éditeur : pas d'édition directe dans la page (désigner puis demander), pas de sélecteur visuel des schémas de
+  couleurs, remplacement d'image testé sur la section image + texte seulement.
+- Accessibilité : pas d'audit axe ni de test avec un vrai lecteur d'écran ; performances mesurées en local, pas de
+  Lighthouse ; Chromium seulement, pas de vraie tablette, ni Safari ni Firefox.
+- 5 langages visuels seulement ; boutique à plusieurs produits non contrôlée dans le banc visuel.
+- **Chemins de thème encore ANCIENS** : galerie des 11 directions et « change de direction » (moteur V1, conservé) ;
+  projets dont la version actuelle est V1 tant qu'ils ne sont pas recomposés ; réglage de projet `themeEngine: "v1"`.
+- La CI GitHub vérifie le thème V2 par `tests/theme-v2.test.ts` (Theme Check d'un ZIP V2) ; `scripts/verify-theme.sh`
+  couvre les directions V1.
 
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 

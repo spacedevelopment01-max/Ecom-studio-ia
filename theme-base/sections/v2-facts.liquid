@@ -1,0 +1,54 @@
+{%- comment -%}
+  Informations pratiques (Theme Engine V2) : zone, horaires, adresse, téléphone… UNIQUEMENT des informations
+  fournies par le client ; une information manquante s'affiche « [À compléter …] ». strip / grid / ledger.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="v2-facts v2-facts--{{ s.layout }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+  <div class="es-container v2-facts__grid">
+    <header class="v2-head">
+      {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="v2-h2" data-reveal="up">{{ s.heading }}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<div class="v2-intro" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+    </header>
+    <dl class="v2-facts__list">
+      {%- for block in section.blocks -%}
+        <div class="v2-facts__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          <dt>{%- if block.settings.icon != 'none' -%}{% render 'icon', name: block.settings.icon %}{%- endif -%}{{ block.settings.label }}</dt>
+          <dd>{% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{{ block.settings.value }}</a>{% else %}{{ block.settings.value }}{% endif %}</dd>
+        </div>
+      {%- endfor -%}
+    </dl>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Infos pratiques V2",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition", "default": "grid", "options": [
+      { "value": "strip", "label": "Bandeau" }, { "value": "grid", "label": "Grille" }, { "value": "ledger", "label": "Registre" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Informations pratiques" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-2" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 80 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 80 }
+  ],
+  "blocks": [
+    { "type": "fact", "name": "Information", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "none", "options": [
+        { "value": "none", "label": "Aucune" }, { "value": "clock", "label": "Horloge" }, { "value": "phone", "label": "Téléphone" }, { "value": "mail", "label": "E-mail" },
+        { "value": "globe", "label": "Globe" }, { "value": "truck", "label": "Livraison" }, { "value": "return", "label": "Retour" }, { "value": "chat", "label": "Message" }
+      ] },
+      { "type": "text", "id": "label", "label": "Libellé", "default": "Information" },
+      { "type": "text", "id": "value", "label": "Valeur", "default": "[À compléter]" },
+      { "type": "url", "id": "link", "label": "Lien (facultatif)" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Infos pratiques V2", "blocks": [{ "type": "fact" }, { "type": "fact" }, { "type": "fact" }] }]
+}
+{% endschema %}

@@ -1,0 +1,193 @@
+{
+  "scenario": "restaurant",
+  "engine": "v1",
+  "label": "avant",
+  "projectId": "u82927ngri8h2jl6",
+  "version": 13,
+  "secondary": "/pages/prestations",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Chez Lison » est coupé"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "h3.es-info__title « HORAIRES » contraste 4.33:1"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "h3.es-info__title « ADRESSE » contraste 4.33:1"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "span.es-info__label « Zone d'intervention » contraste 4.33:1"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "h3.es-info__title « NOUS JOINDRE » contraste 4.33:1"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        }
+      ],
+      "perf": {
+        "cls": 0.0072077580623338905,
+        "lcp": 236,
+        "height": 6549,
+        "sections": 12,
+        "loadMs": 653,
+        "requests": 14,
+        "kb": 1405,
+        "jsKb": 66,
+        "imagesKb": 0
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "h3.es-info__title « HORAIRES » contraste 4.33:1"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "h3.es-info__title « ADRESSE » contraste 4.33:1"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "span.es-info__label « Zone d'intervention » contraste 4.33:1"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "h3.es-info__title « NOUS JOINDRE » contraste 4.33:1"
+        }
+      ],
+      "perf": {
+        "cls": 0,
+        "lcp": 168,
+        "height": 6466,
+        "sections": 12,
+        "loadMs": 672,
+        "requests": 7,
+        "kb": 702,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/pages/prestations",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « Chez Lison » est coupé"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        }
+      ],
+      "perf": {
+        "cls": 0.0012165381663130144,
+        "lcp": 160,
+        "height": 3188,
+        "sections": 4,
+        "loadMs": 639,
+        "requests": 6,
+        "kb": 514,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/pages/prestations",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 152,
+        "height": 3200,
+        "sections": 4,
+        "loadMs": 633,
+        "requests": 6,
+        "kb": 514,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    }
+  },
+  "interaction": "faq",
+  "blocking": 0,
+  "warnings": 14,
+  "structure": {
+    "home": [
+      "hero-split",
+      "rich-text",
+      "wave-divider",
+      "services-list",
+      "wave-divider",
+      "how-to",
+      "wave-divider",
+      "testimonials",
+      "practical-info",
+      "faq",
+      "wave-divider",
+      "cta-banner"
+    ],
+    "header": [
+      "announcement-bar:",
+      "header:logo-center"
+    ],
+    "footer": [
+      "footer:card"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "blog",
+      "article",
+      "password",
+      "page.services",
+      "page.legal"
+    ],
+    "fonts": [
+      "libre_baskerville_n7",
+      "work_sans_n4"
+    ],
+    "direction": "gourmand",
+    "v2": null
+  }
+}

@@ -148,7 +148,7 @@ export const handlers: Record<string, Handler> = {
     return { local: true };
   },
 
-  "shop.build": async (ctx) => buildShop(ctx, ctx.payload.projectId, { useAi: ctx.payload.useAi }),
+  "shop.build": async (ctx) => buildShop(ctx, ctx.payload.projectId, { useAi: ctx.payload.useAi, engine: ctx.payload.engine, language: ctx.payload.language }),
   "shop.direction": async (ctx) => switchDirection(ctx, ctx.payload.projectId, ctx.payload.direction),
   /** Thème entièrement sur mesure (forfait Dominer) : plan, puis chaque section écrite par l'IA, Theme Check, nouvelle version. */
   "theme.custom": async (ctx) => buildCustomTheme(ctx, ctx.payload.projectId),
