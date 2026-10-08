@@ -11,6 +11,7 @@
 import { all, json } from "../db";
 import { loadProject, type Project } from "../projects";
 import { resolveTrade, tradeText, type TradeProfile } from "./trade";
+import { resolveProductCategory, type ProductCategoryProfile } from "../image-v2/categories";
 
 export const QUALITY_WINDOW_MS = 90 * 86400_000;
 
@@ -35,6 +36,8 @@ export type BrainSnapshot = {
   projectId: string;
   project: Project;
   trade: TradeProfile;
+  /** Boutique de produits : famille du produit comprise (Image V2) ; null pour une entreprise de services. */
+  category: ProductCategoryProfile | null;
   memory: MemoryRow[];
   aiPatterns: AiPattern[];
   /** Contrôles ignorés car techniques (contrôle en panne, aucun contrôleur) : jamais transformés en préférence. */
@@ -88,6 +91,7 @@ export function brainSnapshot(projectOrId: string | Project): BrainSnapshot {
     projectId: pid,
     project,
     trade: resolveTrade(tradeText(project), project.product.sector ?? null),
+    category: project.business === "services" ? null : resolveProductCategory(project.product),
     memory,
     aiPatterns: [...byCode.values()].sort((a, b) => b.count - a.count || a.code.localeCompare(b.code)),
     technicalFailures,

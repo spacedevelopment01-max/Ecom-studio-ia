@@ -29,6 +29,10 @@ import { C, L } from "../i18n-server";
 import { brandTypo, palette } from "./images";
 import { paletteKey } from "../route-palette";
 import { avoidPrompt, photoLine, photoLineInput, photoLinePrompt } from "./photo-line";
+import { resolveTrade } from "../brain/trade";
+import { licenseOf } from "../image-v2/sources";
+import { memoOf, remember as rememberCandidate } from "../image-v2/assets";
+import crypto from "node:crypto";
 
 // ---------------------------------------------------------------- textes (purs, testables)
 
@@ -207,7 +211,7 @@ async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?:
   const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`, must.length > 0);
   if (!pick) return null;
   const { photo, img, gate } = pick;
-  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: post.aspect, ...gate.meta } });
+  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, business: "services", format: post.aspect, ...gate.meta } });
 }
 
 /** Recherches de photos libres de droits par emplacement : mots du métier (IA légère si disponible, sinon le texte du projet). */
@@ -222,11 +226,14 @@ async function stockQueries(ictx: { userId: string; projectId: string; jobId?: s
   const tq = (i: number): SlotQuery => (known ? { lang: "en", queries: [known.queries[i % known.queries.length], ...known.queries.filter((_, k) => k !== i % known.queries.length)].slice(0, 2), must: tradeMust } : { lang: "fr", queries: [trade], must: [] });
   const local: Partial<Record<PhotoSlot, SlotQuery>> = { hero: tq(0), banner: tq(1), ad: tq(2) };
   // Chaque prestation est cherchée par son propre nom (jamais la photo d'une autre prestation).
+  let allKnown = !!known && ["core", "combo"].includes(resolveTrade(`${trade} ${p.product.summary ?? ""}`, p.product.sector ?? null).source);
   items.forEach((s, i) => {
     const own = tradeStock(`${s.name} ${s.description ?? ""}`);
+    if (!own) allKnown = false;
     local[`service:${i}`] = own ? { lang: "en", queries: own.queries.slice(0, 2), must: own.must } : { lang: "fr", queries: [s.name, ...(known ? known.queries.slice(0, 1) : [])], must: tradeMust };
   });
-  if (!llmConfigured()) return local;
+  // Image V2 : métier et prestations compris par le registre → requêtes locales précises, aucun appel à l'IA.
+  if (!llmConfigured() || allKnown) return local;
   try {
     const r = await llmJson(
       {
@@ -261,7 +268,9 @@ async function stockQueries(ictx: { userId: string; projectId: string; jobId?: s
 export async function firstOnTopic<T extends Parameters<typeof downloadStock>[0]>(ictx: { userId: string; projectId: string; jobId?: string | null }, found: T[], subject: string, key: (ph: T) => string, metadataOk: boolean, opts: { stockPrompt?: boolean } = {}): Promise<{ photo: T; img: Buffer; decision: GateDecision; gate: ReturnType<typeof gateSave> } | null> {
   const ai = llmConfigured();
   if (!ai && !metadataOk) return null;
-  for (const photo of found.slice(0, 5)) {
+  // Image V2 : un candidat déjà refusé pour ce sujet n'est ni retéléchargé ni recontrôlé (rien n'est repayé).
+  const subjectKey = `legacy:${crypto.createHash("sha256").update(subject).digest("hex").slice(0, 16)}`;
+  for (const photo of found.filter((ph) => memoOf(ictx.projectId, `${ph.source}:${ph.id}`, subjectKey)?.verdict !== "REJECTED").slice(0, 5)) {
     let img: Buffer;
     try {
       img = await downloadStock(photo);
@@ -272,7 +281,9 @@ export async function firstOnTopic<T extends Parameters<typeof downloadStock>[0]
     const checked = ai ? (await checkAmbiance({ ...ictx, usageKey: key(photo) }, img, subject, opts.stockPrompt !== false)).decision : null;
     const decision = checked ? (checked.deliverable === "stock_photo" ? checked : decide("stock_photo", { checker: checked.checked ? "ai" : "none", score: checked.score, issues: checked.feedback ? [checked.feedback] : [], ...(checked.checked ? {} : { error: checked.reason }) })) : decide("stock_photo", { checker: "metadata", score: 7 });
     if (decision.verdict === "FINAL") return { photo, img, decision, gate: gateSave(ictx, decision) };
-    saveCheck(decision, { userId: ictx.userId, projectId: ictx.projectId, jobId: ictx.jobId, candidateId: `${photo.source}:${photo.id}` });
+    const checkId = saveCheck(decision, { userId: ictx.userId, projectId: ictx.projectId, jobId: ictx.jobId, candidateId: `${photo.source}:${photo.id}` });
+    // Contrôle réellement fait (pas une panne) : le refus est retenu pour ce sujet.
+    if (decision.checked) rememberCandidate(ictx.projectId, `${photo.source}:${photo.id}`, subjectKey, { verdict: "REJECTED", score: decision.score, codes: [...decision.fatalCodes, ...decision.blockingCodes], check_id: checkId });
   }
   return null;
 }
@@ -296,7 +307,7 @@ export async function stockFill(ictx: { userId: string; projectId: string; jobId
     if (!pick) continue;
     const { photo, img, gate } = pick;
     used.add(`${photo.source}:${photo.id}`);
-    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...gate.meta }, status: "review" });
+    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...gate.meta }, status: "review" });
     out.push({ id: a.id, slot });
   }
   return out;

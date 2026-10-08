@@ -26,7 +26,11 @@ export function projectState(p: Project): ProjectState {
     brandReady: !!p.brand,
     logoLocked: isLocked(p.brand, "logo"),
     copyFinal: copy?.verdict === "FINAL",
-    genericTrade: brainSnapshot(p).trade.source === "generic",
+    // Image V2 (phase 5A) : un produit est compris par sa famille (modèle des catégories), un service par son métier.
+    genericTrade: (() => {
+      const s = brainSnapshot(p);
+      return p.business === "services" ? s.trade.source === "generic" : (s.category?.source ?? "generic") === "generic";
+    })(),
   };
 }
 

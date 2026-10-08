@@ -47,6 +47,7 @@ export const ACTION_INTENTS: Record<string, Intent[]> = {
   "cutout.run": ["ANALYZE_PRODUCT"],
   "images.generate": ["GENERATE_IMAGE"],
   "image.single": ["GENERATE_IMAGE"],
+  "image.v2": ["GENERATE_IMAGE"],
   "stock.search": ["FIND_STOCK_IMAGE"],
   "video.render": ["CREATE_VIDEO"],
   "ugc.script": ["CREATE_VIDEO"],

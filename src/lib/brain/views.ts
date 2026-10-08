@@ -172,6 +172,21 @@ export function brainItems(s: BrainSnapshot): BrainItem[] {
   if (t.icons.keywords.length) add({ id: "trade.icons", section: "trade", level: "advisory", tier: 5, scopes: ["logo", "all"], source: "trade", text: `Objets du métier pour un symbole : ${t.icons.keywords.join(", ")}${t.icons.avoid.length ? ` (éviter : ${t.icons.avoid.join(", ")})` : ""}.`, data: t.icons });
   if (t.search.queries.length) add({ id: "trade.search", section: "trade", level: "advisory", tier: 5, critical: true, scopes: ["stock", "all"], source: "trade", text: `Recherches de photos (action + métier + lieu) : ${t.search.queries.join(" | ")}`, data: t.search.queries });
 
+  // Boutique de produits : famille du produit comprise (Image V2) — lieux, usages, hors sujet, points de fidélité.
+  const cat = s.category;
+  if (cat && cat.source !== "generic")
+    add({
+      id: "product.category",
+      section: "trade",
+      level: "advisory",
+      tier: 5,
+      critical: true,
+      scopes: ["image", "stock", "video", "advertising", "all"],
+      source: "trade",
+      text: `Famille du produit (déduite, à confirmer) : ${cat.labels.fr} [${cat.source}] · lieux : ${cat.environments.slice(0, 3).join(" ; ")} · usages : ${cat.usage.slice(0, 3).join(" ; ")} · hors sujet : ${cat.negative.slice(0, 5).join(", ")} · fidélité à surveiller : ${cat.fidelityRisks.join(", ")}`,
+      data: { id: cat.id, source: cat.source },
+    });
+
   // Faits du produit / de l'activité.
   const confirmed = pr.facts.filter((f) => f.status === "confirmed").slice(0, 20);
   const inferred = pr.facts.filter((f) => f.status === "inferred").slice(0, 20);

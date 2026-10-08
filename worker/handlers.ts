@@ -57,6 +57,12 @@ export const handlers: Record<string, Handler> = {
 
   "images.generate": async (ctx) => generateImageSet(ctx, ctx.payload.projectId, ctx.payload.options ?? {}),
   "image.single": async (ctx) => generateSingleImage(ctx, ctx.payload.projectId, ctx.payload.request),
+  /** Image V2 : brief local, recherche multisource ou génération routée, barrière V2, bibliothèque, réutilisation. */
+  "image.v2": async (ctx) => {
+    const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
+    const r = await runImageEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
+  },
 
   "video.render": async (ctx) => {
     const projectId = ctx.job.project_id!;

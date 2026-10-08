@@ -14,13 +14,20 @@ import { C } from "../i18n-server";
 import { searchStock, stockCredit } from "../stock/photos";
 import { rankStock, tradeStock } from "../stock/trade-queries";
 import { firstOnTopic } from "./service-media";
+import { resolveProductCategory } from "../image-v2/categories";
+import { licenseOf } from "../image-v2/sources";
 
 type Ictx = { userId: string; projectId: string; jobId?: string | null };
 
-/** Recherches de l'univers du produit (IA légère si active ; sinon catégorie et secteur). */
+/**
+ * Recherches de l'univers du produit. Image V2 : catégorie reconnue (modèle des catégories produits) → requêtes
+ * locales précises, AUCUN appel à l'IA ; catégorie inconnue → IA légère si active, sinon catégorie et secteur.
+ */
 export async function universeQueries(ictx: Ictx, p: Project): Promise<{ lang: "fr" | "en"; queries: string[] }> {
+  const cat = resolveProductCategory(p.product);
+  if (cat.source === "core" && cat.universeQueries.length) return { lang: "en", queries: cat.universeQueries.slice(0, 3) };
   const local = [p.product.category, p.product.sector ?? ""].filter(Boolean);
-  if (!llmConfigured()) return { lang: "fr", queries: local };
+  if (!llmConfigured()) return cat.universeQueries.length ? { lang: "en", queries: cat.universeQueries.slice(0, 3) } : { lang: "fr", queries: local };
   try {
     const r = await llmJson(
       {
@@ -68,7 +75,7 @@ export async function universePhotos(ictx: Ictx, p: Project, n = 2): Promise<Ass
     }
     rest = rest.slice(rest.indexOf(pick.photo) + 1);
     const { photo, img, gate } = pick;
-    out.push(await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${C("ambiance-univers", "world-mood")}-${out.length + 1}.jpg`, mime: "image/jpeg", role: "ambiance", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license }, format: "16:9", ...gate.meta }, status: "review" }));
+    out.push(await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${C("ambiance-univers", "world-mood")}-${out.length + 1}.jpg`, mime: "image/jpeg", role: "ambiance", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, format: "16:9", ...gate.meta }, status: "review" }));
   }
   return out;
 }
