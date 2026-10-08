@@ -161,9 +161,9 @@ describe("Phase 6A — Advertising Engine V2", async () => {
 
   it("B — cosmétique : créations par format, produit réel posé tel quel, images Image V2 réutilisées entre formats, une relecture par concept", async () => {
     const p = fresh("cosmetic");
-    await seedCutout(u.id, p.id);
+    const cutId = await seedCutout(u.id, p.id);
     const cut = await sharp({ create: { width: 300, height: 600, channels: 4, background: { r: 199, g: 123, b: 48, alpha: 1 } } }).png().toBuffer();
-    const { deps, log } = mockAdDeps({ userId: u.id, projectId: p.id, cutout: cut });
+    const { deps, log } = mockAdDeps({ userId: u.id, projectId: p.id, cutout: { id: cutId, data: cut } });
     const r = await fr(() => runAdEngineV2(job(p.id), p.id, { count: 3, platforms: ["meta_feed", "meta_story"] }, deps));
     expect(r.concepts).toHaveLength(3);
     expect(r.outcomes).toHaveLength(3 * 3); // 4:5, 1:1, 9:16

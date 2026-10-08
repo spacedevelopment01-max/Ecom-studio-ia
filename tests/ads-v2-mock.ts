@@ -28,7 +28,8 @@ export function mockAdDeps(o: {
   canReview?: boolean;
   write?: (prompt: string, n: number) => CopySet | Error;
   review?: (n: number) => AdReview | Error;
-  cutout?: Buffer | null;
+  cutout?: { id: string; data: Buffer } | null;
+  logo?: { id: string; data: Buffer } | null;
   noImage?: boolean;
 }): { deps: AdsV2Deps; log: AdMockLog } {
   const log: AdMockLog = { copyCalls: [], reviews: 0, images: [] };
@@ -57,7 +58,7 @@ export function mockAdDeps(o: {
       return { assetId: a.id, data };
     },
     cutout: () => o.cutout ?? null,
-    logo: () => null,
+    logo: () => o.logo ?? null,
   };
   return { deps, log };
 }

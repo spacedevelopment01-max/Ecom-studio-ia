@@ -23,8 +23,9 @@ export type AdsV2Deps = {
   review: (ad: Buffer, text: string, key: string) => Promise<AdReview>;
   /** Image par l'Image Engine V2 (réutilisation, recherche, génération routée, barrière) ; null si aucune image retenue. */
   image: (req: ImageRequestV2) => Promise<{ assetId: string; data: Buffer } | null>;
-  cutout: () => Buffer | null;
-  logo: () => Buffer | null;
+  /** Détourage du produit réel et logo de la marque (asset de la bibliothèque + données). */
+  cutout: () => { id: string; data: Buffer } | null;
+  logo: () => { id: string; data: Buffer } | null;
 };
 
 export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean): AdsV2Deps {
@@ -76,12 +77,12 @@ export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean
     },
     cutout: () => {
       const c = p.business === "products" ? validCutouts(p.id)[0] : undefined;
-      return c ? assetData(c) : null;
+      return c ? { id: c.id, data: assetData(c) } : null;
     },
     logo: () => {
       const id = p.brand?.logo?.assetId;
       const a = id ? getAsset(id) : undefined;
-      return a && !a.deleted_at && /png|svg/.test(a.mime) && a.mime !== "image/svg+xml" ? assetData(a) : null;
+      return a && !a.deleted_at && /png/.test(a.mime) ? { id: a.id, data: assetData(a) } : null;
     },
   };
 }

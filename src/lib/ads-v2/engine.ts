@@ -34,6 +34,7 @@ import { composeAd } from "./compose";
 import { gateAd, localAdChecks } from "./quality";
 import { CTAS, defaultPlatforms, formatsFor, strictestText } from "./platforms";
 import { realAdDeps, type AdsV2Deps } from "./deps";
+import { engineDocKey, latestDoc, saveVersion, userOwned } from "../ad-doc/store";
 import type { AdConcept, AdCopy, AdInsight, AdOutcome, AdReview, AnglePlan, FormatSpec, Platform, VisualConcept } from "./types";
 
 export const ADS_V2_VERSION = "6a.1";
@@ -184,8 +185,8 @@ type OneInput = {
   images: Map<AspectId, { assetId: string; data: Buffer } | null>;
   pal: ReturnType<typeof palette>;
   typo: ReturnType<typeof brandTypo>;
-  logo: Buffer | null;
-  cut: Buffer | null;
+  logo: { id: string; data: Buffer } | null;
+  cut: { id: string; data: Buffer } | null;
   insight: AdInsight;
   limits: ReturnType<typeof strictestText>;
   stats: AdRunResult["stats"];
@@ -196,6 +197,13 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
   const { p, deps, concept, f, stats } = o;
   const jobId = o.ctx?.job.id ?? null;
   const h = hash({ v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout });
+  // Création modifiée par le client (éditeur visuel) : jamais écrasée en silence par une régénération.
+  const docKey = engineDocKey(p.id, concept.id, f.platform, f.aspect);
+  if (userOwned(p.id, docKey)) {
+    const cur = latestDoc(p.id, docKey)!;
+    stats.reused++;
+    return { outcome: { conceptId: concept.id, platform: f.platform, aspect: f.aspect, verdict: "FINAL", score: null, codes: [], reason: "création modifiée par le client : conservée telle quelle", assetId: cur.version.renderedAssetId, imageAssetId: null, attempts: 0, reused: true }, review: null };
+  }
   const prev = reusableAd(p.id, h);
   if (prev) {
     stats.reused++;
@@ -220,7 +228,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
     const sig = `${layout}|${copy.hook}|${key}`;
     if (tried.has(sig)) break;
     tried.add(sig);
-    const { jpg, metrics } = await composeAd({ format: f, layout: img ? layout : layout === "full_bleed" || layout === "split" || layout === "hero_left" ? "typographic" : layout, palette: o.pal, typo: o.typo, brand: o.insight.brand, headline: copy.hook, cta: copy.cta, background: img?.data ?? null, product: concept.visual.productOnTop ? o.cut : null, logo: o.logo });
+    const { jpg, metrics, doc } = await composeAd({ format: f, layout: img ? layout : layout === "full_bleed" || layout === "split" || layout === "hero_left" ? "typographic" : layout, palette: o.pal, typo: o.typo, brand: o.insight.brand, headline: copy.hook, cta: copy.cta, background: img?.data ?? null, product: concept.visual.productOnTop ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null }, conceptId: concept.id });
     const local = localAdChecks(metrics, claims, f.platform);
     let review: AdReview | null = null;
     let reviewError: string | null = null;
@@ -247,12 +255,14 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       sourceAssetId: img?.assetId ?? null,
       status: d.verdict === "REJECTED" ? "rejected" : "review",
       meta: {
-        adV2: { version: ADS_V2_VERSION, hash: d.verdict === "FINAL" ? h : `trial:${h}`, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy, platform: f.platform, aspect: f.aspect, layout, imageAssetId: img?.assetId ?? null, metrics, claims: claims.map((c) => c.fix), attempt },
+        adV2: { version: ADS_V2_VERSION, docKey: d.verdict === "REJECTED" ? null : docKey, hash: d.verdict === "FINAL" ? h : `trial:${h}`, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy, platform: f.platform, aspect: f.aspect, layout, imageAssetId: img?.assetId ?? null, metrics, claims: claims.map((c) => c.fix), attempt },
         format: f.aspect,
         text: { headline: copy.hook },
         ...g.meta,
       },
     });
+    // Document en calques conservé (éditeur visuel) : version « moteur » de la lignée, jamais pour un essai refusé.
+    if (d.verdict !== "REJECTED") saveVersion(p.id, docKey, doc, { note: `moteur — essai ${attempt + 1} (${d.verdict})`, renderedAssetId: asset.id });
     last = { outcome: { conceptId: concept.id, platform: f.platform, aspect: f.aspect, verdict: d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], reason: d.reason, assetId: asset.id, imageAssetId: img?.assetId ?? null, attempts: attempt + 1, reused: false }, review };
     if (d.verdict !== "RETRY" || d.action !== "regenerate" || !d.checked) break;
     // Reprise ciblée : la cause décide de la correction (mise en page gratuite d'abord).

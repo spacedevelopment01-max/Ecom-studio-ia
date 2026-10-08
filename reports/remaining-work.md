@@ -4,7 +4,7 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 6A.
+Dernière mise à jour : phase 6A (+ fondation de l'éditeur visuel des publicités).
 
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
@@ -15,6 +15,34 @@ Dernière mise à jour : phase 6A.
 | 6B | Publicités (Advertising Engine V2) | `scripts/benchmark-ads-v2.ts` | en attente |
 
 La qualité visuelle réelle de ces trois moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
+
+## FONCTIONNALITÉ OBLIGATOIRE — ÉDITEUR VISUEL DES PUBLICITÉS (avant la validation finale de l'Advertising Engine V2)
+
+L'Advertising Engine V2 ne sera pas validé définitivement tant que le client ne peut pas, dans le studio, ouvrir une
+publicité générée, sélectionner son titre, changer son texte, remplacer sa photo, modifier une forme, déplacer son
+logo, enregistrer et exporter — sans aucun appel d'IA. Une publicité n'est pas « modifiable » parce que l'IA peut
+régénérer son texte. Architecture : `reports/ad-editor-architecture.md`.
+
+| Élément | État |
+|---|---|
+| Document en calques (fond, image, voile, produit, marque, titre, bouton, logo, formes) produit par le moteur V2 | **fait** (`src/lib/ad-doc/types.ts`, `ads-v2/compose.ts`) |
+| Moteur de rendu unique aperçu = export (isomorphe navigateur / serveur) | **fait** (`ad-doc/render.ts`) ; vérifié : rendu du document = image enregistrée, à l'octet près |
+| Opérations d'édition gratuites (texte, image, recadrage, couleurs, dégradés, transparence, formes, polices, position, taille, rotation, ordre, masquer, verrouiller, dupliquer, supprimer) | **fait** (`ad-doc/ops.ts`) |
+| Annuler / rétablir | **fait** (classe `History`, côté éditeur) |
+| Versions, historique, restauration, duplication, modifications persistantes | **fait** (table `ad_documents`, `ad-doc/store.ts`) |
+| Une régénération n'écrase jamais une création modifiée par le client | **fait** (moteur V2 : `userOwned`) |
+| Adaptation aux formats (1:1, 4:5, 9:16, 16:9, bannières) en gardant les modifications | **fait** (`ad-doc/reflow.ts`) |
+| Export PNG, JPEG, document éditable (JSON) fidèle à l'aperçu | **fait** (`exportDoc`, API `?export=`) |
+| Retouches en langage naturel : simples en local et gratuites ; génération annoncée, jamais lancée sans accord | **fait côté moteur** (`ad-doc/local-edit.ts`) ; exécution d'une génération payante après confirmation : **à faire** |
+| Contrôles signalés après modification (lisibilité, zones de sécurité, produit recouvert, affirmations) | **fait** (API : `problems`) |
+| API de l'éditeur (`/api/projects/[id]/ads/docs`, `/ads/docs/[docKey]`) | **fait** |
+| **Interface de l'éditeur** : bouton « Modifier », canevas interactif (sélection, double-clic sur un texte, glisser-déposer, poignées de redimensionnement et de rotation, alignements), panneau des calques, panneaux couleurs / polices / formes / images (bibliothèque, recadrage), annuler / rétablir, enregistrer, exporter | **À FAIRE** |
+| **Interface mobile et tablette** (gestes tactiles, panneaux d'outils en bas d'écran, édition du texte au clavier mobile) — pas une réduction de l'écran ordinateur | **À FAIRE** |
+| Polices de la marque chargées dans le navigateur (@font-face) pour un aperçu identique à l'export | **À FAIRE** (le rendu serveur fait foi en attendant) |
+| Tests de l'interface (captures ordinateur et téléphone) | **À FAIRE** |
+
+Planification : à livrer pendant les travaux d'intégration à venir, sans perturber la phase 7A ; la fondation livrée
+ici ne change rien aux autres onglets.
 
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 
