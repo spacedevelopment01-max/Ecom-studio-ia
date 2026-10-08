@@ -5,13 +5,14 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p1b";
+export const POLICY_VERSION = "2026-10-p4a";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
 export const DELIVERABLES = [
   "logo_route",
   "logo_full",
+  "logo_v2",
   "image_product",
   "image_lifestyle",
   "image_ambiance",
@@ -86,6 +87,21 @@ export const POLICIES: Record<Deliverable, Policy> = {
     fatal: ["resembles_known_brand", "unreadable_letters", "corrupt", "forbidden"],
     blocking: ["cliche", "claim", "small_sizes"],
     provisional: { checkers: ["local"], floor: 0, use: "auto", label: "placeholder" },
+  },
+  // Logo V2 (phase 4A) : planche jugée (fond neutre, noir seul, blanc sur sombre, petite taille). Nom exact, lisibilité,
+  // typographie et petite taille ont leur plancher ; texte faux, cliché, rendu amateur bloquent ; une direction sous
+  // 5,5 est abandonnée (aucune génération brûlée pour la sauver) ; la version du studio n'est que provisoire.
+  logo_v2: {
+    final: 8,
+    retryFloor: 5.5,
+    maxRetries: 2,
+    minCriterion: 6,
+    criteriaFloors: { relevance: 7, legibility: 7, typography: 7, smallSize: 6.5 },
+    finalCheckers: ["ai", "human"],
+    minConfidence: 0.7,
+    fatal: ["resembles_known_brand", "corrupt", "forbidden"],
+    blocking: ["name_mismatch", "text_unreadable", "extra_text", "cliche", "amateur", "small_sizes", "weak_monochrome", "claim"],
+    provisional: { checkers: ["local"], floor: 0, use: "manual", label: "needs_improvement" },
   },
   logo_full: { final: 8, retryFloor: 6.5, maxRetries: 1, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["resembles_known_brand", "corrupt", "forbidden"], blocking: ["name_mismatch", "extra_text"] },
   image_product: IMAGE,

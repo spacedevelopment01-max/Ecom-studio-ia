@@ -18,7 +18,7 @@ import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, requirePrice, routeFor, usdToEur } from "./config";
-import { recordCall, redact } from "./trace";
+import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
@@ -69,6 +69,7 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   assertAiAllowed(ctx.userId);
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
+  assertUnderCostCap(micro);
   assertCanSpend(ctx.userId, micro);
   const t = mediaTrace.getStore();
   if (t) Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : provider === "openai" ? "tokens" : "image", started: Date.now() });

@@ -83,6 +83,17 @@ export const handlers: Record<string, Handler> = {
     return { created: (await generateFullLogos(ctx, ctx.payload.projectId, { autoApply: !!ctx.job.parent_id })).length };
   },
 
+  /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
+  "brand.logo.v2": async (ctx) => {
+    const { runLogoEngineV2 } = await import("../src/lib/logo-v2/engine");
+    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid });
+    return { shown: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap };
+  },
+  /** Logo V2 choisi : décision du client, déclinaisons, système de marque. */
+  "brand.logo.v2.choose": async (ctx) => {
+    const { chooseLogoV2 } = await import("../src/lib/logo-v2/choose");
+    return chooseLogoV2(ctx, ctx.payload.projectId, ctx.payload.assetId);
+  },
   "brand.logo": async (ctx) => runLogoJob(ctx, ctx.payload.projectId, { proposalId: ctx.payload.proposalId ?? null, regenerate: !!ctx.payload.regenerate }),
 
   "brand.build": async (ctx) => {

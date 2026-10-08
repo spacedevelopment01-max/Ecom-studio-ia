@@ -55,6 +55,8 @@ export const ACTION_INTENTS: Record<string, Intent[]> = {
   "blog.generate": ["BLOG"],
   "blog.topics": ["BLOG"],
   "brand.fulllogo": ["CREATE_LOGO"],
+  "brand.logo.v2": ["CREATE_LOGO"],
+  "brand.logo.v2.choose": ["CREATE_LOGO"],
   "brand.logo": ["IMPROVE_LOGO"],
   "brand.logo.regenerate": ["CREATE_LOGO"],
   "logo.create": ["CREATE_LOGO"],
