@@ -95,6 +95,11 @@ export function verdictMessage(platform: CmsPlatform, r: CmsGateResult, lang: "f
   const t = (fr: string, en: string) => (lang === "en" ? en : fr);
   const label = { shopify: "Shopify", woocommerce: "WordPress / WooCommerce", prestashop: "PrestaShop", wix: "Wix", squarespace: "Squarespace" }[platform];
   const v = r.decision.verdict;
+  // Wix et Squarespace : un kit de reconstruction, jamais présenté comme un thème installable.
+  if (platform === "wix" || platform === "squarespace") {
+    if (v === "REJECTED") return t(`Kit ${label} non utilisable en l'état : ${r.decision.reason}.`, `${label} kit not usable as is: ${r.decision.reason}.`);
+    return t(`Kit de reconstruction ${label} généré (textes, médias, couleurs, typographies, plan des pages). ${label} n'accepte pas l'import d'un thème : le site se reconstruit à la main dans son éditeur, en suivant le kit.`, `${label} rebuild kit generated (texts, media, colours, fonts, page plan). ${label} does not accept theme imports: the site is rebuilt by hand in its editor, following the kit.`);
+  }
   if (v === "REJECTED") return t(`Export ${label} non utilisable en l'état : ${r.decision.reason}. Il n'est pas proposé comme thème prêt à installer.`, `${label} export not usable as is: ${r.decision.reason}. It is not offered as a ready-to-install theme.`);
   if (v === "RETRY") return t(`Export ${label} : un défaut précis est à corriger (${r.decision.reason}).`, `${label} export: a specific defect must be fixed (${r.decision.reason}).`);
   if (v === "FINAL") return t(`Export ${label} contrôlé (${r.scopeLabel.fr}). Une installation sur votre propre boutique reste à vérifier.`, `${label} export checked (${r.scopeLabel.en}). Installation on your own store remains to be verified.`);

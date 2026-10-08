@@ -19,6 +19,7 @@ import type { BusinessType } from "@/lib/project-types";
 import { KeptSiteCard, ReproductionBanner, SiteReading } from "./existing-site";
 import { useBilling } from "../billing-client";
 import { CustomThemeButton, useCustomThemeStatus } from "./custom-theme";
+import { ExportDownload, ExportSteps, PlatformExportDetails } from "./export-platform";
 
 const PREVIEW_SANDBOX = "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals";
 
@@ -712,6 +713,7 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, platfor
   const t = useT();
   const { reload } = useProject();
   const [others, setOthers] = useState(false);
+  const [checked, setChecked] = useState(0);
   const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; linked: boolean; status: string }[]; publicUrl: boolean }>(open && platform === "shopify" ? `/api/connections?project=${projectId}` : null);
   // Seule une connexion active compte (comme côté serveur, shopifyConnection) : sinon « Export », jamais « Connecté ».
   const shop = conns?.connections.find((c) => c.provider === "shopify" && c.status === "active");
@@ -730,14 +732,14 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, platfor
   const rest = PLATFORM_IDS.filter((x) => x !== platform);
   return (
     <Modal open={open} onClose={onClose} title={t("Exporter et installer", "Export and install")}>
-      <p className="text-sm text-muted">{t("L'export contient exactement les fichiers affichés dans l'aperçu (empreinte", "The export contains exactly the files shown in the preview (fingerprint")} <code className="rounded bg-paper-2 px-1.5 text-xs">{fingerprint}</code>{t("). Une copie est rangée dans Fichiers › Boutique › Exports.", "). A copy is saved in Files › Store › Exports.")}</p>
+      <ExportSteps step={checked ? 5 : 2} />
+      <p className="mt-3 text-sm text-muted">{t("L'export contient exactement les fichiers affichés dans l'aperçu (empreinte", "The export contains exactly the files shown in the preview (fingerprint")} <code className="rounded bg-paper-2 px-1.5 text-xs">{fingerprint}</code>{t("). Une copie est rangée dans Fichiers › Boutique › Exports.", "). A copy is saved in Files › Store › Exports.")}</p>
       <div className="mt-4 rounded-2xl border-2 border-signal/50 bg-signal-soft/40 p-4">
         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">{main.name} <Badge tone="signal">{t("Votre plateforme", "Your platform")}</Badge> <Badge tone={deliveryTone(main.delivery)}>{deliveryLabel(main.delivery, t)}</Badge></p>
         <p className="mt-1 text-xs text-ink-2">{main.text}</p>
-        <a href={`/api/projects/${projectId}/theme/export?platform=${platform}${q}`} className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper">
-          <Download className="size-4" aria-hidden /> {main.kind === "theme" ? t(`Télécharger le thème ${main.short}`, `Download the ${main.short} theme`) : t(`Télécharger le kit ${main.short}`, `Download the ${main.short} kit`)}
-        </a>
+        <ExportDownload url={`/api/projects/${projectId}/theme/export?platform=${platform}${q}`} label={main.kind === "theme" ? t(`Vérifier et télécharger le thème ${main.short}`, `Check and download the ${main.short} theme`) : t(`Télécharger le kit ${main.short}`, `Download the ${main.short} kit`)} onDone={() => setChecked((n) => n + 1)} />
         <p className="mt-2 text-xs text-muted">{howTo[platform]}</p>
+        <PlatformExportDetails projectId={projectId} platform={platform} reloadKey={checked} />
         {csv && (
           <a href={`/api/projects/${projectId}/theme/export?platform=${csv[0]}${q}`} className="mt-3 flex items-center gap-3 rounded-2xl border border-line bg-card p-3 hover:border-ink">
             <Download className="size-4 shrink-0" aria-hidden />
@@ -770,10 +772,9 @@ function ExportModal({ open, onClose, projectId, versionId, fingerprint, platfor
               const info = platformInfo(k, business, t);
               return (
                 <li key={k}>
-                  <a href={`/api/projects/${projectId}/theme/export?platform=${k}${q}`} className="flex items-center gap-3 rounded-2xl border border-line p-3 hover:border-ink">
-                    <Download className="size-4 shrink-0" aria-hidden />
+                  <ExportDownload url={`/api/projects/${projectId}/theme/export?platform=${k}${q}`} label={`${info.name} · ${deliveryLabel(info.delivery, t)}`} className="flex w-full items-center gap-3 rounded-2xl border border-line p-3 text-left hover:border-ink disabled:opacity-60">
                     <span className="min-w-0"><span className="block text-sm font-medium">{info.name} · {deliveryLabel(info.delivery, t)}</span><span className="block text-xs text-muted">{info.text}</span></span>
-                  </a>
+                  </ExportDownload>
                 </li>
               );
             })}

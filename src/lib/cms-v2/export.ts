@@ -12,13 +12,15 @@ import { exportShopify } from "./adapters/shopify";
 import { exportWordPress } from "./adapters/wordpress";
 import { exportPrestaShop } from "./adapters/prestashop";
 import { forbiddenMedia, staticChecks, type StaticCheck } from "./checks";
+import { adaptForPlatform } from "./adapt";
 import { gateCmsExport, type CmsGateResult, type CriterionKey, type Measure } from "./quality";
 import type { CmsPlatform, PlatformExport } from "./types";
 
 export const CMS_PLATFORMS: CmsPlatform[] = ["shopify", "woocommerce", "prestashop", "wix", "squarespace"];
 
 /** Génère l'export d'une plateforme. Les médias refusés ou fatals ne sont JAMAIS exportés. */
-export async function cmsExport(platform: CmsPlatform, spec: ThemeSpec, load: AssetLoader, opts: { projectId?: string } = {}): Promise<PlatformExport> {
+export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: AssetLoader, opts: { projectId?: string } = {}): Promise<PlatformExport> {
+  const spec = adaptForPlatform(spec0, platform);
   const { forbidden } = forbiddenMedia(spec, opts.projectId);
   const blockedIds = new Set([...forbidden].map((f) => spec.files[f]));
   const guarded: AssetLoader = (id) => (blockedIds.has(id) ? null : load(id));

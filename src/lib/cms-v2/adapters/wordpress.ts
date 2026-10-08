@@ -249,7 +249,7 @@ function installGuide(spec: ThemeSpec, services: boolean, lang: "fr" | "en", pag
     t("2. À l'activation, le thème crée les pages du site (si elles n'existent pas) et prérègle les menus (Apparence › Menus).", "2. On activation, the theme creates the site's pages (if missing) and pre-fills the menus (Appearance › Menus)."),
     ...(services ? [] : [
       t("3. Installez et activez WooCommerce (Extensions › Ajouter).", "3. Install and activate WooCommerce (Plugins › Add New)."),
-      t("4. Produits › Importer : choisissez import/produits-woocommerce.csv (prix et déclinaisons tels que saisis dans le studio ; rien n'est inventé).", "4. Products › Import: choose import/products-woocommerce.csv (prices and variants as entered in the studio; nothing is made up)."),
+      t("4. Produits › Importer : choisissez import/produits-woocommerce.csv (prix et déclinaisons tels que saisis dans le studio ; rien n'est inventé). Les produits arrivent en brouillon : ajoutez leurs photos (dossier assets/es du thème) si la colonne Images est vide, vérifiez-les puis publiez-les.", "4. Products › Import: choose import/produits-woocommerce.csv (prices and variants as entered in the studio; nothing is made up). Products arrive as drafts: add their photos (theme folder assets/es) if the Images column is empty, check them, then publish."),
       t("5. Réglez les paiements et la livraison dans WooCommerce › Réglages : le thème ne gère aucun paiement.", "5. Set up payments and shipping in WooCommerce › Settings: the theme handles no payment."),
     ]),
     "",

@@ -4,8 +4,9 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 10A validée techniquement par le propriétaire et fusionnée (PR #62, CI verte) ;
-**qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; phase 11A en cours ; 9A validée techniquement, 9B reportée ; 8A validée techniquement,
+Dernière mise à jour : phase 11A (CMS Integration Engine V2) terminée techniquement, **non fusionnée**, en attente
+de la validation du propriétaire ; 11B non commencée. Phase 10A validée techniquement et fusionnée (PR #62) ;
+**qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée techniquement, 9B reportée ; 8A validée techniquement,
 8B reportée.
 
 **Règle pour la Phase 10 (Theme Engine V2) et les suivantes** : tests visuels réels dans un navigateur, avec
@@ -22,6 +23,7 @@ captures ordinateur ET téléphone, dès le développement technique. Les tests 
 | 8B | Textes SEO, fiches, pages, articles (SEO Engine V2) | `scripts/benchmark-seo-v2.ts` | **reporté** par décision du propriétaire |
 | 8B | SEO des fiches Shopify (métachamps) | `scripts/verify-shopify-seo.ts` | **reporté** — mécanisme NON VÉRIFIÉ |
 | 10B | Sites : installation réelle des thèmes V2 (boutique Shopify de développement, WordPress + WooCommerce, PrestaShop), rendu réel, éventuelles retouches IA réelles | `scripts/theme-v2-check.ts` (ZIP + Theme Check), `scripts/e2e-theme-v2.ts`, puis installation sur des boutiques de test | **non commencée** (avec l'autorisation du propriétaire) |
+| 11B | CMS : installation des thèmes exportés sur de VRAIES plateformes (boutique Shopify de développement, hébergement WordPress + WooCommerce, hébergement PrestaShop 8.1), paiement de test, éditeurs natifs réels, comparaison A/B/C sur ces sites | `scripts/cms-v2-bench.ts` (banc local), puis installation sur des plateformes de test | **non commencée** (avec l'autorisation du propriétaire ; aucun envoi sans son accord) |
 | 9B | Réseaux sociaux : production réelle (textes, visuels, vidéos), publication réelle de test, statistiques réelles | `scripts/benchmark-social-v2.ts` + comptes de test reliés dans le studio | **reporté** par décision du propriétaire (publication réelle seulement avec son autorisation explicite) |
 
 La qualité visuelle réelle de ces quatre moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
@@ -188,7 +190,8 @@ Reste à faire (limites de 10A) :
 - **10B** : installation réelle sur Shopify (boutique de développement), WordPress + WooCommerce, PrestaShop.
 - Sites artisan et restaurant de référence **sans photo authentique** : rendu avec de vraies photos du client non vu.
 - Médias de démonstration dessinés (sérum, logiciel) : pas de vraies photos dans le banc.
-- **WooCommerce / PrestaShop** : contenu des sections V2 repris, **mise en page V2 non reproduite** ; jamais installés.
+- ~~WooCommerce / PrestaShop : mise en page V2 non reproduite, jamais installés~~ → repris en 11A (mise en page
+  reproduite et installée localement ; voir la section CMS ci-dessous). Installation réelle : 11B.
   **Wix / Squarespace** : kits seulement (pas de thème natif).
 - Éditeur : pas d'édition directe dans la page (désigner puis demander), pas de sélecteur visuel des schémas de
   couleurs, remplacement d'image testé sur la section image + texte seulement.
@@ -199,6 +202,39 @@ Reste à faire (limites de 10A) :
   projets dont la version actuelle est V1 tant qu'ils ne sont pas recomposés ; réglage de projet `themeEngine: "v1"`.
 - La CI GitHub vérifie le thème V2 par `tests/theme-v2.test.ts` (Theme Check d'un ZIP V2) ; `scripts/verify-theme.sh`
   couvre les directions V1.
+
+## CMS Integration Engine V2 (phase 11A) — fait et ce qui reste
+
+Fait (100 % local, 0 €) : moteur `src/lib/cms-v2/` (point d'entrée unique, registre des capacités réelles,
+contrôles, Quality Gate `cms_export_v2` à trois dimensions avec provenance des mesures), thème de blocs WordPress
+dont les sections sont rendues par le MÊME gabarit Liquid que Shopify (moteur PHP livré), intégration WooCommerce
+native (boutiques seulement), thème enfant PrestaShop 8.1 + module compagnon, kits Wix / Squarespace présentés
+comme kits, écran « Exporter et installer » (étapes, capacités, informations à compléter, verdicts, versions), banc
+d'installation locale `scripts/cms-v2-bench.ts` (WordPress 6.6 + WooCommerce 9.3.3 et PrestaShop 8.1.7 en Docker,
+5 projets, captures A/B/C). Rapports : `reports/phase-11A-report.md`, `reports/cms-v2-quality-review.md`.
+
+Reste à faire (limites de 11A) :
+- **11B** : aucune installation sur une vraie boutique ni un vrai hébergement. **Shopify : jamais installé** (Theme
+  Check et rendu local des fichiers exportés seulement) — NON VÉRIFIÉ.
+- **Paiement** : aucune commande passée, aucun moyen de paiement réel configuré (page de commande affichée seulement).
+- **Fidélité visuelle CMS** : validée localement sur les pages comparées (accueil, page de contenu, mentions) ;
+  **fiches produit = pages natives** WooCommerce / PrestaShop habillées, composition différente du studio.
+  Validation artistique par le propriétaire : non faite.
+- **PrestaShop** : pas d'éditeur visuel natif des sections (textes dans les fichiers du thème) → au mieux PROVISOIRE ;
+  aucun fichier d'import des produits (création dans le back-office) ; textes des sections dans une seule langue.
+- **WooCommerce** : images du CSV vides sans adresse publique du studio (à ajouter depuis `assets/es`) ; produits
+  importés en brouillon ; interface WordPress testée en anglais (pas de paquet de langue hors ligne).
+- **Produits sans prix confirmé** (high-tech, SaaS du banc) : non vendables, panier et commande non testables pour eux.
+- **Environnement de test** : paquets de langue PrestaShop remplacés par des paquets vides, module
+  `ps_distributionapiclient` retiré, icônes `blockreassurance` corrigées en base, MariaDB sur l'hôte ;
+  `scripts/cms-v2/env.sh` reconstitué à partir des commandes exécutées, **pas rejoué de bout en bout** sur une
+  machine vierge.
+- SEO des sites installés : balises de base contrôlées seulement ; référencement réel non mesuré ; SEO Shopify
+  (métachamps) toujours NON VÉRIFIÉ.
+- Performances : temps de chargement locaux comparés à l'aperçu ; aucun score Lighthouse.
+- Accessibilité : contrôles automatiques (contraste, clavier, textes alternatifs) ; pas de lecteur d'écran réel.
+- Chromium seulement ; ni Safari, ni Firefox, ni vraie tablette.
+- Connexions directes WordPress / PrestaShop : non disponibles (installation par ZIP).
 
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 

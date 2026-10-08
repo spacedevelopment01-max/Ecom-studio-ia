@@ -1,9 +1,12 @@
 <?php
-/** Page du site conçu dans le studio (/pages/<adresse>, /policies/<adresse>). */
+/**
+ * Page du site conçu dans le studio (/pages/<adresse>, /policies/<adresse>).
+ * Pas de $php_self : PrestaShop nomme la page « module-esstudio-page » et construit lui-même les liens des autres
+ * langues (sélecteur de langue) avec l'adresse de la page — un $php_self fixe cassait ces liens (erreur 500 constatée
+ * à l'installation locale d'une boutique bilingue, phase 11A).
+ */
 class EsStudioPageModuleFrontController extends ModuleFrontController
 {
-    public $php_self = 'module-esstudio-page';
-
     public function initContent()
     {
         parent::initContent();

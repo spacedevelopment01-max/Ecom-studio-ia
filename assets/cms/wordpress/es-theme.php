@@ -30,7 +30,11 @@ function es_url($path) {
 	$route = $route === '' ? '/' : $route;
 	$tail = (isset($p['query']) ? '?' . $p['query'] : '') . (isset($p['fragment']) ? '#' . $p['fragment'] : '');
 	if ($route === '/') return home_url('/') . $tail;
-	if (preg_match('#^/(pages|policies)/([\w-]+)$#', $route, $m)) return home_url('/' . $m[2] . '/') . $tail;
+	if (preg_match('#^/(pages|policies)/([\w-]+)$#', $route, $m)) {
+		$ids = (array) get_option('es_pages', []);
+		$id = $ids[$m[2]] ?? 0;
+		return ($id && get_post_status($id) === 'publish' ? get_permalink($id) : home_url('/' . $m[2] . '/')) . $tail;
+	}
 	// Produits, collections, panier, compte : fournis par l'intégration e-commerce quand elle est présente.
 	$shop = apply_filters('es_url_route', null, $route, $tail);
 	if (is_string($shop)) return $shop;
@@ -257,10 +261,17 @@ add_action('after_switch_theme', function () {
 		update_option('blogname', $site['shopName']);
 		update_option('es_site_named', 1);
 	}
+	// Page publiée existante : conservée et reliée. Page non publiée au même nom (ex. le brouillon « privacy-policy »
+	// de WordPress) : laissée intacte, la page du site est créée à côté (adresse unique) et reliée.
+	$ids = (array) get_option('es_pages', []);
 	foreach (array_merge($site['pages'] ?? [], $site['policies'] ?? []) as $p) {
-		if (get_page_by_path($p['handle'])) continue;
-		wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_title' => $p['title'], 'post_name' => $p['handle'], 'post_content' => wp_kses_post($p['body_html'] ?? '')]);
+		if (!empty($ids[$p['handle']]) && get_post_status($ids[$p['handle']]) === 'publish') continue;
+		$existing = get_page_by_path($p['handle']);
+		if ($existing && $existing->post_status === 'publish') { $ids[$p['handle']] = $existing->ID; continue; }
+		$id = wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_title' => $p['title'], 'post_name' => $p['handle'], 'post_content' => wp_kses_post($p['body_html'] ?? '')]);
+		if ($id && !is_wp_error($id)) $ids[$p['handle']] = $id;
 	}
+	update_option('es_pages', $ids);
 	$locations = get_theme_mod('nav_menu_locations', []);
 	foreach ($site['menus'] ?? [] as $handle => $menu) {
 		if (!empty($locations[$handle])) continue;
