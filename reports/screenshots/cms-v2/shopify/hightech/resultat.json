@@ -1,0 +1,914 @@
+{
+  "scenario": "hightech",
+  "label": "C — Ostral, drone (high-tech)",
+  "platform": "shopify",
+  "services": false,
+  "export": {
+    "name": "ostral-shopify.zip",
+    "kb": 1118,
+    "files": 167,
+    "ms": 112,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 167,
+      "zipKb": 1118,
+      "cssKb": 139,
+      "jsKb": 33,
+      "mediaKb": 780,
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 0
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:33929/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 38,
+        "kept": 38,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 647,
+        "kb": 375,
+        "requests": 12
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:33929/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 35,
+        "kept": 35,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 656,
+        "kb": 408,
+        "requests": 12
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:33929/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 35,
+        "kept": 35,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 647,
+        "kb": 623,
+        "requests": 12
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/questions",
+      "c": "http://localhost:33929/p/pages/questions",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 594,
+        "kb": 372,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Questions – Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/questions",
+      "c": "http://localhost:33929/p/pages/questions",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 38,
+        "kept": 38,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 592,
+        "kb": 374,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Questions – Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "produit",
+      "device": "desktop",
+      "a": "/products/ostral",
+      "c": "http://localhost:33929/p/products/ostral",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "v2-faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "v2-faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 44,
+        "kept": 44,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 9,
+        "c": 9,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 6,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 674,
+        "kb": 191,
+        "requests": 16
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 5
+      }
+    },
+    {
+      "name": "produit",
+      "device": "mobile",
+      "a": "/products/ostral",
+      "c": "http://localhost:33929/p/products/ostral",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "v2-faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "v2-faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 9,
+        "c": 9,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 6,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 638,
+        "kb": 485,
+        "requests": 16
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 5
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:33929/p/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 24,
+        "kept": 24,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 590,
+        "kb": 369,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Conditions générales de vente – Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:33929/p/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 21,
+        "kept": 21,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 589,
+        "kb": 494,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Conditions générales de vente – Ostral",
+        "description": " Drone pliable à caméra stabilisée, pensé pour filmer en voyage. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "fidelity": {
+    "diff": 0,
+    "structure": "9/9",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "platformLimit": null,
+  "gate": {
+    "verdict": "PROVISIONAL",
+    "scope": "static",
+    "scopeLabel": "validation statique (fichiers seulement)",
+    "score": 9.9,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 6,
+        "total": 7
+      },
+      "visual": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 9.2,
+        "measured": 3,
+        "total": 8
+      }
+    },
+    "unmeasured": [
+      "installation",
+      "navigation",
+      "buttons",
+      "ecommerce"
+    ],
+    "codes": [],
+    "reason": "contrôle insuffisant pour un résultat final : provisoire",
+    "checkId": "v1ezxfm2yk86i105",
+    "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "static"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "automated",
+      "detail": "Theme Check : 0 erreur(s)"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "static",
+      "detail": "155 fichiers texte analysés"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "static",
+      "detail": "12 média(s), 0 exclu(s)"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "native_editing": {
+      "score": 9,
+      "provenance": "static",
+      "detail": "schémas de sections (réglages et blocs) présents"
+    },
+    "performance": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "temps de chargement local 0.99× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "page_fidelity": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "écart de pixels moyen 0.000, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "suite des sections identique sur 9/9 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 9.6,
+      "provenance": "browser_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 9,
+      "provenance": "browser_local",
+      "detail": "clavier, contrastes, textes alternatifs : aucun défaut bloquant détecté"
+    }
+  },
+  "issues": [
+    "Shopify : aucune installation sur une boutique réelle (NON VÉRIFIÉ) — Theme Check et rendu local des fichiers exportés seulement"
+  ]
+}

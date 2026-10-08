@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p10a";
+export const POLICY_VERSION = "2026-10-p11a";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -44,6 +44,7 @@ export const DELIVERABLES = [
   "theme_home",
   "theme_custom",
   "theme_v2",
+  "cms_export_v2",
   "cutout",
 ] as const;
 export type Deliverable = (typeof DELIVERABLES)[number];
@@ -255,6 +256,20 @@ export const POLICIES: Record<Deliverable, Policy> = {
     fatal: ["broken", "theme_check_error", "navigation_unusable", "unreadable_text"],
     blocking: ["empty_section", "overflow", "overlap", "missing_image", "distorted_image", "js_error", "broken_link", "invented_claim", "missing_h1"],
     provisional: { checkers: ["local", "ai"], floor: 0, use: "manual", label: "needs_improvement" },
+  },
+  // Export vers un CMS (phase 11A) : FINAL seulement quand les vérifications ont été faites sur un site INSTALLÉ (local
+  // ou réel) et que tous les critères obligatoires sont mesurés ; une vérification statique ne conclut jamais FINAL
+  // (provenance « metadata » → PROVISOIRE au mieux). Un défaut bloquant interdit FINAL quelle que soit la note.
+  cms_export_v2: {
+    final: 8,
+    retryFloor: 0,
+    maxRetries: 1,
+    minCriterion: 6,
+    finalCheckers: ["local", "human"],
+    minConfidence: 0.85,
+    fatal: ["secret_exposed", "dangerous_script", "foreign_project_data"],
+    blocking: ["install_failed", "activation_failed", "missing_page", "empty_section", "styles_lost", "layout_mismatch", "navigation_unusable", "buy_button_broken", "cart_broken", "wrong_price", "invented_content", "rejected_media", "native_edit_lost", "mobile_overflow", "js_error", "theme_check_error", "invalid_structure"],
+    provisional: { checkers: ["metadata", "local"], floor: 0, use: "manual", label: "needs_improvement" },
   },
   // Détourage : le contrôle local (pixels) est un vrai contrôle ; il peut conclure.
   cutout: { final: 7, retryFloor: 7, maxRetries: 0, finalCheckers: ["ai", "local", "human"], minConfidence: 0.5, fatal: ["wrong_object", "corrupt"], blocking: [] },

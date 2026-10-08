@@ -1,0 +1,798 @@
+{
+  "scenario": "restaurant",
+  "label": "D — Chez Lison, restaurant",
+  "platform": "woocommerce",
+  "services": true,
+  "export": {
+    "name": "es-chez-lison-wordpress.zip",
+    "kb": 329,
+    "files": 94,
+    "ms": 111,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 94,
+      "zipKb": 329,
+      "cssKb": 148,
+      "jsKb": 39,
+      "mediaKb": 0,
+      "phpErrors": 0
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:8081/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.002,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 708,
+        "kb": 234,
+        "requests": 10
+      },
+      "seo": {
+        "title": "Chez Lison",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:8081/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.002,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 39,
+        "kept": 39,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 691,
+        "kb": 234,
+        "requests": 10
+      },
+      "seo": {
+        "title": "Chez Lison",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:8081/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.006,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 39,
+        "kept": 39,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 706,
+        "kb": 234,
+        "requests": 10
+      },
+      "seo": {
+        "title": "Chez Lison",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/la-carte",
+      "c": "http://localhost:8081/la-carte/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.001,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 36,
+        "kept": 36,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 679,
+        "kb": 234,
+        "requests": 10
+      },
+      "seo": {
+        "title": "La carte – Chez Lison",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/la-carte",
+      "c": "http://localhost:8081/la-carte/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.005,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 34,
+        "kept": 34,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 718,
+        "kb": 234,
+        "requests": 10
+      },
+      "seo": {
+        "title": "La carte – Chez Lison",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8081/terms-of-service/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.071,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 24,
+        "kept": 24,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Karla",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Karla",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 687,
+        "kb": 234,
+        "requests": 10
+      },
+      "seo": {
+        "title": "Conditions générales de prestation – Chez Lison",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8081/terms-of-service/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.097,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 22,
+        "kept": 22,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Karla",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Karla",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 702,
+        "kb": 234,
+        "requests": 10
+      },
+      "seo": {
+        "title": "Conditions générales de prestation – Chez Lison",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "parity": {
+    "sections": 6,
+    "identical": 6,
+    "different": []
+  },
+  "install": {
+    "ok": true,
+    "log": [
+      "WordPress réinitialisé (base vide), permaliens /%postname%/",
+      "thème installé et activé : es-chez-lison"
+    ],
+    "productUrl": null,
+    "purchasable": false,
+    "themeDir": "es-chez-lison",
+    "pageUrls": {
+      "la-carte": "http://localhost:8081/la-carte/",
+      "questions": "http://localhost:8081/questions/",
+      "contact": "http://localhost:8081/contact/",
+      "mentions-legales": "http://localhost:8081/mentions-legales/",
+      "terms-of-service": "http://localhost:8081/terms-of-service/",
+      "privacy-policy": "http://localhost:8081/privacy-policy-2/",
+      "legal-notice": "http://localhost:8081/legal-notice/"
+    }
+  },
+  "fidelity": {
+    "diff": 0.026,
+    "structure": "7/7",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "links": {
+    "checked": 5,
+    "bad": []
+  },
+  "form": {
+    "ok": true,
+    "detail": "formulaire de /contact/ : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+  },
+  "nativeEditing": {
+    "ok": true,
+    "stable": true,
+    "detail": "texte « Restaurant bistrot · Lyon 4e » modifié dans Apparence › Éditeur (barre latérale du bloc), enregistré : visible sur le site ; sections avant/après : identiques"
+  },
+  "platformLimit": null,
+  "gate": {
+    "verdict": "FINAL",
+    "scope": "installed_local",
+    "scopeLabel": "validation locale installée",
+    "score": 9.9,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "visual": {
+        "score": 9.8,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 9.7,
+        "measured": 7,
+        "total": 7
+      }
+    },
+    "unmeasured": [],
+    "codes": [],
+    "reason": "barrière franchie (9.9/10)",
+    "checkId": "nahjr0ppawvdl6wf",
+    "message": "Export WordPress / WooCommerce contrôlé (validation locale installée). Une installation sur votre propre boutique reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "accepté et activé par le gestionnaire de thèmes de la plateforme"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "WordPress 6.6 / WooCommerce 9.3.3"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "aucun secret du studio dans les pages servies ; scripts du thème seulement"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "images servies chargées ; médias refusés exclus de l'export"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "native_editing": {
+      "score": 9,
+      "provenance": "installed_local",
+      "detail": "texte « Restaurant bistrot · Lyon 4e » modifié dans Apparence › Éditeur (barre latérale du bloc), enregistré : visible sur le site ; sections avant/après : identiques"
+    },
+    "performance": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "temps de chargement local 1.09× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "installation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "WordPress réinitialisé (base vide), permaliens /%postname%/ ; thème installé et activé : es-chez-lison"
+    },
+    "page_fidelity": {
+      "score": 8.9,
+      "provenance": "installed_local",
+      "detail": "écart de pixels moyen 0.026, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "suite des sections identique sur 7/7 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 9,
+      "provenance": "installed_local",
+      "detail": "clavier, contrastes, textes alternatifs : aucun défaut bloquant détecté"
+    },
+    "navigation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "5 liens vérifiés, 0 en erreur"
+    },
+    "buttons": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "5 liens vérifiés, 0 en erreur"
+    },
+    "forms": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "formulaire de /contact/ : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+    },
+    "edit_stability": {
+      "score": 10,
+      "provenance": "installed_local"
+    }
+  },
+  "issues": []
+}

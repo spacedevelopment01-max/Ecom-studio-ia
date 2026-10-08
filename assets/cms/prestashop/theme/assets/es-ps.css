@@ -1,0 +1,40 @@
+/*
+ * E-COM STUDIO IA — compatibilité PrestaShop (CMS Engine V2).
+ * Sections, en-tête et pied de page gardent les styles du thème Shopify (theme.css, theme-v2.css, es-design.css).
+ * Ici : fond et typographie du site sur les pages natives (produit, catégorie, panier, commande, compte), boutons,
+ * champs et cartes de Classic aux couleurs du site.
+ */
+body { background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); }
+#wrapper { background: transparent; padding-top: clamp(24px, 4vw, 48px); padding-bottom: clamp(32px, 5vw, 72px); box-shadow: none; }
+#wrapper .container { max-width: var(--page-width, 1320px); width: min(100% - 2 * var(--gutter, 24px), var(--page-width, 1320px)); }
+#wrapper h1, #wrapper h2, #wrapper h3, #wrapper .h1, #wrapper .h2, #wrapper .h3, .product-title, .page-header h1 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); color: var(--c-text); text-transform: var(--heading-case, none); letter-spacing: normal; }
+#wrapper .card, #wrapper .card-block, #wrapper .page-content.card, .cart-grid-body .card, .cart-summary, #js-product-list-top, .block-categories, #search_filters { background: var(--c-surface); border: 0; border-radius: var(--radius-card, 0); box-shadow: none; color: var(--c-text); }
+.btn-primary, .btn-primary:focus, .btn-primary:hover, .add-to-cart, .btn-primary.disabled, .btn-primary:disabled { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-text); border-radius: var(--radius-button, 0); text-transform: var(--button-transform, none); font-family: var(--font-body); font-weight: var(--font-body-weight-bold, 600); box-shadow: none; }
+.btn-secondary, .btn-tertiary { border-radius: var(--radius-button, 0); }
+.product-price, .current-price .current-price-value, .price, .cart-summary-line .value { color: var(--c-text); font-family: var(--font-body); }
+.form-control, .custom-select, .bootstrap-touchspin input, .product-variants select { border: 1px solid var(--c-border); border-radius: calc(var(--radius-button, 0) / 2); background: var(--c-bg); color: var(--c-text); }
+a { color: inherit; }
+#wrapper a:not(.btn):hover { color: var(--c-accent); }
+.breadcrumb { background: transparent; padding-left: 0; }
+.breadcrumb li a, .breadcrumb li span { color: var(--c-muted); }
+.es-page-content { padding: 0; background: transparent; }
+.es-form-notice { width: min(100% - 2 * var(--gutter, 24px), var(--page-width, 1320px)); margin: 16px auto; padding: 12px 16px; border-radius: var(--radius-card, 0); background: var(--c-surface); color: var(--c-text); }
+#blockcart-modal .modal-header { background: var(--c-accent); }
+#blockcart-modal .modal-title, #blockcart-modal .close { color: var(--c-accent-text); }
+/* Fiche produit native : étiquettes (Nouveau, Promo…) et onglets aux couleurs du site, contraste lisible. */
+.product-flags li.product-flag, .product-flag { background: var(--c-text); color: var(--c-bg); font-family: var(--font-body); }
+.product-flags li.product-flag.discount, .product-flags li.product-flag.on-sale { background: var(--c-accent); color: var(--c-accent-text); }
+.tabs { background: var(--c-surface); box-shadow: none; border-radius: var(--radius-card, 0); }
+.tabs .nav-tabs { border-bottom: 1px solid var(--c-border); }
+.tabs .nav-tabs .nav-link { color: var(--c-text); opacity: .75; border: 0; background: transparent; }
+.tabs .nav-tabs .nav-link.active, .tabs .nav-tabs .nav-link:hover { color: var(--c-text); opacity: 1; border: 0; box-shadow: inset 0 -2px 0 var(--c-accent); }
+/* Textes des modules natifs (quantité, partage, réassurance) : couleur du site, lisibles sur fond clair ou sombre. */
+#wrapper .control-label, #wrapper .product-quantity, #wrapper .social-sharing, #wrapper .social-sharing > span, #wrapper .block-title, #wrapper #block-reassurance, #wrapper #block-reassurance span, #wrapper .blockreassurance_product, #wrapper .blockreassurance_product span, #wrapper .blockreassurance_product p, #wrapper #block-reassurance p, #wrapper .product-information, #wrapper .product-description { color: var(--c-text) !important; }
+/*
+ * Sections du site : la typographie de BASE de Classic (paragraphes 15 px gris #7a7a7a, tailles et couleur des titres,
+ * marges des listes) est annulée — comme sur Shopify, seuls les styles du site s'appliquent. Sélecteurs d'élément
+ * seuls (les classes du thème restent prioritaires) ; constaté sur les captures A/C de la phase 11A.
+ */
+:where([data-es-type]) p, :where([data-es-type]) h1, :where([data-es-type]) h2, :where([data-es-type]) h3, :where([data-es-type]) h4, :where([data-es-type]) h5, :where([data-es-type]) h6, :where([data-es-type]) ul, :where([data-es-type]) ol, :where([data-es-type]) dl {
+	font-size: revert; font-weight: revert; font-family: revert; color: revert; line-height: revert; margin: revert; text-transform: revert; letter-spacing: revert;
+}

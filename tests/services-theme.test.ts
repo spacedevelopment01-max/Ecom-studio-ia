@@ -8,7 +8,8 @@ import { compileTheme } from "@/lib/theme/compile";
 import { validateSpec } from "@/lib/theme/ops";
 import { renderPage } from "@/lib/theme/render";
 import { DIRECTIONS } from "@/lib/theme/directions";
-import { exportKit, exportWooCommerce } from "@/lib/theme/platforms";
+import { exportKit } from "@/lib/theme/platforms";
+import { exportWordPress } from "@/lib/cms-v2/adapters/wordpress";
 import { serviceProfile, serviceSpec } from "./fixtures";
 
 /** Texte visible d'une page rendue (sans scripts, styles, attributs ni commentaires). */
@@ -90,7 +91,7 @@ describe("site d'entreprise de services", () => {
 
   it("export WordPress : site vitrine sans WooCommerce ; kit Wix sans CSV produit", async () => {
     const spec = serviceSpec("terroir");
-    const wp = await exportWooCommerce(spec, loader);
+    const wp = await exportWordPress(spec, loader);
     expect(wp.name).toMatch(/-wordpress\.zip$/);
     const files = unzipSync(new Uint8Array(wp.zip));
     const names = Object.keys(files);

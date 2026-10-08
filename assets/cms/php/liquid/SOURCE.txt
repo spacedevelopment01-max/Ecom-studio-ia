@@ -1,0 +1,2 @@
+liquid/liquid 1.4.45 (MIT) — https://github.com/kalimatas/php-liquid
+Copie non modifiée du dossier src/Liquid, utilisée pour rendre les mêmes sections Liquid que le thème Shopify dans les thèmes WordPress exportés.

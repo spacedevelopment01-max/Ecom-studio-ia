@@ -1,0 +1,925 @@
+{
+  "scenario": "saas",
+  "label": "E — Nuvia, SaaS",
+  "platform": "shopify",
+  "services": false,
+  "export": {
+    "name": "nuvia-shopify.zip",
+    "kb": 564,
+    "files": 162,
+    "ms": 121,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 162,
+      "zipKb": 564,
+      "cssKb": 139,
+      "jsKb": 33,
+      "mediaKb": 267,
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 0
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:44643/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 29,
+        "kept": 29,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 616,
+        "kb": 104,
+        "requests": 8
+      },
+      "seo": {
+        "title": "Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:44643/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 26,
+        "kept": 26,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 589,
+        "kb": 151,
+        "requests": 8
+      },
+      "seo": {
+        "title": "Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:44643/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 26,
+        "kept": 26,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 596,
+        "kb": 117,
+        "requests": 8
+      },
+      "seo": {
+        "title": "Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/fonctionnalites",
+      "c": "http://localhost:44643/p/pages/fonctionnalites",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 28,
+        "kept": 28,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 1,
+        "c": 1,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 584,
+        "kb": 78,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Fonctionnalités – Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/fonctionnalites",
+      "c": "http://localhost:44643/p/pages/fonctionnalites",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 25,
+        "kept": 25,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 1,
+        "c": 1,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 601,
+        "kb": 98,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Fonctionnalités – Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "produit",
+      "device": "desktop",
+      "a": "/products/nuvia",
+      "c": "http://localhost:44643/p/products/nuvia",
+      "findings": [
+        {
+          "check": "empty-section",
+          "severity": "blocking",
+          "detail": "section vide : shopify-section-template--es__product_reviews_1"
+        }
+      ],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "product-reviews",
+          "scroll-story",
+          "faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "main-product",
+          "product-reviews",
+          "scroll-story",
+          "faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 44,
+        "kept": 44,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)",
+          "rgb(244, 246, 250)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)",
+          "rgb(244, 246, 250)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 6,
+        "c": 6,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 6,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 640,
+        "kb": 127,
+        "requests": 12
+      },
+      "seo": {
+        "title": "Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 3
+      }
+    },
+    {
+      "name": "produit",
+      "device": "mobile",
+      "a": "/products/nuvia",
+      "c": "http://localhost:44643/p/products/nuvia",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "product-reviews",
+          "scroll-story",
+          "faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "main-product",
+          "product-reviews",
+          "scroll-story",
+          "faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)",
+          "rgb(244, 246, 250)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)",
+          "rgb(244, 246, 250)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 6,
+        "c": 6,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 6,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 622,
+        "kb": 174,
+        "requests": 12
+      },
+      "seo": {
+        "title": "Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 3
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:44643/p/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 17,
+        "kept": 17,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 573,
+        "kb": 142,
+        "requests": 6
+      },
+      "seo": {
+        "title": "Conditions générales de vente – Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:44643/p/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 14,
+        "kept": 14,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 567,
+        "kb": 142,
+        "requests": 6
+      },
+      "seo": {
+        "title": "Conditions générales de vente – Nuvia",
+        "description": " Tableaux de bord qui rendent les données d'une PME lisibles en temps réel. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "fidelity": {
+    "diff": 0,
+    "structure": "9/9",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "platformLimit": null,
+  "gate": {
+    "verdict": "PROVISIONAL",
+    "scope": "static",
+    "scopeLabel": "validation statique (fichiers seulement)",
+    "score": 9.8,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 6,
+        "total": 7
+      },
+      "visual": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 8.9,
+        "measured": 3,
+        "total": 8
+      }
+    },
+    "unmeasured": [
+      "installation",
+      "navigation",
+      "buttons",
+      "ecommerce"
+    ],
+    "codes": [],
+    "reason": "contrôle insuffisant pour un résultat final : provisoire",
+    "checkId": "d3tntgwpwe2n7m1t",
+    "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "static"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "automated",
+      "detail": "Theme Check : 0 erreur(s)"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "static",
+      "detail": "157 fichiers texte analysés"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "static",
+      "detail": "5 média(s), 0 exclu(s)"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "native_editing": {
+      "score": 9,
+      "provenance": "static",
+      "detail": "schémas de sections (réglages et blocs) présents"
+    },
+    "performance": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "temps de chargement local 1.00× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "page_fidelity": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "écart de pixels moyen 0.000, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "suite des sections identique sur 9/9 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 9.6,
+      "provenance": "browser_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 8,
+      "provenance": "browser_local",
+      "detail": "empty-section : section vide : shopify-section-template--es__product_reviews_1"
+    }
+  },
+  "issues": [
+    "empty-section : section vide : shopify-section-template--es__product_reviews_1",
+    "Shopify : aucune installation sur une boutique réelle (NON VÉRIFIÉ) — Theme Check et rendu local des fichiers exportés seulement"
+  ]
+}

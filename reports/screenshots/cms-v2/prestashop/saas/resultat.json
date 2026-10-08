@@ -1,0 +1,983 @@
+{
+  "scenario": "saas",
+  "label": "E — Nuvia, SaaS",
+  "platform": "prestashop",
+  "services": false,
+  "export": {
+    "name": "esnuvia-prestashop.zip",
+    "kb": 463,
+    "files": 40,
+    "ms": 301,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 40,
+      "zipKb": 463,
+      "cssKb": 150,
+      "jsKb": 34,
+      "mediaKb": 341
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 29,
+        "kept": 29,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 2078,
+        "kb": 673,
+        "requests": 37
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 26,
+        "kept": 26,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 903,
+        "kb": 782,
+        "requests": 37
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 26,
+        "kept": 26,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 810,
+        "kb": 782,
+        "requests": 37
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/fonctionnalites",
+      "c": "http://localhost:8082/pages/fonctionnalites",
+      "findings": [],
+      "status": 200,
+      "diff": 0.035,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 28,
+        "kept": 28,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 1,
+        "c": 1,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 800,
+        "kb": 620,
+        "requests": 35
+      },
+      "seo": {
+        "title": "Fonctionnalités",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/fonctionnalites",
+      "c": "http://localhost:8082/pages/fonctionnalites",
+      "findings": [],
+      "status": 200,
+      "diff": 0.062,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 25,
+        "kept": 25,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 1,
+        "c": 1,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 775,
+        "kb": 729,
+        "requests": 35
+      },
+      "seo": {
+        "title": "Fonctionnalités",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "produit",
+      "device": "desktop",
+      "a": "/products/nuvia",
+      "c": "http://localhost:8082/en/home/32-nuvia.html",
+      "findings": [
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "p « Tableaux de bord qui rendent les données » contraste 3.97:1"
+        }
+      ],
+      "status": 200,
+      "diff": 0.056,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "product-reviews",
+          "scroll-story",
+          "faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": false
+      },
+      "texts": {
+        "total": 44,
+        "kept": 19,
+        "missing": [
+          "Prix à définir",
+          "Taxes incluses. Frais de livraison calculés à la commande.",
+          "Ajouter au panier",
+          "Paiement accéléré (Shop Pay, Apple Pay...)",
+          "Caractéristiques",
+          "[À compléter : caractéristiques]",
+          "Livraison et retours",
+          "[À compléter : délais et tarifs de livraison]"
+        ]
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)",
+          "rgb(244, 246, 250)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 6,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 1771,
+        "kb": 872,
+        "requests": 53
+      },
+      "seo": {
+        "title": "Nuvia",
+        "description": "Tableaux de bord qui rendent les données d'une PME lisibles en temps réel.",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "produit",
+      "device": "mobile",
+      "a": "/products/nuvia",
+      "c": "http://localhost:8082/en/home/32-nuvia.html",
+      "findings": [
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "p « Tableaux de bord qui rendent les données » contraste 3.97:1"
+        },
+        {
+          "check": "tap-target",
+          "severity": "warning",
+          "detail": "button.btn «  » 24×23 px (< 24 px)"
+        },
+        {
+          "check": "tap-target",
+          "severity": "warning",
+          "detail": "button.btn «  » 24×23 px (< 24 px)"
+        }
+      ],
+      "status": 200,
+      "diff": 0.094,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "product-reviews",
+          "scroll-story",
+          "faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": false
+      },
+      "texts": {
+        "total": 41,
+        "kept": 16,
+        "missing": [
+          "Prix à définir",
+          "Taxes incluses. Frais de livraison calculés à la commande.",
+          "Ajouter au panier",
+          "Paiement accéléré (Shop Pay, Apple Pay...)",
+          "Caractéristiques",
+          "[À compléter : caractéristiques]",
+          "Livraison et retours",
+          "[À compléter : délais et tarifs de livraison]"
+        ]
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)",
+          "rgb(244, 246, 250)",
+          "rgb(255, 255, 255)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 6,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 908,
+        "kb": 763,
+        "requests": 53
+      },
+      "seo": {
+        "title": "Nuvia",
+        "description": "Tableaux de bord qui rendent les données d'une PME lisibles en temps réel.",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8082/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0.04,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 17,
+        "kept": 17,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 750,
+        "kb": 581,
+        "requests": 34
+      },
+      "seo": {
+        "title": "Conditions générales de vente",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8082/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0.062,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 14,
+        "kept": 14,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ],
+        "c": [
+          "DM Sans",
+          "DM Sans",
+          "DM Sans",
+          "DM Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ],
+        "c": [
+          "rgba(255, 255, 255, 0.76)",
+          "rgb(244, 246, 250)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 755,
+        "kb": 566,
+        "requests": 34
+      },
+      "seo": {
+        "title": "Conditions générales de vente",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "install": {
+    "ok": true,
+    "log": [
+      "PrestaShop 8.1.7 : thème Classic réactivé, thème et module précédents retirés",
+      "gestionnaire de thèmes de PrestaShop : installed / enabled ; module compagnon esstudio actif : oui",
+      "produit créé comme dans Catalogue › Produits (adresse simplifiée « nuvia », prix aucun : non vendable, sans déclinaison)"
+    ],
+    "productUrl": "http://localhost:8082/en/home/32-nuvia.html",
+    "purchasable": false,
+    "themeDir": "esnuvia"
+  },
+  "fidelity": {
+    "diff": 0.028,
+    "structure": "7/7",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "links": {
+    "checked": 8,
+    "bad": []
+  },
+  "form": {
+    "ok": true,
+    "detail": "formulaire de /pages/contact : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+  },
+  "commerce": {
+    "ok": null,
+    "detail": [
+      "produit sans prix confirmé dans le studio : non vendable (aucun prix inventé) ; ajout au panier et commande non testables"
+    ]
+  },
+  "nativeEditing": {
+    "ok": false,
+    "detail": "PrestaShop : catalogue, prix, stocks, commandes et messages modifiables dans l'administration ; textes et mise en page des sections seulement dans les fichiers du thème/module (pas d'éditeur visuel)"
+  },
+  "platformLimit": "modification native limitée (pas d'éditeur visuel de thème dans PrestaShop)",
+  "gate": {
+    "verdict": "PROVISIONAL",
+    "scope": "installed_local",
+    "scopeLabel": "validation locale installée",
+    "score": 9.6,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "visual": {
+        "score": 9.8,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 8.9,
+        "measured": 6,
+        "total": 8
+      }
+    },
+    "unmeasured": [
+      "ecommerce"
+    ],
+    "codes": [],
+    "reason": "contrôle insuffisant pour un résultat final : provisoire",
+    "checkId": "igakahs2mjz6wmuw",
+    "message": "Votre thème PrestaShop est généré et a passé les vérifications disponibles (validation locale installée). Son installation sur une boutique réelle reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "accepté et activé par le gestionnaire de thèmes de la plateforme"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "PrestaShop 8.1.7 (thème enfant de Classic)"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "aucun secret du studio dans les pages servies ; scripts du thème seulement"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "images servies chargées ; médias refusés exclus de l'export"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "native_editing": {
+      "score": 5,
+      "provenance": "installed_local",
+      "detail": "PrestaShop : catalogue, prix, stocks, commandes et messages modifiables dans l'administration ; textes et mise en page des sections seulement dans les fichiers du thème/module (pas d'éditeur visuel)"
+    },
+    "performance": {
+      "score": 9.7,
+      "provenance": "installed_local",
+      "detail": "temps de chargement local 1.66× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "installation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "PrestaShop 8.1.7 : thème Classic réactivé, thème et module précédents retirés ; gestionnaire de thèmes de PrestaShop : installed / enabled ; module compagnon esstudio actif : oui ; produit créé comme dans Catalogue › Produits (adresse simplifiée « nuvia », prix aucun : non vendable, sans déclinaison)"
+    },
+    "page_fidelity": {
+      "score": 8.9,
+      "provenance": "installed_local",
+      "detail": "écart de pixels moyen 0.028, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "suite des sections identique sur 7/7 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 9.1,
+      "provenance": "installed_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 9,
+      "provenance": "installed_local",
+      "detail": "clavier, contrastes, textes alternatifs : aucun défaut bloquant détecté"
+    },
+    "navigation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "8 liens vérifiés, 0 en erreur"
+    },
+    "buttons": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "8 liens vérifiés, 0 en erreur"
+    },
+    "forms": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "formulaire de /pages/contact : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+    }
+  },
+  "issues": [
+    "e-commerce non vérifiable : produit sans prix confirmé dans le studio : non vendable (aucun prix inventé) ; ajout au panier et commande non testables"
+  ]
+}

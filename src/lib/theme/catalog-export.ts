@@ -11,6 +11,12 @@ import { L } from "../i18n-server";
 
 const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 const row = (cells: unknown[]) => cells.map(esc).join(",");
+/**
+ * Ligne d'en-tête SANS guillemets : le fichier commence par le marqueur UTF-8 (BOM) et l'importateur de WooCommerce
+ * lit alors la 1re colonne « "Type" » avec ses guillemets (colonne non reconnue : déclinaisons importées comme
+ * produits séparés — constaté à l'installation locale, phase 11A). Les intitulés ne contiennent ni virgule ni guillemet.
+ */
+const header = (cells: string[]) => cells.join(",");
 const price = (c: number | null) => (c === null || c === undefined ? "" : (c / 100).toFixed(2));
 const strip = (h: string) => h.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
@@ -32,7 +38,7 @@ function collectionsOf(spec: ThemeSpec) {
 export function shopifyProductsCsv(spec: ThemeSpec): string {
   const head = ["Handle", "Title", "Body (HTML)", "Vendor", "Type", "Tags", "Published", "Option1 Name", "Option1 Value", "Variant SKU", "Variant Price", "Variant Compare At Price", "Variant Requires Shipping", "Variant Taxable", "Image Src", "Image Position", "Image Alt Text", "Status"];
   const cols = collectionsOf(spec);
-  const lines = [row(head)];
+  const lines = [header(head)];
   for (const p of storeProducts(spec)) {
     const imgs = imageUrls(spec, p.images);
     const variants = p.variants.length ? p.variants : [{ title: "Default Title", options: ["Default Title"], price: p.price, available: true }];
@@ -71,7 +77,7 @@ export function shopifyProductsCsv(spec: ThemeSpec): string {
 
 export function wooProductsCsv(spec: ThemeSpec): string {
   const cols = collectionsOf(spec);
-  const lines = [row(["Type", "SKU", "Name", "Published", "Short description", "Description", "Regular price", "Sale price", "Categories", "Tags", "Images", "Attribute 1 name", "Attribute 1 value(s)", "Attribute 1 visible", "Parent"])];
+  const lines = [header(["Type", "SKU", "Name", "Published", "Short description", "Description", "Regular price", "Sale price", "Categories", "Tags", "Images", "Attribute 1 name", "Attribute 1 value(s)", "Attribute 1 visible", "Parent"])];
   for (const p of storeProducts(spec)) {
     const imgs = imageUrls(spec, p.images).join(", ");
     const variants = p.variants.length && p.variants[0].title !== "Default Title" ? p.variants : [];

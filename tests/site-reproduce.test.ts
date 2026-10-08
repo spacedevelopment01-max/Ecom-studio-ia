@@ -12,7 +12,7 @@ import { matchFont, reproduceSpec, reproductionNotes, sanitizeHtml } from "@/lib
 import type { SiteImport } from "@/lib/engine/site-types";
 import { compileTheme } from "@/lib/theme/compile";
 import { validateSpec } from "@/lib/theme/ops";
-import { exportWooCommerce } from "@/lib/theme/platforms";
+import { exportWordPress } from "@/lib/cms-v2/adapters/wordpress";
 import { renderPage } from "@/lib/theme/render";
 import { sectionSchema, storeProducts, type ThemeSpec } from "@/lib/theme/spec";
 import { fakeAssets, servicesSite, shopSite } from "./site-reproduce.fixtures";
@@ -191,7 +191,7 @@ describe("reproduction d'un site de services (site sur mesure → WordPress)", (
   });
 
   it("export WordPress : une page par page du site, textes repris", async () => {
-    const wp = await exportWooCommerce(spec, () => null);
+    const wp = await exportWordPress(spec, () => null);
     expect(wp.name).toMatch(/-wordpress\.zip$/);
     const files = unzipSync(new Uint8Array(wp.zip));
     const names = Object.keys(files);

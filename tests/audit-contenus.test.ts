@@ -265,15 +265,17 @@ describe("I-3 sections sur mesure et aperçus cloisonnés", () => {
 
 describe("M-5 export WordPress : commentaires PHP intacts", () => {
   it("nom de boutique et titres de pages ne ferment pas les commentaires PHP/CSS", async () => {
-    const { exportWooCommerce, commentSafe } = await import("@/lib/theme/platforms");
+    const { commentSafe } = await import("@/lib/theme/platforms");
+    const { exportWordPress } = await import("@/lib/cms-v2/adapters/wordpress");
     expect(commentSafe("A */ B ?> C\nD")).toBe("A * / B ? > C D");
     const spec = serviceSpec("atelier");
     spec.store.shopName = "Atelier */ phpinfo(); ?> <?php system('x');";
     spec.store.pages[0].title = "Tarifs */ exit; /*";
-    const { zip } = await exportWooCommerce(spec, () => null);
+    const { zip } = await exportWordPress(spec, () => null);
     const files = unzipSync(new Uint8Array(zip));
-    const php = Object.entries(files).filter(([f]) => f.endsWith(".php"));
-    expect(php.length).toBeGreaterThan(1);
+    // Fichiers PHP qui reprennent un texte du projet (nom de boutique) : le moteur PHP inclus n'en contient aucun.
+    const php = Object.entries(files).filter(([f, d]) => f.endsWith(".php") && strFromU8(d).includes("Atelier"));
+    expect(php.length).toBeGreaterThan(0);
     for (const [f, data] of php) {
       const src = strFromU8(data);
       const comment = src.match(/\/\*\*[\s\S]*?\*\//)![0];
@@ -282,7 +284,9 @@ describe("M-5 export WordPress : commentaires PHP intacts", () => {
       expect(comment, f).not.toMatch(/\?>/);
     }
     const style = strFromU8(Object.entries(files).find(([f]) => f.endsWith("style.css"))![1]);
-    expect(style.indexOf("*/")).toBe(style.lastIndexOf("*/", style.indexOf(".es-features")));
+    // Un seul commentaire (l'en-tête du thème) : le nom piégé ne le ferme pas plus tôt.
+    expect(style.indexOf("*/")).toBe(style.lastIndexOf("*/"));
+    expect(style.slice(0, style.indexOf("*/"))).toContain("Atelier * / phpinfo()");
   });
 });
 

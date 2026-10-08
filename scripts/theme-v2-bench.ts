@@ -14,18 +14,16 @@
  * Ne jamais lancer sur la base de production.
  */
 import fs from "node:fs";
-import http from "node:http";
 import path from "node:path";
 import { chromium, type Browser, type Page } from "playwright";
 import { createUser } from "@/lib/auth";
 import { one } from "@/lib/db";
-import { compileTheme, themeAssetBinary, type ThemeFiles } from "@/lib/theme/compile";
-import { libraryLoader } from "@/lib/theme/loader";
-import { fontFilePath, renderPage } from "@/lib/theme/render";
+import { compileTheme, type ThemeFiles } from "@/lib/theme/compile";
 import { saveThemeVersion } from "@/lib/projects";
 import { runWithLang } from "@/lib/i18n-server";
 import type { ThemeSpec } from "@/lib/theme/spec";
 import { THEME_SCENARIOS, seedThemeScenario, type ThemeScenario } from "../tests/theme-v2-fixtures";
+import { serveStudio } from "./lib/studio-server";
 import { keyboardCheck, reducedMotionCheck, visualCheck, type Finding } from "./lib/visual-check";
 
 if (!process.env.DATA_DIR) throw new Error("DATA_DIR obligatoire (base de démonstration séparée).");
@@ -61,40 +59,7 @@ async function compose(projectId: string): Promise<ThemeSpec> {
   return (await fr(() => composeThemeV2(projectId))).spec;
 }
 
-/** Serveur d'aperçu : mêmes fonctions que la route /preview du studio (thème compilé + médias de la bibliothèque). */
-function serve(spec: ThemeSpec, files: ThemeFiles) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const u = new URL(req.url!, "http://x");
-      const p = u.pathname.replace(/^\/p/, "") || "/";
-      if (p.startsWith("/assets/")) {
-        const name = decodeURIComponent(p.slice(8));
-        if (spec.files[name]) {
-          const bin = await themeAssetBinary(spec, name, libraryLoader);
-          if (bin) {
-            res.writeHead(200, { "Content-Type": bin.mime });
-            return res.end(bin.data);
-          }
-        }
-        const t = files.get("assets/" + name);
-        res.writeHead(t ? 200 : 404, { "Content-Type": name.endsWith(".css") ? "text/css" : name.endsWith(".js") ? "application/javascript" : "image/svg+xml" });
-        return res.end(t ?? "");
-      }
-      if (p.startsWith("/__fonts/")) {
-        const f = fontFilePath(p.slice(9));
-        if (!f) return res.writeHead(404).end();
-        res.writeHead(200, { "Content-Type": "font/ttf" });
-        return res.end(fs.readFileSync(f));
-      }
-      const r = await fr(() => renderPage({ spec, base: "/p", files, cart: [] }, p, u.searchParams));
-      res.writeHead(r.status, { "Content-Type": "text/html; charset=utf-8" });
-      res.end(r.html);
-    } catch (e) {
-      res.writeHead(500).end(String((e as Error).message));
-    }
-  });
-  return new Promise<{ base: string; close: () => void }>((resolve) => server.listen(0, () => resolve({ base: `http://localhost:${(server.address() as any).port}/p`, close: () => server.close() })));
-}
+const serve = (spec: ThemeSpec, files: ThemeFiles) => serveStudio(spec, files);
 
 const LEGAL = /mention|condition|politique|cgv|legal|terms|privacy|confidential/i;
 /** Page secondaire représentative : fiche produit (boutique) ; sinon première page de contenu (prestations, fonctionnalités…). */

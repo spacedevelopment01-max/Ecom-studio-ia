@@ -1,0 +1,768 @@
+{
+  "scenario": "artisan",
+  "label": "A — Sébastien Blanc, plâtrier-peintre",
+  "platform": "shopify",
+  "services": true,
+  "export": {
+    "name": "sebastien-blanc-shopify.zip",
+    "kb": 376,
+    "files": 157,
+    "ms": 166,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 157,
+      "zipKb": 376,
+      "cssKb": 139,
+      "jsKb": 33,
+      "mediaKb": 0,
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 0
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:33407/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-facts",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-facts",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 74,
+        "kept": 74,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ],
+        "c": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ],
+        "c": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 31,
+        "c": 31,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 630,
+        "kb": 221,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Sébastien Blanc",
+        "description": " Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure, rénovation intérieure.    Plâtrerie et plaques de plâtre    Enduits et lissage    Peinture",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:33407/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-facts",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-facts",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 71,
+        "kept": 71,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ],
+        "c": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ],
+        "c": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 31,
+        "c": 31,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 656,
+        "kb": 248,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Sébastien Blanc",
+        "description": " Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure, rénovation intérieure.    Plâtrerie et plaques de plâtre    Enduits et lissage    Peinture",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:33407/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-facts",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-facts",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 71,
+        "kept": 71,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ],
+        "c": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ],
+        "c": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 31,
+        "c": 31,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 630,
+        "kb": 173,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Sébastien Blanc",
+        "description": " Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure, rénovation intérieure.    Plâtrerie et plaques de plâtre    Enduits et lissage    Peinture",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/prestations",
+      "c": "http://localhost:33407/p/pages/prestations",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ],
+        "c": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ],
+        "c": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 16,
+        "c": 16,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 601,
+        "kb": 221,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Prestations – Sébastien Blanc",
+        "description": " Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure, rénovation intérieure.    Plâtrerie et plaques de plâtre    Enduits et lissage    Peinture",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/prestations",
+      "c": "http://localhost:33407/p/pages/prestations",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-steps",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 38,
+        "kept": 38,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ],
+        "c": [
+          "Archivo",
+          "Archivo",
+          "Work Sans",
+          "Work Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ],
+        "c": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(244, 241, 235)",
+          "rgb(244, 241, 235)",
+          "rgb(234, 229, 219)",
+          "rgb(28, 26, 23)",
+          "rgb(28, 26, 23)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 16,
+        "c": 16,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 601,
+        "kb": 144,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Prestations – Sébastien Blanc",
+        "description": " Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure, rénovation intérieure.    Plâtrerie et plaques de plâtre    Enduits et lissage    Peinture",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:33407/p/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 25,
+        "kept": 25,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Archivo",
+          "Work Sans",
+          "Work Sans",
+          "Work Sans"
+        ],
+        "c": [
+          "Archivo",
+          "Work Sans",
+          "Work Sans",
+          "Work Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(28, 26, 23)"
+        ],
+        "c": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(28, 26, 23)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 588,
+        "kb": 237,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Conditions générales de prestation – Sébastien Blanc",
+        "description": " Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure, rénovation intérieure.    Plâtrerie et plaques de plâtre    Enduits et lissage    Peinture",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:33407/p/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 22,
+        "kept": 22,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Archivo",
+          "Work Sans",
+          "Work Sans",
+          "Work Sans"
+        ],
+        "c": [
+          "Archivo",
+          "Work Sans",
+          "Work Sans",
+          "Work Sans"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(28, 26, 23)"
+        ],
+        "c": [
+          "rgba(244, 241, 235, 0.76)",
+          "rgb(28, 26, 23)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 576,
+        "kb": 140,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Conditions générales de prestation – Sébastien Blanc",
+        "description": " Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure, rénovation intérieure.    Plâtrerie et plaques de plâtre    Enduits et lissage    Peinture",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "fidelity": {
+    "diff": 0,
+    "structure": "7/7",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "platformLimit": null,
+  "gate": {
+    "verdict": "PROVISIONAL",
+    "scope": "static",
+    "scopeLabel": "validation statique (fichiers seulement)",
+    "score": 9.9,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 6,
+        "total": 7
+      },
+      "visual": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 9.3,
+        "measured": 3,
+        "total": 7
+      }
+    },
+    "unmeasured": [
+      "installation",
+      "navigation",
+      "buttons",
+      "forms"
+    ],
+    "codes": [],
+    "reason": "contrôle insuffisant pour un résultat final : provisoire",
+    "checkId": "yaonp6kfc7t9tmyj",
+    "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "static"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "automated",
+      "detail": "Theme Check : 0 erreur(s)"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "static",
+      "detail": "157 fichiers texte analysés"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "static",
+      "detail": "0 média(s), 0 exclu(s)"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "native_editing": {
+      "score": 9,
+      "provenance": "static",
+      "detail": "schémas de sections (réglages et blocs) présents"
+    },
+    "performance": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "temps de chargement local 0.99× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "page_fidelity": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "écart de pixels moyen 0.000, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "suite des sections identique sur 7/7 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 9,
+      "provenance": "browser_local",
+      "detail": "clavier, contrastes, textes alternatifs : aucun défaut bloquant détecté"
+    }
+  },
+  "issues": [
+    "Shopify : aucune installation sur une boutique réelle (NON VÉRIFIÉ) — Theme Check et rendu local des fichiers exportés seulement"
+  ]
+}
