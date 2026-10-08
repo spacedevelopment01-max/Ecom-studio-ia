@@ -9,7 +9,7 @@
 import { redact } from "../redact";
 import { AsyncLocalStorage } from "node:async_hooks";
 import crypto from "node:crypto";
-import { id, now, run } from "../db";
+import { id, now, one, run } from "../db";
 
 export type TraceScope = {
   jobId?: string | null;
@@ -22,6 +22,8 @@ export type TraceScope = {
   planId?: string;
   stepId?: string;
   routing?: { reason: string; fallback: boolean; escalation: boolean };
+  /** Plafond de dépense de la tâche (micro-euros) : aucun appel payant ne part au-delà (benchmark --max-cost). */
+  costCapMicro?: number;
   /** Historique de qualité de l'étape du plan en cours (reprise) : transmis au Router V2. */
   history?: { attempt?: number; lastScore?: number | null; lastVerdict?: "FINAL" | "RETRY" | "PROVISIONAL" | "REJECTED"; lastProvider?: string; lastModel?: string; failure?: "quality" | "provider_error" | "parse" | "refusal" };
 };
@@ -41,6 +43,25 @@ export function withTrace<T>(scope: TraceScope, fn: () => Promise<T>): Promise<T
 /** Candidat évalué (piste de logo, image…) et sa tentative : les appels faits dans `fn` lui sont rattachés. */
 export function withCandidate<T>(candidateId: string, attempt: number, fn: () => Promise<T>): Promise<T> {
   return store.run({ ...currentTrace(), candidateId, attempt }, fn);
+}
+
+/** Plafond de dépense atteint : l'appel n'est pas envoyé (rien n'est payé). */
+export class CostCapReached extends Error {
+  constructor(public spentMicro: number, public estimateMicro: number, public capMicro: number) {
+    super(`plafond de dépense atteint : ${(spentMicro / 1e6).toFixed(3)} € dépensés + ${(estimateMicro / 1e6).toFixed(3)} € estimés > ${(capMicro / 1e6).toFixed(3)} €`);
+    this.name = "CostCapReached";
+  }
+}
+
+/**
+ * Garde-fou de dépense RÉEL : avant chaque appel payant, coût déjà enregistré pour la tâche (ai_calls) + estimation
+ * de l'appel comparés au plafond. Au-delà, exception : l'appel ne part pas.
+ */
+export function assertUnderCostCap(estimateMicro: number) {
+  const t = currentTrace();
+  if (t.costCapMicro == null) return;
+  const spent = t.jobId ? (one<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", t.jobId)?.c ?? 0) : 0;
+  if (spent + estimateMicro > t.costCapMicro) throw new CostCapReached(spent, estimateMicro, t.costCapMicro);
 }
 
 /** Empreinte courte d'un texte (version de fait d'un prompt système), sans le conserver. */

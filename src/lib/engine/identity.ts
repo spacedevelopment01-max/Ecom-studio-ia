@@ -357,12 +357,13 @@ export function removeProposal(projectId: string, proposalId: string) {
 }
 
 /** Déclinaisons livrables d'une proposition, puis remplacement du logo dans la boutique et kit réseaux sociaux. */
-export async function applyLogo(ctx: JobContext | null, projectId: string, pr: LogoProposal, opts: { provisional?: boolean } = {}) {
+export async function applyLogo(ctx: JobContext | null, projectId: string, pr: LogoProposal, opts: { provisional?: boolean; noTagline?: boolean } = {}) {
   const p = loadProject(projectId);
   const brand = p.brand!;
   const { color, accent } = pr.colors ?? logoColors(p);
   ctx?.progress(0.75, L("Déclinaisons du logo", "Logo variations"));
-  const spec: LogoSpec = { ...pr.spec, name: brand.name, ...(pr.spec.layout === "badge" || pr.spec.layout === "vertical" ? { tagline: brand.tagline } : {}), color, accent };
+  // Logo V2 : aucun texte en plus du nom exact (pas de signature ajoutée d'office).
+  const spec: LogoSpec = { ...pr.spec, name: brand.name, ...((pr.spec.layout === "badge" || pr.spec.layout === "vertical") && !opts.noTagline ? { tagline: brand.tagline } : {}), color, accent };
   const set = await logoSet(spec, "#FFFFFF");
   // Un emblème rond ou une composition empilée servent sur les étiquettes et emballages ; le site utilise la version horizontale.
   const webSpec: LogoSpec = spec.layout === "badge" || spec.layout === "vertical" ? { ...spec, layout: "lockup", tagline: undefined } : spec;

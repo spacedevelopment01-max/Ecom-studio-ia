@@ -17,7 +17,7 @@ import { activeProviderKey, priceFor, requirePrice, routeFor, usdToEur, type Tas
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { recordCall, redact, shortHash } from "./trace";
+import { assertUnderCostCap, recordCall, redact, shortHash } from "./trace";
 import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
 import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
@@ -185,7 +185,10 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
   // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non.
   assertAiAllowed(call.userId);
-  assertCanSpend(call.userId, estimateMicro(call, route.model));
+  const est = estimateMicro(call, route.model);
+  // Plafond de dépense de la tâche (benchmark) : vérifié AVANT l'envoi.
+  assertUnderCostCap(est);
+  assertCanSpend(call.userId, est);
   const isHaiku = route.model.startsWith("claude-haiku");
   const { brain } = brainOf(call);
   const params: any = {
