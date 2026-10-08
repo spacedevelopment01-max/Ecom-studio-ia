@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p8a";
+export const POLICY_VERSION = "2026-10-p9a";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -40,6 +40,7 @@ export const DELIVERABLES = [
   "seo_metadata_v2",
   "seo_strategy_v2",
   "seo_tech_audit_v2",
+  "social_post_v2",
   "theme_home",
   "theme_custom",
   "cutout",
@@ -226,6 +227,19 @@ export const POLICIES: Record<Deliverable, Policy> = {
   // par le client (PROVISOIRE), jamais présentés comme vérifiés sur le web réel.
   seo_strategy_v2: { final: 8, retryFloor: 5, maxRetries: 0, finalCheckers: ["human"], minConfidence: 0.7, fatal: [], blocking: ["unsourced_metrics", "invented_link", "cannibalization"], provisional: { checkers: ["local"], floor: 5, use: "auto", label: "needs_improvement" } },
   seo_tech_audit_v2: { final: 8, retryFloor: 0, maxRetries: 0, finalCheckers: ["human"], minConfidence: 0.7, fatal: [], blocking: [], provisional: { checkers: ["local"], floor: 0, use: "auto", label: "needs_improvement" } },
+  // Publication sociale V2 (phase 9A) : affirmation inventée, affirmation à éviter, information à compléter, média
+  // refusé / introuvable / sans licence, média ou format non conforme au réseau, accroche répétée : bloquants (jamais
+  // approuvée ni programmée). Contrôle local seul : PROVISOIRE ; l'approbation du client (contrôle humain) conclut.
+  social_post_v2: {
+    final: 7.5,
+    retryFloor: 0,
+    maxRetries: 0,
+    finalCheckers: ["ai", "human"],
+    minConfidence: 0.7,
+    fatal: [],
+    blocking: ["invented_claim", "forbidden_claim", "incomplete", "media_missing", "media_rejected", "rights_unknown", "media_required", "wrong_media", "video_duration", "too_many_media", "caption_too_long", "empty_caption", "duplicate_hook"],
+    provisional: { checkers: ["local"], floor: 0, use: "manual", label: "needs_improvement" },
+  },
   theme_home: THEME,
   theme_custom: THEME,
   // Détourage : le contrôle local (pixels) est un vrai contrôle ; il peut conclure.

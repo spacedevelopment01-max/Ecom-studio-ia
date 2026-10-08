@@ -1,4 +1,5 @@
 "use client";
+import { SocialStudio } from "./social-studio";
 import { useEffect, useState } from "react";
 import { CheckCheck, Plus, Send } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, useApi, useToast } from "../ui";
@@ -9,7 +10,7 @@ import { useT } from "../i18n";
 
 const FILTERS = [["", "Toutes", "All"], ["review", "À valider", "To review"], ["scheduled", "Programmées", "Scheduled"], ["published", "Publiées", "Published"], ["failed", "Échecs", "Failed"], ["draft", "Brouillons", "Drafts"]];
 
-export default function TabPublications() {
+function LegacyPublications() {
   const { id } = useProject();
   const toast = useToast();
   const t = useT();
@@ -93,6 +94,24 @@ export default function TabPublications() {
         </div>
       )}
       <PostEditor post={open} onClose={() => setOpen(null)} onChanged={reload} />
+    </div>
+  );
+}
+
+/**
+ * Onglet : le studio social V2 (stratégie, création, calendrier, publications, comptes, statistiques) est le
+ * parcours principal ; l'ancien parcours reste accessible, replié et signalé comme tel (mêmes publications).
+ */
+export default function TabPublications() {
+  const t = useT();
+  const [legacy, setLegacy] = useState(false);
+  return (
+    <div className="grid min-w-0 grid-cols-1 gap-6">
+      <SocialStudio initial="publications" />
+      <div className="mx-auto w-full max-w-6xl">
+        <button type="button" onClick={() => setLegacy((v) => !v)} className="text-sm text-muted underline underline-offset-4">{legacy ? t("Masquer l'ancien parcours", "Hide the old view") : t("Ancienne liste des publications (V1)", "Old post list (V1)")}</button>
+      </div>
+      {legacy && <LegacyPublications />}
     </div>
   );
 }

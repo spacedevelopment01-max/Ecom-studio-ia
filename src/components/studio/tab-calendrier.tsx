@@ -1,4 +1,5 @@
 "use client";
+import { SocialStudio } from "./social-studio";
 import { useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
 import { enUS, fr } from "date-fns/locale";
@@ -132,7 +133,7 @@ function RulesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   );
 }
 
-export default function TabCalendrier() {
+function LegacyCalendrier() {
   const { id, data: project } = useProject();
   const toast = useToast();
   const t = useT();
@@ -280,3 +281,21 @@ export default function TabCalendrier() {
   );
 }
 
+
+/**
+ * Onglet : le studio social V2 (stratégie, création, calendrier, publications, comptes, statistiques) est le
+ * parcours principal ; l'ancien parcours reste accessible, replié et signalé comme tel (mêmes publications).
+ */
+export default function TabCalendrier() {
+  const t = useT();
+  const [legacy, setLegacy] = useState(false);
+  return (
+    <div className="grid min-w-0 grid-cols-1 gap-6">
+      <SocialStudio initial="calendrier" />
+      <div className="mx-auto w-full max-w-6xl">
+        <button type="button" onClick={() => setLegacy((v) => !v)} className="text-sm text-muted underline underline-offset-4">{legacy ? t("Masquer l'ancien parcours", "Hide the old view") : t("Ancien calendrier (V1) — conservé pour vos anciens calendriers", "Old calendar (V1) — kept for your earlier calendars")}</button>
+      </div>
+      {legacy && <LegacyCalendrier />}
+    </div>
+  );
+}

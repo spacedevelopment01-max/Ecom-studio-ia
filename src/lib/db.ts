@@ -685,6 +685,47 @@ CREATE INDEX IF NOT EXISTS content_documents_project ON content_documents(projec
 
 -- SEO V2 : mémoire des rédactions (empreinte brief + faits → document produit). Même demande, mêmes faits :
 -- rien n'est refait ni repayé (idempotence) ; aucune consigne d'IA stockée ici.
+-- Social Engine V2 : journal des tentatives de publication (une ligne par envoi : début, fin, résultat). Sert à la
+-- reprise sans doublon et au diagnostic ; aucun jeton ni secret n'y est écrit.
+CREATE TABLE IF NOT EXISTS post_attempts (
+  id TEXT PRIMARY KEY,
+  post_id TEXT NOT NULL,
+  attempt INTEGER NOT NULL,
+  lock_token TEXT NOT NULL,
+  started_at INTEGER NOT NULL,
+  ended_at INTEGER,
+  outcome TEXT NOT NULL,             -- sending | published | failed | retry | uncertain | skipped
+  detail TEXT NOT NULL DEFAULT '',
+  remote_id TEXT
+);
+CREATE INDEX IF NOT EXISTS post_attempts_post ON post_attempts(post_id, started_at);
+
+-- Social Engine V2 : règles d'automatisation persistantes (préparer la semaine suivante, programmer les contenus
+-- approuvés, avertir en cas d'erreur…). Jamais de dépense IA ni de publication non autorisée.
+CREATE TABLE IF NOT EXISTS social_automations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  config TEXT NOT NULL DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'active', -- active | paused
+  last_run_at INTEGER,
+  next_run_at INTEGER,
+  last_result TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS social_automations_due ON social_automations(status, next_run_at);
+
+-- Social Engine V2 : métriques RÉELLEMENT fournies par les plateformes (jamais estimées).
+CREATE TABLE IF NOT EXISTS post_metrics (
+  post_id TEXT NOT NULL,
+  metric TEXT NOT NULL,
+  value REAL NOT NULL,
+  source TEXT NOT NULL,
+  fetched_at INTEGER NOT NULL,
+  PRIMARY KEY (post_id, metric)
+);
+
 CREATE TABLE IF NOT EXISTS content_runs (
   project_id TEXT NOT NULL,
   run_key TEXT NOT NULL,
@@ -737,6 +778,21 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["memory", "superseded_by", "TEXT"],
   ["memory", "origin", "TEXT"],
   ["memory", "evidence_json", "TEXT NOT NULL DEFAULT '{}'"],
+  // Social Engine V2 (phase 9A) : ajouts seulement, les publications existantes restent lisibles telles quelles.
+  ["posts", "engine", "TEXT NOT NULL DEFAULT 'v1'"],
+  ["posts", "pillar", "TEXT"],
+  ["posts", "objective", "TEXT"],
+  ["posts", "content_hash", "TEXT"],
+  ["posts", "approved_hash", "TEXT"],
+  ["posts", "user_edited", "INTEGER NOT NULL DEFAULT 0"],
+  ["posts", "lock_token", "TEXT"],
+  ["posts", "locked_at", "INTEGER"],
+  ["posts", "production", "TEXT NOT NULL DEFAULT '{}'"],
+  ["posts", "gate", "TEXT NOT NULL DEFAULT '{}'"],
+  ["posts", "group_id", "TEXT"],
+  ["content_plans", "engine", "TEXT NOT NULL DEFAULT 'v1'"],
+  ["content_plans", "paused", "INTEGER NOT NULL DEFAULT 0"],
+  ["content_plans", "updated_at", "INTEGER"],
 ];
 
 function migrate(db: Database.Database) {

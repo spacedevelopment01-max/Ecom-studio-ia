@@ -4,7 +4,11 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 8A validée techniquement (SEO, Copywriting & Blog Engine V2) ; 8B reportée.
+Dernière mise à jour : phase 9A validée techniquement (Social Media & Automatisation Engine V2) ; 9B reportée ;
+8A validée techniquement ; 8B reportée.
+
+**Règle pour la Phase 10 (Theme Engine V2) et les suivantes** : tests visuels réels dans un navigateur, avec
+captures ordinateur ET téléphone, dès le développement technique. Les tests de code seuls ne suffisent pas.
 
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
@@ -16,6 +20,7 @@ Dernière mise à jour : phase 8A validée techniquement (SEO, Copywriting & Blo
 | 7B | Vidéos et UGC (Video Engine V2) | `scripts/benchmark-video-v2.ts` | en attente |
 | 8B | Textes SEO, fiches, pages, articles (SEO Engine V2) | `scripts/benchmark-seo-v2.ts` | **reporté** par décision du propriétaire |
 | 8B | SEO des fiches Shopify (métachamps) | `scripts/verify-shopify-seo.ts` | **reporté** — mécanisme NON VÉRIFIÉ |
+| 9B | Réseaux sociaux : production réelle (textes, visuels, vidéos), publication réelle de test, statistiques réelles | `scripts/benchmark-social-v2.ts` + comptes de test reliés dans le studio | **reporté** par décision du propriétaire (publication réelle seulement avec son autorisation explicite) |
 
 La qualité visuelle réelle de ces quatre moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
 En 7A, toutes les vidéos ont été produites avec des fournisseurs SIMULÉS (mires, images de test) : aucune vidéo
@@ -121,6 +126,48 @@ Reste à faire :
 - Routage : métadonnées et petites réécritures au niveau « standard » (pas de niveau plus économique pour la
   rédaction dans la politique actuelle) ; pages et articles au niveau « fort ».
 
+## Social Media & Automatisation Engine V2 (phase 9A) — fait et ce qui reste
+
+Fait (fournisseurs et comptes SIMULÉS, aucune publication réelle, 0 €) : moteur `src/lib/social-v2/` (stratégie
+éditoriale par métier, planificateur 1 à 5 publications par jour, adaptateurs par réseau, textes locaux sans
+invention, production par lots plafonnée via Image / Ads / Video Engine V2, barrière `social_post_v2`, approbation
+par version, programmation, envoi avec verrou et journal, état « À vérifier » au lieu d'un renvoi à l'aveugle,
+reprise après arrêt, automatisations persistantes, statistiques sans chiffre inventé, retouches en conversation),
+studio social dans les onglets Calendrier et Publications (mois / semaine / jour / liste, glisser-déposer, éditeur,
+comptes, statistiques), test navigateur ordinateur + téléphone. Rapport : `reports/phase-9A-report.md`.
+
+Validé techniquement par le propriétaire (8 octobre 2026) : Social Media & Automatisation V2, calendrier interactif,
+programmation de 1 à 5 publications par jour, versions approuvées, automatisations persistantes, protections contre
+les doublons, intégration des moteurs V2, interface ordinateur et téléphone (904/904 tests, 28/28 tests navigateur,
+TypeScript et build OK). **NON VALIDÉS** : publication réelle, statistiques des réseaux, qualité des contenus IA.
+**Phase 9B reportée** par décision du propriétaire.
+
+Reste à faire :
+- **9B — publication réelle** (avec votre autorisation explicite, sur des comptes de test) : Facebook, Instagram,
+  TikTok, YouTube, Pinterest. Adaptateurs officiels existants **jamais exécutés** dans cette phase. TikTok : audit de
+  l'application nécessaire pour publier en public.
+- **9B — production réelle** (`scripts/benchmark-social-v2.ts`) : qualité réelle des textes IA, visuels Image V2 /
+  Ads V2 et vidéos générées **NON VALIDÉE**.
+- **Statistiques des plateformes** (vues, portée, likes, commentaires, partages, clics) : aucun fournisseur branché
+  (`registerMetricsProvider` prêt) ; affichées « non connecté » / « indisponible ».
+- **LinkedIn** : export seulement (pas de connexion OAuth ni de publication directe).
+- **Textes locaux** : beaucoup de « [À compléter] » quand le projet manque d'informations (45/60 à 28/30 selon les
+  scénarios simulés) ; prévoir un formulaire « répondez à ces questions » ou une rédaction IA plafonnée ; structure
+  de phrases répétitive ; « saas » en minuscules (repris des questions du SEO V2).
+- **Éditeur de publication** : pas de lien direct vers l'éditeur publicitaire à calques (visuel Ads V2) ni vers le
+  document vidéo éditable (Video V2).
+- **Production gratuite des vidéos** : montage local lent (lots de 3 dans l'interface) ; une vidéo impossible à monter
+  laisse la publication « planifiée ».
+- **Vidéos montées localement « à vérifier »** dans la bibliothèque : l'approbation de la publication est bloquée tant
+  que le client ne les a pas validées ; prévoir la validation directe depuis l'éditeur de publication.
+- **Anti-doublon** : TikTok, YouTube, Pinterest ne permettent pas de vérifier après un délai dépassé → le client
+  confirme l'état « À vérifier ».
+- **Limites des réseaux** (longueurs, durées, fréquences, dimensions) : valeurs publiques au moment du
+  développement, à revérifier.
+- **Ancien calendrier V1** toujours présent (sous le studio V2) pour les anciens calendriers ; ancien éditeur
+  `post-editor.tsx` et API `/api/projects/[id]/plans` conservés. À retirer après validation du V2.
+- Glisser-déposer sur ordinateur seulement ; tablette, Safari, Firefox non testés.
+
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 
 | Parcours | Code | Ce qu'il fait aujourd'hui | Phase prévue pour la reprise |
@@ -128,9 +175,9 @@ Reste à faire :
 | Images produit de la création complète | `src/lib/engine/images.ts` → `generateImageSet` | scènes IA autour du détourage (`openaiScene`, `geminiPlate`), contrôle `verifyAiImage` (barrière phase 1), compositions `renderCreative` / `renderProCreatives` | à reprendre (images de boutique) |
 | Image seule (onglet Images) | `images.ts` → `generateSingleImage` | même chemin que ci-dessus | à reprendre |
 | Images d'une entreprise de services | `src/lib/engine/service-media.ts` → `generateServiceImageSet`, `ambianceChecked`, `postAmbiance` | ambiances IA (`ambianceImage`) contrôlées par `checkAmbiance` ; photos libres par `stockFill` (règles V2 partagées : tri par scène, mémoire des refus, licence) | à reprendre |
-| Photos libres des publications | `service-media.ts` → `postStockPhoto` / `topicQueries` | recherche existante alignée sur les règles V2, pas le moteur V2 complet | phase 7 (réseaux sociaux) |
-| Visuels des publications (calendrier) | `src/lib/engine/calendar.ts` (`renderCreative`) | composition locale à partir du détourage | phase 7 |
-| Retouche d'un visuel de publication | `worker/handlers.ts` (`post.regenerate`, `renderCreative`) | composition locale | phase 7 |
+| Photos libres des publications (calendrier V1) | `service-media.ts` → `postStockPhoto` / `topicQueries` | recherche existante alignée sur les règles V2, pas le moteur V2 complet | le calendrier V2 (9A) passe par la bibliothèque, le rendu local ou l'Image V2 ; à retirer avec le V1 |
+| Visuels des publications (calendrier V1) | `src/lib/engine/calendar.ts` (`renderCreative`) | composition locale à partir du détourage | V2 en place (9A) ; à retirer avec le V1 |
+| Retouche d'un visuel de publication (V1) | `worker/handlers.ts` (`post.regenerate`, `renderCreative`) | composition locale | à reprendre (éditeur V2 : remplacement depuis la bibliothèque, retouches locales) |
 | Kit réseaux sociaux, maquettes de marque | `src/lib/media/social-kit.ts`, `src/lib/media/brand-mockups.ts` | compositions locales | à évaluer |
 | Vidéos (plans libres, images de départ) | `src/lib/engine/videos.ts` (`searchStockVideos`, `rankStock`) | ancien moteur vidéo (onglet Vidéos) ; le Video Engine V2 demande ses images à l'Image Engine V2 | bascule de l'onglet Vidéos |
 | Images UGC | `src/lib/engine/ugc.ts` (`ugcFrame`) | ancien moteur UGC (onglet Vidéos) ; le Video Engine V2 part d'images de l'Image Engine V2 | bascule de l'onglet Vidéos |
