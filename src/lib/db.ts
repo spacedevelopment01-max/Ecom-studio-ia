@@ -598,6 +598,22 @@ CREATE TABLE IF NOT EXISTS task_plans (
   updated_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS task_plans_project ON task_plans(project_id, updated_at);
+
+-- Image V2 (phase 5A) : candidats déjà regardés pour un brief (photo de banque ou image générée). Une photo refusée
+-- n'est ni retéléchargée ni recontrôlée (rien n'est repayé) ; aucune image, aucun prompt n'y est stocké.
+CREATE TABLE IF NOT EXISTS image_candidates (
+  project_id TEXT NOT NULL,
+  candidate_key TEXT NOT NULL,       -- source:id (banque) ou gen:<empreinte>
+  brief_hash TEXT NOT NULL,
+  verdict TEXT NOT NULL,             -- FINAL | RETRY | PROVISIONAL | REJECTED
+  score REAL,
+  codes_json TEXT NOT NULL DEFAULT '[]',
+  check_id TEXT,
+  asset_id TEXT,
+  phash TEXT,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (project_id, candidate_key, brief_hash)
+);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */

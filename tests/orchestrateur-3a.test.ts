@@ -263,11 +263,12 @@ describe("Phase 3A — intention, plan, routeur", async () => {
     expect(ctx.startsWith('<contexte_projet scope="logo">')).toBe(true);
   });
 
-  it("limitation visible : produit au métier générique → avertissement dans le plan des visuels", () => {
+  it("limitation levée (phase 5A) : produit compris par sa famille ; avertissement seulement pour un libellé inconnu", () => {
     const st = fr(() => o.projectState(loadProject(serumId)));
-    expect(st.genericTrade).toBe(true);
-    const p = o.buildPlan({ projectId: serumId, userId: u.id, requestKey: "w", intents: ["GENERATE_IMAGE"], state: st });
-    expect(p.warnings.join(" ")).toMatch(/GENERIC trade fallback \(Phase 2 limitation\)/);
+    expect(st.genericTrade).toBe(false);
+    expect(o.buildPlan({ projectId: serumId, userId: u.id, requestKey: "w", intents: ["GENERATE_IMAGE"], state: st }).warnings.join(" ")).not.toMatch(/GENERIC fallback/);
+    const p = o.buildPlan({ projectId: serumId, userId: u.id, requestKey: "w2", intents: ["GENERATE_IMAGE"], state: { ...st, genericTrade: true } });
+    expect(p.warnings.join(" ")).toMatch(/GENERIC fallback only/);
     expect(fr(() => o.projectState(loadProject(sbId))).genericTrade).toBe(false);
   });
 

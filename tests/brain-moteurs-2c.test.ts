@@ -58,7 +58,8 @@ describe("Project Brain 2C — branchement des moteurs", async () => {
       ["logo", sb, () => tasks.aiCreativeRoutes(b, sb, {})],
       ["logo", sb, () => tasks.aiCreativeRedraw(b, sb, { key: "concept", feedback: "trop générique", previous: null })],
       ["image", serum, () => tasks.aiImageBrief({ ...b, projectId: serum.id }, serum, "mise en scène produit", { line })],
-      ["stock", serum, () => universeQueries({ userId: u.id, projectId: serum.id }, serum)],
+      // Image V2 : une famille de produit reconnue (sérum) n'appelle plus l'IA ; une famille inconnue, si (scope « stock »).
+      ["stock", serum, () => universeQueries({ userId: u.id, projectId: serum.id }, { ...serum, product: { ...serum.product, category: "objet singulier", name: "Zorglu", summary: "", sector: null } })],
       ["theme", serum, () => tasks.aiDesignHome({ ...b, projectId: serum.id }, serum, sampleSpec())],
       ["shop_copy", sb, () => tasks.aiShopCopy(b, sb)],
       ["blog", sb, () => suggestTopics(sb, { refresh: true })],
@@ -75,6 +76,11 @@ describe("Project Brain 2C — branchement des moteurs", async () => {
       ["brand", sb, () => tasks.aiBrand(b, sb)],
     ];
     for (const [scope, p, fn] of cases) expect(await scopesOf(p, fn), scope).toEqual([scope]);
+    // Famille reconnue : requêtes locales du modèle de catégories, aucun appel.
+    calls.length = 0;
+    const local = await fr(() => universeQueries({ userId: u.id, projectId: serum.id }, serum));
+    expect(calls.length).toBe(0);
+    expect(local.queries.join(" ")).toMatch(/skincare|botanical|spa/);
   });
 
   it("table de migration : un scope précis par moteur, aucun « all » ; brainView refuse « all »", () => {

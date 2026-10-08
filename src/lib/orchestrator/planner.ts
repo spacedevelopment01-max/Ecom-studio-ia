@@ -233,7 +233,7 @@ export function buildPlan(a: {
   if (steps.filter((s) => CONTENT.includes(s.kind)).length >= 2 && (!a.only || a.only.includes("quality_review"))) steps.push(makeStep("quality_review", false, {}));
   const warnings: string[] = [];
   if (a.state.genericTrade && steps.some((s) => s.kind === "stock_search" || s.kind === "image_generate"))
-    warnings.push("product category understood through the GENERIC trade fallback (Phase 2 limitation): stock queries and scene hints are not specific to this product");
+    warnings.push("trade or product category understood through the GENERIC fallback only: stock queries and scene hints are built from the label typed by the client, not from a known trade or product family");
   return { id: planId(a.projectId, a.requestKey), projectId: a.projectId, userId: a.userId, requestKey: a.requestKey, intents: a.intents, steps: finalize(steps, a.state), status: "active", warnings };
 }
 

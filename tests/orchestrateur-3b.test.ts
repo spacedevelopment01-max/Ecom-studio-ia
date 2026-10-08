@@ -257,7 +257,8 @@ describe("Phase 3B — orchestrateur branché", async () => {
     expect(a.intent.intents).toEqual(["CREATE_BRAND", "CREATE_SHOP"]);
     expect(a.skipped.map((s) => s.step)).toEqual(["understand", "image_generate"]);
     expect(a.routing.find((x) => x.step === "brand_strategy")).toMatchObject({ model: "claude-opus-5-5", reason: "complex creative direction" });
-    expect(b.warnings.join()).toMatch(/GENERIC trade fallback/);
+    // Phase 5A : la famille du produit est comprise, plus d'avertissement de repli générique.
+    expect(b.warnings.join()).not.toMatch(/GENERIC/);
     expect(b.executed).toContain("image_generate");
     expect(b.routing.find((x) => x.step === "copy")).toMatchObject({ model: "claude-opus-5-5", escalation: true });
     expect(c.plan).toEqual(["logo"]);

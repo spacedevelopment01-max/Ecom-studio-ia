@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p4a";
+export const POLICY_VERSION = "2026-10-p5a";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -16,7 +16,9 @@ export const DELIVERABLES = [
   "image_product",
   "image_lifestyle",
   "image_ambiance",
+  "image_v2",
   "stock_photo",
+  "stock_v2",
   "stock_video",
   "video_clip",
   "ugc_frame",
@@ -107,7 +109,34 @@ export const POLICIES: Record<Deliverable, Policy> = {
   image_product: IMAGE,
   image_lifestyle: IMAGE,
   image_ambiance: IMAGE,
+  // Image V2 (phase 5A) : une image hors sujet n'est jamais FINAL, même très belle (défaut fatal) ; un produit
+  // transformé est fatal ; une image techniquement correcte mais esthétiquement faible ne passe pas (planchers
+  // esthétique et composition). Reprises ciblées limitées à deux, chacune avec un diagnostic.
+  image_v2: {
+    final: 7.5,
+    retryFloor: 5,
+    maxRetries: 2,
+    minCriterion: 5.5,
+    criteriaFloors: { relevance: 7, fidelity: 8, aesthetics: 6.5, composition: 6, brief: 6.5 },
+    finalCheckers: ["ai", "human"],
+    minConfidence: 0.7,
+    fatal: ["off_topic", "wrong_product", "product_altered", "corrupt", "forbidden"],
+    blocking: ["deformed", "text_in_image", "artifacts", "low_resolution", "bad_crop", "weak_aesthetics", "brand_mismatch", "brief_mismatch", "duplicate", "license_unverified"],
+  },
   stock_photo: STOCK,
+  // Photo de banque V2 : seul un contrôle visuel (IA) ou humain conclut FINAL ; la description de la banque seule
+  // (forfait sans IA) ne donne qu'un résultat PROVISOIRE, utilisable mais signalé « à vérifier ».
+  stock_v2: {
+    final: 7.5,
+    retryFloor: 7,
+    maxRetries: 0,
+    criteriaFloors: { relevance: 7, aesthetics: 6, support: 6 },
+    finalCheckers: ["ai", "human"],
+    minConfidence: 0.7,
+    fatal: ["off_topic", "corrupt", "forbidden", "license_unverified"],
+    blocking: ["text_in_image", "artifacts", "low_resolution", "bad_crop", "weak_aesthetics", "duplicate", "deformed"],
+    provisional: { checkers: ["metadata"], floor: 7, use: "auto", label: "needs_improvement" },
+  },
   stock_video: STOCK,
   video_clip: { final: 7, retryFloor: 7, maxRetries: 0, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["wrong_product", "corrupt", "forbidden"], blocking: [] },
   ugc_frame: { ...IMAGE },

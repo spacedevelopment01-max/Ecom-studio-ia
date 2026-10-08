@@ -26,8 +26,8 @@ export const STEP_DELIVERABLES: Record<StepKind, Deliverable[]> = {
   brand_strategy: [],
   logo: ["logo_route", "logo_full", "logo_v2"],
   mockups: [],
-  stock_search: ["stock_photo"],
-  image_generate: ["image_product", "image_lifestyle", "image_ambiance"],
+  stock_search: ["stock_photo", "stock_v2"],
+  image_generate: ["image_product", "image_lifestyle", "image_ambiance", "image_v2"],
   copy: ["copy_shop"],
   seo: ["seo_meta"],
   theme: ["theme_home", "theme_custom"],
@@ -51,6 +51,7 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "copy.build": ["copy"],
   "images.generate": ["image_generate"],
   "image.single": ["image_generate"],
+  "image.v2": ["image_generate"],
   "stock.search": ["stock_search"],
   "shop.build": ["theme"],
   "shop.direction": ["theme"],
@@ -204,17 +205,31 @@ export function pipelinePlan(ctx: JobContext, p: Project, payload: { from?: stri
 
 export type StepExecutorFn = (ctx: JobContext, p: Project, step: PlanStep, decision: RouteDecision) => Promise<StepResult>;
 
-/** Photos libres de droits (gratuites), contrôlées : métier pour un service, univers pour un produit. */
+/**
+ * Photos libres de droits (gratuites), contrôlées : métier pour un service, univers pour un produit.
+ * Image V2 (phase 5A) : même moteur que toutes les images (brief local, recherche multisource, barrière V2,
+ * bibliothèque). Recherche seule : la génération payante est une autre étape du plan.
+ */
 export async function findStockPhotos(ctx: JobContext, projectId: string, n = 2) {
   const p = loadProject(projectId);
-  const ictx = { userId: p.userId, projectId, jobId: ctx.job.id };
+  const { runImageEngineV2 } = await import("../image-v2/engine");
+  const outcomes: { assetId: string | null; verdict: string }[] = [];
   if (p.business === "services") {
-    const { stockFill, stockPhotoSlots } = await import("../engine/service-media");
-    const slots = stockPhotoSlots(p).slice(0, n).map((slot) => ({ slot, aspect: (slot === "hero" || slot === "banner" ? "16:9" : "4:5") as "16:9" | "4:5" }));
-    return { assets: (await stockFill(ictx, p, slots, p.brand?.name ?? "photo")).map((x) => x.id) };
+    const { stockPhotoSlots, serviceItems } = await import("../engine/service-media");
+    for (const slot of stockPhotoSlots(p).slice(0, n)) {
+      const m = /^service:(\d+)$/.exec(slot);
+      const s = m ? serviceItems(p)[Number(m[1])] : undefined;
+      const r = await ctx.step(`stock-v2:${slot}`, async () =>
+        (await runImageEngineV2(ctx, projectId, { kind: "trade_photo", support: slot.startsWith("service:") ? "service_page" : slot === "banner" ? "banner" : "site", aspect: slot === "hero" || slot === "banner" ? "16:9" : "4:5", service: s ? { name: s.name, description: s.description } : null, slot, allowGenerate: false, name: `${p.brand?.name ?? "photo"}-${slot.replace(":", "-")}` })).outcomes.map((o) => ({ assetId: o.assetId, verdict: o.verdict })),
+      );
+      outcomes.push(...r);
+    }
+  } else {
+    const r = await ctx.step("stock-v2:universe", async () => (await runImageEngineV2(ctx, projectId, { kind: "ambiance", support: "site", aspect: "16:9", count: n, allowGenerate: false })).outcomes.map((o) => ({ assetId: o.assetId, verdict: o.verdict })));
+    outcomes.push(...r);
   }
-  const { universePhotos } = await import("../engine/stock-universe");
-  return { assets: (await universePhotos(ictx, p, n)).map((a) => a.id) };
+  const kept = outcomes.filter((o) => o.assetId && (o.verdict === "FINAL" || o.verdict === "PROVISIONAL"));
+  return { assets: kept.map((o) => o.assetId!), final: kept.some((o) => o.verdict === "FINAL"), provisional: kept.some((o) => o.verdict === "PROVISIONAL") };
 }
 
 /** Moteur existant de chaque étape (aucune logique dupliquée). */
@@ -239,7 +254,11 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     const r = await ctx.step(`plan:${s.id}`, () => findStockPhotos(ctx, p.id, 2));
     const o = outcome(ctx.job.id, "stock_search", since);
     // Aucune photo libre FINALE : la génération d'une image IA prend le relais (étape suivante du plan).
-    return r.assets.length ? { ...o, verdict: "FINAL" } : { verdict: "REJECTED", score: o.score ?? null, note: "no FINAL stock photo" };
+    // Photo retenue sur sa seule description (sans contrôle visuel) : PROVISOIRE, jamais présentée comme finale.
+    // Point de reprise d'une version précédente (sans « final ») : une photo retenue valait FINAL.
+    const cached = r as { assets: string[]; final?: boolean; provisional?: boolean };
+    const final = cached.final ?? cached.assets.length > 0;
+    return final ? { ...o, verdict: "FINAL" } : cached.provisional ? { ...o, verdict: "PROVISIONAL", note: "stock photo kept on metadata only" } : { verdict: "REJECTED", score: o.score ?? null, note: "no FINAL stock photo" };
   },
   image_generate: async (ctx, p, s) => {
     const since = Date.now();

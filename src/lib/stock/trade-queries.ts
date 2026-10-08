@@ -41,6 +41,10 @@ const TRADES: Trade[] = [
   { re: /renov|travaux|batiment|multiservice|bricol/, queries: ["home renovation work tools", "house renovation construction"], must: ["renovation", "construction", "tools", "repair", "diy", "builder"] },
 ];
 
+/** Surfaces ou décors qui, seuls, ne montrent ni métier ni usage ; signes d'une personne ou d'un geste (Image V2). */
+const SURFACE_RE = / (wall|walls|texture|textures|background|brick|bricks|stone|facade|concrete|surface|pattern) /;
+const HUMAN_RE = / (man|woman|men|women|worker|workers|person|people|craftsman|artisan|professional|hand|hands|working|applying|painting|plastering|installing|repairing|fixing|laying|using|holding|cooking|serving|renovation|builder|team) /;
+
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 /** Table historique (secours) : métiers absents du registre canonique, et mots que la description d'une photo doit citer. */
@@ -83,7 +87,14 @@ export function tagsMatch(alt: string, must: string[]): boolean {
  * citer le métier les rachète (« plasterer on a brick wall » reste pertinente).
  */
 export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean, negative: string[] = GLOBAL_NEGATIVES): T[] {
-  const off = (p: T) => negative.some((n) => ` ${norm(p.alt).replace(/[^a-z0-9]+/g, " ")} `.includes(` ${norm(n)} `));
+  // Image V2 : on comprend la scène — un concept hors sujet, ou une surface seule (mur, texture, façade) sans personne
+  // ni geste, passe en dernier ; citer le métier rachète la photo (« plasterer smoothing a wall »).
+  const surfaceOnly = (p: T) => {
+    const a = ` ${norm(p.alt).replace(/[^a-z0-9]+/g, " ")} `;
+    return SURFACE_RE.test(a) && !HUMAN_RE.test(a);
+  };
+  // Univers d'un produit (aucun concept écarté) : une matière ou une texture peut y être justement recherchée.
+  const off = (p: T) => (negative.length > 0 && surfaceOnly(p)) || negative.some((n) => ` ${norm(p.alt).replace(/[^a-z0-9]+/g, " ")} `.includes(` ${norm(n)} `));
   const onTrade = (p: T) => must.length > 0 && tagsMatch(p.alt, must);
   if (!must.length) return [...found.filter((p) => !off(p)), ...found.filter(off)];
   const good = found.filter(onTrade);
