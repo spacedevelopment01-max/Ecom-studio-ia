@@ -139,6 +139,13 @@ describe("Phase 6A — Advertising Engine V2", async () => {
     const bg = await mockImage(3, 1080, 1350);
     const { metrics } = await fr(() => composeAd({ format: formatsFor(["meta_feed"])[0], layout: "hero_left", palette: palette(p), typo: brandTypo(p), brand: "Sérum Éclat", headline: "Le flacon tient dans la main", cta: "Découvrir", background: bg, product: cut }));
     expect(metrics.productOverlap).toBe(false);
+    // Titre sur deux lignes avec photo, dans chaque format : jamais de texte sous le bouton (défaut vu en 9:16).
+    for (const f of formatsFor(["meta_feed", "meta_story", "google_display", "pinterest"]))
+      for (const layout of ["hero_left", "split", "hero_center", "full_bleed"] as const) {
+        const photo = await mockImage(7, f.width, f.height);
+        const r = await fr(() => composeAd({ format: f, layout, palette: palette(p), typo: brandTypo(p), brand: "Sérum Éclat", headline: "Le bouchon se visse d'un geste", cta: "Découvrir", background: photo, product: cut }));
+        expect(r.metrics.textOverlap, `${f.label} ${layout}`).toBe(false);
+      }
   });
 
   it("barrière publicitaire : sans relecture jamais FINAL ; panne jamais validée ; affirmation interdite fatale ; illisible → reprise", () => {

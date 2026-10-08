@@ -25,7 +25,7 @@ export async function renderDocToBuffer(doc: AdDocument, images: RenderEnv["imag
   return format === "png" ? c.encode("png") : c.encode("jpeg", 92);
 }
 
-export type DocMetrics = { minFontPx: number; textContrast: number; textShare: number; safeOverflow: boolean; productOverlap: boolean; headlineLines: number; problems: { layerId: string; code: string; message: string }[] };
+export type DocMetrics = { minFontPx: number; textContrast: number; textShare: number; safeOverflow: boolean; productOverlap: boolean; textOverlap: boolean; headlineLines: number; problems: { layerId: string; code: string; message: string }[] };
 
 type Box = { x: number; y: number; w: number; h: number };
 const overlap = (a: Box, b: Box) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
@@ -66,6 +66,7 @@ export function docMetrics(doc: AdDocument, images: RenderEnv["images"]): DocMet
   let safeOverflow = false;
   let productOverlap = false;
   let headlineLines = 0;
+  const drawn: { l: Layer; b: Box }[] = [];
   const inSafe = (b: Box) => b.y >= doc.safe.top - 1 && b.y + b.h <= H - doc.safe.bottom + 1 && b.x >= doc.safe.side - 1 && b.x + b.w <= W - doc.safe.side + 1;
   for (const l of [...texts, ...buttons]) {
     // Ce qui est sous le calque : tout ce qui est dessiné avant lui.
@@ -74,6 +75,7 @@ export function docMetrics(doc: AdDocument, images: RenderEnv["images"]): DocMet
     renderDoc(ctx, { ...doc, layers: doc.layers.slice(0, idx) }, { font: serverFont, images });
     const b: Box & { size: number; lines?: number } = l.kind === "text" ? textBox(ctx, l) : { x: l.x, y: l.y, w: l.w, h: l.h, size: l.font.size };
     if (l.role === "title" && "lines" in b) headlineLines = b.lines ?? 0;
+    drawn.push({ l, b });
     const under = l.kind === "button" ? (typeof l.fill === "string" ? l.fill : l.fill.stops[0]?.color ?? "#000000") : avg(ctx, b, W, H);
     const cr = Math.round(contrast(l.color, under.slice(0, 7)) * 10) / 10;
     minContrast = Math.min(minContrast, cr);
@@ -90,5 +92,9 @@ export function docMetrics(doc: AdDocument, images: RenderEnv["images"]): DocMet
       problems.push({ layerId: l.id, code: "product_overlap", message: "recouvre le produit" });
     }
   }
-  return { minFontPx: minFont === 999 ? 0 : minFont, textContrast: minContrast, textShare: Math.round((area / (W * H)) * 100) / 100, safeOverflow, productOverlap, headlineLines, problems };
+  // Un texte qui passe sous (ou sur) le bouton : illisible, même si chacun est lisible seul.
+  for (const t of drawn.filter((d) => d.l.kind === "text"))
+    for (const btn of drawn.filter((d) => d.l.kind === "button"))
+      if (overlap(t.b, btn.b) > 0) problems.push({ layerId: t.l.id, code: "text_overlap", message: "chevauche le bouton" });
+  return { minFontPx: minFont === 999 ? 0 : minFont, textContrast: minContrast, textShare: Math.round((area / (W * H)) * 100) / 100, safeOverflow, productOverlap, textOverlap: problems.some((x) => x.code === "text_overlap"), headlineLines, problems };
 }

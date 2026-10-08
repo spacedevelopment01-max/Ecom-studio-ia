@@ -2,7 +2,7 @@
  * Éditeur visuel des publicités — fondation (documents en calques, opérations, versions, formats, export).
  * Critère de réussite vérifié SANS aucun appel d'IA : ouvrir une publicité générée, sélectionner son titre, changer
  * son texte, remplacer sa photo, modifier une forme, déplacer son logo, enregistrer et exporter.
- * (L'interface interactive de l'éditeur n'est pas encore livrée : voir reports/remaining-work.md.)
+ * Interface interactive et tests navigateur : tests/ad-editor-ui.test.ts, scripts/e2e-ad-editor.ts.
  */
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
@@ -178,5 +178,23 @@ describe("Éditeur visuel des publicités — documents en calques", async () =>
     const bad = applyOp(doc, { op: "add", layer: { id: "x", name: "x", role: "image", kind: "image", assetId: foreign.id, fit: "cover", crop: null, radius: 0, shadow: null, x: 0, y: 0, w: 10, h: 10, rotation: 0, opacity: 1, visible: true, locked: false, anchor: { h: "left", v: "top" } } });
     expect(foreignAssets(p.id, bad)).toEqual([foreign.id]);
     expect(applyOps(doc, []).layers.length).toBe(doc.layers.length);
+  });
+  it("aucun texte ne chevauche le bouton, quels que soient la mise en page et le format (contrôle signalé sinon)", async () => {
+    const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const cutId = await seedCutout(u.id, p.id);
+    const { deps } = mockAdDeps({ userId: u.id, projectId: p.id, cutout: { id: cutId, data: assetData(getAsset(cutId)!) }, logo: null });
+    const r = await fr(() => runAdEngineV2(null, p.id, { count: 3, platforms: ["meta_feed", "meta_story", "google_display"] }, deps));
+    const keys = r.outcomes.filter((o) => o.assetId).map((o) => json<any>(getAsset(o.assetId!)!.meta, {}).adV2.docKey as string);
+    expect(keys.length).toBeGreaterThan(3);
+    for (const k of keys) {
+      const d = latestDoc(p.id, k)!.doc;
+      const m = docMetrics(d, await docImages(p.id, d));
+      expect(m.problems.filter((x) => x.code === "text_overlap"), `${d.format.aspect}`).toEqual([]);
+    }
+    // Le contrôle repère bien un titre posé sur le bouton.
+    const d = latestDoc(p.id, keys[0])!.doc;
+    const cta = byRole(d, "cta")!;
+    const moved = applyOp(d, { op: "move", id: byRole(d, "title")!.id, x: cta.x, y: cta.y - 10 });
+    expect(docMetrics(moved, await docImages(p.id, moved)).problems.some((x) => x.code === "text_overlap")).toBe(true);
   });
 });

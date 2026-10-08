@@ -33,7 +33,7 @@ export type ComposeInput = {
   conceptId?: string | null;
 };
 
-export type ComposeMetrics = { minFontPx: number; textContrast: number; textShare: number; safeOverflow: boolean; productOverlap: boolean; headlineLines: number };
+export type ComposeMetrics = { minFontPx: number; textContrast: number; textShare: number; safeOverflow: boolean; productOverlap: boolean; textOverlap?: boolean; headlineLines: number };
 
 type Box = { x: number; y: number; w: number; h: number };
 const STRETCH = { h: "stretch", v: "stretch" } as const;
@@ -127,14 +127,18 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   layers.push({ ...base("brand", "Marque", "subtitle", { x: textBox.x, y: textBox.y, w: textBox.w, h: eyebrow * 1.3 }, textAnchor), kind: "text", text: i.brand, font: { family: i.typo.body, weight: 600, size: eyebrow, italic: false }, color: ink, align, lineHeight: 1.2, letterSpacing: Math.round(eyebrow * 0.16), uppercase: true, autoFit: null, shadow: null });
   const weight = i.typo.headingWeight ?? 600;
   const headTop = textBox.y + eyebrow * 2;
-  const room = { w: textBox.w, h: Math.max(eyebrow * 3, textBox.h - eyebrow * 2.2 - (tall || align === "center" ? 0 : eyebrow * 5)) };
+  // Bouton posé en bas (formats hauts, mise en page centrée) : le titre s'arrête au-dessus, jamais dessous.
+  const ctaSize = Math.round(Math.max(W * 0.026, 22));
+  const ctaBottom = align === "center" || tall;
+  const ctaTop = H - safe.bottom - ctaSize * 2.8;
+  const roomH = Math.max(eyebrow * 3, textBox.h - eyebrow * 2.2 - (tall || align === "center" ? 0 : eyebrow * 5));
+  const room = { w: textBox.w, h: ctaBottom ? Math.max(eyebrow * 3, Math.min(roomH, ctaTop - ctaSize * 1.2 - headTop)) : roomH };
   const title: TextLayer = { ...base("title", "Titre", "title", { x: textBox.x, y: headTop, w: room.w, h: room.h }, textAnchor), kind: "text", text: i.headline, font: { family: i.typo.heading, weight, size: Math.round(W * (tall ? 0.105 : wide ? 0.06 : 0.08)), italic: false }, color: ink, align, lineHeight: 1.06, letterSpacing: 0, uppercase: !!i.typo.uppercase, autoFit: { minSize: Math.round(W * (tall ? 0.055 : 0.04)) }, shadow: null };
   layers.push(title);
   const fitted = layoutText(ctx, title, { font: serverFont });
   const titleBottom = title.y + fitted.lines.length * fitted.size * title.lineHeight;
 
   // 4. Bouton (couleur d'accent lisible), puis logo discret hors zone d'interface.
-  const ctaSize = Math.round(Math.max(W * 0.026, 22));
   const accent0 = contrast(pal.accent, under) >= 3 ? pal.accent : ensureContrast(pal.dark, under, 4.5);
   // Libellé du bouton lisible : si le texte clair ou foncé n'atteint pas 4,5:1, c'est le fond du bouton qui s'ajuste.
   const btnText = onColor(accent0);
@@ -143,9 +147,9 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   const bw = ctx.measureText(i.cta).width + ctaSize * 2.8;
   const bh = ctaSize * 2.6;
   const centered = align === "center" || (tall && layout !== "hero_left");
-  const by = align === "center" || tall ? H - safe.bottom - ctaSize * 2.8 : Math.min(titleBottom + ctaSize * 1.4, H - safe.bottom - ctaSize * 2.8);
+  const by = ctaBottom ? ctaTop : Math.min(titleBottom + ctaSize * 1.4, ctaTop);
   const bx = centered ? W / 2 - bw / 2 : textBox.x;
-  layers.push({ ...base("cta", "Bouton", "cta", { x: bx, y: by, w: bw, h: bh }, { h: centered ? "center" : "left", v: align === "center" || tall ? "bottom" : "top" }), kind: "button", text: i.cta, font: { family: i.typo.body, weight: 600, size: ctaSize, italic: false }, fill: accent, color: btnText, radius: bh / 2, stroke: null, shadow: null });
+  layers.push({ ...base("cta", "Bouton", "cta", { x: bx, y: by, w: bw, h: bh }, { h: centered ? "center" : "left", v: ctaBottom ? "bottom" : "top" }), kind: "button", text: i.cta, font: { family: i.typo.body, weight: 600, size: ctaSize, italic: false }, fill: accent, color: btnText, radius: bh / 2, stroke: null, shadow: null });
   if (logoId && !tall) {
     const lg = images.get(logoId)!;
     const lh = Math.round(H * 0.045);
@@ -159,5 +163,5 @@ export async function composeAd(i: ComposeInput): Promise<{ jpg: Buffer; metrics
   const { doc, images } = await buildAdDocument(i);
   const jpg = await renderDocToBuffer(doc, images, "jpeg");
   const m = docMetrics(doc, images);
-  return { jpg, metrics: { minFontPx: m.minFontPx, textContrast: m.textContrast, textShare: m.textShare, safeOverflow: m.safeOverflow, productOverlap: m.productOverlap, headlineLines: m.headlineLines }, doc };
+  return { jpg, metrics: { minFontPx: m.minFontPx, textContrast: m.textContrast, textShare: m.textShare, safeOverflow: m.safeOverflow, productOverlap: m.productOverlap, textOverlap: m.textOverlap, headlineLines: m.headlineLines }, doc };
 }

@@ -120,3 +120,32 @@ export function fontFile(family: string, weight = 400, italic = false): string {
   const weights = Object.keys(def.file).map(Number).sort((a, b) => Math.abs(a - weight) - Math.abs(b - weight));
   return path.join(FONT_DIR, def.file[weights[0]]);
 }
+
+/**
+ * Catalogue des polices réellement disponibles (éditeur visuel des publicités) : graisses chargées et fichiers.
+ * Le navigateur charge les MÊMES fichiers sous les MÊMES alias (« Famille@600 ») que le rendu du serveur : l'aperçu
+ * de l'éditeur et l'export utilisent exactement les mêmes polices.
+ */
+export function fontCatalog(): Record<string, { kind: string; weights: { weight: number; alias: string; file: string }[]; italic: { alias: string; file: string } | null }> {
+  ensureFonts();
+  return Object.fromEntries(
+    Object.entries(CANVAS_FONTS).map(([family, def]) => [
+      family,
+      {
+        kind: def.kind,
+        weights: Object.entries(def.file)
+          .map(([w, file]) => ({ weight: Number(w), alias: `${family}@${w}`, file }))
+          .filter((x) => available.has(x.alias)),
+        italic: def.italic && available.has(`${family}@italic`) ? { alias: `${family}@italic`, file: def.italic } : null,
+      },
+    ]),
+  );
+}
+
+/** Fichier de police servi au navigateur (liste blanche : seulement les fichiers du catalogue). */
+export function fontFileByName(name: string): string | null {
+  const ok = Object.values(CANVAS_FONTS).some((d) => Object.values(d.file).includes(name) || d.italic === name);
+  if (!ok || !/^[A-Za-z0-9-]+\.ttf$/.test(name)) return null;
+  const p = path.join(FONT_DIR, name);
+  return fs.existsSync(p) ? p : null;
+}

@@ -4,7 +4,7 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 6A (+ fondation de l'éditeur visuel des publicités).
+Dernière mise à jour : phase 6A + éditeur visuel des publicités (interface livrée, testée en navigateur).
 
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
@@ -33,16 +33,16 @@ régénérer son texte. Architecture : `reports/ad-editor-architecture.md`.
 | Une régénération n'écrase jamais une création modifiée par le client | **fait** (moteur V2 : `userOwned`) |
 | Adaptation aux formats (1:1, 4:5, 9:16, 16:9, bannières) en gardant les modifications | **fait** (`ad-doc/reflow.ts`) |
 | Export PNG, JPEG, document éditable (JSON) fidèle à l'aperçu | **fait** (`exportDoc`, API `?export=`) |
-| Retouches en langage naturel : simples en local et gratuites ; génération annoncée, jamais lancée sans accord | **fait côté moteur** (`ad-doc/local-edit.ts`) ; exécution d'une génération payante après confirmation : **à faire** |
-| Contrôles signalés après modification (lisibilité, zones de sécurité, produit recouvert, affirmations) | **fait** (API : `problems`) |
+| Retouches en langage naturel : simples en local et gratuites ; génération annoncée, jamais lancée sans accord | **fait** (`ad-doc/local-edit.ts`, zone « Demander une retouche » de l'éditeur ; refus vérifié en navigateur : aucune tâche lancée). Génération payante après accord (photo IA, nouvelle version) : **branchée mais jamais exécutée avec un vrai fournisseur** — à vérifier au benchmark 6B |
+| Contrôles signalés après modification (lisibilité, zones de sécurité, produit recouvert, texte sur le bouton, affirmations) | **fait** (API : `problems`, bouton « problèmes » de l'éditeur) |
 | API de l'éditeur (`/api/projects/[id]/ads/docs`, `/ads/docs/[docKey]`) | **fait** |
-| **Interface de l'éditeur** : bouton « Modifier », canevas interactif (sélection, double-clic sur un texte, glisser-déposer, poignées de redimensionnement et de rotation, alignements), panneau des calques, panneaux couleurs / polices / formes / images (bibliothèque, recadrage), annuler / rétablir, enregistrer, exporter | **À FAIRE** |
-| **Interface mobile et tablette** (gestes tactiles, panneaux d'outils en bas d'écran, édition du texte au clavier mobile) — pas une réduction de l'écran ordinateur | **À FAIRE** |
-| Polices de la marque chargées dans le navigateur (@font-face) pour un aperçu identique à l'export | **À FAIRE** (le rendu serveur fait foi en attendant) |
-| Tests de l'interface (captures ordinateur et téléphone) | **À FAIRE** |
+| **Interface de l'éditeur** : bouton « Modifier », canevas interactif (sélection, double-clic sur un texte, glisser-déposer, poignées de redimensionnement et de rotation, repères d'alignement), panneau des calques, panneaux couleurs / polices / formes / images (bibliothèque, recadrage), annuler / rétablir, enregistrer, versions, exporter | **fait** (`src/components/studio/ad-editor/`) ; testé en navigateur réel (`scripts/e2e-ad-editor.ts`, 28/28) |
+| **Interface mobile et tablette** (gestes tactiles, panneaux d'outils en bas d'écran, édition du texte au clavier mobile) — pas une réduction de l'écran ordinateur | **fait** ; testé au format téléphone (390 × 844, tactile). Pincer pour zoomer : **non fait** (boutons de zoom à la place). Tablette réelle : **non testée** |
+| Polices de la marque chargées dans le navigateur (@font-face) pour un aperçu identique à l'export | **fait** (`/api/fonts`, mêmes fichiers et mêmes noms que le serveur) ; mesuré : écart moyen aperçu / export ≈ 0,6 à 1,4 sur 255 (lissage des bords), composition identique |
+| Tests de l'interface (captures ordinateur et téléphone) | **fait** (`reports/screenshots/ad-editor/`, `reports/ad-editor-final-report.md`) |
 
-Planification : à livrer pendant les travaux d'intégration à venir, sans perturber la phase 7A ; la fondation livrée
-ici ne change rien aux autres onglets.
+Reste à faire pour l'éditeur : voir « Limites » dans `reports/ad-editor-final-report.md` (sélection multiple,
+pincer pour zoomer, test sur tablette réelle, génération payante vérifiée avec un vrai fournisseur).
 
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 
@@ -66,17 +66,18 @@ Déjà sur l'Image Engine V2 : étape « photos libres » des plans (`findStockP
 
 | Parcours | Code | Ce qu'il fait aujourd'hui |
 |---|---|---|
-| Fenêtre « Campagne » de l'onglet Publicités | `src/app/api/projects/[id]/campaigns/draft/route.ts` → `draftAds` (`src/lib/engine/ads.ts`) | textes et plan de test (IA ou local), sans créations visuelles ; reste en place tant que l'onglet n'a pas d'écran V2 |
+| Fenêtre « Campagne » de l'onglet Publicités | `src/app/api/projects/[id]/campaigns/draft/route.ts` → `draftAds` (`src/lib/engine/ads.ts`) | textes et plan de test (IA ou local), sans créations visuelles ; conservée pour compatibilité, sous la nouvelle section V2 « Créations publicitaires » |
 | Visuels « publicité » de la création complète | `images.ts` → `generateImageSet` (rôle `ad`, `renderCreative`) | visuels génériques à partir du titre de marque |
 | Publicités d'une entreprise de services | `service-media.ts` → `serviceCardPlan` (rôle `ad`, gabarits « booking ») | cartes à la marque, sans angle ni barrière publicitaire |
 | Vidéos publicitaires | `src/lib/engine/videos.ts` (`produceVideo`, cible `ads`) | montage vidéo existant |
 
 Déjà sur l'Advertising Engine V2 : étape « publicités » des plans (`ad`), action `ads.v2` (API
-`/api/projects/[id]/campaigns/v2`).
+`/api/projects/[id]/campaigns/v2`), section « Créations publicitaires » de l'onglet Publicités (créer, modifier,
+exporter).
 
 ## Autres limites connues
 
-- Pas encore d'écran dédié dans le studio pour les images V2 ni pour les créations publicitaires V2 (bibliothèque
-  et API seulement).
+- Pas encore d'écran dédié dans le studio pour les images V2 (bibliothèque et API seulement). Les créations
+  publicitaires V2 ont leur écran (onglet Publicités).
 - Seuils locaux (netteté, exposition, contraste, part de texte) non calibrés sur de vrais rendus.
 - Limites de texte et zones de sécurité des régies : valeurs publiques au moment du développement, à revérifier.

@@ -104,15 +104,43 @@ export class History {
   private past: AdDocument[] = [];
   private future: AdDocument[] = [];
   constructor(public current: AdDocument, private limit = 50) {}
-  apply(o: DocOp) {
+  private lastMerge: { key: string; at: number } | null = null;
+  /**
+   * Applique une opération. `merge` : les réglages continus (curseur, saisie) sur la même propriété du même calque
+   * en moins d'une seconde forment un seul pas d'historique (un « annuler » ne défait pas lettre par lettre).
+   */
+  apply(o: DocOp, merge?: string) {
     const next = applyOp(this.current, o);
-    this.past.push(this.current);
-    if (this.past.length > this.limit) this.past.shift();
+    const now = Date.now();
+    const same = merge && this.lastMerge && this.lastMerge.key === merge && now - this.lastMerge.at < 1000;
+    if (!same) {
+      this.past.push(this.current);
+      if (this.past.length > this.limit) this.past.shift();
+    }
+    this.lastMerge = merge ? { key: merge, at: now } : null;
     this.future = [];
     this.current = next;
     return next;
   }
+  /** Plusieurs opérations en UN seul pas d'historique (retouche en langage naturel, alignement multiple). */
+  applyAll(ops: DocOp[]) {
+    const next = applyOps(this.current, ops);
+    this.past.push(this.current);
+    if (this.past.length > this.limit) this.past.shift();
+    this.lastMerge = null;
+    this.future = [];
+    this.current = next;
+    return next;
+  }
+  /** Remplace l'état courant sans créer de pas (chargement, enregistrement). */
+  reset(doc: AdDocument) {
+    this.past = [];
+    this.future = [];
+    this.lastMerge = null;
+    this.current = doc;
+  }
   undo() {
+    this.lastMerge = null;
     const prev = this.past.pop();
     if (!prev) return this.current;
     this.future.push(this.current);

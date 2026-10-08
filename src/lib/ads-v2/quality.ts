@@ -24,6 +24,10 @@ export function localAdChecks(m: ComposeMetrics, claims: ClaimIssue[], platform:
     codes.push("illegible");
     issues.push(m.textContrast < 4.5 ? `contraste du texte ${m.textContrast}:1 (4,5:1 au moins)` : `texte de ${m.minFontPx} px : trop petit sur mobile`);
   }
+  if (m.textOverlap) {
+    codes.push("illegible");
+    issues.push("un texte chevauche le bouton");
+  }
   if (m.safeOverflow) {
     codes.push("safe_zone");
     issues.push(`texte ou bouton dans la zone recouverte par l'interface de ${PLATFORM_SPECS[platform].label}`);
