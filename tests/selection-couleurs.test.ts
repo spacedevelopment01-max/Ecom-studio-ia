@@ -65,7 +65,7 @@ describe("couleurs d'UN élément désigné (titre, bouton)", () => {
     const { serviceSpec } = await import("./fixtures");
     const { compileTheme } = await import("@/lib/theme/compile");
     const { renderPage } = await import("@/lib/theme/render");
-    const { exportWooCommerce } = await import("@/lib/theme/platforms");
+    const { exportWordPress } = await import("@/lib/cms-v2/adapters/wordpress");
     const { unzipSync, strFromU8 } = await import("fflate");
     const spec = serviceSpec("atelier");
     const id = spec.templates.index.order[0];
@@ -88,12 +88,16 @@ describe("couleurs d'UN élément désigné (titre, bouton)", () => {
     expect(files.get("layout/theme.liquid")).toContain("{% render 'es-element-styles' %}");
     const html = (await renderPage({ spec: out.spec, base: "/p", files, cart: [] }, "/", new URLSearchParams())).html;
     expect(html).toContain('id="es-element-styles"');
-    // Export WordPress : le titre retrouvé par son texte reçoit ses couleurs.
+    // Export WordPress : même feuille ciblée que dans le studio (les sections y gardent l'identifiant du studio).
     if (heading) {
-      const { zip } = await exportWooCommerce(out.spec, () => null);
-      const all = Object.entries(unzipSync(new Uint8Array(zip))).filter(([f]) => /patterns\/.+\.php$|templates\/.+\.html$/.test(f)).map(([, d]) => strFromU8(d)).join("\n");
-      expect(all).toMatch(/"style":\{"color":\{"text":"#b42318","background":"#f2c94c"\}\}/);
-      expect(all).toMatch(/has-text-color has-background" style="color:#b42318;background-color:#f2c94c"/);
+      const { zip } = await exportWordPress(out.spec, () => null);
+      const files = unzipSync(new Uint8Array(zip));
+      const design = strFromU8(Object.entries(files).find(([f]) => f.endsWith("assets/css/es-design.css"))![1]);
+      expect(design).toContain(`#shopify-section-${id} > ${sel.path}`);
+      expect(design).toMatch(/color:#B42318!important/);
+      expect(design).toMatch(/background-color:#F2C94C!important/);
+      const front = strFromU8(Object.entries(files).find(([f]) => f.endsWith("templates/front-page.html"))![1]);
+      expect(front).toContain(`"sectionId":"${id}"`);
     }
   });
 

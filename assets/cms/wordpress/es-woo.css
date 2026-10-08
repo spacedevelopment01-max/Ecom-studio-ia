@@ -1,0 +1,30 @@
+/*
+ * E-COM STUDIO IA — blocs WooCommerce (fiche produit, boutique, panier, commande) habillés avec les jetons du
+ * design du site : couleurs, typographies, rayons, largeurs. Boutiques seulement.
+ */
+/* WooCommerce : conteneur, titres, prix, boutons, champs, avec les jetons du design. */
+.es-wc { width: min(100% - 2 * var(--gutter, 24px), var(--page-width, 1320px)); margin-inline: auto; padding-block: clamp(32px, 5vw, 72px); color: var(--c-text); }
+.es-wc .wp-block-post-title, .es-wc h1, .es-wc h2, .wc-block-components-title, .wp-block-woocommerce-cart .wc-block-cart__totals-title, .wp-block-woocommerce-checkout h2 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); color: var(--c-text); text-transform: var(--heading-case, none); }
+.es-wc .wp-block-post-title { font-size: clamp(2rem, 1.5rem + 2vw, 3.2rem); line-height: 1.05; margin: 0 0 12px; }
+.es-wc .wp-block-woocommerce-product-price, .es-wc .wc-block-components-product-price { font-size: 1.35rem; color: var(--c-text); }
+.es-wc .wp-block-columns { gap: clamp(24px, 4vw, 64px); align-items: flex-start; }
+.es-wc .woocommerce-product-gallery img, .es-wc .wp-block-woocommerce-product-image-gallery img { border-radius: var(--radius-card, 0); background: var(--c-surface); }
+body .wp-element-button, body .wc-block-components-button:not(.is-link), body .single_add_to_cart_button, body .woocommerce button.button, body .woocommerce a.button, body .wc-block-cart__submit-button, body .wc-block-components-checkout-place-order-button {
+	background: var(--c-accent); color: var(--c-accent-text); border: 0; border-radius: var(--radius-button, 0); font-family: var(--font-body); font-weight: var(--font-body-weight-bold, 600); text-transform: var(--button-transform, none); padding: .9em 1.6em; min-height: 48px; cursor: pointer;
+}
+body .wp-element-button:hover, body .single_add_to_cart_button:hover, body .wc-block-components-button:not(.is-link):hover { filter: brightness(1.06); }
+.es-wc form.cart { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 20px 0; }
+.es-wc form.cart .quantity input, .es-wc select, .wc-block-components-text-input input, .wc-block-components-select select, .wc-block-components-quantity-selector {
+	border: 1px solid var(--c-border); border-radius: calc(var(--radius-button, 0) / 2); background: var(--c-bg); color: var(--c-text); min-height: 44px; padding: .5em .8em; font: inherit;
+}
+.es-wc table.variations { border: 0; margin: 0 0 8px; } .es-wc table.variations th, .es-wc table.variations td { border: 0; padding: 4px 8px 4px 0; }
+.es-wc .woocommerce-product-details__short-description, .es-wc .wp-block-post-excerpt { color: var(--c-muted); line-height: 1.6; }
+.es-wc .product_meta, .es-wc .wp-block-woocommerce-product-meta { font-size: .9rem; color: var(--c-muted); }
+.wp-block-woocommerce-cart, .wp-block-woocommerce-checkout, .woocommerce-cart .es-wc, .woocommerce-checkout .es-wc { color: var(--c-text); }
+.wc-block-components-sidebar-layout .wc-block-components-main, .wc-block-components-sidebar { font-family: var(--font-body); }
+.wc-block-components-notice-banner { border-radius: var(--radius-card, 0); }
+.es-wc .wc-block-product-template .wp-block-post-title, .es-wc .wc-block-grid__product-title { font-family: var(--font-heading); font-size: 1.15rem; }
+.es-wc .wc-block-components-product-image img, .es-wc .wc-block-grid__product-image img { border-radius: var(--radius-card, 0); }
+.woocommerce-store-notice, p.demo_store { background: var(--c-text); color: var(--c-bg); }
+
+@media (prefers-reduced-motion: reduce) { .es-wc *, .wp-block-woocommerce-cart *, .wp-block-woocommerce-checkout * { transition: none !important; animation: none !important; } }

@@ -208,18 +208,22 @@ describe("Theme Engine V2", async () => {
     fs.rmSync(dir, { recursive: true, force: true });
   }, 120_000);
 
-  it("exports WooCommerce / PrestaShop / kits : le contenu des sections V2 est repris (jamais de page vide)", async () => {
-    const { exportWooCommerce, exportPrestaShop, exportKit, fromV2 } = await import("@/lib/theme/platforms");
+  it("exports WordPress / PrestaShop / kits (CMS Engine V2) : le contenu et la composition des sections V2 sont repris", async () => {
+    const { exportKit } = await import("@/lib/theme/platforms");
+    const { exportWordPress } = await import("@/lib/cms-v2/adapters/wordpress");
+    const { exportPrestaShop } = await import("@/lib/cms-v2/adapters/prestashop");
     const { unzipSync, strFromU8 } = await import("fflate");
     const spec = results.artisan.spec;
     const hero = spec.templates.index.sections[spec.templates.index.order[0]];
-    expect(fromV2(hero).type).toBe("hero-split");
-    const woo = unzipSync(new Uint8Array((await exportWooCommerce(spec, libraryLoader)).zip));
-    const wooText = Object.entries(woo).filter(([p]) => /\.(php|html)$/.test(p)).map(([, d]) => strFromU8(d)).join("\n");
-    expect(wooText).toContain(String(hero.settings.heading));
-    expect(wooText).toMatch(/Plâtrerie et plaques de plâtre/);
-    const ps = unzipSync(new Uint8Array((await exportPrestaShop(spec, libraryLoader)).zip));
-    expect(strFromU8(ps["templates/index.tpl"])).toContain(String(hero.settings.heading));
+    const wp = unzipSync(new Uint8Array((await fr(() => exportWordPress(spec, libraryLoader))).zip));
+    const front = strFromU8(wp[Object.keys(wp).find((n) => n.endsWith("templates/front-page.html"))!]);
+    expect(front).toContain('"type":"v2-hero"');
+    expect(front).toContain(String(hero.settings.heading));
+    expect(Object.keys(wp).some((n) => n.endsWith("inc/sections/v2-hero.liquid"))).toBe(true);
+    const ps = unzipSync(new Uint8Array((await fr(() => exportPrestaShop(spec, libraryLoader))).zip));
+    const home = strFromU8(ps["templates/es/home.tpl"]);
+    expect(home).toContain("v2-hero");
+    expect(home).toContain(String(hero.settings.heading));
     const kit = unzipSync(new Uint8Array((await exportKit(spec, libraryLoader, "wix")).zip));
     expect(Object.values(kit).map((d) => strFromU8(d)).join("\n")).toContain(String(hero.settings.heading));
   }, 60_000);

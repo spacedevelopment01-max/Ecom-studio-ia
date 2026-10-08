@@ -1,0 +1,23 @@
+/*
+ * E-COM STUDIO IA — compatibilité PrestaShop (CMS Engine V2).
+ * Sections, en-tête et pied de page gardent les styles du thème Shopify (theme.css, theme-v2.css, es-design.css).
+ * Ici : fond et typographie du site sur les pages natives (produit, catégorie, panier, commande, compte), boutons,
+ * champs et cartes de Classic aux couleurs du site.
+ */
+body { background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); }
+#wrapper { background: transparent; padding-top: clamp(24px, 4vw, 48px); padding-bottom: clamp(32px, 5vw, 72px); box-shadow: none; }
+#wrapper .container { max-width: var(--page-width, 1320px); width: min(100% - 2 * var(--gutter, 24px), var(--page-width, 1320px)); }
+#wrapper h1, #wrapper h2, #wrapper h3, #wrapper .h1, #wrapper .h2, #wrapper .h3, .product-title, .page-header h1 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); color: var(--c-text); text-transform: var(--heading-case, none); letter-spacing: normal; }
+#wrapper .card, #wrapper .card-block, #wrapper .page-content.card, .cart-grid-body .card, .cart-summary, #js-product-list-top, .block-categories, #search_filters { background: var(--c-surface); border: 0; border-radius: var(--radius-card, 0); box-shadow: none; color: var(--c-text); }
+.btn-primary, .btn-primary:focus, .btn-primary:hover, .add-to-cart, .btn-primary.disabled, .btn-primary:disabled { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-text); border-radius: var(--radius-button, 0); text-transform: var(--button-transform, none); font-family: var(--font-body); font-weight: var(--font-body-weight-bold, 600); box-shadow: none; }
+.btn-secondary, .btn-tertiary { border-radius: var(--radius-button, 0); }
+.product-price, .current-price .current-price-value, .price, .cart-summary-line .value { color: var(--c-text); font-family: var(--font-body); }
+.form-control, .custom-select, .bootstrap-touchspin input, .product-variants select { border: 1px solid var(--c-border); border-radius: calc(var(--radius-button, 0) / 2); background: var(--c-bg); color: var(--c-text); }
+a { color: inherit; }
+#wrapper a:not(.btn):hover { color: var(--c-accent); }
+.breadcrumb { background: transparent; padding-left: 0; }
+.breadcrumb li a, .breadcrumb li span { color: var(--c-muted); }
+.es-page-content { padding: 0; background: transparent; }
+.es-form-notice { width: min(100% - 2 * var(--gutter, 24px), var(--page-width, 1320px)); margin: 16px auto; padding: 12px 16px; border-radius: var(--radius-card, 0); background: var(--c-surface); color: var(--c-text); }
+#blockcart-modal .modal-header { background: var(--c-accent); }
+#blockcart-modal .modal-title, #blockcart-modal .close { color: var(--c-accent-text); }
