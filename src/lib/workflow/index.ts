@@ -84,6 +84,7 @@ export const STEP_INFO: Record<StepKind, { fr: string; en: string; module: strin
 };
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const sameAsk = (a: string, b: string) => norm(a).replace(/[\s.!]+/g, " ").trim() === norm(b).replace(/[\s.!]+/g, " ").trim();
 
 /** Paramètres lus dans la demande (rien n'est supposé au-delà de ce qui est écrit ; défauts annoncés). */
 export function parseWorkflowRequest(text: string, intents: Intent[]): { intents: Intent[]; params: WorkflowParams } {
@@ -240,6 +241,10 @@ const planKey = (wid: string) => `wf:${wid}`;
  */
 export async function prepareWorkflow(projectId: string, userId: string, text: string, o: { aiActive?: boolean; videos?: "ai" | "edited" | "none"; creationJobId?: string } = {}): Promise<Workflow> {
   const p = loadProject(projectId);
+  // Même demande déjà préparée, lancée ou terminée dans les dernières 24 h : on la reprend au lieu de tout refaire
+  // (pas de deuxième calendrier, campagne ni export identiques). Une autre formulation crée une nouvelle demande.
+  const same = all<{ id: string; request: string }>("SELECT id, request FROM workflows WHERE project_id = ? AND status IN ('draft','queued','running','done') AND created_at > ? ORDER BY created_at DESC", projectId, now() - 86_400_000).find((w) => sameAsk(w.request, text));
+  if (same) return loadWorkflow(same.id)!;
   const aiActive = o.aiActive ?? workflowAiActive(userId);
   const wid = id();
   const t = now();

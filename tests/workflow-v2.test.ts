@@ -101,6 +101,11 @@ describe("Studio Workflow V2", async () => {
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM posts WHERE plan_id = ?", `wf-social-${w.id}`)!.n).toBe(before.posts);
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM ad_documents WHERE project_id = ?", cosmetic)!.n).toBe(before.ads);
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND role = 'theme-export'", cosmetic)!.n).toBe(before.exports);
+    // La même demande renvoyée (espaces, majuscules, ponctuation près) : la demande déjà faite est reprise, rien n'est refait.
+    const again = await fr(() => wf.prepareWorkflow(cosmetic, vendre.id, "  prépare une campagne publicitaire, mes publications Instagram pour les 30 prochains jours et exporte ma boutique Shopify. ", { aiActive: false }));
+    expect(again.id).toBe(w.id);
+    expect(again.status).toBe("done");
+    expect(one<{ n: number }>("SELECT COUNT(*) n FROM workflows WHERE project_id = ? AND request LIKE '%campagne publicitaire, mes publications%'", cosmetic)!.n).toBe(1);
   }, 240_000);
 
   it("site de plâtrier-peintre (services) : calendrier Facebook de 2 semaines, aucune trace de vente", async () => {
