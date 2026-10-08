@@ -6,6 +6,7 @@ import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, SectionTitle, useActive, type AssetView } from "./common";
 import { FromSiteBadge } from "./existing-site";
 import { CatalogPanel } from "./catalog-panel";
+import { ContentPanel } from "./content-panel";
 import TabActivite from "./tab-activite";
 import type { Fact } from "@/lib/project-types";
 import { useLang, useT } from "../i18n";
@@ -126,6 +127,7 @@ function TabProduit() {
         </div>
       </div>
       <CatalogPanel />
+      <ContentPanel types={["product_page", "category_page", "home_page", "brand_page", "faq", "metadata"]} />
     </div>
   );
 }

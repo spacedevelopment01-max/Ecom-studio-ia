@@ -70,6 +70,12 @@ export const handlers: Record<string, Handler> = {
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
   },
 
+  /** SEO & Copywriting V2 : stratégie, brief, rédaction (locale puis IA contrôlée), barrière SEO, document versionné. */
+  "content.v2": async (ctx) => {
+    const { runContentEngineV2 } = await import("../src/lib/seo-v2/engine");
+    const r = await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    return { docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20) };
+  },
   /** Vidéo V2 : intention, stratégie, script, storyboard, plans, document éditable, rendu, barrière vidéo. */
   "video.v2": async (ctx) => {
     const { runVideoEngineV2 } = await import("../src/lib/video-v2/engine");

@@ -4,7 +4,7 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 7A (Video & UGC Engine V2, fournisseurs simulés).
+Dernière mise à jour : phase 8A (SEO, Copywriting & Blog Engine V2, fournisseurs simulés).
 
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
@@ -14,6 +14,8 @@ Dernière mise à jour : phase 7A (Video & UGC Engine V2, fournisseurs simulés)
 | 5B | Images et recherche (Image Engine V2) | `scripts/benchmark-image-v2.ts` | en attente |
 | 6B | Publicités (Advertising Engine V2) | `scripts/benchmark-ads-v2.ts` | en attente |
 | 7B | Vidéos et UGC (Video Engine V2) | `scripts/benchmark-video-v2.ts` | en attente |
+| 8B | Textes SEO, fiches, pages, articles (SEO Engine V2) | `scripts/benchmark-seo-v2.ts` | en attente |
+| 8B | SEO des fiches Shopify (métachamps) | `scripts/verify-shopify-seo.ts` | en attente — mécanisme NON VÉRIFIÉ |
 
 La qualité visuelle réelle de ces quatre moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
 En 7A, toutes les vidéos ont été produites avec des fournisseurs SIMULÉS (mires, images de test) : aucune vidéo
@@ -82,6 +84,32 @@ synthétique (fournisseur de synthèse vocale, test d'écoute).
 Chemins vidéo encore ANCIENS (conservés pour compatibilité) : onglet Vidéos → `video.render` (`engine/videos.ts`,
 `produceVideo`) et `video.ugc` (`engine/ugc.ts`, `produceUgc`). L'étape « vidéo » des plans passe déjà par le
 Video Engine V2 ; l'onglet Vidéos sera basculé avec l'interface de montage.
+
+## SEO, Copywriting & Blog Engine V2 (phase 8A) — fait et ce qui reste
+
+Fait (fournisseurs simulés, aucun appel payant) : moteur `src/lib/seo-v2/` (intention, recherche de mots-clés en
+HYPOTHÈSES sémantiques, stratégie par projet, brief, faits vérifiés, rédaction locale puis IA contrôlée, 8 politiques
+de barrière `seo_*_v2`, reprises ciblées, idempotence, plafond de coût), documents texte versionnés (table
+`content_documents`), éditeur de blocs dans les onglets Produit / Activité et Blog, retouches en conversation,
+export HTML / Markdown / JSON-LD, Blog V2 rangé dans le blog existant, test navigateur 12/12.
+
+Reste à faire :
+- **Benchmark 8B avec vos clés** (`scripts/benchmark-seo-v2.ts`) : la qualité RÉELLE de la rédaction IA n'est pas
+  jugée — seules des réponses simulées ont été contrôlées. Aucune performance SEO (positions, trafic) n'est mesurée.
+- **Mots-clés** : aucun fournisseur de données (volumes, CPC, difficulté) n'est branché ; l'interface
+  `KeywordDataProvider` est prête. Tout reste « hypothèse sémantique ».
+- **SEO Shopify des fiches** : mécanisme métachamps `global.title_tag / description_tag` NON VÉRIFIÉ ; à contrôler
+  sur une boutique de test avec `scripts/verify-shopify-seo.ts`. Les fiches et pages V2 ne sont pas encore
+  envoyées automatiquement à Shopify (export / copier-coller) ; seuls les articles passent par l'envoi existant du blog.
+- **hreflang** : recommandation seulement, rien n'est installé sur les sites.
+- **Audit technique** : indexation, sitemap, robots.txt, redirections, vitesse = exploration du site en ligne, non faite.
+- **Ancien chemin blog (V1)** toujours en service à côté du Blog V2 (il impose encore 700 mots minimum) ; le
+  remplacer par le V2 après le benchmark 8B.
+- **Espagnol** : textes du moteur et intitulés prêts ; l'interface du studio reste FR/EN ; libellés de métier
+  espagnols repris du français (pas de dictionnaire métier ES).
+- Retouches IA d'un passage : branchées, testées en simulé seulement.
+- Routage : métadonnées et petites réécritures au niveau « standard » (pas de niveau plus économique pour la
+  rédaction dans la politique actuelle) ; pages et articles au niveau « fort ».
 
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 
