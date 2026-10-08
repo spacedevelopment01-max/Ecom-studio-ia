@@ -1,0 +1,894 @@
+{
+  "scenario": "cosmetic",
+  "label": "B — Sérum Éclat, cosmétique premium",
+  "platform": "shopify",
+  "services": false,
+  "export": {
+    "name": "serum-eclat-shopify.zip",
+    "kb": 492,
+    "files": 161,
+    "ms": 90,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 161,
+      "zipKb": 492,
+      "cssKb": 139,
+      "jsKb": 33,
+      "mediaKb": 145,
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 0
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:39511/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 35,
+        "kept": 35,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 589,
+        "kb": 213,
+        "requests": 10
+      },
+      "seo": {
+        "title": "Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:39511/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 32,
+        "kept": 32,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 606,
+        "kb": 283,
+        "requests": 10
+      },
+      "seo": {
+        "title": "Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:39511/p/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 32,
+        "kept": 32,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 2,
+        "c": 2,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 605,
+        "kb": 280,
+        "requests": 10
+      },
+      "seo": {
+        "title": "Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/questions",
+      "c": "http://localhost:39511/p/pages/questions",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 33,
+        "kept": 33,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 585,
+        "kb": 206,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Questions – Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/questions",
+      "c": "http://localhost:39511/p/pages/questions",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 30,
+        "kept": 30,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 596,
+        "kb": 227,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Questions – Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "produit",
+      "device": "desktop",
+      "a": "/products/serum-eclat",
+      "c": "http://localhost:39511/p/products/serum-eclat",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "product-recommendations",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 5,
+        "c": 5,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 635,
+        "kb": 129,
+        "requests": 12
+      },
+      "seo": {
+        "title": "Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 3
+      }
+    },
+    {
+      "name": "produit",
+      "device": "mobile",
+      "a": "/products/serum-eclat",
+      "c": "http://localhost:39511/p/products/serum-eclat",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "product-recommendations",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 38,
+        "kept": 38,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(247, 243, 238)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 5,
+        "c": 5,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 642,
+        "kb": 233,
+        "requests": 12
+      },
+      "seo": {
+        "title": "Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 3
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:39511/p/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 17,
+        "kept": 17,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 594,
+        "kb": 264,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Conditions générales de vente – Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:39511/p/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 14,
+        "kept": 14,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ],
+        "c": [
+          "Cormorant",
+          "Cormorant",
+          "Jost",
+          "Jost"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(239, 231, 221)"
+        ],
+        "c": [
+          "rgba(247, 243, 238, 0.76)",
+          "rgb(239, 231, 221)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 582,
+        "kb": 108,
+        "requests": 7
+      },
+      "seo": {
+        "title": "Conditions générales de vente – Sérum Éclat",
+        "description": " Sérum à la vitamine C pour un teint lumineux. ",
+        "h1": 1,
+        "lang": "fr",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "fidelity": {
+    "diff": 0,
+    "structure": "9/9",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "platformLimit": null,
+  "gate": {
+    "verdict": "PROVISIONAL",
+    "scope": "static",
+    "scopeLabel": "validation statique (fichiers seulement)",
+    "score": 9.9,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 6,
+        "total": 7
+      },
+      "visual": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 9.2,
+        "measured": 3,
+        "total": 8
+      }
+    },
+    "unmeasured": [
+      "installation",
+      "navigation",
+      "buttons",
+      "ecommerce"
+    ],
+    "codes": [],
+    "reason": "contrôle insuffisant pour un résultat final : provisoire",
+    "checkId": "b9vac1mti6sys6v5",
+    "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "static"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "automated",
+      "detail": "Theme Check : 0 erreur(s)"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "static",
+      "detail": "155 fichiers texte analysés"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "static",
+      "detail": "6 média(s), 0 exclu(s)"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "native_editing": {
+      "score": 9,
+      "provenance": "static",
+      "detail": "schémas de sections (réglages et blocs) présents"
+    },
+    "performance": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "temps de chargement local 0.99× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "page_fidelity": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "écart de pixels moyen 0.000, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "suite des sections identique sur 9/9 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "browser_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "browser_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 9.6,
+      "provenance": "browser_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 9,
+      "provenance": "browser_local",
+      "detail": "clavier, contrastes, textes alternatifs : aucun défaut bloquant détecté"
+    }
+  },
+  "issues": [
+    "Shopify : aucune installation sur une boutique réelle (NON VÉRIFIÉ) — Theme Check et rendu local des fichiers exportés seulement"
+  ]
+}

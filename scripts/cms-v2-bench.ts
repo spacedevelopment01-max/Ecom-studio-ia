@@ -63,8 +63,12 @@ type PageResult = { name: string; device: string; a: string; c: string | null; s
 // ------------------------------------------------------------------ navigateur
 const still = "html,body{scroll-behavior:auto!important}*{animation-duration:0s!important;animation-delay:0s!important;transition:none!important}[data-reveal],[data-reveal] .es-w,[data-scroll-words] .es-w{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important}";
 
-async function open(browser: Browser, url: string, mobile: boolean, errors: string[], storage?: string) {
-  const ctx = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }, isMobile: mobile, hasTouch: mobile, locale: "fr-FR", deviceScaleFactor: 1, storageState: storage });
+type Device = "desktop" | "tablet" | "mobile";
+const VIEWPORT: Record<Device, { width: number; height: number }> = { desktop: { width: 1440, height: 900 }, tablet: { width: 820, height: 1180 }, mobile: { width: 390, height: 844 } };
+async function open(browser: Browser, url: string, dev: Device | boolean, errors: string[], storage?: string) {
+  const d: Device = typeof dev === "string" ? dev : dev ? "mobile" : "desktop";
+  const touch = d !== "desktop";
+  const ctx = await browser.newContext({ viewport: VIEWPORT[d], isMobile: d === "mobile", hasTouch: touch, locale: "fr-FR", deviceScaleFactor: 1, storageState: storage });
   const page = await ctx.newPage();
   const net = { bytes: 0, requests: 0 };
   page.on("pageerror", (e) => errors.push(e.message));
@@ -102,10 +106,11 @@ const MEASURE = `(() => {
   const norm = (t) => t.replace(/[\u2018\u2019\u2032]/g, "'").replace(/[\u201c\u201d\u00ab\u00bb]/g, '"').replace(/[\u2013\u2014]/g, "-").replace(/\u2026/g, "...").replace(/\u00a0|\u202f/g, " ").replace(/\\[(À compléter|To complete) (dans|in) [^\\]]*\\]/g, "[$1 …]");
   const textOf = (root) => [...root.querySelectorAll("h1,h2,h3,h4,p,li,a,button,summary,blockquote,dd,dt,span,label")].filter((e) => vis(e) && !e.closest("script,style,[aria-hidden=true],.visually-hidden,.skip-link,[class*=skip-link],#shopify-section-cart-drawer,[data-es-type=cart-drawer]")).map((e) => norm([...e.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent).join(" ")).replace(/\\s+/g, " ").trim()).filter((t) => t.length >= 4 && !/^[\\d\\s.,:€%–-]+$/.test(t));
   const font = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).fontFamily.split(",")[0].replace(/["']/g, "").trim() : ""; };
-  const sections = [...document.querySelectorAll("[data-es-type]")].filter((e) => !e.parentElement.closest("[data-es-type]"));
+  const adapted = (e) => /^(cart-drawer|main-page)$/.test(e.getAttribute("data-es-type"));
+  const sections = [...document.querySelectorAll("[data-es-type]")].filter((e) => !e.parentElement.closest("[data-es-type]") && !adapted(e));
   const bg = sections.map((s) => { let n = s; while (n) { const c = getComputedStyle(n).backgroundColor; if (c && !/rgba\\(0, 0, 0, 0\\)|transparent/.test(c)) return c; n = n.firstElementChild && n.firstElementChild.getBoundingClientRect().height >= n.getBoundingClientRect().height * 0.9 ? n.firstElementChild : null; } return getComputedStyle(document.body).backgroundColor; });
   const imgs = [...document.querySelectorAll("main img, header img, footer img, [data-es-type] img")];
-  const reveal = [...document.querySelectorAll("[data-reveal]")];
+  const reveal = [...document.querySelectorAll("[data-reveal]")].filter((e) => !e.closest("[data-es-type=cart-drawer],[data-es-type=main-page]"));
   const meta = (n) => (document.querySelector('meta[name="' + n + '"]') || {}).content || "";
   return {
     types,
@@ -357,7 +362,9 @@ async function wpEditorTest(browser: Browser, slug: string, dir: string): Promis
   const after = await (await page.request.get(`${WP.url}/`)).text();
   const typesAfter = [...after.matchAll(/data-es-type="([^"]+)"/g)].map((m) => m[1]);
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const visible = after.includes(esc(newText)) || after.includes(newText) || after.includes(newText.replace(/—/g, "&#8212;"));
+  // WordPress applique sa typographie (apostrophes et tirets typographiques) : comparaison sur le texte normalisé.
+  const typo = (x: string) => x.replace(/&#8217;|&#8216;|[\u2018\u2019]/g, "'").replace(/&#8212;|&#8211;|[\u2013\u2014]/g, "-").replace(/&amp;/g, "&").replace(/&#039;/g, "'");
+  const visible = typo(after).includes(typo(newText)) || after.includes(esc(newText));
   const stable = typesAfter.join(",") === typesBefore.join(",");
   const errs = errors.filter((e) => !/ResizeObserver/.test(e));
   await ctx.close();
@@ -433,19 +440,20 @@ for (const s of only) {
     const fidelity: { diff: number[]; struct: boolean[]; textRatio: number[]; fonts: boolean[]; colors: number[]; imgOk: boolean[]; reveal: boolean[]; mobileBlocking: number; desktopBlocking: number; jsErrors: string[]; seo: number[]; a11y: Finding[]; loadRatio: number[]; links: string[] } = { diff: [], struct: [], textRatio: [], fonts: [], colors: [], imgOk: [], reveal: [], mobileBlocking: 0, desktopBlocking: 0, jsErrors: [], seo: [], a11y: [], loadRatio: [], links: [] };
     for (const pg of pages) {
       const right = platform === "shopify" ? (bServer ? bServer.base + pg.a : null) : pg.c;
-      for (const mobile of [false, true]) {
-        const dev = mobile ? "mobile" : "desktop";
+      // Accueil : ordinateur, tablette et téléphone ; autres pages : ordinateur et téléphone.
+      for (const dev of (pg.name === "accueil" ? ["desktop", "tablet", "mobile"] : ["desktop", "mobile"]) as Device[]) {
+        const mobile = dev !== "desktop";
         const pr: PageResult = { name: pg.name, device: dev, a: pg.a, c: right, findings: [] };
         const eA: string[] = [];
-        const A = await open(browser, studio.base + pg.a, mobile, eA);
+        const A = await open(browser, studio.base + pg.a, dev, eA);
         const shotA = await shoot(A.page, path.join(dir, `A-${pg.name}-${dev}`));
         const mA = (await A.page.evaluate(MEASURE)) as Measured;
         await A.ctx.close();
         if (!right) { pr.findings.push({ check: "c", severity: "warning", detail: "non installé : pas de capture C" }); result.pages.push(pr); continue; }
         const eC: string[] = [];
-        const C = await open(browser, right, mobile, eC);
+        const C = await open(browser, right, dev, eC);
         pr.status = C.status;
-        const findings = await visualCheck(C.page, dev, { home: pg.name === "accueil" });
+        const findings = await visualCheck(C.page, dev === "desktop" ? "desktop" : "mobile", { home: pg.name === "accueil" });
         const shotC = await shoot(C.page, path.join(dir, `${platform === "shopify" ? "B" : "C"}-${pg.name}-${dev}`));
         const mC = (await C.page.evaluate(MEASURE)) as Measured;
         if (!mobile && pg.name === "accueil" && platform !== "shopify") fidelity.a11y.push(...(await keyboardCheck(C.page)));
@@ -510,7 +518,7 @@ for (const s of only) {
       measures.colors = { score: clamp(10 * avg(fidelity.colors)), provenance: prov };
       measures.images = { score: clamp(10 * ratio(fidelity.imgOk)), provenance: prov };
       measures.animations = { score: clamp(10 * ratio(fidelity.reveal)), provenance: prov };
-      measures.responsive = { score: fidelity.mobileBlocking ? clamp(10 - 3 * fidelity.mobileBlocking) : 10, provenance: prov, detail: `${fidelity.mobileBlocking} défaut(s) bloquant(s) sur téléphone` };
+      measures.responsive = { score: fidelity.mobileBlocking ? clamp(10 - 3 * fidelity.mobileBlocking) : 10, provenance: prov, detail: `${fidelity.mobileBlocking} défaut(s) de mise en page bloquant(s) sur tablette ou téléphone` };
       measures.data_preservation = { score: clamp(10 * avg(fidelity.textRatio)), provenance: prov };
       measures.seo = { score: clamp(10 * avg(fidelity.seo)), provenance: prov, detail: "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)" };
       const a11yBlocking = [...new Set(fidelity.a11y.filter((f) => f.severity === "blocking").map((f) => `${f.check} : ${f.detail}`))];
@@ -588,7 +596,7 @@ for (const s of only) {
       structure: st.static.codes.includes("invalid_structure") ? "KO" : "OK",
       installAttempted: platform !== "shopify",
       installed: inst?.ok ?? false,
-      pages: result.pages.filter((p: PageResult) => p.c && (p.status ?? 200) < 400).length / 2,
+      pages: `${new Set(result.pages.filter((p: PageResult) => p.c && (p.status ?? 200) < 400).map((p: PageResult) => p.name)).size}/${pages.length}`,
       fidelity: result.fidelity ?? null,
       nativeEditing: result.nativeEditing?.ok ?? null,
       commerce: services ? "sans objet (site de services)" : result.commerce ? (result.commerce.ok === null ? "non vérifiable" : result.commerce.ok ? "OK" : "KO") : "non installé",
@@ -603,6 +611,11 @@ for (const s of only) {
   studio.close();
 }
 await browser.close();
+// Banc partiel (--only / --platforms) : les autres cases de la matrice sont conservées.
+try {
+  const prev = JSON.parse(fs.readFileSync("reports/cms-v2-matrix.json", "utf8")).matrix as typeof matrix;
+  for (const [k, v] of Object.entries(prev)) matrix[k] = { ...v, ...(matrix[k] ?? {}) };
+} catch {}
 fs.writeFileSync("reports/cms-v2-matrix.json", JSON.stringify({ generatedAt: new Date().toISOString(), environment: { wordpress: "6.6 (php 8.2)", woocommerce: "9.3.3", prestashop: "8.1.7", shopify: "Theme Check (aucune boutique réelle)" }, matrix }, null, 2));
 fs.rmSync(WORK, { recursive: true, force: true });
 process.exit(0);

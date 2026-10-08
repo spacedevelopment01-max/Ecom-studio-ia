@@ -1,0 +1,381 @@
+{
+  "generatedAt": "2026-10-08T21:33:56.319Z",
+  "environment": {
+    "wordpress": "6.6 (php 8.2)",
+    "woocommerce": "9.3.3",
+    "prestashop": "8.1.7",
+    "shopify": "Theme Check (aucune boutique réelle)"
+  },
+  "matrix": {
+    "artisan": {
+      "shopify": {
+        "export": "sebastien-blanc-shopify.zip",
+        "structure": "OK",
+        "installAttempted": false,
+        "installed": false,
+        "pages": "3/3",
+        "fidelity": {
+          "diff": 0,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": null,
+        "commerce": "sans objet (site de services)",
+        "seo": 10,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "score": 9.9
+      },
+      "woocommerce": {
+        "export": "es-sebastien-blanc-wordpress.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "3/3",
+        "fidelity": {
+          "diff": 0.024,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": true,
+        "commerce": "sans objet (site de services)",
+        "seo": 10,
+        "blocking": [],
+        "verdict": "FINAL",
+        "scope": "installed_local",
+        "score": 9.9
+      },
+      "prestashop": {
+        "export": "essebastienblanc-prestashop.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "3/3",
+        "fidelity": {
+          "diff": 0.028,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": false,
+        "commerce": "sans objet (site de services)",
+        "seo": 8.9,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "installed_local",
+        "score": 9.6
+      }
+    },
+    "cosmetic": {
+      "shopify": {
+        "export": "serum-eclat-shopify.zip",
+        "structure": "OK",
+        "installAttempted": false,
+        "installed": false,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0,
+          "structure": "9/9",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": null,
+        "commerce": "non installé",
+        "seo": 9.6,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "score": 9.9
+      },
+      "woocommerce": {
+        "export": "es-serum-eclat-woocommerce.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0.012,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": true,
+        "commerce": "OK",
+        "seo": 9.6,
+        "blocking": [],
+        "verdict": "FINAL",
+        "scope": "installed_local",
+        "score": 9.9
+      },
+      "prestashop": {
+        "export": "esserumeclat-prestashop.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0.019,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": false,
+        "commerce": "OK",
+        "seo": 9.1,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "installed_local",
+        "score": 9.6
+      }
+    },
+    "hightech": {
+      "shopify": {
+        "export": "ostral-shopify.zip",
+        "structure": "OK",
+        "installAttempted": false,
+        "installed": false,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0,
+          "structure": "9/9",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": null,
+        "commerce": "non installé",
+        "seo": 9.6,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "score": 9.9
+      },
+      "woocommerce": {
+        "export": "es-ostral-woocommerce.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0.02,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": true,
+        "commerce": "non vérifiable",
+        "seo": 9.6,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "installed_local",
+        "score": 9.8
+      },
+      "prestashop": {
+        "export": "esostral-prestashop.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0.04,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": false,
+        "commerce": "non vérifiable",
+        "seo": 9.1,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "installed_local",
+        "score": 9.6
+      }
+    },
+    "restaurant": {
+      "shopify": {
+        "export": "chez-lison-shopify.zip",
+        "structure": "OK",
+        "installAttempted": false,
+        "installed": false,
+        "pages": "3/3",
+        "fidelity": {
+          "diff": 0,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": null,
+        "commerce": "sans objet (site de services)",
+        "seo": 10,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "score": 9.9
+      },
+      "woocommerce": {
+        "export": "es-chez-lison-wordpress.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "3/3",
+        "fidelity": {
+          "diff": 0.026,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": true,
+        "commerce": "sans objet (site de services)",
+        "seo": 10,
+        "blocking": [],
+        "verdict": "FINAL",
+        "scope": "installed_local",
+        "score": 9.9
+      },
+      "prestashop": {
+        "export": "eschezlison-prestashop.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "3/3",
+        "fidelity": {
+          "diff": 0.026,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": false,
+        "commerce": "sans objet (site de services)",
+        "seo": 8.9,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "installed_local",
+        "score": 9.6
+      }
+    },
+    "saas": {
+      "shopify": {
+        "export": "nuvia-shopify.zip",
+        "structure": "OK",
+        "installAttempted": false,
+        "installed": false,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0,
+          "structure": "9/9",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": null,
+        "commerce": "non installé",
+        "seo": 9.6,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "score": 9.8
+      },
+      "woocommerce": {
+        "export": "es-nuvia-woocommerce.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0.019,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": true,
+        "commerce": "non vérifiable",
+        "seo": 9.6,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "installed_local",
+        "score": 9.9
+      },
+      "prestashop": {
+        "export": "esnuvia-prestashop.zip",
+        "structure": "OK",
+        "installAttempted": true,
+        "installed": true,
+        "pages": "4/4",
+        "fidelity": {
+          "diff": 0.028,
+          "structure": "7/7",
+          "texts": 1,
+          "fonts": 1,
+          "colors": 1,
+          "mobileBlocking": 0,
+          "desktopBlocking": 0,
+          "jsErrors": []
+        },
+        "nativeEditing": false,
+        "commerce": "non vérifiable",
+        "seo": 9.1,
+        "blocking": [],
+        "verdict": "PROVISIONAL",
+        "scope": "installed_local",
+        "score": 9.6
+      }
+    }
+  }
+}

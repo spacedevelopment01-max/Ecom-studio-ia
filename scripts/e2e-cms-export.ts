@@ -43,6 +43,8 @@ async function login(ctx: BrowserContext) {
 }
 
 const uid = one<{ user_id: string }>("SELECT user_id FROM projects WHERE id = ?", PROJECT)!.user_id;
+// Base de démonstration remise en découverte gratuite (test rejouable).
+run("UPDATE subscriptions SET status = 'none', plan = NULL WHERE user_id = ?", uid);
 const desk = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR", acceptDownloads: true });
 const page = await login(desk);
 const blocked = await page.request.get(`${BASE}/api/projects/${PROJECT}/theme/export?platform=shopify`);
@@ -95,6 +97,9 @@ await page.screenshot({ path: `${OUT}/05-exports-precedents.png` });
 const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "fr-FR" });
 const mp = await login(phone);
 await mp.goto(`${BASE}/studio/${PROJECT}/boutique`, { waitUntil: "networkidle" });
+// Téléphone : l'export se trouve dans la barre de l'aperçu (onglet « Aperçu »).
+await mp.getByRole("tab", { name: /Aperçu/ }).click();
+await mp.waitForTimeout(800);
 await mp.getByTitle(/Exporter/).first().click();
 await mp.getByRole("dialog").waitFor();
 await mp.waitForTimeout(800);

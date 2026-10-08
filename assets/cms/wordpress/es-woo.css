@@ -40,3 +40,5 @@ body .wp-element-button:hover, body .single_add_to_cart_button:hover, body .wc-b
 .woocommerce-store-notice, p.demo_store { background: var(--c-text); color: var(--c-bg); }
 
 @media (prefers-reduced-motion: reduce) { .es-wc *, .wp-block-woocommerce-cart *, .wp-block-woocommerce-checkout * { transition: none !important; animation: none !important; } }
+/* Loupe de la galerie (agrandissement) : lisible sur tous les fonds du site. */
+body .es-wc .woocommerce-product-gallery__trigger { background: var(--c-bg); color: var(--c-text); border: 1px solid var(--c-border); }

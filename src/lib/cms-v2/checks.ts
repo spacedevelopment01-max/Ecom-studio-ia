@@ -119,16 +119,24 @@ export async function staticChecks(platform: CmsPlatform, exp: PlatformExport, s
         fs.mkdirSync(path.dirname(path.join(dir, p)), { recursive: true });
         fs.writeFileSync(path.join(dir, p), data);
       }
-      const { check } = await import("@shopify/theme-check-node");
-      const offenses = await check(dir);
-      const errors = offenses.filter((o) => o.severity === 0);
-      stats.themeCheckErrors = errors.length;
-      stats.themeCheckWarnings = offenses.filter((o) => o.severity === 1).length;
-      if (errors.length) {
-        codes.add("theme_check_error");
-        issues.push(...errors.slice(0, 5).map((o) => `Theme Check : ${o.check} ${o.message}`));
+      // Theme Check indisponible : la compatibilité reste NON MESURÉE (jamais comptée comme réussie).
+      let offenses: { severity: number; check: string; message: string }[] | null = null;
+      try {
+        const { check } = await import("@shopify/theme-check-node");
+        offenses = await check(dir);
+      } catch (e) {
+        issues.push(`Theme Check indisponible : ${String((e as Error).message).slice(0, 120)}`);
       }
-      measures.compatibility = { score: errors.length ? 2 : 10, provenance: "automated", detail: `Theme Check : ${errors.length} erreur(s)` };
+      if (offenses) {
+        const errors = offenses.filter((o) => o.severity === 0);
+        stats.themeCheckErrors = errors.length;
+        stats.themeCheckWarnings = offenses.filter((o) => o.severity === 1).length;
+        if (errors.length) {
+          codes.add("theme_check_error");
+          issues.push(...errors.slice(0, 5).map((o) => `Theme Check : ${o.check} ${o.message}`));
+        }
+        measures.compatibility = { score: errors.length ? 2 : 10, provenance: "automated", detail: `Theme Check : ${errors.length} erreur(s)` };
+      }
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }

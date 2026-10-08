@@ -1,0 +1,1003 @@
+{
+  "scenario": "hightech",
+  "label": "C — Ostral, drone (high-tech)",
+  "platform": "woocommerce",
+  "services": false,
+  "export": {
+    "name": "es-ostral-woocommerce.zip",
+    "kb": 1773,
+    "files": 111,
+    "ms": 305,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 111,
+      "zipKb": 1773,
+      "cssKb": 153,
+      "jsKb": 39,
+      "mediaKb": 1233,
+      "phpErrors": 0
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:8081/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.001,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 38,
+        "kept": 38,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 808,
+        "kb": 1285,
+        "requests": 29
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:8081/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.002,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 35,
+        "kept": 35,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 823,
+        "kb": 1285,
+        "requests": 29
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:8081/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.004,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 35,
+        "kept": 35,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 832,
+        "kb": 1285,
+        "requests": 29
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/questions",
+      "c": "http://localhost:8081/questions/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.001,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 796,
+        "kb": 822,
+        "requests": 24
+      },
+      "seo": {
+        "title": "Questions – Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/questions",
+      "c": "http://localhost:8081/questions/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.006,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 38,
+        "kept": 38,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 817,
+        "kb": 822,
+        "requests": 24
+      },
+      "seo": {
+        "title": "Questions – Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "produit",
+      "device": "desktop",
+      "a": "/products/ostral",
+      "c": "http://localhost:8081/product/ostral/",
+      "findings": [
+        {
+          "check": "contrast",
+          "severity": "blocking",
+          "detail": "a.woocommerce-product-gallery__trigger « 🔍 » contraste 1.11:1"
+        }
+      ],
+      "status": 200,
+      "diff": 0.118,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "v2-faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-specs",
+          "v2-faq",
+          "footer"
+        ],
+        "same": false
+      },
+      "texts": {
+        "total": 44,
+        "kept": 37,
+        "missing": [
+          "Prix à définir",
+          "Taxes incluses. Frais de livraison calculés à la commande.",
+          "Ajouter au panier",
+          "Paiement accéléré (Shop Pay, Apple Pay...)",
+          "[À compléter : délais et tarifs de livraison]",
+          "[À compléter : conditions de retour]",
+          "Ajouter au panier"
+        ]
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 9,
+        "c": 9,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 6,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 899,
+        "kb": 1006,
+        "requests": 43
+      },
+      "seo": {
+        "title": "Ostral – Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 4
+      }
+    },
+    {
+      "name": "produit",
+      "device": "mobile",
+      "a": "/products/ostral",
+      "c": "http://localhost:8081/product/ostral/",
+      "findings": [
+        {
+          "check": "contrast",
+          "severity": "blocking",
+          "detail": "a.woocommerce-product-gallery__trigger « 🔍 » contraste 1.11:1"
+        }
+      ],
+      "status": 200,
+      "diff": 0.22,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "v2-faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-specs",
+          "v2-faq",
+          "footer"
+        ],
+        "same": false
+      },
+      "texts": {
+        "total": 41,
+        "kept": 34,
+        "missing": [
+          "Prix à définir",
+          "Taxes incluses. Frais de livraison calculés à la commande.",
+          "Ajouter au panier",
+          "Paiement accéléré (Shop Pay, Apple Pay...)",
+          "[À compléter : délais et tarifs de livraison]",
+          "[À compléter : conditions de retour]",
+          "Ajouter au panier"
+        ]
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 9,
+        "c": 9,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 6,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 859,
+        "kb": 1006,
+        "requests": 43
+      },
+      "seo": {
+        "title": "Ostral – Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 4
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8081/terms-of-service/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.042,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 24,
+        "kept": 24,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 764,
+        "kb": 822,
+        "requests": 24
+      },
+      "seo": {
+        "title": "Conditions générales de vente – Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8081/terms-of-service/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.084,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 21,
+        "kept": 21,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 798,
+        "kb": 822,
+        "requests": 24
+      },
+      "seo": {
+        "title": "Conditions générales de vente – Ostral",
+        "description": "",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "parity": {
+    "sections": 6,
+    "identical": 6,
+    "different": []
+  },
+  "install": {
+    "ok": true,
+    "log": [
+      "WordPress réinitialisé (base vide), permaliens /%postname%/",
+      "WooCommerce 9.3.3 activé (pages natives panier / commande / compte, EUR, virement de test hors ligne)",
+      "thème installé et activé : es-ostral",
+      "CSV livré importé par l'importateur de WooCommerce : 1 produit(s), 0 erreur(s) ; photos du dossier assets/es, produits publiés (étapes du mode d'emploi)",
+      "produit : ostral (simple, prix aucun, achetable : non)"
+    ],
+    "productUrl": "http://localhost:8081/product/ostral/",
+    "purchasable": false,
+    "themeDir": "es-ostral",
+    "pageUrls": {
+      "questions": "http://localhost:8081/questions/",
+      "livraison-et-retours": "http://localhost:8081/livraison-et-retours/",
+      "contact": "http://localhost:8081/contact/",
+      "mentions-legales": "http://localhost:8081/mentions-legales/",
+      "terms-of-service": "http://localhost:8081/terms-of-service/",
+      "privacy-policy": "http://localhost:8081/privacy-policy-2/",
+      "refund-policy": "http://localhost:8081/refund-policy/",
+      "legal-notice": "http://localhost:8081/legal-notice/"
+    }
+  },
+  "fidelity": {
+    "diff": 0.02,
+    "structure": "7/7",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "links": {
+    "checked": 16,
+    "bad": []
+  },
+  "form": {
+    "ok": true,
+    "detail": "formulaire de /contact/ : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+  },
+  "commerce": {
+    "ok": null,
+    "detail": [
+      "produit sans prix confirmé dans le studio : non vendable (aucun prix inventé) ; ajout au panier et commande non testables"
+    ]
+  },
+  "nativeEditing": {
+    "ok": true,
+    "stable": true,
+    "detail": "texte « Drone pliable à caméra stabilisée » modifié dans Apparence › Éditeur (barre latérale du bloc), enregistré : visible sur le site ; sections avant/après : identiques"
+  },
+  "platformLimit": null,
+  "gate": {
+    "verdict": "PROVISIONAL",
+    "scope": "installed_local",
+    "scopeLabel": "validation locale installée",
+    "score": 9.8,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "visual": {
+        "score": 9.9,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 9.5,
+        "measured": 7,
+        "total": 8
+      }
+    },
+    "unmeasured": [
+      "ecommerce"
+    ],
+    "codes": [],
+    "reason": "contrôle insuffisant pour un résultat final : provisoire",
+    "checkId": "yeoa88k1vmkeunyr",
+    "message": "Votre thème WordPress / WooCommerce est généré et a passé les vérifications disponibles (validation locale installée). Son installation sur une boutique réelle reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "accepté et activé par le gestionnaire de thèmes de la plateforme"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "WordPress 6.6 / WooCommerce 9.3.3"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "aucun secret du studio dans les pages servies ; scripts du thème seulement"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "images servies chargées ; médias refusés exclus de l'export"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "native_editing": {
+      "score": 9,
+      "provenance": "installed_local",
+      "detail": "texte « Drone pliable à caméra stabilisée » modifié dans Apparence › Éditeur (barre latérale du bloc), enregistré : visible sur le site ; sections avant/après : identiques"
+    },
+    "performance": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "temps de chargement local 1.23× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "installation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "WordPress réinitialisé (base vide), permaliens /%postname%/ ; WooCommerce 9.3.3 activé (pages natives panier / commande / compte, EUR, virement de test hors ligne) ; thème installé et activé : es-ostral ; CSV livré importé par l'importateur de WooCommerce : 1 produit(s), 0 erreur(s) ; photos du dossier assets/es, produits publiés (étapes du mode d'emploi) ; produit : ostral (simple, prix aucun, achetable : non)"
+    },
+    "page_fidelity": {
+      "score": 9.2,
+      "provenance": "installed_local",
+      "detail": "écart de pixels moyen 0.020, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "suite des sections identique sur 7/7 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 9.6,
+      "provenance": "installed_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 8,
+      "provenance": "installed_local",
+      "detail": "contrast : a.woocommerce-product-gallery__trigger « 🔍 » contraste 1.11:1"
+    },
+    "navigation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "16 liens vérifiés, 0 en erreur"
+    },
+    "buttons": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "16 liens vérifiés, 0 en erreur"
+    },
+    "forms": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "formulaire de /contact/ : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+    },
+    "edit_stability": {
+      "score": 10,
+      "provenance": "installed_local"
+    }
+  },
+  "issues": [
+    "contrast : a.woocommerce-product-gallery__trigger « 🔍 » contraste 1.11:1",
+    "e-commerce non vérifiable : produit sans prix confirmé dans le studio : non vendable (aucun prix inventé) ; ajout au panier et commande non testables"
+  ]
+}

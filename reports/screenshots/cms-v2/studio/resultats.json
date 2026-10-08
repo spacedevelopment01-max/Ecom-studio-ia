@@ -1,0 +1,57 @@
+[
+  {
+    "test": "Découverte gratuite : export refusé (réservé aux forfaits)",
+    "ok": true,
+    "detail": "402"
+  },
+  {
+    "test": "Étapes affichées : Créer → Personnaliser → Plateforme → Vérifier → Exporter → Installer",
+    "ok": true,
+    "detail": "1. Créer › | 2. Personnaliser › | 3. Plateforme › | 4. Vérifier › | 5. Exporter › | 6. Installer"
+  },
+  {
+    "test": "Capacités réelles de la plateforme (registre) affichées",
+    "ok": true,
+    "detail": "17 lignes"
+  },
+  {
+    "test": "Informations à compléter listées (jamais inventées)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "Export Shopify téléchargé après contrôle (nom versionné)",
+    "ok": true,
+    "detail": "serum-eclat-shopify-v1.zip"
+  },
+  {
+    "test": "Verdict du dernier export affiché, sans « prête à vendre »",
+    "ok": true,
+    "detail": "Dernier export Provisoire (fichiers contrôlés) Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier"
+  },
+  {
+    "test": "Export WordPress / WooCommerce depuis le même écran",
+    "ok": true,
+    "detail": "es-serum-eclat-woocommerce-v1.zip"
+  },
+  {
+    "test": "Exports rangés dans les fichiers et verdicts enregistrés (quality_checks)",
+    "ok": true,
+    "detail": "7 export(s), 7 contrôle(s)"
+  },
+  {
+    "test": "Téléphone : écran d'export sans débordement horizontal",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "Aucune erreur JavaScript",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "Aucun appel d'IA (0 €)",
+    "ok": true,
+    "detail": "0"
+  }
+]

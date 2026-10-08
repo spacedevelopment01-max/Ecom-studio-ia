@@ -28,3 +28,13 @@ a { color: inherit; }
 .tabs .nav-tabs { border-bottom: 1px solid var(--c-border); }
 .tabs .nav-tabs .nav-link { color: var(--c-text); opacity: .75; border: 0; background: transparent; }
 .tabs .nav-tabs .nav-link.active, .tabs .nav-tabs .nav-link:hover { color: var(--c-text); opacity: 1; border: 0; box-shadow: inset 0 -2px 0 var(--c-accent); }
+/* Textes des modules natifs (quantité, partage, réassurance) : couleur du site, lisibles sur fond clair ou sombre. */
+#wrapper .control-label, #wrapper .product-quantity, #wrapper .social-sharing, #wrapper .social-sharing > span, #wrapper .block-title, #wrapper #block-reassurance, #wrapper #block-reassurance span, #wrapper .blockreassurance_product, #wrapper .blockreassurance_product span, #wrapper .blockreassurance_product p, #wrapper #block-reassurance p, #wrapper .product-information, #wrapper .product-description { color: var(--c-text) !important; }
+/*
+ * Sections du site : la typographie de BASE de Classic (paragraphes 15 px gris #7a7a7a, tailles et couleur des titres,
+ * marges des listes) est annulée — comme sur Shopify, seuls les styles du site s'appliquent. Sélecteurs d'élément
+ * seuls (les classes du thème restent prioritaires) ; constaté sur les captures A/C de la phase 11A.
+ */
+:where([data-es-type]) p, :where([data-es-type]) h1, :where([data-es-type]) h2, :where([data-es-type]) h3, :where([data-es-type]) h4, :where([data-es-type]) h5, :where([data-es-type]) h6, :where([data-es-type]) ul, :where([data-es-type]) ol, :where([data-es-type]) dl {
+	font-size: revert; font-weight: revert; font-family: revert; color: revert; line-height: revert; margin: revert; text-transform: revert; letter-spacing: revert;
+}

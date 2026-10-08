@@ -14,6 +14,13 @@ const nextConfig: NextConfig = {
     "liquidjs",
     "playwright",
     "nodemailer",
+    // Theme Check (contrôle des exports Shopify) lit ses fichiers de configuration à côté de son code : il ne doit
+    // pas être empaqueté par Next (sinon « configs/recommended.yml » introuvable et export en erreur).
+    "@shopify/theme-check-node",
+    "@shopify/theme-check-common",
+    "@shopify/theme-check-docs-updater",
+    "@shopify/theme-graph",
+    "@shopify/liquid-html-parser",
   ],
   images: { unoptimized: true },
   poweredByHeader: false,

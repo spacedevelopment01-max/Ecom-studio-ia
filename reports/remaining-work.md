@@ -235,6 +235,11 @@ Reste à faire (limites de 11A) :
 - Accessibilité : contrôles automatiques (contraste, clavier, textes alternatifs) ; pas de lecteur d'écran réel.
 - Chromium seulement ; ni Safari, ni Firefox, ni vraie tablette.
 - Connexions directes WordPress / PrestaShop : non disponibles (installation par ZIP).
+- Shopify SaaS : section d'avis vide sur la fiche produit (venue de 10A, signalée par le contrôle visuel, non corrigée).
+- WooCommerce : contraste signalé sur la loupe de la galerie produit (texte masqué par WooCommerce : probable fausse
+  alerte, à vérifier).
+- PrestaShop : export testé par le gestionnaire de thèmes en ligne de commande (même code que l'écran « Thème et
+  logo », écran lui-même non cliqué).
 
 ## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
 

@@ -164,6 +164,8 @@ describe("CMS Engine V2", async () => {
     // Page du module : pas de $php_self figé (liens des autres langues cassés, erreur 500 constatée).
     expect(strFromU8(z["dependencies/modules/esstudio/controllers/front/page.php"])).not.toMatch(/\$php_self\s*=/);
     expect(textOf(z)).not.toMatch(/es-footer__payment"[^>]*>\s*<li/);
+    // Typographie de base de Classic (paragraphes 15 px gris…) annulée dans les sections du site (écart A/C constaté).
+    expect(strFromU8(z["assets/css/es-ps.css"])).toMatch(/:where\(\[data-es-type\]\) p,/);
     const c = await fr(() => checkCmsExport("prestashop", exp, shop, { projectId: ids.cosmetic }));
     expect(c.static.codes).toEqual([]);
   }, 120_000);
@@ -242,6 +244,48 @@ describe("CMS Engine V2", async () => {
     expect(st.capabilities.some((c) => c.key === "cart")).toBe(true);
     expect(exportStatus(ids.artisan, services, "woocommerce", "fr").capabilities.some((c) => c.key === "cart")).toBe(false);
     expect(missingInfo(services).every((m) => /^\[(À compléter|To complete)/.test(m))).toBe(true);
+  });
+
+  it("exports reproductibles (mêmes octets), noms de fichiers sûrs, sans collision", async () => {
+    for (const pf of ["shopify", "woocommerce", "prestashop", "wix"] as const) {
+      const a = await fr(() => cmsExport(pf, shop, libraryLoader, { projectId: ids.cosmetic }));
+      const b = await fr(() => cmsExport(pf, shop, libraryLoader, { projectId: ids.cosmetic }));
+      expect(Buffer.compare(a.zip, b.zip), pf).toBe(0);
+      const names = Object.keys(files(a.zip));
+      expect(new Set(names.map((n) => n.toLowerCase())).size, pf).toBe(names.length);
+      for (const n of names) expect(n, pf).not.toMatch(/(^\/|\.\.|\\|[<>:"|?*\u0000-\u001f])/);
+      expect(a.name).toMatch(/^[a-z0-9-]+\.zip$/);
+    }
+  }, 180_000);
+
+  it("reprise ciblée : un défaut corrigeable donne RETRY une fois, jamais une boucle de reprises", () => {
+    const m = ALL_MEASURED("installed_local");
+    const first = gateCmsExport({ platform: "woocommerce", services: false, measures: m, codes: ["layout_mismatch"], issues: ["section v2-hero : espacements perdus"] });
+    expect(first.decision.verdict).toBe("RETRY");
+    const after = gateCmsExport({ platform: "woocommerce", services: false, measures: m, codes: ["layout_mismatch"], issues: [], attempt: POLICIES.cms_export_v2.maxRetries });
+    expect(after.decision.verdict).not.toBe("RETRY");
+    expect(after.decision.verdict).not.toBe("FINAL");
+  });
+
+  it("navigation et SEO de base livrés : menus du studio, titre de page géré par WordPress, langue", async () => {
+    const z = files((await fr(() => cmsExport("woocommerce", shop, libraryLoader, { projectId: ids.cosmetic }))).zip);
+    const site = JSON.parse(strFromU8(z[Object.keys(z).find((k) => k.endsWith("inc/site.json"))!]));
+    expect(Object.keys(site.menus ?? {}).length).toBeGreaterThan(0);
+    const php = strFromU8(z[Object.keys(z).find((k) => k.endsWith("inc/es-theme.php"))!]);
+    expect(php).toContain("add_theme_support('title-tag')");
+    expect(php).toContain("register_nav_menus");
+    const ps = files((await fr(() => cmsExport("prestashop", shop, libraryLoader, { projectId: ids.cosmetic }))).zip);
+    const header = strFromU8(ps["templates/es/header.tpl"]);
+    for (const l of shop.store.menus["main-menu"]?.links ?? []) expect(header).toContain(l.title);
+  }, 120_000);
+
+  it("versions : chaque export est rangé avec sa plateforme, son numéro de version et son verdict", async () => {
+    const { saveAsset } = await import("@/lib/library");
+    for (const v of [1, 2]) await saveAsset({ projectId: ids.cosmetic, userId: u.id, data: Buffer.from("zip"), name: `t-woocommerce-v${v}.zip`, mime: "application/zip", kind: "archive", role: "theme-export", folderKey: "shop.exports", origin: "export", meta: { platform: "woocommerce", themeVersion: v, gate: { verdict: "PROVISIONAL" }, scope: "static", message: "m" } });
+    const st = exportStatus(ids.cosmetic, shop, "woocommerce", "fr");
+    expect(st.exports.map((e) => e.themeVersion).sort()).toEqual([1, 2]);
+    expect(st.exports.every((e) => e.verdict === "PROVISIONAL")).toBe(true);
+    expect(exportStatus(ids.cosmetic, shop, "prestashop", "fr").exports).toEqual([]);
   });
 
   it("aucun appel d'IA ni réseau pendant les exports", async () => {

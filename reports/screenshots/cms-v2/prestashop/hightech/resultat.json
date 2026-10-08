@@ -1,0 +1,989 @@
+{
+  "scenario": "hightech",
+  "label": "C — Ostral, drone (high-tech)",
+  "platform": "prestashop",
+  "services": false,
+  "export": {
+    "name": "esostral-prestashop.zip",
+    "kb": 1479,
+    "files": 48,
+    "ms": 432,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 48,
+      "zipKb": 1479,
+      "cssKb": 151,
+      "jsKb": 34,
+      "mediaKb": 1016
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 38,
+        "kept": 38,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 2025,
+        "kb": 1639,
+        "requests": 41
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 35,
+        "kept": 35,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 888,
+        "kb": 1749,
+        "requests": 41
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.001,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-media",
+          "v2-split",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 35,
+        "kept": 35,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 5,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 18,
+        "c": 18,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 861,
+        "kb": 1639,
+        "requests": 41
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/questions",
+      "c": "http://localhost:8082/pages/questions",
+      "findings": [],
+      "status": 200,
+      "diff": 0.053,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 877,
+        "kb": 1176,
+        "requests": 35
+      },
+      "seo": {
+        "title": "Questions",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/questions",
+      "c": "http://localhost:8082/pages/questions",
+      "findings": [],
+      "status": 200,
+      "diff": 0.075,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-faq",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 38,
+        "kept": 38,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(130, 126, 185)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 14,
+        "c": 14,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 809,
+        "kb": 1286,
+        "requests": 35
+      },
+      "seo": {
+        "title": "Questions",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "produit",
+      "device": "desktop",
+      "a": "/products/ostral",
+      "c": "http://localhost:8082/en/home/31-ostral.html",
+      "findings": [
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "p « Drone pliable à caméra stabilisée, pensé » contraste 4.07:1"
+        }
+      ],
+      "status": 200,
+      "diff": 0.236,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "v2-faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-specs",
+          "v2-faq",
+          "footer"
+        ],
+        "same": false
+      },
+      "texts": {
+        "total": 44,
+        "kept": 37,
+        "missing": [
+          "Prix à définir",
+          "Taxes incluses. Frais de livraison calculés à la commande.",
+          "Ajouter au panier",
+          "Paiement accéléré (Shop Pay, Apple Pay...)",
+          "[À compléter : délais et tarifs de livraison]",
+          "[À compléter : conditions de retour]",
+          "Ajouter au panier"
+        ]
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 9,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 6,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 1928,
+        "kb": 1370,
+        "requests": 54
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": "Drone pliable à caméra stabilisée, pensé pour filmer en voyage.",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "produit",
+      "device": "mobile",
+      "a": "/products/ostral",
+      "c": "http://localhost:8082/en/home/31-ostral.html",
+      "findings": [
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "p « Drone pliable à caméra stabilisée, pensé » contraste 4.07:1"
+        },
+        {
+          "check": "tap-target",
+          "severity": "warning",
+          "detail": "button.btn «  » 24×23 px (< 24 px)"
+        },
+        {
+          "check": "tap-target",
+          "severity": "warning",
+          "detail": "button.btn «  » 24×23 px (< 24 px)"
+        }
+      ],
+      "status": 200,
+      "diff": 0.215,
+      "structure": {
+        "a": [
+          "header",
+          "main-product",
+          "v2-specs",
+          "v2-faq",
+          "product-recommendations",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-specs",
+          "v2-faq",
+          "footer"
+        ],
+        "same": false
+      },
+      "texts": {
+        "total": 41,
+        "kept": 34,
+        "missing": [
+          "Prix à définir",
+          "Taxes incluses. Frais de livraison calculés à la commande.",
+          "Ajouter au panier",
+          "Paiement accéléré (Shop Pay, Apple Pay...)",
+          "[À compléter : délais et tarifs de livraison]",
+          "[À compléter : conditions de retour]",
+          "Ajouter au panier"
+        ]
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Space Grotesk",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(13, 15, 19)",
+          "rgb(22, 26, 32)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 9,
+        "c": 5,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 6,
+        "c": 6,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 936,
+        "kb": 1370,
+        "requests": 54
+      },
+      "seo": {
+        "title": "Ostral",
+        "description": "Drone pliable à caméra stabilisée, pensé pour filmer en voyage.",
+        "h1": 1,
+        "lang": "en-US",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8082/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0.046,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 24,
+        "kept": 24,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 798,
+        "kb": 1285,
+        "requests": 35
+      },
+      "seo": {
+        "title": "Conditions générales de vente",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8082/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0.103,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 21,
+        "kept": 21,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ],
+        "c": [
+          "Space Grotesk",
+          "Inter",
+          "Inter",
+          "Inter"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ],
+        "c": [
+          "rgba(13, 15, 19, 0.76)",
+          "rgb(22, 26, 32)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 803,
+        "kb": 1176,
+        "requests": 35
+      },
+      "seo": {
+        "title": "Conditions générales de vente",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "install": {
+    "ok": true,
+    "log": [
+      "PrestaShop 8.1.7 : thème Classic réactivé, thème et module précédents retirés",
+      "gestionnaire de thèmes de PrestaShop : installed / enabled ; module compagnon esstudio actif : oui",
+      "produit créé comme dans Catalogue › Produits (adresse simplifiée « ostral », prix aucun : non vendable, sans déclinaison)"
+    ],
+    "productUrl": "http://localhost:8082/en/home/31-ostral.html",
+    "purchasable": false,
+    "themeDir": "esostral"
+  },
+  "fidelity": {
+    "diff": 0.04,
+    "structure": "7/7",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "links": {
+    "checked": 16,
+    "bad": []
+  },
+  "form": {
+    "ok": true,
+    "detail": "formulaire de /pages/contact : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+  },
+  "commerce": {
+    "ok": null,
+    "detail": [
+      "produit sans prix confirmé dans le studio : non vendable (aucun prix inventé) ; ajout au panier et commande non testables"
+    ]
+  },
+  "nativeEditing": {
+    "ok": false,
+    "detail": "PrestaShop : catalogue, prix, stocks, commandes et messages modifiables dans l'administration ; textes et mise en page des sections seulement dans les fichiers du thème/module (pas d'éditeur visuel)"
+  },
+  "platformLimit": "modification native limitée (pas d'éditeur visuel de thème dans PrestaShop)",
+  "gate": {
+    "verdict": "PROVISIONAL",
+    "scope": "installed_local",
+    "scopeLabel": "validation locale installée",
+    "score": 9.6,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "visual": {
+        "score": 9.8,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 8.9,
+        "measured": 6,
+        "total": 8
+      }
+    },
+    "unmeasured": [
+      "ecommerce"
+    ],
+    "codes": [],
+    "reason": "contrôle insuffisant pour un résultat final : provisoire",
+    "checkId": "ldm7bv82ek3sem0t",
+    "message": "Votre thème PrestaShop est généré et a passé les vérifications disponibles (validation locale installée). Son installation sur une boutique réelle reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "accepté et activé par le gestionnaire de thèmes de la plateforme"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "PrestaShop 8.1.7 (thème enfant de Classic)"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "aucun secret du studio dans les pages servies ; scripts du thème seulement"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "images servies chargées ; médias refusés exclus de l'export"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "native_editing": {
+      "score": 5,
+      "provenance": "installed_local",
+      "detail": "PrestaShop : catalogue, prix, stocks, commandes et messages modifiables dans l'administration ; textes et mise en page des sections seulement dans les fichiers du thème/module (pas d'éditeur visuel)"
+    },
+    "performance": {
+      "score": 9.8,
+      "provenance": "installed_local",
+      "detail": "temps de chargement local 1.62× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "installation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "PrestaShop 8.1.7 : thème Classic réactivé, thème et module précédents retirés ; gestionnaire de thèmes de PrestaShop : installed / enabled ; module compagnon esstudio actif : oui ; produit créé comme dans Catalogue › Produits (adresse simplifiée « ostral », prix aucun : non vendable, sans déclinaison)"
+    },
+    "page_fidelity": {
+      "score": 8.4,
+      "provenance": "installed_local",
+      "detail": "écart de pixels moyen 0.040, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "suite des sections identique sur 7/7 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 9.1,
+      "provenance": "installed_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 9,
+      "provenance": "installed_local",
+      "detail": "clavier, contrastes, textes alternatifs : aucun défaut bloquant détecté"
+    },
+    "navigation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "16 liens vérifiés, 0 en erreur"
+    },
+    "buttons": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "16 liens vérifiés, 0 en erreur"
+    },
+    "forms": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "formulaire de /pages/contact : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+    }
+  },
+  "issues": [
+    "e-commerce non vérifiable : produit sans prix confirmé dans le studio : non vendable (aucun prix inventé) ; ajout au panier et commande non testables"
+  ]
+}

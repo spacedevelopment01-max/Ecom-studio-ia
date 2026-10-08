@@ -212,7 +212,7 @@ ${Object.entries(sc).map(([k, v]) => `- ${k}: background ${v.background} · text
   );
   if (services) {
     files[textsFile] = strToU8([textPage("index", L("Accueil", "Home")), ...spec.store.pages.map((pg) => textPage(`page.${pg.template_suffix}`, pg.title))].filter(Boolean).join("\n\n"));
-    return { zip: Buffer.from(zipSync(files, { level: 6 })), name: `${slug(spec.store.shopName)}-kit-${platform}.zip`, kind: "kit" as const };
+    return { zip: Buffer.from(zipSync(files, { level: 6, mtime: new Date("2026-01-01T00:00:00Z") })), name: `${slug(spec.store.shopName)}-kit-${platform}.zip`, kind: "kit" as const };
   }
   files[textsFile] = strToU8([textPage("index", L("Accueil", "Home")), textPage("product", L("Fiche produit", "Product page")), textPage("page.about", L("Notre histoire", "Our story")), textPage("page.faq", "FAQ"), textPage("page.contact", "Contact"), textPage("page.shipping", L("Livraison et retours", "Shipping and returns"))].join("\n\n"));
   const csvEsc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -221,7 +221,7 @@ ${Object.entries(sc).map(([k, v]) => `- ${k}: background ${v.background} · text
       .concat(storeProducts(spec).flatMap((p) => (p.variants.length ? p.variants : [{ title: "", options: [""], price: p.price, available: true }]).map((v) => [p.title, strip(p.description_html), (v.price ?? p.price) != null ? ((v.price ?? p.price)! / 100).toFixed(2) : "", v.title === "Default Title" ? "" : v.title, (v as any).sku ?? "", p.images.map((f) => `medias/${f}`).join(" ")].map(csvEsc).join(","))))
       .join("\n"),
   );
-  return { zip: Buffer.from(zipSync(files, { level: 6 })), name: `${slug(spec.store.shopName)}-kit-${platform}.zip`, kind: "kit" as const };
+  return { zip: Buffer.from(zipSync(files, { level: 6, mtime: new Date("2026-01-01T00:00:00Z") })), name: `${slug(spec.store.shopName)}-kit-${platform}.zip`, kind: "kit" as const };
 }
 
 export const PLATFORMS = [

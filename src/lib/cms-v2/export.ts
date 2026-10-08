@@ -18,6 +18,13 @@ import type { CmsPlatform, PlatformExport } from "./types";
 
 export const CMS_PLATFORMS: CmsPlatform[] = ["shopify", "woocommerce", "prestashop", "wix", "squarespace"];
 
+/** Nom de fichier sûr partout (sans accents ni caractères spéciaux) : « sérum-éclat » → « serum-eclat ». */
+export function safeFileName(name: string): string {
+  const ext = name.match(/\.[a-z0-9]+$/i)?.[0] ?? "";
+  const base = name.slice(0, name.length - ext.length).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
+  return (base || "export") + ext.toLowerCase();
+}
+
 /** Génère l'export d'une plateforme. Les médias refusés ou fatals ne sont JAMAIS exportés. */
 export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: AssetLoader, opts: { projectId?: string } = {}): Promise<PlatformExport> {
   const spec = adaptForPlatform(spec0, platform);
@@ -32,6 +39,7 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
     const k = await exportKit(spec, guarded, platform);
     exp = { platform, zip: k.zip, name: k.name, kind: "kit", files: [], issues: [], sections: [], media: Object.keys(spec.files).filter((f) => !forbidden.has(f)) };
   }
+  exp.name = safeFileName(exp.name);
   for (const f of forbidden) exp.issues.push({ code: "rejected_media", severity: "blocking", detail: `média ${f} refusé : non exporté (à remplacer dans le studio)` });
   return exp;
 }

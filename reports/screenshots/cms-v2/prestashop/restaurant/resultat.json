@@ -1,0 +1,778 @@
+{
+  "scenario": "restaurant",
+  "label": "D — Chez Lison, restaurant",
+  "platform": "prestashop",
+  "services": true,
+  "export": {
+    "name": "eschezlison-prestashop.zip",
+    "kb": 247,
+    "files": 33,
+    "ms": 320,
+    "issues": []
+  },
+  "static": {
+    "codes": [],
+    "issues": [],
+    "stats": {
+      "files": 33,
+      "zipKb": 247,
+      "cssKb": 151,
+      "jsKb": 34,
+      "mediaKb": 0
+    },
+    "verdict": "PROVISIONAL",
+    "scope": "static"
+  },
+  "pages": [
+    {
+      "name": "accueil",
+      "device": "desktop",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 41,
+        "kept": 41,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 1956,
+        "kb": 767,
+        "requests": 36
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "tablet",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 39,
+        "kept": 39,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 849,
+        "kb": 657,
+        "requests": 36
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "accueil",
+      "device": "mobile",
+      "a": "/",
+      "c": "http://localhost:8082/",
+      "findings": [],
+      "status": 200,
+      "diff": 0.001,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-split",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 39,
+        "kept": 39,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 15,
+        "c": 15,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 865,
+        "kb": 657,
+        "requests": 36
+      },
+      "seo": {
+        "title": "PrestaShop",
+        "description": "",
+        "h1": 1,
+        "lang": "fr-FR",
+        "canonical": true,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "desktop",
+      "a": "/pages/la-carte",
+      "c": "http://localhost:8082/pages/la-carte",
+      "findings": [],
+      "status": 200,
+      "diff": 0.023,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 36,
+        "kept": 36,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 785,
+        "kb": 767,
+        "requests": 35
+      },
+      "seo": {
+        "title": "La carte",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "page",
+      "device": "mobile",
+      "a": "/pages/la-carte",
+      "c": "http://localhost:8082/pages/la-carte",
+      "findings": [],
+      "status": 200,
+      "diff": 0.032,
+      "structure": {
+        "a": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "v2-hero",
+          "v2-index",
+          "v2-facts",
+          "v2-cta",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 34,
+        "kept": 34,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Libre Baskerville",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(245, 238, 225)",
+          "rgb(245, 238, 225)",
+          "rgb(236, 226, 207)",
+          "rgb(32, 24, 19)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 13,
+        "c": 13,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 778,
+        "kb": 767,
+        "requests": 35
+      },
+      "seo": {
+        "title": "La carte",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "desktop",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8082/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0.033,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 24,
+        "kept": 24,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Karla",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Karla",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 805,
+        "kb": 767,
+        "requests": 35
+      },
+      "seo": {
+        "title": "Conditions générales de prestation",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    },
+    {
+      "name": "legal",
+      "device": "mobile",
+      "a": "/policies/terms-of-service",
+      "c": "http://localhost:8082/policies/terms-of-service",
+      "findings": [],
+      "status": 200,
+      "diff": 0.094,
+      "structure": {
+        "a": [
+          "header",
+          "footer"
+        ],
+        "c": [
+          "header",
+          "footer"
+        ],
+        "same": true
+      },
+      "texts": {
+        "total": 22,
+        "kept": 22,
+        "missing": []
+      },
+      "fonts": {
+        "a": [
+          "Libre Baskerville",
+          "Karla",
+          "Karla",
+          "Karla"
+        ],
+        "c": [
+          "Libre Baskerville",
+          "Karla",
+          "Karla",
+          "Karla"
+        ]
+      },
+      "colors": {
+        "a": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(32, 24, 19)"
+        ],
+        "c": [
+          "rgba(245, 238, 225, 0.76)",
+          "rgb(32, 24, 19)"
+        ]
+      },
+      "images": {
+        "a": 0,
+        "c": 0,
+        "broken": 0
+      },
+      "reveal": {
+        "a": 0,
+        "c": 0,
+        "hidden": 0
+      },
+      "perf": {
+        "loadMs": 853,
+        "kb": 657,
+        "requests": 35
+      },
+      "seo": {
+        "title": "Conditions générales de prestation",
+        "description": "",
+        "h1": 2,
+        "lang": "fr-FR",
+        "canonical": false,
+        "viewport": true,
+        "alt": 0
+      }
+    }
+  ],
+  "install": {
+    "ok": true,
+    "log": [
+      "PrestaShop 8.1.7 : thème Classic réactivé, thème et module précédents retirés",
+      "gestionnaire de thèmes de PrestaShop : installed / enabled ; module compagnon esstudio actif : oui"
+    ],
+    "productUrl": null,
+    "purchasable": false,
+    "themeDir": "eschezlison"
+  },
+  "fidelity": {
+    "diff": 0.026,
+    "structure": "7/7",
+    "texts": 1,
+    "fonts": 1,
+    "colors": 1,
+    "mobileBlocking": 0,
+    "desktopBlocking": 0,
+    "jsErrors": []
+  },
+  "links": {
+    "checked": 5,
+    "bad": []
+  },
+  "form": {
+    "ok": true,
+    "detail": "formulaire de /pages/contact : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+  },
+  "nativeEditing": {
+    "ok": false,
+    "detail": "PrestaShop : catalogue, prix, stocks, commandes et messages modifiables dans l'administration ; textes et mise en page des sections seulement dans les fichiers du thème/module (pas d'éditeur visuel)"
+  },
+  "platformLimit": "modification native limitée (pas d'éditeur visuel de thème dans PrestaShop)",
+  "gate": {
+    "verdict": "PROVISIONAL",
+    "scope": "installed_local",
+    "scopeLabel": "validation locale installée",
+    "score": 9.6,
+    "dimensions": {
+      "technical": {
+        "score": 10,
+        "measured": 7,
+        "total": 7
+      },
+      "visual": {
+        "score": 9.9,
+        "measured": 7,
+        "total": 7
+      },
+      "commercial": {
+        "score": 8.8,
+        "measured": 6,
+        "total": 7
+      }
+    },
+    "unmeasured": [],
+    "codes": [],
+    "reason": "note suffisante mais critère faible (native_editing)",
+    "checkId": "x1c7bi8le1dpfwun",
+    "message": "Votre thème PrestaShop est généré et a passé les vérifications disponibles (validation locale installée). Son installation sur une boutique réelle reste à vérifier."
+  },
+  "measures": {
+    "structure": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "accepté et activé par le gestionnaire de thèmes de la plateforme"
+    },
+    "compatibility": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "PrestaShop 8.1.7 (thème enfant de Classic)"
+    },
+    "security": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "aucun secret du studio dans les pages servies ; scripts du thème seulement"
+    },
+    "media_integrity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "images servies chargées ; médias refusés exclus de l'export"
+    },
+    "data_preservation": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "native_editing": {
+      "score": 5,
+      "provenance": "installed_local",
+      "detail": "PrestaShop : catalogue, prix, stocks, commandes et messages modifiables dans l'administration ; textes et mise en page des sections seulement dans les fichiers du thème/module (pas d'éditeur visuel)"
+    },
+    "performance": {
+      "score": 9.7,
+      "provenance": "installed_local",
+      "detail": "temps de chargement local 1.65× celui de l'aperçu (aucun score Lighthouse)"
+    },
+    "installation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "PrestaShop 8.1.7 : thème Classic réactivé, thème et module précédents retirés ; gestionnaire de thèmes de PrestaShop : installed / enabled ; module compagnon esstudio actif : oui"
+    },
+    "page_fidelity": {
+      "score": 9,
+      "provenance": "installed_local",
+      "detail": "écart de pixels moyen 0.026, textes conservés 100 %"
+    },
+    "section_fidelity": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "suite des sections identique sur 7/7 pages comparables"
+    },
+    "typography": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "colors": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "images": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "animations": {
+      "score": 10,
+      "provenance": "installed_local"
+    },
+    "responsive": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "0 défaut(s) de mise en page bloquant(s) sur tablette ou téléphone"
+    },
+    "seo": {
+      "score": 8.9,
+      "provenance": "installed_local",
+      "detail": "titre, un seul H1, langue, viewport, textes alternatifs (le référencement réel n'est pas mesuré)"
+    },
+    "accessibility": {
+      "score": 9,
+      "provenance": "installed_local",
+      "detail": "clavier, contrastes, textes alternatifs : aucun défaut bloquant détecté"
+    },
+    "navigation": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "5 liens vérifiés, 0 en erreur"
+    },
+    "buttons": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "5 liens vérifiés, 0 en erreur"
+    },
+    "forms": {
+      "score": 10,
+      "provenance": "installed_local",
+      "detail": "formulaire de /pages/contact : 1 message enregistré en base, retour « Merci, votre message a bien été enregistré. »"
+    }
+  },
+  "issues": []
+}
