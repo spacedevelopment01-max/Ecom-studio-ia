@@ -33,7 +33,7 @@ export const STEP_DELIVERABLES: Record<StepKind, Deliverable[]> = {
   theme: ["theme_home", "theme_custom"],
   theme_edit: [],
   blog: ["blog_article", "seo_article_v2"],
-  social: ["social_plan", "social_post"],
+  social: ["social_plan", "social_post", "social_post_v2"],
   ad: ["ad_copy", "ad_v2"],
   video: ["video_clip", "ugc_clip", "ugc_frame", "video_v2", "video_shot_v2"],
   quality_review: [],
@@ -67,6 +67,7 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "ads.v2": ["ad"],
   "video.v2": ["video"],
   "content.v2": ["seo"],
+  "social.v2.produce": ["social"],
 };
 
 /** Actions qui demandent EXPRESSÉMENT une image générée (aucune recherche de photo libre imposée avant). */

@@ -65,6 +65,7 @@ export const ACTION_INTENTS: Record<string, Intent[]> = {
   "copy.build": ["WRITE_PRODUCT_COPY"],
   "seo.generate": ["SEO"],
   "content.v2": ["SEO"],
+  "social.v2.produce": ["SOCIAL"],
   "shop.build": ["CREATE_SHOP"],
   "shop.direction": ["CREATE_THEME"],
   "theme.custom": ["CREATE_THEME"],

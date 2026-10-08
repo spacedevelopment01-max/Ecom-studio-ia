@@ -318,38 +318,23 @@ export const handlers: Record<string, Handler> = {
    * Publication programmée : transition atomique scheduled → publishing,
    * vérification anti-doublon côté plateforme, puis publication.
    */
+  /** Social V2 — niveau 2 : production d'un lot (payante seulement avec l'estimation acceptée, dans le plafond). */
+  "social.v2.produce": async (ctx) => {
+    const { produceBatch } = await import("../src/lib/social-v2/production");
+    const { realSocialDeps } = await import("../src/lib/social-v2/deps");
+    const { aiActiveFor } = await import("../src/lib/ai/access");
+    const p = loadProject(ctx.payload.projectId);
+    const deps = realSocialDeps(ctx, p, aiActiveFor(p.userId));
+    return ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null }));
+  },
   "post.publish": async (ctx) => {
-    const { postId } = ctx.payload;
-    // Publication réservée aux forfaits : revérifiée au moment de l'envoi (forfait résilié depuis la programmation).
-    const owner = one<{ user_id: string; project_id: string; network: string }>("SELECT pr.user_id, p.project_id, p.network FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId);
-    if (owner && !planOfUserId(owner.user_id)) {
-      const msg = L("Publication non envoyée : la publication sur les réseaux est réservée aux forfaits. Choisissez un forfait dans « Mon compte », puis reprogrammez-la.", "Post not sent: publishing to social networks is included in the plans. Choose a plan in \"My account\", then reschedule it.");
-      const moved = run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", msg, now(), postId);
-      if (moved.changes) notify(owner.user_id, owner.project_id, L("Une publication n'a pas été envoyée", "A post was not sent"), msg, "error");
-      return { skipped: "sans forfait" };
-    }
-    const claimed = run("UPDATE posts SET status = 'publishing', attempts = attempts + 1, updated_at = ? WHERE id = ? AND status IN ('scheduled','publishing')", now(), postId);
-    if (!claimed.changes) return { skipped: "état modifié (annulée, déplacée ou déjà publiée)" };
-    const post = one<PostRow & { user_id: string }>("SELECT p.*, pr.user_id FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId)!;
-    const c = connectionFor(post.connection_id, post.user_id);
-    try {
-      if (!c) throw new PermanentError(L("Aucun compte connecté pour cette publication. Choisissez un compte puis reprogrammez.", "No account connected for this post. Choose an account, then reschedule."));
-      const existing = await alreadyPublished(post, c);
-      if (existing) {
-        run("UPDATE posts SET status = 'published', remote_id = ?, published_at = ?, error = NULL, updated_at = ? WHERE id = ?", existing, now(), now(), postId);
-        return { remoteId: existing, deduplicated: true };
-      }
-      ctx.progress(0.3, L(`Envoi vers ${c.provider}`, `Sending to ${c.provider}`));
-      const r = await publishPost(post, c);
-      run("UPDATE posts SET status = 'published', remote_id = ?, remote_url = ?, published_at = ?, error = ?, updated_at = ? WHERE id = ?", r.remoteId, r.url ?? null, now(), r.note ?? null, now(), postId);
-      return r;
-    } catch (e: any) {
-      if (e?.reconnect && c) markConnection(c, "expired", e.message);
-      const permanent = e instanceof PermanentError || ctx.job.attempts >= ctx.job.max_attempts;
-      run("UPDATE posts SET status = ?, error = ?, updated_at = ? WHERE id = ?", permanent ? "failed" : "scheduled", String(e?.message ?? e).slice(0, 1000), now(), postId);
-      if (permanent) notify(post.user_id, post.project_id, L("Une publication a échoué", "A post failed"), L(`${post.network} : ${String(e?.message ?? e).slice(0, 200)}`, `${post.network}: ${String(e?.message ?? e).slice(0, 200)}`), "error");
-      throw e;
-    }
+    // Social Engine V2 : prise en charge atomique, version approuvée, journal des tentatives, état incertain en cas
+    // de réponse perdue (jamais de nouvel envoi à l'aveugle). Le résultat est enregistré sur la publication.
+    const { publishOne } = await import("../src/lib/social-v2/scheduler");
+    const { realPublisher } = await import("../src/lib/social-v2/deps");
+    ctx.progress(0.3, L("Envoi de la publication", "Sending the post"));
+    const r = await publishOne(ctx.payload.postId, realPublisher);
+    return r.outcome === "skipped" ? { skipped: r.detail } : r;
   },
 
   "files.classify": async (ctx) => {

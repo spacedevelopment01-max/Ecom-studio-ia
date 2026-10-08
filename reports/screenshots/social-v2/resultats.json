@@ -1,0 +1,142 @@
+[
+  [
+    "Studio social V2 affiché dans l'onglet Calendrier",
+    true,
+    ""
+  ],
+  [
+    "Stratégie éditoriale (piliers, rien d'inventé annoncé)",
+    true,
+    ""
+  ],
+  [
+    "Planification gratuite : 28 publications (14 jours × 2)",
+    true,
+    "28"
+  ],
+  [
+    "Exactement 2 publications par jour",
+    true,
+    "[2,2,2,2,2,2,2,2,2,2,2,2,2,2]"
+  ],
+  [
+    "Statut initial « planifiée » (rien de programmé)",
+    true,
+    ""
+  ],
+  [
+    "Production gratuite par lots : publications avec visuel « à valider »",
+    true,
+    "{\"review\":28}"
+  ],
+  [
+    "Vue mois : publications visibles",
+    true,
+    "28 cartes"
+  ],
+  [
+    "Vue mois : chaque carte reste dans sa case",
+    true,
+    "0px"
+  ],
+  [
+    "Vue semaine",
+    true,
+    ""
+  ],
+  [
+    "Vue jour",
+    true,
+    ""
+  ],
+  [
+    "Vue liste : publications triées",
+    true,
+    "28"
+  ],
+  [
+    "Glisser-déposer : date changée, heure conservée",
+    true,
+    "2026-10-09 → 2026-10-12"
+  ],
+  [
+    "Modification manuelle enregistrée (légende + heure)",
+    true,
+    ""
+  ],
+  [
+    "Approbation de cette version",
+    true,
+    "approved "
+  ],
+  [
+    "Programmation (compte simulé, aucun envoi)",
+    true,
+    "scheduled"
+  ],
+  [
+    "Modification après approbation : réapprobation exigée",
+    true,
+    "review"
+  ],
+  [
+    "Après rechargement : légende, statut et date conservés",
+    true,
+    ""
+  ],
+  [
+    "Badge « Programmée » dans la liste",
+    true,
+    ""
+  ],
+  [
+    "Conversation « Supprime les publications du dimanche » (locale)",
+    true,
+    "4 supprimées, 28 → 24"
+  ],
+  [
+    "Calendrier en pause",
+    true,
+    ""
+  ],
+  [
+    "Calendrier repris",
+    true,
+    ""
+  ],
+  [
+    "Filtre « Programmées »",
+    true,
+    ""
+  ],
+  [
+    "Comptes : CONNECTÉ (simulé) / PRÊT À CONNECTER / EXPORT",
+    true,
+    ""
+  ],
+  [
+    "Statistiques : aucune mesure inventée (indisponible / non connecté)",
+    true,
+    ""
+  ],
+  [
+    "Aucune publication envoyée (0 publiée, 0 en cours)",
+    true,
+    ""
+  ],
+  [
+    "Téléphone : calendrier sans débordement horizontal (page, studio, cases, cartes)",
+    true,
+    "0px"
+  ],
+  [
+    "Téléphone : éditeur utilisable (date et heure, sans débordement)",
+    true,
+    "0px"
+  ],
+  [
+    "Aucune erreur JavaScript",
+    true,
+    ""
+  ]
+]
