@@ -4,7 +4,7 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 8A (SEO, Copywriting & Blog Engine V2, fournisseurs simulés).
+Dernière mise à jour : phase 8A validée techniquement (SEO, Copywriting & Blog Engine V2) ; 8B reportée.
 
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
@@ -14,8 +14,8 @@ Dernière mise à jour : phase 8A (SEO, Copywriting & Blog Engine V2, fournisseu
 | 5B | Images et recherche (Image Engine V2) | `scripts/benchmark-image-v2.ts` | en attente |
 | 6B | Publicités (Advertising Engine V2) | `scripts/benchmark-ads-v2.ts` | en attente |
 | 7B | Vidéos et UGC (Video Engine V2) | `scripts/benchmark-video-v2.ts` | en attente |
-| 8B | Textes SEO, fiches, pages, articles (SEO Engine V2) | `scripts/benchmark-seo-v2.ts` | en attente |
-| 8B | SEO des fiches Shopify (métachamps) | `scripts/verify-shopify-seo.ts` | en attente — mécanisme NON VÉRIFIÉ |
+| 8B | Textes SEO, fiches, pages, articles (SEO Engine V2) | `scripts/benchmark-seo-v2.ts` | **reporté** par décision du propriétaire |
+| 8B | SEO des fiches Shopify (métachamps) | `scripts/verify-shopify-seo.ts` | **reporté** — mécanisme NON VÉRIFIÉ |
 
 La qualité visuelle réelle de ces quatre moteurs n'est PAS prouvée tant que ces benchmarks n'ont pas été faits.
 En 7A, toutes les vidéos ont été produites avec des fournisseurs SIMULÉS (mires, images de test) : aucune vidéo
@@ -93,18 +93,28 @@ de barrière `seo_*_v2`, reprises ciblées, idempotence, plafond de coût), docu
 `content_documents`), éditeur de blocs dans les onglets Produit / Activité et Blog, retouches en conversation,
 export HTML / Markdown / JSON-LD, Blog V2 rangé dans le blog existant, test navigateur 12/12.
 
+Validé techniquement par le propriétaire (8 octobre 2026) : stratégie SEO V2, intentions, fiches produit et pages
+de services, Blog V2, SEO local, multilingue, éditeur de contenus, barrière SEO, intégration Project Brain et
+Router V2 (877/877 tests, 12/12 tests navigateur, TypeScript et build OK). **NON VALIDÉS** : qualité réelle des
+rédactions IA et performances SEO. **Phase 8B reportée** par décision du propriétaire.
+
 Reste à faire :
+- **Intégration Shopify (limite principale)** : le SEO des fiches passe par les métachamps
+  `global.title_tag / description_tag` — mécanisme **NON VÉRIFIÉ** (aucun essai sur une vraie boutique ; script
+  `scripts/verify-shopify-seo.ts` prêt). Les fiches produit, pages de collection, accueil, « À propos », pages de
+  prestation et FAQ rédigées en V2 ne sont **pas envoyées automatiquement** à Shopify : export HTML / Markdown /
+  JSON-LD ou copier-coller. Seuls les articles du Blog V2 passent par l'envoi Shopify existant du blog. Les
+  données structurées (JSON-LD) ne sont pas installées dans le thème Shopify.
+- **Ancien Blog V1 toujours en service** à côté du Blog V2 : « Écrire un article » de l'onglet Blog utilise encore
+  l'ancien moteur (700 mots minimum, mots-clés devinés par l'IA sans étiquette « hypothèse », pas de stratégie ni de
+  contrôle de cannibalisation, pas de versions). Les deux cohabitent dans la même liste d'articles ; à remplacer par
+  le Blog V2 après le benchmark 8B.
 - **Benchmark 8B avec vos clés** (`scripts/benchmark-seo-v2.ts`) : la qualité RÉELLE de la rédaction IA n'est pas
   jugée — seules des réponses simulées ont été contrôlées. Aucune performance SEO (positions, trafic) n'est mesurée.
 - **Mots-clés** : aucun fournisseur de données (volumes, CPC, difficulté) n'est branché ; l'interface
   `KeywordDataProvider` est prête. Tout reste « hypothèse sémantique ».
-- **SEO Shopify des fiches** : mécanisme métachamps `global.title_tag / description_tag` NON VÉRIFIÉ ; à contrôler
-  sur une boutique de test avec `scripts/verify-shopify-seo.ts`. Les fiches et pages V2 ne sont pas encore
-  envoyées automatiquement à Shopify (export / copier-coller) ; seuls les articles passent par l'envoi existant du blog.
 - **hreflang** : recommandation seulement, rien n'est installé sur les sites.
 - **Audit technique** : indexation, sitemap, robots.txt, redirections, vitesse = exploration du site en ligne, non faite.
-- **Ancien chemin blog (V1)** toujours en service à côté du Blog V2 (il impose encore 700 mots minimum) ; le
-  remplacer par le V2 après le benchmark 8B.
 - **Espagnol** : textes du moteur et intitulés prêts ; l'interface du studio reste FR/EN ; libellés de métier
   espagnols repris du français (pas de dictionnaire métier ES).
 - Retouches IA d'un passage : branchées, testées en simulé seulement.
