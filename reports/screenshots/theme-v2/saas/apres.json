@@ -1,0 +1,115 @@
+{
+  "scenario": "saas",
+  "engine": "v2",
+  "label": "apres",
+  "projectId": "yiwp790aih2vs1hp",
+  "version": 11,
+  "secondary": "/pages/fonctionnalites",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0.00020041662982788922,
+        "lcp": 140,
+        "height": 2931,
+        "sections": 3,
+        "loadMs": 602,
+        "requests": 16,
+        "kb": 780,
+        "jsKb": 66,
+        "imagesKb": 213
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 136,
+        "height": 2579,
+        "sections": 3,
+        "loadMs": 624,
+        "requests": 8,
+        "kb": 390,
+        "jsKb": 33,
+        "imagesKb": 106
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/pages/fonctionnalites",
+      "findings": [],
+      "perf": {
+        "cls": 0.00020041662982788922,
+        "lcp": 176,
+        "height": 2254,
+        "sections": 4,
+        "loadMs": 595,
+        "requests": 7,
+        "kb": 338,
+        "jsKb": 33,
+        "imagesKb": 54
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/pages/fonctionnalites",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 112,
+        "height": 2310,
+        "sections": 4,
+        "loadMs": 592,
+        "requests": 7,
+        "kb": 338,
+        "jsKb": 33,
+        "imagesKb": 54
+      }
+    }
+  },
+  "blocking": 0,
+  "warnings": 0,
+  "structure": {
+    "home": [
+      "v2-hero",
+      "v2-split",
+      "v2-cta"
+    ],
+    "header": [
+      "header:logo-left"
+    ],
+    "footer": [
+      "footer:columns"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "page.shipping",
+      "blog",
+      "article",
+      "password",
+      "page.v2-faq",
+      "page.v2-contact",
+      "page.v2-features",
+      "page.v2-pricing"
+    ],
+    "fonts": [
+      "dm_sans_n7",
+      "dm_sans_n4"
+    ],
+    "direction": "nocturne",
+    "v2": {
+      "site": "saas",
+      "language": "product"
+    }
+  }
+}

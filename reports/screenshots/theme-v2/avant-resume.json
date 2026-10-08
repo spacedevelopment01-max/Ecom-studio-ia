@@ -1,0 +1,81 @@
+{
+  "artisan": {
+    "version": 9,
+    "blocking": 0,
+    "warnings": 14,
+    "home": [
+      "hero-fullbleed",
+      "marquee",
+      "services-list",
+      "timeline",
+      "testimonials",
+      "practical-info",
+      "faq",
+      "cta-banner"
+    ]
+  },
+  "cosmetic": {
+    "version": 11,
+    "blocking": 1,
+    "warnings": 6,
+    "home": [
+      "hero-editorial",
+      "image-with-text",
+      "features-grid",
+      "rich-text",
+      "scroll-story",
+      "horizontal-gallery",
+      "faq",
+      "newsletter"
+    ]
+  },
+  "hightech": {
+    "version": 10,
+    "blocking": 1,
+    "warnings": 2,
+    "home": [
+      "hero-fullbleed",
+      "rich-text",
+      "features-grid",
+      "image-with-text",
+      "scroll-story",
+      "horizontal-gallery",
+      "faq",
+      "cta-banner"
+    ]
+  },
+  "restaurant": {
+    "version": 13,
+    "blocking": 0,
+    "warnings": 14,
+    "home": [
+      "hero-split",
+      "rich-text",
+      "wave-divider",
+      "services-list",
+      "wave-divider",
+      "how-to",
+      "wave-divider",
+      "testimonials",
+      "practical-info",
+      "faq",
+      "wave-divider",
+      "cta-banner"
+    ]
+  },
+  "saas": {
+    "version": 9,
+    "blocking": 1,
+    "warnings": 2,
+    "home": [
+      "hero-fullbleed",
+      "rich-text",
+      "features-grid",
+      "image-with-text",
+      "scroll-story",
+      "horizontal-gallery",
+      "faq",
+      "cta-banner"
+    ]
+  }
+}

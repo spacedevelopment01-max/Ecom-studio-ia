@@ -187,6 +187,77 @@
     ]
   },
   {
+    "name": "Design system V2",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Langage visuel des sites créés par le Theme Engine V2. « Aucun » garde le style des directions précédentes."
+      },
+      {
+        "type": "select",
+        "id": "ds_language",
+        "label": "Langage visuel",
+        "default": "none",
+        "options": [
+          {
+            "value": "none",
+            "label": "Aucun (style des directions)"
+          },
+          {
+            "value": "craft",
+            "label": "Atelier précis (artisans)"
+          },
+          {
+            "value": "maison",
+            "label": "Maison éditoriale (soin, beauté)"
+          },
+          {
+            "value": "precision",
+            "label": "Précision technique (high-tech)"
+          },
+          {
+            "value": "bistro",
+            "label": "Bistrot (restaurants)"
+          },
+          {
+            "value": "product",
+            "label": "Produit numérique (SaaS)"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "ds_ratio",
+        "min": 112,
+        "max": 150,
+        "step": 2,
+        "label": "Rapport de l'échelle des titres",
+        "default": 125,
+        "info": "Écart entre deux tailles de titres. Plus il est grand, plus la hiérarchie est contrastée."
+      },
+      {
+        "type": "select",
+        "id": "ds_density",
+        "label": "Densité",
+        "default": "balanced",
+        "options": [
+          {
+            "value": "airy",
+            "label": "Aérée"
+          },
+          {
+            "value": "balanced",
+            "label": "Équilibrée"
+          },
+          {
+            "value": "compact",
+            "label": "Resserrée"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "name": "Mise en page",
     "settings": [
       {

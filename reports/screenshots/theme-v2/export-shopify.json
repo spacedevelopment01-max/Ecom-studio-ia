@@ -1,0 +1,98 @@
+{
+  "artisan": {
+    "ok": true,
+    "files": 157,
+    "zipKb": 376,
+    "themeCheck": {
+      "errors": 0,
+      "warnings": 0,
+      "firstErrors": []
+    },
+    "missing": [],
+    "skipped": [],
+    "templates": 19,
+    "pages": [
+      "prestations (page.v2-services)",
+      "questions (page.v2-faq)",
+      "contact (page.v2-contact)",
+      "mentions-legales"
+    ]
+  },
+  "cosmetic": {
+    "ok": true,
+    "files": 161,
+    "zipKb": 492,
+    "themeCheck": {
+      "errors": 0,
+      "warnings": 0,
+      "firstErrors": []
+    },
+    "missing": [],
+    "skipped": [],
+    "templates": 17,
+    "pages": [
+      "questions (page.v2-faq)",
+      "livraison-et-retours",
+      "contact (page.v2-contact)",
+      "mentions-legales"
+    ]
+  },
+  "hightech": {
+    "ok": true,
+    "files": 167,
+    "zipKb": 1118,
+    "themeCheck": {
+      "errors": 0,
+      "warnings": 0,
+      "firstErrors": []
+    },
+    "missing": [],
+    "skipped": [],
+    "templates": 17,
+    "pages": [
+      "questions (page.v2-faq)",
+      "livraison-et-retours",
+      "contact (page.v2-contact)",
+      "mentions-legales"
+    ]
+  },
+  "restaurant": {
+    "ok": true,
+    "files": 157,
+    "zipKb": 374,
+    "themeCheck": {
+      "errors": 0,
+      "warnings": 0,
+      "firstErrors": []
+    },
+    "missing": [],
+    "skipped": [],
+    "templates": 19,
+    "pages": [
+      "la-carte (page.v2-menu)",
+      "questions (page.v2-faq)",
+      "contact (page.v2-contact)",
+      "mentions-legales"
+    ]
+  },
+  "saas": {
+    "ok": true,
+    "files": 162,
+    "zipKb": 564,
+    "themeCheck": {
+      "errors": 0,
+      "warnings": 0,
+      "firstErrors": []
+    },
+    "missing": [],
+    "skipped": [],
+    "templates": 19,
+    "pages": [
+      "fonctionnalites (page.v2-features)",
+      "tarifs (page.v2-pricing)",
+      "questions (page.v2-faq)",
+      "contact (page.v2-contact)",
+      "mentions-legales"
+    ]
+  }
+}

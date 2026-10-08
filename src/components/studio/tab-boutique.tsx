@@ -45,6 +45,8 @@ type ThemeData = {
   messages: { id: string; role: string; content: string; attachments: string[]; selection: any; theme_version_id: string | null; job_id: string | null; created_at: number }[];
   directions: DirectionCard[];
   library: LibraryItem[];
+  /** Theme Engine V2 : langage visuel, plan des pages et informations à compléter (absent pour l'ancien moteur). */
+  v2?: null | { language: string; site: string; plan: { key: string; title: string; handle: string; url: string; inNav: boolean; complete: boolean; missing: string[] }[]; todo: string[]; languages: { id: string; label: string }[] };
 };
 type Selection = { template: string; section: string; block?: string; text?: string; tag?: string; type?: string; kind?: string; path?: string; role?: string; src?: string } | null;
 
@@ -276,7 +278,7 @@ export default function TabBoutique() {
 
   // Sections de l'en-tête et du pied de page avec leurs choix de disposition (panneau « Disposition »).
   const layoutSections: LayoutSection[] = (theme?.current?.structure ?? [])
-    .filter((tp) => tp.template === "group:header" || tp.template === "group:footer")
+    .filter((tp) => tp.template === "group:header" || tp.template === "group:footer" || (!!theme?.v2 && tp.template === pageTemplate(page, theme)))
     .flatMap((tp) => tp.sections.filter((x) => x.layout?.length).map((x) => ({ template: tp.template, id: x.id, type: x.type, name: x.name, locked: x.locked, layout: x.layout })));
   async function applyLayout(sec: LayoutSection, key: string, value: string | boolean, label: string) {
     setLayoutBusy(true);
@@ -349,7 +351,14 @@ export default function TabBoutique() {
     );
 
   const cur = theme.current;
-  const pages = [
+  const v2Shop = !!theme.v2 && /^shop/.test(theme.v2.site);
+  // Site V2 : les pages réellement prévues par le plan (un site de services ou un SaaS n'a ni fiche produit ni panier).
+  const pages = theme.v2 ? [
+    { path: "/", label: t("Accueil", "Home") },
+    ...(v2Shop ? [{ path: `/products/${cur.product.handle}`, label: t("Fiche produit", "Product page") }, { path: "/cart", label: t("Panier", "Cart") }] : []),
+    ...theme.v2.plan.map((p) => ({ path: p.url, label: p.complete ? p.title : t(`${p.title} (à compléter)`, `${p.title} (to complete)`) })),
+    { path: "/404", label: t("Page 404", "404 page") },
+  ] : [
     { path: "/", label: t("Accueil", "Home") },
     { path: `/products/${cur.product.handle}`, label: t("Fiche produit", "Product page") },
     { path: "/collections/all", label: t("Collection", "Collection") },
@@ -483,6 +492,7 @@ export default function TabBoutique() {
     </div>
   ) : (
     <div className="h-full overflow-y-auto p-4">
+      {theme.v2 && <V2Panel v2={theme.v2} busy={!!chatJobs.some((j) => j.type === "shop.build")} onPage={(url) => { setPage(url); setView("preview"); }} onRebuild={async (language) => { if (!confirm(t("Recomposer le site dans ce langage visuel ? Une nouvelle version est créée (gratuite, sans IA) ; l'actuelle reste restaurable.", "Recompose the website in this visual language? A new version is created (free, no AI); the current one stays restorable."))) return; try { await api(`/api/projects/${id}/theme/build`, { body: { engine: "v2", language }, lang: cl.lang }); toast("ok", t("Recomposition lancée.", "Recomposition started.")); reloadProject(); } catch (e) { toast("bad", (e as Error).message); } }} />}
       <p className="mb-4 text-xs leading-relaxed text-muted">{t("Glissez les sections par la poignée pour les réordonner. Le « + » entre deux sections en ajoute une à cet endroit.", "Drag sections by their handle to reorder them. The “+” between two sections adds one at that spot.")}</p>
       {cur.structure.filter((tp) => ["group:header", pageTemplate(page, theme), "group:footer"].includes(tp.template)).map((tp) => {
         const isPage = !tp.template.startsWith("group:");
@@ -504,7 +514,7 @@ export default function TabBoutique() {
                     </button>
                     <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`))} disabled={i === 0} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Monter", "Move up")}><ArrowUp className="size-3.5" /></button>
                     <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`))} disabled={i === tp.sections.length - 1} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Descendre", "Move down")}><ArrowDown className="size-3.5" /></button>
-                    {!isPage && s.layout?.length ? (
+                    {(!isPage || theme.v2) && s.layout?.length ? (
                       <button onClick={() => setLayoutOpen(true)} className="grid size-7 place-items-center rounded-lg text-signal hover:bg-signal-soft" title={t("Choisir la disposition", "Choose the layout")} aria-label={t(`Disposition : ${s.name}`, `Layout: ${s.name}`)}><PanelTop className="size-3.5" /></button>
                     ) : null}
                     <button onClick={() => ops([{ op: "toggle_section", template: tp.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? t("affichée", "shown") : t("masquée", "hidden")}`)} className="grid size-7 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? t("Afficher", "Show") : t("Masquer", "Hide")}>{s.disabled ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</button>
@@ -562,7 +572,7 @@ export default function TabBoutique() {
           <>
 {layoutSections.length > 0 && (
             <button onClick={() => { const open = !layoutOpen; setLayoutOpen(open); if (open && window.innerWidth < 1024) setView("structure"); }} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", layoutOpen ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} aria-pressed={layoutOpen} aria-controls="layout-panel" data-layout-open>
-              <PanelTop className="size-3.5" /> {t("En-tête et pied de page", "Header & footer")}
+              <PanelTop className="size-3.5" /> {theme.v2 ? t("Disposition", "Layout") : t("En-tête et pied de page", "Header & footer")}
             </button>
           )}
 <button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: t("En bas de la page", "At the bottom of the page") })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> {t("Section", "Section")}</button>
@@ -649,6 +659,35 @@ export default function TabBoutique() {
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} />
       <ThemeGallery services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} />
+    </div>
+  );
+}
+
+/** Theme Engine V2 : langage visuel (recomposition gratuite), pages prévues et informations à compléter. */
+function V2Panel({ v2, onRebuild, onPage, busy }: { v2: NonNullable<ThemeData["v2"]>; onRebuild: (language: string) => void; onPage: (url: string) => void; busy: boolean }) {
+  const t = useT();
+  const [lang, setLang] = useState(v2.language);
+  return (
+    <div className="mb-5 min-w-0 overflow-hidden rounded-2xl border border-line bg-card p-3.5" data-v2-panel>
+      <p className="text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t("Site — moteur V2", "Website — V2 engine")}</p>
+      <div className="mt-2 flex items-center gap-2">
+        <Select value={lang} onChange={(e) => setLang(e.target.value)} className="h-9 min-w-0 flex-1 text-sm" aria-label={t("Langage visuel", "Visual language")} data-v2-language>
+          {v2.languages.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+        </Select>
+        <Button size="sm" variant="secondary" loading={busy} disabled={busy} onClick={() => onRebuild(lang)} data-v2-rebuild>{lang === v2.language ? t("Recomposer", "Recompose") : t("Appliquer", "Apply")}</Button>
+      </div>
+      <p className="mt-1.5 text-[11px] text-muted">{t("Gratuit, sans IA. Vos textes et images sont repris ; une nouvelle version est créée.", "Free, no AI. Your copy and images are kept; a new version is created.")}</p>
+      <ul className="mt-3 grid gap-1">
+        {v2.plan.map((p) => (
+          <li key={p.key} className="min-w-0">
+            <button type="button" onClick={() => onPage(p.url)} className="flex w-full min-w-0 items-start gap-2 rounded-lg px-1.5 py-1 text-left text-sm hover:bg-paper-2">
+              <span className={cx("mt-1.5 size-2 shrink-0 rounded-full", p.complete ? "bg-ok" : "bg-warn")} aria-hidden />
+              <span className="min-w-0 flex-1"><span className="font-medium">{p.title}</span>{!p.inNav && <span className="text-xs text-muted"> · {t("hors menu", "not in menu")}</span>}{!p.complete && <span className="block break-words text-xs text-warn">{t("À compléter : ", "To complete: ")}{p.missing.join(", ")}</span>}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {v2.todo.length > 0 && <p className="mt-2 rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">{t("Informations à fournir : ", "Information to provide: ")}{v2.todo.join(", ")}.</p>}
     </div>
   );
 }

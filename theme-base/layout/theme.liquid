@@ -82,6 +82,14 @@
     {% endstyle %}
 
     {{ 'theme.css' | asset_url | stylesheet_tag }}
+    {%- if settings.ds_language != 'none' and settings.ds_language != blank -%}
+      {%- assign ds_r = settings.ds_ratio | default: 125 | divided_by: 100.0 -%}
+      {%- assign ds_r2 = ds_r | times: ds_r -%}
+      {%- assign ds_r4 = ds_r2 | times: ds_r2 -%}
+      {%- assign ds_r6 = ds_r4 | times: ds_r2 -%}
+      <style>:root { --v2-r1: {{ ds_r }}; --v2-r2: {{ ds_r2 }}; --v2-r4: {{ ds_r4 }}; --v2-r6: {{ ds_r6 }}; }</style>
+      {{ 'theme-v2.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
     <script>
       document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
       window.routes = {
@@ -106,7 +114,7 @@
     </script>
   </head>
 
-  <body class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }} card-{{ settings.card_style }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
+  <body data-ds="{{ settings.ds_language | default: 'none' }}" data-density="{{ settings.ds_density | default: 'balanced' }}" class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }} card-{{ settings.card_style }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
     <a class="skip-link visually-hidden-focusable" href="#MainContent">{{ 'accessibility.skip_to_text' | t }}</a>
 
     {% sections 'header-group' %}

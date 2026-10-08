@@ -1,0 +1,116 @@
+{
+  "scenario": "restaurant",
+  "engine": "v2",
+  "label": "apres",
+  "projectId": "u82927ngri8h2jl6",
+  "version": 15,
+  "secondary": "/pages/la-carte",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0.05680662264097865,
+        "lcp": 172,
+        "height": 2229,
+        "sections": 4,
+        "loadMs": 624,
+        "requests": 14,
+        "kb": 755,
+        "jsKb": 66,
+        "imagesKb": 0
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 120,
+        "height": 2788,
+        "sections": 4,
+        "loadMs": 608,
+        "requests": 7,
+        "kb": 377,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/pages/la-carte",
+      "findings": [],
+      "perf": {
+        "cls": 0.0003437736103073559,
+        "lcp": 144,
+        "height": 1940,
+        "sections": 4,
+        "loadMs": 603,
+        "requests": 7,
+        "kb": 377,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/pages/la-carte",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 128,
+        "height": 2426,
+        "sections": 4,
+        "loadMs": 622,
+        "requests": 7,
+        "kb": 377,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    }
+  },
+  "blocking": 0,
+  "warnings": 0,
+  "structure": {
+    "home": [
+      "v2-hero",
+      "v2-split",
+      "v2-facts",
+      "v2-cta"
+    ],
+    "header": [
+      "header:split"
+    ],
+    "footer": [
+      "footer:brand-left"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "blog",
+      "article",
+      "password",
+      "page.services",
+      "page.legal",
+      "page.v2-faq",
+      "page.v2-contact",
+      "page.v2-menu"
+    ],
+    "fonts": [
+      "libre_baskerville_n7",
+      "karla_n4"
+    ],
+    "direction": "gourmand",
+    "v2": {
+      "site": "restaurant",
+      "language": "bistro"
+    }
+  }
+}

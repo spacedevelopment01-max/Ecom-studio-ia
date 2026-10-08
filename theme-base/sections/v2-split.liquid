@@ -1,0 +1,60 @@
+{%- comment -%}
+  Texte et média (Theme Engine V2). Sans image, la section devient une grande citation typographique :
+  jamais de cadre vide. media-left / media-right / overlap (texte posé sur le bord de l'image).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign has_media = false -%}
+{%- if s.image != blank or s.image_asset != blank -%}{%- assign has_media = true -%}{%- endif -%}
+<section class="v2-split{% if has_media %} v2-split--{{ s.layout }}{% else %} v2-split--quote{% endif %} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+  <div class="es-container v2-split__grid">
+    {%- if has_media -%}
+      <div class="v2-split__media" data-reveal="zoom">{% render 'es-image', image: s.image, asset: s.image_asset, alt: s.image_alt, class: s.fit, sizes: '(min-width: 990px) 50vw, 100vw' %}</div>
+    {%- endif -%}
+    <div class="v2-split__copy">
+      {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="v2-h2" data-reveal="up">{{ s.heading }}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<div class="v2-rte v2-lead-sm" data-reveal="up" style="--d: 1">{{ s.text }}</div>{%- endif -%}
+      {%- if section.blocks.size > 0 -%}
+        <ul class="v2-ticks" data-reveal="up" style="--d: 2">
+          {%- for block in section.blocks -%}<li {{ block.shopify_attributes }}>{% render 'icon', name: 'check' %}<span>{{ block.settings.text }}</span></li>{%- endfor -%}
+        </ul>
+      {%- endif -%}
+      {%- if s.button_label != blank -%}<a class="v2-btn v2-btn--ghost" href="{{ s.button_link | default: '#' }}" data-reveal="up" style="--d: 3">{{ s.button_label }}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Texte et média V2",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition", "default": "media-left", "options": [
+      { "value": "media-left", "label": "Image à gauche" },
+      { "value": "media-right", "label": "Image à droite" },
+      { "value": "overlap", "label": "Texte sur le bord de l'image" }
+    ] },
+    { "type": "select", "id": "fit", "label": "Cadrage de l'image", "default": "v2-cover", "options": [
+      { "value": "v2-cover", "label": "Remplir le cadre" },
+      { "value": "v2-contain", "label": "Image entière" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Notre façon de faire" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de l'image" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "point", "name": "Point clé", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Un point vérifiable" } ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Texte et média V2" }]
+}
+{% endschema %}

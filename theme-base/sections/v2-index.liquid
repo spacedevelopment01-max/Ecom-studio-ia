@@ -1,0 +1,82 @@
+{%- comment -%}
+  Liste d'offres (Theme Engine V2) : prestations, carte, atouts, fonctionnalités.
+  - rows  : lignes numérotées séparées par des filets (index d'atelier) ;
+  - cards : cartes en grille ;
+  - bento : tuiles de tailles différentes (la première en grand) ;
+  - menu  : carte de restaurant (intitulé, pointillés, prix ou mention, description).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="v2-index v2-index--{{ s.layout }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+  <div class="es-container">
+    <header class="v2-head{% if s.layout == 'rows' or s.layout == 'menu' %} v2-head--side{% endif %}">
+      {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="v2-h2" data-reveal="up">{{ s.heading }}</h2>{%- endif -%}
+      {%- if s.intro != blank -%}<div class="v2-intro" data-reveal="up">{{ s.intro }}</div>{%- endif -%}
+    </header>
+    <div class="v2-index__list" data-reveal-stagger>
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <article class="v2-index__item{% if b.image != blank or b.image_asset != blank %} has-media{% endif %}" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          {%- if s.layout == 'rows' -%}<span class="v2-index__num">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>{%- endif -%}
+          {%- if b.image != blank or b.image_asset != blank -%}
+            <div class="v2-index__media">{% render 'es-image', image: b.image, asset: b.image_asset, alt: b.title, class: 'v2-cover', sizes: '(min-width: 990px) 40vw, 90vw' %}</div>
+          {%- elsif b.icon != 'none' and s.layout != 'menu' and s.layout != 'rows' -%}
+            <span class="v2-index__icon">{% render 'icon', name: b.icon %}</span>
+          {%- endif -%}
+          <div class="v2-index__body">
+            <h3 class="v2-h3">
+              <span>{{ b.title }}</span>
+              {%- if s.layout == 'menu' -%}<span class="v2-dots" aria-hidden="true"></span>{%- endif -%}
+              {%- if b.meta != blank and s.layout == 'menu' -%}<span class="v2-index__meta">{{ b.meta }}</span>{%- endif -%}
+            </h3>
+            {%- if b.text != blank -%}<div class="v2-rte">{{ b.text }}</div>{%- endif -%}
+            {%- if b.meta != blank and s.layout != 'menu' -%}<p class="v2-index__meta">{{ b.meta }}</p>{%- endif -%}
+          </div>
+          {%- if b.link_label != blank -%}<a class="v2-link" href="{{ b.link | default: '#' }}">{{ b.link_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+        </article>
+      {%- endfor -%}
+    </div>
+    {%- if s.note != blank -%}<p class="v2-note">{{ s.note }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Liste d'offres V2",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition", "default": "cards", "options": [
+      { "value": "rows", "label": "Lignes numérotées" },
+      { "value": "cards", "label": "Cartes" },
+      { "value": "bento", "label": "Tuiles" },
+      { "value": "menu", "label": "Carte de restaurant" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Ce que nous proposons" },
+    { "type": "richtext", "id": "intro", "label": "Introduction" },
+    { "type": "text", "id": "note", "label": "Mention sous la liste" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Élément", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Élément" },
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "text", "id": "meta", "label": "Mention (prix, durée, « sur devis »…)" },
+      { "type": "select", "id": "icon", "label": "Icône", "default": "none", "options": [
+        { "value": "none", "label": "Aucune" }, { "value": "sparkle", "label": "Éclat" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" },
+        { "value": "hand", "label": "Main" }, { "value": "shield", "label": "Bouclier" }, { "value": "check", "label": "Coche" }, { "value": "bolt", "label": "Éclair" },
+        { "value": "globe", "label": "Globe" }, { "value": "clock", "label": "Horloge" }, { "value": "waves", "label": "Vagues" }, { "value": "compare", "label": "Comparer" }
+      ] },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "link_label", "label": "Lien (ex. En savoir plus)" },
+      { "type": "url", "id": "link", "label": "Adresse du lien" }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Liste d'offres V2", "blocks": [{ "type": "item" }, { "type": "item" }, { "type": "item" }] }]
+}
+{% endschema %}

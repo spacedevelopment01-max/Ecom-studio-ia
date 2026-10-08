@@ -29,6 +29,7 @@ import { llmConfigured } from "../ai/llm";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { C, L, contentLang, inBothLangs } from "../i18n-server";
 import type { Bi } from "../step-notes";
+import type { LanguageId } from "../theme-v2/art-direction";
 
 /** Note de relecture visuelle en dessous de laquelle la composition de l'IA n'est pas gardée (défauts visibles). */
 export const MIN_DESIGN_SCORE = 5;
@@ -238,7 +239,15 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   return { p, direction, services, catalog, spec };
 }
 
-export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi } = {}) {
+export async function buildShop(ctx: JobContext | null, projectId: string, opts: { direction?: DirectionId; useAi?: boolean; summary?: Bi; engine?: "v1" | "v2"; language?: LanguageId } = {}) {
+  // Theme Engine V2 (phase 10A) par défaut pour toute nouvelle composition ; une direction V1 explicitement choisie
+  // (galerie des thèmes, « change de direction ») ou un projet réglé sur l'ancien moteur garde le moteur V1.
+  const engine = opts.engine ?? (opts.direction || (loadProject(projectId).settings as { themeEngine?: string }).themeEngine === "v1" ? "v1" : "v2");
+  if (engine === "v2") {
+    const { buildShopV2 } = await import("../theme-v2/engine");
+    const r = await buildShopV2(ctx, projectId, { language: opts.language, summary: opts.summary });
+    return { versionId: r.versionId, number: r.number };
+  }
   const { p, direction, services, catalog, spec: built } = await composeShop(projectId, opts.direction, ctx);
   let spec = built;
   let author: "ai" | "system" = "system";

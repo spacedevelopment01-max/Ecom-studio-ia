@@ -1,0 +1,47 @@
+{%- comment -%} Caractéristiques (Theme Engine V2) : tableau de caractéristiques CONFIRMÉES, avec une image facultative. {%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign has_media = false -%}
+{%- if s.image != blank or s.image_asset != blank -%}{%- assign has_media = true -%}{%- endif -%}
+<section class="v2-specs{% if has_media %} has-media{% endif %} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+  <div class="es-container v2-specs__grid">
+    {%- if has_media -%}<div class="v2-specs__media" data-reveal="zoom">{% render 'es-image', image: s.image, asset: s.image_asset, alt: s.heading, class: 'v2-cover', sizes: '(min-width: 990px) 45vw, 100vw' %}</div>{%- endif -%}
+    <div>
+      <header class="v2-head">
+        {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="v2-h2" data-reveal="up">{{ s.heading }}</h2>{%- endif -%}
+      </header>
+      <dl class="v2-specs__table">
+        {%- for block in section.blocks -%}
+          <div class="v2-specs__row" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}><dt>{{ block.settings.label }}</dt><dd>{{ block.settings.value }}</dd></div>
+        {%- endfor -%}
+      </dl>
+      {%- if s.note != blank -%}<p class="v2-note">{{ s.note }}</p>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Caractéristiques V2",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Caractéristiques" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "note", "label": "Mention sous le tableau" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "spec", "name": "Caractéristique", "settings": [
+      { "type": "text", "id": "label", "label": "Libellé", "default": "Caractéristique" },
+      { "type": "text", "id": "value", "label": "Valeur", "default": "[À compléter]" }
+    ] }
+  ],
+  "max_blocks": 16,
+  "presets": [{ "name": "Caractéristiques V2", "blocks": [{ "type": "spec" }, { "type": "spec" }] }]
+}
+{% endschema %}

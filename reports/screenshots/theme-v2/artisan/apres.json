@@ -1,0 +1,119 @@
+{
+  "scenario": "artisan",
+  "engine": "v2",
+  "label": "apres",
+  "projectId": "3e1nc8z9gld4jizx",
+  "version": 11,
+  "secondary": "/pages/prestations",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0.00036601944283693415,
+        "lcp": 252,
+        "height": 3937,
+        "sections": 6,
+        "loadMs": 687,
+        "requests": 14,
+        "kb": 1065,
+        "jsKb": 66,
+        "imagesKb": 0
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 152,
+        "height": 4974,
+        "sections": 6,
+        "loadMs": 647,
+        "requests": 7,
+        "kb": 533,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/pages/prestations",
+      "findings": [],
+      "perf": {
+        "cls": 0.00036243208269032924,
+        "lcp": 148,
+        "height": 2081,
+        "sections": 4,
+        "loadMs": 619,
+        "requests": 7,
+        "kb": 527,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/pages/prestations",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 104,
+        "height": 2874,
+        "sections": 4,
+        "loadMs": 598,
+        "requests": 7,
+        "kb": 527,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    }
+  },
+  "interaction": "faq",
+  "blocking": 0,
+  "warnings": 0,
+  "structure": {
+    "home": [
+      "v2-hero",
+      "v2-index",
+      "v2-steps",
+      "v2-facts",
+      "v2-faq",
+      "v2-cta"
+    ],
+    "header": [
+      "header:logo-left"
+    ],
+    "footer": [
+      "footer:columns"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "blog",
+      "article",
+      "password",
+      "page.services",
+      "page.legal",
+      "page.v2-faq",
+      "page.v2-contact",
+      "page.v2-services"
+    ],
+    "fonts": [
+      "archivo_n6",
+      "work_sans_n4"
+    ],
+    "direction": "brut",
+    "v2": {
+      "site": "services_trade",
+      "language": "craft"
+    }
+  }
+}

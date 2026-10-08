@@ -1,0 +1,373 @@
+{
+  "v1": {
+    "signatures": {
+      "artisan": {
+        "language": "brut",
+        "header": "logo-left/bar",
+        "hero": "hero-fullbleed:",
+        "sections": [
+          "hero-fullbleed:",
+          "marquee:",
+          "services-list:cards",
+          "timeline:",
+          "testimonials:",
+          "practical-info:",
+          "faq:",
+          "cta-banner:"
+        ],
+        "cta": "cta-banner:",
+        "footer": "wordmark",
+        "fonts": "archivo_n8/inter_n4",
+        "radius": "14/18",
+        "accentHue": 230,
+        "pages": [
+          "about",
+          "contact",
+          "faq",
+          "legal",
+          "services"
+        ]
+      },
+      "cosmetic": {
+        "language": "atelier",
+        "header": "logo-center/floating",
+        "hero": "hero-editorial:",
+        "sections": [
+          "hero-editorial:",
+          "image-with-text:image-left",
+          "features-grid:",
+          "rich-text:",
+          "scroll-story:",
+          "horizontal-gallery:",
+          "faq:",
+          "newsletter:"
+        ],
+        "cta": ":",
+        "footer": "wordmark",
+        "fonts": "playfair_display_n6/inter_n4",
+        "radius": "40/28",
+        "accentHue": 29,
+        "pages": [
+          "about",
+          "contact",
+          "faq",
+          "shipping"
+        ]
+      },
+      "hightech": {
+        "language": "nocturne",
+        "header": "logo-left/floating",
+        "hero": "hero-fullbleed:",
+        "sections": [
+          "hero-fullbleed:",
+          "rich-text:",
+          "features-grid:",
+          "image-with-text:image-right",
+          "scroll-story:",
+          "horizontal-gallery:",
+          "faq:",
+          "cta-banner:"
+        ],
+        "cta": "cta-banner:",
+        "footer": "columns",
+        "fonts": "lora_n6/inter_n4",
+        "radius": "40/28",
+        "accentHue": 244,
+        "pages": [
+          "about",
+          "contact",
+          "faq",
+          "shipping"
+        ]
+      },
+      "restaurant": {
+        "language": "gourmand",
+        "header": "logo-center/bar",
+        "hero": "hero-split:",
+        "sections": [
+          "hero-split:",
+          "rich-text:",
+          "wave-divider:",
+          "services-list:cards",
+          "wave-divider:",
+          "how-to:horizontal",
+          "wave-divider:",
+          "testimonials:",
+          "practical-info:",
+          "faq:",
+          "wave-divider:",
+          "cta-banner:"
+        ],
+        "cta": "cta-banner:",
+        "footer": "card",
+        "fonts": "libre_baskerville_n7/work_sans_n4",
+        "radius": "40/28",
+        "accentHue": 202,
+        "pages": [
+          "about",
+          "contact",
+          "faq",
+          "legal",
+          "services"
+        ]
+      },
+      "saas": {
+        "language": "nocturne",
+        "header": "logo-left/floating",
+        "hero": "hero-fullbleed:",
+        "sections": [
+          "hero-fullbleed:",
+          "rich-text:",
+          "features-grid:",
+          "image-with-text:image-right",
+          "scroll-story:",
+          "horizontal-gallery:",
+          "faq:",
+          "cta-banner:"
+        ],
+        "cta": "cta-banner:",
+        "footer": "columns",
+        "fonts": "lora_n6/inter_n4",
+        "radius": "40/28",
+        "accentHue": 56,
+        "pages": [
+          "about",
+          "contact",
+          "faq",
+          "shipping"
+        ]
+      }
+    },
+    "pairs": [
+      {
+        "a": "artisan",
+        "b": "cosmetic",
+        "distance": 0.87
+      },
+      {
+        "a": "artisan",
+        "b": "hightech",
+        "distance": 0.65
+      },
+      {
+        "a": "artisan",
+        "b": "restaurant",
+        "distance": 0.74
+      },
+      {
+        "a": "artisan",
+        "b": "saas",
+        "distance": 0.7
+      },
+      {
+        "a": "cosmetic",
+        "b": "hightech",
+        "distance": 0.8
+      },
+      {
+        "a": "cosmetic",
+        "b": "restaurant",
+        "distance": 0.91
+      },
+      {
+        "a": "cosmetic",
+        "b": "saas",
+        "distance": 0.76
+      },
+      {
+        "a": "hightech",
+        "b": "restaurant",
+        "distance": 0.79
+      },
+      {
+        "a": "hightech",
+        "b": "saas",
+        "distance": 0.05
+      },
+      {
+        "a": "restaurant",
+        "b": "saas",
+        "distance": 0.82
+      }
+    ],
+    "min": 0.05,
+    "mean": 0.71,
+    "sameTemplate": [
+      {
+        "a": "hightech",
+        "b": "saas",
+        "distance": 0.05
+      }
+    ]
+  },
+  "v2": {
+    "signatures": {
+      "artisan": {
+        "language": "craft",
+        "header": "logo-left/bar",
+        "hero": "v2-hero:type",
+        "sections": [
+          "v2-hero:type",
+          "v2-index:rows",
+          "v2-steps:line",
+          "v2-facts:ledger",
+          "v2-faq:side",
+          "v2-cta:band"
+        ],
+        "cta": "v2-cta:band",
+        "footer": "columns",
+        "fonts": "archivo_n6/work_sans_n4",
+        "radius": "2/4",
+        "accentHue": 17,
+        "pages": [
+          "page",
+          "v2-contact",
+          "v2-faq",
+          "v2-services"
+        ]
+      },
+      "cosmetic": {
+        "language": "maison",
+        "header": "logo-center/theme",
+        "hero": "v2-hero:stage",
+        "sections": [
+          "v2-hero:stage",
+          "v2-split:media-left",
+          "v2-cta:card"
+        ],
+        "cta": "v2-cta:card",
+        "footer": "centered",
+        "fonts": "cormorant_n5/jost_n4",
+        "radius": "40/22",
+        "accentHue": 30,
+        "pages": [
+          "page",
+          "page",
+          "v2-contact",
+          "v2-faq"
+        ]
+      },
+      "hightech": {
+        "language": "precision",
+        "header": "menu-right/bar",
+        "hero": "v2-hero:stage",
+        "sections": [
+          "v2-hero:stage",
+          "v2-media:bento",
+          "v2-split:overlap",
+          "v2-cta:band"
+        ],
+        "cta": "v2-cta:band",
+        "footer": "split",
+        "fonts": "space_grotesk_n7/inter_n4",
+        "radius": "10/14",
+        "accentHue": 244,
+        "pages": [
+          "page",
+          "page",
+          "v2-contact",
+          "v2-faq"
+        ]
+      },
+      "restaurant": {
+        "language": "bistro",
+        "header": "split/bar",
+        "hero": "v2-hero:board",
+        "sections": [
+          "v2-hero:board",
+          "v2-split:media-left",
+          "v2-facts:grid",
+          "v2-cta:split"
+        ],
+        "cta": "v2-cta:split",
+        "footer": "brand-left",
+        "fonts": "libre_baskerville_n7/karla_n4",
+        "radius": "40/6",
+        "accentHue": 358,
+        "pages": [
+          "page",
+          "v2-contact",
+          "v2-faq",
+          "v2-menu"
+        ]
+      },
+      "saas": {
+        "language": "product",
+        "header": "logo-left/bar",
+        "hero": "v2-hero:frame",
+        "sections": [
+          "v2-hero:frame",
+          "v2-split:media-right",
+          "v2-cta:card"
+        ],
+        "cta": "v2-cta:card",
+        "footer": "columns",
+        "fonts": "dm_sans_n7/dm_sans_n4",
+        "radius": "12/16",
+        "accentHue": 243,
+        "pages": [
+          "page",
+          "v2-contact",
+          "v2-faq",
+          "v2-features",
+          "v2-pricing"
+        ]
+      }
+    },
+    "pairs": [
+      {
+        "a": "artisan",
+        "b": "cosmetic",
+        "distance": 0.92
+      },
+      {
+        "a": "artisan",
+        "b": "hightech",
+        "distance": 0.86
+      },
+      {
+        "a": "artisan",
+        "b": "restaurant",
+        "distance": 0.93
+      },
+      {
+        "a": "artisan",
+        "b": "saas",
+        "distance": 0.78
+      },
+      {
+        "a": "cosmetic",
+        "b": "hightech",
+        "distance": 0.74
+      },
+      {
+        "a": "cosmetic",
+        "b": "restaurant",
+        "distance": 0.88
+      },
+      {
+        "a": "cosmetic",
+        "b": "saas",
+        "distance": 0.85
+      },
+      {
+        "a": "hightech",
+        "b": "restaurant",
+        "distance": 0.94
+      },
+      {
+        "a": "hightech",
+        "b": "saas",
+        "distance": 0.92
+      },
+      {
+        "a": "restaurant",
+        "b": "saas",
+        "distance": 0.96
+      }
+    ],
+    "min": 0.74,
+    "mean": 0.88,
+    "sameTemplate": []
+  }
+}

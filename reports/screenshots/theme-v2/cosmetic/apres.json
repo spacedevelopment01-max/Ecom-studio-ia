@@ -1,0 +1,114 @@
+{
+  "scenario": "cosmetic",
+  "engine": "v2",
+  "label": "apres",
+  "projectId": "msq2qinsbram51qt",
+  "version": 13,
+  "secondary": "/products/serum-eclat",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0.0021133216386959876,
+        "lcp": 176,
+        "height": 2955,
+        "sections": 3,
+        "loadMs": 620,
+        "requests": 20,
+        "kb": 1401,
+        "jsKb": 66,
+        "imagesKb": 95
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 160,
+        "height": 2796,
+        "sections": 3,
+        "loadMs": 632,
+        "requests": 10,
+        "kb": 701,
+        "jsKb": 33,
+        "imagesKb": 48
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/products/serum-eclat",
+      "findings": [],
+      "perf": {
+        "cls": 0.0005770162700135032,
+        "lcp": 192,
+        "height": 2878,
+        "sections": 3,
+        "loadMs": 653,
+        "requests": 13,
+        "kb": 627,
+        "jsKb": 33,
+        "imagesKb": 117
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/products/serum-eclat",
+      "findings": [],
+      "perf": {
+        "cls": 0,
+        "lcp": 128,
+        "height": 2392,
+        "sections": 3,
+        "loadMs": 626,
+        "requests": 12,
+        "kb": 609,
+        "jsKb": 33,
+        "imagesKb": 117
+      }
+    }
+  },
+  "interactionCart": true,
+  "blocking": 0,
+  "warnings": 0,
+  "structure": {
+    "home": [
+      "v2-hero",
+      "v2-split",
+      "v2-cta"
+    ],
+    "header": [
+      "header:logo-center"
+    ],
+    "footer": [
+      "footer:centered"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "page.shipping",
+      "blog",
+      "article",
+      "password",
+      "page.v2-faq",
+      "page.v2-contact"
+    ],
+    "fonts": [
+      "cormorant_n5",
+      "jost_n4"
+    ],
+    "direction": "atelier",
+    "v2": {
+      "site": "shop_mono",
+      "language": "maison"
+    }
+  }
+}

@@ -9,6 +9,7 @@ import { applyOps, type ThemeOp } from "../theme/ops";
 import { containerOf, type ThemeSpec } from "../theme/spec";
 import { REPLACE_INTENT, localMediaReplace, type MediaAttachment } from "../theme/image-target";
 import { localThemeCommand } from "./local";
+import { v2ThemeCommand } from "../theme-v2/local-edit";
 import type { BusinessType } from "../project-types";
 
 type Selection = { template: string; section: string; block?: string; kind?: string; path?: string; role?: string; text?: string; tag?: string; src?: string } | null | undefined;
@@ -54,6 +55,13 @@ export function localFirst(
   if (media) return media.ops.length ? { ops: media.ops, reply: media.reply, revert: false } : null;
   // Une pièce jointe sans remplacement d'image (capture d'exemple, inspiration) : l'IA doit la regarder.
   if (atts.length) return null;
+  // Site V2 : animations, typographie, disposition d'une section, sections V2 ajoutées — sans IA, vérifié à blanc.
+  const v2 = v2ThemeCommand(spec, message, sel);
+  if (v2) {
+    if (!v2.ops.length) return null;
+    const dryV2 = applyOps(spec, v2.ops, { targeted: new Set<string>(sel ? [`${sel.template}:${sel.section}`] : []), mediaFile });
+    return dryV2.rejected.length || !dryV2.applied.length ? null : { ops: v2.ops, reply: v2.reply, revert: false };
+  }
   const r = localThemeCommand(spec, message, sel, business);
   if (r.revert) return { ops: [], reply: r.reply, revert: true };
   if (r.direction) return { ops: [], reply: r.reply, revert: false, direction: r.direction };

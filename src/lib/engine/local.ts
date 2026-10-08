@@ -3,6 +3,7 @@
  * d'IA n'est configuré (ou en secours). Ils produisent une base de travail
  * honnête — sans inventer — et sont signalés « moteur local » dans le studio.
  */
+import { v2ThemeCommand } from "../theme-v2/local-edit";
 import { resolveTrade } from "../brain/trade";
 import { hsl, hslToHex, mix, withLightness, contrast } from "../color";
 import { CANVAS_FONTS } from "../media/fonts";
@@ -872,6 +873,9 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   const services = business === "services";
   const m = message.toLowerCase();
   if (/(reviens|revenir|annule|version précédente|\bundo\b|go back|revert|previous version|roll ?back)/.test(m)) return { ops: [], reply: L("Je reviens à la version précédente.", "Going back to the previous version."), revert: true };
+  // Site du Theme Engine V2 : retouches propres à ses sections et à son design system (animations, typographie, dispositions).
+  const v2 = v2ThemeCommand(spec, message, selection);
+  if (v2) return { ops: v2.ops, reply: v2.reply, revert: false };
   const quoted = message.match(/[«"“]\s*([^»"”]+?)\s*[»"”]/)?.[1];
   const hex = message.match(/#[0-9a-fA-F]{6}\b/)?.[0];
   // Couleurs nommées : l'anglais d'abord (« or » est aussi une conjonction anglaise), puis le français.

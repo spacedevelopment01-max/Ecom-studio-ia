@@ -1,0 +1,190 @@
+{
+  "scenario": "artisan",
+  "engine": "v1",
+  "label": "avant",
+  "projectId": "3e1nc8z9gld4jizx",
+  "version": 9,
+  "secondary": "/pages/prestations",
+  "pages": {
+    "accueil-desktop": {
+      "path": "/",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « SÉBASTIEN BLANC » est coupé"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "a.es-link-arrow « ITINÉRAIRE » contraste 4.42:1"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        },
+        {
+          "check": "hero-cta",
+          "severity": "warning",
+          "detail": "le bouton de l'ouverture est sous la ligne de flottaison (1012 px > 900 px)"
+        }
+      ],
+      "perf": {
+        "cls": 0.013458875868055558,
+        "lcp": 332,
+        "height": 6833,
+        "sections": 8,
+        "loadMs": 777,
+        "requests": 14,
+        "kb": 2236,
+        "jsKb": 66,
+        "imagesKb": 0
+      }
+    },
+    "accueil-mobile": {
+      "path": "/",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « SÉBASTIEN BLANC » est coupé"
+        },
+        {
+          "check": "contrast",
+          "severity": "warning",
+          "detail": "a.es-link-arrow « ITINÉRAIRE » contraste 4.42:1"
+        },
+        {
+          "check": "hero-cta",
+          "severity": "warning",
+          "detail": "le bouton de l'ouverture est sous la ligne de flottaison (899 px > 844 px)"
+        }
+      ],
+      "perf": {
+        "cls": 0.008689719458233193,
+        "lcp": 200,
+        "height": 6762,
+        "sections": 8,
+        "loadMs": 688,
+        "requests": 7,
+        "kb": 1118,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    },
+    "secondaire-desktop": {
+      "path": "/pages/prestations",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « SÉBASTIEN BLANC » est coupé"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        },
+        {
+          "check": "invisible-button",
+          "severity": "warning",
+          "detail": "a «  » est invisible"
+        }
+      ],
+      "perf": {
+        "cls": 0.004190391509130658,
+        "lcp": 188,
+        "height": 3565,
+        "sections": 4,
+        "loadMs": 642,
+        "requests": 6,
+        "kb": 935,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    },
+    "secondaire-mobile": {
+      "path": "/pages/prestations",
+      "findings": [
+        {
+          "check": "clipped-text",
+          "severity": "warning",
+          "detail": "p.es-footer__wordmark « SÉBASTIEN BLANC » est coupé"
+        }
+      ],
+      "perf": {
+        "cls": 0,
+        "lcp": 148,
+        "height": 3568,
+        "sections": 4,
+        "loadMs": 637,
+        "requests": 6,
+        "kb": 935,
+        "jsKb": 33,
+        "imagesKb": 0
+      }
+    }
+  },
+  "interaction": "faq",
+  "blocking": 0,
+  "warnings": 14,
+  "structure": {
+    "home": [
+      "hero-fullbleed",
+      "marquee",
+      "services-list",
+      "timeline",
+      "testimonials",
+      "practical-info",
+      "faq",
+      "cta-banner"
+    ],
+    "header": [
+      "announcement-bar:",
+      "header:logo-left"
+    ],
+    "footer": [
+      "footer:wordmark"
+    ],
+    "templates": [
+      "404",
+      "index",
+      "product",
+      "collection",
+      "list-collections",
+      "search",
+      "cart",
+      "page",
+      "page.about",
+      "page.faq",
+      "page.contact",
+      "blog",
+      "article",
+      "password",
+      "page.services",
+      "page.legal"
+    ],
+    "fonts": [
+      "archivo_n8",
+      "inter_n4"
+    ],
+    "direction": "brut",
+    "v2": null
+  }
+}
