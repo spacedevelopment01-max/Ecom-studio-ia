@@ -176,10 +176,10 @@ export const AD_LIMITS = { primaryFirstLine: 125, headline: 40, description: 30,
 
 /** Attributs personnels (règle Meta « Personal attributes », Google « Personalized advertising ») : jamais affirmés ou sous-entendus. */
 const PERSONAL: RegExp[] = [
-  /\b(vous êtes|êtes-vous|tu es|es-tu)\s+(\p{L}+\s)?(gros|grosse|en surpoids|obèses?|déprimée?s?|stressée?s?|épuisée?s?|anxieu(x|se)|malades?|endettée?s?|célibataires?|divorcée?s?|enceintes?|chauves?|diabétiques?|fauchée?s?|seule?s?)\b/iu,
-  /\b(votre|ta|ton|vos|tes)\s+(acné|cellulite|calvitie|dette|dettes|dépression|diabète|surpoids|kilos en trop|rides|vergetures|insomnie|anxiété)\b/iu,
-  /\b(are you|you('re| are))\s+(\p{L}+\s)?(fat|overweight|obese|depressed|anxious|stressed|exhausted|sick|in debt|single|divorced|pregnant|bald|diabetic|broke|lonely)\b/iu,
-  /\byour\s+(acne|cellulite|baldness|debt|depression|diabetes|extra weight|wrinkles|stretch marks|insomnia|anxiety)\b/iu,
+  /\b(vous êtes|êtes-vous|tu es|es-tu)\s+(\p{L}+\s)?(gros|grosse|en surpoids|obèses?|déprimée?s?|stressée?s?|épuisée?s?|anxieu(x|se)|malades?|endettée?s?|célibataires?|divorcée?s?|enceintes?|chauves?|diabétiques?|fauchée?s?|seule?s?)(?!\p{L})/iu,
+  /\b(votre|ta|ton|vos|tes)\s+(acné|cellulite|calvitie|dette|dettes|dépression|diabète|surpoids|kilos en trop|rides|vergetures|insomnie|anxiété)(?!\p{L})/iu,
+  /\b(are you|you('re| are))\s+(\p{L}+\s)?(fat|overweight|obese|depressed|anxious|stressed|exhausted|sick|in debt|single|divorced|pregnant|bald|diabetic|broke|lonely)(?!\p{L})/iu,
+  /\byour\s+(acne|cellulite|baldness|debt|depression|diabetes|extra weight|wrinkles|stretch marks|insomnia|anxiety)(?!\p{L})/iu,
 ];
 
 export type AdLike = { angle?: string; hook?: string; primary: string; headline: string; description?: string; cta?: string };

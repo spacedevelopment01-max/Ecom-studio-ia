@@ -57,6 +57,12 @@ export const handlers: Record<string, Handler> = {
 
   "images.generate": async (ctx) => generateImageSet(ctx, ctx.payload.projectId, ctx.payload.options ?? {}),
   "image.single": async (ctx) => generateSingleImage(ctx, ctx.payload.projectId, ctx.payload.request),
+  /** Publicités V2 : angles, textes contrôlés, créations composées (Image V2), barrière publicitaire. */
+  "ads.v2": async (ctx) => {
+    const { runAdEngineV2 } = await import("../src/lib/ads-v2/engine");
+    const r = await runAdEngineV2(ctx, ctx.payload.projectId, ctx.payload.request ?? {});
+    return { concepts: r.concepts.length, outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, platform: o.platform, aspect: o.aspect })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
+  },
   /** Image V2 : brief local, recherche multisource ou génération routée, barrière V2, bibliothèque, réutilisation. */
   "image.v2": async (ctx) => {
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");

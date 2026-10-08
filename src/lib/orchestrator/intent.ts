@@ -72,6 +72,7 @@ export const ACTION_INTENTS: Record<string, Intent[]> = {
   "post.regenerate": ["SOCIAL"],
   "social.voice": ["SOCIAL"],
   "ads.draft": ["CREATE_AD"],
+  "ads.v2": ["CREATE_AD"],
   "files.classify": ["ORGANIZE_FILES"],
   "post.publish": ["PUBLISH"],
   "shopify.push": ["PUBLISH"],

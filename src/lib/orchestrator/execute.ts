@@ -34,7 +34,7 @@ export const STEP_DELIVERABLES: Record<StepKind, Deliverable[]> = {
   theme_edit: [],
   blog: ["blog_article"],
   social: ["social_plan", "social_post"],
-  ad: ["ad_copy"],
+  ad: ["ad_copy", "ad_v2"],
   video: ["video_clip", "ugc_clip", "ugc_frame"],
   quality_review: [],
   organize: [],
@@ -64,6 +64,7 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "calendar.plan": ["social"],
   "post.regenerate": ["social"],
   "ads.draft": ["ad"],
+  "ads.v2": ["ad"],
 };
 
 /** Actions qui demandent EXPRESSÉMENT une image générée (aucune recherche de photo libre imposée avant). */
@@ -299,10 +300,16 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     await ctx.step(`plan:${s.id}`, async () => ((await writeBlogArticle(ctx, p.id, { topic: String(s.input.text ?? "") })) as { id?: string } | undefined)?.id ?? null);
     return outcome(ctx.job.id, "blog", since);
   },
+  // Publicités (phase 6A) : Advertising Engine V2 — textes contrôlés ET créations composées (Image Engine V2).
   ad: async (ctx, p, s) => {
     const since = Date.now();
-    const { draftAds } = await import("../engine/ads");
-    const r = await ctx.step(`plan:${s.id}`, () => draftAds(loadProject(p.id), { userId: p.userId }));
+    const { runAdEngineV2 } = await import("../ads-v2/engine");
+    const r = await ctx.step(`plan:${s.id}`, async () => {
+      const run = await runAdEngineV2(ctx, p.id, {});
+      // Annonces au format des brouillons existants (onglet Publicités) : rien n'est perdu pour l'interface actuelle.
+      const ads = run.concepts.map((c) => ({ angle: c.angle.type, lever: c.angle.lever, hook: c.copy.hook, primary: c.copy.primary, headline: c.copy.headline, description: c.copy.description, cta: c.copy.cta }));
+      return { ads, by: run.concepts.some((c) => c.copyBy === "ai") ? "ai" : "local", strategy: run.strategy, creatives: run.outcomes.map((o) => ({ assetId: o.assetId, verdict: o.verdict, platform: o.platform, aspect: o.aspect })) };
+    });
     remember(p.id, { kind: "artifact", key: "ad_drafts", value: JSON.stringify(r), source: r.by === "ai" ? "ai" : "local" });
     return outcome(ctx.job.id, "ad", since);
   },

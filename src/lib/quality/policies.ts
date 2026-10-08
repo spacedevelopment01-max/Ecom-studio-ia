@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p5a";
+export const POLICY_VERSION = "2026-10-p6a";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -29,6 +29,7 @@ export const DELIVERABLES = [
   "social_plan",
   "social_post",
   "ad_copy",
+  "ad_v2",
   "theme_home",
   "theme_custom",
   "cutout",
@@ -147,6 +148,21 @@ export const POLICIES: Record<Deliverable, Policy> = {
   social_plan: TEXT,
   social_post: TEXT,
   ad_copy: TEXT,
+  // Publicité V2 (phase 6A) : création complète (texte + visuel composé) jugée sur 10 critères. Affirmation interdite
+  // ou produit transformé = fatal ; affirmation non confirmée, texte illisible, zone de sécurité débordée, produit
+  // recouvert, trop de texte ou création générique bloquent. Sans relecture IA : au mieux PROVISOIRE (choix manuel).
+  ad_v2: {
+    final: 7.5,
+    retryFloor: 5.5,
+    maxRetries: 2,
+    minCriterion: 6,
+    criteriaFloors: { hook: 7, relevance: 7, legibility: 7, cta: 6.5, brand: 6.5 },
+    finalCheckers: ["ai", "human"],
+    minConfidence: 0.7,
+    fatal: ["forbidden_claim", "product_altered", "wrong_product", "corrupt", "forbidden"],
+    blocking: ["unverified_claim", "copy_policy", "illegible", "safe_zone", "product_overlap", "too_much_text", "generic", "duplicate_concept"],
+    provisional: { checkers: ["local"], floor: 0, use: "manual", label: "needs_improvement" },
+  },
   theme_home: THEME,
   theme_custom: THEME,
   // Détourage : le contrôle local (pixels) est un vrai contrôle ; il peut conclure.
