@@ -26,6 +26,7 @@ export const INTENTS = [
   "CREATE_THEME",
   "EDIT_THEME",
   "ORGANIZE_FILES",
+  "EXPORT_CMS",
   "PUBLISH",
 ] as const;
 export type Intent = (typeof INTENTS)[number];
@@ -78,6 +79,8 @@ export const ACTION_INTENTS: Record<string, Intent[]> = {
   "video.v2": ["CREATE_VIDEO"],
   "video.v2.clip": ["CREATE_VIDEO"],
   "files.classify": ["ORGANIZE_FILES"],
+  // Export du thème vers une plateforme (CMS Engine V2, phase 11A) : ZIP contrôlé, jamais envoyé sans accord.
+  "cms.export": ["EXPORT_CMS"],
   "post.publish": ["PUBLISH"],
   "shopify.push": ["PUBLISH"],
   "canva.send": ["PUBLISH"],
@@ -112,6 +115,8 @@ const RULES: [Intent, RegExp][] = [
   ["FIND_STOCK_IMAGE", /\b(photo libre|banque d'images|stock|libre de droits|royalty[- ]free)\b/],
   ["GENERATE_IMAGE", /\b(images?|visuels?|photos?|mockups?|banniere|banner)\b/],
   ["ANALYZE_PRODUCT", /\b(analyse|analyze|comprend\w*|etudie)\b[^.]{0,30}\b(produit|product|photo|activite)\b/],
+  // Export vers une plateforme : verbe d'export, ou plateforme autre que Shopify nommée (Shopify reste la cible par défaut).
+  ["EXPORT_CMS", /\b(export\w*|telecharg\w*|download)\b[^.]{0,40}\b(theme|boutique|site|shop|store|zip|shopify|woocommerce|wordpress|prestashop|wix|squarespace)\b|\b(woocommerce|wordpress|prestashop|wix|squarespace)\b/],
   ["PUBLISH", /\b(publie|publier|envoie sur shopify|mettre en ligne|publish|push)\b/],
 ];
 
@@ -140,7 +145,7 @@ export function intentsFromRules(text: string): IntentResult {
 const CLARIFY = "Que souhaitez-vous faire : logo, marque, boutique, textes, images, vidéo, publicité, publications ou articles ?";
 
 /** Ordre de travail naturel (une marque avant sa boutique, des visuels avant la publicité…). */
-const ORDER: Intent[] = ["ANALYZE_PRODUCT", "CREATE_BRAND", "CREATE_LOGO", "IMPROVE_LOGO", "FIND_STOCK_IMAGE", "GENERATE_IMAGE", "WRITE_PRODUCT_COPY", "SEO", "CREATE_SHOP", "CREATE_THEME", "EDIT_THEME", "BLOG", "SOCIAL", "CREATE_AD", "CREATE_VIDEO", "ORGANIZE_FILES", "PUBLISH"];
+const ORDER: Intent[] = ["ANALYZE_PRODUCT", "CREATE_BRAND", "CREATE_LOGO", "IMPROVE_LOGO", "FIND_STOCK_IMAGE", "GENERATE_IMAGE", "WRITE_PRODUCT_COPY", "SEO", "CREATE_SHOP", "CREATE_THEME", "EDIT_THEME", "BLOG", "SOCIAL", "CREATE_AD", "CREATE_VIDEO", "ORGANIZE_FILES", "EXPORT_CMS", "PUBLISH"];
 const order = (xs: Intent[]) => [...new Set(xs)].sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
 
 export const IntentAiSchema = z.object({

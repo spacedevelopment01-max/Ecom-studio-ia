@@ -35,8 +35,13 @@ export function projectAccounts(p: Project): { id: string; provider: string; nam
 }
 
 /** Demande en clair → calendrier de niveau 1 (aucune dépense). La programmation viendra après approbation. */
-export function planFromAsk(p: Project, text: string, o: { at?: number; lang?: "fr" | "en"; platforms?: Platform[] } = {}) {
+export function planFromAsk(p: Project, text: string, o: { at?: number; lang?: "fr" | "en"; platforms?: Platform[]; maxDays?: number; planId?: string } = {}) {
   const ask = parseSocialAsk(text);
+  // Durée limitée par le forfait (annoncé, jamais caché).
+  if (o.maxDays && ask.days > o.maxDays) {
+    ask.notes.push(`${ask.days} jours demandés : limité à ${o.maxDays} jours par votre forfait`);
+    ask.days = o.maxDays;
+  }
   const tz = p.settings.timezone || "Europe/Paris";
   const today = toZonedTime(o.at ?? now(), tz);
   const startDate = format(addDays(today, ask.startOffsetDays), "yyyy-MM-dd");
@@ -51,7 +56,7 @@ export function planFromAsk(p: Project, text: string, o: { at?: number; lang?: "
     formatMix: ask.formatMix ?? undefined,
     lang: o.lang,
   };
-  const r = createPlanV2(p, req);
+  const r = createPlanV2(p, req, { planId: o.planId });
   const notes = [...ask.notes];
   if (ask.schedule) notes.push("programmation demandée : elle se fera après votre approbation des contenus (rien ne part sans accord)");
   return { ...r, ask, request: req, notes };

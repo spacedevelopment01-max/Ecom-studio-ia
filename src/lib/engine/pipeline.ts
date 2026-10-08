@@ -91,6 +91,8 @@ function markStep(ctx: JobContext, step: StepId, status: "running" | "done" | "s
 
 export type PipelinePayload = {
   projectId: string;
+  /** Étapes remplacées par une demande du client (Studio Workflow V2, ex. calendrier fait par Social V2) : sautées. */
+  skip?: StepId[];
   from?: StepId;
   mode: "autopilot" | "guided";
   input: { link?: string; description?: string; productName?: string; brandName?: string; price?: string; businessType?: BusinessType; /** Vidéos choisies au lancement (par défaut : avec plans IA). */ videos?: "ai" | "edited" | "none"; /** « J'ai déjà mon site et mon logo » : adresse du site du client. */ existingSite?: boolean; siteUrl?: string };
@@ -115,6 +117,10 @@ export async function runPipeline(ctx: JobContext) {
       const step = STEPS[i];
       const done = (ctx.checkpoint.__steps ?? {})[step.id]?.status;
       if (done === "done" || done === "skipped") continue;
+      if (payload.skip?.includes(step.id)) {
+        markStep(ctx, step.id, "skipped", note("skip.byRequest"));
+        continue;
+      }
       // Étape inutile d'après le plan (marque existante gardée, textes déjà FINAL) : sautée, avec la raison.
       const planSkip = orch.skipped(step.id);
       if (planSkip) {

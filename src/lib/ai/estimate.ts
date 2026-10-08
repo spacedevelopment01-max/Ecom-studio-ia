@@ -97,6 +97,12 @@ export function estimateMicro(action: CostAction, opts: { beats?: number; videos
   return Math.round(total * 1.2 * usdToEur() * markup * EUR);
 }
 
+/** Coût estimé (micro-euros, marge de sécurité et coefficient compris) d'une tâche d'IA isolée — devis des étapes d'un plan. */
+export function estimateTaskMicro(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }, times = 1): number {
+  const markup = getJsonSetting<number>("billing.markup", 1);
+  return Math.round(times * usd(task, units) * 1.2 * usdToEur() * markup * EUR);
+}
+
 export function estimateFor(userId: string, action: CostAction, opts: { beats?: number; videos?: VideoChoice } = {}) {
   const cost = estimateMicro(action, opts);
   const b = balance(userId);

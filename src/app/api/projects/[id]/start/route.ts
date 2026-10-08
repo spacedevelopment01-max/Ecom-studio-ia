@@ -1,5 +1,6 @@
 import { HttpError } from "@/lib/auth";
 import { one, run } from "@/lib/db";
+import { attachStartRequest } from "@/lib/workflow";
 import { handle, ok } from "@/lib/http";
 import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
 import { saveServices, saveSettings } from "@/lib/projects";
@@ -23,6 +24,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     saveSettings(p.id, { ...p.settings, existingSite: { url: site.url, status: "pending" } });
     await saveStartFiles(p.id, user.id, [], logo);
     const job = launchPipeline(p.id, user.id, input, 0);
+    if (input.request) await attachStartRequest(p.id, user.id, input.request, job.id);
     return ok({ jobId: job.id });
   }
   // Le type de projet choisi au démarrage (boutique ou services) remplace celui de la création.
@@ -38,5 +40,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   await saveStartFiles(p.id, user.id, files, logo, business);
   if (form.get("storeType")) run("UPDATE projects SET store_type = ? WHERE id = ?", input.storeType, p.id);
   const job = launchPipeline(p.id, user.id, input, files.length || existing);
+  if (input.request) await attachStartRequest(p.id, user.id, input.request, job.id);
   return ok({ jobId: job.id });
 });

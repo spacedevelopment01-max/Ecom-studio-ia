@@ -599,6 +599,40 @@ CREATE TABLE IF NOT EXISTS task_plans (
 );
 CREATE INDEX IF NOT EXISTS task_plans_project ON task_plans(project_id, updated_at);
 
+-- Studio Workflow V2 (phase 12A) : une demande globale du client, son devis, son autorisation (montant accepté,
+-- plafond), le plan de l'orchestrateur qu'elle suit et les tâches qui l'exécutent. Aucun prompt n'y est stocké.
+CREATE TABLE IF NOT EXISTS workflows (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  request TEXT NOT NULL,
+  intents_json TEXT NOT NULL DEFAULT '[]',
+  params_json TEXT NOT NULL DEFAULT '{}',
+  estimate_json TEXT NOT NULL DEFAULT '{}',
+  approved_micro INTEGER,
+  cap_micro INTEGER,
+  status TEXT NOT NULL,              -- draft | needs_clarification | queued | running | done | failed | cancelled
+  clarification TEXT,
+  plan_id TEXT,
+  pipeline_job_id TEXT,
+  job_id TEXT,
+  error TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS workflows_project ON workflows(project_id, created_at);
+
+-- Identité de marque (phase 12A) : chaque état de la marque (nom, palette, typographies, logo) est daté, pour savoir
+-- avec quelle identité chaque création a été faite et proposer une mise à jour contrôlée après un changement.
+CREATE TABLE IF NOT EXISTS brand_versions (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  fingerprint TEXT NOT NULL,
+  snapshot_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS brand_versions_project ON brand_versions(project_id, created_at);
+
 -- Image V2 (phase 5A) : candidats déjà regardés pour un brief (photo de banque ou image générée). Une photo refusée
 -- n'est ni retéléchargée ni recontrôlée (rien n'est repayé) ; aucune image, aucun prompt n'y est stocké.
 CREATE TABLE IF NOT EXISTS image_candidates (

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { HttpError } from "./auth";
 import { json, now, one, run } from "./db";
 import { enqueue } from "./jobs";
+import { requestReplacesCalendar } from "./workflow";
 import { saveAsset } from "./library";
 import { setStatus } from "./projects";
 import { contactModesOf, emptyServiceProfile, type ContactMode, type ServiceItem, type ServiceProfile } from "./project-types";
@@ -41,6 +42,8 @@ export const StartInput = z.object({
   siteUrl: z.string().max(500).optional(),
   /** Le client confirme que le site lui appartient ou qu'il est autorisé à l'utiliser. */
   siteOwnership: z.string().max(10).optional(),
+  /** Demande globale du client (Studio Workflow V2) : « Crée ma marque, ma boutique… et mes publications ». */
+  request: z.string().max(4000).optional(),
 });
 export type StartInput = z.infer<typeof StartInput>;
 
@@ -129,5 +132,7 @@ export function launchPipeline(projectId: string, userId: string, input: StartIn
   run("UPDATE projects SET sources_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(sources), now(), projectId);
   if (input.productName || input.brandName) run("UPDATE projects SET name = ? WHERE id = ?", input.productName || input.brandName, projectId);
   setStatus(projectId, "queued");
-  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, initial: true, input: { link: site ? undefined : input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price, businessType: input.businessType, videos: input.videos, ...(site ? { existingSite: true, siteUrl: site.url } : {}) } }, maxAttempts: 2 });
+  // Publications demandées dans la demande globale : faites par Social V2 juste après (pas de calendrier en double).
+  const skip = input.request && requestReplacesCalendar(input.request) ? ["calendar"] : undefined;
+  return enqueue({ userId, projectId, type: "pipeline.run", label: L("Création du projet", "Creating the project"), payload: { projectId, mode: input.mode, initial: true, skip, input: { link: site ? undefined : input.link || undefined, description: input.description, productName: input.productName, brandName: input.brandName, price: input.price, businessType: input.businessType, videos: input.videos, ...(site ? { existingSite: true, siteUrl: site.url } : {}) } }, maxAttempts: 2 });
 }

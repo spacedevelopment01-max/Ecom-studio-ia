@@ -44,6 +44,8 @@ export const handlers: Record<string, Handler> = {
 
   /** Demande libre du client : intention → plan → moteurs existants (Router V2, barrière de qualité). */
   "plan.run": runRequestPlan,
+  // Studio Workflow V2 (phase 12A) : demande globale → plan de l'orchestrateur → moteurs V2 (devis autorisé, plafond).
+  "workflow.run": async (ctx) => (await import("../src/lib/workflow")).runWorkflow(ctx),
 
   /** Photos libres de droits (gratuites, contrôlées) avant toute image IA. */
   "stock.search": async (ctx) => findStockPhotos(ctx, ctx.payload.projectId, ctx.payload.n ?? 2),
