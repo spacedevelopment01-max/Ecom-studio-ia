@@ -557,7 +557,7 @@ export async function postAmbiance(ictx: { userId: string; projectId: string; jo
   });
   if (free) return free;
   // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).
-  if (!imageProviderAvailable() || !llmConfigured()) return null;
+  if (!imageProviderAvailable({ usage: "scene" }) || !llmConfigured()) return null;
   const [, , base, look] = ambianceParts(p);
   const prompt = `${base} Photograph illustrating this social media post: "${clip(post.topic, 220)}". Show the real work, tools, materials or place it talks about, a fresh angle and framing specific to this subject. ${look}`;
   const usageKey = `${ictx.jobId ?? "post"}:post-ambiance:${post.key}`;
@@ -797,7 +797,7 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
 
   // 3. Images d'ambiance (IA d'images disponible) pour les emplacements encore vides : consignes honnêtes, aucun faux client.
   // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).
-  const withAi = opts.withAi !== false && !!imageProviderAvailable() && llmConfigured();
+  const withAi = opts.withAi !== false && !!imageProviderAvailable({ usage: "scene" }) && llmConfigured();
   if (opts.v2) {
     // Image Engine V2 : par emplacement encore vide, brief du métier et de la prestation, recherche (photos déjà
     // refusées jamais recontrôlées) puis génération contrôlée seulement si possible et dans le plafond.
@@ -893,7 +893,7 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
   ctx.progress(0.2, L("Composition de l'image", "Composing the image"));
 
   if (kind === "ambiance") {
-    if (!imageProviderAvailable() || req.useAi === false || !llmConfigured()) throw new UserFacingError(L("Les images d'ambiance sont créées par l'IA d'images (non disponible ici). Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "Mood images are created by the AI image generator (not available here). Upload photos of your work, team or premises instead."));
+    if (!imageProviderAvailable({ usage: "scene" }) || req.useAi === false || !llmConfigured()) throw new UserFacingError(L("Les images d'ambiance sont créées par l'IA d'images (non disponible ici). Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "Mood images are created by the AI image generator (not available here). Upload photos of your work, team or premises instead."));
     const f = FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
     const prompts = ambiancePrompts(p);
     const img = await ctx.step("ambiance", async () => {

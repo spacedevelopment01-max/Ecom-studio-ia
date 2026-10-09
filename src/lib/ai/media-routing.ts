@@ -20,9 +20,98 @@ import { L } from "../i18n-server";
 
 export const MEDIA_TASK: Record<MediaKind, TaskId> = { image: "image_generation", video: "video_generation" };
 
+/**
+ * USAGES : chaque usage a son propre principal, son secours et son mode (manuel ou automatique). Sans réglage propre,
+ * un usage suit le réglage général de son type (images / vidéos) — les réglages existants restent donc inchangés.
+ */
+export const MEDIA_USAGES = ["logo", "product_image", "product_edit", "ad_visual", "scene", "product_video", "ugc_video"] as const;
+export type MediaUsage = (typeof MEDIA_USAGES)[number];
+export const isMediaUsage = (v: unknown): v is MediaUsage => typeof v === "string" && (MEDIA_USAGES as readonly string[]).includes(v);
+
+export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaNeed, "kind" | "usage">; label: { fr: string; en: string }; detail: { fr: string; en: string }; canBeOff?: boolean }> = {
+  logo: {
+    kind: "image",
+    need: {},
+    label: { fr: "Logos", en: "Logos" },
+    detail: { fr: "Concepts graphiques des symboles (Logo Engine V2 et studio), logo complet dessiné. Le studio vectorise ensuite et écrit le nom avec de vraies polices.", en: "Graphic concepts of the symbols (Logo Engine V2 and studio), full drawn logo. The studio then vectorizes and sets the name with real fonts." },
+  },
+  product_image: {
+    kind: "image",
+    need: {},
+    label: { fr: "Images produit", en: "Product images" },
+    detail: { fr: "Décor généré puis produit réel composé par le studio ; image de départ des vidéos UGC (photo du produit en référence).", en: "Generated set, then the real product composited by the studio; opening frame of UGC videos (product photo as reference)." },
+  },
+  product_edit: {
+    kind: "image",
+    need: { mask: true },
+    label: { fr: "Retouches produit", en: "Product retouching" },
+    detail: { fr: "Retouche par masque de la photo réelle : le modèle repeint autour du produit, les pixels du produit sont remis à l'identique. Prioritaire pour les photos produit quand un modèle capable est choisi.", en: "Mask retouching of the real photo: the model repaints around the product, the product pixels are put back unchanged. Used first for product photos when a capable model is chosen." },
+    canBeOff: true,
+  },
+  ad_visual: {
+    kind: "image",
+    need: {},
+    label: { fr: "Publicités visuelles", en: "Visual ads" },
+    detail: { fr: "Visuels des créations publicitaires (Advertising Engine V2) : produit réel par retouche ou composition, ou visuel d'ambiance.", en: "Ad creative visuals (Advertising Engine V2): real product via retouching or compositing, or a mood visual." },
+  },
+  scene: {
+    kind: "image",
+    need: {},
+    label: { fr: "Décors et ambiances", en: "Sets and moods" },
+    detail: { fr: "Ambiances de marque, images de sections de site, d'articles et de publications, photos d'ambiance des entreprises de services.", en: "Brand moods, site section, article and post images, mood photos for service businesses." },
+  },
+  product_video: {
+    kind: "video",
+    need: { imageToVideo: true },
+    label: { fr: "Vidéos produit", en: "Product videos" },
+    detail: { fr: "Plans vidéo animés à partir d'une scène contenant le produit réel (montages, publicités vidéo, Video Engine V2).", en: "Video shots animated from a scene containing the real product (edits, video ads, Video Engine V2)." },
+  },
+  ugc_video: {
+    kind: "video",
+    need: { imageToVideo: true, people: true },
+    label: { fr: "Vidéos UGC", en: "UGC videos" },
+    detail: { fr: "Plans avec une personne qui présente le produit (son natif quand le modèle le permet).", en: "Shots with a person presenting the product (native sound when the model allows it)." },
+  },
+};
+
+export type UsageSetting = { mode?: MediaMode; primary?: string; backup?: string | null; off?: boolean };
+export const usageSettings = (): Partial<Record<MediaUsage, UsageSetting>> => getJsonSetting<Partial<Record<MediaUsage, UsageSetting>>>("ai.media.usage", {});
+const splitKey = (v: string) => {
+  const [provider, ...rest] = v.split(":");
+  return { provider, model: rest.join(":") };
+};
+/** Mode de l'usage (sinon celui de son type). */
+export const usageMode = (u: MediaUsage): MediaMode => usageSettings()[u]?.mode ?? mediaMode(USAGE_INFO[u].kind);
+/** Principal de l'usage (sinon celui de son type) et son origine. */
+export function usagePrimary(u: MediaUsage): { provider: string; model: string; inherited: boolean } {
+  const v = usageSettings()[u]?.primary;
+  return v ? { ...splitKey(v), inherited: false } : { ...mediaPrimary(USAGE_INFO[u].kind), inherited: true };
+}
+/** Secours de l'usage : le sien s'il est réglé (null = aucun, choisi), sinon celui de son type. */
+export function usageBackup(u: MediaUsage): { provider: string; model: string } | null {
+  const s = usageSettings()[u];
+  if (s && "backup" in s) return s.backup ? splitKey(s.backup) : null;
+  return mediaBackup(USAGE_INFO[u].kind);
+}
+/**
+ * Usage réglé explicitement (principal ou mode choisis pour lui) : son choix est respecté à la lettre — si ni le
+ * principal ni le secours ne sont utilisables, rien n'est généré (jamais un autre modèle en silence). Un usage qui
+ * suit le réglage général garde le repli historique du Router V2.
+ */
+export const usageExplicit = (u: MediaUsage): boolean => {
+  const s = usageSettings()[u];
+  return !!s && (!!s.primary || !!s.mode);
+};
+/** Usage coupé par l'administration (retouches produit seulement : les photos passent alors par décor + composition). */
+export const usageOff = (u: MediaUsage): boolean => !!USAGE_INFO[u].canBeOff && !!usageSettings()[u]?.off;
+/** Besoin complet d'une génération pour un usage. */
+export const usageNeed = (u: MediaUsage, extra: Partial<MediaNeed> = {}): MediaNeed => ({ kind: USAGE_INFO[u].kind, ...USAGE_INFO[u].need, ...extra, usage: u });
+
 /** Besoin d'une génération : ce que le modèle DOIT savoir faire. */
 export type MediaNeed = {
   kind: MediaKind;
+  /** Usage de la génération (logo, image produit…) : ses propres principal, secours et mode. */
+  usage?: MediaUsage;
   /** Retouche par masque autour du produit réel (fidélité garantie par construction). */
   mask?: boolean;
   /** Images de référence à transmettre (produit, personne). */
@@ -89,6 +178,8 @@ export function incompatibility(m: MediaModel, n: MediaNeed): string | null {
   if (m.kind !== n.kind) return L("autre type de média", "other media type");
   const c = m.caps;
   if (n.mask && !c.maskEdit) return L("pas de retouche par masque", "no mask editing");
+  // Retouche par masque : branchée dans le studio pour l'API Images d'OpenAI seulement (pixels du produit remis ensuite).
+  if (n.mask && m.adapter !== "openai_image") return L("retouche par masque branchée pour OpenAI seulement", "mask editing wired for OpenAI only");
   if (m.needsReference && !(n.references && n.references > 0)) return L("exige une image de référence", "requires a reference image");
   if ((n.references ?? 0) > (c.references ?? 0)) return L(`${n.references} image(s) de référence non acceptée(s)`, `${n.references} reference image(s) not accepted`);
   if (n.text && !c.textInImage) return L("texte dans l'image non fiable", "unreliable text in image");
@@ -186,12 +277,15 @@ export function rankMedia(n: MediaNeed, o: SelectOptions = {}): { model: MediaMo
  * Modèle d'une génération. Manuel : principal s'il convient, sinon secours compatible ; automatique : meilleur
  * classement. null : aucun modèle utilisable (l'appelant garde alors le comportement historique du Router V2).
  */
-export function selectMedia(n: MediaNeed, o: SelectOptions = {}): MediaChoice | null {
-  const mode = o.mode ?? mediaMode(n.kind);
+export function selectMedia(n0: MediaNeed, o: SelectOptions = {}): MediaChoice | null {
+  const u = n0.usage;
+  if (u && usageOff(u)) return null;
+  const n: MediaNeed = u ? { ...USAGE_INFO[u].need, ...n0 } : n0;
+  const mode = o.mode ?? (u ? usageMode(u) : mediaMode(n.kind));
   const status = o.status ?? ((m: MediaModel) => mediaStatus(m));
   if (mode === "auto") {
     const best = rankMedia(n, o).find((r) => !r.excluded);
-    if (best) return { provider: best.model.provider, model: best.model.model, role: "auto", reason: `auto: ${best.model.label}, score ${best.score}` };
+    if (best) return { provider: best.model.provider, model: best.model.model, role: "auto", reason: `auto${u ? ` [${u}]` : ""}: ${best.model.label}, score ${best.score}` };
   }
   const fits = (r: { provider: string; model: string } | null, role: "primary" | "backup"): MediaChoice | null => {
     if (!r) return null;
@@ -204,21 +298,21 @@ export function selectMedia(n: MediaNeed, o: SelectOptions = {}): MediaChoice | 
     // Le secours doit être utilisable (tarif connu, vérifié) : sa réservation couvre alors son coût.
     if (role === "backup" && !st.usable) return null;
     if (incompatibility(m, n)) return null;
-    return { provider: r.provider, model: r.model, role, reason: role === "primary" ? "admin primary" : "admin backup (compatible, price covered)" };
+    return { provider: r.provider, model: r.model, role, reason: `${role === "primary" ? "admin primary" : "admin backup (compatible, price covered)"}${u ? ` [${u}]` : ""}` };
   };
-  return fits(mediaPrimary(n.kind), "primary") ?? fits(mediaBackup(n.kind), "backup");
+  return fits(u ? usagePrimary(u) : mediaPrimary(n.kind), "primary") ?? fits(u ? usageBackup(u) : mediaBackup(n.kind), "backup");
 }
 
 /**
  * Modèle à appeler chez un fournisseur donné : celui choisi pour ce fournisseur (principal ou secours), sinon le
  * modèle historique du studio pour ce fournisseur (comportement inchangé).
  */
-export function modelForProvider(provider: string, kind: MediaKind, chosen?: { provider: string; model: string } | null): string {
+export function modelForProvider(provider: string, kind: MediaKind, chosen?: { provider: string; model: string } | null, usage?: MediaUsage): string {
   if (chosen?.provider === provider) return chosen.model;
-  const p = mediaPrimary(kind);
+  const p = usage ? usagePrimary(usage) : mediaPrimary(kind);
   if (p.provider === provider) return p.model;
   // Secours : seulement s'il est utilisable (confirmé, tarifé) — sinon le modèle historique de ce fournisseur.
-  const b = mediaBackup(kind);
+  const b = usage ? usageBackup(usage) : mediaBackup(kind);
   const bm = b ? mediaModel(b.provider, b.model) : null;
   if (b?.provider === provider && bm && mediaStatus(bm).usable) return b.model;
   return MEDIA_MODELS.find((m) => m.kind === kind && m.provider === provider && m.legacyDefault)?.model ?? MEDIA_MODELS.find((m) => m.kind === kind && m.provider === provider)!.model;

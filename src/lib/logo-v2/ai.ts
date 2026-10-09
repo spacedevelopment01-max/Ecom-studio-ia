@@ -1,13 +1,17 @@
 /**
  * Accès à l'IA du moteur Logo V2 (injecté : réel ici, simulé dans les tests). Chaque appel a une raison :
  *  - territoires : UN appel (directeur artistique, niveau fort) pour toutes les directions ;
- *  - symbole : seulement pour un territoire qui en demande un (jamais pour un logotype ou un monogramme construit) ;
- *  - exploration par image : seulement pour une construction « illustrative », puis vectorisée (jamais finale telle quelle) ;
+ *  - concept graphique du symbole : par le MODÈLE D'IMAGES choisi pour l'usage « Logos » (Administration › Images &
+ *    Vidéos), seulement pour un territoire qui demande un symbole ; vectorisé ensuite (jamais livré tel quel) ;
+ *  - symbole vectoriel (tâche « logo_symbol ») : FINALISATION — redessine le concept en SVG propre quand la
+ *    vectorisation automatique ne suffit pas ; il ne le conçoit seul que si aucun modèle d'images n'est utilisable,
+ *    et c'est alors écrit dans les notes de la série (jamais en silence) ;
  *  - relecture : une par proposition construite, sur la planche (niveau fort : c'est elle qui décide FINAL).
  * Le routage passe par le Router V2 (tâche + capacité), le contexte par le scope « logo » du Project Brain.
  */
 import type { JobContext } from "../jobs";
 import { llmJson } from "../ai/llm";
+import { imageUnavailableReason, mediaRouteFor } from "../ai/media-providers";
 import { L, uiLang } from "../i18n-server";
 import { STYLE_FONTS, TerritoriesSchema, type TerritoryDraft } from "./territories";
 import { LogoReviewSchema } from "./quality";
@@ -16,9 +20,12 @@ import type { BrandBrief, LogoReview, Territory } from "./types";
 
 export type LogoV2Ai = {
   territories(brief: BrandBrief, n: number, avoid: string[]): Promise<TerritoryDraft[]>;
-  drawSymbol(t: Territory, brief: BrandBrief, feedback?: string): Promise<{ svg: string; idea: string }>;
-  /** Exploration par l'IA d'images (raster) ; null si aucun fournisseur capable. */
-  exploreSymbol(t: Territory, brief: BrandBrief): Promise<Buffer | null>;
+  /** Symbole SVG (tâche logo_symbol) ; `concept` : image du concept à finaliser en vectoriel. */
+  drawSymbol(t: Territory, brief: BrandBrief, feedback?: string, concept?: Buffer | null): Promise<{ svg: string; idea: string }>;
+  /** Concept graphique par le modèle d'images de l'usage « Logos » (raster) ; null si aucun modèle utilisable. */
+  exploreSymbol(t: Territory, brief: BrandBrief, feedback?: string): Promise<Buffer | null>;
+  /** Modèle d'images qui fera les concepts (ou la raison de son absence) ; absent : exploreSymbol décide seul. */
+  conceptRoute?(): { provider: string; model: string } | { unavailable: string };
   review(board: Buffer, t: Territory, brief: BrandBrief, expected: string): Promise<LogoReview>;
 };
 
@@ -46,6 +53,7 @@ Règles strictes du SVG (toute entorse = refus automatique) :
 - aplats ou traits épais (stroke-width de 8 à 14, linecap et linejoin « round ») ; aucun détail de moins de 6 unités ;
 - fill/stroke = "currentColor", "none" ou le code exact de la couleur d'accent fournie (une forme au plus) ; jamais de blanc (découpe : fill-rule="evenodd") ;
 - interdits : <text>, lettres, chiffres, <image>, <use>, <style>, <script>, <defs>, <filter>, <mask>, <clipPath>, dégradés, attributs style, class, transform, href, on…, url(…), commentaires ; au plus 600 nombres.
+Si une image de CONCEPT est jointe (proposée par l'IA d'images) : c'est la référence graphique à finaliser — garde son idée, sa silhouette et son parti pris, simplifie-la en formes nettes ; ne la remplace pas par une autre idée.
 Réponds { "idea": "ce que montre le symbole, une phrase", "svg": "<svg …>…</svg>" }.`;
 
 export const REVIEW_SYSTEM = `Rôle : directeur de création exigeant d'une grande agence de branding. Tu juges UNE proposition de logo avant qu'elle soit présentée au client, sur une planche : en couleur sur fond neutre, en noir seul, en blanc sur fond sombre, puis en petite taille (64 px et 24 px).
@@ -78,25 +86,31 @@ ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas
       );
       return r.territories;
     },
-    async drawSymbol(t, brief, feedback) {
+    async drawSymbol(t, brief, feedback, concept) {
       return llmJson(
         {
           task: "logo_symbol",
           ...base,
-          usageKey: key(`symbol:${t.id}:${feedback ? "r" : "0"}:${(feedback ?? "").length}`),
-          promptKey: "logo-v2-symbol",
+          usageKey: key(`symbol:${t.id}:${feedback ? "r" : "0"}:${(feedback ?? "").length}${concept ? ":c" : ""}`),
+          promptKey: concept ? "logo-v2-symbol-finalize" : "logo-v2-symbol",
           system: SYMBOL_SYSTEM,
           context: brief.brainContext,
+          ...(concept ? { images: [{ data: concept, label: L("concept du symbole (IA d'images) à finaliser en vectoriel", "symbol concept (image AI) to finalize as vector") }] } : {}),
           prompt: `Territoire « ${t.name} » : ${t.concept}\nIdée du symbole : ${t.symbolIdea ?? "à tirer du concept"}\nConstruction : ${t.construction} ; sobriété ${t.sobriety}/5 ; à éviter : ${[...t.avoid, ...brief.cliches.slice(0, 6)].join(", ")}.\nCouleur d'accent (code exact) : ${brief.palette[t.colorRole.accent]}.${feedback ? `\nREPRISE CIBLÉE — la version précédente a été refusée : ${feedback}. Corrige exactement ce point, garde l'idée si elle n'est pas en cause.` : ""}`,
           maxTokens: 6000,
         },
         z.object({ idea: z.string().catch(""), svg: z.string() }),
       );
     },
-    async exploreSymbol(t, _brief) {
+    async exploreSymbol(t, _brief, feedback) {
       const { imageProviderAvailable, logoSymbolImage } = await import("../ai/media-providers");
-      if (!imageProviderAvailable() || !t.symbolIdea) return null;
-      return logoSymbolImage({ ...base, usageKey: key(`explore:${t.id}`) }, { concept: `${t.symbolIdea}. ${t.distinctive}` });
+      if (!imageProviderAvailable({ usage: "logo" }) || !t.symbolIdea) return null;
+      return logoSymbolImage({ ...base, usageKey: key(`explore:${t.id}${feedback ? `:r${feedback.length}` : ""}`) }, { concept: `${t.symbolIdea}. ${t.distinctive}${feedback ? ` Fix these issues from the previous version: ${feedback}` : ""}` });
+    },
+    conceptRoute() {
+      // Même décision que la génération (principal, secours, mode de l'usage « Logos »).
+      const r = mediaRouteFor("logo");
+      return r ?? { unavailable: imageUnavailableReason("logo") ?? L("aucun modèle d'images utilisable pour les logos", "no usable image model for logos") };
     },
     async review(board, t, brief, expected) {
       return llmJson(

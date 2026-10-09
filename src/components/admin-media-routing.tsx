@@ -74,9 +74,9 @@ export function MediaRoutingPanel({ data, post }: { data: MediaRoutingData; post
         <Card key={k.kind} className="grid gap-4 overflow-x-auto p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-display text-lg font-semibold">{k.kind === "image" ? t("Images, logos et visuels publicitaires", "Images, logos and ad visuals") : t("Vidéos produit et UGC", "Product and UGC videos")}</p>
+              <p className="font-display text-lg font-semibold">{k.kind === "image" ? t("Images — réglage général et catalogue", "Images — general setting and catalog") : t("Vidéos — réglage général et catalogue", "Videos — general setting and catalog")}</p>
               <p className="text-xs text-muted">
-                {t("Principal", "Primary")} : <span className="font-mono">{k.primary}</span> · {t("Secours", "Backup")} : <span className="font-mono">{k.backup ?? t("aucun", "none")}</span>
+                {t("Suivi par les usages sans réglage propre", "Followed by usages without their own setting")} · {t("Principal", "Primary")} : <span className="font-mono">{k.primary}</span> · {t("Secours", "Backup")} : <span className="font-mono">{k.backup ?? t("aucun", "none")}</span>
                 {k.mode === "auto" && <> · {t("Choix automatique actuel", "Current automatic pick")} : <span className="font-mono">{k.autoPick ?? t("aucun modèle utilisable", "no usable model")}</span></>}
               </p>
             </div>

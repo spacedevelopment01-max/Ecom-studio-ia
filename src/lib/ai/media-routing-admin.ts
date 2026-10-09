@@ -8,7 +8,7 @@ import { L } from "../i18n-server";
 import { getSetting } from "../settings";
 import { priceFor } from "./config";
 import { MEDIA_MODELS, type MediaKind, type MediaModel } from "./media-models";
-import { mediaBackup, mediaMode, mediaPrimary, mediaStats, mediaStatus, rankMedia, shutDown, typicalCostMicro } from "./media-routing";
+import { incompatibility, MEDIA_USAGES, mediaBackup, mediaMode, mediaPrimary, mediaStats, mediaStatus, rankMedia, selectMedia, shutDown, typicalCostMicro, USAGE_INFO, usageBackup, usageExplicit, usageNeed, usageOff, usagePrimary, usageSettings } from "./media-routing";
 
 const eur = (micro: number | null) => (micro == null ? null : Math.round((micro / EUR) * 1000) / 1000);
 
@@ -71,6 +71,49 @@ export function mediaRoutingOverview() {
           score: ranking.find((r) => r.model === m)?.score ?? null,
           observed: s ? { calls: s.calls, failures: s.failures, avgCostEur: eur(s.avgCostMicro), avgLatencyMs: s.avgLatencyMs, avgScore: s.avgScore } : null,
         };
+      }),
+    };
+  });
+}
+
+/**
+ * Réglages par USAGE (logos, images produit, retouches produit, publicités, décors, vidéos produit, vidéos UGC) :
+ * mode, principal, secours (hérités du réglage général tant qu'ils ne sont pas choisis), modèle qui serait appelé
+ * maintenant, et modèles du catalogue avec leur compatibilité pour cet usage.
+ */
+export function mediaUsageOverview() {
+  const settings = usageSettings();
+  return MEDIA_USAGES.map((u) => {
+    const info = USAGE_INFO[u];
+    const own = settings[u] ?? {};
+    const primary = usagePrimary(u);
+    const backup = usageBackup(u);
+    const need = usageNeed(u);
+    const off = usageOff(u);
+    const pick = off ? null : selectMedia(need);
+    const key = (r: { provider: string; model: string } | null) => (r ? `${r.provider}:${r.model}` : null);
+    const pm = MEDIA_MODELS.find((m) => `${m.provider}:${m.model}` === key(primary));
+    return {
+      usage: u,
+      kind: info.kind,
+      label: L(info.label.fr, info.label.en),
+      detail: L(info.detail.fr, info.detail.en),
+      mode: own.mode ?? mediaMode(info.kind),
+      modeInherited: !own.mode,
+      primary: key(primary)!,
+      primaryInherited: primary.inherited,
+      // Principal hérité qui ne convient pas à cet usage (ex. modèle sans retouche par masque) : signalé.
+      primaryProblem: pm ? incompatibility(pm, need) : L("modèle hors catalogue", "model not in the catalog"),
+      backup: key(backup),
+      backupInherited: !("backup" in own),
+      off,
+      canBeOff: !!info.canBeOff,
+      current: pick ? { key: `${pick.provider}:${pick.model}`, role: pick.role } : null,
+      explicit: usageExplicit(u),
+      options: MEDIA_MODELS.filter((m) => m.kind === info.kind).map((m) => {
+        const st = mediaStatus(m);
+        const priced = !st.reasons.some((r) => /tarif|price/i.test(r));
+        return { key: st.key, label: m.label, incompatible: incompatibility(m, need), canBePrimary: !!m.adapter && st.confirmed && priced, canBeBackup: st.usable };
       }),
     };
   });

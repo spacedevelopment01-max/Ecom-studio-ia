@@ -110,7 +110,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     strategy,
     inv,
     allowGeneration: canGenerate,
-    provider: (need) => chooseProvider(need, { available: deps.available, preferred: deps.preferred, estimate: deps.estimate ?? estimateMicro }),
+    provider: (need) => chooseProvider(need, { available: deps.available, preferred: deps.preferredFor ? deps.preferredFor(!!need.people) : deps.preferred, estimate: deps.estimate ?? estimateMicro }),
     budgetMicro: budget.capMicro,
   });
   notes.push(...planning.notes);
@@ -570,7 +570,7 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
   const inv = deps.inventory();
   const notes: string[] = [];
   const shot: ShotPlan = { id: clip.shotId, durationS: clip.durationS, part: clip.part ?? "development", subject: o.instruction?.trim() || clip.label, action: "plan de remplacement", environment: strategy.style.camera, framing: "medium", camera: "push_in", lighting: strategy.style.light, reference: { assetId: inv.photos[0]?.id ?? null, note: "photo réelle" }, voice: "", onScreen: "", sound: "", transition: clip.transitionIn.kind, purpose: "remplacer la séquence", showsProduct: !!inv.cutout && p.business === "products", character: intent.kind === "ugc", method: "ai_video", source: { kind: "compose" }, why: "" };
-  const choice = o.approve && deps.generationAllowed && deps.canReview ? chooseProvider({ imageToVideo: true, people: shot.character, nativeAudio: false, aspect: cur.doc.aspect, durationS: clip.durationS }, { available: deps.available, preferred: deps.preferred, estimate: deps.estimate ?? estimateMicro }) : null;
+  const choice = o.approve && deps.generationAllowed && deps.canReview ? chooseProvider({ imageToVideo: true, people: shot.character, nativeAudio: false, aspect: cur.doc.aspect, durationS: clip.durationS }, { available: deps.available, preferred: deps.preferredFor ? deps.preferredFor(!!shot.character) : deps.preferred, estimate: deps.estimate ?? estimateMicro }) : null;
   if (choice) shot.source = { kind: "generate", assetId: shot.reference.assetId, provider: choice.provider, model: choice.model, estimateMicro: choice.estimateMicro };
   else {
     notes.push(o.approve ? "aucun fournisseur vidéo compatible et disponible : plan local" : "génération non approuvée : plan local");

@@ -9,7 +9,7 @@ import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { activeProviderKey, routeFor } from "../ai/config";
 import { aiClip } from "../ai/media-providers";
-import { mediaMode, selectMedia } from "../ai/media-routing";
+import { selectMedia, usageNeed, usagePrimary, type MediaUsage } from "../ai/media-routing";
 import { all, json } from "../db";
 import type { JobContext } from "../jobs";
 import { assetData, getAsset, type Asset } from "../library";
@@ -42,6 +42,8 @@ export type VideoV2Deps = {
   voice: null | ((text: string, voiceId: string | null, key: string) => Promise<{ data: Buffer; mime: string }>);
   available: (provider: string) => boolean;
   preferred: { provider: string; model: string } | null;
+  /** Modèle préféré selon l'usage du plan (vidéo produit, ou UGC quand une personne est à l'image). */
+  preferredFor?: (people: boolean) => { provider: string; model: string } | null;
   /** Estimation du coût d'un plan (EUR micro) ; par défaut, le tarif de l'administration. */
   estimate?: (provider: string, model: string, seconds: number) => number | null;
   inventory: () => Inventory;
@@ -72,9 +74,14 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
   const base = { userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null };
   const ai = aiActive && llmConfigured();
   const small = (b: Buffer) => sharp(b).resize(768, 768, { fit: "inside" }).jpeg({ quality: 82 }).toBuffer();
-  // Mode automatique du routage multimédia : le modèle le mieux noté devient le modèle préféré du moteur.
-  const auto = mediaMode("video") === "auto" ? selectMedia({ kind: "video", imageToVideo: true }) : null;
-  const route = auto ?? routeFor("video_generation");
+  // Usage du plan (Images & Vidéos) : principal ou choix automatique de « Vidéos produit » ou « Vidéos UGC ».
+  const prefer = (u: MediaUsage) => {
+    const c = selectMedia(usageNeed(u));
+    if (c) return { provider: c.provider, model: c.model };
+    const p = usagePrimary(u);
+    return p.inherited ? (routeFor("video_generation") ?? p) : p;
+  };
+  const preferred = { product: prefer("product_video"), ugc: prefer("ugc_video") };
   return {
     canWrite: ai,
     canReview: ai,
@@ -101,14 +108,15 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       // Barrières existantes : forfait, budget IA, plafond de la tâche, tarif connu — vérifiées AVANT l'envoi.
       const usage = { ...base, usageKey: key };
       // Modèle choisi par le moteur (catalogue) ; relais vers le secours compatible si le principal échoue sans coût.
-      if (req.provider === "google" || req.provider === "fal") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
+      if (req.provider === "google" || req.provider === "fal") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
       throw new Error(`fournisseur vidéo non pris en charge : ${req.provider}`);
     },
     // Aucun fournisseur de synthèse vocale branché dans le studio (vérifié) : la voix reste à enregistrer ou à
     // brancher (phase 7B) ; le message passe par les sous-titres et le texte à l'écran.
     voice: null,
     available: (provider) => !!activeProviderKey(provider as never),
-    preferred: route ? { provider: route.provider, model: route.model } : null,
+    preferred: preferred.product,
+    preferredFor: (people) => (people ? preferred.ugc : preferred.product),
     inventory: () => projectInventory(p),
     data: (assetId) => {
       const a = getAsset(assetId);

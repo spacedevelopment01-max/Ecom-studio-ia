@@ -12,7 +12,8 @@
 import sharp from "sharp";
 import { activeProviderKey } from "../ai/config";
 import { llmConfigured, llmJson } from "../ai/llm";
-import { ambianceImage, geminiPlate, openaiScene, routeMedia } from "../ai/media-providers";
+import { ambianceImage, imageProviderAvailable, mediaRouteFor, openaiScene, productImagePath, productPlate } from "../ai/media-providers";
+import type { MediaUsage } from "../ai/media-routing";
 import { brainContext } from "../ai/context";
 import { assetData, getAsset } from "../library";
 import type { Project } from "../projects";
@@ -71,22 +72,25 @@ export async function compositeProduct(plate: Buffer, cutout: Buffer, aspect: Vi
 
 export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: boolean }): ImageV2Deps {
   const base = { userId: p.userId, projectId: p.id, jobId: b.jobId };
-  const pathFor = (brief: VisualBrief): GenerationPath => {
-    if (!b.aiActive) return "none";
+  /** Usage de l'administration (Images & Vidéos) : publicité, image du produit réel, ou décor et ambiance. */
+  const usageFor = (brief: VisualBrief): MediaUsage => (brief.support === "ad" || brief.kind === "ad_image" ? "ad_visual" : brief.productFidelity ? "product_image" : "scene");
+  /** Parcours et usage réellement appliqué (retouche par masque : « Retouches produit » pour une image produit). */
+  const routeFor = (brief: VisualBrief): { path: GenerationPath; usage: MediaUsage } => {
+    const usage = usageFor(brief);
+    if (!b.aiActive) return { path: "none", usage };
     if (brief.productFidelity) {
-      if (!brief.references.length) return "none";
-      // Retouche par masque si un modèle d'édition est disponible ; sinon décor vide + produit réel composé.
-      const edit = routeMedia("image_generation", "mask");
-      if (edit && edit.provider === "openai") return "masked_edit";
-      const gen = routeMedia("image_generation");
-      return gen && gen.provider === "google" ? "composite_plate" : "none";
+      if (!brief.references.length) return { path: "none", usage };
+      // Retouche par masque si un modèle capable est choisi ; sinon décor vide du modèle choisi + produit réel composé.
+      const r = productImagePath(usage === "ad_visual" ? "ad_visual" : "product_image");
+      return r ? { path: r.path, usage: r.usage } : { path: "none", usage };
     }
-    return routeMedia("image_generation") ? "text_to_image" : "none";
+    return { path: imageProviderAvailable({ usage }) ? "text_to_image" : "none", usage };
   };
+  const pathFor = (brief: VisualBrief): GenerationPath => routeFor(brief).path;
   return {
     providers: STOCK_PROVIDERS,
     canReview: b.aiActive && llmConfigured(),
-    canGenerate: b.aiActive && (!!activeProviderKey("openai") || !!activeProviderKey("google")),
+    canGenerate: b.aiActive && (!!activeProviderKey("openai") || !!activeProviderKey("google") || !!activeProviderKey("fal")),
     download: (c) => downloadStock({ source: c.source as never, id: c.id, url: c.url, page: c.page, author: c.author, license: c.license.name, width: c.width, height: c.height, alt: c.alt }),
     reference: (assetId) => {
       const a = getAsset(assetId);
@@ -115,7 +119,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       )) as ImageReview;
     },
     async generate(brief, prompt, reference, key) {
-      const path = pathFor(brief);
+      const { path, usage } = routeFor(brief);
       const aspect = generationAspect(brief.format.aspect);
       if (path === "masked_edit" && reference) {
         const size = aspect === "16:9" ? "1536x1024" : aspect === "1:1" ? "1024x1024" : "1024x1536";
@@ -126,15 +130,19 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
         const top = Math.round(H * 0.82 - (pm.height ?? 0));
         const composite = await sharp({ create: { width: W, height: H, channels: 4, background: { r: 235, g: 230, b: 224, alpha: 1 } } }).composite([{ input: prod, left, top }]).png().toBuffer();
         const mask = await sharp({ create: { width: W, height: H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: prod, left, top }]).png().toBuffer();
-        const painted = await openaiScene({ ...base, usageKey: key }, { composite, productMask: mask, prompt, size: size as "1024x1024" });
+        const painted = await openaiScene({ ...base, usageKey: key }, { composite, productMask: mask, prompt, size: size as "1024x1024", usage });
         // Pixels du produit d'origine remis exactement par-dessus (fidélité garantie par construction).
-        return { img: await sharp(painted).resize(W, H).composite([{ input: prod, left, top }]).jpeg({ quality: 90 }).toBuffer(), provider: "openai", model: null, path };
+        return { img: await sharp(painted).resize(W, H).composite([{ input: prod, left, top }]).jpeg({ quality: 90 }).toBuffer(), provider: "openai", model: mediaRouteFor(usage, { mask: true })?.model ?? null, path };
       }
       if (path === "composite_plate" && reference) {
-        const plate = await geminiPlate({ ...base, usageKey: key }, { prompt, aspect });
-        return { img: await compositeProduct(plate, reference, brief.format.aspect), provider: "google", model: null, path };
+        const r = mediaRouteFor(usage);
+        const plate = await productPlate({ ...base, usageKey: key }, { prompt, aspect, usage });
+        return { img: await compositeProduct(plate, reference, brief.format.aspect), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
-      if (path === "text_to_image") return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect }), provider: routeMedia("image_generation")?.provider ?? "ai", model: null, path };
+      if (path === "text_to_image") {
+        const r = mediaRouteFor(usage);
+        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, usage }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
+      }
       throw new Error(L("aucun parcours de génération fiable pour cette image", "no reliable generation path for this image"));
     },
   };

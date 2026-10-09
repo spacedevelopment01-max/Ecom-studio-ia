@@ -5,7 +5,7 @@ import { setSetting, setJsonSetting, getJsonSetting } from "@/lib/settings";
 import { DEFAULT_ROUTES, TASKS, priceFor, priceValid, type TaskId } from "@/lib/ai/config";
 import { effortValues, textModel } from "@/lib/ai/text-models";
 import { mediaModel } from "@/lib/ai/media-models";
-import { mediaPrimary, mediaStatus } from "@/lib/ai/media-routing";
+import { incompatibility, MEDIA_USAGES, mediaPrimary, mediaStatus, USAGE_INFO, usageNeed, usagePrimary, usageSettings, type UsageSetting } from "@/lib/ai/media-routing";
 import { L } from "@/lib/i18n-server";
 
 const pos = z.number().positive().finite();
@@ -36,6 +36,19 @@ export const POST = handle(async (req: Request) => {
       mediaPrimary: z.object({ kind: z.enum(["image", "video"]), key: z.string().max(160) }).optional(),
       mediaBackup: z.object({ kind: z.enum(["image", "video"]), key: z.string().max(160).nullable() }).optional(),
       mediaModel: z.object({ key: z.string().max(160), enabled: z.boolean().optional(), confirm: z.boolean().optional() }).optional(),
+      // Réglage d'un USAGE (logos, images produit…) : principal (null = suivre le réglage général), secours (null =
+      // aucun), mode, retour au réglage général, coupure (retouches produit).
+      mediaUsage: z
+        .object({
+          usage: z.enum(MEDIA_USAGES),
+          mode: z.enum(["manual", "auto"]).optional(),
+          primary: z.string().max(160).nullable().optional(),
+          backup: z.string().max(160).nullable().optional(),
+          inheritBackup: z.boolean().optional(),
+          off: z.boolean().optional(),
+          reset: z.boolean().optional(),
+        })
+        .optional(),
       textModel: z.object({ key: z.string().regex(/^(anthropic|openai|google):[\w.-]+$/), enabled: z.boolean().optional(), confirm: z.boolean().optional() }).optional(),
       price: z.object({ key: z.string().regex(/^(anthropic|openai|google|fal):.+$/, { error: () => L("Clé attendue : fournisseur:modèle", "Expected key: provider:model") }), value: PriceSchema.nullable() }).optional(),
       pricesChecked: z.literal(true).optional(),
@@ -127,6 +140,51 @@ export const POST = handle(async (req: Request) => {
       backups[b.mediaBackup.kind] = b.mediaBackup.key;
     }
     setJsonSetting("ai.media.backup", backups);
+  }
+  if (b.mediaUsage) {
+    const u = b.mediaUsage.usage;
+    const info = USAGE_INFO[u];
+    const settings = usageSettings();
+    const cur: UsageSetting = { ...(settings[u] ?? {}) };
+    // Modèle appelable pour CET usage : adaptateur réel, tarif connu et confirmé, capacités suffisantes.
+    const callable = (key: string, role: string) => {
+      const m = mediaOf(key, info.kind);
+      const st = mediaStatus(m);
+      if (!m.adapter || !st.confirmed || st.reasons.some((r) => /tarif|price/i.test(r))) throw new HttpError(400, L(`${m.label} ne peut pas être ${role} : ${st.reasons.join(", ")}.`, `${m.label} can't be ${role}: ${st.reasons.join(", ")}.`));
+      const why = incompatibility(m, usageNeed(u));
+      if (why) throw new HttpError(400, L(`${m.label} ne convient pas à « ${info.label.fr} » : ${why}.`, `${m.label} doesn't fit "${info.label.en}": ${why}.`));
+      return m;
+    };
+    if (b.mediaUsage.reset) delete settings[u];
+    else {
+      if (b.mediaUsage.mode) cur.mode = b.mediaUsage.mode;
+      if (b.mediaUsage.primary !== undefined) {
+        if (b.mediaUsage.primary === null) delete cur.primary;
+        else {
+          callable(b.mediaUsage.primary, L("principal", "primary"));
+          cur.primary = b.mediaUsage.primary;
+        }
+      }
+      if (b.mediaUsage.inheritBackup) delete cur.backup;
+      else if (b.mediaUsage.backup !== undefined) {
+        if (b.mediaUsage.backup === null) cur.backup = null;
+        else {
+          const m = callable(b.mediaUsage.backup, L("secours", "backup"));
+          // Secours couvert : utilisable (clé active, tarif valide), distinct du principal de l'usage.
+          if (!mediaStatus(m).usable) throw new HttpError(400, L(`${m.label} ne peut pas servir de secours : ${mediaStatus(m).reasons.join(", ")}.`, `${m.label} can't be a backup: ${mediaStatus(m).reasons.join(", ")}.`));
+          const p = cur.primary ?? (() => { const x = usagePrimary(u); return `${x.provider}:${x.model}`; })();
+          if (p === b.mediaUsage.backup) throw new HttpError(400, L("Le secours doit être différent du principal.", "The backup must differ from the primary."));
+          cur.backup = b.mediaUsage.backup;
+        }
+      }
+      if (b.mediaUsage.off !== undefined) {
+        if (b.mediaUsage.off && !info.canBeOff) throw new HttpError(400, L("Cet usage ne peut pas être coupé.", "This usage can't be turned off."));
+        if (b.mediaUsage.off) cur.off = true;
+        else delete cur.off;
+      }
+      settings[u] = cur;
+    }
+    setJsonSetting("ai.media.usage", settings);
   }
   if (b.mediaModel) {
     const m = mediaOf(b.mediaModel.key);

@@ -130,6 +130,8 @@ describe("Project Brain 2C — contextes ciblés et traces", async () => {
     const v = view(p, "image");
     const brain = { scope: v.label, hash: v.hash, version: v.brainVersion };
     const { geminiPlate } = await import("@/lib/ai/media-providers");
+    // Décor vide demandé au modèle choisi pour « Images produit » (ici Gemini, réglé dans l'administration).
+    (await import("@/lib/settings")).setJsonSetting("ai.media.usage", { product_image: { primary: "google:gemini-2.5-flash-image" } });
     const png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
     fetchImpl = async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: png } }] } }] }), { status: 200 });
     await fr(() => geminiPlate({ userId: u.id, projectId: p.id, usageKey: `img-ok-${Date.now()}`, brain }, { prompt: "set", aspect: "1:1" }));

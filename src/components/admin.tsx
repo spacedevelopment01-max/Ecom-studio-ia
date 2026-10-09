@@ -10,6 +10,7 @@ import { intlLocale, type Lang } from "@/lib/i18n";
 import { AccountingView } from "./admin-accounting";
 import { TextRoutingPanel, type TextRoutingData } from "./admin-text-routing";
 import { MediaRoutingPanel, type MediaRoutingData } from "./admin-media-routing";
+import { MediaUsagesPanel, type MediaUsageData } from "./admin-media-usages";
 
 type Overview = {
   appUrl: string;
@@ -21,6 +22,7 @@ type Overview = {
   markup: number;
   textRouting: TextRoutingData;
   mediaRouting: MediaRoutingData;
+  mediaUsages: MediaUsageData;
   oauth: { key: string; label: string; configured: boolean; clientIdMasked: string; redirectUri: string; needs: string; docs: string }[];
   stripe: { secretMasked: string; webhookConfigured: boolean; verifiedAt: string | null; live: boolean; webhookUrl: string };
   smtp: { configured: boolean; hostMasked: string; port: string; userMasked: string; passwordConfigured: boolean; fromMasked: string };
@@ -111,6 +113,7 @@ export function AdminConsole() {
             <PricingAlert data={data} post={post} onOpen={openPrices} />
             {tab === "ia" && <AiProviders data={data} set={set} />}
             {tab === "routes" && <Routes data={data} post={post} />}
+            {tab === "medias" && <MediaUsagesPanel data={data.mediaUsages} post={post} />}
             {tab === "medias" && <MediaRoutingPanel data={data.mediaRouting} post={post} />}
             {tab === "connexions" && <OAuthApps data={data} set={set} />}
             {tab === "paiements" && <Payments data={data} set={set} />}

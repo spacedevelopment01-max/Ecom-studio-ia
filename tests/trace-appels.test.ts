@@ -98,6 +98,8 @@ describe("trace des appels", async () => {
   });
 
   it("image : génération tracée (fournisseur, modèle, latence, coût) ; échec après envoi tracé aussi", async () => {
+    // Décor vide demandé au modèle choisi pour « Images produit » (ici Gemini, réglé dans l'administration).
+    (await import("@/lib/settings")).setJsonSetting("ai.media.usage", { product_image: { primary: "google:gemini-2.5-flash-image" } });
     vi.stubGlobal("fetch", async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from("img").toString("base64") } }] } }] }), { status: 200 }));
     await withTrace({ step: "visuels" }, () => geminiPlate({ userId: "u-img", projectId: "p-img", usageKey: "k-img" }, { prompt: "set", aspect: "1:1" }));
     vi.stubGlobal("fetch", async () => new Response("boom", { status: 500 }));
