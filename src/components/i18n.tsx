@@ -48,12 +48,13 @@ export function useT() {
 }
 
 /** Sélecteur de langue de l'interface. */
-export function LangSwitch({ className }: { className?: string }) {
+/** `large` : boutons de 40 px de haut (zones tactiles de l'accueil public). */
+export function LangSwitch({ className, large }: { className?: string; large?: boolean }) {
   const { lang, setLang } = useLang();
   return (
     <div role="group" aria-label={lang === "en" ? "Language" : "Langue"} className={["inline-flex shrink-0 rounded-full border border-line bg-card p-0.5 text-xs font-semibold", className].filter(Boolean).join(" ")}>
       {LANGS.map((l) => (
-        <button key={l.id} type="button" onClick={() => l.id !== lang && setLang(l.id)} aria-pressed={lang === l.id} title={l.label} lang={l.id} className={["rounded-full px-2.5 py-1.5 transition", lang === l.id ? "bg-ink text-paper" : "text-muted hover:text-ink"].join(" ")}>
+        <button key={l.id} type="button" onClick={() => l.id !== lang && setLang(l.id)} aria-pressed={lang === l.id} title={l.label} lang={l.id} className={[large ? "h-10 min-w-10 rounded-full px-2.5 transition" : "rounded-full px-2.5 py-1.5 transition", lang === l.id ? "bg-ink text-paper" : "text-muted hover:text-ink"].join(" ")}>
           {l.short}
         </button>
       ))}

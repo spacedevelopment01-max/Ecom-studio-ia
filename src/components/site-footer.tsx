@@ -13,12 +13,14 @@ export async function SiteFooter() {
     {
       title: T("Produit", "Product"),
       links: [
+        { href: "/#fonctionnalites", label: T("Fonctionnalités", "Features") },
         { href: "/#video", label: T("Comment ça marche", "How it works") },
+        { href: "/#boutiques", label: T("Création de boutique", "Store creation") },
         { href: "/#sur-mesure", label: T("Thème sur mesure", "Custom theme") },
-        { href: "/#boutiques", label: T("Plateformes", "Platforms") },
+        { href: "/#plateformes", label: T("Plateformes et exports", "Platforms and exports") },
         { href: "/#rangement", label: T("Rangement des fichiers", "File organization") },
         { href: "/#demonstrations", label: T("Démonstrations", "Demos") },
-        { href: "/#offre", label: T("Offre", "Pricing") },
+        { href: "/#offre", label: T("Tarifs", "Pricing") },
       ],
     },
     {
@@ -38,7 +40,7 @@ export async function SiteFooter() {
       <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <div className="text-white [&_path]:[fill:#070B17]"><Logo /></div>
-          <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">{T("Une photo, une marque, une boutique qui vend. Le studio crée votre marque, votre boutique (Shopify, WooCommerce, PrestaShop), vos images, vos vidéos et vos publications.", "One photo, one brand, a store that sells. The studio creates your brand, your store (Shopify, WooCommerce, PrestaShop), your images, your videos and your posts.")}</p>
+          <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">{T("Toute votre activité e-commerce, un seul studio : votre marque, votre boutique (Shopify, WooCommerce, PrestaShop), vos images, vos vidéos, vos publicités et vos publications.", "Your entire e-commerce business, one studio: your brand, your store (Shopify, WooCommerce, PrestaShop), your images, your videos, your ads and your posts.")}</p>
           <Link href="/inscription" className="btn-glow mt-6 inline-flex h-11 items-center rounded-full bg-[#3D6EF0] px-5 text-sm font-semibold text-white">{T("Essayer le studio", "Try the studio")}</Link>
         </div>
         <nav className="grid gap-10 sm:grid-cols-3 lg:col-span-8" aria-label={T("Pied de page", "Footer")}>
