@@ -33,6 +33,7 @@ export type StepKind =
   | "video"
   | "quality_review"
   | "organize"
+  | "cms_export"
   | "publish";
 
 export type StepStatus = "pending" | "done" | "skipped" | "rejected" | "failed";
@@ -122,6 +123,8 @@ export const STEP_TEMPLATES: Record<StepKind, Template> = {
   video: { task: "video_direction", scope: "video", deliverable: "video_clip", cost: "high", deps: ["brand_strategy"], after: ["image_generate", "stock_search"] },
   quality_review: { task: "quality_control", scope: "qc", deliverable: null, cost: "low", deps: [], after: ["copy", "seo", "theme", "blog", "social", "ad", "video"] },
   organize: { task: "classification", scope: null, deliverable: null, cost: "low", deps: [] },
+  // Export du thème (CMS Engine V2) : moteur local, contrôlé par le Quality Gate CMS ; après la boutique si elle est au plan.
+  cms_export: { task: "local", scope: null, deliverable: "cms_export_v2", cost: "free", deps: [], after: ["theme", "theme_edit", "quality_review"] },
   publish: { task: "local", scope: null, deliverable: null, cost: "free", deps: ["theme", "quality_review"] },
 };
 
@@ -143,6 +146,7 @@ const INTENT_STEPS: Record<Intent, StepKind[]> = {
   CREATE_AD: ["ad"],
   CREATE_VIDEO: ["video"],
   ORGANIZE_FILES: ["organize"],
+  EXPORT_CMS: ["cms_export"],
   PUBLISH: ["publish"],
 };
 
@@ -162,6 +166,7 @@ const EXPLICIT: Partial<Record<Intent, StepKind[]>> = {
   CREATE_VIDEO: ["video"],
   ANALYZE_PRODUCT: ["understand"],
   CREATE_BRAND: ["brand_strategy"],
+  EXPORT_CMS: ["cms_export"],
 };
 
 const CONTENT: StepKind[] = ["copy", "seo", "theme", "blog", "social", "ad", "video"];

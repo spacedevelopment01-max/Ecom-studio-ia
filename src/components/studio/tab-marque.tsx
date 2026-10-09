@@ -14,6 +14,7 @@ import { FromSiteBadge } from "./existing-site";
 import { FullLogoPanel } from "./full-logo-panel";
 import { LogoV2Panel } from "./logo-v2-panel";
 import { PalettePicker } from "./palette-picker";
+import { BrandPropagationCard } from "./workflow-panel";
 
 const PALETTE_LABEL: Record<string, { fr: string; en: string }> = {
   primary: { fr: "Principale", en: "Primary" },
@@ -141,6 +142,7 @@ export default function TabMarque() {
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
       {active[0] && <JobProgress job={active[0]} />}
       {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
+      <BrandPropagationCard />
       {!ident?.provided && <LogoV2Panel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && <FullLogoPanel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}

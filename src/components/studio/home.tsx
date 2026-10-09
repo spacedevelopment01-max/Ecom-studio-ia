@@ -306,6 +306,9 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
       )}
       </>
       )}
+      <Field label={t("Tout ce que vous voulez obtenir (facultatif)", "Everything you want to get (optional)")} hint={t("Exemple : « Crée ma marque, ma boutique Shopify, mes publicités et prépare mes publications Instagram pour les 30 prochains jours. » Le studio prépare un plan et un devis ; rien de payant n'est lancé sans votre accord.", "Example: \"Create my brand, my Shopify store, my ads and prepare my Instagram posts for the next 30 days.\" The studio prepares a plan and an estimate; nothing paid is started without your approval.")} htmlFor="request">
+        <Textarea id="request" name="request" rows={2} maxLength={4000} placeholder={t("Ma marque, ma boutique, mes publicités, mes publications…", "My brand, my store, my ads, my posts…")} />
+      </Field>
       <fieldset className="grid gap-2">
         <legend className="mb-1">
           <span className="block font-display text-xl font-semibold">{t("Vidéos de la création", "Videos in the creation")}</span>

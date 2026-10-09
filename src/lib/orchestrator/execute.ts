@@ -38,6 +38,7 @@ export const STEP_DELIVERABLES: Record<StepKind, Deliverable[]> = {
   video: ["video_clip", "ugc_clip", "ugc_frame", "video_v2", "video_shot_v2"],
   quality_review: [],
   organize: [],
+  cms_export: ["cms_export_v2"],
   publish: [],
 };
 
@@ -291,10 +292,49 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     await ctx.step(`plan:${s.id}`, async () => (await buildShop(ctx, p.id)).number);
     return outcome(ctx.job.id, "theme", since);
   },
+  // Réseaux sociaux (phase 12A) : Social Engine V2 — calendrier d'après la demande (durée, réseaux, fréquence),
+  // textes locaux sans invention, visuels produits sans dépense (bibliothèque, rendu local) ; une production payante
+  // n'est lancée que si l'étape a été autorisée avec son montant et dans le plafond. Rien n'est publié sans
+  // approbation. Plan identifié par la demande : une reprise ne crée aucun doublon.
   social: async (ctx, p, s) => {
-    const { startWeekCalendar } = await import("../engine/pipeline");
-    await startWeekCalendar(ctx, p.id, `plan-calendar:${ctx.job.id}`);
-    return { note: "7-day calendar started (child job)" };
+    const since = Date.now();
+    const { planFromAsk } = await import("../social-v2/engine");
+    const { produceBatch, postsOfPlan } = await import("../social-v2/production");
+    const { realSocialDeps } = await import("../social-v2/deps");
+    const text = String(s.input.socialText ?? s.input.text ?? "");
+    const planned = await ctx.step(`plan:${s.id}:calendar`, async () => {
+      // Plan identifié par la demande (reprise sans doublon) ; durée bornée par le forfait.
+      const r = planFromAsk(loadProject(p.id), text, { maxDays: (s.input.maxSocialDays as number | undefined) ?? undefined, planId: (s.input.socialPlanId as string | undefined) ?? undefined });
+      return { planId: r.planId, created: r.created, existing: r.existing, days: r.ask.days, perDay: r.ask.perDay, platforms: r.request.platforms.map((x) => x.platform), notes: r.notes };
+    });
+    const allowPaid = !!s.input.allowPaid;
+    const prod = await ctx.step(`plan:${s.id}:produce`, async () => {
+      const fresh = loadProject(p.id);
+      return produceBatch(fresh, postsOfPlan(planned.planId), realSocialDeps(ctx, fresh, allowPaid && routingEnv(fresh).aiActive), { allowPaid, maxCostEur: Number(s.input.maxCostEur ?? 0), approvedEstimateMicro: (s.input.approvedMicro as number | undefined) ?? null, batchSize: 400 });
+    });
+    remember(p.id, { kind: "artifact", key: "social_plan_v2", value: JSON.stringify({ planId: planned.planId, days: planned.days, platforms: planned.platforms }), source: "local" });
+    const o = outcome(ctx.job.id, "social", since);
+    return { ...o, note: `${planned.created + planned.existing} posts planned (${planned.platforms.join(", ")}, ${planned.days} days), ${prod.produced} visuals produced, ${prod.spentMicro} µ€ spent; approval required before any publication` };
+  },
+  // Export du thème (CMS Engine V2, phase 11A) : même chemin que l'écran « Exporter » (contrôle, verdict, version).
+  cms_export: async (ctx, p, s) => {
+    const { currentTheme } = await import("../projects");
+    const { exportAndRecord } = await import("../cms-v2/record");
+    const { contentLang } = await import("../i18n-server");
+    const platforms = ((s.input.cmsPlatforms as string[] | undefined) ?? [p.platform ?? "shopify"]) as import("../cms-v2/types").CmsPlatform[];
+    const out = await ctx.step(`plan:${s.id}`, async () => {
+      const v = currentTheme(p.id);
+      if (!v) return { error: "no store to export yet" };
+      const rows = [];
+      for (const pf of platforms) {
+        const r = await exportAndRecord({ id: p.id, userId: p.userId }, { spec: v.spec, number: v.version.number, id: v.version.id }, pf, contentLang() === "en" ? "en" : "fr", { jobId: ctx.job.id });
+        rows.push({ platform: pf, name: r.name, verdict: r.verdict, scope: r.scope, assetId: r.assetId, message: r.message });
+      }
+      return { rows };
+    });
+    if ("error" in out) return { verdict: "REJECTED", note: String(out.error) };
+    const worst = out.rows.some((r) => r.verdict === "REJECTED") ? "REJECTED" : out.rows.every((r) => r.verdict === "FINAL") ? "FINAL" : "PROVISIONAL";
+    return { verdict: worst, note: out.rows.map((r) => `${r.platform}: ${r.verdict}`).join(", "), ownedRetries: true };
   },
   blog: async (ctx, p, s) => {
     const since = Date.now();

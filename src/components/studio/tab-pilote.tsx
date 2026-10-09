@@ -12,6 +12,7 @@ import { LANGS, type Lang } from "@/lib/i18n";
 import { isPlatform, PlatformCards } from "./platform-picker";
 import { missingActivity } from "./services-editor";
 import { SitePilotCard } from "./existing-site";
+import { BrandPropagationCard, WorkflowPanel } from "./workflow-panel";
 
 function StepIcon({ status }: { status: string }) {
   if (status === "done") return <span className="grid size-7 place-items-center rounded-full bg-ok text-white"><Check className="size-4" /></span>;
@@ -118,7 +119,7 @@ function Memory() {
             <Brain className="mt-0.5 size-4 shrink-0 text-signal" />
             <div className="min-w-0 flex-1">
               <p><Badge tone="neutral">{KIND[m.kind] ?? m.kind}</Badge> <span className="font-medium">{m.key}</span></p>
-              <p className="mt-1 break-words text-ink-2">{m.value}</p>
+              <p className="mt-1 min-w-0 text-ink-2 [overflow-wrap:anywhere]">{m.value}</p>
             </div>
             <button onClick={async () => { await api(`/api/projects/${id}/memory?item=${m.id}`, { method: "DELETE" }); reload(); }} className="grid size-8 place-items-center rounded-full hover:bg-paper-2" aria-label={t("Oublier", "Forget")}><Trash2 className="size-4 text-muted" /></button>
           </li>
@@ -277,6 +278,8 @@ export default function TabPilote() {
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("l'analyse, la marque et les textes", "the analysis, the brand and the copy")} />
       {!pl && <StartCreation />}
+      <WorkflowPanel />
+      <BrandPropagationCard />
       {/* Projet pas encore lancé : pas de carte d'avancement vide ni d'aperçu « en cours » (rien ne tourne). */}
       {pl && <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <Card className="p-5 sm:p-7">

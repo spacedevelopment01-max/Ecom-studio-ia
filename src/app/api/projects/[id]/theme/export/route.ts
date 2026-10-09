@@ -2,16 +2,13 @@ import { handle } from "@/lib/http";
 import { HttpError } from "@/lib/auth";
 import { currentTheme, themeVersion } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { themeFingerprint } from "@/lib/theme/compile";
-import { libraryLoader as loader } from "@/lib/theme/loader";
 import { saveAsset } from "@/lib/library";
 import { L, uiLang } from "@/lib/i18n-server";
 import { requirePlan } from "@/lib/plan-gates";
 import { shopifyProductsCsv, wooProductsCsv } from "@/lib/theme/catalog-export";
-import { CMS_PLATFORMS, checkCmsExport, cmsExport } from "@/lib/cms-v2/export";
-import { verdictMessage } from "@/lib/cms-v2/quality";
+import { CMS_PLATFORMS } from "@/lib/cms-v2/export";
+import { exportAndRecord } from "@/lib/cms-v2/record";
 import type { CmsPlatform } from "@/lib/cms-v2/types";
-import { gateMeta, saveCheck } from "@/lib/quality/store";
 
 export const runtime = "nodejs";
 
@@ -35,33 +32,18 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   }
   if (!CMS_PLATFORMS.includes(platform as CmsPlatform)) throw new HttpError(400, L("Plateforme inconnue.", "Unknown platform."));
   const pf = platform as CmsPlatform;
-  const exp = await cmsExport(pf, v.spec, loader, { projectId: p.id });
-  const check = await checkCmsExport(pf, exp, v.spec, { projectId: p.id });
-  const checkId = saveCheck(check.gate.decision, { userId: user.id, projectId: p.id, candidateId: `${pf}:v${v.version.number}` });
-  const message = verdictMessage(pf, check.gate, uiLang());
-  if (check.gate.decision.verdict === "REJECTED") {
-    throw new HttpError(422, L(`${message} Défauts : ${check.static.issues.slice(0, 4).join(" ; ")}`, `${message} Defects: ${check.static.issues.slice(0, 4).join("; ")}`));
+  const r = await exportAndRecord({ id: p.id, userId: user.id }, { spec: v.spec, number: v.version.number, id: v.version.id }, pf, uiLang());
+  if (r.verdict === "REJECTED") {
+    throw new HttpError(422, L(`${r.message} Défauts : ${r.issues.slice(0, 4).join(" ; ")}`, `${r.message} Defects: ${r.issues.slice(0, 4).join("; ")}`));
   }
-  const name = exp.name.replace(/\.zip$/, `-v${v.version.number}.zip`);
-  await saveAsset({
-    projectId: p.id,
-    userId: user.id,
-    data: exp.zip,
-    name,
-    mime: "application/zip",
-    kind: "archive",
-    role: "theme-export",
-    folderKey: "shop.exports",
-    origin: "export",
-    meta: { platform: pf, delivery: exp.kind, themeVersion: v.version.number, versionId: v.version.id, fingerprint: themeFingerprint(v.spec), gate: gateMeta(check.gate.decision, checkId), scope: check.gate.scope, unmeasured: check.gate.unmeasured, issues: check.static.issues.slice(0, 20), stats: check.static.stats, message },
-  });
-  return new Response(new Uint8Array(exp.zip), {
+  const name = r.name;
+  return new Response(new Uint8Array(r.zip), {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(name)}`,
-      "X-Theme-Fingerprint": themeFingerprint(v.spec),
-      "X-ES-Verdict": check.gate.decision.verdict,
-      "X-ES-Scope": check.gate.scope ?? "none",
+      "X-Theme-Fingerprint": r.fingerprint,
+      "X-ES-Verdict": r.verdict,
+      "X-ES-Scope": r.scope ?? "none",
     },
   });
 });

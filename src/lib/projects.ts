@@ -1,4 +1,5 @@
 /** Accès aux projets : produit, marque, mémoire, versions du thème. */
+import { recordBrandVersion } from "./brand-versions";
 import { all, id, json, now, one, run, tx } from "./db";
 import type { ProjectRow } from "./auth";
 import { emptyProduct, emptyServiceProfile, type Brand, type BusinessType, type CatalogItem, type ProductProfile, type ProjectSettings, type ServiceProfile, type StoreType, type Strategy } from "./project-types";
@@ -65,6 +66,9 @@ export function saveProduct(projectId: string, product: ProductProfile) {
   run("UPDATE projects SET product_json = ?, sector = ?, updated_at = ? WHERE id = ?", JSON.stringify(product), product.sector, now(), projectId);
 }
 export function saveBrand(projectId: string, brand: Brand) {
+  // Identité datée (phase 12A) : savoir avec quelle marque chaque création a été faite.
+  const prev = one<{ brand_json: string | null }>("SELECT brand_json FROM projects WHERE id = ?", projectId);
+  recordBrandVersion(projectId, prev?.brand_json ? (JSON.parse(prev.brand_json) as Brand) : null, brand);
   run("UPDATE projects SET brand_json = ?, name = CASE WHEN ? != '' THEN ? ELSE name END, updated_at = ? WHERE id = ?", JSON.stringify(brand), brand.name, brand.name, now(), projectId);
 }
 export function saveStrategy(projectId: string, s: Strategy) {

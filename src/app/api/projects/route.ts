@@ -1,5 +1,6 @@
 import { requireUser, HttpError } from "@/lib/auth";
 import { all, id, now, one, run } from "@/lib/db";
+import { attachStartRequest } from "@/lib/workflow";
 import { handle, ok } from "@/lib/http";
 import { ensureFolders } from "@/lib/library";
 import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
@@ -68,5 +69,6 @@ export const POST = handle(async (req: Request) => {
   await saveStartFiles(pid, user.id, site ? [] : files, logo, site ? "products" : input.businessType);
   if (!hasProductInput(input, files)) return ok({ id: pid, jobId: null, started: false });
   const job = launchPipeline(pid, user.id, input, files.length);
+  if (input.request) await attachStartRequest(pid, user.id, input.request, job.id);
   return ok({ id: pid, jobId: job.id, started: true });
 });
