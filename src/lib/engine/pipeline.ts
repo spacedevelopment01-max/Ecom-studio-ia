@@ -21,10 +21,7 @@ import { localCopy } from "./local-copy";
 import { buildShop } from "./shop";
 import { importExistingSiteNote, loadSiteImport, saveReproductionNotes, siteKept } from "./existing-site";
 import { buildReproducedShop, platformName } from "./site-reproduce";
-import { produceVideo, videoStepNote, type VideoStepResult } from "./videos";
 
-/** Ce qu'une étape vidéo garde (repris tel quel à la reprise d'une tâche). */
-const stepVideo = (r: Awaited<ReturnType<typeof produceVideo>>): VideoStepResult => ({ assetId: r.assetId, method: r.method, clipFallback: r.clipFallback });
 import { aiAnalyzeProduct, aiAnalyzeService, aiShopCopyChecked } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { emptyProduct, type BusinessType, type ProductProfile } from "../project-types";
@@ -344,18 +341,18 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
     }
     case "video": {
       if (inp.videos === "none") return { skipped: note("skip.videosNone") };
-      if (services) {
-        return serviceContent(async () => {
-          const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") })));
-          const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo de présentation de l'activité pour le site", "business presentation video for the website"), music: "none" })));
-          return inBothLangs(() => videoStepNote([a, b], inp.videos !== "edited"));
-        });
-      }
+      // Video & UGC Engine V2 : documents vidéo modifiables et versionnés ; plans générés seulement si le client les a
+      // choisis au lancement (« avec plans IA ») et dans le plafond, sinon montage local à partir des médias.
+      const approve = inp.videos !== "edited";
+      const produce = async () => {
+        const a = await ctx.step("v2:916", () => pipelineVideo(ctx, projectId, { kind: "video_ad", platform: "reels", text: services ? C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") : C("publicité courte pour les réseaux sociaux", "short ad for social media") }, approve));
+        const b = await ctx.step("v2:169", () => pipelineVideo(ctx, projectId, { kind: services ? "company_presentation" : "brand_film", platform: services ? "website" : "shop_page", text: services ? C("vidéo de présentation de l'activité pour le site", "business presentation video for the website") : C("vidéo d'ambiance pour la boutique", "mood video for the store") }, approve));
+        return inBothLangs(() => L(`${[a, b].filter(Boolean).length} vidéo(s) montée(s) (documents modifiables dans l'onglet Vidéos)`, `${[a, b].filter(Boolean).length} video(s) edited (editable documents in the Videos tab)`));
+      };
+      if (services) return serviceContent(produce);
       const has = validCutouts(projectId).length > 0;
       if (!has) return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
-      const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })));
-      const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })));
-      return inBothLangs(() => videoStepNote([a, b], inp.videos !== "edited"));
+      return produce();
     }
     case "shop": {
       const site = loadSiteImport(projectId);
@@ -402,6 +399,13 @@ async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> 
       return 0;
     }
   });
+}
+
+/** Une vidéo de la création complète par Video Engine V2 ; renvoie le fichier rendu (ou null). */
+async function pipelineVideo(ctx: JobContext, projectId: string, ask: { kind: "video_ad" | "brand_film" | "company_presentation"; platform: "reels" | "shop_page" | "website"; text: string }, approve: boolean): Promise<string | null> {
+  const { runVideoEngineV2 } = await import("../video-v2/engine");
+  const r = await runVideoEngineV2(ctx, projectId, { ask: { ...ask, allowGeneration: approve }, approveGeneration: approve });
+  return r.videoAssetId;
 }
 
 /** Calendrier de 7 jours (réseaux connectés, sinon Instagram, Facebook, Pinterest) lancé en tâche enfant, une seule fois. */

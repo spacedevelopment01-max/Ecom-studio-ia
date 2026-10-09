@@ -1,16 +1,15 @@
-import { z } from "zod";
-import { body, handle, ok } from "@/lib/http";
-import { enqueue } from "@/lib/jobs";
+import { handle } from "@/lib/http";
 import { HttpError } from "@/lib/auth";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { requireCreationPlan } from "@/lib/plan-gates";
 import { L } from "@/lib/i18n-server";
 
-export const POST = handle(async (req: Request, ctx: Ctx) => {
-  const { user, project: p } = await projectFromCtx(ctx);
+/**
+ * Ancien moteur vidéo (motion design V1) : plus de nouvelle production. Les vidéos se créent avec Video & UGC Engine
+ * V2 (onglet Vidéos, `/videos/v2`) ; les vidéos déjà produites restent dans la bibliothèque.
+ */
+export const POST = handle(async (_req: Request, ctx: Ctx) => {
+  const { user } = await projectFromCtx(ctx);
   requireCreationPlan(user, "videos");
-  if (!p.brand) throw new HttpError(409, L("Créez d'abord la marque.", "Create the brand first."));
-  const b = await body(req, z.object({ format: z.enum(["9:16", "1:1", "4:5", "16:9"]), goal: z.string().max(400).optional(), useAiClip: z.boolean().optional(), music: z.enum(["calm", "pulse", "none"]).optional(), target: z.enum(["ads", "social", "shop"]).optional(), url: z.string().max(120).optional() }));
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "video.render", label: L(`Vidéo ${b.format}`, `Video ${b.format}`), payload: b });
-  return ok({ jobId: job.id });
+  throw new HttpError(410, L("Les nouvelles vidéos se créent avec le moteur vidéo de l'onglet Vidéos (documents modifiables).", "New videos are created with the video engine in the Videos tab (editable documents)."));
 });

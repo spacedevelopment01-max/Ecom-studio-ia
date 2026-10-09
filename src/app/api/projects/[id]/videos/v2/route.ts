@@ -4,6 +4,7 @@ import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { all, json, one } from "@/lib/db";
 import { L } from "@/lib/i18n-server";
+import { requireCreationPlan } from "@/lib/plan-gates";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { runVideoEngineV2 } from "@/lib/video-v2/engine";
 import { VIDEO_FORMATS, VIDEO_INTENTS, VIDEO_PLATFORMS, type VideoDocument } from "@/lib/video-v2/types";
@@ -34,7 +35,27 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   return ok({
     videos: rows.map((r) => {
       const d = json<Partial<VideoDocument>>(r.doc_json, {});
-      return { docKey: r.doc_key, version: r.version, edited: r.edited > 0, intent: d.meta?.intent ?? null, aspect: d.aspect ?? null, platform: d.platform ?? null, durationS: Math.round((d.clips ?? []).reduce((t, c) => t + c.durationS, 0) * 10) / 10, clips: d.clips?.length ?? 0, url: r.rendered_asset_id ? `/api/files/${r.rendered_asset_id}` : null, at: r.created_at };
+      // Dernier rendu (une version modifiée après lui est signalée « à rendre ») ; statut d'approbation du fichier.
+      const last = one<{ version: number; rendered_asset_id: string }>("SELECT version, rendered_asset_id FROM video_documents WHERE project_id = ? AND doc_key = ? AND rendered_asset_id IS NOT NULL ORDER BY version DESC LIMIT 1", p.id, r.doc_key);
+      const asset = last ? one<{ status: string; meta: string; deleted_at: number | null }>("SELECT status, meta, deleted_at FROM assets WHERE id = ?", last.rendered_asset_id) : null;
+      const gate = asset ? json<any>(asset.meta, {}).gate : null;
+      return {
+        docKey: r.doc_key,
+        version: r.version,
+        edited: r.edited > 0,
+        intent: d.meta?.intent ?? null,
+        aspect: d.aspect ?? null,
+        platform: d.platform ?? null,
+        durationS: Math.round((d.clips ?? []).reduce((t, c) => t + c.durationS, 0) * 10) / 10,
+        clips: d.clips?.length ?? 0,
+        url: last && asset && !asset.deleted_at ? `/api/files/${last.rendered_asset_id}` : null,
+        renderedAssetId: last && asset && !asset.deleted_at ? last.rendered_asset_id : null,
+        renderedVersion: last?.version ?? null,
+        needsRender: !last || last.version < r.version,
+        status: asset?.status ?? null,
+        verdict: gate?.verdict ?? null,
+        at: r.created_at,
+      };
     }),
   });
 });
@@ -52,6 +73,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const r = await runVideoEngineV2(null, p.id, { ask: b.ask, offer: b.offer, planOnly: true, maxCostEur: b.maxCostEur });
     return ok({ intent: r.intent, strategy: r.strategy, script: r.script, shots: r.shots.map((s) => ({ id: s.id, part: s.part, durationS: s.durationS, subject: s.subject, method: s.method, why: s.why, paid: s.source.kind === "generate", estimateMicro: s.source.estimateMicro ?? 0 })), estimateMicro: r.estimateMicro, notes: r.notes });
   }
+  // Même droit que les autres créations de vidéos : un forfait de création est requis (aucun passe-droit).
+  requireCreationPlan(user, b.ask.kind === "ugc" ? "ugc" : "videos");
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type LIKE 'video.v2%' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
   const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2", label: L("Vidéo : script, plans, montage", "Video: script, shots, editing"), payload: { projectId: p.id, request: { ask: b.ask, offer: b.offer, approveGeneration: !!b.approveGeneration, maxCostEur: b.maxCostEur } } });
   return ok({ jobId: job.id });
