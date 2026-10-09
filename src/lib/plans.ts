@@ -2,7 +2,7 @@
  * Forfaits et packs : la seule source de vérité (page d'accueil, abonnement, studio, paiement, quotas).
  * Une seule boutique ou un seul site par abonnement, quel que soit le forfait.
  * Les crédits d'IA ne sont jamais affichés au client : il voit des quotas concrets (visuels, vidéos…).
- * Le budget IA interne (`aiBudgetEur`) reste un garde-fou caché qui protège la marge.
+ * Le budget IA interne (caché) découle des prix : 40 % du HT du forfait, 50 % du HT des packs (voir billing.ts).
  */
 
 export type PlanId = "creer" | "vendre" | "dominer";
@@ -33,8 +33,6 @@ export type Plan = {
   rollover: boolean;
   /** Remise sur les packs. */
   packDiscount: number;
-  /** Garde-fou interne (jamais affiché) : dépense IA maximale par mois, en euros. */
-  aiBudgetEur: number;
 };
 
 export const PLANS: Record<PlanId, Plan> = {
@@ -54,7 +52,6 @@ export const PLANS: Record<PlanId, Plan> = {
     support: "email",
     rollover: false,
     packDiscount: 0,
-    aiBudgetEur: 16,
   },
   vendre: {
     id: "vendre",
@@ -73,7 +70,6 @@ export const PLANS: Record<PlanId, Plan> = {
     support: "priority",
     rollover: true,
     packDiscount: 0.1,
-    aiBudgetEur: 34,
   },
   dominer: {
     id: "dominer",
@@ -91,7 +87,6 @@ export const PLANS: Record<PlanId, Plan> = {
     support: "priority-call",
     rollover: true,
     packDiscount: 0.2,
-    aiBudgetEur: 45,
   },
 };
 export const PLAN_IDS = Object.keys(PLANS) as PlanId[];
@@ -102,8 +97,6 @@ export const CUSTOM_THEMES_PER_MONTH = 2;
 /** Découverte gratuite : faite par le moteur du studio, sans IA (pas d'export, pas d'images ni de vidéos). */
 export const DISCOVERY = {
   includes: ["analysis", "brand", "logos", "homePreview"] as const,
-  /** Aucune dépense IA pour une découverte : tout est fait par le moteur local. */
-  aiBudgetEur: 0,
   /** Une découverte par compte (e-mail vérifié). */
   perAccount: 1,
 };

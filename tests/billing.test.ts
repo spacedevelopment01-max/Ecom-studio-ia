@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { createUser } from "@/lib/auth";
 import { run } from "@/lib/db";
-import { assertCanSpend, balance, creditTopup, CREATION_BUDGET_EUR, EUR, getSubscription, monthlyAllowanceMicro, monthlyPriceEur, recordUsage, syncAllowance } from "@/lib/billing";
+import { assertCanSpend, balance, creditTopup, EUR, getSubscription, monthlyAllowanceMicro, monthlyPriceEur, recordUsage, syncAllowance } from "@/lib/billing";
 
 describe("forfaits et budget IA caché", () => {
   it("prix mensuel du forfait (équivalent mensuel en annuel) et budget IA caché du forfait", () => {
     expect(monthlyPriceEur({ plan: "creer", billing: "month" })).toBe(49.9);
     expect(monthlyPriceEur({ plan: "vendre", billing: "year" })).toBeCloseTo(66.58, 2);
     expect(monthlyPriceEur({ plan: null, billing: null })).toBe(49.9); // ancien abonnement → « Créer »
-    expect(monthlyAllowanceMicro({ status: "active", plan: "dominer" } as any) / EUR).toBe(45);
+    // Budget = 40 % du prix mensuel HT (TVA 20 %) : Dominer 99,90 € TTC → 83,25 € HT → 33,30 €.
+    expect(monthlyAllowanceMicro({ status: "active", plan: "dominer", billing: "month" } as any) / EUR).toBeCloseTo(33.3, 5);
     expect(monthlyAllowanceMicro({ status: "none", plan: "dominer" } as any)).toBe(0);
   });
 
@@ -17,21 +18,22 @@ describe("forfaits et budget IA caché", () => {
     run("UPDATE users SET role = 'client' WHERE id = ?", u.id); // le premier compte de la base est administrateur
     expect(balance(u.id).available).toBe(0);
     expect(() => assertCanSpend(u.id, 2 * EUR)).toThrow(/limite d'utilisation équitable/);
-    creditTopup(u.id, 20, "pay_1"); // ancienne recharge : 50 % au budget
+    creditTopup(u.id, 24, "pay_1"); // ancienne recharge : 50 % de son prix HT (24 € TTC → 20 € HT → 10 €)
     expect(balance(u.id).available).toBe(10 * EUR);
     recordUsage({ userId: u.id, task: "copywriting", provider: "anthropic", model: "m", unit: "tokens", inputUnits: 1, outputUnits: 1, costMicro: 8.5 * EUR, estimated: false, idempotencyKey: "u1" });
     recordUsage({ userId: u.id, task: "copywriting", provider: "anthropic", model: "m", unit: "tokens", inputUnits: 1, outputUnits: 1, costMicro: 8.5 * EUR, estimated: false, idempotencyKey: "u1" });
     expect(balance(u.id).available).toBe(1.5 * EUR);
   });
 
-  it("l'activation d'un forfait ajoute son budget mensuel et, une seule fois, le budget de création de la boutique", async () => {
+  it("l'activation d'un forfait ajoute son budget mensuel (40 % du HT), sans enveloppe de création en plus", async () => {
     const u = await createUser(`c${Date.now()}@test.fr`, "motdepasse-test", "C");
     const before = balance(u.id).available;
     run("UPDATE subscriptions SET status = 'manual', plan = 'vendre' WHERE user_id = ?", u.id);
     syncAllowance(u.id);
-    expect(balance(u.id).available).toBe(before + 34 * EUR + CREATION_BUDGET_EUR * EUR);
+    const vendre = Math.floor(0.4 * (79.9 / 1.2) * EUR);
+    expect(balance(u.id).available).toBe(before + vendre);
     syncAllowance(u.id);
-    expect(balance(u.id).available).toBe(before + 34 * EUR + CREATION_BUDGET_EUR * EUR);
+    expect(balance(u.id).available).toBe(before + vendre);
     expect(getSubscription(u.id).plan).toBe("vendre");
   });
 });

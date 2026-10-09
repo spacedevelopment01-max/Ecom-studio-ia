@@ -315,6 +315,25 @@ CREATE TABLE IF NOT EXISTS ledger (
   created_at INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ledger_ref ON ledger(type, ref) WHERE ref IS NOT NULL;
+-- Réservations du coût maximal des appels d'IA payants (voir billing.ts) : held → settled | released | uncertain → reconciled.
+CREATE TABLE IF NOT EXISTS ai_reservations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  task TEXT,
+  provider TEXT,
+  model TEXT,
+  job_id TEXT,
+  project_id TEXT,
+  actual INTEGER,
+  debit_monthly INTEGER NOT NULL DEFAULT 0,
+  debit_topup INTEGER NOT NULL DEFAULT 0,
+  note TEXT,
+  created_at INTEGER NOT NULL,
+  settled_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS ai_reservations_held ON ai_reservations(user_id, status, created_at);
 CREATE TABLE IF NOT EXISTS quota_usage (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   period_start INTEGER NOT NULL,
@@ -798,6 +817,9 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["subscriptions", "stripe_checkout_at", "INTEGER"],
   // Début de la période mensuelle précédente : le report des quotas ne vient que de celle-là.
   ["wallets", "prev_period_start", "INTEGER"],
+  // Règle budgétaire (40 % du HT du forfait, 50 % du HT des packs) : coûts maximaux réservés, version de la règle.
+  ["wallets", "reserved", "INTEGER NOT NULL DEFAULT 0"],
+  ["wallets", "rule_version", "INTEGER NOT NULL DEFAULT 0"],
   // Décompte d'un quota : période et répartition (mois / packs), pour pouvoir le rendre (image refusée au contrôle).
   ["quota_events", "period_start", "INTEGER"],
   ["quota_events", "from_month", "INTEGER"],

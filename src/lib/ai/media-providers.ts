@@ -11,7 +11,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
 import sharp from "sharp";
-import { assertCanSpend, EUR, recordUsage } from "../billing";
+import { EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
@@ -42,7 +42,7 @@ function quotaFor(media: "image" | "video") {
  * départ du chronomètre) puis par `recordMedia()` (succès) ; une génération partie puis échouée (refus, délai
  * dépassé) est tracée aussi. Aucune image ni consigne n'est enregistrée.
  */
-type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean } };
+type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean } };
 const mediaTrace = new AsyncLocalStorage<MediaTrace>();
 
 function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...a: A) => Promise<R>): (...a: A) => Promise<R> {
@@ -52,6 +52,14 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
       try {
         return await fn(...args);
       } catch (e) {
+        // Réservation du coût maximal : rendue si rien n'est parti ou si le fournisseur a refusé la demande ; sinon
+        // (délai dépassé, coupure, erreur après acceptation ou réponse), coût maximal retenu par prudence.
+        if (t.reservation && !t.recorded) {
+          const status = (e as { status?: unknown })?.status;
+          if (!t.sent) release(t.reservation, "aucune demande envoyée au fournisseur");
+          else if (t.rejected || typeof status === "number") release(t.reservation, `refus du fournisseur${typeof status === "number" ? ` (${status})` : ""}`);
+          else settleUncertain(t.reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+        }
         // Échec après le départ de la demande au fournisseur : l'appel a eu lieu, il est tracé (coût inconnu = 0, signalé).
         if (t.provider && !t.recorded) {
           const msg = String((e as Error)?.message ?? e);
@@ -63,22 +71,47 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
   };
 }
 
-/** Avant une génération : quota du forfait (message clair s'il est épuisé), puis budget IA caché. */
+/** Marge prudente sur le coût d'une génération (jetons d'image variables selon la taille et la qualité). */
+const MEDIA_MAX_FACTOR = 1.25;
+
+/**
+ * Avant une génération : quota du forfait (message clair s'il est épuisé), plafond de la tâche, puis réservation
+ * atomique du coût MAXIMAL sur le budget du compte. Rien ne part si le maximum ne peut pas être couvert.
+ */
 function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: string, model: string) {
   // Droits du compte vérifiés à chaque génération (forfait, budget), dans une tâche de fond ou non.
   assertAiAllowed(ctx.userId);
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
-  assertUnderCostCap(micro);
-  assertCanSpend(ctx.userId, micro);
+  const max = Math.ceil(micro * MEDIA_MAX_FACTOR * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  assertUnderCostCap(max);
   const t = mediaTrace.getStore();
-  if (t) Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : provider === "openai" ? "tokens" : "image", started: Date.now() });
+  // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
+  if (!t) throw new PermanentError("génération hors suivi de réservation");
+  t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId });
+  Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : provider === "openai" ? "tokens" : "image", started: Date.now() });
+}
+
+/** La demande part chez le fournisseur (à partir d'ici, un échec sans réponse d'erreur est incertain). */
+function sent() {
+  const t = mediaTrace.getStore();
+  if (t) t.sent = true;
+}
+const providerFetch: typeof fetch = (input, init) => {
+  sent();
+  return fetch(input, init);
+};
+/** Refus explicite du fournisseur (clé, requête, quota) : rien n'a été produit, la réservation est rendue. */
+function refusal<E extends Error>(e: E): E {
+  const t = mediaTrace.getStore();
+  if (t) t.rejected = true;
+  return e;
 }
 
 /** Après une génération : consommation réelle (budget caché) et décompte du quota. */
 function recordMedia(u: Parameters<typeof recordUsage>[0]) {
-  const billed = recordUsage(u);
   const t = mediaTrace.getStore();
+  const billed = recordUsage(u, { reservationId: t?.reservation ?? null });
   if (t) t.recorded = true;
   recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
@@ -173,6 +206,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
   const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
   let res: any;
   try {
+    sent();
     res = await client.images.edit({
       model,
       image: await toFile(input.composite, "scene.png", { type: "image/png" }),
@@ -183,8 +217,8 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
       n: 1,
     } as any);
   } catch (e: any) {
-    if (e?.status === 401) throw new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel."));
-    if (e?.status === 400) throw new PermanentError(L(`Génération d'image refusée par OpenAI : ${e.message}`, `Image generation rejected by OpenAI: ${e.message}`));
+    if (e?.status === 401) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
+    if (e?.status === 400) throw refusal(new PermanentError(L(`Génération d'image refusée par OpenAI : ${e.message}`, `Image generation rejected by OpenAI: ${e.message}`)));
     throw e;
   }
   const b64 = res.data?.[0]?.b64_json;
@@ -206,14 +240,14 @@ async function geminiPlateImpl(ctx: Ctx, input: { prompt: string; reference?: Bu
   // Aucune image du produit n'est envoyée : les modèles d'image la redessinent presque toujours dans le décor,
   // ce qui donnerait un second produit (réinventé) à côté du vrai. Le décor est décrit par le texte seul.
   const parts: any[] = [{ text: `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.` }];
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+  const r = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: input.aspect } } }),
   });
-  if (r.status === 401 || r.status === 403) throw new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel."));
-  if (r.status === 400) throw new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300));
-  if (!r.ok) throw new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`);
+  if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel.")));
+  if (r.status === 400) throw refusal(new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300)));
+  if (!r.ok) throw refusal(new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`));
   const j: any = await r.json();
   const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
   const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
@@ -269,14 +303,14 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
     gate(ctx, cost("google", model, { images: 1 }).micro, "image", "google", model);
     const parts: any[] = [{ text }];
     if (ref) parts.push({ inline_data: { mime_type: "image/jpeg", data: ref.toString("base64") } });
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    const r = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: input.aspect } } }),
     });
-    if (r.status === 401 || r.status === 403) throw new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel."));
-    if (r.status === 400) throw new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300));
-    if (!r.ok) throw new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`);
+    if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel.")));
+    if (r.status === 400) throw refusal(new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300)));
+    if (!r.ok) throw refusal(new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`));
     const j: any = await r.json();
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
@@ -292,12 +326,13 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
   const size = input.aspect === "16:9" ? "1536x1024" : input.aspect === "1:1" ? "1024x1024" : "1024x1536";
   let res: any;
   try {
+    sent();
     res = ref
       ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: input.quality } as any)
       : await client.images.generate({ model, prompt: text, size, quality: input.quality, ...(input.transparent ? { background: "transparent", output_format: "png" } : {}) } as any);
   } catch (e: any) {
-    if (e?.status === 401 || e?.status === 403) throw new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel."));
-    if (e?.status === 400) throw new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`));
+    if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
+    if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
     throw e;
   }
   const b64 = res.data?.[0]?.b64_json;
@@ -323,7 +358,7 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
   const seconds = input.seconds ?? 8;
   gate(ctx, cost("google", model, { seconds }).micro, "video", "google", model);
   const jpeg = await sharp(input.image).jpeg({ quality: 90 }).toBuffer();
-  const start = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:predictLongRunning`, {
+  const start = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:predictLongRunning`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
@@ -332,20 +367,20 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
       parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people) },
     }),
   });
-  if (start.status === 401 || start.status === 403) throw new PermanentError(L("Clé Google refusée pour Veo.", "Google key rejected for Veo."));
-  if (!start.ok) throw new PermanentError(L("Veo a refusé la demande : ", "Veo rejected the request: ") + (await start.text()).slice(0, 300));
+  if (start.status === 401 || start.status === 403) throw refusal(new PermanentError(L("Clé Google refusée pour Veo.", "Google key rejected for Veo.")));
+  if (!start.ok) throw refusal(new PermanentError(L("Veo a refusé la demande : ", "Veo rejected the request: ") + (await start.text()).slice(0, 300)));
   const op: any = await start.json();
   const name = op.name;
   for (let i = 0; i < 90; i++) {
     await new Promise((r) => setTimeout(r, 10_000));
     onWait?.(L(`Génération du plan vidéo par Veo (${(i + 1) * 10} s)…`, `Veo is generating the video shot (${(i + 1) * 10} s)…`));
-    const s = await fetch(`https://generativelanguage.googleapis.com/v1beta/${name}`, { headers: { "x-goog-api-key": key } });
+    const s = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/${name}`, { headers: { "x-goog-api-key": key } });
     const j: any = await s.json();
     if (j.error) throw new PermanentError(L(`Veo : ${j.error.message}`, `Veo: ${j.error.message}`));
     if (j.done) {
       const uri = j.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
       if (!uri) throw new PermanentError(L("Veo n'a renvoyé aucune vidéo (contenu filtré).", "Veo returned no video (content filtered)."));
-      const v = await fetch(uri, { headers: { "x-goog-api-key": key } });
+      const v = await providerFetch(uri, { headers: { "x-goog-api-key": key } });
       if (!v.ok) throw new Error(L(`Téléchargement Veo impossible (${v.status}).`, `Couldn't download the Veo video (${v.status}).`));
       const c = cost("google", model, { seconds });
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "google", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
@@ -379,14 +414,14 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     gate(ctx, cost("google", model, { images: 1 }).micro, "image", "google", model);
     const parts: any[] = [{ text }, { inline_data: { mime_type: "image/jpeg", data: product.toString("base64") } }];
     if (persona) parts.push({ inline_data: { mime_type: "image/jpeg", data: persona.toString("base64") } });
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    const r = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: input.aspect } } }),
     });
-    if (r.status === 401 || r.status === 403) throw new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel."));
-    if (r.status === 400) throw new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300));
-    if (!r.ok) throw new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`);
+    if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel.")));
+    if (r.status === 400) throw refusal(new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300)));
+    if (!r.ok) throw refusal(new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`));
     const j: any = await r.json();
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
@@ -403,10 +438,11 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   if (persona) images.push(await toFile(persona, "personne.jpg", { type: "image/jpeg" }));
   let res: any;
   try {
+    sent();
     res = await client.images.edit({ model, image: images as any, prompt: text, size: input.aspect === "9:16" ? "1024x1536" : "1536x1024", quality: "high" } as any);
   } catch (e: any) {
-    if (e?.status === 401 || e?.status === 403) throw new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel."));
-    if (e?.status === 400) throw new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`));
+    if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
+    if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
     throw e;
   }
   const b64 = res.data?.[0]?.b64_json;
@@ -432,19 +468,19 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
   gate(ctx, cost("fal", model, { seconds }).micro, "video", "fal", model);
   const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
   const headers = { Authorization: `Key ${key}`, "Content-Type": "application/json" };
-  const r = await fetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
-  if (r.status === 401 || r.status === 403) throw new PermanentError(falRefusal(r.status, await r.text().catch(() => "")));
-  if (!r.ok) throw new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300));
+  const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
+  if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
+  if (!r.ok) throw refusal(new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300)));
   const q: any = await r.json();
   for (let i = 0; i < 120; i++) {
     await new Promise((res) => setTimeout(res, 6000));
     onWait?.(L(`Génération du plan vidéo (${(i + 1) * 6} s)…`, `Generating the video shot (${(i + 1) * 6} s)…`));
-    const st: any = await (await fetch(q.status_url, { headers })).json();
+    const st: any = await (await providerFetch(q.status_url, { headers })).json();
     if (st.status === "COMPLETED") {
-      const out: any = await (await fetch(q.response_url, { headers })).json();
+      const out: any = await (await providerFetch(q.response_url, { headers })).json();
       const url = out.video?.url;
       if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune vidéo.", "fal.ai returned no video."));
-      const v = await fetch(url);
+      const v = await providerFetch(url);
       const c = cost("fal", model, { seconds });
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "fal", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
       return Buffer.from(await v.arrayBuffer());

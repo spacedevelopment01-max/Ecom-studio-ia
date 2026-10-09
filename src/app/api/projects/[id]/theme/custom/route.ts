@@ -46,7 +46,7 @@ export const POST = handle(async (_req: Request, ctx: Ctx) => {
   if (!(await runForUser(user.id, async () => llmConfigured()))) throw new HttpError(402, L("Le thème entièrement sur mesure est écrit par l'IA, indisponible pour le moment. Réessayez un peu plus tard.", "The fully custom theme is written by AI, which is unavailable right now. Try again a little later."));
   // Plusieurs sections écrites par l'IA : on vérifie d'abord que l'utilisation équitable du mois le permet.
   try {
-    if (user.role !== "admin") assertCanSpend(user.id, estimateMicro("theme-custom"));
+    assertCanSpend(user.id, estimateMicro("theme-custom"));
   } catch (e) {
     throw new HttpError(402, (e as Error).message);
   }

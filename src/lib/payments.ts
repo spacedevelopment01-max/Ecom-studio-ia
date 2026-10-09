@@ -5,7 +5,7 @@
  */
 import crypto from "node:crypto";
 import { all, id, logError, now, one, run, tx } from "./db";
-import { alignPeriod, creditTopup, getSubscription, syncAllowance } from "./billing";
+import { alignPeriod, creditPackBudget, creditTopup, getSubscription, syncAllowance } from "./billing";
 import { HttpError } from "./auth";
 import { PACKS, PLANS, packPrice, type Billing, type PackId, type PlanId } from "./plans";
 import { creditPack, launchPackBought, userPlan } from "./quotas";
@@ -234,7 +234,10 @@ async function applyStripeEvent(evt: any) {
       if (o.metadata?.kind === "pack" && o.metadata.pack in PACKS) {
         const pack = o.metadata.pack as PackId;
         run("INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, label, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), userId, "pack", o.amount_total ?? 0, "paid", o.id, pack, now());
-        if (creditPack(userId, pack, `stripe:${o.id}`) === "already_bought") {
+        const credited = creditPack(userId, pack, `stripe:${o.id}`);
+        // Budget fournisseur distinct du pack : 50 % du prix HT réellement payé (remise du forfait comprise).
+        if (credited === "credited") creditPackBudget(userId, (o.amount_total ?? 0) / 100, `stripe:${o.id}`, `Pack ${PACKS[pack].name.fr}`);
+        if (credited === "already_bought") {
           logError("stripe:pack", new Error(`Pack ${pack} déjà acheté : second paiement ${o.id} non crédité`), { userId });
           notifyAdmins("Pack acheté deux fois", `Le compte ${userId} a payé une seconde fois le pack « ${PACKS[pack].name.fr} », qui ne s'achète qu'une fois (paiement ${o.id}). Il n'a pas été crédité : remboursez ce paiement dans Stripe.`);
         }
