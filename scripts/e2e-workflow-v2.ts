@@ -42,9 +42,14 @@ const drone = "public/demo/drone/photo.jpg";
 // Compte de démonstration au forfait « Vendre » (calendrier 30 jours, publicités, export) ; aucune clé d'IA : 0 €.
 const EMAIL = `wf-${Date.now()}@demo.fr`;
 const PASSWORD = "motdepasse-demo";
-const user = await createUser(EMAIL, PASSWORD, "Démo");
-run("INSERT OR IGNORE INTO subscriptions (user_id, status, stores, updated_at) VALUES (?,?,?,?)", user.id, "none", 1, Date.now());
-run("UPDATE subscriptions SET status = 'active', plan = 'vendre' WHERE user_id = ?", user.id);
+// Un abonnement = une boutique (règle appliquée à tous, administrateur compris) : un compte par parcours.
+async function account(email: string) {
+  const u = await createUser(email, PASSWORD, "Démo");
+  run("INSERT OR IGNORE INTO subscriptions (user_id, status, stores, updated_at) VALUES (?,?,?,?)", u.id, "none", 1, Date.now());
+  run("UPDATE subscriptions SET status = 'active', plan = 'vendre' WHERE user_id = ?", u.id);
+  return email;
+}
+await account(EMAIL);
 
 // Worker réel (même base) ; relancé après une interruption brutale.
 let worker: ChildProcess | null = null;
@@ -74,7 +79,7 @@ async function waitWf(wid: string, timeoutMs = 20 * 60_000) {
   }
 }
 
-async function login(ctx: BrowserContext) {
+async function login(ctx: BrowserContext, email = EMAIL) {
   await ctx.addInitScript(() => {
     try {
       sessionStorage.setItem("ecsSeen", "1");
@@ -84,7 +89,7 @@ async function login(ctx: BrowserContext) {
   const page = await ctx.newPage();
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
-  await page.fill("#email", EMAIL);
+  await page.fill("#email", email);
   await page.fill("#password", PASSWORD);
   await Promise.all([page.waitForURL(/studio/), page.click("button[type=submit]")]);
   return page;
@@ -164,7 +169,8 @@ await sleep(2500);
 check("1. Même demande renvoyée : rien n'est refait (même demande, mêmes publications)", wfOf(cosmetic).length === 1 && one<{ n: number }>("SELECT COUNT(*) n FROM posts WHERE project_id = ?", cosmetic)!.n === 30);
 
 // ── 2. Plâtrier-peintre à partir d'une description ─────────────────────────────────────────────────────────────
-const artisan = await createFromForm(page, { business: "services", description: "Plâtrier-peintre à Lyon et alentours : plâtrerie, isolation intérieure, peinture intérieure et extérieure, ravalement. Entreprise artisanale, devis gratuit.", request: "Crée mon site WordPress et prépare mes publications Facebook pour les 2 prochaines semaines.", videos: /Pas de vidéo/, shot: "04-formulaire-platrier.png" });
+const page2 = await login(await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR" }), await account(`wf2-${Date.now()}@demo.fr`));
+const artisan = await createFromForm(page2, { business: "services", description: "Plâtrier-peintre à Lyon et alentours : plâtrerie, isolation intérieure, peinture intérieure et extérieure, ravalement. Entreprise artisanale, devis gratuit.", request: "Crée mon site WordPress et prépare mes publications Facebook pour les 2 prochaines semaines.", videos: /Pas de vidéo/, shot: "04-formulaire-platrier.png" });
 let [w2] = wfOf(artisan);
 w2 = await waitWf(w2.id);
 check("2. Plâtrier-peintre : demande terminée", w2.status === "done", `${w2.status}${w2.error ? ` — ${w2.error}` : ""}`);
@@ -173,12 +179,13 @@ check("2. 14 jours de publications Facebook", posts2.length >= 14 && posts2.ever
 check("2. Aucune trace de vente en ligne dans les publications d'un artisan", !posts2.some((p) => /panier|ajouter au panier|livraison offerte|en stock/i.test(p.caption ?? "")));
 const exp2 = all<{ name: string }>("SELECT name FROM assets WHERE project_id = ? AND role = 'theme-export' AND deleted_at IS NULL", artisan);
 check("2. Export WordPress contrôlé", exp2.some((e) => /wordpress/i.test(e.name)), exp2.map((e) => e.name).join(", "));
-await page.reload({ waitUntil: "networkidle" });
-await page.waitForSelector("[data-testid=wf-steps] li");
-await page.screenshot({ path: `${OUT}/05-pilote-platrier.png`, fullPage: true });
+await page2.reload({ waitUntil: "networkidle" });
+await page2.waitForSelector("[data-testid=wf-steps] li");
+await page2.screenshot({ path: `${OUT}/05-pilote-platrier.png`, fullPage: true });
 
 // ── 3. Marque high-tech ────────────────────────────────────────────────────────────────────────────────────────
-const tech = await createFromForm(page, { business: "products", photo: drone, description: "Drone pliable avec caméra 4K, 249 g, autonomie annoncée par le fabricant : [à compléter].", request: "Crée ma marque high-tech, mon logo, mes visuels et ma boutique Shopify.", videos: /Pas de vidéo/, shot: "06-formulaire-high-tech.png" });
+const page3 = await login(await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR" }), await account(`wf3-${Date.now()}@demo.fr`));
+const tech = await createFromForm(page3, { business: "products", photo: drone, description: "Drone pliable avec caméra 4K, 249 g, autonomie annoncée par le fabricant : [à compléter].", request: "Crée ma marque high-tech, mon logo, mes visuels et ma boutique Shopify.", videos: /Pas de vidéo/, shot: "06-formulaire-high-tech.png" });
 let [w3] = wfOf(tech);
 w3 = await waitWf(w3.id);
 check("3. High-tech : demande terminée", w3.status === "done", `${w3.status}${w3.error ? ` — ${w3.error}` : ""}`);
@@ -186,8 +193,8 @@ const b3 = JSON.parse(one<{ brand_json: string }>("SELECT brand_json FROM projec
 check("3. Marque créée (nom, palette, typographies) et boutique composée", !!b3.name && !!b3.palette?.primary && !!one("SELECT 1 FROM theme_versions WHERE project_id = ?", tech), `${b3.name ?? "?"} ${b3.palette?.primary ?? ""}`);
 check("3. Export Shopify fait (boutique demandée)", !!one("SELECT 1 FROM assets WHERE project_id = ? AND role = 'theme-export' AND deleted_at IS NULL", tech));
 check("3. Pas de publications ni de publicités non demandées", !one("SELECT 1 FROM posts WHERE project_id = ? AND plan_id LIKE 'wf-social-%'", tech) && !one("SELECT 1 FROM ad_documents WHERE project_id = ?", tech));
-await page.reload({ waitUntil: "networkidle" });
-await page.screenshot({ path: `${OUT}/07-pilote-high-tech.png`, fullPage: true });
+await page3.reload({ waitUntil: "networkidle" });
+await page3.screenshot({ path: `${OUT}/07-pilote-high-tech.png`, fullPage: true });
 
 // ── 4. Campagne publicitaire + calendrier, depuis le Pilote ────────────────────────────────────────────────────
 await page.goto(`${BASE}/studio/${cosmetic}/pilote`, { waitUntil: "networkidle" });
