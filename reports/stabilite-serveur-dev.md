@@ -10,18 +10,27 @@ Mesures faites dans ce conteneur avec la vraie base du studio (50 comptes, 120 p
 - Le `try/catch` de `missingGlyphs` **avalait l'erreur** et renvoyait « aucun caractère manquant ». Le contrôle des caractères du nom (accents, caractères absents d'une police) ne s'exécutait donc jamais sur le serveur.
 - Les tests ne le voyaient pas, car vitest charge la version CommonJS, où l'import par défaut fonctionne.
 
-**Correction.**
-- Import nommé : `import { parse as parseFont } from "opentype.js"`.
+**Correction.** opentype.js est chargé sous **deux formes**, et les deux sont prouvées :
+
+| Environnement | Version d'opentype.js chargée | Ce qu'elle expose |
+|---|---|---|
+| Next.js (webpack) | ESM | seulement les exports nommés |
+| Worker et scripts (Node via `tsx`) | CommonJS | seulement l'export par défaut |
+
+- Un premier correctif en import nommé seul (`import { parse }`) cassait le worker : `The requested module 'opentype.js' does not provide an export named 'parse'`. Le test `benchmark-logo-v2-check` l'a révélé. Ce premier correctif n'a jamais été fusionné.
+- Le code final importe l'espace de noms du module et prend `parse` là où il se trouve. C'est vérifié avec Next (build sans avertissement), avec `tsx` (« 漢 » détecté) et dans les tests.
 - La police est lue sur la copie exacte de ses octets.
 - Une police illisible n'est **plus masquée** : l'erreur est levée avec le nom et le fichier de la police.
 - Un seul fichier du studio utilise opentype.js : c'est vérifié dans `src`, `worker` et `scripts`.
 
-**Test** : `tests/opentype-esm.test.ts` force le chargement de la version ESM, comme dans Next. Ses vérifications :
-- aucun export par défaut, `parse` présent ;
-- « Sébastien Blanc » est accepté, « 漢 » est détecté comme absent de la police ;
-- construction typographique et export SVG vectoriel, sans image matricielle.
+**Tests.**
+- `tests/opentype-esm.test.ts` (forme Next.js) vérifie :
+  - aucun export par défaut, `parse` présent ;
+  - « Sébastien Blanc » est accepté, « 漢 » est détecté comme absent de la police ;
+  - construction typographique et export SVG vectoriel, sans image matricielle.
+- `tests/opentype-cjs.test.ts` (forme worker) vérifie le même contrôle des caractères avec l'export par défaut seul.
 
-Remis sur l'ancien code, ce test échoue (2 tests sur 3) : il détecte donc bien le problème.
+Remis sur l'ancien code, le test ESM échoue (2 tests sur 3) : il détecte donc bien le problème.
 
 ## Problème 2 — « next dev -p 3000 exited with code 0 » et requêtes de 5 à 18 s
 
@@ -82,10 +91,46 @@ Le premier passage reste long (10 à 45 s par page) : c'est la compilation initi
 
 ## Test d'endurance de 15 minutes
 
-[À compléter : résultats du test d'endurance]
+Conditions : 2 processeurs, tas Node de 4 Go, départ à froid, session administrateur, boucle Administration → Pilote → Marque → Boutique, sans interruption.
+
+- **Durée : 15,1 min.** 92 pages visitées, 23 tours, **0 erreur de navigation**.
+- **1 442 requêtes API, 0 en erreur** (aucune réponse 4xx, 5xx ni coupure).
+- **Serveur jamais arrêté ni redémarré.** Le journal ne contient ni « exited », ni « memory threshold », ni exception non interceptée. Les seules fins de processus sont l'arrêt volontaire en fin de test (`SIGINT` / `SIGTERM`), où le site et le worker s'arrêtent ensemble.
+- **Chaque route n'est compilée qu'une fois** sur les 15 min.
+- **Temps médians après le premier tour :**
+
+| Page | Médiane | Premier passage |
+|---|---|---|
+| Administration | 2,0 s | 10,6 s |
+| Pilote | 4,2 s | 15,6 s |
+| Marque | 9,8 s* | 64 s |
+| Boutique | 6,6 s* | 22 s |
+
+- **Mémoire du serveur Next :**
+
+| Moment | 2 min | 4 min | 6 min | 8 min | 10 min | 12 min | 14 min |
+|---|---|---|---|---|---|---|---|
+| Mémoire | 3,5 Go | 4,0 Go | 4,2 Go | 4,3 Go | 4,36 Go | 4,42 Go | 4,48 Go |
+
+  Le maximum est de 4,5 Go : la mémoire se stabilise, avec une légère hausse d'environ 30 Mo par minute en fin de test. Le worker reste à 73 Mo au maximum.
+- **Journaux du navigateur** : une seule erreur, le chargement de Google Fonts refusé par le proxy de ce conteneur (certificat), sans lien avec le studio. Les requêtes « interrompues » viennent du changement de page par le script de test.
+
+\* Jusqu'au « réseau calme » mesuré par le navigateur, que prolongent les interrogations régulières des onglets.
+
+### Comparaison avec le mode production (même machine, mêmes conditions, 5 min)
+
+`npm run build` puis `next start` avec le worker : 76 pages, 0 erreur.
+
+| | Développement | Production |
+|---|---|---|
+| Mémoire du serveur Next | 4,5 Go | **0,5 Go** (517 Mo) |
+| Administration (médiane) | 2,0 s | 0,7 s |
+| Pilote (médiane) | 4,2 s | 0,75 s |
+| Marque (médiane) | 9,8 s | 0,9 s |
+| Boutique (médiane) | 6,6 s | 0,9 s |
 
 ## Problèmes encore non résolus
 
-- **Mémoire du mode développement** : 4,2 à 4,6 Go pour le seul serveur Next. Dans un Codespace de 8 Go, avec VS Code, le worker et Chromium pour les vignettes, la marge est faible. Je n'ai pas prouvé d'arrêt par manque de mémoire dans votre Codespace : je n'ai pas accès à ses journaux système. Si Linux tue le serveur Next pour manque de mémoire, Next ne le relance pas, et le site ne répond plus sans aucun message « exited ». Le mode production (`npm run build` puis `npm start`) consomme beaucoup moins : voir la mesure ci-dessous.
+- **Mémoire du mode développement** : 4,2 à 4,6 Go pour le seul serveur Next. Dans un Codespace de 8 Go, avec VS Code, le worker et Chromium pour les vignettes, la marge est faible. Je n'ai pas prouvé d'arrêt par manque de mémoire dans votre Codespace : je n'ai pas accès à ses journaux système. Si Linux tue le serveur Next pour manque de mémoire, Next ne le relance pas, et le site ne répond plus sans aucun message « exited ». Le mode production (`npm run build` puis `npm start`) consomme environ 9 fois moins de mémoire (517 Mo) : voir la comparaison ci-dessus. Pour un usage quotidien sans modifier le code, c'est le mode le plus sûr.
 - **Premier passage lent** : c'est inhérent au mode développement (compilation à la demande). Turbopack pourrait réduire ce temps, mais je ne l'ai pas activé, faute de l'avoir validé sur tout le studio.
 - Le script `start` (production) garde l'ancien lancement : il ne protège pas encore contre un double lancement.

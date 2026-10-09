@@ -7,8 +7,15 @@
  *  - composition, proportions, couleurs : construites par le code (fond transparent, SVG, déclinaisons possibles).
  */
 import fs from "node:fs";
-// opentype.js 2 : exports NOMMÉS seulement dans sa version ESM (celle que charge Next.js) — pas d'export par défaut.
-import { parse as parseFont } from "opentype.js";
+import * as opentypeModule from "opentype.js";
+
+/**
+ * opentype.js 2 est chargé sous deux formes selon l'environnement : Next.js (webpack) prend sa version ESM, qui n'a
+ * QUE des exports nommés (`parse`…) ; le worker et les scripts (Node ESM via tsx) prennent sa version CommonJS, qui
+ * n'expose que l'export par défaut. On prend `parse` là où il est (vérifié dans les deux environnements).
+ */
+const opentypeExports: Record<string, unknown> = opentypeModule;
+const parseFont = ("parse" in opentypeExports ? opentypeExports.parse : (opentypeExports["default"] as { parse?: unknown } | undefined)?.parse) as typeof opentypeModule.parse;
 import sharp from "sharp";
 import { contrast } from "../color";
 import { canvasFamily, fontFile } from "../media/fonts";

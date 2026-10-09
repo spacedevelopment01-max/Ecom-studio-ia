@@ -4,7 +4,7 @@
  * clé est tracée sans être refacturée ; les échecs sont tracés ; jamais de prompt, d'image ni de clé enregistrés.
  * Les étapes de tâche (ctx.step) étiquettent les appels et ne sont jamais rejouées.
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 const sent: any[] = [];
 const okReply = async () => ({ model: "claude-sonnet-5-5", stop_reason: "end_turn", content: [{ type: "text", text: "Bonjour" }], usage: { input_tokens: 120, output_tokens: 40, cache_read_input_tokens: 900, cache_creation_input_tokens: 300 } });
@@ -99,7 +99,9 @@ describe("trace des appels", async () => {
 
   it("image : génération tracée (fournisseur, modèle, latence, coût) ; échec après envoi tracé aussi", async () => {
     // Décor vide demandé au modèle choisi pour « Images produit » (ici Gemini, réglé dans l'administration).
+    // (remis à zéro en fin de test : la base est partagée avec les autres fichiers de tests)
     (await import("@/lib/settings")).setJsonSetting("ai.media.usage", { product_image: { primary: "google:gemini-2.5-flash-image" } });
+    onTestFinished(async () => (await import("@/lib/settings")).setJsonSetting("ai.media.usage", {}));
     vi.stubGlobal("fetch", async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from("img").toString("base64") } }] } }] }), { status: 200 }));
     await withTrace({ step: "visuels" }, () => geminiPlate({ userId: "u-img", projectId: "p-img", usageKey: "k-img" }, { prompt: "set", aspect: "1:1" }));
     vi.stubGlobal("fetch", async () => new Response("boom", { status: 500 }));
