@@ -2,7 +2,8 @@ import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError, requireAdmin } from "@/lib/auth";
 import { setSetting, setJsonSetting, getJsonSetting } from "@/lib/settings";
-import { DEFAULT_ROUTES, type TaskId } from "@/lib/ai/config";
+import { DEFAULT_ROUTES, TASKS, priceFor, priceValid, type TaskId } from "@/lib/ai/config";
+import { effortValues, textModel } from "@/lib/ai/text-models";
 import { L } from "@/lib/i18n-server";
 
 const pos = z.number().positive().finite();
@@ -24,7 +25,11 @@ export const POST = handle(async (req: Request) => {
     req,
     z.object({
       set: z.array(z.object({ key: z.string(), value: z.string().nullable() })).optional(),
-      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal"]), model: z.string().min(2).max(120), effort: z.enum(["low", "medium", "high", "xhigh", "max"]).optional() }).optional(),
+      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
+      // Routage des modèles de texte : manuel (défaut, routage actuel inchangé) ou automatique multifournisseur.
+      routingMode: z.enum(["manual", "auto"]).optional(),
+      pinTask: z.object({ task: z.string(), pinned: z.boolean() }).optional(),
+      textModel: z.object({ key: z.string().regex(/^(anthropic|openai|google):[\w.-]+$/), enabled: z.boolean().optional(), confirm: z.boolean().optional() }).optional(),
       price: z.object({ key: z.string().regex(/^(anthropic|openai|google|fal):.+$/, { error: () => L("Clé attendue : fournisseur:modèle", "Expected key: provider:model") }), value: PriceSchema.nullable() }).optional(),
       pricesChecked: z.literal(true).optional(),
       usdToEur: z.number().min(0.3).max(3).optional(),
@@ -40,6 +45,14 @@ export const POST = handle(async (req: Request) => {
   }
   if (b.route) {
     if (!(b.route.task in DEFAULT_ROUTES)) throw new HttpError(400, L("Tâche inconnue.", "Unknown task."));
+    // Tâche de texte : modèle du catalogue uniquement, effort parmi les valeurs acceptées par CE modèle.
+    if (TASKS[b.route.task as TaskId].kind === "llm") {
+      const m = textModel(b.route.provider, b.route.model);
+      if (!m) throw new HttpError(400, L(`Modèle de texte inconnu : ${b.route.provider}:${b.route.model}. Choisissez un modèle du catalogue.`, `Unknown text model: ${b.route.provider}:${b.route.model}. Pick a model from the catalog.`));
+      if (b.route.effort && !effortValues(m.provider, m.model).includes(b.route.effort)) throw new HttpError(400, L(`Effort « ${b.route.effort} » non accepté par ${m.label}.`, `Effort "${b.route.effort}" isn't accepted by ${m.label}.`));
+    } else if (b.route.effort) {
+      throw new HttpError(400, L("Les modèles d'image et de vidéo n'ont pas de réglage d'effort.", "Image and video models have no effort setting."));
+    }
     const routes = getJsonSetting<Record<string, unknown>>("ai.routes", {});
     routes[b.route.task as TaskId] = { provider: b.route.provider, model: b.route.model, ...(b.route.effort ? { effort: b.route.effort } : {}) };
     setJsonSetting("ai.routes", routes);
@@ -49,6 +62,30 @@ export const POST = handle(async (req: Request) => {
     if (b.price.value === null) delete prices[b.price.key];
     else prices[b.price.key] = b.price.value;
     setJsonSetting("ai.prices", prices);
+  }
+  if (b.routingMode) setSetting("ai.routing.mode", b.routingMode);
+  if (b.pinTask) {
+    if (!(b.pinTask.task in DEFAULT_ROUTES)) throw new HttpError(400, L("Tâche inconnue.", "Unknown task."));
+    const pinned = new Set(getJsonSetting<string[]>("ai.routing.pinned", []));
+    if (b.pinTask.pinned) pinned.add(b.pinTask.task);
+    else pinned.delete(b.pinTask.task);
+    setJsonSetting("ai.routing.pinned", [...pinned]);
+  }
+  if (b.textModel) {
+    const [provider, ...rest] = b.textModel.key.split(":");
+    const m = textModel(provider, rest.join(":"));
+    if (!m) throw new HttpError(400, L("Modèle inconnu du catalogue.", "Model not in the catalog."));
+    const all = getJsonSetting<Record<string, { enabled?: boolean; confirmedAt?: number }>>("ai.textModels", {});
+    const cur = { ...(all[b.textModel.key] ?? {}) };
+    if (b.textModel.enabled !== undefined) cur.enabled = b.textModel.enabled;
+    if (b.textModel.confirm === true) {
+      // Confirmation possible seulement avec un tarif valide : sans tarif, le coût maximal ne serait pas borné.
+      const p = priceFor(m.provider, m.model);
+      if (!p || !priceValid(p) || p.unit !== "tokens") throw new HttpError(400, L(`Renseignez d'abord le tarif officiel de ${m.label} (fournisseur:modèle, en jetons).`, `First enter the official price of ${m.label} (provider:model, per token).`));
+      cur.confirmedAt = Date.now();
+    } else if (b.textModel.confirm === false) delete cur.confirmedAt;
+    all[b.textModel.key] = cur;
+    setJsonSetting("ai.textModels", all);
   }
   if (b.pricesChecked) setSetting("ai.prices.checkedAt", String(Date.now()));
   if (b.usdToEur) setJsonSetting("billing.usdToEur", b.usdToEur);

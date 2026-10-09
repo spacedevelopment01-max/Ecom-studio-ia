@@ -19,6 +19,7 @@ import { POLICIES, type Deliverable } from "../quality/policies";
 import type { GateDecision, Verdict } from "../quality/gate";
 import { MODELS, TIER_RANK, capableModels, modelInfo, type Capability, type Tier } from "./capabilities";
 import { MEDIA_DEFAULTS, TEXT_MODEL_BY_TIER, routingPolicy, type TaskPolicy } from "./policy";
+import { pickTextModel } from "./text-routing";
 
 export type Difficulty = "simple" | "standard" | "complex";
 export type InputType = "text" | "image" | "mixed" | "mask" | "video";
@@ -52,6 +53,11 @@ export type RouteRequest = {
   /** Le moteur peut-il faire cette étape sans IA ? (faux pour un appel déjà engagé vers l'IA) */
   allowLocal?: boolean;
   policy?: Record<TaskId, TaskPolicy>;
+  /**
+   * Routage automatique multifournisseur des modèles de texte (mode « auto » de l'administration) : budget restant
+   * du client et sélection remplaçable dans les tests. Absent : routage manuel (inchangé).
+   */
+  auto?: { budgetLeftMicro?: number | null; pick?: typeof pickTextModel };
 };
 
 export type RouteMode = "local" | "search" | "llm" | "image" | "video" | "none";
@@ -133,9 +139,22 @@ export function route(req: RouteRequest): RouteDecision {
     reason = `previous attempt ${h.lastScore}, targeted correction`;
   }
 
+  // Mode automatique : une tâche simple qui le permet descend au niveau prévu pour elle (jamais sous ce niveau).
+  if (req.auto && req.difficulty === "simple" && policy.simpleTier && !escalation && h.failure !== "quality" && h.failure !== "parse" && TIER_RANK[policy.simpleTier] < TIER_RANK[tier]) {
+    tier = policy.simpleTier;
+    reason = `simple request: ${tier} tier is enough`;
+  }
+
   // Route fixée par l'administration : respectée (sauf escalade décidée sur un échec de qualité).
   const ov = req.overrides?.[req.task];
   const failed = h.failure === "provider_error" ? `${h.lastProvider}:${h.lastModel}` : null;
+
+  // Routage automatique du texte entre fournisseurs : qualité du niveau d'abord, puis capacités, historique, coût,
+  // latence et budget restant (text-routing.ts). Une route fixée par l'administration n'est pas concernée.
+  if (mode === "llm" && req.auto && !ov?.model) {
+    const pick = (req.auto.pick ?? pickTextModel)({ task: req.task, tier: tier === "local" ? "light" : tier, vision: needs.includes("vision"), budgetLeftMicro: req.auto.budgetLeftMicro, exclude: failed });
+    if (pick) return { mode, provider: pick.model.provider, model: pick.model.model, effort: pick.model.effort.values.length ? policy.effort : undefined, tier: pick.model.tier, reason: `${pick.reason} · ${reason}`, ...base, fallback: !!failed, escalation };
+  }
   if (ov?.provider && ov.model && !escalation && `${ov.provider}:${ov.model}` !== failed && req.available(ov.provider)) {
     return { mode, provider: ov.provider, model: ov.model, effort: ov.effort ?? policy.effort, tier: modelInfo(ov.provider, ov.model)?.tier ?? tier, reason: `admin route · ${reason}`, ...base, escalation: false };
   }
