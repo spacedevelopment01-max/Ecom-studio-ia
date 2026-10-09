@@ -1,0 +1,1760 @@
+{
+ "apparition": {
+  "element": "#marque .hp-eyebrow",
+  "avant": {
+   "opacity": "0",
+   "transform": "matrix(1, 0, 0, 1, 0, 28)",
+   "cls": "hp-eyebrow reveal"
+  },
+  "pendant": [
+   {
+    "t": 0,
+    "v": {
+     "o": 0,
+     "ty": 28
+    }
+   },
+   {
+    "t": 81,
+    "v": {
+     "o": 0.31,
+     "ty": 19
+    }
+   },
+   {
+    "t": 161,
+    "v": {
+     "o": 0.64,
+     "ty": 10
+    }
+   },
+   {
+    "t": 242,
+    "v": {
+     "o": 0.81,
+     "ty": 5
+    }
+   },
+   {
+    "t": 323,
+    "v": {
+     "o": 0.9,
+     "ty": 3
+    }
+   },
+   {
+    "t": 408,
+    "v": {
+     "o": 0.95,
+     "ty": 1
+    }
+   },
+   {
+    "t": 489,
+    "v": {
+     "o": 0.98,
+     "ty": 1
+    }
+   },
+   {
+    "t": 572,
+    "v": {
+     "o": 0.99,
+     "ty": 0
+    }
+   },
+   {
+    "t": 656,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 740,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 824,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 907,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 990,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 1073,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 1157,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 1240,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   }
+  ]
+ },
+ "nombreElementsReveal": 94,
+ "inclinaisonHero": [
+  {
+   "y": 0,
+   "p": "0.530",
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  {
+   "y": 120,
+   "p": "0.618",
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  {
+   "y": 240,
+   "p": "0.705",
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  {
+   "y": 360,
+   "p": "0.793",
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  {
+   "y": 480,
+   "p": "0.881",
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  }
+ ],
+ "parcours": {
+  "ordreAffiche": [
+   "Marque",
+   "Boutique",
+   "Images",
+   "Publicités",
+   "Vidéos",
+   "SEO",
+   "Réseaux sociaux"
+  ],
+  "fondus": [
+   {
+    "module": "brand",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 71,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 141,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 213,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 284,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 355,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 429,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 499,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 570,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 640,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "store",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 79,
+      "v": [
+       0.82,
+       0.18,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 150,
+      "v": [
+       0.35,
+       0.65,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 220,
+      "v": [
+       0.15,
+       0.85,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 291,
+      "v": [
+       0.05,
+       0.95,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 362,
+      "v": [
+       0.02,
+       0.98,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 433,
+      "v": [
+       0.01,
+       0.99,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 503,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 574,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 645,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "images",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 74,
+      "v": [
+       0,
+       0.54,
+       0.46,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 144,
+      "v": [
+       0,
+       0.23,
+       0.77,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 216,
+      "v": [
+       0,
+       0.08,
+       0.92,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 286,
+      "v": [
+       0,
+       0.03,
+       0.97,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 357,
+      "v": [
+       0,
+       0.01,
+       0.99,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 427,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 499,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 570,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 641,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "ads",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 70,
+      "v": [
+       0,
+       0,
+       0.54,
+       0.46,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 146,
+      "v": [
+       0,
+       0,
+       0.23,
+       0.77,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 217,
+      "v": [
+       0,
+       0,
+       0.1,
+       0.9,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 287,
+      "v": [
+       0,
+       0,
+       0.03,
+       0.97,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 359,
+      "v": [
+       0,
+       0,
+       0.01,
+       0.99,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 430,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 500,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 575,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 645,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "video",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 72,
+      "v": [
+       0,
+       0,
+       0,
+       0.82,
+       0.18,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 146,
+      "v": [
+       0,
+       0,
+       0,
+       0.28,
+       0.72,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 216,
+      "v": [
+       0,
+       0,
+       0,
+       0.12,
+       0.88,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 287,
+      "v": [
+       0,
+       0,
+       0,
+       0.05,
+       0.95,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 357,
+      "v": [
+       0,
+       0,
+       0,
+       0.02,
+       0.98,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 439,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 512,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 582,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 653,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "seo",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 72,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.54,
+       0.46,
+       0
+      ]
+     },
+     {
+      "t": 146,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.23,
+       0.77,
+       0
+      ]
+     },
+     {
+      "t": 216,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.1,
+       0.9,
+       0
+      ]
+     },
+     {
+      "t": 288,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.03,
+       0.97,
+       0
+      ]
+     },
+     {
+      "t": 358,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.01,
+       0.99,
+       0
+      ]
+     },
+     {
+      "t": 429,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "t": 499,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "t": 571,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "t": 641,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "social",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "t": 70,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.82,
+       0.18
+      ]
+     },
+     {
+      "t": 144,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.28,
+       0.72
+      ]
+     },
+     {
+      "t": 215,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.12,
+       0.88
+      ]
+     },
+     {
+      "t": 285,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.05,
+       0.95
+      ]
+     },
+     {
+      "t": 356,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.02,
+       0.98
+      ]
+     },
+     {
+      "t": 427,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     {
+      "t": 497,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     {
+      "t": 568,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     {
+      "t": 638,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "fonctionnement": {
+  "etapes": [
+   {
+    "t": 0,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 501,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 1001,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 1502,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 2002,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 2502,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 3003,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 3503,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 4004,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 4504,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 5004,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 5505,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 6005,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 6506,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 7006,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 7506,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 8007,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 8507,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 9007,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 9508,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 10008,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 10508,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 11009,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 11512,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 12012,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 12513,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 13013,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 13514,
+    "v": "3Vous personnalisez et vous validez.Dési"
+   },
+   {
+    "t": 14014,
+    "v": "3Vous personnalisez et vous validez.Dési"
+   }
+  ],
+  "animationBarre": "hp-fill"
+ },
+ "editeurPublicite": {
+  "logoGauche": [
+   {
+    "t": 0,
+    "v": 517
+   },
+   {
+    "t": 52,
+    "v": 517
+   },
+   {
+    "t": 102,
+    "v": 517
+   },
+   {
+    "t": 153,
+    "v": 517
+   },
+   {
+    "t": 203,
+    "v": 517
+   },
+   {
+    "t": 253,
+    "v": 517
+   },
+   {
+    "t": 308,
+    "v": 517
+   },
+   {
+    "t": 359,
+    "v": 517
+   },
+   {
+    "t": 410,
+    "v": 517
+   },
+   {
+    "t": 460,
+    "v": 517
+   },
+   {
+    "t": 511,
+    "v": 517
+   },
+   {
+    "t": 561,
+    "v": 517
+   },
+   {
+    "t": 611,
+    "v": 517
+   },
+   {
+    "t": 661,
+    "v": 517
+   }
+  ],
+  "rapportHauteurLargeur": [
+   {
+    "t": 0,
+    "v": 1.25
+   },
+   {
+    "t": 50,
+    "v": 1.26
+   },
+   {
+    "t": 101,
+    "v": 1.31
+   },
+   {
+    "t": 152,
+    "v": 1.42
+   },
+   {
+    "t": 202,
+    "v": 1.59
+   },
+   {
+    "t": 259,
+    "v": 1.67
+   },
+   {
+    "t": 309,
+    "v": 1.72
+   },
+   {
+    "t": 360,
+    "v": 1.75
+   },
+   {
+    "t": 411,
+    "v": 1.77
+   },
+   {
+    "t": 461,
+    "v": 1.78
+   },
+   {
+    "t": 511,
+    "v": 1.78
+   },
+   {
+    "t": 562,
+    "v": 1.78
+   },
+   {
+    "t": 612,
+    "v": 1.78
+   },
+   {
+    "t": 662,
+    "v": 1.78
+   }
+  ]
+ },
+ "toutConnecte": {
+  "noeudActif": [
+   {
+    "t": 0,
+    "v": "Marque"
+   },
+   {
+    "t": 400,
+    "v": "Boutique"
+   },
+   {
+    "t": 801,
+    "v": "Boutique"
+   },
+   {
+    "t": 1201,
+    "v": "Boutique"
+   },
+   {
+    "t": 1601,
+    "v": "Boutique"
+   },
+   {
+    "t": 2002,
+    "v": "Boutique"
+   },
+   {
+    "t": 2402,
+    "v": "Boutique"
+   },
+   {
+    "t": 2803,
+    "v": "Boutique"
+   },
+   {
+    "t": 3203,
+    "v": "Boutique"
+   },
+   {
+    "t": 3603,
+    "v": "Images"
+   },
+   {
+    "t": 4004,
+    "v": "Images"
+   },
+   {
+    "t": 4404,
+    "v": "Images"
+   },
+   {
+    "t": 4804,
+    "v": "Images"
+   },
+   {
+    "t": 5205,
+    "v": "Images"
+   },
+   {
+    "t": 5605,
+    "v": "Images"
+   },
+   {
+    "t": 6006,
+    "v": "Images"
+   },
+   {
+    "t": 6406,
+    "v": "Images"
+   },
+   {
+    "t": 6806,
+    "v": "Textes"
+   },
+   {
+    "t": 7207,
+    "v": "Textes"
+   }
+  ],
+  "animationLien": "hp-dash 1.2s"
+ },
+ "personnalisation": [
+  {
+   "t": 0,
+   "v": "16px"
+  },
+  {
+   "t": 42,
+   "v": "15.1517px"
+  },
+  {
+   "t": 83,
+   "v": "12.9374px"
+  },
+  {
+   "t": 126,
+   "v": "9.05311px"
+  },
+  {
+   "t": 167,
+   "v": "7.63297px"
+  },
+  {
+   "t": 209,
+   "v": "6.51853px"
+  },
+  {
+   "t": 250,
+   "v": "6.16689px"
+  },
+  {
+   "t": 294,
+   "v": "6px"
+  },
+  {
+   "t": 334,
+   "v": "6px"
+  },
+  {
+   "t": 375,
+   "v": "6px"
+  },
+  {
+   "t": 416,
+   "v": "6px"
+  }
+ ],
+ "basculeTheme": {
+  "images": [
+   {
+    "t": 571,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 780,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 807,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 895,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1009,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1117,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1145,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1172,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1196,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1209,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1223,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1235,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1251,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1268,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1286,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1302,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1319,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1334,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1351,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1368,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1385,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1401,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1418,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1435,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1451,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1468,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1484,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1501,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1518,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 1535,
+    "bg": "rgb(250, 249, 246)"
+   }
+  ],
+  "ecartsMs": [
+   571,
+   209,
+   27,
+   88,
+   114,
+   108,
+   28,
+   27,
+   24,
+   13,
+   14,
+   12,
+   16,
+   17,
+   18,
+   16,
+   17,
+   15,
+   17,
+   17,
+   17,
+   16,
+   17,
+   17,
+   16,
+   17,
+   16,
+   17,
+   17,
+   17
+  ],
+  "nombreElementsPage": 2732
+ },
+ "fluidite": {
+  "images": 710,
+  "ips": 59.2,
+  "p95ms": 16.8,
+  "maxms": 33.4,
+  "tachesLongues": 0,
+  "hauteurPage": 29055
+ },
+ "inclinaisonHeroTelephone": [
+  {
+   "y": 0,
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  {
+   "y": 100,
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  {
+   "y": 200,
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  {
+   "y": 300,
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  {
+   "y": 400,
+   "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  }
+ ],
+ "telephoneParcours": {
+  "pastilleActive": [
+   "Marque",
+   "Boutique",
+   "Images",
+   "Publicités",
+   "Vidéos",
+   "SEO",
+   "Réseaux sociaux"
+  ],
+  "defilementRail": [
+   0,
+   0,
+   85,
+   187,
+   290,
+   368,
+   368
+  ]
+ },
+ "mouvementReduit": {
+  "revealOpacity": "1",
+  "revealDuree": "1e-05s",
+  "panelDuree": "1e-05s",
+  "sfx": "matrix(1, 0, 0, 1, 0, 0)",
+  "etapes": [
+   {
+    "t": 0,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 1000,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 2001,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 3002,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 4002,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 5003,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 6003,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 7004,
+    "v": "1Vous donnez une pho"
+   }
+  ]
+ },
+ "resultats": [
+  [
+   "Apparition au défilement : opacité et position évoluent progressivement (0,9 s)",
+   true,
+   "0ms:0/28px 81ms:0.31/19px 161ms:0.64/10px 242ms:0.81/5px 323ms:0.9/3px 408ms:0.95/1px 489ms:0.98/1px 572ms:0.99/0px"
+  ],
+  [
+   "Ordinateur : l'inclinaison de la vidéo d'entrée varie au défilement",
+   false,
+   "0px→--p 0.530 (à plat), 120px→--p 0.618 (à plat), 240px→--p 0.705 (à plat), 360px→--p 0.793 (à plat), 480px→--p 0.881 (à plat)"
+  ],
+  [
+   "Parcours Marque → Boutique → Images → Publicités → Vidéos → SEO → Réseaux sociaux dans cet ordre",
+   true,
+   "Marque > Boutique > Images > Publicités > Vidéos > SEO > Réseaux sociaux"
+  ],
+  [
+   "Parcours : fondu progressif entre panneaux (valeurs intermédiaires mesurées)",
+   true,
+   "[[1],[0.82,0.18],[0.35,0.65],[0.15,0.85],[0.05,0.95]]"
+  ],
+  [
+   "Parcours : fenêtre du studio fixée (position sticky) pendant la lecture",
+   true,
+   "sticky"
+  ],
+  [
+   "Comment ça fonctionne : les étapes s'enchaînent seules (au moins 2 changements en 14 s)",
+   true,
+   "1Vous donnez une photo | 2Le studio comprend le | 3Vous personnalisez et"
+  ],
+  [
+   "Éditeur de publicité : le logo glisse vers sa nouvelle place (positions intermédiaires)",
+   false,
+   "517 → 517 → 517 → 517 → 517 → 517 → 517 → 517 → 517 → 517 → 517 → 517 → 517 → 517"
+  ],
+  [
+   "Éditeur de publicité : changement de format animé (4:5 → 9:16)",
+   true,
+   "1.25 → 1.26 → 1.31 → 1.42 → 1.59 → 1.67 → 1.72 → 1.75 → 1.77 → 1.78 → 1.78 → 1.78 → 1.78 → 1.78"
+  ],
+  [
+   "Tout est connecté : rotation automatique du module mis en avant et lien animé",
+   true,
+   "Marque → Boutique → Images → Textes ; hp-dash 1.2s"
+  ],
+  [
+   "Personnalisation : arrondis qui changent en douceur",
+   true,
+   "16px → 15.1517px → 12.9374px → 9.05311px → 7.63297px → 6.51853px → 6.16689px → 6px → 6px → 6px → 6px"
+  ],
+  [
+   "Bascule clair / sombre : le fondu existe (couleurs intermédiaires)",
+   false,
+   "1 couleurs différentes"
+  ],
+  [
+   "Bascule clair / sombre : fondu fluide (images ≤ 50 ms)",
+   false,
+   "écarts entre images : 571, 209, 27, 88, 114, 108, 28, 27, 24, 13, 14, 12 ms"
+  ],
+  [
+   "Défilement jamais bloqué : la molette fait défiler la page (aucun overflow caché, aucun aimantage)",
+   true,
+   "0 → 12000px ; {\"html\":\"visible\",\"body\":\"visible\",\"snap\":\"none\"}"
+  ],
+  [
+   "Fluidité (Chromium de test, sans carte graphique) : défilement de toute la page mesuré",
+   true,
+   "59.2 images/s, 95e centile 16.8 ms, max 33.4 ms, 0 tâches longues, page 29055px"
+  ],
+  [
+   "Téléphone : l'inclinaison de la vidéo d'entrée varie au défilement",
+   false,
+   "0px, 100px, 200px, 300px, 400px"
+  ],
+  [
+   "Téléphone : la pastille active du rail suit les 7 modules, et le rail défile pour la montrer",
+   true,
+   "Marque > Boutique > Images > Publicités > Vidéos > SEO > Réseaux sociaux ; rail 0/0/85/187/290/368/368px"
+  ],
+  [
+   "Téléphone : chaque module a son aperçu sous le texte",
+   true,
+   ""
+  ],
+  [
+   "Téléphone : défilement au doigt fluide et non bloqué",
+   true,
+   "8186 → 18881px"
+  ],
+  [
+   "Téléphone : le menu ouvert fige la page en dessous, puis le défilement revient à la fermeture",
+   true,
+   "hidden → rétabli"
+  ],
+  [
+   "Mouvement réduit : contenu visible d'emblée, transitions coupées, pas d'enchaînement automatique",
+   true,
+   "{\"revealOpacity\":\"1\",\"revealDuree\":\"1e-05s\",\"panelDuree\":\"1e-05s\",\"sfx\":\"matrix(1, 0, 0, 1, 0, 0)\"}"
+  ],
+  [
+   "Aucune erreur JavaScript pendant l'audit",
+   true,
+   ""
+  ]
+ ]
+}
