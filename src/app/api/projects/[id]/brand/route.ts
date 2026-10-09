@@ -5,7 +5,8 @@ import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { loadProject, remember, saveBrand } from "@/lib/projects";
 import { saveBrandGuide } from "@/lib/engine/brand";
-import { generateLogos, hasClientLogo, recolorChosenRoute } from "@/lib/engine/identity";
+import { generateLogos, hasClientLogo, latestProposals, recolorChosenRoute } from "@/lib/engine/identity";
+import { reapplyLogoV2 } from "@/lib/logo-v2/choose";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { HttpError } from "@/lib/auth";
 import { DIRECTIONS } from "@/lib/theme/directions";
@@ -61,9 +62,12 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   // Exécuté « pour » le client : une IA éventuelle (nouvelles pistes, ligne éditoriale) respecte son forfait et son budget.
   const recolored = paletteOnly && !!brand.logo?.route ? await runForUser(owner, () => recolorChosenRoute(p.id, p.brand!.palette, { exact: !!b.paletteExact })) : false;
   const regenerate = !recolored && touchesLogo && !hasClientLogo(p.id) && !logoLocked;
-  if (regenerate) await runForUser(owner, () => generateLogos(null, p.id));
+  // Logo V2 appliqué : même direction reconstruite avec le nouveau nom et la palette (sans IA). Ancien projet avec des
+  // pistes de l'ancien moteur : ses pistes sont mises à jour comme avant (compatibilité, aucune nouvelle génération).
+  const v2 = regenerate && p.brand.logo?.engine === "v2" ? await runForUser(owner, () => reapplyLogoV2(null, p.id)) : false;
+  if (regenerate && !v2 && latestProposals(p.id).length) await runForUser(owner, () => generateLogos(null, p.id));
   if (!recolored) await saveBrandGuide(p.id);
-  return ok({ brand: loadProject(p.id).brand ?? brand, logoUpdated: regenerate || recolored, recolored, logoKept: touchesLogo && logoLocked && !recolored });
+  return ok({ brand: loadProject(p.id).brand ?? brand, logoUpdated: v2 || (regenerate && latestProposals(p.id).length > 0) || recolored, recolored, logoKept: touchesLogo && logoLocked && !recolored });
 });
 
 /** Nouvelle proposition de marque (les éléments validés sont conservés). */

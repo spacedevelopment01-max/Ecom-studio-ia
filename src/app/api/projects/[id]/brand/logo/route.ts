@@ -74,6 +74,13 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     recordBrandDecision(p.id, "logo.remplacement", `Remplacement demandé par la piste ${b.proposalId}`);
   }
   const regenerate = !!b.regenerate || !props.length;
+  // Nouvelles propositions : toujours Brand & Logo Engine V2 (l'ancien générateur de pistes ne crée plus rien) ;
+  // les anciennes pistes restent consultables et peuvent encore être choisies.
+  if (regenerate) {
+    if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.choose','brand.logo') AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine.", "A logo task is already running: wait for it to finish."));
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id } });
+    return ok({ jobId: job.id, proposals: list(p.id), current: currentId(p), engine: "v2" });
+  }
   if (regenerate && props.length >= MAX_ROUTES) throw new HttpError(409, L(`Vous avez déjà ${MAX_ROUTES} pistes : supprimez-en une pour en créer une nouvelle.`, `You already have ${MAX_ROUTES} routes: delete one to create a new one.`));
   if (!regenerate && !props.some((x) => x.id === b.proposalId)) throw new HttpError(404, L("Piste introuvable.", "Route not found."));
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'brand.logo' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine.", "A logo task is already running: wait for it to finish."));

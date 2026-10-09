@@ -6,6 +6,7 @@ import { all, json, one } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
 import { recordLogoRouteRejection } from "@/lib/brain/rejections";
+import { loadProject } from "@/lib/projects";
 
 export const runtime = "nodejs";
 
@@ -15,8 +16,8 @@ export const runtime = "nodejs";
  */
 function view(projectId: string) {
   const run = json<any>(one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'logo_v2_run'", projectId)?.value, null);
-  if (!run) return { run: null, proposals: [], discarded: [] };
-  const rows = all<{ id: string; role: string; meta: string }>("SELECT id, role, meta FROM assets WHERE project_id = ? AND role IN ('logo-v2','logo-v2-trial') AND json_extract(meta, '$.run') = ? AND deleted_at IS NULL ORDER BY created_at", projectId, run.runId);
+  if (!run) return { run: null, proposals: [], studio: [], discarded: [], applied: null };
+  const rows = all<{ id: string; role: string; meta: string }>("SELECT id, role, meta FROM assets WHERE project_id = ? AND role IN ('logo-v2','logo-v2-studio','logo-v2-trial') AND json_extract(meta, '$.run') = ? AND deleted_at IS NULL ORDER BY created_at", projectId, run.runId);
   const item = (r: { id: string; meta: string }) => {
     const m = json<any>(r.meta, {});
     const t = m.territory ?? {};
@@ -35,6 +36,10 @@ function view(projectId: string) {
   return {
     run: { id: run.runId, at: run.at, ai: run.ai, stoppedByCostCap: !!run.stoppedByCostCap, territories: run.territories, rejected: run.rejected ?? [] },
     proposals: rows.filter((r) => r.role === "logo-v2").map(item),
+    // Versions du studio (contrôle local, sans relecture IA) : proposées à part, jamais présentées comme finales.
+    studio: rows.filter((r) => r.role === "logo-v2-studio").map(item),
+    // Proposition appliquée actuellement (création complète ou choix du client).
+    applied: loadProject(projectId).brand?.logo.engine === "v2" ? (loadProject(projectId).brand?.logo.proposalId ?? null) : null,
     // Diagnostic : essais écartés (jamais présentés comme des propositions).
     discarded: rows.filter((r) => r.role === "logo-v2-trial").map((r) => ({ ...item(r), url: undefined })),
   };
@@ -52,14 +57,14 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.choose','brand.logo') AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine.", "A logo task is already running: wait for it to finish."));
   if (b.action === "reject") {
     // Direction écartée par le client : refus mémorisé (le type de logo ne sera plus proposé).
-    const meta = json<any>(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND role = 'logo-v2'", b.assetId ?? "", p.id)?.meta, null);
+    const meta = json<any>(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-studio')", b.assetId ?? "", p.id)?.meta, null);
     if (!meta) throw new HttpError(404, L("Proposition introuvable.", "Proposal not found."));
     const mt = meta.territory?.markType;
     recordLogoRouteRejection(p.id, { name: meta.territory?.name, composition: mt === "emblem" ? "emblem" : mt === "wordmark" ? "wordmark" : undefined, markKind: mt === "monogram" || mt === "lettermark" ? "monogram" : mt === "symbol_wordmark" || mt === "abstract_mark" ? "ai-symbol" : undefined });
     return ok(view(p.id));
   }
   if (b.action === "choose") {
-    if (!b.assetId || !one("SELECT 1 FROM assets WHERE id = ? AND project_id = ? AND role = 'logo-v2'", b.assetId, p.id)) throw new HttpError(404, L("Proposition introuvable.", "Proposal not found."));
+    if (!b.assetId || !one("SELECT 1 FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-studio')", b.assetId, p.id)) throw new HttpError(404, L("Proposition introuvable.", "Proposal not found."));
     const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.choose", label: L("Logo choisi : déclinaisons et charte", "Chosen logo: variations and guidelines"), payload: { projectId: p.id, assetId: b.assetId } });
     return ok({ jobId: job.id, ...view(p.id) });
   }

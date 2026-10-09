@@ -248,10 +248,16 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     const provisional = !!loadProject(p.id).brand?.logo.provisional;
     return { note: "brand built", covered: { logo, mockups: { note: provisional ? "logo provisional: brand book deferred until a real logo" : "brand book done by brand_strategy" } } };
   },
+  // Logo (Brand & Logo Engine V2) : nouvelles directions contrôlées ; la meilleure est appliquée comme proposition
+  // (jamais à la place d'un logo choisi, validé ou fourni par le client, qui reste en place).
   logo: async (ctx, p, s) => {
     const since = Date.now();
-    const { runLogoJob } = await import("../engine/logo-job");
-    await ctx.step(`plan:${s.id}`, () => runLogoJob(ctx, p.id, { proposalId: null, regenerate: true }));
+    const { runLogoEngineV2 } = await import("../logo-v2/engine");
+    const { applyBestLogoV2 } = await import("../logo-v2/choose");
+    await ctx.step(`plan:${s.id}`, async () => {
+      const run = await runLogoEngineV2(ctx, p.id);
+      return (await applyBestLogoV2(ctx, p.id, [...run.shown, ...run.studio]))?.assetId ?? null;
+    });
     return outcome(ctx.job.id, "logo", since);
   },
   stock_search: async (ctx, p, s) => {

@@ -213,7 +213,7 @@ export async function useFullLogo(projectId: string, assetId: string, opts: { va
   const fav = await saveAsset({ ...base, data: await sharp(src).resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer(), name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
   const validated = opts.validate !== false;
   // Choix explicite du client : le logo devient la décision active (verrou « logo »), l'ancien reste dans l'historique.
-  saveBrand(projectId, { ...p.brand, validated: validated ? [...new Set([...(p.brand.validated ?? []), "logo"])] : p.brand.validated, logo: { ...p.brand.logo, assetId: main.id, concept: `${C("Logo complet dessiné par l'IA", "Full logo drawn by AI")} — ${json(a.meta).concept ?? ""}`, status: validated ? "validated" : "proposed", proposal: undefined, proposalId: a.id, route: undefined, provisional: false } });
+  saveBrand(projectId, { ...p.brand, validated: validated ? [...new Set([...(p.brand.validated ?? []), "logo"])] : p.brand.validated, logo: { ...p.brand.logo, assetId: main.id, concept: `${C("Logo complet dessiné par l'IA", "Full logo drawn by AI")} — ${json(a.meta).concept ?? ""}`, status: validated ? "validated" : "proposed", proposal: undefined, proposalId: a.id, route: undefined, provisional: false, engine: undefined } });
   markBrandLogo(projectId, main.id);
   if (validated && !opts.auto) recordBrandDecision(projectId, "logo", `Logo complet dessiné par l'IA (${a.id})`);
   const { swapThemeLogos } = await import("./identity");

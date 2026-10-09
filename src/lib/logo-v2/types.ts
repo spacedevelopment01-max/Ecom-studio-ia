@@ -115,6 +115,8 @@ export type EngineRun = {
   territories: Territory[];
   /** Propositions montrées au client (FINAL). */
   shown: ProposalResult[];
+  /** Versions du studio (contrôle local seulement, sans relecture IA) : proposées à part, logo provisoire au mieux. */
+  studio: ProposalResult[];
   /** Essais écartés (diagnostic seulement). */
   discarded: ProposalResult[];
   /** Territoires refusés avant construction (trop proches, refusés par le client, cliché). */
