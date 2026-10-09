@@ -4,8 +4,9 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : **migration V1 → V2** sur la branche `claude/v1-to-v2-migration`, **non fusionnée**
-(rapport `reports/v1-to-v2-migration.md`). Phase 12A et correctifs post-audit **fusionnés** (PR #64 et #65).
+Dernière mise à jour : **migration V1 → V2** (rapport `reports/v1-to-v2-migration.md`) validée par le propriétaire
+sur rapport et fusionnée dans `main` (migration **partielle**, voir ci-dessous) ; **tests fonctionnels et visuels du
+propriétaire à venir** : les corrections et améliorations seront décidées à partir de ses observations. Phase 12A et correctifs post-audit **fusionnés** (PR #64 et #65).
 Check-up général : `reports/general-checkup.md`. Phase 11A fusionnée (PR #63) ; 11B non commencée. Phase 10A fusionnée
 (PR #62) ; **qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée
 techniquement, 9B reportée ; 8A validée techniquement, 8B reportée. Phase 13 non commencée.
@@ -280,7 +281,7 @@ Reste à faire (limites de 11A) :
 - PrestaShop : export testé par le gestionnaire de thèmes en ligne de commande (même code que l'écran « Thème et
   logo », écran lui-même non cliqué).
 
-## Migration V1 → V2 (branche `claude/v1-to-v2-migration`, non fusionnée)
+## Migration V1 → V2 (validée sur rapport, fusionnée ; tests du propriétaire en attente)
 
 Fait : création complète, demande unique et onglets sur les moteurs V2 pour les nouvelles créations :
 - logo (Logo V2, version du studio provisoire sans IA) ;
@@ -307,8 +308,10 @@ Reste à faire (issu de la migration) :
 - **Sujets d'articles** (`blog/topics`) : encore V1 ; réécriture d'un ancien article V1 fermée (modification à la
   main ou nouvel article V2).
 - Coût réel d'une création complète V2 avec une vraie IA : **non mesuré**.
-- Scénarios A–J sur ordinateur et téléphone : **à faire par le propriétaire** ; parcours navigateur 12A, éditeur
-  publicitaire et export CMS non rejoués sur la branche de migration.
+- Scénarios A–J sur ordinateur et téléphone : **à faire par le propriétaire** (tests fonctionnels et visuels) ;
+  parcours navigateur 12A, éditeur publicitaire et export CMS non rejoués après la migration.
+- Corrections et améliorations : à décider après les observations du propriétaire.
+- Test intermittent à surveiller : export CMS « mêmes octets » (1 échec sous charge, 3/3 seul).
 
 ## Autres limites connues
 
