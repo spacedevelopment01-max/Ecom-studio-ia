@@ -408,20 +408,30 @@ async function pipelineVideo(ctx: JobContext, projectId: string, ask: { kind: "v
   return r.videoAssetId;
 }
 
-/** Calendrier de 7 jours (réseaux connectés, sinon Instagram, Facebook, Pinterest) lancé en tâche enfant, une seule fois. */
-export async function startWeekCalendar(ctx: JobContext, projectId: string, idempotencyKey: string) {
-  const p = loadProject(projectId);
+/** Identifiant stable du calendrier de la création complète : une reprise retrouve le même, jamais un second. */
+export const creationPlanId = (projectId: string) => `creation-${projectId}`;
+
+/**
+ * Calendrier de 7 jours de la création complète — Social Media Engine V2 : plan (réseaux du projet, sinon Instagram
+ * et Facebook), textes sans invention, visuels produits sans dépense (bibliothèque, rendu local), barrière, approbation
+ * par version : rien n'est programmé ni publié sans l'accord du client. Une seule fois par projet : une reprise ou
+ * « Suite de la création » ne crée jamais un second calendrier (ni celui d'un ancien projet qui en a déjà un).
+ */
+export async function startWeekCalendar(ctx: JobContext, projectId: string, _idempotencyKey?: string) {
   return await ctx.step("plan", async () => {
-    const pid = id();
+    const planId = creationPlanId(projectId);
+    if (one("SELECT 1 FROM content_plans WHERE id = ? AND project_id = ?", planId, projectId)) return planId;
+    // Ancien projet dont la création a déjà fait un calendrier (ancien moteur) : rien de plus.
+    const older = one<{ id: string }>("SELECT id FROM content_plans WHERE project_id = ? ORDER BY created_at LIMIT 1", projectId);
+    if (older) return older.id;
+    const { planFromAsk } = await import("../social-v2/engine");
+    const { produceBatch, postsOfPlan } = await import("../social-v2/production");
+    const { realSocialDeps } = await import("../social-v2/deps");
     const fresh = loadProject(projectId);
-    const conns = all<{ id: string; provider: string }>("SELECT c.id, c.provider FROM connections c JOIN project_connections pc ON pc.connection_id = c.id WHERE pc.project_id = ? AND c.provider IN ('instagram','facebook','tiktok','youtube','pinterest')", projectId);
-    const networks = conns.length ? conns.map((c) => ({ network: c.provider, connectionId: c.id })) : [{ network: "instagram" }, { network: "facebook" }, { network: "pinterest" }];
-    const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
-    const params = { startDate: tomorrow, days: 7, perDay: 1, slots: ["11:30"], timezone: fresh.settings.timezone, networks, goals: fresh.business === "services" ? C("faire connaître l'activité et ses prestations, amener vers une prise de contact", "promote the business and its services, drive people to get in touch") : C("faire découvrir le produit et amener vers la boutique", "introduce the product and drive traffic to the store"), tone: "", mix: { photo: 70, video: 20, text: 10 }, approval: "manual" as const };
-    run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", pid, projectId, JSON.stringify(params), "planning", now());
-    const job = enqueue({ userId: p.userId, projectId, type: "calendar.plan", label: L("Calendrier de 7 jours", "7-day calendar"), payload: { projectId, planId: pid, params }, parentId: ctx.job.id, idempotencyKey });
-    run("UPDATE content_plans SET job_id = ? WHERE id = ?", job.id, pid);
-    return pid;
+    planFromAsk(fresh, "7 jours, 1 publication par jour", { planId, lang: fresh.settings.language === "en" ? "en" : "fr" });
+    await produceBatch(fresh, postsOfPlan(planId), realSocialDeps(ctx, fresh, false), { allowPaid: false, maxCostEur: 0, approvedEstimateMicro: null, batchSize: 50 });
+    remember(projectId, { kind: "artifact", key: "social_plan_v2", value: JSON.stringify({ planId, days: 7, origin: "creation" }), source: "local" });
+    return planId;
   });
 }
 

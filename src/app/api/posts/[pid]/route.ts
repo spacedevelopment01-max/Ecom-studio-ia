@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { id, now, one, run } from "@/lib/db";
+import { now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
 import { enqueue } from "@/lib/jobs";
@@ -7,6 +7,8 @@ import { addUsage, getAsset, removeUsages } from "@/lib/library";
 import { postView } from "@/lib/posts";
 import { L } from "@/lib/i18n-server";
 import { requirePlan } from "@/lib/plan-gates";
+import { duplicatePostV2 } from "@/lib/social-v2/engine";
+import { loadProject } from "@/lib/projects";
 
 async function postOf(ctx: { params: Promise<{ pid: string }> }) {
   const user = await requireUser();
@@ -19,8 +21,17 @@ async function postOf(ctx: { params: Promise<{ pid: string }> }) {
 
 const locked = (s: string) => s === "publishing" || s === "published";
 
+/**
+ * Publication Social V2 : elle se gère uniquement dans le calendrier (approbation par version, barrière avant toute
+ * programmation, publication par le planificateur V2). Cet ancien point d'accès ne peut jamais contourner ces protections.
+ */
+const refuseV2 = (post: { engine?: string }) => {
+  if (post.engine === "v2") throw new HttpError(409, L("Cette publication se gère dans le calendrier (relecture, approbation par version, programmation).", "This post is managed in the calendar (review, version approval, scheduling)."));
+};
+
 export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ pid: string }> }) => {
   const { post } = await postOf(ctx);
+  refuseV2(post);
   if (locked(post.status)) throw new HttpError(409, L("Une publication envoyée ne peut plus être modifiée.", "A post that has been sent can no longer be edited."));
   const b = await body(req, z.object({ title: z.string().max(200).optional(), caption: z.string().max(5000).optional(), hashtags: z.string().max(500).optional(), media: z.array(z.string()).max(10).optional(), scheduledAt: z.number().nullable().optional(), connectionId: z.string().nullable().optional(), network: z.enum(["instagram", "facebook", "tiktok", "youtube", "pinterest"]).optional(), format: z.string().optional(), link: z.string().max(500).nullable().optional() }));
   if (b.media) for (const m of b.media) if (getAsset(m)?.project_id !== post.project_id) throw new HttpError(400, L("Média étranger au projet.", "Media does not belong to this project."));
@@ -39,16 +50,22 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ pid: s
 
 export const DELETE = handle(async (_req: Request, ctx: { params: Promise<{ pid: string }> }) => {
   const { post } = await postOf(ctx);
+  refuseV2(post);
   if (post.status === "publishing") throw new HttpError(409, L("Publication en cours d'envoi : patientez quelques secondes.", "Post is being sent: please wait a few seconds."));
   removeUsages("post", post.id);
   run("DELETE FROM posts WHERE id = ?", post.id);
   return ok();
 });
 
-/** Actions : valider, programmer, annuler, dupliquer, régénérer, publier maintenant. */
+/** Anciennes publications (V1) : valider, programmer, annuler, publier maintenant ; dupliquer crée une publication V2. */
 export const POST = handle(async (req: Request, ctx: { params: Promise<{ pid: string }> }) => {
   const { user, post } = await postOf(ctx);
   const b = await body(req, z.object({ action: z.enum(["approve", "schedule", "unschedule", "cancel", "duplicate", "regenerate", "publish_now"]), instruction: z.string().max(500).optional(), part: z.enum(["text", "media", "both"]).optional() }));
+  // Dupliquer : la copie est toujours une publication Social V2 (à relire puis approuver dans le calendrier).
+  if (b.action === "duplicate") return ok({ id: duplicatePostV2(loadProject(post.project_id), post.id) });
+  refuseV2(post);
+  // Ancienne publication : plus de régénération par l'ancien moteur ; la copie (V2) se retouche dans le calendrier.
+  if (b.action === "regenerate") throw new HttpError(410, L("Dupliquez cette publication : la copie se retouche dans le calendrier (nouveau moteur).", "Duplicate this post: the copy is edited in the calendar (new engine)."));
   switch (b.action) {
     case "approve":
     case "schedule": {
@@ -70,20 +87,6 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ pid: st
       if (locked(post.status)) throw new HttpError(409, L("Déjà envoyée.", "Already sent."));
       run("UPDATE posts SET status = 'cancelled', updated_at = ? WHERE id = ?", now(), post.id);
       break;
-    case "duplicate": {
-      const nid = id();
-      run(
-        // La copie garde le moteur de l'original : une publication V2 dupliquée reste soumise à l'approbation de sa
-        // version et au contrôle V2 (jamais d'approbation « par date » héritée des anciennes publications V1).
-        "INSERT INTO posts (id, project_id, plan_id, campaign_id, connection_id, network, format, status, scheduled_at, timezone, title, caption, hashtags, link, angle, media, brief, engine, publish_key, created_at, updated_at) SELECT ?, project_id, plan_id, campaign_id, connection_id, network, format, 'draft', scheduled_at + 86400000, timezone, title, caption, hashtags, link, angle, media, brief, engine, ?, ?, ? FROM posts WHERE id = ?",
-        nid, `dup:${nid}`, now(), now(), post.id,
-      );
-      return ok({ id: nid });
-    }
-    case "regenerate": {
-      const job = enqueue({ userId: user.id, projectId: post.project_id, type: "post.regenerate", label: L("Régénération d'une publication", "Regenerating a post"), payload: { postId: post.id, instruction: b.instruction, part: b.part ?? "both" } });
-      return ok({ jobId: job.id });
-    }
     case "publish_now": {
       requirePlan(user);
       if (locked(post.status)) throw new HttpError(409, L("Déjà envoyée.", "Already sent."));

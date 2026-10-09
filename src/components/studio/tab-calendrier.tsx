@@ -14,98 +14,6 @@ import { ContentLangPicker, useContentLang } from "./content-lang";
 
 type ViewMode = "month" | "week" | "day";
 
-function PlanForm({ open, onClose, initialGoals = "" }: { open: boolean; onClose: () => void; initialGoals?: string }) {
-  const { id, data } = useProject();
-  const toast = useToast();
-  const t = useT();
-  const cl = useContentLang();
-  const tz = data?.settings.timezone ?? "Europe/Paris";
-  const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; linked: boolean; status: string }[] }>(open ? `/api/connections?project=${id}` : null);
-  const [f, setF] = useState({ startDate: format(addDays(new Date(), 1), "yyyy-MM-dd"), days: 7, perDay: 1, slots: ["11:30", "18:30", "08:30", "13:00", "21:00"], timezone: tz, goals: initialGoals.slice(0, 600), tone: "", photo: 60, video: 30, text: 10, link: "", approval: "manual" as "manual" | "auto" });
-  const [nets, setNets] = useState<Record<string, string | null | false>>({ instagram: null, facebook: false, tiktok: false, youtube: false, pinterest: false });
-  const [busy, setBusy] = useState(false);
-  const submit = async () => {
-    const networks = Object.entries(nets).filter(([, v]) => v !== false).map(([network, connectionId]) => ({ network, connectionId: connectionId || null }));
-    if (!networks.length) return toast("bad", t("Choisissez au moins un réseau.", "Choose at least one network."));
-    setBusy(true);
-    try {
-      await api(`/api/projects/${id}/plans`, { body: { startDate: f.startDate, days: f.days, perDay: f.perDay, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, networks, goals: f.goals, tone: f.tone, mix: { photo: f.photo, video: f.video, text: f.text }, link: f.link || undefined, approval: f.approval }, lang: cl.lang });
-      toast("ok", t(`${f.days * f.perDay} publications en préparation : textes, médias et dates.`, `${f.days * f.perDay} posts in preparation: copy, media and dates.`));
-      onClose();
-    } catch (e) {
-      toast("bad", (e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Modal open={open} onClose={onClose} title={t("Préparer des publications à l'avance", "Prepare posts in advance")} wide>
-      <div className="grid gap-5 md:grid-cols-2">
-        <div className="grid content-start gap-3">
-          <div className="grid grid-cols-2 gap-3">
-            <Field label={t("Premier jour", "First day")} htmlFor="cstart"><Input id="cstart" type="date" value={f.startDate} onChange={(e) => setF({ ...f, startDate: e.target.value })} /></Field>
-            <Field label={t("Nombre de jours", "Number of days")} htmlFor="cdays"><Input id="cdays" type="number" min={1} max={60} value={f.days} onChange={(e) => setF({ ...f, days: Math.max(1, Math.min(60, Number(e.target.value))) })} /></Field>
-          </div>
-          <Field label={t("Publications par jour", "Posts per day")} htmlFor="cper">
-            <div className="flex gap-1.5" id="cper">
-              {[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" onClick={() => setF({ ...f, perDay: n })} className={cx("h-10 flex-1 rounded-xl border text-sm", f.perDay === n ? "border-ink bg-ink text-paper" : "border-line bg-card")}>{n}</button>)}
-            </div>
-          </Field>
-          <Field label={t("Horaires", "Times")} htmlFor="cslot0">
-            <div className="flex flex-wrap gap-2">
-              {Array.from({ length: f.perDay }, (_, i) => <Input key={i} id={`cslot${i}`} type="time" value={f.slots[i]} onChange={(e) => { const s = [...f.slots]; s[i] = e.target.value; setF({ ...f, slots: s }); }} className="w-28" />)}
-            </div>
-          </Field>
-          <Field label={t("Fuseau horaire", "Time zone")} htmlFor="ctz"><Input id="ctz" value={f.timezone} onChange={(e) => setF({ ...f, timezone: e.target.value })} /></Field>
-          <Field label={t("Objectifs", "Goals")} htmlFor="cgoals"><Textarea id="cgoals" rows={2} value={f.goals} onChange={(e) => setF({ ...f, goals: e.target.value })} placeholder={t("Faire découvrir le produit, amener vers la boutique, préparer le lancement…", "Introduce the product, drive traffic to the store, build up to the launch…")} /></Field>
-          <Field label={t("Ton", "Tone")} htmlFor="ctone"><Input id="ctone" value={f.tone} onChange={(e) => setF({ ...f, tone: e.target.value })} placeholder={t("Celui de la marque par défaut", "The brand's tone by default")} /></Field>
-          <Field label={t("Lien de la boutique", "Store link")} htmlFor="clink"><Input id="clink" value={f.link} onChange={(e) => setF({ ...f, link: e.target.value })} placeholder="https://…" /></Field>
-        </div>
-        <div className="grid content-start gap-4">
-          <div>
-            <p className="mb-2 text-sm font-medium">{t("Réseaux et comptes", "Networks and accounts")}</p>
-            <div className="grid gap-2">
-              {Object.keys(NETWORKS).map((n) => {
-                const accounts = (conns?.connections ?? []).filter((c) => c.provider === n);
-                const on = nets[n] !== false;
-                return (
-                  <div key={n} className={cx("flex items-center gap-3 rounded-2xl border p-2.5", on ? "border-ink" : "border-line")}>
-                    <input type="checkbox" checked={on} onChange={(e) => setNets({ ...nets, [n]: e.target.checked ? accounts[0]?.id ?? null : false })} aria-label={NETWORKS[n].label} className="size-4 accent-[var(--signal)]" />
-                    <NetworkDot network={n} />
-                    <span className="flex-1 text-sm">{NETWORKS[n].label}</span>
-                    {on && (
-                      <Select value={(nets[n] as string) ?? ""} onChange={(e) => setNets({ ...nets, [n]: e.target.value || null })} className="h-8 w-40 text-xs" aria-label={t(`Compte ${NETWORKS[n].label}`, `${NETWORKS[n].label} account`)}>
-                        <option value="">{t("Sans compte (à choisir)", "No account (to choose)")}</option>
-                        {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                      </Select>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-medium">{t("Répartition des contenus", "Content mix")}</p>
-            {(["photo", "video", "text"] as const).map((k) => (
-              <label key={k} className="mb-2 flex items-center gap-3 text-sm">
-                <span className="w-24">{k === "photo" ? t("Photos", "Photos") : k === "video" ? t("Vidéos", "Videos") : t("Textes / carrousels", "Text / carousels")}</span>
-                <input type="range" min={0} max={100} step={10} value={f[k]} onChange={(e) => setF({ ...f, [k]: Number(e.target.value) })} className="flex-1 accent-[var(--signal)]" />
-                <span className="w-10 text-right text-xs text-muted">{f[k]} %</span>
-              </label>
-            ))}
-          </div>
-          <div className="rounded-2xl bg-paper-2 p-3">
-            <Toggle checked={f.approval === "auto"} onChange={(v) => setF({ ...f, approval: v ? "auto" : "manual" })} label={t("Programmer automatiquement selon mes règles", "Schedule automatically according to my rules")} />
-            <p className="mt-1.5 text-[11px] text-muted">{t("Sinon, chaque publication arrive « à valider ». Les règles se règlent avec le bouton « Règles d'automatisation ».", "Otherwise, each post arrives \"to review\". Set the rules with the \"Automation rules\" button.")}</p>
-          </div>
-          <ContentLangPicker {...cl} />
-          <Button size="lg" onClick={submit} loading={busy} icon={<Sparkles className="size-4" />}>{t(`Préparer ${f.days * f.perDay} publications`, `Prepare ${f.days * f.perDay} posts`)}</Button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
 function RulesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { id, data, reload } = useProject();
   const toast = useToast();
@@ -150,8 +58,6 @@ function LegacyCalendrier() {
   }, []);
   const [cursor, setCursor] = useState(() => toZonedTime(new Date(), tz));
   const [openPost, setOpenPost] = useState<PostView | null>(null);
-  const [planOpen, setPlanOpen] = useState(false);
-  const [planGoals, setPlanGoals] = useState("");
   const [rulesOpen, setRulesOpen] = useState(false);
   const active = useActive(["calendar.plan", "video.render", "post."]);
   const range = useMemo(() => {
@@ -165,17 +71,6 @@ function LegacyCalendrier() {
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
-  useEffect(() => {
-    try {
-      // Prompt de la bibliothèque : « Nouveau calendrier » s'ouvre avec le prompt dans « Objectifs ».
-      const pending = sessionStorage.getItem(`es-insert-calendrier-${id}`);
-      if (pending) {
-        sessionStorage.removeItem(`es-insert-calendrier-${id}`);
-        setPlanGoals(pending.replace(/^#+\s*/gm, "").replace(/\n{2,}/g, "\n").trim());
-        setPlanOpen(true);
-      }
-    } catch {}
-  }, [id]);
   const days: Date[] = [];
   for (let d = range[0]; d <= range[1]; d = addDays(d, 1)) days.push(d);
   const postsOn = (d: Date) => (data?.posts ?? []).filter((p) => p.scheduledAt && formatInTimeZone(new Date(p.scheduledAt), tz, "yyyy-MM-dd") === format(d, "yyyy-MM-dd")).sort((a, b) => (a.scheduledAt ?? 0) - (b.scheduledAt ?? 0));
@@ -216,7 +111,6 @@ function LegacyCalendrier() {
             {(["day", "week", "month"] as ViewMode[]).map((m) => <button key={m} onClick={() => setMode(m)} className={cx("rounded-full px-3 py-1.5 text-sm", mode === m && "bg-ink text-paper")} aria-pressed={mode === m}>{m === "day" ? t("Jour", "Day") : m === "week" ? t("Semaine", "Week") : t("Mois", "Month")}</button>)}
           </div>
           <Button variant="secondary" size="md" icon={<Settings2 className="size-4" />} onClick={() => setRulesOpen(true)}>{t("Règles d'automatisation", "Automation rules")}</Button>
-          <Button variant="signal" icon={<Sparkles className="size-4" />} onClick={() => setPlanOpen(true)}>{t("Préparer des publications", "Prepare posts")}</Button>
         </div>
       </div>
       <p className="text-xs text-muted">{t(`Fuseau : ${tz} · glissez une publication sur un autre jour pour la déplacer · les publications programmées partent à l'heure prévue, même navigateur fermé.`, `Time zone: ${tz} · drag a post onto another day to move it · scheduled posts go out at the planned time, even with the browser closed.`)}</p>
@@ -274,7 +168,6 @@ function LegacyCalendrier() {
       <div className="flex flex-wrap gap-3 text-xs text-muted">
         {Object.entries(POST_STATUS).map(([k, v]) => <span key={k} className="flex items-center gap-1.5"><span className={cx("size-2.5 rounded-full", { ok: "bg-ok", warn: "bg-warn", bad: "bg-bad", info: "bg-info", ink: "bg-ink", neutral: "bg-line" }[v.tone as string])} /> {t(v.label, v.en)}</span>)}
       </div>
-      <PlanForm key={planGoals} open={planOpen} initialGoals={planGoals} onClose={() => setPlanOpen(false)} />
       <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
       <PostEditor post={openPost} onClose={() => setOpenPost(null)} onChanged={reload} />
     </div>
@@ -293,7 +186,7 @@ export default function TabCalendrier() {
     <div className="grid min-w-0 grid-cols-1 gap-6">
       <SocialStudio initial="calendrier" />
       <div className="mx-auto w-full max-w-6xl">
-        <button type="button" onClick={() => setLegacy((v) => !v)} className="text-sm text-muted underline underline-offset-4">{legacy ? t("Masquer l'ancien parcours", "Hide the old view") : t("Ancien calendrier (V1) — conservé pour vos anciens calendriers", "Old calendar (V1) — kept for your earlier calendars")}</button>
+        <button type="button" onClick={() => setLegacy((v) => !v)} className="text-sm text-muted underline underline-offset-4">{legacy ? t("Masquer l'ancien parcours", "Hide the old view") : t("Ancien calendrier — consultation de vos anciennes publications (les nouvelles se préparent ci-dessus)", "Old calendar — view your earlier posts (new ones are prepared above)")}</button>
       </div>
       {legacy && <LegacyCalendrier />}
     </div>

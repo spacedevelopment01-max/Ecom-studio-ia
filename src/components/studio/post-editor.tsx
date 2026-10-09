@@ -2,12 +2,11 @@
 /** Éditeur d'une publication : texte, médias, compte, date et actions. */
 import { useEffect, useState } from "react";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
-import { CalendarClock, Copy, ExternalLink, ImagePlus, RefreshCw, Send, Trash2, X, Ban, Check } from "lucide-react";
+import { CalendarClock, Copy, ExternalLink, ImagePlus, Send, Trash2, X, Ban, Check } from "lucide-react";
 import { api, Badge, Button, cx, Field, Input, Modal, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, MediaPicker, type AssetView } from "./common";
 import { useT } from "../i18n";
-import { ContentLangPicker, useContentLang } from "./content-lang";
 
 export type PostView = { id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null; angle: string | null; media: AssetView[]; connectionId: string | null; connectionName: string | null; error: string | null; remoteUrl: string | null; publishedAt: number | null; autoApproved: boolean; advice?: string[] };
 
@@ -39,13 +38,11 @@ export function PostEditor({ post, onClose, onChanged }: { post: PostView | null
   const { id: projectId, data: project } = useProject();
   const toast = useToast();
   const t = useT();
-  const cl = useContentLang();
   const tz = post?.timezone ?? project?.settings.timezone ?? "Europe/Paris";
   const [f, setF] = useState<PostView | null>(post);
   const [date, setDate] = useState("");
   const [picker, setPicker] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
-  const [instruction, setInstruction] = useState("");
   const { data: conns } = useApi<{ connections: { id: string; provider: string; name: string; status: string; linked: boolean }[] }>(post ? `/api/connections?project=${projectId}` : null);
   useEffect(() => {
     setF(post);
@@ -70,8 +67,8 @@ export function PostEditor({ post, onClose, onChanged }: { post: PostView | null
     setBusy(a);
     try {
       if (a !== "duplicate" && a !== "regenerate" && !locked) await api(`/api/posts/${f.id}`, { method: "PATCH", body: { title: f.title, caption: f.caption, hashtags: f.hashtags, media: f.media.map((m) => m.id), scheduledAt: date ? fromZonedTime(date, tz).getTime() : null, connectionId: f.connectionId, link: f.link } });
-      await api(`/api/posts/${f.id}`, { body: { action: a, ...extra }, lang: a === "regenerate" ? cl.lang : undefined });
-      toast("ok", t<Record<string, string>>({ approve: "Validée et programmée.", schedule: "Programmée.", unschedule: "Déprogrammée.", cancel: "Annulée.", duplicate: "Dupliquée (lendemain, en brouillon).", regenerate: "Régénération en cours.", publish_now: "Publication en cours d'envoi." }, { approve: "Approved and scheduled.", schedule: "Scheduled.", unschedule: "Unscheduled.", cancel: "Cancelled.", duplicate: "Duplicated (next day, as a draft).", regenerate: "Regenerating.", publish_now: "Sending the post." })[a] ?? t("Fait.", "Done."));
+      await api(`/api/posts/${f.id}`, { body: { action: a, ...extra } });
+      toast("ok", t<Record<string, string>>({ approve: "Validée et programmée.", schedule: "Programmée.", unschedule: "Déprogrammée.", cancel: "Annulée.", duplicate: "Dupliquée dans le nouveau calendrier (à relire).", regenerate: "Régénération en cours.", publish_now: "Publication en cours d'envoi." }, { approve: "Approved and scheduled.", schedule: "Scheduled.", unschedule: "Unscheduled.", cancel: "Cancelled.", duplicate: "Duplicated into the new calendar (to review).", regenerate: "Regenerating.", publish_now: "Sending the post." })[a] ?? t("Fait.", "Done."));
       onChanged();
       if (a !== "regenerate") onClose();
     } catch (e) {
@@ -121,17 +118,7 @@ export function PostEditor({ post, onClose, onChanged }: { post: PostView | null
             <Field label={t(`Date et heure (${tz})`, `Date and time (${tz})`)} htmlFor="pdate"><Input id="pdate" type="datetime-local" value={date} disabled={locked} onChange={(e) => setDate(e.target.value)} /></Field>
             <Field label={t("Lien", "Link")} htmlFor="plink"><Input id="plink" value={f.link ?? ""} disabled={locked} onChange={(e) => setF({ ...f, link: e.target.value || null })} placeholder="https://" /></Field>
           </div>
-          {!locked && (
-            <div className="rounded-2xl bg-paper-2 p-3">
-              <p className="text-xs font-medium">{t("Régénérer avec l'IA", "Regenerate with AI")}</p>
-              <ContentLangPicker {...cl} className="mt-2" />
-              <div className="mt-2 flex gap-2">
-                <Input value={instruction} onChange={(e) => setInstruction(e.target.value)} placeholder={t("Consigne (facultatif) : plus court, plus pédagogique…", "Instructions (optional): shorter, more educational…")} className="h-9 text-sm" />
-                <Button size="sm" variant="secondary" icon={<RefreshCw className="size-3.5" />} loading={busy === "regenerate"} onClick={() => action("regenerate", { instruction, part: "text" })}>{t("Texte", "Text")}</Button>
-                <Button size="sm" variant="secondary" icon={<RefreshCw className="size-3.5" />} onClick={() => action("regenerate", { instruction, part: "media" })}>{t("Visuel", "Visual")}</Button>
-              </div>
-            </div>
-          )}
+          {/* Retouche : la copie (« Dupliquer ») est une publication du nouveau calendrier, retouchable avec son assistant. */}
         </div>
         <div className="grid content-start gap-3">
           <div className="overflow-hidden rounded-2xl border border-line bg-card">

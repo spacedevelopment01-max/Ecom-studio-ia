@@ -48,6 +48,8 @@ export type AdRequestV2 = {
   /** Offre RÉELLE de la campagne (sinon aucune promotion). */
   offer?: string | null;
   maxCostEur?: number;
+  /** Textes seulement (fenêtre « Campagne ») : angles, textes contrôlés et plan de test, sans création d'image. */
+  copyOnly?: boolean;
 };
 
 export type AdRunResult = {
@@ -143,6 +145,7 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
     const logo = deps.logo();
     for (const a of angles) result.concepts.push({ id: a.id, angle: a, copy: copies.get(a.id)!.copy, visual: visualFor(a, insight, !!cut), copyBy: copies.get(a.id)!.by, claims: allClaims.get(a.id)! });
 
+    if (req.copyOnly) return result;
     // 2. Créations par concept et par format.
     const pal = palette(p);
     const typo = brandTypo(p);
