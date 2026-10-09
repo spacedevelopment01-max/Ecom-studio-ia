@@ -152,4 +152,20 @@ délais dépassés et des factures d'appels incertains ; paiement Stripe réel (
 réel de Stripe comparé au prorata du budget) ; envoi réel de l'e-mail de confirmation administrateur ; connexion
 OAuth réelle (Meta, TikTok, Google, Pinterest, LinkedIn, Shopify).
 
-Parcours navigateur rejoués après correction (bases de démonstration, 0 € d'IA) : résultats ajoutés ci-dessous.
+## 9. Parcours navigateur rejoués après correction
+
+Chromium, `next start` + vrai worker, bases de démonstration, aucune clé d'IA (0 €).
+
+| Parcours | Résultat |
+|---|---|
+| Demande unique, 5 parcours + téléphone, worker coupé à 54 % puis relancé (`scripts/e2e-workflow-v2.ts`) | **36/36**, 0 appel d'IA, aucune erreur JavaScript — captures `reports/screenshots/post-audit/` |
+| Inscription → photo → création complète → visite de chaque espace (`e2e-browser`) | **OK**, 0 px de débordement mobile, aucune erreur JavaScript |
+| Éditeur visuel des publicités (`e2e-ad-editor`) | **28/28** |
+| Export Shopify / WordPress (`e2e-cms-export`) | **11/11**, 0 appel d'IA |
+
+Changements de comportement visibles, voulus :
+- le parcours de la demande unique utilise désormais **un compte par boutique** : la limite d'une boutique par
+  abonnement s'applique aussi à l'administrateur (le script de test a été adapté) ;
+- dans `e2e-browser`, le compte de test (premier compte, administrateur, sans forfait) passe par la **découverte
+  gratuite** : visuels, vidéo et calendrier ne sont plus faits d'office pour lui (création en 6 s au lieu de 55 s).
+  Pour tester en payant, attribuer un forfait dans Administration › Clients.

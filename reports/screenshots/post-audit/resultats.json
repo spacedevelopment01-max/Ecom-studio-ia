@@ -1,0 +1,182 @@
+[
+  {
+    "test": "1. Demande globale enregistrée avec la création (une seule demande, devis 0 € → lancée d'office)",
+    "ok": true,
+    "detail": "queued, création reliée"
+  },
+  {
+    "test": "1. Création complète sans calendrier de 7 jours en double (remplacé par celui de la demande)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "1. Reprise après interruption du worker : la demande va au bout",
+    "ok": true,
+    "detail": "done"
+  },
+  {
+    "test": "1. Suivi : étapes, résultats et liens vers les éditeurs affichés",
+    "ok": true,
+    "detail": "Analyse du produit ou de l'activité done by the full creation (job m7yf0vxo) Ouvrir | Marque (nom, positionnement, palette, typographies) done by the full creation (job m7yf0vxo) Ouvrir | Logo done with the brand by the full creation Ouvrir | Charte et maquettes de marque done with the brand by the full creation Ouvrir | Photos libres de droits visuals already searched and made by the full creation Ouvrir | Visuels done by the full creation (job m7yf0vxo) Ouvrir"
+  },
+  {
+    "test": "1. 30 publications Instagram préparées (Social V2), aucune publiée",
+    "ok": true,
+    "detail": "30"
+  },
+  {
+    "test": "1. Aucun doublon de publication (clés uniques)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "1. Pas de second calendrier créé par la création complète",
+    "ok": true,
+    "detail": "0"
+  },
+  {
+    "test": "1. Publicités V2 créées (documents éditables)",
+    "ok": true,
+    "detail": "9"
+  },
+  {
+    "test": "1. Thème Shopify exporté et contrôlé (rangé dans les fichiers)",
+    "ok": true,
+    "detail": "seve-co-shopify-v1.zip"
+  },
+  {
+    "test": "1. Marque et logo créés",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "1. Une seule création complète et une seule exécution de la demande (pas de tâche en double)",
+    "ok": true,
+    "detail": "1 / 1"
+  },
+  {
+    "test": "1. Éléments à valider par le client listés (rien validé à sa place)",
+    "ok": true,
+    "detail": "Répondre aux questions sur votre produit ou activité 6 | Choisir ou valider votre logo | Relire et approuver les publications (rien n'est publié sans votre accord) 30 | Relire les publicités avant toute diffusion 9 | Installer le thème exporté sur votre boutique et vérifier (installation réelle non vérifiée par le studio)"
+  },
+  {
+    "test": "1. Même demande renvoyée : rien n'est refait (même demande, mêmes publications)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "2. Plâtrier-peintre : demande terminée",
+    "ok": true,
+    "detail": "done"
+  },
+  {
+    "test": "2. 14 jours de publications Facebook",
+    "ok": true,
+    "detail": "14 (facebook)"
+  },
+  {
+    "test": "2. Aucune trace de vente en ligne dans les publications d'un artisan",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "2. Export WordPress contrôlé",
+    "ok": true,
+    "detail": "es-charpente-services-wordpress-v1.zip"
+  },
+  {
+    "test": "3. High-tech : demande terminée",
+    "ok": true,
+    "detail": "done"
+  },
+  {
+    "test": "3. Marque créée (nom, palette, typographies) et boutique composée",
+    "ok": true,
+    "detail": "Maison Boréal #34363D"
+  },
+  {
+    "test": "3. Export Shopify fait (boutique demandée)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "3. Pas de publications ni de publicités non demandées",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "4. Devis affiché avant tout lancement (par module, total)",
+    "ok": true,
+    "detail": "0 € — Calendrier de publications · Social V2 local, gratuit 0 € | Campagne publicitaire · Advertising V2 local, gratuit 0 € | Relecture qualité · Quality Gate non exécutée dans une demande (aucun moteur dédié) non incluse 0 €"
+  },
+  {
+    "test": "4. Rien n'est lancé avant l'accord du client",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "4. Campagne + calendrier terminés",
+    "ok": true,
+    "detail": "done"
+  },
+  {
+    "test": "4. Publications Instagram et Facebook sur 14 jours (une par jour, réseaux alternés)",
+    "ok": true,
+    "detail": "14 (facebook, instagram)"
+  },
+  {
+    "test": "4. Nouvelle campagne publicitaire enregistrée",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "4. Les 30 publications de la première demande sont intactes",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "5. Nouvelle palette enregistrée (onglet Marque)",
+    "ok": true,
+    "detail": "200"
+  },
+  {
+    "test": "5. Créations utilisant l'ancienne identité listées, rien modifié d'office",
+    "ok": true,
+    "detail": "24 : Publicité Change : couleurs, logo | Publicité Change : couleurs, logo | Publicité Change : couleurs, logo | Publicité Change : couleurs, logo | Publicité Change : couleurs, logo"
+  },
+  {
+    "test": "5. Mise à jour contrôlée des créations choisies (nouvelle version, locale)",
+    "ok": true,
+    "detail": "v3 v3 v3 v5 v5 v5 v3 v3 v3 visuel refait localement, à réapprouver visuel refait localement, à réapprouver visuel refait localement, à réapprouver visuel refait localement, à réapprouver visuel refait localement, à réapprouver visuel refait localement, à réapprouver visuel refait localement, à réapp"
+  },
+  {
+    "test": "5. Boutique : nouvelle version avec la nouvelle palette (l'ancienne reste)",
+    "ok": true,
+    "detail": "v2 → v2"
+  },
+  {
+    "test": "6. Téléphone : Pilote (demande, suivi, validations, éditeurs) sans débordement",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "6. Téléphone : onglet Marque sans débordement",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "6. Téléphone : champ « Tout ce que vous voulez obtenir » visible, sans débordement",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "Aucune erreur JavaScript",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "Aucun appel d'IA (0 €)",
+    "ok": true,
+    "detail": "0"
+  }
+]
