@@ -4,11 +4,11 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : phase 12A (Studio Integration & AI Workflow V2) terminée techniquement, **non fusionnée**, en
-attente de la validation du propriétaire ; 12B et Phase 13 non commencées. Phase 11A validée techniquement et
-fusionnée (PR #63, commit 6cce305) ; 11B non commencée. Phase 10A fusionnée (PR #62) ; **qualité visuelle finale avec
-les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée techniquement, 9B reportée ; 8A validée
-techniquement, 8B reportée.
+Dernière mise à jour : correctifs prioritaires post-audit (budget IA 40 %/50 %, réservations, Phase 12A, sécurité)
+sur la branche `claude/post-audit-critical-fixes`, **non fusionnée**. Phase 12A terminée techniquement, non fusionnée ;
+check-up général : `reports/general-checkup.md`. Phase 11A fusionnée (PR #63, commit 6cce305) ; 11B non commencée.
+Phase 10A fusionnée (PR #62) ; **qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non
+commencée ; 9A validée techniquement, 9B reportée ; 8A validée techniquement, 8B reportée. Phase 13 non commencée.
 
 **Règle pour la Phase 10 (Theme Engine V2) et les suivantes** : tests visuels réels dans un navigateur, avec
 captures ordinateur ET téléphone, dès le développement technique. Les tests de code seuls ne suffisent pas.
@@ -203,6 +203,28 @@ Reste à faire (limites de 10A) :
   projets dont la version actuelle est V1 tant qu'ils ne sont pas recomposés ; réglage de projet `themeEngine: "v1"`.
 - La CI GitHub vérifie le thème V2 par `tests/theme-v2.test.ts` (Theme Check d'un ZIP V2) ; `scripts/verify-theme.sh`
   couvre les directions V1.
+
+## Correctifs post-audit (branche `claude/post-audit-critical-fixes`, non fusionnée)
+
+Fait : budget IA = 40 % du prix HT du forfait (annuel compris, sans enveloppe de création, prorata au changement de
+forfait), packs/recharges = 50 % du HT payé, réservation atomique du coût maximal avant tout appel, jamais de solde
+négatif, incertain = coût maximal retenu (réconciliable), anciens portefeuilles mis en conformité ; demande unique :
+aucune dépense sans accord, plafond pendant les étapes, vidéo jamais auto-approuvée, devis complet, blog filtré,
+statuts « non faite », « Réessayer » réel ; OAuth lié à la session ; rôle administrateur après lien de confirmation ;
+projet archivé inutilisable ; passe-droits administrateur retirés. Rapport : `reports/post-audit-critical-fixes.md`.
+
+Reste à faire (issu de `reports/general-checkup.md`, non traité dans cette étape) :
+- Coûts réels jamais mesurés face aux maximums réservés (vraies API) ; écran d'administration de réconciliation des
+  appels incertains ; alerte à 80 % du budget jamais envoyée.
+- « Suite de la création » recrée un calendrier V1 (doublon reproduit) ; tout nouveau projet reçoit un calendrier V1.
+- Moteurs V1 encore utilisés par la création complète (visuels, vidéo, textes, logo, calendrier), les onglets Images,
+  Vidéos et UGC, et les étapes `image_generate`, `copy`, `logo`, `blog` de la demande unique (étiquetées V2).
+- Blog V1 et V2 sur la même table (écrasement possible) ; boutique sur les textes V1 au lieu des documents SEO V2.
+- Envoi direct vers Shopify sans les contrôles CMS V2 ; import ZIP sans limite de décompression ; envois de fichiers
+  entièrement en mémoire ; adresse IP falsifiable pour les limites de fréquence.
+- Propagation de marque : réapprobation non appliquée au statut ; export refait en français.
+- Pas d'écran Image V2 ni Vidéo V2 ; vidéos V2 non modifiables ; pas de vérification d'e-mail à l'inscription ni de
+  suppression de compte ou de projet.
 
 ## Studio Workflow V2 (phase 12A) — fait et ce qui reste
 
