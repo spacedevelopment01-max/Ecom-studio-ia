@@ -1,0 +1,1766 @@
+{
+ "apparition": {
+  "element": "#marque .hp-eyebrow",
+  "avant": {
+   "opacity": "0",
+   "transform": "matrix(1, 0, 0, 1, 0, 28)",
+   "cls": "hp-eyebrow reveal"
+  },
+  "pendant": [
+   {
+    "t": 0,
+    "v": {
+     "o": 0,
+     "ty": 28
+    }
+   },
+   {
+    "t": 84,
+    "v": {
+     "o": 0.27,
+     "ty": 20
+    }
+   },
+   {
+    "t": 167,
+    "v": {
+     "o": 0.69,
+     "ty": 9
+    }
+   },
+   {
+    "t": 250,
+    "v": {
+     "o": 0.86,
+     "ty": 4
+    }
+   },
+   {
+    "t": 333,
+    "v": {
+     "o": 0.94,
+     "ty": 2
+    }
+   },
+   {
+    "t": 420,
+    "v": {
+     "o": 0.98,
+     "ty": 1
+    }
+   },
+   {
+    "t": 500,
+    "v": {
+     "o": 0.99,
+     "ty": 0
+    }
+   },
+   {
+    "t": 584,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 668,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 751,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 836,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 917,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 1000,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 1083,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 1167,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   },
+   {
+    "t": 1250,
+    "v": {
+     "o": 1,
+     "ty": 0
+    }
+   }
+  ]
+ },
+ "nombreElementsReveal": 89,
+ "inclinaisonHero": [
+  {
+   "y": 0,
+   "p": "0.530",
+   "transform": "matrix3d(1, 0, 0, 0, 0, 0.999877, -0.0157073, 1.12195e-05, 0, 0.0157073, 0.999877, -0.000714198, 0, 0, 0, 1)"
+  },
+  {
+   "y": 120,
+   "p": "0.618",
+   "transform": "matrix3d(0.9898, 0, 0, 0, 0, 0.987911, -0.0611156, 4.3654e-05, 0, 0.0617454, 0.998092, -0.000712923, 0, 0, 0, 1)"
+  },
+  {
+   "y": 240,
+   "p": "0.706",
+   "transform": "matrix3d(0.9766, 0, 0, 0, 0, 0.970925, -0.105133, 7.50952e-05, 0, 0.107652, 0.994189, -0.000710135, 0, 0, 0, 1)"
+  },
+  {
+   "y": 360,
+   "p": "0.796",
+   "transform": "matrix3d(0.9631, 0, 0, 0, 0, 0.953727, -0.134038, 9.57412e-05, 0, 0.139173, 0.990268, -0.000707334, 0, 0, 0, 1)"
+  },
+  {
+   "y": 480,
+   "p": "0.886",
+   "transform": "matrix3d(0.95, 0, 0, 0, 0, 0.940755, -0.132214, 9.44389e-05, 0, 0.139173, 0.990268, -0.000707334, 0, 0, 0, 1)"
+  }
+ ],
+ "parcours": {
+  "ordreAffiche": [
+   "Marque",
+   "Boutique",
+   "Images",
+   "Publicités",
+   "Vidéos",
+   "SEO",
+   "Réseaux sociaux"
+  ],
+  "fondus": [
+   {
+    "module": "brand",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 71,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 141,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 220,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 292,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 364,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 435,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 505,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 576,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 647,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "store",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       1,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 71,
+      "v": [
+       1,
+       0.19,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 142,
+      "v": [
+       0.99,
+       0.75,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 213,
+      "v": [
+       0.96,
+       0.9,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 283,
+      "v": [
+       0.79,
+       0.96,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 353,
+      "v": [
+       0,
+       0.99,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 425,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 495,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 566,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 636,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "images",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 73,
+      "v": [
+       0,
+       1,
+       0.49,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 143,
+      "v": [
+       0,
+       0.99,
+       0.8,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 214,
+      "v": [
+       0,
+       0.9,
+       0.94,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 285,
+      "v": [
+       0,
+       0.53,
+       0.98,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 355,
+      "v": [
+       0,
+       0,
+       0.99,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 426,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 499,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 569,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 640,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "ads",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       0,
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 76,
+      "v": [
+       0,
+       0,
+       1,
+       0.49,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 151,
+      "v": [
+       0,
+       0,
+       0.98,
+       0.84,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 222,
+      "v": [
+       0,
+       0,
+       0.9,
+       0.94,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 294,
+      "v": [
+       0,
+       0,
+       0.53,
+       0.98,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 366,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 437,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 507,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 578,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 649,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "video",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 75,
+      "v": [
+       0,
+       0,
+       0,
+       1,
+       0.36,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 146,
+      "v": [
+       0,
+       0,
+       0,
+       0.99,
+       0.75,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 216,
+      "v": [
+       0,
+       0,
+       0,
+       0.93,
+       0.92,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 288,
+      "v": [
+       0,
+       0,
+       0,
+       0.69,
+       0.97,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 364,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.99,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 438,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 508,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 579,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 649,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "seo",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     {
+      "t": 70,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0.49,
+       0
+      ]
+     },
+     {
+      "t": 141,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.99,
+       0.8,
+       0
+      ]
+     },
+     {
+      "t": 211,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.9,
+       0.94,
+       0
+      ]
+     },
+     {
+      "t": 285,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0.53,
+       0.98,
+       0
+      ]
+     },
+     {
+      "t": 355,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.99,
+       0
+      ]
+     },
+     {
+      "t": 431,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "t": 501,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "t": 572,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "t": 645,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     }
+    ]
+   },
+   {
+    "module": "social",
+    "opacites": [
+     {
+      "t": 0,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0
+      ]
+     },
+     {
+      "t": 72,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0.2
+      ]
+     },
+     {
+      "t": 147,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.99,
+       0.75
+      ]
+     },
+     {
+      "t": 217,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.96,
+       0.9
+      ]
+     },
+     {
+      "t": 287,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.79,
+       0.96
+      ]
+     },
+     {
+      "t": 358,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0.99
+      ]
+     },
+     {
+      "t": 430,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     {
+      "t": 500,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     {
+      "t": 571,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1
+      ]
+     },
+     {
+      "t": 641,
+      "v": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "fonctionnement": {
+  "etapes": [
+   {
+    "t": 0,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 501,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 1001,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 1501,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 2002,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 2502,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 3002,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 3504,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 4004,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 4504,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 5005,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 5505,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 6006,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 6506,
+    "v": "1Vous donnez une photo, un lien ou une d"
+   },
+   {
+    "t": 7006,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 7507,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 8007,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 8509,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 9010,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 9510,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 10011,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 10511,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 11011,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 11511,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 12011,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 12512,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 13012,
+    "v": "2Le studio comprend le projet et prépare"
+   },
+   {
+    "t": 13512,
+    "v": "3Vous personnalisez et vous validez.Dési"
+   },
+   {
+    "t": 14012,
+    "v": "3Vous personnalisez et vous validez.Dési"
+   }
+  ],
+  "animationBarre": "hp-fill"
+ },
+ "editeurPublicite": {
+  "logoGauche": [
+   {
+    "t": 0,
+    "v": 271
+   },
+   {
+    "t": 50,
+    "v": 389
+   },
+   {
+    "t": 101,
+    "v": 450
+   },
+   {
+    "t": 151,
+    "v": 480
+   },
+   {
+    "t": 201,
+    "v": 495
+   },
+   {
+    "t": 252,
+    "v": 503
+   },
+   {
+    "t": 302,
+    "v": 506
+   },
+   {
+    "t": 352,
+    "v": 508
+   },
+   {
+    "t": 403,
+    "v": 509
+   },
+   {
+    "t": 453,
+    "v": 509
+   },
+   {
+    "t": 503,
+    "v": 509
+   },
+   {
+    "t": 554,
+    "v": 509
+   },
+   {
+    "t": 604,
+    "v": 509
+   },
+   {
+    "t": 654,
+    "v": 509
+   }
+  ],
+  "rapportHauteurLargeur": [
+   {
+    "t": 0,
+    "v": {
+     "o": 0,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 50,
+    "v": {
+     "o": 0.58,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 101,
+    "v": {
+     "o": 0.83,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 151,
+    "v": {
+     "o": 0.93,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 202,
+    "v": {
+     "o": 0.97,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 252,
+    "v": {
+     "o": 0.99,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 302,
+    "v": {
+     "o": 1,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 353,
+    "v": {
+     "o": 1,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 403,
+    "v": {
+     "o": 1,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 457,
+    "v": {
+     "o": 1,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 508,
+    "v": {
+     "o": 1,
+     "r": 1.78
+    }
+   },
+   {
+    "t": 559,
+    "v": {
+     "o": 1,
+     "r": 1.78
+    }
+   }
+  ]
+ },
+ "toutConnecte": {
+  "noeudActif": [
+   {
+    "t": 0,
+    "v": "Marque"
+   },
+   {
+    "t": 400,
+    "v": "Marque"
+   },
+   {
+    "t": 801,
+    "v": "Marque"
+   },
+   {
+    "t": 1201,
+    "v": "Marque"
+   },
+   {
+    "t": 1601,
+    "v": "Boutique"
+   },
+   {
+    "t": 2002,
+    "v": "Boutique"
+   },
+   {
+    "t": 2402,
+    "v": "Boutique"
+   },
+   {
+    "t": 2802,
+    "v": "Boutique"
+   },
+   {
+    "t": 3203,
+    "v": "Boutique"
+   },
+   {
+    "t": 3605,
+    "v": "Boutique"
+   },
+   {
+    "t": 4007,
+    "v": "Boutique"
+   },
+   {
+    "t": 4407,
+    "v": "Boutique"
+   },
+   {
+    "t": 4809,
+    "v": "Images"
+   },
+   {
+    "t": 5209,
+    "v": "Images"
+   },
+   {
+    "t": 5609,
+    "v": "Images"
+   },
+   {
+    "t": 6010,
+    "v": "Images"
+   },
+   {
+    "t": 6410,
+    "v": "Images"
+   },
+   {
+    "t": 6810,
+    "v": "Images"
+   },
+   {
+    "t": 7210,
+    "v": "Images"
+   }
+  ],
+  "animationLien": "hp-dash 1.2s"
+ },
+ "personnalisation": [
+  {
+   "t": 0,
+   "v": "16px"
+  },
+  {
+   "t": 40,
+   "v": "15.1489px"
+  },
+  {
+   "t": 82,
+   "v": "12.9374px"
+  },
+  {
+   "t": 122,
+   "v": "10.0984px"
+  },
+  {
+   "t": 163,
+   "v": "7.62974px"
+  },
+  {
+   "t": 206,
+   "v": "6.51759px"
+  },
+  {
+   "t": 253,
+   "v": "6.16641px"
+  },
+  {
+   "t": 318,
+   "v": "6px"
+  },
+  {
+   "t": 371,
+   "v": "6px"
+  },
+  {
+   "t": 412,
+   "v": "6px"
+  }
+ ],
+ "basculeTheme": {
+  "repos": [
+   4,
+   23,
+   10,
+   22,
+   11,
+   22,
+   11,
+   36,
+   23,
+   8,
+   25,
+   9,
+   28,
+   5,
+   25,
+   8,
+   23,
+   10,
+   23,
+   11,
+   31,
+   3,
+   24,
+   10,
+   27,
+   6,
+   27,
+   6,
+   27,
+   7
+  ],
+  "images": [
+   {
+    "t": 36,
+    "ecart": 36,
+    "voile": 0,
+    "bg": "rgb(6, 10, 24)"
+   },
+   {
+    "t": 73,
+    "ecart": 37,
+    "voile": 0,
+    "bg": "rgb(6, 10, 24)"
+   },
+   {
+    "t": 101,
+    "ecart": 28,
+    "voile": 0,
+    "bg": "rgb(6, 10, 24)"
+   },
+   {
+    "t": 138,
+    "ecart": 38,
+    "voile": 0.02,
+    "bg": "rgb(6, 10, 24)"
+   },
+   {
+    "t": 176,
+    "ecart": 38,
+    "voile": 0.14,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 274,
+    "ecart": 98,
+    "voile": 1,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 294,
+    "ecart": 20,
+    "voile": 1,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 323,
+    "ecart": 29,
+    "voile": 0.65,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 344,
+    "ecart": 21,
+    "voile": 0.41,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 373,
+    "ecart": 29,
+    "voile": 0.17,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 406,
+    "ecart": 34,
+    "voile": 0.07,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 441,
+    "ecart": 35,
+    "voile": 0.03,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 475,
+    "ecart": 34,
+    "voile": 0.01,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 511,
+    "ecart": 36,
+    "voile": 0,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 546,
+    "ecart": 35,
+    "voile": 0,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 575,
+    "ecart": 29,
+    "voile": 0,
+    "bg": "rgb(250, 249, 246)"
+   },
+   {
+    "t": 609,
+    "ecart": 34,
+    "voile": null,
+    "bg": "rgb(250, 249, 246)"
+   }
+  ],
+  "elementsAvecTransition": 155
+ },
+ "fluidite": {
+  "images": 706,
+  "ips": 58.8,
+  "p95ms": 16.8,
+  "maxms": 50,
+  "tachesLongues": 0,
+  "hauteurPage": 28994
+ },
+ "inclinaisonHeroTelephone": [
+  {
+   "y": 0,
+   "transform": "matrix3d(1, 0, 0, 0, 0, 0.980887, 0.194577, -0.000138983, 0, -0.194577, 0.980887, -0.000700634, 0, 0, 0, 1)"
+  },
+  {
+   "y": 100,
+   "transform": "matrix3d(1, 0, 0, 0, 0, 0.988652, 0.150226, -0.000107304, 0, -0.150226, 0.988652, -0.00070618, 0, 0, 0, 1)"
+  },
+  {
+   "y": 200,
+   "transform": "matrix3d(1, 0, 0, 0, 0, 0.994576, 0.104008, -7.42912e-05, 0, -0.104008, 0.994576, -0.000710412, 0, 0, 0, 1)"
+  },
+  {
+   "y": 300,
+   "transform": "matrix3d(1, 0, 0, 0, 0, 0.998312, 0.0580867, -4.14905e-05, 0, -0.0580867, 0.998312, -0.00071308, 0, 0, 0, 1)"
+  },
+  {
+   "y": 400,
+   "transform": "matrix3d(1, 0, 0, 0, 0, 0.999927, 0.0120425, -8.60177e-06, 0, -0.0120425, 0.999927, -0.000714234, 0, 0, 0, 1)"
+  }
+ ],
+ "telephoneParcours": {
+  "pastilleActive": [
+   "Marque",
+   "Boutique",
+   "Images",
+   "Publicités",
+   "Vidéos",
+   "SEO",
+   "Réseaux sociaux"
+  ],
+  "defilementRail": [
+   0,
+   0,
+   85,
+   187,
+   290,
+   368,
+   368
+  ]
+ },
+ "mouvementReduit": {
+  "revealOpacity": "1",
+  "revealDuree": "1e-05s",
+  "panelDuree": "1e-05s",
+  "sfx": "none",
+  "etapes": [
+   {
+    "t": 0,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 1001,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 2001,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 3002,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 4002,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 5003,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 6003,
+    "v": "1Vous donnez une pho"
+   },
+   {
+    "t": 7004,
+    "v": "1Vous donnez une pho"
+   }
+  ]
+ },
+ "resultats": [
+  [
+   "Apparition au défilement : opacité et position évoluent progressivement (0,9 s)",
+   true,
+   "0ms:0/28px 84ms:0.27/20px 167ms:0.69/9px 250ms:0.86/4px 333ms:0.94/2px 420ms:0.98/1px 500ms:0.99/0px 584ms:1/0px"
+  ],
+  [
+   "Ordinateur : l'inclinaison de la vidéo d'entrée varie au défilement",
+   true,
+   "0px→--p 0.530 , 120px→--p 0.618 , 240px→--p 0.706 , 360px→--p 0.796 , 480px→--p 0.886 "
+  ],
+  [
+   "Parcours Marque → Boutique → Images → Publicités → Vidéos → SEO → Réseaux sociaux dans cet ordre",
+   true,
+   "Marque > Boutique > Images > Publicités > Vidéos > SEO > Réseaux sociaux"
+  ],
+  [
+   "Parcours : fondu progressif entre panneaux (valeurs intermédiaires mesurées)",
+   true,
+   "[[1],[1,0.19],[0.99,0.75],[0.96,0.9],[0.79,0.96]]"
+  ],
+  [
+   "Parcours : fenêtre du studio fixée (position sticky) pendant la lecture",
+   true,
+   "sticky"
+  ],
+  [
+   "Comment ça fonctionne : les étapes s'enchaînent seules (au moins 2 changements en 14 s)",
+   true,
+   "1Vous donnez une photo | 2Le studio comprend le | 3Vous personnalisez et"
+  ],
+  [
+   "Éditeur de publicité : le logo glisse vers sa nouvelle place (positions intermédiaires)",
+   true,
+   "271 → 389 → 450 → 480 → 495 → 503 → 506 → 508 → 509 → 509 → 509 → 509 → 509 → 509"
+  ],
+  [
+   "Éditeur de publicité : nouveau format affiché en fondu (opacité progressive, sans animer la taille)",
+   true,
+   "0 → 0.58 → 0.83 → 0.93 → 0.97 → 0.99 → 1 → 1 → 1 → 1 → 1 → 1"
+  ],
+  [
+   "Tout est connecté : rotation automatique du module mis en avant et lien animé",
+   true,
+   "Marque → Boutique → Images ; hp-dash 1.2s"
+  ],
+  [
+   "Personnalisation : arrondis qui changent en douceur",
+   true,
+   "16px → 15.1489px → 12.9374px → 10.0984px → 7.62974px → 6.51759px → 6.16641px → 6px → 6px → 6px"
+  ],
+  [
+   "Bascule clair / sombre : fondu progressif (voile à opacité intermédiaire, un seul élément animé)",
+   true,
+   "5 images de fondu ; voile 0 → 0 → 0 → 0.02 → 0.14 → 1 → 1 → 0.65 → 0.41 → 0.17 → 0.07 → 0.03 → 0.01 → 0 → 0 → 0"
+  ],
+  [
+   "Bascule clair / sombre : aucune image visible au-delà de 50 ms pendant le fondu (le recalcul est caché sous le voile)",
+   true,
+   "fondu : moyenne 33 ms, max 38 ms ; page au repos : moyenne 17 ms, max 36 ms ; sous le voile opaque : 98, 20 ms"
+  ],
+  [
+   "Défilement jamais bloqué : la molette fait défiler la page (aucun overflow caché, aucun aimantage)",
+   true,
+   "0 → 12000px ; {\"html\":\"visible\",\"body\":\"visible\",\"snap\":\"none\"}"
+  ],
+  [
+   "Fluidité (Chromium de test, sans carte graphique) : défilement de toute la page mesuré",
+   true,
+   "58.8 images/s, 95e centile 16.8 ms, max 50 ms, 0 tâches longues, page 28994px"
+  ],
+  [
+   "Téléphone : l'inclinaison de la vidéo d'entrée varie au défilement",
+   true,
+   "0px, 100px, 200px, 300px, 400px"
+  ],
+  [
+   "Téléphone : la pastille active du rail suit les 7 modules, et le rail défile pour la montrer",
+   true,
+   "Marque > Boutique > Images > Publicités > Vidéos > SEO > Réseaux sociaux ; rail 0/0/85/187/290/368/368px"
+  ],
+  [
+   "Téléphone : chaque module a son aperçu sous le texte",
+   true,
+   ""
+  ],
+  [
+   "Téléphone : défilement au doigt fluide et non bloqué",
+   true,
+   "8217 → 20565px"
+  ],
+  [
+   "Téléphone : le menu ouvert fige la page en dessous, puis le défilement revient à la fermeture",
+   true,
+   "hidden → rétabli"
+  ],
+  [
+   "Mouvement réduit : contenu visible d'emblée, transitions coupées, pas d'enchaînement automatique",
+   true,
+   "{\"revealOpacity\":\"1\",\"revealDuree\":\"1e-05s\",\"panelDuree\":\"1e-05s\",\"sfx\":\"none\"}"
+  ],
+  [
+   "Aucune erreur JavaScript pendant l'audit",
+   true,
+   ""
+  ]
+ ]
+}

@@ -27,7 +27,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const themeScript = `(function(){try{var t=localStorage.getItem('ecs-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}})();`;
+// Thème mémorisé posé avant l'affichage (pas de flash) ; classe « js » : les apparitions animées de l'accueil ne masquent
+// du contenu que si JavaScript s'exécute (sans lui, tout reste visible).
+const themeScript = `(function(){document.documentElement.classList.add('js');try{var t=localStorage.getItem('ecs-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}})();`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await serverLang();

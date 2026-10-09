@@ -1,0 +1,55 @@
+OK  Vidéo d'entrée : fichier d'origine /explainers/film-court.mp4 — /explainers/film-court.mp4
+OK  Vidéo d'entrée : image d'attente d'origine
+OK  Vidéo d'entrée : lecture silencieuse automatique quand elle est visible — {"paused":false,"muted":true,"t":3.01088,"ready":4}
+OK  Thème système sombre appliqué à la première visite — rgb(6, 10, 24)
+OK  Vidéo d'entrée : bouton pause / lecture — false → true
+OK  Vidéo d'entrée : « Avec le son » active le son et les commandes — {"muted":false,"controls":true}
+OK  Toutes les ancres (en-tête, pied de page, boutons) ont leur section
+OK  Liens vers les autres pages valides (10) — /connexion /inscription /inscription?plan=creer&billing=month /inscription?plan=vendre&billing=month /inscription?plan=dominer&billing=month /contact /mentions-legales /conditions /confidentialite /cookies
+OK  Bouton « Commencer mon projet » → inscription — /inscription
+OK  Lien « Connexion » → /connexion
+OK  Bouton « Découvrir les fonctionnalités » → #fonctionnalites
+OK  SEO : titre, description, une seule balise h1, Open Graph — E-COM STUDIO IA · Toute votre activité e-commerce, un seul studio · h1=1
+OK  Parcours au défilement : le module affiché suit le texte lu (Publicités) —  Publicités
+OK  Parcours au défilement : Réseaux sociaux en dernier
+OK  Comment ça fonctionne : une étape se choisit au clic
+OK  Création de marque : changement de marque de démonstration
+OK  Création de boutique : bascule ordinateur / téléphone
+OK  Éditeur de publicité : le titre saisi s'affiche sur la publicité
+OK  SEO : texte modifiable, signalé « Modifié par vous »
+OK  Réseaux sociaux : approbation d'une publication — 1 sur 4 approuvées → 2 sur 4 approuvées
+OK  Personnalisation : l'aperçu suit les réglages
+OK  Ordinateur sombre : aucun débordement horizontal — 0px
+OK  Thème système clair appliqué à la première visite — rgb(250, 249, 246)
+OK  Bascule clair → sombre (soleil / lune) — dark / dark
+OK  Thème mémorisé et appliqué dès le chargement (pas de flash) — {"theme":"dark","bg":"rgb(7, 11, 23)"}
+OK  Thème mémorisé l'emporte sur le thème système — rgb(6, 10, 24)
+OK  Bascule sombre → clair
+OK  Clavier : premier arrêt « Aller au contenu » — Aller au contenu
+OK  Vidéo indisponible : image et lien de secours affichés
+OK  Téléphone sombre : menu ouvert (liens, langue, thème, connexion)
+OK  Téléphone sombre : Échap ferme le menu
+OK  Téléphone sombre : bascule du thème depuis le menu — light
+OK  Téléphone sombre : un lien du menu ferme le menu et mène à la section
+OK  Téléphone sombre : rail des modules fixé pendant le parcours
+OK  Téléphone sombre : aucun débordement horizontal — 0px
+OK  Téléphone sombre : commandes tactiles d'au moins 44 × 44 px (liens dans le texte exceptés)
+OK  Téléphone clair : menu ouvert (liens, langue, thème, connexion)
+OK  Téléphone clair : Échap ferme le menu
+OK  Téléphone clair : bascule du thème depuis le menu — dark
+OK  Téléphone clair : un lien du menu ferme le menu et mène à la section
+OK  Téléphone clair : rail des modules fixé pendant le parcours
+OK  Téléphone clair : aucun débordement horizontal — 0px
+OK  Téléphone clair : commandes tactiles d'au moins 44 × 44 px (liens dans le texte exceptés)
+OK  tablette (768px) : aucun débordement horizontal — 0px
+OK  portable (1024px) : aucun débordement horizontal — 0px
+OK  petit-telephone (360px) : aucun débordement horizontal — 0px
+OK  Anglais (ordinateur) : accroche traduite — Your entire e‑commerce business. One studio.
+OK  Anglais (ordinateur) : aucun débordement horizontal
+OK  Anglais (telephone) : accroche traduite — Your entire e‑commerce business. One studio.
+OK  Anglais (telephone) : aucun débordement horizontal
+OK  Mouvement réduit : la vidéo ne démarre pas seule, commandes affichées — {"paused":true,"controls":true}
+OK  Mouvement réduit : tout le contenu est visible sans animation — 0 masqué(s)
+OK  Aucune erreur JavaScript
+
+53/53 vérifications réussies

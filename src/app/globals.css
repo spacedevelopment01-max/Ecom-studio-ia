@@ -186,3 +186,102 @@ body { background: var(--paper); color: var(--ink); font-family: var(--font-sans
   .plan-sparkle svg, .plan-sparkle::before, .plan-sparkle::after { animation: none !important; }
   .plan-sparkle::before, .plan-sparkle::after { opacity: 0; }
 }
+
+/* ======================================================================================================
+   Accueil public (refonte premium) : direction artistique propre à la page, dans les deux thèmes.
+   Les variables du studio sont redéfinies sous .hp seulement : le studio et les pages légales ne changent pas,
+   et les composants réutilisés (forfaits, démonstrations, rangement) prennent la palette de l'accueil.
+   ====================================================================================================== */
+.hp {
+  --paper: #FAF9F6; --paper-2: #F1F4FB; --card: #FFFFFF; --ink: #0B1533; --ink-2: #2A3557; --muted: #586281; --line: #E2E6F0;
+  --signal: #2F4BD8; --signal-2: #5A63E8; --signal-ink: #FFFFFF; --signal-soft: #E9EDFD; --glow: rgba(47, 75, 216, .2);
+  --violet: #6650D2; --hp-hero-a: rgba(90, 99, 232, .16); --hp-hero-b: rgba(124, 196, 255, .22); --hp-frame: #0B1533;
+  --hp-elev: 0 1px 1px rgba(11, 21, 51, .04), 0 8px 24px -12px rgba(11, 21, 51, .14), 0 32px 64px -32px rgba(11, 21, 51, .22);
+  --shadow: 0 1px 0 rgba(11, 21, 51, .04), 0 14px 40px -24px rgba(11, 21, 51, .28);
+  --signal-text: #2F4BD8;
+  /* Jetons de mouvement (design-system/e-com-studio-ia/MASTER.md) */
+  --hp-ease-out: cubic-bezier(.16, 1, .3, 1); --hp-ease-in: cubic-bezier(.7, 0, .84, 0);
+  --hp-dur-fast: 180ms; --hp-dur-exit: 300ms; --hp-dur-enter: 500ms;
+  background: var(--paper); color: var(--ink); color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hp {
+    --paper: #060A18; --paper-2: #0A1024; --card: #0E1431; --ink: #EEF1FF; --ink-2: #C4CAE6; --muted: #9098BC; --line: #1D2548;
+    --signal: #5865F2; --signal-2: #9AA6FF; --signal-ink: #FFFFFF; --signal-soft: #151C4A; --glow: rgba(88, 101, 242, .32);
+    --violet: #A890FF; --hp-hero-a: rgba(88, 101, 242, .28); --hp-hero-b: rgba(168, 144, 255, .14); --hp-frame: #020512;
+    --hp-elev: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 24px 60px -28px rgba(0, 0, 0, .9);
+    --shadow: 0 1px 0 rgba(0, 0, 0, .25), 0 18px 50px -24px rgba(0, 0, 0, .85);
+    --signal-text: #9AA6FF;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] .hp {
+  --paper: #060A18; --paper-2: #0A1024; --card: #0E1431; --ink: #EEF1FF; --ink-2: #C4CAE6; --muted: #9098BC; --line: #1D2548;
+  --signal: #5865F2; --signal-2: #9AA6FF; --signal-ink: #FFFFFF; --signal-soft: #151C4A; --glow: rgba(88, 101, 242, .32);
+  --violet: #A890FF; --hp-hero-a: rgba(88, 101, 242, .28); --hp-hero-b: rgba(168, 144, 255, .14); --hp-frame: #020512;
+  --hp-elev: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 24px 60px -28px rgba(0, 0, 0, .9);
+  --shadow: 0 1px 0 rgba(0, 0, 0, .25), 0 18px 50px -24px rgba(0, 0, 0, .85);
+  --signal-text: #9AA6FF;
+  color-scheme: dark;
+}
+/* Texte en couleur d'accent : en sombre, l'accent clair (8:1) ; l'accent des boutons (#5865F2) n'atteint pas 4,5:1 en petit texte.
+   Hors couche : prime sur l'utilitaire text-signal, uniquement dans l'accueil. */
+.hp .text-signal { color: var(--signal-text); }
+/* Apparitions : sans JavaScript (ou avant qu'il soit prêt sur une page sans « js »), le contenu reste visible. */
+html:not(.js) .hp .reveal { opacity: 1; transform: none; }
+.hp .reveal { transition-duration: .7s; transition-delay: calc(var(--d, 0) * 40ms); }
+/* En-tête collant : un élément atteint au clavier n'est jamais caché dessous (focus-not-obscured) ; les ancres de
+   section gardent leur propre marge (scroll-mt). */
+.hp :focus-visible { scroll-margin-top: 6rem; scroll-margin-bottom: 2rem; }
+@layer components {
+/* Colonnes de grille : jamais plus larges que leur piste (listes défilantes, textes longs sur téléphone). */
+.hp .grid > * { min-width: 0; }
+.hp .hp-elev { box-shadow: var(--hp-elev); }
+.hp .hp-eyebrow { font-size: .78rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--signal-text); }
+.hp .hp-title { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.035em; line-height: .98; font-variation-settings: "opsz" 96; text-wrap: balance; }
+.hp .hp-lead { font-size: clamp(1.05rem, 1.4vw, 1.2rem); line-height: 1.65; color: var(--ink-2); text-wrap: pretty; }
+.hp .hp-accent { background: linear-gradient(100deg, var(--signal) 0%, var(--violet) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:root[data-theme="dark"] .hp .hp-accent { background-image: linear-gradient(100deg, #AEB7FF 0%, var(--violet) 100%); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hp .hp-accent { background-image: linear-gradient(100deg, #AEB7FF 0%, var(--violet) 100%); } }
+/* Fonds : lueur maîtrisée et fin quadrillage (sombre), lavis bleuté (clair). */
+.hp .hp-aura { background: radial-gradient(900px 520px at 78% -8%, var(--hp-hero-a), transparent 62%), radial-gradient(700px 520px at -6% 28%, var(--hp-hero-b), transparent 62%); }
+.hp .hp-grid { background-image: linear-gradient(color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px); background-size: 64px 64px; -webkit-mask-image: radial-gradient(ellipse 75% 60% at 50% 20%, #000 25%, transparent 75%); mask-image: radial-gradient(ellipse 75% 60% at 50% 20%, #000 25%, transparent 75%); }
+.hp .hp-band { background: var(--paper-2); }
+.hp .hp-glass { background: color-mix(in srgb, var(--card) 78%, transparent); backdrop-filter: saturate(160%) blur(18px); -webkit-backdrop-filter: saturate(160%) blur(18px); }
+.hp .hp-btn { display: inline-flex; align-items: center; justify-content: center; gap: .55rem; min-height: 48px; padding: 0 1.4rem; border-radius: 999px; font-weight: 600; font-size: 15px; transition: transform .2s ease, box-shadow .25s ease, background-color .2s ease, border-color .2s ease; cursor: pointer; }
+.hp .hp-btn-primary { background: var(--signal); color: var(--signal-ink); box-shadow: 0 10px 28px -12px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .22); }
+.hp .hp-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 16px 36px -14px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .22); }
+.hp .hp-btn-ghost { border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 70%, transparent); color: var(--ink); }
+.hp .hp-btn-ghost:hover { border-color: color-mix(in srgb, var(--ink) 40%, transparent); }
+.hp .hp-chip { display: inline-flex; align-items: center; gap: .4rem; border-radius: 999px; border: 1px solid var(--line); background: var(--card); padding: .3rem .7rem; font-size: .75rem; font-weight: 500; color: var(--ink-2); }
+/* Fenêtre « studio » qui encadre les démonstrations. */
+.hp .hp-window { border: 1px solid var(--line); background: var(--card); border-radius: 1.5rem; overflow: hidden; box-shadow: var(--hp-elev); }
+.hp .hp-window-bar { display: flex; align-items: center; gap: .4rem; padding: .6rem .9rem; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--paper-2) 70%, var(--card)); }
+.hp .hp-dot { width: .55rem; height: .55rem; border-radius: 999px; background: color-mix(in srgb, var(--ink) 18%, transparent); }
+/* Parcours au défilement : panneaux qui se succèdent dans la fenêtre fixe. */
+/* Sortie plus rapide que l'entrée (300 ms / 500 ms), transform et opacité seulement. */
+.hp .hp-panel { position: absolute; inset: 0; opacity: 0; transform: translateY(14px) scale(.985); transition: opacity var(--hp-dur-exit) var(--hp-ease-in), transform var(--hp-dur-exit) var(--hp-ease-in); pointer-events: none; }
+.hp .hp-panel.on { opacity: 1; transform: none; pointer-events: auto; transition: opacity var(--hp-dur-enter) var(--hp-ease-out), transform var(--hp-dur-enter) var(--hp-ease-out); }
+@keyframes hp-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+/* Arrivée au chargement (hero) : animation CSS, visible sans attendre JavaScript. */
+.hp .hp-load { animation: hp-rise .8s var(--hp-ease-out) both; animation-delay: calc(var(--d, 0) * 70ms); }
+/* Inclinaison de la vidéo d'entrée au défilement (--p de 0 à 1, posé par ScrollFX sur le même élément) :
+   jusqu'à 12° quand elle arrive par le bas (téléphone), à plat au centre, légère bascule en arrière en la quittant. */
+.hp .hp-hero-tilt { transform: perspective(1400px) rotateX(clamp(-8deg, calc((0.5 - var(--p, .5)) * 30deg), 12deg)) scale(calc(1 - clamp(0, calc((var(--p, .5) - .55) * .15), .05))); transform-origin: 50% 60%; will-change: transform; }
+/* Logo de l'éditeur de publicité : déplacé par transform dans une zone mesurée en unités de conteneur. */
+.hp .hp-ad-area { container-type: size; }
+/* Liens du schéma « tout est connecté ». */
+@keyframes hp-dash { to { stroke-dashoffset: -6; } }
+.hp .hp-flow { stroke-dasharray: 1.2 1.8; animation: hp-dash 1.2s linear infinite; }
+/* Barre de progression de l'étape (comment ça fonctionne). */
+@keyframes hp-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.hp .hp-fill { transform-origin: 0 50%; animation: hp-fill var(--dur, 6s) linear forwards; }
+.hp .hp-fill.paused { animation-play-state: paused; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hp .hp-panel, .hp .hp-panel.on { transition: none; transform: none; }
+  .hp .hp-hero-tilt { transform: none; will-change: auto; }
+  .hp .hp-load { animation: none; }
+  .hp .hp-flow { animation: none; }
+  .hp .hp-fill { animation: none; transform: scaleX(1); }
+}

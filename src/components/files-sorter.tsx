@@ -5,7 +5,7 @@
  * de l'arborescence réelle du studio (DEFAULT_TREE).
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Check, ChevronRight, FileImage, FileVideo, Folder, FolderOpen, Sparkles } from "lucide-react";
+import { Check, ChevronRight, FileImage, FileVideo, Folder, FolderOpen, Pause, Play, Sparkles } from "lucide-react";
 import { cx } from "./ui";
 import { useLang } from "./i18n";
 import type { Lang } from "@/lib/i18n";
@@ -67,6 +67,11 @@ export function FilesSorter() {
   const rows = useRef<(HTMLLIElement | null)[]>([]);
   const folders = useRef<Record<string, HTMLLIElement | null>>({});
   const [step, setStep] = useState(0);
+  // Démonstration en boucle : bouton pause, et arrêt au focus clavier (contenu en mouvement).
+  const [paused, setPaused] = useState(false);
+  const hold = useRef(false);
+  const pausedRef = useRef(false);
+  pausedRef.current = paused;
   const [ghost, setGhost] = useState<{ label: string; video?: boolean; x: number; y: number; tx: number; ty: number; go: boolean } | null>(null);
 
   // Démarre quand la maquette est visible, tourne en boucle ; affiche l'état final si les animations sont réduites.
@@ -79,7 +84,7 @@ export function FilesSorter() {
     }
     let timer: ReturnType<typeof setInterval> | undefined;
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !timer) timer = setInterval(() => setStep((s) => (s >= LAST ? 0 : s + 1)), TICK);
+      if (e.isIntersecting && !timer) timer = setInterval(() => !pausedRef.current && !hold.current && setStep((s) => (s >= LAST ? 0 : s + 1)), TICK);
       else if (!e.isIntersecting && timer) (clearInterval(timer), (timer = undefined));
     }, { threshold: 0.25 });
     io.observe(el);
@@ -110,14 +115,22 @@ export function FilesSorter() {
   }, [sending]);
 
   return (
-    <div ref={box} className="relative overflow-hidden rounded-[28px] border border-line bg-paper shadow-soft">
+    <div
+      ref={box}
+      onFocus={() => (hold.current = true)}
+      onBlur={() => (hold.current = false)}
+      className="relative overflow-hidden rounded-[28px] border border-line bg-paper shadow-soft"
+    >
       <div className="flex items-center gap-2 border-b border-line px-4 py-3">
         <span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" /><span className="size-2.5 rounded-full bg-line" />
         <span className="ml-2 text-xs text-muted">{t("Fichiers · Ostral", "Files · Ostral")}</span>
-        <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-signal-soft px-2.5 py-1 text-[11px] font-medium text-signal">
-          <Sparkles className={cx("size-3", step > 0 && done < FILES.length && "animate-spin [animation-duration:2.4s]")} />
+        <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-signal-soft px-2.5 py-1 text-xs font-medium text-signal">
+          <Sparkles className={cx("size-3", step > 0 && done < FILES.length && "animate-spin [animation-duration:2.4s]", paused && "[animation-play-state:paused]")} />
           {done < FILES.length ? t(`L'IA range… ${done}/${FILES.length}`, `AI is sorting… ${done}/${FILES.length}`) : t("Tout est rangé", "All sorted")}
         </span>
+        <button type="button" onClick={() => setPaused((x) => !x)} aria-pressed={paused} aria-label={paused ? t("Reprendre la démonstration", "Resume the demo") : t("Mettre la démonstration en pause", "Pause the demo")} className="-my-2 -mr-2 grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-2 transition hover:bg-paper-2 hover:text-ink">
+          {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
+        </button>
       </div>
       <div className="grid sm:grid-cols-[minmax(0,210px)_1fr]">
         <ul className="border-b border-line p-3 text-[13px] sm:border-b-0 sm:border-r">
