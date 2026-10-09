@@ -601,6 +601,14 @@ CREATE TABLE IF NOT EXISTS password_resets (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets(user_id);
+-- Confirmation de l'accès administrateur (lien signé envoyé à ADMIN_EMAIL, voir admin-claim.ts).
+CREATE TABLE IF NOT EXISTS admin_claims (
+  token_hash TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at INTEGER NOT NULL,
+  used_at INTEGER,
+  created_at INTEGER NOT NULL
+);
 
 -- Plans de tâches (phase 3A) : étapes, dépendances, statuts et routage choisi ; une reprise repart du plan
 -- enregistré (rien de fait n'est refait). Aucun prompt ni contenu généré n'y est stocké.

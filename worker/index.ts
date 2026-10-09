@@ -12,9 +12,15 @@ import { enqueueDueV2, recoverStale } from "../src/lib/social-v2/scheduler";
 import { realPublisher } from "../src/lib/social-v2/deps";
 import { runDueAutomations } from "../src/lib/social-v2/automations";
 import { handlers, HANDLER_TYPES } from "./handlers";
-import { runForUser } from "../src/lib/ai/access";
+import { runForUser, withAiDisabled } from "../src/lib/ai/access";
 import { withTrace } from "../src/lib/ai/trace";
 import { intentsFromAction } from "../src/lib/orchestrator/intent";
+
+/** Plafond de dépense accepté par le client pour cette tâche (création lancée par une demande), sinon aucun. */
+const capOf = (payload: unknown) => {
+  const c = (payload as { costCapMicro?: unknown } | null)?.costCapMicro;
+  return typeof c === "number" && Number.isFinite(c) && c >= 0 ? c : undefined;
+};
 
 /** Intention d'une tâche de fond, sans IA (trace : chaque appel est rattaché à ce que le client a demandé). */
 const jobIntent = (type: string, payload: unknown) => intentsFromAction(type, payload as { regenerate?: boolean })?.join("+");
@@ -55,7 +61,10 @@ async function runOne() {
   (async () => {
     try {
       // Budget IA épuisé : les étapes IA basculent discrètement sur le moteur local (voir src/lib/ai/access.ts).
-      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload) }, () => handlers[job.type](ctx)), jobQuotaScope(job)));
+      // Création lancée par une demande sans devis payant accepté : moteurs locaux seulement (aucune dépense).
+      const exec = () => handlers[job.type](ctx);
+      const guarded = (ctx.payload as { aiOff?: boolean })?.aiOff ? () => withAiDisabled("demande lancée sans devis payant accepté", exec) : exec;
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload) }, guarded), jobQuotaScope(job)));
       runWithLang({ ui: userLang(job.user_id) }, () => completeJob(job.id, result));
       console.log(`[worker] ✓ ${job.type} ${job.id} en ${((Date.now() - started) / 1000).toFixed(1)} s`);
     } catch (e) {

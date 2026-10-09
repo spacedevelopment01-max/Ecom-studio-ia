@@ -28,6 +28,10 @@ import { CMS_PLATFORMS } from "../cms-v2/export";
 import type { CmsPlatform } from "../cms-v2/types";
 import { L } from "../i18n-server";
 import { planOfUserId } from "../plan-gates";
+import { assertBlogWrite } from "../engine/blog";
+import { withAiDisabled } from "../ai/access";
+import { withTrace, CostCapReached } from "../ai/trace";
+import { JobCancelled, JobPaused, PermanentError, retryJob } from "../jobs";
 import { PLANS } from "../plans";
 
 export type WorkflowStatus = "draft" | "needs_clarification" | "queued" | "running" | "done" | "failed" | "cancelled";
@@ -38,7 +42,8 @@ export type WorkflowParams = {
   video: boolean;
 };
 
-export type EstimateLine = { kind: StepKind | "pipeline"; label: { fr: string; en: string }; module: string; mode: "local" | "ai" | "search" | "done"; paid: boolean; estimateMicro: number; note?: string };
+/** mode « skip » : étape non exécutée (forfait, aucun moteur dédié) — jamais présentée comme faite. */
+export type EstimateLine = { kind: StepKind | "pipeline"; label: { fr: string; en: string }; module: string; mode: "local" | "ai" | "search" | "done" | "skip"; paid: boolean; estimateMicro: number; note?: string };
 export type WorkflowEstimate = { lines: EstimateLine[]; totalMicro: number; aiActive: boolean; needsCreation: boolean };
 
 export type Workflow = {
@@ -144,6 +149,9 @@ export function stepEstimateMicro(kind: StepKind, params: WorkflowParams): numbe
   }
 }
 
+/** Étapes que la création complète peut sauter (forfait, « pas de vidéo », calendrier remplacé par la demande). */
+const CREATION_MAY_SKIP = new Set<StepKind>(["image_generate", "video", "social", "stock_search"]);
+
 /** Devis : par étape, local (gratuit) ou IA (payant, montant estimé), avec la création complète si le projet n'est pas construit. */
 export function estimateWorkflow(p: Project, plan: TaskPlan, params: WorkflowParams, o: { aiActive: boolean; needsCreation: boolean; videos?: "ai" | "edited" | "none" }): WorkflowEstimate {
   const lines: EstimateLine[] = [];
@@ -154,22 +162,26 @@ export function estimateWorkflow(p: Project, plan: TaskPlan, params: WorkflowPar
   }
   for (const s of plan.steps) {
     const info = STEP_INFO[s.kind];
-    if (s.status === "skipped" || (covered.has(s.kind) && !s.explicit)) {
-      lines.push({ kind: s.kind, label: { fr: info.fr, en: info.en }, module: info.module, mode: "done", paid: false, estimateMicro: 0, note: s.reason ?? (covered.has(s.kind) ? "création complète" : undefined) });
-      continue;
-    }
-    if (covered.has(s.kind)) {
-      lines.push({ kind: s.kind, label: { fr: info.fr, en: info.en }, module: info.module, mode: "done", paid: false, estimateMicro: 0, note: "création complète" });
+    const base = { kind: s.kind, label: { fr: info.fr, en: info.en }, module: info.module };
+    // Étape sans moteur dans une demande : non exécutée, donc ni « faite » ni facturée.
+    if (!STEP_EXECUTORS[s.kind]) {
+      lines.push({ ...base, mode: "skip", paid: false, estimateMicro: 0, note: "non exécutée dans une demande (aucun moteur dédié)" });
       continue;
     }
     const gate = planGate(s.kind, p.userId);
-    if (gate) {
-      lines.push({ kind: s.kind, label: { fr: info.fr, en: info.en }, module: info.module, mode: "done", paid: false, estimateMicro: 0, note: gate.fr });
+    if (s.status === "skipped" || gate) {
+      lines.push({ ...base, mode: "skip", paid: false, estimateMicro: 0, note: gate?.fr ?? s.reason ?? undefined });
+      continue;
+    }
+    // Faite par la création complète : 0 € ici. Étapes que la création peut sauter (visuels, vidéo, calendrier) :
+    // comptées au devis, sinon une étape annoncée gratuite deviendrait payante.
+    if (covered.has(s.kind) && !CREATION_MAY_SKIP.has(s.kind)) {
+      lines.push({ ...base, mode: "done", paid: false, estimateMicro: 0, note: s.explicit ? "faite par la création complète" : "création complète" });
       continue;
     }
     const local = s.task === "local" || s.task === "search" || !o.aiActive;
     const micro = local ? 0 : stepEstimateMicro(s.kind, params);
-    lines.push({ kind: s.kind, label: { fr: info.fr, en: info.en }, module: info.module, mode: s.task === "search" ? "search" : local ? "local" : "ai", paid: micro > 0, estimateMicro: micro });
+    lines.push({ ...base, mode: s.task === "search" ? "search" : local ? "local" : "ai", paid: micro > 0, estimateMicro: micro, note: covered.has(s.kind) && micro > 0 ? "comptée au cas où la création complète ne la ferait pas" : undefined });
   }
   return { lines, totalMicro: lines.reduce((a, l) => a + l.estimateMicro, 0), aiActive: o.aiActive, needsCreation: o.needsCreation };
 }
@@ -180,6 +192,16 @@ export function estimateWorkflow(p: Project, plan: TaskPlan, params: WorkflowPar
  * forfaits. Renvoie la raison d'un blocage (null : permis).
  */
 export function planGate(kind: StepKind | "pipeline", userId: string): { fr: string; en: string } | null {
+  // Blog : forfait ET quota d'articles du mois (sinon l'étape échouerait et ferait échouer la demande).
+  if (kind === "blog") {
+    try {
+      assertBlogWrite(userId);
+    } catch (e) {
+      const msg = (e as Error).message;
+      return { fr: msg, en: msg };
+    }
+    return null;
+  }
   const plan = planOfUserId(userId);
   if (plan) return null;
   if (kind === "cms_export" || kind === "publish") return { fr: "export et publication réservés aux forfaits (la découverte gratuite reste un aperçu)", en: "export and publishing are included in the plans (the free discovery is a preview)" };
@@ -317,7 +339,7 @@ export function startWorkflow(wid: string, o: { approveMicro?: number | null; ca
     if (!pipelineJobId) {
       // Le calendrier de 7 jours de la création est remplacé par celui de la demande (Social V2) : pas de doublon.
       const skip = wf.intents.includes("SOCIAL") ? ["calendar"] : [];
-      const job = enqueue({ userId: wf.userId, projectId: p.id, type: "pipeline.run", label: L("Création complète", "Full creation"), payload: { projectId: p.id, mode: "autopilot", input: { videos: o.videos ?? (wf.params.video ? "edited" : "none") }, skip, workflowId: wid }, idempotencyKey: `${planKey(wid)}:pipeline` });
+      const job = enqueue({ userId: wf.userId, projectId: p.id, type: "pipeline.run", label: L("Création complète", "Full creation"), payload: { projectId: p.id, mode: "autopilot", input: { videos: o.videos ?? (wf.params.video ? "edited" : "none") }, skip, workflowId: wid, ...(total > 0 ? { costCapMicro: cap } : { aiOff: true }) }, idempotencyKey: `${planKey(wid)}:pipeline` });
       pipelineJobId = job.id;
     }
   }
@@ -351,54 +373,120 @@ export function workflowSpend(wf: Pick<Workflow, "jobId" | "pipelineJobId">): { 
 }
 
 /**
- * Tâche « workflow.run » : exécute le plan de la demande par l'orchestrateur et les moteurs V2. Les étapes faites
- * par la création complète de ce parcours sont reportées comme faites (jamais refaites) ; chaque étape payante est
- * précédée d'une vérification du plafond ; tout est enregistré après chaque étape (reprise sans doublon).
+ * Tâche « workflow.run » : exécute le plan de la demande par l'orchestrateur et les moteurs. Garde-fous :
+ *  - sans devis payant accepté, TOUTE la demande tourne avec l'IA coupée (moteurs locaux ; un appel payant qui
+ *    partirait quand même est refusé avant l'envoi) : une étape annoncée gratuite ne peut pas devenir payante ;
+ *  - avec un devis accepté, chaque appel payant est borné par le plafond (coût maximal vérifié avant l'envoi,
+ *    pendant les étapes, tous moteurs confondus) ;
+ *  - une étape non exécutée (forfait, plafond, aucun moteur) est « non faite » ; une étape en erreur n'arrête
+ *    pas les autres ; la demande se termine « en échec » s'il reste des étapes à reprendre (« Réessayer »).
+ * Les étapes faites par la création complète de ce parcours sont reportées comme faites (jamais refaites).
  */
 export async function runWorkflow(ctx: JobContext) {
   const wf = loadWorkflow(String(ctx.payload.workflowId));
   if (!wf) throw new Error("workflow introuvable");
-  update(wf.id, { status: "running" });
+  update(wf.id, { status: "running", error: null });
+  let result: { planId: string; steps: { kind: StepKind; status: string; reason: string | null | undefined }[] };
   try {
     const p = loadProject(wf.projectId);
-    const allowPaid = wf.estimate.totalMicro > 0 && (wf.approvedMicro ?? 0) >= wf.estimate.totalMicro;
+    const allowPaid = workflowAllowsPaid(wf);
     const plan = loadOrCreatePlan({ projectId: p.id, userId: p.userId, requestKey: planKey(wf.id), intents: wf.intents, state: projectState(p), input: stepInput(wf.request, wf.params) });
     // Étapes de l'entrée enrichies de l'autorisation (montant accepté, plafond) : lues par les moteurs qui produisent.
     for (const s of plan.steps) {
       s.input = { ...s.input, allowPaid, approvedMicro: wf.approvedMicro ?? 0, maxCostEur: (wf.capMicro ?? 0) / EUR, maxSocialDays: planCalendarDays(p.userId) || undefined, socialPlanId: `wf-social-${wf.id}` };
       // Règle du forfait : l'étape n'est pas faite, la raison est affichée (jamais contournée).
       const gate = s.status === "pending" ? planGate(s.kind, p.userId) : null;
-      if (gate) Object.assign(s, { status: "skipped", reason: `plan: ${gate.en}` });
+      if (gate) Object.assign(s, { status: "skipped", reason: `forfait : ${gate.fr}` });
     }
     markCoveredByCreation(plan, wf.pipelineJobId);
     savePlan(plan);
-    const cap = wf.capMicro ?? 0;
+    // Plafond de cette tâche : plafond accepté moins ce que la création complète lancée par la demande a déjà coûté
+    // (une création lancée avant, depuis le formulaire, a eu son propre accord et n'est pas comptée ici).
+    const pipelineLaunchedHere = wf.estimate.lines.some((l) => l.kind === "pipeline" && l.mode !== "done");
+    const pipelineSpent = pipelineLaunchedHere && wf.pipelineJobId ? jobSpend([wf.pipelineJobId]) : 0;
+    const cap = Math.max(0, (wf.capMicro ?? 0) - pipelineSpent);
     const est = new Map(wf.estimate.lines.map((l) => [l.kind, l.estimateMicro] as const));
     const n = plan.steps.length;
     let i = 0;
-    await runPlan(
-      plan,
-      async (s, d) => {
-        ctx.progress(Math.min(0.95, i++ / Math.max(1, n)), `${STEP_INFO[s.kind].fr}…`);
-        // Plafond global : une étape payante qui le dépasserait n'est pas lancée (rien de payé au-delà).
-        if ((d.mode === "llm" || d.mode === "image" || d.mode === "video") && (est.get(s.kind) ?? 0) > 0) {
-          const spent = workflowSpend(loadWorkflow(wf.id)!).totalMicro;
-          if (spent + (est.get(s.kind) ?? 0) > cap) return { verdict: "REJECTED", note: `budget cap reached (${(spent / EUR).toFixed(2)} € spent of ${(cap / EUR).toFixed(2)} €): step not started` };
-        }
-        const ex = STEP_EXECUTORS[s.kind];
-        if (!ex) return { note: `${s.kind}: done by the creation or not needed here` };
-        return ex(ctx, loadProject(p.id), s, d);
-      },
-      routingEnv(p),
-      { onNone: "execute" },
-    );
-    update(wf.id, { status: plan.steps.some((s) => s.status === "failed") ? "failed" : "done", error: plan.steps.filter((s) => s.status === "failed").map((s) => `${s.kind}: ${s.reason}`).join(" ; ") || null });
-    return { planId: plan.id, steps: plan.steps.map((s) => ({ kind: s.kind, status: s.status, reason: s.reason })) };
+    const exec = () =>
+      runPlan(
+        plan,
+        async (s, d) => {
+          ctx.progress(Math.min(0.95, i++ / Math.max(1, n)), `${STEP_INFO[s.kind].fr}…`);
+          const ex = STEP_EXECUTORS[s.kind];
+          if (!ex) return { skip: "non exécutée : aucun moteur dédié à cette étape dans une demande" };
+          const gate = planGate(s.kind, p.userId);
+          if (gate) return { skip: `forfait : ${gate.fr}` };
+          // Plafond : une étape qui peut appeler l'IA n'est pas lancée si le reste ne couvre pas son estimation.
+          if (allowPaid && (d.mode === "llm" || d.mode === "image" || d.mode === "video")) {
+            const spent = jobSpend([ctx.job.id]);
+            if (spent + (est.get(s.kind) ?? 0) > cap) return { skip: `plafond atteint (${(spent / EUR).toFixed(2)} € dépensés sur ${(cap / EUR).toFixed(2)} €) : étape non lancée` };
+          }
+          try {
+            return await ex(ctx, loadProject(p.id), s, d);
+          } catch (e) {
+            if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+            if (e instanceof CostCapReached || (e as Error)?.name === "CostCapReached") return { skip: `plafond atteint pendant l'étape : ${(e as Error).message}` };
+            return { failed: (e as Error)?.message?.slice(0, 300) || "erreur inconnue" };
+          }
+        },
+        routingEnv(p),
+        { onNone: "execute" },
+      );
+    // Sans accord payant : IA coupée pour toute la demande. Avec accord : chaque appel borné par le plafond.
+    await (allowPaid ? withTrace({ costCapMicro: cap }, exec) : withAiDisabled("demande lancée sans devis payant accepté", exec));
+    const toRetry = plan.steps.filter((s) => s.status === "failed" || (s.status === "skipped" && /^plafond/.test(s.reason ?? "")));
+    const error = toRetry.map((s) => `${STEP_INFO[s.kind].fr} : ${s.reason}`).join(" ; ") || null;
+    update(wf.id, { status: toRetry.length ? "failed" : "done", error });
+    result = { planId: plan.id, steps: plan.steps.map((s) => ({ kind: s.kind, status: s.status, reason: s.reason })) };
   } catch (e) {
     // Panne ou interruption : la tâche sera reprise (points de reprise) ; le statut reflète l'échec en attendant.
-    update(wf.id, { status: "failed", error: (e as Error).message.slice(0, 400) });
+    if (!(e instanceof JobPaused)) update(wf.id, { status: "failed", error: (e as Error).message.slice(0, 400) });
     throw e;
   }
+  // Étapes à reprendre : la tâche se termine en échec (sans nouvelle tentative automatique) pour que « Réessayer »
+  // la relance avec ses points de reprise (aucune opération déjà facturée n'est refaite).
+  if (loadWorkflow(wf.id)!.status === "failed") throw new PermanentError(loadWorkflow(wf.id)!.error ?? "étapes à reprendre");
+  return result;
+}
+
+/** Une dépense payante est-elle autorisée (devis > 0 accepté) ? */
+export const workflowAllowsPaid = (wf: Pick<Workflow, "estimate" | "approvedMicro">) => wf.estimate.totalMicro > 0 && (wf.approvedMicro ?? 0) >= wf.estimate.totalMicro;
+
+/** Dépense IA réelle (micro-euros, coût fournisseur enregistré) de tâches et de leurs sous-tâches. */
+function jobSpend(roots: string[]) {
+  if (!roots.length) return 0;
+  const ids = new Set(roots);
+  for (const r of all<{ id: string }>(`SELECT id FROM jobs WHERE parent_id IN (${roots.map(() => "?").join(",")})`, ...roots)) ids.add(r.id);
+  const list = [...ids];
+  return one<{ c: number }>(`SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id IN (${list.map(() => "?").join(",")})`, ...list)?.c ?? 0;
+}
+
+/**
+ * « Réessayer » : reprend les étapes en échec ou arrêtées par le plafond (les étapes faites restent faites), avec
+ * un nouvel accord et un nouveau plafond si le client les donne. La même tâche est relancée avec ses points de
+ * reprise : rien de ce qui a déjà été produit et facturé n'est refait.
+ */
+export function retryWorkflow(wid: string, o: { approveMicro?: number | null; capEur?: number | null } = {}): Workflow {
+  const wf = loadWorkflow(wid);
+  if (!wf) throw new WorkflowError(404, L("Demande introuvable.", "Request not found."));
+  if (wf.status !== "failed") throw new WorkflowError(409, L("Cette demande n'a rien à reprendre.", "This request has nothing to retry."));
+  if (o.capEur != null) {
+    const cap = Math.round(o.capEur * EUR);
+    if (wf.estimate.totalMicro > 0 && (o.approveMicro == null || o.approveMicro < wf.estimate.totalMicro || cap < wf.estimate.totalMicro)) throw new WorkflowError(402, L("Le nouveau plafond doit couvrir le devis accepté.", "The new cap must cover the accepted estimate."));
+    update(wid, { cap_micro: cap, approved_micro: o.approveMicro ?? wf.approvedMicro });
+  }
+  const plan = wf.planId ? loadPlan(wf.planId) : null;
+  if (plan) {
+    for (const s of plan.steps) if (s.status === "failed" || (s.status === "skipped" && /^plafond/.test(s.reason ?? ""))) Object.assign(s, { status: "pending", reason: null, result: undefined });
+    // Étapes arrêtées parce qu'une étape en échec les précédait : reprises aussi.
+    for (const s of plan.steps) if (s.status === "skipped" && /: not needed \/ not possible$/.test(s.reason ?? "")) Object.assign(s, { status: "pending", reason: null });
+    plan.status = "active";
+    savePlan(plan);
+  }
+  if (wf.jobId) retryJob(wf.jobId);
+  update(wid, { status: "queued", error: null });
+  return loadWorkflow(wid)!;
 }
 
 /** Étapes déjà réalisées par la création complète de CE parcours : reportées, jamais refaites. */

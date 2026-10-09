@@ -9,7 +9,7 @@ import { useLang, useT } from "../i18n";
 import { formatEur } from "../billing-client";
 
 type Bi = { fr: string; en: string };
-type Line = { kind: string; label: Bi; module: string; mode: "local" | "ai" | "search" | "done"; paid: boolean; estimateMicro: number; note?: string };
+type Line = { kind: string; label: Bi; module: string; mode: "local" | "ai" | "search" | "done" | "skip"; paid: boolean; estimateMicro: number; note?: string };
 type Step = { kind: string; status: string; reason: string | null; verdict: string | null; note: string | null; attempts: number; label: Bi; module: string; tab: string; mode: string | null; spentMicro: number };
 type Validation = { key: string; label: Bi; tab: string; count?: number };
 type View = {
@@ -61,6 +61,7 @@ const STATUS: Record<string, Bi> = {
 function ModeBadge({ line }: { line: Line }) {
   const t = useT();
   if (line.mode === "done") return <Badge tone="ok">{t("déjà fait", "already done")}</Badge>;
+  if (line.mode === "skip") return <Badge>{t("non incluse", "not included")}</Badge>;
   if (line.paid) return <Badge tone="signal">{t("IA payante", "paid AI")}</Badge>;
   return <Badge>{t("local, gratuit", "local, free")}</Badge>;
 }
@@ -131,12 +132,13 @@ function Progression({ view, reload }: { view: View; reload: () => void }) {
   const { lang } = useLang();
   const t = useT();
   const toast = useToast();
-  const done = view.steps.filter((s) => s.status === "done" || s.status === "skipped").length;
-  const failed = view.workflow.status === "failed" || view.job?.status === "failed" || view.job?.status === "blocked";
+  // Une étape non exécutée (forfait, plafond, aucun moteur) n'est jamais comptée comme faite.
+  const done = view.steps.filter((s) => s.status === "done").length;
+  const notDone = view.steps.filter((s) => s.status === "skipped").length;
+  const failed = view.workflow.status === "failed";
   async function retry() {
-    if (!view.job) return;
     try {
-      await api(`/api/jobs/${view.job.id}`, { body: { action: "retry" } });
+      await api(`/api/projects/${id}/workflow/${view.workflow.id}`, { body: { action: "retry" } });
       toast("ok", t("Nouvel essai : les étapes déjà réussies ne sont pas refaites.", "Retrying: steps already done are not redone."));
       reload();
     } catch (e) {
@@ -148,7 +150,7 @@ function Progression({ view, reload }: { view: View; reload: () => void }) {
       {view.pipeline && view.pipeline.status !== "done" && (
         <p className="rounded-xl bg-paper-2 px-3 py-2 text-sm">{t("Création de base en cours (marque, boutique, images) : la suite démarre ensuite d'elle-même.", "Base creation running (brand, store, images): the rest starts automatically afterwards.")} <span className="tabular-nums text-muted">{Math.round(view.pipeline.progress * 100)} %</span></p>
       )}
-      {view.steps.length > 0 && <p className="text-sm text-muted">{t(`${done} / ${view.steps.length} étapes`, `${done} / ${view.steps.length} steps`)} · {t("dépensé", "spent")} <span className="tabular-nums" data-testid="wf-spent">{eur(view.spentMicro, lang)}</span>{view.workflow.capMicro != null && <> · {t("plafond", "cap")} {eur(view.workflow.capMicro, lang)}</>}</p>}
+      {view.steps.length > 0 && <p className="text-sm text-muted">{t(`${done} / ${view.steps.length} étapes faites`, `${done} / ${view.steps.length} steps done`)}{notDone > 0 && t(` · ${notDone} non faite(s)`, ` · ${notDone} not done`)} · {t("dépensé", "spent")} <span className="tabular-nums" data-testid="wf-spent">{eur(view.spentMicro, lang)}</span>{view.workflow.capMicro != null && <> · {t("plafond", "cap")} {eur(view.workflow.capMicro, lang)}</>}</p>}
       <ol className="grid gap-1.5" data-testid="wf-steps">
         {view.steps.map((s, i) => (
           <li key={`${s.kind}-${i}`} className="flex items-start gap-3 rounded-xl border border-line px-3 py-2">
@@ -170,7 +172,7 @@ function Progression({ view, reload }: { view: View; reload: () => void }) {
       {failed && (
         <div className="flex flex-wrap items-center gap-3 rounded-xl bg-bad-soft px-3 py-2 text-sm text-bad" role="alert">
           <AlertTriangle className="size-4 shrink-0" aria-hidden /> <span className="min-w-0 flex-1 break-words">{view.workflow.error ?? view.job?.error ?? t("Une étape a échoué.", "A step failed.")}</span>
-          {view.job && <Button size="sm" variant="secondary" icon={<RotateCcw className="size-4" />} onClick={retry}>{t("Réessayer", "Retry")}</Button>}
+          <Button size="sm" variant="secondary" icon={<RotateCcw className="size-4" />} onClick={retry} data-testid="wf-retry">{t("Réessayer", "Retry")}</Button>
         </div>
       )}
     </div>

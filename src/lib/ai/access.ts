@@ -18,6 +18,16 @@ import { L } from "../i18n-server";
 export type QuotaScope = "normal" | "creation" | "ugc";
 const store = new AsyncLocalStorage<{ userId: string; scope: QuotaScope }>();
 
+/**
+ * IA coupée pour une portée d'exécution (demande du client sans devis payant accepté) : moteurs locaux seulement,
+ * et tout appel payant qui partirait quand même est refusé avant l'envoi. Rien ne se dépense sans accord.
+ */
+const aiOff = new AsyncLocalStorage<{ reason: string }>();
+export function withAiDisabled<T>(reason: string, fn: () => Promise<T>): Promise<T> {
+  return aiOff.run({ reason }, fn);
+}
+export const aiDisabledReason = () => aiOff.getStore()?.reason ?? null;
+
 /** En dessous de ce disponible, une génération IA ne pourrait pas aboutir : moteur local. */
 export const AI_MIN_AVAILABLE = 0.5 * EUR;
 
@@ -40,6 +50,7 @@ export function currentQuotaScope(): QuotaScope {
 
 /** L'IA sera réellement utilisée pour ce client (budget suffisant). */
 export function aiActiveFor(userId: string): boolean {
+  if (aiOff.getStore()) return false;
   // Découverte gratuite (aucun forfait) : tout est fait par le moteur local, aucun appel à l'IA.
   if (!planOf(getSubscription(userId))) return false;
   return hasAiCredits(userId);
@@ -52,6 +63,7 @@ export function hasAiCredits(userId: string): boolean {
 
 /** IA autorisée pour la tâche en cours. Hors tâche : seule la configuration des fournisseurs compte. */
 export function currentUserHasAiCredits(): boolean {
+  if (aiOff.getStore()) return false;
   const u = currentAiUser();
   return !u || aiActiveFor(u);
 }
@@ -63,6 +75,8 @@ export function currentUserHasAiCredits(): boolean {
  */
 export function assertAiAllowed(userId: string | null | undefined): void {
   if (!userId) throw new UserFacingError(L("Appel à l'IA refusé : aucun compte n'est associé à la demande.", "AI call refused: no account is attached to the request."));
+  const off = aiOff.getStore();
+  if (off) throw new UserFacingError(L(`Appel à l'IA refusé : ${off.reason}.`, `AI call refused: ${off.reason}.`));
   let sub;
   try {
     sub = getSubscription(userId);

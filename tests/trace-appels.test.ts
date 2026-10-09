@@ -33,6 +33,10 @@ const billed = new Set<string>();
 vi.mock("@/lib/billing", async (orig) => ({
   ...(await orig<object>()),
   assertCanSpend: () => undefined,
+  // Réservations du budget testées à part (tests/budget-ia.test.ts) : ici, comptes fictifs sans portefeuille.
+  reserve: () => "reservation-test",
+  release: () => undefined,
+  settleUncertain: () => undefined,
   // Comptes de test « u-… » : un forfait actif et du budget IA (assertAiAllowed les laisse passer, comme un client payant).
   getSubscription: () => ({ user_id: "u", status: "active", plan: "creer", stores: 1 }),
   planOf: () => "creer",

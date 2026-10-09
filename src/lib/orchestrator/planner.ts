@@ -61,6 +61,10 @@ export type StepResult = {
   covered?: Partial<Record<StepKind, StepResult>>;
   /** Le fournisseur a échoué (panne, délai) : rien n'est accepté ; repli ou reprise. */
   providerError?: boolean;
+  /** Étape NON exécutée (forfait, plafond, aucun moteur) : jamais présentée comme terminée. */
+  skip?: string;
+  /** Étape en échec (erreur du moteur) : les autres étapes continuent, ses dépendantes sont arrêtées. */
+  failed?: string;
   note?: string;
 };
 
@@ -285,6 +289,19 @@ export function applyResult(plan: TaskPlan, stepId: string, r: StepResult): Task
   const s = plan.steps.find((x) => x.id === stepId);
   if (!s) return plan;
   s.result = r;
+  if (r.skip) {
+    Object.assign(s, { status: "skipped", reason: r.skip });
+    s.attempts++;
+    if (plan.steps.every((x) => x.status !== "pending")) plan.status = "done";
+    return plan;
+  }
+  if (r.failed) {
+    Object.assign(s, { status: "failed", reason: r.failed });
+    s.attempts++;
+    blockDependents(plan, s);
+    if (plan.steps.every((x) => x.status !== "pending")) plan.status = "done";
+    return plan;
+  }
   if (r.providerError) {
     // Rien n'est accepté. Une nouvelle tentative passe par un fournisseur de repli (même barrière de qualité) ;
     // après deux pannes, l'étape échoue (jamais un résultat médiocre gardé faute de mieux).

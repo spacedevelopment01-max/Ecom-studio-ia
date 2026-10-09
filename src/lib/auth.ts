@@ -22,10 +22,11 @@ export async function createUser(email: string, password: string, name: string):
   if (password.length < 8) throw new HttpError(400, L("Le mot de passe doit contenir au moins 8 caractères.", "Password must be at least 8 characters long."));
   if (one("SELECT 1 FROM users WHERE email = ?", email)) throw new HttpError(409, L("Un compte existe déjà avec cette adresse.", "An account already exists with this email address."));
   const hasAdmin = one("SELECT 1 FROM users WHERE role = 'admin'");
-  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-  // Administration réservée au propriétaire : avec ADMIN_EMAIL, seul ce compte est administrateur ;
-  // sans ADMIN_EMAIL, uniquement le tout premier compte de l'installation. Aucun autre moyen de le devenir.
-  const role = adminEmail ? (adminEmail === email ? "admin" : "client") : !hasAdmin ? "admin" : "client";
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  // Administration réservée au propriétaire, jamais sur simple inscription en production : avec ADMIN_EMAIL, le
+  // compte de cette adresse confirme d'abord qu'il la possède (lien signé, voir admin-claim.ts) ; sans ADMIN_EMAIL,
+  // seul le tout premier compte d'une installation de DÉVELOPPEMENT est administrateur (en production : aucun).
+  const role = !adminEmail && !hasAdmin && process.env.NODE_ENV !== "production" ? "admin" : "client";
   const uid = id();
   run(
     "INSERT INTO users (id, email, name, password_hash, role, created_at) VALUES (?,?,?,?,?,?)",
@@ -128,7 +129,9 @@ export type ProjectRow = {
 
 /** Isolation stricte : un projet n'est accessible qu'à son propriétaire. */
 export function ownedProject(user: User, projectId: string): ProjectRow {
-  const p = one<ProjectRow>("SELECT * FROM projects WHERE id = ? AND user_id = ?", projectId, user.id);
+  // Un projet supprimé (archivé) n'est plus utilisable : sinon la limite d'une boutique par abonnement serait
+  // contournée (archiver puis continuer à travailler dessus). Ses données restent conservées en base.
+  const p = one<ProjectRow>("SELECT * FROM projects WHERE id = ? AND user_id = ? AND archived = 0", projectId, user.id);
   if (!p) throw new HttpError(404, L("Projet introuvable.", "Project not found."));
   return p;
 }

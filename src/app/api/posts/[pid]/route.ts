@@ -73,7 +73,9 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ pid: st
     case "duplicate": {
       const nid = id();
       run(
-        "INSERT INTO posts (id, project_id, plan_id, campaign_id, connection_id, network, format, status, scheduled_at, timezone, title, caption, hashtags, link, angle, media, brief, publish_key, created_at, updated_at) SELECT ?, project_id, plan_id, campaign_id, connection_id, network, format, 'draft', scheduled_at + 86400000, timezone, title, caption, hashtags, link, angle, media, brief, ?, ?, ? FROM posts WHERE id = ?",
+        // La copie garde le moteur de l'original : une publication V2 dupliquée reste soumise à l'approbation de sa
+        // version et au contrôle V2 (jamais d'approbation « par date » héritée des anciennes publications V1).
+        "INSERT INTO posts (id, project_id, plan_id, campaign_id, connection_id, network, format, status, scheduled_at, timezone, title, caption, hashtags, link, angle, media, brief, engine, publish_key, created_at, updated_at) SELECT ?, project_id, plan_id, campaign_id, connection_id, network, format, 'draft', scheduled_at + 86400000, timezone, title, caption, hashtags, link, angle, media, brief, engine, ?, ?, ? FROM posts WHERE id = ?",
         nid, `dup:${nid}`, now(), now(), post.id,
       );
       return ok({ id: nid });
