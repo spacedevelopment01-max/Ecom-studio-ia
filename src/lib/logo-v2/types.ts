@@ -79,7 +79,7 @@ export type Candidate = {
   spec: LogoSpec;
   /** Ce qui a changé par rapport à la tentative précédente (reprise ciblée). */
   change: string | null;
-  symbolSource: "ai_svg" | "ai_image_traced" | "monogram" | "library" | "none";
+  symbolSource: "ai_svg" | "ai_image_traced" | "ai_image_finalized" | "monogram" | "library" | "none";
 };
 
 export const REVIEW_CRITERIA = ["relevance", "originality", "legibility", "typography", "composition", "balance", "memorability", "smallSize", "monochrome", "versatility"] as const;

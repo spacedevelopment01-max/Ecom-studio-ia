@@ -20,7 +20,7 @@ import { FORMATS, renderCreative, renderPackshot, renderScene, renderBanner, typ
 import { canvasFamily } from "../media/fonts";
 import { aiImageBrief, aiQcImage, qcScore, qcTier, type QcTier } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
-import { geminiPlate, imageProviderAvailable, openaiScene, refundMediaQuota } from "../ai/media-providers";
+import { mediaRouteFor, openaiScene, productImagePath, productPlate, refundMediaQuota } from "../ai/media-providers";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 import { C, L } from "../i18n-server";
@@ -126,12 +126,20 @@ async function imageBrief(ictx: ImgCtx, project: Project, style: string, formatI
       })();
 }
 
-async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string, given?: Brief): Promise<{ image: Buffer; provider: string; lightFrom?: "left" | "right"; brief: Brief } | null> {
-  const provider = imageProviderAvailable();
-  if (!provider) return null;
+/** Nom lisible d'un fournisseur d'images (mention de l'image). */
+const PROVIDER_NAME: Record<string, string> = { openai: "OpenAI", google: "Gemini", fal: "fal.ai" };
+
+/**
+ * Photo du produit réel par l'IA, selon l'administration (Images & Vidéos) : « Retouches produit » (retouche par
+ * masque, pixels du produit remis) si un modèle capable y est choisi, sinon « Images produit » (décor généré par le
+ * modèle choisi, produit réel composé). provider « openai » = retouche par masque (le produit est déjà dans l'image).
+ */
+async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: string, formatId: FormatId, key: string, lifestyle?: string, given?: Brief): Promise<{ image: Buffer; provider: string; providerLabel: string; lightFrom?: "left" | "right"; brief: Brief } | null> {
+  const route = productImagePath("product_image");
+  if (!route) return null;
   const brief = given ?? (await imageBrief(ictx, project, style, formatId, key, lifestyle));
   const f = FORMATS[formatId];
-  if (provider === "openai") {
+  if (route.path === "masked_edit") {
     // Cadre à la taille OpenAI la plus proche, produit placé, masque du produit.
     const size = f.w > f.h * 1.2 ? "1536x1024" : f.h > f.w * 1.2 ? "1024x1536" : "1024x1024";
     const [W, H] = size.split("x").map(Number);
@@ -142,14 +150,16 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
     const base = sharp({ create: { width: W, height: H, channels: 4, background: { r: 235, g: 230, b: 224, alpha: 1 } } });
     const composite = await base.composite([{ input: prod, left, top }]).png().toBuffer();
     const mask = await sharp({ create: { width: W, height: H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: prod, left, top }]).png().toBuffer();
-    const painted = await openaiScene({ ...ictx, usageKey: `${key}:openai`, brain: brief.brain }, { composite, productMask: mask, prompt: brief.prompt, size: size as any });
+    const painted = await openaiScene({ ...ictx, usageKey: `${key}:openai`, brain: brief.brain }, { composite, productMask: mask, prompt: brief.prompt, size: size as any, usage: route.usage });
     // On replace exactement les pixels du produit d'origine par-dessus.
     const restored = await sharp(painted).resize(W, H).composite([{ input: prod, left, top }]).png().toBuffer();
-    return { image: restored, provider: "openai", brief };
+    return { image: restored, provider: "openai", providerLabel: "OpenAI", brief };
   }
   const aspect = f.w > f.h * 1.5 ? "16:9" : f.h > f.w * 1.5 ? "9:16" : f.h > f.w * 1.1 ? "4:5" : "1:1";
-  const plate = await geminiPlate({ ...ictx, usageKey: `${key}:gemini`, brain: brief.brain }, { prompt: brief.prompt, aspect });
-  return { image: plate, provider: "google-plate", lightFrom: brief.lightFrom, brief };
+  const name = PROVIDER_NAME[mediaRouteFor(route.usage)?.provider ?? ""] ?? "IA";
+  // Clé de consommation inchangée (« :gemini ») : une reprise d'une tâche déjà commencée ne repaie rien.
+  const plate = await productPlate({ ...ictx, usageKey: `${key}:gemini`, brain: brief.brain }, { prompt: brief.prompt, aspect, usage: route.usage });
+  return { image: plate, provider: "plate", providerLabel: name, lightFrom: brief.lightFrom, brief };
 }
 
 export type ImageSetOptions = {
@@ -215,7 +225,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   // Mises en scène de la ligne photographique (même lumière, mêmes matières, même étalonnage).
   const styles = opts.scenes ?? (line.local.scenes as SceneStyle[]);
   // Image payante seulement si son contrôle de fidélité est possible (sinon elle ne pourrait jamais être FINAL).
-  const withAi = !opts.localOnly && opts.withAi !== false && !!imageProviderAvailable() && llmConfigured();
+  const withAi = !opts.localOnly && opts.withAi !== false && !!productImagePath("product_image") && llmConfigured();
   for (const [i, style] of styles.entries()) {
     await ctx.step(`scene:${style}`, async () => {
       ctx.progress(0.5 + i * 0.08, L(`Mise en scène « ${style} »${withAi ? " (décor généré)" : ""}`, `Staging "${style}"${withAi ? " (generated set)" : ""}`));
@@ -225,12 +235,12 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
         try {
           const r = await aiBackground(ictx, project, cutBuf, style, "product", `${ctx.job.id}:scene:${style}`);
           if (r) {
-            // OpenAI : décor peint autour du produit (pixels d'origine replacés) ; Gemini : décor vide + produit réel composé.
+            // Retouche par masque : décor peint autour du produit (pixels d'origine replacés) ; sinon décor vide + produit réel composé.
             const image = r.provider === "openai" ? r.image : (await renderScene({ product, palette: pal, style, format: FORMATS.product, seed: 7 + i, background: await loadImage(r.image), lightFrom: r.lightFrom })).png;
             const check = await verifyAiImage({ ...ictx, usageKey: `${ctx.job.id}:qc:${style}` }, originalPhoto(), image, { deliverable: "image_product", attempt: 1 });
             qc = check.qc;
             const keep = gateSave(ictx, check.decision);
-            const id = await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}-${C("ia", "ai")}.jpg`, "scene", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Décor peint par IA autour du produit réel (${style})`, `AI-painted set around the real product (${style})`), provider: "OpenAI", qc } : { recipe: L(`Décor généré par IA, produit réel composé (${style})`, `AI-generated set with the real product composited (${style})`), provider: L("Gemini (décor) + composition locale", "Gemini (set) + local compositing"), qc }), ...keep.meta }, "image/jpeg", keep.status);
+            const id = await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-scene-${style}-${C("ia", "ai")}.jpg`, "scene", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Décor peint par IA autour du produit réel (${style})`, `AI-painted set around the real product (${style})`), provider: "OpenAI", qc } : { recipe: L(`Décor généré par IA, produit réel composé (${style})`, `AI-generated set with the real product composited (${style})`), provider: L(`${r.providerLabel} (décor) + composition locale`, `${r.providerLabel} (set) + local compositing`), qc }), ...keep.meta }, "image/jpeg", keep.status);
             if (check.decision.verdict === "FINAL") return [id];
             // Image de l'IA gardée (à vérifier ou écartée, visible dans Images, jamais réutilisée automatiquement) ;
             // une scène du studio complète la série.
@@ -258,7 +268,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
       await ctx.step(`lifestyle:${i}`, async () => {
         ctx.progress(0.7 + i * 0.02, L("Photos du produit en situation", "Lifestyle product photos"));
         try {
-          // Gemini : décor de vie généré, produit réel posé dessus par la composition locale (ombres, sol).
+          // Décor de vie généré (ou peint autour du produit), produit réel posé dessus par la composition locale (ombres, sol).
           const fmt = i === 0 ? "landscape" : "product";
           const attempt = async (key: string, n: number, brief?: Brief, avoid?: string) => {
             // Reprise : le brief déjà payé est réutilisé, seuls les défauts à éviter s'ajoutent (pas de nouveau brief).
@@ -279,7 +289,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
           // Photo gardée dans tous les cas (payée) : FINAL utilisable ; sinon à vérifier ou écartée (visible, non réutilisée).
           if (check.decision.verdict === "REJECTED") refundMediaQuota(ictx.userId, `${ctx.job.id}:lifestyle:${i}:retry`);
           const keep = gateSave(ictx, check.decision);
-          return [await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Photo en situation générée autour du produit réel : ${situation}`, `Lifestyle photo generated around the real product: ${situation}`), provider: "OpenAI", qc: check.qc } : { recipe: L(`Photo en situation : décor généré (${situation}) et produit réel composé`, `Lifestyle photo: generated set (${situation}) with the real product composited`), provider: L("Gemini + composition locale", "Gemini + local compositing"), qc: check.qc }), ...keep.meta }, "image/jpeg", keep.status)];
+          return [await save(await sharp(image).jpeg({ quality: 92 }).toBuffer(), `${base}-${C("en-situation", "lifestyle")}-${i + 1}.jpg`, "lifestyle", "images.scenes", { ...(r.provider === "openai" ? { recipe: L(`Photo en situation générée autour du produit réel : ${situation}`, `Lifestyle photo generated around the real product: ${situation}`), provider: "OpenAI", qc: check.qc } : { recipe: L(`Photo en situation : décor généré (${situation}) et produit réel composé`, `Lifestyle photo: generated set (${situation}) with the real product composited`), provider: L(`${r.providerLabel} + composition locale`, `${r.providerLabel} + local compositing`), qc: check.qc }), ...keep.meta }, "image/jpeg", keep.status)];
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           console.warn("[images] photo en situation indisponible :", (e as Error).message);
@@ -433,7 +443,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
             refundMediaQuota(ictx.userId, `${ctx.job.id}:single`);
             return { rejected: check.reason };
           }
-          return { b64: image.toString("base64"), provider: out.provider, qc: check.qc, gate: gateSave(ictx, check.decision).meta.gate };
+          return { b64: image.toString("base64"), provider: out.provider, providerLabel: out.providerLabel, qc: check.qc, gate: gateSave(ictx, check.decision).meta.gate };
         } catch (e) {
           if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
           refundMediaQuota(ictx.userId, `${ctx.job.id}:single`);
@@ -443,7 +453,7 @@ export async function generateSingleImage(ctx: JobContext, projectId: string, re
       if (r && "b64" in r && r.b64) {
         data = await sharp(Buffer.from(r.b64, "base64")).jpeg({ quality: 92 }).toBuffer();
         const recipe = r.provider === "openai" ? L("Décor peint par IA autour du produit réel", "AI-painted set around the real product") : L("Décor généré par IA, produit réel composé", "AI-generated set with the real product composited");
-        const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${req.kind === "banner" ? C("banniere", "banner") : "scene"}-${C("ia", "ai")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: req.kind, folderKey: req.kind === "banner" ? "images.banners" : "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe, provider: r.provider === "openai" ? "OpenAI" : L("Gemini (décor) + composition locale", "Gemini (set) + local compositing"), qc: r.qc, gate: r.gate, format: fmt.label }, status: "review" });
+        const a = await saveAsset({ projectId, userId: project.userId, data, name: `${base}-${req.kind === "banner" ? C("banniere", "banner") : "scene"}-${C("ia", "ai")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: req.kind, folderKey: req.kind === "banner" ? "images.banners" : "images.scenes", origin: "generated", sourceAssetId: cut.id, meta: { recipe, provider: r.provider === "openai" ? "OpenAI" : L(`${r.providerLabel ?? "IA"} (décor) + composition locale`, `${r.providerLabel ?? "AI"} (set) + local compositing`), qc: r.qc, gate: r.gate, format: fmt.label }, status: "review" });
         return { assetId: a.id };
       }
       // Image IA refusée au contrôle (ou indisponible) : scène composée localement, la raison est gardée et affichée.

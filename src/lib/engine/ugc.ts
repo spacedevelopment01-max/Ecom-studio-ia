@@ -435,9 +435,9 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
   if (!brand) throw new UserFacingError(L("Définissez la marque avant de produire une vidéo UGC.", "Set up the brand before producing a UGC video."));
   assertQuota(project.userId, "ugc");
   if (!hasAiCredits(project.userId)) throw new UserFacingError(L("Vous avez atteint la limite d'utilisation équitable de l'IA de votre forfait pour ce mois-ci : la vidéo UGC pourra être créée au renouvellement.", "You've reached your plan's fair-use AI limit for this month: the UGC video can be created when it renews."));
-  const video = videoProviderAvailable();
+  const video = videoProviderAvailable("ugc_video");
   if (!video) throw new UserFacingError(L("Aucun fournisseur vidéo configuré (Google Veo ou fal.ai) : la vidéo UGC ne peut pas être générée.", "No video provider configured (Google Veo or fal.ai): the UGC video can't be generated."));
-  if (!imageProviderAvailable()) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.", "No image provider configured (Google Gemini or OpenAI): the person in the video can't be created."));
+  if (!imageProviderAvailable({ usage: "product_image", references: 1, people: true })) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.", "No image provider configured (Google Gemini or OpenAI): the person in the video can't be created."));
   // Personne et produit sont générés par l'IA : sans IA de vision pour les contrôler, rien n'est généré ni payé.
   if (!llmConfigured()) throw new UserFacingError(L("Le contrôle des images générées n'est pas disponible : la vidéo UGC n'est pas créée, car la fidélité du produit ne pourrait pas être vérifiée.", "Checking generated images isn't available: the UGC video isn't created, because product fidelity couldn't be verified."));
   const script = cleanUgcScript(req.script);
@@ -501,7 +501,7 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
         for (let attempt = 0; attempt < 2 && !buf; attempt++) {
           const u = attempt ? { ...usage, usageKey: `${usage.usageKey}:${attempt}` } : usage;
           // Fournisseur choisi par le routage multimédia ; relais vers le secours compatible si le principal échoue sans coût.
-          const b = await aiClip(video, u, { image: frame, prompt, aspect: o.format, people: true, seconds: video === "google" ? undefined : 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
+          const b = await aiClip(video, u, { image: frame, prompt, aspect: o.format, people: true, usage: "ugc_video", seconds: video === "google" ? undefined : 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
           const stills = await clipStills(b, qdir, `c${attempt}`);
           let ok = stills.length > 0;
           for (const [k, st] of stills.entries()) {

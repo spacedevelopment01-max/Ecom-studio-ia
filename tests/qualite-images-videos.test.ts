@@ -151,7 +151,7 @@ describe("vidéos", () => {
   it("plan IA : jamais utilisé sans contrôle ; refusé, il est remboursé (vidéos IA du forfait)", async () => {
     const fs = await import("node:fs");
     const src = fs.readFileSync("src/lib/engine/videos.ts", "utf8");
-    expect(src).toMatch(/req\.useAiClip && llmConfigured\(\) \? videoProviderAvailable\(\)/);
+    expect(src).toMatch(/req\.useAiClip && llmConfigured\(\) \? videoProviderAvailable\("product_video"\)/);
     expect(src).toMatch(/refundMediaQuota\(project\.userId, clipKey, "aiVideos"\)/);
     expect(src).toMatch(/exactly identical to the first frame/);
     const { createUser } = await import("@/lib/auth");

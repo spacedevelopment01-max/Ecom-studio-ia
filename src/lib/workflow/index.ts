@@ -114,15 +114,18 @@ export function parseWorkflowRequest(text: string, intents: Intent[]): { intents
 /** L'IA réelle est-elle disponible pour ce compte (forfait, interrupteur, clé) ? Sinon : moteurs locaux, 0 €. */
 export const workflowAiActive = (userId: string) => aiActiveFor(userId) && !!activeProviderKey("anthropic");
 
+/** Concepts graphiques des symboles de logo par le modèle d'images (au plus 3 par série, reprises comprises). */
+const LOGO_CONCEPTS_MICRO = () => estimateTaskMicro("image_generation", { images: 1 }, 3);
+
 /** Coût IA estimé d'une étape (micro-euros) si elle passe par l'IA ; 0 pour une étape locale ou de recherche. */
 export function stepEstimateMicro(kind: StepKind, params: WorkflowParams): number {
   switch (kind) {
     case "understand":
       return estimateTaskMicro("vision_analysis", { input: 8000, output: 2000 });
     case "brand_strategy":
-      return estimateTaskMicro("strategy", { input: 20000, output: 8000 }, 1.3) + estimateTaskMicro("logo_symbol", { input: 6000, output: 3000 }, 3);
+      return estimateTaskMicro("strategy", { input: 20000, output: 8000 }, 1.3) + estimateTaskMicro("logo_symbol", { input: 6000, output: 3000 }, 3) + LOGO_CONCEPTS_MICRO();
     case "logo":
-      return estimateTaskMicro("logo_symbol", { input: 6000, output: 3000 }, 3);
+      return estimateTaskMicro("logo_symbol", { input: 6000, output: 3000 }, 3) + LOGO_CONCEPTS_MICRO();
     case "image_generate":
       return estimateMicro("images");
     case "copy":

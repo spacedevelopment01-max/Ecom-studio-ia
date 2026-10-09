@@ -36,26 +36,46 @@ export type EngineOptions = {
 const specHash = (c: Candidate) => crypto.createHash("sha256").update(JSON.stringify({ ...c.spec, custom: c.spec.custom ? JSON.stringify(c.spec.custom) : null })).digest("hex").slice(0, 16);
 const needsSymbol = (t: Territory) => (t.markType === "symbol_wordmark" || t.markType === "abstract_mark" || (t.markType === "emblem" && !!t.symbolIdea));
 
-/** Symbole d'un territoire : SVG de l'IA, sinon (construction illustrative) image de l'IA vectorisée ; sinon aucun (monogramme). */
+/**
+ * Symbole d'un territoire :
+ *  1. CONCEPT graphique par le modèle d'images choisi pour l'usage « Logos » (Administration › Images & Vidéos) ;
+ *  2. vectorisation automatique du concept, nettoyée et testée en petite taille ;
+ *  3. sinon FINALISATION vectorielle du concept par la tâche « logo_symbol » (le concept lui est montré) ;
+ *  4. sans modèle d'images utilisable : symbole conçu en vectoriel par la tâche « logo_symbol » — écrit dans les notes.
+ * Une image n'est jamais livrée telle quelle ; à défaut de symbole propre, le territoire reste sans symbole.
+ */
 async function territorySymbol(ctx: JobContext, ai: LogoV2Ai | null, t: Territory, brief: BrandBrief, notes: string[], feedback?: string, attempt = 0): Promise<SymbolInput> {
   if (!ai || !needsSymbol(t)) return null;
   const accent = brief.palette[t.colorRole.accent];
-  const drawn = await withCandidate(`logo-v2:${t.id}`, attempt, () => ctx.step(`v2:${t.id}:symbol:${attempt}`, () => ai.drawSymbol(t, brief, feedback)));
-  const clean = cleanSymbol(drawn.svg, accent);
-  if (clean.ok) return { symbol: clean.symbol, source: "ai_svg" };
-  notes.push(`${t.name} : symbole SVG refusé (${clean.reason})`);
-  if (t.construction === "illustrative" && attempt === 0) {
-    // Exploration par l'IA d'images, puis vectorisation : l'image n'est jamais livrée telle quelle.
-    const img = await withCandidate(`logo-v2:${t.id}`, attempt, () => ctx.step(`v2:${t.id}:explore`, async () => (await ai.exploreSymbol(t, brief))?.toString("base64") ?? null));
-    if (img) {
-      const tr = await traceSymbol(Buffer.from(img, "base64"));
+  let concept: Buffer | null = null;
+  const route = ai.conceptRoute?.() ?? null;
+  if (route && "unavailable" in route) notes.push(`${t.name} : aucun modèle d'images utilisable pour les logos (${route.unavailable}) — symbole conçu en vectoriel par l'IA de texte`);
+  else if (t.symbolIdea) {
+    try {
+      const img = await withCandidate(`logo-v2:${t.id}`, attempt, () => ctx.step(`v2:${t.id}:concept:${attempt}`, async () => (await ai.exploreSymbol(t, brief, feedback))?.toString("base64") ?? null));
+      concept = img ? Buffer.from(img, "base64") : null;
+      if (!concept) notes.push(`${t.name} : aucun concept d'image produit — symbole conçu en vectoriel par l'IA de texte`);
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
+      notes.push(`${t.name} : concept d'image indisponible (${(e as Error).message.slice(0, 160)}) — symbole conçu en vectoriel par l'IA de texte`);
+    }
+    if (concept) {
+      const used = route ? ` (${route.provider}:${route.model})` : "";
+      const tr = await traceSymbol(concept);
       if (tr.ok) {
         const c2 = cleanSymbol(tr.svg, accent);
-        if (c2.ok) return { symbol: c2.symbol, source: "ai_image_traced" };
-        notes.push(`${t.name} : image vectorisée refusée (${c2.reason})`);
-      } else notes.push(`${t.name} : image non vectorisable (${tr.reason})`);
+        if (c2.ok) {
+          notes.push(`${t.name} : concept du modèle d'images${used}, vectorisé`);
+          return { symbol: c2.symbol, source: "ai_image_traced" };
+        }
+        notes.push(`${t.name} : concept${used} vectorisé mais refusé (${c2.reason}) — finalisation vectorielle`);
+      } else notes.push(`${t.name} : concept${used} non vectorisable automatiquement (${tr.reason}) — finalisation vectorielle`);
     }
   }
+  const drawn = await withCandidate(`logo-v2:${t.id}`, attempt, () => ctx.step(`v2:${t.id}:symbol:${attempt}${concept ? ":c" : ""}`, () => ai.drawSymbol(t, brief, feedback, concept)));
+  const clean = cleanSymbol(drawn.svg, accent);
+  if (clean.ok) return { symbol: clean.symbol, source: concept ? "ai_image_finalized" : "ai_svg" };
+  notes.push(`${t.name} : symbole SVG refusé (${clean.reason})`);
   return null;
 }
 

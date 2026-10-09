@@ -176,7 +176,7 @@ function realRouteAi(p: Project, cutout: Buffer | null, avoid: RouteAvoid[] = []
   // et concept), vectorisé ensuite. Monogramme (piste typo) : dessiné à partir des vraies lettres de la police.
   const drawn = async (d: RouteDraft, attempt: number, feedback = ""): Promise<RouteDraft> => {
     if (!d || d.key === "typo") return d;
-    if (!imageProviderAvailable()) return { ...d, imageNote: imageUnavailableReason() ?? undefined };
+    if (!imageProviderAvailable({ usage: "logo" })) return { ...d, imageNote: imageUnavailableReason("logo") ?? undefined };
     const usageKey = k("symbol", d.key, attempt);
     const activity = [p.product.name, p.product.category, p.product.summary].filter(Boolean).join(" — ");
     try {

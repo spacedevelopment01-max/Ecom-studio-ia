@@ -23,6 +23,9 @@ const nextConfig: NextConfig = {
     "@shopify/liquid-html-parser",
   ],
   images: { unoptimized: true },
+  // Développement : une route compilée reste prête 30 min (60 s par défaut). Sinon, revenir sur un onglet du studio
+  // recompilait ~4 400 modules (2 à 5 s, et jusqu'à 3 fois la même route en 6 min, mesuré).
+  onDemandEntries: { maxInactiveAge: 30 * 60_000, pagesBufferLength: 60 },
   poweredByHeader: false,
   experimental: { serverActions: { bodySizeLimit: "60mb" } },
 };

@@ -111,7 +111,7 @@ export function fullLogoDecision(qc: FullLogoQc | null, name: string, attempt: n
 export async function generateFullLogos(ctx: JobContext | null, projectId: string, opts: { autoApply?: boolean } = {}): Promise<Asset[]> {
   const p = loadProject(projectId);
   if (!p.brand) throw new UserFacingError(L("La marque doit exister avant le logo.", "The brand must exist before the logo."));
-  if (!llmConfigured() || !imageProviderAvailable()) throw new UserFacingError(L(`Logo complet par IA indisponible : ${imageUnavailableReason() ?? "IA de rédaction non active"}.`, `AI full logo unavailable: ${imageUnavailableReason() ?? "writing AI not active"}.`));
+  if (!llmConfigured() || !imageProviderAvailable({ usage: "logo", text: true, transparent: true })) throw new UserFacingError(L(`Logo complet par IA indisponible : ${imageUnavailableReason("logo") ?? "IA de rédaction non active"}.`, `AI full logo unavailable: ${imageUnavailableReason("logo") ?? "writing AI not active"}.`));
   const name = p.brand.name;
   const colors = [p.brand.palette.primary, p.brand.palette.accent, p.brand.palette.secondary, p.brand.palette.dark];
   const ictx = { userId: p.userId, projectId, jobId: ctx?.job.id ?? null };

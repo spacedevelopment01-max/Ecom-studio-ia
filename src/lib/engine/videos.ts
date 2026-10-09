@@ -112,8 +112,8 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   /** Plan IA demandé, mais pas utilisé (indisponible ou refusé au contrôle) : dit dans la note d'étape. */
   let clipFallback: string | null = null;
   // Un plan IA n'est utilisé qu'après contrôle par l'IA de vision : sans elle, il n'est même pas généré (ni payé).
-  const provider = req.useAiClip && llmConfigured() ? videoProviderAvailable() : null;
-  if (req.useAiClip && !provider) clipFallback = !llmConfigured() && videoProviderAvailable() ? L("contrôle de fidélité des plans IA indisponible", "AI shot fidelity check unavailable") : L("génération de plans vidéo non disponible", "video shot generation unavailable");
+  const provider = req.useAiClip && llmConfigured() ? videoProviderAvailable("product_video") : null;
+  if (req.useAiClip && !provider) clipFallback = !llmConfigured() && videoProviderAvailable("product_video") ? L("contrôle de fidélité des plans IA indisponible", "AI shot fidelity check unavailable") : L("génération de plans vidéo non disponible", "video shot generation unavailable");
   else if (provider && !imgs.length) clipFallback = L("aucune photo de scène pour le plan IA", "no scene photo for the AI shot");
   const clipKey = `${ctx.job.id}:clip:${req.format}:${req.target ?? ""}`;
   if (provider && imgs.length) {
@@ -124,7 +124,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const prompt = services
         ? `Slow cinematic push-in on this real photo of the business, soft light shift, subtle depth of field. Keep every person, object and place exactly as they are; add no people, no text, no logo.`
         : `${clipCamera(project.product.sector, req.format)} Motion starts on the very first frame (no static opening), ${brand.palette.secondary} color accents in the light, natural soft shadows, crisp focus on the product. The product stays perfectly still and exactly identical to the first frame (same shape, proportions, label, text and colors); it is never redrawn, duplicated, cropped or hidden. No text overlay, no new objects, no people.`;
-      const buf = await aiClip(provider, { userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m));
+      const buf = await aiClip(provider, { userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16", usage: "product_video" }, (m) => ctx.progress(0.15, m));
       const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name)}-${C("plan-genere", "generated-shot")}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: scene.id, meta: { provider, recipe: L("Plan d'ambiance généré (image vers vidéo)", "Generated mood shot (image to video)") }, status: "review" });
       return a.id;
     }).catch((e) => {

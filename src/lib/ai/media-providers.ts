@@ -23,7 +23,7 @@ import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
-import { mediaBackup, mediaStatus, modelForProvider, selectMedia, type MediaChoice, type MediaNeed } from "./media-routing";
+import { mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
 import { mediaModel, type MediaKind } from "./media-models";
 
 /** brain : contexte du Brain d'où vient la consigne de la génération (portée, empreinte, version), tracé dans ai_calls. */
@@ -45,7 +45,7 @@ function quotaFor(media: "image" | "video") {
  * départ du chronomètre) puis par `recordMedia()` (succès) ; une génération partie puis échouée (refus, délai
  * dépassé) est tracée aussi. Aucune image ni consigne n'est enregistrée.
  */
-type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean }; choice?: MediaChoice };
+type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean }; choice?: MediaChoice; usage?: MediaUsage };
 const mediaTrace = new AsyncLocalStorage<MediaTrace>();
 
 function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...a: A) => Promise<R>): (...a: A) => Promise<R> {
@@ -84,9 +84,9 @@ function markReleased(e: unknown, t: MediaTrace) {
 /** Relais en cours : modèle en échec écarté, et SEUL le secours choisi par l'administration peut être appelé. */
 const mediaExclude = new AsyncLocalStorage<{ exclude: string[]; only: string }>();
 
-/** Secours utilisable pour ce type : confirmé, tarifé, clé active, adaptateur réel (son coût est donc couvert). */
-function usableBackup(kind: MediaKind): { provider: string; model: string } | null {
-  const b = mediaBackup(kind);
+/** Secours utilisable pour cet usage (sinon ce type) : confirmé, tarifé, clé active, adaptateur réel (coût couvert). */
+function usableBackup(kind: MediaKind, usage?: MediaUsage): { provider: string; model: string } | null {
+  const b = usage ? usageBackup(usage) : mediaBackup(kind);
   const m = b ? mediaModel(b.provider, b.model) : null;
   return b && m && mediaStatus(m).usable ? b : null;
 }
@@ -96,14 +96,17 @@ function usableBackup(kind: MediaKind): { provider: string; model: string } | nu
  * génération est relancée une fois, le modèle en échec étant écarté. Le secours passe par sa propre réservation
  * (son coût maximal est couvert avant l'envoi). Un résultat incertain (coût retenu) n'est jamais relancé.
  */
-function withMediaBackup<A extends [Ctx, ...any[]], R>(kind: MediaKind, fn: (...a: A) => Promise<R>): (...a: A) => Promise<R> {
+function withMediaBackup<A extends [Ctx, ...any[]], R>(kind: MediaKind, fn: (...a: A) => Promise<R>, opts: { usage?: (...a: A) => MediaUsage | undefined; providers?: string[] } = {}): (...a: A) => Promise<R> {
   return async (...args: A) => {
     try {
       return await fn(...args);
     } catch (e) {
       const failed = (e as { mediaReleased?: boolean; mediaFailed?: string | null }) ?? {};
-      const backup = usableBackup(kind);
+      // Secours de l'USAGE de la génération (logo, image produit…), sinon celui du type.
+      const backup = usableBackup(kind, opts.usage?.(...args));
       if (!failed.mediaReleased || !failed.mediaFailed || !backup || `${backup.provider}:${backup.model}` === failed.mediaFailed || mediaExclude.getStore()) throw e;
+      // Chemin branché pour certains fournisseurs seulement (retouche par masque : OpenAI).
+      if (opts.providers && !opts.providers.includes(backup.provider)) throw e;
       return mediaExclude.run({ exclude: [failed.mediaFailed], only: `${backup.provider}:${backup.model}` }, () => fn(...args));
     }
   };
@@ -120,7 +123,8 @@ function budgetLeft(userId?: string): number | null {
 
 /** Modèle à appeler chez ce fournisseur pour la génération en cours (choix tracé, sinon modèle historique). */
 function pickModel(provider: string, kind: MediaKind): string {
-  return modelForProvider(provider, kind, mediaTrace.getStore()?.choice ?? null);
+  const t = mediaTrace.getStore();
+  return modelForProvider(provider, kind, t?.choice ?? null, t?.usage);
 }
 
 /** Intervalles d'interrogation des générations longues (réduits dans les tests). */
@@ -267,8 +271,12 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   const t = mediaTrace.getStore();
   const relay = mediaExclude.getStore();
   const exclude = relay?.exclude ?? [];
+  const usage = need?.usage;
+  if (t && usage) t.usage = usage;
+  // Usage coupé par l'administration (retouches produit) : aucun modèle, pas de repli historique.
+  if (usage && usageOff(usage)) return null;
   // Routage multimédia : principal de l'administration, secours compatible et couvert, ou mode automatique.
-  const choice = selectMedia({ kind, mask: inputType === "mask", ...(kind === "video" ? { imageToVideo: true } : {}), ...need }, { exclude, budgetLeftMicro: budgetLeft(t?.ctx?.userId ?? currentAiUser() ?? undefined), mode: relay ? "manual" : undefined });
+  const choice = selectMedia({ ...(usage ? USAGE_INFO[usage].need : {}), kind, mask: inputType === "mask", ...(kind === "video" ? { imageToVideo: true } : {}), ...need }, { exclude, budgetLeftMicro: budgetLeft(t?.ctx?.userId ?? currentAiUser() ?? undefined), mode: relay ? "manual" : undefined });
   // Relais : uniquement le secours désigné (jamais un autre modèle de repli, dont le coût n'aurait pas été validé).
   if (relay && (!choice || `${choice.provider}:${choice.model}` !== relay.only)) return null;
   if (choice) {
@@ -278,6 +286,8 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
     }
     return { mode: kind, provider: choice.provider, model: choice.model, tier: "strong", reason: choice.reason, fallback: choice.role === "backup", escalation: false, qualityTarget: null };
   }
+  // Usage réglé explicitement : son choix (principal, secours) est respecté — aucun autre modèle en silence.
+  if (usage && usageExplicit(usage)) return null;
   // Aucun modèle du catalogue ne convient : comportement historique du Router V2 (repli vers un fournisseur capable).
   const custom = getJsonSetting<Partial<Record<string, unknown>>>("ai.routes", {});
   const d = route({ task, inputType, aiActive: true, allowLocal: false, available: (p) => !!activeProviderKey(p) && !exclude.some((x) => x.startsWith(`${p}:`)), overrides: custom[task] ? { [task]: routeFor(task) } : undefined });
@@ -292,16 +302,38 @@ export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "g
 }
 
 /** Pourquoi aucune image IA ne peut être faite maintenant (affiché au client et dans le diagnostic). */
-export function imageUnavailableReason(): string | null {
-  if (imageProviderAvailable()) return null;
+export function imageUnavailableReason(usage?: MediaUsage): string | null {
+  if (imageProviderAvailable(usage ? { usage } : undefined)) return null;
   if (!currentUserHasAiCredits()) return L("IA non active pour ce compte (forfait ou budget IA épuisé)", "AI not active for this account (plan or AI budget used up)");
   const u = currentAiUser();
   if (u && !userPlan(u)) return L("aucun forfait actif : les images IA sont réservées aux forfaits", "no active plan: AI images come with the plans");
+  if (usage && usageExplicit(usage)) return L(`le modèle choisi pour « ${USAGE_INFO[usage].label.fr} » (et son secours) n'est pas utilisable : clé, tarif, confirmation ou capacité — voir Administration › Images & Vidéos`, `the model chosen for "${USAGE_INFO[usage].label.en}" (and its backup) is not usable: key, price, confirmation or capability — see Admin › Images & videos`);
   return L("aucune clé OpenAI, Gemini ou fal.ai active (ou aucun modèle d'image compatible) dans l'administration", "no active OpenAI, Gemini or fal.ai key (or no compatible image model) in the admin settings");
 }
 
-export function videoProviderAvailable(): "google" | "fal" | null {
-  const d = routeMedia("video_generation");
+/**
+ * Parcours d'une image qui montre le produit RÉEL, selon l'usage :
+ *  - retouche par masque (le modèle repeint autour du produit, pixels remis) si un modèle capable est choisi pour
+ *    « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) ;
+ *  - sinon décor généré par le modèle de l'usage, puis produit réel composé par le studio ;
+ *  - null : aucun modèle utilisable (rien n'est généré).
+ */
+export function productImagePath(usage: "product_image" | "ad_visual"): { path: "masked_edit"; usage: MediaUsage } | { path: "composite_plate"; usage: MediaUsage } | null {
+  const editUsage: MediaUsage = usage === "product_image" ? "product_edit" : usage;
+  const edit = routeMedia("image_generation", "mask", { usage: editUsage });
+  if (edit && edit.provider === "openai") return { path: "masked_edit", usage: editUsage };
+  const gen = routeMedia("image_generation", undefined, { usage });
+  return gen ? { path: "composite_plate", usage } : null;
+}
+
+/** Fournisseur et modèle que prendra une génération de cet usage (affichage, notes de la tâche), null si aucun. */
+export function mediaRouteFor(usage: MediaUsage, need: Partial<MediaNeed> = {}): { provider: string; model: string; reason: string } | null {
+  const d = routeMedia(USAGE_INFO[usage].kind === "video" ? "video_generation" : "image_generation", need.mask ? "mask" : undefined, { ...need, usage });
+  return d ? { provider: d.provider, model: d.model, reason: d.reason } : null;
+}
+
+export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | null {
+  const d = routeMedia("video_generation", undefined, usage ? { usage } : undefined);
   return d && (d.provider === "google" || d.provider === "fal") ? d.provider : null;
 }
 
@@ -310,10 +342,12 @@ export function videoProviderAvailable(): "google" | "fal" | null {
  * `composite` : image PNG du cadre avec le produit déjà placé ;
  * `productMask` : PNG de même taille, opaque là où se trouve le produit.
  */
-async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask: Buffer; prompt: string; size: "1024x1024" | "1024x1536" | "1536x1024" }) {
+async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask: Buffer; prompt: string; size: "1024x1024" | "1024x1536" | "1536x1024"; usage?: MediaUsage }) {
   const key = activeProviderKey("openai");
   if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
-  routeMedia("image_generation", "mask"); // Router V2 : capacité vérifiée, décision tracée avec la génération.
+  // Router V2 : capacité vérifiée pour l'usage (retouches produit, publicités), décision tracée avec la génération.
+  const d = routeMedia("image_generation", "mask", { usage: input.usage ?? "product_edit" });
+  if (mediaExclude.getStore() && d?.provider !== "openai") throw new PermanentError(L("Aucun secours capable de retoucher par masque.", "No backup able to do mask editing."));
   const model = pickModel("openai", "image");
   const scenePrompt = `${input.prompt} Keep the existing product exactly as it is (shape, colours, label, proportions); only paint the surrounding environment, surface and lighting. The product stands on the surface with a natural contact shadow, the camera height and perspective match the product photo. No text, no extra products.`;
   gate(ctx, openaiImageMax(model, { prompt: scenePrompt, images: 2, size: input.size, quality: "high" }), "image", "openai", model);
@@ -353,31 +387,15 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
   return Buffer.from(b64, "base64");
 }
 
-/** Décor vide généré par Gemini (le produit réel est composé ensuite). */
-async function geminiPlateImpl(ctx: Ctx, input: { prompt: string; reference?: Buffer; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
-  const key = activeProviderKey("google");
-  if (!key) throw new UserFacingError(L("Aucune clé Google Gemini configurée pour la génération d'images.", "No Google Gemini key configured for image generation."));
-  routeMedia("image_generation"); // Router V2 : capacité vérifiée, décision tracée avec la génération.
-  const model = pickModel("google", "image");
-  // Aucune image du produit n'est envoyée : les modèles d'image la redessinent presque toujours dans le décor,
-  // ce qui donnerait un second produit (réinventé) à côté du vrai. Le décor est décrit par le texte seul.
-  const parts: any[] = [{ text: `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.` }];
-  const gmax = geminiImageMax(model, { prompt: parts[0].text, images: 0 });
-  gate(ctx, gmax, "image", "google", model);
-  const r = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: input.aspect } } }),
-  });
-  if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel.")));
-  if (r.status === 400) throw refusal(new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300)));
-  if (!r.ok) throw refusal(new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`));
-  const j: any = await r.json();
-  const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
-  const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
-  if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: gmax, estimated: true, idempotencyKey: ctx.usageKey });
-  return Buffer.from(b64, "base64");
+/**
+ * Décor vide généré par le modèle de l'usage (images produit, publicités), quel que soit le fournisseur ; le produit
+ * réel est composé ensuite par le studio. Aucune image du produit n'est envoyée : les modèles d'image la redessinent
+ * presque toujours dans le décor, ce qui donnerait un second produit (réinventé) à côté du vrai.
+ */
+async function productPlateImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3"; usage?: MediaUsage }) {
+  const text = `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.`;
+  const aspect = input.aspect === "2:3" ? "4:5" : input.aspect;
+  return generateImageImpl(ctx, { text, aspect, reference: null, quality: "high", usage: input.usage ?? "product_image" });
 }
 
 /**
@@ -385,10 +403,10 @@ async function geminiPlateImpl(ctx: Ctx, input: { prompt: string; reference?: Bu
  * Consignes d'honnêteté ajoutées à chaque demande : aucun visage identifiable présenté comme un client,
  * aucun texte, logo, diplôme, certificat ni récompense. `reference` : photo réelle de l'activité (ambiance seulement).
  */
-export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null }) {
+export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage }) {
   const text = `${input.prompt}
 Editorial photograph that conveys the atmosphere of this activity, natural light, realistic, premium. Tools, materials, the work and the place tell the story. No people, no hands, no faces (the most frequent source of defects). No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
-  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high" });
+  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene" });
 }
 
 /**
@@ -398,7 +416,7 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
 export async function logoSymbolImage(ctx: Ctx, input: { concept: string; reference?: Buffer | null }) {
   const text = `Design a single flat vector-style logo symbol (brand mark): ${input.concept}
 Rules: one solid black shape (or up to three bold black shapes) on a pure white background, centered, generous margins. Bold, simple geometric forms that stay recognizable at 16 pixels: thick strokes, no thin lines, no gradients, no shading, no texture, no outlines of the canvas, no 3D, no mockup. Absolutely no text, no letters, no numbers, no words. Think like a senior brand designer: a meaningful sign drawn from the idea, not a literal illustration of an object. Timeless, distinctive, not a cliché of the sector.${input.reference ? " The reference photo is context only: do not copy it." : ""}`;
-  return generateImage(ctx, { text, aspect: "1:1", reference: input.reference ?? null, quality: "medium" });
+  return generateImage(ctx, { text, aspect: "1:1", reference: input.reference ?? null, quality: "medium", usage: "logo" });
 }
 
 /**
@@ -410,12 +428,12 @@ export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: stri
 ${input.colors?.length ? `Colors: use ONLY the brand's colors ${input.colors.join(", ")} (plus white or near-black if needed) — the logo must match the brand guidelines.
 ` : ""}Text in the logo, spelled EXACTLY, same accents: the name "${input.name}"${input.descriptor ? ` and, smaller, the trade line "${input.descriptor}"` : ""}. No other words, no slogan, no fake letters.
 Quality bar: a modern, professional logo for a real small business — original, made for this brand only, never a copy of an existing logo. Follow the composition and style chosen in the brief. Crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo background, no frame around the canvas.`;
-  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true, need: { text: true, transparent: true } });
+  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
 }
 
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */
-async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; need?: Partial<MediaNeed> }) {
-  const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...input.need });
+async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed> }) {
+  const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
   const text = input.text;
   const ref = input.reference ? await sharp(input.reference).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
@@ -472,10 +490,11 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
 /** Équivalent « rapide » d'un modèle Veo (forfait en qualité standard). */
 const FAST_VEO: Record<string, string> = { "veo-3.0-generate-001": "veo-3.0-fast-generate-001", "veo-3.1-generate-preview": "veo-3.1-fast-generate-preview" };
 
-async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string }, onWait?: (msg: string) => void) {
+async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) {
   const key = activeProviderKey("google");
   if (!key) throw new UserFacingError(L("Aucune clé Google configurée pour la vidéo.", "No Google key configured for video."));
-  routeMedia("video_generation", undefined, { audio: !!input.people, people: !!input.people }); // Router V2 : capacité vérifiée, décision tracée.
+  // Router V2 : usage (vidéo produit ou UGC), capacité vérifiée, décision tracée.
+  routeMedia("video_generation", undefined, { usage: input.usage ?? (input.people ? "ugc_video" : "product_video"), audio: !!input.people, people: !!input.people });
   // Modèle explicite (Video Engine V2, s'il est bien un modèle Veo du catalogue), sinon le choix du routage.
   const chosen = input.model && mediaModel("google", input.model)?.adapter === "veo" ? input.model : pickModel("google", "video");
   // Forfait « Créer » : vidéos en qualité standard (modèle rapide) ; les autres forfaits gardent le modèle réglé.
@@ -524,7 +543,8 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
  * `persona` (image du premier plan) garde la même personne et le même décor d'un plan à l'autre.
  */
 async function ugcFrameImpl(ctx: Ctx, input: { prompt: string; product: Buffer; persona?: Buffer; aspect: "9:16" | "16:9"; subject?: "product" | "service" }) {
-  const provider = imageProviderAvailable({ references: input.persona ? 2 : 1, people: true });
+  // Image de départ d'un plan UGC : usage « Images produit » (photo du produit réel en référence, une personne).
+  const provider = imageProviderAvailable({ usage: "product_image", references: input.persona ? 2 : 1, people: true });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai) pour créer la personne de la vidéo UGC.", "No image provider configured (Google Gemini, OpenAI or fal.ai) to create the person in the UGC video."));
   const product = await sharp(input.product).flatten({ background: "#ffffff" }).resize(1024, 1024, { fit: "contain", background: "#ffffff" }).jpeg({ quality: 90 }).toBuffer();
   const persona = input.persona ? await sharp(input.persona).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer() : null;
@@ -587,10 +607,10 @@ export function veoPersonGeneration(model: string, people: boolean): "allow_adul
 }
 
 /** Plan vidéo via fal.ai (file d'attente officielle). */
-async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; seconds?: number; model?: string }, onWait?: (msg: string) => void) {
+async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) {
   const key = activeProviderKey("fal");
   if (!key) throw new UserFacingError(L("Aucune clé fal.ai configurée.", "No fal.ai key configured."));
-  routeMedia("video_generation"); // Router V2 : capacité vérifiée, décision tracée avec la génération.
+  routeMedia("video_generation", undefined, { usage: input.usage ?? "product_video" }); // Router V2 : usage et capacité vérifiés, décision tracée.
   const model = input.model && mediaModel("fal", input.model)?.adapter === "fal_video" ? input.model : pickModel("fal", "video");
   // Durées acceptées par le modèle (Kling 2.1 : 5 ou 10 s ; Kling 3 : 3 à 15 s) : la durée retenue est demandée,
   // réservée et comptée (jamais moins que facturé).
@@ -660,13 +680,14 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
  * Plan vidéo IA chez le fournisseur choisi, avec relais vers le secours compatible si le principal échoue sans coût.
  * `provider` : celui annoncé à l'appelant (videoProviderAvailable / Video Engine V2).
  */
-export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string }, onWait?: (msg: string) => void): Promise<Buffer> {
-  const run = (p: string, model?: string) => (p === "google" ? veoClip(ctx, { ...input, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, model }, onWait));
+export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
+  const usage: MediaUsage = input.usage ?? (input.people ? "ugc_video" : "product_video");
+  const run = (p: string, model?: string) => (p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
   try {
     return await run(provider, input.model);
   } catch (e) {
     const f = e as { mediaReleased?: boolean; mediaFailed?: string | null };
-    const b = usableBackup("video");
+    const b = usableBackup("video", usage);
     const bm = b ? mediaModel(b.provider, b.model) : null;
     // Secours seulement s'il est compatible (son natif pour l'UGC) et différent du modèle en échec.
     if (!f?.mediaReleased || !b || !bm || `${b.provider}:${b.model}` === f.mediaFailed || (input.people && !bm.caps.audio && provider === "google")) throw e;
@@ -710,9 +731,11 @@ export function falRefusal(status: number, body: string): string {
   return L(`Clé fal.ai refusée (${status}${detail ? ` : ${detail}` : ""}). Vérifiez qu'elle est copiée en entier et qu'elle n'a pas été supprimée sur fal.ai.`, `fal.ai key rejected (${status}${detail ? `: ${detail}` : ""}). Check it is copied in full and has not been deleted on fal.ai.`);
 }
 
-export const openaiScene = traced("image_generation", openaiSceneImpl);
-export const geminiPlate = traced("image_generation", geminiPlateImpl);
+export const openaiScene = withMediaBackup("image", traced("image_generation", openaiSceneImpl), { usage: (_c, i) => i.usage ?? "product_edit", providers: ["openai"] });
+export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
+/** Ancien nom (décor vide) : même génération, par le modèle de l'usage. */
+export const geminiPlate = productPlate;
 export const veoClip = traced("video_generation", veoClipImpl);
-export const ugcFrame = withMediaBackup("image", traced("image_generation", ugcFrameImpl));
+export const ugcFrame = withMediaBackup("image", traced("image_generation", ugcFrameImpl), { usage: () => "product_image" });
 export const falClip = traced("video_generation", falClipImpl);
-const generateImage = withMediaBackup("image", traced("image_generation", generateImageImpl));
+const generateImage = withMediaBackup("image", traced("image_generation", generateImageImpl), { usage: (_c, i) => i.usage });

@@ -6,7 +6,7 @@
  *  - trace : appel texte → brain_scope / brain_hash / brain_version ; génération d'image écrite depuis le Brain → idem ;
  *  - stable / volatil : créations récentes jamais dans le stable, seulement dans le volatil des scopes qui en ont besoin.
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 const sent: any[] = [];
 vi.mock("@anthropic-ai/sdk", () => {
@@ -130,6 +130,10 @@ describe("Project Brain 2C — contextes ciblés et traces", async () => {
     const v = view(p, "image");
     const brain = { scope: v.label, hash: v.hash, version: v.brainVersion };
     const { geminiPlate } = await import("@/lib/ai/media-providers");
+    // Décor vide demandé au modèle choisi pour « Images produit » (ici Gemini, réglé dans l'administration).
+    // (remis à zéro en fin de test : la base est partagée avec les autres fichiers de tests)
+    (await import("@/lib/settings")).setJsonSetting("ai.media.usage", { product_image: { primary: "google:gemini-2.5-flash-image" } });
+    onTestFinished(async () => (await import("@/lib/settings")).setJsonSetting("ai.media.usage", {}));
     const png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
     fetchImpl = async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: png } }] } }] }), { status: 200 });
     await fr(() => geminiPlate({ userId: u.id, projectId: p.id, usageKey: `img-ok-${Date.now()}`, brain }, { prompt: "set", aspect: "1:1" }));
