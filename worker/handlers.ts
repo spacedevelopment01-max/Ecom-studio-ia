@@ -57,7 +57,11 @@ export const handlers: Record<string, Handler> = {
     return { valid: list.length, summary: cutoutSummary(project.id) };
   },
 
-  "images.generate": async (ctx) => generateImageSet(ctx, ctx.payload.projectId, ctx.payload.options ?? {}),
+  /** Jeu d'images : Image Engine V2 (composants locaux, photos libres, génération contrôlée). */
+  "images.generate": async (ctx) => {
+    const { runImageSetV2 } = await import("../src/lib/image-v2/set");
+    return runImageSetV2(ctx, ctx.payload.projectId);
+  },
   "image.single": async (ctx) => generateSingleImage(ctx, ctx.payload.projectId, ctx.payload.request),
   /** Publicités V2 : angles, textes contrôlés, créations composées (Image V2), barrière publicitaire. */
   "ads.v2": async (ctx) => {
