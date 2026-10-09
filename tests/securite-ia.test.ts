@@ -30,7 +30,7 @@ vi.mock("@anthropic-ai/sdk", () => {
       const p = Promise.resolve({ model: "claude-sonnet-5-5", stop_reason: "end_turn", content: [{ type: "text", text: reply }], usage: { input_tokens: 10, output_tokens: 10 } });
       return { finalMessage: () => p };
     }
-    messages = { stream: (p: any) => this.stream(p) };
+    messages = { stream: (p: any) => this.stream(p), countTokens: async (p: any) => ({ input_tokens: Math.ceil(JSON.stringify(p).length / 3) }) };
     beta = { messages: { stream: (p: any) => this.stream(p) } };
   }
   return { default: Anthropic, Anthropic };

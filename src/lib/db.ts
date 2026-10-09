@@ -320,6 +320,8 @@ CREATE TABLE IF NOT EXISTS ai_reservations (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   amount INTEGER NOT NULL,
+  res_monthly INTEGER NOT NULL DEFAULT 0,
+  res_topup INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL,
   task TEXT,
   provider TEXT,
@@ -828,6 +830,9 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   // Règle budgétaire (40 % du HT du forfait, 50 % du HT des packs) : coûts maximaux réservés, version de la règle.
   ["wallets", "reserved", "INTEGER NOT NULL DEFAULT 0"],
   ["wallets", "rule_version", "INTEGER NOT NULL DEFAULT 0"],
+  ["wallets", "reserved_topup", "INTEGER NOT NULL DEFAULT 0"],
+  ["ai_reservations", "res_monthly", "INTEGER NOT NULL DEFAULT 0"],
+  ["ai_reservations", "res_topup", "INTEGER NOT NULL DEFAULT 0"],
   // Décompte d'un quota : période et répartition (mois / packs), pour pouvoir le rendre (image refusée au contrôle).
   ["quota_events", "period_start", "INTEGER"],
   ["quota_events", "from_month", "INTEGER"],

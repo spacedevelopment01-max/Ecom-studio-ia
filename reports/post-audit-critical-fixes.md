@@ -127,14 +127,8 @@ les moteurs V1 et V2.
 
 ## 7. Risques résiduels (honnêtement)
 
-- **Coût maximal du texte** : estimé à partir du nombre de caractères (1 jeton ≈ 2,5 caractères, majoré de 25 %) et du
-  plafond de sortie. Une entrée exceptionnellement « dense » en jetons pourrait dépasser l'estimation : le dépassement
-  n'est alors jamais débité au client (solde 0) mais il est réellement payé au fournisseur — il est **inscrit et
-  signalé** (`overrun`), pas empêché. Sur de vrais appels, à mesurer.
-- **Prix des fournisseurs** : la protection repose sur les tarifs saisis dans l'administration et le taux USD→EUR ;
-  un tarif faux fausse les plafonds.
-- **Modèle de repli du fournisseur** (« server-side fallback ») plus cher que le modèle demandé : couvert par le même
-  mécanisme de dépassement signalé.
+- **Coût maximal du texte, tarifs, modèle de repli** : traités après coup, voir la section 10 « Validation finale du
+  plafond fournisseur » (comptage officiel des jetons, repli serveur supprimé, tarifs périmés bloqués).
 - **Appels incertains** : le coût maximal est retenu jusqu'à réconciliation **manuelle** (fonction prête, pas encore
   d'écran d'administration).
 - **TVA** : hypothèse 20 % (France) ; les prix sont saisis TTC dans `plans.ts`.
@@ -169,3 +163,119 @@ Changements de comportement visibles, voulus :
 - dans `e2e-browser`, le compte de test (premier compte, administrateur, sans forfait) passe par la **découverte
   gratuite** : visuels, vidéo et calendrier ne sont plus faits d'office pour lui (création en 6 s au lieu de 55 s).
   Pour tester en payant, attribuer un forfait dans Administration › Clients.
+
+## 10. Validation finale du plafond fournisseur
+
+Objectif : que la dépense **réellement facturée par les fournisseurs** reste ≤ 40 % du prix HT de l'abonnement et
+≤ 50 % du prix HT des packs — et pas seulement qu'un relevé interne plafonné à 0 le fasse croire. Aucun appel payant
+n'a été lancé pour cette validation (fournisseurs simulés dans les tests).
+
+### Principe
+
+Avant chaque envoi, le **coût maximal que le fournisseur peut facturer pour cette requête** est réservé sur le budget
+(transaction atomique). Si ce maximum ne peut pas être calculé de façon fiable, la requête **n'est pas envoyée**.
+Le relevé interne n'est donc qu'un reflet : c'est la borne de chaque requête envoyée qui protège la marge.
+
+### Ce qui a changé
+
+| Point demandé | Avant | Maintenant |
+|---|---|---|
+| Texte : entrée | estimée d'après les caractères (1 jeton ≈ 2,5 caractères) | **nombre exact** de jetons donné par Anthropic pour ce modèle (`count_tokens`, gratuit), + octets du schéma de sortie imposé, + marge 2 % + 512 jetons |
+| Texte : sortie | `max_tokens` | `max_tokens` (la réflexion est comptée dedans, Anthropic ne peut pas le dépasser), vérifié ≤ sortie maximale du modèle |
+| Texte : tarifs d'entrée | tarif d'entrée ×1,25 | inchangé : tout est compté au tarif d'écriture en cache (le plus cher, ×1,25) |
+| Entrée très longue | non contrôlée | **bloquée** au-delà de 200 000 jetons (100 000 pour Haiku 5.5) : au-delà, un autre barème peut s'appliquer |
+| Modèle aux limites inconnues | accepté s'il avait un tarif | **bloqué** (table `TEXT_MODEL_LIMITS`) |
+| Repli serveur (`fallbacks: "default"`) | actif : Anthropic pouvait servir un autre modèle, **plus cher**, non couvert | **supprimé** |
+| Relances | SDK Anthropic : 3, SDK OpenAI : 2, invisibles pour la réservation | SDK : **0** ; relances maison (2 au plus) **dans la même réservation**, uniquement sur une réponse d'erreur HTTP (rien de produit ni facturé) ; coupure en cours de réponse → incertain, jamais relancée |
+| Modèle servi ≠ modèle demandé | compté au prix du modèle servi s'il était connu | compté **au plus cher des deux** ; débit jamais au-delà de la réservation, excédent signalé |
+| Tarifs jamais confirmés ou vérifiés il y a plus de 90 jours | simple alerte | **toute génération payante bloquée** jusqu'à « J'ai vérifié les tarifs » (Administration) |
+| Change USD → EUR | taux saisi | taux saisi **+ 5 %** sur chaque réservation |
+| Veo | réservé et compté sur la durée demandée (ex. 4 s) alors que Veo 3 produit et facture 8 s | **au moins 8 s** réservées et comptées |
+| fal (Kling) | durée envoyée telle quelle (Kling n'accepte que 5 ou 10 s) | durée **arrondie au-dessus à 5 ou 10 s**, la même valeur est envoyée, réservée et comptée ; autre modèle fal : **bloqué** |
+| OpenAI images | forfait de 6 300 jetons de sortie, entrée estimée | sortie par taille et qualité (tableau OpenAI), entrée ≤ octets du texte + 1 500 jetons par image envoyée, `n: 1` explicite ; taille inconnue : bloquée |
+| Gemini images | prix de l'image seulement | prix de l'image + jetons d'entrée (texte + 1 300 par image de référence) |
+| Budgets abonnement / packs | une seule réserve commune | **deux réserves distinctes** : chaque réservation note sa part sur l'abonnement et sa part sur les packs ; règlement, libération et réconciliation rendent chaque part à son budget |
+| Bouton « Tester la clé » Anthropic | petite génération payante | comptage de jetons (**gratuit**) |
+
+### Opérations garanties (sous réserve des conditions ci-dessous)
+
+- **Texte (Anthropic)** : le maximum facturable est entièrement déterminé par des grandeurs que le fournisseur garantit
+  lui-même : jetons d'entrée comptés par son propre outil, plafond `max_tokens` qu'il applique, aucun outil payant
+  côté serveur, aucun repli vers un autre modèle, aucune relance invisible. **Démontré** dans la limite de deux
+  hypothèses : (1) les consignes que le fournisseur ajoute pour le format de sortie et la réflexion restent sous la
+  marge prévue (octets du schéma + 2 % + 512 jetons) — documentées comme faibles, **non chiffrées** par Anthropic ;
+  (2) les tarifs saisis sont justes.
+- **Appels simultanés** : réservation atomique ; jamais plus que le disponible réservé (testé).
+- **Relances, délais, coupures, processus arrêté** : chaque requête qui a pu être facturée est couverte par une
+  réservation ; un résultat incertain retient le maximum ; une réservation orpheline est retenue au maximum après 2 h.
+- **Abonnement et packs** : aucune opération ne peut réserver plus que la somme des deux restes ; chaque part revient
+  à son budget (testé).
+
+### Opérations bloquées (plutôt que d'estimer)
+
+Tarif inconnu ou non « jetons » pour un modèle de texte ; tarifs non confirmés ou périmés (> 90 jours) ; modèle de
+texte aux limites inconnues ; comptage des jetons impossible (erreur autre qu'une saturation passagère) ; entrée
+au-delà de 200 000 jetons ; taille d'image OpenAI hors tableau ; modèle vidéo fal autre que Kling ; génération hors
+suivi de réservation.
+
+### Bornes documentées mais non démontrables de notre côté (risques résiduels)
+
+- **Images OpenAI** : la borne des jetons d'image d'entrée (1 500 par image) suit la méthode de calcul publiée pour
+  la vision (tuiles de 512 px) ; OpenAI ne la garantit pas explicitement pour `gpt-image-1`. Marge de 25 % en plus.
+- **Gemini images** : un seul visuel est attendu ; si Gemini renvoyait plusieurs images dans une réponse, chacune
+  serait facturée. Marge de 25 %, non suffisante en théorie pour 2 images.
+- **Veo** : on suppose qu'un appel produit **une** vidéo de **8 s au plus** (comportement par défaut documenté de
+  Veo 3, aucun paramètre de durée ni de nombre n'est envoyé). Un changement de ce comportement par Google ne serait
+  pas détecté avant la facture.
+- **fal** : prix à la seconde de Kling saisi dans l'administration ; fal ne fournit pas le coût réel dans la réponse.
+- **Tarifs et change** : la vérification tous les 90 jours est **imposée**, mais l'exactitude des chiffres saisis
+  dépend de vous. Une hausse de prix entre deux vérifications ou une baisse de l'euro de plus de 5 % ne serait pas
+  couverte.
+- **Réconciliation** : les appels incertains restent comptés au maximum tant que la facture n'a pas été rapprochée
+  (fonction prête, pas d'écran).
+- **Seuil de 200 000 jetons** : choisi par prudence ; Anthropic n'annonce pas de barème « long contexte » pour les
+  modèles utilisés, mais ne le garantit pas non plus. Les requêtes du studio sont très en dessous.
+
+### Fichiers modifiés (cette validation)
+
+`src/lib/ai/llm.ts` (coût maximal par `count_tokens`, plus de repli serveur, SDK sans relance, relances maison,
+modèle servi compté au plus cher, test de clé gratuit) · `src/lib/ai/config.ts` (`assertPricesFresh`,
+`TEXT_MODEL_LIMITS`, `FX_SAFETY`, entrée Gemini) · `src/lib/ai/media-providers.ts` (bornes OpenAI/Gemini, Veo ≥ 8 s,
+fal 5/10 s, SDK OpenAI sans relance, `n: 1`) · `src/lib/billing.ts` et `src/lib/db.ts` (réserves séparées
+abonnement / packs) · `src/app/api/admin/test/route.ts`, `src/components/admin.tsx` (textes) ·
+`vitest.config.ts` (tarifs « confirmés » pour les tests) · tests : `tests/budget-ia.test.ts` + simulateur de comptage
+de jetons ajouté aux 10 fichiers de test qui simulent Anthropic.
+
+### Tests ajoutés (`tests/budget-ia.test.ts`, bloc « plafond fournisseur »)
+
+| Cas | Vérifié |
+|---|---|
+| Entrée très dense (150 000 jetons pour quelques caractères) | réservation = jetons comptés, même modèle, même système, mêmes messages que l'envoi |
+| Entrée de 250 000 jetons | bloquée, aucun envoi, aucune réservation |
+| Comptage impossible / saturé | bloqué / erreur relançable, aucun envoi |
+| Modèle plus cher (Fable 5.1) | réservation au tarif Fable (> 4× Sonnet) ; modèle tarifé mais aux limites inconnues : bloqué |
+| Repli et modèle servi différent | aucun `fallbacks` ni `betas` envoyé ; réponse d'un autre modèle comptée à son tarif, réglée dans la réservation |
+| Relances | 429 : 3 essais dans **une** réservation, rendue ; coupure en cours de réponse : 1 essai, incertain |
+| Tarifs périmés (91 jours) ou jamais confirmés | texte et image bloqués, aucune requête réseau |
+| Veo 4 s demandées | 8 s réservées |
+| fal 6 s demandées | 10 s envoyées et réservées ; autre modèle fal bloqué |
+| OpenAI images | borne par taille et qualité ; taille inconnue bloquée |
+| Budgets séparés | répartition, refus au-delà des restes, règlement et libération par budget |
+
+Résultats : `npx tsc --noEmit` OK · `npx vitest run` **991/991** · `npm run build` OK. Parcours navigateur **non
+rejoués** pour cette étape (seuls deux textes de l'administration changent à l'écran).
+
+### Verdict
+
+- **Texte (Anthropic)** — l'essentiel de la dépense : le plafond strict **peut être respecté**, avec une démonstration
+  qui ne dépend que du comptage officiel, du plafond de sortie appliqué par Anthropic et de tarifs justes. Seule la
+  petite part de consignes ajoutées par le fournisseur est couverte par une marge et non par un chiffre publié.
+- **Images et vidéos** : plafond respecté **si les fournisseurs se comportent comme documenté** (une image ou une vidéo
+  par appel, 8 s pour Veo, tarifs saisis exacts). Ce n'est **pas une garantie absolue** : aucun de ces fournisseurs ne
+  permet de fixer côté requête un montant maximal facturable.
+- Je ne peux donc pas annoncer de garantie absolue sur l'ensemble. La garantie est **forte pour le texte**,
+  **conditionnelle pour les médias**, et dépend partout de **tarifs vérifiés** — vérification désormais imposée.
+- **À faire de votre côté après fusion** : Administration › Modèles et tarifs → comparer les tarifs et le taux
+  USD → EUR avec les pages officielles, puis cliquer « J'ai vérifié les tarifs ». Sans cela, **toutes les
+  générations payantes restent bloquées** (le moteur local gratuit continue de fonctionner).
+

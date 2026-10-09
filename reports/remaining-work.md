@@ -216,6 +216,9 @@ projet archivé inutilisable ; passe-droits administrateur retirés. Rapport : `
 Reste à faire (issu de `reports/general-checkup.md`, non traité dans cette étape) :
 - Coûts réels jamais mesurés face aux maximums réservés (vraies API) ; écran d'administration de réconciliation des
   appels incertains ; alerte à 80 % du budget jamais envoyée.
+- Plafond fournisseur (section 10 du rapport post-audit) : texte borné par le comptage officiel des jetons, repli
+  serveur supprimé, tarifs périmés bloqués. Restent des bornes seulement documentées pour les médias (images OpenAI
+  et Gemini, durée Veo, prix fal) et l'exactitude des tarifs saisis.
 - « Suite de la création » recrée un calendrier V1 (doublon reproduit) ; tout nouveau projet reçoit un calendrier V1.
 - Moteurs V1 encore utilisés par la création complète (visuels, vidéo, textes, logo, calendrier), les onglets Images,
   Vidéos et UGC, et les étapes `image_generate`, `copy`, `logo`, `blog` de la demande unique (étiquetées V2).

@@ -208,7 +208,7 @@ function PricingAlert({ data, post, onOpen }: { data: Overview; post: (b: Record
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warn/30 bg-warn-soft p-4 text-sm text-warn">
           <p>
             <span className="font-semibold">{age === null ? t("Tarifs des fournisseurs jamais confirmés.", "Provider prices have never been confirmed.") : t(`Tarifs vérifiés il y a ${age} jours.`, `Prices checked ${age} days ago.`)}</span>{" "}
-            {t(`Si un fournisseur a augmenté ses prix, le budget IA interne des clients (garde-fou de marge, jamais affiché) sous-estime la dépense réelle. Comparez avec les pages officielles (OpenAI, Google, Anthropic, fal.ai) et le taux USD → EUR, tous les ${reviewDays} jours.`, `If a provider has raised its prices, the customers' internal AI budget (a margin safeguard, never shown) underestimates the actual spend. Compare with the official pricing pages (OpenAI, Google, Anthropic, fal.ai) and the USD → EUR rate every ${reviewDays} days.`)}
+            {t(`Les générations payantes sont suspendues tant que les tarifs ne sont pas confirmés : un tarif périmé sous-estimerait la dépense réelle. Comparez avec les pages officielles (OpenAI, Google, Anthropic, fal.ai) et le taux USD → EUR, tous les ${reviewDays} jours.`, `Paid generations are paused until prices are confirmed: an outdated price would underestimate the actual spend. Compare with the official pricing pages (OpenAI, Google, Anthropic, fal.ai) and the USD → EUR rate every ${reviewDays} days.`)}
           </p>
           <div className="flex gap-2">
             <Button size="sm" variant="secondary" onClick={onOpen}>{t("Voir les tarifs", "View prices")}</Button>

@@ -17,7 +17,7 @@ import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
-import { activeProviderKey, requirePrice, routeFor, usdToEur } from "./config";
+import { activeProviderKey, FX_SAFETY, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
@@ -83,7 +83,7 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   assertAiAllowed(ctx.userId);
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
-  const max = Math.ceil(micro * MEDIA_MAX_FACTOR * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+  const max = Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
   assertUnderCostCap(max);
   const t = mediaTrace.getStore();
   // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
@@ -142,9 +142,47 @@ function cost(provider: string, model: string, units: { input?: number; output?:
   const p = requirePrice(provider, model);
   let usd = 0;
   if (p.unit === "tokens") usd = ((units.input ?? 0) * p.inputPerM + (units.imageIn ?? 0) * (p.imageInputPerM ?? p.inputPerM) + (units.output ?? 0) * p.outputPerM + (units.imageOut ?? 0) * (p.imageOutputPerM ?? p.outputPerM)) / 1e6;
-  if (p.unit === "image") usd = (units.images ?? 1) * p.perImage;
+  // Image au forfait (Gemini) : prix de l'image produite + jetons d'entrée (texte, images de référence).
+  if (p.unit === "image") usd = (units.images ?? 1) * p.perImage + ((units.input ?? 0) * (p.inputPerM ?? 0)) / 1e6;
   if (p.unit === "video_second") usd = (units.seconds ?? 0) * p.perSecond;
   return { micro: Math.round(usd * usdToEur() * EUR), estimated: p.unit !== "tokens" };
+}
+
+/**
+ * Bornes documentées des générations (coût MAXIMAL réservé) :
+ *  - OpenAI gpt-image-1 : jetons de sortie par taille et qualité (tableau du fournisseur, au plus 6 240 en « high »),
+ *    jetons d'image d'entrée ≤ 1 500 par image (85 + 170 par tuile de 512 px après mise à l'échelle 2 048 / 768),
+ *    jetons de texte ≤ octets du texte ; une seule image demandée (`n: 1`).
+ *  - Gemini : une image au forfait + entrée ≤ octets du texte + 1 300 jetons par image de référence (tuiles 768 px).
+ *  - Veo : facturé à la seconde de vidéo produite ; Veo 3 produit 8 s par défaut → au moins 8 s réservées et comptées.
+ *  - fal Kling : durée 5 ou 10 s seulement → arrondie au-dessus, la même valeur est demandée, réservée et comptée.
+ */
+const OPENAI_OUT_TOKENS: Record<string, Record<string, number>> = {
+  high: { "1024x1024": 4160, "1024x1536": 6240, "1536x1024": 6208 },
+  medium: { "1024x1024": 1056, "1024x1536": 1584, "1536x1024": 1568 },
+};
+const OPENAI_IMAGE_IN_TOKENS = 1500;
+const GEMINI_IMAGE_IN_TOKENS = 1300;
+export const VEO_MIN_BILLED_SECONDS = 8;
+const bytes = (t: string) => Buffer.byteLength(t, "utf8");
+
+export function openaiImageMax(model: string, o: { prompt: string; images: number; size: string; quality: "medium" | "high" }) {
+  const out = OPENAI_OUT_TOKENS[o.quality]?.[o.size];
+  if (!out) throw new PermanentError(L(`Taille d'image ${o.size} sans borne de coût connue : génération bloquée.`, `Image size ${o.size} has no known cost bound: generation blocked.`));
+  return cost("openai", model, { input: bytes(o.prompt), imageIn: OPENAI_IMAGE_IN_TOKENS * o.images, imageOut: out }).micro;
+}
+
+export function geminiImageMax(model: string, o: { prompt: string; images: number }) {
+  return cost("google", model, { images: 1, input: bytes(o.prompt) + GEMINI_IMAGE_IN_TOKENS * o.images }).micro;
+}
+
+/** Secondes facturées par Veo : jamais moins que la durée produite par défaut. */
+export const veoBilledSeconds = (requested?: number) => Math.max(VEO_MIN_BILLED_SECONDS, Math.ceil(requested ?? VEO_MIN_BILLED_SECONDS));
+
+/** Durée Kling (5 ou 10 s) ; autre modèle fal : durée non bornée de façon fiable → bloqué. */
+export function falBilledSeconds(model: string, requested?: number) {
+  if (!model.startsWith("fal-ai/kling-video/")) throw new PermanentError(L(`Modèle vidéo fal ${model} sans borne de durée connue : génération bloquée.`, `fal video model ${model} has no known duration bound: generation blocked.`));
+  return (requested ?? 5) <= 5 ? 5 : 10;
 }
 
 /**
@@ -192,7 +230,8 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
   routeMedia("image_generation", "mask"); // Router V2 : capacité vérifiée, décision tracée avec la génération.
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  gate(ctx, cost("openai", model, { input: 400, imageIn: 1500, imageOut: 6300 }).micro, "image", "openai", model);
+  const scenePrompt = `${input.prompt} Keep the existing product exactly as it is (shape, colours, label, proportions); only paint the surrounding environment, surface and lighting. The product stands on the surface with a natural contact shadow, the camera height and perspective match the product photo. No text, no extra products.`;
+  gate(ctx, openaiImageMax(model, { prompt: scenePrompt, images: 2, size: input.size, quality: "high" }), "image", "openai", model);
   // Le masque OpenAI : zones transparentes = zones à peindre. On rend donc
   // transparent tout ce qui n'est pas le produit.
   const { data, info } = await sharp(input.productMask).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -203,7 +242,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
     mask[i * 4 + 3] = a > 8 ? 255 : 0;
   }
   const maskPng = await sharp(mask, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
-  const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
+  const client = new OpenAI({ apiKey: key, maxRetries: 0, timeout: 300_000 });
   let res: any;
   try {
     sent();
@@ -211,7 +250,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
       model,
       image: await toFile(input.composite, "scene.png", { type: "image/png" }),
       mask: await toFile(maskPng, "mask.png", { type: "image/png" }),
-      prompt: `${input.prompt} Keep the existing product exactly as it is (shape, colours, label, proportions); only paint the surrounding environment, surface and lighting. The product stands on the surface with a natural contact shadow, the camera height and perspective match the product photo. No text, no extra products.`,
+      prompt: scenePrompt,
       size: input.size,
       quality: "high",
       n: 1,
@@ -236,10 +275,11 @@ async function geminiPlateImpl(ctx: Ctx, input: { prompt: string; reference?: Bu
   routeMedia("image_generation"); // Router V2 : capacité vérifiée, décision tracée avec la génération.
   const route = routeFor("image_generation");
   const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-  gate(ctx, cost("google", model, { images: 1 }).micro, "image", "google", model);
   // Aucune image du produit n'est envoyée : les modèles d'image la redessinent presque toujours dans le décor,
   // ce qui donnerait un second produit (réinventé) à côté du vrai. Le décor est décrit par le texte seul.
   const parts: any[] = [{ text: `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.` }];
+  const gmax = geminiImageMax(model, { prompt: parts[0].text, images: 0 });
+  gate(ctx, gmax, "image", "google", model);
   const r = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
@@ -252,8 +292,7 @@ async function geminiPlateImpl(ctx: Ctx, input: { prompt: string; reference?: Bu
   const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
   const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
   if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
-  const c = cost("google", model, { images: 1 });
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: gmax, estimated: true, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -300,7 +339,8 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
     const key = activeProviderKey("google")!;
     const route = routeFor("image_generation");
     const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-    gate(ctx, cost("google", model, { images: 1 }).micro, "image", "google", model);
+    const gmax = geminiImageMax(model, { prompt: text, images: ref ? 1 : 0 });
+    gate(ctx, gmax, "image", "google", model);
     const parts: any[] = [{ text }];
     if (ref) parts.push({ inline_data: { mime_type: "image/jpeg", data: ref.toString("base64") } });
     const r = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
@@ -315,21 +355,21 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
     if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
-    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
+    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: gmax, estimated: true, idempotencyKey: ctx.usageKey });
     return Buffer.from(b64, "base64");
   }
   const key = activeProviderKey("openai")!;
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  gate(ctx, cost("openai", model, { input: 300, imageOut: 6300 }).micro, "image", "openai", model);
-  const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
   const size = input.aspect === "16:9" ? "1536x1024" : input.aspect === "1:1" ? "1024x1024" : "1024x1536";
+  gate(ctx, openaiImageMax(model, { prompt: text, images: ref ? 1 : 0, size, quality: input.quality }), "image", "openai", model);
+  const client = new OpenAI({ apiKey: key, maxRetries: 0, timeout: 300_000 });
   let res: any;
   try {
     sent();
     res = ref
-      ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: input.quality } as any)
-      : await client.images.generate({ model, prompt: text, size, quality: input.quality, ...(input.transparent ? { background: "transparent", output_format: "png" } : {}) } as any);
+      ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: input.quality, n: 1 } as any)
+      : await client.images.generate({ model, prompt: text, size, quality: input.quality, n: 1, ...(input.transparent ? { background: "transparent", output_format: "png" } : {}) } as any);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
@@ -355,7 +395,8 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
   // Forfait « Créer » : vidéos en qualité standard (modèle rapide) ; les autres forfaits gardent le modèle réglé.
   const plan = userPlan(ctx.userId);
   const model = plan && PLANS[plan].videoQuality === "fast" && chosen === "veo-3.0-generate-001" ? "veo-3.0-fast-generate-001" : chosen;
-  const seconds = input.seconds ?? 8;
+  // Veo facture la durée produite (8 s par défaut pour Veo 3, la durée demandée n'est pas transmise) : au moins 8 s.
+  const seconds = veoBilledSeconds(input.seconds);
   gate(ctx, cost("google", model, { seconds }).micro, "video", "google", model);
   const jpeg = await sharp(input.image).jpeg({ quality: 90 }).toBuffer();
   const start = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:predictLongRunning`, {
@@ -411,7 +452,8 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     const key = activeProviderKey("google")!;
     const route = routeFor("image_generation");
     const model = route.provider === "google" ? route.model : "gemini-2.5-flash-image";
-    gate(ctx, cost("google", model, { images: 1 }).micro, "image", "google", model);
+    const gmax = geminiImageMax(model, { prompt: text, images: persona ? 2 : 1 });
+    gate(ctx, gmax, "image", "google", model);
     const parts: any[] = [{ text }, { inline_data: { mime_type: "image/jpeg", data: product.toString("base64") } }];
     if (persona) parts.push({ inline_data: { mime_type: "image/jpeg", data: persona.toString("base64") } });
     const r = await providerFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
@@ -426,20 +468,21 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
     if (!b64) throw new Error(L("Gemini n'a pas renvoyé d'image (contenu filtré ou indisponible).", "Gemini returned no image (content filtered or unavailable)."));
-    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: cost("google", model, { images: 1 }).micro, estimated: true, idempotencyKey: ctx.usageKey });
+    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "google", model, unit: "image", quantity: 1, costMicro: gmax, estimated: true, idempotencyKey: ctx.usageKey });
     return Buffer.from(b64, "base64");
   }
   const key = activeProviderKey("openai")!;
   const route = routeFor("image_generation");
   const model = route.provider === "openai" ? route.model : "gpt-image-1";
-  gate(ctx, cost("openai", model, { input: 400, imageIn: 3000, imageOut: 6300 }).micro, "image", "openai", model);
-  const client = new OpenAI({ apiKey: key, maxRetries: 2, timeout: 300_000 });
+  const ugcSize = input.aspect === "9:16" ? "1024x1536" : "1536x1024";
+  gate(ctx, openaiImageMax(model, { prompt: text, images: persona ? 2 : 1, size: ugcSize, quality: "high" }), "image", "openai", model);
+  const client = new OpenAI({ apiKey: key, maxRetries: 0, timeout: 300_000 });
   const images = [await toFile(product, "produit.jpg", { type: "image/jpeg" })];
   if (persona) images.push(await toFile(persona, "personne.jpg", { type: "image/jpeg" }));
   let res: any;
   try {
     sent();
-    res = await client.images.edit({ model, image: images as any, prompt: text, size: input.aspect === "9:16" ? "1024x1536" : "1536x1024", quality: "high" } as any);
+    res = await client.images.edit({ model, image: images as any, prompt: text, size: ugcSize, quality: "high", n: 1 } as any);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
@@ -464,7 +507,8 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
   routeMedia("video_generation"); // Router V2 : capacité vérifiée, décision tracée avec la génération.
   const route = routeFor("video_generation");
   const model = route.provider === "fal" ? route.model : "fal-ai/kling-video/v2.1/pro/image-to-video";
-  const seconds = input.seconds ?? 5;
+  // Kling n'accepte que 5 ou 10 s : la durée arrondie est demandée, réservée et comptée (jamais moins que facturé).
+  const seconds = falBilledSeconds(model, input.seconds);
   gate(ctx, cost("fal", model, { seconds }).micro, "video", "fal", model);
   const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
   const headers = { Authorization: `Key ${key}`, "Content-Type": "application/json" };

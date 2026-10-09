@@ -12,6 +12,8 @@
  * nouveaux moteurs — tous passent par ai/llm.ts ou ai/media-providers.ts) :
  *  1. réservation atomique du coût MAXIMAL de l'appel avant l'envoi (`reserve`) — refusée si le reste disponible,
  *     réservations en cours déduites, ne le couvre pas : deux appels simultanés ne peuvent pas dépasser le budget ;
+ *     la réservation est prise sur le budget de l'abonnement puis sur celui des packs, chaque part étant suivie à part
+ *     (`reserved` / `reserved_topup`) et rendue ou débitée sur son propre budget ;
  *  2. règlement au coût réellement facturé (`settle`) — jamais de solde négatif ; un coût réel supérieur à la
  *     réservation n'est débité qu'à hauteur du reste et le dépassement est signalé (`overrun`) ;
  *  3. appel refusé par le fournisseur avant tout travail : réservation libérée (`release`) ;
@@ -76,8 +78,10 @@ export type Wallet = {
   topup_period_added: number;
   topup_period_used: number;
   alert80_sent_at: number | null;
-  /** Coûts maximaux réservés par les appels en cours (déduits du disponible). */
+  /** Coûts maximaux réservés par les appels en cours, sur le budget de l'abonnement. */
   reserved: number;
+  /** Coûts maximaux réservés par les appels en cours, sur le budget des packs et recharges (distinct). */
+  reserved_topup: number;
   rule_version: number;
 };
 
@@ -129,7 +133,7 @@ function ensureWallet(userId: string): Wallet {
   }
   w = renewIfDue(w);
   if (w.rule_version < BUDGET_RULE_VERSION) w = conformWallet(w);
-  if (w.reserved > 0) sweepStaleReservations(userId);
+  if (w.reserved > 0 || w.reserved_topup > 0) sweepStaleReservations(userId);
   return one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
 }
 
@@ -258,12 +262,16 @@ export type Balance = {
   paused: boolean;
 };
 
+/** Reste non réservé du budget de l'abonnement, et du budget packs/recharges (jamais mélangés). */
+const freeMonthly = (w: Wallet) => Math.max(0, w.monthly_allowance - w.monthly_used - w.reserved);
+const freeTopup = (w: Wallet) => Math.max(0, w.topup_balance - w.reserved_topup);
+
 export function balance(userId: string): Balance {
   const w = ensureWallet(userId);
   const monthlyRemaining = Math.max(0, w.monthly_allowance - w.monthly_used);
-  const available = Math.max(0, monthlyRemaining + Math.max(0, w.topup_balance) - w.reserved);
+  const available = freeMonthly(w) + freeTopup(w);
   const used = w.monthly_used + w.topup_period_used;
-  const capacity = available + w.reserved + used;
+  const capacity = available + w.reserved + w.reserved_topup + used;
   const usedPct = capacity > 0 ? used / capacity : 0;
   return {
     available,
@@ -272,7 +280,7 @@ export function balance(userId: string): Balance {
     usedPct,
     monthlyRemaining,
     topupBalance: w.topup_balance,
-    reserved: w.reserved,
+    reserved: w.reserved + w.reserved_topup,
     periodEnd: w.period_end,
     alert: usedPct >= 0.8,
     paused: available <= 0,
@@ -295,7 +303,7 @@ export function assertCanSpend(userId: string, estimateMicro: number) {
 // ------------------------------------------------------------------ réservations
 
 export type ReservationMeta = { task: string; provider: string; model: string; jobId?: string | null; projectId?: string | null };
-type ReservationRow = { id: string; user_id: string; amount: number; status: "held" | "settled" | "released" | "uncertain" | "reconciled"; debit_monthly: number; debit_topup: number; actual: number | null; created_at: number };
+type ReservationRow = { id: string; user_id: string; amount: number; res_monthly: number; res_topup: number; status: "held" | "settled" | "released" | "uncertain" | "reconciled"; debit_monthly: number; debit_topup: number; actual: number | null; created_at: number };
 
 /**
  * Réserve le coût MAXIMAL d'un appel avant son envoi. Une seule instruction SQL conditionnelle : le reste
@@ -309,29 +317,48 @@ export function reserve(userId: string, maxMicro: number, meta: ReservationMeta)
   if (!Number.isFinite(amount) || amount <= 0) throw new UserFacingError(L("Coût maximal de l'appel d'IA inconnu : opération bloquée par sécurité.", "Maximum cost of the AI call is unknown: operation blocked for safety."));
   ensureWallet(userId);
   const rid = id();
+  // Transaction IMMEDIATE : le verrou d'écriture est pris AVANT la lecture, donc deux processus (site, worker) ne
+  // peuvent jamais réserver le même reste. Le coût est réparti : budget de l'abonnement d'abord, puis packs.
   const ok = tx(() => {
-    const r = run(
-      "UPDATE wallets SET reserved = reserved + ?, updated_at = ? WHERE user_id = ? AND MAX(0, monthly_allowance - monthly_used) + MAX(0, topup_balance) - reserved >= ?",
-      amount,
-      now(),
-      userId,
-      amount,
-    );
-    if (r.changes !== 1) return false;
-    run("INSERT INTO ai_reservations (id, user_id, amount, status, task, provider, model, job_id, project_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)", rid, userId, amount, "held", meta.task, meta.provider, meta.model, meta.jobId ?? null, meta.projectId ?? null, now());
+    const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
+    const fm = freeMonthly(w);
+    const ft = freeTopup(w);
+    if (fm + ft < amount) return false;
+    const onMonthly = Math.min(amount, fm);
+    const onTopup = amount - onMonthly;
+    run("UPDATE wallets SET reserved = reserved + ?, reserved_topup = reserved_topup + ?, updated_at = ? WHERE user_id = ?", onMonthly, onTopup, now(), userId);
+    run("INSERT INTO ai_reservations (id, user_id, amount, res_monthly, res_topup, status, task, provider, model, job_id, project_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", rid, userId, amount, onMonthly, onTopup, "held", meta.task, meta.provider, meta.model, meta.jobId ?? null, meta.projectId ?? null, now());
     return true;
   });
   if (!ok) throw budgetError(userId);
   return rid;
 }
 
-/** Débite `amount` sur le budget mensuel puis sur le budget packs, sans jamais passer sous zéro. Dans une transaction. */
-function debit(userId: string, amount: number) {
+/** Rend la part réservée (sur chaque budget) d'une réservation. Dans une transaction. */
+function unreserve(r: ReservationRow) {
+  run("UPDATE wallets SET reserved = MAX(0, reserved - ?), reserved_topup = MAX(0, reserved_topup - ?), updated_at = ? WHERE user_id = ?", r.res_monthly, r.res_topup, now(), r.user_id);
+}
+
+/**
+ * Débite `amount` : d'abord dans la limite de ce qui avait été réservé sur chaque budget (abonnement, packs), puis,
+ * pour un éventuel excédent, sur le reste libre — sans jamais passer sous zéro. Dans une transaction, APRÈS
+ * `unreserve`. L'excédent impossible à couvrir est renvoyé (`overrun`).
+ */
+function debit(userId: string, amount: number, res: { monthly: number; topup: number } = { monthly: 0, topup: 0 }) {
   const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
-  const fromMonthly = Math.min(amount, Math.max(0, w.monthly_allowance - w.monthly_used));
-  const fromTopup = Math.min(amount - fromMonthly, Math.max(0, w.topup_balance));
+  let left = amount;
+  const m1 = Math.min(left, res.monthly, Math.max(0, w.monthly_allowance - w.monthly_used));
+  left -= m1;
+  const t1 = Math.min(left, res.topup, Math.max(0, w.topup_balance));
+  left -= t1;
+  const m2 = Math.min(left, freeMonthly({ ...w, monthly_used: w.monthly_used + m1 }));
+  left -= m2;
+  const t2 = Math.min(left, freeTopup({ ...w, topup_balance: w.topup_balance - t1 }));
+  left -= t2;
+  const fromMonthly = m1 + m2;
+  const fromTopup = t1 + t2;
   run("UPDATE wallets SET monthly_used = monthly_used + ?, topup_balance = topup_balance - ?, topup_period_used = topup_period_used + ?, updated_at = ? WHERE user_id = ?", fromMonthly, fromTopup, fromTopup, now(), userId);
-  return { fromMonthly, fromTopup, overrun: amount - fromMonthly - fromTopup };
+  return { fromMonthly, fromTopup, overrun: left };
 }
 
 /** Dépassement (coût réel au-delà de ce qui pouvait être débité) : jamais débité au client, inscrit et signalé. */
@@ -349,9 +376,9 @@ export function settle(reservationId: string, billedMicro: number, ref: string |
   tx(() => {
     const r = one<ReservationRow>("SELECT * FROM ai_reservations WHERE id = ?", reservationId);
     if (!r || r.status !== "held") return;
-    run("UPDATE wallets SET reserved = MAX(0, reserved - ?), updated_at = ? WHERE user_id = ?", r.amount, now(), r.user_id);
+    unreserve(r);
     const amount = Math.max(0, Math.round(billedMicro));
-    const d = debit(r.user_id, amount);
+    const d = debit(r.user_id, amount, { monthly: r.res_monthly, topup: r.res_topup });
     run("UPDATE ai_reservations SET status = 'settled', actual = ?, debit_monthly = ?, debit_topup = ?, settled_at = ? WHERE id = ?", amount, d.fromMonthly, d.fromTopup, now(), r.id);
     if (amount > 0) run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "usage", d.fromTopup > 0 ? "topup" : "monthly", -(d.fromMonthly + d.fromTopup), ref, note, now());
     recordOverrun(r.user_id, d.overrun, ref ?? r.id, note);
@@ -363,7 +390,7 @@ export function release(reservationId: string, reason = "") {
   tx(() => {
     const r = one<ReservationRow>("SELECT * FROM ai_reservations WHERE id = ?", reservationId);
     if (!r || r.status !== "held") return;
-    run("UPDATE wallets SET reserved = MAX(0, reserved - ?), updated_at = ? WHERE user_id = ?", r.amount, now(), r.user_id);
+    unreserve(r);
     run("UPDATE ai_reservations SET status = 'released', note = ?, settled_at = ? WHERE id = ?", reason.slice(0, 200), now(), r.id);
   });
 }
@@ -376,8 +403,8 @@ export function settleUncertain(reservationId: string, reason: string) {
   tx(() => {
     const r = one<ReservationRow>("SELECT * FROM ai_reservations WHERE id = ?", reservationId);
     if (!r || r.status !== "held") return;
-    run("UPDATE wallets SET reserved = MAX(0, reserved - ?), updated_at = ? WHERE user_id = ?", r.amount, now(), r.user_id);
-    const d = debit(r.user_id, r.amount);
+    unreserve(r);
+    const d = debit(r.user_id, r.amount, { monthly: r.res_monthly, topup: r.res_topup });
     run("UPDATE ai_reservations SET status = 'uncertain', actual = ?, debit_monthly = ?, debit_topup = ?, note = ?, settled_at = ? WHERE id = ?", r.amount, d.fromMonthly, d.fromTopup, reason.slice(0, 200), now(), r.id);
     run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "usage", d.fromTopup > 0 ? "topup" : "monthly", -(d.fromMonthly + d.fromTopup), `uncertain:${r.id}`, `Résultat incertain, coût maximal retenu — ${reason.slice(0, 120)}`, now());
     recordOverrun(r.user_id, d.overrun, `uncertain:${r.id}`, reason);

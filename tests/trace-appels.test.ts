@@ -23,7 +23,7 @@ vi.mock("@anthropic-ai/sdk", () => {
       const p = this.opts.fetch("https://api.anthropic.test/v1/messages", {}).then(() => nextReply());
       return { finalMessage: () => p };
     }
-    messages = { stream: (p: any) => this.stream(p) };
+    messages = { stream: (p: any) => this.stream(p), countTokens: async (p: any) => ({ input_tokens: Math.ceil(JSON.stringify(p).length / 3) }) };
     beta = { messages: { stream: (p: any) => this.stream(p) } };
   }
   return { default: Anthropic, Anthropic };

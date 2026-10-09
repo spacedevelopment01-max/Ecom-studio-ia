@@ -127,7 +127,7 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = POLICY_ROUTES;
 /** Tarifs publics (USD) servant au calcul du coût. À vérifier et ajuster dans l'administration. */
 export type Price =
   | { unit: "tokens"; inputPerM: number; outputPerM: number; imageInputPerM?: number; imageOutputPerM?: number }
-  | { unit: "image"; perImage: number }
+  | { unit: "image"; perImage: number; inputPerM?: number }
   | { unit: "video_second"; perSecond: number };
 
 export const DEFAULT_PRICES: Record<string, Price> = {
@@ -136,7 +136,7 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "anthropic:claude-sonnet-5-5": { unit: "tokens", inputPerM: 2, outputPerM: 10 },
   "anthropic:claude-haiku-4-5": { unit: "tokens", inputPerM: 1, outputPerM: 5 },
   "openai:gpt-image-1": { unit: "tokens", inputPerM: 5, outputPerM: 40, imageInputPerM: 10, imageOutputPerM: 40 },
-  "google:gemini-2.5-flash-image": { unit: "image", perImage: 0.039 },
+  "google:gemini-2.5-flash-image": { unit: "image", perImage: 0.039, inputPerM: 0.3 },
   "google:veo-3.0-generate-001": { unit: "video_second", perSecond: 0.4 },
   "google:veo-3.0-fast-generate-001": { unit: "video_second", perSecond: 0.15 },
   "fal:fal-ai/kling-video/v2.1/pro/image-to-video": { unit: "video_second", perSecond: 0.09 },
@@ -168,8 +168,40 @@ export function pricesCheckedAt(): number | null {
 export function requirePrice(provider: string, model: string): Price {
   const p = priceFor(provider, model);
   if (!p || !priceValid(p)) throw new UserFacingError(L(`Tarif inconnu pour ${provider}:${model} : renseignez-le dans l'administration (Modèles et tarifs) avant d'utiliser ce modèle.`, `Unknown price for ${provider}:${model}. Enter it in the admin settings (Models and pricing) before using this model.`));
+  assertPricesFresh();
   return p;
 }
+
+/**
+ * Tarifs (et taux USD → EUR) jamais confirmés ou confirmés il y a plus de PRICE_REVIEW_DAYS jours : un tarif
+ * périmé pourrait sous-estimer la dépense réelle chez le fournisseur. Toute génération payante est alors refusée
+ * (jamais d'estimation optimiste) jusqu'à la confirmation dans l'administration (« J'ai vérifié les tarifs »).
+ */
+export function assertPricesFresh() {
+  const at = pricesCheckedAt();
+  if (at && Date.now() - at <= PRICE_REVIEW_DAYS * 86400_000) return;
+  throw new UserFacingError(
+    at
+      ? L(`Tarifs des fournisseurs d'IA vérifiés il y a plus de ${PRICE_REVIEW_DAYS} jours : générations payantes suspendues jusqu'à leur vérification dans l'administration.`, `AI provider prices were checked more than ${PRICE_REVIEW_DAYS} days ago: paid generations are paused until they're checked in the admin settings.`)
+      : L("Tarifs des fournisseurs d'IA jamais confirmés : générations payantes suspendues jusqu'à leur vérification dans l'administration.", "AI provider prices have never been confirmed: paid generations are paused until they're checked in the admin settings."),
+  );
+}
+
+/**
+ * Limites réelles des modèles de texte (documentation Anthropic) : fenêtre d'entrée, sortie maximale, et seuil
+ * au-delà duquel un autre barème peut s'appliquer (au-delà, l'appel est refusé : barème non garanti).
+ * Modèle absent de cette table : refusé (limites inconnues = coût non borné).
+ */
+export const TEXT_MODEL_LIMITS: Record<string, { context: number; maxOutput: number; flatPriceUpTo: number }> = {
+  "claude-fable-5-1": { context: 1_000_000, maxOutput: 128_000, flatPriceUpTo: 200_000 },
+  "claude-opus-5-5": { context: 1_000_000, maxOutput: 128_000, flatPriceUpTo: 200_000 },
+  "claude-sonnet-5-5": { context: 1_000_000, maxOutput: 128_000, flatPriceUpTo: 200_000 },
+  "claude-haiku-5-5": { context: 1_000_000, maxOutput: 128_000, flatPriceUpTo: 100_000 },
+  "claude-haiku-4-5": { context: 200_000, maxOutput: 64_000, flatPriceUpTo: 200_000 },
+};
+
+/** Marge de change appliquée au coût MAXIMAL réservé (le fournisseur facture en dollars). */
+export const FX_SAFETY = 1.05;
 
 export function priceValid(p: Price): boolean {
   const pos = (n: unknown) => typeof n === "number" && Number.isFinite(n) && n > 0;
