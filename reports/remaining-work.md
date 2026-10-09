@@ -314,6 +314,17 @@ Reste à faire (issu de la migration) :
 - Test intermittent « export CMS, mêmes octets » : **corrigé** avant la fusion (date fixe dans le ZIP du thème
   Shopify, comme les autres exports) — cause : la date de création changeait d'une seconde à l'autre.
 
+## Accueil public — refonte premium (branche `claude/homepage-premium-v2`, en attente de validation)
+
+Rapport : `reports/homepage-premium-v2.md` ; captures : `reports/screenshots/homepage-premium-v2/`.
+Reste à faire :
+- **Validation visuelle des deux thèmes par le propriétaire**, puis fusion seulement sur sa demande.
+- Lecture du film d'entrée à vérifier dans Safari / Chrome réels (le Chromium de test ne lit pas le H.264 : vérifié
+  avec une copie WebM du même film).
+- Décider si l'on remet des éléments retirés de l'ancienne page (bandeau de chiffres, mention des prompts sectoriels
+  et de la mémoire de l'IA, film « formats »).
+- Mesure Lighthouse et test sur vrais téléphones : non faits.
+
 ## Autres limites connues
 
 - Écran Image V2 minimal (onglet Images : demande, verdict, licence, refus) ; pas d'édition avancée d'image
