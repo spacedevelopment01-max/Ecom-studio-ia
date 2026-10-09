@@ -9,26 +9,27 @@ import { useCostConfirm } from "./cost-confirm";
 import { useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { PlanRequired, useCreationLocked } from "../billing-client";
+import { ImageV2Panel } from "./image-v2-panel";
 
 const GROUPS = [
-  { id: "all", label: "Tout", en: "All", roles: "packshot,detail,scene,lifestyle,ambiance,banner,social,ad,cutout" },
-  { id: "packshot", label: "Packshots", en: "Packshots", roles: "packshot" },
+  { id: "all", label: "Tout", en: "All", roles: "packshot,packshot-v2,detail,scene,lifestyle,ambiance,banner,social,post-photo,ad,cutout" },
+  { id: "packshot", label: "Packshots", en: "Packshots", roles: "packshot,packshot-v2" },
   { id: "detail", label: "Détails", en: "Details", roles: "detail" },
   { id: "scene", label: "Scènes", en: "Scenes", roles: "scene" },
   { id: "lifestyle", label: "En situation", en: "Lifestyle", roles: "lifestyle" },
   { id: "ambiance", label: "Univers (libres de droits)", en: "World (royalty-free)", roles: "ambiance" },
   { id: "banner", label: "Bannières", en: "Banners", roles: "banner" },
-  { id: "social", label: "Réseaux", en: "Social", roles: "social" },
+  { id: "social", label: "Réseaux", en: "Social", roles: "social,post-photo" },
   { id: "ad", label: "Publicités", en: "Ads", roles: "ad" },
   { id: "cutout", label: "Détourages", en: "Cutouts", roles: "cutout,original" },
 ];
 
 /** Entreprise de services : pas de packshot ni de détourage — photos de l'activité, ambiances, visuels typographiques. */
 const SERVICE_GROUPS = [
-  { id: "all", label: "Tout", en: "All", roles: "lifestyle,scene,banner,social,ad" },
+  { id: "all", label: "Tout", en: "All", roles: "lifestyle,scene,ambiance,banner,social,post-photo,ad" },
   { id: "photos", label: "Photos de l'activité", en: "Business photos", roles: "lifestyle,scene" },
   { id: "banner", label: "Bannières du site", en: "Website banners", roles: "banner" },
-  { id: "social", label: "Réseaux", en: "Social", roles: "social" },
+  { id: "social", label: "Réseaux", en: "Social", roles: "social,post-photo" },
   { id: "ad", label: "Publicités", en: "Ads", roles: "ad" },
 ];
 const SERVICE_KINDS = [
@@ -38,7 +39,6 @@ const SERVICE_KINDS = [
   ["info", "Horaires, zone et contact", "Hours, area and contact"],
   ["booking", "Publicité « Prenez rendez-vous »", "\"Book now\" ad"],
   ["banner", "Bannière du site (sans texte)", "Website banner (no text)"],
-  ["ambiance", "Image d'ambiance (IA)", "Mood image (AI)"],
 ] as const;
 const SERVICE_FORMATS: Record<string, string[]> = {
   service: ["portrait", "square", "story", "landscape"],
@@ -47,7 +47,6 @@ const SERVICE_FORMATS: Record<string, string[]> = {
   info: ["portrait", "square", "story"],
   booking: ["story", "square", "portrait", "landscape"],
   banner: ["banner", "landscape"],
-  ambiance: ["portrait", "square", "story", "landscape"],
 };
 
 const STYLES = [
@@ -82,7 +81,7 @@ function ProductImages() {
   const cl = useContentLang();
   const [group, setGroup] = useState("all");
   const [viewer, setViewer] = useState<AssetView | null>(null);
-  const [form, setForm] = useState({ kind: "scene", style: "window", format: "product", layout: "editorial", headline: "", subline: "", cta: "", useAi: false });
+  const [form, setForm] = useState({ kind: "scene", style: "window", format: "product", layout: "editorial", headline: "", subline: "", cta: "" });
   const active = useActive(["images.generate", "image.single"]);
   const cost = useCostConfirm();
   const locked = useCreationLocked();
@@ -97,14 +96,14 @@ function ProductImages() {
         // Prompt de la bibliothèque : le bon type d'image est ouvert (le texte du prompt sert de référence, il n'est pas collé comme titre).
         let kind = "scene";
         try { kind = (JSON.parse(pending) as { kind?: string }).kind ?? kind; } catch {}
-        setForm((f) => ({ ...f, kind: ["packshot", "scene", "social", "ad", "banner"].includes(kind) ? kind : "scene" }));
+        setForm((f) => ({ ...f, kind: ["packshot", "scene", "banner"].includes(kind) ? kind : "scene" }));
         sessionStorage.removeItem(`es-insert-images-${id}`);
         toast("info", t("Type d'image choisi d'après le prompt : vérifiez les options et lancez la création.", "Image type chosen from the prompt: check the options and start creating."));
       }
     } catch {}
   }, [id, toast, t]);
   const create = async (mode: "set" | "single") => {
-    if (form.useAi && data?.ai.image && !(await cost.confirm(mode === "set" ? "images" : "image"))) return;
+    if (mode === "set" && data?.ai.image && !(await cost.confirm("images"))) return;
     try {
       await api(`/api/projects/${id}/images`, { body: { mode, ...form, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined }, lang: cl.lang });
       toast("ok", mode === "set" ? t("Jeu d'images complet en préparation.", "Full image set in progress.") : t("Image en préparation.", "Image in progress."));
@@ -112,24 +111,23 @@ function ProductImages() {
       toast("bad", (e as Error).message);
     }
   };
-  const textual = form.kind === "social" || form.kind === "ad";
+  const textual = false;
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6">
       {cost.dialog}
       <EngineNotice what={t("les décors (studio, podium, arche, lumière de fenêtre…)", "the backdrops (studio, podium, arch, window light…)")} />
+      <ImageV2Panel />
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <Card className="h-max p-5 lg:sticky lg:top-24">
-          <h2 className="font-display text-xl font-semibold">{t("Créer", "Create")}</h2>
-          <p className="mt-1 text-xs text-muted">{t("Le produit est toujours composé à partir de ses pixels réels ; les textes sont ajoutés typographiquement.", "The product is always composited from its real pixels; text is added typographically.")}</p>
+          <h2 className="font-display text-xl font-semibold">{t("Mise en page du studio", "Studio layouts")}</h2>
+          <p className="mt-1 text-xs text-muted">{t("Packshots, mises en scène et bannières rendus sans IA à partir des pixels réels du produit (gratuit). Les visuels avec texte se créent dans Publicités (éditeur à calques) et Publications.", "Packshots, staged scenes and banners rendered without AI from the product's real pixels (free). Visuals with text are created in Ads (layered editor) and Posts.")}</p>
           <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             <Field label={t("Type", "Type")} htmlFor="ikind">
               <Select id="ikind" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value, format: e.target.value === "packshot" ? "packshot" : e.target.value === "banner" ? "banner" : e.target.value === "scene" ? "product" : "portrait" })}>
                 <option value="packshot">Packshot</option>
                 <option value="scene">{t("Scène", "Scene")}</option>
                 <option value="banner">{t("Bannière de boutique", "Store banner")}</option>
-                <option value="social">{t("Visuel social (avec texte)", "Social visual (with text)")}</option>
-                <option value="ad">{t("Publicité (avec texte et bouton)", "Ad (with text and button)")}</option>
               </Select>
             </Field>
             {form.kind !== "packshot" && (
@@ -156,15 +154,9 @@ function ProductImages() {
                 {form.kind === "ad" && <Field label={t("Bouton", "Button")} htmlFor="icta"><Input id="icta" value={form.cta} onChange={(e) => setForm({ ...form, cta: e.target.value })} placeholder={cl.lang === "en" ? "Discover" : "Découvrir"} /></Field>}
               </>
             )}
-            {(form.kind === "scene" || form.kind === "banner") && (
-              <div className={cx("rounded-2xl p-3", data?.ai.image ? "bg-paper-2" : "bg-paper-2 opacity-60")}>
-                <Toggle checked={form.useAi && !!data?.ai.image} onChange={(v) => setForm({ ...form, useAi: v })} disabled={!data?.ai.image} label={t("Décor généré par IA", "AI-generated backdrop")} />
-                <p className="mt-1.5 text-[11px] text-muted">{data?.ai.image ? t("Seul le décor est généré ; le produit réel est replacé par-dessus puis vérifié. Chaque image utilise 1 visuel de votre forfait.", "Only the backdrop is generated; the real product is placed back on top and checked. Each image uses 1 visual from your plan.") : t("Aucun fournisseur d'images n'est configuré : décors du studio.", "No image provider is configured: studio backdrops.")}</p>
-              </div>
-            )}
             <ContentLangPicker {...cl} />
             <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{t("Créer l'image", "Create image")}</Button>
-            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (packshots, détails, scènes, bannières, réseaux)", "Full set (packshots, details, scenes, banners, social)")}</Button>
+            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (packshots, détails, scènes, bannières, photos libres et photos en situation contrôlées)", "Full set (packshots, details, scenes, banners, royalty-free photos and checked lifestyle photos)")}</Button>
             {locked && <PlanRequired what="images" />}
           </div>
         </Card>
@@ -223,32 +215,32 @@ function ServiceImages() {
   const aiImage = !!data?.ai.image;
   const FORMAT_LABEL: Record<string, [string, string]> = { portrait: ["4:5 · Instagram, Facebook", "4:5 · Instagram, Facebook"], square: ["1:1 · fil d'actualité", "1:1 · news feed"], story: ["9:16 · story, reel", "9:16 · story, reel"], landscape: ["16:9 · site, YouTube, LinkedIn", "16:9 · website, YouTube, LinkedIn"], banner: ["2:1 · bannière du site", "2:1 · website banner"] };
   const create = async (mode: "set" | "single") => {
-    const ai = mode === "set" ? aiImage : form.kind === "ambiance";
-    if (ai && aiImage && !(await cost.confirm(mode === "set" ? "images" : "image"))) return;
+    if (mode === "set" && aiImage && !(await cost.confirm("images"))) return;
     try {
       const body = mode === "set"
         ? { mode, useAi: aiImage }
-        : { mode, kind: form.kind, format: form.format, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined, serviceIndex: form.serviceIndex, items: form.kind === "tips" ? form.tips.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) : undefined, usePhoto: form.usePhoto, useAi: form.kind === "ambiance" ? true : undefined };
+        : { mode, kind: form.kind, format: form.format, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined, serviceIndex: form.serviceIndex, items: form.kind === "tips" ? form.tips.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) : undefined, usePhoto: form.usePhoto };
       await api(`/api/projects/${id}/images`, { body, lang: cl.lang });
       toast("ok", mode === "set" ? t("Jeu de visuels en préparation.", "Visual set in progress.") : t("Visuel en préparation.", "Visual in progress."));
     } catch (e) {
       toast("bad", (e as Error).message);
     }
   };
-  const withText = !["banner", "ambiance"].includes(form.kind);
+  const withText = form.kind !== "banner";
   const photoAllowed = ["service", "booking", "banner"].includes(form.kind);
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6">
       {cost.dialog}
+      <ImageV2Panel />
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <Card className="h-max p-5 lg:sticky lg:top-24">
-          <h2 className="font-display text-xl font-semibold">{t("Créer", "Create")}</h2>
+          <h2 className="font-display text-xl font-semibold">{t("Visuels typographiques du studio", "Studio typographic visuals")}</h2>
           <p className="mt-1 text-xs text-muted">{photos ? t("Les visuels partent de vos photos (réalisations, équipe, lieu) et de votre offre réelle : aucun avis ni chiffre inventé.", "Visuals start from your photos (work, team, premises) and your real offer: no made-up reviews or figures.") : t("Sans photo, les visuels sont typographiques et graphiques, à vos couleurs. Ajoutez des photos de vos réalisations, de votre équipe ou de votre lieu dans Fichiers pour des visuels plus vivants.", "Without photos, visuals are typographic and graphic, in your colors. Add photos of your work, team or premises in Files for livelier visuals.")}</p>
           <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             <Field label={t("Type", "Type")} htmlFor="skind">
               <Select id="skind" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value, format: SERVICE_FORMATS[e.target.value][0] })}>
-                {SERVICE_KINDS.map(([v, l, en]) => <option key={v} value={v} disabled={v === "ambiance" && !aiImage}>{t(l, en)}{v === "ambiance" && !aiImage ? t(" — IA non disponible", " — AI not available") : ""}</option>)}
+                {SERVICE_KINDS.map(([v, l, en]) => <option key={v} value={v}>{t(l, en)}</option>)}
               </Select>
             </Field>
             <Field label="Format" htmlFor="sfmt">
@@ -273,12 +265,10 @@ function ServiceImages() {
                 {["service", "booking", "info"].includes(form.kind) && <Field label={t("Bouton", "Button")} htmlFor="scta"><Input id="scta" value={form.cta} onChange={(e) => setForm({ ...form, cta: e.target.value })} placeholder={t("Selon votre mode de contact", "Based on your contact method")} /></Field>}
               </>
             )}
-            {form.kind === "ambiance" && <Field label={t("Précision (facultatif)", "Detail (optional)")} htmlFor="ssub2"><Input id="ssub2" value={form.subline} onChange={(e) => setForm({ ...form, subline: e.target.value })} placeholder={t("Ex. atelier lumineux, outils en bois", "E.g. bright workshop, wooden tools")} /></Field>}
             {photoAllowed && photos > 0 && <Toggle checked={form.usePhoto} onChange={(v) => setForm({ ...form, usePhoto: v })} label={t("Utiliser une photo de l'activité", "Use a business photo")} />}
-            {form.kind === "ambiance" && <p className="rounded-2xl bg-paper-2 p-3 text-[11px] text-muted">{t("Illustration générée par IA de votre type d'activité : sans visage de client reconnaissable, sans texte, logo, diplôme ni récompense. Elle ne remplace pas une photo de vos locaux. Utilise 1 visuel de votre forfait.", "AI-generated illustration of your kind of business: no recognizable customer face, no text, logo, diploma or award. It doesn't replace a photo of your premises. Uses 1 visual from your plan.")}</p>}
             <ContentLangPicker {...cl} />
             <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{form.kind === "tips" ? t("Créer le carrousel", "Create the carousel") : t("Créer le visuel", "Create visual")}</Button>
-            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{aiImage ? t("Jeu complet (photos, ambiances IA, bannières, réseaux, publicités)", "Full set (photos, AI moods, banners, social, ads)") : t("Jeu complet (photos, bannières, réseaux, publicités)", "Full set (photos, banners, social, ads)")}</Button>
+            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (vos photos, photos libres du métier, images contrôlées par emplacement du site, bannières)", "Full set (your photos, royalty-free trade photos, checked images for each website slot, banners)")}</Button>
             {locked && <PlanRequired what="images" />}
           </div>
         </Card>

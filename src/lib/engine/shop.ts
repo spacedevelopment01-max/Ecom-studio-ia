@@ -22,6 +22,7 @@ import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
 import { FONT_HANDLES } from "../theme/render";
+import { overlayV2Copy } from "../seo-v2/theme-copy";
 import { effectivePalette, paletteKey } from "../route-palette";
 import { SHOPIFY_TO_CANVAS } from "../media/fonts";
 import { tidyComposition } from "../theme/tidy";
@@ -42,9 +43,16 @@ export function themeFileName(a: Asset, hint?: string): string {
   return `es-${slug(hint ?? a.role ?? "media")}-${a.id.slice(0, 6)}.${ext}`;
 }
 
+/**
+ * Textes de la boutique : le kit de textes de mise en page, complété — et, pour ce qu'ils couvrent, REMPLACÉ — par les
+ * documents SEO & Copywriting V2 (fiche produit, page d'accueil). Un seul texte de référence par contenu.
+ */
 export function savedCopy(projectId: string): ShopCopy | null {
   const row = one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'shop_copy'", projectId);
-  return row ? json<ShopCopy | null>(row.value, null) : null;
+  const kit = row ? json<ShopCopy | null>(row.value, null) : null;
+  if (!kit) return null;
+  const p = loadProject(projectId);
+  return overlayV2Copy(kit, projectId, p.settings.language ?? contentLang(), p.business).copy;
 }
 
 export function collectImages(projectId: string): { slots: ImageSlots; files: Record<string, string>; gallery: string[] } {
@@ -74,7 +82,8 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   };
   // Photos en situation (vie de tous les jours) : héros de la boutique et première scène.
   // Celles du marchand passent avant celles générées par l'IA.
-  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
+  // Photos du produit en situation de l'Image Engine V2 (rangées en « scènes ») comptent aussi comme photos en situation.
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND (role = 'lifestyle' OR (role = 'scene' AND json_extract(meta, '$.imageV2.brief.kind') IN ('lifestyle','usage_scene'))) AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
   put("lifestyle", life[0], "en-situation-1");
   // Ambiances de l'univers (photos libres, sans le produit) : seulement pour les emplacements d'ambiance encore vides.
   const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'ambiance' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (status = 'approved') DESC, created_at DESC LIMIT 8", projectId).filter(isAutoUsable).slice(0, 2);

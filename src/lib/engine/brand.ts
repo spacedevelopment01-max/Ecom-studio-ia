@@ -10,7 +10,7 @@ import { canvasFamily } from "../media/fonts";
 import { assetData, getAsset } from "../library";
 import { sectorLabel } from "../project-types";
 import { C, L, contentLang } from "../i18n-server";
-import { generateLogos, proposeTaglines } from "./identity";
+import { proposeTaglines } from "./identity";
 import { latestSocialKit } from "./social-kit";
 import { brandFromAi } from "../ai/tasks";
 import { aiBrandChecked, finalizeBrand } from "./brand-check";
@@ -82,15 +82,14 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   saveBrand(projectId, brand);
   // Site existant : jamais de logo généré (celui du site ou du client est conservé).
   if (!site && !clientLogo && !keepValidated.includes("logo")) {
-    // Point de reprise : une création reprise après une interruption ne repaie pas les pistes déjà faites.
-    await ctx.step("logos", () => generateLogos(ctx, projectId, { base: { ...logoSpec, name: brand.name }, redrawSymbol: true }));
-    // Avec l'IA d'images : deux logos complets (symbole et nom) dessinés en parallèle, proposés dans l'onglet Marque.
-    const { imageProviderAvailable } = await import("../ai/media-providers");
-    const { llmConfigured } = await import("../ai/llm");
-    if (llmConfigured() && imageProviderAvailable()) {
-      const { enqueue } = await import("../jobs");
-      enqueue({ userId: p.userId, projectId, type: "brand.fulllogo", label: L("Logos dessinés par l'IA", "Logos drawn by AI"), payload: { projectId }, parentId: ctx.job.id, idempotencyKey: `full-logo:${ctx.job.id}` });
-    }
+    // Brand & Logo Engine V2 : territoires distincts, construction typographique exacte, contrôle qualité, reprises
+    // ciblées. Point de reprise : une création reprise après une interruption ne repaie rien.
+    const { runLogoEngineV2 } = await import("../logo-v2/engine");
+    const { applyBestLogoV2 } = await import("../logo-v2/choose");
+    const run = await runLogoEngineV2(ctx, projectId);
+    // La meilleure proposition contrôlée est appliquée (le client peut en choisir une autre dans l'onglet Marque) ;
+    // sans proposition FINALE, la meilleure version du studio sert de logo PROVISOIRE (jamais présentée comme finale).
+    await ctx.step("logo-v2:apply", async () => (await applyBestLogoV2(ctx, projectId, [...run.shown, ...run.studio]))?.assetId ?? null);
   }
   // Charte finale seulement avec un logo réel (fourni, choisi ou validé par la barrière), jamais sur un logo provisoire.
   if (!loadProject(projectId).brand?.logo.provisional) {

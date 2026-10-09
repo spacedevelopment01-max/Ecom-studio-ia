@@ -33,6 +33,9 @@ export function blogTopicsV2(p: Project, strategy: SeoStrategy): BlogTopicV2[] {
   }));
 }
 
+/** Empreinte du titre et du texte d'un article (détecte une modification faite par le client). */
+const articleHash = (title: string, body: string) => crypto.createHash("sha256").update(`${title}\n${body}`).digest("hex").slice(0, 24);
+
 /** Identifiant stable de l'article du blog lié à un document V2. */
 export const blogIdFor = (docKey: string) => `b2${crypto.createHash("sha256").update(docKey).digest("hex").slice(0, 20)}`;
 
@@ -42,7 +45,10 @@ export const blogAiAllowed = (userId: string) => blogPlanReason(userId) == null;
 /** Range (ou met à jour) le brouillon dans le blog existant ; un article publié reste publié (statut « prêt »). */
 export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: { notes: string[]; ai: boolean; jobKey: string }) {
   const articleId = blogIdFor(docKey);
-  const prev = one<{ slug: string; status: string; cover_asset_id: string | null }>("SELECT slug, status, cover_asset_id FROM blog_articles WHERE id = ?", articleId);
+  const prev = one<{ slug: string; status: string; cover_asset_id: string | null; title: string; body_html: string; v2_hash: string | null }>("SELECT slug, status, cover_asset_id, title, body_html, v2_hash FROM blog_articles WHERE id = ?", articleId);
+  // Article modifié par le client dans l'onglet Blog depuis le dernier rangement : jamais écrasé (le document V2 garde
+  // la nouvelle version ; l'article du client reste tel qu'il l'a écrit).
+  if (prev && prev.v2_hash && articleHash(prev.title, prev.body_html) !== prev.v2_hash) return articleId;
   const h1 = doc.blocks.find((b) => b.kind === "h1");
   const title = h1 ? stripInline(blockText(h1)) : doc.page.title;
   const body = toHtml({ blocks: doc.blocks.filter((b) => b.kind !== "h1") });
@@ -57,6 +63,7 @@ export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: 
        body_html = excluded.body_html, language = excluded.language, status = CASE WHEN blog_articles.published_url IS NOT NULL THEN 'ready' ELSE 'draft' END, qc_notes = excluded.qc_notes, keyword = excluded.keyword, updated_at = excluded.updated_at`,
     articleId, p.id, p.userId, title, slug, doc.meta.seoTitle, doc.meta.metaDescription, excerpt, body, "[]", prev?.cover_asset_id ?? pickCover(p.id), doc.lang, JSON.stringify(o.notes.slice(0, 30)), doc.primaryKeyword, "informational", t, t,
   );
+  run("UPDATE blog_articles SET v2_hash = ? WHERE id = ?", articleHash(title, body), articleId);
   // Un article écrit par l'IA = 1 article du forfait, décompté une seule fois par rédaction.
   if (o.ai) consumeQuota(p.userId, "blog", 1, `blog2:${o.jobKey}:${docKey}`);
   return articleId;

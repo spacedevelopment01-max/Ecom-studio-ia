@@ -32,7 +32,7 @@ import { renderCreative, FORMATS } from "../src/lib/media/compose";
 import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engine/images";
 import { cutoutSummary, redoCutout } from "../src/lib/engine/cutouts";
 import { loadImage } from "@napi-rs/canvas";
-import { L } from "../src/lib/i18n-server";
+import { L, contentLang } from "../src/lib/i18n-server";
 import { planOfUserId } from "../src/lib/plan-gates";
 import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../src/lib/orchestrator/execute";
 
@@ -57,7 +57,11 @@ export const handlers: Record<string, Handler> = {
     return { valid: list.length, summary: cutoutSummary(project.id) };
   },
 
-  "images.generate": async (ctx) => generateImageSet(ctx, ctx.payload.projectId, ctx.payload.options ?? {}),
+  /** Jeu d'images : Image Engine V2 (composants locaux, photos libres, génération contrôlée). */
+  "images.generate": async (ctx) => {
+    const { runImageSetV2 } = await import("../src/lib/image-v2/set");
+    return runImageSetV2(ctx, ctx.payload.projectId);
+  },
   "image.single": async (ctx) => generateSingleImage(ctx, ctx.payload.projectId, ctx.payload.request),
   /** Publicités V2 : angles, textes contrôlés, créations composées (Image V2), barrière publicitaire. */
   "ads.v2": async (ctx) => {
@@ -398,7 +402,15 @@ export const handlers: Record<string, Handler> = {
     if (!c) throw new PermanentError(L("Connectez votre boutique Shopify dans l'onglet Connexions.", "Connect your Shopify store in the Connections tab."));
     const cur = currentTheme(projectId);
     if (!cur) throw new PermanentError(L("Aucune boutique à installer.", "No store to install."));
-    const out: Record<string, unknown> = {};
+    // Contrôles du CMS Engine V2 AVANT tout envoi (même export que le bouton « Exporter ») : un export refusé
+    // n'est jamais envoyé vers la boutique réelle.
+    const checked = await ctx.step("cms-v2-check", async () => {
+      const { exportAndRecord } = await import("../src/lib/cms-v2/record");
+      const r = await exportAndRecord({ id: projectId, userId: ctx.job.user_id }, { spec: cur.spec, number: cur.version.number, id: cur.version.id }, "shopify", contentLang() === "en" ? "en" : "fr", { jobId: ctx.job.id });
+      return { verdict: r.verdict, message: r.message, issues: r.issues };
+    });
+    if (checked.verdict === "REJECTED") throw new PermanentError(`${L("Envoi bloqué par le contrôle de l'export Shopify : ", "Sending blocked by the Shopify export check: ")}${checked.message}`);
+    const out: Record<string, unknown> = { cmsCheck: checked.verdict };
     if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
     if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, L("Création des pages", "Creating the pages")), pushPages(c, cur.spec)));
     if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, L("Installation du thème (non publié)", "Installing the theme (unpublished)")), pushTheme(c, projectId, cur.version.id, cur.spec.name)));

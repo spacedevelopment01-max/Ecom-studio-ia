@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { enqueue } from "@/lib/jobs";
 import { one } from "@/lib/db";
 import { json } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
@@ -32,7 +31,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     await useFullLogo(p.id, b.assetId);
     return ok({ logos: list(p.id), current: b.assetId });
   }
-  if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'brand.fulllogo' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Des logos complets sont déjà en cours de création.", "Full logos are already being created."));
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.fulllogo", label: L("Logos complets dessinés par l'IA", "Full logos drawn by AI"), payload: { projectId: p.id } });
-  return ok({ jobId: job.id });
+  // Ancien générateur de logos complets : plus de nouvelle création (Brand & Logo Engine V2 dans l'onglet Marque) ;
+  // les logos déjà créés restent consultables et utilisables (« use »).
+  throw new HttpError(410, L("Les nouveaux logos se créent avec le moteur de logo de l'onglet Marque.", "New logos are created with the logo engine in the Brand tab."));
 });

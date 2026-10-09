@@ -266,7 +266,12 @@ describe("Phase 4A — Brand & Logo Engine V2", async () => {
     const pid = fr(() => seedLogoFixture(u.id, "saas"));
     const r = await runEngine(pid, null);
     expect(r.shown).toHaveLength(0);
-    expect(r.discarded.every((d) => d.verdict === "PROVISIONAL")).toBe(true);
+    expect(r.studio.length).toBeGreaterThan(0);
+    expect(r.studio.every((d) => d.verdict === "PROVISIONAL")).toBe(true);
+    expect(r.discarded.some((d) => d.verdict === "PROVISIONAL")).toBe(false);
+    // Rangées à part (version du studio), jamais comme proposition finale.
+    expect(all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2'", pid)).toHaveLength(0);
+    expect(all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2-studio' AND status = 'review'", pid)).toHaveLength(r.studio.length);
   });
 
   it("aucun cas particulier codé pour le benchmark (Sébastien Blanc, plâtrier) dans le moteur", () => {

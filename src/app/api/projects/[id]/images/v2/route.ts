@@ -6,6 +6,7 @@ import { all, json, one, run } from "@/lib/db";
 import { remember } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
+import { requireCreationPlan } from "@/lib/plan-gates";
 import { visualIntent } from "@/lib/image-v2/intent";
 import { ART_DIRECTIONS, VISUAL_KINDS } from "@/lib/image-v2/types";
 import { DIRECTIONS } from "@/lib/image-v2/direction";
@@ -74,6 +75,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     remember(p.id, { kind: "rejection", key: `image:${b.direction}`, value: DIRECTIONS[b.direction].label, source: "user", scope: "image" });
     return ok(view(p.id));
   }
+  // Même droit que les autres créations d'images : un forfait de création est requis (aucun passe-droit).
+  requireCreationPlan(user, "images");
   const r = b.request ?? {};
   const intent = r.kind ? { kind: r.kind, support: r.support } : visualIntent(r.text ?? "", p.business);
   const job = enqueue({

@@ -840,6 +840,8 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   // Blog : requête visée et intention de recherche, conservées pour les réécritures.
   ["blog_articles", "keyword", "TEXT"],
   ["blog_articles", "search_intent", "TEXT"],
+  // Migration V2 : empreinte du texte rangé par le moteur V2 (une modification du client n'est jamais écrasée).
+  ["blog_articles", "v2_hash", "TEXT"],
   // Mémoire du projet (Project Brain 2B) : clé normalisée (déduplication), état (active / remplacée / rejetée),
   // remplaçante, provenance (utilisateur, contrôle qualité, import, déduction…) et preuves (nombre, dernière fois).
   ["memory", "norm_key", "TEXT"],

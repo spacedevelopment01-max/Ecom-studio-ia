@@ -248,10 +248,16 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     const provisional = !!loadProject(p.id).brand?.logo.provisional;
     return { note: "brand built", covered: { logo, mockups: { note: provisional ? "logo provisional: brand book deferred until a real logo" : "brand book done by brand_strategy" } } };
   },
+  // Logo (Brand & Logo Engine V2) : nouvelles directions contrôlées ; la meilleure est appliquée comme proposition
+  // (jamais à la place d'un logo choisi, validé ou fourni par le client, qui reste en place).
   logo: async (ctx, p, s) => {
     const since = Date.now();
-    const { runLogoJob } = await import("../engine/logo-job");
-    await ctx.step(`plan:${s.id}`, () => runLogoJob(ctx, p.id, { proposalId: null, regenerate: true }));
+    const { runLogoEngineV2 } = await import("../logo-v2/engine");
+    const { applyBestLogoV2 } = await import("../logo-v2/choose");
+    await ctx.step(`plan:${s.id}`, async () => {
+      const run = await runLogoEngineV2(ctx, p.id);
+      return (await applyBestLogoV2(ctx, p.id, [...run.shown, ...run.studio]))?.assetId ?? null;
+    });
     return outcome(ctx.job.id, "logo", since);
   },
   stock_search: async (ctx, p, s) => {
@@ -267,8 +273,8 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
   },
   image_generate: async (ctx, p, s) => {
     const since = Date.now();
-    const { generateImageSet } = await import("../engine/images");
-    await ctx.step(`plan:${s.id}`, async () => (await generateImageSet(ctx, p.id)).created.length);
+    const { runImageSetV2 } = await import("../image-v2/set");
+    await ctx.step(`plan:${s.id}`, async () => (await runImageSetV2(ctx, p.id)).created.length);
     return outcome(ctx.job.id, "image_generate", since);
   },
   copy: async (ctx, p, s) => {
@@ -277,6 +283,9 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     const { llmConfigured } = await import("../ai/llm");
     const { localCopy } = await import("../engine/local-copy");
     await ctx.step(`plan:${s.id}`, async () => {
+      // Page principale par SEO & Copywriting Engine V2 (texte de référence de la boutique pour ce qu'il couvre).
+      const { runContentEngineV2 } = await import("../seo-v2/engine");
+      await ctx.step(`plan:${s.id}:seo-v2`, async () => (await runContentEngineV2(ctx, p.id, { type: p.business === "services" ? "home_page" : "product_page", request: String(s.input.text ?? "") || null })).docKey);
       const fresh = loadProject(p.id);
       if (llmConfigured()) {
         const r = await aiShopCopyChecked({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, fresh, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn));
@@ -338,9 +347,11 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
   },
   blog: async (ctx, p, s) => {
     const since = Date.now();
-    const { assertBlogWrite, writeBlogArticle } = await import("../engine/blog");
+    // Article de blog : SEO & Copywriting Engine V2 (faits vérifiés, contrôles, document éditable, rangé dans le blog).
+    const { assertBlogWrite } = await import("../engine/blog");
+    const { runContentEngineV2 } = await import("../seo-v2/engine");
     assertBlogWrite(p.userId);
-    await ctx.step(`plan:${s.id}`, async () => ((await writeBlogArticle(ctx, p.id, { topic: String(s.input.text ?? "") })) as { id?: string } | undefined)?.id ?? null);
+    await ctx.step(`plan:${s.id}`, async () => (await runContentEngineV2(ctx, p.id, { type: "blog_article", request: String(s.input.text ?? "") || null })).docKey);
     return outcome(ctx.job.id, "blog", since);
   },
   // SEO & Copywriting (phase 8A) : SEO Engine V2 — page principale (fiche produit ou accueil d'une entreprise de

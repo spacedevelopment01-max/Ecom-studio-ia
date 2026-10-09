@@ -11,7 +11,6 @@ import { DIRECTIONS } from "@/lib/theme/directions";
 import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { FromSiteBadge } from "./existing-site";
-import { FullLogoPanel } from "./full-logo-panel";
 import { LogoV2Panel } from "./logo-v2-panel";
 import { PalettePicker } from "./palette-picker";
 import { BrandPropagationCard } from "./workflow-panel";
@@ -144,7 +143,6 @@ export default function TabMarque() {
       {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
       <BrandPropagationCard />
       {!ident?.provided && <LogoV2Panel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
-      {!ident?.provided && <FullLogoPanel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <Card className="p-5 sm:p-7">
@@ -374,17 +372,9 @@ function LogoRoutes({ routes, max, current, choosing, locked, onChoose, onRegene
   return (
     <Card className="p-5 sm:p-7">
       <SectionTitle
-        title={t("Pistes créatives du logo", "Logo creative routes")}
-        action={
-          <div className="flex flex-col items-end gap-1">
-            <Button size="sm" variant="ghost" icon={<Sparkles className="size-4" />} loading={choosing === "regenerate"} disabled={locked || !!choosing || routes.length >= max} onClick={onRegenerate}>
-              {routes.length >= max ? t("Nouvelles pistes", "New routes") : t(`${max - routes.length > 1 ? "Nouvelles pistes" : "Nouvelle piste"} (+${max - routes.length})`, `New route${max - routes.length > 1 ? "s" : ""} (+${max - routes.length})`)}
-            </Button>
-            <span className="text-[11px] text-muted">{routes.length >= max ? t(`${routes.length}/${max} pistes : supprimez-en une pour en créer une nouvelle`, `${routes.length}/${max} routes: delete one to create a new one`) : t(`${routes.length}/${max} pistes · les pistes gardées restent`, `${routes.length}/${max} routes · kept routes stay`)}</span>
-          </div>
-        }
+        title={t("Anciennes pistes de logo", "Earlier logo routes")}
       >
-        {routes.length > 1 ? t(`${routes.length} pistes différentes, chacune avec son idée, sa typographie et ses couleurs, présentées en situation. Choisissez celle qui vous ressemble : ses déclinaisons et votre kit réseaux sociaux sont créés aussitôt.`, `${routes.length} different routes, each with its own idea, typeface and colors, shown in real situations. Pick the one that feels like you: its variations and your social media kit are created right away.`) : t("Une piste, avec son idée, sa typographie et ses couleurs, présentée en situation. « Nouvelles pistes » en propose d'autres.", "One route, with its idea, typeface and colors, shown in real situations. \"New routes\" suggests others.")}
+        {t("Pistes créées par l'ancien moteur de logo, conservées pour ce projet : vous pouvez encore en choisir une ou les supprimer. Les nouvelles propositions viennent du moteur de logo ci-dessus.", "Routes created by the previous logo engine, kept for this project: you can still choose or delete one. New proposals come from the logo engine above.")}
       </SectionTitle>
       {anyLocal && (
         <div className="mb-4 rounded-xl border border-line bg-paper-2 p-3 text-xs text-muted" role="note">

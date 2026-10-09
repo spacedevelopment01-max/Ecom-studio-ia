@@ -202,7 +202,11 @@ describe("I7 — découverte gratuite : images, vidéos et UGC réservées aux f
     // M6 : libellé lisible, jamais la clé interne.
     const job = one<{ label: string }>("SELECT label FROM jobs WHERE id = ?", (await ok.json()).jobId)!;
     expect(job.label).toBe("Bannière");
-    expect((await videos(post(`/api/projects/${pid}/videos`, { format: "9:16" }), ctx({ id: pid }))).status).toBe(200);
+    // Migration V2 : l'ancien moteur vidéo ne produit plus rien (410) ; le moteur V2 accepte la demande avec un forfait.
+    expect((await videos(post(`/api/projects/${pid}/videos`, { format: "9:16" }), ctx({ id: pid }))).status).toBe(410);
+    run("UPDATE projects SET brand_json = ? WHERE id = ?", JSON.stringify({ name: "Marque" }), pid);
+    const v2 = (await import("@/app/api/projects/[id]/videos/v2/route")).POST;
+    expect((await v2(post(`/api/projects/${pid}/videos/v2`, { action: "generate", ask: { kind: "video_ad" } }), ctx({ id: pid }))).status).toBe(200);
   });
 
   it("GET /api/billing indique si la création est ouverte (forfait ou administrateur)", async () => {

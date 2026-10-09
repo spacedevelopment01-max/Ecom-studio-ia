@@ -189,7 +189,8 @@ export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: 
   // 3. Enregistrement : le client ne voit que les propositions FINALES ; le reste reste au diagnostic.
   ctx.progress(0.9, L("Propositions", "Proposals"));
   const shown = results.filter((r) => r.verdict === "FINAL");
-  const discarded = results.filter((r) => r.verdict !== "FINAL");
+  const studio = results.filter((r) => r.verdict === "PROVISIONAL");
+  const discarded = results.filter((r) => r.verdict !== "FINAL" && r.verdict !== "PROVISIONAL");
   const ids = await ctx.step("v2:save", async () => {
     const out: Record<string, string> = {};
     for (const r of results) {
@@ -200,10 +201,12 @@ export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: 
         data: png,
         name: C(`logo-v2-${r.territory.id}.png`, `logo-v2-${r.territory.id}.png`),
         mime: "image/png",
-        role: r.verdict === "FINAL" ? "logo-v2" : "logo-v2-trial",
+        // FINAL : proposition ; PROVISIONAL (version du studio, sans relecture IA) : proposée à part, jamais comme finale ;
+        // le reste : essai écarté (diagnostic).
+        role: r.verdict === "FINAL" ? "logo-v2" : r.verdict === "PROVISIONAL" ? "logo-v2-studio" : "logo-v2-trial",
         folderKey: "brand.logos",
         origin: "generated",
-        status: r.verdict === "FINAL" ? "review" : "rejected",
+        status: r.verdict === "FINAL" || r.verdict === "PROVISIONAL" ? "review" : "rejected",
         meta: { engine: "logo-v2", run: ctx.job.id, territory: r.territory, spec: r.candidate.spec, change: r.candidate.change, symbolSource: r.candidate.symbolSource, gate: { verdict: r.verdict, score: r.score, reason: r.reason, codes: r.codes, attempts: r.attempts, checkId: r.checkId } },
       });
       out[r.territory.id] = a.id;
@@ -211,7 +214,7 @@ export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: 
     return out;
   });
   for (const r of results) r.assetId = ids[r.territory.id];
-  const run: EngineRun = { runId: ctx.job.id, territories: sel.kept, shown, discarded, territoryRejections: sel.rejected, ai: aiState, stoppedByCostCap, notes };
-  remember(projectId, { kind: "artifact", key: "logo_v2_run", value: JSON.stringify({ runId: run.runId, at: Date.now(), territories: run.territories.map((t) => ({ id: t.id, name: t.name, markType: t.markType, source: t.source })), shown: shown.map((r) => r.assetId), discarded: discarded.map((r) => r.assetId), rejected: sel.rejected, ai: aiState, stoppedByCostCap, notes: notes.slice(0, 20) }), source: ai ? "ai" : "local" });
+  const run: EngineRun = { runId: ctx.job.id, territories: sel.kept, shown, studio, discarded, territoryRejections: sel.rejected, ai: aiState, stoppedByCostCap, notes };
+  remember(projectId, { kind: "artifact", key: "logo_v2_run", value: JSON.stringify({ runId: run.runId, at: Date.now(), territories: run.territories.map((t) => ({ id: t.id, name: t.name, markType: t.markType, source: t.source })), shown: shown.map((r) => r.assetId), studio: studio.map((r) => r.assetId), discarded: discarded.map((r) => r.assetId), rejected: sel.rejected, ai: aiState, stoppedByCostCap, notes: notes.slice(0, 20) }), source: ai ? "ai" : "local" });
   return run;
 }

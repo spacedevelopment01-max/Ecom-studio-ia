@@ -13,7 +13,7 @@ import { enqueue, JobCancelled, JobContext, JobPaused, type Job } from "../jobs"
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, saveProduct, saveServices, setStatus, remember, notify } from "../projects";
 import { importLink, fetchImage } from "./import-link";
-import { generateImageSet } from "./images";
+import { runImageSetV2 } from "../image-v2/set";
 import { analysisPhotos, cutoutSummary, ensureCutouts, validCutouts } from "./cutouts";
 import { localAnalysis, factsFromDescription, localServiceAnalysis, mergeServiceProfile } from "./local";
 import { buildBrand } from "./brand";
@@ -21,10 +21,7 @@ import { localCopy } from "./local-copy";
 import { buildShop } from "./shop";
 import { importExistingSiteNote, loadSiteImport, saveReproductionNotes, siteKept } from "./existing-site";
 import { buildReproducedShop, platformName } from "./site-reproduce";
-import { produceVideo, videoStepNote, type VideoStepResult } from "./videos";
 
-/** Ce qu'une étape vidéo garde (repris tel quel à la reprise d'une tâche). */
-const stepVideo = (r: Awaited<ReturnType<typeof produceVideo>>): VideoStepResult => ({ assetId: r.assetId, method: r.method, clipFallback: r.clipFallback });
 import { aiAnalyzeProduct, aiAnalyzeService, aiShopCopyChecked } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
 import { emptyProduct, type BusinessType, type ProductProfile } from "../project-types";
@@ -318,6 +315,10 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
     }
     case "copy": {
       const fresh = loadProject(projectId);
+      // 1. Page principale (fiche produit ou accueil d'un service) : SEO & Copywriting Engine V2 — faits vérifiés,
+      //    contrôles, document éditable et versionné ; c'est le texte de référence de la boutique pour ce qu'il couvre.
+      await pipelinePageCopy(ctx, projectId, services ? "home_page" : "product_page");
+      // 2. Kit de textes de mise en page (accroches de sections, bandeau, pied de page) pour ce qu'aucun document ne couvre.
       if (llmConfigured()) {
         const r = await ctx.step("ai", () => aiShopCopyChecked({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, fresh, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn)));
         remember(projectId, { kind: "artifact", key: "shop_copy", value: JSON.stringify(r.copy), source: "ai", status: "confirmed" });
@@ -327,31 +328,35 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return note("copy.base");
     }
     case "images": {
+      // Image Engine V2 (composants locaux gratuits, photos libres, génération contrôlée), puis publicités par
+      // Advertising Engine V2 (documents à calques modifiables dans l'éditeur visuel).
       if (services) {
         return serviceContent(async () => {
-          const r = await generateImageSet(ctx, projectId);
-          return note("images.done", { n: r.created.length });
+          const r = await runImageSetV2(ctx, projectId);
+          const ads = await pipelineAds(ctx, projectId);
+          return note("images.done", { n: r.created.length + ads });
         });
       }
       const has = validCutouts(projectId).length > 0;
       if (!has) return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
-      const r = await generateImageSet(ctx, projectId);
-      return note("images.done", { n: r.created.length });
+      const r = await runImageSetV2(ctx, projectId);
+      const ads = await pipelineAds(ctx, projectId);
+      return note("images.done", { n: r.created.length + ads });
     }
     case "video": {
       if (inp.videos === "none") return { skipped: note("skip.videosNone") };
-      if (services) {
-        return serviceContent(async () => {
-          const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") })));
-          const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo de présentation de l'activité pour le site", "business presentation video for the website"), music: "none" })));
-          return inBothLangs(() => videoStepNote([a, b], inp.videos !== "edited"));
-        });
-      }
+      // Video & UGC Engine V2 : documents vidéo modifiables et versionnés ; plans générés seulement si le client les a
+      // choisis au lancement (« avec plans IA ») et dans le plafond, sinon montage local à partir des médias.
+      const approve = inp.videos !== "edited";
+      const produce = async () => {
+        const a = await ctx.step("v2:916", () => pipelineVideo(ctx, projectId, { kind: "video_ad", platform: "reels", text: services ? C("vidéo courte pour faire connaître l'activité sur les réseaux sociaux", "short video to promote the business on social media") : C("publicité courte pour les réseaux sociaux", "short ad for social media") }, approve));
+        const b = await ctx.step("v2:169", () => pipelineVideo(ctx, projectId, { kind: services ? "company_presentation" : "brand_film", platform: services ? "website" : "shop_page", text: services ? C("vidéo de présentation de l'activité pour le site", "business presentation video for the website") : C("vidéo d'ambiance pour la boutique", "mood video for the store") }, approve));
+        return inBothLangs(() => L(`${[a, b].filter(Boolean).length} vidéo(s) montée(s) (documents modifiables dans l'onglet Vidéos)`, `${[a, b].filter(Boolean).length} video(s) edited (editable documents in the Videos tab)`));
+      };
+      if (services) return serviceContent(produce);
       const has = validCutouts(projectId).length > 0;
       if (!has) return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
-      const a = await ctx.step("v916", async () => stepVideo(await produceVideo(new StepScope(ctx, 0, 0.5, "v916"), projectId, { format: "9:16", target: "ads", useAiClip: inp.videos !== "edited", goal: C("publicité courte pour les réseaux sociaux", "short ad for social media") })));
-      const b = await ctx.step("v169", async () => stepVideo(await produceVideo(new StepScope(ctx, 0.5, 1, "v169"), projectId, { format: "16:9", target: "shop", useAiClip: inp.videos !== "edited", goal: C("vidéo d'ambiance pour la boutique", "mood video for the store"), music: "none" })));
-      return inBothLangs(() => videoStepNote([a, b], inp.videos !== "edited"));
+      return produce();
     }
     case "shop": {
       const site = loadSiteImport(projectId);
@@ -380,20 +385,74 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
   }
 }
 
-/** Calendrier de 7 jours (réseaux connectés, sinon Instagram, Facebook, Pinterest) lancé en tâche enfant, une seule fois. */
-export async function startWeekCalendar(ctx: JobContext, projectId: string, idempotencyKey: string) {
-  const p = loadProject(projectId);
+/**
+ * Publicités de la création complète : Advertising Engine V2 (angles, textes contrôlés, créations composées), en
+ * documents à calques ouverts dans l'éditeur visuel. Une publicité impossible (pas assez de faits confirmés) ne
+ * bloque pas la création. Point de reprise : une reprise ne refait ni ne repaie rien.
+ */
+async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> {
+  return ctx.step("ads-v2", async () => {
+    ctx.progress(0.96, L("Publicités (moteur publicitaire)", "Ads (advertising engine)"));
+    try {
+      const { runAdEngineV2 } = await import("../ads-v2/engine");
+      const r = await runAdEngineV2(ctx, projectId, { count: 2, maxCostEur: 1 });
+      return r.outcomes.filter((o) => o.assetId).length;
+    } catch (e) {
+      if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
+      console.warn(`[pipeline] publicités V2 non créées : ${(e as Error).message}`);
+      return 0;
+    }
+  });
+}
+
+/**
+ * Page principale rédigée par SEO & Copywriting Engine V2 (une fois : même brief et mêmes faits = rien de refait ;
+ * un texte modifié par le client n'est jamais écrasé). Un échec ne bloque pas la création (le kit de textes reste).
+ */
+async function pipelinePageCopy(ctx: JobContext, projectId: string, type: "product_page" | "home_page") {
+  await ctx.step("seo-v2:page", async () => {
+    try {
+      const { runContentEngineV2 } = await import("../seo-v2/engine");
+      return (await runContentEngineV2(ctx, projectId, { type })).docKey;
+    } catch (e) {
+      if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
+      console.warn(`[pipeline] page SEO V2 non rédigée : ${(e as Error).message}`);
+      return null;
+    }
+  });
+}
+
+/** Une vidéo de la création complète par Video Engine V2 ; renvoie le fichier rendu (ou null). */
+async function pipelineVideo(ctx: JobContext, projectId: string, ask: { kind: "video_ad" | "brand_film" | "company_presentation"; platform: "reels" | "shop_page" | "website"; text: string }, approve: boolean): Promise<string | null> {
+  const { runVideoEngineV2 } = await import("../video-v2/engine");
+  const r = await runVideoEngineV2(ctx, projectId, { ask: { ...ask, allowGeneration: approve }, approveGeneration: approve });
+  return r.videoAssetId;
+}
+
+/** Identifiant stable du calendrier de la création complète : une reprise retrouve le même, jamais un second. */
+export const creationPlanId = (projectId: string) => `creation-${projectId}`;
+
+/**
+ * Calendrier de 7 jours de la création complète — Social Media Engine V2 : plan (réseaux du projet, sinon Instagram
+ * et Facebook), textes sans invention, visuels produits sans dépense (bibliothèque, rendu local), barrière, approbation
+ * par version : rien n'est programmé ni publié sans l'accord du client. Une seule fois par projet : une reprise ou
+ * « Suite de la création » ne crée jamais un second calendrier (ni celui d'un ancien projet qui en a déjà un).
+ */
+export async function startWeekCalendar(ctx: JobContext, projectId: string, _idempotencyKey?: string) {
   return await ctx.step("plan", async () => {
-    const pid = id();
+    const planId = creationPlanId(projectId);
+    if (one("SELECT 1 FROM content_plans WHERE id = ? AND project_id = ?", planId, projectId)) return planId;
+    // Ancien projet dont la création a déjà fait un calendrier (ancien moteur) : rien de plus.
+    const older = one<{ id: string }>("SELECT id FROM content_plans WHERE project_id = ? ORDER BY created_at LIMIT 1", projectId);
+    if (older) return older.id;
+    const { planFromAsk } = await import("../social-v2/engine");
+    const { produceBatch, postsOfPlan } = await import("../social-v2/production");
+    const { realSocialDeps } = await import("../social-v2/deps");
     const fresh = loadProject(projectId);
-    const conns = all<{ id: string; provider: string }>("SELECT c.id, c.provider FROM connections c JOIN project_connections pc ON pc.connection_id = c.id WHERE pc.project_id = ? AND c.provider IN ('instagram','facebook','tiktok','youtube','pinterest')", projectId);
-    const networks = conns.length ? conns.map((c) => ({ network: c.provider, connectionId: c.id })) : [{ network: "instagram" }, { network: "facebook" }, { network: "pinterest" }];
-    const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
-    const params = { startDate: tomorrow, days: 7, perDay: 1, slots: ["11:30"], timezone: fresh.settings.timezone, networks, goals: fresh.business === "services" ? C("faire connaître l'activité et ses prestations, amener vers une prise de contact", "promote the business and its services, drive people to get in touch") : C("faire découvrir le produit et amener vers la boutique", "introduce the product and drive traffic to the store"), tone: "", mix: { photo: 70, video: 20, text: 10 }, approval: "manual" as const };
-    run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", pid, projectId, JSON.stringify(params), "planning", now());
-    const job = enqueue({ userId: p.userId, projectId, type: "calendar.plan", label: L("Calendrier de 7 jours", "7-day calendar"), payload: { projectId, planId: pid, params }, parentId: ctx.job.id, idempotencyKey });
-    run("UPDATE content_plans SET job_id = ? WHERE id = ?", job.id, pid);
-    return pid;
+    planFromAsk(fresh, "7 jours, 1 publication par jour", { planId, lang: fresh.settings.language === "en" ? "en" : "fr" });
+    await produceBatch(fresh, postsOfPlan(planId), realSocialDeps(ctx, fresh, false), { allowPaid: false, maxCostEur: 0, approvedEstimateMicro: null, batchSize: 50 });
+    remember(projectId, { kind: "artifact", key: "social_plan_v2", value: JSON.stringify({ planId, days: 7, origin: "creation" }), source: "local" });
+    return planId;
   });
 }
 

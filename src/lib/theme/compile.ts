@@ -177,7 +177,8 @@ export async function exportThemeZip(spec: ThemeSpec, load: AssetLoader): Promis
     }
     entries[`assets/${filename}`] = new Uint8Array(bin.data);
   }
-  const zip = Buffer.from(zipSync(entries, { level: 6 }));
+  // Date fixe (comme les autres exports) : deux exports du même thème donnent exactement les mêmes octets.
+  const zip = Buffer.from(zipSync(entries, { level: 6, mtime: new Date("2026-01-01T00:00:00Z") }));
   return { zip, files: Object.keys(entries).sort(), skipped };
 }
 

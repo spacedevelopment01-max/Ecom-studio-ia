@@ -133,6 +133,6 @@ describe("publications : la duplication par l'ancien écran ne contourne pas l'a
     const res = await route.POST(new Request(`http://localhost:3000/api/posts/${post}`, { method: "POST", body: JSON.stringify({ action: "duplicate" }), headers: { "content-type": "application/json" } }), { params: Promise.resolve({ pid: post }) });
     const copy = (await res.json()).id;
     const row = one<{ engine: string; status: string; approved_hash: string | null }>("SELECT engine, status, approved_hash FROM posts WHERE id = ?", copy)!;
-    expect(row).toEqual({ engine: "v2", status: "draft", approved_hash: null });
+    expect(row).toEqual({ engine: "v2", status: "review", approved_hash: null });
   });
 });

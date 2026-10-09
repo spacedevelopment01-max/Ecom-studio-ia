@@ -382,7 +382,7 @@ export async function applyLogo(ctx: JobContext | null, projectId: string, pr: L
   const route = r ? { key: r.key, name: r.name, heading: r.heading, headingWeight: r.headingWeight, body: r.body, colors: r.colors, roles: r.roles, source: r.source } : undefined;
   // Piste avec sa propre palette : elle devient la palette de la marque (sauf palette validée par le client).
   const palette = r?.palette && !(brand.validated ?? []).includes("palette") ? r.palette : brand.palette;
-  saveBrand(projectId, { ...brand, palette, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, proposalId: pr.id, route, provisional: !!opts.provisional } });
+  saveBrand(projectId, { ...brand, palette, logo: { ...brand.logo, assetId: main.id, concept: r ? `${r.name} — ${r.why}` : pr.concept, status: "proposed", proposal: pr.key, proposalId: pr.id, route, provisional: !!opts.provisional, engine: undefined } });
   // Site de services : bannières sans photo redessinées aux couleurs de la piste (sans IA), reprises par le site.
   const { refreshSiteBanners } = await import("./service-media");
   const banners = await refreshSiteBanners(projectId).catch((e) => (console.error(`[bannières] ${projectId} : ${(e as Error).message}`), []));

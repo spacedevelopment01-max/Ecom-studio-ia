@@ -69,12 +69,14 @@ export type Workflow = {
 /** Libellé, module et éditeur de chaque étape (affichage du suivi ; liens vers les onglets du studio). */
 export const STEP_INFO: Record<StepKind, { fr: string; en: string; module: string; tab: string }> = {
   understand: { fr: "Analyse du produit ou de l'activité", en: "Product or business analysis", module: "Project Brain", tab: "produit" },
-  brand_strategy: { fr: "Marque (nom, positionnement, palette, typographies)", en: "Brand (name, positioning, palette, fonts)", module: "Brand & Logo V2", tab: "marque" },
+  // Stratégie de marque : moteur de marque existant (aucun module V2 dédié) ; son logo passe par Brand & Logo V2.
+  brand_strategy: { fr: "Marque (nom, positionnement, palette, typographies)", en: "Brand (name, positioning, palette, fonts)", module: "Marque + Logo V2", tab: "marque" },
   logo: { fr: "Logo", en: "Logo", module: "Brand & Logo V2", tab: "marque" },
-  mockups: { fr: "Charte et maquettes de marque", en: "Brand book and mockups", module: "Brand & Logo V2", tab: "marque" },
+  mockups: { fr: "Charte et maquettes de marque", en: "Brand book and mockups", module: "Charte (après le choix du logo)", tab: "marque" },
   stock_search: { fr: "Photos libres de droits", en: "Royalty-free photos", module: "Image V2", tab: "images" },
   image_generate: { fr: "Visuels", en: "Visuals", module: "Image V2", tab: "images" },
-  copy: { fr: "Textes de la boutique ou du site", en: "Store or website copy", module: "SEO & Copy V2", tab: "produit" },
+  // Page principale par SEO & Copy V2 ; accroches de mise en page par le kit de textes existant (voir seo-v2/theme-copy).
+  copy: { fr: "Textes de la boutique ou du site", en: "Store or website copy", module: "SEO & Copy V2 + kit de textes", tab: "produit" },
   seo: { fr: "Page principale optimisée (SEO)", en: "SEO main page", module: "SEO & Copy V2", tab: "produit" },
   theme: { fr: "Boutique / site (thème)", en: "Store / website (theme)", module: "Theme V2", tab: "boutique" },
   theme_edit: { fr: "Retouche du site", en: "Website edit", module: "Theme V2", tab: "boutique" },

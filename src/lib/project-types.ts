@@ -105,6 +105,8 @@ export type Brand = {
     proposal?: "logotype" | "symbole" | "embleme" | "produit" | "concept" | "typo";
     /** Fichier de la piste choisie (plusieurs pistes peuvent avoir la même famille). */
     proposalId?: string;
+    /** Moteur qui a produit le logo appliqué (« v2 » : Brand & Logo Engine V2 ; absent : ancien moteur). */
+    engine?: "v2";
     /** Typographies et couleurs de la piste retenue (kit réseaux sociaux, charte, visuels). */
     route?: { key: string; name: string; heading: string; headingWeight: number; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; roles?: { ink: keyof Brand["palette"]; accent: keyof Brand["palette"]; ground: keyof Brand["palette"]; tint: keyof Brand["palette"] }; source: "ai" | "local" };
   };
