@@ -8,6 +8,7 @@ import { formatEur } from "./billing-client";
 import { LangSwitch, useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
 import { AccountingView } from "./admin-accounting";
+import { TextRoutingPanel, type TextRoutingData } from "./admin-text-routing";
 
 type Overview = {
   appUrl: string;
@@ -17,6 +18,7 @@ type Overview = {
   usdToEur: number;
   pricing: { checkedAt: number | null; reviewDays: number; missing: { task: string; label: string; key: string }[] };
   markup: number;
+  textRouting: TextRoutingData;
   oauth: { key: string; label: string; configured: boolean; clientIdMasked: string; redirectUri: string; needs: string; docs: string }[];
   stripe: { secretMasked: string; webhookConfigured: boolean; verifiedAt: string | null; live: boolean; webhookUrl: string };
   smtp: { configured: boolean; hostMasked: string; port: string; userMasked: string; passwordConfigured: boolean; fromMasked: string };
@@ -70,6 +72,19 @@ export function AdminConsole() {
       toast("bad", (e as Error).message);
     }
   };
+  // « Voir les tarifs » : ouvre l'onglet ET amène la carte des tarifs à l'écran (elle est sous le tableau de routage,
+  // hors de vue : l'onglet seul donnait l'impression que le bouton ne faisait rien).
+  const openPrices = () => {
+    setTab("routes");
+    const go = (n = 0) => {
+      const el = document.getElementById("tarifs-fournisseurs");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        (el.querySelector("input, button") as HTMLElement | null)?.focus({ preventScroll: true });
+      } else if (n < 20) requestAnimationFrame(() => go(n + 1));
+    };
+    requestAnimationFrame(() => go());
+  };
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
@@ -90,7 +105,7 @@ export function AdminConsole() {
         </nav>
         {!data ? <div className="skeleton h-72 rounded-3xl" /> : (
           <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
-            <PricingAlert data={data} post={post} onOpen={() => setTab("routes")} />
+            <PricingAlert data={data} post={post} onOpen={openPrices} />
             {tab === "ia" && <AiProviders data={data} set={set} />}
             {tab === "routes" && <Routes data={data} post={post} />}
             {tab === "connexions" && <OAuthApps data={data} set={set} />}
@@ -227,8 +242,10 @@ function Routes({ data, post }: { data: Overview; post: (b: Record<string, unkno
   const [priceJson, setPriceJson] = useState("");
   const [fx, setFx] = useState(String(data.usdToEur));
   const [markup, setMarkup] = useState(String(data.markup));
+  const effortsOf = (provider: string, model: string) => data.textRouting.models.find((m) => m.provider === provider && m.model === model)?.effort.values ?? [];
   return (
     <>
+      <TextRoutingPanel data={data.textRouting} post={post} />
       <Card className="overflow-x-auto p-5">
         <p className="font-display text-lg font-semibold">{t("Routage des tâches", "Task routing")}</p>
         <p className="mb-4 text-sm text-ink-2">{t("Chaque tâche utilise le fournisseur et le modèle indiqués. Les identifiants de modèles doivent correspondre exactement à ceux du fournisseur.", "Each task uses the provider and model shown. Model IDs must match the provider's exactly.")}</p>
@@ -240,9 +257,9 @@ function Routes({ data, post }: { data: Overview; post: (b: Record<string, unkno
               return (
                 <tr key={k.id}>
                   <td className="py-2 pr-2">{k.label}<span className="block text-[11px] text-muted">{k.kind}</span></td>
-                  <td className="pr-2"><Select value={r.provider} onChange={(e) => setEdit({ ...edit, [k.id]: { ...r, provider: e.target.value } })} aria-label={t("Fournisseur", "Provider")}>{data.providers.map((p) => <option key={p.id} value={p.id}>{p.id}</option>)}</Select></td>
+                  <td className="pr-2"><Select value={r.provider} onChange={(e) => setEdit({ ...edit, [k.id]: { ...r, provider: e.target.value, effort: undefined } })} aria-label={t("Fournisseur", "Provider")}>{data.providers.filter((p) => k.kind !== "llm" || ["anthropic", "openai", "google"].includes(p.id)).map((p) => <option key={p.id} value={p.id}>{p.id}</option>)}</Select></td>
                   <td className="pr-2"><Input value={r.model} onChange={(e) => setEdit({ ...edit, [k.id]: { ...r, model: e.target.value } })} aria-label={t("Modèle", "Model")} className="font-mono text-xs" /></td>
-                  <td className="pr-2">{r.provider === "anthropic" ? <Select value={r.effort ?? ""} onChange={(e) => setEdit({ ...edit, [k.id]: { ...r, effort: e.target.value || undefined } })} aria-label={t("Effort", "Effort")}><option value="">{t("défaut", "default")}</option>{["low", "medium", "high", "xhigh", "max"].map((x) => <option key={x}>{x}</option>)}</Select> : <span className="text-muted">—</span>}</td>
+                  <td className="pr-2">{k.kind === "llm" && effortsOf(r.provider, r.model).length ? <Select value={effortsOf(r.provider, r.model).includes(r.effort ?? "") ? r.effort : ""} onChange={(e) => setEdit({ ...edit, [k.id]: { ...r, effort: e.target.value || undefined } })} aria-label={t("Effort", "Effort")}><option value="">{t("défaut", "default")}</option>{effortsOf(r.provider, r.model).map((x) => <option key={x}>{x}</option>)}</Select> : <span className="text-muted">—</span>}</td>
                   <td className="pr-2 text-xs">{k.price ? <Badge tone="ok">{t("défini", "set")}</Badge> : <Badge tone="warn">{t("manquant", "missing")}</Badge>}</td>
                   <td>{edit[k.id] && <Button size="sm" onClick={async () => { await post({ route: { task: k.id, ...edit[k.id] } }, t("Routage enregistré.", "Routing saved.")); const n = { ...edit }; delete n[k.id]; setEdit(n); }}>OK</Button>}</td>
                 </tr>
@@ -251,12 +268,12 @@ function Routes({ data, post }: { data: Overview; post: (b: Record<string, unkno
           </tbody>
         </table>
       </Card>
-      <Card className="grid gap-4 p-5">
+      <Card id="tarifs-fournisseurs" className="grid scroll-mt-24 gap-4 p-5">
         <p className="font-display text-lg font-semibold">{t("Tarifs des fournisseurs (USD)", "Provider prices (USD)")}</p>
         <p className="text-sm text-ink-2">{t("Coûts internes, jamais affichés aux clients. Les images et vidéos sont comptées à l'unité (image, seconde de vidéo) lorsque le fournisseur facture ainsi : aucun jeton n'est inventé. Vérifiez ces tarifs sur les pages officielles.", "Internal costs, never shown to customers. Images and videos are counted per unit (image, second of video) when the provider bills that way: no tokens are made up. Check these prices on the official pages.")}</p>
         <div className="grid gap-1 font-mono text-xs">
           {Object.entries(data.prices).map(([k, v]) => (
-            <button key={k} onClick={() => { setPriceKey(k); setPriceJson(JSON.stringify(v)); }} className="flex justify-between gap-3 rounded-lg px-2 py-1 text-left hover:bg-paper-2"><span>{k}</span><span className="text-muted">{JSON.stringify(v)}</span></button>
+            <button key={k} onClick={() => { setPriceKey(k); setPriceJson(JSON.stringify(v)); }} className="flex min-w-0 flex-wrap justify-between gap-x-3 rounded-lg px-2 py-1 text-left hover:bg-paper-2"><span className="break-all">{k}</span><span className="min-w-0 break-all text-muted">{JSON.stringify(v)}</span></button>
           ))}
         </div>
         <form onSubmit={(e) => { e.preventDefault(); try { post({ price: { key: priceKey, value: JSON.parse(priceJson) } }, t("Tarif enregistré.", "Price saved.")); } catch { alert(t("JSON invalide", "Invalid JSON")); } }} className="grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">

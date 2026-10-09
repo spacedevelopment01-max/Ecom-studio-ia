@@ -116,7 +116,11 @@ export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "imag
   video_generation: task("Génération vidéo (plans)", "Video generation (shots)", "video"),
 };
 
-export type Route = { provider: ProviderId; model: string; effort?: "low" | "medium" | "high" | "xhigh" | "max" };
+/**
+ * Effort : valeur propre au fournisseur et au modèle (Anthropic `output_config.effort`, OpenAI `reasoning.effort`,
+ * Gemini `thinkingLevel`), validée par le catalogue des modèles de texte (text-models.ts).
+ */
+export type Route = { provider: ProviderId; model: string; effort?: string };
 
 /**
  * Routage par défaut de chaque tâche : dérivé de la politique centrale (src/lib/orchestrator/policy.ts), seul
@@ -134,6 +138,7 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "anthropic:claude-fable-5-1": { unit: "tokens", inputPerM: 10, outputPerM: 50 },
   "anthropic:claude-opus-5-5": { unit: "tokens", inputPerM: 4, outputPerM: 20 },
   "anthropic:claude-sonnet-5-5": { unit: "tokens", inputPerM: 2, outputPerM: 10 },
+  "anthropic:claude-haiku-5-5": { unit: "tokens", inputPerM: 0.1, outputPerM: 0.5 },
   "anthropic:claude-haiku-4-5": { unit: "tokens", inputPerM: 1, outputPerM: 5 },
   "openai:gpt-image-1": { unit: "tokens", inputPerM: 5, outputPerM: 40, imageInputPerM: 10, imageOutputPerM: 40 },
   "google:gemini-2.5-flash-image": { unit: "image", perImage: 0.039, inputPerM: 0.3 },

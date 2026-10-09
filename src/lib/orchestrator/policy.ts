@@ -13,7 +13,8 @@ import type { Route, TaskId } from "../ai/config";
 import { getJsonSetting } from "../settings";
 import type { Capability, Tier } from "./capabilities";
 
-type Effort = NonNullable<Route["effort"]>;
+/** Effort sur l'échelle de la politique ; traduit vers la valeur acceptée par chaque modèle (mapEffort). */
+type Effort = "low" | "medium" | "high" | "xhigh" | "max";
 
 export type TaskPolicy = {
   /** Capacités indispensables (la vision s'ajoute quand l'entrée contient des images). */
@@ -25,6 +26,8 @@ export type TaskPolicy = {
   escalateTo?: Tier;
   /** Une demande SIMPLE de cette tâche peut être faite par le moteur local (0 €). */
   localWhenSimple?: boolean;
+  /** Mode automatique : niveau suffisant pour une demande SIMPLE (jamais appliqué en manuel ni après un échec). */
+  simpleTier?: Tier;
   /** Pourquoi ce niveau (raison synthétique tracée). */
   why: string;
 };
@@ -47,13 +50,13 @@ export const DEFAULT_POLICY: Record<TaskId, TaskPolicy> = {
   theme_edit: { needs: TEXT, tier: "strong", effort: "medium", localWhenSimple: true, why: "composed theme edit" },
   theme_custom: { needs: [...TEXT, "long_context"], tier: "strong", effort: "high", why: "full custom theme" },
   // Contrôles (images, plans vidéo, relectures) : grille fixe, réponse courte — modèle solide mais moins cher que la création.
-  quality_control: { needs: TEXT, tier: "standard", effort: "low", escalateTo: "strong", why: "fixed grid review" },
+  quality_control: { needs: TEXT, tier: "standard", effort: "low", escalateTo: "strong", simpleTier: "light", why: "fixed grid review" },
   photo_triage: { needs: [...TEXT, "vision"], tier: "light", escalateTo: "standard", why: "simple photo sorting" },
   cutout_check: { needs: [...TEXT, "vision"], tier: "standard", effort: "low", why: "visual check, fixed grid" },
   logo_symbol: { needs: TEXT, tier: "strong", effort: "medium", why: "complex creative direction" },
   social_planning: { needs: TEXT, tier: "strong", effort: "medium", why: "editorial strategy" },
   // Reprises ciblées du calendrier et réécritures de l'éditeur : rédaction de community manager, effort moyen.
-  social_copy: { needs: TEXT, tier: "standard", effort: "medium", escalateTo: "strong", why: "targeted social rewrite" },
+  social_copy: { needs: TEXT, tier: "standard", effort: "medium", escalateTo: "strong", simpleTier: "light", why: "targeted social rewrite" },
   classification: { needs: TEXT, tier: "light", escalateTo: "standard", localWhenSimple: true, why: "short classification" },
   video_direction: { needs: TEXT, tier: "strong", effort: "medium", why: "complex creative direction" },
   // Brief photo : quelques centaines de mots, mais il conditionne une image payante (~0,17 $) — modèle fort, effort moyen.

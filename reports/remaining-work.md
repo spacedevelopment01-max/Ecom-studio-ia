@@ -11,6 +11,35 @@ Check-up général : `reports/general-checkup.md`. Phase 11A fusionnée (PR #63)
 (PR #62) ; **qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée
 techniquement, 9B reportée ; 8A validée techniquement, 8B reportée. Phase 13 non commencée.
 
+## PRIORITÉ — fal.ai dans l'administration vidéo (à terminer)
+
+- **État** : fal.ai est branché côté génération vidéo (`src/lib/ai/media-providers.ts`, modèle par défaut
+  `fal-ai/kling-video/v2.1/pro/image-to-video`, tarif à la seconde, réservation du coût maximal). Son intégration
+  dans l'**administration vidéo** reste incomplète :
+  - choix du modèle fal ;
+  - tarif propre au modèle choisi ;
+  - essai réel et état de la clé ;
+  - affichage dans « Modèles et tarifs » au même niveau que Google Veo.
+- **À faire** : terminer cette intégration avec les mêmes garde-fous que les autres fournisseurs (tarif confirmé,
+  coût maximal borné, aucun appel payant sans accord du propriétaire).
+- N'a pas bloqué la fusion du routage IA multifournisseur des modèles de texte.
+
+## Routage IA multifournisseur (texte) — fusionné, à tester par le propriétaire
+
+- Rapport : `reports/ai-routing-multi.md`. Mode **manuel** par défaut.
+- OpenAI (`gpt-5.6-terra`, `gpt-5.6-luna`) et Gemini (`gemini-3.8-flash`, `gemini-3.5-flash-lite`) sont branchés
+  mais **verrouillés**. Leurs tarifs, limites et identifiants Gemini sont NON VÉRIFIÉS (pages officielles
+  inaccessibles depuis l'environnement de développement).
+- Pour les utiliser, le propriétaire doit, dans l'administration :
+  1. saisir le tarif officiel ;
+  2. cliquer sur « Confirmer » ;
+  3. cliquer sur « Activer ».
+- À faire :
+  - comparaison réelle de qualité et de coût par le propriétaire (Anthropic, OpenAI, Gemini) ;
+  - décision sur le routage définitif ;
+  - éventuelle révision du niveau « fort » de certaines tâches (briefs photo, planification éditoriale, vidéo,
+    publicités) après essais réels.
+
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
 | Phase | Objet | Script | État |

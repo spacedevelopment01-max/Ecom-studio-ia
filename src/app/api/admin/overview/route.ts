@@ -8,6 +8,7 @@ import { getSetting, getJsonSetting, appUrl } from "@/lib/settings";
 import { PROVIDER_INFO, providerConfig, redirectUri, type ProviderKey } from "@/lib/social/oauth";
 import { paymentsLive, stripeKeys } from "@/lib/payments";
 import { mailConfigured } from "@/lib/mail";
+import { textRoutingOverview } from "@/lib/ai/text-routing-admin";
 
 export const GET = handle(async () => {
   await requireAdmin();
@@ -33,6 +34,7 @@ export const GET = handle(async () => {
       missing: (Object.keys(TASKS) as TaskId[]).filter((t) => { const r = routeFor(t); const p = priceFor(r.provider, r.model); return !p || !priceValid(p); }).map((t) => ({ task: t, label: TASKS[t].label, key: `${routeFor(t).provider}:${routeFor(t).model}` })),
     },
     markup: getJsonSetting<number>("billing.markup", 1),
+    textRouting: textRoutingOverview(),
     oauth: (Object.keys(PROVIDER_INFO) as ProviderKey[]).map((k) => ({ key: k, label: PROVIDER_INFO[k].label, configured: providerConfig(k).configured, clientIdMasked: mask(providerConfig(k).clientId), redirectUri: redirectUri(k), needs: PROVIDER_INFO[k].needs, docs: PROVIDER_INFO[k].docs })),
     stripe: { secretMasked: mask(stripeKeys().secret), webhookConfigured: !!stripeKeys().webhookSecret, verifiedAt: getSetting("stripe.verifiedAt"), live: paymentsLive(), webhookUrl: `${appUrl()}/api/stripe/webhook` },
     // SMTP : valeurs masquées uniquement (le port n'est pas un secret).

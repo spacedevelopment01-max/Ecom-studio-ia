@@ -12,7 +12,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
-import { EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
+import { balance, EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, FX_SAFETY, priceFor, requirePrice, routeFor, TEXT_MODEL_LIMITS, usdToEur, type TaskId } from "./config";
@@ -24,7 +24,10 @@ import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
 import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
 import { routingHistoryFor } from "../orchestrator/history";
+import { pinnedTasks, routingMode } from "../orchestrator/text-routing";
 import type { Deliverable } from "../quality/policies";
+import { mapEffort, modelStatus, TEXT_MODELS, textModel, thinkingOutsideMaxOutput } from "./text-models";
+import { ProviderHttpError, hasTextAdapter, textAdapters, type TextPart, type TextRequest, type TextResult, type TextTurn } from "./text-providers";
 
 export type LlmImage = { data: Buffer; label?: string };
 
@@ -64,8 +67,9 @@ export type LlmCall = {
  * Modèle d'un appel, choisi par le Router V2 (politique centrale + route fixée par l'administration + historique).
  * Un appel arrivé ici est déjà engagé vers l'IA : jamais de bascule silencieuse vers le moteur local.
  */
-export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing">): RouteDecision {
+export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { userId?: string }): RouteDecision {
   const custom = getJsonSetting<Partial<Record<TaskId, unknown>>>("ai.routes", {});
+  const auto = routingMode() === "auto";
   return route({
     task: call.task,
     difficulty: call.routing?.difficulty,
@@ -77,8 +81,19 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing">): Ro
     allowLocal: false,
     // Clé Anthropic absente : l'erreur explicite vient du client (message d'administration), pas d'un repli.
     available: (p) => p === "anthropic" || !!activeProviderKey(p),
-    overrides: custom[call.task] ? { [call.task]: routeFor(call.task) } : undefined,
+    // Mode automatique : la route fixée dans l'administration ne s'applique qu'aux tâches maintenues en manuel.
+    overrides: custom[call.task] && (!auto || pinnedTasks().includes(call.task)) ? { [call.task]: routeFor(call.task) } : undefined,
+    auto: auto ? { budgetLeftMicro: call.userId ? budgetLeft(call.userId) : null } : undefined,
   });
+}
+
+/** Reste disponible du budget IA du client (micro-euros), null si inconnu. */
+function budgetLeft(userId: string): number | null {
+  try {
+    return balance(userId).available;
+  } catch {
+    return null;
+  }
 }
 
 /** Contexte Brain d'un appel : explicite, sinon retrouvé à partir du bloc <contexte_projet> de projectContext. */
@@ -108,7 +123,17 @@ function client(): Anthropic {
 
 /** IA texte utilisable pour la tâche en cours : fournisseur configuré et crédits disponibles (sinon moteur local). */
 export function llmConfigured() {
-  return !!activeProviderKey("anthropic") && currentUserHasAiCredits();
+  return textProviderReady() && currentUserHasAiCredits();
+}
+
+/**
+ * Au moins un fournisseur de texte prêt : Anthropic configuré, ou — en routage automatique — un modèle OpenAI ou
+ * Gemini confirmé, tarifé et activé (le studio ne dépend plus exclusivement d'Anthropic).
+ */
+export function textProviderReady(): boolean {
+  if (activeProviderKey("anthropic")) return true;
+  if (routingMode() !== "auto") return false;
+  return TEXT_MODELS.some((m) => m.provider !== "anthropic" && modelStatus(m).autoEligible);
 }
 
 async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {
@@ -226,10 +251,14 @@ type RawResult = { text: string; stop: string | null; model: string };
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
   const decision = routeLlm(call);
   const route = { provider: decision.provider, model: decision.model, effort: decision.effort };
+  // OpenAI et Gemini : même autorisation, même réservation, même trace, même facturation (aucun contournement).
+  if (hasTextAdapter(route.provider)) return otherCall(call, decision, messages, format, suffix, callTry);
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
   // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non.
   assertAiAllowed(call.userId);
-  const isHaiku = route.model.startsWith("claude-haiku");
+  // Seul Haiku 4.5 n'a pas d'effort réglable (réflexion par budget de jetons) ; Haiku 5.5 suit le chemin commun.
+  const isHaiku = route.model === "claude-haiku-4-5";
+  const effort = mapEffort("anthropic", route.model, route.effort ?? "medium") ?? "medium";
   const { brain } = brainOf(call);
   const params: any = {
     model: route.model,
@@ -247,7 +276,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   const reservation = reserve(call.userId, maxMicro, { task: call.task, provider: "anthropic", model: route.model, jobId: call.jobId, projectId: call.projectId });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
-    params.output_config = { effort: route.effort ?? "medium", ...(format ? { format } : {}) };
+    params.output_config = { effort, ...(format ? { format } : {}) };
   } else if (format) {
     params.output_config = { format };
   }
@@ -263,7 +292,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     provider: "anthropic",
     requestedModel: route.model,
     unit: "tokens" as const,
-    effort: isHaiku ? null : (route.effort ?? "medium"),
+    effort: isHaiku ? null : effort,
     usageKey: call.usageKey ? `${call.usageKey}${suffix}` : null,
     promptKey: call.promptKey ?? call.task,
     promptHash: shortHash(params.system[0].text),
@@ -333,6 +362,147 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   if (msg.stop_reason === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
   const text = msg.content.filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text").map((b) => b.text).join("");
   return { text, stop: msg.stop_reason, model: msg.model };
+}
+
+/** Conversation au format neutre des adaptateurs (texte et images JPEG déjà préparées). */
+function toTurns(messages: Anthropic.Beta.BetaMessageParam[]): TextTurn[] {
+  return messages.map((m) => {
+    const blocks = typeof m.content === "string" ? [{ type: "text", text: m.content }] : (m.content as any[]);
+    const parts: TextPart[] = [];
+    for (const b of blocks) {
+      if (b?.type === "text" && typeof b.text === "string") parts.push({ type: "text", text: b.text });
+      else if (b?.type === "image" && b.source?.type === "base64") parts.push({ type: "image", jpegBase64: b.source.data });
+    }
+    return { role: m.role === "assistant" ? "assistant" : "user", parts };
+  });
+}
+
+/**
+ * Coût MAXIMAL d'un appel OpenAI ou Gemini, en micro-euros, coefficient compris — mêmes principes qu'Anthropic :
+ *  - entrée = comptage EXACT du fournisseur (endpoint gratuit) + octets du schéma imposé + marge, tout au tarif
+ *    d'entrée plein (aucune remise de cache supposée) ;
+ *  - sortie = plafond envoyé (réflexion comprise chez OpenAI) ; chez Gemini, la réflexion est comptée EN PLUS
+ *    (prise en compte dans le plafond non confirmée), jusqu'à la sortie maximale du modèle ;
+ *  - bloqué si le modèle n'est pas confirmé, le tarif inconnu, le comptage impossible ou la demande trop longue.
+ */
+export async function otherMaxCostMicro(provider: string, req: TextRequest, count: (r: TextRequest) => Promise<number>) {
+  const m = textModel(provider, req.model);
+  if (!m) throw new PermanentError(L(`Modèle ${provider}:${req.model} absent du catalogue : coût maximal non garanti, appel bloqué.`, `Model ${provider}:${req.model} isn't in the catalog: maximum cost can't be guaranteed, call blocked.`));
+  const st = modelStatus(m);
+  if (!st.confirmed) throw new PermanentError(L(`Modèle ${m.label} non confirmé dans l'administration (identifiant, tarif, limites) : appel bloqué.`, `Model ${m.label} isn't confirmed in the admin settings (ID, price, limits): call blocked.`));
+  const p = requirePrice(provider, req.model);
+  if (p.unit !== "tokens") throw new UserFacingError(L(`Tarif « jetons » attendu pour ${provider}:${req.model}.`, `A per-token price is expected for ${provider}:${req.model}.`));
+  if (!(req.maxOutput > 0) || req.maxOutput > m.limits.maxOutput) throw new PermanentError(L(`Limite de sortie invalide pour ${req.model}.`, `Invalid output limit for ${req.model}.`));
+  let counted: number;
+  try {
+    counted = await count(req);
+  } catch (e) {
+    if (e instanceof ProviderHttpError && (e.status === 429 || e.status >= 500)) throw e;
+    throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
+  }
+  if (!Number.isFinite(counted) || counted <= 0) throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
+  const formatTokens = req.jsonSchema ? Buffer.byteLength(JSON.stringify(req.jsonSchema), "utf8") : 0;
+  const inTok = Math.ceil((counted + formatTokens) * INPUT_MARGIN.ratio) + INPUT_MARGIN.tokens;
+  if (inTok + req.maxOutput > m.limits.context || inTok > m.limits.flatPriceUpTo) throw new UserFacingError(L(`Demande trop longue (${counted} jetons) pour ${m.label} : raccourcissez-la.`, `Request too long (${counted} tokens) for ${m.label}: shorten it.`));
+  const outTok = req.maxOutput + (thinkingOutsideMaxOutput(provider) && req.effort ? m.limits.maxOutput : 0);
+  const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
+  return Math.ceil(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
+}
+
+/** Adaptateurs remplaçables dans les tests (aucun appel réel). */
+export const textDeps = { adapters: textAdapters as Record<"openai" | "google", { count: (r: TextRequest, key: string) => Promise<number>; send: (r: TextRequest, key: string) => Promise<TextResult> }> };
+
+/** Appel OpenAI / Gemini : mêmes garde-fous que rawCall (droits, plafond de tâche, réservation, trace, facturation). */
+async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthropic.Beta.BetaMessageParam[], format: unknown, suffix: string, callTry: number): Promise<RawResult> {
+  const provider = decision.provider as "openai" | "google";
+  const model = decision.model;
+  const m = textModel(provider, model);
+  if (!m) throw new PermanentError(L(`Modèle ${provider}:${model} absent du catalogue des modèles de texte.`, `Model ${provider}:${model} isn't in the text model catalog.`));
+  const key = activeProviderKey(provider);
+  if (!key) throw new UserFacingError(L(`La clé ${provider} est absente ou désactivée dans l'administration.`, `The ${provider} key is missing or disabled in the admin settings.`));
+  assertAiAllowed(call.userId);
+  const adapter = textDeps.adapters[provider];
+  const effort = mapEffort(provider, model, decision.effort ?? null);
+  const schema = format && typeof format === "object" && (format as any).schema ? ((format as any).schema as Record<string, unknown>) : null;
+  const req: TextRequest = { model, system: systemText(call), turns: toTurns(messages), maxOutput: Math.min(m.limits.maxOutput, Math.max(call.maxTokens ?? 16000, 4000)), effort, jsonSchema: schema };
+  const { brain } = brainOf(call);
+  const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
+  assertUnderCostCap(maxMicro);
+  const reservation = reserve(call.userId, maxMicro, { task: call.task, provider, model, jobId: call.jobId, projectId: call.projectId });
+  const started = Date.now();
+  let attempts = 0;
+  const trace = {
+    userId: call.userId,
+    projectId: call.projectId,
+    jobId: call.jobId,
+    task: call.task,
+    provider,
+    requestedModel: model,
+    unit: "tokens" as const,
+    effort,
+    usageKey: call.usageKey ? `${call.usageKey}${suffix}` : null,
+    promptKey: call.promptKey ?? call.task,
+    promptHash: shortHash(req.system),
+    callTry,
+    brainScope: brain?.scope ?? null,
+    brainHash: brain?.hash ?? null,
+    brainVersion: brain?.version ?? null,
+    routingReason: decision.reason,
+    fallback: decision.fallback,
+    escalation: decision.escalation,
+  };
+  let res: TextResult;
+  try {
+    for (let attempt = 0; ; attempt++) {
+      attempts++;
+      try {
+        res = await adapter.send(req, key);
+        break;
+      } catch (e) {
+        if (!(e instanceof ProviderHttpError) || !RETRYABLE(e.status) || attempt >= RETRY_DELAYS_MS.length) throw e;
+        await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
+      }
+    }
+  } catch (e) {
+    // Réponse d'erreur HTTP : rien n'a été produit ni facturé, la réservation est rendue. Sinon : coût maximal retenu.
+    if (e instanceof ProviderHttpError) release(reservation, `refus du fournisseur (${e.status})`);
+    else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+    recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
+    if (e instanceof ProviderHttpError && (e.status === 401 || e.status === 403)) throw new PermanentError(L(`La clé ${provider} configurée est refusée. Vérifiez-la dans l'administration.`, `The configured ${provider} key was rejected. Check it in the admin settings.`));
+    if (e instanceof ProviderHttpError && e.status === 404) throw new PermanentError(L(`Modèle introuvable (${model}). Corrigez le routage dans l'administration.`, `Model not found (${model}). Fix the routing in the admin settings.`));
+    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    throw e;
+  }
+  let billed: { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean };
+  try {
+    const p = priceFor(provider, model);
+    // Entrée mise en cache comptée au tarif plein (remise du fournisseur non supposée : jamais sous le coût réel).
+    const usd = p && p.unit === "tokens" ? (res!.usage.input * p.inputPerM + res!.usage.output * p.outputPerM) / 1e6 : 0;
+    const costMicro = Math.round(usd * usdToEur() * EUR);
+    const b = recordUsage({ userId: call.userId, projectId: call.projectId, jobId: call.jobId, task: call.task, provider, model, unit: "tokens", inputUnits: res!.usage.input, outputUnits: res!.usage.output, costMicro, estimated: !p, idempotencyKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined }, { reservationId: reservation });
+    billed = { costMicro, estimated: !p, ...b };
+  } catch (e) {
+    settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
+    throw e;
+  }
+  recordCall({
+    ...trace,
+    servedModel: res!.model,
+    inputTokens: Math.max(0, res!.usage.input - res!.usage.cachedInput),
+    cacheReadTokens: res!.usage.cachedInput,
+    cacheWriteTokens: 0,
+    outputTokens: res!.usage.output,
+    latencyMs: Date.now() - started,
+    httpAttempts: attempts,
+    stopReason: res!.stop,
+    costMicro: billed.costMicro,
+    estimated: billed.estimated,
+    usageEventId: billed.eventId,
+    billingDedup: billed.dedup,
+    status: res!.stop === "refusal" ? "refused" : "ok",
+  });
+  if (res!.stop === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
+  return { text: res!.text, stop: res!.stop === "max_tokens" ? "max_tokens" : res!.stop === "end_turn" ? "end_turn" : res!.stop, model: res!.model };
 }
 
 /** Plafond de sortie (réflexion comprise) quand une réponse JSON a été coupée faute de place. */
