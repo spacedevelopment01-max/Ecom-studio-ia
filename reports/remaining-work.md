@@ -5,7 +5,7 @@ Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
 Dernière mise à jour : **migration V1 → V2** (rapport `reports/v1-to-v2-migration.md`) validée par le propriétaire
-sur rapport et fusionnée dans `main` (migration **partielle**, voir ci-dessous) ; **tests fonctionnels et visuels du
+sur rapport et fusionnée dans `main` par la PR #66 (migration **partielle**, voir ci-dessous) ; **tests fonctionnels et visuels du
 propriétaire à venir** : les corrections et améliorations seront décidées à partir de ses observations. Phase 12A et correctifs post-audit **fusionnés** (PR #64 et #65).
 Check-up général : `reports/general-checkup.md`. Phase 11A fusionnée (PR #63) ; 11B non commencée. Phase 10A fusionnée
 (PR #62) ; **qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée
@@ -311,7 +311,8 @@ Reste à faire (issu de la migration) :
 - Scénarios A–J sur ordinateur et téléphone : **à faire par le propriétaire** (tests fonctionnels et visuels) ;
   parcours navigateur 12A, éditeur publicitaire et export CMS non rejoués après la migration.
 - Corrections et améliorations : à décider après les observations du propriétaire.
-- Test intermittent à surveiller : export CMS « mêmes octets » (1 échec sous charge, 3/3 seul).
+- Test intermittent « export CMS, mêmes octets » : **corrigé** avant la fusion (date fixe dans le ZIP du thème
+  Shopify, comme les autres exports) — cause : la date de création changeait d'une seconde à l'autre.
 
 ## Autres limites connues
 
