@@ -82,12 +82,12 @@ const shot = (page: Page, file: string, full = false) => page.screenshot({ path:
   await p.evaluate(() => window.scrollTo(0, 0));
   await p.waitForTimeout(800);
   const wasPaused = await p.evaluate(() => document.querySelector<HTMLVideoElement>("main video")!.paused);
-  await p.getByRole("button", { name: /Mettre la vidéo en pause|Lire la vidéo/ }).click();
+  await p.locator("main section").first().getByRole("button", { name: /Mettre la vidéo en pause|Lire la vidéo/ }).click();
   await p.waitForTimeout(400);
   const nowPaused = await p.evaluate(() => document.querySelector<HTMLVideoElement>("main video")!.paused);
   check("Vidéo d'entrée : bouton pause / lecture", wasPaused !== nowPaused, `${wasPaused} → ${nowPaused}`);
   // « Avec le son » relance depuis le début, avec les commandes
-  await p.getByRole("button", { name: "Avec le son" }).click();
+  await p.locator("main section").first().getByRole("button", { name: "Avec le son" }).click();
   await p.waitForTimeout(400);
   const sound = await p.evaluate(() => {
     const v = document.querySelector<HTMLVideoElement>("main video")!;
@@ -269,8 +269,8 @@ for (const [label, theme] of [["sombre", "dark"], ["clair", "light"]] as const) 
   await at(p, "#module-store", -120);
   check(`Téléphone ${label} : rail des modules fixé pendant le parcours`, await p.evaluate(() => { const el = document.querySelector("[aria-label='Modules du studio'][role=list]")!; const r = el.getBoundingClientRect(); return r.top >= 0 && r.top < 160; }));
   check(`Téléphone ${label} : aucun débordement horizontal`, (await overflow(p)) <= 0, `${await overflow(p)}px`);
-  const small = await p.evaluate(() => Array.from(document.querySelectorAll<HTMLElement>("main a, main button, header a, header button")).filter((e) => e.parentElement?.tagName !== "P").filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.height < 32 && getComputedStyle(e).visibility !== "hidden"; }).map((e) => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 24)));
-  check(`Téléphone ${label} : zones tactiles d'au moins 32 px de haut`, small.length === 0, small.slice(0, 6).join(" | "));
+  const small = await p.evaluate(() => Array.from(document.querySelectorAll<HTMLElement>("main a, main button, header a, header button")).filter((e) => e.parentElement?.tagName !== "P").filter((e) => { const w = e.offsetWidth, h = e.offsetHeight; return w > 0 && h > 0 && (h < 43.5 || w < 43.5) && getComputedStyle(e).visibility !== "hidden" && !e.closest("[aria-hidden=true]"); }).map((e) => (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 24)));
+  check(`Téléphone ${label} : commandes tactiles d'au moins 44 × 44 px (liens dans le texte exceptés)`, small.length === 0, small.slice(0, 6).join(" | "));
   await p.context().close();
 }
 for (const [w, h, name] of [[768, 1024, "tablette"], [1024, 768, "portable"], [360, 740, "petit-telephone"]] as const) {

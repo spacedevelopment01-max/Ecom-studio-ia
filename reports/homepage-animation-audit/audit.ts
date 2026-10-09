@@ -121,8 +121,9 @@ if (MODE !== "videos") {
   const logo = await sample<number>(p, `Math.round(document.querySelector("#visuels button[aria-label='Sélectionner le logo']").getBoundingClientRect().left)`, 700, 50);
   check("Éditeur de publicité : le logo glisse vers sa nouvelle place (positions intermédiaires)", distinct(logo) >= 4, logo.map((x) => x.v).join(" → "));
   await p.locator("#visuels").getByRole("button", { name: "9:16" }).click();
-  const ratio = await sample<number>(p, `(() => { const r = document.querySelector("#visuels button[aria-label='Sélectionner la photo']").parentElement.getBoundingClientRect(); return +(r.height / r.width).toFixed(2); })()`, 700, 50);
-  check("Éditeur de publicité : changement de format animé (4:5 → 9:16)", distinct(ratio) >= 3, ratio.map((x) => x.v).join(" → "));
+  // Changement de format : la nouvelle mise en page apparaît en fondu (pas d'animation de taille, règle layout-shift-avoid).
+  const ratio = await sample<{ o: number; r: number }>(p, `(() => { const c = document.querySelector("#visuels button[aria-label='Sélectionner la photo']").parentElement; const r = c.getBoundingClientRect(); return { o: +(+getComputedStyle(c).opacity).toFixed(2), r: +(r.height / r.width).toFixed(2) }; })()`, 600, 50);
+  check("Éditeur de publicité : nouveau format affiché en fondu (opacité progressive, sans animer la taille)", ratio[0].v.r === 1.78 && ratio.some((x) => x.v.o > 0.05 && x.v.o < 0.95), ratio.map((x) => x.v.o).join(" → "));
   out.editeurPublicite = { logoGauche: logo, rapportHauteurLargeur: ratio };
 
   await p.evaluate(() => window.scrollTo(0, document.querySelector("#connecte")!.getBoundingClientRect().top + window.scrollY + 300));
@@ -138,27 +139,38 @@ if (MODE !== "videos") {
   check("Personnalisation : arrondis qui changent en douceur", distinct(radius) >= 3, radius.map((x) => x.v).join(" → "));
   out.personnalisation = radius;
 
-  // 1g. Bascule de thème : couleur du fond et durée de chaque image pendant le fondu (0,45 s prévus)
+  // 1g. Bascule de thème : « fondu par le fond » (un voile monte, le thème change dessous, le voile s'efface).
+  //     Mesure image par image : opacité du voile, couleur de fond, durée de chaque image.
   await p.evaluate(() => window.scrollTo(0, 0));
   await p.waitForTimeout(500);
   const theme = (await p.evaluate(`(async () => {
     const btn = document.querySelector("header button[aria-label^='Passer en thème']");
-    const hp = document.querySelector(".hp");
     const frame = () => new Promise((r) => requestAnimationFrame(() => r(performance.now())));
-    await frame();
+    // Rythme de la page au repos (vidéo d'entrée en lecture), pour comparaison.
+    const base = []; let lb = await frame();
+    for (let i = 0; i < 30; i++) { const t = await frame(); base.push(Math.round(t - lb)); lb = t; }
     const t0 = performance.now();
     btn.click();
     const res = [];
-    for (let i = 0; i < 30; i++) { const t = await frame(); res.push({ t: Math.round(t - t0), bg: getComputedStyle(hp).backgroundColor }); }
-    return res;
-  })()`)) as { t: number; bg: string }[];
-  const gaps = theme.map((x, i) => x.t - (i ? theme[i - 1].t : 0));
-  out.basculeTheme = { images: theme, ecartsMs: gaps, nombreElementsPage: await p.evaluate(() => document.querySelectorAll("*").length) };
-  const inter = new Set(theme.map((x) => x.bg)).size;
-  check("Bascule clair / sombre : le fondu existe (couleurs intermédiaires)", inter >= 3, `${inter} couleurs différentes`);
-  check("Bascule clair / sombre : fondu fluide (images ≤ 50 ms)", Math.max(...gaps) <= 50, `écarts entre images : ${gaps.slice(0, 12).join(", ")} ms`);
+    let last = t0;
+    for (let i = 0; i < 60; i++) {
+      const t = await frame();
+      const v = document.querySelector("[data-theme-veil]");
+      res.push({ t: Math.round(t - t0), ecart: Math.round(t - last), voile: v ? +(+getComputedStyle(v).opacity).toFixed(2) : null, bg: getComputedStyle(document.querySelector(".hp")).backgroundColor });
+      last = t;
+      if (!v && i > 10) break;
+    }
+    return { repos: base, images: res, elementsAvecTransition: Array.from(document.querySelectorAll(".hp *")).filter((e) => getComputedStyle(e).transitionProperty.includes("background-color")).length };
+  })()`)) as { repos: number[]; images: { t: number; ecart: number; voile: number | null; bg: string }[]; elementsAvecTransition: number };
+  out.basculeTheme = theme;
+  const partial = theme.images.filter((x) => x.voile !== null && x.voile > 0.03 && x.voile < 0.97);
+  const visibleGaps = theme.images.filter((x) => x.voile === null || x.voile < 0.97).map((x) => x.ecart);
+  check("Bascule clair / sombre : fondu progressif (voile à opacité intermédiaire, un seul élément animé)", partial.length >= 4 && new Set(theme.images.map((x) => x.bg)).size === 2, `${partial.length} images de fondu ; voile ${theme.images.map((x) => x.voile).filter((v) => v !== null).join(" → ")}`);
+  const reposMax = Math.max(...theme.repos);
+  const moy = (a: number[]) => Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+  check("Bascule clair / sombre : aucune image visible au-delà de 50 ms pendant le fondu (le recalcul est caché sous le voile)", Math.max(...visibleGaps) <= 50, `fondu : moyenne ${moy(visibleGaps)} ms, max ${Math.max(...visibleGaps)} ms ; page au repos : moyenne ${moy(theme.repos)} ms, max ${reposMax} ms ; sous le voile opaque : ${theme.images.filter((x) => x.voile !== null && x.voile >= 0.97).map((x) => x.ecart).join(", ")} ms`);
   await p.getByRole("button", { name: "Passer en thème sombre" }).first().click();
-  await p.waitForTimeout(1500);
+  await p.waitForTimeout(1200);
 
   // 1h. Défilement non bloqué et fluidité
   const blockers = await p.evaluate(() => ({ html: getComputedStyle(document.documentElement).overflowY, body: getComputedStyle(document.body).overflowY, snap: getComputedStyle(document.documentElement).scrollSnapType }));
@@ -270,7 +282,7 @@ async function recordDesktop(theme: "dark" | "light", name: string) {
   await wheelTo(p, (await topOf(p, "#visuels")) + 500); // galerie horizontale fixée traversée
   await wheelTo(p, (await topOf(p, "#editeur-publicite")) - 60);
   await p.locator("#visuels").getByLabel("Titre", { exact: true }).fill("Dormez mieux.");
-  for (const n of ["En haut à droite", "9:16", "1:1", "En bas", "4:5"]) { await p.locator("#visuels").getByRole("button", { name: n }).click(); await p.waitForTimeout(700); }
+  for (const n of ["En haut à droite", "9:16", "1:1", "En bas à droite", "4:5"]) { await p.locator("#visuels").getByRole("button", { name: n }).click(); await p.waitForTimeout(700); }
   await wheelTo(p, (await topOf(p, "#seo")) - 40);
   await p.locator("#seo").getByRole("tab", { name: "Article de blog" }).click(); await p.waitForTimeout(900);
   await wheelTo(p, (await topOf(p, "#social")) + 250);

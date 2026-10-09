@@ -54,7 +54,10 @@ describe("Accueil premium", () => {
     // Les deux directions artistiques de l'accueil : thème système sombre ET choix explicite.
     expect(css).toMatch(/@media \(prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme="light"\]\) \.hp \{/);
     expect(css).toMatch(/:root\[data-theme="dark"\] \.hp \{/);
-    expect(css).toContain("html.hp-theme-anim");
+    // Fondu léger : un seul voile qui s'efface (opacity), jamais de transition posée sur tous les éléments.
+    expect(home).toContain("veil.style.opacity");
+    expect(home).toContain("prefers-reduced-motion: reduce");
+    expect(css).not.toMatch(/html\.[\w-]+ \* \{ transition/);
   });
 
   it("tarifs et capacités lus dans la configuration, connexions non essayées signalées", () => {

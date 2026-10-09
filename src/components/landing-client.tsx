@@ -1,8 +1,10 @@
 "use client";
 /** Îlots interactifs de la page d'accueil. */
 import { useEffect, useRef, useState } from "react";
+import { Pause, Play } from "lucide-react";
 import { cx } from "./ui";
 import { useLang, useT } from "./i18n";
+import { onTabKeys } from "./home/tabs";
 
 /** Ajoute la classe « in » aux éléments .reveal visibles (une seule fois). */
 export function RevealObserver() {
@@ -14,7 +16,8 @@ export function RevealObserver() {
     }
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && (e.target.classList.add("in"), io.unobserve(e.target))),
-      { rootMargin: "0px 0px -10% 0px", threshold: 0.1 },
+      // Déclenchement dès l'entrée dans l'écran : pas de zone vide en bas de page pendant le défilement.
+      { rootMargin: "0px 0px -4% 0px", threshold: 0.01 },
     );
     els.forEach((e) => io.observe(e));
     return () => io.disconnect();
@@ -25,6 +28,10 @@ export function RevealObserver() {
 /** Vidéo muette lue seulement quand elle est visible (économie de batterie). */
 export function AutoVideo({ src, poster, className, label }: { src: string; poster?: string; className?: string; label: string }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const [paused, setPaused] = useState(false); // choisi par le visiteur : la vidéo ne reprend plus seule
+  const [playing, setPlaying] = useState(false);
+  const pausedRef = useRef(false);
+  const t = useT();
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
@@ -32,11 +39,27 @@ export function AutoVideo({ src, poster, className, label }: { src: string; post
       v.controls = true;
       return;
     }
-    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? v.play().catch(() => {}) : v.pause()), { threshold: 0.25 });
+    const io = new IntersectionObserver(([e]) => (e.isIntersecting && !pausedRef.current ? v.play().catch(() => {}) : v.pause()), { threshold: 0.25 });
     io.observe(v);
     return () => io.disconnect();
   }, []);
-  return <video ref={ref} src={src} poster={poster} muted loop playsInline preload="none" aria-label={label} className={className} />;
+  const toggle = () => {
+    const v = ref.current;
+    if (!v) return;
+    pausedRef.current = !v.paused;
+    setPaused(pausedRef.current);
+    if (v.paused) v.play().catch(() => {});
+    else v.pause();
+  };
+  return (
+    <div className="relative">
+      <video ref={ref} src={src} poster={poster} muted loop playsInline preload="none" aria-label={label} className={className} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} />
+      {/* Vidéo en boucle : pause possible à tout moment (contenu en mouvement de plus de 5 s). */}
+      <button type="button" onClick={toggle} aria-label={playing ? t("Mettre la vidéo en pause", "Pause the video") : t("Lire la vidéo", "Play the video")} aria-pressed={paused} className="absolute bottom-2 right-2 grid size-11 cursor-pointer place-items-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/70">
+        {playing ? <Pause className="size-4" aria-hidden /> : <Play className="size-4" aria-hidden />}
+      </button>
+    </div>
+  );
 }
 
 /** `captions` : sous-titres français ; `captionsEn` : sous-titres anglais (piste affichée par défaut selon la langue). */
@@ -161,9 +184,9 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
   if (!d) return null;
   return (
     <div>
-      <div role="tablist" aria-label={t("Démonstrations", "Demos")} className="scrollbar-none -mx-4 mb-8 flex gap-2 overflow-x-auto px-4">
+      <div role="tablist" onKeyDown={(e) => onTabKeys(e, i, demos.length, setI)} aria-label={t("Démonstrations", "Demos")} className="scrollbar-none -mx-4 mb-8 flex gap-2 overflow-x-auto px-4">
         {demos.map((x, k) => (
-          <button key={x.id} role="tab" aria-selected={k === i} onClick={() => setI(k)} className={cx("shrink-0 rounded-full border px-4 py-2 text-sm transition", k === i ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")}>
+          <button key={x.id} type="button" role="tab" tabIndex={k === i ? 0 : -1} aria-selected={k === i} onClick={() => setI(k)} className={cx("min-h-11 shrink-0 cursor-pointer rounded-full border px-4 py-2 text-sm transition", k === i ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")}>
             {x.brand} <span className="opacity-60">· {x.sector}</span>
           </button>
         ))}
@@ -206,7 +229,7 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
             {d.images.slice(0, 3).map((im) => (
               <figure key={im.src} className="overflow-hidden rounded-2xl border border-line bg-card">
                 <img src={im.src} alt={im.label} className="aspect-[4/5] w-full object-cover" loading="lazy" />
-                <figcaption className="truncate px-3 py-2 text-[11px] text-muted">{im.label}</figcaption>
+                <figcaption className="truncate px-3 py-2 text-xs text-muted">{im.label}</figcaption>
               </figure>
             ))}
           </div>
@@ -214,7 +237,7 @@ export function DemoTabs({ demos }: { demos: Demo[] }) {
         <div className="grid grid-cols-2 gap-4 lg:col-span-3 lg:grid-cols-1">
           <div className="relative mx-auto w-full max-w-[260px] overflow-hidden rounded-[2rem] border-[6px] border-ink bg-ink">
             <AutoVideo src={d.video} poster={d.videoPoster} label={t(`Publicité vidéo 9:16 pour ${d.brand}`, `9:16 video ad for ${d.brand}`)} className="aspect-[9/16] w-full object-cover" />
-            <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">{t("Vidéo 9:16 · MP4", "9:16 video · MP4")}</span>
+            <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{t("Vidéo 9:16 · MP4", "9:16 video · MP4")}</span>
           </div>
           <div className="relative mx-auto w-full max-w-[200px] overflow-hidden rounded-[1.6rem] border-[5px] border-ink bg-ink lg:hidden">
             <img src={d.shopMobile} alt={t(`Boutique ${d.brand} sur téléphone`, `${d.brand} store on mobile`)} className="aspect-[9/19] w-full object-cover object-top" loading="lazy" />
@@ -400,7 +423,7 @@ export function ThemeShowcase({ themes, children }: { themes: ThemeShow[]; child
               <div className="overflow-hidden rounded-[1.25rem] border border-line bg-paper">
                 <div className="flex items-center gap-1.5 border-b border-line px-3 py-2">
                   <span className="size-2 rounded-full bg-line" /><span className="size-2 rounded-full bg-line" /><span className="size-2 rounded-full bg-line" />
-                  <span className="ml-2 truncate text-[11px] text-muted">{d.name.toLowerCase()}.myshopify.com</span>
+                  <span className="ml-2 truncate text-xs text-muted">{d.name.toLowerCase()}.myshopify.com</span>
                 </div>
                 <img src={d.preview} alt={t(`Boutique de démonstration, thème ${d.name}`, `Demo store, ${d.name} theme`)} loading="lazy" className="aspect-[16/11] w-full object-cover object-top" />
               </div>
@@ -411,8 +434,8 @@ export function ThemeShowcase({ themes, children }: { themes: ThemeShow[]; child
                 </div>
                 <p className="serif-i text-lg text-signal">{d.tagline}</p>
                 <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {d.chrome.map((c) => <li key={c} className="rounded-full border border-line bg-paper px-2.5 py-1 text-[11px] text-ink-2">{c}</li>)}
-                  {d.dark && <li className="rounded-full bg-ink px-2.5 py-1 text-[11px] text-paper">{t("Version sombre", "Dark version")}</li>}
+                  {d.chrome.map((c) => <li key={c} className="rounded-full border border-line bg-paper px-2.5 py-1 text-xs text-ink-2">{c}</li>)}
+                  {d.dark && <li className="rounded-full bg-ink px-2.5 py-1 text-xs text-paper">{t("Version sombre", "Dark version")}</li>}
                 </ul>
               </div>
             </article>

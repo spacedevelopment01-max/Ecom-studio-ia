@@ -50,7 +50,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
             <img src={d.logo} alt={t(`Logo ${d.brand}`, `${d.brand} logo`)} className="max-h-28 w-auto object-contain" loading="lazy" />
           </div>
           <div className="flex flex-col justify-between rounded-2xl border border-line bg-paper-2 p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-muted">{t("Typographies", "Typefaces")}</p>
+            <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Typographies", "Typefaces")}</p>
             <p className="font-display text-4xl font-semibold leading-none text-ink">Aa</p>
             <ul className="grid gap-0.5 text-xs text-ink-2">
               <li>{t("Titres", "Headings")} · {d.fonts.heading}</li>
@@ -63,7 +63,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
           <div className="flex h-12 overflow-hidden rounded-xl">
             {d.palette.map((c) => <span key={c} className="flex-1" style={{ background: c }} />)}
           </div>
-          <div className="mt-2 flex justify-between gap-1 font-mono text-[10px] text-muted sm:text-[11px]">
+          <div className="mt-2 flex justify-between gap-1 font-mono text-xs text-muted sm:text-xs">
             {d.palette.map((c) => <span key={c}>{c}</span>)}
           </div>
           <p className="mt-2 text-xs text-ink-2">{t(`Palette mesurée sur le produit · direction « ${d.direction} »`, `Palette measured on the product · “${d.direction}” direction`)}</p>
@@ -74,7 +74,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
     return (
       <div className="relative h-full p-4 sm:p-5">
         <div className="overflow-hidden rounded-xl border border-line bg-card shadow-sm">
-          <div className="flex items-center gap-1 border-b border-line px-2.5 py-1.5"><span className="hp-dot" /><span className="hp-dot" /><span className="hp-dot" /><span className="ml-2 truncate text-[10px] text-muted">{d.brand.toLowerCase()}.myshopify.com</span></div>
+          <div className="flex items-center gap-1 border-b border-line px-2.5 py-1.5"><span className="hp-dot" /><span className="hp-dot" /><span className="hp-dot" /><span className="ml-2 truncate text-xs text-muted">{d.brand.toLowerCase()}.myshopify.com</span></div>
           <img src={d.shopDesktop} alt={t(`Boutique ${d.brand} sur ordinateur`, `${d.brand} store on desktop`)} loading="lazy" className="aspect-[16/10] w-full object-cover object-left-top" />
         </div>
         <div className="absolute bottom-3 right-4 w-[27%] overflow-hidden rounded-[1.1rem] border-[4px] border-[var(--hp-frame)] bg-[var(--hp-frame)] shadow-2xl sm:right-6">
@@ -89,7 +89,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
         {tiles.map(([src, l], i) => (
           <figure key={src} className={cx("relative overflow-hidden rounded-2xl border border-line", i === 0 ? "bg-[repeating-conic-gradient(#E9ECF3_0_25%,#fff_0_50%)] [background-size:16px_16px]" : "bg-paper-2")}>
             <Img src={src} alt={l} contain={i === 0} className={i === 0 ? "p-3" : ""} />
-            <figcaption className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">{l}</figcaption>
+            <figcaption className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">{l}</figcaption>
           </figure>
         ))}
       </div>
@@ -124,13 +124,13 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-line bg-[#070B17]">
           <Img src={d.videoPoster} alt={t(`Image de la vidéo ${d.brand}`, `${d.brand} video frame`)} className="opacity-90" />
           <span className="absolute inset-0 grid place-items-center"><span className="grid size-12 place-items-center rounded-full bg-white/90 text-[#0B1533] shadow-lg"><Play className="size-5" aria-hidden /></span></span>
-          <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">{t("Rendu MP4 après votre accord", "MP4 render after your approval")}</span>
+          <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{t("Rendu MP4 après votre accord", "MP4 render after your approval")}</span>
         </div>
         <ol className="grid grid-cols-4 gap-2">
           {shots.map(([src, l], i) => (
             <li key={i} className="overflow-hidden rounded-xl border border-line bg-card">
               <img src={src} alt="" aria-hidden loading="lazy" className="aspect-[4/3] w-full object-cover" />
-              <p className="truncate px-1.5 py-1 text-[10px] text-ink-2"><span className="font-semibold text-ink">{i + 1}</span> · {l}</p>
+              <p className="truncate px-1.5 py-1 text-xs text-ink-2"><span className="font-semibold text-ink">{i + 1}</span> · {l}</p>
             </li>
           ))}
         </ol>
@@ -141,7 +141,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
     return (
       <div className="grid h-full grid-cols-1 gap-3 p-4 sm:grid-cols-[1.35fr_1fr] sm:p-5">
         <article className="overflow-hidden rounded-2xl border border-line bg-card p-4 text-xs leading-relaxed text-ink-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-muted">{t("Fiche produit · modifiable", "Product page · editable")}</p>
+          <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Fiche produit · modifiable", "Product page · editable")}</p>
           <h4 className="mt-2 font-display text-lg font-semibold leading-tight text-ink">{d.product}</h4>
           <p className="mt-1.5">{t("Oreiller ergonomique en forme de papillon.", "Butterfly-shaped ergonomic pillow.")}</p>
           <ul className="mt-2 grid gap-1">
@@ -168,7 +168,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
       <div className="grid grid-cols-7 gap-1.5" aria-hidden>
         {days.map((dd, i) => (
           <div key={dd} className={cx("flex flex-col items-center gap-1 rounded-xl border py-2", posts[i] ? "border-line bg-card" : "border-transparent")}>
-            <span className="text-[10px] font-semibold text-muted">{dd}</span>
+            <span className="text-xs font-semibold text-muted">{dd}</span>
             <span className={cx("size-1.5 rounded-full", posts[i] ? "bg-signal" : "bg-line")} />
           </div>
         ))}
@@ -181,7 +181,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
               <span className="block text-sm font-semibold text-ink">{net}</span>
               <span className="block text-xs text-muted">{days[Number(day)]} · {["18:00", "", "12:30", "", "20:00", "11:00"][Number(day)]}</span>
             </span>
-            <span className={cx("inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold", st === "review" ? "bg-[#FCEBD0] text-[#7A4500]" : st === "ok" ? "bg-[#DDF2E6] text-[#165C3A]" : "bg-[#E9EDFD] text-[#2F4BD8]")}>
+            <span className={cx("inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold", st === "review" ? "bg-[#FCEBD0] text-[#7A4500]" : st === "ok" ? "bg-[#DDF2E6] text-[#165C3A]" : "bg-[#E9EDFD] text-[#2F4BD8]")}>
               {st === "review" ? <Clock className="size-3" aria-hidden /> : st === "ok" ? <Check className="size-3" aria-hidden /> : <CalendarDays className="size-3" aria-hidden />} {status[st]}
             </span>
           </li>
@@ -216,7 +216,7 @@ export function StoryScroll({ steps, demo }: { steps: StoryStep[]; demo: StoryDe
           {steps.map((s, i) => {
             const Icon = ICONS[s.key];
             return (
-              <button key={s.key} type="button" role="listitem" data-k={i} onClick={() => go(i)} aria-current={i === active ? "step" : undefined} className={cx("inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition", i === active ? "bg-ink text-paper" : "bg-card text-ink-2 ring-1 ring-line")}>
+              <button key={s.key} type="button" role="listitem" data-k={i} onClick={() => go(i)} aria-current={i === active ? "step" : undefined} className={cx("inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition", i === active ? "bg-ink text-paper" : "bg-card text-ink-2 ring-1 ring-line")}>
                 <Icon className="size-3.5" aria-hidden /> {s.label}
               </button>
             );
@@ -230,7 +230,7 @@ export function StoryScroll({ steps, demo }: { steps: StoryStep[]; demo: StoryDe
           {steps.map((s, i) => {
             const Icon = ICONS[s.key];
             return (
-              <li key={s.key} ref={(el) => void (refs.current[i] = el)} data-i={i} id={`module-${s.key}`} className={cx("scroll-mt-40 py-10 lg:flex lg:min-h-[78vh] lg:flex-col lg:justify-center lg:py-0", "lg:transition-opacity lg:duration-500", i === active ? "lg:opacity-100" : "lg:opacity-40")}>
+              <li key={s.key} ref={(el) => void (refs.current[i] = el)} data-i={i} id={`module-${s.key}`} className={cx("scroll-mt-40 py-10 lg:flex lg:flex-col lg:justify-center lg:py-0", i === 0 ? "lg:min-h-[64vh]" : "lg:min-h-[78vh]", "lg:transition-opacity lg:duration-500", i === active ? "lg:opacity-100" : "lg:opacity-40")}>
                 <p className="flex items-center gap-3 text-sm font-semibold text-signal">
                   <span className="grid size-9 place-items-center rounded-xl bg-signal-soft"><Icon className="size-4" aria-hidden /></span>
                   <span className="font-display tabular-nums">{String(i + 1).padStart(2, "0")}</span>
@@ -258,7 +258,7 @@ export function StoryScroll({ steps, demo }: { steps: StoryStep[]; demo: StoryDe
               <div className="hp-window-bar">
                 <span className="hp-dot" /><span className="hp-dot" /><span className="hp-dot" />
                 <span className="ml-2 truncate text-xs text-muted">{t("Studio", "Studio")} · {demo.brand}</span>
-                <span className="ml-auto rounded-full bg-signal-soft px-2 py-0.5 text-[10px] font-semibold text-signal">{t("Démonstration", "Demo")}</span>
+                <span className="ml-auto rounded-full bg-signal-soft px-2 py-0.5 text-xs font-semibold text-signal">{t("Démonstration", "Demo")}</span>
               </div>
               <div className="grid grid-cols-[176px_minmax(0,1fr)]">
                 <nav className="border-r border-line bg-paper-2/60 p-2" aria-label={t("Modules du studio", "Studio modules")}>

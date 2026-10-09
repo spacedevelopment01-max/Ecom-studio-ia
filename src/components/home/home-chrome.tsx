@@ -18,7 +18,7 @@ function currentMode(): Mode {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-/** Bascule soleil / lune : fondu doux des couleurs (aucun si l'utilisateur demande moins de mouvement). */
+/** Bascule soleil / lune : fondu léger entre les deux thèmes (aucun si l'utilisateur demande moins de mouvement). */
 export function ThemeSwitch({ className }: { className?: string }) {
   const t = useT();
   const [mode, setMode] = useState<Mode | null>(null);
@@ -38,16 +38,35 @@ export function ThemeSwitch({ className }: { className?: string }) {
   }, []);
   const toggle = () => {
     const next: Mode = currentMode() === "dark" ? "light" : "dark";
-    const root = document.documentElement;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduce) root.classList.add("hp-theme-anim");
-    root.dataset.theme = next;
-    try {
-      localStorage.setItem("ecs-theme", next);
-    } catch {}
+    const apply = () => {
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem("ecs-theme", next);
+      } catch {}
+      window.dispatchEvent(new Event("ecs-theme"));
+    };
+    // Fondu par le fond (« fade through ») : un seul voile de l'ancienne couleur de fond monte en 140 ms, le thème
+    // change dessous (le recalcul de la page se fait à l'abri du regard), puis le voile s'efface en 260 ms. Une seule
+    // propriété animée (opacity) sur un seul élément : mesuré plus léger que l'API View Transitions et que des
+    // transitions sur tous les éléments. Mouvement réduit : changement immédiat, sans voile.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return void (apply(), setMode(next));
+    document.querySelectorAll("[data-theme-veil]").forEach((v) => v.remove());
+    const veil = document.createElement("div");
+    veil.setAttribute("aria-hidden", "true");
+    veil.dataset.themeVeil = "";
+    const from = getComputedStyle(document.querySelector(".hp") ?? document.body).backgroundColor;
+    veil.style.cssText = `position:fixed;inset:0;z-index:2147483646;pointer-events:none;background:${from};opacity:0;transition:opacity 140ms cubic-bezier(.7,0,.84,0)`;
+    document.body.appendChild(veil);
+    requestAnimationFrame(() => requestAnimationFrame(() => (veil.style.opacity = "1")));
+    window.setTimeout(() => {
+      apply();
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        veil.style.transition = "opacity 260ms cubic-bezier(.16,1,.3,1)";
+        veil.style.opacity = "0";
+      }));
+      window.setTimeout(() => veil.remove(), 420);
+    }, 160);
     setMode(next);
-    window.dispatchEvent(new Event("ecs-theme"));
-    if (!reduce) window.setTimeout(() => root.classList.remove("hp-theme-anim"), 520);
   };
   const dark = mode === "dark";
   return (
@@ -110,7 +129,7 @@ export function HomeHeader({ links, loggedIn, ctaHref }: { links: NavLink[]; log
   return (
     <header className={cx("sticky top-0 z-50 transition-[background-color,border-color,box-shadow] duration-300", scrolled ? "hp-glass border-b border-line/80" : "border-b border-transparent")}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[72px] sm:px-6">
-        <Link href="/" aria-label={t("E-COM STUDIO IA, accueil", "E-COM STUDIO IA, home")} className="shrink-0 rounded-lg">
+        <Link href="/" aria-label={t("E-COM STUDIO IA, accueil", "E-COM STUDIO IA, home")} className="inline-flex min-h-11 shrink-0 items-center rounded-lg">
           <Logo />
         </Link>
         <nav className="hidden items-center gap-1 xl:flex" aria-label={t("Navigation principale", "Main navigation")}>

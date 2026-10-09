@@ -61,7 +61,7 @@ export function BillingSwitch({ value, onChange, className }: { value: Billing; 
   return (
     <div role="radiogroup" aria-label={t("Facturation", "Billing")} className={cx("inline-flex rounded-full border border-line bg-card p-1 text-sm font-medium", className)}>
       {(["month", "year"] as const).map((b) => (
-        <button key={b} type="button" role="radio" aria-checked={value === b} onClick={() => onChange(b)} className={cx("flex h-10 items-center gap-2 rounded-full px-4 transition", value === b ? "bg-ink text-paper" : "text-ink-2 hover:text-ink")}>
+        <button key={b} type="button" role="radio" aria-checked={value === b} onClick={() => onChange(b)} className={cx("flex h-11 cursor-pointer items-center gap-2 rounded-full px-4 transition", value === b ? "bg-ink text-paper" : "text-ink-2 hover:text-ink")}>
           {b === "month" ? t("Mensuel", "Monthly") : t("Annuel", "Yearly")}
           {b === "year" && <span className={cx("rounded-full px-2 py-0.5 text-[11px] font-semibold", value === b ? "bg-signal text-signal-ink" : "bg-signal-soft text-signal")}>{t("2 mois offerts", "2 months free")}</span>}
         </button>

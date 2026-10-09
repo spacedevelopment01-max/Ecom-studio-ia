@@ -1,6 +1,6 @@
 OK  Vidéo d'entrée : fichier d'origine /explainers/film-court.mp4 — /explainers/film-court.mp4
 OK  Vidéo d'entrée : image d'attente d'origine
-OK  Vidéo d'entrée : lecture silencieuse automatique quand elle est visible — {"paused":false,"muted":true,"t":3.078601,"ready":4}
+OK  Vidéo d'entrée : lecture silencieuse automatique quand elle est visible — {"paused":false,"muted":true,"t":3.01088,"ready":4}
 OK  Thème système sombre appliqué à la première visite — rgb(6, 10, 24)
 OK  Vidéo d'entrée : bouton pause / lecture — false → true
 OK  Vidéo d'entrée : « Avec le son » active le son et les commandes — {"muted":false,"controls":true}
@@ -33,14 +33,14 @@ OK  Téléphone sombre : bascule du thème depuis le menu — light
 OK  Téléphone sombre : un lien du menu ferme le menu et mène à la section
 OK  Téléphone sombre : rail des modules fixé pendant le parcours
 OK  Téléphone sombre : aucun débordement horizontal — 0px
-OK  Téléphone sombre : zones tactiles d'au moins 32 px de haut
+OK  Téléphone sombre : commandes tactiles d'au moins 44 × 44 px (liens dans le texte exceptés)
 OK  Téléphone clair : menu ouvert (liens, langue, thème, connexion)
 OK  Téléphone clair : Échap ferme le menu
 OK  Téléphone clair : bascule du thème depuis le menu — dark
 OK  Téléphone clair : un lien du menu ferme le menu et mène à la section
 OK  Téléphone clair : rail des modules fixé pendant le parcours
 OK  Téléphone clair : aucun débordement horizontal — 0px
-OK  Téléphone clair : zones tactiles d'au moins 32 px de haut
+OK  Téléphone clair : commandes tactiles d'au moins 44 × 44 px (liens dans le texte exceptés)
 OK  tablette (768px) : aucun débordement horizontal — 0px
 OK  portable (1024px) : aucun débordement horizontal — 0px
 OK  petit-telephone (360px) : aucun débordement horizontal — 0px

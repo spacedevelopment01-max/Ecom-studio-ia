@@ -90,10 +90,10 @@ export function HeroFilm({ src, poster, description }: { src: string; poster: st
       />
       {!sound && (
         <div className="absolute right-2.5 top-2.5 z-10 flex gap-2 sm:right-4 sm:top-4">
-          <button type="button" onClick={togglePlay} aria-label={playing ? t("Mettre la vidéo en pause", "Pause the video") : t("Lire la vidéo", "Play the video")} className="grid size-10 cursor-pointer place-items-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/70 sm:size-11">
+          <button type="button" onClick={togglePlay} aria-label={playing ? t("Mettre la vidéo en pause", "Pause the video") : t("Lire la vidéo", "Play the video")} className="grid size-11 cursor-pointer place-items-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-black/70 sm:size-11">
             {playing ? <Pause className="size-4" aria-hidden /> : <Play className="size-4" aria-hidden />}
           </button>
-          <button type="button" onClick={withSound} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-[#2F4BD8] px-4 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 sm:h-11">
+          <button type="button" onClick={withSound} className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full bg-[#2F4BD8] px-4 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 sm:h-11">
             <Volume2 className="size-4" aria-hidden /> {t("Avec le son", "With sound")}
           </button>
         </div>
@@ -113,33 +113,45 @@ export function HowItWorks({ steps }: { steps: Step[] }) {
   const t = useT();
   const { lang } = useLang();
   const [i, setI] = useState(0);
-  const [auto, setAuto] = useState(true);
+  const [auto, setAuto] = useState(true); // enchaînement des étapes (arrêté au premier clic sur une étape)
+  const [paused, setPaused] = useState(false); // bouton pause : arrête l'enchaînement ET les films
+  const [hold, setHold] = useState(false); // focus clavier dans la démonstration : tout est suspendu (arrêt au focus, auto-rotation-controls)
   const [visible, setVisible] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const vids = useRef<(HTMLVideoElement | null)[]>([]);
   useEffect(() => {
-    if (reduced()) setAuto(false);
+    if (reduced()) (setAuto(false), setPaused(true));
     const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.35 });
     if (root.current) io.observe(root.current);
     return () => io.disconnect();
   }, []);
+  const playing = visible && !paused;
   useEffect(() => {
     vids.current.forEach((v, k) => {
       if (!v) return;
-      if (k === i && visible && !reduced()) {
-        v.currentTime = 0;
-        v.play().catch(() => {});
+      if (k === i && playing) {
+        if (v.paused) v.play().catch(() => {});
       } else v.pause();
     });
-  }, [i, visible]);
+  }, [i, playing]);
   useEffect(() => {
-    if (!auto || !visible) return;
+    vids.current.forEach((v, k) => v && k !== i && (v.currentTime = 0));
+  }, [i]);
+  const running = auto && !paused && !hold && visible;
+  useEffect(() => {
+    if (!running) return;
     const id = window.setTimeout(() => setI((k) => (k + 1) % steps.length), 6500);
     return () => window.clearTimeout(id);
-  }, [auto, visible, i, steps.length]);
+  }, [running, i, steps.length]);
   const choose = (k: number) => {
     setAuto(false);
     setI(k);
+  };
+  const togglePause = () => {
+    if (paused) {
+      setPaused(false);
+      setAuto(true);
+    } else setPaused(true);
   };
   const overlays = [
     // 1. Ce que le client donne
@@ -173,7 +185,12 @@ export function HowItWorks({ steps }: { steps: Step[] }) {
     </div>,
   ];
   return (
-    <div ref={root} className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
+    <div
+      ref={root}
+      onFocus={() => setHold(true)}
+      onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && setHold(false)}
+      className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-16"
+    >
       <ol className="grid min-w-0 gap-2" aria-label={t("Les quatre étapes", "The four steps")}>
         {steps.map((s, k) => (
           <li key={k}>
@@ -187,14 +204,11 @@ export function HowItWorks({ steps }: { steps: Step[] }) {
                 <span className={cx("grid size-10 shrink-0 place-items-center rounded-full font-display text-sm font-semibold transition", k === i ? "bg-signal text-signal-ink" : "bg-paper-2 text-muted")}>{k + 1}</span>
                 <span className="min-w-0">
                   <span className={cx("block font-display text-lg font-semibold leading-snug sm:text-xl", k === i ? "text-ink" : "text-ink-2")}>{s.title}</span>
-                  <span className={cx("grid transition-[grid-template-rows] duration-500", k === i ? "grid-rows-[1fr]" : "grid-rows-[0fr]")}>
-                    <span className="overflow-hidden">
-                      <span className="block pt-2 text-[15px] leading-relaxed text-ink-2">{s.text}</span>
-                    </span>
-                  </span>
+                  {/* Description de l'étape active : apparition en fondu (opacité et translation), sans animer la hauteur. */}
+                  {k === i && <span className="block pt-2 text-[15px] leading-relaxed text-ink-2 [animation:hp-rise_.45s_cubic-bezier(.16,1,.3,1)_both]">{s.text}</span>}
                 </span>
               </span>
-              {k === i && auto && visible && <span key={`${i}-${lang}`} className="hp-fill absolute inset-x-0 bottom-0 h-0.5 bg-signal" style={{ ["--dur" as any]: "6.5s" }} aria-hidden />}
+              {k === i && auto && !paused && visible && <span key={`${i}-${lang}`} className={cx("hp-fill absolute inset-x-0 bottom-0 h-0.5 bg-signal", hold && "paused")} style={{ ["--dur" as any]: "6.5s" }} aria-hidden />}
             </button>
           </li>
         ))}
@@ -203,7 +217,10 @@ export function HowItWorks({ steps }: { steps: Step[] }) {
         <div className="hp-window">
           <div className="hp-window-bar">
             <span className="hp-dot" /><span className="hp-dot" /><span className="hp-dot" />
-            <span className="ml-2 truncate text-xs text-muted">{t(`Étape ${i + 1} sur ${steps.length}`, `Step ${i + 1} of ${steps.length}`)} · {steps[i].title}</span>
+            <span className="ml-2 min-w-0 flex-1 truncate text-xs text-muted">{t(`Étape ${i + 1} sur ${steps.length}`, `Step ${i + 1} of ${steps.length}`)} · {steps[i].title}</span>
+            <button type="button" onClick={togglePause} aria-pressed={paused} aria-label={paused ? t("Reprendre la démonstration", "Resume the demo") : t("Mettre la démonstration en pause", "Pause the demo")} className="-my-2 -mr-2 grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-ink-2 transition hover:bg-paper-2 hover:text-ink">
+              {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
+            </button>
           </div>
           <div className="relative aspect-square w-full bg-[#070B17]">
             {steps.map((s, k) => (
@@ -223,7 +240,7 @@ export function HowItWorks({ steps }: { steps: Step[] }) {
             ))}
           </div>
           <div className="border-t border-line bg-paper-2/60 px-4 py-3.5 sm:px-5">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[.14em] text-muted">{[t("Ce que vous donnez", "What you provide"), t("Ce que le studio prépare", "What the studio prepares"), t("Ce que vous décidez", "What you decide"), t("Ce que vous obtenez", "What you get")][i]}</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[.14em] text-muted">{[t("Ce que vous donnez", "What you provide"), t("Ce que le studio prépare", "What the studio prepares"), t("Ce que vous décidez", "What you decide"), t("Ce que vous obtenez", "What you get")][i]}</p>
             <div key={i} className="[animation:hp-rise_.45s_cubic-bezier(.16,1,.3,1)_both]">{overlays[i]}</div>
           </div>
         </div>

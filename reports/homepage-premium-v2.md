@@ -1,7 +1,7 @@
 # Accueil public — refonte premium (V2)
 
-Branche : `claude/homepage-premium-v2` (partie de `main` après la PR #66). **Non fusionnée** : en attente de la
-validation du propriétaire sur les captures des deux thèmes.
+Branche : `claude/homepage-premium-v2` (partie de `main` après la PR #66). **Non fusionnée** : direction artistique,
+deux thèmes et parcours des 7 modules validés par le propriétaire ; la passe de finition (§10) attend sa validation.
 
 Périmètre respecté :
 - seule la page d'accueil publique a changé (plus le pied de page partagé et une option du sélecteur de langue) ;
@@ -173,13 +173,13 @@ Pour la bascule de thème, j'ai suivi les règles générales, sans correspondan
 - Apparitions douces au défilement.
 - Hero :
   - la vidéo apparaît au chargement, sans attendre le défilement, pour être visible tout de suite sur téléphone ;
-  - elle s'incline légèrement pendant le défilement.
+  - elle s'incline légèrement pendant le défilement (corrigé en finition : l'inclinaison ne fonctionnait pas, §10).
 - Parcours :
   - sur ordinateur, la fenêtre reste fixe et son contenu se fond d'un module à l'autre, avec une barre de progression ;
   - sur téléphone, un rail des modules reste collé en haut et suit la position.
 - Comment ça fonctionne : barre de temps par étape et films en fondu.
 - Schéma « Tout est connecté » : le lien actif est animé.
-- Bascule de thème : fondu de 0,45 s des couleurs.
+- Bascule de thème : fondu par un voile unique (0,14 s puis 0,26 s), voir §10.
 - Aucune bibliothèque ajoutée : défilement natif, rien n'est bloqué.
 - Mouvement réduit : tout est affiché tel quel ; la vidéo attend un clic.
 
@@ -280,3 +280,65 @@ Puis, dans un autre terminal (`TEST_WEBM`, facultatif, est une copie WebM du fil
 ```bash
 BASE=http://localhost:3091 TEST_WEBM=/chemin/film-court.webm npx tsx scripts/screens-homepage-v2.ts
 ```
+
+## 10. Passe de finition (avant fusion)
+
+Demandée après validation de la direction artistique. Rien n'a changé dans la vidéo d'entrée (même fichier, empreinte
+vérifiée par un test), les textes, les démonstrations, les comptes, projets, abonnements ou moteurs d'IA.
+
+### 10.1 UI UX Pro Max, utilisé pour de vrai
+
+- Lus en entier : `SKILL.md`, `quick-reference.md` (sections 1 à 10) et `pro-rules.md`.
+- Design system **persistant** créé par l'outil du skill (`search.py --design-system --persist --page accueil`) :
+  - `design-system/e-com-studio-ia/MASTER.md` : couleurs des deux thèmes avec contrastes mesurés, typographie,
+    espacements, ombres, **jetons de mouvement** (arrivée 500 ms, sortie 300 ms, survol 180 ms, décalage 40 ms),
+    composants, interdits, liste de contrôle finale ;
+  - `design-system/e-com-studio-ia/pages/accueil.md` : règles propres à l'accueil.
+- La sortie brute du skill proposait une autre direction (or, Cormorant, « Liquid Glass »…). Elle **n'a pas été
+  appliquée** : la direction validée est conservée et chaque écart est noté en fin de `MASTER.md`.
+
+Liste de contrôle finale du skill, appliquée à l'accueil :
+
+| Règle du skill | Résultat |
+|---|---|
+| Contraste des petits textes (`color-contrast`) | Corrigé : en sombre, l'accent des petits textes passe de #5865F2 (≈ 4:1) à #9AA6FF (≈ 8:1) |
+| Commandes tactiles de 44 px (`touch-target-size`) | Corrigé : pastilles, onglets, boutons des démos, liens du pied de page sur téléphone, logo de l'en-tête. Vérifié automatiquement sur téléphone |
+| Étiquettes lisibles (`readable-font-size`) | Corrigé : aucune étiquette sous 12 px ; agenda des réseaux en liste lisible sur téléphone |
+| Pause des animations automatiques (`auto-rotation-controls`) | Ajouté : bouton pause sur « Comment ça fonctionne », « Tout est connecté », les vidéos 9:16 et le rangement des fichiers ; arrêt quand le clavier y entre |
+| Clavier | Onglets au clavier (flèches, Début, Fin) ; le focus n'est plus caché sous l'en-tête collant |
+| Animations légères (`transform-performance`, `layout-shift-avoid`) | Seuls `transform` et `opacity` sont animés ; plus d'animation de hauteur ni de proportions |
+| Sortie plus rapide que l'entrée | Panneaux du parcours : entrée 500 ms, sortie 300 ms |
+| Images (`image-optimization`) | Copies WebP : 148 images, 10,1 Mo → 5,6 Mo (−45 %). Les JPG restent en secours |
+| Mouvement réduit | Inclinaison, rotations, lecture automatique et fondu de thème désactivés |
+| Pas de contenu invisible au chargement | Le haut de page apparaît sans attendre le défilement ; sans JavaScript, tout est visible |
+
+### 10.2 Animations corrigées
+
+- **Inclinaison de la vidéo d'entrée** : elle ne bougeait pas (l'animation d'arrivée écrasait l'inclinaison). Elle est
+  maintenant portée par un cadre séparé. Mesurée : l'angle varie au défilement sur ordinateur et téléphone.
+- **Logo de la publicité** : il glisse d'un coin à l'autre en 0,5 s au lieu de sauter (positions mesurées image par
+  image : 271 → 389 → 509 px).
+- **Changement de format** de la publicité : fondu doux au lieu d'un saut de proportions.
+- **Clair / sombre** : l'ancien fondu posait une transition sur des milliers d'éléments. Trois solutions ont été
+  mesurées (changement direct, View Transitions, voile) ; retenue : **un seul voile** à la couleur de l'ancien fond,
+  qui apparaît (0,14 s), laisse le thème changer dessous, puis s'efface (0,26 s). Mesure : images visibles toutes les
+  33 ms en moyenne (38 ms au pire), le calcul lourd (≈ 98 ms) est caché sous le voile.
+- **Sept modules** : ordre, fondu entre panneaux, fenêtre fixe sur ordinateur, rail qui suit sur téléphone, vérifiés.
+
+### 10.3 Mesures (version de production, Chromium sans carte graphique)
+
+- Vérifications navigateur : **53 / 53**.
+- Mesures d'animation : **21 / 21** (défilement à 58,8 images/s, 95 % des images en moins de 16,8 ms, aucune tâche
+  longue ; aucune erreur JavaScript).
+- TypeScript : OK. Tests : **1003 / 1003** (116 fichiers). Build de production : OK.
+
+### 10.4 Nouvelles vidéos (`reports/homepage-animation-audit/videos/`)
+
+Quatre enregistrements réels d'environ 1 minute, faits par le navigateur de test sur la version de production :
+`ordinateur-clair.mp4`, `ordinateur-sombre.mp4`, `telephone-clair.mp4`, `telephone-sombre.mp4`.
+
+### 10.5 Limites (non vérifié)
+
+- Pas de carte graphique ni de vrai téléphone : la fluidité réelle sur iPhone / Android et Safari reste à vérifier.
+- Les vidéos du navigateur de test tournent à environ 25 images/s : elles paraissent un peu moins fluides que l'écran.
+- Le film d'entrée est lu dans le test via une copie WebM (Chromium de test sans H.264) ; le fichier MP4 n'a pas changé.

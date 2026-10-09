@@ -47,9 +47,9 @@ export async function SiteFooter() {
           {COLUMNS.map((c) => (
             <div key={c.title}>
               <p className="text-xs font-medium uppercase tracking-[.18em] text-white/50">{c.title}</p>
-              <ul className="mt-4 grid gap-2.5 text-sm">
+              <ul className="mt-3 grid gap-0 text-sm sm:mt-4 sm:gap-2.5">
                 {c.links.map((l) => (
-                  <li key={l.href}><Link href={l.href} className="text-white/80 transition hover:text-white">{l.label}</Link></li>
+                  <li key={l.href}><Link href={l.href} className="inline-flex min-h-11 items-center text-white/80 transition hover:text-white sm:min-h-0">{l.label}</Link></li>
                 ))}
               </ul>
             </div>

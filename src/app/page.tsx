@@ -91,14 +91,21 @@ export default async function Home() {
     const en = src.replace(/(\.\w+)$/, ".en$1");
     return fs.existsSync(path.join(process.cwd(), "public", en)) ? en : src;
   };
+  // Images : copie WebP allégée quand elle existe (scripts/optimize-home-images.ts), sinon l'original.
+  const W = (src: string) => {
+    if (!/\.jpe?g$/i.test(src)) return src;
+    const w = src.replace(/\.jpe?g$/i, ".webp");
+    return fs.existsSync(path.join(process.cwd(), "public", w)) ? w : src;
+  };
+  const webp = (d: Demo): Demo => ({ ...d, photo: W(d.photo), shopDesktop: W(d.shopDesktop), shopMobile: W(d.shopMobile), videoPoster: W(d.videoPoster), images: d.images.map((im) => ({ ...im, src: W(im.src) })) });
   // Interface anglaise : démonstration produite en anglais (manifest.en.json) quand elle existe, sinon la française aux textes traduits.
   const rawEn = lang === "en" ? demos("manifest.en.json") : [];
   const raw = demos().map((d) => rawEn.find((x) => x.id === d.id) ?? d);
-  const list = raw.map((d) => (rawEn.includes(d) ? d : localizeDemo(d, lang)));
+  const list = raw.map((d) => (rawEn.includes(d) ? d : localizeDemo(d, lang))).map(webp);
   const user = await currentUser();
   const live = paymentsLive();
   const cta = user ? "/studio" : "/inscription";
-  const themes = directionCards(lang).map((c) => ({ ...c, preview: M(c.preview) }));
+  const themes = directionCards(lang).map((c) => ({ ...c, preview: W(M(c.preview)) }));
 
   // Projet de démonstration qui traverse le parcours : Somnéa (oreiller), sinon la première démonstration.
   const hero = list.find((d) => d.id === "oreiller") ?? list[0];
@@ -161,7 +168,7 @@ export default async function Home() {
         return { id, label, text: `${text} ${T("Démonstration :", "Demo:")} ${d.brand} · ${d.product}.`, desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().replace(/\s+/g, "")}.myshopify.com` };
       })
       .filter((x): x is StoreDemo => !!x),
-    { id: "services", label: T("Entreprise de services", "Service business"), text: T("Démonstration fictive : « Studio Maëlle », coach sportive, publiée pour WordPress. Aucun panier : chaque bouton mène à la prise de rendez-vous.", "Fictional demo: \"Studio Maëlle\", a personal trainer, published for WordPress. No cart: every button leads to booking."), desktop: M("/demo/services/site-bureau.jpg"), mobile: M("/demo/services/site-mobile.jpg"), caption: "studio-maelle.fr" },
+    { id: "services", label: T("Entreprise de services", "Service business"), text: T("Démonstration fictive : « Studio Maëlle », coach sportive, publiée pour WordPress. Aucun panier : chaque bouton mène à la prise de rendez-vous.", "Fictional demo: \"Studio Maëlle\", a personal trainer, published for WordPress. No cart: every button leads to booking."), desktop: W(M("/demo/services/site-bureau.jpg")), mobile: W(M("/demo/services/site-mobile.jpg")), caption: "studio-maelle.fr" },
   ];
 
   const docs = story
@@ -218,7 +225,7 @@ export default async function Home() {
         {c.ok === "no" ? <Minus className="size-3" aria-hidden /> : <Check className="size-3" aria-hidden />}
       </span>
       <span className={c.ok === "no" ? "text-muted" : "text-ink-2"}>
-        {c.ok === "beta" && <span className="mr-1.5 rounded bg-[#FCEBD0] px-1.5 py-0.5 text-[11px] font-semibold text-[#7A4500]">{T("Bêta", "Beta")}</span>}
+        {c.ok === "beta" && <span className="mr-1.5 rounded bg-[#FCEBD0] px-1.5 py-0.5 text-xs font-semibold text-[#7A4500]">{T("Bêta", "Beta")}</span>}
         {c.text}
       </span>
     </span>
@@ -255,29 +262,32 @@ export default async function Home() {
           <div className="hp-grid absolute inset-0 -z-10" aria-hidden />
           <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-6 sm:gap-12 sm:px-6 sm:pb-24 sm:pt-16 lg:grid-cols-12 lg:gap-10 lg:pt-20">
             <div className="min-w-0 lg:col-span-6 xl:col-span-6">
-              <p className="reveal inline-flex items-center gap-2 rounded-full border border-line bg-card/70 py-1.5 pl-1.5 pr-4 text-xs font-semibold tracking-[.14em] text-ink-2">
+              <p className="hp-load inline-flex items-center gap-2 rounded-full border border-line bg-card/70 py-1.5 pl-1.5 pr-4 text-xs font-semibold tracking-[.14em] text-ink-2">
                 <span className="grid size-6 place-items-center rounded-full bg-signal text-signal-ink"><Sparkles className="size-3.5" aria-hidden /></span>
                 E-COM STUDIO IA
               </p>
-              <h1 className="hp-title reveal mt-6 text-[clamp(2.55rem,4.5vw,4.15rem)] !leading-[0.98]" style={{ ["--d" as any]: 1 }}>
+              <h1 className="hp-title hp-load mt-6 text-[clamp(2.55rem,4.5vw,4.15rem)] !leading-[0.98]" style={{ ["--d" as any]: 1 }}>
                 {lang === "en" ? <>Your entire <span className="whitespace-nowrap">e&#8209;commerce</span> business.</> : <>Toute votre activité <span className="whitespace-nowrap">e&#8209;commerce.</span></>} <span className="hp-accent">{T("Un seul studio.", "One studio.")}</span>
               </h1>
-              <p className="hp-lead reveal mt-5 max-w-xl sm:mt-6" style={{ ["--d" as any]: 2 }}>
+              <p className="hp-lead hp-load mt-5 max-w-xl sm:mt-6" style={{ ["--d" as any]: 2 }}>
                 {T("Créez votre marque, concevez votre boutique, produisez vos contenus et développez votre activité grâce à l'intelligence artificielle, depuis une seule plateforme.", "Create your brand, design your store, produce your content and grow your business with artificial intelligence, all from a single platform.")}
               </p>
-              <div className="reveal mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap" style={{ ["--d" as any]: 3 }}>
+              <div className="hp-load mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap" style={{ ["--d" as any]: 3 }}>
                 <Link href={cta} className="hp-btn hp-btn-primary !min-h-14 !px-6">
                   {user ? T("Ouvrir mon studio", "Open my studio") : T("Commencer mon projet", "Start my project")} <ArrowRight className="size-4" aria-hidden />
                 </Link>
                 <a href="#fonctionnalites" className="hp-btn hp-btn-ghost !min-h-14 !px-6">{T("Découvrir les fonctionnalités", "Explore the features")}</a>
               </div>
-              <ul className="reveal mt-6 grid gap-2 text-sm text-ink-2 sm:mt-8 sm:flex sm:flex-wrap sm:gap-x-6" style={{ ["--d" as any]: 4 }}>
+              <ul className="hp-load mt-6 grid gap-2 text-sm text-ink-2 sm:mt-8 sm:flex sm:flex-wrap sm:gap-x-6" style={{ ["--d" as any]: 4 }}>
                 <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Découverte gratuite, sans carte bancaire", "Free discovery, no credit card")}</li>
                 <li className="flex items-center gap-2"><Lock className="size-4 text-signal" aria-hidden /> {T("Rien n'est publié sans votre accord", "Nothing is published without your approval")}</li>
               </ul>
             </div>
             <div className="relative min-w-0 lg:col-span-6 xl:col-span-6">
-              <div data-sfx className="sfx-tilt relative [animation:hp-rise_.9s_.2s_cubic-bezier(.16,1,.3,1)_both]">
+              {/* Deux conteneurs : l'arrivée au chargement (hp-load) et l'inclinaison au défilement (hp-hero-tilt)
+                  ne se disputent plus la même propriété transform. */}
+              <div className="hp-load relative" style={{ ["--d" as any]: 2 }}>
+              <div data-sfx className="hp-hero-tilt relative">
                 <div className="absolute -inset-6 -z-10 rounded-[3rem] bg-[radial-gradient(closest-side,var(--glow),transparent)] opacity-70 blur-2xl" aria-hidden />
                 <div className="overflow-hidden rounded-[1.6rem] border border-line bg-card shadow-[var(--hp-elev)] sm:rounded-[2rem]">
                   <div className="flex items-center gap-1.5 border-b border-line px-4 py-2.5">
@@ -289,12 +299,13 @@ export default async function Home() {
                 <ol className="scrollbar-none mt-5 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible" aria-label={T("Les modules du studio", "The studio's modules")}>
                   {modules.map((m, i) => (
                     <li key={m.key}>
-                      <a href={`#module-${m.key}`} className="hp-chip whitespace-nowrap !py-1.5 transition hover:border-signal hover:text-ink">
-                        <span className="font-display text-[11px] font-semibold text-signal">{String(i + 1).padStart(2, "0")}</span> {m.label}
+                      <a href={`#module-${m.key}`} className="hp-chip min-h-11 whitespace-nowrap transition hover:border-signal hover:text-ink sm:min-h-9">
+                        <span className="font-display text-xs font-semibold text-signal">{String(i + 1).padStart(2, "0")}</span> {m.label}
                       </a>
                     </li>
                   ))}
                 </ol>
+              </div>
               </div>
             </div>
           </div>
@@ -400,7 +411,7 @@ export default async function Home() {
             {ba && (
               <div className="mt-12 grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-14">
                 <div className="reveal reveal-scale overflow-hidden rounded-[1.75rem] border border-line hp-elev">
-                  <BeforeAfter before={ba.photo} after={M("/demo/drone/avant-apres.jpg")} aspect="18 / 11" beforeLabel={T("Photo d'origine", "Original photo")} afterLabel={T("Création du studio", "Studio creation")} />
+                  <BeforeAfter before={ba.photo} after={W(M("/demo/drone/avant-apres.jpg"))} aspect="18 / 11" beforeLabel={T("Photo d'origine", "Original photo")} afterLabel={T("Création du studio", "Studio creation")} />
                 </div>
                 <div>
                   <p className="font-display text-2xl font-semibold leading-snug">{T("Glissez pour comparer.", "Drag to compare.")}</p>
@@ -489,7 +500,7 @@ export default async function Home() {
                 <SocialCalendarDemo posts={posts} />
               </div>
               <ul className="mt-8 flex flex-wrap gap-2 text-sm">
-                {["Instagram", "Facebook", "TikTok", "YouTube", "Pinterest"].map((n) => <li key={n} className="hp-chip !text-sm">{n} <span className="rounded bg-[#FCEBD0] px-1.5 text-[11px] font-semibold text-[#7A4500]">{T("Bêta", "Beta")}</span></li>)}
+                {["Instagram", "Facebook", "TikTok", "YouTube", "Pinterest"].map((n) => <li key={n} className="hp-chip !text-sm">{n} <span className="rounded bg-[#FCEBD0] px-1.5 text-xs font-semibold text-[#7A4500]">{T("Bêta", "Beta")}</span></li>)}
                 <li className="hp-chip !text-sm">LinkedIn <span className="text-muted">· {T("export", "export")}</span></li>
               </ul>
               <p className="mt-3 text-xs text-muted">{T("Bêta : publication par la connexion officielle développée, pas encore essayée sur de vrais comptes. Export : publications préparées, à publier vous-même.", "Beta: publishing through the official connection is built, not yet tried on real accounts. Export: posts prepared for you to publish yourself.")}</p>
@@ -534,9 +545,9 @@ export default async function Home() {
               {platforms.map((p) => (
                 <div key={p.name} className="grid gap-3 border-b border-line px-5 py-5 text-sm last:border-b-0 md:grid-cols-[1.1fr_1.3fr_1.3fr_1.2fr] md:gap-6 md:px-6">
                   <p className="font-display text-lg font-semibold text-ink">{p.name}</p>
-                  <div><span className="mb-1 block text-[11px] font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Export natif", "Native export")}</span><Mark c={p.native} /></div>
-                  <div><span className="mb-1 block text-[11px] font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Connexion", "Connection")}</span><Mark c={p.connect} /></div>
-                  <div><span className="mb-1 block text-[11px] font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Kit de reconstruction", "Rebuild kit")}</span><Mark c={p.kit} /></div>
+                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Export natif", "Native export")}</span><Mark c={p.native} /></div>
+                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Connexion", "Connection")}</span><Mark c={p.connect} /></div>
+                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Kit de reconstruction", "Rebuild kit")}</span><Mark c={p.kit} /></div>
                 </div>
               ))}
             </div>

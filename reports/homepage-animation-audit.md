@@ -238,3 +238,9 @@ Les défauts du §2.3 sont visibles dans ces vidéos : la vidéo d'entrée ne s'
 - **Contraste** : un défaut mineur, l'accent sombre sur de petits textes.
 
 Je propose de corriger ces quatre points et d'appliquer les améliorations du §1.6 seulement après votre accord.
+
+## Suite donnée (passe de finition)
+
+Les défauts relevés dans cet audit ont été corrigés : voir `reports/homepage-premium-v2.md`, §10. Les mesures
+(`homepage-animation-audit/mesures.json`) et les quatre vidéos (`homepage-animation-audit/videos/`) ont été refaites
+sur la version corrigée.
