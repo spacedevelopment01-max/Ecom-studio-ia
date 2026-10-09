@@ -152,7 +152,17 @@ async function aiBackground(ictx: ImgCtx, project: Project, cut: Buffer, style: 
   return { image: plate, provider: "google-plate", lightFrom: brief.lightFrom, brief };
 }
 
-export type ImageSetOptions = { scenes?: SceneStyle[]; withAi?: boolean; social?: boolean; banner?: boolean };
+export type ImageSetOptions = {
+  scenes?: SceneStyle[];
+  withAi?: boolean;
+  social?: boolean;
+  banner?: boolean;
+  /**
+   * Composants locaux seulement (Image Engine V2, `runImageSetV2`) : packshots, détails, mises en scène et bannières
+   * sans texte, rendus sans IA. Photos IA, photos libres, visuels réseaux et publicités viennent des moteurs V2.
+   */
+  localOnly?: boolean;
+};
 
 /**
  * Jeu d'images complet. Idempotent par étape (points de reprise du job) :
@@ -160,7 +170,7 @@ export type ImageSetOptions = { scenes?: SceneStyle[]; withAi?: boolean; social?
  */
 export async function generateImageSet(ctx: JobContext, projectId: string, opts: ImageSetOptions = {}) {
   let project = loadProject(projectId);
-  if (isServices(project)) return generateServiceImageSet(ctx, projectId, opts);
+  if (isServices(project)) return generateServiceImageSet(ctx, projectId, opts.localOnly ? { social: false, v2: true } : opts);
   const ictx: ImgCtx = { userId: project.userId, projectId, jobId: ctx.job.id };
   const cutouts = await ensureCutouts(ctx, project);
   if (!cutouts.length) throw new Error(L("Aucune photo du produit : importez au moins une photo pour créer les images.", "No product photo: upload at least one photo to create the images."));
@@ -205,7 +215,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   // Mises en scène de la ligne photographique (même lumière, mêmes matières, même étalonnage).
   const styles = opts.scenes ?? (line.local.scenes as SceneStyle[]);
   // Image payante seulement si son contrôle de fidélité est possible (sinon elle ne pourrait jamais être FINAL).
-  const withAi = opts.withAi !== false && !!imageProviderAvailable() && llmConfigured();
+  const withAi = !opts.localOnly && opts.withAi !== false && !!imageProviderAvailable() && llmConfigured();
   for (const [i, style] of styles.entries()) {
     await ctx.step(`scene:${style}`, async () => {
       ctx.progress(0.5 + i * 0.08, L(`Mise en scène « ${style} »${withAi ? " (décor généré)" : ""}`, `Staging "${style}"${withAi ? " (generated set)" : ""}`));
@@ -281,7 +291,7 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   }
 
   // Univers du produit en photos libres de droits (gratuites) : sections du site sans produit, plans de coupe vidéo.
-  await ctx.step("universe", async () => {
+  if (!opts.localOnly) await ctx.step("universe", async () => {
     ctx.progress(0.73, L("Photos libres de droits de l'univers du produit", "Royalty-free photos of the product's world"));
     const { universePhotos } = await import("./stock-universe");
     const got = await universePhotos(ictx, project, 2).catch((e) => {
@@ -304,12 +314,12 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
       return [
         await save(await renderBanner(product, pal, line.local.scenes[0] === "spotlight" || line.local.scenes[0] === "window" ? line.local.scenes[0] : "studio", FORMATS.banner, 21, null, look), `${base}-${C("banniere", "banner")}-studio.jpg`, "banner", "images.banners", { recipe: L("Bannière 2:1 sans texte (textes dans le thème)", "2:1 banner without text (text lives in the theme)") }),
         await save(await renderBanner(product, pal, "color", FORMATS.landscape, 22, null, look), `${base}-${C("banniere-couleur", "banner-color")}.jpg`, "banner", "images.banners", { recipe: L("Bannière 16:9 fond de marque", "16:9 banner on brand background") }),
-        ...(await proBanner()),
+        ...(opts.localOnly ? [] : await proBanner()),
       ];
     });
   }
 
-  if (opts.social !== false) {
+  if (opts.social !== false && !opts.localOnly) {
     await ctx.step("social", async () => {
       ctx.progress(0.85, L("Visuels réseaux sociaux et publicités", "Social media and ad visuals"));
       const headline = project.brand?.tagline || project.product.name || project.brand?.name || C("Découvrir", "Discover");

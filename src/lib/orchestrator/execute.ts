@@ -273,8 +273,8 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
   },
   image_generate: async (ctx, p, s) => {
     const since = Date.now();
-    const { generateImageSet } = await import("../engine/images");
-    await ctx.step(`plan:${s.id}`, async () => (await generateImageSet(ctx, p.id)).created.length);
+    const { runImageSetV2 } = await import("../image-v2/set");
+    await ctx.step(`plan:${s.id}`, async () => (await runImageSetV2(ctx, p.id)).created.length);
     return outcome(ctx.job.id, "image_generate", since);
   },
   copy: async (ctx, p, s) => {

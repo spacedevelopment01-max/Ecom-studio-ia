@@ -737,7 +737,13 @@ async function photoCrop(buf: Buffer, f: Format) {
   return sharp(buf).rotate().resize(f.w, f.h, { fit: "cover", position: sharp.strategy.attention }).jpeg({ quality: 90, mozjpeg: true }).toBuffer();
 }
 
-export type ServiceSetOptions = { withAi?: boolean; social?: boolean; banner?: boolean };
+export type ServiceSetOptions = {
+  withAi?: boolean;
+  social?: boolean;
+  banner?: boolean;
+  /** Images d'ambiance manquantes faites par Image Engine V2 (brief, recherche puis génération contrôlée, bibliothèque). */
+  v2?: boolean;
+};
 
 /** Jeu complet pour une entreprise de services. Idempotent par étape (points de reprise du job). */
 export async function generateServiceImageSet(ctx: JobContext, projectId: string, opts: ServiceSetOptions = {}) {
@@ -792,7 +798,22 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
   // 3. Images d'ambiance (IA d'images disponible) pour les emplacements encore vides : consignes honnêtes, aucun faux client.
   // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).
   const withAi = opts.withAi !== false && !!imageProviderAvailable() && llmConfigured();
-  if (withAi) {
+  if (opts.v2) {
+    // Image Engine V2 : par emplacement encore vide, brief du métier et de la prestation, recherche (photos déjà
+    // refusées jamais recontrôlées) puis génération contrôlée seulement si possible et dans le plafond.
+    const { runImageEngineV2 } = await import("../image-v2/engine");
+    const todo = open.filter((x) => !filled.has(x.slot));
+    for (const [i, { slot, aspect }] of todo.entries()) {
+      const ids = await ctx.step(`svc:v2:${slot}`, async () => {
+        ctx.progress(0.2 + (i / Math.max(1, todo.length)) * 0.3, L("Images de l'activité (moteur d'images)", "Business images (image engine)"));
+        const want = slotSubject(project, slot);
+        const svc = want.service ? serviceItems(project).find((x) => x.name === want.service) : undefined;
+        const r = await runImageEngineV2(ctx, projectId, { kind: "trade_photo", support: slot === "ad" ? "ad" : "site", aspect, topic: want.subject, service: svc ? { name: svc.name, description: svc.description } : null, slot, count: 1 });
+        return r.outcomes.filter((o) => o.assetId && o.verdict === "FINAL").map((o) => o.assetId!);
+      });
+      created.push(...ids);
+    }
+  } else if (withAi) {
     // Une image par visuel : vraies photos du client, puis photos libres de droits ; l'IA complète ce qui manque.
     const todo = open.filter((x) => !filled.has(x.slot));
     for (const [i, { slot, aspect, prompt }] of todo.entries()) {

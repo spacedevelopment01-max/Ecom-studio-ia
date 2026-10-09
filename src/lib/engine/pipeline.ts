@@ -13,7 +13,7 @@ import { enqueue, JobCancelled, JobContext, JobPaused, type Job } from "../jobs"
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, saveProduct, saveServices, setStatus, remember, notify } from "../projects";
 import { importLink, fetchImage } from "./import-link";
-import { generateImageSet } from "./images";
+import { runImageSetV2 } from "../image-v2/set";
 import { analysisPhotos, cutoutSummary, ensureCutouts, validCutouts } from "./cutouts";
 import { localAnalysis, factsFromDescription, localServiceAnalysis, mergeServiceProfile } from "./local";
 import { buildBrand } from "./brand";
@@ -327,16 +327,20 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return note("copy.base");
     }
     case "images": {
+      // Image Engine V2 (composants locaux gratuits, photos libres, génération contrôlée), puis publicités par
+      // Advertising Engine V2 (documents à calques modifiables dans l'éditeur visuel).
       if (services) {
         return serviceContent(async () => {
-          const r = await generateImageSet(ctx, projectId);
-          return note("images.done", { n: r.created.length });
+          const r = await runImageSetV2(ctx, projectId);
+          const ads = await pipelineAds(ctx, projectId);
+          return note("images.done", { n: r.created.length + ads });
         });
       }
       const has = validCutouts(projectId).length > 0;
       if (!has) return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
-      const r = await generateImageSet(ctx, projectId);
-      return note("images.done", { n: r.created.length });
+      const r = await runImageSetV2(ctx, projectId);
+      const ads = await pipelineAds(ctx, projectId);
+      return note("images.done", { n: r.created.length + ads });
     }
     case "video": {
       if (inp.videos === "none") return { skipped: note("skip.videosNone") };
@@ -378,6 +382,26 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
       return note("organize.done", { n, loose });
     }
   }
+}
+
+/**
+ * Publicités de la création complète : Advertising Engine V2 (angles, textes contrôlés, créations composées), en
+ * documents à calques ouverts dans l'éditeur visuel. Une publicité impossible (pas assez de faits confirmés) ne
+ * bloque pas la création. Point de reprise : une reprise ne refait ni ne repaie rien.
+ */
+async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> {
+  return ctx.step("ads-v2", async () => {
+    ctx.progress(0.96, L("Publicités (moteur publicitaire)", "Ads (advertising engine)"));
+    try {
+      const { runAdEngineV2 } = await import("../ads-v2/engine");
+      const r = await runAdEngineV2(ctx, projectId, { count: 2, maxCostEur: 1 });
+      return r.outcomes.filter((o) => o.assetId).length;
+    } catch (e) {
+      if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
+      console.warn(`[pipeline] publicités V2 non créées : ${(e as Error).message}`);
+      return 0;
+    }
+  });
 }
 
 /** Calendrier de 7 jours (réseaux connectés, sinon Instagram, Facebook, Pinterest) lancé en tâche enfant, une seule fois. */

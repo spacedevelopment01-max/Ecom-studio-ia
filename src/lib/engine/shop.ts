@@ -74,7 +74,8 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   };
   // Photos en situation (vie de tous les jours) : héros de la boutique et première scène.
   // Celles du marchand passent avant celles générées par l'IA.
-  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
+  // Photos du produit en situation de l'Image Engine V2 (rangées en « scènes ») comptent aussi comme photos en situation.
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND (role = 'lifestyle' OR (role = 'scene' AND json_extract(meta, '$.imageV2.brief.kind') IN ('lifestyle','usage_scene'))) AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC", projectId).filter(isAutoUsable);
   put("lifestyle", life[0], "en-situation-1");
   // Ambiances de l'univers (photos libres, sans le produit) : seulement pour les emplacements d'ambiance encore vides.
   const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'ambiance' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (status = 'approved') DESC, created_at DESC LIMIT 8", projectId).filter(isAutoUsable).slice(0, 2);
