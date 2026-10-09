@@ -4,6 +4,7 @@
  * niveaux et capacités aux modèles réels.
  */
 import type { ProviderId } from "../ai/config";
+import { MEDIA_MODELS } from "../ai/media-models";
 
 export type Capability =
   | "text"
@@ -43,6 +44,15 @@ export const MODELS: ModelCapability[] = [
   { provider: "pexels", model: "pexels-search", tier: "local", capabilities: ["stock_search"], effort: false },
   { provider: "pixabay", model: "pixabay-search", tier: "local", capabilities: ["stock_search"], effort: false },
 ];
+
+// Modèles images et vidéos du catalogue multimédia (media-models.ts) VÉRIFIÉS (identifiant et tarif officiels)
+// absents ci-dessus : déclarés au repli historique du routeur. Les autres (à confirmer) ne passent que par le routage
+// multimédia (media-routing.ts), qui vérifie leur confirmation par l'administration.
+for (const m of MEDIA_MODELS) {
+  if (!m.adapter || !(m.verified.id && m.verified.price) || MODELS.some((x) => x.provider === m.provider && x.model === m.model)) continue;
+  const capabilities: Capability[] = m.kind === "video" ? ["video_generation"] : m.needsReference ? ["image_edit"] : m.caps.maskEdit ? ["image_generation", "image_edit"] : ["image_generation"];
+  MODELS.push({ provider: m.provider, model: m.model, tier: m.quality === 3 ? "strong" : m.quality === 2 ? "standard" : "light", capabilities, effort: false });
+}
 
 export const modelInfo = (provider: string, model: string) => MODELS.find((m) => m.provider === provider && m.model === model) ?? null;
 

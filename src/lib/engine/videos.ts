@@ -23,7 +23,7 @@ import { usableByRole } from "../quality/usable";
 import { localVideoPlan } from "./local";
 import { aiVideoPlan, aiQcImage, aiQcScene, qcScore, qcTier } from "../ai/tasks";
 import { llmConfigured } from "../ai/llm";
-import { videoProviderAvailable, veoClip, falClip, refundMediaQuota } from "../ai/media-providers";
+import { aiClip, videoProviderAvailable, refundMediaQuota } from "../ai/media-providers";
 import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { all, json, run } from "../db";
 import { downloadStockVideo, searchStockVideos, stockVideoCredit } from "../stock/photos";
@@ -124,9 +124,7 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const prompt = services
         ? `Slow cinematic push-in on this real photo of the business, soft light shift, subtle depth of field. Keep every person, object and place exactly as they are; add no people, no text, no logo.`
         : `${clipCamera(project.product.sector, req.format)} Motion starts on the very first frame (no static opening), ${brand.palette.secondary} color accents in the light, natural soft shadows, crisp focus on the product. The product stays perfectly still and exactly identical to the first frame (same shape, proportions, label, text and colors); it is never redrawn, duplicated, cropped or hidden. No text overlay, no new objects, no people.`;
-      const buf = provider === "google"
-        ? await veoClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m))
-        : await falClip({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt }, (m) => ctx.progress(0.15, m));
+      const buf = await aiClip(provider, { userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16" }, (m) => ctx.progress(0.15, m));
       const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name)}-${C("plan-genere", "generated-shot")}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: scene.id, meta: { provider, recipe: L("Plan d'ambiance généré (image vers vidéo)", "Generated mood shot (image to video)") }, status: "review" });
       return a.id;
     }).catch((e) => {

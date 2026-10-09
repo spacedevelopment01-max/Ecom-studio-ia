@@ -10,6 +10,8 @@
 import { EUR } from "../billing";
 import { priceFor, usdToEur } from "../ai/config";
 import { capableModels } from "../orchestrator/capabilities";
+import { MEDIA_MODELS, mediaModel } from "../ai/media-models";
+import { mediaStatus } from "../ai/media-routing";
 import type { VideoAspect, VideoCapability } from "./types";
 
 export const VIDEO_CAPABILITIES: VideoCapability[] = [
@@ -61,6 +63,27 @@ export const VIDEO_CAPABILITIES: VideoCapability[] = [
   },
 ];
 
+// Modèles vidéo récents du catalogue (Veo 3.1, Kling 3) : même chemin d'appel que ceux ci-dessus (adaptateurs veo /
+// fal_video), d'où des capacités « code » ; leur usage reste soumis à la clé, au tarif et à la vérification.
+for (const m of MEDIA_MODELS) {
+  if (m.kind !== "video" || !m.adapter || VIDEO_CAPABILITIES.some((c) => c.provider === m.provider && c.model === m.model)) continue;
+  VIDEO_CAPABILITIES.push({
+    provider: m.provider,
+    model: m.model,
+    textToVideo: !!m.caps.textToVideo,
+    imageToVideo: !!m.caps.imageToVideo,
+    references: false,
+    durations: m.durations ?? [8],
+    aspects: m.aspects as VideoCapability["aspects"],
+    maxResolution: m.resolution,
+    cameraControl: "prompt",
+    people: !!m.caps.people,
+    crossShotConsistency: "start_frame",
+    nativeAudio: !!m.caps.audio,
+    verification: { imageToVideo: "code", people: "code", ...(m.caps.audio ? { nativeAudio: "code" as const } : {}), ...(m.caps.textToVideo ? { textToVideo: "documented" as const } : {}) },
+  });
+}
+
 export type ShotNeed = { imageToVideo: boolean; people: boolean; nativeAudio: boolean; aspect: VideoAspect; durationS: number };
 
 /** Capacité VÉRIFIÉE (jamais seulement documentée) : seule base d'une décision. */
@@ -104,12 +127,20 @@ export function chooseProvider(n: ShotNeed, o: { available: (provider: string) =
   const ok: (ProviderChoice & { pref: boolean })[] = [];
   for (const c of VIDEO_CAPABILITIES) {
     const key = `${c.provider}:${c.model}`;
-    if (!routed.has(key)) {
+    // Déclaration : Router V2 (modèles historiques) ou catalogue multimédia (vérifié par l'administration ci-dessous).
+    if (!routed.has(key) && !mediaModel(c.provider, c.model)) {
       rejected.push({ model: key, why: "non déclaré au Router V2" });
       continue;
     }
     if (!o.available(c.provider)) {
       rejected.push({ model: key, why: "clé inactive" });
+      continue;
+    }
+    // Modèle du catalogue multimédia : utilisable (tarif, vérification) et activé par l'administration.
+    const mm = mediaModel(c.provider, c.model);
+    const st = mm ? mediaStatus(mm) : null;
+    if (st && (!st.confirmed || !st.enabled)) {
+      rejected.push({ model: key, why: !st.confirmed ? "à confirmer dans l'administration" : "désactivé" });
       continue;
     }
     const why = compatible(c, n);
