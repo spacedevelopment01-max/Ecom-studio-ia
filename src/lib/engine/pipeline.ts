@@ -315,6 +315,10 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
     }
     case "copy": {
       const fresh = loadProject(projectId);
+      // 1. Page principale (fiche produit ou accueil d'un service) : SEO & Copywriting Engine V2 — faits vérifiés,
+      //    contrôles, document éditable et versionné ; c'est le texte de référence de la boutique pour ce qu'il couvre.
+      await pipelinePageCopy(ctx, projectId, services ? "home_page" : "product_page");
+      // 2. Kit de textes de mise en page (accroches de sections, bandeau, pied de page) pour ce qu'aucun document ne couvre.
       if (llmConfigured()) {
         const r = await ctx.step("ai", () => aiShopCopyChecked({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, fresh, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn)));
         remember(projectId, { kind: "artifact", key: "shop_copy", value: JSON.stringify(r.copy), source: "ai", status: "confirmed" });
@@ -397,6 +401,23 @@ async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> 
       if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
       console.warn(`[pipeline] publicités V2 non créées : ${(e as Error).message}`);
       return 0;
+    }
+  });
+}
+
+/**
+ * Page principale rédigée par SEO & Copywriting Engine V2 (une fois : même brief et mêmes faits = rien de refait ;
+ * un texte modifié par le client n'est jamais écrasé). Un échec ne bloque pas la création (le kit de textes reste).
+ */
+async function pipelinePageCopy(ctx: JobContext, projectId: string, type: "product_page" | "home_page") {
+  await ctx.step("seo-v2:page", async () => {
+    try {
+      const { runContentEngineV2 } = await import("../seo-v2/engine");
+      return (await runContentEngineV2(ctx, projectId, { type })).docKey;
+    } catch (e) {
+      if (e instanceof JobPaused || e instanceof JobCancelled) throw e;
+      console.warn(`[pipeline] page SEO V2 non rédigée : ${(e as Error).message}`);
+      return null;
     }
   });
 }

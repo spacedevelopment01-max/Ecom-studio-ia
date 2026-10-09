@@ -22,6 +22,7 @@ import { assetsByRole, latestAsset } from "./images";
 import { aiDesignHome, aiReviewHome } from "../ai/tasks";
 import { snapshotTheme } from "../theme/snapshot";
 import { FONT_HANDLES } from "../theme/render";
+import { overlayV2Copy } from "../seo-v2/theme-copy";
 import { effectivePalette, paletteKey } from "../route-palette";
 import { SHOPIFY_TO_CANVAS } from "../media/fonts";
 import { tidyComposition } from "../theme/tidy";
@@ -42,9 +43,16 @@ export function themeFileName(a: Asset, hint?: string): string {
   return `es-${slug(hint ?? a.role ?? "media")}-${a.id.slice(0, 6)}.${ext}`;
 }
 
+/**
+ * Textes de la boutique : le kit de textes de mise en page, complété — et, pour ce qu'ils couvrent, REMPLACÉ — par les
+ * documents SEO & Copywriting V2 (fiche produit, page d'accueil). Un seul texte de référence par contenu.
+ */
 export function savedCopy(projectId: string): ShopCopy | null {
   const row = one<{ value: string }>("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'shop_copy'", projectId);
-  return row ? json<ShopCopy | null>(row.value, null) : null;
+  const kit = row ? json<ShopCopy | null>(row.value, null) : null;
+  if (!kit) return null;
+  const p = loadProject(projectId);
+  return overlayV2Copy(kit, projectId, p.settings.language ?? contentLang(), p.business).copy;
 }
 
 export function collectImages(projectId: string): { slots: ImageSlots; files: Record<string, string>; gallery: string[] } {
