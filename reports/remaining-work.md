@@ -4,14 +4,11 @@ Tenu à jour à chaque phase. Rien de ce qui figure ici n'est présenté comme f
 Règle pour les phases 6, 7, 9 et 10 : réutiliser **en priorité l'Image Engine V2** (`src/lib/image-v2/`) et, pour
 les publicités, l'**Advertising Engine V2** (`src/lib/ads-v2/`), plutôt que créer des moteurs d'images concurrents.
 
-Dernière mise à jour : correctifs prioritaires post-audit (budget IA 40 %/50 %, réservations, Phase 12A, sécurité)
-sur la branche `claude/post-audit-critical-fixes`, **non fusionnée**. Phase 12A terminée techniquement, non fusionnée ;
-check-up général : `reports/general-checkup.md`. Phase 11A fusionnée (PR #63, commit 6cce305) ; 11B non commencée.
-Phase 10A fusionnée (PR #62) ; **qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non
-commencée ; 9A validée techniquement, 9B reportée ; 8A validée techniquement, 8B reportée. Phase 13 non commencée.
-
-**Règle pour la Phase 10 (Theme Engine V2) et les suivantes** : tests visuels réels dans un navigateur, avec
-captures ordinateur ET téléphone, dès le développement technique. Les tests de code seuls ne suffisent pas.
+Dernière mise à jour : **migration V1 → V2** sur la branche `claude/v1-to-v2-migration`, **non fusionnée**
+(rapport `reports/v1-to-v2-migration.md`). Phase 12A et correctifs post-audit **fusionnés** (PR #64 et #65).
+Check-up général : `reports/general-checkup.md`. Phase 11A fusionnée (PR #63) ; 11B non commencée. Phase 10A fusionnée
+(PR #62) ; **qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée
+techniquement, 9B reportée ; 8A validée techniquement, 8B reportée. Phase 13 non commencée.
 
 ## Validations visuelles réelles en attente (benchmarks payants, dans le Codespace du propriétaire)
 
@@ -204,7 +201,7 @@ Reste à faire (limites de 10A) :
 - La CI GitHub vérifie le thème V2 par `tests/theme-v2.test.ts` (Theme Check d'un ZIP V2) ; `scripts/verify-theme.sh`
   couvre les directions V1.
 
-## Correctifs post-audit (branche `claude/post-audit-critical-fixes`, non fusionnée)
+## Correctifs post-audit (fusionnés : PR #65)
 
 Fait : budget IA = 40 % du prix HT du forfait (annuel compris, sans enveloppe de création, prorata au changement de
 forfait), packs/recharges = 50 % du HT payé, réservation atomique du coût maximal avant tout appel, jamais de solde
@@ -229,7 +226,7 @@ Reste à faire (issu de `reports/general-checkup.md`, non traité dans cette ét
 - Pas d'écran Image V2 ni Vidéo V2 ; vidéos V2 non modifiables ; pas de vérification d'e-mail à l'inscription ni de
   suppression de compte ou de projet.
 
-## Studio Workflow V2 (phase 12A) — fait et ce qui reste
+## Studio Workflow V2 (phase 12A, fusionnée : PR #64) — fait et ce qui reste
 
 Fait (100 % local, 0 €) : demande unique (formulaire de création ou Pilote) → plan de l'orchestrateur existant → devis
 par module → accord + plafond si payant → exécution par les moteurs V2 (création complète, Ads V2, Social V2, CMS V2,
@@ -283,40 +280,39 @@ Reste à faire (limites de 11A) :
 - PrestaShop : export testé par le gestionnaire de thèmes en ligne de commande (même code que l'écran « Thème et
   logo », écran lui-même non cliqué).
 
-## Chemins d'images encore ANCIENS (pas encore sur l'Image Engine V2)
+## Migration V1 → V2 (branche `claude/v1-to-v2-migration`, non fusionnée)
 
-| Parcours | Code | Ce qu'il fait aujourd'hui | Phase prévue pour la reprise |
-|---|---|---|---|
-| Images produit de la création complète | `src/lib/engine/images.ts` → `generateImageSet` | scènes IA autour du détourage (`openaiScene`, `geminiPlate`), contrôle `verifyAiImage` (barrière phase 1), compositions `renderCreative` / `renderProCreatives` | à reprendre (images de boutique) |
-| Image seule (onglet Images) | `images.ts` → `generateSingleImage` | même chemin que ci-dessus | à reprendre |
-| Images d'une entreprise de services | `src/lib/engine/service-media.ts` → `generateServiceImageSet`, `ambianceChecked`, `postAmbiance` | ambiances IA (`ambianceImage`) contrôlées par `checkAmbiance` ; photos libres par `stockFill` (règles V2 partagées : tri par scène, mémoire des refus, licence) | à reprendre |
-| Photos libres des publications (calendrier V1) | `service-media.ts` → `postStockPhoto` / `topicQueries` | recherche existante alignée sur les règles V2, pas le moteur V2 complet | le calendrier V2 (9A) passe par la bibliothèque, le rendu local ou l'Image V2 ; à retirer avec le V1 |
-| Visuels des publications (calendrier V1) | `src/lib/engine/calendar.ts` (`renderCreative`) | composition locale à partir du détourage | V2 en place (9A) ; à retirer avec le V1 |
-| Retouche d'un visuel de publication (V1) | `worker/handlers.ts` (`post.regenerate`, `renderCreative`) | composition locale | à reprendre (éditeur V2 : remplacement depuis la bibliothèque, retouches locales) |
-| Kit réseaux sociaux, maquettes de marque | `src/lib/media/social-kit.ts`, `src/lib/media/brand-mockups.ts` | compositions locales | à évaluer |
-| Vidéos (plans libres, images de départ) | `src/lib/engine/videos.ts` (`searchStockVideos`, `rankStock`) | ancien moteur vidéo (onglet Vidéos) ; le Video Engine V2 demande ses images à l'Image Engine V2 | bascule de l'onglet Vidéos |
-| Images UGC | `src/lib/engine/ugc.ts` (`ugcFrame`) | ancien moteur UGC (onglet Vidéos) ; le Video Engine V2 part d'images de l'Image Engine V2 | bascule de l'onglet Vidéos |
-| Univers produit (ancienne fonction) | `src/lib/engine/stock-universe.ts` → `universePhotos` | requêtes locales V2 (catégories), contrôle existant | remplacée dans les plans par l'Image V2 ; fonction encore utilisée par d'anciens appels |
+Fait : création complète, demande unique et onglets sur les moteurs V2 pour les nouvelles créations :
+- logo (Logo V2, version du studio provisoire sans IA) ;
+- jeu d'images (Image V2 + rendus locaux) ;
+- publicités (Ads V2, fenêtre Campagne comprise) ;
+- vidéos et UGC (Vidéo V2 : plan, estimation, accord, documents, rendu, approbation, exports) ;
+- textes (document SEO V2 de référence de la boutique) ;
+- blog (SEO V2, article du client protégé) ;
+- calendrier de la création (Social V2, une seule fois par projet : doublon corrigé) ;
+- publications créées en V2, ancien point d'accès sans contournement ;
+- envoi Shopify contrôlé par le CMS V2.
 
-Déjà sur l'Image Engine V2 : étape « photos libres » des plans (`findStockPhotos`), action `image.v2` (API
-`/api/projects/[id]/images/v2`), visuels des publicités V2 (phase 6A).
+Détail, inventaire des anciens moteurs restants et risques : `reports/v1-to-v2-migration.md`.
 
-## Chemins publicitaires encore ANCIENS (pas encore sur l'Advertising Engine V2)
-
-| Parcours | Code | Ce qu'il fait aujourd'hui |
-|---|---|---|
-| Fenêtre « Campagne » de l'onglet Publicités | `src/app/api/projects/[id]/campaigns/draft/route.ts` → `draftAds` (`src/lib/engine/ads.ts`) | textes et plan de test (IA ou local), sans créations visuelles ; conservée pour compatibilité, sous la nouvelle section V2 « Créations publicitaires » |
-| Visuels « publicité » de la création complète | `images.ts` → `generateImageSet` (rôle `ad`, `renderCreative`) | visuels génériques à partir du titre de marque |
-| Publicités d'une entreprise de services | `service-media.ts` → `serviceCardPlan` (rôle `ad`, gabarits « booking ») | cartes à la marque, sans angle ni barrière publicitaire |
-| Vidéos publicitaires | `src/lib/engine/videos.ts` (`produceVideo`, cible `ads`) | montage vidéo existant |
-
-Déjà sur l'Advertising Engine V2 : étape « publicités » des plans (`ad`), action `ads.v2` (API
-`/api/projects/[id]/campaigns/v2`), section « Créations publicitaires » de l'onglet Publicités (créer, modifier,
-exporter).
+Reste à faire (issu de la migration) :
+- **Montage vidéo interactif** : timeline plan par plan, synthèse vocale dans l'interface (aujourd'hui : retouche en
+  français, régénération d'un plan avec accord).
+- **Directions de thème** : correspondance entre les 11 directions V1 (galerie, « change de direction ») et les
+  5 langages du Theme V2 ; reproduction d'un site existant et thème sur mesure encore V1.
+- **Stratégie de marque** (nom, positionnement, palette) : pas de module V2 ; **kit de textes de mise en page**
+  (accroches de sections) encore produit par l'ancien générateur.
+- **Visuels typographiques des services** (annonce de prestation, conseils, horaires) : encore V1 (cartes figées),
+  à reprendre dans Social V2.
+- **Sujets d'articles** (`blog/topics`) : encore V1 ; réécriture d'un ancien article V1 fermée (modification à la
+  main ou nouvel article V2).
+- Coût réel d'une création complète V2 avec une vraie IA : **non mesuré**.
+- Scénarios A–J sur ordinateur et téléphone : **à faire par le propriétaire** ; parcours navigateur 12A, éditeur
+  publicitaire et export CMS non rejoués sur la branche de migration.
 
 ## Autres limites connues
 
-- Pas encore d'écran dédié dans le studio pour les images V2 (bibliothèque et API seulement). Les créations
-  publicitaires V2 ont leur écran (onglet Publicités).
+- Écran Image V2 minimal (onglet Images : demande, verdict, licence, refus) ; pas d'édition avancée d'image
+  (recadrage, retouche locale guidée) dans cet écran.
 - Seuils locaux (netteté, exposition, contraste, part de texte) non calibrés sur de vrais rendus.
 - Limites de texte et zones de sécurité des régies : valeurs publiques au moment du développement, à revérifier.
