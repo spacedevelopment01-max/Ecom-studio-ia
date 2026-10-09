@@ -26,7 +26,7 @@ import { llmConfigured } from "../ai/llm";
 import { hasAiCredits, withQuotaScope } from "../ai/access";
 import { assertQuota, consumeQuota } from "../quotas";
 import { aiQcImage, aiQcScene, aiUgcScript, qcPassed, qcScore, QC_MIN_SCORE, type UgcScript } from "../ai/tasks";
-import { imageProviderAvailable, ugcFrame, veoClip, falClip, videoProviderAvailable } from "../ai/media-providers";
+import { aiClip, imageProviderAvailable, ugcFrame, videoProviderAvailable } from "../ai/media-providers";
 import { brandTypo, confirmedFacts, ensureCutouts, palette } from "./images";
 import { FONT_DIR, font } from "../media/fonts";
 import { cleanUgcScript, ugcIssues } from "../ugc-rules";
@@ -500,9 +500,8 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
       try {
         for (let attempt = 0; attempt < 2 && !buf; attempt++) {
           const u = attempt ? { ...usage, usageKey: `${usage.usageKey}:${attempt}` } : usage;
-          const b = video === "google"
-            ? await veoClip(u, { image: frame, prompt, aspect: o.format, people: true }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)))
-            : await falClip(u, { image: frame, prompt, seconds: 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
+          // Fournisseur choisi par le routage multimédia ; relais vers le secours compatible si le principal échoue sans coût.
+          const b = await aiClip(video, u, { image: frame, prompt, aspect: o.format, people: true, seconds: video === "google" ? undefined : 10 }, (m) => ctx.progress(0.3 + (i / n) * 0.5, L(`Plan ${i + 1}/${n} : ${m}`, `Shot ${i + 1}/${n}: ${m}`)));
           const stills = await clipStills(b, qdir, `c${attempt}`);
           let ok = stills.length > 0;
           for (const [k, st] of stills.entries()) {

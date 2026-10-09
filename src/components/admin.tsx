@@ -9,6 +9,7 @@ import { LangSwitch, useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
 import { AccountingView } from "./admin-accounting";
 import { TextRoutingPanel, type TextRoutingData } from "./admin-text-routing";
+import { MediaRoutingPanel, type MediaRoutingData } from "./admin-media-routing";
 
 type Overview = {
   appUrl: string;
@@ -19,6 +20,7 @@ type Overview = {
   pricing: { checkedAt: number | null; reviewDays: number; missing: { task: string; label: string; key: string }[] };
   markup: number;
   textRouting: TextRoutingData;
+  mediaRouting: MediaRoutingData;
   oauth: { key: string; label: string; configured: boolean; clientIdMasked: string; redirectUri: string; needs: string; docs: string }[];
   stripe: { secretMasked: string; webhookConfigured: boolean; verifiedAt: string | null; live: boolean; webhookUrl: string };
   smtp: { configured: boolean; hostMasked: string; port: string; userMasked: string; passwordConfigured: boolean; fromMasked: string };
@@ -37,6 +39,7 @@ const SECTIONS = [
   ["compta", "Comptabilité", "Accounting"],
   ["ia", "Fournisseurs IA", "AI providers"],
   ["routes", "Modèles et tarifs", "Models and pricing"],
+  ["medias", "Images & Vidéos", "Images & videos"],
   ["connexions", "Connexions OAuth", "OAuth connections"],
   ["paiements", "Paiements", "Payments"],
   ["emails", "E-mails", "Emails"],
@@ -108,6 +111,7 @@ export function AdminConsole() {
             <PricingAlert data={data} post={post} onOpen={openPrices} />
             {tab === "ia" && <AiProviders data={data} set={set} />}
             {tab === "routes" && <Routes data={data} post={post} />}
+            {tab === "medias" && <MediaRoutingPanel data={data.mediaRouting} post={post} />}
             {tab === "connexions" && <OAuthApps data={data} set={set} />}
             {tab === "paiements" && <Payments data={data} set={set} />}
             {tab === "emails" && <SmtpSettings data={data} set={set} />}

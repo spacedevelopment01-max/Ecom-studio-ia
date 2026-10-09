@@ -8,7 +8,8 @@ import sharp from "sharp";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { activeProviderKey, routeFor } from "../ai/config";
-import { falClip, veoClip } from "../ai/media-providers";
+import { aiClip } from "../ai/media-providers";
+import { mediaMode, selectMedia } from "../ai/media-routing";
 import { all, json } from "../db";
 import type { JobContext } from "../jobs";
 import { assetData, getAsset, type Asset } from "../library";
@@ -71,7 +72,9 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
   const base = { userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null };
   const ai = aiActive && llmConfigured();
   const small = (b: Buffer) => sharp(b).resize(768, 768, { fit: "inside" }).jpeg({ quality: 82 }).toBuffer();
-  const route = routeFor("video_generation");
+  // Mode automatique du routage multimédia : le modèle le mieux noté devient le modèle préféré du moteur.
+  const auto = mediaMode("video") === "auto" ? selectMedia({ kind: "video", imageToVideo: true }) : null;
+  const route = auto ?? routeFor("video_generation");
   return {
     canWrite: ai,
     canReview: ai,
@@ -97,8 +100,8 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
     async generateClip(req, key) {
       // Barrières existantes : forfait, budget IA, plafond de la tâche, tarif connu — vérifiées AVANT l'envoi.
       const usage = { ...base, usageKey: key };
-      if (req.provider === "google") return veoClip(usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
-      if (req.provider === "fal") return falClip(usage, { image: req.image, prompt: req.prompt, seconds: req.seconds }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
+      // Modèle choisi par le moteur (catalogue) ; relais vers le secours compatible si le principal échoue sans coût.
+      if (req.provider === "google" || req.provider === "fal") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
       throw new Error(`fournisseur vidéo non pris en charge : ${req.provider}`);
     },
     // Aucun fournisseur de synthèse vocale branché dans le studio (vérifié) : la voix reste à enregistrer ou à

@@ -4,6 +4,8 @@ import { HttpError, requireAdmin } from "@/lib/auth";
 import { setSetting, setJsonSetting, getJsonSetting } from "@/lib/settings";
 import { DEFAULT_ROUTES, TASKS, priceFor, priceValid, type TaskId } from "@/lib/ai/config";
 import { effortValues, textModel } from "@/lib/ai/text-models";
+import { mediaModel } from "@/lib/ai/media-models";
+import { mediaPrimary, mediaStatus } from "@/lib/ai/media-routing";
 import { L } from "@/lib/i18n-server";
 
 const pos = z.number().positive().finite();
@@ -29,6 +31,11 @@ export const POST = handle(async (req: Request) => {
       // Routage des modèles de texte : manuel (défaut, routage actuel inchangé) ou automatique multifournisseur.
       routingMode: z.enum(["manual", "auto"]).optional(),
       pinTask: z.object({ task: z.string(), pinned: z.boolean() }).optional(),
+      // Routage multimédia (images, vidéos) : mode, principal, secours, confirmation et activation des modèles.
+      mediaMode: z.object({ kind: z.enum(["image", "video"]), mode: z.enum(["manual", "auto"]) }).optional(),
+      mediaPrimary: z.object({ kind: z.enum(["image", "video"]), key: z.string().max(160) }).optional(),
+      mediaBackup: z.object({ kind: z.enum(["image", "video"]), key: z.string().max(160).nullable() }).optional(),
+      mediaModel: z.object({ key: z.string().max(160), enabled: z.boolean().optional(), confirm: z.boolean().optional() }).optional(),
       textModel: z.object({ key: z.string().regex(/^(anthropic|openai|google):[\w.-]+$/), enabled: z.boolean().optional(), confirm: z.boolean().optional() }).optional(),
       price: z.object({ key: z.string().regex(/^(anthropic|openai|google|fal):.+$/, { error: () => L("Clé attendue : fournisseur:modèle", "Expected key: provider:model") }), value: PriceSchema.nullable() }).optional(),
       pricesChecked: z.literal(true).optional(),
@@ -86,6 +93,53 @@ export const POST = handle(async (req: Request) => {
     } else if (b.textModel.confirm === false) delete cur.confirmedAt;
     all[b.textModel.key] = cur;
     setJsonSetting("ai.textModels", all);
+  }
+  const mediaOf = (key: string, kind?: string) => {
+    const [provider, ...rest] = key.split(":");
+    const m = mediaModel(provider, rest.join(":"));
+    if (!m || (kind && m.kind !== kind)) throw new HttpError(400, L("Modèle image ou vidéo inconnu du catalogue.", "Image or video model not in the catalog."));
+    return m;
+  };
+  if (b.mediaMode) {
+    const modes = getJsonSetting<Record<string, string>>("ai.media.mode", {});
+    modes[b.mediaMode.kind] = b.mediaMode.mode;
+    setJsonSetting("ai.media.mode", modes);
+  }
+  if (b.mediaPrimary) {
+    const m = mediaOf(b.mediaPrimary.key, b.mediaPrimary.kind);
+    // Un principal doit être appelable : adaptateur réel, tarif connu et informations confirmées (coût borné).
+    const st = mediaStatus(m);
+    if (!m.adapter || !st.confirmed || st.reasons.some((r) => /tarif|price/i.test(r))) throw new HttpError(400, L(`${m.label} ne peut pas être principal : ${st.reasons.join(", ")}.`, `${m.label} can't be primary: ${st.reasons.join(", ")}.`));
+    const routes = getJsonSetting<Record<string, unknown>>("ai.routes", {});
+    routes[b.mediaPrimary.kind === "image" ? "image_generation" : "video_generation"] = { provider: m.provider, model: m.model };
+    setJsonSetting("ai.routes", routes);
+  }
+  if (b.mediaBackup) {
+    const backups = getJsonSetting<Record<string, string | null>>("ai.media.backup", {});
+    if (b.mediaBackup.key === null) delete backups[b.mediaBackup.kind];
+    else {
+      const m = mediaOf(b.mediaBackup.key, b.mediaBackup.kind);
+      const st = mediaStatus(m);
+      const p = mediaPrimary(b.mediaBackup.kind);
+      if (`${p.provider}:${p.model}` === b.mediaBackup.key) throw new HttpError(400, L("Le secours doit être différent du principal.", "The backup must differ from the primary."));
+      // Secours couvert : tarif connu et confirmé (sa propre réservation borne son coût avant l'envoi).
+      if (!m.adapter || !st.confirmed || st.reasons.some((r) => /tarif|price/i.test(r))) throw new HttpError(400, L(`${m.label} ne peut pas servir de secours : ${st.reasons.join(", ")}.`, `${m.label} can't be a backup: ${st.reasons.join(", ")}.`));
+      backups[b.mediaBackup.kind] = b.mediaBackup.key;
+    }
+    setJsonSetting("ai.media.backup", backups);
+  }
+  if (b.mediaModel) {
+    const m = mediaOf(b.mediaModel.key);
+    const all = getJsonSetting<Record<string, { enabled?: boolean; confirmedAt?: number }>>("ai.media.models", {});
+    const cur = { ...(all[b.mediaModel.key] ?? {}) };
+    if (b.mediaModel.enabled !== undefined) cur.enabled = b.mediaModel.enabled;
+    if (b.mediaModel.confirm === true) {
+      const p = priceFor(m.provider, m.model);
+      if (!p || !priceValid(p)) throw new HttpError(400, L(`Renseignez d'abord le tarif officiel de ${m.label} (« Tarifs des fournisseurs »).`, `First enter the official price of ${m.label} ("Provider prices").`));
+      cur.confirmedAt = Date.now();
+    } else if (b.mediaModel.confirm === false) delete cur.confirmedAt;
+    all[b.mediaModel.key] = cur;
+    setJsonSetting("ai.media.models", all);
   }
   if (b.pricesChecked) setSetting("ai.prices.checkedAt", String(Date.now()));
   if (b.usdToEur) setJsonSetting("billing.usdToEur", b.usdToEur);
