@@ -5,6 +5,7 @@
  * publication dans Shopify ou export (HTML à coller, fichier d'import WordPress).
  * Sans forfait ou avec Créer : présentation et « Inclus dans les forfaits Vendre et Dominer ».
  */
+import { startPolling } from "@/lib/poll";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bold, Check, ClipboardCopy, Download, ExternalLink, Eye, Heading2, Heading3, ImageIcon, Lightbulb, Link2, List, Newspaper, Pencil, RefreshCw, RotateCcw, Send, Sparkles, Trash2, TriangleAlert, Wand2, X,
@@ -99,11 +100,12 @@ export default function TabBlog() {
   // Fin d'une écriture : la liste se met à jour et l'article s'ouvre.
   useEffect(() => {
     if (!pending) return;
-    const timer = setInterval(async () => {
+    // Une requête à la fois (jamais d'empilement si le serveur est lent).
+    const poller = startPolling(async () => {
       try {
         const { job } = await api<{ job: { status: string; result: any; error: string | null } }>(`/api/jobs/${pending}`);
         if (["done", "failed", "cancelled"].includes(job.status)) {
-          clearInterval(timer);
+          poller.stop();
           setPending(null);
           await reload();
           if (job.status === "done" && job.result?.articleId) {
@@ -113,7 +115,7 @@ export default function TabBlog() {
         }
       } catch {}
     }, 2000);
-    return () => clearInterval(timer);
+    return () => poller.stop();
   }, [pending, reload, t, toast]);
 
   const startJob = useCallback((jobId: string) => setPending(jobId), []);

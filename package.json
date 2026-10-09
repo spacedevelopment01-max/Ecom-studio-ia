@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently --restart-tries 5 --restart-after 3000 -n web,worker -c cyan,magenta \"next dev -p 3000\" \"tsx watch worker/index.ts\"",
+    "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "concurrently --restart-tries 10 --restart-after 3000 -n web,worker \"next start -p 3000\" \"tsx worker/index.ts\"",
     "worker": "tsx worker/index.ts",

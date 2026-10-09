@@ -7,7 +7,8 @@
  *  - composition, proportions, couleurs : construites par le code (fond transparent, SVG, déclinaisons possibles).
  */
 import fs from "node:fs";
-import opentype from "opentype.js";
+// opentype.js 2 : exports NOMMÉS seulement dans sa version ESM (celle que charge Next.js) — pas d'export par défaut.
+import { parse as parseFont } from "opentype.js";
 import sharp from "sharp";
 import { contrast } from "../color";
 import { canvasFamily, fontFile } from "../media/fonts";
@@ -21,12 +22,17 @@ const TRACKING = { tight: 0, normal: 0.04, wide: 0.16 } as const;
 
 /** Glyphes absents de la police (le nom serait rendu faux) : la famille est alors écartée. */
 export function missingGlyphs(text: string, family: string, weight: number): string[] {
+  const file = fontFile(family, weight);
+  let f: ReturnType<typeof parseFont>;
   try {
-    const f = opentype.parse(fs.readFileSync(fontFile(family, weight)).buffer as ArrayBuffer);
-    return [...new Set([...text].filter((ch) => ch.trim() && f.charToGlyphIndex(ch) === 0))];
-  } catch {
-    return [];
+    const buf = fs.readFileSync(file);
+    // Copie exacte des octets du fichier (un Buffer peut partager une zone mémoire plus grande).
+    f = parseFont(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer);
+  } catch (e) {
+    // Jamais masqué : sans lecture de la police, l'exactitude du nom ne peut pas être garantie.
+    throw new Error(`Police illisible pour le contrôle des glyphes (${family} ${weight}, ${file}) : ${(e as Error).message}`);
   }
+  return [...new Set([...text].filter((ch) => ch.trim() && f.charToGlyphIndex(ch) === 0))];
 }
 
 /** Polices du style, dans l'ordre, capables d'écrire le nom exact. */

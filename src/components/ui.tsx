@@ -1,5 +1,6 @@
 "use client";
 /** Composants d'interface du studio (accessibles, clair/sombre). */
+import { startPolling } from "@/lib/poll";
 import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Moon, Sun, X, Loader2, Check, AlertTriangle, Info } from "lucide-react";
@@ -63,12 +64,11 @@ export function useApi<T = any>(url: string | null, opts: { poll?: number } = {}
     setLoading(!!url);
     load();
     if (!opts.poll || !url) return () => void (alive.current = false);
-    const t = setInterval(() => {
-      if (document.visibilityState === "visible") load();
-    }, opts.poll);
+    // Une requête à la fois : un tour est sauté tant que la précédente n'a pas répondu (jamais d'empilement).
+    const poller = startPolling(load, opts.poll, () => document.visibilityState === "visible");
     return () => {
       alive.current = false;
-      clearInterval(t);
+      poller.stop();
     };
   }, [url, opts.poll, load]);
   return { data, error, loading, reload: load, setData };

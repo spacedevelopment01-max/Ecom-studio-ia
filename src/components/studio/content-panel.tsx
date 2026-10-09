@@ -6,6 +6,7 @@
  * compteurs, indicateurs SEO, versions et restauration, aperçu, export et retouches en conversation.
  * Les modifications manuelles n'appellent jamais l'IA.
  */
+import { startPolling } from "@/lib/poll";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Bold, Download, Eye, FileText, Italic, Link2, MessageSquare, Plus, RotateCcw, Save, Search, Sparkles, Trash2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, Input, Select, Spinner, Textarea, useApi, useToast } from "../ui";
@@ -81,11 +82,12 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
 
   useEffect(() => {
     if (!job) return;
-    const timer = setInterval(async () => {
+    // Une requête à la fois (jamais d'empilement si le serveur est lent).
+    const poller = startPolling(async () => {
       try {
         const { job: j } = await api<{ job: { status: string; result: any; error: string | null } }>(`/api/jobs/${job}`);
         if (["done", "failed", "cancelled"].includes(j.status)) {
-          clearInterval(timer);
+          poller.stop();
           setJob(null);
           await reload();
           if (j.status === "done" && j.result?.docKey) setOpen(j.result.docKey);
@@ -93,7 +95,7 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
         }
       } catch {}
     }, 2000);
-    return () => clearInterval(timer);
+    return () => poller.stop();
   }, [job, reload, t, toast]);
 
   if (!data) return <Card className="grid place-items-center p-10 text-muted"><Spinner className="size-5" /></Card>;
