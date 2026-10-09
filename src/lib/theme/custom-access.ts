@@ -55,7 +55,7 @@ export function customThemeAccess(user: Pick<User, "id" | "role">): CustomThemeA
       renewsAt,
     };
   }
-  if (user.role !== "admin" && used >= CUSTOM_THEMES_PER_MONTH) {
+  if (used >= CUSTOM_THEMES_PER_MONTH) {
     const end = new Date(renewsAt).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
     return {
       allowed: false,

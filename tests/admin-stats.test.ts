@@ -32,14 +32,19 @@ describe("tableau de bord de l'administration", () => {
 });
 
 describe("administration réservée au propriétaire", () => {
-  it("avec ADMIN_EMAIL, seul ce compte devient administrateur", async () => {
+  it("avec ADMIN_EMAIL, seul ce compte peut devenir administrateur — après confirmation de l'adresse (lien signé)", async () => {
     const t = Date.now();
     process.env.ADMIN_EMAIL = `proprio${t}@test.fr`;
     try {
       const client = await createUser(`client${t}@test.fr`, "motdepasse-test", "Client");
       const owner = await createUser(`PROPRIO${t}@test.fr`, "motdepasse-test", "Propriétaire");
       expect(client.role).toBe("client");
-      expect(owner.role).toBe("admin");
+      // Jamais d'office à l'inscription : le compte confirme d'abord qu'il possède l'adresse ADMIN_EMAIL.
+      expect(owner.role).toBe("client");
+      const { requestAdminClaim, confirmAdminClaim } = await import("@/lib/admin-claim");
+      expect(requestAdminClaim(client)).toBeNull();
+      const token = new URL(requestAdminClaim(owner)!).searchParams.get("jeton");
+      expect(confirmAdminClaim(token, owner)).toBe(true);
     } finally {
       delete process.env.ADMIN_EMAIL;
     }

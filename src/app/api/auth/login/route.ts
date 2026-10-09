@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { startSession, verifyLogin } from "@/lib/auth";
+import { requestAdminClaim } from "@/lib/admin-claim";
 import { body, fail, handle, ok } from "@/lib/http";
 import { L, setUserLang, uiLang } from "@/lib/i18n-server";
 import { clientIp, LIMITS, rateClear, rateCount, rateHit } from "@/lib/rate-limit";
@@ -23,5 +24,6 @@ export const POST = handle(async (req: Request) => {
   // Mémorise la langue de l'interface sur le compte (tâches en arrière-plan, notifications, e-mails).
   setUserLang(u.id, uiLang());
   await startSession(u.id);
+  requestAdminClaim(u);
   return ok({ user: { id: u.id, email: u.email, role: u.role } });
 });

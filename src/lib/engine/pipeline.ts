@@ -182,7 +182,7 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
   const inp = payload.input;
   const services = p.business === "services";
   // Découverte gratuite (sans forfait) : analyse, marque, logos et aperçu de la boutique ; images, vidéos et calendrier avec un forfait.
-  if ((step === "images" || step === "video" || step === "calendar") && !userPlan(p.userId) && one<{ role: string }>("SELECT role FROM users WHERE id = ?", p.userId)?.role !== "admin") {
+  if ((step === "images" || step === "video" || step === "calendar") && !userPlan(p.userId)) {
     return { skipped: note("skip.plan") };
   }
   switch (step) {

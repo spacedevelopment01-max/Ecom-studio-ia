@@ -44,7 +44,7 @@ export const POST = handle(async (req: Request) => {
   const sub = getSubscription(user.id);
   const count = one<{ n: number }>("SELECT COUNT(*) n FROM projects WHERE user_id = ? AND archived = 0", user.id)!.n;
   const allowed = subscriptionActive(sub) && !sub.plan ? Math.max(1, sub.stores) : 1;
-  if (count >= allowed && user.role !== "admin") {
+  if (count >= allowed) {
     throw new HttpError(402, L("Un abonnement comprend une boutique ou un site. Pour une autre boutique, archivez celle-ci ou ouvrez un second compte avec son propre abonnement.", "A subscription includes one store or website. For another store, archive this one or open a second account with its own subscription."));
   }
   const pid = id();

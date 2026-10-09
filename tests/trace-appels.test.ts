@@ -23,7 +23,7 @@ vi.mock("@anthropic-ai/sdk", () => {
       const p = this.opts.fetch("https://api.anthropic.test/v1/messages", {}).then(() => nextReply());
       return { finalMessage: () => p };
     }
-    messages = { stream: (p: any) => this.stream(p) };
+    messages = { stream: (p: any) => this.stream(p), countTokens: async (p: any) => ({ input_tokens: Math.ceil(JSON.stringify(p).length / 3) }) };
     beta = { messages: { stream: (p: any) => this.stream(p) } };
   }
   return { default: Anthropic, Anthropic };
@@ -33,6 +33,10 @@ const billed = new Set<string>();
 vi.mock("@/lib/billing", async (orig) => ({
   ...(await orig<object>()),
   assertCanSpend: () => undefined,
+  // Réservations du budget testées à part (tests/budget-ia.test.ts) : ici, comptes fictifs sans portefeuille.
+  reserve: () => "reservation-test",
+  release: () => undefined,
+  settleUncertain: () => undefined,
   // Comptes de test « u-… » : un forfait actif et du budget IA (assertAiAllowed les laisse passer, comme un client payant).
   getSubscription: () => ({ user_id: "u", status: "active", plan: "creer", stores: 1 }),
   planOf: () => "creer",

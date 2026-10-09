@@ -369,7 +369,7 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
   video: async (ctx, p, s) => {
     const since = Date.now();
     const { runVideoEngineV2 } = await import("../video-v2/engine");
-    await ctx.step(`plan:${s.id}`, async () => (await runVideoEngineV2(ctx, p.id, { ask: { text: String(s.input.text ?? ""), platform: "reels" }, approveGeneration: true })).videoAssetId);
+    await ctx.step(`plan:${s.id}`, async () => (await runVideoEngineV2(ctx, p.id, { ask: { text: String(s.input.text ?? ""), platform: "reels" }, approveGeneration: !!s.input.allowPaid })).videoAssetId);
     return outcome(ctx.job.id, "video", since);
   },
 };

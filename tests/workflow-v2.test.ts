@@ -125,7 +125,7 @@ describe("Studio Workflow V2", async () => {
     const pid = await seedThemeScenario(decouverte.id, "cosmetic");
     await fr(() => buildShopV2(null, pid));
     const w = await fr(() => wf.prepareWorkflow(pid, decouverte.id, "Crée mes publicités, mes publications Instagram et exporte ma boutique Shopify", { aiActive: false }));
-    expect(w.estimate.lines.filter((l) => ["ad", "social", "cms_export"].includes(l.kind)).every((l) => l.mode === "done" && /forfait/.test(l.note ?? ""))).toBe(true);
+    expect(w.estimate.lines.filter((l) => ["ad", "social", "cms_export"].includes(l.kind)).every((l) => l.mode === "skip" && /forfait/.test(l.note ?? ""))).toBe(true);
     const s = wf.startWorkflow(w.id, {});
     const r = await fr(() => wf.runWorkflow(ctxOf(s.jobId!)));
     for (const k of ["ad", "social", "cms_export"]) expect(r.steps.find((x) => x.kind === k)?.status, k).toBe("skipped");

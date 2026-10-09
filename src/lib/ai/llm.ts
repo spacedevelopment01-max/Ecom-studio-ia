@@ -4,16 +4,18 @@
  *  - sorties JSON validées par Zod (sorties structurées ou réparation guidée),
  *  - images de référence (vision),
  *  - comptabilisation exacte des tokens dans l'enveloppe IA du client,
- *  - repli serveur en cas de refus de sécurité.
+ *  - coût MAXIMAL réservé avant l'envoi, à partir du comptage officiel des jetons (count_tokens) ;
+ *  - aucun repli serveur vers un autre modèle (son tarif ne serait pas couvert par la réservation) ;
+ *  - aucune relance automatique du SDK (chaque requête facturable est couverte par une réservation).
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
-import { assertCanSpend, EUR, recordUsage } from "../billing";
+import { EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
-import { activeProviderKey, priceFor, requirePrice, routeFor, usdToEur, type TaskId } from "./config";
+import { activeProviderKey, FX_SAFETY, priceFor, requirePrice, routeFor, TEXT_MODEL_LIMITS, usdToEur, type TaskId } from "./config";
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -100,7 +102,7 @@ let cached: { key: string; client: Anthropic } | null = null;
 function client(): Anthropic {
   const key = activeProviderKey("anthropic");
   if (!key) throw new UserFacingError(L("Aucun fournisseur d'IA de langage n'est configuré. L'administration doit renseigner la clé Anthropic.", "No language AI provider is configured. An administrator needs to add the Anthropic key."));
-  if (cached?.key !== key) cached = { key, client: new Anthropic({ apiKey: key, maxRetries: 3, timeout: 10 * 60_000, fetch: countingFetch }) };
+  if (cached?.key !== key) cached = { key, client: new Anthropic({ apiKey: key, maxRetries: 0, timeout: 10 * 60_000, fetch: countingFetch }) };
   return cached.client;
 }
 
@@ -145,16 +147,58 @@ export function systemText(call: Pick<LlmCall, "system">): string {
   return `${languageDirective(contentLang(), uiLang())}\n\n${call.system}`;
 }
 
-function estimateMicro(call: LlmCall, model: string) {
-  // Sans tarif « jetons » connu, l'appel est refusé (sinon il serait compté 0 € hors enveloppe).
+/** Marge sur l'entrée comptée : consignes ajoutées par le fournisseur (format de sortie, réflexion), non comptées. */
+const INPUT_MARGIN = { ratio: 1.02, tokens: 512 };
+
+/**
+ * Coût MAXIMAL d'un appel (réservé avant l'envoi), en micro-euros, coefficient compris :
+ *  - entrée = nombre EXACT de jetons donné par le fournisseur pour ce modèle (count_tokens : texte, images,
+ *    système), + octets du schéma de sortie imposé, + marge, au tarif d'écriture en cache (×1,25, le plus cher) ;
+ *  - sortie = `max_tokens` (la réflexion est comptée dedans et ne peut pas le dépasser), au tarif de sortie ;
+ *  - change USD → EUR majoré de FX_SAFETY.
+ * Bloqué (jamais d'estimation) si : tarif inconnu ou non confirmé, modèle aux limites inconnues, comptage
+ * impossible, entrée au-delà de la fenêtre du modèle ou du seuil où un autre barème peut s'appliquer.
+ */
+export async function maxCostMicro(model: string, params: { system?: { type: "text"; text: string }[]; messages: Anthropic.Beta.BetaMessageParam[]; max_tokens: number }, format?: unknown, count: (p: { model: string; system?: unknown; messages: unknown }) => Promise<number> = countInputTokens) {
   const p = requirePrice("anthropic", model);
   if (p.unit !== "tokens") throw new UserFacingError(L(`Tarif « jetons » attendu pour anthropic:${model} : corrigez-le dans l'administration.`, `A per-token price is expected for anthropic:${model}. Fix it in the admin settings.`));
-  const inTok = (systemText(call).length + (call.context?.length ?? 0) + (call.reference?.length ?? 0) + brainOf(call).volatile.length + call.prompt.length) / 3.2 + (call.images?.length ?? 0) * 1600;
-  const outTok = Math.min(call.maxTokens ?? 16000, 6000);
-  return Math.round(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * EUR);
+  const limits = TEXT_MODEL_LIMITS[model];
+  if (!limits) throw new PermanentError(L(`Limites du modèle ${model} inconnues : coût maximal non garanti, appel bloqué. Choisissez un modèle pris en charge dans l'administration.`, `Limits of model ${model} are unknown: maximum cost can't be guaranteed, call blocked. Pick a supported model in the admin settings.`));
+  if (!(params.max_tokens > 0) || params.max_tokens > limits.maxOutput) throw new PermanentError(L(`Limite de sortie invalide pour ${model}.`, `Invalid output limit for ${model}.`));
+  const counted = await count({ model, system: params.system, messages: params.messages });
+  if (!Number.isFinite(counted) || counted <= 0) throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
+  const formatTokens = format ? Buffer.byteLength(JSON.stringify(format), "utf8") : 0;
+  const inTok = Math.ceil((counted + formatTokens) * INPUT_MARGIN.ratio) + INPUT_MARGIN.tokens;
+  if (inTok + params.max_tokens > limits.context || inTok > limits.flatPriceUpTo) throw new UserFacingError(L(`Demande trop longue (${counted} jetons) : au-delà de ${limits.flatPriceUpTo} jetons, le tarif du fournisseur n'est pas garanti. Raccourcissez-la.`, `Request too long (${counted} tokens): above ${limits.flatPriceUpTo} tokens the provider's price isn't guaranteed. Shorten it.`));
+  const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
+  return Math.ceil(((inTok * 1.25 * p.inputPerM + params.max_tokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
 }
 
-function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = ""): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
+/** Nombre exact de jetons d'entrée pour ce modèle (endpoint gratuit du fournisseur). Échec : appel bloqué. */
+async function countInputTokens(p: { model: string; system?: unknown; messages: unknown }): Promise<number> {
+  try {
+    const r = await client().messages.countTokens(p as Anthropic.MessageCountTokensParams);
+    return r.input_tokens;
+  } catch (e) {
+    const status = (e as { status?: unknown })?.status;
+    // Saturation passagère : la file de tâches réessaiera. Autre échec : bloqué (aucune estimation de repli).
+    if (typeof status === "number" && (status === 429 || status >= 500)) throw e;
+    throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
+  }
+}
+
+/** Réponses d'erreur HTTP du fournisseur relançables (rien n'a été produit ni facturé). */
+const RETRYABLE = (status: number) => status === 429 || status === 529 || status >= 500;
+const RETRY_DELAYS_MS = [1000, 4000];
+
+function pricier(a: string, b: string) {
+  const pa = priceFor("anthropic", a);
+  const pb = priceFor("anthropic", b);
+  if (!pa || pa.unit !== "tokens") return false;
+  return !pb || pb.unit !== "tokens" || pa.outputPerM > pb.outputPerM || pa.inputPerM > pb.inputPerM;
+}
+
+function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
   const p = priceFor("anthropic", model);
   const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * 1.25 + (usage.cache_read_input_tokens ?? 0) * 0.1;
   const output = usage.output_tokens ?? 0;
@@ -173,7 +217,7 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
     costMicro,
     estimated: !p,
     idempotencyKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined,
-  });
+  }, { reservationId });
   return { costMicro, estimated: !p, ...billed };
 }
 
@@ -185,10 +229,6 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
   // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non.
   assertAiAllowed(call.userId);
-  const est = estimateMicro(call, route.model);
-  // Plafond de dépense de la tâche (benchmark) : vérifié AVANT l'envoi.
-  assertUnderCostCap(est);
-  assertCanSpend(call.userId, est);
   const isHaiku = route.model.startsWith("claude-haiku");
   const { brain } = brainOf(call);
   const params: any = {
@@ -199,11 +239,15 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     system: [{ type: "text", text: systemText(call), cache_control: { type: "ephemeral" } }],
     messages,
   };
+  // Coût maximal de l'appel : plafond de la tâche (demande du client, benchmark) puis réservation atomique sur le
+  // budget du compte, AVANT l'envoi. Rien ne part si le maximum ne peut pas être couvert.
+  // Aucun repli serveur (`fallbacks`) : un modèle de repli serait facturé à son propre tarif, non couvert.
+  const maxMicro = await maxCostMicro(route.model, params, format);
+  assertUnderCostCap(maxMicro);
+  const reservation = reserve(call.userId, maxMicro, { task: call.task, provider: "anthropic", model: route.model, jobId: call.jobId, projectId: call.projectId });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
     params.output_config = { effort: route.effort ?? "medium", ...(format ? { format } : {}) };
-    params.betas = ["server-side-fallback-2026-07-01"];
-    params.fallbacks = "default";
   } else if (format) {
     params.output_config = { format };
   }
@@ -234,20 +278,42 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     escalation: decision.escalation,
   };
   try {
+    // Relances maison, dans la MÊME réservation, uniquement sur une réponse d'erreur HTTP (rien de produit ni
+    // facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
     msg = await httpCounter.run(counter, async () => {
-      const stream = isHaiku ? client().messages.stream(params) : client().beta.messages.stream(params);
-      return (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
+      for (let attempt = 0; ; attempt++) {
+        try {
+          const stream = isHaiku ? client().messages.stream(params) : client().beta.messages.stream(params);
+          return (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
+        } catch (e) {
+          const status = (e as { status?: unknown })?.status;
+          if (typeof status !== "number" || !RETRYABLE(status) || attempt >= RETRY_DELAYS_MS.length) throw e;
+          await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
+        }
+      }
     });
   } catch (e) {
+    // Réponse d'erreur du fournisseur (4xx, 429, 5xx) : rien n'a été produit ni facturé, la réservation est rendue.
+    // Coupure réseau, délai dépassé, flux interrompu : résultat incertain, le coût maximal est retenu par prudence.
+    const status = (e as { status?: unknown })?.status;
+    if (typeof status === "number") release(reservation, `refus du fournisseur (${status})`);
+    else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
     if (e instanceof Anthropic.BadRequestError) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
     throw e; // 429 / 5xx / réseau : la file de tâches réessaie.
   }
-  // Réponse d'un modèle de repli sans prix connu : coût compté au prix du modèle demandé (jamais 0 €).
-  const served = msg.model && priceFor("anthropic", msg.model) ? msg.model : route.model;
-  const billed = account(call, served, msg.usage, suffix);
+  // Modèle servi différent du modèle demandé (ne devrait pas arriver sans repli) : compté au plus cher des deux.
+  const served = msg.model && msg.model !== route.model && pricier(msg.model, route.model) ? msg.model : route.model;
+  let billed: ReturnType<typeof account>;
+  try {
+    billed = account(call, served, msg.usage, suffix, reservation);
+  } catch (e) {
+    // Réponse reçue (donc facturée) mais comptabilisation impossible : coût maximal retenu.
+    settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
+    throw e;
+  }
   recordCall({
     ...trace,
     servedModel: msg.model ?? null,
@@ -434,7 +500,8 @@ export function extractJson(text: string): unknown {
 }
 
 /** Test de connexion depuis l'administration. */
+/** Vérification de clé depuis l'administration : comptage de jetons (gratuit), aucune génération facturée. */
 export async function pingAnthropic(model: string) {
-  const r = await client().messages.create({ model, max_tokens: 16, messages: [{ role: "user", content: "Réponds OK." }] } as any);
-  return { model: (r as any).model, ok: true };
+  const r = await client().messages.countTokens({ model, messages: [{ role: "user", content: "OK" }] });
+  return { model, ok: r.input_tokens > 0 };
 }
