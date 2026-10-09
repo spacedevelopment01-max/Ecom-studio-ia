@@ -13,6 +13,9 @@ techniquement, 9B reportée ; 8A validée techniquement, 8B reportée. Phase 13 
 
 ## PRIORITÉ — fal.ai dans l'administration vidéo (à terminer)
 
+- **Avancement (routage multimédia V2)** : fal.ai apparaît maintenant dans « Administration › Images & Vidéos »
+  (principal, secours, état de la clé, capacités, tarif, confirmation), avec Kling 3 et deux modèles d'image ; il
+  reste à saisir leurs tarifs officiels et à faire un essai réel.
 - **État** : fal.ai est branché côté génération vidéo (`src/lib/ai/media-providers.ts`, modèle par défaut
   `fal-ai/kling-video/v2.1/pro/image-to-video`, tarif à la seconde, réservation du coût maximal). Son intégration
   dans l'**administration vidéo** reste incomplète :
@@ -23,6 +26,27 @@ techniquement, 9B reportée ; 8A validée techniquement, 8B reportée. Phase 13 
 - **À faire** : terminer cette intégration avec les mêmes garde-fous que les autres fournisseurs (tarif confirmé,
   coût maximal borné, aucun appel payant sans accord du propriétaire).
 - N'a pas bloqué la fusion du routage IA multifournisseur des modèles de texte.
+
+## Routage multimédia V2 (logos, images, publicités, vidéos) — branche en cours, non fusionnée
+
+- Rapport : `reports/multimedia-routing-v2.md`. Mode **manuel** par défaut, principaux inchangés (GPT Image 1, Veo 3).
+- **Utilisables tels quels** : OpenAI `gpt-image-1`, Gemini `gemini-2.5-flash-image`, Veo 3 et Veo 3 Fast,
+  Kling 2.1 (fal).
+- **À configurer par le propriétaire** (tarif officiel à saisir, puis « Confirmer ») :
+  - GPT Image 1.5, 2 et 2.5 Flare ;
+  - Gemini 3.1 Flash Image, 3 Pro Image et 3.1 Flash-Lite Image ;
+  - Veo 3.1 (normal, Fast et Lite) ;
+  - Kling 3 Pro et Standard ;
+  - fal Nano Banana 2 Edit et FLUX.2 Klein Edit (leurs paramètres d'entrée sont aussi à valider au premier essai).
+- NON VÉRIFIÉ :
+  - tarifs officiels OpenAI (images), API Gemini (images, Veo) et fal (pages inaccessibles depuis l'environnement de
+    développement) ;
+  - dates d'arrêt de Veo 3, de Gemini 2.5 Flash Image et de Kling 2.1.
+- À faire :
+  - essais réels comparés, avec l'accord du propriétaire pour la dépense ;
+  - relais APRÈS une panne en cours de génération pour les scènes produit (aujourd'hui : relais au moment du choix
+    seulement) ;
+  - résolutions 2K / 4K (non utilisées).
 
 ## Routage IA multifournisseur (texte) — fusionné, à tester par le propriétaire
 
