@@ -5,7 +5,8 @@
  *  2. récupère la dernière version (git pull) ;
  *  3. installe ce qui a changé (npm install) ;
  *  4. vide le cache de compilation (.next) ;
- *  5. relance le studio (npm run dev).
+ *  5. relance le studio en mode production (npm run studio : reconstruit puis lance) — ou « npm run maj -- --dev »
+ *     pour le mode développement.
  * Les données (base, fichiers, réglages) ne sont jamais touchées.
  */
 import fs from "node:fs";
@@ -57,5 +58,6 @@ say("Nettoyage du cache de compilation (.next)…");
 fs.rmSync(".next", { recursive: true, force: true });
 
 // 5. Relance.
-say("Relance du studio (npm run dev)… (Ctrl+C pour l'arrêter)");
-process.exit(spawnSync("npm", ["run", "dev"], { stdio: "inherit", shell: process.platform === "win32" }).status ?? 0);
+const mode = process.argv.includes("--dev") ? "dev" : "studio";
+say(`Relance du studio (npm run ${mode})… (Ctrl+C pour l'arrêter)`);
+process.exit(spawnSync("npm", ["run", mode], { stdio: "inherit", shell: process.platform === "win32" }).status ?? 0);

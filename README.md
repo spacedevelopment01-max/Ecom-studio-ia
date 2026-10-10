@@ -12,8 +12,13 @@ npm run setup      # crée .env.local (APP_SECRET aléatoire) et la base SQLite 
 npm run dev        # site (http://localhost:3000) + worker de tâches de fond
 ```
 
-Mise à jour (Codespace compris, même si le studio tourne déjà) : `npm run maj` — arrête le studio en cours, récupère
-la dernière version, installe, vide le cache de compilation et relance. Les données ne sont pas touchées.
+Utiliser le studio (Codespace compris) : `npm run studio` — mode production, environ 3 fois moins de mémoire que
+`npm run dev` ; construit le site seulement quand le code a changé ; relance seule la partie qui plante. Le Codespace
+le lance tout seul à chaque connexion.
+
+Mise à jour (même si le studio tourne déjà) : `npm run maj` — arrête le studio en cours, récupère la dernière version,
+installe, vide le cache de compilation et relance (`npm run maj -- --dev` pour le mode développement). Les données ne
+sont pas touchées.
 
 Production : `npm run build` puis `npm start` (lance le site **et** le worker). Le worker doit tourner en continu : c'est lui qui exécute les créations longues et les publications programmées, navigateur fermé.
 

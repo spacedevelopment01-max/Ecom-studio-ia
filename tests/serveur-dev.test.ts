@@ -84,9 +84,19 @@ describe("serveur de développement", () => {
     // « npm run maj » : arrête le studio en cours AVANT de changer les fichiers, puis met à jour et relance.
     expect(pkg.scripts.maj).toBe("node scripts/maj.mjs");
     const maj = fs.readFileSync(path.join("scripts", "maj.mjs"), "utf8");
-    const order = ["SIGTERM", '"pull"', '"install"', '".next"', '"run", "dev"'].map((k) => maj.indexOf(k));
+    const order = ["SIGTERM", '"pull"', '"install"', '".next"', '"run", mode'].map((k) => maj.indexOf(k));
     expect(order.every((i) => i > 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
+    // Mode conseillé (Codespace compris) : production, surveillé par le lanceur lui-même (pas de « concurrently
+    // --restart-tries », qui relançait aussi pendant un arrêt demandé) ; lancé automatiquement à chaque connexion.
+    expect(pkg.scripts.studio).toBe("node scripts/studio.mjs");
+    const studio = fs.readFileSync(path.join("scripts", "studio.mjs"), "utf8");
+    expect(studio).toMatch(/"build"/);
+    expect(studio).toMatch(/"start", "-p"/);
+    expect(studio).toMatch(/if \(stopping\) return finish\(\)/);
+    expect(studio).not.toMatch(/concurrently/);
+    expect(maj).toMatch(/"studio"/);
+    expect(JSON.parse(fs.readFileSync(".devcontainer/devcontainer.json", "utf8")).postAttachCommand.studio).toBe("npm run studio");
     expect(dev).toMatch(/next dev -p \$\{PORT\}/);
     expect(dev).toMatch(/node_modules\/\.bin/);
     expect(fs.readFileSync("next.config.ts", "utf8")).toMatch(/onDemandEntries: \{ maxInactiveAge: 30 \* 60_000/);
