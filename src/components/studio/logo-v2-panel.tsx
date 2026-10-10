@@ -16,7 +16,7 @@ type Proposal = {
   id: string;
   url?: string;
   territory: { name: string; concept: string; why: string; markType: string; composition: string; typography: string; distinctive: string; source: "ai" | "local"; style?: string | null; descriptor?: string | null };
-  artwork?: { textCorrected: boolean; originalUrl: string | null; provider: string | null; issues: string[]; choosable: boolean; previous: string | null } | null;
+  artwork?: { textCorrected: boolean; originalUrl: string | null; provider: string | null; costMicro: number | null; issues: string[]; choosable: boolean; previous: string | null } | null;
   font: string;
   score: number | null;
   verdict: string | null;
@@ -63,6 +63,13 @@ const MARK: Record<string, [string, string]> = {
 export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   const { id } = useProject();
   const t = useT();
+  // Provenance réelle de l'image (fournisseur · modèle) et coût facturé de cette image, quand il est connu.
+  const provenance = (a: NonNullable<Proposal["artwork"]>) => {
+    const [prov, model] = (a.provider ?? "").split(":");
+    const who = prov === "openai" ? "OpenAI" : prov === "google" ? "Gemini" : prov === "fal" ? "fal.ai" : t("IA d'images", "image AI");
+    const euros = a.costMicro != null ? ` · ${(a.costMicro / 1e6).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : "";
+    return `${t("Dessiné par", "Drawn by")} ${who}${model ? ` ${model}` : ""}${euros}`;
+  };
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   const [style, setStyle] = useState("auto");
@@ -117,7 +124,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
               <strong className="text-sm">{p.territory.name}</strong>
               <Badge>{t(...(MARK[p.territory.markType] ?? [p.territory.markType, p.territory.markType]))}</Badge>
               {p.territory.style && STYLE[p.territory.style] && <Badge>{t(...STYLE[p.territory.style])}</Badge>}
-              {p.artwork && <Badge tone="info">{t("Dessiné par l'IA d'images", "Drawn by the image AI")}</Badge>}
+              {p.artwork && <Badge tone="info">{provenance(p.artwork)}</Badge>}
               {!isStudio && p.score != null && <Badge tone="ok">{t(`Validé ${p.score}/10`, `Approved ${p.score}/10`)}</Badge>}
               {isStudio && <Badge tone="warn">{t("Provisoire", "Provisional")}</Badge>}
               {data?.applied === p.id && <Badge tone="info">{t("Appliqué", "Applied")}</Badge>}
@@ -183,6 +190,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
                   <strong className="text-sm">{d.territory.name}</strong>
                   {d.territory.style && STYLE[d.territory.style] && <Badge>{t(...STYLE[d.territory.style])}</Badge>}
                   <Badge tone="warn">{d.score != null ? t(`Non validé ${d.score}/10`, `Not approved ${d.score}/10`) : t("Non validé", "Not approved")}</Badge>
+                  {d.artwork && <Badge tone="info">{provenance(d.artwork)}</Badge>}
                 </div>
                 <img src={d.url} alt={d.territory.name} className="mb-3 w-full rounded-lg bg-[#F4F3EF] object-contain p-4" />
                 <p className="text-xs text-ink-2">{d.reason}</p>

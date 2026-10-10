@@ -10,7 +10,7 @@
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
-import { openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
+import { emitMediaProgress, openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
 import sharp from "sharp";
 import { EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
@@ -267,7 +267,8 @@ const bytes = (t: string) => Buffer.byteLength(t, "utf8");
 export function openaiImageMax(model: string, o: { prompt: string; images: number; size: string; quality: "medium" | "high" }) {
   // Tarif « par image » saisi dans l'administration : borne directe (une image demandée).
   const p = requirePrice("openai", model);
-  if (p.unit === "image") return cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro;
+  // Avec le flux, les aperçus s'ajoutent (≈ 2 × 100 jetons, < 5 % d'une image haute qualité) : +5 % sur le tarif par image.
+  if (p.unit === "image") return Math.ceil(cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro * (openaiStreams(model) ? 1.05 : 1));
   // Au jeton : seulement pour le modèle dont la table officielle des jetons de sortie est connue.
   if (model !== "gpt-image-1") throw new PermanentError(L(`Jetons de sortie de ${model} inconnus : saisissez un tarif par image dans l'administration (coût maximal non borné, génération bloquée).`, `Output tokens of ${model} are unknown: enter a per-image price in the admin settings (maximum cost not bounded, generation blocked).`));
   const out = OPENAI_OUT_TOKENS[o.quality]?.[o.size];
@@ -555,7 +556,10 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
   const b64 = res.b64;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage, idempotencyKey: ctx.usageKey });
+  // Coût réel de cette image transmis au moteur qui l'a demandée (affiché sur la carte de la proposition).
+  if (res.usage) emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
   return Buffer.from(b64, "base64");
 }
 

@@ -147,3 +147,83 @@ export async function artworkSymbol(png: Buffer, box?: TextBox | null): Promise<
 export async function symbolFavicon(symbol: Buffer): Promise<Buffer> {
   return sharp(symbol).resize(192, 192, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
 }
+
+/**
+ * Forme de remplissage, pas un logo : le symbole (hors nom) n'est qu'UNE forme géométrique de base pleine, d'une seule
+ * couleur, sans détail (disque, carré, triangle…). Mesuré sans IA : un seul aplat, une seule pièce, et sa surface
+ * remplit presque toute son enveloppe convexe. Un monogramme, une illustration, une forme découpée ou texturée ne
+ * sont jamais concernés (liberté du style intacte).
+ */
+export async function isPlaceholderShape(png: Buffer, box?: TextBox | null): Promise<boolean> {
+  const sym = await artworkSymbol(png, box);
+  if (!sym) return false;
+  const S = 128;
+  const { data } = await sharp(sym).resize(S, S, { fit: "fill" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const inked: [number, number][] = [];
+  const cols = new Map<string, number>();
+  for (let y = 0; y < S; y++)
+    for (let x = 0; x < S; x++) {
+      const i = (y * S + x) * 4;
+      if (data[i + 3] < 128) continue;
+      inked.push([x, y]);
+      const k = `${data[i] >> 5},${data[i + 1] >> 5},${data[i + 2] >> 5}`;
+      cols.set(k, (cols.get(k) ?? 0) + 1);
+    }
+  if (inked.length < 50) return false;
+  // Une seule couleur (95 % de l'encre dans une teinte quantifiée).
+  if (Math.max(...cols.values()) / inked.length < 0.95) return false;
+  // Une seule pièce.
+  const on = new Uint8Array(S * S);
+  for (const [x, y] of inked) on[y * S + x] = 1;
+  const seen = new Uint8Array(S * S);
+  const stack = [inked[0][1] * S + inked[0][0]];
+  seen[stack[0]] = 1;
+  let reached = 0;
+  while (stack.length) {
+    const p = stack.pop()!;
+    reached++;
+    const x = p % S;
+    const y = (p / S) | 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= S || ny >= S) continue;
+      const q = ny * S + nx;
+      if (on[q] && !seen[q]) (seen[q] = 1), stack.push(q);
+    }
+  }
+  if (reached < inked.length * 0.98) return false;
+  // Pleine : surface ≥ 96 % de l'enveloppe convexe (aucune découpe, aucun creux, aucune lettre).
+  const pts = [...inked].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o: number[], a: number[], b: number[]) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const half = (list: [number, number][]) => {
+    const h: [number, number][] = [];
+    for (const p of list) {
+      while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], p) <= 0) h.pop();
+      h.push(p);
+    }
+    return h;
+  };
+  const lower = half(pts);
+  const upper = half([...pts].reverse());
+  const hull = [...lower.slice(0, -1), ...upper.slice(0, -1)];
+  let area2 = 0;
+  for (let i = 0; i < hull.length; i++) {
+    const [x1, y1] = hull[i];
+    const [x2, y2] = hull[(i + 1) % hull.length];
+    area2 += x1 * y2 - x2 * y1;
+  }
+  const hullArea = Math.abs(area2) / 2 + hull.length / 2 + 1; // pixels du bord compris
+  return inked.length / hullArea >= 0.96;
+}
+
+/** Empreinte visuelle (64 bits) d'un logo : deux images quasi identiques ont des empreintes très proches. */
+export async function visualHash(png: Buffer): Promise<string> {
+  const { data } = await sharp(png).flatten({ background: "#FFFFFF" }).resize(9, 8, { fit: "fill" }).greyscale().raw().toBuffer({ resolveWithObject: true });
+  let bits = "";
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) bits += data[y * 9 + x] > data[y * 9 + x + 1] ? "1" : "0";
+  return bits;
+}
+export const hashDistance = (a: string, b: string) => [...a].reduce((n, c, i) => n + (c !== b[i] ? 1 : 0), 0);
+/** Seuil : au plus 4 bits différents sur 64 = même dessin (recadrage ou compression près). */
+export const SAME_LOGO_BITS = 4;

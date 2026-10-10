@@ -20,9 +20,10 @@ import { mediaModel } from "./media-models";
 export const OPENAI_PARTIAL_IMAGES = 2;
 export const OPENAI_PARTIAL_TOKENS = 100;
 
-export type MediaProgress = { phase: "sent" | "partial" | "received"; partials?: number; atMs: number; streamed: boolean };
+export type MediaProgress = { phase: "sent" | "partial" | "received" | "billed"; partials?: number; atMs: number; streamed: boolean; costMicro?: number };
 /** Suivi de la génération en cours (posé par le moteur qui l'a demandée, ex. Logo V2 → avancement en direct). */
 export const mediaProgress = new AsyncLocalStorage<(p: MediaProgress) => void>();
+export const emitMediaProgress = (p: MediaProgress) => emit(p);
 const emit = (p: MediaProgress) => {
   try {
     mediaProgress.getStore()?.(p);

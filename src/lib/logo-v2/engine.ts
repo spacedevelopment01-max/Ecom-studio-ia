@@ -27,6 +27,7 @@ import { MIN_DISTANCE, defaultStyle, localTerritories, selectTerritories, territ
 import { POLICIES } from "../quality/policies";
 import { decide } from "../quality/gate";
 import { mediaProgress, type MediaProgress } from "../ai/openai-images";
+import { hashDistance, isPlaceholderShape, SAME_LOGO_BITS, visualHash } from "./identity";
 import { artworkBoard, artworkText, cleanArtwork, correctArtworkText, gateArtwork } from "./artwork";
 import type { ArtworkReview, BrandBrief, Candidate, EngineRun, LogoReview, LogoStyle, ProposalResult, Territory } from "./types";
 
@@ -58,9 +59,10 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
   const spec = buildCandidate(t, brief, { family, attempt: 0, symbol: null }).spec;
   const tag = opts.keyTag ?? "";
   let raw: Buffer;
+  let billedMicro: number | null = null;
   try {
     // Avancement de la génération (envoi, aperçus du flux, réception) écrit en direct pour l'interface.
-    const onProgress = (p: MediaProgress) => opts.live?.dir(t.id, { progress: { phase: p.phase, partials: p.partials, atMs: p.atMs, streamed: p.streamed } });
+    const onProgress = (p: MediaProgress) => (p.phase === "billed" ? (billedMicro = p.costMicro ?? null) : opts.live?.dir(t.id, { progress: { phase: p.phase, partials: p.partials, atMs: p.atMs, streamed: p.streamed } }));
     const b64 = await withCandidate(`logo-v2:${t.id}${tag}`, 0, () => ctx.step(`v2:${t.id}${tag}:art:0`, () => mediaProgress.run(onProgress, async () => (await ai.drawArtwork!(t, brief, opts.feedback)).toString("base64"))));
     raw = Buffer.from(b64, "base64");
     // Image enregistrée comme point de reprise de la tâche (et original conservé par le moteur multimédia).
@@ -75,7 +77,14 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
   }
   opts.live?.dir(t.id, { status: "checking" });
   const png = await cleanArtwork(raw);
-  let cand: Candidate = { territoryId: t.id, attempt: 0, spec, change: opts.feedback ? `nouvelle version demandée : ${opts.feedback.slice(0, 160)}` : null, symbolSource: "artwork", artwork: { png, originalPng: raw, expected, textBox: null, textCorrected: false, provider: opts.provider ?? null } };
+  let cand: Candidate = { territoryId: t.id, attempt: 0, spec, change: opts.feedback ? `nouvelle version demandée : ${opts.feedback.slice(0, 160)}` : null, symbolSource: "artwork", artwork: { png, originalPng: raw, expected, textBox: null, textCorrected: false, provider: opts.provider ?? null, costMicro: billedMicro, hash: await visualHash(png) } };
+  // Forme de remplissage (disque, carré, triangle plein d'une couleur au-dessus du nom) : jamais présentée comme un
+  // logo, et aucune relecture payée pour elle. L'image reste visible parmi les essais écartés.
+  if (await isPlaceholderShape(png)) {
+    const d = decide("logo_artwork", { checker: "local", score: null, codes: ["placeholder_shape"] }, { attempt: POLICIES.logo_artwork.maxRetries });
+    const checkId = saveCheck(d, { userId: loadProject(brief.projectId).userId, projectId: brief.projectId, jobId: ctx.job.id, candidateId: `logo-v2:${t.id}${tag}`, previousCheckId: null });
+    return { territory: t, candidate: cand, verdict: "REJECTED", score: null, reason: "symbole réduit à une forme géométrique de base (forme de remplissage, pas un logo travaillé) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)", codes: ["placeholder_shape"], attempts: 1, checkId, artworkReview: null };
+  }
   let previousCheckId: string | null = null;
   const userId = loadProject(brief.projectId).userId;
   const check = async (c: Candidate): Promise<{ result: ProposalResult; review: ArtworkReview | null }> => {
@@ -347,6 +356,14 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
       throw e;
     }
   }
+  // Copies : une image quasi identique à une autre de la série n'est jamais présentée comme une création distincte.
+  for (const [i, r] of results.entries()) {
+    const h = r.candidate.artwork?.hash;
+    const twin = h ? results.slice(0, i).find((o) => o.candidate.artwork?.hash && hashDistance(o.candidate.artwork.hash, h) <= SAME_LOGO_BITS) : null;
+    if (!twin) continue;
+    Object.assign(r, { verdict: "REJECTED", codes: [...r.codes, "duplicate"], reason: `copie quasi identique de « ${twin.territory.name} » : pas une création distincte` });
+    live.dir(r.territory.id, { status: "done", verdict: "REJECTED", score: r.score, reason: r.reason });
+  }
   // 3. Enregistrement : propositions FINALES, versions du studio, essais écartés (image gardée) et échecs.
   ctx.progress(0.9, L("Enregistrement des propositions", "Saving the proposals"));
   live.set({ stage: "save" });
@@ -398,7 +415,7 @@ export async function saveProposal(ctx: JobContext, userId: string, projectId: s
       spec: r.candidate.spec,
       change: r.candidate.change,
       symbolSource: r.candidate.symbolSource,
-      ...(art ? { artwork: { expected: art.expected, textBox: art.textBox, textCorrected: art.textCorrected, provider: art.provider, aiGenerated: true, needsSimplifiedMark: rv?.needsSimplifiedMark ?? true, criteria: rv?.criteria ?? null, issues: rv?.issues ?? [] } } : {}),
+      ...(art ? { artwork: { expected: art.expected, textBox: art.textBox, textCorrected: art.textCorrected, provider: art.provider, costMicro: art.costMicro ?? null, hash: art.hash ?? null, aiGenerated: true, needsSimplifiedMark: rv?.needsSimplifiedMark ?? true, criteria: rv?.criteria ?? null, issues: rv?.issues ?? [] } } : {}),
       gate: { verdict: r.verdict, score: r.score, reason: r.reason, codes: r.codes, attempts: r.attempts, checkId: r.checkId },
       ...extraMeta,
     },
