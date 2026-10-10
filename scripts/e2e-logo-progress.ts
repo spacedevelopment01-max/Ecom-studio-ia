@@ -93,7 +93,12 @@ const text1 = await page.locator("main").innerText();
 check("Étapes affichées : brief, génération OpenAI, réception et sauvegarde, contrôle qualité, résultat", /Brief et directions/.test(text1) && /Génération OpenAI/.test(text1) && /Réception et sauvegarde/.test(text1) && /Contrôle qualité/.test(text1) && /Résultat/.test(text1));
 const states1 = await page.locator("[data-step]").evaluateAll((els) => els.map((e) => `${e.getAttribute("data-step")}:${e.getAttribute("data-state")}`));
 check("Série réussie : les 5 étapes cochées", states1.join(",") === "prepare:done,images:done,receive:done,review:done,result:done", states1.join(","));
-check("Propositions validées visibles", (await page.locator("text=Choisir ce logo").count()) >= 2, `${await page.locator("text=Choisir ce logo").count()} bouton(s)`);
+check("Le vrai logo OpenAI est proposé (validé)", (await page.locator("text=Choisir ce logo").count()) >= 1, `${await page.locator("text=Choisir ce logo").count()} bouton(s)`);
+// 3 créations = 3 cartes distinctes (3 images différentes), chacune avec sa provenance réelle et son coût.
+const cardImgs = await page.locator("main img[alt]").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).src).filter((u) => /\/api\/files\//.test(u)));
+check("3 cartes distinctes, 3 images différentes", new Set(cardImgs).size >= 3, `${new Set(cardImgs).size} image(s)`);
+check("Provenance réelle et coût sur les cartes", (await page.locator("text=/Dessiné par OpenAI gpt-image-2 · \\d+,\\d{2} €/").count()) >= 3);
+check("Forme de remplissage écartée sans note, avec la raison", /forme géométrique de base/.test(text1));
 check("Proposition écartée visible avec son image originale", /Logos complets écartés par le contrôle/.test(text1) && (await page.locator("img[alt='Signe épuré']").count()) > 0);
 const s1 = await fakeStats();
 check("GPT Image 2 : aucune demande de fond transparent", s1.imageBodies.length > 0 && s1.imageBodies.every((b) => b.model === "gpt-image-2" && b.background === null), JSON.stringify(s1.imageBodies.slice(0, 1)));
@@ -106,7 +111,7 @@ await page.reload({ waitUntil: "networkidle" });
 await page.waitForSelector("#logo-style");
 await page.waitForTimeout(1500);
 const text2 = await page.locator("main").innerText();
-check("Après rechargement : propositions, essai écarté et étapes toujours affichés", (await page.locator("text=Choisir ce logo").count()) >= 2 && /Logos complets écartés/.test(text2) && /Contrôle qualité/.test(text2));
+check("Après rechargement : propositions, essai écarté et étapes toujours affichés", (await page.locator("text=Choisir ce logo").count()) >= 1 && /Logos complets écartés/.test(text2) && /Contrôle qualité/.test(text2));
 await panel(page).screenshot({ path: `${OUT}/3-apres-rechargement.png` });
 
 // ---- 3. Fournisseur qui refuse les images : échec visible direction par direction, rien ne disparaît

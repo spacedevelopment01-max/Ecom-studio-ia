@@ -52,12 +52,14 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
   const flatLogo = () => artFixture(0);
   /** Un dessin distinct par direction (une série n'est jamais faite de copies). */
   const DIR_ART: Record<string, number> = { "Atelier illustré": 1, "Signe épuré": 2, Lettrage: 3 };
-  async function texturedLogo() {
+  /** Matière bruitée ; `variant` : forme différente (série sans copies). */
+  async function texturedLogo(variant = 0) {
     const W = 1024;
     const data = Buffer.alloc(W * W * 3, 255);
     let seed = 7;
     const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
-    for (let y = 150; y < 650; y++) for (let x = 250; x < 780; x++) {
+    const [x0, x1, y0, y1] = [[250, 780, 150, 650], [120, 470, 100, 650], [560, 920, 120, 420], [250, 780, 420, 650]][variant % 4];
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
       const i = (y * W + x) * 3;
       const v = Math.round(60 + rnd() * 150);
       data[i] = Math.min(255, v + 60);
@@ -193,7 +195,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(gateArtwork(illustrated as any, t, { name: "X" }, 0).verdict).toBe("FINAL");
     const pid = sb();
     const log = newLog();
-    const r = await runEngine(pid, artAi(log, { image: () => texturedLogo(), reviews: { "Signe épuré": [(e) => artReview(7, e, { issues: ["symbole générique"] })] } }));
+    const r = await runEngine(pid, artAi(log, { image: (t: any) => texturedLogo(DIR_ART[t.name]), reviews: { "Signe épuré": [(e) => artReview(7, e, { issues: ["symbole générique"] })] } }));
     expect(r.shown.map((s) => s.territory.name)).toEqual(["Atelier illustré", "Lettrage"]);
     const bad = r.discarded.find((d) => d.territory.name === "Signe épuré")!;
     expect(bad.verdict).toBe("REJECTED");

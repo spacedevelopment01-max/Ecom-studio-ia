@@ -16,14 +16,15 @@ const PORT = Number(process.env.FAKE_AI_PORT || 3999);
 let MODE = process.env.FAKE_AI_MODE || "ok";
 const stats = { images: 0, messages: 0, count: 0, imageBodies: [] };
 
-/** Trois logos simulés, différents (dessinés ici : ce ne sont pas des logos d'une IA). */
+/** Trois logos simulés, différents (dessinés ici : ce ne sont pas des logos d'une IA) : anneau, maison au trait, et
+ * un triangle plein — une forme de remplissage que le studio doit écarter sans lui donner de note. */
 const COLORS = ["#2E2E33", "#446274", "#8A5A2B"];
 const REAL = process.env.FAKE_AI_LOGO ? fs.readFileSync(process.env.FAKE_AI_LOGO).toString("base64") : null;
 async function fakeLogo(i) {
   if (REAL && i % 3 === 0) return REAL;
   const c = COLORS[i % 3];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#FFFFFF"/>
-    ${i % 3 === 0 ? `<circle cx="512" cy="380" r="200" fill="${c}"/>` : i % 3 === 1 ? `<rect x="352" y="200" width="320" height="320" rx="40" fill="${c}"/>` : `<path d="M300 520 L512 220 L724 520 Z" fill="${c}"/>`}
+    ${i % 3 === 0 ? `<circle cx="512" cy="380" r="200" fill="${c}"/><circle cx="512" cy="380" r="100" fill="#FFFFFF"/>` : i % 3 === 1 ? `<path d="M300 520 L300 330 L512 170 L724 330 L724 520 Z" fill="none" stroke="${c}" stroke-width="44" stroke-linejoin="round"/><rect x="470" y="400" width="84" height="120" fill="${c}"/>` : `<path d="M300 520 L512 220 L724 520 Z" fill="${c}"/>`}
     <text x="512" y="720" font-family="DejaVu Sans, sans-serif" font-size="80" font-weight="700" fill="#222" text-anchor="middle">SÉBASTIEN BLANC</text></svg>`;
   return (await sharp(Buffer.from(svg)).png().toBuffer()).toString("base64");
 }
