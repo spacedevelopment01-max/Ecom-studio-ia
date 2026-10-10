@@ -66,7 +66,16 @@ http
       stats.images++;
       stats.imageBodies.push({ model: body.model, background: body.background ?? null, quality: body.quality, size: body.size });
       if (MODE === "refuse") return send(400, { error: { message: "Transparent background is not supported for this model.", type: "invalid_request_error" } });
-      return send(200, { created: Date.now(), data: [{ b64_json: await fakeLogo(stats.images - 1) }], usage: { input_tokens: 900, output_tokens: 4160, input_tokens_details: { text_tokens: 900, image_tokens: 0 } } });
+      const b64 = await fakeLogo(stats.images - 1);
+      const usage = { input_tokens: 900, output_tokens: 4160 + 100 * (body.partial_images ?? 0), input_tokens_details: { text_tokens: 900, image_tokens: 0 } };
+      if (body.stream) {
+        // Flux comme l'API : images partielles puis image finale (événements SSE).
+        res.writeHead(200, { "content-type": "text/event-stream" });
+        for (let i = 0; i < (body.partial_images ?? 0); i++) res.write(`event: image_generation.partial_image\ndata: ${JSON.stringify({ type: "image_generation.partial_image", partial_image_index: i, b64_json: b64 })}\n\n`);
+        res.write(`event: image_generation.completed\ndata: ${JSON.stringify({ type: "image_generation.completed", b64_json: b64, usage })}\n\n`);
+        return res.end();
+      }
+      return send(200, { created: Date.now(), data: [{ b64_json: b64 }], usage });
     }
     if (url.endsWith("/messages/count_tokens")) {
       stats.count++;
