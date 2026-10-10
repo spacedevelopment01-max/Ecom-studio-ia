@@ -204,3 +204,52 @@ Tous les fichiers produits sont dans `reports/openai-real-brand-test/identite/` 
    - Codespace ou serveur : rien de plus à faire (pas de proxy) ;
    - Claude Cloud : le proxy est pris en charge automatiquement.
 8. En cas d'erreur 502 ou de flux coupé, le studio **ne relance rien**. Il affiche l'erreur et retient le coût maximal par prudence : à vérifier dans le tableau de bord OpenAI.
+
+## 9. Vérifications avant le test réel de 3 logos (sans appel payant)
+
+| Point demandé | Résultat | Preuve |
+|---|---|---|
+| 1. Trois prompts réellement distincts | **Validé** | `tests/openai-streaming.test.ts` (« série de 3 ») : 3 demandes reçues par le faux serveur, 3 textes différents. Chacun porte le guide de son style (monogramme, minimaliste, typographique), le nom de sa direction et son idée de symbole. |
+| 2. Trois générations distinctes, trois originaux séparés | **Validé** | 3 demandes en flux (`stream: true`, 2 aperçus). 3 propositions avec 3 fichiers originaux distincts, chacun identique octet par octet à l'image reçue. Navigateur : 3 images, aucune relance. |
+| 3. Formes génériques jamais bien notées | **Corrigé** | Nouveau contrôle sans IA (`isPlaceholderShape`), décrit sous le tableau. |
+| 4. Liberté artistique et contrôle par style | **Préservés** | Le vrai logo, un anneau, une maison au trait, un losange deux tons, une courbe et un logo texturé passent. Les critères par style et le seuil de 8/10 sont inchangés. |
+| 5. Trois cartes distinctes, provenance et statut | **Validé** | Navigateur : 3 cartes, 3 images différentes. Chaque carte affiche « Dessiné par OpenAI gpt-image-2 · 0,17 € » (coût réel facturé de cette image) et son statut (validé, ou écarté avec la raison). |
+| 6. Pas de copies présentées comme créations | **Corrigé** | Nouveau contrôle par empreinte visuelle, décrit sous le tableau. |
+| 7. Devis = coût maximal de chaque génération, flux compris | **Validé** | Coût maximal d'une image : +5 % pour les aperçus (tarif par image), +200 jetons (tarif au jeton). Devis = 3 × ce maximum + relectures + directions. Le coût réel mesuré (0,2164 $) reste sous le maximum d'une image dès que le tarif saisi est d'au moins 0,22 $. |
+| 8. Parcours après le choix | **Validé** | Test « le client choisit la 2e proposition » : logo principal = cette image, palette tirée de ce logo (bleu ardoise), symbole découpé, déclinaisons, WebP, planche. Navigateur : choix du vrai logo, planche et exports visibles. |
+| 9. Protections, originaux, anciens projets | **Préservés** | Plafonds 40 % et 50 % HT inchangés (testés), réservation atomique, accord avant la série. Aucun original supprimé. Les anciens projets ne sont pas modifiés : les nouveaux contrôles ne s'appliquent qu'aux nouvelles séries. |
+
+**Point 3 en détail.**
+- Le studio écarte un symbole qui n'est qu'une forme pleine d'une couleur, sans découpe : disque, carré, triangle.
+- Pour cela, il mesure trois choses : un seul aplat, une seule pièce, et une surface qui remplit au moins 96 % de son enveloppe convexe.
+- L'image est écartée **sans note** et **sans relecture payée**. Elle reste visible parmi les essais écartés. Elle ne peut pas être choisie.
+- Testé : disque, carré et triangle écartés. Le vrai logo et des dessins travaillés (anneau, maison au trait, losange deux tons, courbe) acceptés.
+
+**Point 6 en détail.**
+- Le studio calcule une empreinte visuelle de chaque logo.
+- Une image quasi identique à une autre de la série est écartée comme « copie », jamais choisissable.
+- Testé : 3 fois le même logo donne 1 proposition et 2 copies écartées. Le même logo recadré et recompressé est reconnu comme copie.
+
+**Faits techniques sous-jacents :**
+- **Politique qualité :** version `2026-10-p11c`. Les codes `placeholder_shape` et `duplicate` sont bloquants. Aucun seuil n'est abaissé.
+- **Anciens tests :** ils utilisaient un disque plein identique pour les 3 directions, désormais écarté à juste titre. Ils utilisent maintenant 3 dessins distincts et travaillés (`artFixture`).
+- **Tests automatiques :** 128 fichiers, **1 106 tests réussis**.
+- **TypeScript et compilation :** OK.
+- **Navigateur :** **23/23**.
+
+### Ce qui reste à confirmer avec de vraies générations OpenAI
+
+- La **qualité graphique** et la **diversité réelle** des 3 logos : seules de vraies images le diront.
+- L'**orthographe** lue par la vraie relecture (modèle de texte) et sa notation.
+- Le **coût réel** des 3 images et des relectures.
+- La **durée** d'une série : environ 3 × 90 s pour les images, plus les relectures.
+
+### Devis du test réel (calculé par le studio)
+
+| | Montant |
+|---|---|
+| Coût maximal d'une image `gpt-image-2` (tarif saisi 0,22 $, flux et marges compris) | 0,26 € |
+| Devis maximal de la série de 3 (images, relectures, directions) | **≈ 1,29 €** (relectures Claude) à **≈ 1,34 €** (relectures OpenAI à 2,5 $ / 15 $ par million de jetons) |
+| Coût réel attendu | ≈ 0,57 € d'images (3 × 0,19 €) + quelques centimes de texte, soit **≈ 0,60 à 0,70 €** |
+
+Le studio affiche ce devis exact avant de lancer et n'envoie rien sans accord. Il s'arrête au plafond, sans relance automatique.
