@@ -149,7 +149,8 @@ export const MEDIA_MODELS: MediaModel[] = [
     kind: "image",
     adapter: "openai_image",
     quality: 3,
-    caps: { maskEdit: true, references: 16, transparent: true, textInImage: true, people: true },
+    // Flux : indispensable derrière un relais réseau (réponse sans flux coupée vers 30 s) ; refusé = erreur 4xx, non facturée.
+    caps: { maskEdit: true, references: 16, transparent: true, textInImage: true, people: true, stream: true },
     aspects: ["1:1", "2:3", "3:2"],
     resolution: "taille libre jusqu'à 3840×2160 (le studio demande 1024–1536 px)",
     typical: {},

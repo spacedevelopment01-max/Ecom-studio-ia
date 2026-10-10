@@ -258,3 +258,20 @@ Progrès réels : les 3 noms sont exacts, les marques sont pleines et liées au 
 Remarque honnête : avant cette série, j'ai supprimé de la base de démonstration la trace de mon propre essai gratuit
 (envoi bloqué volontairement, rien envoyé à OpenAI) : le routage automatique la comptait comme un échec du modèle et
 écartait GPT-5.6 Sol. La vraie erreur 502 reste dans l'historique.
+
+### Série réelle n° 5 — même demande, modèle `gpt-image-2.5-flare` (10/10/2026, 19 h 50)
+
+Modèle choisi par le propriétaire. Flux activé pour ce modèle (sinon le relais coupe la réponse), fond transparent
+accepté par le modèle. Tarif saisi par prudence : 0,25 $ par image (aucun tarif officiel lisible d'ici).
+Preuves : `logo-quality/studio-reel/essai-5-gpt-image-2.5-flare/` (originaux transparents, vue sur blanc, capture).
+
+| Direction | Note | Nom exact | Observation |
+|---|---|---|---|
+| La finition signée | 6,3 | oui | serif élégante, signature trop proche des codes mode / beauté |
+| Le monogramme de précision | 7,5 | oui | SB + règle graduée + platoir : solide ; le platoir fait lire « SBR » |
+| Le geste maîtrisé | 7,9 | oui | platoir qui tire l'enduit vers la surface lisse : la plus aboutie |
+
+- Durée par image : ~16 s (contre ~85 s avec `gpt-image-2`). Jetons réels : ~245 en entrée, 1 909 en sortie par image.
+- Coût compté par le studio : 0,215 € par image (tarif prudent saisi). Coût réel estimé avec les tarifs publics non
+  officiels (30 $ / M jetons de sortie) : ~0,05 € par image — **non vérifié**.
+- Série : 0,87 € comptés. Mission : **2,71 €** comptés, reste 7,29 €.
