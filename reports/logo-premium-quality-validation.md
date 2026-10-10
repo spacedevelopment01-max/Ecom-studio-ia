@@ -275,3 +275,19 @@ Preuves : `logo-quality/studio-reel/essai-5-gpt-image-2.5-flare/` (originaux tra
 - Coût compté par le studio : 0,215 € par image (tarif prudent saisi). Coût réel estimé avec les tarifs publics non
   officiels (30 $ / M jetons de sortie) : ~0,05 € par image — **non vérifié**.
 - Série : 0,87 € comptés. Mission : **2,71 €** comptés, reste 7,29 €.
+
+### Référence du propriétaire et changement de cap (10/10/2026, 20 h)
+
+Le propriétaire juge les séries 3 à 5 « pas belles » et donne ses références
+(`logo-quality/references-proprietaire/`) : le logo obtenu dans ChatGPT pour Sébastien Blanc (emblème rond, outils
+et matières du métier, toit, nom en script deux tons, arc de texte) et une planche de 50 logos de commerce (une icône
+claire du métier, nom bien mis en valeur, ligne d'activités).
+
+Cause : le moteur visait un style « agence conceptuelle » et traitait comme des clichés à éviter exactement ce qu'aime
+la clientèle visée (outils du métier, emblème rond, écriture script). Corrections générales (aucun mot de métier dans
+le code, test inchangé) :
+- directions : logos de petites entreprises, beaux, chaleureux, métier compris au premier regard ; trois familles —
+  emblème illustré, icône + nom, signature script avec un signe du métier ;
+- demande au modèle d'images : « beautiful, professional logo » ;
+- contrôle : juge comme le client final ; outils, emblème rond, script bien dessinés ne sont plus des défauts ;
+  « cliché » = seulement un dessin grossier façon clip-art. Seuil inchangé : 8/10.
