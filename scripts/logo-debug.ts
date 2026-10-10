@@ -18,6 +18,12 @@
  *    le SVG vectorisé (ou la raison de l'échec) reste dans le point de reprise.
  *  - Logo complet (tâche « brand.full-logo ») : l'image est enregistrée (fond blanc rendu transparent) dès sa
  *    réception (`role = logo-ai-full`), avec sa note de contrôle.
+ *  - Depuis la correction du 10/10/2026 : TOUTE image payée est aussi conservée telle que reçue dans
+ *    `storage/ai-originals/<projet>/<id de l'appel>.<ext>` (avant vectorisation et contrôle, même rejetée).
+ *
+ * Étapes imbriquées : quand un moteur tourne à l'intérieur d'une autre étape (Pilote : « plan:<étape> », création
+ * complète, marque…), `ai_calls.step` vaut « extérieure/intérieure » ; le point de reprise est rangé sous l'étape
+ * INTÉRIEURE. Le diagnostic reconnaît le parcours d'après cette étape intérieure.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -127,15 +133,31 @@ for (const [i, c] of calls.entries()) {
   const j = job(c.job_id);
   const cp = json<Record<string, unknown>>(j?.checkpoint, {});
   const row: Row = { n, call: c, jobType: j?.type ?? null, flow: "inconnu", original: null, originalNote: "", vector: null, vectorNote: "", finals: [], notes: [] };
-  const stepVal = c.step ? cp[c.step] : undefined;
+  // Étape imbriquée (« plan:s3/v2:t2:concept:0 ») : le parcours et le point de reprise suivent l'étape intérieure.
+  const inner = c.step ? c.step.split("/").pop()! : null;
+  const outer = c.step && c.step.includes("/") ? c.step.slice(0, c.step.lastIndexOf("/")) : null;
+  const stepVal = c.step ? (c.step in cp ? cp[c.step] : inner ? cp[inner] : undefined) : undefined;
+  if (outer) row.notes.push(`étape imbriquée : « ${inner} » exécutée à l'intérieur de « ${outer} »${outer.startsWith("plan:") ? " (Pilote / orchestrateur)" : ""}`);
+  // Original conservé à la facturation (studio corrigé) : prioritaire, quel que soit le parcours.
+  const keptDir = path.join(STORAGE_DIR, "ai-originals", c.project_id.replace(/[^\w-]/g, "_"));
+  const kept = fs.existsSync(keptDir) ? fs.readdirSync(keptDir).find((f) => f.startsWith(c.id + ".")) : undefined;
+  const takeKept = () => {
+    if (!kept || row.original) return false;
+    row.original = `${pre}-original${path.extname(kept)}`;
+    fs.copyFileSync(path.join(keptDir, kept), path.join(OUT, row.original));
+    row.originalNote = "image reçue du fournisseur, conservée telle quelle au moment de la facturation (storage/ai-originals)";
+    return true;
+  };
 
   if (!j) {
     row.originalNote = c.job_id ? "tâche supprimée de la base : point de reprise perdu" : "appel hors tâche (aucun point de reprise)";
-  } else if (c.step && /^v2:[^:]+:concept:\d+/.test(c.step)) {
+  } else if (inner && /^v2:[^:]+:(concept:\d+|explore)$/.test(inner)) {
     // ---- Logo Engine V2 : concept gardé en base64 dans le point de reprise.
     row.flow = "Logo Engine V2 — concept du symbole";
-    const tid = c.step.split(":")[1];
-    if (isImageB64(stepVal)) {
+    const tid = inner.split(":")[1];
+    if (takeKept()) {
+      /* original conservé à la facturation */
+    } else if (isImageB64(stepVal)) {
       row.original = `${pre}-original${extOfB64(stepVal)}`;
       fs.writeFileSync(path.join(OUT, row.original), Buffer.from(stepVal, "base64"));
       row.originalNote = "image reçue d'OpenAI, telle quelle (point de reprise de la tâche)";
@@ -157,7 +179,7 @@ for (const [i, c] of calls.entries()) {
     if (!row.vector) row.vectorNote = renders.length ? "le rendu n'utilise pas de symbole vectorisé (concept refusé ou non vectorisable)" : "—";
     const run = json<any>((db.prepare("SELECT value FROM memory WHERE project_id = ? AND kind = 'artifact' AND key = 'logo_v2_run'").get(c.project_id) as { value: string } | undefined)?.value, null);
     if (run?.runId === c.job_id) for (const note of (run.notes ?? []) as string[]) if (note.includes(json<any>(renders[0]?.meta, {}).territory?.name ?? "\u0000") || note.toLowerCase().includes(tid)) row.notes.push(note);
-  } else if (c.step && /^full-logo:\d+:\d+:image$/.test(c.step)) {
+  } else if (inner && /^full-logo:\d+:\d+:image$/.test(inner)) {
     // ---- Logo complet : enregistré dès réception (fond blanc rendu transparent).
     row.flow = "Logo complet dessiné par l'IA";
     const a = typeof stepVal === "string" ? assetById(stepVal) : undefined;
@@ -169,10 +191,10 @@ for (const [i, c] of calls.entries()) {
       row.vectorNote = "pas de vectorisation dans ce parcours (logo complet en image)";
       row.finals.push({ file: cp2.file, label: "même image, avec sa note de contrôle", status: a.deleted_at ? "supprimé" : a.status, verdict: m.gate?.verdict, score: m.gate?.score ?? null, reason: m.gate?.reason ?? m.qcWarning, codes: m.gate?.codes });
     } else row.originalNote = c.status !== "ok" ? `appel en échec (${c.error_kind ?? c.status}) : aucune image reçue` : "image introuvable (point de reprise ou fichier absent)";
-  } else if (c.step && /^logo:[^:]+:(routes|[^:]+:redraw:\d+)$/.test(c.step)) {
+  } else if (inner && /^logo:[^:]+:(routes|[^:]+:redraw:\d+)$/.test(inner)) {
     // ---- Pistes du studio : image vectorisée aussitôt, jamais enregistrée.
     row.flow = "Pistes de logo du studio — symbole";
-    row.originalNote = "NON ENREGISTRÉE : ce parcours vectorise l'image dès sa réception et ne garde que le SVG (ou la raison de l'échec). L'image d'origine n'existe plus nulle part dans le studio.";
+    if (!takeKept()) row.originalNote = "NON ENREGISTRÉE : ce parcours vectorisait l'image dès sa réception et ne gardait que le SVG (ou la raison de l'échec). L'image d'origine n'existe plus nulle part dans le studio.";
     const drafts = (Array.isArray(stepVal) ? stepVal : stepVal ? [stepVal] : []) as { key?: string; name?: string; svg?: string; imageNote?: string }[];
     const withSvg = drafts.filter((d) => d?.svg);
     if (withSvg.length) {
@@ -182,7 +204,7 @@ for (const [i, c] of calls.entries()) {
       row.vectorNote = `SVG gardé dans le point de reprise (pistes de l'étape : ${drafts.map((d) => d?.name ?? d?.key).filter(Boolean).join(", ")})`;
     } else row.vectorNote = drafts.map((d) => d?.imageNote).filter(Boolean).join(" ; ") || "aucun SVG gardé";
     // Pistes rendues de cette série (« logo-proposal », même série ; même piste pour un redessin).
-    const [, batch, maybeKey] = c.step.split(":");
+    const [, batch, maybeKey] = inner.split(":");
     const logos = (db.prepare("SELECT id, name, role, mime, storage_key, status, meta, created_at, deleted_at, project_id FROM assets WHERE project_id = ? AND role = 'logo-proposal' AND json_extract(meta, '$.batch') = ? ORDER BY created_at").all(c.project_id, batch) as Asset[]).filter((a) => maybeKey === "routes" || json<any>(a.meta, {}).key === maybeKey);
     for (const a of logos) {
       const m = json<any>(a.meta, {});
@@ -191,16 +213,33 @@ for (const [i, c] of calls.entries()) {
     }
   } else {
     row.flow = `autre parcours (${j.type}, étape ${c.step ?? "?"})`;
-    row.originalNote = isImageB64(stepVal) ? "" : "parcours non reconnu par ce diagnostic";
-    if (isImageB64(stepVal)) {
+    const keys = Object.keys(cp);
+    row.originalNote = isImageB64(stepVal) ? "" : `parcours non reconnu par ce diagnostic — étape intérieure « ${inner ?? "aucune"} » ; ${inner && inner in cp ? `point de reprise présent (type ${Array.isArray(stepVal) ? "liste" : typeof stepVal}, ${JSON.stringify(stepVal ?? null).length} caractères)` : "aucun point de reprise sous cette étape"} ; ${keys.length} clé(s) dans la sauvegarde de la tâche`;
+    takeKept();
+    if (!row.original && isImageB64(stepVal)) {
       row.original = `${pre}-original${extOfB64(stepVal)}`;
       fs.writeFileSync(path.join(OUT, row.original), Buffer.from(stepVal, "base64"));
       row.originalNote = "image trouvée dans le point de reprise de la tâche";
     }
   }
+  if (!row.original) takeKept();
   if (c.status !== "ok") row.notes.push(`appel en statut « ${c.status} » ${c.error_kind ? `: ${c.error_kind}` : ""}`);
   if (c.billing_dedup) row.notes.push("reprise : appel déjà compté, non refacturé");
   rows.push(row);
+}
+
+// Toutes les images encore présentes dans les sauvegardes des tâches concernées (même hors des étapes reconnues).
+const used = new Set(rows.map((r) => r.call.step?.split("/").pop()));
+const cpImages: { job: string; key: string; file: string }[] = [];
+for (const [jid, jj] of jobs) {
+  if (!jj) continue;
+  const cpj = json<Record<string, unknown>>(jj.checkpoint, {});
+  for (const [k, v] of Object.entries(cpj)) {
+    if (used.has(k) || !isImageB64(v)) continue;
+    const f = `sauvegarde-${jid.slice(0, 8)}-${k.replace(/[^\w.-]+/g, "_")}${extOfB64(v)}`;
+    fs.writeFileSync(path.join(OUT, f), Buffer.from(v, "base64"));
+    cpImages.push({ job: jid, key: k, file: f });
+  }
 }
 
 // Fichiers temporaires encore présents autour des appels (les tâches de logo n'en créent normalement pas).
@@ -257,7 +296,7 @@ ${rows
     (r) => `<section class="call">
 <div class="head"><b>Appel ${r.n}</b><span>${esc(when(r.call.created_at))}</span><span class="tag">${esc(r.call.requested_model)}${r.call.served_model && r.call.served_model !== r.call.requested_model ? ` → ${esc(r.call.served_model)}` : ""}</span>
 <span>coût : <b>${eur(r.call.cost)}</b>${r.call.estimated ? " (estimé au tarif saisi)" : ""}</span><span class="${r.call.status === "ok" ? "ok" : "bad"}">statut : ${esc(r.call.status)}</span></div>
-<p class="note">${esc(r.flow)} · tâche ${esc(r.jobType ?? "—")} (${esc(r.call.job_id ?? "—")}) · étape <code>${esc(r.call.step ?? "—")}</code> · tentative ${r.call.attempt}${r.call.routing_reason ? ` · routage : ${esc(r.call.routing_reason)}` : ""}</p>
+<p class="note">${esc(r.flow)} · tâche ${esc(r.jobType ?? "—")} (${esc(r.call.job_id ?? "—")}) · étape <code>${esc(r.call.step ?? "—")}</code> · appel <code>${esc(r.call.id)}</code> · tentative ${r.call.attempt}${r.call.routing_reason ? ` · routage : ${esc(r.call.routing_reason)}` : ""}</p>
 <div class="grid">
 <figure><figcaption>1. Original (avant vectorisation et contrôle)</figcaption>${img(r.original, "original")}<p class="note">${esc(r.originalNote)}</p></figure>
 <figure><figcaption>2. Version vectorisée</figcaption>${img(r.vector, "vectorisé")}<p class="note">${esc(r.vectorNote)}</p></figure>
@@ -271,6 +310,7 @@ ${r.notes.length ? `<ul>${r.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul
 </section>`,
   )
   .join("")}
+${cpImages.length ? `<section class="call"><b>Autres images trouvées dans les sauvegardes des tâches</b><div class="grid">${cpImages.map((x) => `<figure><figcaption>${esc(x.key)}</figcaption>${img(x.file, x.key)}<p class="note">tâche ${esc(x.job)}</p></figure>`).join("")}</div></section>` : ""}
 ${tmpHits.length ? `<section class="call"><b>Fichiers temporaires retrouvés autour des appels</b><div class="grid">${tmpHits.map((p, k) => `<figure><figcaption>${esc(path.basename(p))}</figcaption>${img(`tmp-${String(k + 1).padStart(2, "0")}${path.extname(p)}`, "tmp")}<code>${esc(p)}</code></figure>`).join("")}</div></section>` : `<p class="note">Fichiers temporaires : aucun fichier image dans <code>${esc(tmpRoot)}</code> autour des appels.</p>`}
 <section class="call"><b>Tableau des appels</b><table><tr><th>#</th><th>Date</th><th>Modèle</th><th>Coût</th><th>Statut</th><th>Étape</th><th>Original</th></tr>
 ${rows.map((r) => `<tr><td>${r.n}</td><td>${esc(when(r.call.created_at))}</td><td>${esc(r.call.requested_model)}</td><td>${eur(r.call.cost)}</td><td>${esc(r.call.status)}</td><td><code>${esc(r.call.step ?? "—")}</code></td><td>${r.original ? "disponible" : "<span class=bad>non disponible</span>"}</td></tr>`).join("")}

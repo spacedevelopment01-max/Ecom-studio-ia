@@ -21,6 +21,7 @@ import { activeProviderKey, FX_SAFETY, requirePrice, routeFor, usdToEur } from "
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
+import { putFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
 import { mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
@@ -45,7 +46,7 @@ function quotaFor(media: "image" | "video") {
  * départ du chronomètre) puis par `recordMedia()` (succès) ; une génération partie puis échouée (refus, délai
  * dépassé) est tracée aussi. Aucune image ni consigne n'est enregistrée.
  */
-type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean }; choice?: MediaChoice; usage?: MediaUsage };
+type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean }; choice?: MediaChoice; usage?: MediaUsage; callId?: string | null };
 const mediaTrace = new AsyncLocalStorage<MediaTrace>();
 
 function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...a: A) => Promise<R>): (...a: A) => Promise<R> {
@@ -53,7 +54,9 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
     const t: MediaTrace = { task, ctx: args[0] };
     return mediaTrace.run(t, async () => {
       try {
-        return await fn(...args);
+        const out = await fn(...args);
+        keepPaidImage(t, out);
+        return out;
       } catch (e) {
         // Réservation du coût maximal : rendue si rien n'est parti ou si le fournisseur a refusé la demande ; sinon
         // (délai dépassé, coupure, erreur après acceptation ou réponse), coût maximal retenu par prudence.
@@ -74,6 +77,27 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
       }
     });
   };
+}
+
+/** Clé de stockage de l'image d'origine d'un appel payé (diagnostic) : ai-originals/<projet>/<appel>.<ext>. */
+export function paidImageKey(projectId: string, callId: string, data: Buffer): string {
+  const ext = data.subarray(0, 4).toString("hex") === "89504e47" ? ".png" : data.subarray(0, 3).toString("hex") === "ffd8ff" ? ".jpg" : data.subarray(8, 12).toString("ascii") === "WEBP" ? ".webp" : ".bin";
+  return `ai-originals/${projectId.replace(/[^\w-]/g, "_")}/${callId}${ext}`;
+}
+
+/**
+ * Toute image PAYÉE est conservée telle que le fournisseur l'a renvoyée, sous l'identifiant de son appel (ai_calls),
+ * avant vectorisation, retouche ou contrôle qualité — même si elle est rejetée ensuite. Elle n'entre pas dans la
+ * bibliothèque du client (jamais réutilisée automatiquement) : elle sert au diagnostic. Ne fait jamais échouer la
+ * génération déjà payée.
+ */
+function keepPaidImage(t: MediaTrace, out: unknown) {
+  if (t.task !== "image_generation" || !t.recorded || !t.callId || !t.ctx?.projectId || !Buffer.isBuffer(out)) return;
+  try {
+    putFile(paidImageKey(t.ctx.projectId, t.callId, out), out);
+  } catch (e) {
+    console.warn("[images] original payé non conservé :", (e as Error).message);
+  }
 }
 
 /** Échec sans coût (réservation rendue) : le secours peut être tenté ; on retient le modèle qui a échoué. */
@@ -173,7 +197,8 @@ function recordMedia(u: Parameters<typeof recordUsage>[0]) {
   const t = mediaTrace.getStore();
   const billed = recordUsage(u, { reservationId: t?.reservation ?? null });
   if (t) t.recorded = true;
-  recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
+  const callId = recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
+  if (t) t.callId = callId;
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
   if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
 }
