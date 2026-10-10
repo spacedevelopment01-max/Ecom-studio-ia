@@ -232,10 +232,11 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     }
     expect(outsideDiff).toBe(0);
     expect(insideDiff).toBeGreaterThan(100);
-    // L'original de l'IA (avant correction) reste disponible.
+    // Le fichier reçu du fournisseur (avant nettoyage et correction) reste disponible, à l'identique.
     const original = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2-original' AND source_asset_id = ?", pid, s.assetId!);
     expect(original).toBeTruthy();
-    expect((await sharp(assetData(getAsset(original!.id)!)).raw().toBuffer()).equals(await sharp(clean).raw().toBuffer())).toBe(true);
+    expect(assetData(getAsset(original!.id)!).equals(raw)).toBe(true);
+    expect(clean.length).toBeGreaterThan(0);
   });
 
   it("fond blanc retiré même quand l'image a un canal alpha entièrement opaque ; un fond déjà transparent est gardé", async () => {
@@ -277,7 +278,10 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(brand.logo.status).toBe("validated");
     expect(brand.logo.engine).toBe("v2");
     const roleData = (role: string) => all<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC", pid, role);
-    for (const role of ["logo", "logo-light", "logo-mono", "logo-white", "logo-mark", "logo-mark-svg", "favicon", "brand-board", "brand-guide"]) expect(roleData(role).length, role).toBeGreaterThan(0);
+    for (const role of ["logo", "logo-webp", "logo-light", "logo-light-webp", "logo-mono", "logo-white", "logo-mark", "logo-mark-webp", "favicon", "brand-board", "brand-guide"]) expect(roleData(role).length, role).toBeGreaterThan(0);
+    // Symbole seul découpé dans le logo (matière texturée) : pas de SVG, il ne serait pas fidèle.
+    expect(JSON.parse(getAsset(roleData("logo-mark")[0].id)!.meta as any).symbolFromArtwork).toBe(true);
+    expect(roleData("logo-mark-svg")).toHaveLength(0);
     // Logo principal = l'original (pas une reconstruction).
     expect(assetData(getAsset(roleData("logo")[0].id)!).equals(assetData(getAsset(pick.assetId!)!))).toBe(true);
     // Texture : aucune version vectorielle imposée du logo complet.
