@@ -59,7 +59,8 @@ export default function TabMarque() {
   const [choosing, setChoosing] = useState<string | null>(null);
   // Logo : nouvelles pistes ou piste choisie, en tâche de fond (plusieurs minutes avec l'IA) ; l'écran suit la tâche
   // et se met à jour à la fin (aucune requête longue que le relais d'un codespace pourrait couper).
-  const logoJobs = useActive("brand.logo");
+  // Logo V2 : son avancement (étapes, échecs) est affiché dans son propre panneau.
+  const logoJobs = useActive("brand.logo").filter((j) => !j.type.startsWith("brand.logo.v2"));
   const chooseLogo = async (b: { proposalId?: string; regenerate?: boolean }) => {
     setChoosing(b.proposalId ?? "regenerate");
     try {

@@ -17,6 +17,7 @@ import { llmConfigured } from "../ai/llm";
 import { CostCapReached, currentTrace, withCandidate, withTrace } from "../ai/trace";
 import { one } from "../db";
 import { ARTWORK_SERIES, BUILT_SERIES, logoRedrawQuote, logoSeriesQuote } from "./quote";
+import { liveTracker, type LiveTracker } from "./live";
 import { C, L } from "../i18n-server";
 import { realLogoV2Ai, type LogoV2Ai } from "./ai";
 import { brandDiscovery } from "./discovery";
@@ -49,7 +50,7 @@ const stopping = (e: unknown) => e instanceof JobCancelled || e instanceof JobPa
  * RÉÉCRIT par le studio (vraie police, même endroit), sans redessiner l'illustration ni payer une nouvelle image.
  * Une nouvelle version dessinée ne se fait qu'à la demande du client (« Nouvelle version », avec accord du coût).
  */
-export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory, brief: BrandBrief, notes: string[], opts: { feedback?: string; provider?: string | null; keyTag?: string } = {}): Promise<ProposalResult | null> {
+export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory, brief: BrandBrief, notes: string[], opts: { feedback?: string; provider?: string | null; keyTag?: string; live?: LiveTracker } = {}): Promise<ProposalResult | null> {
   const expected = artworkText(t, brief);
   const family = fontsFor(t, brief)[0] ?? "Inter";
   // Construction typographique du studio : base de la version simplifiée (favicon, tampon, broderie) après le choix.
@@ -61,9 +62,12 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
     raw = Buffer.from(b64, "base64");
   } catch (e) {
     if (stopping(e)) throw e;
-    notes.push(`${t.name} : logo complet non dessiné (${(e as Error).message.slice(0, 160)})`);
+    const reason = (e as Error).message.slice(0, 300);
+    notes.push(`${t.name} : logo complet non dessiné (${reason})`);
+    opts.live?.dir(t.id, { status: "failed", reason: `image non dessinée : ${reason}` });
     return null;
   }
+  opts.live?.dir(t.id, { status: "checking" });
   const png = await cleanArtwork(raw);
   let cand: Candidate = { territoryId: t.id, attempt: 0, spec, change: opts.feedback ? `nouvelle version demandée : ${opts.feedback.slice(0, 160)}` : null, symbolSource: "artwork", artwork: { png, expected, textBox: null, textCorrected: false, provider: opts.provider ?? null } };
   let previousCheckId: string | null = null;
@@ -202,8 +206,8 @@ async function targetedChange(
 }
 
 /** Construit, contrôle et reprend (de façon ciblée) un territoire ; abandonne une direction faible. */
-async function developTerritory(ctx: JobContext, ai: LogoV2Ai | null, t: Territory, brief: BrandBrief, notes: string[], art: { provider: string } | null): Promise<ProposalResult | null> {
-  if (ai && art) return developArtwork(ctx, ai, t, brief, notes, { provider: art.provider });
+async function developTerritory(ctx: JobContext, ai: LogoV2Ai | null, t: Territory, brief: BrandBrief, notes: string[], art: { provider: string } | null, live?: LiveTracker): Promise<ProposalResult | null> {
+  if (ai && art) return developArtwork(ctx, ai, t, brief, notes, { provider: art.provider, live });
   const fonts = fontsFor(t, brief);
   if (!fonts.length) {
     notes.push(`${t.name} : aucune police du style ${t.typography.style} n'écrit exactement « ${brief.name} » — territoire écarté`);
@@ -246,11 +250,32 @@ function withSeriesCap<T>(ctx: JobContext, quoteMicro: number, capMicro: number 
 
 /** Série complète de propositions pour un projet (tâche de fond « brand.logo.v2 »), dans la limite de son devis. */
 export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: EngineOptions = {}): Promise<EngineRun> {
-  const quote = logoSeriesQuote();
+  let quote: ReturnType<typeof logoSeriesQuote>;
+  try {
+    quote = logoSeriesQuote();
+  } catch (e) {
+    // Devis impossible (tarif manquant…) : écrit comme échec de la série, avec sa raison.
+    liveTracker(projectId, ctx.job.id).set({ stage: "failed", error: (e as Error).message.slice(0, 500) });
+    throw e;
+  }
   return withSeriesCap(ctx, quote.maxMicro, opts.capMicro, () => seriesRun(ctx, projectId, opts));
 }
 
 async function seriesRun(ctx: JobContext, projectId: string, opts: EngineOptions): Promise<EngineRun> {
+  const live = liveTracker(projectId, ctx.job.id);
+  try {
+    return await seriesSteps(ctx, projectId, opts, live);
+  } catch (e) {
+    // Pause et annulation : la tâche reprendra ou s'arrête à la demande du client (pas une erreur).
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    // Toute autre interruption est ÉCRITE (étape « échec » et raison) avant de remonter : jamais une barre qui disparaît.
+    live.set({ stage: "failed", error: (e as Error).message.slice(0, 500) });
+    for (const d of live.state.directions) if (d.status === "waiting" || d.status === "drawing" || d.status === "checking") live.dir(d.id, { status: "failed", reason: "série interrompue" });
+    throw e;
+  }
+}
+
+async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptions, live: LiveTracker): Promise<EngineRun> {
   const p = loadProject(projectId);
   const brief = brandDiscovery(p, { style: opts.style });
   const ai = opts.ai !== undefined ? opts.ai : llmConfigured() ? realLogoV2Ai(ctx, { userId: p.userId, projectId }) : null;
@@ -264,6 +289,7 @@ async function seriesRun(ctx: JobContext, projectId: string, opts: EngineOptions
     else art = { provider: `${r.provider}:${r.model}` };
   }
   const n = opts.territories ?? (art ? ARTWORK_SERIES : BUILT_SERIES);
+  live.set({ stage: "prepare", art: art?.provider ?? null });
   let aiState: EngineRun["ai"] = ai ? "used" : "off";
   let stoppedByCostCap = false;
   // 1. Territoires (un seul appel) — concept AVANT toute image.
@@ -288,24 +314,36 @@ async function seriesRun(ctx: JobContext, projectId: string, opts: EngineOptions
     }
   }
   // 2. Construction, contrôle, reprises ciblées — territoire par territoire.
+  live.directions(sel.kept.map((t) => ({ id: t.id, name: t.name, style: t.style ?? null })));
+  live.set({ stage: "images" });
   const results: ProposalResult[] = [];
   for (const [i, t] of sel.kept.entries()) {
-    if (stoppedByCostCap) break;
-    ctx.progress(0.2 + (0.6 * i) / Math.max(1, sel.kept.length), L(`Direction « ${t.name} »`, `Direction "${t.name}"`));
+    if (stoppedByCostCap) {
+      live.dir(t.id, { status: "failed", reason: "non faite : plafond de dépense atteint" });
+      continue;
+    }
+    const useArt = t.source !== "local" && !!art;
+    ctx.progress(0.2 + (0.6 * i) / Math.max(1, sel.kept.length), useArt ? L(`Image de « ${t.name} » (IA d'images)`, `Image for "${t.name}" (image AI)`) : L(`Direction « ${t.name} »`, `Direction "${t.name}"`));
+    live.dir(t.id, { status: "drawing" });
     try {
-      const r = await developTerritory(ctx, t.source === "local" ? null : ai, t, brief, notes, t.source === "local" ? null : art);
-      if (r) results.push(r);
+      const r = await developTerritory(ctx, t.source === "local" ? null : ai, t, brief, notes, t.source === "local" ? null : art, live);
+      if (r) {
+        results.push(r);
+        live.dir(t.id, { status: "done", verdict: r.verdict, score: r.score, reason: r.reason });
+      } else if (live.state.directions.find((d) => d.id === t.id)?.status !== "failed") live.dir(t.id, { status: "failed", reason: notes.filter((x) => x.startsWith(`${t.name} :`)).at(-1)?.slice(t.name.length + 3) ?? "aucune proposition construite" });
     } catch (e) {
       if (e instanceof CostCapReached) {
         stoppedByCostCap = true;
         notes.push((e as Error).message);
-        break;
+        live.dir(t.id, { status: "failed", reason: `plafond de dépense atteint : ${(e as Error).message}` });
+        continue;
       }
       throw e;
     }
   }
-  // 3. Enregistrement : le client ne voit que les propositions FINALES ; le reste reste au diagnostic.
-  ctx.progress(0.9, L("Propositions", "Proposals"));
+  // 3. Enregistrement : propositions FINALES, versions du studio, essais écartés (image gardée) et échecs.
+  ctx.progress(0.9, L("Enregistrement des propositions", "Saving the proposals"));
+  live.set({ stage: "save" });
   const shown = results.filter((r) => r.verdict === "FINAL");
   const studio = results.filter((r) => r.verdict === "PROVISIONAL");
   const discarded = results.filter((r) => r.verdict !== "FINAL" && r.verdict !== "PROVISIONAL");
@@ -314,9 +352,14 @@ async function seriesRun(ctx: JobContext, projectId: string, opts: EngineOptions
     for (const r of results) out[r.territory.id] = await saveProposal(ctx, p.userId, projectId, r);
     return out;
   });
-  for (const r of results) r.assetId = ids[r.territory.id];
+  for (const r of results) {
+    r.assetId = ids[r.territory.id];
+    live.dir(r.territory.id, { assetId: r.assetId });
+  }
+  const failures = live.state.directions.filter((d) => d.status === "failed").map((d) => ({ id: d.id, name: d.name, style: d.style, reason: d.reason ?? "" }));
   const run: EngineRun = { runId: ctx.job.id, territories: sel.kept, shown, studio, discarded, territoryRejections: sel.rejected, ai: aiState, stoppedByCostCap, notes };
-  remember(projectId, { kind: "artifact", key: "logo_v2_run", value: JSON.stringify({ runId: run.runId, at: Date.now(), style: brief.style, territories: run.territories.map((t) => ({ id: t.id, name: t.name, markType: t.markType, style: t.style, source: t.source })), shown: shown.map((r) => r.assetId), studio: studio.map((r) => r.assetId), discarded: discarded.map((r) => r.assetId), rejected: sel.rejected, ai: aiState, art: art?.provider ?? null, stoppedByCostCap, notes: notes.slice(0, 20) }), source: ai ? "ai" : "local" });
+  remember(projectId, { kind: "artifact", key: "logo_v2_run", value: JSON.stringify({ runId: run.runId, at: Date.now(), style: brief.style, territories: run.territories.map((t) => ({ id: t.id, name: t.name, markType: t.markType, style: t.style, source: t.source })), shown: shown.map((r) => r.assetId), studio: studio.map((r) => r.assetId), discarded: discarded.map((r) => r.assetId), rejected: sel.rejected, failures, ai: aiState, art: art?.provider ?? null, stoppedByCostCap, notes: notes.slice(0, 20) }), source: ai ? "ai" : "local" });
+  live.set({ stage: "done" });
   return run;
 }
 

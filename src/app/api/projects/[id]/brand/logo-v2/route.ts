@@ -12,6 +12,20 @@ import { LOGO_STYLES } from "@/lib/logo-v2/types";
 import { artworkChoosable } from "@/lib/logo-v2/choose";
 import { isLocked } from "@/lib/brain/brand-locks";
 import { logoRedrawQuote, logoSeriesQuote } from "@/lib/logo-v2/quote";
+import { readLive } from "@/lib/logo-v2/live";
+
+/**
+ * Dernière tâche de logo du projet (en cours, terminée ou ÉCHOUÉE) et avancement direction par direction : une
+ * tâche qui échoue reste visible avec son erreur, jamais une barre qui disparaît.
+ */
+function progressView(projectId: string) {
+  const job = one<{ id: string; type: string; status: string; progress: number; message: string; error: string | null; created_at: number; updated_at: number }>(
+    "SELECT id, type, status, progress, message, error, created_at, updated_at FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.redraw') ORDER BY created_at DESC, rowid DESC LIMIT 1",
+    projectId,
+  );
+  const live = readLive(projectId);
+  return { job: job ? { ...job, error: job.error ? job.error.slice(0, 600) : null } : null, live: live && (!job || live.jobId === job.id) ? live : null };
+}
 
 export const runtime = "nodejs";
 
@@ -24,7 +38,7 @@ function view(projectId: string) {
   const p = loadProject(projectId);
   // Slogan : écrit dans un logo seulement s'il est validé ; sinon c'est une proposition (jamais une info du client).
   const tagline = p.brand?.tagline?.trim() ? { text: p.brand.tagline.trim(), validated: isLocked(p.brand, "tagline") } : null;
-  if (!run) return { run: null, proposals: [], studio: [], discarded: [], applied: null, tagline, styles: LOGO_STYLES };
+  if (!run) return { run: null, proposals: [], studio: [], discarded: [], applied: null, tagline, styles: LOGO_STYLES, ...progressView(projectId) };
   const rows = all<{ id: string; role: string; meta: string }>("SELECT id, role, meta FROM assets WHERE project_id = ? AND role IN ('logo-v2','logo-v2-studio','logo-v2-trial') AND json_extract(meta, '$.run') = ? AND deleted_at IS NULL ORDER BY created_at", projectId, run.runId);
   const originals = new Map(all<{ id: string; source_asset_id: string }>("SELECT id, source_asset_id FROM assets WHERE project_id = ? AND role = 'logo-v2-original' AND deleted_at IS NULL", projectId).map((o) => [o.source_asset_id, o.id] as const));
   const item = (r: { id: string; meta: string }) => {
@@ -46,7 +60,8 @@ function view(projectId: string) {
     };
   };
   return {
-    run: { id: run.runId, at: run.at, ai: run.ai, art: run.art ?? null, style: run.style ?? "auto", stoppedByCostCap: !!run.stoppedByCostCap, territories: run.territories, rejected: run.rejected ?? [], notes: (run.notes ?? []).slice(0, 12) },
+    run: { id: run.runId, at: run.at, ai: run.ai, art: run.art ?? null, style: run.style ?? "auto", stoppedByCostCap: !!run.stoppedByCostCap, territories: run.territories, rejected: run.rejected ?? [], failures: run.failures ?? [], notes: (run.notes ?? []).slice(0, 12) },
+    ...progressView(projectId),
     tagline,
     styles: LOGO_STYLES,
     proposals: rows.filter((r) => r.role === "logo-v2").map(item),
