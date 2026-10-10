@@ -78,6 +78,15 @@ describe("serveur de développement", () => {
     expect(pkg.scripts.dev).toBe("node scripts/dev.mjs");
     const dev = fs.readFileSync(path.join("scripts", "dev.mjs"), "utf8");
     expect(dev).toMatch(/"--kill-others"/);
+    // Aucun redémarrage automatique : avec --kill-others il relançait le worker arrêté (studio à moitié mort).
+    expect(dev).not.toMatch(/--restart-tries|--restart-after/);
+    expect(dev).toMatch(/\.studio-dev\.pid/);
+    // « npm run maj » : arrête le studio en cours AVANT de changer les fichiers, puis met à jour et relance.
+    expect(pkg.scripts.maj).toBe("node scripts/maj.mjs");
+    const maj = fs.readFileSync(path.join("scripts", "maj.mjs"), "utf8");
+    const order = ["SIGTERM", '"pull"', '"install"', '".next"', '"run", "dev"'].map((k) => maj.indexOf(k));
+    expect(order.every((i) => i > 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(dev).toMatch(/next dev -p \$\{PORT\}/);
     expect(dev).toMatch(/node_modules\/\.bin/);
     expect(fs.readFileSync("next.config.ts", "utf8")).toMatch(/onDemandEntries: \{ maxInactiveAge: 30 \* 60_000/);

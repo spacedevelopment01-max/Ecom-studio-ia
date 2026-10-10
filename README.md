@@ -12,6 +12,9 @@ npm run setup      # crée .env.local (APP_SECRET aléatoire) et la base SQLite 
 npm run dev        # site (http://localhost:3000) + worker de tâches de fond
 ```
 
+Mise à jour (Codespace compris, même si le studio tourne déjà) : `npm run maj` — arrête le studio en cours, récupère
+la dernière version, installe, vide le cache de compilation et relance. Les données ne sont pas touchées.
+
 Production : `npm run build` puis `npm start` (lance le site **et** le worker). Le worker doit tourner en continu : c'est lui qui exécute les créations longues et les publications programmées, navigateur fermé.
 
 L'administration (`/admin`) est réservée au propriétaire : définissez `ADMIN_EMAIL` avec votre adresse, seul ce compte sera administrateur. Sans `ADMIN_EMAIL`, seul le tout premier compte créé l'est. Le rôle ne peut pas être transmis depuis le studio.

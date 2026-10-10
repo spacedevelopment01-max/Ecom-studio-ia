@@ -5,8 +5,11 @@
  * trouvait le port occupé : le site s'arrêtait (« next dev -p 3000 exited with code 0 ») mais son worker restait
  * actif — deux workers se partageaient alors les tâches. Ici : port déjà pris → message clair, RIEN n'est lancé,
  * code de sortie 1 (l'échec reste visible). Le site et le worker s'arrêtent ensemble (--kill-others) : jamais un
- * worker orphelin ni un site sans worker.
+ * worker orphelin ni un site sans worker. AUCUN redémarrage automatique : combiné à --kill-others, il relançait le
+ * worker arrêté (et le site) au lieu de tout arrêter — un studio à moitié mort gardait le port et ne quittait plus.
+ * Le numéro du lanceur est écrit dans .studio-dev.pid : « npm run maj » arrête proprement le studio en cours.
  */
+import fs from "node:fs";
 import net from "node:net";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -39,11 +42,18 @@ Port ${PORT} is already in use: the studio is probably already running. Nothing 
     process.exit(1);
   }
   const bin = path.join(path.dirname(createRequire(import.meta.url).resolve("concurrently/package.json")), "dist/bin/index.js");
-  const child = spawn(process.execPath, [bin, "--kill-others", "--restart-tries", "5", "--restart-after", "3000", "-n", "web,worker", "-c", "cyan,magenta", `next dev -p ${PORT}`, "tsx watch worker/index.ts"], {
+  const child = spawn(process.execPath, [bin, "--kill-others", "-n", "web,worker", "-c", "cyan,magenta", `next dev -p ${PORT}`, "tsx watch worker/index.ts"], {
     stdio: "inherit",
     // « next » et « tsx » du projet, même lancé sans npm (npm ajoute node_modules/.bin au PATH, node seul non).
     env: { ...process.env, PATH: `${path.resolve("node_modules/.bin")}${path.delimiter}${process.env.PATH ?? ""}` },
   });
+  const pidFile = path.resolve(".studio-dev.pid");
+  fs.writeFileSync(pidFile, String(process.pid));
+  const cleanup = () => {
+    try {
+      if (fs.readFileSync(pidFile, "utf8").trim() === String(process.pid)) fs.unlinkSync(pidFile);
+    } catch {}
+  };
   for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(sig, () => child.kill(sig));
-  child.on("exit", (code, signal) => process.exit(code ?? (signal ? 1 : 0)));
+  child.on("exit", (code, signal) => (cleanup(), process.exit(code ?? (signal ? 1 : 0))));
 }
