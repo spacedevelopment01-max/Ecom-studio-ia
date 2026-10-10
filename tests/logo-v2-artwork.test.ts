@@ -28,7 +28,8 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
   const { chooseLogoV2, reapplyLogoV2 } = await import("@/lib/logo-v2/choose");
   const { brandDiscovery } = await import("@/lib/logo-v2/discovery");
   const { selectTerritories, cleanDescriptor } = await import("@/lib/logo-v2/territories");
-  const { artworkPrompt, artworkScore, cleanArtwork, faithfulSvg, gateArtwork, STYLE_GUIDE } = await import("@/lib/logo-v2/artwork");
+  const { artworkPrompt, artworkScore, cleanArtwork, faithfulSvg, gateArtwork, STYLE_GUIDE, QUALITY_BAR, POOR_CONCEPTS } = await import("@/lib/logo-v2/artwork");
+  const { TerritorySchema } = await import("@/lib/logo-v2/territories");
   const { ART_CRITERIA } = await import("@/lib/logo-v2/types");
   const { seedLogoFixture, artFixture } = await import("./logo-v2-fixtures");
   const { mockAi } = await import("./logo-v2-mock");
@@ -93,6 +94,8 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     artifacts: false,
     issues: o.issues ?? [],
     needsSimplifiedMark: true,
+    genericConcept: o.genericConcept ?? false,
+    fix: o.fix ?? { target: "none", instruction: "" },
   });
 
   const STYLED = (b: any) => [
@@ -356,5 +359,59 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(log.calls.some((c) => c.startsWith("art:"))).toBe(false);
     expect(r.notes.join(" ")).toMatch(/logo complet par l'IA d'images indisponible \(aucun modèle choisi pour « Logos »\)/);
     expect(r.shown.length + r.discarded.length).toBeGreaterThan(0);
+  });
+
+  // ---- Qualité des demandes et du contrôle (logos premium)
+  it("brief de direction artistique : transmis tel quel, couleurs de la direction (palette non validée), barre de qualité et concepts pauvres, sans lignes génériques contradictoires ; taille bornée, texte exact jamais coupé", async () => {
+    const pid = sb();
+    const b = fr(() => brandDiscovery(loadProject(pid)));
+    const brief = "A refined custom-drawn mark with one continuous curve; spaced capitals; one accent stroke. ".repeat(18);
+    const draft = TerritorySchema.parse({ ...STYLED(b)[1], imageBrief: brief.slice(0, 1600), colors: ["#2E2E33", "#B8916A", "rouge"] });
+    expect(draft.colors).toBeUndefined(); // couleur invalide : liste rejetée, jamais inventée
+    const t = { ...selectTerritories([{ ...draft, colors: ["#2E2E33", "#B8916A"] }] as any, b, 1).kept[0] };
+    const p = artworkPrompt(t, { ...b, paletteLocked: false });
+    expect(p).toContain("Art direction: A refined custom-drawn mark");
+    expect(p).toContain("Colours: #2E2E33, #B8916A (chosen for this direction)");
+    expect(p).toContain(QUALITY_BAR);
+    expect(p).toContain(POOR_CONCEPTS);
+    expect(p).not.toMatch(/^Composition: /m); // le brief décrit la composition : pas de consigne générique en double
+    expect(Buffer.byteLength(p, "utf8")).toBeLessThanOrEqual(3800);
+    expect(p).toContain(`the name "${b.name}"`);
+    expect(p).toMatch(/Output: crisp edges/);
+    // Positionnement, clientèle et personnalité de la marque transmis.
+    if (b.positioning) expect(p).toContain("Positioning:");
+    // Palette validée par le client : ses couleurs, jamais celles de la direction.
+    const locked = artworkPrompt(t, { ...b, paletteLocked: true });
+    expect(locked).toContain(`main ink ${b.palette[t.colorRole.ink]}`);
+    expect(locked).not.toContain("chosen for this direction");
+  });
+
+  it("concept pauvre relevé par le contrôle (cachet sans personnalité, initiales encadrées…) : jamais validé même bien noté, image gardée ; critères couleur et différenciation comptés", async () => {
+    const pid = sb();
+    const log = newLog();
+    const r = await runEngine(pid, artAi(log, { reviews: { "Signe épuré": [(e) => artReview(8.9, e, { genericConcept: true, issues: ["cachet rond sans personnalité"], fix: { target: "concept", instruction: "remplacer le cachet par une construction des deux lettres en réserve" } })] } }));
+    const bad = r.discarded.find((d) => d.territory.name === "Signe épuré")!;
+    expect(bad.verdict).toBe("REJECTED");
+    expect(bad.codes).toContain("generic_concept");
+    expect(getAsset(bad.assetId!)!.role).toBe("logo-v2-trial");
+    const m = JSON.parse(getAsset(bad.assetId!)!.meta as any);
+    expect(m.artwork.fix).toEqual({ target: "concept", instruction: "remplacer le cachet par une construction des deux lettres en réserve" });
+    expect(ART_CRITERIA).toEqual(expect.arrayContaining(["colour", "distinctiveness"]));
+    // Couleur faible : la note pondérée baisse (aucune note relevée).
+    const weak = artReview(8.5, { name: "X" }, { low: { colour: 4, distinctiveness: 4 } });
+    expect(artworkScore(weak as any, "minimal")).toBeLessThan(8);
+  });
+
+  it("nouvelle version : la critique du contrôle (défauts, correction proposée) est transmise au dessin, avec les remarques du client", async () => {
+    const pid = sb();
+    const log = newLog();
+    const r = await runEngine(pid, artAi(log, { reviews: { "Signe épuré": [(e) => artReview(6.2, e, { issues: ["symbole interchangeable"], fix: { target: "symbol", instruction: "abandonner le carré, construire le signe dans la lettre" } })] } }));
+    const bad = r.discarded.find((d) => d.territory.name === "Signe épuré")!;
+    await fr(() => redrawArtwork(job(pid, "brand.logo.v2.redraw"), pid, bad.assetId!, { ai: artAi(log) as any }));
+    const last = log.prompts.at(-1)!;
+    expect(last).toContain("abandonner le carré, construire le signe dans la lettre");
+    expect(last).toContain("symbole interchangeable");
+    await fr(() => redrawArtwork(job(pid, "brand.logo.v2.redraw"), pid, bad.assetId!, { feedback: "plus de contraste", ai: artAi(log) as any }));
+    expect(log.prompts.at(-1)).toMatch(/plus de contraste\. fix — abandonner le carré/);
   });
 });

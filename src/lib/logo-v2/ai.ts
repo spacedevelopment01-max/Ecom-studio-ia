@@ -54,6 +54,8 @@ export const ArtworkReviewSchema = z.object({
   artifacts: z.boolean().catch(false),
   issues: z.array(z.string().max(300)).max(8).catch([]),
   needsSimplifiedMark: z.boolean().catch(true),
+  genericConcept: z.boolean().catch(false),
+  fix: z.object({ target: z.enum(["symbol", "typography", "composition", "colour", "concept", "none"]).catch("none"), instruction: z.string().max(400).catch("") }).catch({ target: "none", instruction: "" }),
 });
 
 const fontsList = () => Object.entries(STYLE_FONTS).map(([s, f]) => `${s} (${f.join(", ")})`).join(" ; ");
@@ -70,7 +72,10 @@ Chaque territoire est RÉELLEMENT différent des autres sur au moins trois de ce
 - colorRole : rôles de la palette de la marque (primary, secondary, accent, light, dark) pour l'encre du nom et l'accent ;
 - symbolIdea (types à symbole ou monogramme, sinon null) : UNE idée graphique forte tirée de la logique du métier (geste, outil, matière, résultat, bénéfice). un objet ou un geste du métier de CETTE entreprise est permis s'il est intégré de façon originale et professionnelle, mais jamais exigé ; seuls les clichés MALADROITS sont à éviter (icône de banque d'images, assemblage convenu) ;
 - descriptor : ligne d'activités sous le nom, en capitales, 1 à 3 activités RÉELLES de l'entreprise séparées par « • » (seulement celles du contexte), ou null ;
-- distinctive : ce qui rend ce territoire mémorable ; avoid : ce qu'il faut éviter en le dessinant.
+- distinctive : ce qui rend ce territoire mémorable ; avoid : ce qu'il faut éviter en le dessinant ;
+- imageBrief (EN ANGLAIS, 90 à 160 mots) : le brief de direction artistique que lira le modèle d'images, concret et visuel. Il dit : l'idée centrale (UNE idée graphique, pas un objet nommé) ; ce que montre la marque et comment elle est dessinée (construction, qualité du trait, matière ou finition) ; la composition et les proportions ; le traitement typographique du nom (graisses, approche, contraste ou deux tons, hiérarchie avec la ligne d'activités) ; l'usage des couleurs (codes HEX) ; le niveau de finition attendu ; ce qu'il faut éviter. Jamais de formule générique (« modern minimalist logo ») : chaque phrase guide réellement le dessin ;
+- colors : 2 ou 3 couleurs HEX choisies pour CETTE marque et ce territoire (accord juste avec le métier, le positionnement et la clientèle) — seulement si la palette n'est pas validée par le client, sinon [].
+Concepts pauvres À NE PAS proposer : une forme banale sans idée (cercle, triangle, carré arrondi), un cachet ou un sceau sans personnalité, des initiales simplement posées dans un cadre, une police standard sans composition, un symbole interchangeable entre plusieurs entreprises, une décoration sans intention, le simple nom d'un outil ou d'un élément du métier pris comme concept. La simplicité est bienvenue quand elle porte une vraie idée graphique (coupe, réserve, construction, double lecture).
 Règles : le nom de la marque sera écrit EXACTEMENT tel quel (accents compris) ; aucun slogan inventé dans le logo (un slogan n'y figure que s'il a été validé par le client) ; respecte les refus et décisions du client indiqués ; ne reproduis aucun logo existant.
 Langue de « name », « concept », « whyItFits », « distinctive », « rationale » : ${uiLang() === "en" ? "English" : "français"}.`;
 
@@ -110,7 +115,7 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
 Activités réelles (seules autorisées dans « descriptor ») : ${brief.activities.join(", ") || brief.activity || "[À compléter : activités]"}.
 Symboles convenus à ne pas dessiner de façon banale : ${brief.cliches.slice(0, 12).join(", ")}.
 ${brief.style !== "auto" ? `Style choisi par le client : ${brief.style} — tous les territoires dans ce style, différents sur les autres axes.\n` : "Style : propose plusieurs styles différents, adaptés à cette entreprise.\n"}
-${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "style", "descriptor", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [] } ] }.`,
+${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}${brief.positioning ? `Positionnement : ${brief.positioning}.\n` : ""}${brief.audience ? `Clientèle : ${brief.audience}.\n` : ""}${brief.personality.length ? `Personnalité : ${brief.personality.join(", ")}.\n` : ""}${brief.paletteLocked ? `Palette validée par le client (à garder, « colors » vide) : ${Object.values(brief.palette).join(", ")}.\n` : "Palette non validée : choisis les couleurs de chaque territoire (« colors »).\n"}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "style", "descriptor", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [], "imageBrief", "colors": [] } ] }.`,
           maxTokens: 9000,
         },
         TerritoriesSchema,
@@ -163,7 +168,7 @@ ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas
           system: ARTWORK_REVIEW_SYSTEM(t.style),
           context: brief.brainContext,
           images: [{ data: board, label: L("planche de contrôle du logo complet", "full logo review board") }],
-          prompt: `Territoire « ${t.name} » — concept : ${t.concept}\nStyle : ${t.style} ; type : ${t.markType}.\nNom attendu (exact) : « ${expected.name} ».${expected.descriptor ? ` Ligne d'activités autorisée : « ${expected.descriptor} ».` : ""}${expected.tagline ? ` Slogan validé autorisé : « ${expected.tagline} ».` : ""}\nRéponds { "criteria": { ${ART_CRITERIA.map((k) => `"${k}": 0`).join(", ")} }, "textRead": "…", "nameExact": true, "extraText": false, "nameBox": { "x": 0, "y": 0, "w": 0, "h": 0 }, "clumsyCliche": false, "resemblesKnownBrand": false, "amateur": false, "artifacts": false, "issues": [], "needsSimplifiedMark": true }.`,
+          prompt: `Territoire « ${t.name} » — concept : ${t.concept}\nStyle : ${t.style} ; type : ${t.markType}.\nNom attendu (exact) : « ${expected.name} ».${expected.descriptor ? ` Ligne d'activités autorisée : « ${expected.descriptor} ».` : ""}${expected.tagline ? ` Slogan validé autorisé : « ${expected.tagline} ».` : ""}\nRéponds { "criteria": { ${ART_CRITERIA.map((k) => `"${k}": 0`).join(", ")} }, "textRead": "…", "nameExact": true, "extraText": false, "nameBox": { "x": 0, "y": 0, "w": 0, "h": 0 }, "clumsyCliche": false, "resemblesKnownBrand": false, "amateur": false, "artifacts": false, "genericConcept": false, "issues": [], "fix": { "target": "symbol|typography|composition|colour|concept|none", "instruction": "…" }, "needsSimplifiedMark": true }.`,
           maxTokens: 3000,
         },
         ArtworkReviewSchema,

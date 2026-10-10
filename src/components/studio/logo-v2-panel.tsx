@@ -16,7 +16,7 @@ type Proposal = {
   id: string;
   url?: string;
   territory: { name: string; concept: string; why: string; markType: string; composition: string; typography: string; distinctive: string; source: "ai" | "local"; style?: string | null; descriptor?: string | null };
-  artwork?: { textCorrected: boolean; originalUrl: string | null; provider: string | null; costMicro: number | null; issues: string[]; choosable: boolean; previous: string | null } | null;
+  artwork?: { textCorrected: boolean; originalUrl: string | null; provider: string | null; costMicro: number | null; fix: string | null; issues: string[]; choosable: boolean; previous: string | null } | null;
   font: string;
   score: number | null;
   verdict: string | null;
@@ -195,6 +195,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
                 <img src={d.url} alt={d.territory.name} className="mb-3 w-full rounded-lg bg-[#F4F3EF] object-contain p-4" />
                 <p className="text-xs text-ink-2">{d.reason}</p>
                 {!!d.artwork?.issues.length && <p className="mt-1 text-xs text-muted">{d.artwork.issues.join(" ; ")}</p>}
+                {d.artwork?.fix && <p className="mt-1 text-xs text-ink-2"><strong>{t("À corriger dans une nouvelle version :", "To fix in a new version:")}</strong> {d.artwork.fix}</p>}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {d.artwork?.choosable && <Button size="sm" variant="secondary" icon={<Check className="size-4" />} loading={busy === d.id} onClick={() => { if (window.confirm(t("Ce logo n'a pas atteint le niveau du contrôle. Le choisir quand même ?", "This logo did not reach the check's level. Choose it anyway?"))) post({ action: "choose", assetId: d.id }, t("Logo choisi : déclinaisons et charte en préparation.", "Logo chosen: variations and guidelines being prepared."), d.id); }}>{t("Choisir quand même", "Choose anyway")}</Button>}
                   <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} loading={busy === `v${d.id}`} onClick={() => redraw(d)}>{t("Nouvelle version", "New version")}</Button>
