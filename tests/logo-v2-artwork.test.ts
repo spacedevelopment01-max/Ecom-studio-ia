@@ -30,7 +30,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
   const { selectTerritories, cleanDescriptor } = await import("@/lib/logo-v2/territories");
   const { artworkPrompt, artworkScore, cleanArtwork, faithfulSvg, gateArtwork, STYLE_GUIDE } = await import("@/lib/logo-v2/artwork");
   const { ART_CRITERIA } = await import("@/lib/logo-v2/types");
-  const { seedLogoFixture } = await import("./logo-v2-fixtures");
+  const { seedLogoFixture, artFixture } = await import("./logo-v2-fixtures");
   const { mockAi } = await import("./logo-v2-mock");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
 
@@ -48,7 +48,10 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
 
   // ---- images simulées (aucun appel) : aplats (minimaliste), matière bruitée (texturé, illustré)
   const svgPng = (body: string) => sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#FFFFFF"/>${body}</svg>`)).png().toBuffer();
-  const flatLogo = () => svgPng(`<circle cx="512" cy="380" r="220" fill="#8A3B26"/><rect x="262" y="700" width="500" height="90" fill="#222222"/>`);
+  // Logo plat travaillé (anneau, pas une forme pleine de remplissage), nom en barre sombre dessous.
+  const flatLogo = () => artFixture(0);
+  /** Un dessin distinct par direction (une série n'est jamais faite de copies). */
+  const DIR_ART: Record<string, number> = { "Atelier illustré": 1, "Signe épuré": 2, Lettrage: 3 };
   async function texturedLogo() {
     const W = 1024;
     const data = Buffer.alloc(W * W * 3, 255);
@@ -104,7 +107,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
       async drawArtwork(t: any, b: any, feedback?: string) {
         log.calls.push(`art:${t.name}${feedback ? ":v" : ""}`);
         log.prompts.push(artworkPrompt(t, b, feedback));
-        return (o.image ?? (() => flatLogo()))(t);
+        return (o.image ?? ((x: any) => artFixture(DIR_ART[x.name] ?? 0)))(t);
       },
       async reviewArtwork(_board: Buffer, t: any, _b: any, exp: any) {
         log.calls.push(`art-review:${t.name}`);

@@ -42,3 +42,21 @@ export function seedLogoFixture(userId: string, kind: LogoFixture): string {
       return insert(userId, "products", { ...emptyProduct(), name: "Atlas Gourde", nameStatus: "provided", category: "Gourde isotherme", sector: "sport", summary: "Gourde isotherme en acier, 24 h au froid, bouchon une main." }, null, brandPatch(["robuste", "aventurier", "direct"], "La gourde qui suit partout, du bureau au sommet.", "Randonneurs et actifs urbains"));
   }
 }
+
+/**
+ * Logos complets d'essai (sans IA) : dessins DISTINCTS et travaillés (anneau, maison au trait, losange deux tons,
+ * courbe), jamais une simple forme pleine, avec le nom en barre sombre (#222) dessous. Un dessin par direction : une
+ * série de 3 n'est jamais faite de 3 copies.
+ */
+export async function artFixture(variant: number, size = 1024): Promise<Buffer> {
+  const sharp = (await import("sharp")).default;
+  const k = size / 1024;
+  const marks = [
+    `<circle cx="512" cy="380" r="220" fill="#8A3B26"/><circle cx="512" cy="380" r="110" fill="#FFFFFF"/>`,
+    `<path d="M300 520 L300 330 L512 170 L724 330 L724 520 Z" fill="none" stroke="#446274" stroke-width="44" stroke-linejoin="round"/><rect x="470" y="400" width="84" height="120" fill="#446274"/>`,
+    `<path d="M512 150 L740 380 L512 610 Z" fill="#2B5D8A"/><path d="M512 150 L284 380 L512 610 Z" fill="#C8A27A"/>`,
+    `<path d="M640 200 C460 140 340 260 470 360 C600 460 520 600 360 560" fill="none" stroke="#5B3A8A" stroke-width="60" stroke-linecap="round"/>`,
+  ];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#FFFFFF"/>${marks[variant % marks.length]}<rect x="262" y="700" width="500" height="90" fill="#222222"/></svg>`;
+  return sharp(Buffer.from(svg)).resize(Math.round(1024 * k)).png().toBuffer();
+}

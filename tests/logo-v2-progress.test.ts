@@ -25,7 +25,7 @@ describe("Logo V2 — avancement et échecs visibles", async () => {
   const { runLogoEngineV2 } = await import("@/lib/logo-v2/engine");
   const { readLive } = await import("@/lib/logo-v2/live");
   const { ART_CRITERIA } = await import("@/lib/logo-v2/types");
-  const { seedLogoFixture } = await import("./logo-v2-fixtures");
+  const { seedLogoFixture, artFixture } = await import("./logo-v2-fixtures");
   const { mockAi } = await import("./logo-v2-mock");
   const route = await import("@/app/api/projects/[id]/brand/logo-v2/route");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
@@ -43,7 +43,9 @@ describe("Logo V2 — avancement et échecs visibles", async () => {
   };
   const view = async (pid: string) => (await route.GET(new Request(`http://x/api/projects/${pid}/brand/logo-v2`), { params: Promise.resolve({ id: pid }) } as any)).json();
   const DRAFTS = (b: any) => ["Direction A", "Direction B", "Direction C"].map((name, i) => ({ name, concept: `Concept ${name} pour ${b.name}.`, whyItFits: "Traduit la marque pour sa clientèle.", markType: ["wordmark", "symbol_wordmark", "monogram"][i], composition: ["wordmark_only", "stacked", "horizontal"][i], construction: ["typographic", "geometric", "organic"][i], sobriety: [1, 3, 5][i], style: ["typographic", "minimal", "premium"][i], symbolIdea: i ? "un signe" : null, typography: { style: "grotesque", weight: "bold", case: "upper", tracking: "normal", rationale: "" }, colorRole: { ink: "dark", accent: "primary", rationale: "" }, distinctive: "", avoid: [] }));
-  const png = () => sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="600" height="600" fill="#fff"/><circle cx="300" cy="250" r="140" fill="#446274"/><rect x="150" y="430" width="300" height="60" fill="#222"/></svg>`)).png().toBuffer();
+  // Un dessin distinct (et travaillé) par image : jamais 3 copies, jamais une simple forme pleine.
+  let drawn = 0;
+  const png = () => artFixture(drawn++, 600);
   const review = (exp: any, score = 8.6) => ({ criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, score])), textRead: exp.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true });
   const ai = (o: { draw?: (t: any) => Promise<Buffer>; route?: () => any; score?: (t: any) => number } = {}) => ({
     ...mockAi({ calls: [] }, { drafts: DRAFTS as any }),
