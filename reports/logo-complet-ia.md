@@ -10,12 +10,13 @@ Branche `claude/ecom-studio-ia-platform-8cwl79`. **Aucun appel payant** : tous l
 | Le dessin était vectorisé ou redessiné en 1 à 3 formes SVG simples. | L'**image originale haute définition** est le livrable principal. Une version SVG n'est proposée que si elle reproduit fidèlement le dessin (≥ 96 % des pixels). |
 | Une maison, un toit, un rouleau… étaient refusés d'office (liste de mots). | Un objet du métier est **permis** s'il est bien intégré. Seule la relecture du dessin écarte un cliché **maladroit** (icône de banque d'images). |
 | Contrôle identique pour tous : noir seul, 24 px. | Contrôle **adapté au style** : la texture, les couleurs et les dégradés ne sont pas des défauts ; la lisibilité est jugée aux tailles prévues. Une version simplifiée sert aux favicons, tampons et broderies. |
-| Aucun choix de style. | Le client choisit : **illustré, minimaliste, typographique, monogramme, emblème, texturé, dégradés**, ou « laisser l'IA proposer plusieurs styles ». |
+| Aucun choix de style. | Le client choisit : **illustré, minimaliste, typographique, monogramme, emblème, texturé, dégradés, premium**, ou « laisser l'IA proposer plusieurs styles ». |
+| Les consignes envoyées à l'IA citaient des exemples d'un projet (toit, pinceau, initiales mêlées, enduit, « PLÂTRERIE • PEINTURE… »). | **Consignes neutres** : rien n'est imposé (ni forme, ni objet, ni initiales, ni texture, ni composition). L'IA analyse chaque marque et choisit sa direction. Les seuls exemples d'objets cités viennent du métier analysé du projet lui-même. Un test le vérifie sur trois marques différentes, et contrôle aussi les sources des générateurs de logos. |
 
 ## Fonctionnement
 
 1. **Directions** : une demande au directeur artistique (IA de texte). Chaque direction a un style, et 3 axes au moins diffèrent entre deux directions. Le minimalisme n'est pas privilégié.
-2. **Dessin** : une seule image payée par direction (4 au plus par série), par le modèle choisi pour « Logos » dans Administration › Images & Vidéos. Ce modèle doit savoir écrire du texte : OpenAI ou Gemini. Sinon, le logo est construit avec de vraies polices, et c'est écrit dans les notes de la série.
+2. **Dessin** : **3 créations par série**, une seule image payée chacune, par le modèle choisi pour « Logos » dans Administration › Images & Vidéos. Ce modèle doit savoir écrire du texte dans l'image (par exemple OpenAI GPT Image 1). Sinon, 4 logos sont construits avec de vraies polices, et c'est écrit dans les notes de la série.
 3. **Relecture** : critères pondérés selon le style (pertinence, originalité, exécution du dessin, typographie, composition, lisibilité aux tailles prévues, mémorisation, usages). La barrière est inchangée : **8/10**, nom exact, aucun texte inventé. La note n'est jamais relevée (testé).
 4. **Nom mal écrit** : le studio efface la zone du nom indiquée par la relecture et le réécrit avec une vraie police, dans la couleur trouvée sur place. **Le dessin n'est pas touché** (testé pixel par pixel), et l'original de l'IA est gardé à part. C'est gratuit : aucune image n'est regénérée.
 5. **Aucune nouvelle image sans accord** : un logo sous la barrière n'est pas redessiné automatiquement. Il reste visible avec son image originale et ses défauts. Le client peut :
@@ -36,7 +37,14 @@ L'ancien générateur séparé de « logos complets » est remplacé par ce mote
 
 ## Coûts et sécurité
 
-- Devis du Pilote : 4 images et leurs relectures par série. Chaque image passe par la réservation de son coût maximal, dans le budget du compte.
+- **Devis avant tout appel payant.** Le bouton « Créer les directions » affiche d'abord le montant maximal de la série. Ce montant comprend :
+  - la demande des directions ;
+  - les 3 images, au coût maximal calculé exactement comme la réservation faite avant chaque image ;
+  - 2 relectures par création (dont la relecture après une reprise du nom).
+
+  « Nouvelle version » affiche aussi son propre devis (une image et ses relectures).
+- **Le devis est le plafond.** Il est enregistré avec la tâche. Avant chaque appel payant, le studio vérifie que dépense déjà faite + coût maximal de l'appel ≤ plafond ; sinon l'appel ne part pas, et la série s'arrête proprement. Une image déjà payée dont la relecture est bloquée est gardée comme essai. Le devis du Pilote (étape « logo ») utilise le même calcul : les deux ne peuvent pas diverger.
+- Chaque image passe en plus par la réservation de son coût maximal dans le budget du compte (plafonds de 40 % et 50 % HT).
 - Toute image payée reste conservée (`storage/ai-originals/…`, déjà en place), et les essais écartés gardent leur image.
 - Le forfait Découverte reste sans IA : la « Nouvelle version » est refusée (403), et le logo est construit localement.
 - Les plafonds de 40 % HT (abonnements) et 50 % HT (recharges) ne sont pas modifiés (aucune modification de la facturation). Forfaits, prix et page d'accueil ne sont pas modifiés. Les projets existants ne sont pas modifiés.
@@ -59,6 +67,12 @@ L'ancien générateur séparé de « logos complets » est remplacé par ce mote
   - nouvelle version à la demande ;
   - nom de marque modifié ;
   - absence de modèle d'images capable d'écrire.
+- `tests/logo-budget.test.ts` (vraie chaîne de paiement, fournisseurs simulés) :
+  - série de 3 logos complets avec une reprise (nom réécrit) : dépense réelle ≤ devis, aucune réservation en attente ; devis du Pilote = devis du moteur ;
+  - plafond plus bas que le devis : les images suivantes ne partent pas et ne sont pas réservées ; chaque image payée est gardée ;
+  - « Nouvelle version » : une seule image, sous son devis ;
+  - Découverte : aucun appel (ni texte, ni image).
+- `tests/logo-v2-artwork.test.ts` : en plus, « aucune consigne d'une marque devenue règle » (3 marques, sources des générateurs).
 - `tests/logo-v2-route.test.ts` : style transmis à la tâche ; « Nouvelle version » réservée aux logos complets et refusée en Découverte ; nom faux jamais choisi.
 - Tests adaptés :
   - `logo-v2.test.ts` : l'objet du métier n'est plus refusé d'office ;
@@ -76,4 +90,5 @@ L'ancien générateur séparé de « logos complets » est remplacé par ce mote
 - **Non vérifié avec une vraie IA** : la qualité réelle dépend du modèle choisi (OpenAI GPT Image, Gemini…). Le premier essai réel demandera votre accord.
 - La réécriture du nom suppose que la relecture situe bien le nom. Si le nom se mêle au dessin, la relecture suivante le refusera : rien ne sera livré abîmé.
 - La version simplifiée est une initiale construite par le studio, pas un recadrage du symbole de l'IA.
+- Le devis des relectures suppose le modèle de texte habituel pour chaque tâche. Si le routage choisit un modèle plus cher, le plafond peut arrêter la série plus tôt, mais jamais la faire dépasser.
 - Les couleurs d'un logo complet ne sont pas recolorées automatiquement quand la palette change : elles font partie du dessin.

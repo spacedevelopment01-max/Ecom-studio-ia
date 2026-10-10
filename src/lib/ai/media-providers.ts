@@ -462,7 +462,30 @@ Quality bar: a modern, professional logo for a real small business — original,
  * (style, texte exact) ; haute qualité, fond transparent quand le modèle le permet.
  */
 export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
-  return generateImage(ctx, { text: input.prompt, aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+}
+
+/** Taille maximale d'une demande de logo complet : borne le coût maximal du devis (jamais dépassé). */
+export const LOGO_PROMPT_MAX_BYTES = 3800;
+const clampBytes = (t: string, max: number) => {
+  if (Buffer.byteLength(t, "utf8") <= max) return t;
+  let out = t;
+  while (Buffer.byteLength(out, "utf8") > max) out = out.slice(0, -40);
+  return out;
+};
+
+/**
+ * Coût MAXIMAL d'un logo complet, calculé exactement comme la réservation faite avant l'appel (même modèle choisi
+ * pour « Logos », même borne de la demande, même majoration) : sert au devis et au plafond de la série. null : aucun
+ * modèle d'images utilisable (aucun logo complet possible).
+ */
+export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): number | null {
+  const r = mediaRouteFor("logo", opts.text === false ? {} : { text: true, transparent: true });
+  if (!r) return null;
+  const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
+  const model = r.model;
+  const micro = r.provider === "openai" ? openaiImageMax(model, { prompt, images: 0, size: "1024x1024", quality: "high" }) : r.provider === "google" ? geminiImageMax(model, { prompt, images: 0 }) : cost(r.provider, model, { images: 1 }).micro;
+  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
 }
 
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */

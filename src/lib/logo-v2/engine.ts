@@ -14,7 +14,9 @@ import { logoPng } from "../media/logo";
 import { traceSymbol } from "../media/trace-symbol";
 import { saveCheck } from "../quality/store";
 import { llmConfigured } from "../ai/llm";
-import { CostCapReached, withCandidate } from "../ai/trace";
+import { CostCapReached, currentTrace, withCandidate, withTrace } from "../ai/trace";
+import { one } from "../db";
+import { ARTWORK_SERIES, BUILT_SERIES, logoRedrawQuote, logoSeriesQuote } from "./quote";
 import { C, L } from "../i18n-server";
 import { realLogoV2Ai, type LogoV2Ai } from "./ai";
 import { brandDiscovery } from "./discovery";
@@ -35,6 +37,8 @@ export type EngineOptions = {
   avoid?: string[];
   /** Style choisi par le client (« auto » ou absent : l'IA propose plusieurs styles adaptés). */
   style?: LogoStyle | "auto";
+  /** Plafond de la série (micro-euros) ; par défaut, le devis de la série. */
+  capMicro?: number;
 };
 
 const stopping = (e: unknown) => e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached;
@@ -72,7 +76,9 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
       review = await withCandidate(`logo-v2:${t.id}${tag}`, c.attempt, () => ctx.step(`v2:${t.id}${tag}:art-review:${c.attempt}`, () => ai.reviewArtwork!(board, t, brief, expected)));
       d = gateArtwork(review, t, expected, c.attempt);
     } catch (e) {
-      if (stopping(e)) throw e;
+      // Plafond atteint au moment de la relecture : l'image déjà payée est gardée (essai non contrôlé), jamais perdue.
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      if (e instanceof CostCapReached) notes.push(`${t.name} : relecture non faite (${e.message})`);
       d = decide("logo_artwork", { checker: "ai", score: null, error: (e as Error).message.slice(0, 200) }, { attempt: c.attempt });
     }
     previousCheckId = saveCheck(d, { userId, projectId: brief.projectId, jobId: ctx.job.id, candidateId: `logo-v2:${t.id}${tag}`, previousCheckId });
@@ -227,13 +233,37 @@ async function developTerritory(ctx: JobContext, ai: LogoV2Ai | null, t: Territo
   return best;
 }
 
-/** Série complète de propositions pour un projet (tâche de fond « brand.logo.v2 »). */
+/**
+ * Plafond d'une série : le devis (logoSeriesQuote) — ce que la tâche a déjà dépensé avant (autres étapes d'un plan)
+ * n'est pas compté contre lui ; un plafond plus strict déjà posé (devis accepté du Pilote, benchmark) est conservé.
+ */
+function withSeriesCap<T>(ctx: JobContext, quoteMicro: number, capMicro: number | undefined, fn: () => Promise<T>): Promise<T> {
+  const before = one<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", ctx.job.id)?.c ?? 0;
+  const own = before + (capMicro ?? quoteMicro);
+  const cur = currentTrace();
+  return withTrace({ jobId: ctx.job.id, costCapMicro: cur.costCapMicro != null ? Math.min(cur.costCapMicro, own) : own }, fn);
+}
+
+/** Série complète de propositions pour un projet (tâche de fond « brand.logo.v2 »), dans la limite de son devis. */
 export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: EngineOptions = {}): Promise<EngineRun> {
+  const quote = logoSeriesQuote();
+  return withSeriesCap(ctx, quote.maxMicro, opts.capMicro, () => seriesRun(ctx, projectId, opts));
+}
+
+async function seriesRun(ctx: JobContext, projectId: string, opts: EngineOptions): Promise<EngineRun> {
   const p = loadProject(projectId);
   const brief = brandDiscovery(p, { style: opts.style });
-  const n = opts.territories ?? 4;
   const ai = opts.ai !== undefined ? opts.ai : llmConfigured() ? realLogoV2Ai(ctx, { userId: p.userId, projectId }) : null;
   const notes: string[] = [];
+  // Logo complet par le modèle d'images quand il sait écrire le nom (3 créations) ; sinon construction avec de vraies
+  // polices (4 directions).
+  let art: { provider: string } | null = null;
+  if (ai?.artworkRoute && ai.drawArtwork && ai.reviewArtwork) {
+    const r = ai.artworkRoute();
+    if ("unavailable" in r) notes.push(`logo complet par l'IA d'images indisponible (${r.unavailable}) — logos construits avec de vraies polices`);
+    else art = { provider: `${r.provider}:${r.model}` };
+  }
+  const n = opts.territories ?? (art ? ARTWORK_SERIES : BUILT_SERIES);
   let aiState: EngineRun["ai"] = ai ? "used" : "off";
   let stoppedByCostCap = false;
   // 1. Territoires (un seul appel) — concept AVANT toute image.
@@ -257,14 +287,7 @@ export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: 
       if (sel.kept.length < n && sel.kept.every((k) => territoryDistance(k, t) >= MIN_DISTANCE)) sel.kept.push(t);
     }
   }
-  // 2. Logo complet par le modèle d'images quand il sait écrire le nom ; sinon construction avec de vraies polices.
-  let art: { provider: string } | null = null;
-  if (ai?.artworkRoute && ai.drawArtwork && ai.reviewArtwork) {
-    const r = ai.artworkRoute();
-    if ("unavailable" in r) notes.push(`logo complet par l'IA d'images indisponible (${r.unavailable}) — logos construits avec de vraies polices`);
-    else art = { provider: `${r.provider}:${r.model}` };
-  }
-  // Construction, contrôle, reprises ciblées — territoire par territoire.
+  // 2. Construction, contrôle, reprises ciblées — territoire par territoire.
   const results: ProposalResult[] = [];
   for (const [i, t] of sel.kept.entries()) {
     if (stoppedByCostCap) break;
@@ -342,7 +365,7 @@ export async function saveProposal(ctx: JobContext, userId: string, projectId: s
  * une seule image payée pour ce territoire, avec ses remarques éventuelles ; la version précédente reste dans la
  * série (jamais remplacée ni supprimée). Rien n'est relancé automatiquement.
  */
-export async function redrawArtwork(ctx: JobContext, projectId: string, assetId: string, opts: { feedback?: string; ai?: LogoV2Ai | null } = {}): Promise<{ assetId: string | null; verdict: string | null; notes: string[] }> {
+export async function redrawArtwork(ctx: JobContext, projectId: string, assetId: string, opts: { feedback?: string; ai?: LogoV2Ai | null; capMicro?: number } = {}): Promise<{ assetId: string | null; verdict: string | null; notes: string[] }> {
   const p = loadProject(projectId);
   const { getAsset } = await import("../library");
   const { json } = await import("../db");
@@ -357,7 +380,15 @@ export async function redrawArtwork(ctx: JobContext, projectId: string, assetId:
   const notes: string[] = [];
   ctx.progress(0.2, L(`Nouvelle version de « ${t.name} »`, `New version of "${t.name}"`));
   const feedback = opts.feedback?.trim() || "a genuinely new interpretation of the same direction";
-  const r = await developArtwork(ctx, ai, t, brief, notes, { feedback, provider: `${route.provider}:${route.model}`, keyTag: `:v${ctx.job.id.slice(0, 8)}` });
+  const quote = logoRedrawQuote();
+  let r: ProposalResult | null;
+  try {
+    r = await withSeriesCap(ctx, quote?.maxMicro ?? 0, opts.capMicro, () => developArtwork(ctx, ai, t, brief, notes, { feedback, provider: `${route.provider}:${route.model}`, keyTag: `:v${ctx.job.id.slice(0, 8)}` }));
+  } catch (e) {
+    if (!(e instanceof CostCapReached)) throw e;
+    notes.push(e.message);
+    return { assetId: null, verdict: null, notes };
+  }
   if (!r) return { assetId: null, verdict: null, notes };
   const id = await ctx.step("v2:redraw:save", () => saveProposal(ctx, p.userId, projectId, r, { run: meta.run, previous: assetId }));
   return { assetId: id, verdict: r.verdict, notes };

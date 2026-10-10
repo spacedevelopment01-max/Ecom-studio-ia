@@ -3,8 +3,8 @@
  *
  * Avec l'IA : le directeur artistique les invente pour CETTE marque (aucune direction codée en dur), au format
  * structuré ; le code vérifie ensuite la diversité (style d'identité, type de marque, composition, style
- * typographique, construction, sobriété) et écarte ce que le client a refusé. Un objet du métier (maison, pinceau,
- * outil…) est permis : c'est la relecture qui écarte un cliché MALADROIT, pas une liste de mots.
+ * typographique, construction, sobriété) et écarte ce que le client a refusé. Un objet du métier est permis (jamais
+ * exigé) : c'est la relecture qui écarte un cliché MALADROIT, pas une liste de mots.
  * Sans IA : une version du studio construit des territoires à partir des mêmes axes, d'après la personnalité, le
  * secteur et le positionnement — présentée comme telle (jamais FINALE sans contrôle par l'IA ou par le client).
  */
@@ -81,7 +81,7 @@ const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 const ABSTRACTION = /abstrait|abstract|stylis|negatif|negative space|fusion|combine|construit|geometri|fragment|trace|ligne|line|plan|module|rythme|rhythm|grid|grille/;
 
 /**
- * Objet attendu du métier cité tel quel dans l'idée du symbole (rouleau, truelle, maison, ampoule…), sans parti pris
+ * Objet attendu du métier cité tel quel dans l'idée du symbole (d'après la liste des objets attendus du métier), sans parti pris
  * d'abstraction ou de combinaison. INDICATION seulement (note de la série) : un symbole du métier bien intégré est
  * permis ; seule la relecture du dessin écarte un cliché maladroit.
  */

@@ -24,7 +24,7 @@ const placeholder = (s: string | null | undefined) => !s || /\[(À|A) (compléte
 
 /**
  * Symboles convenus de TOUS les secteurs (globe, virgule, poignée de main…) : signalés à l'IA comme risques de
- * banalité. Un objet du métier (maison, pinceau, outil) n'en fait pas partie : bien intégré, il est permis.
+ * banalité. Un objet du métier n'en fait pas partie : bien intégré, il est permis (jamais exigé).
  */
 const GENERIC_CLICHES = ["globe", "swoosh", "lightbulb", "ampoule", "handshake", "poignée de main", "check mark", "coche"];
 

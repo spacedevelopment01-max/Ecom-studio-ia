@@ -31,6 +31,7 @@ import { planOfUserId } from "../plan-gates";
 import { assertBlogWrite } from "../engine/blog";
 import { withAiDisabled } from "../ai/access";
 import { withTrace, CostCapReached } from "../ai/trace";
+import { logoSeriesQuote } from "../logo-v2/quote";
 import { JobCancelled, JobPaused, PermanentError, retryJob } from "../jobs";
 import { PLANS } from "../plans";
 
@@ -115,10 +116,10 @@ export function parseWorkflowRequest(text: string, intents: Intent[]): { intents
 export const workflowAiActive = (userId: string) => aiActiveFor(userId) && !!activeProviderKey("anthropic");
 
 /**
- * Logos complets dessinés par le modèle d'images : une image par territoire (4 par série), aucune nouvelle image
- * automatique ; relectures des logos complets (une par territoire, une de plus si le nom est réécrit par le studio).
+ * Série de logos (Logo V2) : le devis du moteur lui-même (3 logos complets et leurs relectures, ou 4 logos construits),
+ * qui sert aussi de plafond à la série — le devis du Pilote et le plafond réel ne peuvent pas diverger.
  */
-const LOGO_CONCEPTS_MICRO = () => estimateTaskMicro("image_generation", { images: 1 }, 4) + estimateTaskMicro("quality_control", { input: 4000, output: 1200 }, 8);
+const LOGO_CONCEPTS_MICRO = () => logoSeriesQuote().maxMicro;
 
 /** Coût IA estimé d'une étape (micro-euros) si elle passe par l'IA ; 0 pour une étape locale ou de recherche. */
 export function stepEstimateMicro(kind: StepKind, params: WorkflowParams): number {
@@ -126,9 +127,9 @@ export function stepEstimateMicro(kind: StepKind, params: WorkflowParams): numbe
     case "understand":
       return estimateTaskMicro("vision_analysis", { input: 8000, output: 2000 });
     case "brand_strategy":
-      return estimateTaskMicro("strategy", { input: 20000, output: 8000 }, 1.3) + estimateTaskMicro("logo_symbol", { input: 6000, output: 3000 }, 3) + LOGO_CONCEPTS_MICRO();
+      return estimateTaskMicro("strategy", { input: 20000, output: 8000 }, 1.3) + LOGO_CONCEPTS_MICRO();
     case "logo":
-      return estimateTaskMicro("logo_symbol", { input: 6000, output: 3000 }, 3) + LOGO_CONCEPTS_MICRO();
+      return LOGO_CONCEPTS_MICRO();
     case "image_generate":
       return estimateMicro("images");
     case "copy":

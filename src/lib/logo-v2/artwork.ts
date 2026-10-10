@@ -30,11 +30,13 @@ export const STYLE_GUIDE: Record<LogoStyle, string> = {
   typographic:
     "TYPOGRAPHIC logo: the name itself is the design — custom-feeling lettering, a ligature or a typographic detail linked to the trade, contrast of weights or of two colours; no separate icon, or only a tiny integrated accent.",
   monogram:
-    "MONOGRAM logo: the initials built into a distinctive mark (interlaced, cut, stacked, or fused with a trade element such as a roof, a tool or a gesture), placed above or beside the full name in clean capitals.",
+    "MONOGRAM logo: the initials built into a distinctive mark (interlaced, cut, stacked, or combined with an element drawn from THIS business only when it adds meaning), placed above or beside the full name in clean capitals.",
   emblem:
     "EMBLEM logo: a seal, crest or badge that encloses a symbol and the name, structured and balanced, with a heritage or artisanal presence; fine but legible details.",
   textured:
-    "TEXTURED logo: a mark with real material — brush stroke, stucco or render trowel texture, chalk, letterpress or engraving grain — in two tones of the palette, premium artisan feel; the name stays crisp and clean.",
+    "TEXTURED logo: a mark with a real material chosen to fit THIS business (for example ink, grain, letterpress, engraving or a hand-drawn stroke), in two tones of the palette; the name stays crisp and clean.",
+  premium:
+    "PREMIUM logo: restraint and precision — a refined serif or an elegant sans-serif, generous spacing, one discreet signature detail, one or two colours, a timeless high-end feel; no gimmicks, no fake luxury.",
   gradient:
     "MODERN GRADIENT logo: a contemporary mark with smooth gradients built from the brand colours, depth through overlapping translucent shapes, paired with a clean sans-serif wordmark.",
 };
@@ -48,6 +50,7 @@ export const STYLE_LABEL: Record<LogoStyle, [string, string]> = {
   emblem: ["Emblème / badge", "Emblem / badge"],
   textured: ["Texturé, artisanal", "Textured, artisanal"],
   gradient: ["Dégradés modernes", "Modern gradients"],
+  premium: ["Premium, haut de gamme", "Premium, high-end"],
 };
 
 const COMPOSITION: Record<Territory["composition"], string> = {
@@ -87,7 +90,7 @@ export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string
     `Composition: ${COMPOSITION[t.composition]}. Typography: ${TYPO[t.typography.style]}, ${t.typography.weight} weight, ${caseWord}, ${t.typography.tracking} letter-spacing.`,
     `Colours: the brand palette — main ink ${ink}, accent ${accent}${others.length ? `, also available ${others.join(", ")}` : ""}${t.style === "gradient" ? "; gradients are built only from these colours" : ""}; white or near-black only if needed.`,
     `Text in the logo, spelled EXACTLY with the same accents and spaces: the name "${txt.name}"${txt.descriptor ? `, and smaller, the activity line "${txt.descriptor}"` : ""}${txt.tagline ? `, and smallest, the slogan "${txt.tagline}"` : ""}. No other words, no slogan${txt.tagline ? " other than this one" : ""}, no fake or extra letters.`,
-    `Creative freedom: an object of the trade (a house, a brush, a tool…) is welcome when it is integrated in an original, professional way. Avoid only clumsy stock-icon clichés${t.avoid.length ? ` and: ${t.avoid.slice(0, 6).join(", ")}` : ""}. Never copy or imitate an existing logo.`,
+    `Nothing is imposed: no shape, object, initials, texture or composition is required — follow this direction only. An object or gesture of this business${brief.trade.objects.length ? ` (here, for example: ${brief.trade.objects.slice(0, 3).join(", ")})` : ""} may be used when it is integrated in an original, professional way. Avoid only clumsy stock-icon clichés${t.avoid.length ? ` and: ${t.avoid.slice(0, 6).join(", ")}` : ""}. Never copy or imitate an existing logo.`,
     feedback ? `Requested changes for this new version: ${feedback}.` : "",
     "Output: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas.",
   ]
@@ -120,6 +123,7 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
   textured: { widths: [360, 180], uses: "en-tête de site, carte de visite, enseigne (une version simplifiée sert au favicon et au tampon)" },
   emblem: { widths: [360, 160], uses: "étiquettes, en-tête de site, tampon (une version simplifiée sert au favicon)" },
   gradient: { widths: [360, 160], uses: "site, application, réseaux sociaux (une version simplifiée sert à l'impression une couleur)" },
+  premium: { widths: [360, 160, 80], uses: "étiquettes, emballages, site, papeterie" },
   minimal: { widths: [360, 160, 64], uses: "tous supports, y compris en petit" },
   monogram: { widths: [360, 160, 64], uses: "tous supports ; le monogramme seul sert en petit" },
   typographic: { widths: [360, 160, 80], uses: "tous supports ; le nom doit rester lisible en petit" },
@@ -163,6 +167,7 @@ export const STYLE_WEIGHTS: Record<LogoStyle, Record<ArtCriterion, number>> = {
   textured: { relevance: 1.2, originality: 1.1, craft: 1.5, typography: 1, composition: 1.1, legibility: 1, memorability: 1.2, intendedUse: 0.8 },
   emblem: { relevance: 1.2, originality: 1, craft: 1.3, typography: 1.1, composition: 1.3, legibility: 1, memorability: 1.1, intendedUse: 0.9 },
   gradient: { relevance: 1.1, originality: 1.2, craft: 1.3, typography: 1, composition: 1.1, legibility: 1, memorability: 1.2, intendedUse: 0.9 },
+  premium: { relevance: 1.1, originality: 1.1, craft: 1.3, typography: 1.5, composition: 1.2, legibility: 1.1, memorability: 1.1, intendedUse: 1 },
   minimal: { relevance: 1.2, originality: 1.3, craft: 1.1, typography: 1.1, composition: 1, legibility: 1, memorability: 1.2, intendedUse: 1.2 },
   monogram: { relevance: 1.1, originality: 1.3, craft: 1.2, typography: 1.2, composition: 1.1, legibility: 1, memorability: 1.2, intendedUse: 1.1 },
   typographic: { relevance: 1.1, originality: 1.2, craft: 1.1, typography: 1.6, composition: 1.1, legibility: 1.2, memorability: 1.1, intendedUse: 1 },
@@ -196,7 +201,7 @@ export function gateArtwork(r: ArtworkReview, t: Territory, expected: { name: st
 export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur de création exigeant d'une grande agence de branding. Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre, puis aux tailles prévues pour ce style.
 Style demandé : ${style}. Juge-le selon CE style : ${STYLE_GUIDE[style]}
 Une texture, plusieurs couleurs, des dégradés ou un détail illustré ne sont PAS des défauts quand le style les demande. La lisibilité se juge aux usages réellement prévus (${INTENDED_SIZES[style].uses}), pas à 16 px pour un logo illustré : une version simplifiée distincte servira aux favicons, tampons et broderies.
-Un objet du métier (maison, pinceau, outil…) bien intégré est permis ; « clumsyCliche » = seulement un cliché MALADROIT (icône de banque d'images, assemblage convenu, rendu clip-art).
+Un objet ou un geste du métier de CETTE entreprise, bien intégré, est permis (jamais exigé) ; « clumsyCliche » = seulement un cliché MALADROIT (icône de banque d'images, assemblage convenu, rendu clip-art).
 Note de 0 à 10 : relevance (évoque CETTE entreprise et son métier), originality, craft (qualité d'exécution du dessin : traits, matière, cohérence), typography (choix et dessin du texte), composition (équilibre, hiérarchie), legibility (le nom se lit d'un coup d'œil aux tailles prévues), memorability, intendedUse (tient aux usages prévus).
 Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : un mot non autorisé (slogan inventé, lettres parasites). « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
 « artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA. « resemblesKnownBrand » : rappelle un logo connu. « amateur » : rendu de générateur, déséquilibré, daté.

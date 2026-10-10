@@ -11,6 +11,7 @@ import { aiActiveFor } from "@/lib/ai/access";
 import { LOGO_STYLES } from "@/lib/logo-v2/types";
 import { artworkChoosable } from "@/lib/logo-v2/choose";
 import { isLocked } from "@/lib/brain/brand-locks";
+import { logoRedrawQuote, logoSeriesQuote } from "@/lib/logo-v2/quote";
 
 export const runtime = "nodejs";
 
@@ -66,7 +67,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["generate", "choose", "reject", "redraw"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional() }));
+  const b = await body(req, z.object({ action: z.enum(["generate", "choose", "reject", "redraw", "quote"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional() }));
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.choose','brand.logo.v2.redraw','brand.logo') AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine.", "A logo task is already running: wait for it to finish."));
   if (b.action === "reject") {
@@ -77,12 +78,18 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     recordLogoRouteRejection(p.id, { name: meta.territory?.name, composition: mt === "emblem" ? "emblem" : mt === "wordmark" ? "wordmark" : undefined, markKind: mt === "monogram" || mt === "lettermark" ? "monogram" : mt === "symbol_wordmark" || mt === "abstract_mark" ? "ai-symbol" : undefined });
     return ok(view(p.id));
   }
+  if (b.action === "quote") {
+    // Devis AVANT tout appel payant : montant maximal de la série (ou d'une nouvelle version), qui sert aussi de plafond.
+    const q = b.assetId ? logoRedrawQuote() : logoSeriesQuote();
+    const ai = aiActiveFor(p.userId);
+    return ok({ ai, quote: q ? { ...q, maxEur: Math.round((q.maxMicro / 1e6) * 100) / 100 } : null });
+  }
   if (b.action === "redraw") {
     // Nouvelle version d'un logo complet : une image payée, seulement à la demande du client (coût confirmé dans l'interface).
     const meta = json<any>(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-trial') AND deleted_at IS NULL", b.assetId ?? "", p.id)?.meta, null);
     if (!meta?.artwork) throw new HttpError(404, L("Logo complet introuvable.", "Full logo not found."));
     if (!aiActiveFor(p.userId)) throw new HttpError(403, L("Une nouvelle version dessinée par l'IA demande un forfait avec IA.", "A new AI-drawn version needs a plan with AI."));
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.redraw", label: L("Logo : nouvelle version", "Logo: new version"), payload: { projectId: p.id, assetId: b.assetId, feedback: b.feedback ?? "" } });
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.redraw", label: L("Logo : nouvelle version", "Logo: new version"), payload: { projectId: p.id, assetId: b.assetId, feedback: b.feedback ?? "", ...(logoRedrawQuote() ? { costCapMicro: logoRedrawQuote()!.maxMicro } : {}) } });
     return ok({ jobId: job.id, ...view(p.id) });
   }
   if (b.action === "choose") {
@@ -91,6 +98,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.choose", label: L("Logo choisi : déclinaisons et charte", "Chosen logo: variations and guidelines"), payload: { projectId: p.id, assetId: b.assetId } });
     return ok({ jobId: job.id, ...view(p.id) });
   }
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id, style: b.style ?? "auto" } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id, style: b.style ?? "auto", costCapMicro: logoSeriesQuote().maxMicro } });
   return ok({ jobId: job.id, ...view(p.id) });
 });

@@ -43,6 +43,7 @@ const STYLE: Record<string, [string, string]> = {
   emblem: ["Emblème / badge", "Emblem / badge"],
   textured: ["Texturé, artisanal", "Textured, artisanal"],
   gradient: ["Dégradés modernes", "Modern gradients"],
+  premium: ["Premium, haut de gamme", "Premium, high-end"],
 };
 
 const MARK: Record<string, [string, string]> = {
@@ -74,12 +75,32 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
       setBusy(null);
     }
   }
-  const generate = () => {
-    if (!window.confirm(t("Créer de nouvelles directions de logo ? Avec l'IA d'images, chaque direction est un logo complet dessiné : jusqu'à 4 images payées (une par direction) et leurs relectures, décomptées de votre budget IA. Aucune nouvelle image n'est relancée sans votre accord.", "Create new logo directions? With the image AI, each direction is a fully drawn logo: up to 4 paid images (one per direction) plus their reviews, counted against your AI budget. No new image is started without your consent."))) return;
+  /** Devis avant tout appel payant : montant MAXIMAL (qui sert aussi de plafond), accepté par le client. */
+  async function quote(assetId?: string): Promise<{ ai: boolean; quote: { mode: string; creations: number; images: number; maxEur: number } | null } | null> {
+    try {
+      return await api(`/api/projects/${id}/brand/logo-v2`, { body: { action: "quote", ...(assetId ? { assetId } : {}) } });
+    } catch (e) {
+      toast("bad", (e as Error).message);
+      return null;
+    }
+  }
+  const eur = (n: number) => n.toLocaleString(t("fr-FR", "en-GB"), { style: "currency", currency: "EUR" });
+  const generate = async () => {
+    const q = await quote();
+    if (!q) return;
+    const msg = !q.ai || !q.quote
+      ? t("Créer de nouvelles directions de logo ? Sans IA active, elles sont construites par le studio (0 €).", "Create new logo directions? Without active AI, they are built by the studio (€0).")
+      : q.quote.mode === "artwork"
+        ? t(`Créer ${q.quote.creations} logos complets dessinés par l'IA d'images ? Devis : ${eur(q.quote.maxEur)} au maximum (${q.quote.images} images et leurs relectures), décompté de votre budget IA. Ce montant est aussi le plafond : rien ne sera dépensé au-delà, et aucune image ne sera relancée sans votre accord.`, `Create ${q.quote.creations} full logos drawn by the image AI? Quote: ${eur(q.quote.maxEur)} at most (${q.quote.images} images and their reviews), counted against your AI budget. This amount is also the cap: nothing is spent beyond it, and no image is restarted without your consent.`)
+        : t(`Créer ${q.quote.creations} directions de logo construites ? Devis : ${eur(q.quote.maxEur)} au maximum (relectures par l'IA), décompté de votre budget IA. Ce montant est aussi le plafond.`, `Create ${q.quote.creations} built logo directions? Quote: ${eur(q.quote.maxEur)} at most (AI reviews), counted against your AI budget. This amount is also the cap.`);
+    if (!window.confirm(msg)) return;
     post({ action: "generate", style }, t("Directions créatives lancées : quelques minutes.", "Creative directions started: a few minutes."), "gen");
   };
-  const redraw = (p: Proposal) => {
-    const feedback = window.prompt(t(`Nouvelle version de « ${p.territory.name} » : une image payée. Vos remarques (facultatif) :`, `New version of "${p.territory.name}": one paid image. Your remarks (optional):`), "");
+  const redraw = async (p: Proposal) => {
+    const q = await quote(p.id);
+    if (!q) return;
+    const price = q.quote ? eur(q.quote.maxEur) : t("[non disponible]", "[not available]");
+    const feedback = window.prompt(t(`Nouvelle version de « ${p.territory.name} » : une image payée, ${price} au maximum (plafond). Vos remarques (facultatif) :`, `New version of "${p.territory.name}": one paid image, ${price} at most (cap). Your remarks (optional):`), "");
     if (feedback === null) return;
     post({ action: "redraw", assetId: p.id, feedback }, t("Nouvelle version en cours : la précédente reste disponible.", "New version in progress: the previous one stays available."), `v${p.id}`);
   };

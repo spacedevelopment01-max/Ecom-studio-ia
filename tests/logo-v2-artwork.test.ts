@@ -128,7 +128,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     for (const p of log.prompts) {
       expect(p).toContain('the name "Sébastien Blanc"');
       expect(p).not.toMatch(/one solid black shape|no letters|Absolutely no text/i);
-      expect(p).toMatch(/a house, a brush, a tool/);
+      expect(p).toMatch(/Nothing is imposed: no shape, object, initials, texture or composition is required/);
     }
     // Maison + pinceau : permis (plus de refus par liste de mots).
     expect(log.prompts[0]).toContain("une maison dont le toit devient un coup de pinceau");
@@ -137,6 +137,29 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     // Ligne d'activités : réelle → gardée ; inventée (coaching) → retirée.
     expect(r.shown[0].territory.descriptor).toBe("PLÂTRERIE • PEINTURE • ENDUITS");
     expect(r.shown[2].territory.descriptor).toBeNull();
+  });
+
+  it("aucune consigne d'une marque devenue règle : demandes neutres pour une autre marque, seul le style de la direction est transmis", async () => {
+    const { TERRITORIES_SYSTEM } = await import("@/lib/logo-v2/ai");
+    const TRADE = /roof|toit|house|maison|brush|pinceau|trowel|truelle|stucco|plaster|pl[âa]tr|enduit/i;
+    expect(fr(() => TERRITORIES_SYSTEM())).not.toMatch(TRADE);
+    for (const style of Object.keys(STYLE_GUIDE)) expect(STYLE_GUIDE[style as keyof typeof STYLE_GUIDE], style).not.toMatch(TRADE);
+    // Sources des générateurs de logos : aucun exemple propre à un métier ou à un client.
+    const files = [...fs.readdirSync(path.resolve(import.meta.dirname, "../src/lib/logo-v2")).map((f) => `../src/lib/logo-v2/${f}`), "../src/lib/engine/full-logo.ts"];
+    for (const f of files) expect(fs.readFileSync(path.resolve(import.meta.dirname, f), "utf8"), f).not.toMatch(TRADE);
+    for (const kind of ["saas", "cosmetic", "restaurant"] as const) {
+      const pid = fr(() => seedLogoFixture(u.id, kind));
+      const b = fr(() => brandDiscovery(loadProject(pid)));
+      const draft = { name: "Logotype", markType: "wordmark", composition: "wordmark_only", construction: "typographic", sobriety: 2, style: "typographic", symbolIdea: null, concept: "Le nom seul, dessiné avec soin.", whyItFits: "Une marque sobre pour sa clientèle.", typography: { style: "grotesque", weight: "bold", case: "title", tracking: "normal", rationale: "" }, colorRole: { ink: "dark", accent: "primary", rationale: "" }, distinctive: "", avoid: [] };
+      const t = selectTerritories([draft] as any, b, 1).kept[0];
+      const prompt = artworkPrompt(t, b);
+      expect(prompt, kind).not.toMatch(TRADE);
+      // Hors la phrase qui dit justement que rien n'est imposé : ni initiales, ni texture, ni monogramme demandés.
+      expect(prompt.split("\n").filter((l) => !l.startsWith("Nothing is imposed")).join("\n"), kind).not.toMatch(/initials|texture|monogram/i);
+      expect(prompt).toContain(STYLE_GUIDE.typographic);
+      for (const other of ["illustrated", "monogram", "textured", "emblem", "gradient", "premium", "minimal"] as const) expect(prompt).not.toContain(STYLE_GUIDE[other]);
+      expect(prompt).toContain(`the name "${b.name}"`);
+    }
   });
 
   it("style choisi par le client : toutes les directions dans ce style (différentes sur les autres axes)", async () => {

@@ -52,9 +52,10 @@ export type BrandBrief = {
 /**
  * Styles d'identité visuelle : aucun n'est privilégié. « illustrated » : symbole illustré du métier ; « minimal » :
  * signe épuré ; « typographic » : composition typographique ; « monogram » : initiales construites ; « emblem » :
- * sceau, badge ; « textured » : matière (pinceau, enduit, craie, gravure) ; « gradient » : dégradés modernes.
+ * sceau, badge ; « textured » : matière choisie pour l'entreprise ; « gradient » : dégradés modernes ; « premium » : sobriété
+ * haut de gamme. Aucun n'est imposé : le directeur artistique choisit ce qui sert CHAQUE marque.
  */
-export const LOGO_STYLES = ["illustrated", "minimal", "typographic", "monogram", "emblem", "textured", "gradient"] as const;
+export const LOGO_STYLES = ["illustrated", "minimal", "typographic", "monogram", "emblem", "textured", "gradient", "premium"] as const;
 export type LogoStyle = (typeof LOGO_STYLES)[number];
 
 export const MARK_TYPES = ["wordmark", "lettermark", "monogram", "symbol_wordmark", "abstract_mark", "emblem"] as const;
