@@ -318,6 +318,12 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
       if (e instanceof CostCapReached) stoppedByCostCap = true;
       notes.push(`territoires IA indisponibles : ${(e as Error).message}`);
       aiState = "unavailable";
+      // Logos par l'IA d'images prévus (devis accepté) : jamais remplacés en silence par des logos construits.
+      // La série s'arrête avant toute image, avec la vraie raison.
+      if (art && !stoppedByCostCap) {
+        const why = (e as Error).message.slice(0, 300);
+        throw new UserFacingError(L(`Directions de logo impossibles : ${why} Aucune image n'a été demandée ; seules les dépenses déjà tracées sont dues.`, `Logo directions failed: ${why} No image was requested; only the spending already traced is due.`));
+      }
     }
   }
   const sel = selectTerritories(drafts ?? localTerritories(brief).map((d) => ({ ...d, source: "local" as const })), brief, n);

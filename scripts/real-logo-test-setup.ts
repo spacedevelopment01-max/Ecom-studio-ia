@@ -7,7 +7,8 @@
  *   DATA_DIR=<dossier vide> npx tsx scripts/real-logo-test-setup.ts
  * Tarifs saisis (bornes du coût maximal réservé) : gpt-image-2 0,22 $ / image (coût mesuré : 0,2164 $) ;
  * GPT-5.6 Terra 2,5 $ / 15 $ par million de jetons (la plus haute des deux valeurs publiques relevées, page
- * officielle inaccessible depuis l'environnement — à confirmer).
+ * officielle inaccessible depuis l'environnement — à confirmer) ; GPT-5.6 Sol (niveau « fort » : directions de
+ * logo) 5 $ / 30 $ (prix de lancement relevé, le plus haut des tarifs publics — à confirmer).
  */
 import { createUser } from "@/lib/auth";
 import { one, run } from "@/lib/db";
@@ -31,10 +32,11 @@ setJsonSetting("ai.prices", {
   ...getJsonSetting<Record<string, unknown>>("ai.prices", {}),
   "openai:gpt-image-2": { unit: "image", perImage: 0.22 },
   "openai:gpt-5.6-terra": { unit: "tokens", inputPerM: 2.5, outputPerM: 15 },
+  "openai:gpt-5.6-sol": { unit: "tokens", inputPerM: 5, outputPerM: 30 },
 });
 setJsonSetting("ai.media.models", { "openai:gpt-image-2": { confirmedAt: now, enabled: true } });
 setJsonSetting("ai.media.usage", { logo: { primary: "openai:gpt-image-2" } });
-setJsonSetting("ai.textModels", { "openai:gpt-5.6-terra": { confirmedAt: now, enabled: true } });
+setJsonSetting("ai.textModels", { "openai:gpt-5.6-terra": { confirmedAt: now, enabled: true }, "openai:gpt-5.6-sol": { confirmedAt: now, enabled: true } });
 setSetting("ai.routing.mode", "auto");
 const pid = runWithLang({ ui: "fr", content: "fr" }, () => seedLogoFixture(u.id, "artisan"));
 console.log(JSON.stringify({ email: EMAIL, projectId: pid, budgetEur: balance(u.id).available / 1e6 }, null, 2));

@@ -280,7 +280,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
   }, 240_000);
 
   // ---- Série de 3 logos complets (comme « Créer les directions ») : 3 directions, 3 demandes, 3 originaux distincts
-  async function series(images: Buffer[], choose?: number) {
+  async function series(images: Buffer[], choose?: number, territoriesError?: Error) {
     const { JobContext } = await import("@/lib/jobs");
     const { runLogoEngineV2 } = await import("@/lib/logo-v2/engine");
     const { realLogoV2Ai } = await import("@/lib/logo-v2/ai");
@@ -301,7 +301,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     const drafts = () => [D("Monogramme d'artisan", "monogram", "stacked", "illustrative", 3, "monogram", "S et B, toit, truelle", "PLÂTRERIE • PEINTURE"), D("Maison au trait", "symbol_wordmark", "horizontal", "geometric", 2, "minimal", "une maison dessinée d'un seul trait"), D("Lettrage d'atelier", "wordmark", "wordmark_only", "typographic", 1, "typographic", null)];
     const reviewed: string[] = [];
     const real = realLogoV2Ai(c, { userId: u.id, projectId: pid });
-    const ai = { ...mockAi({ calls: [] } as any, { drafts: drafts as any }), artworkRoute: real.artworkRoute, drawArtwork: real.drawArtwork, reviewArtwork: async (_b: Buffer, t: any, _br: any, e: { name: string }) => (reviewed.push(t.name), { criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, 8.6])), textRead: e.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true }) } as any;
+    const ai = { ...mockAi({ calls: [] } as any, { drafts: drafts as any }), ...(territoriesError ? { territories: async () => { throw territoriesError; } } : {}), artworkRoute: real.artworkRoute, drawArtwork: real.drawArtwork, reviewArtwork: async (_b: Buffer, t: any, _br: any, e: { name: string }) => (reviewed.push(t.name), { criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, 8.6])), textRead: e.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true }) } as any;
     srv.images = images;
     const r = await fr(() => runLogoEngineV2(c, pid, { ai }));
     return { r, pid, reviewed };
@@ -334,6 +334,15 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
       expect(m.provider).toBe("openai:gpt-image-2");
       expect(m.costMicro).toBeGreaterThan(0);
     }
+  }, 120_000);
+
+  it("directions impossibles alors que des logos par l'IA d'images sont prévus : échec visible avec la vraie raison, AUCUNE image demandée, jamais de logos construits à la place", async () => {
+    const before = srv.requests.length;
+    const logos = () => all("SELECT id FROM assets WHERE role IN ('logo-v2','logo-v2-studio','logo-v2-trial')").length;
+    const assetsBefore = logos();
+    await expect(series([realPng], undefined, new Error("Aucun fournisseur d'IA de langage n'est configuré."))).rejects.toThrow(/Directions de logo impossibles : Aucun fournisseur d'IA de langage/);
+    expect(srv.requests.length).toBe(before);
+    expect(logos()).toBe(assetsBefore);
   }, 120_000);
 
   it("3 copies du même logo : une seule proposition, les 2 autres écartées comme copies (jamais choisissables)", async () => {

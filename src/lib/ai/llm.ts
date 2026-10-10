@@ -199,6 +199,12 @@ export async function maxCostMicro(model: string, params: { system?: { type: "te
   return Math.ceil(((inTok * 1.25 * p.inputPerM + params.max_tokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
 }
 
+/** Comptage refusé : appel bloqué, avec la réponse du fournisseur (sans secret) pour savoir quoi corriger. */
+function countFailed(status: number | null, message?: string) {
+  const why = `${status ? `HTTP ${status} — ` : ""}${redact(String(message ?? "")).slice(0, 200)}`.trim();
+  return L(`Comptage des jetons impossible : appel bloqué par sécurité${why ? ` (${why})` : ""}.`, `Token count unavailable: call blocked for safety${why ? ` (${why})` : ""}.`);
+}
+
 /** Nombre exact de jetons d'entrée pour ce modèle (endpoint gratuit du fournisseur). Échec : appel bloqué. */
 async function countInputTokens(p: { model: string; system?: unknown; messages: unknown }): Promise<number> {
   try {
@@ -208,7 +214,9 @@ async function countInputTokens(p: { model: string; system?: unknown; messages: 
     const status = (e as { status?: unknown })?.status;
     // Saturation passagère : la file de tâches réessaiera. Autre échec : bloqué (aucune estimation de repli).
     if (typeof status === "number" && (status === 429 || status >= 500)) throw e;
-    throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
+    // Clé absente ou désactivée : le vrai message (administration), pas un faux problème de comptage.
+    if (e instanceof UserFacingError) throw e;
+    throw new PermanentError(countFailed(typeof status === "number" ? status : null, (e as Error)?.message));
   }
 }
 
@@ -398,7 +406,8 @@ export async function otherMaxCostMicro(provider: string, req: TextRequest, coun
     counted = await count(req);
   } catch (e) {
     if (e instanceof ProviderHttpError && (e.status === 429 || e.status >= 500)) throw e;
-    throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
+    if (e instanceof UserFacingError) throw e;
+    throw new PermanentError(countFailed(e instanceof ProviderHttpError ? e.status : null, (e as Error)?.message));
   }
   if (!Number.isFinite(counted) || counted <= 0) throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
   const formatTokens = req.jsonSchema ? Buffer.byteLength(JSON.stringify(req.jsonSchema), "utf8") : 0;
