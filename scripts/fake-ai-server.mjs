@@ -69,7 +69,7 @@ http
     if (url === "/mode" && req.method === "POST") return (MODE = body.mode || MODE), send(200, { mode: MODE });
     if (url.endsWith("/images/generations")) {
       stats.images++;
-      stats.imageBodies.push({ model: body.model, background: body.background ?? null, quality: body.quality, size: body.size });
+      stats.imageBodies.push({ model: body.model, background: body.background ?? null, quality: body.quality, size: body.size, stream: !!body.stream, partials: body.partial_images ?? 0 });
       if (MODE === "refuse") return send(400, { error: { message: "Transparent background is not supported for this model.", type: "invalid_request_error" } });
       if (MODE === "502") return send(502, { error: { message: "upstream request failed" } });
       const b64 = await fakeLogo(stats.images - 1);

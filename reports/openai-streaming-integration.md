@@ -119,7 +119,59 @@ Tous les fichiers produits sont dans `reports/openai-real-brand-test/identite/` 
 
 ## 6. Tests
 
-[RÉSULTATS]
+| Vérification | Résultat |
+|---|---|
+| TypeScript (`npx tsc --noEmit`) | OK |
+| Tests automatiques (`npx vitest run`) | **128 fichiers, 1 101 tests réussis** |
+| Compilation de production (`next build`) | OK |
+| Navigateur, de bout en bout (`scripts/e2e-logo-progress.ts`) | **20/20 vérifications réussies** |
+
+**Mise en place du test navigateur :**
+- vrai site compilé, vrai worker, vraies tâches de fond ;
+- faux OpenAI local (`scripts/fake-ai-server.mjs`) qui renvoie **le vrai logo OpenAI** en flux ;
+- modèle des logos : GPT Image 2.
+
+**Ce que vérifie le test navigateur :**
+- le devis est affiché avant tout appel ;
+- les aperçus du flux sont visibles en direct (« aperçu 2 reçu ») ;
+- les 5 étapes sont cochées ;
+- les demandes partent en flux avec 2 aperçus, 3 images, aucune relance ;
+- tout reste affiché après un rechargement ;
+- refus du fournisseur : chaque direction est en échec avec la vraie raison, rien n'est coché en vert ;
+- tâche échouée : l'erreur est affichée ;
+- **choix du vrai logo** : déclinaisons, planche, symbole seul et exports WebP visibles dans l'onglet Marque ;
+- pas de débordement sur téléphone ;
+- 0 erreur JavaScript.
+
+**Nouveaux tests automatiques :**
+- `tests/openai-streaming.test.ts`. Il utilise le vrai SDK OpenAI, un faux serveur HTTP et le vrai logo :
+  - flux : 2 aperçus puis l'image finale, original identique, coût tracé ;
+  - **502** : coût maximal retenu, **aucune seconde génération ni secours** ;
+  - **flux coupé** après un aperçu, ou terminé sans image : même chose ;
+  - flux désactivé dans l'administration : réponse classique ;
+  - **budget insuffisant** : rien n'est envoyé ;
+  - **proxy** : utilisé quand il existe (tunnel comme Claude Cloud), ignoré sinon ;
+  - coût maximal : il inclut les aperçus ;
+  - **parcours Logo V2 complet** :
+    - génération en flux, puis sauvegarde ;
+    - **reprise de la même tâche sans nouvel appel** (protection contre les doubles générations) ;
+    - choix du logo, puis identité : palette anthracite et sable, symbole découpé, WebP, aucun SVG infidèle ;
+    - aucune personne dans la demande.
+- `tests/logo-identity.test.ts` :
+  - palette et symbole mesurés sur le vrai logo ;
+  - symbole au-dessus du nom ou à gauche ;
+  - nom seul : aucun symbole inventé.
+- **Tests existants mis à jour** pour le nouveau comportement voulu :
+  - les faux OpenAI répondent en flux ;
+  - « refus sans facturation » = 429 ;
+  - 503 = incertain, sans secours ;
+  - original = fichier reçu.
+
+**Captures** (`reports/screenshots/logo-progress/`) :
+- `1b-flux-en-cours.png` : réception en flux, « aperçu 2 reçu » ;
+- `2-resultat.png` : vrai logo OpenAI proposé, 5 étapes cochées, lien « Fichier original reçu » ;
+- `3-apres-rechargement.png`, `4-refus-fournisseur.png`, `5-tache-echouee.png` ;
+- `6-identite-marque.png` : déclinaisons, planche et téléchargements PNG, WebP et favicon, après le choix.
 
 ## 7. Limites restantes (honnêtement)
 

@@ -82,6 +82,10 @@ await page.waitForSelector("[data-testid=logo-series-progress]", { timeout: 30_0
 check("Le devis est affiché avant tout appel payant", dialogs.some((d) => /Devis : .* au maximum/.test(d)), dialogs[0]?.slice(0, 140));
 await page.waitForTimeout(1500);
 await panel(page).screenshot({ path: `${OUT}/1-en-cours.png` });
+// Réception en flux visible direction par direction (« aperçu reçu », « image reçue et sauvegardée »).
+const streamSeen = await page.waitForSelector("[data-progress]", { timeout: 60_000 }).then(() => true).catch(() => false);
+check("Génération en flux visible en direct (aperçus, réception, sauvegarde)", streamSeen, streamSeen ? await page.locator("[data-progress]").first().innerText() : "");
+if (streamSeen) await panel(page).screenshot({ path: `${OUT}/1b-flux-en-cours.png` });
 const j1 = await waitJob();
 check("La tâche se termine (worker)", j1?.status === "done", `${j1?.status}${j1?.error ? ` — ${j1.error}` : ""}`);
 await page.waitForTimeout(6500); // une interrogation du panneau (toutes les 5 s)
@@ -93,6 +97,7 @@ check("Propositions validées visibles", (await page.locator("text=Choisir ce lo
 check("Proposition écartée visible avec son image originale", /Logos complets écartés par le contrôle/.test(text1) && (await page.locator("img[alt='Signe épuré']").count()) > 0);
 const s1 = await fakeStats();
 check("GPT Image 2 : aucune demande de fond transparent", s1.imageBodies.length > 0 && s1.imageBodies.every((b) => b.model === "gpt-image-2" && b.background === null), JSON.stringify(s1.imageBodies.slice(0, 1)));
+check("Demandes en flux avec 2 aperçus (méthode de l'essai réel)", s1.imageBodies.every((b: any) => b.stream === true && b.partials === 2));
 check("3 images demandées (une par direction), aucune relance", s1.images === 3, `${s1.images} image(s)`);
 await panel(page).screenshot({ path: `${OUT}/2-resultat.png` });
 
