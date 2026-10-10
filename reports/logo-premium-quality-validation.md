@@ -291,3 +291,15 @@ le code, test inchangé) :
 - demande au modèle d'images : « beautiful, professional logo » ;
 - contrôle : juge comme le client final ; outils, emblème rond, script bien dessinés ne sont plus des défauts ;
   « cliché » = seulement un dessin grossier façon clip-art. Seuil inchangé : 8/10.
+
+### Série réelle n° 6 — cap « petites entreprises », `gpt-image-2.5-flare` (10/10/2026, 20 h 03)
+
+Preuves : `logo-quality/studio-reel/essai-6-references-proprietaire/` (originaux, vue sur blanc, capture).
+
+| Direction | Style | Note du contrôle | Nom exact |
+|---|---|---|---|
+| Le geste de finition | illustré | 7,9 | oui |
+| L'angle parfait | icône + nom | 6,8 (originalité, différenciation) | oui |
+| La signature de l'artisan | script | 6,4 (originalité, différenciation) | oui |
+
+Série : 0,85 € comptés. Mission : **3,56 €** comptés, reste 6,44 €. Validation esthétique : au propriétaire.
