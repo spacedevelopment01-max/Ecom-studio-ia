@@ -32,6 +32,8 @@ export type MediaModel = {
     textToVideo?: boolean;
     audio?: boolean;
     people?: boolean;
+    /** Réponse en flux (images partielles) : connexion jamais muette pendant une longue génération. */
+    stream?: boolean;
   };
   aspects: string[];
   resolution: string;
@@ -67,7 +69,7 @@ export const MEDIA_MODELS: MediaModel[] = [
     kind: "image",
     adapter: "openai_image",
     quality: 3,
-    caps: { maskEdit: true, references: 4, transparent: true, textInImage: true, people: true },
+    caps: { maskEdit: true, references: 4, transparent: true, textInImage: true, people: true, stream: true },
     aspects: ["1:1", "2:3", "3:2"],
     resolution: "1024×1024, 1024×1536, 1536×1024",
     typical: { inputTokens: 1500, outputTokens: 4160 },
@@ -128,7 +130,8 @@ export const MEDIA_MODELS: MediaModel[] = [
     adapter: "openai_image",
     quality: 3,
     // Fond transparent « en aperçu » selon la spécification : non retenu comme capacité.
-    caps: { maskEdit: true, references: 16, textInImage: true, people: true },
+    // Flux vérifié par un essai réel (logo complet, 1024², haute qualité, 2 aperçus, 92 s).
+    caps: { maskEdit: true, references: 16, textInImage: true, people: true, stream: true },
     aspects: ["1:1", "2:3", "3:2"],
     resolution: "taille libre jusqu'à 3840×2160 (le studio demande 1024–1536 px)",
     typical: {},

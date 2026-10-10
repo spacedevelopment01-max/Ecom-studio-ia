@@ -26,6 +26,7 @@ import { gateCandidate } from "./quality";
 import { MIN_DISTANCE, defaultStyle, localTerritories, selectTerritories, territoryDistance, type TerritoryDraft } from "./territories";
 import { POLICIES } from "../quality/policies";
 import { decide } from "../quality/gate";
+import { mediaProgress, type MediaProgress } from "../ai/openai-images";
 import { artworkBoard, artworkText, cleanArtwork, correctArtworkText, gateArtwork } from "./artwork";
 import type { ArtworkReview, BrandBrief, Candidate, EngineRun, LogoReview, LogoStyle, ProposalResult, Territory } from "./types";
 
@@ -58,8 +59,13 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
   const tag = opts.keyTag ?? "";
   let raw: Buffer;
   try {
-    const b64 = await withCandidate(`logo-v2:${t.id}${tag}`, 0, () => ctx.step(`v2:${t.id}${tag}:art:0`, async () => (await ai.drawArtwork!(t, brief, opts.feedback)).toString("base64")));
+    // Avancement de la génération (envoi, aperçus du flux, réception) écrit en direct pour l'interface.
+    const onProgress = (p: MediaProgress) => opts.live?.dir(t.id, { progress: { phase: p.phase, partials: p.partials, atMs: p.atMs, streamed: p.streamed } });
+    const b64 = await withCandidate(`logo-v2:${t.id}${tag}`, 0, () => ctx.step(`v2:${t.id}${tag}:art:0`, () => mediaProgress.run(onProgress, async () => (await ai.drawArtwork!(t, brief, opts.feedback)).toString("base64"))));
     raw = Buffer.from(b64, "base64");
+    // Image enregistrée comme point de reprise de la tâche (et original conservé par le moteur multimédia).
+    const prev = opts.live?.state.directions.find((d) => d.id === t.id)?.progress;
+    opts.live?.dir(t.id, { progress: { phase: "saved", partials: prev?.partials, atMs: prev?.atMs, streamed: prev?.streamed } });
   } catch (e) {
     if (stopping(e)) throw e;
     const reason = (e as Error).message.slice(0, 300);
@@ -69,7 +75,7 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
   }
   opts.live?.dir(t.id, { status: "checking" });
   const png = await cleanArtwork(raw);
-  let cand: Candidate = { territoryId: t.id, attempt: 0, spec, change: opts.feedback ? `nouvelle version demandée : ${opts.feedback.slice(0, 160)}` : null, symbolSource: "artwork", artwork: { png, expected, textBox: null, textCorrected: false, provider: opts.provider ?? null } };
+  let cand: Candidate = { territoryId: t.id, attempt: 0, spec, change: opts.feedback ? `nouvelle version demandée : ${opts.feedback.slice(0, 160)}` : null, symbolSource: "artwork", artwork: { png, originalPng: raw, expected, textBox: null, textCorrected: false, provider: opts.provider ?? null } };
   let previousCheckId: string | null = null;
   const userId = loadProject(brief.projectId).userId;
   const check = async (c: Candidate): Promise<{ result: ProposalResult; review: ArtworkReview | null }> => {
@@ -94,7 +100,7 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
   if (result.verdict === "RETRY" && result.codes.includes("name_mismatch") && review?.nameBox) {
     const fixed = await correctArtworkText(png, review.nameBox, t, brief);
     if (fixed) {
-      cand = { ...cand, attempt: 1, change: `nom réécrit par le studio (police ${family}) — l'illustration n'est pas redessinée`, artwork: { ...cand.artwork!, png: fixed, originalPng: png, textCorrected: true } };
+      cand = { ...cand, attempt: 1, change: `nom réécrit par le studio (police ${family}) — l'illustration n'est pas redessinée`, artwork: { ...cand.artwork!, png: fixed, textCorrected: true } };
       const second = await check(cand);
       second.result.artworkReview = second.review ?? review;
       result = second.result;
@@ -364,8 +370,8 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
 }
 
 /**
- * Enregistre une proposition : logo complet → l'image ORIGINALE de l'IA (et, si le nom a été réécrit, l'original
- * avant correction, gardé à part) ; logo construit → rendu PNG de sa construction. Les essais écartés gardent aussi
+ * Enregistre une proposition : logo complet → l'image de l'IA (fond retiré, dessin intact), et à part le fichier
+ * ORIGINAL reçu du fournisseur, tel quel ; logo construit → rendu PNG de sa construction. Les essais écartés gardent aussi
  * leur image (diagnostic, jamais perdue).
  */
 export async function saveProposal(ctx: JobContext, userId: string, projectId: string, r: ProposalResult, extraMeta: Record<string, unknown> = {}): Promise<string> {
@@ -398,7 +404,7 @@ export async function saveProposal(ctx: JobContext, userId: string, projectId: s
     },
   });
   if (art?.originalPng) {
-    await saveAsset({ projectId, userId, data: art.originalPng, name: C(`logo-v2-${r.territory.id}-original.png`, `logo-v2-${r.territory.id}-original.png`), mime: "image/png", role: "logo-v2-original", folderKey: "brand.logos", origin: "generated", status: "review", sourceAssetId: a.id, meta: { engine: "logo-v2", run: ctx.job.id, original: true, note: "image originale de l'IA, avant réécriture du nom" } });
+    await saveAsset({ projectId, userId, data: art.originalPng, name: C(`logo-v2-${r.territory.id}-original.png`, `logo-v2-${r.territory.id}-original.png`), mime: "image/png", role: "logo-v2-original", folderKey: "brand.logos", origin: "generated", status: "review", sourceAssetId: a.id, meta: { engine: "logo-v2", run: ctx.job.id, original: true, note: "fichier reçu du fournisseur, tel quel (avant nettoyage du fond et réécriture éventuelle du nom)" } });
   }
   return a.id;
 }

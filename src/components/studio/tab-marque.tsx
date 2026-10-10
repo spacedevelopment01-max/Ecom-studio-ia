@@ -53,7 +53,7 @@ export default function TabMarque() {
   const [regen, setRegen] = useState(false);
   const [guidance, setGuidance] = useState("");
   const active = useActive("brand.build");
-  const { data: logos, reload: reloadLogos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=logo,logo-svg,logo-light,logo-light-svg,logo-mark,logo-mark-svg,logo-horizontal,logo-horizontal-svg,favicon,brand-guide,brand-book`);
+  const { data: logos, reload: reloadLogos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=logo,logo-svg,logo-webp,logo-light,logo-light-svg,logo-light-webp,logo-mono,logo-white,logo-mark,logo-mark-svg,logo-mark-webp,logo-horizontal,logo-horizontal-svg,favicon,brand-board,brand-guide,brand-book`);
   const { data: ident, reload: reloadIdent } = useApi<{ proposals: Proposal[]; current: string | null; max?: number; provided: boolean; taglines: string[] }>(`/api/projects/${id}/brand/logo`);
   const [kitTick, setKitTick] = useState(0);
   const [choosing, setChoosing] = useState<string | null>(null);
@@ -267,11 +267,16 @@ export default function TabMarque() {
             <div className="grid grid-cols-2 gap-2">
               {byRole("logo") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo")!.url} alt={t("Logo principal", "Main logo")} className="max-h-20 object-contain" /></div>}
               {byRole("logo-light") && <div className="grid place-items-center rounded-2xl bg-[#141210] p-4"><img src={byRole("logo-light")!.url} alt={t("Logo clair", "Light logo")} className="max-h-20 object-contain" /></div>}
-              {byRole("logo-mark") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo-mark")!.url} alt={t("Monogramme", "Monogram")} className="max-h-20 object-contain" /></div>}
+              {byRole("logo-mark") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo-mark")!.url} alt={t("Symbole seul", "Symbol only")} className="max-h-20 object-contain" /></div>}
               {byRole("favicon") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("favicon")!.url} alt="Favicon" className="size-12 object-contain" /></div>}
             </div>
+            {byRole("brand-board") && (
+              <a href={byRole("brand-board")!.url} target="_blank" rel="noreferrer" className="mt-3 block overflow-hidden rounded-2xl border border-line" data-testid="brand-board">
+                <img src={byRole("brand-board")!.url} alt={t("Planche d'identité de marque", "Brand identity board")} className="w-full" />
+              </a>
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
-              {["logo-svg", "logo", "logo-horizontal-svg", "logo-light-svg", "logo-mark-svg", "favicon"].map((r) => byRole(r) && (
+              {["logo", "logo-webp", "logo-svg", "logo-horizontal-svg", "logo-light", "logo-light-webp", "logo-light-svg", "logo-mono", "logo-white", "logo-mark", "logo-mark-webp", "logo-mark-svg", "favicon", "brand-board"].map((r) => byRole(r) && (
                 <a key={r} href={byRole(r)!.downloadUrl} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink"><Download className="size-3.5" /> {byRole(r)!.name}</a>
               ))}
             </div>

@@ -86,9 +86,9 @@ const j1 = await waitJob();
 check("La tâche se termine (worker)", j1?.status === "done", `${j1?.status}${j1?.error ? ` — ${j1.error}` : ""}`);
 await page.waitForTimeout(6500); // une interrogation du panneau (toutes les 5 s)
 const text1 = await page.locator("main").innerText();
-check("Étapes affichées : préparation, images, contrôle qualité, résultat", /Préparation des directions/.test(text1) && /Génération des images/.test(text1) && /Contrôle qualité/.test(text1) && /Résultat/.test(text1));
+check("Étapes affichées : brief, génération OpenAI, réception et sauvegarde, contrôle qualité, résultat", /Brief et directions/.test(text1) && /Génération OpenAI/.test(text1) && /Réception et sauvegarde/.test(text1) && /Contrôle qualité/.test(text1) && /Résultat/.test(text1));
 const states1 = await page.locator("[data-step]").evaluateAll((els) => els.map((e) => `${e.getAttribute("data-step")}:${e.getAttribute("data-state")}`));
-check("Série réussie : les 4 étapes cochées", states1.join(",") === "prepare:done,images:done,review:done,result:done", states1.join(","));
+check("Série réussie : les 5 étapes cochées", states1.join(",") === "prepare:done,images:done,receive:done,review:done,result:done", states1.join(","));
 check("Propositions validées visibles", (await page.locator("text=Choisir ce logo").count()) >= 2, `${await page.locator("text=Choisir ce logo").count()} bouton(s)`);
 check("Proposition écartée visible avec son image originale", /Logos complets écartés par le contrôle/.test(text1) && (await page.locator("img[alt='Signe épuré']").count()) > 0);
 const s1 = await fakeStats();
@@ -114,7 +114,7 @@ const text3 = await page.locator("main").innerText();
 check("Refus du fournisseur : chaque direction en échec avec la vraie raison", /Directions sans image/.test(text3) && /Requête refusée par OpenAI/.test(text3) && !/Aucun fournisseur d'images configuré/.test(text3), `tâche ${j3?.status}`);
 check("Refus : message clair à la place des propositions", /Aucune proposition : les images n'ont pas pu être produites/.test(text3));
 const states3 = await page.locator("[data-step]").evaluateAll((els) => els.map((e) => `${e.getAttribute("data-step")}:${e.getAttribute("data-state")}`));
-check("Refus : l'étape « Génération des images » est en échec (jamais cochée en vert)", states3.includes("images:failed") && states3.includes("result:failed"), states3.join(","));
+check("Refus : l'étape « Génération OpenAI » est en échec (jamais cochée en vert)", states3.includes("images:failed") && states3.includes("result:failed"), states3.join(","));
 await panel(page).screenshot({ path: `${OUT}/4-refus-fournisseur.png` });
 await page.reload({ waitUntil: "networkidle" });
 await page.waitForSelector("#logo-style");
@@ -130,6 +130,24 @@ await page.waitForTimeout(1500);
 const text4 = await page.locator("main").innerText();
 check("Tâche échouée : erreur compréhensible affichée", /La création des logos a échoué/.test(text4) && /Délai dépassé/.test(text4));
 await panel(page).screenshot({ path: `${OUT}/5-tache-echouee.png` });
+
+// ---- 5. Choix du VRAI logo OpenAI (série 1) → identité complète visible dans l'onglet Marque
+const realAsset = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2' AND json_extract(meta, '$.run') = ? ORDER BY created_at LIMIT 1", pid, j1!.id);
+const chosen = realAsset ? await page.evaluate(async ([p, a]) => (await fetch(`/api/projects/${p}/brand/logo-v2`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "choose", assetId: a }) })).status, [pid, realAsset.id] as const) : 0;
+const jc = await (async () => {
+  const t0 = Date.now();
+  for (;;) {
+    const j = one<{ status: string; error: string | null }>("SELECT status, error FROM jobs WHERE project_id = ? AND type = 'brand.logo.v2.choose' ORDER BY created_at DESC LIMIT 1", pid);
+    if ((j && ["done", "failed"].includes(j.status)) || Date.now() - t0 > 120_000) return j;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+})();
+check("Choix du logo : déclinaisons et planche créées (tâche terminée)", chosen === 200 && jc?.status === "done", `${chosen} ${jc?.status ?? ""} ${jc?.error ?? ""}`);
+await page.goto(`${BASE}/studio/${pid}/marque`, { waitUntil: "networkidle" });
+await page.waitForTimeout(1500);
+check("Onglet Marque : planche d'identité, symbole seul et exports WebP visibles", (await page.locator("[data-testid=brand-board] img").count()) === 1 && (await page.locator("img[alt='Symbole seul']").count()) > 0 && /logo-principal\.webp/.test(await page.locator("main").innerText()));
+const board = page.locator("[data-testid=brand-board]").locator("xpath=ancestor::div[contains(@class,'p-5')][1]");
+if (await board.count()) await board.screenshot({ path: `${OUT}/6-identite-marque.png` });
 
 const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "fr-FR", storageState: await ctx.storageState() });
 const pp = await phone.newPage();

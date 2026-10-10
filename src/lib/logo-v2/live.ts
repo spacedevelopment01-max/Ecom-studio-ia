@@ -18,6 +18,11 @@ export type LiveDirection = {
   score?: number | null;
   reason?: string;
   assetId?: string;
+  /**
+   * Génération par l'IA d'images : demande envoyée, aperçus reçus (flux), image reçue, image sauvegardée (point de
+   * reprise de la tâche + original conservé) — une reprise après interruption ne repaie pas une image sauvegardée.
+   */
+  progress?: { phase: "sent" | "partial" | "received" | "saved"; partials?: number; atMs?: number; streamed?: boolean };
 };
 export type LiveState = {
   jobId: string;

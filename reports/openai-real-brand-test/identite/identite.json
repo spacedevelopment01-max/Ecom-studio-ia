@@ -1,0 +1,92 @@
+{
+  "project": "Sébastien Blanc",
+  "logo": {
+    "status": "validated",
+    "provisional": false,
+    "engine": "v2"
+  },
+  "palette": {
+    "primary": "#38393E",
+    "secondary": "#E8DCCF",
+    "accent": "#CBA173",
+    "light": "#FAF7F5",
+    "dark": "#18191B"
+  },
+  "fonts": {
+    "heading": "archivo_n6",
+    "body": "inter_n4"
+  },
+  "files": [
+    {
+      "role": "logo-v2",
+      "file": "logo-v2-logo-v2-t1.png",
+      "bytes": 619877
+    },
+    {
+      "role": "logo-v2-original",
+      "file": "logo-v2-original-logo-v2-t1-original.png",
+      "bytes": 924623
+    },
+    {
+      "role": "logo-v2-studio",
+      "file": "logo-v2-studio-logo-v2-t2.png",
+      "bytes": 18002
+    },
+    {
+      "role": "logo-v2-studio",
+      "file": "logo-v2-studio-logo-v2-t3.png",
+      "bytes": 14871
+    },
+    {
+      "role": "logo",
+      "file": "logo-logo-principal.png",
+      "bytes": 619877
+    },
+    {
+      "role": "logo-light",
+      "file": "logo-light-logo-fond-sombre.png",
+      "bytes": 491183
+    },
+    {
+      "role": "logo-mono",
+      "file": "logo-mono-logo-noir.png",
+      "bytes": 31489
+    },
+    {
+      "role": "logo-white",
+      "file": "logo-white-logo-blanc.png",
+      "bytes": 30060
+    },
+    {
+      "role": "logo-mark",
+      "file": "logo-mark-symbole-seul.png",
+      "bytes": 598925
+    },
+    {
+      "role": "favicon",
+      "file": "favicon-favicon.png",
+      "bytes": 30881
+    },
+    {
+      "role": "logo-webp",
+      "file": "logo-webp-logo-principal.webp",
+      "bytes": 64174
+    },
+    {
+      "role": "logo-light-webp",
+      "file": "logo-light-webp-logo-fond-sombre.webp",
+      "bytes": 52760
+    },
+    {
+      "role": "logo-mark-webp",
+      "file": "logo-mark-webp-symbole-seul.webp",
+      "bytes": 111108
+    },
+    {
+      "role": "brand-board",
+      "file": "brand-board-planche-identite.png",
+      "bytes": 563695
+    }
+  ],
+  "review": "SIMULÉE (aucun appel d'IA)"
+}

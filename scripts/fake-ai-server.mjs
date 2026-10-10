@@ -5,7 +5,10 @@
  *   FAKE_AI_PORT=3999 FAKE_AI_MODE=ok|refuse node scripts/fake-ai-server.mjs
  * Mode « refuse » : OpenAI répond 400 comme pour un fond transparent non pris en charge (rien n'est facturé).
  * GET /stats : nombre d'appels reçus par point d'accès.
+ * FAKE_AI_LOGO=<png> : renvoie ce logo (ex. le vrai logo OpenAI déjà payé) pour la 1re image, au lieu d'un dessin simulé.
+ * Mode « 502 » : erreur de passerelle (facturation incertaine) ; mode « cut » : flux coupé après le 1er aperçu.
  */
+import fs from "node:fs";
 import http from "node:http";
 import sharp from "sharp";
 
@@ -15,7 +18,9 @@ const stats = { images: 0, messages: 0, count: 0, imageBodies: [] };
 
 /** Trois logos simulés, différents (dessinés ici : ce ne sont pas des logos d'une IA). */
 const COLORS = ["#2E2E33", "#446274", "#8A5A2B"];
+const REAL = process.env.FAKE_AI_LOGO ? fs.readFileSync(process.env.FAKE_AI_LOGO).toString("base64") : null;
 async function fakeLogo(i) {
+  if (REAL && i % 3 === 0) return REAL;
   const c = COLORS[i % 3];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#FFFFFF"/>
     ${i % 3 === 0 ? `<circle cx="512" cy="380" r="200" fill="${c}"/>` : i % 3 === 1 ? `<rect x="352" y="200" width="320" height="320" rx="40" fill="${c}"/>` : `<path d="M300 520 L512 220 L724 520 Z" fill="${c}"/>`}
@@ -66,12 +71,17 @@ http
       stats.images++;
       stats.imageBodies.push({ model: body.model, background: body.background ?? null, quality: body.quality, size: body.size });
       if (MODE === "refuse") return send(400, { error: { message: "Transparent background is not supported for this model.", type: "invalid_request_error" } });
+      if (MODE === "502") return send(502, { error: { message: "upstream request failed" } });
       const b64 = await fakeLogo(stats.images - 1);
       const usage = { input_tokens: 900, output_tokens: 4160 + 100 * (body.partial_images ?? 0), input_tokens_details: { text_tokens: 900, image_tokens: 0 } };
       if (body.stream) {
         // Flux comme l'API : images partielles puis image finale (événements SSE).
         res.writeHead(200, { "content-type": "text/event-stream" });
-        for (let i = 0; i < (body.partial_images ?? 0); i++) res.write(`event: image_generation.partial_image\ndata: ${JSON.stringify({ type: "image_generation.partial_image", partial_image_index: i, b64_json: b64 })}\n\n`);
+        for (let i = 0; i < (body.partial_images ?? 0); i++) {
+          res.write(`event: image_generation.partial_image\ndata: ${JSON.stringify({ type: "image_generation.partial_image", partial_image_index: i, b64_json: b64.slice(0, 4000) })}\n\n`);
+          await new Promise((r) => setTimeout(r, Number(process.env.FAKE_AI_DELAY_MS || 1500)));
+          if (MODE === "cut") return res.socket?.destroy();
+        }
         res.write(`event: image_generation.completed\ndata: ${JSON.stringify({ type: "image_generation.completed", b64_json: b64, usage })}\n\n`);
         return res.end();
       }

@@ -92,6 +92,7 @@ export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string
     `Text in the logo, spelled EXACTLY with the same accents and spaces: the name "${txt.name}"${txt.descriptor ? `, and smaller, the activity line "${txt.descriptor}"` : ""}${txt.tagline ? `, and smallest, the slogan "${txt.tagline}"` : ""}. No other words, no slogan${txt.tagline ? " other than this one" : ""}, no fake or extra letters.`,
     `Nothing is imposed: no shape, object, initials, texture or composition is required — follow this direction only. An object or gesture of this business${brief.trade.objects.length ? ` (here, for example: ${brief.trade.objects.slice(0, 3).join(", ")})` : ""} may be used when it is integrated in an original, professional way. Avoid only clumsy stock-icon clichés${t.avoid.length ? ` and: ${t.avoid.slice(0, 6).join(", ")}` : ""}. Never copy or imitate an existing logo.`,
     feedback ? `Requested changes for this new version: ${feedback}.` : "",
+    "No people: no person, face, hands or human silhouette.",
     "Output: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas.",
   ]
     .filter(Boolean)

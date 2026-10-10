@@ -24,7 +24,7 @@ type Proposal = {
   attempts: number;
   change: string | null;
 };
-type LiveDir = { id: string; name: string; style: string | null; status: "waiting" | "drawing" | "checking" | "done" | "failed"; verdict?: string | null; score?: number | null; reason?: string; assetId?: string };
+type LiveDir = { id: string; name: string; style: string | null; status: "waiting" | "drawing" | "checking" | "done" | "failed"; verdict?: string | null; score?: number | null; reason?: string; assetId?: string; progress?: { phase: "sent" | "partial" | "received" | "saved"; partials?: number; atMs?: number; streamed?: boolean } };
 type Live = { jobId: string; startedAt: number; updatedAt: number; stage: "prepare" | "images" | "save" | "done" | "failed"; art: string | null; directions: LiveDir[]; error?: string };
 type JobRow = { id: string; type: string; status: string; progress: number; message: string; error: string | null; created_at: number; updated_at: number };
 type View = {
@@ -128,7 +128,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
             {p.artwork ? (
               <p className="mt-1 text-xs text-muted">
                 {t("Image originale haute définition (livrable principal).", "Original high-resolution image (main deliverable).")}
-                {p.artwork.textCorrected && <> {t("Nom réécrit par le studio, dessin intact.", "Name rewritten by the studio, drawing untouched.")} {p.artwork.originalUrl && <a className="underline" href={p.artwork.originalUrl} target="_blank" rel="noreferrer">{t("Voir l'original", "See the original")}</a>}</>}
+                {p.artwork.textCorrected && <> {t("Nom réécrit par le studio, dessin intact.", "Name rewritten by the studio, drawing untouched.")}</>} {p.artwork.originalUrl && <a className="underline" href={p.artwork.originalUrl} target="_blank" rel="noreferrer">{t("Fichier original reçu", "Original file received")}</a>}
               </p>
             ) : (
               <p className="mt-1 text-xs text-muted">{t(`Typographie : ${p.font} · ${p.attempts} essai(s)`, `Typeface: ${p.font} · ${p.attempts} attempt(s)`)}{p.change ? ` · ${p.change}` : ""}</p>
@@ -254,17 +254,28 @@ function SeriesProgress({ job, live, runId, runAt }: { job: JobRow; live: Live |
   const imgs: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "drawing") ? "active" : drawn ? "partial" : "active") : total ? count(drawn) : failed ? "failed" : "done";
   const revs: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "checking") ? "active" : checked ? "partial" : "todo") : total ? (drawn === 0 ? "failed" : count(checked)) : failed ? "failed" : "done";
   const res: StepState = failed ? "failed" : stage === "done" ? (total && checked === 0 ? "failed" : "done") : past("images") ? "active" : "todo";
+  // Réception et sauvegarde des images (logos complets dessinés par l'IA d'images seulement).
+  const saved = dirs.filter((d) => d.progress?.phase === "saved").length;
+  const recv: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.progress && d.progress.phase !== "saved") ? "active" : saved ? "partial" : "todo") : total ? count(saved) : failed ? "failed" : "done";
+  const provider = live?.art ? (live.art.startsWith("openai") ? "OpenAI" : live.art.startsWith("google") ? "Gemini" : live.art) : null;
   const steps: { key: string; label: string; detail: string; state: StepState }[] = [
-    { key: "prepare", label: t("Préparation des directions", "Preparing the directions"), detail: total ? t(`${total} direction(s)`, `${total} direction(s)`) : "", state: prep },
-    { key: "images", label: live?.art ? t("Génération des images", "Generating the images") : t("Construction des logos", "Building the logos"), detail: total ? `${drawn}/${total}` : "", state: imgs },
+    { key: "prepare", label: t("Brief et directions", "Brief and directions"), detail: total ? t(`${total} direction(s)`, `${total} direction(s)`) : "", state: prep },
+    { key: "images", label: provider ? t(`Génération ${provider}`, `${provider} generation`) : t("Construction des logos", "Building the logos"), detail: total ? `${drawn}/${total}` : "", state: imgs },
+    ...(live?.art ? [{ key: "receive", label: t("Réception et sauvegarde", "Received and saved"), detail: total ? `${saved}/${total}` : "", state: recv }] : []),
     { key: "review", label: t("Contrôle qualité", "Quality check"), detail: total ? `${checked}/${total}` : "", state: revs },
     { key: "result", label: t("Résultat", "Result"), detail: "", state: res },
   ];
   const STATUS: Record<LiveDir["status"], [string, string]> = { waiting: ["En attente", "Waiting"], drawing: [live?.art ? "Image en cours" : "Construction en cours", live?.art ? "Drawing" : "Building"], checking: ["Contrôle qualité en cours", "Quality check in progress"], done: ["Contrôlé", "Checked"], failed: ["Échec", "Failed"] };
+  const secs = (ms?: number) => (ms ? ` (${Math.round(ms / 1000)} s)` : "");
+  const progressText = (p: NonNullable<LiveDir["progress"]>) =>
+    p.phase === "sent" ? t(`demande envoyée à ${provider ?? "l'IA"}${p.streamed ? ", réponse en flux" : ""}`, `request sent to ${provider ?? "the AI"}${p.streamed ? ", streamed response" : ""}`)
+    : p.phase === "partial" ? t(`aperçu ${p.partials ?? 1} reçu${secs(p.atMs)}`, `preview ${p.partials ?? 1} received${secs(p.atMs)}`)
+    : p.phase === "received" ? t(`image reçue${secs(p.atMs)}`, `image received${secs(p.atMs)}`)
+    : t("image reçue et sauvegardée", "image received and saved");
   const old = runId && runId !== job.id;
   return (
     <div className={`mb-4 rounded-xl border p-4 ${failed ? "border-bad/40 bg-bad/5" : "border-line"}`} role="status" aria-live="polite" data-testid="logo-series-progress">
-      <ol className="grid gap-2 sm:grid-cols-4">
+      <ol className={`grid gap-2 ${live?.art ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
         {steps.map((s, i) => (
           <li key={s.key} className="flex items-center gap-2 text-sm" data-step={s.key} data-state={s.state}>
             <span className={`grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold ${s.state === "done" ? "bg-ok text-white" : s.state === "active" ? "bg-signal text-white" : s.state === "failed" ? "bg-bad text-white" : s.state === "partial" ? "bg-warn text-white" : "bg-paper-2 text-muted"}`} aria-hidden>{s.state === "done" ? "✓" : s.state === "failed" ? "✕" : s.state === "partial" ? "!" : i + 1}</span>
@@ -290,6 +301,7 @@ function SeriesProgress({ job, live, runId, runAt }: { job: JobRow; live: Live |
                 {d.status === "done" ? (d.verdict === "FINAL" ? t(`Validé ${d.score ?? ""}/10`, `Approved ${d.score ?? ""}/10`) : d.verdict === "PROVISIONAL" ? t("Version du studio", "Studio version") : t(`Écarté par le contrôle${d.score != null ? ` (${d.score}/10)` : ""}`, `Rejected by the check${d.score != null ? ` (${d.score}/10)` : ""}`)) : t(...STATUS[d.status])}
               </span>
               {(d.status === "failed" || (d.status === "done" && d.verdict !== "FINAL")) && d.reason && <span className="text-muted">— {d.reason}</span>}
+              {(d.status === "drawing" || d.status === "checking") && d.progress && <span className="text-muted" data-progress={d.progress.phase}>— {progressText(d.progress)}</span>}
             </li>
           ))}
         </ul>

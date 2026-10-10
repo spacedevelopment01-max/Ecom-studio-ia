@@ -10,6 +10,7 @@
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
+import { openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
 import sharp from "sharp";
 import { EUR, recordUsage, release, reserve, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
@@ -63,10 +64,12 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
         if (t.reservation && !t.recorded) {
           const status = (e as { status?: unknown })?.status;
           if (!t.sent) release(t.reservation, "aucune demande envoyée au fournisseur");
-          else if (t.rejected || typeof status === "number") release(t.reservation, `refus du fournisseur${typeof status === "number" ? ` (${status})` : ""}`);
+          else if (t.rejected || refused(status)) release(t.reservation, `refus du fournisseur${typeof status === "number" ? ` (${status})` : ""}`);
           else settleUncertain(t.reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
           // Rien n'a été facturé (réservation rendue) : un secours compatible peut prendre le relais sans double coût.
-          if (!t.sent || t.rejected || typeof status === "number") markReleased(e, t);
+          // Une erreur 5xx (ex. « 502 upstream request failed » d'un proxy) ou une coupure du flux n'en fait pas partie :
+          // la génération a pu avoir lieu et être facturée → coût maximal retenu, jamais de seconde génération.
+          if (!t.sent || t.rejected || refused(status)) markReleased(e, t);
         }
         // Échec après le départ de la demande au fournisseur : l'appel a eu lieu, il est tracé (coût inconnu = 0, signalé).
         if (t.provider && !t.recorded) {
@@ -78,6 +81,9 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
     });
   };
 }
+
+/** Refus net du fournisseur (4xx hors délai) : rien n'a été produit ni facturé. 5xx, 408 et coupures : incertain. */
+const refused = (status: unknown) => typeof status === "number" && status >= 400 && status < 500 && status !== 408;
 
 /** Clé de stockage de l'image d'origine d'un appel payé (diagnostic) : ai-originals/<projet>/<appel>.<ext>. */
 export function paidImageKey(projectId: string, callId: string, data: Buffer): string {
@@ -266,7 +272,9 @@ export function openaiImageMax(model: string, o: { prompt: string; images: numbe
   if (model !== "gpt-image-1") throw new PermanentError(L(`Jetons de sortie de ${model} inconnus : saisissez un tarif par image dans l'administration (coût maximal non borné, génération bloquée).`, `Output tokens of ${model} are unknown: enter a per-image price in the admin settings (maximum cost not bounded, generation blocked).`));
   const out = OPENAI_OUT_TOKENS[o.quality]?.[o.size];
   if (!out) throw new PermanentError(L(`Taille d'image ${o.size} sans borne de coût connue : génération bloquée.`, `Image size ${o.size} has no known cost bound: generation blocked.`));
-  return cost("openai", model, { input: bytes(o.prompt), imageIn: OPENAI_IMAGE_IN_TOKENS * o.images, imageOut: out }).micro;
+  // Réponse en flux : chaque image partielle est facturée en plus (≈ 100 jetons de sortie).
+  const partials = openaiStreams(model) ? OPENAI_PARTIAL_IMAGES * OPENAI_PARTIAL_TOKENS : 0;
+  return cost("openai", model, { input: bytes(o.prompt), imageIn: OPENAI_IMAGE_IN_TOKENS * o.images, imageOut: out + partials }).micro;
 }
 
 export function geminiImageMax(model: string, o: { prompt: string; images: number }) {
@@ -393,11 +401,10 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
     mask[i * 4 + 3] = a > 8 ? 255 : 0;
   }
   const maskPng = await sharp(mask, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
-  const client = new OpenAI({ apiKey: key, maxRetries: 0, timeout: 300_000 });
-  let res: any;
+  const client = openaiClient(key);
+  let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
-    sent();
-    res = await client.images.edit({
+    res = await openaiImage(client, "edit", {
       model,
       image: await toFile(input.composite, "scene.png", { type: "image/png" }),
       mask: await toFile(maskPng, "mask.png", { type: "image/png" }),
@@ -405,13 +412,13 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
       size: input.size,
       quality: "high",
       n: 1,
-    } as any);
+    }, sent);
   } catch (e: any) {
     if (e?.status === 401) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Génération d'image refusée par OpenAI : ${e.message}`, `Image generation rejected by OpenAI: ${e.message}`)));
     throw e;
   }
-  const b64 = res.data?.[0]?.b64_json;
+  const b64 = res.b64;
   if (!b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
   const u = res.usage ?? {};
   const c = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
@@ -534,19 +541,18 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
   const model = pickModel("openai", "image");
   const size = input.aspect === "16:9" ? "1536x1024" : input.aspect === "1:1" ? "1024x1024" : "1024x1536";
   gate(ctx, openaiImageMax(model, { prompt: text, images: ref ? 1 : 0, size, quality: input.quality }), "image", "openai", model);
-  const client = new OpenAI({ apiKey: key, maxRetries: 0, timeout: 300_000 });
-  let res: any;
+  const client = openaiClient(key);
+  let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
-    sent();
     res = ref
-      ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: input.quality, n: 1 } as any)
-      : await client.images.generate({ model, prompt: text, size, quality: input.quality, n: 1, ...(input.transparent && openaiTransparent(model) ? { background: "transparent", output_format: "png" } : {}) } as any);
+      ? await openaiImage(client, "edit", { model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })], prompt: text, size, quality: input.quality, n: 1 }, sent)
+      : await openaiImage(client, "generate", { model, prompt: text, size, quality: input.quality, n: 1, ...(input.transparent && openaiTransparent(model) ? { background: "transparent", output_format: "png" } : {}) }, sent);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
     throw e;
   }
-  const b64 = res.data?.[0]?.b64_json;
+  const b64 = res.b64;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });

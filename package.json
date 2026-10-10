@@ -36,6 +36,7 @@
     "react-dom": "^19.3.0",
     "sanitize-html": "^2.18.0",
     "sharp": "^0.35.5",
+    "undici": "^7.30.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
