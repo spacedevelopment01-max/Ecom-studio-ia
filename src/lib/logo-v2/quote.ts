@@ -11,15 +11,27 @@ import { FX_SAFETY, priceFor, routeFor, usdToEur, type TaskId } from "../ai/conf
 import { getJsonSetting } from "../settings";
 import { EUR } from "../billing";
 import { logoArtworkMaxMicro } from "../ai/media-providers";
+import { routeLlm } from "../ai/llm";
 
 /** Créations par série quand le modèle d'images dessine le logo complet. */
 export const ARTWORK_SERIES = 3;
 /** Directions construites par série sans modèle d'images capable d'écrire (version construite, moins coûteuse). */
 export const BUILT_SERIES = 4;
 
+/** Modèle qui fera vraiment l'appel : celui du routage automatique s'il est actif, sinon la route de la tâche. */
+function textRoute(task: TaskId): { provider: string; model: string } {
+  try {
+    const d = routeLlm({ task });
+    if (d.provider !== "none" && d.provider !== "local") return d;
+  } catch {}
+  return routeFor(task);
+}
+
 /** Coût maximal d'un appel de texte (même formule que le garde-fou : entrée majorée de 25 %, sortie maximale). */
 function textMaxMicro(task: TaskId, inputTokens: number, maxTokens: number): number {
-  const r = routeFor(task);
+  const r = textRoute(task);
+  // OpenAI / Gemini : sortie plafonnée à 4 000 jetons au moins (garde-fou de l'appel).
+  if (r.provider !== "anthropic") maxTokens = Math.max(maxTokens, 4000);
   const p = priceFor(r.provider, r.model);
   if (!p || p.unit !== "tokens") return 0;
   const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));

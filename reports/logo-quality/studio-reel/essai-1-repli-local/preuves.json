@@ -1,0 +1,67 @@
+{
+  "jobId": "0qlwps65vmw0skwz",
+  "status": "done",
+  "error": null,
+  "durationS": 9,
+  "devis": [
+    "Créer 3 logos complets dessinés par l'IA d'images ? Devis : 1,29 € au maximum (3 images et leurs relectures), décompté de votre budget IA. Ce montant est aussi le plafond : rien ne sera dépensé au-delà, et aucune image ne sera relancée sans votre accord."
+  ],
+  "cartesImagesDistinctes": 3,
+  "erreursJS": [],
+  "items": [
+    {
+      "n": 1,
+      "assetId": "q30020lgah3rq3la",
+      "role": "logo-v2-studio",
+      "file": null,
+      "direction": "Logotype pur",
+      "style": "typographic",
+      "concept": "Le nom « Sébastien Blanc » seul, dessiné avec soin : la typographie porte toute la personnalité.",
+      "imageBrief": null,
+      "colors": null,
+      "costEur": null,
+      "verdict": "PROVISIONAL",
+      "score": null,
+      "reason": "contrôle insuffisant pour un résultat final : provisoire",
+      "codes": [],
+      "prompt": "Design a complete, professional logo for the brand \"Sébastien Blanc\" (plâtrier peintre: Plâtrerie et plaques de plâtre, Enduits et lissage, Peinture intérieure), as a top branding agency would present it — the logo artwork only, not a mockup.\nPositioning: Finitions intérieures soignées, du plâtre à la peinture, pour des intérieurs nets. Clients: Particuliers qui rénovent leur logement autour de Mâcon. Personality: précis, artisan, fiable.\nCreative direction \"Logotype pur\": Le nom « Sébastien Blanc » seul, dessiné avec soin : la typographie porte toute la personnalité.\nStyle: TYPOGRAPHIC logo: the name itself is the design — custom-feeling lettering, a ligature or a typographic detail linked to the trade, contrast of weights or of two colours; no separate icon, or only a tiny integrated accent.\nComposition: the name alone (lettering), with any accent integrated into the letters. Typography: grotesque sans-serif, bold weight, title case, normal letter-spacing.\nColours: the brand palette — main ink #141B1F, accent #446274, also available #D0D8DD, #747FB4, #F2F5F7; white or near-black only if needed.\nText in the logo, spelled EXACTLY with the same accents and spaces: the name \"Sébastien Blanc\". No other words, no slogan, no fake or extra letters.\nNothing is imposed: no shape, object, initials, texture or composition is required beyond this direction. An object or gesture of this business (here, for example: trowel, ruler, paint) may be used when it is integrated in an original, professional way. Also avoid: wall, bricks, palette, trowel (literal). Never copy or imitate an existing logo.\nQuality bar: a real agency-quality logo, drawn with care and personality, every element deliberate; refined details and a precise finish; a deliberate typographic treatment of the name (weights, spacing, hierarchy with the activity line), not a default font simply typed; balanced proportions; a mark that could only belong to this business and would not look out of place in a premium branding portfolio.\nAvoid poor concepts: a plain circle, triangle or rounded square used as the symbol with no graphic idea; a generic stamp or seal with no personality; letters simply placed inside a square or circle frame; a standard font with no composition; a symbol that could belong to any company; decoration added without intent; stock-icon clichés. Simple shapes are welcome only when they carry a real idea (a cut, a negative space, a construction, a double reading).\nNo people: no person, face, hands or human silhouette.\nOutput: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas."
+    },
+    {
+      "n": 2,
+      "assetId": "urf2n5pcugo88pre",
+      "role": "logo-v2-studio",
+      "file": null,
+      "direction": "Monogramme construit",
+      "style": "monogram",
+      "concept": "Une initiale construite comme une marque réduite, associée au nom : mémorisable et nette en très petit.",
+      "imageBrief": null,
+      "colors": null,
+      "costEur": null,
+      "verdict": "PROVISIONAL",
+      "score": null,
+      "reason": "contrôle insuffisant pour un résultat final : provisoire",
+      "codes": [],
+      "prompt": "Design a complete, professional logo for the brand \"Sébastien Blanc\" (plâtrier peintre: Plâtrerie et plaques de plâtre, Enduits et lissage, Peinture intérieure), as a top branding agency would present it — the logo artwork only, not a mockup.\nPositioning: Finitions intérieures soignées, du plâtre à la peinture, pour des intérieurs nets. Clients: Particuliers qui rénovent leur logement autour de Mâcon. Personality: précis, artisan, fiable.\nCreative direction \"Monogramme construit\": Une initiale construite comme une marque réduite, associée au nom : mémorisable et nette en très petit.\nStyle: MONOGRAM logo: the initials built into a distinctive mark (interlaced, cut, stacked, or combined with an element drawn from THIS business only when it adds meaning), placed above or beside the full name in clean capitals.\nComposition: symbol on the left, name on the right. Typography: geometric sans-serif, regular weight, capitals, wide letter-spacing.\nColours: the brand palette — main ink #141B1F, accent #747FB4, also available #446274, #D0D8DD, #F2F5F7; white or near-black only if needed.\nText in the logo, spelled EXACTLY with the same accents and spaces: the name \"Sébastien Blanc\". No other words, no slogan, no fake or extra letters.\nNothing is imposed: no shape, object, initials, texture or composition is required beyond this direction. An object or gesture of this business (here, for example: trowel, ruler, paint) may be used when it is integrated in an original, professional way. Also avoid: wall, bricks, palette, trowel (literal). Never copy or imitate an existing logo.\nQuality bar: a real agency-quality logo, drawn with care and personality, every element deliberate; refined details and a precise finish; a deliberate typographic treatment of the name (weights, spacing, hierarchy with the activity line), not a default font simply typed; balanced proportions; a mark that could only belong to this business and would not look out of place in a premium branding portfolio.\nAvoid poor concepts: a plain circle, triangle or rounded square used as the symbol with no graphic idea; a generic stamp or seal with no personality; letters simply placed inside a square or circle frame; a standard font with no composition; a symbol that could belong to any company; decoration added without intent; stock-icon clichés. Simple shapes are welcome only when they carry a real idea (a cut, a negative space, a construction, a double reading).\nNo people: no person, face, hands or human silhouette.\nOutput: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas."
+    },
+    {
+      "n": 3,
+      "assetId": "k8t7yjke5qri08g8",
+      "role": "logo-v2-studio",
+      "file": null,
+      "direction": "Marque abstraite",
+      "style": "minimal",
+      "concept": "Une forme abstraite tirée du geste (« plastering »), au-dessus du nom : évoque sans illustrer.",
+      "imageBrief": null,
+      "colors": null,
+      "costEur": null,
+      "verdict": "PROVISIONAL",
+      "score": null,
+      "reason": "contrôle insuffisant pour un résultat final : provisoire",
+      "codes": [],
+      "prompt": "Design a complete, professional logo for the brand \"Sébastien Blanc\" (plâtrier peintre: Plâtrerie et plaques de plâtre, Enduits et lissage, Peinture intérieure), as a top branding agency would present it — the logo artwork only, not a mockup.\nPositioning: Finitions intérieures soignées, du plâtre à la peinture, pour des intérieurs nets. Clients: Particuliers qui rénovent leur logement autour de Mâcon. Personality: précis, artisan, fiable.\nCreative direction \"Marque abstraite\": Une forme abstraite tirée du geste (« plastering »), au-dessus du nom : évoque sans illustrer.\nStyle: MINIMAL logo: a reduced, intelligent sign (negative space, a clever cut, a single strong gesture), flat colours, precise geometry, and a clean wordmark; it must stay strong at small sizes.\nSymbol idea: forme abstraite construite d'après le geste du métier.\nComposition: symbol above the name, centered. Typography: humanist sans-serif, regular weight, title case, normal letter-spacing.\nColours: the brand palette — main ink #141B1F, accent #446274, also available #D0D8DD, #747FB4, #F2F5F7; white or near-black only if needed.\nText in the logo, spelled EXACTLY with the same accents and spaces: the name \"Sébastien Blanc\". No other words, no slogan, no fake or extra letters.\nNothing is imposed: no shape, object, initials, texture or composition is required beyond this direction. An object or gesture of this business (here, for example: trowel, ruler, paint) may be used when it is integrated in an original, professional way. Also avoid: wall, bricks, palette, trowel (literal). Never copy or imitate an existing logo.\nQuality bar: a real agency-quality logo, drawn with care and personality, every element deliberate; refined details and a precise finish; a deliberate typographic treatment of the name (weights, spacing, hierarchy with the activity line), not a default font simply typed; balanced proportions; a mark that could only belong to this business and would not look out of place in a premium branding portfolio.\nAvoid poor concepts: a plain circle, triangle or rounded square used as the symbol with no graphic idea; a generic stamp or seal with no personality; letters simply placed inside a square or circle frame; a standard font with no composition; a symbol that could belong to any company; decoration added without intent; stock-icon clichés. Simple shapes are welcome only when they carry a real idea (a cut, a negative space, a construction, a double reading).\nNo people: no person, face, hands or human silhouette.\nOutput: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas."
+    }
+  ],
+  "calls": [],
+  "reservations": [],
+  "totalCoutFournisseurEur": 0
+}

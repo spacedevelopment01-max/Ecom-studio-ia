@@ -1,0 +1,496 @@
+{
+  "jobId": "tach6z26dynpe42n",
+  "status": "done",
+  "error": null,
+  "durationS": 156,
+  "devis": [
+    "Créer 3 logos complets dessinés par l'IA d'images ? Devis : 1,69 € au maximum (3 images et leurs relectures), décompté de votre budget IA. Ce montant est aussi le plafond : rien ne sera dépensé au-delà, et aucune image ne sera relancée sans votre accord."
+  ],
+  "cartesImagesDistinctes": 3,
+  "erreursJS": [],
+  "items": [
+    {
+      "n": 1,
+      "assetId": "7juwz4atge1nlbd9",
+      "role": "logo-v2-trial",
+      "file": "1-original.png",
+      "direction": "Le geste de finition",
+      "style": "illustrated",
+      "concept": "Une composition illustrée ouverte montre les deux gestes complémentaires du métier : une lisseuse étale un enduit régulier tandis qu’un rouleau applique une bande de peinture. Le nom « Sébastien Blanc » occupe le centre de la composition, avec une hiérarchie claire et artisanale.",
+      "imageBrief": "Create a refined illustrated trade logo centered on a plastering trowel smoothing a warm sand-colored skim coat while a paint roller lays down a clean terracotta finish. Arrange both tools in one harmonious open composition above the name, with crisp linework, controlled material texture and carefully resolved details. Set the name in bold, highly legible crafted grotesque lettering, with one element in the accent color. Place the activity line below in small widely spaced capitals. Use charcoal brown #292420, terracotta #B9613C and warm sand #D8C5A5 on a plain white background.",
+      "colors": [
+        "#292420",
+        "#B9613C",
+        "#D8C5A5"
+      ],
+      "provider": "openai:gpt-image-2.5-flare",
+      "costEur": 0.215,
+      "verdict": "REJECTED",
+      "score": 7.9,
+      "reason": "sous la barrière (7.9/10, attendu 8) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)",
+      "codes": [],
+      "criteria": {
+        "relevance": 8.8,
+        "originality": 6.8,
+        "craft": 8.1,
+        "typography": 8.2,
+        "composition": 7.7,
+        "colour": 8.4,
+        "legibility": 8.7,
+        "memorability": 7.4,
+        "distinctiveness": 6.9,
+        "intendedUse": 7.8
+      },
+      "issues": [
+        "L’association lisseuse–rouleau exprime immédiatement les deux métiers, mais reste une représentation assez attendue dans le secteur et manque d’un détail formel réellement propre à Sébastien Blanc.",
+        "Le symbole est sensiblement plus large et visuellement plus mouvementé que le bloc typographique, ce qui crée deux niveaux un peu séparés plutôt qu’une signature parfaitement unifiée.",
+        "Les deux grandes traces se rejoignent en une pointe blanche centrale assez irrégulière, donnant l’impression d’une découpe accidentelle plutôt que d’une transition pleinement maîtrisée.",
+        "La ligne « PLÂTRERIE • PEINTURE » devient trop ténue dans la plus petite présentation, notamment à cause de son approche très ouverte.",
+        "La version claire sur fond sombre conserve bien la lecture générale, mais le passage des contours noirs au blanc affaiblit légèrement le modelé de la lisseuse et des manches."
+      ],
+      "fix": {
+        "target": "symbol",
+        "instruction": "Redessiner la jonction centrale des deux gestes comme une transition volontaire et distinctive : faire naître les deux traces d’un même mouvement continu, avec une réserve nette en forme de S subtil, puis resserrer légèrement la largeur du symbole pour mieux l’aligner sur le bloc nominal."
+      },
+      "prompt": "Design a beautiful, professional logo for \"Sébastien Blanc\", plâtrier peintre (Plâtrerie, Peinture).\nA real agency-quality logo: Create a refined illustrated trade logo centered on a plastering trowel smoothing a warm sand-colored skim coat while a paint roller lays down a clean terracotta finish. Arrange both tools in one harmonious open composition above the name, with crisp linework, controlled material texture and carefully resolved details. Set the name in bold, highly legible crafted grotesque lettering, with one element in the accent color. Place the activity line below in small widely spaced capitals. Use charcoal brown #292420, terracotta #B9613C and warm sand #D8C5A5 on a plain white background.\nColours: #292420, #B9613C, #D8C5A5.\nThe name, perfectly legible: \"Sébastien Blanc\"; smaller and spaced underneath, the activity line: \"PLÂTRERIE • PEINTURE\".\nSpell every word exactly, with the accents. No other text.\nCentered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo, no people."
+    },
+    {
+      "n": 2,
+      "assetId": "d8pdpfab461wt0mz",
+      "role": "logo-v2-trial",
+      "file": "2-original.png",
+      "direction": "L’angle parfait",
+      "style": "minimal",
+      "concept": "Une icône compacte associe une lisseuse inclinée et un petit rouleau. Leurs contours dessinent un angle droit précis, évocateur de murs préparés avec soin et de finitions nettes. L’icône se place à gauche du nom « Sébastien Blanc ».",
+      "imageBrief": "Design a crisp trade icon combining a plastering trowel and a paint roller into a precise right-angle shape. Give the trowel a broad recognizable blade and the roller a compact warm ochre head, using balanced proportions and carefully finished contours. Position the icon to the left of the name. Set the name in strong, friendly humanist sans lettering with excellent distance legibility, then place the activity line beneath it in smaller spaced capitals. Use deep brown #312A26, warm ochre #C7833E and soft cream #F2E9DA on a plain white background.",
+      "colors": [
+        "#312A26",
+        "#C7833E",
+        "#F2E9DA"
+      ],
+      "provider": "openai:gpt-image-2.5-flare",
+      "costEur": 0.215,
+      "verdict": "REJECTED",
+      "score": 6.8,
+      "reason": "sous la barrière (6.8/10, attendu 8) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)",
+      "codes": [
+        "weak_originality",
+        "weak_distinctiveness"
+      ],
+      "criteria": {
+        "relevance": 8,
+        "originality": 5,
+        "craft": 7,
+        "typography": 8,
+        "composition": 7,
+        "colour": 8,
+        "legibility": 8,
+        "memorability": 6,
+        "distinctiveness": 5,
+        "intendedUse": 7
+      },
+      "issues": [
+        "L’angle droit annoncé par le concept n’est pas immédiatement perceptible : l’ensemble se lit surtout comme une juxtaposition littérale d’une lisseuse et d’un rouleau.",
+        "Le symbole cumule plusieurs poignées et ruptures de contour, ce qui crée une silhouette plus encombrée que véritablement minimale.",
+        "La grande lame triangulaire domine fortement le rouleau et le nom, donnant au bloc une légère pesanteur visuelle à gauche.",
+        "La ligne « PLÂTRERIE • PEINTURE » devient trop fine et trop espacée dans les deux plus petites présentations.",
+        "Les détails internes du rouleau, les petites réserves des poignées et la diagonale de la lame se dégradent aux très petites tailles.",
+        "L’association directe de deux outils du métier est pertinente mais assez courante dans le secteur, ce qui limite la distinctivité propre à Sébastien Blanc."
+      ],
+      "fix": {
+        "target": "symbol",
+        "instruction": "Redessiner l’icône comme un seul geste géométrique compact : fusionner la lisseuse et le rouleau autour d’un angle droit clairement identifiable, supprimer une poignée et les petits détails internes, puis réduire légèrement la masse de la lame afin d’obtenir une silhouette plus équilibrée, distinctive et solide en petit."
+      },
+      "prompt": "Design a beautiful, professional logo for \"Sébastien Blanc\", plâtrier peintre (Plâtrerie, Peinture).\nA real agency-quality logo: Design a crisp trade icon combining a plastering trowel and a paint roller into a precise right-angle shape. Give the trowel a broad recognizable blade and the roller a compact warm ochre head, using balanced proportions and carefully finished contours. Position the icon to the left of the name. Set the name in strong, friendly humanist sans lettering with excellent distance legibility, then place the activity line beneath it in smaller spaced capitals. Use deep brown #312A26, warm ochre #C7833E and soft cream #F2E9DA on a plain white background.\nColours: #312A26, #C7833E, #F2E9DA.\nThe name, perfectly legible: \"Sébastien Blanc\"; smaller and spaced underneath, the activity line: \"PLÂTRERIE • PEINTURE\".\nSpell every word exactly, with the accents. No other text.\nCentered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo, no people."
+    },
+    {
+      "n": 3,
+      "assetId": "1ban586ls89zb0at",
+      "role": "logo-v2-trial",
+      "file": "3-original.png",
+      "direction": "La signature de l’artisan",
+      "style": "typographic",
+      "concept": "Le nom « Sébastien Blanc » devient une signature dessinée sur mesure, fluide mais très lisible. Son soulignement prend la forme d’un passage de lisseuse, terminé par une courte touche de peinture colorée.",
+      "imageBrief": "Draw the name as an elegant custom artisan signature with generous, highly legible letterforms and a confident flowing rhythm. Extend the baseline into a recognizable plastering pass made by a small trowel, ending in a short clay-red painted touch. Center the signature above the activity line, which appears in compact contemporary serif capitals with generous spacing. Preserve a handcrafted character through subtle stroke variation and precise finishing. Use ink brown #352A24, clay red #A9563F and warm ivory #F4EBDD on a plain white background.",
+      "colors": [
+        "#352A24",
+        "#A9563F",
+        "#F4EBDD"
+      ],
+      "provider": "openai:gpt-image-2.5-flare",
+      "costEur": 0.215,
+      "verdict": "REJECTED",
+      "score": 6.4,
+      "reason": "sous la barrière (6.4/10, attendu 8) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)",
+      "codes": [
+        "weak_originality",
+        "weak_distinctiveness"
+      ],
+      "criteria": {
+        "relevance": 7,
+        "originality": 5,
+        "craft": 7,
+        "typography": 7,
+        "composition": 7,
+        "colour": 7,
+        "legibility": 7,
+        "memorability": 6,
+        "distinctiveness": 5,
+        "intendedUse": 6
+      },
+      "issues": [
+        "La signature est élégante et lisible, mais son dessin reste proche des nombreux logotypes d’artisans fondés sur une calligraphie manuscrite, ce qui limite fortement l’appropriation à la marque.",
+        "L’extrémité du soulignement se lit comme un pinceau explicite plutôt que comme un passage de lisseuse : le concept annoncé fusionnant plâtrerie et peinture n’est donc pas pleinement traduit.",
+        "Le raccord entre le soulignement, l’outil et la touche colorée est visuellement chargé, avec plusieurs petits angles et contours qui perdent en netteté aux tailles réduites.",
+        "La ligne « PLÂTRIER PEINTRE », très espacée et fine, devient difficile à lire dans les deux plus petites présentations.",
+        "La composition est très étirée horizontalement, ce qui réduira sa présence sur les formats étroits, les photos de profil et certains marquages de véhicule."
+      ],
+      "fix": {
+        "target": "typography",
+        "instruction": "Redessiner le soulignement comme un geste réellement hybride et distinctif : une large trace nette de lisseuse qui se resserre en une courte touche de peinture, sans représenter littéralement un pinceau, puis renforcer légèrement la graisse et réduire l’approche de « PLÂTRIER PEINTRE » pour préserver sa lecture en petit."
+      },
+      "prompt": "Design a beautiful, professional logo for \"Sébastien Blanc\", plâtrier peintre (Plâtrerie, Peinture).\nA real agency-quality logo: Draw the name as an elegant custom artisan signature with generous, highly legible letterforms and a confident flowing rhythm. Extend the baseline into a recognizable plastering pass made by a small trowel, ending in a short clay-red painted touch. Center the signature above the activity line, which appears in compact contemporary serif capitals with generous spacing. Preserve a handcrafted character through subtle stroke variation and precise finishing. Use ink brown #352A24, clay red #A9563F and warm ivory #F4EBDD on a plain white background.\nColours: #352A24, #A9563F, #F4EBDD.\nThe name, perfectly legible: \"Sébastien Blanc\"; smaller and spaced underneath, the activity line: \"PLÂTRIER PEINTRE\".\nSpell every word exactly, with the accents. No other text.\nCentered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo, no people."
+    }
+  ],
+  "calls": [
+    {
+      "task": "logo_symbol",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 2687,
+      "output_tokens": 3297,
+      "cost": 96617,
+      "latency_ms": 49798,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791662650498
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2.5-flare",
+      "requested_model": "gpt-image-2.5-flare",
+      "status": "ok",
+      "input_tokens": 257,
+      "output_tokens": 1909,
+      "cost": 215000,
+      "latency_ms": 18497,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791662669264
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 4305,
+      "output_tokens": 615,
+      "cost": 34379,
+      "latency_ms": 10915,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791662682515
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2.5-flare",
+      "requested_model": "gpt-image-2.5-flare",
+      "status": "ok",
+      "input_tokens": 256,
+      "output_tokens": 1909,
+      "cost": 215000,
+      "latency_ms": 16395,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791662699055
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 4285,
+      "output_tokens": 766,
+      "cost": 38188,
+      "latency_ms": 13741,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791662714254
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2.5-flare",
+      "requested_model": "gpt-image-2.5-flare",
+      "status": "ok",
+      "input_tokens": 242,
+      "output_tokens": 1909,
+      "cost": 215000,
+      "latency_ms": 17834,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791662732254
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 4285,
+      "output_tokens": 572,
+      "cost": 33183,
+      "latency_ms": 9825,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791662744050
+    }
+  ],
+  "reservations": [
+    {
+      "status": "reconciled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": 0
+    },
+    {
+      "status": "released",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": null
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "amount": 56124,
+      "actual": 890
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": 107603
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 257757,
+      "actual": 119686
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 257988,
+      "actual": 119592
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129843,
+      "actual": 33686
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129843,
+      "actual": 35286
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129897,
+      "actual": 35105
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129929,
+      "actual": 32504
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 258398,
+      "actual": 109603
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130087,
+      "actual": 36365
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130127,
+      "actual": 37926
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130168,
+      "actual": 37758
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 258534,
+      "actual": 114531
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130281,
+      "actual": 35927
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130340,
+      "actual": 35957
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130326,
+      "actual": 33880
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 258498,
+      "actual": 96617
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130502,
+      "actual": 34379
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130407,
+      "actual": 38188
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130407,
+      "actual": 33183
+    }
+  ],
+  "totalCoutFournisseurEur": 0.847367
+}

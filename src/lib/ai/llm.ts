@@ -199,6 +199,12 @@ export async function maxCostMicro(model: string, params: { system?: { type: "te
   return Math.ceil(((inTok * 1.25 * p.inputPerM + params.max_tokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
 }
 
+/** Comptage refusé : appel bloqué, avec la réponse du fournisseur (sans secret) pour savoir quoi corriger. */
+function countFailed(status: number | null, message?: string) {
+  const why = `${status ? `HTTP ${status} — ` : ""}${redact(String(message ?? "")).slice(0, 200)}`.trim();
+  return L(`Comptage des jetons impossible : appel bloqué par sécurité${why ? ` (${why})` : ""}.`, `Token count unavailable: call blocked for safety${why ? ` (${why})` : ""}.`);
+}
+
 /** Nombre exact de jetons d'entrée pour ce modèle (endpoint gratuit du fournisseur). Échec : appel bloqué. */
 async function countInputTokens(p: { model: string; system?: unknown; messages: unknown }): Promise<number> {
   try {
@@ -208,7 +214,9 @@ async function countInputTokens(p: { model: string; system?: unknown; messages: 
     const status = (e as { status?: unknown })?.status;
     // Saturation passagère : la file de tâches réessaiera. Autre échec : bloqué (aucune estimation de repli).
     if (typeof status === "number" && (status === 429 || status >= 500)) throw e;
-    throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
+    // Clé absente ou désactivée : le vrai message (administration), pas un faux problème de comptage.
+    if (e instanceof UserFacingError) throw e;
+    throw new PermanentError(countFailed(typeof status === "number" ? status : null, (e as Error)?.message));
   }
 }
 
@@ -398,7 +406,8 @@ export async function otherMaxCostMicro(provider: string, req: TextRequest, coun
     counted = await count(req);
   } catch (e) {
     if (e instanceof ProviderHttpError && (e.status === 429 || e.status >= 500)) throw e;
-    throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
+    if (e instanceof UserFacingError) throw e;
+    throw new PermanentError(countFailed(e instanceof ProviderHttpError ? e.status : null, (e as Error)?.message));
   }
   if (!Number.isFinite(counted) || counted <= 0) throw new PermanentError(L("Comptage des jetons impossible : appel bloqué par sécurité.", "Token count unavailable: call blocked for safety."));
   const formatTokens = req.jsonSchema ? Buffer.byteLength(JSON.stringify(req.jsonSchema), "utf8") : 0;
@@ -408,6 +417,9 @@ export async function otherMaxCostMicro(provider: string, req: TextRequest, coun
   const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
   return Math.ceil(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
 }
+
+/** Refus net du fournisseur (4xx hors délai) : rien n'a été produit ni facturé. */
+const providerRefused = (status: number) => status >= 400 && status < 500 && status !== 408;
 
 /** Adaptateurs remplaçables dans les tests (aucun appel réel). */
 export const textDeps = { adapters: textAdapters as Record<"openai" | "google", { count: (r: TextRequest, key: string) => Promise<number>; send: (r: TextRequest, key: string) => Promise<TextResult> }> };
@@ -459,18 +471,26 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
         res = await adapter.send(req, key);
         break;
       } catch (e) {
-        if (!(e instanceof ProviderHttpError) || !RETRYABLE(e.status) || attempt >= RETRY_DELAYS_MS.length) throw e;
+        // Seule une saturation (429, rien de produit) est relancée. Un 5xx (souvent un relais réseau : « upstream
+        // request failed ») ne prouve pas que rien n'a été facturé : jamais de relance automatique.
+        if (!(e instanceof ProviderHttpError) || e.status !== 429 || attempt >= RETRY_DELAYS_MS.length) throw e;
         await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
       }
     }
   } catch (e) {
-    // Réponse d'erreur HTTP : rien n'a été produit ni facturé, la réservation est rendue. Sinon : coût maximal retenu.
-    if (e instanceof ProviderHttpError) release(reservation, `refus du fournisseur (${e.status})`);
-    else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+    // Refus net (4xx hors délai) : rien n'a été produit ni facturé, la réservation est rendue. 5xx, délai, coupure :
+    // résultat incertain, coût maximal retenu, et l'étape s'arrête (aucune relance par la file de tâches).
+    const uncertain = !(e instanceof ProviderHttpError && providerRefused(e.status));
+    if (!uncertain) release(reservation, `refus du fournisseur (${(e as ProviderHttpError).status})`);
+    else settleUncertain(reservation, redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof ProviderHttpError && (e.status === 401 || e.status === 403)) throw new PermanentError(L(`La clé ${provider} configurée est refusée. Vérifiez-la dans l'administration.`, `The configured ${provider} key was rejected. Check it in the admin settings.`));
     if (e instanceof ProviderHttpError && e.status === 404) throw new PermanentError(L(`Modèle introuvable (${model}). Corrigez le routage dans l'administration.`, `Model not found (${model}). Fix the routing in the admin settings.`));
-    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (uncertain) {
+      const why = redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 200);
+      throw new PermanentError(L(`Résultat incertain chez ${provider} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${provider} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+    }
     throw e;
   }
   let billed: { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean };

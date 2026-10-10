@@ -318,6 +318,12 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
       if (e instanceof CostCapReached) stoppedByCostCap = true;
       notes.push(`territoires IA indisponibles : ${(e as Error).message}`);
       aiState = "unavailable";
+      // Logos par l'IA d'images prévus (devis accepté) : jamais remplacés en silence par des logos construits.
+      // La série s'arrête avant toute image, avec la vraie raison.
+      if (art && !stoppedByCostCap) {
+        const why = (e as Error).message.slice(0, 300);
+        throw new UserFacingError(L(`Directions de logo impossibles : ${why} Aucune image n'a été demandée ; seules les dépenses déjà tracées sont dues.`, `Logo directions failed: ${why} No image was requested; only the spending already traced is due.`));
+      }
     }
   }
   const sel = selectTerritories(drafts ?? localTerritories(brief).map((d) => ({ ...d, source: "local" as const })), brief, n);
@@ -415,7 +421,7 @@ export async function saveProposal(ctx: JobContext, userId: string, projectId: s
       spec: r.candidate.spec,
       change: r.candidate.change,
       symbolSource: r.candidate.symbolSource,
-      ...(art ? { artwork: { expected: art.expected, textBox: art.textBox, textCorrected: art.textCorrected, provider: art.provider, costMicro: art.costMicro ?? null, hash: art.hash ?? null, aiGenerated: true, needsSimplifiedMark: rv?.needsSimplifiedMark ?? true, criteria: rv?.criteria ?? null, issues: rv?.issues ?? [] } } : {}),
+      ...(art ? { artwork: { expected: art.expected, textBox: art.textBox, textCorrected: art.textCorrected, provider: art.provider, costMicro: art.costMicro ?? null, hash: art.hash ?? null, fix: rv?.fix && rv.fix.target !== "none" && rv.fix.instruction ? rv.fix : null, aiGenerated: true, needsSimplifiedMark: rv?.needsSimplifiedMark ?? true, criteria: rv?.criteria ?? null, issues: rv?.issues ?? [] } } : {}),
       gate: { verdict: r.verdict, score: r.score, reason: r.reason, codes: r.codes, attempts: r.attempts, checkId: r.checkId },
       ...extraMeta,
     },
@@ -445,7 +451,10 @@ export async function redrawArtwork(ctx: JobContext, projectId: string, assetId:
   const t: Territory = { ...meta.territory, style: meta.territory.style ?? defaultStyle(meta.territory), descriptor: meta.territory.descriptor ?? null };
   const notes: string[] = [];
   ctx.progress(0.2, L(`Nouvelle version de « ${t.name} »`, `New version of "${t.name}"`));
-  const feedback = opts.feedback?.trim() || "a genuinely new interpretation of the same direction";
+  // Nouvelle version : les remarques du client ET la critique du contrôle sur la version précédente (défauts, correction
+  // proposée) — pour corriger réellement le concept au lieu de refaire presque la même image.
+  const critique = [meta.artwork.fix?.instruction ? `fix — ${meta.artwork.fix.instruction}` : "", (meta.artwork.issues ?? []).length ? `defects of the previous version to correct — ${(meta.artwork.issues as string[]).slice(0, 4).join("; ")}` : ""].filter(Boolean).join(". ");
+  const feedback = [opts.feedback?.trim(), critique].filter(Boolean).join(". ") || "a genuinely new interpretation of the same direction";
   const quote = logoRedrawQuote();
   let r: ProposalResult | null;
   try {

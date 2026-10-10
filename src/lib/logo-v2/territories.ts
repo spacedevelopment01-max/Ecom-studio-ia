@@ -35,6 +35,8 @@ export const TerritorySchema = z.object({
   avoid: z.array(z.string().max(120)).max(8).catch([]),
   style: z.enum(LOGO_STYLES).optional().catch(undefined),
   descriptor: z.string().max(80).nullable().optional().catch(null),
+  imageBrief: z.string().max(1600).optional().catch(undefined),
+  colors: z.array(z.string().regex(/^#[0-9a-fA-F]{6}$/)).max(4).optional().catch(undefined),
 });
 export const TerritoriesSchema = z.object({ territories: z.array(TerritorySchema).min(1).max(8) });
 export type TerritoryDraft = z.infer<typeof TerritorySchema>;
@@ -108,6 +110,15 @@ export function cleanDescriptor(raw: string | null | undefined, brief: Pick<Bran
 }
 
 /**
+ * Ligne d'activités de repli quand celle proposée par l'IA n'est pas faite d'activités réelles : les activités du
+ * projet (2 au plus, courtes), jamais une invention.
+ */
+export function fallbackDescriptor(brief: Pick<BrandBrief, "activities">): string | null {
+  const parts = brief.activities.map((x) => x.replace(/\s+/g, " ").trim()).filter((x) => x && x.length <= 24).slice(0, 2);
+  return parts.length ? parts.map((x) => x.toLocaleUpperCase("fr-FR")).join(" • ") : null;
+}
+
+/**
  * Sélection des territoires : forme valide, refus du client respectés, style demandé par le client, et diversité
  * réelle (au moins MIN_DISTANCE axes de différence avec chaque territoire déjà retenu).
  */
@@ -116,7 +127,7 @@ export function selectTerritories(drafts: (TerritoryDraft & { source?: Territory
   const rejected: { name: string; reason: string }[] = [];
   for (const [i, d] of drafts.entries()) {
     const style = brief.style !== "auto" ? brief.style : (d.style ?? defaultStyle(d));
-    const t: Territory = { ...d, id: `t${i + 1}`, source: d.source ?? "ai", symbolIdea: d.symbolIdea ?? null, style, descriptor: cleanDescriptor(d.descriptor, brief) };
+    const t: Territory = { ...d, id: `t${i + 1}`, source: d.source ?? "ai", symbolIdea: d.symbolIdea ?? null, style, descriptor: cleanDescriptor(d.descriptor, brief) ?? (d.descriptor?.trim() ? fallbackDescriptor(brief) : null) };
     if (brief.rejectedMarkTypes.includes(t.markType)) {
       rejected.push({ name: t.name, reason: `type « ${t.markType} » refusé par le client` });
       continue;

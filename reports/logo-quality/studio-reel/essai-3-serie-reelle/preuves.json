@@ -1,0 +1,379 @@
+{
+  "jobId": "37jqyyzl9et8kgke",
+  "status": "done",
+  "error": null,
+  "durationS": 395,
+  "devis": [
+    "Créer 3 logos complets dessinés par l'IA d'images ? Devis : 1,58 € au maximum (3 images et leurs relectures), décompté de votre budget IA. Ce montant est aussi le plafond : rien ne sera dépensé au-delà, et aucune image ne sera relancée sans votre accord."
+  ],
+  "cartesImagesDistinctes": 3,
+  "erreursJS": [],
+  "items": [
+    {
+      "n": 1,
+      "assetId": "bt7dv6xsk4ube9bh",
+      "role": "logo-v2-trial",
+      "file": "1-original.png",
+      "direction": "L’Aplomb",
+      "style": "premium",
+      "concept": "Une signature premium où « Sébastien Blanc » est composé comme un nom d’artisan reconnu. Les lettres sont redessinées avec des verticales fermes, des courbes maîtrisées et quelques terminaisons coupées avec la netteté d’une finition parfaitement dressée.",
+      "imageBrief": "Create a refined typographic signature built entirely around the name. Draw a contemporary serif wordmark with firm vertical stems, moderate stroke contrast and carefully sharpened terminals. Introduce one restrained proprietary detail: several letter endings share the same short, clean diagonal cut, suggesting the crisp edge of a perfectly finished surface without depicting a tool. Set the name prominently, with balanced spacing and excellent legibility; place the activity line below in small uppercase sans serif with generous tracking. Use deep warm charcoal #292520 for the lettering and terracotta #AD684A only on one discreet typographic cut or separator. Keep all proportions calm and architectural on a plain white background. Deliver precise vector-level curves and optical corrections. Avoid script lettering, luxury clichés, generic construction icons, badges, shadows and mockup effects.",
+      "colors": [
+        "#292520",
+        "#AD684A",
+        "#D8C8B3"
+      ],
+      "provider": "openai:gpt-image-2",
+      "costEur": 0.1892,
+      "verdict": "REJECTED",
+      "score": 2.7,
+      "reason": "défaut bloquant : amateur, artifacts",
+      "codes": [
+        "amateur",
+        "artifacts",
+        "weak_relevance",
+        "weak_originality",
+        "weak_craft",
+        "weak_typography",
+        "weak_composition",
+        "weak_colour",
+        "weak_legibility",
+        "weak_memorability",
+        "weak_distinctiveness",
+        "weak_intendedUse"
+      ],
+      "criteria": {
+        "relevance": 3,
+        "originality": 4,
+        "craft": 2,
+        "typography": 2,
+        "composition": 2,
+        "colour": 4,
+        "legibility": 2,
+        "memorability": 3,
+        "distinctiveness": 3,
+        "intendedUse": 2
+      },
+      "issues": [
+        "Le nom principal est disloqué en fragments surdimensionnés et superposés : plusieurs lettres de « Sébastien Blanc » sont coupées, fusionnées ou hors séquence, ce qui empêche toute lecture immédiate.",
+        "La petite répétition lisible de « Sébastien Blanc » ne compense pas l’illisibilité du mot-symbole principal et crée deux niveaux concurrents pour le même nom.",
+        "La construction typographique présente des anomalies manifestes de génération : portions de lettres flottantes, caractères incomplets, jonctions incohérentes et masses noires sans correspondance alphabétique claire.",
+        "La composition manque d’aplomb malgré le concept annoncé : les lignes sont décalées sans axe structurant, avec de grands vides accidentels et une hiérarchie instable.",
+        "Sur fond sombre, le contraste du noir contre l’anthracite est insuffisant ; presque tout le nom disparaît, y compris à grande taille.",
+        "Aux tailles réduites présentées, le mot-symbole devient une accumulation de fragments et la ligne d’activité cesse rapidement d’être exploitable.",
+        "Le langage éditorial premium est perceptible dans le contraste typographique et l’accent terre cuite, mais l’exécution paraît expérimentale plutôt que précise, fiable et parfaitement finie."
+      ],
+      "fix": {
+        "target": "typography",
+        "instruction": "Reconstruire intégralement « Sébastien Blanc » comme un mot-symbole lisible sur deux lignes maximum, sans répétition du nom ni chevauchement : conserver une serif contrastée et un seul détail de coupe net sur une ou deux terminaisons, puis aligner les lignes sur un axe ferme et prévoir une version inversée claire pour le fond sombre."
+      },
+      "prompt": "Design a complete, professional logo for the brand \"Sébastien Blanc\" (plâtrier peintre: Plâtrerie, Peinture, Plâtrier peintre), as a top branding agency would present it — the logo artwork only, not a mockup.\nPositioning: Entreprise artisanale professionnelle, sérieuse et élégante, au savoir-faire reconnu, avec une attention particulière aux finitions. Clients: Particuliers qui rénovent leur logement autour de Mâcon. Personality: précis, artisan, fiable.\nCreative direction \"L’Aplomb\": Une signature premium où « Sébastien Blanc » est composé comme un nom d’artisan reconnu. Les lettres sont redessinées avec des verticales fermes, des courbes maîtrisées et quelques terminaisons coupées avec la netteté d’une finition parfaitement dressée.\nArt direction: Create a refined typographic signature built entirely around the name. Draw a contemporary serif wordmark with firm vertical stems, moderate stroke contrast and carefully sharpened terminals. Introduce one restrained proprietary detail: several letter endings share the same short, clean diagonal cut, suggesting the crisp edge of a perfectly finished surface without depicting a tool. Set the name prominently, with balanced spacing and excellent legibility; place the activity line below in small uppercase sans serif with generous tracking. Use deep warm charcoal #292520 for the lettering and terracotta #AD684A only on one discreet typographic cut or separator. Keep all proportions calm and architectural on a plain white background. Deliver precise vector-level curves and optical corrections. Avoid script lettering, luxury clichés, generic construction icons, badges, shadows and mockup effects.\nStyle: PREMIUM logo: restraint and precision — a refined serif or an elegant sans-serif, generous spacing, one discreet signature detail, one or two colours, a timeless high-end feel; no gimmicks, no fake luxury.\nColours: #292520, #AD684A, #D8C8B3 (chosen for this direction); white or near-black only if needed.\nText in the logo, spelled EXACTLY with the same accents and spaces: the name \"Sébastien Blanc\", and smaller, the activity line \"PLÂTRERIE • PEINTURE\". No other words, no slogan, no fake or extra letters.\nAlso avoid: Une calligraphie décorative ou difficile à lire, Des contrastes typographiques trop précieux, Un effet doré ou un faux code de maison de luxe, Un encadrement de type badge, Une texture appliquée sur toutes les lettres. Never copy or imitate an existing logo.\nQuality bar: a real agency-quality logo, drawn with care and personality, every element deliberate; refined details and a precise finish; a deliberate typographic treatment of the name (weights, spacing, hierarchy with the activity line), not a default font simply typed; balanced proportions; a mark that could only belong to this business and would not look out of place in a premium branding portfolio.\nAvoid poor concepts: a plain circle, triangle or rounded square used as the symbol with no graphic idea; a generic stamp or seal with no personality; letters simply placed inside a square or circle frame; a standard font with no composition; a symbol that could belong to any company; decoration added without intent; stock-icon clichés. Simple shapes are welcome only when they carry a real idea (a cut, a negative space, a construction, a double reading).\nNo people: no person, face, hands or human silhouette.\nOutput: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas."
+    },
+    {
+      "n": 2,
+      "assetId": "hspts9xczwzezf6t",
+      "role": "logo-v2-trial",
+      "file": "2-original.png",
+      "direction": "Le Joint Maîtrisé",
+      "style": "monogram",
+      "concept": "Un monogramme SB construit d’un seul tenant : la courbe du S vient lisser et refermer la jonction entre les deux fûts du B. Une réserve centrale rappelle subtilement le profil d’un joint de plaque après passage de l’enduit, sans représenter littéralement un outil.",
+      "imageBrief": "Design a genuinely interlocked SB monogram rather than two adjacent initials. Build both letters from shared geometric strokes, with the lower curve of the first letter flowing into the vertical structure of the second. At their shared center, carve a tapered negative-space seam: broadest in the middle and feathered to very thin ends, like a drywall joint after expert skim coating. Pair the mark horizontally with the name in a clean medium-weight grotesque; place the activity line underneath in smaller uppercase letters with wide tracking. Use green charcoal #26302F for the principal drawing, warm clay #B96F4B for one controlled inner segment, and optional sand #E4D4C0 for minor detail only. Keep the background pure white and the geometry optically balanced. Avoid literal tools, framed initials, house symbols, badges, excessive overlap and illegible letterforms.",
+      "colors": [
+        "#26302F",
+        "#B96F4B",
+        "#E4D4C0"
+      ],
+      "provider": "openai:gpt-image-2",
+      "costEur": 0.1892,
+      "verdict": "REJECTED",
+      "score": 6,
+      "reason": "sous la barrière (6.0/10, attendu 8) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)",
+      "codes": [
+        "weak_relevance",
+        "weak_craft",
+        "weak_colour",
+        "weak_legibility",
+        "weak_intendedUse"
+      ],
+      "criteria": {
+        "relevance": 6,
+        "originality": 6,
+        "craft": 6,
+        "typography": 7,
+        "composition": 7,
+        "colour": 5,
+        "legibility": 6,
+        "memorability": 6,
+        "distinctiveness": 6,
+        "intendedUse": 5
+      },
+      "issues": [
+        "La réserve centrale orange évoque davantage une flamme ou une feuille qu’un joint de plaque lissé, ce qui affaiblit la pertinence métier du concept annoncé.",
+        "Le filet clair extrêmement fin placé à gauche de la forme orange disparaît aux petites tailles et crée une fragilité d’impression inutile.",
+        "Sur fond sombre, le vert très sombre manque nettement de contraste : le monogramme et surtout le nom deviennent difficiles à lire.",
+        "Le monogramme paraît davantage formé par un « 3B » que par un « SB » au premier regard, car la construction du S est trop fermée et ambiguë.",
+        "La ligne « PLÂTRIER PEINTRE » est trop espacée et trop fine dans les petites déclinaisons présentées ; elle devient illisible bien avant le nom.",
+        "La typographie du nom est propre mais assez standard et entretient peu de dialogue formel avec les courbes épaisses du monogramme."
+      ],
+      "fix": {
+        "target": "symbol",
+        "instruction": "Redessiner la jonction centrale comme une réserve nette et symétriquement maîtrisée évoquant réellement un joint enduit, sans forme de flamme ni filet clair ; ouvrir légèrement la construction du S pour que les initiales SB soient immédiatement identifiables, puis prévoir une version inversée claire pour les fonds sombres."
+      },
+      "prompt": "Design a complete, professional logo for the brand \"Sébastien Blanc\" (plâtrier peintre: Plâtrerie, Peinture, Plâtrier peintre), as a top branding agency would present it — the logo artwork only, not a mockup.\nPositioning: Entreprise artisanale professionnelle, sérieuse et élégante, au savoir-faire reconnu, avec une attention particulière aux finitions. Clients: Particuliers qui rénovent leur logement autour de Mâcon. Personality: précis, artisan, fiable.\nCreative direction \"Le Joint Maîtrisé\": Un monogramme SB construit d’un seul tenant : la courbe du S vient lisser et refermer la jonction entre les deux fûts du B. Une réserve centrale rappelle subtilement le profil d’un joint de plaque après passage de l’enduit, sans représenter littéralement un outil.\nArt direction: Design a genuinely interlocked SB monogram rather than two adjacent initials. Build both letters from shared geometric strokes, with the lower curve of the first letter flowing into the vertical structure of the second. At their shared center, carve a tapered negative-space seam: broadest in the middle and feathered to very thin ends, like a drywall joint after expert skim coating. Pair the mark horizontally with the name in a clean medium-weight grotesque; place the activity line underneath in smaller uppercase letters with wide tracking. Use green charcoal #26302F for the principal drawing, warm clay #B96F4B for one controlled inner segment, and optional sand #E4D4C0 for minor detail only. Keep the background pure white and the geometry optically balanced. Avoid literal tools, framed initials, house symbols, badges, excessive overlap and illegible letterforms.\nStyle: MONOGRAM logo: the initials built into a distinctive mark (interlaced, cut, stacked, or combined with an element drawn from THIS business only when it adds meaning), placed above or beside the full name in clean capitals.\nColours: #26302F, #B96F4B, #E4D4C0 (chosen for this direction); white or near-black only if needed.\nText in the logo, spelled EXACTLY with the same accents and spaces: the name \"Sébastien Blanc\", and smaller, the activity line \"PLÂTRIER PEINTRE\". No other words, no slogan, no fake or extra letters.\nAlso avoid: Deux initiales simplement juxtaposées, Un monogramme enfermé dans un cercle ou un cadre, Une truelle littérale, Une maison, un mur ou des briques, Des entrelacs décoratifs qui nuisent à la lecture. Never copy or imitate an existing logo.\nQuality bar: a real agency-quality logo, drawn with care and personality, every element deliberate; refined details and a precise finish; a deliberate typographic treatment of the name (weights, spacing, hierarchy with the activity line), not a default font simply typed; balanced proportions; a mark that could only belong to this business and would not look out of place in a premium branding portfolio.\nAvoid poor concepts: a plain circle, triangle or rounded square used as the symbol with no graphic idea; a generic stamp or seal with no personality; letters simply placed inside a square or circle frame; a standard font with no composition; a symbol that could belong to any company; decoration added without intent; stock-icon clichés. Simple shapes are welcome only when they carry a real idea (a cut, a negative space, a construction, a double reading).\nNo people: no person, face, hands or human silhouette.\nOutput: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas."
+    },
+    {
+      "n": 3,
+      "assetId": "fbrb8ftf9yxewhlf",
+      "role": "logo-v2-trial",
+      "file": "3-original.png",
+      "direction": "Le Passage de Matière",
+      "style": "illustrated",
+      "concept": "Un symbole expressif montre deux gestes complémentaires : une large trace d’enduit, mate et légèrement irrégulière, est traversée par une reprise plus fine et parfaitement régulière évoquant la mise en peinture finale. Le contraste raconte le passage du support brut à la finition maîtrisée.",
+      "imageBrief": "Create an expressive craft symbol showing a broad vertical skim-coat imprint crossed by a narrower, perfectly controlled painted passage. The plaster shape should have subtle mineral edges, a dense center and delicately feathered margins, while the painted passage remains smooth, opaque and sharply terminated. The result must clearly communicate surface preparation followed by an immaculate finish, not an abstract swoosh. Place the symbol above the name, with the name set in a confident semi-bold humanist sans serif and the activity line below in smaller, widely tracked uppercase. Use dark mineral brown #302824 for the lettering, ochre #C48850 for the controlled paint passage and warm plaster #DDCFBB for the textured imprint. Work on a pure white background with sophisticated vector-texture control. Avoid literal brushes, rollers or trowels, random splashes, dirty grunge, gradients, badges and stock-icon styling.",
+      "colors": [
+        "#302824",
+        "#C48850",
+        "#DDCFBB"
+      ],
+      "provider": "openai:gpt-image-2",
+      "costEur": 0.1892,
+      "verdict": "REJECTED",
+      "score": 6.7,
+      "reason": "sous la barrière (6.7/10, attendu 8) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)",
+      "codes": [],
+      "criteria": {
+        "relevance": 8,
+        "originality": 6,
+        "craft": 7,
+        "typography": 7,
+        "composition": 7,
+        "colour": 7,
+        "legibility": 7,
+        "memorability": 6,
+        "distinctiveness": 6,
+        "intendedUse": 6
+      },
+      "issues": [
+        "Le symbole évoque immédiatement l’enduit et la peinture, mais les deux traces paraissent surtout juxtaposées : l’idée annoncée de reprise traversant la matière et de transformation du brut vers la finition n’est pas pleinement visible.",
+        "La trace d’enduit est riche et crédible, mais son rendu très texturé, presque photographique, contraste avec la bande orange plus simple et réduit l’unité illustrative du symbole.",
+        "Sur fond sombre, le nom et la ligne d’activité manquent fortement de contraste et deviennent difficiles à lire ; cette déclinaison n’est pas exploitable en l’état.",
+        "La composition verticale laisse beaucoup d’espace entre le symbole et le nom, ce qui affaiblit la cohésion du bloc-marque et augmente inutilement sa hauteur.",
+        "À petite taille, la ligne « PLÂTRERIE • PEINTURE » devient trop fine et trop espacée pour rester confortablement lisible.",
+        "Le dispositif à deux traces reste assez proche d’un langage visuel courant dans les identités de peintres et décorateurs ; il manque une singularité de forme propre à Sébastien Blanc."
+      ],
+      "fix": {
+        "target": "symbol",
+        "instruction": "Redessiner les deux gestes comme une seule transition clairement construite : faire pénétrer la bande peinte dans la trace d’enduit avec une zone de recouvrement maîtrisée, harmoniser leur niveau de détail, puis créer une déclinaison sombre où toute la typographie passe en clair avec un contraste franc."
+      },
+      "prompt": "Design a complete, professional logo for the brand \"Sébastien Blanc\" (plâtrier peintre: Plâtrerie, Peinture, Plâtrier peintre), as a top branding agency would present it — the logo artwork only, not a mockup.\nPositioning: Entreprise artisanale professionnelle, sérieuse et élégante, au savoir-faire reconnu, avec une attention particulière aux finitions. Clients: Particuliers qui rénovent leur logement autour de Mâcon. Personality: précis, artisan, fiable.\nCreative direction \"Le Passage de Matière\": Un symbole expressif montre deux gestes complémentaires : une large trace d’enduit, mate et légèrement irrégulière, est traversée par une reprise plus fine et parfaitement régulière évoquant la mise en peinture finale. Le contraste raconte le passage du support brut à la finition maîtrisée.\nArt direction: Create an expressive craft symbol showing a broad vertical skim-coat imprint crossed by a narrower, perfectly controlled painted passage. The plaster shape should have subtle mineral edges, a dense center and delicately feathered margins, while the painted passage remains smooth, opaque and sharply terminated. The result must clearly communicate surface preparation followed by an immaculate finish, not an abstract swoosh. Place the symbol above the name, with the name set in a confident semi-bold humanist sans serif and the activity line below in smaller, widely tracked uppercase. Use dark mineral brown #302824 for the lettering, ochre #C48850 for the controlled paint passage and warm plaster #DDCFBB for the textured imprint. Work on a pure white background with sophisticated vector-texture control. Avoid literal brushes, rollers or trowels, random splashes, dirty grunge, gradients, badges and stock-icon styling.\nStyle: ILLUSTRATED logo: a crafted illustrative icon or scene of the trade, drawn with a confident, consistent line; several brand colours and refined shading are welcome; rich but controlled detail, like a premium agency illustration — never clip-art.\nColours: #302824, #C48850, #DDCFBB (chosen for this direction); white or near-black only if needed.\nText in the logo, spelled EXACTLY with the same accents and spaces: the name \"Sébastien Blanc\", and smaller, the activity line \"PLÂTRERIE • PEINTURE\". No other words, no slogan, no fake or extra letters.\nAlso avoid: Une simple tache de peinture, Un coup de pinceau générique, Un rouleau ou une truelle dessinés littéralement, Un symbole trop gestuel ressemblant à un swoosh, Une texture sale ou excessivement grunge. Never copy or imitate an existing logo.\nQuality bar: a real agency-quality logo, drawn with care and personality, every element deliberate; refined details and a precise finish; a deliberate typographic treatment of the name (weights, spacing, hierarchy with the activity line), not a default font simply typed; balanced proportions; a mark that could only belong to this business and would not look out of place in a premium branding portfolio.\nAvoid poor concepts: a plain circle, triangle or rounded square used as the symbol with no graphic idea; a generic stamp or seal with no personality; letters simply placed inside a square or circle frame; a standard font with no composition; a symbol that could belong to any company; decoration added without intent; stock-icon clichés. Simple shapes are welcome only when they carry a real idea (a cut, a negative space, a construction, a double reading).\nNo people: no person, face, hands or human silhouette.\nOutput: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas."
+    }
+  ],
+  "calls": [
+    {
+      "task": "logo_symbol",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 2576,
+      "output_tokens": 4206,
+      "cost": 119592,
+      "latency_ms": 66091,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791650816496
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2",
+      "requested_model": "gpt-image-2",
+      "status": "ok",
+      "input_tokens": 751,
+      "output_tokens": 7177,
+      "cost": 189200,
+      "latency_ms": 86233,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791650902862
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 4162,
+      "output_tokens": 612,
+      "cost": 33686,
+      "latency_ms": 11658,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791650916832
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 3051,
+      "output_tokens": 674,
+      "cost": 35286,
+      "latency_ms": 12506,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791650930560
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2",
+      "requested_model": "gpt-image-2",
+      "status": "ok",
+      "input_tokens": 781,
+      "output_tokens": 7177,
+      "cost": 189200,
+      "latency_ms": 83796,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791651014777
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 4174,
+      "output_tokens": 665,
+      "cost": 35105,
+      "latency_ms": 11474,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791651028557
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2",
+      "requested_model": "gpt-image-2",
+      "status": "ok",
+      "input_tokens": 774,
+      "output_tokens": 7177,
+      "cost": 189200,
+      "latency_ms": 86741,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791651115698
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 4181,
+      "output_tokens": 563,
+      "cost": 32504,
+      "latency_ms": 14391,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791651132784
+    }
+  ],
+  "reservations": [
+    {
+      "status": "reconciled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": 0
+    },
+    {
+      "status": "released",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": null
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "amount": 56124,
+      "actual": 890
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": 107603
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 257757,
+      "actual": 119686
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 257988,
+      "actual": 119592
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129843,
+      "actual": 33686
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129843,
+      "actual": 35286
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129897,
+      "actual": 35105
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129929,
+      "actual": 32504
+    }
+  ],
+  "totalCoutFournisseurEur": 0.823773
+}

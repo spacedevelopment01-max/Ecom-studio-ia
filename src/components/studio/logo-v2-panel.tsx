@@ -16,7 +16,7 @@ type Proposal = {
   id: string;
   url?: string;
   territory: { name: string; concept: string; why: string; markType: string; composition: string; typography: string; distinctive: string; source: "ai" | "local"; style?: string | null; descriptor?: string | null };
-  artwork?: { textCorrected: boolean; originalUrl: string | null; provider: string | null; costMicro: number | null; issues: string[]; choosable: boolean; previous: string | null } | null;
+  artwork?: { textCorrected: boolean; originalUrl: string | null; provider: string | null; costMicro: number | null; fix: string | null; issues: string[]; choosable: boolean; previous: string | null } | null;
   font: string;
   score: number | null;
   verdict: string | null;
@@ -195,6 +195,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
                 <img src={d.url} alt={d.territory.name} className="mb-3 w-full rounded-lg bg-[#F4F3EF] object-contain p-4" />
                 <p className="text-xs text-ink-2">{d.reason}</p>
                 {!!d.artwork?.issues.length && <p className="mt-1 text-xs text-muted">{d.artwork.issues.join(" ; ")}</p>}
+                {d.artwork?.fix && <p className="mt-1 text-xs text-ink-2"><strong>{t("À corriger dans une nouvelle version :", "To fix in a new version:")}</strong> {d.artwork.fix}</p>}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {d.artwork?.choosable && <Button size="sm" variant="secondary" icon={<Check className="size-4" />} loading={busy === d.id} onClick={() => { if (window.confirm(t("Ce logo n'a pas atteint le niveau du contrôle. Le choisir quand même ?", "This logo did not reach the check's level. Choose it anyway?"))) post({ action: "choose", assetId: d.id }, t("Logo choisi : déclinaisons et charte en préparation.", "Logo chosen: variations and guidelines being prepared."), d.id); }}>{t("Choisir quand même", "Choose anyway")}</Button>}
                   <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} loading={busy === `v${d.id}`} onClick={() => redraw(d)}>{t("Nouvelle version", "New version")}</Button>
@@ -258,13 +259,15 @@ function SeriesProgress({ job, live, runId, runAt }: { job: JobRow; live: Live |
   // État de CHAQUE étape, d'après ce qui s'est réellement passé (une étape sans résultat n'est jamais cochée en vert).
   const past = (k: Live["stage"]) => ["prepare", "images", "save", "done"].indexOf(stage) > ["prepare", "images", "save", "done"].indexOf(k);
   const count = (n: number): StepState => (n === total ? "done" : n === 0 ? "failed" : "partial");
-  const prep: StepState = stage === "prepare" ? (failed ? "failed" : "active") : "done";
-  const imgs: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "drawing") ? "active" : drawn ? "partial" : "active") : total ? count(drawn) : failed ? "failed" : "done";
-  const revs: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "checking") ? "active" : checked ? "partial" : "todo") : total ? (drawn === 0 ? "failed" : count(checked)) : failed ? "failed" : "done";
+  // Échec AVANT les directions (aucune direction établie) : c'est cette étape qui a échoué, les suivantes n'ont pas eu lieu.
+  const beforeDirs = failed && total === 0;
+  const prep: StepState = stage === "prepare" || beforeDirs ? (failed ? "failed" : "active") : "done";
+  const imgs: StepState = stage === "prepare" || beforeDirs ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "drawing") ? "active" : drawn ? "partial" : "active") : total ? count(drawn) : failed ? "failed" : "done";
+  const revs: StepState = stage === "prepare" || beforeDirs ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "checking") ? "active" : checked ? "partial" : "todo") : total ? (drawn === 0 ? "failed" : count(checked)) : failed ? "failed" : "done";
   const res: StepState = failed ? "failed" : stage === "done" ? (total && checked === 0 ? "failed" : "done") : past("images") ? "active" : "todo";
   // Réception et sauvegarde des images (logos complets dessinés par l'IA d'images seulement).
   const saved = dirs.filter((d) => d.progress?.phase === "saved").length;
-  const recv: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.progress && d.progress.phase !== "saved") ? "active" : saved ? "partial" : "todo") : total ? count(saved) : failed ? "failed" : "done";
+  const recv: StepState = stage === "prepare" || beforeDirs ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.progress && d.progress.phase !== "saved") ? "active" : saved ? "partial" : "todo") : total ? count(saved) : failed ? "failed" : "done";
   const provider = live?.art ? (live.art.startsWith("openai") ? "OpenAI" : live.art.startsWith("google") ? "Gemini" : live.art) : null;
   const steps: { key: string; label: string; detail: string; state: StepState }[] = [
     { key: "prepare", label: t("Brief et directions", "Brief and directions"), detail: total ? t(`${total} direction(s)`, `${total} direction(s)`) : "", state: prep },
@@ -296,7 +299,13 @@ function SeriesProgress({ job, live, runId, runAt }: { job: JobRow; live: Live |
         <div className="mt-3 text-sm" role="alert">
           <p className="font-medium text-bad">{job.status === "cancelled" ? t("Création annulée.", "Creation canceled.") : t("La création des logos a échoué.", "Logo creation failed.")}</p>
           {(live?.error || job.error) && <p className="mt-1 text-xs">{live?.error || job.error}</p>}
-          <p className="mt-1 text-xs text-muted">{t("Une image refusée par le fournisseur n'est pas facturée. Corrigez la cause (modèle choisi pour « Logos », budget, clé) puis relancez.", "An image refused by the provider is not billed. Fix the cause (model chosen for \"Logos\", budget, key) then try again.")}</p>
+          <p className="mt-1 text-xs text-muted">
+            {/incertain|uncertain/i.test(live?.error || job.error || "")
+              ? t("Résultat incertain : le coût maximal a été retenu par prudence. Vérifiez la consommation chez le fournisseur avant de relancer.", "Uncertain result: the maximum cost was kept as a precaution. Check the provider's usage before trying again.")
+              : beforeDirs
+                ? t("Aucune image n'a été demandée pour cette série. Corrigez la cause indiquée puis relancez.", "No image was requested for this series. Fix the cause shown, then try again.")
+                : t("Une image refusée par le fournisseur n'est pas facturée. Corrigez la cause (modèle choisi pour « Logos », budget, clé) puis relancez.", "An image refused by the provider is not billed. Fix the cause (model chosen for \"Logos\", budget, key) then try again.")}
+          </p>
         </div>
       )}
       {!!dirs.length && (

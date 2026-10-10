@@ -3,8 +3,8 @@
  *
  * Ils ne font QUE traduire une demande neutre vers le format du fournisseur et la réponse en retour : budget,
  * réservation, autorisation, idempotence, trace et facturation restent dans llm.ts (rawCall), identiques pour
- * tous les fournisseurs. Aucune relance automatique ici : une réponse d'erreur HTTP remonte avec son code (rien
- * n'a été produit ni facturé), toute autre erreur est un résultat incertain.
+ * tous les fournisseurs. Aucune relance automatique ici : une réponse d'erreur HTTP remonte avec son code, toute
+ * autre erreur est un résultat incertain.
  */
 export type TextPart = { type: "text"; text: string } | { type: "image"; jpegBase64: string };
 export type TextTurn = { role: "user" | "assistant"; parts: TextPart[] };
@@ -88,8 +88,56 @@ export async function openaiCount(req: TextRequest, key: string, fetcher: Fetch 
   return Number(j?.input_tokens);
 }
 
+/**
+ * Réponse en FLUX (SSE) : les en-têtes et les événements arrivent dès le début, ce qui évite qu'un relais réseau
+ * coupe une réflexion longue (502 au bout d'environ 30 s sans réponse, constaté en réel). Le résultat est lu dans
+ * l'événement final (`response.completed` / `incomplete` / `failed`), de même forme que la réponse classique.
+ * Flux terminé sans événement final ou événement d'erreur : résultat incertain (jamais une erreur HTTP).
+ */
+async function postStream(fetcher: Fetch, url: string, headers: Record<string, string>, body: Record<string, unknown>) {
+  const r = await fetcher(url, { method: "POST", headers: { "content-type": "application/json", accept: "text/event-stream", ...headers }, body: JSON.stringify({ ...body, stream: true }) });
+  if (!r.ok) {
+    const text = await r.text();
+    let msg = text.slice(0, 300);
+    try {
+      msg = String(JSON.parse(text)?.error?.message ?? msg).slice(0, 300);
+    } catch {}
+    throw new ProviderHttpError(r.status, msg);
+  }
+  // Réponse classique (relais ou serveur sans flux) : lue telle quelle.
+  if (!/event-stream/i.test(r.headers.get("content-type") ?? "")) return JSON.parse(await r.text());
+  let final: any = null;
+  let failure: string | null = null;
+  const handle = (block: string) => {
+    const data = block.split("\n").filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trimStart()).join("\n");
+    if (!data || data === "[DONE]") return;
+    let ev: any;
+    try {
+      ev = JSON.parse(data);
+    } catch {
+      return;
+    }
+    if (ev?.type === "response.completed" || ev?.type === "response.incomplete" || ev?.type === "response.failed") final = ev.response;
+    else if (ev?.type === "error") failure = String(ev?.message ?? ev?.error?.message ?? "erreur du flux").slice(0, 300);
+  };
+  const dec = new TextDecoder();
+  let buf = "";
+  for await (const chunk of r.body as unknown as AsyncIterable<Uint8Array>) {
+    buf += dec.decode(chunk, { stream: true }).replace(/\r\n/g, "\n");
+    let i: number;
+    while ((i = buf.indexOf("\n\n")) >= 0) {
+      handle(buf.slice(0, i));
+      buf = buf.slice(i + 2);
+    }
+  }
+  if (buf.trim()) handle(buf);
+  if (!final) throw new Error(`Flux OpenAI interrompu sans réponse finale${failure ? ` : ${failure}` : ""} (résultat incertain)`);
+  return final;
+}
+
 export async function openaiSend(req: TextRequest, key: string, fetcher: Fetch = fetch): Promise<TextResult> {
-  const j = await postJson(fetcher, `${OPENAI}/responses`, { authorization: `Bearer ${key}` }, openaiBody(req));
+  const j = await postStream(fetcher, `${OPENAI}/responses`, { authorization: `Bearer ${key}` }, openaiBody(req));
+  if (j?.status === "failed") throw new Error(`Réponse OpenAI en échec : ${String(j?.error?.message ?? "sans détail").slice(0, 200)} (résultat incertain)`);
   let text = "";
   let refused = false;
   for (const item of j?.output ?? []) {

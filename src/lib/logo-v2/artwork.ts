@@ -73,31 +73,78 @@ export function artworkText(t: Territory, brief: BrandBrief) {
   return { name: brief.name, descriptor: t.descriptor, tagline: brief.tagline };
 }
 
+/**
+ * Niveau de finition exigé, quel que soit le style (ce qui distinguait l'essai direct réussi des demandes du studio :
+ * une vraie exigence de dessin, pas une liste d'options).
+ */
+export const QUALITY_BAR =
+  "Quality bar: a real agency-quality logo, drawn with care and personality, every element deliberate; refined details and a precise finish; a deliberate typographic treatment of the name (weights, spacing, hierarchy with the activity line), not a default font simply typed; balanced proportions; a mark that could only belong to this business and would not look out of place in a premium branding portfolio.";
+
+/**
+ * Concepts pauvres, refusés pour toutes les marques (la simplicité reste permise quand elle porte une vraie idée).
+ * Mots génériques seulement : aucun objet ni métier d'un client.
+ */
+export const POOR_CONCEPTS =
+  "Avoid poor concepts: a plain circle, triangle or rounded square used as the symbol with no graphic idea; a generic stamp or seal with no personality; letters simply placed inside a square or circle frame; a standard font with no composition; a symbol that could belong to any company; decoration added without intent; stock-icon clichés. Simple shapes are welcome only when they carry a real idea (a cut, a negative space, a construction, a double reading).";
+
+/** Partie du brief de direction artistique gardée dans la limite de taille de la demande (le texte exact reste entier). */
+const fitBrief = (brief: string, room: number) => (Buffer.byteLength(brief, "utf8") <= room ? brief : `${Buffer.from(brief, "utf8").subarray(0, Math.max(0, room - 3)).toString("utf8").replace(/\uFFFD+$/, "").replace(/\s+\S*$/, "")}…`);
+
 /** Demande complète au modèle d'images pour un territoire (en anglais : langue la mieux suivie par ces modèles). */
 export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string): string {
   const pal = brief.palette;
   const ink = pal[t.colorRole.ink];
   const accent = pal[t.colorRole.accent];
-  const others = [...new Set(Object.values(pal))].filter((c) => c !== ink && c !== accent).slice(0, 3);
   const txt = artworkText(t, brief);
-  const caseWord = t.typography.case === "upper" ? "capitals" : t.typography.case === "lower" ? "lowercase" : "title case";
-  return [
-    `Design a complete, professional logo for the brand "${brief.name}" (${brief.trade.label || brief.activity}), as a top branding agency would present it — the logo artwork only, not a mockup.`,
-    `Creative direction "${t.name}": ${t.concept}`,
-    `Style: ${STYLE_GUIDE[t.style]}`,
-    t.symbolIdea ? `Symbol idea: ${t.symbolIdea}.` : "",
-    t.distinctive ? `What makes it memorable: ${t.distinctive}.` : "",
-    `Composition: ${COMPOSITION[t.composition]}. Typography: ${TYPO[t.typography.style]}, ${t.typography.weight} weight, ${caseWord}, ${t.typography.tracking} letter-spacing.`,
-    `Colours: the brand palette — main ink ${ink}, accent ${accent}${others.length ? `, also available ${others.join(", ")}` : ""}${t.style === "gradient" ? "; gradients are built only from these colours" : ""}; white or near-black only if needed.`,
-    `Text in the logo, spelled EXACTLY with the same accents and spaces: the name "${txt.name}"${txt.descriptor ? `, and smaller, the activity line "${txt.descriptor}"` : ""}${txt.tagline ? `, and smallest, the slogan "${txt.tagline}"` : ""}. No other words, no slogan${txt.tagline ? " other than this one" : ""}, no fake or extra letters.`,
-    `Nothing is imposed: no shape, object, initials, texture or composition is required — follow this direction only. An object or gesture of this business${brief.trade.objects.length ? ` (here, for example: ${brief.trade.objects.slice(0, 3).join(", ")})` : ""} may be used when it is integrated in an original, professional way. Avoid only clumsy stock-icon clichés${t.avoid.length ? ` and: ${t.avoid.slice(0, 6).join(", ")}` : ""}. Never copy or imitate an existing logo.`,
-    feedback ? `Requested changes for this new version: ${feedback}.` : "",
-    "No people: no person, face, hands or human silhouette.",
-    "Output: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas.",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const upper = t.typography.case === "upper";
+  // Couleurs : celles de la direction quand la palette n'est pas validée (choisies pour la marque), sinon la palette.
+  const own = !brief.paletteLocked && t.colors?.length ? t.colors.filter((c) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 3) : [];
+  const colours = own.length ? `Colours: ${own.join(", ")}.` : `Colours: ${[...new Set([ink, accent])].join(" and ")}, from the brand palette.`;
+  const end = (x: string) => x.trim().replace(/[.\s]+$/, "");
+  const trade = brief.trade.label || brief.activity;
+  const acts = brief.activities.filter((a) => a.toLowerCase() !== trade.toLowerCase()).slice(0, 3);
+  const name = upper ? txt.name.toLocaleUpperCase("fr-FR") : txt.name;
+  // Même forme que l'essai direct réussi : peu de consignes, toutes positives, une marque forte décrite précisément.
+  // Le brief de direction artistique décrit le dessin ; sans brief, la direction, le style et l'idée de symbole.
+  const art = t.imageBrief?.trim()
+    ? `A real agency-quality logo: ${end(briefWithoutText(t.imageBrief.trim(), brief.name))}.`
+    : [
+        `A real agency-quality logo, creative direction "${t.name}": ${end(t.concept)}.`,
+        `Style: ${STYLE_GUIDE[t.style]}`,
+        t.symbolIdea ? `Symbol idea: ${end(t.symbolIdea)}.` : "",
+        `Composition: ${COMPOSITION[t.composition]}. Typography: ${TYPO[t.typography.style]}, ${t.typography.weight} weight.`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+  const lines = [
+    `Design a beautiful, professional logo for "${brief.name}", ${trade}${acts.length ? ` (${acts.join(", ")})` : ""}.`,
+    art,
+    colours,
+    `The name, perfectly legible${upper ? ", in capitals" : ""}: "${name}"${txt.descriptor ? `; smaller and spaced underneath, the activity line: "${txt.descriptor}"` : ""}${txt.tagline ? `; smallest, the slogan: "${txt.tagline}"` : ""}.`,
+    "Spell every word exactly, with the accents. No other text.",
+    feedback ? `Changes for this version: ${end(feedback)}.` : "",
+    "Centered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo, no people.",
+  ];
+  const fixed = lines.filter(Boolean).join("\n");
+  // Taille bornée (devis) : seul le brief est raccourci, jamais le texte exact ni la sortie.
+  if (Buffer.byteLength(fixed, "utf8") <= PROMPT_BUDGET) return fixed;
+  const room = PROMPT_BUDGET - (Buffer.byteLength(fixed, "utf8") - Buffer.byteLength(art, "utf8")) - 20;
+  return lines.map((l) => (l === art ? fitBrief(art, room) : l)).filter(Boolean).join("\n");
 }
+
+/** Taille maximale d'une demande (même borne que le devis : LOGO_PROMPT_MAX_BYTES du moteur multimédia). */
+const PROMPT_BUDGET = 3800;
+
+/**
+ * Brief sans texte recopié : un texte cité (nom ou ligne d'activités réécrite à sa façon) contredirait le texte exact
+ * imposé plus loin et ferait écrire au modèle d'images de mauvais mots. Le nom cité devient « the name », un mot du
+ * nom ou des initiales (3 lettres au plus) restent tels quels, toute autre citation devient « the activity line ».
+ */
+export function briefWithoutText(text: string, name: string): string {
+  const fold = (x: string) => x.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/\s+/g, " ").trim().toLowerCase();
+  return text.replace(/[“"«]\s*([^”"»]{1,120}?)\s*[”"»]/g, (m, q: string) => (fold(q) === fold(name) ? "the name" : fold(name).includes(fold(q)) || q.replace(/[^\p{L}]/gu, "").length <= 3 ? m : "the activity line"));
+}
+
 
 // ---------------------------------------------------------------- image : nettoyage, planche
 
@@ -130,13 +177,24 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
   typographic: { widths: [360, 160, 80], uses: "tous supports ; le nom doit rester lisible en petit" },
 };
 
+/** Pixels sombres (encre) passés en blanc, couleurs gardées : version fidèle pour fonds sombres (déclinaison du studio). */
+export async function onDarkVersion(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) {
+    const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+    if (lum < 0.38) data[i] = data[i + 1] = data[i + 2] = 255;
+  }
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}
+
 /** Planche de relecture d'un logo complet : grand format sur fond neutre et sur blanc, sur fond sombre, puis aux tailles prévues. */
 export async function artworkBoard(png: Buffer, style: LogoStyle): Promise<Buffer> {
   const fit = (w: number, h: number) => sharp(png).resize({ width: w, height: h, fit: "inside" }).png().toBuffer();
   const cell = async (w: number, h: number, bg: string, img: Buffer) => sharp({ create: { width: w, height: h, channels: 4, background: bg } }).composite([{ input: img, gravity: "center" }]).png().toBuffer();
   const a = await cell(900, 860, "#F4F3EF", await fit(820, 800));
   const b = await cell(680, 420, "#FFFFFF", await fit(600, 380));
-  const c = await cell(680, 420, "#16161A", await fit(600, 380));
+  // Fond sombre : la version claire que le studio produit à partir de ce logo (l'original sombre n'y est jamais utilisé).
+  const c = await cell(680, 420, "#16161A", await sharp(await onDarkVersion(png)).resize({ width: 600, height: 380, fit: "inside" }).png().toBuffer());
   const sizes = INTENDED_SIZES[style].widths;
   const row = await Promise.all(sizes.map((w) => fit(w, Math.round(w * 0.7))));
   let x = 30;
@@ -164,14 +222,14 @@ export async function artworkBoard(png: Buffer, style: LogoStyle): Promise<Buffe
  * pertinence, un signe minimaliste aussi sur sa tenue en petit, un logo typographique d'abord sur la typographie.
  */
 export const STYLE_WEIGHTS: Record<LogoStyle, Record<ArtCriterion, number>> = {
-  illustrated: { relevance: 1.3, originality: 1.1, craft: 1.5, typography: 1, composition: 1.1, legibility: 1, memorability: 1.2, intendedUse: 0.8 },
-  textured: { relevance: 1.2, originality: 1.1, craft: 1.5, typography: 1, composition: 1.1, legibility: 1, memorability: 1.2, intendedUse: 0.8 },
-  emblem: { relevance: 1.2, originality: 1, craft: 1.3, typography: 1.1, composition: 1.3, legibility: 1, memorability: 1.1, intendedUse: 0.9 },
-  gradient: { relevance: 1.1, originality: 1.2, craft: 1.3, typography: 1, composition: 1.1, legibility: 1, memorability: 1.2, intendedUse: 0.9 },
-  premium: { relevance: 1.1, originality: 1.1, craft: 1.3, typography: 1.5, composition: 1.2, legibility: 1.1, memorability: 1.1, intendedUse: 1 },
-  minimal: { relevance: 1.2, originality: 1.3, craft: 1.1, typography: 1.1, composition: 1, legibility: 1, memorability: 1.2, intendedUse: 1.2 },
-  monogram: { relevance: 1.1, originality: 1.3, craft: 1.2, typography: 1.2, composition: 1.1, legibility: 1, memorability: 1.2, intendedUse: 1.1 },
-  typographic: { relevance: 1.1, originality: 1.2, craft: 1.1, typography: 1.6, composition: 1.1, legibility: 1.2, memorability: 1.1, intendedUse: 1 },
+  illustrated: { relevance: 1.3, originality: 1.1, craft: 1.5, typography: 1, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 0.8 },
+  textured: { relevance: 1.2, originality: 1.1, craft: 1.5, typography: 1, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 0.8 },
+  emblem: { relevance: 1.2, originality: 1, craft: 1.3, typography: 1.1, composition: 1.3, colour: 1, legibility: 1, memorability: 1.1, distinctiveness: 1.2, intendedUse: 0.9 },
+  gradient: { relevance: 1.1, originality: 1.2, craft: 1.3, typography: 1, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 0.9 },
+  premium: { relevance: 1.1, originality: 1.1, craft: 1.3, typography: 1.5, composition: 1.2, colour: 1, legibility: 1.1, memorability: 1.1, distinctiveness: 1.2, intendedUse: 1 },
+  minimal: { relevance: 1.2, originality: 1.3, craft: 1.1, typography: 1.1, composition: 1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 1.2 },
+  monogram: { relevance: 1.1, originality: 1.3, craft: 1.2, typography: 1.2, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 1.1 },
+  typographic: { relevance: 1.1, originality: 1.2, craft: 1.1, typography: 1.6, composition: 1.1, colour: 1, legibility: 1.2, memorability: 1.1, distinctiveness: 1.2, intendedUse: 1 },
 };
 
 export function artworkScore(r: Pick<ArtworkReview, "criteria">, style: LogoStyle): number {
@@ -191,6 +249,7 @@ export function artworkCodes(r: ArtworkReview, expected: { name: string }): stri
   if (r.resemblesKnownBrand) codes.push("resembles_known_brand");
   if (r.amateur) codes.push("amateur");
   if (r.artifacts) codes.push("artifacts");
+  if (r.genericConcept) codes.push("generic_concept");
   return codes;
 }
 
@@ -199,14 +258,15 @@ export function gateArtwork(r: ArtworkReview, t: Territory, expected: { name: st
   return decide("logo_artwork", { checker: "ai", score: artworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues: r.issues }, { attempt });
 }
 
-export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur de création exigeant d'une grande agence de branding. Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre, puis aux tailles prévues pour ce style.
+export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur de création exigeant d'une grande agence de branding. Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre (la VERSION CLAIRE produite automatiquement par le studio à partir de ce logo : juge sa tenue, pas le contraste des couleurs d'origine sur fond sombre), puis aux tailles prévues pour ce style.
 Style demandé : ${style}. Juge-le selon CE style : ${STYLE_GUIDE[style]}
 Une texture, plusieurs couleurs, des dégradés ou un détail illustré ne sont PAS des défauts quand le style les demande. La lisibilité se juge aux usages réellement prévus (${INTENDED_SIZES[style].uses}), pas à 16 px pour un logo illustré : une version simplifiée distincte servira aux favicons, tampons et broderies.
-Un objet ou un geste du métier de CETTE entreprise, bien intégré, est permis (jamais exigé) ; « clumsyCliche » = seulement un cliché MALADROIT (icône de banque d'images, assemblage convenu, rendu clip-art).
-Note de 0 à 10 : relevance (évoque CETTE entreprise et son métier), originality, craft (qualité d'exécution du dessin : traits, matière, cohérence), typography (choix et dessin du texte), composition (équilibre, hiérarchie), legibility (le nom se lit d'un coup d'œil aux tailles prévues), memorability, intendedUse (tient aux usages prévus).
+Juge comme le ferait le client final (une petite entreprise et sa clientèle) : le logo est-il BEAU, soigné, professionnel, et fait-il comprendre le métier au premier regard ? Les éléments attendus du métier (outils, matières, produits, lieu), un emblème rond ou un arc, une écriture script, deux couleurs franches ne sont PAS des défauts quand ils sont bien dessinés ; « clumsyCliche » = seulement un dessin grossier, mal exécuté, façon clip-art bas de gamme.
+Note de 0 à 10 : relevance (évoque CETTE entreprise, son positionnement et sa clientèle), originality, craft (qualité d'exécution du dessin : traits, matière, cohérence, finition), typography (choix, dessin et traitement du texte : graisses, approches, hiérarchie nom / activité), composition (équilibre, proportions, hiérarchie), colour (accord et cohérence des couleurs, contraste), legibility (le nom se lit d'un coup d'œil aux tailles prévues), memorability, distinctiveness (n'appartient qu'à CETTE marque, se distingue des logos du secteur), intendedUse (tient aux usages professionnels prévus).
+« genericConcept » = true quand la proposition repose SEULEMENT sur une forme vide sans rien du métier (cercle, triangle ou carré sans contenu), une abstraction que personne ne peut relier au métier, une police standard posée sans composition ou une décoration sans intention. Une icône du métier bien dessinée, un emblème rond réunissant les éléments du métier ou une signature script soignée ne sont PAS des concepts pauvres.
 Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : un mot non autorisé (slogan inventé, lettres parasites). « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
 « artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA. « resemblesKnownBrand » : rappelle un logo connu. « amateur » : rendu de générateur, déséquilibré, daté.
-Sois strict : 8 se mérite ; un logo seulement correct n'est pas présenté. Ne relève pas une note pour faire passer un logo moyen. « issues » : défauts concrets. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;
+Sois strict : 8 se mérite ; un logo seulement correct n'est pas présenté. Ne relève pas une note pour faire passer un logo moyen. « issues » : défauts concrets et précis (ce qui ne va pas, où, pourquoi), jamais des généralités. « fix » : LA correction la plus utile pour une nouvelle version — cible (symbol, typography, composition, colour, concept) et consigne précise qui change vraiment la proposition (ex. « symbole trop générique : remplacer le cadre par une construction des deux lettres en réserve », « référence au métier trop littérale : garder le geste, abandonner l'objet ») ; « none » si rien à corriger. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;
 
 // ---------------------------------------------------------------- correction du texte sans redessin
 
@@ -236,6 +296,9 @@ export async function correctArtworkText(png: Buffer, box: TextBox, t: Territory
   const W = meta.width ?? 0;
   const H = meta.height ?? 0;
   if (!W || !H || box.w <= 0.05 || box.h <= 0.02) return null;
+  // Nom qui EST le dessin (logotype) ou nom en grand : une réécriture en police standard détruirait le logo. Rien
+  // n'est réécrit ; la proposition reste refusée avec sa faute, l'original intact (« Nouvelle version » pour corriger).
+  if (t.markType === "wordmark" || t.markType === "lettermark" || box.h > 0.16 || box.w * box.h > 0.12) return null;
   const pad = 0.012;
   const x0 = Math.floor(clamp01(box.x - pad) * W);
   const y0 = Math.floor(clamp01(box.y - pad) * H);

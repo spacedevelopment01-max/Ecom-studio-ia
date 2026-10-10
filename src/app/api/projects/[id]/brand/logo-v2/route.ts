@@ -50,7 +50,7 @@ function view(projectId: string) {
       url: `/api/files/${r.id}`,
       territory: { name: t.name, concept: t.concept, why: t.whyItFits, markType: t.markType, composition: t.composition, typography: t.typography?.style, distinctive: t.distinctive, source: t.source, style: t.style ?? null, descriptor: t.descriptor ?? null },
       // Logo complet de l'IA d'images : original conservé (avant réécriture du nom), défauts relevés, choix possible.
-      artwork: art ? { textCorrected: !!art.textCorrected, originalUrl: originals.has(r.id) ? `/api/files/${originals.get(r.id)}` : null, provider: art.provider ?? null, costMicro: typeof art.costMicro === "number" ? art.costMicro : null, issues: art.issues ?? [], choosable: artworkChoosable(m), previous: m.previous ?? null } : null,
+      artwork: art ? { textCorrected: !!art.textCorrected, originalUrl: originals.has(r.id) ? `/api/files/${originals.get(r.id)}` : null, provider: art.provider ?? null, costMicro: typeof art.costMicro === "number" ? art.costMicro : null, fix: art.fix?.instruction ?? null, issues: art.issues ?? [], choosable: artworkChoosable(m), previous: m.previous ?? null } : null,
       font: m.spec?.family,
       score: typeof m.gate?.score === "number" ? Math.round(m.gate.score * 10) / 10 : null,
       verdict: m.gate?.verdict ?? null,

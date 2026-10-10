@@ -89,6 +89,13 @@ export type Territory = {
   style: LogoStyle;
   /** Ligne d'activités proposée sous le nom (seulement des activités réelles), sinon null. */
   descriptor: string | null;
+  /**
+   * Brief de direction artistique écrit pour le modèle d'images (anglais) : ce que montre la marque et comment elle
+   * est dessinée, idée centrale, composition, traitement typographique, couleurs, finition, ce qu'il faut éviter.
+   */
+  imageBrief?: string;
+  /** Couleurs (HEX) choisies pour cette direction quand la palette n'est pas validée par le client. */
+  colors?: string[];
 };
 
 /** Proposition construite à partir d'un territoire. */
@@ -128,7 +135,7 @@ export type ReviewCriterion = (typeof REVIEW_CRITERIA)[number];
 
 /** Relecture d'un directeur artistique (IA, sur planche : fond neutre, noir et blanc, petite taille). */
 /** Relecture d'un logo complet de l'IA d'images (critères adaptés au style, usages réellement prévus). */
-export const ART_CRITERIA = ["relevance", "originality", "craft", "typography", "composition", "legibility", "memorability", "intendedUse"] as const;
+export const ART_CRITERIA = ["relevance", "originality", "craft", "typography", "composition", "colour", "legibility", "memorability", "distinctiveness", "intendedUse"] as const;
 export type ArtCriterion = (typeof ART_CRITERIA)[number];
 export type ArtworkReview = {
   criteria: Record<ArtCriterion, number>;
@@ -145,6 +152,14 @@ export type ArtworkReview = {
   issues: string[];
   /** Une version simplifiée est-elle nécessaire pour les petites tailles (favicon, tampon, broderie) ? */
   needsSimplifiedMark: boolean;
+  /**
+   * Concept pauvre : la proposition repose seulement sur une forme banale sans idée (cercle, carré arrondi, cachet sans
+   * personnalité, initiales encadrées, police standard sans composition, symbole interchangeable, décor sans intention).
+   * Une forme simple portée par une vraie idée graphique n'en est PAS un.
+   */
+  genericConcept?: boolean;
+  /** Correction la plus utile pour une nouvelle version : cible et consigne précise. */
+  fix?: { target: "symbol" | "typography" | "composition" | "colour" | "concept" | "none"; instruction: string };
 };
 
 export type LogoReview = {

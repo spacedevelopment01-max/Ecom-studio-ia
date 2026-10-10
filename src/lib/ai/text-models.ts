@@ -114,6 +114,23 @@ export const TEXT_MODELS: TextModel[] = [
   // tarif confirmé ; comptage exact gratuit par POST /v1/responses/input_tokens.
   {
     provider: "openai",
+    // Présent dans la liste des modèles du compte (GET /v1/models). Tarif public relevé sur des sources non
+    // officielles (4 $ / 20 $ ou 5 $ / 30 $ par million) : à saisir et confirmer dans l'administration.
+    model: "gpt-5.6-sol",
+    label: "GPT-5.6 Sol",
+    tier: "strong",
+    vision: true,
+    structured: true,
+    effort: { kind: "openai_reasoning", values: ["low", "medium", "high"], default: "medium" },
+    limits: { context: 128_000, maxOutput: 32_000, flatPriceUpTo: 128_000 },
+    latency: 3,
+    exactCount: true,
+    verified: false,
+    source: "https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml",
+    use: { fr: "Candidat pour la direction artistique et la stratégie de marque, à comparer à Opus 5.5 après essai réel.", en: "Candidate for art direction and brand strategy, to compare with Opus 5.5 after a real trial." },
+  },
+  {
+    provider: "openai",
     model: "gpt-5.6-terra",
     label: "GPT-5.6 Terra",
     tier: "standard",
