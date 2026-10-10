@@ -13,3 +13,4 @@ _site
 
 # Copies muettes des tutoriels (avant voix off), régénérables par scripts/build-tutorials.ts
 scripts/tutorials/silent/
+.studio-dev.pid
