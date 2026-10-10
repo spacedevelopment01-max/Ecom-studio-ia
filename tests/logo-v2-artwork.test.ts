@@ -142,9 +142,11 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(log.prompts[0]).toContain("une maison dont le toit devient un coup de pinceau");
     expect(r.shown.map((s) => s.territory.style)).toEqual(["illustrated", "minimal", "typographic"]);
     expect(r.shown.every((s) => s.candidate.symbolSource === "artwork" && s.verdict === "FINAL")).toBe(true);
-    // Ligne d'activités : réelle → gardée ; inventée (coaching) → retirée.
+    // Ligne d'activités : réelle → gardée ; inventée (coaching) → remplacée par les vraies activités du projet.
     expect(r.shown[0].territory.descriptor).toBe("PLÂTRERIE • PEINTURE • ENDUITS");
-    expect(r.shown[2].territory.descriptor).toBeNull();
+    expect(r.shown[2].territory.descriptor).not.toMatch(/COACHING|NUTRITION/);
+    const { fallbackDescriptor } = await import("@/lib/logo-v2/territories");
+    expect(r.shown[2].territory.descriptor).toBe(fallbackDescriptor(fr(() => brandDiscovery(loadProject(pid)))));
   });
 
   it("aucune consigne d'une marque devenue règle : demandes neutres pour une autre marque, seul le style de la direction est transmis", async () => {
@@ -413,5 +415,44 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(last).toContain("symbole interchangeable");
     await fr(() => redrawArtwork(job(pid, "brand.logo.v2.redraw"), pid, bad.assetId!, { feedback: "plus de contraste", ai: artAi(log) as any }));
     expect(log.prompts.at(-1)).toMatch(/plus de contraste\. fix — abandonner le carré/);
+  });
+});
+
+describe("brief de direction artistique sans texte recopié", () => {
+  it("le nom cité devient « the name », un mot du nom reste, une ligne d'activités réécrite devient « the activity line »", async () => {
+    const { briefWithoutText } = await import("@/lib/logo-v2/artwork");
+    const out = briefWithoutText('Draw “SÉBASTIEN BLANC” with the word "Blanc" in sand, then "PLÂTRIER PEINTRE" below; « ENDUITS ET LISSAGE » never.', "Sébastien Blanc");
+    expect(out).toBe('Draw the name with the word "Blanc" in sand, then the activity line below; the activity line never.');
+    expect(briefWithoutText("An interlocked “SB” monogram", "Sébastien Blanc")).toBe("An interlocked “SB” monogram");
+  });
+
+  it("ligne d'activités proposée hors des activités réelles : remplacée par les activités du projet, jamais inventée", async () => {
+    const { cleanDescriptor, fallbackDescriptor } = await import("@/lib/logo-v2/territories");
+    const brief = { activities: ["Plâtrerie", "Peinture", "Plâtrier peintre"], activity: "Plâtrier peintre", trade: { label: "plâtrier peintre", actions: [] } } as any;
+    expect(cleanDescriptor("ENDUITS ET LISSAGE • PEINTURE INTÉRIEURE", brief)).toBeNull();
+    expect(fallbackDescriptor(brief)).toBe("PLÂTRERIE • PEINTURE");
+    expect(fallbackDescriptor({ activities: [] })).toBeNull();
+  });
+});
+
+describe("corrections issues du test réel dans le studio", () => {
+  it("nom mal écrit dans un logotype (le nom EST le dessin) ou nom en grand : jamais réécrit en police standard par-dessus", async () => {
+    const { correctArtworkText } = await import("@/lib/logo-v2/artwork");
+    const png = await sharp({ create: { width: 400, height: 400, channels: 4, background: "#FFFFFF" } }).png().toBuffer();
+    const t = { markType: "wordmark", style: "premium", typography: { style: "high_contrast_serif", weight: "regular", case: "title" } } as any;
+    const brief = { name: "Sébastien Blanc", palette: {}, fontsLocked: null } as any;
+    expect(await correctArtworkText(png, { x: 0.1, y: 0.25, w: 0.8, h: 0.4 }, t, brief)).toBeNull();
+    // Symbole + nom, mais nom en très grand : même refus.
+    expect(await correctArtworkText(png, { x: 0.1, y: 0.3, w: 0.8, h: 0.3 }, { ...t, markType: "symbol_wordmark" }, brief)).toBeNull();
+  });
+
+  it("planche de relecture : sur fond sombre, la version claire du studio (l'encre sombre passe en blanc), pas l'original sombre", async () => {
+    const { artworkBoard } = await import("@/lib/logo-v2/artwork");
+    const png = await sharp({ create: { width: 600, height: 380, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: await sharp({ create: { width: 400, height: 200, channels: 4, background: "#202020" } }).png().toBuffer(), left: 100, top: 90 }]).png().toBuffer();
+    const board = await artworkBoard(png, "premium");
+    // Centre de la cellule « fond sombre » (926 + 340, 446 + 210) : encre claire.
+    const { data } = await sharp(board).extract({ left: 926 + 330, top: 446 + 200, width: 20, height: 20 }).raw().toBuffer({ resolveWithObject: true });
+    const avg = data.reduce((s, v) => s + v, 0) / data.length;
+    expect(avg).toBeGreaterThan(200);
   });
 });

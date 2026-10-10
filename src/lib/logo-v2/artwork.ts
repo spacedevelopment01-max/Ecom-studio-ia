@@ -133,8 +133,18 @@ export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string
   // les règles et la sortie ne sont jamais coupés).
   const fixed = [...head, ...tail].filter(Boolean).join("\n");
   const room = PROMPT_BUDGET - Buffer.byteLength(fixed, "utf8") - 20;
-  const art = t.imageBrief?.trim() ? `Art direction: ${fitBrief(t.imageBrief.trim(), room)}` : "";
+  const art = t.imageBrief?.trim() ? `Art direction: ${fitBrief(briefWithoutText(t.imageBrief.trim(), brief.name), room)}` : "";
   return [...head, art, ...tail].filter(Boolean).join("\n");
+}
+
+/**
+ * Brief sans texte recopié : un texte cité (nom ou ligne d'activités réécrite à sa façon) contredirait le texte exact
+ * imposé plus loin et ferait écrire au modèle d'images de mauvais mots. Le nom cité devient « the name », un mot du
+ * nom ou des initiales (3 lettres au plus) restent tels quels, toute autre citation devient « the activity line ».
+ */
+export function briefWithoutText(text: string, name: string): string {
+  const fold = (x: string) => x.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/\s+/g, " ").trim().toLowerCase();
+  return text.replace(/[“"«]\s*([^”"»]{1,120}?)\s*[”"»]/g, (m, q: string) => (fold(q) === fold(name) ? "the name" : fold(name).includes(fold(q)) || q.replace(/[^\p{L}]/gu, "").length <= 3 ? m : "the activity line"));
 }
 
 /** Taille maximale d'une demande (même borne que le devis : LOGO_PROMPT_MAX_BYTES du moteur multimédia). */
@@ -171,13 +181,24 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
   typographic: { widths: [360, 160, 80], uses: "tous supports ; le nom doit rester lisible en petit" },
 };
 
+/** Pixels sombres (encre) passés en blanc, couleurs gardées : version fidèle pour fonds sombres (déclinaison du studio). */
+export async function onDarkVersion(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) {
+    const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+    if (lum < 0.38) data[i] = data[i + 1] = data[i + 2] = 255;
+  }
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}
+
 /** Planche de relecture d'un logo complet : grand format sur fond neutre et sur blanc, sur fond sombre, puis aux tailles prévues. */
 export async function artworkBoard(png: Buffer, style: LogoStyle): Promise<Buffer> {
   const fit = (w: number, h: number) => sharp(png).resize({ width: w, height: h, fit: "inside" }).png().toBuffer();
   const cell = async (w: number, h: number, bg: string, img: Buffer) => sharp({ create: { width: w, height: h, channels: 4, background: bg } }).composite([{ input: img, gravity: "center" }]).png().toBuffer();
   const a = await cell(900, 860, "#F4F3EF", await fit(820, 800));
   const b = await cell(680, 420, "#FFFFFF", await fit(600, 380));
-  const c = await cell(680, 420, "#16161A", await fit(600, 380));
+  // Fond sombre : la version claire que le studio produit à partir de ce logo (l'original sombre n'y est jamais utilisé).
+  const c = await cell(680, 420, "#16161A", await sharp(await onDarkVersion(png)).resize({ width: 600, height: 380, fit: "inside" }).png().toBuffer());
   const sizes = INTENDED_SIZES[style].widths;
   const row = await Promise.all(sizes.map((w) => fit(w, Math.round(w * 0.7))));
   let x = 30;
@@ -241,7 +262,7 @@ export function gateArtwork(r: ArtworkReview, t: Territory, expected: { name: st
   return decide("logo_artwork", { checker: "ai", score: artworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues: r.issues }, { attempt });
 }
 
-export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur de création exigeant d'une grande agence de branding. Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre, puis aux tailles prévues pour ce style.
+export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur de création exigeant d'une grande agence de branding. Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre (la VERSION CLAIRE produite automatiquement par le studio à partir de ce logo : juge sa tenue, pas le contraste des couleurs d'origine sur fond sombre), puis aux tailles prévues pour ce style.
 Style demandé : ${style}. Juge-le selon CE style : ${STYLE_GUIDE[style]}
 Une texture, plusieurs couleurs, des dégradés ou un détail illustré ne sont PAS des défauts quand le style les demande. La lisibilité se juge aux usages réellement prévus (${INTENDED_SIZES[style].uses}), pas à 16 px pour un logo illustré : une version simplifiée distincte servira aux favicons, tampons et broderies.
 Un objet ou un geste du métier de CETTE entreprise, bien intégré, est permis (jamais exigé) ; « clumsyCliche » = seulement un cliché MALADROIT (icône de banque d'images, assemblage convenu, rendu clip-art).
@@ -279,6 +300,9 @@ export async function correctArtworkText(png: Buffer, box: TextBox, t: Territory
   const W = meta.width ?? 0;
   const H = meta.height ?? 0;
   if (!W || !H || box.w <= 0.05 || box.h <= 0.02) return null;
+  // Nom qui EST le dessin (logotype) ou nom en grand : une réécriture en police standard détruirait le logo. Rien
+  // n'est réécrit ; la proposition reste refusée avec sa faute, l'original intact (« Nouvelle version » pour corriger).
+  if (t.markType === "wordmark" || t.markType === "lettermark" || box.h > 0.16 || box.w * box.h > 0.12) return null;
   const pad = 0.012;
   const x0 = Math.floor(clamp01(box.x - pad) * W);
   const y0 = Math.floor(clamp01(box.y - pad) * H);

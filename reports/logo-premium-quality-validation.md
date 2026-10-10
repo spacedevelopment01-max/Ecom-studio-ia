@@ -196,3 +196,47 @@ Il faut aussi :
 - une clé OpenAI active dans Administration › Fournisseurs IA ;
 - « Logos » sur `gpt-image-2` avec un tarif d'au moins 0,22 $ ;
 - un modèle de contrôle qualité capable de lire une image (Claude, ou un modèle OpenAI activé dans Administration › Modèles).
+
+## 8. Mission 10 € — série réelle n° 3 et analyse de conception (10/10/2026)
+
+Dépense de la mission à ce stade : **1,05 €** (11 appels, aucun incertain), plafond appliqué dans le système de
+réservation du studio (10 € disponibles au départ, 8,95 € restants).
+
+| Étape réelle | Modèle | Résultat | Coût |
+|---|---|---|---|
+| Essai de flux texte | gpt-5.6-terra | réponse en 3 s, flux SSE à travers le relais | 0,0009 € |
+| Directions (avant correction) | gpt-5.6-sol | 5 directions en 57 s — trop abstraites | 0,108 € |
+| Directions (après correction) | gpt-5.6-sol | 5 directions en 71 s — concrètes | 0,120 € |
+| Série dans le studio (Marque › Créer les directions) | gpt-5.6-sol + 3 × gpt-image-2 + 4 relectures | 3 images reçues, enregistrées, affichées après rechargement ; 3 refus | 0,824 € |
+
+Preuves : `logo-quality/studio-reel/essai-3-serie-reelle/` (3 originaux, demandes exactes dans `preuves.json`, captures).
+
+### Pourquoi la série est faible alors que l'appel direct était bon
+
+Référence (appel direct, ~900 caractères) : un seul ordre positif et riche — un monogramme S B **fusionné** avec trois
+signes du métier reconnaissables (toit, truelle, coup de pinceau), matière, deux couleurs nommées, nom en capitales
+grasses avec BLANC en couleur, ligne d'activités espacée. Le modèle avait de quoi dessiner une marque forte.
+
+Demandes du studio (~3 500 caractères chacune) :
+1. **Trop de consignes, surtout négatives.** Environ 40 instructions, dont trois listes « à éviter » (celle de la
+   direction en français, « concepts pauvres », « clichés »). Interdire truelle, toit, pinceau, rouleau, texture… a
+   retiré exactement ce qui faisait la richesse de la référence ; le modèle a produit la solution la plus sûre.
+2. **Des idées conceptuelles invisibles en image.** « Terminaisons coupées comme une finition dressée » est devenu deux
+   petits traits rouges ; « réserve en forme de joint enduit » est devenu une flamme orange ; « passage du brut à la
+   finition » est devenu un échantillon d'enduit à côté d'une bande. Une idée qui doit être expliquée ne survit pas au
+   dessin.
+3. **Biais « subtilité » de nos consignes de directions** (« référence SUBTILE », « sans représenter littéralement un
+   outil »). Pour un artisan, la clientèle doit reconnaître le métier d'un coup d'œil ; la référence le fait par
+   fusion de signes, pas par allusion.
+4. **Manque de masse et de présence** : serif fine en minuscules (n° 1), grotesque moyenne (n° 2), humaniste
+   (n° 3), là où la référence a un symbole plein et des capitales grasses deux tons.
+5. **Symbole et nom séparés** (n° 3) : un échantillon de matière posé au-dessus du nom n'est pas une marque.
+6. **Texte dessiné par le modèle d'images** : nom en grand serif fin minuscule → faute « Sébastier ».
+
+### Défauts du studio prouvés par cette série (corrigés)
+
+- La « correction du nom » a écrit « Sébastien Blanc » en petit PAR-DESSUS le grand logotype : logo détruit, note 2,7
+  sur la version abîmée. Désormais aucune réécriture quand le nom est le dessin ou qu'il est grand (l'original reste).
+- La planche de contrôle montrait le logo sombre d'origine sur fond sombre : les 3 notes étaient pénalisées pour un
+  contraste que la version claire du studio règle. La planche montre maintenant la version claire.
+- Briefs qui recopiaient une ligne d'activités inventée ; fond coloré demandé ; repli vers les activités réelles.

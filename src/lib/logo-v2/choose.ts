@@ -10,7 +10,7 @@ import { assetData, getAsset, saveAsset } from "../library";
 import { markBrandLogo } from "../brain/brand-locks";
 import { canvasFamily } from "../media/fonts";
 import { brandBoard } from "./brand-board";
-import { faithfulSvg, STYLE_LABEL, correctArtworkText } from "./artwork";
+import { faithfulSvg, STYLE_LABEL, correctArtworkText, onDarkVersion } from "./artwork";
 import { brandDiscovery } from "./discovery";
 import { artworkInks, artworkSymbol, paletteFromInks, symbolFavicon } from "./identity";
 import { defaultStyle } from "./territories";
@@ -62,15 +62,6 @@ function proposalOf(projectId: string, assetId: string, opts: { byClient?: boole
   return { meta, verdict: (verdict === "FINAL" || verdict === "PROVISIONAL" ? verdict : "CLIENT") as "FINAL" | "PROVISIONAL" | "CLIENT" };
 }
 
-/** Pixels sombres (encre) passés en blanc, couleurs gardées : version fidèle pour fonds sombres. */
-async function onDark(png: Buffer): Promise<Buffer> {
-  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  for (let i = 0; i < data.length; i += 4) {
-    const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
-    if (lum < 0.38) data[i] = data[i + 1] = data[i + 2] = 255;
-  }
-  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
-}
 
 /** Silhouette d'une seule couleur (noir seul, blanc seul) : mêmes formes, transparence gardée. */
 async function silhouette(png: Buffer, hex: string): Promise<Buffer> {
@@ -97,7 +88,7 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   if (handle && !(cur.validated ?? []).includes("fonts")) saveBrand(projectId, { ...cur, fonts: { ...cur.fonts, heading: handle } });
   const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { engine: "logo-v2", artwork: true, territory: t.id, proposal: assetId } };
   const main = await saveAsset({ ...base, data: png, name: C("logo-principal.png", "logo-main.png"), mime: "image/png", role: "logo", sourceAssetId: assetId, status: "approved" });
-  const lightPng = await onDark(png);
+  const lightPng = await onDarkVersion(png);
   const light = await saveAsset({ ...base, data: lightPng, name: C("logo-fond-sombre.png", "logo-dark-background.png"), mime: "image/png", role: "logo-light", sourceAssetId: main.id });
   const monoPng = await silhouette(png, "#111111");
   await saveAsset({ ...base, data: monoPng, name: C("logo-noir.png", "logo-black.png"), mime: "image/png", role: "logo-mono", sourceAssetId: main.id });
