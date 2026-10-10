@@ -45,14 +45,22 @@ vi.mock("@anthropic-ai/sdk", () => {
 
 // OpenAI Images simulé : génération et retouche ; `mode` force une panne sans facturation.
 const PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-const oa = { calls: [] as any[], mode: "ok" as "ok" | "503" };
+const oa = { calls: [] as any[], mode: "ok" as "ok" | "503" | "429" | "400" };
 vi.mock("openai", () => {
   class OpenAI {
     constructor(public opts: any) {}
     private run = async (kind: string, p: any) => {
       oa.calls.push({ kind, ...p });
       if (oa.mode === "503") throw Object.assign(new Error("service unavailable"), { status: 503 });
-      return { data: [{ b64_json: PNG }], usage: { input_tokens: 300, output_tokens: 1000, input_tokens_details: { text_tokens: 300, image_tokens: 0 } } };
+      if (oa.mode === "429") throw Object.assign(new Error("rate limit"), { status: 429 });
+      if (oa.mode === "400") throw Object.assign(new Error("Transparent background is not supported for this model."), { status: 400 });
+      const usage = { input_tokens: 300, output_tokens: 1000, input_tokens_details: { text_tokens: 300, image_tokens: 0 } };
+      // Réponse en flux (modèles qui la permettent) : aperçus puis image finale, comme l'API.
+      if (p.stream) return (async function* () {
+        for (let i = 0; i < (p.partial_images ?? 0); i++) yield { type: `image_${kind === "edit" ? "edit" : "generation"}.partial_image`, partial_image_index: i, b64_json: PNG };
+        yield { type: `image_${kind === "edit" ? "edit" : "generation"}.completed`, b64_json: PNG, usage };
+      })();
+      return { data: [{ b64_json: PNG }], usage };
     };
     images = { generate: (p: any) => this.run("generate", p), edit: (p: any) => this.run("edit", p) };
   }
@@ -215,13 +223,34 @@ describe("routage multimédia par usage", async () => {
     const c = await client();
     setUsage("logo", { backup: "google:gemini-2.5-flash-image" });
     setUsage("scene", { backup: null });
-    oa.mode = "503";
+    // Refus net sans facturation (429) : le secours prend le relais. Une erreur 5xx, elle, est incertaine (plus bas).
+    oa.mode = "429";
     await fr(() => mp.logoSymbolImage(ctx(c), { concept: "onde" }));
     expect(net.calls.at(-1)!.url).toContain("gemini-2.5-flash-image");
     expect(reservations(c.userId).map((r) => `${r.status}:${r.model}`)).toEqual(["released:gpt-image-1", "settled:gemini-2.5-flash-image"]);
     const n = net.calls.length;
     await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow();
     expect(net.calls.length).toBe(n);
+  });
+
+  it("logo complet sur GPT Image 2 (pas de fond transparent) : aucune demande de transparence ; principal refusé + secours incapable d'écrire → l'erreur réelle est montrée, jamais « aucun fournisseur »", async () => {
+    const c = await client();
+    confirmModel("openai:gpt-image-2", { unit: "image", perImage: 0.2 });
+    setUsage("logo", { primary: "openai:gpt-image-2", backup: "google:gemini-2.5-flash-image" });
+    await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" }));
+    expect(oa.calls.at(-1)).toMatchObject({ kind: "generate", model: "gpt-image-2" });
+    expect(oa.calls.at(-1).background).toBeUndefined();
+    // Le modèle qui gère la transparence la reçoit toujours.
+    setUsage("logo", { primary: "openai:gpt-image-1" });
+    await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" }));
+    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-1", background: "transparent" });
+    // Principal refusé par OpenAI (rien de facturé) ; le secours (Gemini) ne sait pas écrire le nom : vraie erreur.
+    setUsage("logo", { primary: "openai:gpt-image-2", backup: "google:gemini-2.5-flash-image" });
+    oa.mode = "400";
+    const err = (await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" })).catch((e) => e)) as Error;
+    expect(err.message).toMatch(/Requête refusée par OpenAI/);
+    expect(err.message).not.toMatch(/Aucun fournisseur/);
+    expect(net.calls.filter((x) => x.url.includes(":generateContent"))).toHaveLength(0);
   });
 
   it("mode automatique par usage : seules les vidéos UGC passent en automatique (son natif), les autres restent manuels", () => {
@@ -387,8 +416,8 @@ describe("routage multimédia par usage", async () => {
     const file = storagePath(`ai-originals/${c.projectId}/${call.id}.png`);
     expect(fs.existsSync(file)).toBe(true);
     expect(fs.readFileSync(file).equals(Buffer.from(PNG, "base64"))).toBe(true);
-    // Échec avant facturation (fournisseur indisponible) : aucune image, aucun fichier.
-    oa.mode = "503";
+    // Échec avant facturation (refus du fournisseur) : aucune image, aucun fichier.
+    oa.mode = "429";
     await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow();
     expect(fs.readdirSync(storagePath(`ai-originals/${c.projectId}`))).toEqual([`${call.id}.png`]);
   });

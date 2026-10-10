@@ -30,7 +30,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
   const { selectTerritories, cleanDescriptor } = await import("@/lib/logo-v2/territories");
   const { artworkPrompt, artworkScore, cleanArtwork, faithfulSvg, gateArtwork, STYLE_GUIDE } = await import("@/lib/logo-v2/artwork");
   const { ART_CRITERIA } = await import("@/lib/logo-v2/types");
-  const { seedLogoFixture } = await import("./logo-v2-fixtures");
+  const { seedLogoFixture, artFixture } = await import("./logo-v2-fixtures");
   const { mockAi } = await import("./logo-v2-mock");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
 
@@ -48,13 +48,18 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
 
   // ---- images simulées (aucun appel) : aplats (minimaliste), matière bruitée (texturé, illustré)
   const svgPng = (body: string) => sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#FFFFFF"/>${body}</svg>`)).png().toBuffer();
-  const flatLogo = () => svgPng(`<circle cx="512" cy="380" r="220" fill="#8A3B26"/><rect x="262" y="700" width="500" height="90" fill="#222222"/>`);
-  async function texturedLogo() {
+  // Logo plat travaillé (anneau, pas une forme pleine de remplissage), nom en barre sombre dessous.
+  const flatLogo = () => artFixture(0);
+  /** Un dessin distinct par direction (une série n'est jamais faite de copies). */
+  const DIR_ART: Record<string, number> = { "Atelier illustré": 1, "Signe épuré": 2, Lettrage: 3 };
+  /** Matière bruitée ; `variant` : forme différente (série sans copies). */
+  async function texturedLogo(variant = 0) {
     const W = 1024;
     const data = Buffer.alloc(W * W * 3, 255);
     let seed = 7;
     const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
-    for (let y = 150; y < 650; y++) for (let x = 250; x < 780; x++) {
+    const [x0, x1, y0, y1] = [[250, 780, 150, 650], [120, 470, 100, 650], [560, 920, 120, 420], [250, 780, 420, 650]][variant % 4];
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
       const i = (y * W + x) * 3;
       const v = Math.round(60 + rnd() * 150);
       data[i] = Math.min(255, v + 60);
@@ -104,7 +109,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
       async drawArtwork(t: any, b: any, feedback?: string) {
         log.calls.push(`art:${t.name}${feedback ? ":v" : ""}`);
         log.prompts.push(artworkPrompt(t, b, feedback));
-        return (o.image ?? (() => flatLogo()))(t);
+        return (o.image ?? ((x: any) => artFixture(DIR_ART[x.name] ?? 0)))(t);
       },
       async reviewArtwork(_board: Buffer, t: any, _b: any, exp: any) {
         log.calls.push(`art-review:${t.name}`);
@@ -190,7 +195,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(gateArtwork(illustrated as any, t, { name: "X" }, 0).verdict).toBe("FINAL");
     const pid = sb();
     const log = newLog();
-    const r = await runEngine(pid, artAi(log, { image: () => texturedLogo(), reviews: { "Signe épuré": [(e) => artReview(7, e, { issues: ["symbole générique"] })] } }));
+    const r = await runEngine(pid, artAi(log, { image: (t: any) => texturedLogo(DIR_ART[t.name]), reviews: { "Signe épuré": [(e) => artReview(7, e, { issues: ["symbole générique"] })] } }));
     expect(r.shown.map((s) => s.territory.name)).toEqual(["Atelier illustré", "Lettrage"]);
     const bad = r.discarded.find((d) => d.territory.name === "Signe épuré")!;
     expect(bad.verdict).toBe("REJECTED");
@@ -232,10 +237,11 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     }
     expect(outsideDiff).toBe(0);
     expect(insideDiff).toBeGreaterThan(100);
-    // L'original de l'IA (avant correction) reste disponible.
+    // Le fichier reçu du fournisseur (avant nettoyage et correction) reste disponible, à l'identique.
     const original = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2-original' AND source_asset_id = ?", pid, s.assetId!);
     expect(original).toBeTruthy();
-    expect((await sharp(assetData(getAsset(original!.id)!)).raw().toBuffer()).equals(await sharp(clean).raw().toBuffer())).toBe(true);
+    expect(assetData(getAsset(original!.id)!).equals(raw)).toBe(true);
+    expect(clean.length).toBeGreaterThan(0);
   });
 
   it("fond blanc retiré même quand l'image a un canal alpha entièrement opaque ; un fond déjà transparent est gardé", async () => {
@@ -277,7 +283,10 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(brand.logo.status).toBe("validated");
     expect(brand.logo.engine).toBe("v2");
     const roleData = (role: string) => all<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = ? AND deleted_at IS NULL ORDER BY created_at DESC", pid, role);
-    for (const role of ["logo", "logo-light", "logo-mono", "logo-white", "logo-mark", "logo-mark-svg", "favicon", "brand-board", "brand-guide"]) expect(roleData(role).length, role).toBeGreaterThan(0);
+    for (const role of ["logo", "logo-webp", "logo-light", "logo-light-webp", "logo-mono", "logo-white", "logo-mark", "logo-mark-webp", "favicon", "brand-board", "brand-guide"]) expect(roleData(role).length, role).toBeGreaterThan(0);
+    // Symbole seul découpé dans le logo (matière texturée) : pas de SVG, il ne serait pas fidèle.
+    expect(JSON.parse(getAsset(roleData("logo-mark")[0].id)!.meta as any).symbolFromArtwork).toBe(true);
+    expect(roleData("logo-mark-svg")).toHaveLength(0);
     // Logo principal = l'original (pas une reconstruction).
     expect(assetData(getAsset(roleData("logo")[0].id)!).equals(assetData(getAsset(pick.assetId!)!))).toBe(true);
     // Texture : aucune version vectorielle imposée du logo complet.

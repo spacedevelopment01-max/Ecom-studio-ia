@@ -117,6 +117,10 @@ export type ArtworkInfo = {
   /** Nom réécrit par le studio avec une vraie police (sans redessiner l'illustration). */
   textCorrected: boolean;
   provider: string | null;
+  /** Coût réel de l'image (micro-euros, jetons facturés), quand le fournisseur l'a indiqué. */
+  costMicro?: number | null;
+  /** Empreinte visuelle (détection des copies quasi identiques dans une même série). */
+  hash?: string;
 };
 
 export const REVIEW_CRITERIA = ["relevance", "originality", "legibility", "typography", "composition", "balance", "memorability", "smallSize", "monochrome", "versatility"] as const;

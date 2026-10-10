@@ -496,7 +496,8 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
   it("images OpenAI : borne documentée par taille et qualité ; taille inconnue : bloquée", () => {
     const high = openaiImageMax("gpt-image-1", { prompt: "x".repeat(1000), images: 2, size: "1024x1536", quality: "high" });
     const medium = openaiImageMax("gpt-image-1", { prompt: "x".repeat(1000), images: 2, size: "1024x1536", quality: "medium" });
-    expect(high).toBe(Math.round(((1000 * 5 + 3000 * 10 + 6240 * 40) / 1e6) * usdToEur() * EUR));
+    // 6 240 jetons de sortie (haute qualité, 1024×1536) + 2 aperçus du flux (≈ 100 jetons chacun).
+    expect(high).toBe(Math.round(((1000 * 5 + 3000 * 10 + (6240 + 200) * 40) / 1e6) * usdToEur() * EUR));
     expect(medium).toBeLessThan(high);
     expect(() => openaiImageMax("gpt-image-1", { prompt: "x", images: 0, size: "2048x2048", quality: "high" })).toThrow(/sans borne de coût/);
   });

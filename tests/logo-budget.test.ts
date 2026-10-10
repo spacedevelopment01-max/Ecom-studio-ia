@@ -38,14 +38,22 @@ vi.mock("@anthropic-ai/sdk", () => {
   return { default: Anthropic, Anthropic };
 });
 
-const oa = { calls: [] as any[], b64: "" };
+const oa = { calls: [] as any[], b64: "", distinct: true };
 vi.mock("openai", () => {
   class OpenAI {
     constructor(public opts: any) {}
     private run = async (kind: string, p: any) => {
       oa.calls.push({ kind, ...p });
+      // Un dessin distinct par image demandée (une série n'est jamais faite de copies).
+      if (oa.distinct) oa.b64 = (await (await import("./logo-v2-fixtures")).artFixture(oa.calls.length - 1)).toString("base64");
       // Usage facturé typique d'un logo haute qualité 1024² (coût réel tracé, sous le maximum réservé).
-      return { data: [{ b64_json: oa.b64 }], usage: { input_tokens: 900, output_tokens: 4160, input_tokens_details: { text_tokens: 900, image_tokens: 0 } } };
+      const usage = { input_tokens: 900, output_tokens: 4160 + 100 * (p.partial_images ?? 0), input_tokens_details: { text_tokens: 900, image_tokens: 0 } };
+      // Réponse en flux (modèles qui la permettent) : aperçus puis image finale, comme l'API.
+      if (p.stream) return (async function* () {
+        for (let i = 0; i < (p.partial_images ?? 0); i++) yield { type: "image_generation.partial_image", partial_image_index: i, b64_json: oa.b64 };
+        yield { type: "image_generation.completed", b64_json: oa.b64, usage };
+      })();
+      return { data: [{ b64_json: oa.b64 }], usage };
     };
     images = { generate: (p: any) => this.run("generate", p), edit: (p: any) => this.run("edit", p) };
   }

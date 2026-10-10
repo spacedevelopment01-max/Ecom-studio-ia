@@ -24,6 +24,8 @@ export type BoardInput = {
   fonts: { heading: string; body: string; headingWeight?: number };
   styleLabel?: string;
   svgNote?: string;
+  /** La marque réduite est le symbole découpé dans le logo (sinon version simplifiée construite par le studio). */
+  markIsSymbol?: boolean;
 };
 
 const W = 2400;
@@ -102,7 +104,7 @@ export async function brandBoard(b: BoardInput): Promise<Buffer> {
     comps.push({ input: await markTile(t.s, t.bg), left: x, top: row2 + 20 + (200 - t.s) });
     x += t.s + 60;
   }
-  await label(L("Version simplifiée : favicon, tampon, broderie", "Simplified version: favicon, stamp, embroidery"), 70, row2 + 250);
+  await label(b.markIsSymbol ? L("Symbole seul, tiré du logo : favicon, avatar, tampon", "Symbol only, taken from the logo: favicon, avatar, stamp") : L("Version simplifiée : favicon, tampon, broderie", "Simplified version: favicon, stamp, embroidery"), 70, row2 + 250);
   // Couleurs exactes.
   const entries = Object.entries(b.palette).slice(0, 5);
   comps.push({

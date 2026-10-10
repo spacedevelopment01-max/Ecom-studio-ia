@@ -21,14 +21,21 @@ vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeP
 
 // OpenAI Images simulé (SDK) : génération et retouche ; `openaiMode` force une panne.
 const PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-const oa = { calls: [] as any[], mode: "ok" as "ok" | "503" };
+const oa = { calls: [] as any[], mode: "ok" as "ok" | "503" | "429" };
 vi.mock("openai", () => {
   class OpenAI {
     constructor(public opts: any) {}
     private run = async (kind: string, p: any) => {
       oa.calls.push({ kind, ...p });
       if (oa.mode === "503") throw Object.assign(new Error("service unavailable"), { status: 503 });
-      return { data: [{ b64_json: PNG }], usage: { input_tokens: 300, output_tokens: 1000, input_tokens_details: { text_tokens: 300, image_tokens: 0 } } };
+      if (oa.mode === "429") throw Object.assign(new Error("rate limit"), { status: 429 });
+      const usage = { input_tokens: 300, output_tokens: 1000, input_tokens_details: { text_tokens: 300, image_tokens: 0 } };
+      // Réponse en flux (modèles qui la permettent) : aperçus puis image finale, comme l'API.
+      if (p.stream) return (async function* () {
+        for (let i = 0; i < (p.partial_images ?? 0); i++) yield { type: "image_generation.partial_image", partial_image_index: i, b64_json: PNG };
+        yield { type: "image_generation.completed", b64_json: PNG, usage };
+      })();
+      return { data: [{ b64_json: PNG }], usage };
     };
     images = { generate: (p: any) => this.run("generate", p), edit: (p: any) => this.run("edit", p) };
   }
@@ -206,10 +213,14 @@ describe("routage multimédia V2", async () => {
     expect(reservations(c.userId).map((r) => r.provider)).toEqual(["google"]);
   });
 
-  it("image : OpenAI en panne (503, rien facturé) → secours Gemini ; fournisseur sans clé → secours directement", async () => {
+  it("image : OpenAI refuse (429, rien facturé) → secours Gemini ; 503 (peut-être facturé) → aucun secours ; fournisseur sans clé → secours directement", async () => {
     const c = await client();
     setJsonSetting("ai.media.backup", { image: "google:gemini-2.5-flash-image" });
     oa.mode = "503";
+    await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow();
+    expect(reservations(c.userId).map((r) => `${r.status}:${r.provider}`)).toEqual(["uncertain:openai"]);
+    run("DELETE FROM ai_reservations WHERE user_id = ?", c.userId);
+    oa.mode = "429";
     await fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }));
     expect(reservations(c.userId).map((r) => `${r.status}:${r.provider}`)).toEqual(["released:openai", "settled:google"]);
     keys.openai = null;
@@ -221,7 +232,7 @@ describe("routage multimédia V2", async () => {
     // Tarif saisi mais modèle NON confirmé : toujours pas utilisable comme secours.
     setJsonSetting("ai.prices", { "google:gemini-3.1-flash-image": { unit: "image", perImage: 0.067 } });
     setJsonSetting("ai.media.backup", { image: "google:gemini-3.1-flash-image" });
-    oa.mode = "503";
+    oa.mode = "429";
     await expect(fr(() => mp.logoSymbolImage(ctx(c), { concept: "une vague" }))).rejects.toThrow();
     expect(net.calls.length).toBe(0);
     expect(reservations(c.userId).map((r) => r.status)).toEqual(["released"]);

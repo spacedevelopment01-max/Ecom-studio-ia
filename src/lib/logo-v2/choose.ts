@@ -12,6 +12,7 @@ import { canvasFamily } from "../media/fonts";
 import { brandBoard } from "./brand-board";
 import { faithfulSvg, STYLE_LABEL, correctArtworkText } from "./artwork";
 import { brandDiscovery } from "./discovery";
+import { artworkInks, artworkSymbol, paletteFromInks, symbolFavicon } from "./identity";
 import { defaultStyle } from "./territories";
 import { json } from "../db";
 import { loadProject, saveBrand } from "../projects";
@@ -41,7 +42,7 @@ export function extraVariants(spec: LogoSpec): { role: string; name: string; spe
 }
 
 /** Défauts qui interdisent un logo complet même choisi par le client (nom faux, texte inventé, ressemblance). */
-const ARTWORK_NEVER = ["name_mismatch", "text_unreadable", "extra_text", "resembles_known_brand", "corrupt", "forbidden"];
+const ARTWORK_NEVER = ["name_mismatch", "text_unreadable", "extra_text", "resembles_known_brand", "corrupt", "forbidden", "placeholder_shape", "duplicate"];
 
 /**
  * Logo complet écarté par le contrôle mais présentable au CLIENT (son choix vaut contrôle humain) : seulement si le
@@ -101,22 +102,41 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   const monoPng = await silhouette(png, "#111111");
   await saveAsset({ ...base, data: monoPng, name: C("logo-noir.png", "logo-black.png"), mime: "image/png", role: "logo-mono", sourceAssetId: main.id });
   await saveAsset({ ...base, data: await silhouette(png, "#FFFFFF"), name: C("logo-blanc.png", "logo-white.png"), mime: "image/png", role: "logo-white", sourceAssetId: main.id });
-  // Version simplifiée (petites tailles) : initiale construite par le studio aux couleurs du logo, vectorielle.
-  const simple = await logoSet({ ...spec, tagline: undefined });
-  const markPng = simple.faviconPng;
-  const mark = await saveAsset({ ...base, data: simple.monoPng, name: C("version-simplifiee.png", "simplified-version.png"), mime: "image/png", role: "logo-mark", sourceAssetId: main.id, meta: { ...base.meta, simplified: true } });
-  await saveAsset({ ...base, data: Buffer.from(simple.monoSvg), name: C("version-simplifiee.svg", "simplified-version.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id });
+  // Symbole seul, découpé dans le logo original (favicon, avatar, tampon) ; à défaut (logotype seul), version
+  // simplifiée construite par le studio aux couleurs du logo, vectorielle.
+  const symbol = await artworkSymbol(png, meta.artwork?.textBox ?? null);
+  let markPng: Buffer;
+  let mark;
+  if (symbol) {
+    markPng = await symbolFavicon(symbol);
+    mark = await saveAsset({ ...base, data: symbol, name: C("symbole-seul.png", "symbol-only.png"), mime: "image/png", role: "logo-mark", sourceAssetId: main.id, meta: { ...base.meta, symbolFromArtwork: true } });
+    const symbolSvg = await faithfulSvg(symbol);
+    if (symbolSvg.ok) await saveAsset({ ...base, data: Buffer.from(symbolSvg.svg), name: C("symbole-seul.svg", "symbol-only.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id, meta: { ...base.meta, fidelity: Math.round(symbolSvg.fidelity * 1000) / 1000 } });
+  } else {
+    const simple = await logoSet({ ...spec, tagline: undefined });
+    markPng = simple.faviconPng;
+    mark = await saveAsset({ ...base, data: simple.monoPng, name: C("version-simplifiee.png", "simplified-version.png"), mime: "image/png", role: "logo-mark", sourceAssetId: main.id, meta: { ...base.meta, simplified: true } });
+    await saveAsset({ ...base, data: Buffer.from(simple.monoSvg), name: C("version-simplifiee.svg", "simplified-version.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id });
+  }
   const fav = await saveAsset({ ...base, data: markPng, name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
+  // Exports WebP (site, réseaux sociaux) : mêmes images, sans perte de qualité visible.
+  const webp = (img: Buffer) => sharp(img).webp({ quality: 92, alphaQuality: 100 }).toBuffer();
+  await saveAsset({ ...base, data: await webp(png), name: C("logo-principal.webp", "logo-main.webp"), mime: "image/webp", role: "logo-webp", sourceAssetId: main.id });
+  await saveAsset({ ...base, data: await webp(lightPng), name: C("logo-fond-sombre.webp", "logo-dark-background.webp"), mime: "image/webp", role: "logo-light-webp", sourceAssetId: main.id });
+  if (symbol) await saveAsset({ ...base, data: await webp(symbol), name: C("symbole-seul.webp", "symbol-only.webp"), mime: "image/webp", role: "logo-mark-webp", sourceAssetId: mark.id });
   // SVG du logo complet : seulement fidèle (sinon le PNG haute définition reste le livrable, sans version simplifiée imposée).
   const svg = await faithfulSvg(png);
   if (svg.ok) await saveAsset({ ...base, data: Buffer.from(svg.svg), name: C("logo-principal.svg", "logo-main.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-svg", sourceAssetId: main.id, meta: { ...base.meta, fidelity: Math.round(svg.fidelity * 1000) / 1000 } });
   const svgNote = svg.ok ? L(`Version vectorielle fidèle disponible (${Math.round(svg.fidelity * 100)} %).`, `Faithful vector version available (${Math.round(svg.fidelity * 100)}%).`) : L(`Pas de version vectorielle : ${svg.reason}.`, `No vector version: ${svg.reason}.`);
+  // Couleurs de la marque = couleurs mesurées dans le logo (sauf palette validée par le client).
   const after = loadProject(projectId).brand!;
-  saveBrand(projectId, { ...after, logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
+  const inks = await artworkInks(png);
+  const fromLogo = isLocked(after, "palette") ? null : paletteFromInks(inks);
+  saveBrand(projectId, { ...after, ...(fromLogo ? { palette: fromLogo } : {}), logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
   markBrandLogo(projectId, main.id);
   const { swapThemeLogos } = await import("../engine/identity");
   const fresh = loadProject(projectId).brand!;
-  swapThemeLogos(projectId, { logo: main.id, light: light.id, favicon: fav.id }, isLocked(fresh, "fonts") ? null : { heading: fresh.fonts.heading, body: fresh.fonts.body });
+  swapThemeLogos(projectId, { logo: main.id, light: light.id, favicon: fav.id }, isLocked(fresh, "fonts") ? null : { heading: fresh.fonts.heading, body: fresh.fonts.body }, fromLogo);
   // Planche d'identité : logo original, déclinaisons, couleurs exactes, typographies, applications.
   ctx?.progress(0.7, L("Planche d'identité de marque", "Brand identity board"));
   const board = await brandBoard({
@@ -129,6 +149,7 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
     fonts: { heading: canvasFamily(fresh.fonts.heading), body: canvasFamily(fresh.fonts.body), headingWeight: spec.weight },
     styleLabel: L(STYLE_LABEL[t.style][0], STYLE_LABEL[t.style][1]),
     svgNote,
+    markIsSymbol: !!symbol,
   });
   await saveAsset({ ...base, data: board, name: C("planche-identite.png", "identity-board.png"), mime: "image/png", role: "brand-board", sourceAssetId: main.id });
   if (opts.provisional) return { main, svg: svg.ok };

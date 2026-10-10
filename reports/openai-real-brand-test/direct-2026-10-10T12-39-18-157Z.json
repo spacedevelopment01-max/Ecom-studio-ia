@@ -1,0 +1,57 @@
+{
+  "at": "2026-10-10T12:40:50.208Z",
+  "requestedModel": "gpt-image-2",
+  "params": {
+    "size": "1024x1024",
+    "quality": "high",
+    "output_format": "png",
+    "background": "opaque",
+    "n": 1
+  },
+  "prompt": "Design a professional logo for a French craftsman: \"Sébastien Blanc\", plasterer and painter (plâtrerie, peinture, enduits).\nA real agency-quality logo: a crafted monogram of the initials S and B, drawn with care and personality, combined with an element of the trade (for example a roofline, a trowel stroke or a brush stroke), with a subtle material texture.\nTwo tones: deep charcoal grey (#2E2E33) and warm sand beige (#C8A27A).\nBelow the monogram, the name in clean, bold, perfectly legible capitals: \"SÉBASTIEN BLANC\" (the word BLANC in the beige tone), and underneath, smaller and spaced: \"PLÂTRERIE • PEINTURE\".\nSpell every word exactly, with the accents. No other text. Centered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo.",
+  "usage": {
+    "input_tokens": 209,
+    "input_tokens_details": {
+      "image_tokens": 0,
+      "text_tokens": 209
+    },
+    "output_tokens": 7177,
+    "output_tokens_details": {
+      "image_tokens": 7177,
+      "text_tokens": 0
+    },
+    "total_tokens": 7386
+  },
+  "costUsd": 0.2164,
+  "costEur": 0.1861,
+  "rates": {
+    "textIn": 5,
+    "imageIn": 8,
+    "imageOut": 30,
+    "usdToEur": 0.86,
+    "note": "tarifs publics relevés, non confirmés sur la page officielle"
+  },
+  "stream": {
+    "partialImages": 2,
+    "events": [
+      {
+        "atMs": 10646,
+        "type": "image_generation.partial_image",
+        "bytes": 927318
+      },
+      {
+        "atMs": 50623,
+        "type": "image_generation.partial_image",
+        "bytes": 926292
+      },
+      {
+        "atMs": 91964,
+        "type": "image_generation.completed",
+        "bytes": 924624
+      }
+    ]
+  },
+  "durationMs": 91972,
+  "bytes": 924623,
+  "file": "direct-2026-10-10T12-39-18-157Z.png"
+}
