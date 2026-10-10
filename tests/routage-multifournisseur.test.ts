@@ -92,6 +92,26 @@ describe("adaptateurs OpenAI et Gemini (réponses simulées)", async () => {
     expect((await geminiSend(req, "k", fake(200, { promptFeedback: { blockReason: "SAFETY" }, candidates: [] }))).stop).toBe("refusal");
   });
 
+  it("OpenAI en flux (SSE) : demande stream, réponse lue dans l'événement final ; flux coupé sans réponse finale : incertain", async () => {
+    const sse = (events: unknown[]) => {
+      let sent: any = null;
+      const f = (async (_u: string, init: any) => {
+        sent = JSON.parse(init.body);
+        const text = events.map((e) => `event: ${(e as any).type}\ndata: ${JSON.stringify(e)}\n\n`).join("");
+        return new Response(text, { status: 200, headers: { "content-type": "text/event-stream" } });
+      }) as unknown as typeof fetch;
+      return { f, body: () => sent };
+    };
+    const response = { status: "completed", model: "gpt-5.6-sol", output: [{ type: "message", content: [{ type: "output_text", text: "Bonjour" }] }], usage: { input_tokens: 10, output_tokens: 7 } };
+    const ok = sse([{ type: "response.created", response: { status: "in_progress" } }, { type: "response.output_text.delta", delta: "Bon" }, { type: "response.completed", response }]);
+    expect(await openaiSend(req, "k", ok.f)).toMatchObject({ text: "Bonjour", stop: "end_turn", model: "gpt-5.6-sol", usage: { input: 10, output: 7 } });
+    expect(ok.body().stream).toBe(true);
+    const cut = sse([{ type: "response.created", response: { status: "in_progress" } }, { type: "response.output_text.delta", delta: "Bon" }]);
+    const e = await openaiSend(req, "k", cut.f).then(() => null, (x: Error) => x);
+    expect(e).not.toBeInstanceOf(ProviderHttpError);
+    expect(e!.message).toMatch(/interrompu.*incertain/);
+  });
+
   it("comptage exact des jetons et erreurs HTTP remontées avec leur code", async () => {
     expect(await openaiCount(req, "k", fake(200, { object: "response.input_tokens", input_tokens: 321 }))).toBe(321);
     expect(await geminiCount(req, "k", fake(200, { totalTokens: 123 }))).toBe(123);
@@ -185,6 +205,29 @@ describe("mêmes garde-fous budgétaires pour OpenAI et Gemini", async () => {
     const r = reservations(u.id)[1];
     expect(r.status).toBe("uncertain");
     expect(r.actual).toBe(r.amount);
+  });
+
+  it("502 du relais (« upstream request failed ») : UN seul envoi, coût maximal retenu (incertain), arrêt sans relance ; 429 : relancé", async () => {
+    const u = await client("creer");
+    let sends = 0;
+    sendImpl = async () => {
+      sends++;
+      throw new ProviderHttpError(502, "upstream request failed");
+    };
+    await expect(text(u.id)).rejects.toThrow(/Résultat incertain chez openai \(HTTP 502 — upstream request failed\).*aucune relance automatique/);
+    expect(sends).toBe(1);
+    const r = reservations(u.id)[0];
+    expect(r.status).toBe("uncertain");
+    expect(r.actual).toBe(r.amount);
+    const { PermanentError } = await import("@/lib/jobs");
+    await expect(text(u.id)).rejects.toBeInstanceOf(PermanentError);
+    sends = 0;
+    sendImpl = async () => {
+      if (++sends === 1) throw new ProviderHttpError(429, "slow down");
+      return { text: "ok", stop: "end_turn", model: "gpt-5.6-terra", usage: { input: 1000, cachedInput: 0, output: 500 } };
+    };
+    await expect(text(u.id)).resolves.toBeTruthy();
+    expect(sends).toBe(2);
   });
 
   it("modèle non confirmé ou sans tarif : appel bloqué avant tout envoi", async () => {

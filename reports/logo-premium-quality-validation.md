@@ -129,9 +129,43 @@ Avoid poor concepts: a plain circle, triangle or rounded square used as the symb
 
 Les 3 directions du benchmark sont propres à ce projet. Elles sont dans `scripts/benchmark-logo-quality.ts`, jamais dans le moteur : pour les autres entreprises, c'est le modèle de texte qui écrit les directions et leurs briefs, selon leur secteur et leur positionnement. Un test vérifie qu'aucun mot de métier d'un client n'apparaît dans le code des générateurs.
 
-## 5. Tests
+## 5. Tests réels dans le studio (10/10/2026)
 
-[RÉSULTATS]
+Studio réel lancé dans Claude Cloud : site (`next start`), worker, base de démonstration séparée, OpenAI par la clé
+du relais réseau (jamais écrite). Compte client de démonstration, forfait « Vendre », budget 26,63 €.
+
+| Essai | Ce qui s'est passé | Appels OpenAI | Dépense tracée |
+|---|---|---|---|
+| 1 | Directions routées vers Anthropic (aucune clé) : échec masqué (« comptage impossible »), puis **repli silencieux** sur 3 logos construits. | 0 | 0 € |
+| Contrôle gratuit | Comptage exact de la demande des directions chez OpenAI (`gpt-5.6-sol`) : 2 266 jetons, coût maximal 0,26 €. Envoi bloqué volontairement ; réservation réconciliée à 0 €. | 0 envoi | 0 € |
+| 2 (accord : plafond 1,58 €) | Directions par `gpt-5.6-sol` : **502 « upstream request failed »** du relais au bout d'environ 30 s, **3 fois** (relances automatiques de l'ancien code), 96 s au total. Série arrêtée avant toute image, avec la raison affichée. | 3 envois, sans réponse | 0 € tracé — **réel non vérifiable** |
+
+Preuves : `logo-quality/studio-reel/essai-1-repli-local/` et `essai-2-502/` (captures de l'onglet Marque, `preuves.json` :
+appels, réservations, erreurs ; aucune clé).
+
+**Consommation réelle de l'essai 2 : non vérifiée.** La clé du relais n'a pas le droit `api.usage.read` (lecture de la
+consommation refusée par OpenAI). Si OpenAI a traité les 3 demandes, le maximum possible est 3 × 0,26 € ≈ **0,77 €**.
+À vérifier dans le tableau de bord OpenAI (Usage, 10/10/2026 vers 15 h 36–15 h 38 UTC, modèle `gpt-5.6-sol`).
+
+**Aucun logo OpenAI n'a encore été produit dans le studio** : la qualité des nouvelles demandes, les 3 cartes, les
+boutons, le rechargement, les coûts par image et l'identité complète **restent à démontrer** par une série réussie.
+
+### Défauts prouvés par ces essais, et corrigés
+
+| Défaut | Correction | Test |
+|---|---|---|
+| Aucun modèle de texte « fort » d'OpenAI au catalogue : directions envoyées à Anthropic sans clé | GPT-5.6 Sol ajouté (verrouillé jusqu'à confirmation et tarif dans l'administration) | `logo-openai-routage` |
+| Vraie raison masquée par « Comptage des jetons impossible » | La raison réelle remonte (fournisseur absent, code HTTP et message, sans secret) | `logo-openai-routage` |
+| Repli silencieux sur des logos construits après un devis de logos OpenAI accepté | La série s'arrête, la raison s'affiche, aucune image n'est demandée | `openai-streaming` |
+| Devis calculé sur la route manuelle, pas sur le modèle réellement choisi | Devis sur le modèle du routage automatique (1,58 € au lieu de 1,29 €) | `logo-openai-routage` |
+| Texte OpenAI : 502 relancé 2 fois et compté « non facturé » | Un 5xx est **incertain** : un seul envoi, coût maximal retenu, arrêt, aucune relance (même règle que les images) ; seul un 429 est relancé | `routage-multifournisseur` |
+| Texte OpenAI sans flux : relais coupé vers 30 s pendant la réflexion | Réponse **en flux** (SSE), comme les images qui passent déjà par le relais ; flux coupé sans réponse finale = incertain | `routage-multifournisseur` |
+| Onglet Marque : « Brief et directions » coché en vert alors que c'est l'étape en échec ; note « image refusée non facturée » hors sujet | Étape en échec marquée ✕, étapes suivantes non commencées ; note adaptée (aucune image demandée / résultat incertain) | capture `essai-2-502/affichage-apres-correction.png` |
+
+**Non vérifié** : que le flux de texte passe le relais sans coupure. Seul un vrai appel le prouvera (les images en
+flux, elles, passent : essai réel précédent).
+
+Vérifications : `npx tsc --noEmit` sans erreur ; `npx vitest run` 129 fichiers, 1 117 tests réussis ; `next build` réussi.
 
 ## 6. Ce qui reste à démontrer (honnêtement)
 

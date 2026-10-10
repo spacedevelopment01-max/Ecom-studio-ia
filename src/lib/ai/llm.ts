@@ -418,6 +418,9 @@ export async function otherMaxCostMicro(provider: string, req: TextRequest, coun
   return Math.ceil(((inTok * p.inputPerM + outTok * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
 }
 
+/** Refus net du fournisseur (4xx hors délai) : rien n'a été produit ni facturé. */
+const providerRefused = (status: number) => status >= 400 && status < 500 && status !== 408;
+
 /** Adaptateurs remplaçables dans les tests (aucun appel réel). */
 export const textDeps = { adapters: textAdapters as Record<"openai" | "google", { count: (r: TextRequest, key: string) => Promise<number>; send: (r: TextRequest, key: string) => Promise<TextResult> }> };
 
@@ -468,18 +471,26 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
         res = await adapter.send(req, key);
         break;
       } catch (e) {
-        if (!(e instanceof ProviderHttpError) || !RETRYABLE(e.status) || attempt >= RETRY_DELAYS_MS.length) throw e;
+        // Seule une saturation (429, rien de produit) est relancée. Un 5xx (souvent un relais réseau : « upstream
+        // request failed ») ne prouve pas que rien n'a été facturé : jamais de relance automatique.
+        if (!(e instanceof ProviderHttpError) || e.status !== 429 || attempt >= RETRY_DELAYS_MS.length) throw e;
         await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
       }
     }
   } catch (e) {
-    // Réponse d'erreur HTTP : rien n'a été produit ni facturé, la réservation est rendue. Sinon : coût maximal retenu.
-    if (e instanceof ProviderHttpError) release(reservation, `refus du fournisseur (${e.status})`);
-    else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+    // Refus net (4xx hors délai) : rien n'a été produit ni facturé, la réservation est rendue. 5xx, délai, coupure :
+    // résultat incertain, coût maximal retenu, et l'étape s'arrête (aucune relance par la file de tâches).
+    const uncertain = !(e instanceof ProviderHttpError && providerRefused(e.status));
+    if (!uncertain) release(reservation, `refus du fournisseur (${(e as ProviderHttpError).status})`);
+    else settleUncertain(reservation, redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof ProviderHttpError && (e.status === 401 || e.status === 403)) throw new PermanentError(L(`La clé ${provider} configurée est refusée. Vérifiez-la dans l'administration.`, `The configured ${provider} key was rejected. Check it in the admin settings.`));
     if (e instanceof ProviderHttpError && e.status === 404) throw new PermanentError(L(`Modèle introuvable (${model}). Corrigez le routage dans l'administration.`, `Model not found (${model}). Fix the routing in the admin settings.`));
-    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (uncertain) {
+      const why = redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 200);
+      throw new PermanentError(L(`Résultat incertain chez ${provider} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${provider} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+    }
     throw e;
   }
   let billed: { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean };

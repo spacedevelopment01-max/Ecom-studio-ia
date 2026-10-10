@@ -1,0 +1,43 @@
+{
+  "jobId": "6vhhqf5njq5xcrfl",
+  "status": "failed",
+  "error": "Directions de logo impossibles : upstream request failed Aucune image n'a été demandée ; seules les dépenses déjà tracées sont dues.",
+  "durationS": 44,
+  "devis": [],
+  "cartesImagesDistinctes": 3,
+  "erreursJS": [],
+  "items": [],
+  "calls": [
+    {
+      "task": "logo_symbol",
+      "provider": "openai",
+      "served_model": null,
+      "requested_model": "gpt-5.6-sol",
+      "status": "error",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost": 0,
+      "latency_ms": 95884,
+      "estimated": 0,
+      "error_kind": "ProviderHttpError: upstream request failed",
+      "created_at": 1791646637119
+    }
+  ],
+  "reservations": [
+    {
+      "status": "reconciled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": 0
+    },
+    {
+      "status": "released",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": null
+    }
+  ],
+  "totalCoutFournisseurEur": 0
+}

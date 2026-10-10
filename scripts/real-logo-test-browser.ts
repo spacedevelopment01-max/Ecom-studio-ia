@@ -4,6 +4,7 @@
  *   mode « devis »  : clique, lit le devis affiché par le studio, REFUSE (rien n'est envoyé) ;
  *   mode « lancer » : accepte le devis (appels payants réels), suit la série, vérifie l'affichage, rechargement compris,
  *                     et exporte les preuves (captures, originaux, demandes envoyées, traces des appels, coûts, contrôle) ;
+ *   mode « suivre »  : comme « lancer » mais SANS cliquer (aucune nouvelle série) : suit la dernière série et exporte ;
  *   mode « choisir N » : choisit la proposition N (1, 2 ou 3) → identité complète, capture de la planche.
  *   DATA_DIR=<base de démonstration> BASE=http://localhost:3080 npx tsx scripts/real-logo-test-browser.ts devis|lancer|choisir 2
  * Ne jamais lancer sur la base de production.
@@ -20,7 +21,7 @@ import { brandDiscovery } from "@/lib/logo-v2/discovery";
 
 if (!process.env.DATA_DIR) throw new Error("DATA_DIR obligatoire (base de démonstration).");
 const [mode, arg] = process.argv.slice(2);
-if (!["devis", "lancer", "choisir"].includes(mode)) throw new Error("Mode : devis | lancer | choisir N");
+if (!["devis", "lancer", "suivre", "choisir"].includes(mode)) throw new Error("Mode : devis | lancer | suivre | choisir N");
 const BASE = process.env.BASE ?? "http://localhost:3080";
 const EMAIL = "test-logo-reel@demo.fr";
 const PASSWORD = process.env.TEST_PASSWORD || "motdepasse-test-logo";
@@ -46,7 +47,7 @@ page.on("dialog", (d) => {
   dialogs.push(d.message());
   log(`Boîte de dialogue : ${d.message().slice(0, 300)}`);
   // Devis : refusé en mode « devis », accepté en mode « lancer » (accord explicite du propriétaire) et « choisir ».
-  if (mode === "devis") void d.dismiss();
+  if (mode === "devis" || mode === "suivre") void d.dismiss();
   else void d.accept();
 });
 await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
@@ -69,12 +70,14 @@ if (mode === "devis") {
   process.exit(0);
 }
 
-if (mode === "lancer") {
+if (mode === "lancer" || mode === "suivre") {
   const t0 = Date.now();
-  await page.click("text=Créer les directions");
-  await page.waitForSelector("[data-testid=logo-series-progress]", { timeout: 60_000 });
+  // « lancer » : seule la tâche créée par CE clic est suivie (jamais une série précédente déjà terminée).
+  const since = mode === "lancer" ? t0 - 1000 : 0;
+  if (mode === "lancer") await page.click("text=Créer les directions");
+  await page.waitForSelector("[data-testid=logo-series-progress]", { timeout: 60_000 }).catch(() => {});
   let shot = 0;
-  const job = () => one<{ id: string; status: string; error: string | null; message: string }>("SELECT id, status, error, message FROM jobs WHERE project_id = ? AND type = 'brand.logo.v2' ORDER BY created_at DESC LIMIT 1", pid);
+  const job = () => one<{ id: string; status: string; error: string | null; message: string }>("SELECT id, status, error, message FROM jobs WHERE project_id = ? AND type = 'brand.logo.v2' AND created_at >= ? ORDER BY created_at DESC LIMIT 1", pid, since);
   for (;;) {
     const j = job();
     if (j && ["done", "failed", "cancelled"].includes(j.status)) break;

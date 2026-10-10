@@ -259,13 +259,15 @@ function SeriesProgress({ job, live, runId, runAt }: { job: JobRow; live: Live |
   // État de CHAQUE étape, d'après ce qui s'est réellement passé (une étape sans résultat n'est jamais cochée en vert).
   const past = (k: Live["stage"]) => ["prepare", "images", "save", "done"].indexOf(stage) > ["prepare", "images", "save", "done"].indexOf(k);
   const count = (n: number): StepState => (n === total ? "done" : n === 0 ? "failed" : "partial");
-  const prep: StepState = stage === "prepare" ? (failed ? "failed" : "active") : "done";
-  const imgs: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "drawing") ? "active" : drawn ? "partial" : "active") : total ? count(drawn) : failed ? "failed" : "done";
-  const revs: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "checking") ? "active" : checked ? "partial" : "todo") : total ? (drawn === 0 ? "failed" : count(checked)) : failed ? "failed" : "done";
+  // Échec AVANT les directions (aucune direction établie) : c'est cette étape qui a échoué, les suivantes n'ont pas eu lieu.
+  const beforeDirs = failed && total === 0;
+  const prep: StepState = stage === "prepare" || beforeDirs ? (failed ? "failed" : "active") : "done";
+  const imgs: StepState = stage === "prepare" || beforeDirs ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "drawing") ? "active" : drawn ? "partial" : "active") : total ? count(drawn) : failed ? "failed" : "done";
+  const revs: StepState = stage === "prepare" || beforeDirs ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.status === "checking") ? "active" : checked ? "partial" : "todo") : total ? (drawn === 0 ? "failed" : count(checked)) : failed ? "failed" : "done";
   const res: StepState = failed ? "failed" : stage === "done" ? (total && checked === 0 ? "failed" : "done") : past("images") ? "active" : "todo";
   // Réception et sauvegarde des images (logos complets dessinés par l'IA d'images seulement).
   const saved = dirs.filter((d) => d.progress?.phase === "saved").length;
-  const recv: StepState = stage === "prepare" ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.progress && d.progress.phase !== "saved") ? "active" : saved ? "partial" : "todo") : total ? count(saved) : failed ? "failed" : "done";
+  const recv: StepState = stage === "prepare" || beforeDirs ? "todo" : stage === "images" && !failed ? (dirs.some((d) => d.progress && d.progress.phase !== "saved") ? "active" : saved ? "partial" : "todo") : total ? count(saved) : failed ? "failed" : "done";
   const provider = live?.art ? (live.art.startsWith("openai") ? "OpenAI" : live.art.startsWith("google") ? "Gemini" : live.art) : null;
   const steps: { key: string; label: string; detail: string; state: StepState }[] = [
     { key: "prepare", label: t("Brief et directions", "Brief and directions"), detail: total ? t(`${total} direction(s)`, `${total} direction(s)`) : "", state: prep },
@@ -297,7 +299,13 @@ function SeriesProgress({ job, live, runId, runAt }: { job: JobRow; live: Live |
         <div className="mt-3 text-sm" role="alert">
           <p className="font-medium text-bad">{job.status === "cancelled" ? t("Création annulée.", "Creation canceled.") : t("La création des logos a échoué.", "Logo creation failed.")}</p>
           {(live?.error || job.error) && <p className="mt-1 text-xs">{live?.error || job.error}</p>}
-          <p className="mt-1 text-xs text-muted">{t("Une image refusée par le fournisseur n'est pas facturée. Corrigez la cause (modèle choisi pour « Logos », budget, clé) puis relancez.", "An image refused by the provider is not billed. Fix the cause (model chosen for \"Logos\", budget, key) then try again.")}</p>
+          <p className="mt-1 text-xs text-muted">
+            {/incertain|uncertain/i.test(live?.error || job.error || "")
+              ? t("Résultat incertain : le coût maximal a été retenu par prudence. Vérifiez la consommation chez le fournisseur avant de relancer.", "Uncertain result: the maximum cost was kept as a precaution. Check the provider's usage before trying again.")
+              : beforeDirs
+                ? t("Aucune image n'a été demandée pour cette série. Corrigez la cause indiquée puis relancez.", "No image was requested for this series. Fix the cause shown, then try again.")
+                : t("Une image refusée par le fournisseur n'est pas facturée. Corrigez la cause (modèle choisi pour « Logos », budget, clé) puis relancez.", "An image refused by the provider is not billed. Fix the cause (model chosen for \"Logos\", budget, key) then try again.")}
+          </p>
         </div>
       )}
       {!!dirs.length && (
