@@ -6,7 +6,10 @@
  *  - symbole vectoriel (tâche « logo_symbol ») : FINALISATION — redessine le concept en SVG propre quand la
  *    vectorisation automatique ne suffit pas ; il ne le conçoit seul que si aucun modèle d'images n'est utilisable,
  *    et c'est alors écrit dans les notes de la série (jamais en silence) ;
- *  - relecture : une par proposition construite, sur la planche (niveau fort : c'est elle qui décide FINAL).
+ *  - relecture : une par proposition construite, sur la planche (niveau fort : c'est elle qui décide FINAL) ;
+ *  - LOGO COMPLET (phase LA) : quand le modèle d'images de l'usage « Logos » sait écrire du texte, il dessine le logo
+ *    entier de chaque territoire dans son style ; l'original est le livrable (artwork.ts), relu avec des critères
+ *    adaptés au style.
  * Le routage passe par le Router V2 (tâche + capacité), le contexte par le scope « logo » du Project Brain.
  */
 import type { JobContext } from "../jobs";
@@ -16,7 +19,9 @@ import { L, uiLang } from "../i18n-server";
 import { STYLE_FONTS, TerritoriesSchema, type TerritoryDraft } from "./territories";
 import { LogoReviewSchema } from "./quality";
 import { z } from "zod";
-import type { BrandBrief, LogoReview, Territory } from "./types";
+import type { ArtworkReview, BrandBrief, LogoReview, Territory } from "./types";
+import { ART_CRITERIA, LOGO_STYLES } from "./types";
+import { ARTWORK_REVIEW_SYSTEM, artworkPrompt, STYLE_GUIDE } from "./artwork";
 
 export type LogoV2Ai = {
   territories(brief: BrandBrief, n: number, avoid: string[]): Promise<TerritoryDraft[]>;
@@ -27,26 +32,50 @@ export type LogoV2Ai = {
   /** Modèle d'images qui fera les concepts (ou la raison de son absence) ; absent : exploreSymbol décide seul. */
   conceptRoute?(): { provider: string; model: string } | { unavailable: string };
   review(board: Buffer, t: Territory, brief: BrandBrief, expected: string): Promise<LogoReview>;
+  /** Modèle d'images capable d'écrire le nom, qui dessinera les logos complets (ou la raison de son absence). */
+  artworkRoute?(): { provider: string; model: string } | { unavailable: string };
+  /** Logo complet d'un territoire dessiné par le modèle d'images (image PNG telle que livrée). */
+  drawArtwork?(t: Territory, brief: BrandBrief, feedback?: string): Promise<Buffer>;
+  /** Relecture d'un logo complet sur sa planche, critères adaptés au style. */
+  reviewArtwork?(board: Buffer, t: Territory, brief: BrandBrief, expected: { name: string; descriptor: string | null; tagline: string | null }): Promise<ArtworkReview>;
 };
+
+const score10 = z.coerce.number().min(0).max(10).catch(0);
+const frac = z.coerce.number().min(0).max(1);
+export const ArtworkReviewSchema = z.object({
+  criteria: z.object(Object.fromEntries(ART_CRITERIA.map((k) => [k, score10])) as Record<(typeof ART_CRITERIA)[number], typeof score10>),
+  textRead: z.string().max(300).catch(""),
+  nameExact: z.boolean().catch(false),
+  extraText: z.boolean().catch(false),
+  nameBox: z.object({ x: frac, y: frac, w: frac, h: frac }).nullable().catch(null),
+  clumsyCliche: z.boolean().catch(false),
+  resemblesKnownBrand: z.boolean().catch(false),
+  amateur: z.boolean().catch(false),
+  artifacts: z.boolean().catch(false),
+  issues: z.array(z.string().max(300)).max(8).catch([]),
+  needsSimplifiedMark: z.boolean().catch(true),
+});
 
 const fontsList = () => Object.entries(STYLE_FONTS).map(([s, f]) => `${s} (${f.join(", ")})`).join(" ; ");
 
 export const TERRITORIES_SYSTEM = () => `Rôle : directeur artistique senior d'une agence de branding reconnue (niveau 2026). Avant tout dessin, tu proposes des TERRITOIRES CRÉATIFS de logo pour la marque décrite dans le contexte, comme dans une vraie présentation d'agence.
-Démarche : comprends l'entreprise, son activité réelle, sa clientèle, sa personnalité, ce qui la distingue ; repère les codes visuels attendus de son secteur (les clichés que tout le monde utilise) ; puis invente des directions qui lui appartiennent.
-Chaque territoire est RÉELLEMENT différent des autres sur au moins trois de ces axes : type de marque (markType), composition, style typographique, construction graphique, niveau de sobriété. Jamais « le même logo dans une autre couleur ».
+Démarche : comprends l'entreprise, son activité réelle, sa clientèle, sa personnalité, ce qui la distingue ; repère les codes visuels de son secteur ; puis invente des directions qui lui appartiennent. AUCUN style n'est privilégié : le minimalisme n'est pas la règle ; un logo illustré, texturé, typographique, un monogramme, un emblème ou des dégradés peuvent être la meilleure réponse.
+Chaque territoire est RÉELLEMENT différent des autres sur au moins trois de ces axes : style, type de marque (markType), composition, style typographique, construction graphique, niveau de sobriété. Jamais « le même logo dans une autre couleur ».
+- style : ${LOGO_STYLES.join(", ")} — ${Object.entries(STYLE_GUIDE).map(([k, v]) => `${k} = ${v.split(":")[0].toLowerCase()}`).join(" ; ")} ;
 - markType : wordmark (nom seul dessiné), lettermark (initiale(s) seule(s) comme marque), monogram (initiales construites + nom), symbol_wordmark (symbole + nom), abstract_mark (forme abstraite + nom), emblem (sceau / badge réunissant marque et nom) — choisis ce qui sert la marque, pas par défaut ;
 - composition : horizontal, stacked, wordmark_only, badge ;
-- typography.style parmi les styles disponibles (le texte sera rendu avec ces vraies polices) : ${fontsList()} ; weight, case, tracking ; rationale : pourquoi ce choix (pas de faux luxe, pas d'association amateur) ;
+- typography.style parmi : ${fontsList()} ; weight, case, tracking ; rationale : pourquoi ce choix (pas de faux luxe, pas d'association amateur) ;
 - construction : geometric, organic, typographic, modular, illustrative ;
 - sobriety : 1 (très sobre) à 5 (expressif) ;
 - colorRole : rôles de la palette de la marque (primary, secondary, accent, light, dark) pour l'encre du nom et l'accent ;
-- symbolIdea (types à symbole seulement, sinon null) : UNE idée graphique forte tirée de la logique du métier (geste, précision, matière, résultat, bénéfice) — abstraite, combinée ou construite ; JAMAIS l'objet attendu dessiné littéralement (rouleau, truelle, maison, mur, ampoule, globe, feuille, goutte, coche…) ;
+- symbolIdea (types à symbole ou monogramme, sinon null) : UNE idée graphique forte tirée de la logique du métier (geste, outil, matière, résultat, bénéfice). Un objet du métier (maison, pinceau, outil…) est permis s'il est intégré de façon originale et professionnelle (fusionné avec les initiales, construit, stylisé) ; seuls les clichés MALADROITS sont à éviter (icône de banque d'images, assemblage convenu) ;
+- descriptor : ligne d'activités sous le nom, en capitales, 1 à 3 activités RÉELLES de l'entreprise séparées par « • » (seulement celles du contexte), ou null ;
 - distinctive : ce qui rend ce territoire mémorable ; avoid : ce qu'il faut éviter en le dessinant.
-Règles : le nom de la marque sera écrit EXACTEMENT tel quel (accents compris) ; aucune signature ni baseline inventée ; respecte les refus et décisions du client indiqués ; ne reproduis aucun logo existant.
+Règles : le nom de la marque sera écrit EXACTEMENT tel quel (accents compris) ; aucun slogan inventé dans le logo (un slogan n'y figure que s'il a été validé par le client) ; respecte les refus et décisions du client indiqués ; ne reproduis aucun logo existant.
 Langue de « name », « concept », « whyItFits », « distinctive », « rationale » : ${uiLang() === "en" ? "English" : "français"}.`;
 
 export const SYMBOL_SYSTEM = `Rôle : designer de marques (niveau agence). Tu dessines le SYMBOLE d'un territoire de logo déjà défini, en SVG vectoriel propre.
-Le symbole traduit l'idée du territoire (symbolIdea) avec un parti pris graphique net (coupe, réserve, négatif, rythme, construction) ; il doit rester lisible à 16 px et en une seule couleur ; jamais une icône de bibliothèque, jamais l'objet du métier dessiné littéralement.
+Le symbole traduit l'idée du territoire (symbolIdea) avec un parti pris graphique net (coupe, réserve, négatif, rythme, construction) ; il doit rester lisible à 16 px et en une seule couleur ; jamais une icône de bibliothèque ; un objet du métier est permis s'il est stylisé avec un vrai parti pris.
 Règles strictes du SVG (toute entorse = refus automatique) :
 - un seul <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"> ; dessin centré occupant 80 à 90 % du cadre ;
 - 1 à 3 formes parmi <path>, <circle>, <ellipse>, <rect>, <polygon>, <polyline>, <line>, éventuellement dans <g> ;
@@ -78,8 +107,10 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
           system: TERRITORIES_SYSTEM(),
           context: brief.brainContext,
           prompt: `Nom exact de la marque : « ${brief.name} ». Activité : ${brief.activity}. Métier compris : ${brief.trade.label}${brief.trade.actions.length ? ` (gestes : ${brief.trade.actions.join(", ")})` : ""}.
-Clichés du métier à ne pas dessiner tels quels : ${brief.cliches.slice(0, 12).join(", ")}.
-${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [] } ] }.`,
+Activités réelles (seules autorisées dans « descriptor ») : ${brief.activities.join(", ") || brief.activity || "[À compléter : activités]"}.
+Symboles convenus à ne pas dessiner de façon banale : ${brief.cliches.slice(0, 12).join(", ")}.
+${brief.style !== "auto" ? `Style choisi par le client : ${brief.style} — tous les territoires dans ce style, différents sur les autres axes.\n` : "Style : propose plusieurs styles différents, adaptés à cette entreprise.\n"}
+${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas proposer) : ${brief.rejectedMarkTypes.join(", ")}.\n` : ""}${avoid.length ? `Territoires déjà montrés (ne pas reprendre) : ${avoid.join(" ; ")}.\n` : ""}${brief.fontsLocked ? `Typographie validée par le client (à garder) : ${brief.fontsLocked.heading}.\n` : ""}Propose ${n} territoires. Réponds { "territories": [ { "name", "concept", "whyItFits", "style", "descriptor", "markType", "composition", "typography": { "style", "weight", "case", "tracking", "rationale" }, "colorRole": { "ink", "accent", "rationale" }, "sobriety", "construction", "symbolIdea", "distinctive", "avoid": [] } ] }.`,
           maxTokens: 9000,
         },
         TerritoriesSchema,
@@ -111,6 +142,32 @@ ${brief.rejectedMarkTypes.length ? `Types de logo refusés par le client (ne pas
       // Même décision que la génération (principal, secours, mode de l'usage « Logos »).
       const r = mediaRouteFor("logo");
       return r ?? { unavailable: imageUnavailableReason("logo") ?? L("aucun modèle d'images utilisable pour les logos", "no usable image model for logos") };
+    },
+    artworkRoute() {
+      // Logo complet : le modèle doit savoir écrire le nom (même décision que la génération pour l'usage « Logos »).
+      const r = mediaRouteFor("logo", { text: true, transparent: true });
+      return r ?? { unavailable: imageUnavailableReason("logo") ?? L("aucun modèle d'images capable d'écrire le nom pour les logos", "no image model able to write the name for logos") };
+    },
+    async drawArtwork(t, brief, feedback) {
+      const { logoArtworkImage } = await import("../ai/media-providers");
+      return logoArtworkImage({ ...base, usageKey: key(`art:${t.id}${feedback ? `:r${feedback.length}` : ""}`) }, { prompt: artworkPrompt(t, brief, feedback) });
+    },
+    async reviewArtwork(board, t, brief, expected) {
+      return llmJson(
+        {
+          task: "quality_control",
+          ...base,
+          usageKey: key(`art-review:${t.id}:${board.length}`),
+          promptKey: "logo-v2-artwork-review",
+          routing: { difficulty: "complex", deliverable: "logo_v2" },
+          system: ARTWORK_REVIEW_SYSTEM(t.style),
+          context: brief.brainContext,
+          images: [{ data: board, label: L("planche de contrôle du logo complet", "full logo review board") }],
+          prompt: `Territoire « ${t.name} » — concept : ${t.concept}\nStyle : ${t.style} ; type : ${t.markType}.\nNom attendu (exact) : « ${expected.name} ».${expected.descriptor ? ` Ligne d'activités autorisée : « ${expected.descriptor} ».` : ""}${expected.tagline ? ` Slogan validé autorisé : « ${expected.tagline} ».` : ""}\nRéponds { "criteria": { ${ART_CRITERIA.map((k) => `"${k}": 0`).join(", ")} }, "textRead": "…", "nameExact": true, "extraText": false, "nameBox": { "x": 0, "y": 0, "w": 0, "h": 0 }, "clumsyCliche": false, "resemblesKnownBrand": false, "amateur": false, "artifacts": false, "issues": [], "needsSimplifiedMark": true }.`,
+          maxTokens: 3000,
+        },
+        ArtworkReviewSchema,
+      ) as Promise<ArtworkReview>;
     },
     async review(board, t, brief, expected) {
       return llmJson(

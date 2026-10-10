@@ -9,7 +9,6 @@ import { contrast } from "../color";
 import { symbolLegibility } from "../media/logo-symbol";
 import { decide, type GateDecision } from "../quality/gate";
 import { missingGlyphs, expectedText } from "./construct";
-import { literalCliche } from "./territories";
 import { REVIEW_CRITERIA, type BrandBrief, type Candidate, type LogoReview, type Territory } from "./types";
 
 const score10 = z.coerce.number().min(0).max(10).catch(0);
@@ -33,8 +32,6 @@ export function deterministicChecks(c: Candidate, t: Territory, brief: BrandBrie
   if (c.spec.tagline) codes.push("extra_text"), issues.push("texte en plus du nom (signature non validée)");
   if (c.spec.custom && !symbolLegibility(c.spec.custom).ok) codes.push("small_sizes"), issues.push("symbole illisible en petite taille");
   if (contrast(c.spec.color, "#FFFFFF") < 4.5) codes.push("weak_monochrome"), issues.push("encre trop claire pour une impression en une couleur");
-  const cl = literalCliche(t, brief.cliches);
-  if (cl) codes.push("cliche"), issues.push(`cliché littéral du métier (${cl})`);
   return { codes: [...new Set(codes)], issues };
 }
 

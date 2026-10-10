@@ -440,7 +440,7 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
  */
 export async function logoSymbolImage(ctx: Ctx, input: { concept: string; reference?: Buffer | null }) {
   const text = `Design a single flat vector-style logo symbol (brand mark): ${input.concept}
-Rules: one solid black shape (or up to three bold black shapes) on a pure white background, centered, generous margins. Bold, simple geometric forms that stay recognizable at 16 pixels: thick strokes, no thin lines, no gradients, no shading, no texture, no outlines of the canvas, no 3D, no mockup. Absolutely no text, no letters, no numbers, no words. Think like a senior brand designer: a meaningful sign drawn from the idea, not a literal illustration of an object. Timeless, distinctive, not a cliché of the sector.${input.reference ? " The reference photo is context only: do not copy it." : ""}`;
+Rules: one solid black shape (or up to three bold black shapes) on a pure white background, centered, generous margins. Bold, simple geometric forms that stay recognizable at 16 pixels: thick strokes, no thin lines, no gradients, no shading, no texture, no outlines of the canvas, no 3D, no mockup. Absolutely no text, no letters, no numbers, no words. Think like a senior brand designer: a meaningful sign drawn from the idea; an object of the trade is welcome when stylized with intent, never as clip-art. Timeless, distinctive.${input.reference ? " The reference photo is context only: do not copy it." : ""}`;
   return generateImage(ctx, { text, aspect: "1:1", reference: input.reference ?? null, quality: "medium", usage: "logo" });
 }
 
@@ -454,6 +454,15 @@ ${input.colors?.length ? `Colors: use ONLY the brand's colors ${input.colors.joi
 ` : ""}Text in the logo, spelled EXACTLY, same accents: the name "${input.name}"${input.descriptor ? ` and, smaller, the trade line "${input.descriptor}"` : ""}${input.tagline ? ` and, smallest, the brand's slogan "${input.tagline}"` : ""}. No other words${input.tagline ? "" : ", no slogan"}, no fake letters.
 Quality bar: a modern, professional logo for a real small business — original, made for this brand only, never a copy of an existing logo. Follow the composition and style chosen in the brief. Crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo background, no frame around the canvas.`;
   return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+}
+
+/**
+ * Logo V2 — logo complet d'un territoire (illustré, minimaliste, typographique, monogramme, emblème, texturé,
+ * dégradé…) dessiné par le modèle d'images de l'usage « Logos ». La demande complète vient du moteur Logo V2
+ * (style, texte exact) ; haute qualité, fond transparent quand le modèle le permet.
+ */
+export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
+  return generateImage(ctx, { text: input.prompt, aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
 }
 
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */

@@ -1,11 +1,10 @@
 "use client";
 /**
- * Logo complet dessiné par l'IA d'images : symbole, nom, activités (et slogan validé) dans une seule image, comme une
- * agence le livrerait ; chaque logo est relu par l'IA (nom exact, aucun texte inventé). Les essais refusés ne sont pas
- * montrés, seulement comptés.
+ * Logos complets créés par l'ancien générateur (avant le Logo V2 « logo complet ») : toujours consultables et
+ * utilisables. Les nouveaux logos complets se créent dans le panneau Logo (styles, original conservé, contrôle adapté).
  */
 import { useState } from "react";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import { api, Badge, Button, Card, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { SectionTitle } from "./common";
@@ -32,24 +31,13 @@ export function FullLogoPanel({ onApplied }: { onApplied?: () => void }) {
       setBusy(null);
     }
   }
-  const create = () => {
-    if (!window.confirm(t("Créer 3 logos complets avec l'IA d'images ? Chaque logo est une image payante (jusqu'à 6 images si des reprises sont nécessaires), décomptée de votre budget IA.", "Create 3 full logos with the image AI? Each logo is a paid image (up to 6 images if retries are needed), counted against your AI budget."))) return;
-    post({ action: "create" }, t("Création lancée : quelques minutes.", "Creation started: a few minutes."), "gen");
-  };
   const logos = data?.logos ?? [];
+  if (!logos.length) return null;
   return (
     <Card className="p-5 sm:p-7">
-      <SectionTitle
-        title={t("Logo complet dessiné par l'IA", "Full logo drawn by AI")}
-        action={
-          <Button size="sm" variant="secondary" icon={<Sparkles className="size-4" />} loading={busy === "gen" || !!data?.running} disabled={!!data?.running} onClick={create}>
-            {t("Créer 3 logos complets", "Create 3 full logos")}
-          </Button>
-        }
-      >
-        {t("Un logo d'agence en une seule image : monogramme ou symbole lié à votre métier, nom de la marque, activités (et votre slogan s'il est validé). Chaque logo est relu par l'IA : nom exact, aucun mot inventé. C'est une image (PNG), pas un fichier vectoriel.", "An agency-style logo in a single image: monogram or symbol tied to your trade, brand name, activities (and your slogan if validated). Each logo is reviewed by AI: exact name, no invented words. It is an image (PNG), not a vector file.")}
+      <SectionTitle title={t("Logos complets déjà créés", "Full logos already created")}>
+        {t("Créés par l'ancien générateur : vous pouvez toujours en utiliser un. Les nouveaux logos complets se créent dans le panneau Logo ci-dessus.", "Created by the previous generator: you can still use one. New full logos are created in the Logo panel above.")}
       </SectionTitle>
-      {data?.running && <p className="mb-3 text-sm text-ink-2">{t("Création en cours…", "Creating…")}</p>}
       {!!logos.length && (
         <div className="grid gap-4 sm:grid-cols-3">
           {logos.map((l) => (

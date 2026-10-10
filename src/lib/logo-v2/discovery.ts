@@ -7,7 +7,7 @@ import { brainSnapshot } from "../brain/snapshot";
 import { brainContext } from "../brain/facade";
 import { isLocked } from "../brain/brand-locks";
 import { localBrand } from "../engine/local";
-import type { BrandBrief, MarkType } from "./types";
+import type { BrandBrief, LogoStyle, MarkType } from "./types";
 
 /** Concept refusé (mémoire « logo:<concept> », phase 2B) → types de logo à ne plus proposer. */
 const REJECTED_TO_MARK: Record<string, MarkType[]> = {
@@ -22,10 +22,13 @@ const REJECTED_TO_MARK: Record<string, MarkType[]> = {
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 const placeholder = (s: string | null | undefined) => !s || /\[(À|A) (compléter|définir|préciser)|\[To (complete|define)/i.test(s);
 
-/** Clichés génériques des logos (en plus des objets à éviter du métier). */
-const GENERIC_CLICHES = ["globe", "swoosh", "lightbulb", "ampoule", "handshake", "poignée de main", "house roof", "toit de maison", "check mark", "coche"];
+/**
+ * Symboles convenus de TOUS les secteurs (globe, virgule, poignée de main…) : signalés à l'IA comme risques de
+ * banalité. Un objet du métier (maison, pinceau, outil) n'en fait pas partie : bien intégré, il est permis.
+ */
+const GENERIC_CLICHES = ["globe", "swoosh", "lightbulb", "ampoule", "handshake", "poignée de main", "check mark", "coche"];
 
-export function brandDiscovery(p: Project): BrandBrief {
+export function brandDiscovery(p: Project, opts: { style?: LogoStyle | "auto" } = {}): BrandBrief {
   const s = brainSnapshot(p);
   const brand = p.brand ?? localBrand(p.product, p.product.name || p.name, p).brand;
   const st = p.strategy;
@@ -55,5 +58,8 @@ export function brandDiscovery(p: Project): BrandBrief {
     rejections: logoRejections.map((m) => m.value),
     cliches: [...new Set([...s.trade.icons.avoid, ...s.trade.icons.keywords.map((k) => `${k} (literal)`), ...GENERIC_CLICHES])],
     brainContext: brainContext(p, "logo"),
+    activities: [...new Set([...(p.business === "services" ? p.services.services.map((x) => x.name) : []), p.product.category ?? ""].map((x) => x.trim()).filter(Boolean))].slice(0, 12),
+    tagline: isLocked(p.brand, "tagline") && p.brand?.tagline?.trim() ? p.brand.tagline.trim() : null,
+    style: opts.style ?? "auto",
   };
 }
