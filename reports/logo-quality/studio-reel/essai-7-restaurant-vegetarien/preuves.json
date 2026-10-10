@@ -1,0 +1,541 @@
+{
+  "jobId": "ezt417g8sqybatji",
+  "status": "done",
+  "error": null,
+  "durationS": 146,
+  "devis": [
+    "Créer 3 logos complets dessinés par l'IA d'images ? Devis : 1,69 € au maximum (3 images et leurs relectures), décompté de votre budget IA. Ce montant est aussi le plafond : rien ne sera dépensé au-delà, et aucune image ne sera relancée sans votre accord."
+  ],
+  "cartesImagesDistinctes": 3,
+  "erreursJS": [],
+  "items": [
+    {
+      "n": 1,
+      "assetId": "zssusplym3x5cb03",
+      "role": "logo-v2-trial",
+      "file": "1-original.png",
+      "direction": "Le Potager du quartier",
+      "style": "illustrated",
+      "concept": "Un emblème illustré chaleureux réunissant une assiette généreuse, des légumes de saison, quelques feuilles et des couverts dans une composition inspirée des enseignes de bistrot.",
+      "imageBrief": "Create a richly illustrated restaurant emblem with the brand at the center. Show a generous plate filled with recognizable seasonal vegetables, framed by an elegant fork, spoon, leafy stems and a subtle arched border. Place the name prominently across the emblem in refined high-contrast serif lettering, with one word in terracotta. Set the activity line below in small, widely spaced capitals. Use forest green #294936, terracotta #E36F45 and warm cream #FFF8EC. Crisp crafted lines, balanced detail, appetizing shapes, solid white background.",
+      "colors": [
+        "#294936",
+        "#E36F45",
+        "#FFF8EC"
+      ],
+      "provider": "openai:gpt-image-2.5-flare",
+      "costEur": 0.215,
+      "verdict": "REJECTED",
+      "score": 7.5,
+      "reason": "sous la barrière (7.5/10, attendu 8) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)",
+      "codes": [],
+      "criteria": {
+        "relevance": 9,
+        "originality": 6,
+        "craft": 8,
+        "typography": 8,
+        "composition": 8,
+        "colour": 8,
+        "legibility": 8,
+        "memorability": 7,
+        "distinctiveness": 6,
+        "intendedUse": 7
+      },
+      "issues": [
+        "L’assiette foisonnante, les couverts et les rameaux communiquent immédiatement le restaurant végétarien, mais cet assemblage reste courant dans l’identité visuelle des tables végétales et manque d’un signe réellement propriétaire lié au nom « La Graine Verte ».",
+        "L’accumulation de nombreux légumes finement détaillés devient confuse dans la plus petite présentation ; la ligne d’activité y est pratiquement illisible.",
+        "La version claire sur fond sombre tient globalement, mais les détails végétaux très pâles perdent leur hiérarchie et donnent à l’assiette un rendu plus délavé que la version principale.",
+        "Le mot « Verte » en orange apporte une chaleur réussie, mais contredit légèrement l’association verbale immédiate attendue et réduit la force distinctive du nom."
+      ],
+      "fix": {
+        "target": "symbol",
+        "instruction": "Rendre l’emblème propriétaire en réduisant le nombre de légumes et en organisant clairement les éléments conservés autour d’une graine centrale reconnaissable, par exemple révélée en réserve dans l’assiette ou formée par deux feuilles ; préserver la générosité illustrée tout en renforçant la silhouette aux tailles d’en-tête et d’enseigne."
+      },
+      "prompt": "Design a beautiful, professional logo for \"La Graine Verte\", restaurant (Cuisine végétarienne, Restaurant végétarien).\nA real agency-quality logo: Create a richly illustrated restaurant emblem with the brand at the center. Show a generous plate filled with recognizable seasonal vegetables, framed by an elegant fork, spoon, leafy stems and a subtle arched border. Place the name prominently across the emblem in refined high-contrast serif lettering, with one word in terracotta. Set the activity line below in small, widely spaced capitals. Use forest green #294936, terracotta #E36F45 and warm cream #FFF8EC. Crisp crafted lines, balanced detail, appetizing shapes, solid white background.\nColours: #294936, #E36F45, #FFF8EC.\nThe name, perfectly legible: \"La Graine Verte\"; smaller and spaced underneath, the activity line: \"CUISINE VÉGÉTARIENNE • RESTAURANT\".\nSpell every word exactly, with the accents. No other text.\nCentered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo, no people."
+    },
+    {
+      "n": 2,
+      "assetId": "mo8jei5nhiasbatv",
+      "role": "logo-v2-trial",
+      "file": "2-original.png",
+      "direction": "La Pousse dans l’assiette",
+      "style": "minimal",
+      "concept": "Une icône nette représente une jeune pousse surgissant d’une assiette creuse, accompagnée d’un nom composé en lettres franches et accueillantes.",
+      "imageBrief": "Design a clear restaurant icon showing a shallow bowl formed by two confident curves, with a fresh two-leaf sprout rising directly from its center. Place the icon to the left of the name, set large in friendly bold humanist sans-serif lettering. Highlight one word of the name in spring green and place the activity line beneath in compact, widely spaced capitals. Use deep green #243E36, spring green #8DAA3B and soft cream #F7F2E7. Strong silhouette, smooth crafted geometry, inviting proportions, solid white background.",
+      "colors": [
+        "#243E36",
+        "#8DAA3B",
+        "#F7F2E7"
+      ],
+      "provider": "openai:gpt-image-2.5-flare",
+      "costEur": 0.215,
+      "verdict": "REJECTED",
+      "score": 6,
+      "reason": "sous la barrière (6.0/10, attendu 8) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)",
+      "codes": [
+        "weak_originality",
+        "weak_typography",
+        "weak_legibility",
+        "weak_distinctiveness"
+      ],
+      "criteria": {
+        "relevance": 8,
+        "originality": 4,
+        "craft": 7,
+        "typography": 6,
+        "composition": 7,
+        "colour": 7,
+        "legibility": 6,
+        "memorability": 6,
+        "distinctiveness": 4,
+        "intendedUse": 6
+      },
+      "issues": [
+        "L’association d’une pousse verte et d’un bol est immédiatement compréhensible, mais très répandue dans la restauration végétale et distingue peu cette adresse lyonnaise de ses concurrents.",
+        "Le symbole superpose plusieurs courbes proches au niveau du bord de l’assiette, ce qui alourdit le geste et perd en netteté aux plus petites tailles.",
+        "La ligne « RESTAURANT VÉGÉTARIEN », très espacée et trop fine par rapport au nom, devient illisible dans les deux plus petites présentations.",
+        "Le caractère sans sérif gras est accueillant et lisible, mais assez standard ; il n’exprime ni l’esprit atelier ni la chaleur d’un bistrot de quartier.",
+        "La version claire tient correctement sur fond sombre, mais le passage du bol en blanc réduit la cohésion entre le symbole et le mot-symbole."
+      ],
+      "fix": {
+        "target": "symbol",
+        "instruction": "Rendre le signe plus distinctif et plus minimal en fusionnant la pousse et l’assiette en un seul geste de réserve : supprimer les doubles contours du bol et dessiner une découpe propre évoquant simultanément une feuille et le creux de l’assiette, avec une silhouette forte qui reste identifiable seule en petit."
+      },
+      "prompt": "Design a beautiful, professional logo for \"La Graine Verte\", restaurant (Cuisine végétarienne, Restaurant végétarien).\nA real agency-quality logo: Design a clear restaurant icon showing a shallow bowl formed by two confident curves, with a fresh two-leaf sprout rising directly from its center. Place the icon to the left of the name, set large in friendly bold humanist sans-serif lettering. Highlight one word of the name in spring green and place the activity line beneath in compact, widely spaced capitals. Use deep green #243E36, spring green #8DAA3B and soft cream #F7F2E7. Strong silhouette, smooth crafted geometry, inviting proportions, solid white background.\nColours: #243E36, #8DAA3B, #F7F2E7.\nThe name, perfectly legible: \"La Graine Verte\"; smaller and spaced underneath, the activity line: \"RESTAURANT VÉGÉTARIEN\".\nSpell every word exactly, with the accents. No other text.\nCentered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo, no people."
+    },
+    {
+      "n": 3,
+      "assetId": "fl4k0xbpav618hvb",
+      "role": "logo-v2-trial",
+      "file": "3-original.png",
+      "direction": "La Signature du cuisinier",
+      "style": "typographic",
+      "concept": "Le nom devient une signature vivante, prolongée par un geste dessiné évoquant une cuillère de cuisine portant une petite feuille fraîche.",
+      "imageBrief": "Draw the name as a warm, highly legible custom signature with confident strokes and carefully shaped letters. Extend the final stroke into the handle of a recognizable cooking spoon, with a small fresh leaf resting in the spoon bowl. Center the signature above the activity line, set in refined, widely spaced capitals. Use muted deep green #334A40, warm coral #D46A4C and pale oat #F3EBDD. Give the lettering artisanal rhythm, balanced thickness and a welcoming handcrafted finish on a solid white background.",
+      "colors": [
+        "#334A40",
+        "#D46A4C",
+        "#F3EBDD"
+      ],
+      "provider": "openai:gpt-image-2.5-flare",
+      "costEur": 0.215,
+      "verdict": "REJECTED",
+      "score": 7.3,
+      "reason": "sous la barrière (7.3/10, attendu 8) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)",
+      "codes": [],
+      "criteria": {
+        "relevance": 8,
+        "originality": 6,
+        "craft": 8,
+        "typography": 8,
+        "composition": 8,
+        "colour": 8,
+        "legibility": 7,
+        "memorability": 7,
+        "distinctiveness": 6,
+        "intendedUse": 7
+      },
+      "issues": [
+        "La signature manuscrite est élégante et lisible, mais son dessin reste assez familier dans l’univers des restaurants naturels et ne crée pas encore une identité fortement propriétaire.",
+        "Le prolongement final évoque bien un geste culinaire, mais la forme orange peut aussi être perçue comme une flamme ou un piment plutôt que comme une cuillère.",
+        "La ligne « CUISINE VÉGÉTARIENNE », très espacée et très fine, devient difficile à lire dans les deux plus petites présentations.",
+        "Dans la version claire sur fond sombre, la feuille blanche perd une partie de sa présence et de sa cohérence avec la version principale verte."
+      ],
+      "fix": {
+        "target": "symbol",
+        "instruction": "Redessiner le prolongement du dernier « e » pour construire une cuillère plus immédiatement identifiable, avec un cuilleron net contenant la feuille en réserve, tout en conservant un seul geste continu et en réduisant légèrement sa longueur afin d’obtenir un détail plus distinctif et plus robuste en petit."
+      },
+      "prompt": "Design a beautiful, professional logo for \"La Graine Verte\", restaurant (Cuisine végétarienne, Restaurant végétarien).\nA real agency-quality logo: Draw the name as a warm, highly legible custom signature with confident strokes and carefully shaped letters. Extend the final stroke into the handle of a recognizable cooking spoon, with a small fresh leaf resting in the spoon bowl. Center the signature above the activity line, set in refined, widely spaced capitals. Use muted deep green #334A40, warm coral #D46A4C and pale oat #F3EBDD. Give the lettering artisanal rhythm, balanced thickness and a welcoming handcrafted finish on a solid white background.\nColours: #334A40, #D46A4C, #F3EBDD.\nThe name, perfectly legible: \"La Graine Verte\"; smaller and spaced underneath, the activity line: \"CUISINE VÉGÉTARIENNE\".\nSpell every word exactly, with the accents. No other text.\nCentered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo, no people."
+    }
+  ],
+  "calls": [
+    {
+      "task": "logo_symbol",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 681,
+      "output_tokens": 2658,
+      "cost": 79086,
+      "latency_ms": 37914,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791663314187
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2.5-flare",
+      "requested_model": "gpt-image-2.5-flare",
+      "status": "ok",
+      "input_tokens": 248,
+      "output_tokens": 1909,
+      "cost": 215000,
+      "latency_ms": 20224,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791663334495
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 2908,
+      "output_tokens": 690,
+      "cost": 35415,
+      "latency_ms": 12053,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791663349563
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2.5-flare",
+      "requested_model": "gpt-image-2.5-flare",
+      "status": "ok",
+      "input_tokens": 250,
+      "output_tokens": 1909,
+      "cost": 215000,
+      "latency_ms": 15511,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791663365291
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 2901,
+      "output_tokens": 660,
+      "cost": 34525,
+      "latency_ms": 12763,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791663379551
+    },
+    {
+      "task": "image_generation",
+      "provider": "openai",
+      "served_model": "gpt-image-2.5-flare",
+      "requested_model": "gpt-image-2.5-flare",
+      "status": "ok",
+      "input_tokens": 241,
+      "output_tokens": 1909,
+      "cost": 215000,
+      "latency_ms": 20289,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791663400056
+    },
+    {
+      "task": "quality_control",
+      "provider": "openai",
+      "served_model": "gpt-5.6-sol",
+      "requested_model": "gpt-5.6-sol",
+      "status": "ok",
+      "input_tokens": 2898,
+      "output_tokens": 484,
+      "cost": 30023,
+      "latency_ms": 8230,
+      "estimated": 0,
+      "error_kind": null,
+      "created_at": 1791663410151
+    }
+  ],
+  "reservations": [
+    {
+      "status": "reconciled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": 0
+    },
+    {
+      "status": "released",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": null
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "amount": 56124,
+      "actual": 890
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 256561,
+      "actual": 107603
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 257757,
+      "actual": 119686
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 257988,
+      "actual": 119592
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129843,
+      "actual": 33686
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129843,
+      "actual": 35286
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129897,
+      "actual": 35105
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129929,
+      "actual": 32504
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 258398,
+      "actual": 109603
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130087,
+      "actual": 36365
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130127,
+      "actual": 37926
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "amount": 260742,
+      "actual": 189200
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130168,
+      "actual": 37758
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 258534,
+      "actual": 114531
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130281,
+      "actual": 35927
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130340,
+      "actual": 35957
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130326,
+      "actual": 33880
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 258498,
+      "actual": 96617
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130502,
+      "actual": 34379
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130407,
+      "actual": 38188
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 130407,
+      "actual": 33183
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 257378,
+      "actual": 79086
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129536,
+      "actual": 35415
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129414,
+      "actual": 34525
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "amount": 296297,
+      "actual": 215000
+    },
+    {
+      "status": "settled",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "amount": 129455,
+      "actual": 30023
+    }
+  ],
+  "totalCoutFournisseurEur": 0.824049
+}

@@ -303,3 +303,18 @@ Preuves : `logo-quality/studio-reel/essai-6-references-proprietaire/` (originaux
 | La signature de l'artisan | script | 6,4 (originalité, différenciation) | oui |
 
 Série : 0,85 € comptés. Mission : **3,56 €** comptés, reste 6,44 €. Validation esthétique : au propriétaire.
+
+### Série réelle n° 7 — autre métier : restaurant végétarien (10/10/2026, 20 h 14)
+
+Projet de démonstration au nom fictif « La Graine Verte » (restaurant végétarien), même compte, même budget, même
+parcours. Défaut général corrigé au passage : le studio classait tout restaurant comme « traiteur » (dictionnaire des
+métiers) ; un métier « restaurant » distinct a été ajouté (test `trade-restaurant`).
+Preuves : `logo-quality/studio-reel/essai-7-restaurant-vegetarien/`.
+
+| Direction | Style | Note du contrôle | Nom exact |
+|---|---|---|---|
+| Le Potager du quartier | emblème illustré | 7,5 | oui |
+| La Pousse dans l'assiette | icône + nom | 6,0 | oui |
+| La Signature du cuisinier | script | 7,3 | oui |
+
+Série : 0,82 € comptés. Mission : **4,38 €** comptés, reste 5,62 €.
