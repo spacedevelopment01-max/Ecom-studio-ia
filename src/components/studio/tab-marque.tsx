@@ -12,6 +12,7 @@ import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { FromSiteBadge } from "./existing-site";
 import { LogoV2Panel } from "./logo-v2-panel";
+import { FullLogoPanel } from "./full-logo-panel";
 import { PalettePicker } from "./palette-picker";
 import { BrandPropagationCard } from "./workflow-panel";
 
@@ -143,6 +144,7 @@ export default function TabMarque() {
       {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
       <BrandPropagationCard />
       {!ident?.provided && <LogoV2Panel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
+      {!ident?.provided && <FullLogoPanel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <Card className="p-5 sm:p-7">

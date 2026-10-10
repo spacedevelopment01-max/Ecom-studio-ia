@@ -5,6 +5,7 @@
  * au moins, nom exact, aucun texte en trop), reprise ciblée sur diagnostic, ou refus. Seuls les logos non refusés
  * sont proposés ; seul un FINAL peut être appliqué automatiquement. Fichier PNG haute définition.
  */
+import { isLocked } from "../brain/brand-locks";
 import { markBrandLogo, recordBrandDecision } from "../brain/brand-locks";
 import sharp from "sharp";
 import { z } from "zod";
@@ -39,24 +40,24 @@ async function briefs(ictx: Ictx, p: Project, usageKey: string): Promise<{ conce
       system: `Rôle : directeur artistique senior d'une agence de branding. Tu écris, pour un illustrateur (une IA d'images), trois briefs de LOGO COMPLET (symbole + nom de la marque) vraiment différents, comme un vrai designer : le symbole naît de la logique du métier ou du produit (fonction, geste, outil, matière, bénéfice, origine), jamais un cliché du secteur ; typographie décrite précisément (famille, graisse, casse, interlettrage) ; composition (symbole à gauche, au-dessus, emblème…) ; couleurs : UNIQUEMENT celles de la palette de la marque (codes hexadécimaux donnés), le logo doit correspondre à la charte graphique. Aucune promesse, aucun slogan dans le logo. Briefs EN ANGLAIS, 70 à 140 mots chacun ; « concept » en français, une phrase.`,
       context: view.stable,
       prompt: `Marque : « ${p.brand?.name ?? p.name} ».${palette}${direction}
-Trois propositions ORIGINALES et vraiment différentes (idée, composition, typographie, couleurs), du niveau des logos professionnels de commerçants et d'artisans, par exemple : 1) une icône illustrée et colorée qui montre le métier au premier regard, au-dessus du nom ; 2) un emblème ou un badge ; 3) une typographie travaillée (script élégant ou capitales fortes) avec un petit symbole. Choisis ce qui sert le mieux cette entreprise ; jamais la copie d'un logo existant. « descriptor » : la ligne du métier sous le nom, en français, 1 à 3 mots en capitales (ex. « PLÂTRIER PEINTRE »), ou vide pour un logo sans cette ligne.
+Trois propositions ORIGINALES et vraiment différentes (idée, composition, typographie, couleurs), du niveau des logos professionnels de commerçants et d'artisans réalisés par une agence, par exemple : 1) un monogramme des initiales de la marque fusionné avec un élément du métier stylisé (toit, outil, geste), avec de la matière (enduit, coup de pinceau, texture) et deux tons de la palette, au-dessus du nom ; 2) une icône illustrée qui montre le métier au premier regard, au-dessus du nom ; 3) un emblème ou une typographie travaillée avec un petit symbole. Un objet du métier est permis s'il est stylisé avec soin (pas une icône de bibliothèque). Typographie : nom en grandes capitales nettes, éventuellement en deux graisses ou deux couleurs. Choisis ce qui sert le mieux cette entreprise ; jamais la copie d'un logo existant. « descriptor » : la ligne des métiers sous le nom, en français et en capitales, uniquement les activités réelles de l'entreprise : 1 à 3 activités séparées par « • » (ex. « PLÂTRERIE • PEINTURE • RÉNOVATION »), ou vide pour un logo sans cette ligne.
 Réponds { "logos": [ { "concept": "…", "brief": "…", "descriptor": "…" }, { "concept": "…", "brief": "…", "descriptor": "…" }, { "concept": "…", "brief": "…", "descriptor": "…" } ] }.`,
       maxTokens: 6000,
     },
-    z.object({ logos: z.array(z.object({ concept: z.string(), brief: z.string(), descriptor: z.string().max(40).optional().catch(undefined) })).min(1).max(3) }),
+    z.object({ logos: z.array(z.object({ concept: z.string(), brief: z.string(), descriptor: z.string().max(60).optional().catch(undefined) })).min(1).max(3) }),
   );
   return r.logos;
 }
 
 /** Le nom est-il écrit exactement, sans autre texte ? Logo propre et professionnel ? */
-async function checkFullLogo(ictx: Ictx & { usageKey: string }, img: Buffer, name: string, descriptor?: string) {
+async function checkFullLogo(ictx: Ictx & { usageKey: string }, img: Buffer, name: string, descriptor?: string, tagline?: string) {
   return llmJson(
     {
       task: "quality_control",
       ...ictx,
       system: "Rôle : contrôleur qualité de logos (agence). Tu lis le texte du logo lettre par lettre et tu vérifies sa qualité.",
       images: [{ data: await sharp(img).flatten({ background: "#ffffff" }).resize(1024, 1024, { fit: "inside" }).png().toBuffer(), label: "logo à contrôler" }],
-      prompt: `Nom attendu, à l'identique (lettres, accents, espaces) : « ${name} ».${descriptor ? ` Ligne du métier autorisée, à l'identique : « ${descriptor} » (ce n'est pas du texte en trop).` : ""}
+      prompt: `Nom attendu, à l'identique (lettres, accents, espaces) : « ${name} ».${descriptor ? ` Ligne du métier autorisée, à l'identique : « ${descriptor} » (ce n'est pas du texte en trop).` : ""}${tagline ? ` Slogan de la marque autorisé, à l'identique : « ${tagline} » (ce n'est pas du texte en trop).` : ""}
 Réponds { "text": "texte lu exactement", "nameExact": true|false, "extraText": true|false, "score": 0-10, "issues": ["…"] } — score : 9-10 logo d'agence ; 7-8 bon ; 5-6 défauts visibles ; 0-4 inutilisable (texte déformé, symbole confus, rendu amateur).`,
       maxTokens: 2500,
     },
@@ -113,6 +114,8 @@ export async function generateFullLogos(ctx: JobContext | null, projectId: strin
   if (!p.brand) throw new UserFacingError(L("La marque doit exister avant le logo.", "The brand must exist before the logo."));
   if (!llmConfigured() || !imageProviderAvailable({ usage: "logo", text: true, transparent: true })) throw new UserFacingError(L(`Logo complet par IA indisponible : ${imageUnavailableReason("logo") ?? "IA de rédaction non active"}.`, `AI full logo unavailable: ${imageUnavailableReason("logo") ?? "writing AI not active"}.`));
   const name = p.brand.name;
+  // Slogan dans le logo : seulement celui que le client a validé (jamais un slogan inventé pour l'occasion).
+  const tagline = isLocked(p.brand, "tagline") && p.brand.tagline?.trim() ? p.brand.tagline.trim() : undefined;
   const colors = [p.brand.palette.primary, p.brand.palette.accent, p.brand.palette.secondary, p.brand.palette.dark];
   const ictx = { userId: p.userId, projectId, jobId: ctx?.job.id ?? null };
   const scope = ctx?.job.id ?? stableKey(projectId, crypto.randomUUID());
@@ -134,7 +137,7 @@ export async function generateFullLogos(ctx: JobContext | null, projectId: strin
         let fresh: { asset: Asset; png: Buffer } | null = null;
         const assetId = await step(`full-logo:${i}:${attempt}:image`, () =>
           withCandidate(candidate, attempt, async () => {
-            const img = await fullLogoImage({ ...ictx, usageKey: key }, { brief: feedback ? `${b.brief} Fix these defects of a previous attempt: ${feedback}.` : b.brief, name, descriptor, colors });
+            const img = await fullLogoImage({ ...ictx, usageKey: key }, { brief: feedback ? `${b.brief} Fix these defects of a previous attempt: ${feedback}.` : b.brief, name, descriptor, tagline, colors });
             const png = await clean(img);
             const a = await saveAsset({ projectId, userId: p.userId, data: png, name: C(`logo-complet-ia-${i + 1}.png`, `ai-full-logo-${i + 1}.png`), mime: "image/png", role: "logo-ai-full", folderKey: "brand.logos", origin: "generated", meta: { concept: b.concept, brief: b.brief, aiGenerated: true, attempt, recipe: L("Logo complet dessiné par l'IA d'images d'après le brief du directeur artistique", "Full logo drawn by the image AI from the art director's brief"), qcWarning: L("contrôle en attente", "check pending") }, status: "review" });
             fresh = { asset: a, png };
@@ -146,7 +149,7 @@ export async function generateFullLogos(ctx: JobContext | null, projectId: strin
         const qcRes = await step(`full-logo:${i}:${attempt}:qc`, () =>
           withCandidate(candidate, attempt, async () => {
             try {
-              return { qc: await checkFullLogo({ ...ictx, usageKey: `${key}:qc` }, got?.png ?? assetData(asset), name, descriptor), error: "" };
+              return { qc: await checkFullLogo({ ...ictx, usageKey: `${key}:qc` }, got?.png ?? assetData(asset), name, descriptor, tagline), error: "" };
             } catch (e) {
               if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
               return { qc: null, error: (e as Error).message };
