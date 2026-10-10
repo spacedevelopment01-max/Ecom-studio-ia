@@ -105,6 +105,8 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
     post({ action: "redraw", assetId: p.id, feedback }, t("Nouvelle version en cours : la précédente reste disponible.", "New version in progress: the previous one stays available."), `v${p.id}`);
   };
   const proposals = data?.proposals ?? [];
+  // Logos complets que le modèle d'images n'a pas dessinés (refus, modèle incapable…) : dit clairement, jamais en silence.
+  const notDrawn = (data?.run?.notes ?? []).filter((n) => /logo complet non dessiné|full logo not drawn/.test(n));
   const studio = data?.studio ?? [];
   const card = (p: Proposal, isStudio: boolean) => (
           <div key={p.id} className="min-w-0 rounded-xl border border-line p-4">
@@ -155,6 +157,13 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
       </SectionTitle>
       {data?.tagline && !data.tagline.validated && <p className="mb-3 text-xs text-muted">{t(`Slogan « ${data.tagline.text} » : proposition à valider dans Identité. Il n'apparaîtra dans un logo qu'une fois validé par vous.`, `Slogan "${data.tagline.text}": a proposal to validate in Identity. It will only appear in a logo once you validate it.`)}</p>}
       {data?.run?.stoppedByCostCap && <p className="mb-3 text-xs text-warn">{t("Série arrêtée au plafond de dépense fixé.", "Series stopped at the set spending cap.")}</p>}
+      {notDrawn.length > 0 && (
+        <div role="alert" className="mb-3 rounded-xl border border-warn/40 bg-warn/10 p-3 text-sm">
+          <p className="font-medium">{t(`${notDrawn.length} logo(s) n'ont pas pu être dessinés par l'IA d'images.`, `${notDrawn.length} logo(s) could not be drawn by the image AI.`)}</p>
+          <ul className="mt-1 list-disc pl-5 text-xs">{notDrawn.map((n, i) => <li key={i}>{n}</li>)}</ul>
+          <p className="mt-1 text-xs text-muted">{t("Une image refusée par le fournisseur n'est pas facturée. Vérifiez le modèle choisi pour « Logos » dans Administration › Images & Vidéos, puis relancez.", "An image refused by the provider is not billed. Check the model chosen for \"Logos\" in Admin › Images & videos, then try again.")}</p>
+        </div>
+      )}
       {data?.run && !proposals.length && <p className="mb-3 text-sm text-ink-2">{studio.length ? t("Aucune direction relue par l'IA dans cette série : les versions du studio ci-dessous servent de logo provisoire.", "No AI-reviewed direction in this series: the studio versions below serve as a provisional logo.") : t("Aucune direction n'a atteint le niveau attendu dans cette série.", "No direction reached the expected level in this series.")}</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         {proposals.map((p) => card(p, false))}

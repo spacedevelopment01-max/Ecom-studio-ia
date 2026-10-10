@@ -131,7 +131,14 @@ function withMediaBackup<A extends [Ctx, ...any[]], R>(kind: MediaKind, fn: (...
       if (!failed.mediaReleased || !failed.mediaFailed || !backup || `${backup.provider}:${backup.model}` === failed.mediaFailed || mediaExclude.getStore()) throw e;
       // Chemin branché pour certains fournisseurs seulement (retouche par masque : OpenAI).
       if (opts.providers && !opts.providers.includes(backup.provider)) throw e;
-      return mediaExclude.run({ exclude: [failed.mediaFailed], only: `${backup.provider}:${backup.model}` }, () => fn(...args));
+      try {
+        return await mediaExclude.run({ exclude: [failed.mediaFailed], only: `${backup.provider}:${backup.model}` }, () => fn(...args));
+      } catch (e2) {
+        // Secours inutilisable pour cette demande (aucun appel parti) : l'erreur réelle du principal est gardée,
+        // jamais remplacée par un « aucun fournisseur » trompeur.
+        if (!(e2 as { mediaReleased?: boolean }).mediaReleased && !(e2 as { mediaFailed?: string }).mediaFailed) throw e;
+        throw e2;
+      }
     }
   };
 }
@@ -488,6 +495,12 @@ export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): 
   return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
 }
 
+/**
+ * Fond transparent demandé à OpenAI seulement si le modèle le permet (catalogue) : sinon la demande est refusée
+ * (ex. GPT Image 2). Le fond blanc est alors retiré par le studio après coup.
+ */
+const openaiTransparent = (model: string) => !!mediaModel("openai", model)?.caps.transparent;
+
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */
 async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed> }) {
   const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
@@ -527,7 +540,7 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
     sent();
     res = ref
       ? await client.images.edit({ model, image: [await toFile(ref, "reference.jpg", { type: "image/jpeg" })] as any, prompt: text, size, quality: input.quality, n: 1 } as any)
-      : await client.images.generate({ model, prompt: text, size, quality: input.quality, n: 1, ...(input.transparent ? { background: "transparent", output_format: "png" } : {}) } as any);
+      : await client.images.generate({ model, prompt: text, size, quality: input.quality, n: 1, ...(input.transparent && openaiTransparent(model) ? { background: "transparent", output_format: "png" } : {}) } as any);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
