@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p11a";
+export const POLICY_VERSION = "2026-10-p11b";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -13,6 +13,7 @@ export const DELIVERABLES = [
   "logo_route",
   "logo_full",
   "logo_v2",
+  "logo_artwork",
   "image_product",
   "image_lifestyle",
   "image_ambiance",
@@ -130,6 +131,21 @@ export const POLICIES: Record<Deliverable, Policy> = {
     fatal: ["resembles_known_brand", "corrupt", "forbidden"],
     blocking: ["name_mismatch", "text_unreadable", "extra_text", "cliche", "amateur", "small_sizes", "weak_monochrome", "claim"],
     provisional: { checkers: ["local"], floor: 0, use: "manual", label: "needs_improvement" },
+  },
+  // Logo complet de l'IA d'images (Logo V2, phase LA) : critères adaptés au STYLE (une texture, plusieurs couleurs ou
+  // un détail illustré ne sont pas des défauts ; la lisibilité se juge aux tailles réellement prévues, une version
+  // simplifiée servant aux favicons, tampons et broderies). Barrière inchangée : 8/10, nom exact, aucun texte inventé.
+  // La seule reprise automatique est GRATUITE (nom réécrit par le studio) : aucune image n'est regénérée sans accord.
+  logo_artwork: {
+    final: 8,
+    retryFloor: 5.5,
+    maxRetries: 1,
+    minCriterion: 6,
+    criteriaFloors: { relevance: 7, legibility: 7, typography: 7, craft: 7 },
+    finalCheckers: ["ai", "human"],
+    minConfidence: 0.7,
+    fatal: ["resembles_known_brand", "corrupt", "forbidden"],
+    blocking: ["name_mismatch", "text_unreadable", "extra_text", "cliche", "amateur", "artifacts", "claim"],
   },
   logo_full: { final: 8, retryFloor: 6.5, maxRetries: 1, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["resembles_known_brand", "corrupt", "forbidden"], blocking: ["name_mismatch", "extra_text"] },
   image_product: IMAGE,

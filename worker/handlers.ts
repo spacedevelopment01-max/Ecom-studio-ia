@@ -128,8 +128,13 @@ export const handlers: Record<string, Handler> = {
   /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
   "brand.logo.v2": async (ctx) => {
     const { runLogoEngineV2 } = await import("../src/lib/logo-v2/engine");
-    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid });
+    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style });
     return { shown: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap };
+  },
+  /** Logo V2 : nouvelle version d'un logo complet, demandée par le client (une image, coût accepté). */
+  "brand.logo.v2.redraw": async (ctx) => {
+    const { redrawArtwork } = await import("../src/lib/logo-v2/engine");
+    return redrawArtwork(ctx, ctx.payload.projectId, ctx.payload.assetId, { feedback: ctx.payload.feedback });
   },
   /** Logo V2 choisi : décision du client, déclinaisons, système de marque. */
   "brand.logo.v2.choose": async (ctx) => {

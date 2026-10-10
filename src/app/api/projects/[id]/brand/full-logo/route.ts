@@ -23,7 +23,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 });
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
-  const { user, project: p } = await projectFromCtx(ctx);
+  const { project: p } = await projectFromCtx(ctx);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   const b = await body(req, z.object({ action: z.enum(["create", "use"]), assetId: z.string().max(40).optional() }));
   if (b.action === "use") {
@@ -31,7 +31,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     await useFullLogo(p.id, b.assetId);
     return ok({ logos: list(p.id), current: b.assetId });
   }
-  // Ancien générateur de logos complets : plus de nouvelle création (Brand & Logo Engine V2 dans l'onglet Marque) ;
-  // les logos déjà créés restent consultables et utilisables (« use »).
-  throw new HttpError(410, L("Les nouveaux logos se créent avec le moteur de logo de l'onglet Marque.", "New logos are created with the logo engine in the Brand tab."));
+  // Les logos complets se créent désormais dans le Logo V2 (styles, original conservé, contrôle adapté au style, aucune
+  // image relancée sans accord) ; les logos déjà créés ici restent consultables et utilisables (« use »).
+  throw new HttpError(410, L("Les logos complets se créent maintenant dans le panneau Logo de l'onglet Marque.", "Full logos are now created in the Logo panel of the Brand tab."));
 });

@@ -21,6 +21,7 @@ import { activeProviderKey, FX_SAFETY, requirePrice, routeFor, usdToEur } from "
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
+import { putFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
 import { mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
@@ -45,7 +46,7 @@ function quotaFor(media: "image" | "video") {
  * départ du chronomètre) puis par `recordMedia()` (succès) ; une génération partie puis échouée (refus, délai
  * dépassé) est tracée aussi. Aucune image ni consigne n'est enregistrée.
  */
-type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean }; choice?: MediaChoice; usage?: MediaUsage };
+type MediaTrace = { task: "image_generation" | "video_generation"; ctx?: Ctx; provider?: string; model?: string; unit?: "image" | "video_second" | "tokens"; started?: number; recorded?: boolean; reservation?: string; sent?: boolean; rejected?: boolean; routing?: { reason: string; fallback: boolean; escalation: boolean }; choice?: MediaChoice; usage?: MediaUsage; callId?: string | null };
 const mediaTrace = new AsyncLocalStorage<MediaTrace>();
 
 function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...a: A) => Promise<R>): (...a: A) => Promise<R> {
@@ -53,7 +54,9 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
     const t: MediaTrace = { task, ctx: args[0] };
     return mediaTrace.run(t, async () => {
       try {
-        return await fn(...args);
+        const out = await fn(...args);
+        keepPaidImage(t, out);
+        return out;
       } catch (e) {
         // Réservation du coût maximal : rendue si rien n'est parti ou si le fournisseur a refusé la demande ; sinon
         // (délai dépassé, coupure, erreur après acceptation ou réponse), coût maximal retenu par prudence.
@@ -74,6 +77,27 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
       }
     });
   };
+}
+
+/** Clé de stockage de l'image d'origine d'un appel payé (diagnostic) : ai-originals/<projet>/<appel>.<ext>. */
+export function paidImageKey(projectId: string, callId: string, data: Buffer): string {
+  const ext = data.subarray(0, 4).toString("hex") === "89504e47" ? ".png" : data.subarray(0, 3).toString("hex") === "ffd8ff" ? ".jpg" : data.subarray(8, 12).toString("ascii") === "WEBP" ? ".webp" : ".bin";
+  return `ai-originals/${projectId.replace(/[^\w-]/g, "_")}/${callId}${ext}`;
+}
+
+/**
+ * Toute image PAYÉE est conservée telle que le fournisseur l'a renvoyée, sous l'identifiant de son appel (ai_calls),
+ * avant vectorisation, retouche ou contrôle qualité — même si elle est rejetée ensuite. Elle n'entre pas dans la
+ * bibliothèque du client (jamais réutilisée automatiquement) : elle sert au diagnostic. Ne fait jamais échouer la
+ * génération déjà payée.
+ */
+function keepPaidImage(t: MediaTrace, out: unknown) {
+  if (t.task !== "image_generation" || !t.recorded || !t.callId || !t.ctx?.projectId || !Buffer.isBuffer(out)) return;
+  try {
+    putFile(paidImageKey(t.ctx.projectId, t.callId, out), out);
+  } catch (e) {
+    console.warn("[images] original payé non conservé :", (e as Error).message);
+  }
 }
 
 /** Échec sans coût (réservation rendue) : le secours peut être tenté ; on retient le modèle qui a échoué. */
@@ -173,7 +197,8 @@ function recordMedia(u: Parameters<typeof recordUsage>[0]) {
   const t = mediaTrace.getStore();
   const billed = recordUsage(u, { reservationId: t?.reservation ?? null });
   if (t) t.recorded = true;
-  recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
+  const callId = recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: u.model, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
+  if (t) t.callId = callId;
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
   if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
 }
@@ -415,7 +440,7 @@ Editorial photograph that conveys the atmosphere of this activity, natural light
  */
 export async function logoSymbolImage(ctx: Ctx, input: { concept: string; reference?: Buffer | null }) {
   const text = `Design a single flat vector-style logo symbol (brand mark): ${input.concept}
-Rules: one solid black shape (or up to three bold black shapes) on a pure white background, centered, generous margins. Bold, simple geometric forms that stay recognizable at 16 pixels: thick strokes, no thin lines, no gradients, no shading, no texture, no outlines of the canvas, no 3D, no mockup. Absolutely no text, no letters, no numbers, no words. Think like a senior brand designer: a meaningful sign drawn from the idea, not a literal illustration of an object. Timeless, distinctive, not a cliché of the sector.${input.reference ? " The reference photo is context only: do not copy it." : ""}`;
+Rules: one solid black shape (or up to three bold black shapes) on a pure white background, centered, generous margins. Bold, simple geometric forms that stay recognizable at 16 pixels: thick strokes, no thin lines, no gradients, no shading, no texture, no outlines of the canvas, no 3D, no mockup. Absolutely no text, no letters, no numbers, no words. Think like a senior brand designer: a meaningful sign drawn from the idea; an object of the trade is welcome when stylized with intent, never as clip-art. Timeless, distinctive.${input.reference ? " The reference photo is context only: do not copy it." : ""}`;
   return generateImage(ctx, { text, aspect: "1:1", reference: input.reference ?? null, quality: "medium", usage: "logo" });
 }
 
@@ -423,12 +448,44 @@ Rules: one solid black shape (or up to three bold black shapes) on a pure white 
  * Logo complet (symbole + nom) dessiné par l'IA d'images, d'après le brief détaillé du directeur artistique.
  * Fond transparent (OpenAI) ; avec Gemini, fond blanc retiré ensuite.
  */
-export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: string; descriptor?: string; colors?: string[] }) {
+export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: string; descriptor?: string; tagline?: string; colors?: string[] }) {
   const text = `Design a complete, professional logo as a top branding agency would deliver it (logo artwork only, not a mockup): ${input.brief}
 ${input.colors?.length ? `Colors: use ONLY the brand's colors ${input.colors.join(", ")} (plus white or near-black if needed) — the logo must match the brand guidelines.
-` : ""}Text in the logo, spelled EXACTLY, same accents: the name "${input.name}"${input.descriptor ? ` and, smaller, the trade line "${input.descriptor}"` : ""}. No other words, no slogan, no fake letters.
+` : ""}Text in the logo, spelled EXACTLY, same accents: the name "${input.name}"${input.descriptor ? ` and, smaller, the trade line "${input.descriptor}"` : ""}${input.tagline ? ` and, smallest, the brand's slogan "${input.tagline}"` : ""}. No other words${input.tagline ? "" : ", no slogan"}, no fake letters.
 Quality bar: a modern, professional logo for a real small business — original, made for this brand only, never a copy of an existing logo. Follow the composition and style chosen in the brief. Crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo background, no frame around the canvas.`;
   return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+}
+
+/**
+ * Logo V2 — logo complet d'un territoire (illustré, minimaliste, typographique, monogramme, emblème, texturé,
+ * dégradé…) dessiné par le modèle d'images de l'usage « Logos ». La demande complète vient du moteur Logo V2
+ * (style, texte exact) ; haute qualité, fond transparent quand le modèle le permet.
+ */
+export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", transparent: true, usage: "logo", need: { text: true, transparent: true } });
+}
+
+/** Taille maximale d'une demande de logo complet : borne le coût maximal du devis (jamais dépassé). */
+export const LOGO_PROMPT_MAX_BYTES = 3800;
+const clampBytes = (t: string, max: number) => {
+  if (Buffer.byteLength(t, "utf8") <= max) return t;
+  let out = t;
+  while (Buffer.byteLength(out, "utf8") > max) out = out.slice(0, -40);
+  return out;
+};
+
+/**
+ * Coût MAXIMAL d'un logo complet, calculé exactement comme la réservation faite avant l'appel (même modèle choisi
+ * pour « Logos », même borne de la demande, même majoration) : sert au devis et au plafond de la série. null : aucun
+ * modèle d'images utilisable (aucun logo complet possible).
+ */
+export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): number | null {
+  const r = mediaRouteFor("logo", opts.text === false ? {} : { text: true, transparent: true });
+  if (!r) return null;
+  const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
+  const model = r.model;
+  const micro = r.provider === "openai" ? openaiImageMax(model, { prompt, images: 0, size: "1024x1024", quality: "high" }) : r.provider === "google" ? geminiImageMax(model, { prompt, images: 0 }) : cost(r.provider, model, { images: 1 }).micro;
+  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
 }
 
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */

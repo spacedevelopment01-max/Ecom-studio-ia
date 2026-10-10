@@ -6,12 +6,18 @@
 import sharp from "sharp";
 import type { JobContext } from "../jobs";
 import { UserFacingError } from "../jobs";
-import { getAsset, saveAsset } from "../library";
+import { assetData, getAsset, saveAsset } from "../library";
+import { markBrandLogo } from "../brain/brand-locks";
+import { canvasFamily } from "../media/fonts";
+import { brandBoard } from "./brand-board";
+import { faithfulSvg, STYLE_LABEL, correctArtworkText } from "./artwork";
+import { brandDiscovery } from "./discovery";
+import { defaultStyle } from "./territories";
 import { json } from "../db";
 import { loadProject, saveBrand } from "../projects";
-import { logoPng, buildLogo, type LogoSpec } from "../media/logo";
+import { logoPng, logoSet, buildLogo, type LogoSpec } from "../media/logo";
 import { SHOPIFY_TO_CANVAS } from "../media/fonts";
-import { recordBrandDecision } from "../brain/brand-locks";
+import { isLocked, recordBrandDecision } from "../brain/brand-locks";
 import { applyLogo, type LogoProposal } from "../engine/identity";
 import { C, L } from "../i18n-server";
 import type { Territory } from "./types";
@@ -34,14 +40,103 @@ export function extraVariants(spec: LogoSpec): { role: string; name: string; spe
   return out;
 }
 
-/** Proposition Logo V2 d'un projet (FINAL, ou version du studio sans relecture IA), sinon erreur. */
-function proposalOf(projectId: string, assetId: string) {
+/** Défauts qui interdisent un logo complet même choisi par le client (nom faux, texte inventé, ressemblance). */
+const ARTWORK_NEVER = ["name_mismatch", "text_unreadable", "extra_text", "resembles_known_brand", "corrupt", "forbidden"];
+
+/**
+ * Logo complet écarté par le contrôle mais présentable au CLIENT (son choix vaut contrôle humain) : seulement si le
+ * nom est exact et qu'aucun défaut rédhibitoire n'a été relevé ; il reste marqué « non validé par le contrôle ».
+ */
+export function artworkChoosable(meta: any): boolean {
+  return !!meta?.artwork && meta.gate?.verdict !== "RETRY" && !(meta.gate?.codes ?? []).some((c: string) => ARTWORK_NEVER.includes(c));
+}
+
+/** Proposition Logo V2 d'un projet (FINAL, ou version du studio sans relecture IA, ou logo complet choisissable), sinon erreur. */
+function proposalOf(projectId: string, assetId: string, opts: { byClient?: boolean } = {}) {
   const a = getAsset(assetId);
   const meta = a ? json<any>(a.meta as any, {}) : null;
   if (!a || a.project_id !== projectId || meta?.engine !== "logo-v2") throw new UserFacingError(L("Proposition introuvable.", "Proposal not found."));
   const verdict = meta.gate?.verdict;
-  if (verdict !== "FINAL" && verdict !== "PROVISIONAL") throw new UserFacingError(L("Cette proposition n'a pas passé le contrôle qualité : elle ne peut pas devenir le logo.", "This proposal did not pass the quality check: it can't become the logo."));
-  return { meta, verdict: verdict as "FINAL" | "PROVISIONAL" };
+  if (verdict !== "FINAL" && verdict !== "PROVISIONAL" && !(opts.byClient && artworkChoosable(meta))) throw new UserFacingError(L("Cette proposition n'a pas passé le contrôle qualité : elle ne peut pas devenir le logo.", "This proposal did not pass the quality check: it can't become the logo."));
+  return { meta, verdict: (verdict === "FINAL" || verdict === "PROVISIONAL" ? verdict : "CLIENT") as "FINAL" | "PROVISIONAL" | "CLIENT" };
+}
+
+/** Pixels sombres (encre) passés en blanc, couleurs gardées : version fidèle pour fonds sombres. */
+async function onDark(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) {
+    const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+    if (lum < 0.38) data[i] = data[i + 1] = data[i + 2] = 255;
+  }
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}
+
+/** Silhouette d'une seule couleur (noir seul, blanc seul) : mêmes formes, transparence gardée. */
+async function silhouette(png: Buffer, hex: string): Promise<Buffer> {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) (data[i] = r), (data[i + 1] = g), (data[i + 2] = b);
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}
+
+/**
+ * Application d'un LOGO COMPLET (image de l'IA) : l'original devient le logo principal ; déclinaisons fidèles
+ * (fond sombre, noir seul, blanc seul), version simplifiée construite par le studio pour les petites tailles
+ * (favicon, tampon, broderie), version SVG seulement si elle est fidèle, typographie des titres, boutique mise à
+ * jour, planche d'identité ; charte seulement pour un logo non provisoire.
+ */
+async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: string, meta: any, opts: { provisional: boolean; png?: Buffer }) {
+  const p = loadProject(projectId);
+  const t: Territory = { ...meta.territory, style: meta.territory.style ?? defaultStyle(meta.territory) };
+  const spec: LogoSpec = meta.spec;
+  const png = opts.png ?? assetData(getAsset(assetId)!);
+  ctx?.progress(0.3, L("Déclinaisons fidèles du logo", "Faithful logo variations"));
+  const cur = loadProject(projectId).brand!;
+  const handle = shopifyHandle(spec.family, spec.weight);
+  if (handle && !(cur.validated ?? []).includes("fonts")) saveBrand(projectId, { ...cur, fonts: { ...cur.fonts, heading: handle } });
+  const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { engine: "logo-v2", artwork: true, territory: t.id, proposal: assetId } };
+  const main = await saveAsset({ ...base, data: png, name: C("logo-principal.png", "logo-main.png"), mime: "image/png", role: "logo", sourceAssetId: assetId, status: "approved" });
+  const lightPng = await onDark(png);
+  const light = await saveAsset({ ...base, data: lightPng, name: C("logo-fond-sombre.png", "logo-dark-background.png"), mime: "image/png", role: "logo-light", sourceAssetId: main.id });
+  const monoPng = await silhouette(png, "#111111");
+  await saveAsset({ ...base, data: monoPng, name: C("logo-noir.png", "logo-black.png"), mime: "image/png", role: "logo-mono", sourceAssetId: main.id });
+  await saveAsset({ ...base, data: await silhouette(png, "#FFFFFF"), name: C("logo-blanc.png", "logo-white.png"), mime: "image/png", role: "logo-white", sourceAssetId: main.id });
+  // Version simplifiée (petites tailles) : initiale construite par le studio aux couleurs du logo, vectorielle.
+  const simple = await logoSet({ ...spec, tagline: undefined });
+  const markPng = simple.faviconPng;
+  const mark = await saveAsset({ ...base, data: simple.monoPng, name: C("version-simplifiee.png", "simplified-version.png"), mime: "image/png", role: "logo-mark", sourceAssetId: main.id, meta: { ...base.meta, simplified: true } });
+  await saveAsset({ ...base, data: Buffer.from(simple.monoSvg), name: C("version-simplifiee.svg", "simplified-version.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-mark-svg", sourceAssetId: main.id });
+  const fav = await saveAsset({ ...base, data: markPng, name: "favicon.png", mime: "image/png", role: "favicon", sourceAssetId: main.id });
+  // SVG du logo complet : seulement fidèle (sinon le PNG haute définition reste le livrable, sans version simplifiée imposée).
+  const svg = await faithfulSvg(png);
+  if (svg.ok) await saveAsset({ ...base, data: Buffer.from(svg.svg), name: C("logo-principal.svg", "logo-main.svg"), mime: "image/svg+xml", kind: "logo", role: "logo-svg", sourceAssetId: main.id, meta: { ...base.meta, fidelity: Math.round(svg.fidelity * 1000) / 1000 } });
+  const svgNote = svg.ok ? L(`Version vectorielle fidèle disponible (${Math.round(svg.fidelity * 100)} %).`, `Faithful vector version available (${Math.round(svg.fidelity * 100)}%).`) : L(`Pas de version vectorielle : ${svg.reason}.`, `No vector version: ${svg.reason}.`);
+  const after = loadProject(projectId).brand!;
+  saveBrand(projectId, { ...after, logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
+  markBrandLogo(projectId, main.id);
+  const { swapThemeLogos } = await import("../engine/identity");
+  const fresh = loadProject(projectId).brand!;
+  swapThemeLogos(projectId, { logo: main.id, light: light.id, favicon: fav.id }, isLocked(fresh, "fonts") ? null : { heading: fresh.fonts.heading, body: fresh.fonts.body });
+  // Planche d'identité : logo original, déclinaisons, couleurs exactes, typographies, applications.
+  ctx?.progress(0.7, L("Planche d'identité de marque", "Brand identity board"));
+  const board = await brandBoard({
+    name: fresh.name,
+    logo: png,
+    light: lightPng,
+    mono: monoPng,
+    mark: markPng,
+    palette: fresh.palette as unknown as Record<string, string>,
+    fonts: { heading: canvasFamily(fresh.fonts.heading), body: canvasFamily(fresh.fonts.body), headingWeight: spec.weight },
+    styleLabel: L(STYLE_LABEL[t.style][0], STYLE_LABEL[t.style][1]),
+    svgNote,
+  });
+  await saveAsset({ ...base, data: board, name: C("planche-identite.png", "identity-board.png"), mime: "image/png", role: "brand-board", sourceAssetId: main.id });
+  if (opts.provisional) return { main, svg: svg.ok };
+  ctx?.progress(0.9, L("Charte de marque", "Brand guidelines"));
+  const { saveBrandBook, saveBrandGuide } = await import("../engine/brand");
+  await saveBrandGuide(projectId).catch((e) => console.error(`[charte] ${projectId} : ${(e as Error).message}`));
+  await saveBrandBook(projectId).catch((e) => console.error(`[charte] ${projectId} : ${(e as Error).message}`));
+  return { main, svg: svg.ok };
 }
 
 /**
@@ -79,12 +174,12 @@ async function applyProposal(ctx: JobContext | null, projectId: string, assetId:
  * ce logo). Le choix du client vaut contrôle humain : une version du studio choisie par lui devient son logo.
  */
 export async function chooseLogoV2(ctx: JobContext | null, projectId: string, assetId: string) {
-  const { meta, verdict } = proposalOf(projectId, assetId);
+  const { meta, verdict } = proposalOf(projectId, assetId, { byClient: true });
   const t: Territory = meta.territory;
   // 1. Décision du client (Project Brain) — avant tout le reste.
-  recordBrandDecision(projectId, "logo", `${t.name} — ${t.concept.slice(0, 160)} (${assetId})${verdict === "PROVISIONAL" ? " [version du studio choisie par le client]" : ""}`);
+  recordBrandDecision(projectId, "logo", `${t.name} — ${t.concept.slice(0, 160)} (${assetId})${verdict === "PROVISIONAL" ? " [version du studio choisie par le client]" : verdict === "CLIENT" ? " [logo complet non validé par le contrôle, choisi par le client]" : ""}`);
   // 2. Logo principal, déclinaisons, charte et planches.
-  const applied = await applyProposal(ctx, projectId, assetId, meta, { provisional: false });
+  const applied = meta.artwork ? await applyArtwork(ctx, projectId, assetId, meta, { provisional: false }) : await applyProposal(ctx, projectId, assetId, meta, { provisional: false });
   // 3. Logo validé par le choix du client (verrou : aucun traitement automatique ne le remplacera).
   const after = loadProject(projectId).brand!;
   saveBrand(projectId, { ...after, validated: [...new Set([...(after.validated ?? []), "logo"])], logo: { ...after.logo, status: "validated", provisional: false } });
@@ -103,7 +198,8 @@ export async function applyBestLogoV2(ctx: JobContext | null, projectId: string,
   const best = results.filter((r) => r.assetId && (r.verdict === "FINAL" || r.verdict === "PROVISIONAL")).sort((a, b) => rank(b) - rank(a))[0];
   if (!best) return null;
   const { meta, verdict } = proposalOf(projectId, best.assetId!);
-  await applyProposal(ctx, projectId, best.assetId!, meta, { provisional: verdict !== "FINAL" });
+  if (meta.artwork) await applyArtwork(ctx, projectId, best.assetId!, meta, { provisional: verdict !== "FINAL" });
+  else await applyProposal(ctx, projectId, best.assetId!, meta, { provisional: verdict !== "FINAL" });
   return { assetId: best.assetId!, provisional: verdict !== "FINAL" };
 }
 
@@ -119,12 +215,39 @@ export async function reapplyLogoV2(ctx: JobContext | null, projectId: string): 
   const a = getAsset(b.logo.proposalId);
   const meta = a ? json<any>(a.meta as any, {}) : null;
   if (!meta || meta.engine !== "logo-v2") return false;
+  if (meta.artwork) return reapplyArtwork(ctx, projectId, a!.id, meta);
   const t: Territory = meta.territory;
   const color = b.palette[t.colorRole?.ink as keyof typeof b.palette] ?? meta.spec.color;
   const accent = b.palette[t.colorRole?.accent as keyof typeof b.palette] ?? meta.spec.accent ?? color;
   const next = { ...meta, spec: { ...meta.spec, name: b.name, color, accent } };
   const wasValidated = b.logo.status === "validated";
   await applyProposal(ctx, projectId, b.logo.proposalId, next, { provisional: !wasValidated && !!b.logo.provisional });
+  if (wasValidated) {
+    const after = loadProject(projectId).brand!;
+    saveBrand(projectId, { ...after, logo: { ...after.logo, status: "validated" } });
+  }
+  return true;
+}
+
+/**
+ * Logo complet appliqué et nom de marque modifié : le nom est RÉÉCRIT par le studio dans la zone relevée par la
+ * relecture (l'illustration n'est pas redessinée, aucune image payée), à partir de l'image originale. Les couleurs
+ * dessinées par l'IA ne sont pas recolorées. Sans zone connue : false (le logo garde son nom, le client est prévenu).
+ */
+async function reapplyArtwork(ctx: JobContext | null, projectId: string, assetId: string, meta: any): Promise<boolean> {
+  const p = loadProject(projectId);
+  const b = p.brand!;
+  const expected = meta.artwork?.expected?.name;
+  if (!expected || expected === b.name) return true;
+  const box = meta.artwork?.textBox;
+  if (!box) return false;
+  const original = getAsset(assetId)!;
+  const t: Territory = { ...meta.territory, style: meta.territory.style ?? defaultStyle(meta.territory) };
+  const fixed = await correctArtworkText(assetData(original), box, t, { ...brandDiscovery(p), name: b.name });
+  if (!fixed) return false;
+  const next = await saveAsset({ projectId, userId: p.userId, data: fixed, name: original.name ?? C("logo-v2.png", "logo-v2.png"), mime: "image/png", role: original.role ?? "logo-v2", folderKey: "brand.logos", origin: "generated", status: "review", sourceAssetId: original.id, meta: { ...meta, spec: { ...meta.spec, name: b.name }, artwork: { ...meta.artwork, expected: { ...meta.artwork.expected, name: b.name }, textCorrected: true }, change: `nom réécrit par le studio : « ${expected} » → « ${b.name} »` } });
+  const wasValidated = b.logo.status === "validated";
+  await applyArtwork(ctx, projectId, next.id, json<any>(next.meta as any, {}), { provisional: !wasValidated && !!b.logo.provisional, png: fixed });
   if (wasValidated) {
     const after = loadProject(projectId).brand!;
     saveBrand(projectId, { ...after, logo: { ...after.logo, status: "validated" } });

@@ -2,14 +2,15 @@
  * Territoires créatifs (Logo V2) : plusieurs directions RÉELLEMENT différentes, décrites avant toute image.
  *
  * Avec l'IA : le directeur artistique les invente pour CETTE marque (aucune direction codée en dur), au format
- * structuré ; le code vérifie ensuite la diversité (type de marque, composition, style typographique, construction,
- * sobriété), écarte ce que le client a refusé et ce qui reprend un cliché littéral du métier.
+ * structuré ; le code vérifie ensuite la diversité (style d'identité, type de marque, composition, style
+ * typographique, construction, sobriété) et écarte ce que le client a refusé. Un objet du métier est permis (jamais
+ * exigé) : c'est la relecture qui écarte un cliché MALADROIT, pas une liste de mots.
  * Sans IA : une version du studio construit des territoires à partir des mêmes axes, d'après la personnalité, le
  * secteur et le positionnement — présentée comme telle (jamais FINALE sans contrôle par l'IA ou par le client).
  */
 import { z } from "zod";
 import { CANVAS_FONTS } from "../media/fonts";
-import { COMPOSITIONS, CONSTRUCTIONS, MARK_TYPES, TYPE_STYLES, type BrandBrief, type Composition, type Construction, type MarkType, type Territory, type TypeStyle } from "./types";
+import { COMPOSITIONS, CONSTRUCTIONS, LOGO_STYLES, MARK_TYPES, TYPE_STYLES, type LogoStyle, type BrandBrief, type Composition, type Construction, type MarkType, type Territory, type TypeStyle } from "./types";
 
 const ROLE = z.enum(["primary", "secondary", "accent", "light", "dark"]);
 
@@ -32,6 +33,8 @@ export const TerritorySchema = z.object({
   symbolIdea: z.string().max(400).nullable().catch(null),
   distinctive: z.string().max(400).catch(""),
   avoid: z.array(z.string().max(120)).max(8).catch([]),
+  style: z.enum(LOGO_STYLES).optional().catch(undefined),
+  descriptor: z.string().max(80).nullable().optional().catch(null),
 });
 export const TerritoriesSchema = z.object({ territories: z.array(TerritorySchema).min(1).max(8) });
 export type TerritoryDraft = z.infer<typeof TerritorySchema>;
@@ -53,25 +56,34 @@ export function nearestWeight(family: string, w: number): number {
   return ws.sort((a, b) => Math.abs(a - w) - Math.abs(b - w))[0] ?? 400;
 }
 
-/** Signature d'un territoire sur les axes de diversité. */
-const axes = (t: Pick<Territory, "markType" | "composition" | "typography" | "construction" | "sobriety">) => [t.markType, t.composition, t.typography.style, t.construction, t.sobriety <= 2 ? "sober" : t.sobriety >= 4 ? "expressive" : "balanced"];
+/** Style d'identité déduit d'un territoire qui n'en indique pas (anciennes séries, version du studio). */
+export function defaultStyle(t: Pick<Territory, "markType" | "construction">): LogoStyle {
+  if (t.markType === "wordmark") return "typographic";
+  if (t.markType === "monogram" || t.markType === "lettermark") return "monogram";
+  if (t.markType === "emblem") return "emblem";
+  return t.construction === "illustrative" ? "illustrated" : t.construction === "organic" ? "textured" : "minimal";
+}
 
-/** Nombre d'axes sur lesquels deux territoires diffèrent (0 à 5). */
+/** Signature d'un territoire sur les axes de diversité. */
+const axes = (t: Pick<Territory, "markType" | "composition" | "typography" | "construction" | "sobriety"> & { style?: LogoStyle }) => [t.markType, t.composition, t.typography.style, t.construction, t.sobriety <= 2 ? "sober" : t.sobriety >= 4 ? "expressive" : "balanced", t.style ?? defaultStyle(t)];
+
+/** Nombre d'axes sur lesquels deux territoires diffèrent (0 à 6). */
 export function territoryDistance(a: Territory, b: Territory): number {
   const x = axes(a);
   const y = axes(b);
   return x.filter((v, i) => v !== y[i]).length;
 }
 
-/** Distance minimale exigée entre deux territoires (sur 5 axes). */
+/** Distance minimale exigée entre deux territoires (sur 6 axes). */
 export const MIN_DISTANCE = 3;
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const ABSTRACTION = /abstrait|abstract|stylis|negatif|negative space|fusion|combine|construit|geometri|fragment|trace|ligne|line|plan|module|rythme|rhythm|grid|grille/;
 
 /**
- * Cliché littéral : l'idée du symbole se résume à un objet attendu du métier (rouleau, truelle, maison, ampoule…)
- * sans parti pris d'abstraction ou de combinaison. Un objet du métier traité de façon abstraite reste permis.
+ * Objet attendu du métier cité tel quel dans l'idée du symbole (d'après la liste des objets attendus du métier), sans parti pris
+ * d'abstraction ou de combinaison. INDICATION seulement (note de la série) : un symbole du métier bien intégré est
+ * permis ; seule la relecture du dessin écarte un cliché maladroit.
  */
 export function literalCliche(t: Pick<Territory, "symbolIdea" | "markType">, cliches: string[]): string | null {
   if (!t.symbolIdea || !["symbol_wordmark", "emblem", "abstract_mark"].includes(t.markType)) return null;
@@ -80,22 +92,33 @@ export function literalCliche(t: Pick<Territory, "symbolIdea" | "markType">, cli
   return hit && !ABSTRACTION.test(idea) ? hit : null;
 }
 
+const words = (s: string) => norm(s).split(/[^a-z0-9]+/).filter((w) => w.length >= 4);
+
 /**
- * Sélection des territoires : forme valide, refus du client respectés, pas de cliché littéral, et diversité réelle
- * (au moins MIN_DISTANCE axes de différence avec chaque territoire déjà retenu).
+ * Ligne d'activités sous le nom : seulement des activités RÉELLES de l'entreprise (prestations saisies, catégorie,
+ * métier compris). Chaque élément doit partager un mot avec elles ; sinon la ligne est retirée (rien d'inventé).
+ */
+export function cleanDescriptor(raw: string | null | undefined, brief: Pick<BrandBrief, "activities" | "trade" | "activity">): string | null {
+  const parts = (raw ?? "").split(/[•·|,\/]/).map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean);
+  if (!parts.length || parts.length > 3) return null;
+  const known = new Set(words([...brief.activities, brief.activity, brief.trade.label, ...brief.trade.actions].join(" ")).map((w) => w.slice(0, 5)));
+  if (!parts.every((x) => words(x).some((w) => known.has(w.slice(0, 5))))) return null;
+  const line = parts.map((x) => x.toLocaleUpperCase("fr-FR")).join(" • ");
+  return line.length <= 60 ? line : null;
+}
+
+/**
+ * Sélection des territoires : forme valide, refus du client respectés, style demandé par le client, et diversité
+ * réelle (au moins MIN_DISTANCE axes de différence avec chaque territoire déjà retenu).
  */
 export function selectTerritories(drafts: (TerritoryDraft & { source?: Territory["source"] })[], brief: BrandBrief, max: number): { kept: Territory[]; rejected: { name: string; reason: string }[] } {
   const kept: Territory[] = [];
   const rejected: { name: string; reason: string }[] = [];
   for (const [i, d] of drafts.entries()) {
-    const t: Territory = { ...d, id: `t${i + 1}`, source: d.source ?? "ai", symbolIdea: d.symbolIdea ?? null };
+    const style = brief.style !== "auto" ? brief.style : (d.style ?? defaultStyle(d));
+    const t: Territory = { ...d, id: `t${i + 1}`, source: d.source ?? "ai", symbolIdea: d.symbolIdea ?? null, style, descriptor: cleanDescriptor(d.descriptor, brief) };
     if (brief.rejectedMarkTypes.includes(t.markType)) {
       rejected.push({ name: t.name, reason: `type « ${t.markType} » refusé par le client` });
-      continue;
-    }
-    const cliche = literalCliche(t, brief.cliches);
-    if (cliche) {
-      rejected.push({ name: t.name, reason: `cliché littéral du métier (${cliche})` });
       continue;
     }
     const close = kept.find((k) => territoryDistance(k, t) < MIN_DISTANCE);
@@ -132,7 +155,7 @@ function styleFor(b: BrandBrief, i: number): TypeStyle {
   return order[i % order.length];
 }
 
-export function localTerritories(b: BrandBrief): TerritoryDraft[] {
+export function localTerritories(b: BrandBrief): (TerritoryDraft & { style: LogoStyle; descriptor: null })[] {
   return ARCHETYPES.filter((a) => !b.rejectedMarkTypes.includes(a.markType)).map((a, i) => ({
     name: a.name,
     concept: a.concept(b),
@@ -146,5 +169,7 @@ export function localTerritories(b: BrandBrief): TerritoryDraft[] {
     symbolIdea: a.markType === "abstract_mark" ? `forme abstraite construite d'après le geste du métier` : null,
     distinctive: "",
     avoid: b.cliches.slice(0, 4),
+    style: b.style !== "auto" ? b.style : defaultStyle(a),
+    descriptor: null,
   }));
 }

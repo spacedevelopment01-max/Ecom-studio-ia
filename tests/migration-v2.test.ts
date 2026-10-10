@@ -120,6 +120,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
     const ugc = await import("@/app/api/projects/[id]/ugc/route");
     expect((await ugc.POST(req(`/api/projects/${pid}/ugc`, {}), ctx({ id: pid }))).status).toBe(410);
     const full = await import("@/app/api/projects/[id]/brand/full-logo/route");
+    // Ancien générateur de logos complets : remplacé par le Logo V2 « logo complet » (aucune tâche créée ici).
     expect((await full.POST(req(`/api/projects/${pid}/brand/full-logo`, { action: "create" }), ctx({ id: pid }))).status).toBe(410);
     const images = await import("@/app/api/projects/[id]/images/route");
     expect((await images.POST(req(`/api/projects/${pid}/images`, { mode: "single", kind: "ad" }), ctx({ id: pid }))).status).toBe(410);

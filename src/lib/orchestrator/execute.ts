@@ -24,7 +24,7 @@ import type { RouteDecision } from "./router";
 export const STEP_DELIVERABLES: Record<StepKind, Deliverable[]> = {
   understand: ["cutout"],
   brand_strategy: [],
-  logo: ["logo_route", "logo_full", "logo_v2"],
+  logo: ["logo_route", "logo_full", "logo_v2", "logo_artwork"],
   mockups: [],
   stock_search: ["stock_photo", "stock_v2"],
   image_generate: ["image_product", "image_lifestyle", "image_ambiance", "image_v2"],
@@ -49,6 +49,7 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
   "brand.fulllogo": ["logo"],
   "brand.logo.v2": ["logo"],
   "brand.logo.v2.choose": ["logo"],
+  "brand.logo.v2.redraw": ["logo"],
   "copy.build": ["copy"],
   "images.generate": ["image_generate"],
   "image.single": ["image_generate"],

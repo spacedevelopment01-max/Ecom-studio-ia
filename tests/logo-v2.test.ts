@@ -78,15 +78,17 @@ describe("Phase 4A — Brand & Logo Engine V2", async () => {
     expect(sent).toHaveLength(0);
   });
 
-  it("territoires réellement distincts : quasi-doublon et cliché littéral écartés ; refus du client respectés", () => {
+  it("territoires réellement distincts : quasi-doublon écarté ; objet du métier PERMIS (plus de refus par liste de mots) ; refus du client respectés", () => {
     const pid = sb();
     const b = fr(() => brandDiscovery(loadProject(pid)));
     const sel = selectTerritories(draftsFor(b), b, 4);
     // Le client a déjà écarté un badge (fixture) : l'emblème n'est plus proposé.
-    expect(sel.kept.map((t) => t.name)).toEqual(["Signature typographique", "Monogramme construit", "Geste abstrait"]);
+    // L'objet du métier n'est plus refusé d'office : c'est la relecture du dessin qui écarte un cliché maladroit.
+    expect(sel.kept.map((t) => t.name)).toEqual(["Signature typographique", "Monogramme construit", "Geste abstrait", "Objet du métier"]);
     expect(sel.rejected.map((r) => r.reason)).toContain("type « emblem » refusé par le client");
     for (const a of sel.kept) for (const c of sel.kept) if (a !== c) expect(territoryDistance(a, c)).toBeGreaterThanOrEqual(MIN_DISTANCE);
-    expect(sel.rejected.map((r) => r.reason).join(" | ")).toMatch(/trop proche de « Signature typographique ».*\| cliché littéral du métier \(trowel\)/);
+    expect(sel.rejected.map((r) => r.reason).join(" | ")).toMatch(/trop proche de « Signature typographique »/);
+    expect(sel.rejected.map((r) => r.reason).join(" | ")).not.toMatch(/cliché/);
     // Un objet du métier traité de façon abstraite reste permis.
     expect(literalCliche({ markType: "symbol_wordmark", symbolIdea: "trowel stylisé en négatif dans une ligne d'enduit" }, b.cliches)).toBeNull();
     // Sans ce refus (autre marque) : l'emblème est proposé ; avec un refus du monogramme : plus de monogramme.
@@ -107,7 +109,7 @@ describe("Phase 4A — Brand & Logo Engine V2", async () => {
     expect(log.calls).not.toContain("symbol:Signature typographique");
     expect(log.calls).not.toContain("symbol:Monogramme construit");
     expect(log.calls).toContain("symbol:Geste abstrait");
-    expect(r.shown).toHaveLength(3);
+    expect(r.shown).toHaveLength(4);
     expect(r.shown.every((s) => s.verdict === "FINAL")).toBe(true);
   });
 

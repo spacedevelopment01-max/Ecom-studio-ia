@@ -8,6 +8,9 @@ import { describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 
 const prompts: string[] = [];
+const inputs: any[] = [];
+const llmCalls: any[] = [];
+let brand: any = { name: "Sébastien Blanc", palette: { primary: "#8A3B26" }, direction: "atelier" };
 const refunds: string[] = [];
 let qcCalls = 0;
 let nextQc = (n: number): any => (n === 0 ? { text: "Sebastein Blanc", nameExact: false, extraText: false, score: 7, issues: [] } : { text: "Sébastien Blanc", nameExact: true, extraText: false, score: 8, issues: [] });
@@ -17,6 +20,7 @@ vi.mock("@/lib/ai/media-providers", () => ({
   refundMediaQuota: (_u: string, k: string) => refunds.push(k),
   fullLogoImage: vi.fn(async (_c: unknown, i: { brief: string; name: string }) => {
     prompts.push(i.brief);
+    inputs.push(i);
     return sharp({ create: { width: 300, height: 200, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: await sharp({ create: { width: 100, height: 60, channels: 4, background: "#8A3B26" } }).png().toBuffer(), left: 100, top: 70 }]).png().toBuffer();
   }),
 }));
@@ -24,12 +28,13 @@ vi.mock("@/lib/ai/llm", async (orig) => ({
   ...(await orig<object>()),
   llmConfigured: () => true,
   llmJson: vi.fn(async (call: { task: string }) => {
-    if (call.task === "logo_symbol") return { logos: [{ concept: "Le fil à plomb", brief: "A plumb line forming an S, deep terracotta #8A3B26, serif wordmark." }] };
+    llmCalls.push(call);
+    if (call.task === "logo_symbol") return { logos: [{ concept: "Le fil à plomb", brief: "A plumb line forming an S, deep terracotta #8A3B26, serif wordmark.", descriptor: "PLÂTRERIE • PEINTURE • RÉNOVATION" }] };
     return nextQc(qcCalls++);
   }),
 }));
 vi.mock("@/lib/ai/context", () => ({ projectContext: () => "", brainContext: () => "", brainView: () => ({ stable: "", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
-vi.mock("@/lib/projects", async (orig) => ({ ...(await orig<object>()), loadProject: () => ({ id: "p", userId: "u", name: "Blanc", brand: { name: "Sébastien Blanc", palette: { primary: "#8A3B26" }, direction: "atelier" } }) }));
+vi.mock("@/lib/projects", async (orig) => ({ ...(await orig<object>()), loadProject: () => ({ id: "p", userId: "u", name: "Blanc", get brand() { return brand; } }) }));
 const saved: any[] = [];
 vi.mock("@/lib/library", async (orig) => ({ ...(await orig<object>()), saveAsset: vi.fn(async (a: any) => (saved.push(a), { id: `a${saved.length}`, ...a })) }));
 
@@ -93,5 +98,20 @@ describe("logo complet par l'IA d'images", () => {
     const meta = JSON.parse(out[0].meta as any);
     expect(meta.gate.verdict).toBe("RETRY");
     expect(meta.qcWarning).toMatch(/contrôle en panne/);
+  });
+
+  it("activités du métier transmises ; slogan écrit dans le logo seulement s'il a été validé par le client", async () => {
+    qcCalls = 0;
+    nextQc = () => ({ text: "Sébastien Blanc", nameExact: true, extraText: false, score: 8.5, issues: [] });
+    inputs.length = 0;
+    brand = { name: "Sébastien Blanc", tagline: "Des espaces qui vous ressemblent", palette: { primary: "#8A3B26" }, direction: "atelier" };
+    await generateFullLogos(null, "p");
+    expect(inputs[0]).toMatchObject({ descriptor: "PLÂTRERIE • PEINTURE • RÉNOVATION", tagline: undefined });
+    inputs.length = 0;
+    brand = { ...brand, validated: ["tagline"] };
+    await generateFullLogos(null, "p");
+    expect(inputs[0].tagline).toBe("Des espaces qui vous ressemblent");
+    // Le contrôle reçoit le slogan : il ne le compte pas comme texte en trop.
+    expect(JSON.stringify(llmCalls.at(-1))).toContain("Des espaces qui vous ressemblent");
   });
 });

@@ -378,6 +378,21 @@ describe("routage multimédia par usage", async () => {
     expect(getJsonSetting<Record<string, unknown>>("ai.media.usage", {}).logo).toBeUndefined();
   });
 
+  it("toute image payée est conservée telle que reçue, sous l'identifiant de son appel — même rejetée ensuite ; rien pour un échec non facturé", async () => {
+    const { storagePath } = await import("@/lib/storage");
+    const fs = await import("node:fs");
+    const c = await client();
+    await fr(() => mp.logoSymbolImage(ctx(c), { concept: "onde" }));
+    const call = one<{ id: string }>("SELECT id FROM ai_calls WHERE user_id = ? AND task = 'image_generation' AND status = 'ok'", c.userId)!;
+    const file = storagePath(`ai-originals/${c.projectId}/${call.id}.png`);
+    expect(fs.existsSync(file)).toBe(true);
+    expect(fs.readFileSync(file).equals(Buffer.from(PNG, "base64"))).toBe(true);
+    // Échec avant facturation (fournisseur indisponible) : aucune image, aucun fichier.
+    oa.mode = "503";
+    await expect(fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow();
+    expect(fs.readdirSync(storagePath(`ai-originals/${c.projectId}`))).toEqual([`${call.id}.png`]);
+  });
+
   it("plafonds de dépense IA intacts : 40 % HT des abonnements, 50 % HT des recharges", () => {
     expect(billing.SUBSCRIPTION_AI_SHARE).toBe(0.4);
     expect(billing.PACK_AI_SHARE).toBe(0.5);
