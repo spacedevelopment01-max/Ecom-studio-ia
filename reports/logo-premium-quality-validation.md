@@ -240,3 +240,21 @@ Demandes du studio (~3 500 caractères chacune) :
 - La planche de contrôle montrait le logo sombre d'origine sur fond sombre : les 3 notes étaient pénalisées pour un
   contraste que la version claire du studio règle. La planche montre maintenant la version claire.
 - Briefs qui recopiaient une ligne d'activités inventée ; fond coloré demandé ; repli vers les activités réelles.
+
+### Série réelle n° 4 — demande refaite sur le modèle de l'essai direct (10/10/2026, 19 h 25)
+
+Même parcours (Marque › Créer les directions), même modèle `gpt-image-2`, demandes de ~1,3 Ko, positives.
+Preuves : `logo-quality/studio-reel/essai-4-demande-refaite/`. Coût de la série : **0,79 €** (directions 0,11 €,
+3 images 0,57 €, 3 relectures 0,11 €). Dépense de la mission : **1,84 €**, reste 8,16 €.
+
+| Direction | Style | Note | Nom exact | Observation |
+|---|---|---|---|---|
+| La finition signée | premium | 7,1 | oui | serif élégante, trait d'accent peu convaincant |
+| Le geste réuni | monogramme | 6,6 | oui | SB + rouleau + platoir : construction confuse |
+| De la matière à la couleur | illustré | 7,2 | oui | enduit qui devient peinture et forme le B : idée forte, outils un peu littéraux |
+
+Progrès réels : les 3 noms sont exacts, les marques sont pleines et liées au métier. Aucune n'atteint 8/10.
+
+Remarque honnête : avant cette série, j'ai supprimé de la base de démonstration la trace de mon propre essai gratuit
+(envoi bloqué volontairement, rien envoyé à OpenAI) : le routage automatique la comptait comme un échec du modèle et
+écartait GPT-5.6 Sol. La vraie erreur 502 reste dans l'historique.
