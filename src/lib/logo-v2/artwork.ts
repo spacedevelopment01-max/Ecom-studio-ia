@@ -95,47 +95,45 @@ export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string
   const pal = brief.palette;
   const ink = pal[t.colorRole.ink];
   const accent = pal[t.colorRole.accent];
-  const others = [...new Set(Object.values(pal))].filter((c) => c !== ink && c !== accent).slice(0, 3);
   const txt = artworkText(t, brief);
-  const caseWord = t.typography.case === "upper" ? "capitals" : t.typography.case === "lower" ? "lowercase" : "title case";
+  const upper = t.typography.case === "upper";
   // Couleurs : celles de la direction quand la palette n'est pas validée (choisies pour la marque), sinon la palette.
-  const own = !brief.paletteLocked && t.colors?.length ? t.colors.filter((c) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 4) : [];
-  const colours = own.length
-    ? `Colours: ${own.join(", ")} (chosen for this direction)${t.style === "gradient" ? "; gradients are built only from these colours" : ""}; white or near-black only if needed.`
-    : `Colours: the brand palette — main ink ${ink}, accent ${accent}${others.length ? `, also available ${others.join(", ")}` : ""}${t.style === "gradient" ? "; gradients are built only from these colours" : ""}; white or near-black only if needed.`;
+  const own = !brief.paletteLocked && t.colors?.length ? t.colors.filter((c) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 3) : [];
+  const colours = own.length ? `Colours: ${own.join(", ")}.` : `Colours: ${[...new Set([ink, accent])].join(" and ")}, from the brand palette.`;
   const end = (x: string) => x.trim().replace(/[.\s]+$/, "");
-  const who = [brief.positioning ? `Positioning: ${end(brief.positioning)}.` : "", brief.audience ? `Clients: ${end(brief.audience)}.` : "", brief.personality.length ? `Personality: ${brief.personality.slice(0, 4).join(", ")}.` : ""].filter(Boolean).join(" ");
-  // Avec un brief de direction artistique, c'est lui qui décrit le dessin, la composition et la typographie : les
-  // lignes génériques ne sont pas répétées (elles le contrediraient).
-  const briefed = !!t.imageBrief?.trim();
-  const head = [
-    `Design a complete, professional logo for the brand "${brief.name}" (${brief.trade.label || brief.activity}${brief.activities.length ? `: ${brief.activities.slice(0, 3).join(", ")}` : ""}), as a top branding agency would present it — the logo artwork only, not a mockup.`,
-    who,
-    `Creative direction "${t.name}": ${t.concept}`,
-  ];
-  const tail = [
-    `Style: ${STYLE_GUIDE[t.style]}`,
-    !briefed && t.symbolIdea ? `Symbol idea: ${t.symbolIdea}.` : "",
-    !briefed && t.distinctive ? `What makes it memorable: ${t.distinctive}.` : "",
-    briefed ? "" : `Composition: ${COMPOSITION[t.composition]}. Typography: ${TYPO[t.typography.style]}, ${t.typography.weight} weight, ${caseWord}, ${t.typography.tracking} letter-spacing.`,
+  const trade = brief.trade.label || brief.activity;
+  const acts = brief.activities.filter((a) => a.toLowerCase() !== trade.toLowerCase()).slice(0, 3);
+  const name = upper ? txt.name.toLocaleUpperCase("fr-FR") : txt.name;
+  // Même forme que l'essai direct réussi : peu de consignes, toutes positives, une marque forte décrite précisément.
+  // Le brief de direction artistique décrit le dessin ; sans brief, la direction, le style et l'idée de symbole.
+  const art = t.imageBrief?.trim()
+    ? `A real agency-quality logo: ${end(briefWithoutText(t.imageBrief.trim(), brief.name))}.`
+    : [
+        `A real agency-quality logo, creative direction "${t.name}": ${end(t.concept)}.`,
+        `Style: ${STYLE_GUIDE[t.style]}`,
+        t.symbolIdea ? `Symbol idea: ${end(t.symbolIdea)}.` : "",
+        `Composition: ${COMPOSITION[t.composition]}. Typography: ${TYPO[t.typography.style]}, ${t.typography.weight} weight.`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+  const lines = [
+    `Design a professional logo for "${brief.name}", ${trade}${acts.length ? ` (${acts.join(", ")})` : ""}.`,
+    art,
     colours,
-    `Text in the logo, spelled EXACTLY with the same accents and spaces: the name "${txt.name}"${txt.descriptor ? `, and smaller, the activity line "${txt.descriptor}"` : ""}${txt.tagline ? `, and smallest, the slogan "${txt.tagline}"` : ""}. No other words, no slogan${txt.tagline ? " other than this one" : ""}, no fake or extra letters.`,
-    briefed
-      ? `${t.avoid.length ? `Also avoid: ${t.avoid.slice(0, 6).join(", ")}. ` : ""}Never copy or imitate an existing logo.`
-      : `Nothing is imposed: no shape, object, initials, texture or composition is required beyond this direction. An object or gesture of this business${brief.trade.objects.length ? ` (here, for example: ${brief.trade.objects.slice(0, 3).join(", ")})` : ""} may be used when it is integrated in an original, professional way.${t.avoid.length ? ` Also avoid: ${t.avoid.slice(0, 6).join(", ")}.` : ""} Never copy or imitate an existing logo.`,
-    QUALITY_BAR,
-    POOR_CONCEPTS,
-    feedback ? `Requested changes for this new version: ${feedback}.` : "",
-    "No people: no person, face, hands or human silhouette.",
-    "Output: crisp edges, centered, generous margins, on a plain transparent or pure white background. No mockup, no paper, no wall, no photo, no frame around the canvas.",
+    `The name, perfectly legible${upper ? ", in capitals" : ""}: "${name}"${txt.descriptor ? `; smaller and spaced underneath, the activity line: "${txt.descriptor}"` : ""}${txt.tagline ? `; smallest, the slogan: "${txt.tagline}"` : ""}.`,
+    "Spell every word exactly, with the accents. No other text.",
+    feedback ? `Changes for this version: ${end(feedback)}.` : "",
+    "Centered, generous margins, plain white background, flat logo artwork only — no mockup, no wall, no paper, no photo, no people.",
   ];
-  // Brief de direction artistique écrit pour le modèle d'images : la place qui reste lui revient (le texte exact,
-  // les règles et la sortie ne sont jamais coupés).
-  const fixed = [...head, ...tail].filter(Boolean).join("\n");
-  const room = PROMPT_BUDGET - Buffer.byteLength(fixed, "utf8") - 20;
-  const art = t.imageBrief?.trim() ? `Art direction: ${fitBrief(briefWithoutText(t.imageBrief.trim(), brief.name), room)}` : "";
-  return [...head, art, ...tail].filter(Boolean).join("\n");
+  const fixed = lines.filter(Boolean).join("\n");
+  // Taille bornée (devis) : seul le brief est raccourci, jamais le texte exact ni la sortie.
+  if (Buffer.byteLength(fixed, "utf8") <= PROMPT_BUDGET) return fixed;
+  const room = PROMPT_BUDGET - (Buffer.byteLength(fixed, "utf8") - Buffer.byteLength(art, "utf8")) - 20;
+  return lines.map((l) => (l === art ? fitBrief(art, room) : l)).filter(Boolean).join("\n");
 }
+
+/** Taille maximale d'une demande (même borne que le devis : LOGO_PROMPT_MAX_BYTES du moteur multimédia). */
+const PROMPT_BUDGET = 3800;
 
 /**
  * Brief sans texte recopié : un texte cité (nom ou ligne d'activités réécrite à sa façon) contredirait le texte exact
@@ -147,8 +145,6 @@ export function briefWithoutText(text: string, name: string): string {
   return text.replace(/[“"«]\s*([^”"»]{1,120}?)\s*[”"»]/g, (m, q: string) => (fold(q) === fold(name) ? "the name" : fold(name).includes(fold(q)) || q.replace(/[^\p{L}]/gu, "").length <= 3 ? m : "the activity line"));
 }
 
-/** Taille maximale d'une demande (même borne que le devis : LOGO_PROMPT_MAX_BYTES du moteur multimédia). */
-const PROMPT_BUDGET = 3800;
 
 // ---------------------------------------------------------------- image : nettoyage, planche
 

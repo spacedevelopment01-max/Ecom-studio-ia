@@ -244,7 +244,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     // Aucune personne ajoutée sans autorisation (règle des créations).
     const { artworkPrompt } = await import("@/lib/logo-v2/artwork");
     const { brandDiscovery } = await import("@/lib/logo-v2/discovery");
-    expect(fr(() => artworkPrompt(prop0(r), brandDiscovery(loadProject(pid))))).toMatch(/No people: no person, face, hands or human silhouette/);
+    expect(fr(() => artworkPrompt(prop0(r), brandDiscovery(loadProject(pid))))).toMatch(/no people\./);
     const prop = r.shown[0];
     expect(prop?.verdict).toBe("FINAL");
     // Suivi en direct : image reçue PUIS sauvegardée (persistant, relu comme après un rechargement).
@@ -320,7 +320,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     expect(srv.prompts[0]).toContain(STYLE_GUIDE.monogram);
     expect(srv.prompts[1]).toContain(STYLE_GUIDE.minimal);
     expect(srv.prompts[2]).toContain(STYLE_GUIDE.typographic);
-    expect(srv.prompts[0]).toContain('Creative direction "Monogramme d\'artisan"');
+    expect(srv.prompts[0]).toContain('creative direction "Monogramme d\'artisan"');
     expect(srv.prompts[1]).toContain("Symbol idea: une maison dessinée d'un seul trait");
     // Les 3 propositions sont montrées, chacune avec SON image ORIGINALE (fichier reçu, à l'identique).
     expect(r.shown.map((x) => x.territory.name)).toEqual(["Monogramme d'artisan", "Maison au trait", "Lettrage d'atelier"]);

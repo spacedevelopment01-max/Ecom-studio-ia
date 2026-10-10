@@ -134,9 +134,11 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(log.prompts[1]).toContain(STYLE_GUIDE.minimal);
     expect(log.prompts[2]).toContain(STYLE_GUIDE.typographic);
     for (const p of log.prompts) {
-      expect(p).toContain('the name "Sébastien Blanc"');
+      expect(p).toMatch(/The name, perfectly legible(, in capitals)?: "(Sébastien Blanc|SÉBASTIEN BLANC)"/);
       expect(p).not.toMatch(/one solid black shape|no letters|Absolutely no text/i);
-      expect(p).toMatch(/Nothing is imposed: no shape, object, initials, texture or composition is required/);
+      // Forme de l'essai direct réussi : consignes positives, courtes, sans listes d'interdits.
+      expect(p).not.toMatch(/Nothing is imposed|Avoid poor concepts|Also avoid/);
+      expect(Buffer.byteLength(p, "utf8")).toBeLessThan(1800);
     }
     // Maison + pinceau : permis (plus de refus par liste de mots).
     expect(log.prompts[0]).toContain("une maison dont le toit devient un coup de pinceau");
@@ -165,10 +167,10 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
       const prompt = artworkPrompt(t, b);
       expect(prompt, kind).not.toMatch(TRADE);
       // Hors la phrase qui dit justement que rien n'est imposé : ni initiales, ni texture, ni monogramme demandés.
-      expect(prompt.split("\n").filter((l) => !l.startsWith("Nothing is imposed")).join("\n"), kind).not.toMatch(/initials|texture|monogram/i);
+      expect(prompt, kind).not.toMatch(/initials|texture|monogram/i);
       expect(prompt).toContain(STYLE_GUIDE.typographic);
       for (const other of ["illustrated", "monogram", "textured", "emblem", "gradient", "premium", "minimal"] as const) expect(prompt).not.toContain(STYLE_GUIDE[other]);
-      expect(prompt).toContain(`the name "${b.name}"`);
+      expect(prompt).toContain(`"${b.name}"`);
     }
   });
 
@@ -318,10 +320,10 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     const b1 = fr(() => brandDiscovery(loadProject(pid)));
     const t1 = selectTerritories(STYLED(b1) as any, b1, 3).kept[0];
     expect(artworkPrompt(t1, b1)).not.toContain("Des murs nets");
-    expect(artworkPrompt(t1, b1)).toMatch(/No other words, no slogan,/);
+    expect(artworkPrompt(t1, b1)).toMatch(/No other text\./);
     saveBrand(pid, { ...loadProject(pid).brand!, validated: [...(loadProject(pid).brand!.validated ?? []), "tagline"] });
     const b2 = fr(() => brandDiscovery(loadProject(pid)));
-    expect(artworkPrompt(t1, b2)).toContain('the slogan "Des murs nets, sans surprise"');
+    expect(artworkPrompt(t1, b2)).toContain('the slogan: "Des murs nets, sans surprise"');
     // Ligne d'activités : seulement des activités réelles.
     expect(cleanDescriptor("Plâtrerie • Peinture", b2)).toBe("PLÂTRERIE • PEINTURE");
     expect(cleanDescriptor("Plâtrerie • Électricité", b2)).toBeNull();
@@ -334,7 +336,7 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     const first = r.shown[0];
     const out = await fr(() => redrawArtwork(job(pid, "brand.logo.v2.redraw"), pid, first.assetId!, { feedback: "toit plus marqué, deux tons", ai: artAi(log) as any }));
     expect(log.calls.filter((c) => c === "art:Atelier illustré:v")).toHaveLength(1);
-    expect(log.prompts.at(-1)).toContain("Requested changes for this new version: toit plus marqué, deux tons");
+    expect(log.prompts.at(-1)).toContain("Changes for this version: toit plus marqué, deux tons");
     expect(out.assetId).toBeTruthy();
     expect(getAsset(first.assetId!)!.deleted_at).toBeFalsy();
     expect(JSON.parse(getAsset(out.assetId!)!.meta as any)).toMatchObject({ run: JSON.parse(getAsset(first.assetId!)!.meta as any).run, previous: first.assetId });
@@ -372,20 +374,21 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     expect(draft.colors).toBeUndefined(); // couleur invalide : liste rejetée, jamais inventée
     const t = { ...selectTerritories([{ ...draft, colors: ["#2E2E33", "#B8916A"] }] as any, b, 1).kept[0] };
     const p = artworkPrompt(t, { ...b, paletteLocked: false });
-    expect(p).toContain("Art direction: A refined custom-drawn mark");
-    expect(p).toContain("Colours: #2E2E33, #B8916A (chosen for this direction)");
-    expect(p).toContain(QUALITY_BAR);
-    expect(p).toContain(POOR_CONCEPTS);
-    expect(p).not.toMatch(/^Composition: /m); // le brief décrit la composition : pas de consigne générique en double
+    expect(p).toContain("A real agency-quality logo: A refined custom-drawn mark");
+    expect(p).toContain("Colours: #2E2E33, #B8916A.");
+    // Forme de l'essai direct réussi : ni barre de qualité générique, ni listes d'interdits, ni lignes contradictoires.
+    expect(p).not.toContain(QUALITY_BAR);
+    expect(p).not.toContain(POOR_CONCEPTS);
+    expect(p).not.toMatch(/^Composition: |^Style: /m);
     expect(Buffer.byteLength(p, "utf8")).toBeLessThanOrEqual(3800);
-    expect(p).toContain(`the name "${b.name}"`);
-    expect(p).toMatch(/Output: crisp edges/);
-    // Positionnement, clientèle et personnalité de la marque transmis.
-    if (b.positioning) expect(p).toContain("Positioning:");
+    expect(p).toMatch(new RegExp(`"(${b.name}|${b.name.toLocaleUpperCase("fr-FR")})"`));
+    expect(p).toContain("Spell every word exactly, with the accents. No other text.");
+    expect(p).toMatch(/plain white background, flat logo artwork only/);
     // Palette validée par le client : ses couleurs, jamais celles de la direction.
     const locked = artworkPrompt(t, { ...b, paletteLocked: true });
-    expect(locked).toContain(`main ink ${b.palette[t.colorRole.ink]}`);
-    expect(locked).not.toContain("chosen for this direction");
+    expect(locked).toContain(b.palette[t.colorRole.ink]);
+    expect(locked).toContain("from the brand palette");
+    expect(locked).not.toContain("#B8916A");
   });
 
   it("concept pauvre relevé par le contrôle (cachet sans personnalité, initiales encadrées…) : jamais validé même bien noté, image gardée ; critères couleur et différenciation comptés", async () => {

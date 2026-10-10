@@ -107,7 +107,7 @@ describe("Logo V2 — devis et plafond de la série", async () => {
     { name: "Direction C", markType: "emblem", composition: "badge", construction: "organic", sobriety: 4, style: "premium", symbolIdea: "un sceau sobre" },
   ].map((o) => ({ concept: `Concept ${o.name} pour la marque.`, whyItFits: "Traduit la personnalité de la marque pour sa clientèle.", typography: { style: "grotesque", weight: "bold", case: "upper", tracking: "normal", rationale: "" }, colorRole: { ink: "dark", accent: "primary", rationale: "" }, distinctive: "", avoid: [], ...o }));
   const artReview = (o: Record<string, unknown> = {}) => ({ criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, 8.6])), textRead: "", nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true, ...o });
-  /** Relectures : la première de « Direction A » lit un nom faux (zone connue) → nom réécrit puis relu. */
+  /** Relectures : la première de « Direction B » (symbole + nom) lit un nom faux (zone connue) → nom réécrit puis relu. */
   function respond(name: string) {
     let firstA = true;
     return (params: any) => {
@@ -115,7 +115,7 @@ describe("Logo V2 — devis et plafond de la série", async () => {
       if (sys.includes("TERRITOIRES CRÉATIFS")) return JSON.stringify({ territories: DRAFTS });
       if (sys.includes("logo complet dessiné par une IA d'images")) {
         const msg = JSON.stringify(params.messages);
-        if (msg.includes("Direction A") && firstA) {
+        if (msg.includes("Direction B") && firstA) {
           firstA = false;
           return JSON.stringify(artReview({ textRead: "NOM FAUX", nameExact: false, nameBox }));
         }
@@ -153,7 +153,7 @@ describe("Logo V2 — devis et plafond de la série", async () => {
     const r = await fr(() => runForUser(uid, () => runLogoEngineV2(ctx, pid, { ai: realLogoV2Ai(ctx, { userId: uid, projectId: pid }) })));
     expect(oa.calls.filter((c) => c.kind === "generate")).toHaveLength(3);
     expect(r.stoppedByCostCap).toBe(false);
-    expect(r.shown.find((s) => s.territory.name === "Direction A")?.candidate.artwork?.textCorrected).toBe(true);
+    expect(r.shown.find((s) => s.territory.name === "Direction B")?.candidate.artwork?.textCorrected).toBe(true);
     // 1 territoires + 3 relectures + 1 relecture après la reprise.
     expect(llm.sent).toHaveLength(5);
     const s = spent(ctx.job.id);
