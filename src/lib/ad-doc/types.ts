@@ -61,6 +61,8 @@ export type TextLayer = LayerBase & {
   /** Réduit la taille pour tenir dans le cadre (jamais sous minSize). */
   autoFit: { minSize: number } | null;
   shadow: Shadow | null;
+  /** Lignes équilibrées (titre) : même nombre de lignes, longueurs aussi proches que possible. */
+  balance?: boolean;
 };
 
 export type ShapeLayer = LayerBase & {
@@ -98,5 +100,8 @@ export type AdDocument = {
   layers: Layer[];
   /** Identité de marque disponible dans l'éditeur (palette, polices). */
   brand: { palette: Record<string, string>; fonts: { heading: string; body: string }; name: string };
-  meta: { conceptId: string | null; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null };
+  meta: { conceptId: string | null; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; recipe?: AdRecipe };
 };
+
+/** Recette de composition (moteur publicitaire) : permet de RECOMPOSER la création dans un autre format. */
+export type AdRecipe = { layout: string; art: Record<string, unknown>; palette: Record<string, string>; typo: { heading: string; body: string; headingWeight?: number; uppercase?: boolean }; brand: string; eyebrow: string | null; logo: string | null; logoLight: string | null };

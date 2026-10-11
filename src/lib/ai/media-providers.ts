@@ -459,7 +459,7 @@ async function productPlateImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
  */
 export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage }) {
   const text = `${input.prompt}
-Editorial photograph that conveys the atmosphere of this activity, natural light, realistic, premium. Tools, materials, the work and the place tell the story. No people, no hands, no faces (the most frequent source of defects). No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
+Editorial photograph that conveys the atmosphere of this business, natural light, realistic, premium. The place, the objects, the materials and the light tell the story. No people, no hands, no faces (the most frequent source of defects). No text, no lettering, no logo, no signage, no diploma, no certificate, no award, no badge, no price. Aspect ratio ${input.aspect}.${input.reference ? " The reference photo shows the real business: use it only for mood, colors and kind of place; do not copy any person." : ""}`;
   return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene" });
 }
 

@@ -29,6 +29,8 @@ export type BriefRequest = {
   variant?: number | null;
   /** Détourages / photos de référence du produit. */
   references?: string[];
+  /** Zone à garder calme pour le texte, imposée par la composition qui utilisera l'image (publicités). */
+  textZone?: "none" | "left" | "right" | "top" | "bottom" | "center";
 };
 
 const uniq = <T,>(a: T[]) => [...new Set(a.filter(Boolean))];
@@ -154,14 +156,14 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     subject,
     action,
     environment,
-    purpose: `${req.kind} for ${support}${FORMATS[aspect].textZone !== "none" && (support === "ad" || support === "banner" || support === "social") ? `, keep the ${FORMATS[aspect].textZone} area calm for text` : ""}`,
+    purpose: `${req.kind} for ${support}${(req.textZone ?? FORMATS[aspect].textZone) !== "none" && (support === "ad" || support === "banner" || support === "social") ? `, keep the ${req.textZone ?? FORMATS[aspect].textZone} area calm for text` : ""}`,
     audience: brand?.audience && !/\[(À|A) compléter/i.test(brand.audience) ? brand.audience : null,
     artDirection: dir.id,
     composition: d.composition,
     lighting: vIndex == null ? d.lighting : `${d.lighting}; ${LIGHTS[v % LIGHTS.length]}`,
     framing: vIndex == null ? d.framing : `${d.framing}; ${angles[v % angles.length]}`,
     palette,
-    format: FORMATS[aspect],
+    format: req.textZone ? { ...FORMATS[aspect], textZone: req.textZone } : FORMATS[aspect],
     positive,
     must,
     queries,
@@ -179,7 +181,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
 /** Empreinte stable du brief : même brief → même image réutilisable, même contrôle déjà payé. */
 export function briefHash(b: VisualBrief): string {
   // Sans personne : clé distincte (une image faite quand les personnes étaient permises n'est pas réutilisée).
-  const key = { v: b.version, k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.people === false ? { np: 1 } : {}) };
+  const key = { v: b.version, k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 
@@ -188,6 +190,8 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   const d = { ...DIRECTIONS[b.artDirection], ...(b.people === false ? DIRECTION_NO_PEOPLE[b.artDirection] : {}) };
   return [
     `${d.label} photograph. Subject: ${b.subject}.`,
+    // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
+    b.support === "ad" ? "Premium advertising campaign photograph for social media: one clear focal point, crafted natural or golden light, rich textures and materials, shallow depth of field, refined colour grading, generous negative space, realistic and believable (never a 3D render, never clip-art)." : "",
     b.action ? `Action: ${b.action}.` : "",
     b.environment ? `Setting: ${b.environment}.` : "",
     `Composition: ${b.composition}. Lighting: ${b.lighting}. Camera: ${b.framing}. Mood: ${d.mood}.`,

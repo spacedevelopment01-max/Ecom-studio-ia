@@ -75,6 +75,10 @@ export type AdCopy = {
   cta: string;
   /** Variante d'accroche pour un test A/B (même angle, autre formulation). */
   hookB: string | null;
+  /** Ligne secondaire de la création (« Café en grains • Torréfaction artisanale ») : faits confirmés seulement. */
+  sub?: string | null;
+  /** Image idéale décrite par le rédacteur (consigne d'image, jamais affichée). */
+  visual?: string | null;
 };
 
 export type VisualConcept = {
@@ -82,7 +86,7 @@ export type VisualConcept = {
   kind: "ad_image" | "lifestyle" | "usage_scene" | "trade_photo" | "ambiance" | "site_image";
   subject: string;
   /** Mise en page publicitaire. */
-  layout: "hero_left" | "hero_center" | "full_bleed" | "split" | "typographic";
+  layout: "hero_left" | "hero_center" | "full_bleed" | "split" | "typographic" | "editorial" | "poster" | "panel" | "band" | "frame";
   /** Le produit réel (détourage) est-il posé sur la création ? */
   productOnTop: boolean;
 };

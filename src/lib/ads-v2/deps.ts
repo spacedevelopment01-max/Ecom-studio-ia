@@ -7,7 +7,8 @@ import sharp from "sharp";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import type { JobContext } from "../jobs";
-import { assetData, getAsset } from "../library";
+import { all } from "../db";
+import { assetData, getAsset, type Asset } from "../library";
 import type { Project } from "../projects";
 import { validCutouts } from "../engine/cutouts";
 import { L } from "../i18n-server";
@@ -27,6 +28,8 @@ export type AdsV2Deps = {
   /** Détourage du produit réel et logo de la marque (asset de la bibliothèque + données). */
   cutout: () => { id: string; data: Buffer } | null;
   logo: () => { id: string; data: Buffer } | null;
+  /** Version claire du logo (posée sur une photo sombre) ; facultative. */
+  logoLight?: () => { id: string; data: Buffer } | null;
 };
 
 export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean): AdsV2Deps {
@@ -84,6 +87,13 @@ export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean
       const id = p.brand?.logo?.assetId;
       const a = id ? getAsset(id) : undefined;
       return a && !a.deleted_at && /png/.test(a.mime) ? { id: a.id, data: assetData(a) } : null;
+    },
+    logoLight: () => {
+      // Déclinaison « fond sombre » du logo actuel (faite à partir de lui, jamais celle d'un ancien logo).
+      const id = p.brand?.logo?.assetId;
+      if (!id) return null;
+      const a = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'logo-light' AND source_asset_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", p.id, id)[0];
+      return a && /png/.test(a.mime) ? { id: a.id, data: assetData(a) } : null;
     },
   };
 }

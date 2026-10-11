@@ -110,7 +110,7 @@ export function localCopy(i: AdInsight, a: AnglePlan, lang: Lang, limits: { hook
 
 const str = z.preprocess((v) => (v == null ? "" : String(v)), z.string());
 export const CopySetSchema = z.object({
-  ads: z.array(z.object({ angle: str, hook: str, hookB: str.optional(), primary: str, headline: str, description: str, cta: str, visual: str.optional() })).min(1),
+  ads: z.array(z.object({ angle: str, hook: str, hookB: str.optional(), primary: str, headline: str, description: str, cta: str, sub: str.optional(), visual: str.optional() })).min(1),
 });
 export type CopySet = z.infer<typeof CopySetSchema>;
 
@@ -119,12 +119,13 @@ export function copySystem(lang: Lang, i: AdInsight, ctas: string[], limits: { h
 
 Rôle : concepteur-rédacteur senior d'une agence de publicité (niveau 2026). Tu écris des annonces qui arrêtent le défilement et vendent, sans jamais mentir.
 Pour CHAQUE angle donné (dans l'ordre), une annonce qui exploite SA matière et rien d'autre :
-- « hook » : accroche des 3 premières secondes, ${limits.hookWords} mots au plus, concrète, propre à ${i.offerName} (pas de question vague, pas de slogan creux) ;
+- « hook » : TITRE DE L'AFFICHE, posé en très grand sur l'image : 2 à 7 mots (${limits.hookWords} au plus), rythmé, mémorable, propre à ${i.offerName} ; une ou deux phrases très courtes terminées par un point sont bienvenues (ex. « Partez léger. Voyez grand. », « Réveillez le goût. »). Pas de question vague, pas de slogan creux, aucune promesse non confirmée ;
 - « hookB » : une seconde accroche du même angle pour un test A/B, vraiment différente ;
 - « primary » : PREMIÈRE LIGNE de ${limits.primaryFirstLine} caractères au plus qui porte l'accroche, puis 1 ou 2 phrases courtes : bénéfice concret, puis preuve (fait confirmé du contexte) ;
 - « headline » : ${limits.headline} caractères au plus, sans « ! » ni « ? » ; « description » : ${limits.description} caractères au plus ;
 - « cta » : exactement l'un de : ${ctas.join(" | ")} ;
-- « visual » : l'image idéale en une phrase (premier plan, geste, lumière).
+- « sub » : ligne secondaire sous le titre, 45 caractères au plus, faits confirmés seulement, souvent 2 ou 3 éléments séparés par « • » (ex. « Café en grains • Torréfaction artisanale », « Conception • Construction • Rénovation ») ;
+- « visual » : la photographie publicitaire idéale en une phrase (sujet, décor, lumière, ambiance), sans texte ni personne inventée.
 Interdits absolus : chiffre, durée, garantie, certification, avis, note, promotion, urgence ou superlatif absents du contexte ; allégation de santé ; attribut personnel (« vous êtes… », « votre acné ») ; MAJUSCULES ; « !! ». Une matière manquante se signale par « [À compléter : …] », jamais inventée.
 Ton de la marque : ${i.tone.join(", ") || "naturel"}${i.premium ? " — marque premium : sobriété, précision, aucune exagération" : ""}.
 Langue des annonces : ${langName(lang)}.`;
@@ -136,5 +137,5 @@ Audience : ${i.audience.declared ?? i.audience.persona ?? "large (adultes)"}.${i
 Faits confirmés : ${i.facts.map((f) => `${f.label} : ${f.value}`).join(" ; ") || "aucun"}.
 ${i.offer ? `Offre réelle configurée : ${i.offer}.\n` : "Aucune offre ni promotion configurée.\n"}Angles (un par annonce, dans l'ordre) :
 ${angles.map((a, k) => `${k + 1}. ${a.type} — matière : ${a.material} — levier : ${a.lever}`).join("\n")}
-${feedback ? `\nCORRECTIONS EXIGÉES sur la version précédente (toutes, sans rien inventer) :\n${feedback}\n` : ""}Réponds { "ads": [ { "angle": "…", "hook": "…", "hookB": "…", "primary": "…", "headline": "…", "description": "…", "cta": "…", "visual": "…" } ] }.`;
+${feedback ? `\nCORRECTIONS EXIGÉES sur la version précédente (toutes, sans rien inventer) :\n${feedback}\n` : ""}Réponds { "ads": [ { "angle": "…", "hook": "…", "hookB": "…", "primary": "…", "headline": "…", "description": "…", "cta": "…", "sub": "…", "visual": "…" } ] }.`;
 }

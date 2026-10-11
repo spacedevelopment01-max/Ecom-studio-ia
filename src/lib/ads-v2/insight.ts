@@ -7,6 +7,7 @@ import type { Project } from "../projects";
 import { resolveProductCategory } from "../image-v2/categories";
 import { resolveTrade, tradeText } from "../brain/trade";
 import type { AdInsight } from "./types";
+import { contentLang } from "../i18n-server";
 
 const PREMIUM_RE = /premium|luxe|luxury|haut de gamme|high[- ]end|prestige|elegan|raffin|exclusi/i;
 const ph = (s: string | null | undefined) => !s?.trim() || /\[(À|A) (compléter|définir|préciser)|\[To (complete|define)/i.test(s);
@@ -40,7 +41,8 @@ export function adInsight(p: Project, opts: { audience?: string | null; offer?: 
     facts: [...facts, ...answered].slice(0, 12),
     objections,
     proofs,
-    usage: services ? svc.map((s) => s.name) : (cat?.usage ?? []),
+    // Textes des publicités : usages dans la langue des contenus (jamais « hands applying cream » sur une pub française).
+    usage: services ? svc.map((s) => s.name) : contentLang() === "en" ? (cat?.usage ?? []) : (cat?.usageFr ?? []),
     services: svc,
     area: services ? clean(p.services?.area) ?? clean(p.services?.address) : null,
     contactMode: services ? (p.services?.contactMode ?? null) : null,

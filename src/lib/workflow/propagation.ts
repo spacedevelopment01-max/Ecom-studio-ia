@@ -157,7 +157,7 @@ export function rebrandAdDoc(doc: AdDocument, oldS: BrandSnapshot, newS: BrandSn
         return l;
     }
   });
-  return { ...doc, layers, brand: { ...doc.brand, palette: { ...doc.brand.palette, ...newS.palette }, name: newS.name || doc.brand.name, fonts: newS.fonts ?? doc.brand.fonts }, meta: { ...doc.meta, source: "engine" } };
+  return { ...doc, layers, brand: { ...doc.brand, palette: { ...doc.brand.palette, ...newS.palette }, name: newS.name || doc.brand.name, fonts: newS.fonts ?? doc.brand.fonts }, meta: { ...doc.meta, source: "engine", ...(doc.meta.recipe ? { recipe: { ...doc.meta.recipe, palette: { ...doc.meta.recipe.palette, ...newS.palette }, brand: newS.name || doc.meta.recipe.brand } } : {}) } };
 }
 
 /** Thème aux couleurs, typographies, logo et nom actuels ; mise en page et retouches conservées. */

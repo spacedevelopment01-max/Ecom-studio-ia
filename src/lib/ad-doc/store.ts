@@ -37,7 +37,12 @@ export const AdDocumentSchema = z.object({
   format: z.object({ platform: z.string().max(40).nullable(), aspect: z.string().max(10) }),
   layers: z.array(LayerSchema).max(60),
   brand: z.object({ palette: z.record(z.string(), z.string().max(64)), fonts: z.object({ heading: z.string().max(60), body: z.string().max(60) }), name: z.string().max(120) }),
-  meta: z.object({ conceptId: z.string().max(40).nullable(), source: z.enum(["engine", "user", "ai_local", "ai"]), createdFrom: z.string().max(60).nullable() }),
+  meta: z.object({
+    conceptId: z.string().max(40).nullable(),
+    source: z.enum(["engine", "user", "ai_local", "ai"]),
+    createdFrom: z.string().max(60).nullable(),
+    recipe: z.object({ layout: z.string().max(20), art: z.record(z.string(), z.unknown()), palette: z.record(z.string(), z.string().max(30)), typo: z.object({ heading: z.string().max(60), body: z.string().max(60), headingWeight: z.number().optional(), uppercase: z.boolean().optional() }), brand: z.string().max(120), eyebrow: z.string().max(120).nullable(), logo: z.string().max(60).nullable(), logoLight: z.string().max(60).nullable() }).optional(),
+  }),
 });
 
 /** Les images d'un document ne peuvent venir que de la bibliothèque de CE projet (aucune adresse externe). */
