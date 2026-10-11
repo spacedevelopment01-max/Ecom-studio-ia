@@ -296,9 +296,11 @@ export function aiReserves(userId: string): { plan: { used: number } | null; cre
   const ratio = (used: number, total: number) => (total > 0 ? Math.min(1, Math.max(0, used / total)) : 1);
   // Crédits : tout ce qui a été acheté (budget des packs et recharges payés), dont ce qu'il reste à utiliser.
   const bought = Math.max(packEntitlementMicro(userId), w.topup_balance + w.topup_period_used);
+  // Seul ce qui a réellement été dépensé compte : la réserve d'une action en cours (son coût MAXIMAL, rendu en partie
+  // à la fin) ferait baisser puis remonter le « reste » affiché.
   return {
-    plan: w.monthly_allowance > 0 ? { used: ratio(w.monthly_used + w.reserved, w.monthly_allowance) } : null,
-    credits: bought > 0 ? { used: ratio(bought - Math.max(0, w.topup_balance - w.reserved_topup), bought) } : null,
+    plan: w.monthly_allowance > 0 ? { used: ratio(w.monthly_used, w.monthly_allowance) } : null,
+    credits: bought > 0 ? { used: ratio(bought - Math.max(0, w.topup_balance), bought) } : null,
   };
 }
 

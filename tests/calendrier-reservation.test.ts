@@ -56,7 +56,11 @@ describe("site de services en mode réservation", async () => {
   });
 
   it("horaires absents ou lien de réservation en ligne : pas de calendrier inventé, le bouton reste", () => {
-    expect(types(run(null).templates.index)).not.toContain("booking-calendar");
+    // Horaires inconnus : calendrier posé masqué (prêt à régler), jamais affiché avec des horaires par défaut.
+    const home = run(null).templates.index;
+    const cal = home.order.map((k) => home.sections[k]).filter((x) => x.type === "booking-calendar");
+    expect(cal.length).toBe(1);
+    expect(cal[0].disabled).toBe(true);
     expect(types(run("Sur rendez-vous").templates.index)).toContain("v2-cta");
     expect(types(run("Du lundi au vendredi, 9 h – 18 h", "https://reservation.exemple/rdv").templates.index)).not.toContain("booking-calendar");
   });

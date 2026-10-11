@@ -5,10 +5,10 @@
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Sparkles } from "lucide-react";
-import { api, Badge, Card, cx, formatDate, Logo, ThemeToggle, useApi, useToast } from "./ui";
+import { ArrowLeft, Sparkles } from "lucide-react";
+import { api, Badge, Card, formatDate, Logo, ThemeToggle, useApi, useToast } from "./ui";
 import { LangSwitch, useLang, useT } from "./i18n";
-import { AiUsageBar, formatEur, PACK_FOR_QUOTA, QUOTA_LABEL, Soon, useBilling } from "./billing-client";
+import { AiUsageBar, formatEur, Soon, useBilling } from "./billing-client";
 import { CompareTable, PackCards, PricingCards } from "./pricing";
 import { SecurityCard } from "./password-forms";
 import { PACKS, PLANS, type Billing, type BillingView, type CheckoutBody, type PackId, type PlanId, type QuotaKey } from "@/lib/plans";
@@ -133,44 +133,7 @@ export function AccountPage() {
             {(plan || QUOTA_ORDER.some((k) => b.quotas[k].pack > 0)) && (
               <Card className="p-6 sm:p-7">
                 <h2 className="font-display text-2xl font-semibold">{t("Ce qu'il vous reste ce mois-ci", "What you have left this month")}</h2>
-                <p className="mt-1 text-sm text-muted">{t(`Vos quotas reviennent le ${formatDate(b.periodEnd, { day: "numeric", month: "long" })}.`, `Your quotas come back on ${formatDate(b.periodEnd, { day: "numeric", month: "long" })}.`)}</p>
                 <AiUsageBar billing={b} variant="full" className="mt-5 rounded-2xl border border-line p-4" />
-                <ul className="mt-5 grid gap-5">
-                  {QUOTA_ORDER.map((k) => {
-                    const q = b.quotas[k];
-                    const total = q.included + q.rollover + q.pack;
-                    if (k === "blog" && total === 0) return null;
-                    const pack = PACK_FOR_QUOTA[k];
-                    const detail = [q.rollover > 0 && t(`dont ${q.rollover} reporté${q.rollover > 1 ? "s" : ""}`, `${q.rollover} rolled over`), q.pack > 0 && t(`dont ${q.pack} en packs`, `${q.pack} from packs`)].filter(Boolean).join(", ");
-                    return (
-                      <li key={k} className="grid gap-2">
-                        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                          <p className="text-[15px] font-medium first-letter:uppercase">
-                            {QUOTA_LABEL[k][lang][1]}
-                          </p>
-                          <div className="flex items-center gap-3">
-                            {total > 0 ? (
-                              <p className="tabular-nums"><strong className="text-lg">{q.left}</strong> <span className="text-muted">/ {total}</span></p>
-                            ) : (
-                              <p className="text-sm text-muted">{t("Pas inclus dans votre forfait", "Not included in your plan")}</p>
-                            )}
-                            {q.left <= 0 && pack && (
-                              <button type="button" onClick={() => (setWant((w) => ({ ...w, pack })), document.getElementById("packs")?.scrollIntoView({ behavior: "smooth" }))} className="inline-flex h-8 items-center gap-1 rounded-full bg-ink px-3 text-xs font-medium text-paper">
-                                <Plus className="size-3.5" aria-hidden /> {t("Ajouter un pack", "Add a pack")}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        {total > 0 && (
-                          <div className="h-2.5 w-full overflow-hidden rounded-full bg-paper-2" role="progressbar" aria-label={QUOTA_LABEL[k][lang][1]} aria-valuenow={q.left} aria-valuemin={0} aria-valuemax={total}>
-                            <div className={cx("h-full rounded-full transition-[width] duration-700", q.left <= 0 ? "bg-bad" : q.left / total < 0.2 ? "bg-warn" : "bg-signal")} style={{ width: `${Math.min(100, (q.left / total) * 100)}%` }} />
-                          </div>
-                        )}
-                        {detail && <p className="text-xs text-muted">{detail}</p>}
-                      </li>
-                    );
-                  })}
-                </ul>
                 <p className="mt-5 border-t border-line pt-4 text-sm text-ink-2">
                   {t("Langue de la boutique : une langue (français ou anglais). Boutique en plusieurs langues : ", "Store language: one language (French or English). Multilingual store: ")}
                   <Soon />

@@ -5,7 +5,7 @@ import { DIRECTIONS, DARK_DIRECTIONS, colorSchemes, directionCards, type Directi
 import { CATALOG_IDS, CATALOG_THEMES } from "@/lib/theme/theme-catalog";
 import { SECTION_LIBRARY } from "@/lib/theme/section-library";
 import { validateSpec } from "@/lib/theme/ops";
-import { sampleSpec, serviceSpec } from "./fixtures";
+import { sampleSpec, serviceProfile, serviceSpec } from "./fixtures";
 import { localThemeCommand } from "@/lib/engine/local";
 
 type Spec = ReturnType<typeof sampleSpec>;
@@ -110,6 +110,8 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
       add(sampleSpec(d.id));
       for (const kind of ["multi", "niche"] as const) add(sampleSpec(d.id, kind, { rich: true }));
     }
+    // Calendrier de réservation : posé par l'activité (salle de jeu sans service de réservation en ligne).
+    add(serviceSpec("atelier", "fr", { ...serviceProfile, bookingUrl: "", hours: "Tous les jours, 10 h – 23 h" }, { activity: "Escape game" }));
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));

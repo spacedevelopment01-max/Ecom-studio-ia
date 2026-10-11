@@ -1,7 +1,7 @@
 /**
  * Lecture des horaires d'ouverture saisis par le client (« Du lundi au vendredi, 9 h – 18 h », « Mar–Sam 9h-12h /
  * 14h-19h », « Mon–Fri 9am–6pm ») pour régler le calendrier de réservation. Prudent : un seul groupe de jours et
- * une seule plage (avec pause facultative) ; tout le reste renvoie null — aucun horaire n'est jamais deviné.
+ * une seule plage (avec pause facultative), ou « tous les jours » (sauf les jours cités) ; tout le reste renvoie null — aucun horaire n'est jamais deviné.
  */
 export type OpeningHours = { days: number[]; open: string; close: string; breakStart: string; breakEnd: string };
 
@@ -33,10 +33,18 @@ export function parseOpeningHours(text: string | null | undefined): OpeningHours
   const tokens = s.match(/[a-zàâçéèêëîïôûùüÿœ]+\.?/g) ?? [];
   const found: { n: number; i: number }[] = [];
   tokens.forEach((w, i) => { const n = dayOf(w); if (n != null) found.push({ n, i }); });
-  if (!found.length) return null;
+  // « Tous les jours », « 7j/7 », « every day » : la semaine entière, moins les jours fermés (« sauf le lundi »).
+  const every = /(tous les jours|7\s*j(?:ours)?\s*(?:\/|sur)\s*7|\b7\/7\b|every ?day|daily|7 days a week)/.exec(s);
+  if (!found.length && !every) return null;
   let days: number[];
   const isRange = found.length === 2 && /(\bau\b|\bà\b|\bto\b|\bthrough\b|-)/.test(s.slice(s.indexOf(tokens[found[0].i]), s.lastIndexOf(tokens[found[1].i])));
-  if (isRange) {
+  if (every) {
+    const except = /(sauf|except|closed on|ferm[ée]e? le)/.exec(s);
+    const off = except ? found.filter((f) => s.indexOf(tokens[f.i], except.index) >= except.index).map((f) => f.n) : found.length ? null : [];
+    // Jours cités sans « sauf » à côté de « tous les jours » : lecture ambiguë, rien n'est deviné.
+    if (off == null) return null;
+    days = [1, 2, 3, 4, 5, 6, 0].filter((d) => !off.includes(d));
+  } else if (isRange) {
     days = [];
     for (let d = found[0].n, k = 0; k < 7; k++, d = (d + 1) % 7) { days.push(d); if (d === found[1].n) break; }
   } else days = [...new Set(found.map((f) => f.n))];
