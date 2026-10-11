@@ -30,3 +30,54 @@ describe("détourage", () => {
     expect(a(1, 1)).toBe(0); // le fond reste transparent
   });
 });
+
+describe("second détourage par la couleur du fond", () => {
+  it("fond uni : produit gardé entier, fond transparent ; fond chargé : refusé (jamais un détourage grossier)", async () => {
+    const { cutoutProduct, CutoutUnavailable } = await import("@/lib/media/cutout");
+    const W = 400, H = 300;
+    const plain = await sharp({ create: { width: W, height: H, channels: 3, background: "#f4f4f2" } })
+      .composite([{ input: await sharp({ create: { width: 220, height: 120, channels: 3, background: "#6b6f75" } }).png().toBuffer(), left: 90, top: 90 }])
+      .jpeg().toBuffer();
+    const cut = await cutoutProduct(plain, { method: "flood" });
+    expect(cut.method).toBe("flood");
+    // Le produit entier est gardé (bord gauche compris) et le fond est retiré : le cadre retenu est celui du produit.
+    expect(cut.bbox.x).toBeGreaterThanOrEqual(78);
+    expect(cut.bbox.x).toBeLessThanOrEqual(92);
+    expect(cut.bbox.w).toBeGreaterThanOrEqual(214);
+    expect(cut.bbox.w).toBeLessThanOrEqual(240);
+    const { data, info } = await sharp(cut.png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const a = (x: number, y: number) => data[(Math.floor(y) * info.width + Math.floor(x)) * 4 + 3];
+    expect(a(info.width / 2, info.height / 2)).toBeGreaterThan(200);
+    expect(a(info.width * 0.08, info.height / 2)).toBeGreaterThan(200);
+    expect(a(0, 0)).toBeLessThan(60);
+    const noise = Buffer.alloc(W * H * 3);
+    for (let i = 0; i < noise.length; i++) noise[i] = (i * 2654435761) % 251;
+    const busy = await sharp(noise, { raw: { width: W, height: H, channels: 3 } }).jpeg().toBuffer();
+    await expect(cutoutProduct(busy, { method: "flood" })).rejects.toBeInstanceOf(CutoutUnavailable);
+  });
+});
+
+describe("bords d'un détourage sur fond uni", () => {
+  it("le liseré clair laissé par le modèle autour du produit devient transparent ; le produit reste opaque", async () => {
+    const { defringe } = await import("@/lib/media/cutout");
+    const W = 60, H = 40;
+    const rgb = Buffer.alloc(W * H * 3, 250);
+    const rgba = Buffer.alloc(W * H * 4);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const p = y * W + x;
+      const inside = x >= 15 && x < 45 && y >= 10 && y < 30;
+      const ring = !inside && x >= 14 && x < 46 && y >= 9 && y < 31;
+      const c = inside ? 30 : ring ? 238 : 250; // produit sombre, liseré presque blanc (reste du fond)
+      rgb.fill(c, p * 3, p * 3 + 3);
+      rgba.fill(c, p * 4, p * 4 + 3);
+      rgba[p * 4 + 3] = inside || ring ? 255 : 0;
+    }
+    const original = await sharp(rgb, { raw: { width: W, height: H, channels: 3 } }).png().toBuffer();
+    const cut = await sharp(rgba, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
+    const out = await sharp(await defringe(cut, original)).raw().toBuffer();
+    const a = (x: number, y: number) => out[(y * W + x) * 4 + 3];
+    expect(a(30, 9)).toBeLessThan(90); // liseré
+    expect(a(14, 20)).toBeLessThan(90);
+    expect(a(30, 20)).toBe(255); // cœur du produit
+  });
+});

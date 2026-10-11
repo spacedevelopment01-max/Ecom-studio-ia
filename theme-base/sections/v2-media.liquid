@@ -9,7 +9,7 @@
     <div class="v2-media__grid" tabindex="0" aria-label="{{ s.heading | escape }}">
       {%- for block in section.blocks -%}
         <figure class="v2-media__tile" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
-          {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.caption, class: 'v2-cover', sizes: '(min-width: 990px) 50vw, 85vw' %}
+          {% render 'es-image', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.caption, class: block.settings.fit, sizes: '(min-width: 990px) 50vw, 85vw' %}
           {%- if block.settings.caption != blank -%}<figcaption>{{ block.settings.caption }}</figcaption>{%- endif -%}
         </figure>
       {%- endfor -%}
@@ -36,6 +36,10 @@
     { "type": "image", "name": "Image", "settings": [
       { "type": "image_picker", "id": "image", "label": "Image" },
       { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "select", "id": "fit", "label": "Cadrage de la photo", "default": "v2-cover", "options": [
+        { "value": "v2-cover", "label": "Remplir le cadre" },
+        { "value": "v2-contain", "label": "Image entière" }
+      ] },
       { "type": "text", "id": "caption", "label": "Légende" }
     ] }
   ],

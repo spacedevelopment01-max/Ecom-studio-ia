@@ -27,6 +27,8 @@ const IN_PAGE = `(mode, home) => {
       const s = getComputedStyle(n);
       if (s.backgroundImage && s.backgroundImage !== "none") return null;
       if (n.querySelector && n !== el && n.querySelector(":scope > img, :scope > picture, :scope > video") && getComputedStyle(n).position !== "static") return null;
+      // Photo de fond posée en couche (ouverture pleine largeur) ou en-tête transparent au-dessus d'elle : non mesurable ici.
+      if (n.matches && (n.matches(".es-header--transparent:not(.is-scrolled)") || (n.querySelector && n.querySelector(":scope > .v2-hero__bg") && getComputedStyle(n.querySelector(":scope > .v2-hero__bg")).position === "absolute"))) return null;
       const c = rgb(s.backgroundColor);
       if (c && c.a > 0.9) return c;
     }

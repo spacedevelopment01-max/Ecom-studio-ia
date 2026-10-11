@@ -22,6 +22,23 @@ export type SiteContent = {
   category: string;
   city: string | null;
   hero: { eyebrow: string; heading: string; em: string; text: string };
+  /** Signature de la marque (confirmée, jamais « à compléter ») : bandeau et bannière. */
+  tagline: string;
+  /** Positionnement confirmé de la marque (vide sinon). */
+  positioning: string;
+  /**
+   * Textes rédigés pour chaque grande section (rédaction du studio, IA quand elle est active) : jamais « à compléter »,
+   * jamais un titre d'un seul mot (un fait isolé ne fait pas un titre). Vide : la section prend son titre par défaut.
+   */
+  lines: {
+    statement: { eyebrow: string; heading: string; text: string } | null;
+    detail: { eyebrow: string; heading: string; text: string } | null;
+    cta: { heading: string; text: string; button: string } | null;
+    /** Présentation courte de la marque pour le pied de page (textes de la boutique). */
+    about?: string;
+    gallery: string;
+    features: string;
+  };
   /** Informations confirmées (jamais de valeur inventée). */
   facts: Fact[];
   contact: { phone: string | null; email: string | null; address: string | null; hours: string | null; area: string | null; bookingUrl: string | null };
@@ -37,6 +54,8 @@ export type SiteContent = {
   images: ImageSlots;
   /** Galerie (produit) : fichiers d'images dans l'ordre. */
   gallery: string[];
+  /** Images en format paysage (largeur ≥ 1,3 × hauteur) : seules capables d'ouvrir le site en pleine largeur. */
+  wide?: string[];
   /** Titre (≤ 60 signes) et description (≤ 155 signes) de l'accueil pour Google. */
   seo: { title: string; description: string };
   todo: string[];
@@ -50,6 +69,8 @@ export function fitText(s: string, max: number): string {
 }
 
 export const TODO = /\[(À|A) compléter|\[To complete/i;
+/** Vocabulaire de la plateforme de marque et de la vérification des faits : interne, jamais dans un texte du site. */
+export const STRATEGY_TALK = /différence crédible|proposition de valeur|\bpersonas?\b|positionnement|faits confirmés|informations disponibles|credible difference|value proposition|confirmed facts/i;
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 export const para = (s: string) => (s ? (/^\s*</.test(s) ? s : `<p>${esc(s)}</p>`) : "");
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -96,7 +117,8 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
     // Accueil rédigé par SEO & Copywriting V2 (l'IA quand elle est active) : son titre principal (métier + ville,
     // c'est ce que Google lit en premier) et son introduction remplacent le titre construit avec les noms de prestations.
     const docH1 = clean(seoDoc?.h1).replace(/\s+[—–-]\s+[^—–-]+$/, "");
-    const docIntro = clean(seoDoc?.intro);
+    // Introduction rédigée : écartée si elle expose le vocabulaire interne de la stratégie (jamais lu par un client).
+    const docIntro = STRATEGY_TALK.test(clean(seoDoc?.intro)) ? "" : clean(seoDoc?.intro);
     if (docH1 && !TODO.test(docH1)) {
       const sp = splitHeading(docH1);
       hero = { eyebrow: [category, area].filter(Boolean).join(" · "), heading: sp.heading, em: sp.em, text: docIntro && !TODO.test(docIntro) ? docIntro : localText };
@@ -111,8 +133,12 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
   } else if (intent.site === "restaurant") {
     hero = { eyebrow: [category, area].filter(Boolean).join(" · "), heading: name, em: "", text: positioning || summary };
   } else {
-    const s = splitHeading(positioning || clean(b.tagline) || summary || name);
-    hero = { eyebrow: category, heading: s.heading, em: s.em, text: summary && summary !== positioning ? summary : "" };
+    // Titre d'ouverture : celui rédigé pour l'accueil (textes de la boutique), sinon la signature de marque. Le
+    // positionnement est une phrase de stratégie interne (« Pour la personne qui… ») : jamais un titre s'il est long.
+    const short = (x: string) => (okHeading(x) && x.length <= 70 && x.split(/\s+/).length <= 10 ? clean(x) : "");
+    const s = splitHeading(short(copy.hero?.heading) || short(clean(b.tagline)) || short(positioning) || short(summary) || name);
+    const lead = okText(copy.hero?.text);
+    hero = { eyebrow: category, heading: s.heading, em: s.em, text: lead || (summary && summary !== positioning ? summary : "") };
   }
 
   // ------------------------------------------------------------ faits confirmés
@@ -187,6 +213,9 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
     category: cap(category),
     city,
     hero,
+    tagline: clean(b.tagline) && !TODO.test(b.tagline ?? "") ? clean(b.tagline) : "",
+    lines: sectionLines(copy),
+    positioning,
     facts,
     contact,
     offers,
@@ -204,5 +233,24 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
     gallery,
     seo,
     todo,
+  };
+}
+
+/** Titre de section utilisable : rédigé, confirmé, au moins deux mots. */
+const okHeading = (s: string | undefined) => {
+  const t = clean(s);
+  return t && !TODO.test(t) && t.split(/\s+/).length >= 2 ? t : "";
+};
+const okText = (s: string | undefined) => (clean(s) && !TODO.test(s ?? "") ? clean(s) : "");
+
+function sectionLines(copy: ShopCopy): SiteContent["lines"] {
+  const block = (x: { eyebrow: string; heading: string; text: string } | undefined) => (x && okHeading(x.heading) ? { eyebrow: okText(x.eyebrow), heading: okHeading(x.heading), text: okText(x.text) } : null);
+  return {
+    statement: block(copy.statement),
+    detail: block(copy.detail),
+    cta: copy.cta && okHeading(copy.cta.heading) ? { heading: okHeading(copy.cta.heading), text: okText(copy.cta.text), button: okText(copy.cta.button) } : null,
+    gallery: okHeading(copy.gallery?.heading),
+    features: okHeading(copy.features?.heading),
+    about: okText(copy.footer?.about).length <= 160 ? okText(copy.footer?.about) : "",
   };
 }

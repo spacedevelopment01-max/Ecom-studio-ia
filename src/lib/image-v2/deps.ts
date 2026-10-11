@@ -54,28 +54,58 @@ ${personCheckEn(b.people !== false)}
 Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composition": 0, "realism": 0, "brand": 0, "brief": 0, "support": 0, "artifacts": 0, "commercial": 0 }, "shows": "…", "offTopic": false, "productAltered": false, "wrongProduct": false, "textInImage": false, "deformed": false, "artifacts": false, "personVisible": false, "issues": [], "fix": { "target": "lighting|composition|background|crop|product|direction|none", "instruction": "…" } }.`;
 }
 
+/**
+ * Détourage nettoyé : les pixels presque transparents (reste de fond, halo d'ombre d'origine) sont effacés, sinon ils
+ * dessinent un rectangle voilé autour du produit une fois posé sur un décor. Pixels du produit inchangés.
+ */
+async function cleanAlpha(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 3; i < data.length; i += 4) if (data[i] < 48) data[i] = 0;
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}
+
 /** Image du produit posée sur un décor (pixels du produit inchangés), ombre de contact douce. */
 export async function compositeProduct(plate: Buffer, cutout: Buffer, aspect: VisualBrief["format"]["aspect"], textZone: VisualBrief["format"]["textZone"] = "none"): Promise<Buffer> {
   const f = FORMATS[aspect];
   const base = await sharp(plate, { failOn: "none" }).resize(f.width, f.height, { fit: "cover" }).toBuffer();
   const side = textZone === "left";
-  const prod = await sharp(cutout).resize({ width: Math.round(f.width * (side ? 0.4 : 0.5)), height: Math.round(f.height * (textZone === "top" ? 0.5 : 0.62)), fit: "inside" }).png().toBuffer();
+  const prod = await cleanAlpha(await sharp(cutout).resize({ width: Math.round(f.width * (side ? 0.4 : 0.5)), height: Math.round(f.height * (textZone === "top" ? 0.5 : 0.62)), fit: "inside" }).png().toBuffer());
   const pm = await sharp(prod).metadata();
   // Le produit se place à l'opposé de la zone gardée pour le texte (publicités) : jamais sous le titre.
   const left = Math.round(side ? f.width * 0.72 - (pm.width ?? 0) / 2 : (f.width - (pm.width ?? 0)) / 2);
   const top = Math.round(f.height * (textZone === "top" ? 0.9 : 0.86) - (pm.height ?? 0));
   const pw = pm.width ?? 10;
   const ph = pm.height ?? 10;
-  // Ombre en deux couches : contact serré et sombre sous le produit, puis ombre portée large et douce (le produit
-  // repose sur la surface au lieu de flotter).
-  const contact = await sharp({ create: { width: Math.max(1, Math.round(pw * 0.78)), height: Math.max(2, Math.round(ph * 0.035)), channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.5 } } }).blur(Math.max(2, Math.round(pw * 0.012))).png().toBuffer();
-  const soft = await sharp({ create: { width: Math.max(1, Math.round(pw * 1.05)), height: Math.max(2, Math.round(ph * 0.09)), channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.22 } } }).blur(Math.max(4, Math.round(pw * 0.05))).png().toBuffer();
-  const clampX = (x: number) => Math.max(0, Math.min(f.width - 1, x));
-  const clampY = (y: number) => Math.max(0, Math.min(f.height - 1, y));
+  // Ombre en deux couches, dessinées en ellipses floues (bords transparents) : contact serré et sombre sous le produit,
+  // puis ombre portée large et douce — le produit repose sur la surface au lieu de flotter.
+  // Ombre calculée pixel par pixel (ellipse à bord très doux, noir pur, transparente ailleurs) : aucun cadre visible.
+  const shadowPng = (w: number, h: number, rx: number, ry: number, _blur: number, alpha: number) => {
+    const buf = Buffer.alloc(w * h * 4);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const d = ((x - w / 2) / rx) ** 2 + ((y - h / 2) / ry) ** 2;
+        const v = d >= 1 ? 0 : (1 - d) ** 2;
+        buf[(y * w + x) * 4 + 3] = Math.round(255 * alpha * v);
+      }
+    return sharp(buf, { raw: { width: w, height: h, channels: 4 } });
+  };
+  const sw = Math.round(pw * 1.5);
+  const sh = Math.max(24, Math.round(ph * 0.22));
+  const soft = await shadowPng(sw, sh, pw * 0.62, sh * 0.42, 0, 0.3).png().toBuffer();
+  const contact = await shadowPng(sw, sh, pw * 0.44, sh * 0.16, 0, 0.5).png().toBuffer();
+  const sl = left + Math.round(pw / 2 - sw / 2);
+  const st = top + ph - Math.round(sh / 2) - Math.round(ph * 0.01);
+  const fit = async (buf: Buffer) => {
+    // Rogne l'ombre aux bords du cadre (sharp refuse une incrustation qui dépasse).
+    const x0 = Math.max(0, sl), y0 = Math.max(0, st);
+    const x1 = Math.min(f.width, sl + sw), y1 = Math.min(f.height, st + sh);
+    if (x1 <= x0 || y1 <= y0) return null;
+    return { input: await sharp(buf).extract({ left: x0 - sl, top: y0 - st, width: x1 - x0, height: y1 - y0 }).png().toBuffer(), left: x0, top: y0 };
+  };
+  const shadows = (await Promise.all([fit(soft), fit(contact)])).flatMap((x) => (x ? [x] : []));
   return sharp(base)
     .composite([
-      { input: soft, left: clampX(left - Math.round(pw * 0.025)), top: clampY(top + ph - Math.round(ph * 0.05)) },
-      { input: contact, left: clampX(left + Math.round(pw * 0.11)), top: clampY(top + ph - Math.round(ph * 0.025)) },
+      ...shadows,
       { input: prod, left, top },
     ])
     .jpeg({ quality: 90 })

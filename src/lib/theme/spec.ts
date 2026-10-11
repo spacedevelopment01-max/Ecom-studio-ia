@@ -55,20 +55,21 @@ export type StorePage = { handle: string; title: string; template_suffix: string
  * Style d'un élément précis : section, chemin CSS depuis l'enveloppe de la section (« div:nth-child(1) > h1:nth-child(2) »),
  * nature et texte (pour le retrouver dans les exports qui ne reprennent pas le même HTML, ex. WordPress).
  */
-export type ElementStyle = { template: string; section: string; path: string; role: "heading" | "text" | "button" | "other"; text?: string; color?: string; background?: string };
+export type ElementStyle = { template: string; section: string; path: string; role: "heading" | "text" | "button" | "other"; text?: string; color?: string; background?: string; /** Taille relative (0,8 à 1,6) : texte, marges et hauteur ensemble. */ scale?: number };
 
 /** Chemin CSS d'élément sûr : balises, nth-child et « > » seulement. */
 export const ELEMENT_PATH = /^(?:[a-z][a-z0-9-]*:nth-child\(\d{1,3}\))(?: > [a-z][a-z0-9-]*:nth-child\(\d{1,3}\)){0,24}$/;
 
 /** Feuille de style des éléments désignés (aperçu du studio et thème Shopify). */
 export function elementStylesCss(spec: Pick<ThemeSpec, "elementStyles">): string {
-  const rules = (spec.elementStyles ?? []).filter((e) => ELEMENT_PATH.test(e.path) && /^[\w-]{1,80}$/.test(e.section) && (e.color || e.background));
+  const rules = (spec.elementStyles ?? []).filter((e) => ELEMENT_PATH.test(e.path) && /^[\w-]{1,80}$/.test(e.section) && (e.color || e.background || e.scale));
   return rules
     .map((e) => {
       const sel = [`#shopify-section-${e.section}`, `[id^="shopify-section-"][id$="__${e.section}"]`].map((w) => `${w} > ${e.path}`).join(",");
       const decl = [
         e.color && `color:${e.color}!important;-webkit-text-fill-color:${e.color}!important`,
         e.background && (e.role === "button" ? `background:${e.background}!important;border-color:${e.background}!important` : `background-color:${e.background}!important;padding:.08em .25em;border-radius:.15em;-webkit-box-decoration-break:clone;box-decoration-break:clone`),
+        e.scale && e.scale >= 0.8 && e.scale <= 1.6 && `zoom:${e.scale}`,
       ].filter(Boolean).join(";");
       // Le texte à l'intérieur (span, em…) suit la couleur de l'élément.
       const inner = e.color ? `\n${sel.split(",").map((x) => `${x} *`).join(",")}{color:${e.color}!important;-webkit-text-fill-color:${e.color}!important}` : "";

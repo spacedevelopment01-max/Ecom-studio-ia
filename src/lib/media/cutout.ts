@@ -167,7 +167,107 @@ async function floodCutout(input: Buffer): Promise<Buffer> {
     if (y > 0) stack.push(p - w);
     if (y < h - 1) stack.push(p + w);
   }
-  return sharp(data, { raw: { width: w, height: h, channels: 4 } }).blur(0.6).png().toBuffer();
+  // Bords : un pixel du contour mêle le produit et le fond (liseré clair visible sur un fond sombre). Sur deux pixels
+  // de profondeur, l'opacité suit l'écart à la couleur du fond et la part du fond est retirée de la couleur.
+  const ring = new Uint8Array(w * h);
+  for (let pass = 1; pass <= 2; pass++) {
+    const next: number[] = [];
+    for (let p = 0; p < w * h; p++) {
+      if (seen[p] || ring[p]) continue;
+      const x = p % w;
+      const y = (p / w) | 0;
+      const near = (q: number) => seen[q] || (pass > 1 && ring[q] === pass - 1);
+      if ((x > 0 && near(p - 1)) || (x < w - 1 && near(p + 1)) || (y > 0 && near(p - w)) || (y < h - 1 && near(p + w))) next.push(p);
+    }
+    for (const p of next) ring[p] = pass;
+  }
+  for (let p = 0; p < w * h; p++) {
+    if (!ring[p]) continue;
+    const i = p * 4;
+    const d = Math.max(Math.abs(data[i] - avg[0]), Math.abs(data[i + 1] - avg[1]), Math.abs(data[i + 2] - avg[2]));
+    const a = Math.max(0, Math.min(1, (d - tol) / 64)) * (ring[p] === 1 ? 0.85 : 1);
+    data[i + 3] = Math.round(a * 255);
+    if (a > 0.05) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, Math.round((data[i + k] - (1 - a) * avg[k]) / a)));
+  }
+  // Fond retiré : sa couleur ne doit jamais déborder sur le produit à l'adoucissement (seule l'opacité est adoucie).
+  const rgb = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).removeAlpha().raw().toBuffer();
+  const alpha = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).extractChannel(3).blur(0.6).raw().toBuffer();
+  return sharp(rgb, { raw: { width: w, height: h, channels: 3 } }).joinChannel(alpha, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
+}
+
+/**
+ * Bords d'un détourage sur fond uni : le contour garde souvent un liseré de la couleur du fond (halo clair visible sur
+ * un fond sombre). Sur `depth` pixels depuis la transparence, l'opacité suit l'écart à la couleur du fond et la part
+ * du fond est retirée de la couleur ; seule l'opacité est ensuite adoucie (le fond ne redéborde jamais).
+ */
+export async function defringe(png: Buffer, original: Buffer, depth = 1): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  const src = await sharp(original, { failOn: "none" }).rotate().resize(w, h, { fit: "fill" }).removeAlpha().raw().toBuffer();
+  // Couleur du fond : moyenne du pourtour de la photo d'origine.
+  const avg = [0, 0, 0];
+  let n = 0;
+  for (let x = 0; x < w; x += 4) for (const y of [0, h - 1]) { for (let k = 0; k < 3; k++) avg[k] += src[(y * w + x) * 3 + k]; n++; }
+  for (let y = 0; y < h; y += 4) for (const x of [0, w - 1]) { for (let k = 0; k < 3; k++) avg[k] += src[(y * w + x) * 3 + k]; n++; }
+  for (let k = 0; k < 3; k++) avg[k] /= n;
+  const clear = new Uint8Array(w * h);
+  for (let p = 0; p < w * h; p++) clear[p] = data[p * 4 + 3] < 24 ? 1 : 0;
+  const ring = new Uint8Array(w * h);
+  for (let pass = 1; pass <= depth; pass++) {
+    const next: number[] = [];
+    for (let p = 0; p < w * h; p++) {
+      if (clear[p] || ring[p]) continue;
+      const x = p % w;
+      const y = (p / w) | 0;
+      const near = (q: number) => clear[q] === 1 || (pass > 1 && ring[q] === pass - 1);
+      if ((x > 0 && near(p - 1)) || (x < w - 1 && near(p + 1)) || (y > 0 && near(p - w)) || (y < h - 1 && near(p + w))) next.push(p);
+    }
+    for (const p of next) ring[p] = pass;
+  }
+  // Chaque pixel du bord est un mélange de la couleur du produit voisin (intérieur, à quelques pixels) et de celle du
+  // fond : sa part de produit donne son opacité (un gris entre un produit noir et un fond blanc est à moitié transparent).
+  const src0 = Buffer.from(data);
+  const R = depth + 3;
+  for (let p = 0; p < w * h; p++) {
+    if (!ring[p]) continue;
+    const i = p * 4;
+    const x0 = p % w;
+    const y0 = (p / w) | 0;
+    const fg = [0, 0, 0];
+    let m = 0;
+    for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) {
+      const x = x0 + dx, y = y0 + dy;
+      if (x < 0 || y < 0 || x >= w || y >= h) continue;
+      const q = y * w + x;
+      if (clear[q] || ring[q] || src0[q * 4 + 3] < 250) continue;
+      for (let k = 0; k < 3; k++) fg[k] += src0[q * 4 + k];
+      m++;
+    }
+    let a: number;
+    if (m) {
+      for (let k = 0; k < 3; k++) fg[k] /= m;
+      const span = [fg[0] - avg[0], fg[1] - avg[1], fg[2] - avg[2]];
+      const len2 = span[0] ** 2 + span[1] ** 2 + span[2] ** 2;
+      // Produit de la couleur du fond : impossible de les séparer, l'opacité du modèle est gardée.
+      a = len2 < 900 ? src0[i + 3] / 255 : Math.max(0, Math.min(1, ((src0[i] - avg[0]) * span[0] + (src0[i + 1] - avg[1]) * span[1] + (src0[i + 2] - avg[2]) * span[2]) / len2));
+    } else {
+      const d = Math.max(Math.abs(src0[i] - avg[0]), Math.abs(src0[i + 1] - avg[1]), Math.abs(src0[i + 2] - avg[2]));
+      a = Math.max(0, Math.min(1, (d - 12) / 70));
+    }
+    a = Math.min(src0[i + 3] / 255, a * (ring[p] === 1 ? 0.9 : 1));
+    data[i + 3] = Math.round(a * 255);
+    if (a > 0.05) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, Math.round((src0[i + k] - (1 - a) * avg[k]) / a)));
+  }
+  // Voile presque transparent de la couleur du fond autour du produit (visible en liseré sur un fond sombre) : retiré.
+  for (let p = 0; p < w * h; p++) {
+    const i = p * 4;
+    if (data[i + 3] >= 128) continue;
+    const d = Math.max(Math.abs(src0[i] - avg[0]), Math.abs(src0[i + 1] - avg[1]), Math.abs(src0[i + 2] - avg[2]));
+    if (d < 40) data[i + 3] = 0;
+  }
+  const rgb = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).removeAlpha().raw().toBuffer();
+  const alpha = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).extractChannel(3).blur(0.5).raw().toBuffer();
+  return sharp(rgb, { raw: { width: w, height: h, channels: 3 } }).joinChannel(alpha, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
 }
 
 /**
@@ -175,17 +275,26 @@ async function floodCutout(input: Buffer): Promise<Buffer> {
  * par couleur du fond n'est utilisé que si le fond est réellement uni ; sinon `CutoutUnavailable` est levée et
  * aucun détourage n'est produit (jamais un détourage grossier sur un fond chargé).
  */
-export async function cutoutProduct(input: Buffer): Promise<Cutout> {
+export async function cutoutProduct(input: Buffer, opts: { method?: "flood" | "tight" } = {}): Promise<Cutout> {
   let png: Buffer;
   let method: Cutout["method"] = "model";
   let model: CutoutModel | undefined;
   const bg = await measureBackground(input);
+  // Second essai demandé (premier détourage refusé au contrôle) : détourage par la couleur du fond, seulement sur fond uni.
+  if (opts.method === "flood" && !bg.flat) throw new CutoutUnavailable(L("Fond non uni : pas de second détourage possible.", "Background not plain: no second cutout possible."));
   try {
-    if (bg.transparent >= 0.9) {
+    if (opts.method === "flood") {
+      png = await floodCutout(input);
+      method = "flood";
+    } else if (bg.transparent >= 0.9) {
       // Photo déjà détourée (PNG à fond transparent) : sa transparence est gardée telle quelle.
       png = await sharp(input, { failOn: "none" }).rotate().resize(2048, 2048, { fit: "inside", withoutEnlargement: true }).ensureAlpha().png().toBuffer();
       method = "existing";
-    } else ({ png, model } = await modelCutout(input));
+    } else {
+      ({ png, model } = await modelCutout(input));
+      // Fond clair et assez uni : liseré du fond retiré des bords (plus profondément pour un second essai « resserré »).
+      if (bg.plain) png = await defringe(png, input, opts.method === "tight" ? 3 : 1);
+    }
   } catch (e) {
     if (!bg.flat) {
       console.warn("[cutout] modèle indisponible et fond non uni : pas de détourage :", (e as Error).message);

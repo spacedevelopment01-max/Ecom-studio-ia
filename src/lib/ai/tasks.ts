@@ -604,9 +604,26 @@ export function tidyCopy<T>(copy: T): T {
   return c as T;
 }
 
+/** Vocabulaire interne de vérification : jamais dans un titre lu par le client (« Trois faits pour choisir »). */
+const JARGON = /\b(faits|confirmée?s?|constatée?s?|vérifiée?s?|informations? disponibles?|caractéristiques indiquées|présentée? comme|différence crédible|proposition de valeur|personas?|facts?|confirmed|verified|available information|credible difference|value proposition)\b/i;
+export function lintJargon(copy: ShopCopy): { path: string; term: string }[] {
+  const c = copy as any;
+  const heads: [string, unknown][] = [
+    ["hero.heading", c.hero?.heading], ["hero.line1", c.hero?.line1], ["hero.line2", c.hero?.line2], ["hero.eyebrow", c.hero?.eyebrow],
+    ["statement.heading", c.statement?.heading], ["statement.eyebrow", c.statement?.eyebrow], ["features.heading", c.features?.heading],
+    ["detail.heading", c.detail?.heading], ["story.heading", c.story?.heading], ["cta.heading", c.cta?.heading], ["gallery.heading", c.gallery?.heading],
+    ...((c.features?.items ?? []) as { title: string }[]).map((x, i) => [`features.items[${i}].title`, x?.title] as [string, unknown]),
+  ];
+  return heads.flatMap(([path, v]) => {
+    const m = typeof v === "string" ? v.match(JARGON) : null;
+    return m ? [{ path, term: m[0] }] : [];
+  });
+}
+
 export function copyQuality(copy: ShopCopy, p: Project): string[] {
   const out: string[] = [];
   for (const h of lintHollow(copy)) out.push(L(`${h.path} : formule creuse « ${h.term} ». Remplace-la par un fait concret du produit.`, `${h.path}: empty phrase "${h.term}". Replace it with a concrete product fact.`));
+  for (const h of lintJargon(copy)) out.push(L(`${h.path} : vocabulaire de vérification « ${h.term} » dans un titre client. Écris un titre de marque qui donne envie (usage, sensation, moment de vie) à partir des mêmes faits.`, `${h.path}: verification wording "${h.term}" in a customer-facing heading. Write a brand heading that creates desire (use, feeling, moment) from the same facts.`));
   const c = copy as any;
   // Longueurs et tirets : mêmes limites que tidyCopy (qui les corrige gratuitement avant) ; gardés ici pour tout
   // appelant qui n'aurait pas nettoyé le texte.
@@ -681,6 +698,27 @@ ${spec.store.business === "services" ? `SITE D'ENTREPRISE DE SERVICES (pas de bo
   );
 }
 
+/**
+ * Opérations rendues par l'IA sous une autre forme que celle attendue : liste nommée « operations », ou chaque
+ * opération écrite { replace_section: {…} } au lieu de { op: "replace_section", … }. Ramenées à la forme attendue
+ * (sinon toute la retouche était perdue, alors que l'IA l'avait correctement préparée).
+ */
+export function normalizeOps(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const o = { ...(raw as Record<string, unknown>) };
+  const list = Array.isArray(o.ops) && o.ops.length ? o.ops : Array.isArray(o.operations) ? o.operations : o.ops;
+  if (Array.isArray(list)) {
+    o.ops = list.map((x) => {
+      if (!x || typeof x !== "object" || typeof (x as { op?: unknown }).op === "string") return x;
+      const keys = Object.keys(x as object);
+      const inner = keys.length === 1 ? (x as Record<string, unknown>)[keys[0]] : null;
+      return inner && typeof inner === "object" && !Array.isArray(inner) ? { op: keys[0], ...(inner as object) } : x;
+    });
+  }
+  delete o.operations;
+  return o;
+}
+
 const ChatSchema = z.object({
   reply: z.string(),
   revert: z.boolean(),
@@ -702,6 +740,7 @@ export async function aiThemeChat(
   return llmJson(
     {
       task: "theme_edit",
+      prepare: normalizeOps,
       userId: b.userId,
       projectId: b.projectId,
       jobId: b.jobId,
@@ -725,7 +764,8 @@ Demande du client : <demande>${input.message}</demande>`,
   );
 }
 
-const OPS_HELP = `Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value} (TOUT le site : chaque section sur ce schéma change), section_colors{template,section,colors{background?,text?,accent?,…}} (couleurs d'UNE seule section, schéma dédié), element_style{template,section,path,role,text,color?,background?} (couleurs d'UN seul élément désigné : reprends exactement son chemin), add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
+const OPS_HELP = `Forme exacte : « ops » est une liste d'objets, chacun avec sa clé « op », ex. {"op":"replace_section","template":"index","section":"…","type":"…","settings":{…}}.
+Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value} (TOUT le site : chaque section sur ce schéma change), section_colors{template,section,colors{background?,text?,accent?,…}} (couleurs d'UNE seule section, schéma dédié), element_style{template,section,path,role,text,color?,background?,scale?} (couleurs ou taille — scale 0,8 à 1,6 — d'UN seul élément désigné : reprends exactement son chemin ; tous les boutons du site : set_global button_scale en %), add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, duplicate_section{template,section,position?} (copie juste après), replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
 Le gabarit d'une section du groupe d'en-tête est « group:header », du pied de page « group:footer ».`;
 
 /** Référence stable du thème (mise en cache entre les appels) : sections, réglages, couleurs, opérations. */
@@ -738,6 +778,7 @@ export function themeReference(spec: ThemeSpec, withOps = false): string {
       ? `Thème importé par le client (« ${spec.imported.name} ») : n'utilise que ses propres sections et réglages listés ci-dessus ; conserve son style, améliore sans le dénaturer.`
       : "Schémas de couleurs : scheme-1 (fond principal), scheme-2 (surface douce), scheme-3 (contraste sombre), scheme-4 (accent).",
     withOps ? OPS_HELP : "",
+    (spec as { meta?: { v2?: unknown } }).meta?.v2 ? "Site composé par le moteur V2 : pour ajouter ou remplacer une section, préfère les sections « v2-* » (même langage visuel), puis seulement les autres." : "",
     "</reference_theme>",
   ].filter(Boolean).join("\n");
 }
@@ -752,6 +793,7 @@ export async function aiRepairOps(b: Base, p: Project, spec: ThemeSpec, input: {
   return llmJson(
     {
       task: "theme_edit",
+      prepare: normalizeOps,
       userId: b.userId,
       projectId: b.projectId,
       jobId: b.jobId,
@@ -778,7 +820,7 @@ const ReviewSchema = z.object({
   score: z.coerce.number().transform((n) => (Number.isFinite(n) ? Math.max(0, Math.min(10, n)) : 0)),
   strengths: capped(str, 5),
   issues: capped(z.object({ where: str, problem: str, severity: z.enum(["bloquant", "important", "mineur"]).catch("important") }), 12),
-  ops: z.preprocess((v) => (Array.isArray(v) ? v.filter((o) => OpSchema.safeParse(o).success).slice(0, 14) : []), z.array(OpSchema)),
+  ops: z.preprocess((v) => (Array.isArray(v) ? ((normalizeOps({ ops: v }) as { ops: unknown[] }).ops).filter((o) => OpSchema.safeParse(o).success).slice(0, 14) : []), z.array(OpSchema)),
 });
 export type HomeReview = z.infer<typeof ReviewSchema>;
 

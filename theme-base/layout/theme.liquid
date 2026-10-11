@@ -70,6 +70,7 @@
         --page-width: {{ settings.page_width }}px;
         --space-scale: {{ settings.spacing_scale | divided_by: 100.0 }};
         --radius-button: {{ settings.button_radius }}px;
+        --btn-scale: {{ settings.button_scale | default: 100 | divided_by: 100.0 }};
         --radius-card: {{ settings.card_radius }}px;
         --button-transform: {% if settings.button_uppercase %}uppercase{% else %}none{% endif %};
         --logo-width: {{ settings.logo_width }}px;

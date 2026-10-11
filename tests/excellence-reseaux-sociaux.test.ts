@@ -371,6 +371,14 @@ describe("assistant de retouche de la boutique : jamais de fausse affirmation de
     });
   });
 
+  it("IA sans opération qui décrit au présent ce qu'elle « fait » : le client lit que rien n'a changé", () => {
+    fr(() => {
+      const n = honestChatNote({ reply: "J'agrandis uniquement le bouton d'envoi, avec une hauteur plus confortable.", mode: "ai", revert: false, opsCount: 0, applied: [], rejected: [] });
+      expect(n).toMatch(/^Je n'ai pas pu appliquer/);
+      expect(n).toMatch(/Ce qui était envisagé/);
+    });
+  });
+
   it("proposition sans opération : gardée telle quelle (conseil d'expert)", () => {
     fr(() => {
       const reply = "Deux options : un titre plus court (« Doux comme un lapin ») ou un fond rose poudré. Laquelle préférez-vous ?";

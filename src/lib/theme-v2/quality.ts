@@ -30,7 +30,7 @@ const BROWSER_CODES: Record<string, string> = {
 
 export type ThemeV2Check = { score: number; criteria: Record<string, number>; unmeasured: string[]; codes: string[]; issues: string[]; decision: GateDecision };
 
-const NEED_BLOCKS: Record<string, number> = { "v2-index": 2, "v2-steps": 2, "v2-facts": 1, "v2-specs": 2, "v2-faq": 1, "v2-media": 2 };
+const NEED_BLOCKS: Record<string, number> = { "v2-index": 2, "v2-steps": 2, "v2-facts": 1, "v2-specs": 2, "v2-faq": 1, "v2-media": 2, "v2-cards": 2, "v2-benefits": 2 };
 
 export function checkThemeV2(spec: ThemeSpec, plan: PagePlan[] = [], browser: BrowserFinding[] = []): ThemeV2Check {
   const codes = new Set<string>();

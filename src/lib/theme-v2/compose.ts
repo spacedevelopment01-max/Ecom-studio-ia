@@ -7,10 +7,13 @@
  *   de types différents n'ont ni la même structure, ni la même grammaire.
  */
 import { pick, type Lang } from "../i18n";
-import type { BlockInstance, MenuLink, SectionInstance, StorePage, TemplateJson } from "../theme/spec";
+import type { BlockInstance, MenuLink, SectionInstance, StoreCollection, StorePage, StoreProduct, TemplateJson } from "../theme/spec";
 import type { ArtDirection, HeroLayout } from "./art-direction";
 import type { WebsiteIntent } from "./intent";
 import { TODO, fitText, para, type Fact, type SiteContent } from "./content";
+
+/** Nom de prestation normalisé (clé des photos par prestation). */
+const serviceNorm = (n: string) => n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
 export type PagePlan = { key: string; title: string; handle: string; url: string; template: string; inNav: boolean; required: string[]; missing: string[]; complete: boolean };
 
@@ -66,7 +69,27 @@ export type Composition = {
   hero: HeroLayout;
 };
 
-export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent, productHandle: string | null, productTemplate: TemplateJson | null): Composition {
+/** Catalogue réel de la boutique (collections et produits), pour les cartes de l'accueil. */
+export type Catalog = { collections: StoreCollection[]; products: StoreProduct[] };
+
+const money = (cents: number, lang: Lang) => new Intl.NumberFormat(lang === "en" ? "en-GB" : "fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100);
+
+/** Pictogramme d'un fait confirmé, d'après ses mots (matière, protection, livraison…) ; coche par défaut. */
+function factIcon(x: string): string {
+  const v = x.toLowerCase();
+  if (/coton|lin|laine|bois|bambou|végétal|naturel|plante|cotton|linen|wool|wood|natural/.test(v)) return "leaf";
+  if (/eau|étanche|imperm|liquide|water|liquid/.test(v)) return "drop";
+  if (/garanti|protection|sécur|resist|résist|solide|warranty|safe|durable/.test(v)) return "shield";
+  if (/livr|expédi|shipping|delivery/.test(v)) return "truck";
+  if (/main|artisan|fait à|hand/.test(v)) return "hand";
+  if (/batterie|autonomie|charge|watt|volt|battery|power/.test(v)) return "bolt";
+  if (/minute|heure|temps|hour|time/.test(v)) return "clock";
+  if (/son|audio|sound/.test(v)) return "sound";
+  if (/origine|fabriqué|made in|origin/.test(v)) return "globe";
+  return "check";
+}
+
+export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent, productHandle: string | null, productTemplate: TemplateJson | null, catalog: Catalog = { collections: [], products: [] }): Composition {
   const lang: Lang = c.lang;
   const t = (fr: string, en: string) => pick(lang, fr, en);
   const ids = new Ids();
@@ -124,16 +147,26 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     : { label: t("Questions fréquentes", "FAQ"), link: url("faq") };
 
   // ------------------------------------------------------------ ouverture
+  // Ouverture pleine largeur : uniquement avec une vraie photo paysage (un portrait recadré en bandeau serait flou et coupé).
+  // Le packshot (produit sur fond uni) n'est jamais une photo d'ambiance : agrandi en plein écran, il serait coupé.
+  const keyOf = (f?: string) => f?.match(/-([a-z0-9]{6})\.\w+$/)?.[1] ?? f;
+  const isPack = (f?: string) => !!f && !!im.packshot && keyOf(f) === keyOf(im.packshot);
+  const heroScene = isPack(im.hero) ? undefined : im.hero;
+  const wideHero = [heroScene, im.lifestyle, im.scene1, im.lifestyle2, im.banner].find((f) => f && !isPack(f) && (c.wide ?? []).includes(f));
   const heroLayout: HeroLayout = (() => {
     for (const l of art.hero.layouts) {
+      // Photo de campagne (le produit ou le métier en situation, pas un détourage) : ouverture pleine largeur.
+      if (l === "immersive" && wideHero) return l;
+      if (l === "halfbleed" && (im.lifestyle || heroScene || im.scene1)) return l;
       if (l === "stage" && im.cutout) return l;
-      if (l === "split" && (im.lifestyle || im.scene1 || im.hero)) return l;
+      if (l === "split" && (im.lifestyle || im.scene1 || heroScene)) return l;
       if (l === "frame" && (im.packshot || im.scene1)) return l;
-      if (l === "board" || l === "type") return l;
+      // Seule photo : le packshot du client — montré en entier dans un cadre plutôt qu'une ouverture sans image.
+      if ((l === "board" || l === "type") && !(im.packshot && shop)) return l;
     }
-    return "type";
+    return im.packshot && shop ? "frame" : "type";
   })();
-  const heroImage = heroLayout === "stage" ? im.cutout : heroLayout === "split" ? im.lifestyle ?? im.scene1 ?? im.hero : heroLayout === "frame" ? im.packshot ?? im.scene1 : undefined;
+  const heroImage = heroLayout === "immersive" ? wideHero : heroLayout === "halfbleed" ? im.lifestyle ?? heroScene ?? im.scene1 : heroLayout === "stage" ? im.cutout : heroLayout === "split" ? im.lifestyle ?? im.scene1 ?? heroScene : heroLayout === "frame" ? im.packshot ?? im.scene1 : undefined;
   const contactFacts: Fact[] = [
     c.contact.phone ? { label: t("Téléphone", "Phone"), value: c.contact.phone, link: tel(c.contact.phone), icon: "phone" } : null,
     c.contact.area ? { label: intent.site === "restaurant" ? t("Quartier", "Area") : t("Zone d'intervention", "Service area"), value: c.contact.area, icon: "globe" } : null,
@@ -161,6 +194,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       card_title: heroLayout === "board" ? t("Au menu", "On the menu") : heroLayout === "type" ? t("Coordonnées", "Contact details") : "",
       texture: art.hero.texture,
       color_scheme: "scheme-1",
+      veil: art.language === "maison" ? 45 : 55,
       padding_top: heroLayout === "frame" ? 88 : 64,
       padding_bottom: heroLayout === "frame" ? 64 : 96,
     },
@@ -193,28 +227,116 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     }
     // Boutique : « En détail » — image de détail et faits CONFIRMÉS (le texte de l'ouverture n'est jamais répété).
     const ticks = c.facts.filter((f) => f.label !== t("Prix", "Price")).map((f) => `${f.label} : ${f.value}`);
-    if (shop && splitImage && ticks.length) return ["v2-split", { layout: L === "precision" ? "overlap" : "media-left", fit: "v2-cover", eyebrow: c.category, heading: t("En détail", "Up close"), text: "", image_asset: splitImage, image_alt: c.name, button_label: t("Voir le produit", "View the product"), button_link: productUrl, color_scheme: "scheme-2", padding_top: 112, padding_bottom: 112 }, ticks.map((x) => ({ type: "point", settings: { text: x } }))];
+    const dl = c.lines.detail;
+    // Seule photo disponible : le packshot, déjà montré par l'ouverture ou le bloc d'achat — pas une troisième fois.
+    if (isPack(splitImage) && (isPack(heroImage) || (intent.site === "shop_mono" && productHandle))) return null;
+    if (shop && splitImage && ticks.length) return ["v2-split", { layout: L === "precision" ? "overlap" : "media-left", fit: isPack(splitImage) ? "v2-contain" : "v2-cover", eyebrow: dl?.eyebrow || c.category, heading: dl && dl.heading !== c.name ? dl.heading : t("En détail", "Up close"), text: dl?.text && !c.hero.text.includes(dl.text) ? para(dl.text) : "", image_asset: splitImage, image_alt: c.name, button_label: t("Voir le produit", "View the product"), button_link: productUrl, color_scheme: "scheme-2", padding_top: 112, padding_bottom: 112 }, ticks.map((x) => ({ type: "point", settings: { text: x } }))];
     return null;
   })();
-  const used = new Set([heroImage, splitImage].filter(Boolean));
+  // Une même photo peut porter plusieurs noms de fichier (un par emplacement) : on compare le média lui-même
+  // (identifiant en fin de nom), jamais deux fois la même photo sur une page.
+  const mediaKey = (f: string) => f.match(/-([a-z0-9]{6})\.\w+$/)?.[1] ?? f;
+  const usedKeys = new Set([heroImage, splitImage].filter((f): f is string => !!f).map(mediaKey));
+  const used = { has: (f: string) => usedKeys.has(mediaKey(f)), add: (f: string) => usedKeys.add(mediaKey(f)) };
+  const uniqMedia = (fs: string[]) => fs.filter((f, i, a) => a.findIndex((x) => mediaKey(x) === mediaKey(f)) === i);
+  const specs: Sec | null = c.specs.length >= 2 ? [
+    "v2-specs",
+    { layout: L === "precision" || L === "product" ? (c.specs.length >= 3 && c.specs.every((x) => x.value.length <= 28) ? "tiles" : "table") : L === "maison" && c.specs.length >= 6 ? "columns" : "table", eyebrow: t("Fiche", "Details"), heading: t("Caractéristiques", "Specifications"), image_asset: L === "precision" ? im.packshot ?? "" : "", note: t("Seules les caractéristiques confirmées sont affichées.", "Only confirmed specifications are shown."), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
+    c.specs.map((s) => ({ type: "spec", settings: { label: s.label, value: s.value } })),
+  ] : null;
+  // ------------------------------------------------------------ sections de composition (niveau agence)
+  // Chaque section n'apparaît qu'avec un contenu réel (photo ET texte confirmés) ; sa composition dépend du langage
+  // visuel, pour que deux activités différentes n'aient ni le même parcours ni la même grammaire.
+  const cardLayout = L === "craft" ? "numbered" : L === "precision" ? "overlay" : L === "bistro" ? "tiles" : "below";
+  const bannerLayout = L === "craft" ? "panorama" : L === "maison" ? "overlay" : "panel";
+  // Bandeau : la signature de la marque entre deux filets (jamais répétée si elle sert déjà de titre principal).
+  // Une phrase déjà dite par l'ouverture (titre + complément, texte) n'est jamais répétée plus bas.
+  const heroSaid = `${c.hero.heading} ${c.hero.em} ${c.hero.text}`.toLowerCase().replace(/\s+/g, " ");
+  const said = (x: string) => heroSaid.includes(x.toLowerCase().replace(/[.!]+$/, "").replace(/\s+/g, " ").trim());
+  const bandText = [c.tagline, c.positioning].find((x) => x && x.length <= 70 && !said(x)) ?? "";
+  const band: Sec | null = bandText && (shop || intent.site === "restaurant") ? ["v2-band", { layout: "rule", text: bandText, color_scheme: "scheme-2", padding_top: 28, padding_bottom: 28 }] : null;
+  // Boutique : les faits confirmés courts en pictogrammes juste sous l'ouverture (repères d'achat, comme sur les
+  // fiches de référence) — seulement avec au moins trois faits réels, jamais un atout supposé.
+  const stripFacts = shop ? c.facts.filter((f) => f.label !== t("Prix", "Price") && f.value.length <= 34 && !TODO.test(f.value)).slice(0, 4) : [];
+  const shopStrip: Sec | null = stripFacts.length >= 3 ? ["v2-band", { layout: "icons", text: c.category, color_scheme: "scheme-2", padding_top: 24, padding_bottom: 24 }, stripFacts.map((f) => ({ type: "item", settings: { icon: factIcon(f.label + " " + f.value), label: f.value.charAt(0).toUpperCase() + f.value.slice(1), sub: f.label } }))] : null;
+  // Site de services : les prestations en pictogrammes, juste sous l'ouverture (repères avant le détail).
+  const serviceBand: Sec | null = services && c.offers.length >= 3 ? ["v2-band", { layout: "icons", text: c.category, color_scheme: "scheme-2", padding_top: 24, padding_bottom: 24 }, c.offers.slice(0, 4).map((o) => ({ type: "item", settings: { icon: "check", label: o.title, sub: "" } }))] : null;
+  // Cartes : collections réelles (avec photo), sinon produits réels du catalogue (photo, prix réel), sinon prestations illustrées.
+  const productUrlOf = (h: string) => `/products/${h}`;
+  const colCards = catalog.collections.filter((x) => x.image && x.products.length).slice(0, 4);
+  const prodCards = catalog.products.filter((x) => x.images[0]).slice(0, 4);
+  const svcCards = services && im.byService ? c.offers.map((o) => ({ o, img: im.byService?.[serviceNorm(o.title)] })).filter((x) => x.img) : [];
+  const cards: Sec | null = intent.site === "shop_multi" && colCards.length >= 2 ? [
+    "v2-cards",
+    { layout: cardLayout, columns: Math.min(4, colCards.length), fit: "v2-cover", eyebrow: t("Collections", "Collections"), heading: t("Explorer la boutique", "Explore the shop"), intro: "", link_label: t("Tout voir", "View all"), link: "/collections/all", color_scheme: "scheme-1", padding_top: 96, padding_bottom: 96 },
+    colCards.map((x) => ({ type: "card", settings: { image_asset: x.image, title: x.title, text: x.description ? para(fitText(x.description, 90)) : "", link_label: t("Découvrir", "Discover"), link: `/collections/${x.handle}` } })),
+  ] : intent.site === "shop_multi" && prodCards.length >= 3 ? [
+    "v2-cards",
+    { layout: cardLayout === "numbered" ? "below" : cardLayout, columns: Math.min(4, prodCards.length), fit: L === "precision" ? "v2-cover" : "v2-contain", eyebrow: t("La sélection", "The selection"), heading: t("Nos produits", "Our products"), intro: "", link_label: t("Tout voir", "View all"), link: "/collections/all", color_scheme: "scheme-1", padding_top: 96, padding_bottom: 96 },
+    prodCards.map((x) => ({ type: "card", settings: { image_asset: x.images[0], kicker: x.price != null ? money(x.price, lang) : "", title: x.title, text: "", link_label: t("Voir le produit", "View product"), link: productUrlOf(x.handle) } })),
+  ] : svcCards.length >= 2 ? [
+    "v2-cards",
+    { layout: L === "craft" ? "numbered" : "overlay", columns: Math.min(3, svcCards.length), fit: "v2-cover", eyebrow: c.category, heading: t("Nos prestations", "Our services"), intro: "", link_label: t("Toutes les prestations", "All services"), link: url("services"), color_scheme: "scheme-1", padding_top: 96, padding_bottom: 96 },
+    svcCards.slice(0, 3).map(({ o, img }) => ({ type: "card", settings: { image_asset: img, title: o.title, text: o.text ? para(fitText(o.text.replace(/<[^>]+>/g, " "), 110)) : "", link_label: intent.conversion === "quote" ? t("Demander un devis", "Request a quote") : t("En savoir plus", "Learn more"), link: url("contact") } })),
+  ] : null;
+  // Bannière : photo d'ambiance réelle (jamais une création publicitaire) et la phrase de la marque.
+  const bannerImage = [im.lifestyle2, im.scene3, im.scene2, im.scene1, im.lifestyle].find((f) => f && !used.has(f));
+  if (bannerImage) used.add(bannerImage);
+  const st = c.lines.statement && !said(c.lines.statement.heading) ? c.lines.statement : null;
+  const bannerHeading = st?.heading ?? [c.tagline, c.positioning].find((x) => x && x !== bandText && x.length <= 80 && !said(x)) ?? (shop ? c.name : "");
+  const bannerText = st?.text && !said(st.text) ? st.text : c.summary && !inHero && c.summary !== bannerHeading && !said(c.summary) ? fitText(c.summary, 160) : "";
+  const banner: Sec | null = bannerImage && bannerHeading ? [
+    "v2-banner",
+    { layout: bannerLayout, align: "start", full_width: L !== "maison", veil: L === "precision" ? 60 : 50, image_asset: bannerImage, image_alt: c.name, eyebrow: st?.eyebrow || c.category || "", heading: bannerHeading, text: bannerText ? para(bannerText) : "", button_label: shop ? t("Découvrir", "Discover") : primary.label, button_link: shop ? (intent.site === "shop_multi" ? "/collections/all" : productUrl) : primary.link, color_scheme: L === "precision" ? "scheme-3" : L === "craft" || L === "bistro" ? "scheme-4" : "scheme-3", padding_top: L === "maison" ? 24 : 0, padding_bottom: L === "maison" ? 24 : 0 },
+  ] : null;
+  // Bénéfices illustrés : atouts confirmés, chacun avec une photo de détail encore inutilisée (sinon son pictogramme).
+  const detailPics = uniqMedia([im.detail1, im.detail2, im.scene1, im.scene2, im.packshot].filter((f): f is string => !!f && !used.has(f)));
+  const benefitItems = (shop || intent.site === "saas") ? offerItems.slice(0, 3) : [];
+  const benefits: Sec | null = benefitItems.length >= 2 ? [
+    "v2-benefits",
+    { layout: detailPics.length >= benefitItems.length ? "images" : "icons", columns: benefitItems.length, eyebrow: "", heading: c.lines.features || t("Pensé dans les détails", "Designed down to the details"), text: "", color_scheme: "scheme-1", padding_top: 96, padding_bottom: 96 },
+    benefitItems.map((o, i) => ({ type: "benefit", settings: { image_asset: detailPics[i] ?? "", icon: o.icon && o.icon !== "none" ? o.icon : "check", title: o.title, text: o.text } })),
+  ] : null;
+  for (const f of detailPics.slice(0, benefits && benefits[1].layout === "images" ? benefitItems.length : 0)) used.add(f);
+
+  // Boutique d'un produit : le produit à acheter dès l'accueil (galerie et zoom, variantes, quantité, vrai panier),
+  // avec ses points forts CONFIRMÉS (3 à 5) au plus près du bouton d'achat — jamais un atout supposé.
+  const buyFacts = c.facts.filter((f) => f.label !== t("Prix", "Price") && f.value.length <= 60 && !TODO.test(f.value)).slice(0, 5);
+  const buy: Sec | null = intent.site === "shop_mono" && productHandle ? [
+    "featured-product",
+    {
+      product: productHandle,
+      eyebrow: c.category,
+      text: c.lines.detail?.text ? para(fitText(c.lines.detail.text, 220)) : "",
+      show_gallery: true,
+      thumbs_position: L === "precision" || L === "product" ? "left" : "bottom",
+      enable_zoom: true,
+      show_sale_badge: true,
+      picker: "buttons",
+      show_quantity: true,
+      show_dynamic_checkout: false,
+      color_scheme: "scheme-1",
+      padding_top: 96,
+      padding_bottom: 96,
+    },
+    buyFacts.length >= 3 ? buyFacts.map((f) => ({ type: "highlight", settings: { icon: factIcon(f.label + " " + f.value), text: `${f.label} : ${f.value}` } })) : [],
+  ] : null;
+
   // Bannières exclues : ce sont des créations publicitaires avec du texte incrusté, pas des photos.
-  const mediaFiles = [im.packshot, im.detail1, im.scene1, im.scene2, im.detail2, im.scene3].filter((f): f is string => !!f && !used.has(f)).filter((f, i, a) => a.indexOf(f) === i);
+  const mediaFiles = uniqMedia([im.packshot, im.detail1, im.scene1, im.scene2, im.detail2, im.scene3].filter((f): f is string => !!f && !used.has(f)));
   const media: Sec | null = shop && mediaFiles.length >= 3 ? [
     "v2-media",
-    { layout: L === "precision" ? "bento" : "rail", eyebrow: "", heading: t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
-    mediaFiles.slice(0, 5).map((f) => ({ type: "image", settings: { image_asset: f, caption: "" } })),
+    // Mosaïque seulement avec des photos paysage (sinon ses grandes cases coupent le produit) ; le packshot est montré
+    // en entier.
+    { layout: L === "precision" && mediaFiles.filter((f) => (c.wide ?? []).includes(f)).length >= 2 ? "bento" : "rail", eyebrow: "", heading: c.lines.gallery || t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
+    mediaFiles.slice(0, 5).map((f) => ({ type: "image", settings: { image_asset: f, fit: f === im.packshot ? "v2-contain" : "v2-cover", caption: "" } })),
   ] : null;
   // Site de services : galerie « En images » avec les photos qui n'ont pas déjà une place (au moins 4, au plus 8).
-  const servicePics = services ? [...c.gallery.slice(7), ...c.gallery.slice(0, 7)].filter((f) => !used.has(f)).filter((f, i, a) => a.indexOf(f) === i).slice(0, 8) : [];
+  const servicePics = services ? [...c.gallery.slice(7), ...c.gallery.slice(0, 7)].filter((f) => !used.has(f)).filter((f, i, a) => a.findIndex((x) => mediaKey(x) === mediaKey(f)) === i).slice(0, 8) : [];
   const serviceMedia: Sec | null = servicePics.length >= 4 ? [
     "v2-media",
     { layout: L === "craft" ? "bento" : "rail", eyebrow: c.category, heading: t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
     servicePics.map((f) => ({ type: "image", settings: { image_asset: f, caption: "" } })),
-  ] : null;
-  const specs: Sec | null = c.specs.length >= 2 ? [
-    "v2-specs",
-    { eyebrow: t("Fiche", "Details"), heading: t("Caractéristiques", "Specifications"), image_asset: L === "precision" ? im.packshot ?? "" : "", note: t("Seules les caractéristiques confirmées sont affichées.", "Only confirmed specifications are shown."), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
-    c.specs.map((s) => ({ type: "spec", settings: { label: s.label, value: s.value } })),
   ] : null;
   const facts: Sec | null = services || intent.site === "restaurant" ? [
     "v2-facts",
@@ -246,11 +368,11 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       : c.city ? t(`Une question ? ${c.name} à ${c.city}`, `A question? ${c.name} in ${c.city}`) : t("Une question ?", "A question?"))
     : intent.site === "restaurant" ? (/^chez\s/i.test(c.name) ? t(`À table ${c.name.charAt(0).toLowerCase()}${c.name.slice(1)}`, `Join us at ${c.name}`) : t(`À table chez ${c.name}`, `Join us at ${c.name}`))
     : intent.site === "saas" ? t(`Voir ${c.name} en action`, `See ${c.name} in action`)
-    : c.name;
+    : c.lines.cta?.heading ?? c.name;
   const ctaText = services ? (intent.conversion === "quote" ? t("Décrivez votre projet : la réponse se fait sur devis.", "Describe your project: we reply with a quote.")
       : intent.conversion === "book" ? t("Choisissez votre date et réservez en quelques instants.", "Pick your date and book in moments.")
       : intent.conversion === "call" ? t("Appelez-nous : nous répondons à vos questions.", "Call us: we'll answer your questions.")
-      : t("Écrivez-nous : nous vous répondons rapidement.", "Write to us: we'll get back to you.")) : intent.site === "saas" ? t("Une démonstration sur vos propres questions.", "A demo built around your own questions.") : shop && c.facts.length >= 2 ? c.facts.slice(0, 3).map((f) => f.value).join(" · ") : ""; // une valeur seule (« stabilisée ») ne veut rien dire hors contexte
+      : t("Écrivez-nous : nous vous répondons rapidement.", "Write to us: we'll get back to you.")) : intent.site === "saas" ? t("Une démonstration sur vos propres questions.", "A demo built around your own questions.") : shop && c.lines.cta?.text ? c.lines.cta.text : shop && c.facts.length >= 2 ? c.facts.slice(0, 3).map((f) => f.value).join(" · ") : ""; // une valeur seule (« stabilisée ») ne veut rien dire hors contexte
   const cta: Sec = [
     "v2-cta",
     {
@@ -258,7 +380,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       eyebrow: shop ? c.category : "",
       heading: ctaHeading,
       text: para(ctaText),
-      button_label: primary.label,
+      button_label: shop && c.lines.cta?.button ? c.lines.cta.button : primary.label,
       button_link: primary.link,
       button2_label: shop ? "" : secondary.link.startsWith("tel:") ? secondary.label : "",
       button2_link: shop ? "" : secondary.link.startsWith("tel:") ? secondary.link : "",
@@ -269,27 +391,51 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     factBlocks(services || intent.site === "restaurant" ? contactFacts.filter((f) => f.link).slice(0, 2) : []),
   ];
 
+  // Site de services (devis ou contact) : le formulaire de demande directement en fin d'accueil, à la place du simple
+  // bouton final (une étape de moins pour le visiteur). Réservation ou appel : le bouton « Réserver » / « Appeler » reste.
+  const quoteForm: Sec | null = services && (intent.conversion === "quote" || intent.conversion === "contact") ? [
+    "contact-form",
+    {
+      eyebrow: c.city ? `${c.category} · ${c.city}` : c.category,
+      heading: ctaHeading,
+      text: para(intent.conversion === "quote" ? (intent.site === "services_trade" ? t("Décrivez votre projet (pièces, surfaces, délais souhaités) : la réponse se fait sur devis.", "Describe your project (rooms, surfaces, preferred timing): we reply with a quote.") : t("Décrivez votre projet : la réponse se fait sur devis.", "Describe your project: we reply with a quote.")) : t("Décrivez votre demande : nous vous répondons rapidement.", "Tell us what you need: we'll get back to you quickly.")),
+      email: c.contact.email ?? "",
+      hours: c.contact.hours ?? "",
+      response: "",
+      color_scheme: L === "precision" ? "scheme-4" : "scheme-3",
+      padding_top: 104,
+      padding_bottom: 104,
+    },
+  ] : null;
+
   // ------------------------------------------------------------ accueil selon le type de site (ordre = parcours)
   let home: (Sec | null)[];
   switch (intent.site) {
     case "services_trade":
     case "local_service":
-      home = [hero, offers, serviceMedia, steps, facts, faqHome, cta];
+      // Cartes illustrées des prestations (photo de chacune) ; la liste complète reste sur la page Prestations.
+      home = [hero, serviceBand, cards ?? offers, banner, serviceMedia, steps, facts, faqHome, quoteForm ?? cta];
       break;
     case "restaurant":
       // L'ardoise de l'ouverture liste déjà les formules : la liste n'est répétée que si elle apporte un détail confirmé.
-      home = [hero, heroLayout === "board" && !c.offers.some((o) => o.text && !TODO.test(o.text)) ? null : offers, split, facts, faqHome, cta];
+      home = [hero, band, heroLayout === "board" && !c.offers.some((o) => o.text && !TODO.test(o.text)) ? null : offers, split, banner, facts, faqHome, cta];
       break;
     case "saas":
-      home = [hero, split, offers, faqHome, cta];
+      home = [hero, split, benefits ?? offers, banner, faqHome, cta];
       break;
     default:
-      home = L === "precision" ? [hero, media, split, offers, faqHome, cta] : [hero, split, media, offers, faqHome, cta];
+      // Parcours d'une boutique : ouverture, signature, catalogue, détail, ambiance, bénéfices, images, questions, achat.
+      // Bandeau de faits sous l'ouverture ; la signature passe alors avant la bannière (jamais deux bandeaux collés).
+      home = L === "precision"
+        ? [hero, shopStrip ?? band, cards, buy, media, split, benefits ?? offers, shopStrip ? band : null, banner, faqHome, cta]
+        : [hero, shopStrip ?? band, cards, buy, split, shopStrip ? band : null, banner, benefits ?? offers, media, faqHome, cta];
   }
   // Rythme : fonds alternés (principal / surface) entre l'ouverture et l'appel final, jamais deux fois le même d'affilée.
   const present = home.filter(Boolean) as Sec[];
   let alt = false;
   for (const s of present.slice(1, -1)) {
+    // Bandeau et bannière gardent leur fond (respiration, photo) : ils ne comptent pas dans l'alternance.
+    if (s[0] === "v2-banner" || s[0] === "v2-band") continue;
     s[1].color_scheme = alt ? "scheme-2" : "scheme-1";
     alt = !alt;
   }
@@ -315,12 +461,13 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   if (productTemplate) {
     const main = productTemplate.order.map((k) => productTemplate.sections[k]).find((s) => s.type === "main-product");
     if (main) {
-      main.settings = { ...main.settings, sticky_bar: true, gallery_layout: L === "maison" ? "stack" : (main.settings.gallery_layout ?? "stack") };
+      // Galerie avec miniatures et agrandissement au clic (niveau des fiches de référence), barre d'achat collante.
+      main.settings = { ...main.settings, sticky_bar: true, enable_zoom: true, gallery_layout: c.gallery.length > 1 ? "carousel" : (main.settings.gallery_layout ?? "stack") };
       // Bloc d'achat recomposé à partir des faits confirmés : pas de note sans vrais avis, pas d'accroche répétée par la
       // description, points forts = valeurs confirmées courtes, caractéristiques détaillées dans la section dédiée
       // (le volet « Caractéristiques » V1 peut contenir des faits déduits d'une photo).
       const blocks = { ...(main.blocks ?? {}) };
-      const highlights = c.specs.filter((f) => f.label !== t("Type", "Type") && f.value.length <= 28 && !c.variantValues.includes(f.value.toLowerCase())).slice(0, 3).map((f) => f.value);
+      const highlights = c.specs.filter((f) => f.label !== t("Type", "Type") && f.value.length <= 28 && !c.variantValues.includes(f.value.toLowerCase())).slice(0, 4).map((f) => (/\s/.test(f.value) || f.value.toLowerCase().includes(f.label.toLowerCase()) ? f.value : `${f.label} ${f.value.charAt(0).toLowerCase()}${f.value.slice(1)}`));
       const order = (main.block_order ?? Object.keys(blocks)).filter((k) => {
         const b = blocks[k];
         if (!b) return false;
@@ -335,7 +482,8 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       main.blocks = Object.fromEntries(order.map((k) => [k, blocks[k]]));
       main.block_order = order;
     }
-    const extra = template(ids, [specs ? ["v2-specs", { ...specs[1], image_asset: "" }, specs[2]] : null, realFaq.length ? ["v2-faq", { layout: "side", heading: t("Questions fréquentes", "Frequently asked questions"), color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }, realFaq.map((f) => ({ type: "question", settings: { question: f.q, answer: f.a } }))] : null, offers]);
+    // Suite de la fiche : ambiance (photo réelle), bénéfices illustrés, caractéristiques confirmées, questions réelles.
+    const extra = template(ids, [banner && banner[1].heading !== c.name ? ["v2-banner", { ...banner[1], button_label: "", padding_top: 0, padding_bottom: 0 }] : null, benefits ?? offers, specs ? ["v2-specs", { ...specs[1], image_asset: "" }, specs[2]] : null, realFaq.length ? ["v2-faq", { layout: "side", heading: t("Questions fréquentes", "Frequently asked questions"), color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }, realFaq.map((f) => ({ type: "question", settings: { question: f.q, answer: f.a } }))] : null]);
     const kept = productTemplate.order.filter((k) => productTemplate.sections[k].type === "main-product" || productTemplate.sections[k].type === "product-recommendations");
     templates.product = { sections: { ...Object.fromEntries(kept.map((k) => [k, productTemplate.sections[k]])), ...extra.sections }, order: [...kept.filter((k) => productTemplate.sections[k].type === "main-product"), ...extra.order, ...kept.filter((k) => productTemplate.sections[k].type === "product-recommendations")] };
   }
@@ -378,7 +526,8 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     ...art.header,
     menu: "main-menu",
     mega_menu: "none",
-    transparent_on_home: false,
+    // Ouverture photo pleine largeur : l'en-tête se pose dessus (il reprend son fond au défilement).
+    transparent_on_home: heroLayout === "immersive",
     desktop_icons: false,
     cta_label: shop ? "" : primary.label,
     cta_link: shop ? "" : primary.link,
@@ -386,13 +535,16 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     phone: services || intent.site === "restaurant" ? c.contact.phone ?? "" : "",
     color_scheme: "scheme-1",
   };
+  // Pied de page : présentation courte rédigée, sinon la signature ; jamais la longue phrase de positionnement interne.
+  const shortPos = art.positioning && !TODO.test(art.positioning) && art.positioning.length <= 140 ? art.positioning : "";
+  const brandLine = c.lines?.about || c.tagline || shortPos || c.category;
   const footerBlocks = [
-    { type: "text", settings: { heading: c.name, text: para(art.positioning && !TODO.test(art.positioning) ? art.positioning : c.category) } },
+    { type: "text", settings: { heading: c.name, text: para(brandLine) } },
     { type: "links", settings: { heading: t("Le site", "Site"), menu: "main-menu" } },
     { type: "links", settings: { heading: t("Informations", "Information"), menu: "footer" } },
     ...(services || intent.site === "restaurant") && contactFacts.length ? [{ type: "contact", settings: { heading: t("Nous trouver", "Find us"), address: c.contact.address ?? c.contact.area ?? "", phone: c.contact.phone ?? "", email: c.contact.email ?? "", hours: c.contact.hours ?? "" } }] : [],
     ...(shop ? [{ type: "newsletter", settings: { heading: t("Lettre d'information", "Newsletter"), text: "" } }] : []),
   ];
-  const footer = { style: art.footer.style, tagline: art.positioning && !TODO.test(art.positioning) ? art.positioning : c.category, show_wordmark: false, show_policies: shop, show_payment: shop, color_scheme: art.footer.scheme };
+  const footer = { style: art.footer.style, tagline: c.tagline || brandLine, show_wordmark: false, show_policies: shop, show_payment: shop, color_scheme: art.footer.scheme };
   return { templates, pages, plan, menus, header, footer, footerBlocks, secondary: services ? url("services") : intent.site === "restaurant" ? url("menu") : intent.site === "saas" ? url("features") : productUrl, hero: heroLayout };
 }

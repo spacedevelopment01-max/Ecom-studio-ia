@@ -25,6 +25,7 @@ const IGNORED_ATTRS = new Set(["data-es-block", "data-es-section", "data-es-type
 export const PLATFORM_ADAPTATIONS = [
   { id: "form-action", label: "destination des formulaires (traitée par le CMS)" },
   { id: "payment-icons", label: "icônes des moyens de paiement (fournies par la plateforme)" },
+  { id: "featured-product", label: "bloc d'achat d'une page : celui du CMS (WooCommerce), avec son vrai panier" },
 ] as const;
 
 /** Forme canonique d'un fragment HTML : balises, attributs triés, textes aux espaces normalisés. */
@@ -113,7 +114,8 @@ export async function parity(spec: ThemeSpec, wheres = ["index", "group:header",
   const studio = await studioSections(spec, "/");
   const out: ParityResult[] = [];
   for (const where of wheres) {
-    const list = sectionsOf(spec, where);
+    // Bloc d'achat : remplacé à l'export par celui du CMS (adaptation attendue, voir PLATFORM_ADAPTATIONS).
+    const list = sectionsOf(spec, where).filter(({ s }) => s.type !== "featured-product");
     const php = phpSections(spec, list);
     list.forEach(({ id, s }, i) => {
       const key = where.startsWith("group:") ? `${where}:${id}` : `${where}:${id}`;

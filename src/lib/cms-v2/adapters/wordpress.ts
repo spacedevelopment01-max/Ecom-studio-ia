@@ -57,6 +57,7 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
 
   // ------------------------------------------------------------ sections exportées (gabarits utilisés)
   const used = new Set<string>();
+  const adapted = new Set<string>();
   const schemas: Record<string, SectionSchema & { class?: string; hidden?: boolean }> = {};
   const schemaOf = (type: string) => {
     const src = files.get(`sections/${type}.liquid`);
@@ -75,6 +76,15 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
       .filter((id) => container.sections[id] && !container.sections[id].disabled && keep(container.sections[id]))
       .map((id) => {
         const s = container.sections[id];
+        // Produit à acheter sur une page : le bloc d'achat natif de WooCommerce (galerie, déclinaisons, stock, quantité,
+        // panier réels), retrouvé par le SKU du produit importé (= son adresse dans le studio). Le formulaire d'achat
+        // Shopify ne fonctionnerait pas dans WordPress.
+        if (s.type === "featured-product") {
+          const handle = String(s.settings.product ?? "") || spec.store.product?.handle || "";
+          if (services || !handle) return "";
+          adapted.add("featured-product");
+          return `<!-- wp:group {"className":"es-wc es-wc-featured","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc es-wc-featured"><!-- wp:shortcode -->\n[product_page sku="${handle.replace(/[^a-z0-9-]/gi, "")}"]\n<!-- /wp:shortcode --></div>\n<!-- /wp:group -->`;
+        }
         const schema = schemaOf(s.type);
         if (!schema) {
           issues.push({ code: "section_not_exported", severity: "blocking", detail: `${where} : section « ${s.type} » sans gabarit exportable` });

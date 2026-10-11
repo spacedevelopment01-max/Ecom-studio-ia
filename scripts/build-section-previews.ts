@@ -2,7 +2,8 @@
  * Aperçus de la bibliothèque de sections (public/sections/<type>.jpg), rendus avec une vraie boutique de démonstration.
  *   PID=<projet de démonstration> npx tsx scripts/build-section-previews.ts
  * Chaque section est ajoutée seule à la page d'accueil (réglages par défaut, plus un exemple pour celles
- * qui ont besoin de contenu), puis photographiée.
+ * qui ont besoin de contenu), puis photographiée. Sections V2 (v2-*) : si le site de démonstration (composé par le
+ * moteur V2) en contient une, c'est elle qui est photographiée, avec son vrai contenu.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -36,6 +37,10 @@ const SAMPLES: Record<string, { settings?: Record<string, unknown>; blocks?: { t
   "immersive-reviews": { settings: { height: "medium" } },
   "before-after": { settings: { image_before_asset: pack, image_after_asset: life || detail } },
   "image-with-text": { settings: { image_asset: life || detail } },
+  "v2-cards": {
+    settings: { layout: "overlay", columns: 3, eyebrow: "La sélection", heading: "Pour chaque sortie" },
+    blocks: [pack, detail, life].filter(Boolean).map((img, i) => ({ type: "card", settings: { image_asset: img, kicker: ["Vue d'ensemble", "En détail", "En situation"][i], title: ["Le produit", "Le détail qui compte", "Sur le terrain"][i], link: "/collections/all" } })),
+  },
 };
 
 async function placeholder(type: string, label: string) {
@@ -59,7 +64,11 @@ for (const e of SECTION_LIBRARY) {
   // Comme un ajout depuis le studio (préréglage + médias du projet), complété par l'exemple éventuel.
   const sample = SAMPLES[e.type] ?? {};
   // Textes rédigés à partir du projet, comme l'aperçu de la bibliothèque (mode exemple).
-  const filled = withProjectMedia(spec, e.type, sample.settings, sample.blocks, contentContext(loadProject(PID!), spec, true));
+  const real = e.type.startsWith("v2-") ? Object.values(cur.spec.templates).flatMap((t) => Object.values(t.sections)).find((x) => x.type === e.type && !x.disabled) : undefined;
+  const filled = real
+    ? { settings: real.settings, blocks: (real.block_order ?? Object.keys(real.blocks ?? {})).map((k) => real.blocks![k]).filter(Boolean).map((b) => ({ type: b.type, settings: b.settings })) }
+    : withProjectMedia(spec, e.type, sample.settings, sample.blocks, contentContext(loadProject(PID!), spec, true));
+  if (process.env.ONLY_REAL && !real) continue;
   const res = applyOps(spec, [{ op: "add_section", template: "index", type: e.type, settings: filled.settings as any, blocks: filled.blocks as any, position: { index: 0 } } as any], { overrideLocks: true });
   if (!res.applied.length) {
     console.log(`✗ ${e.type} : ${res.rejected.map((r) => r.reason).join(" ; ")}`);
@@ -85,7 +94,14 @@ for (const e of SECTION_LIBRARY) {
     console.log(`~ ${e.type} (vide, emplacement)`);
   } else {
     const buf = await page.screenshot({ clip: { x: 0, y: box.y, width: 1280, height: Math.min(box.height, 760) }, type: "jpeg", quality: 85 });
-    await sharp(buf).resize({ width: 640 }).jpeg({ quality: 74 }).toFile(path.join(OUT, `${e.type}.jpg`));
+    // Section basse (bandeau) : centrée sur son propre fond, jamais agrandie jusqu'au flou.
+    let img = sharp(buf);
+    if (box.height < 300) {
+      const { data } = await sharp(buf).extract({ left: 2, top: 2, width: 1, height: 1 }).raw().toBuffer({ resolveWithObject: true });
+      const pad = Math.round((300 - box.height) / 2);
+      img = sharp(await sharp(buf).extend({ top: pad, bottom: pad, background: { r: data[0], g: data[1], b: data[2] } }).toBuffer());
+    }
+    await img.resize({ width: 640 }).jpeg({ quality: 74 }).toFile(path.join(OUT, `${e.type}.jpg`));
     console.log(`✓ ${e.type}`);
   }
   await context.close();

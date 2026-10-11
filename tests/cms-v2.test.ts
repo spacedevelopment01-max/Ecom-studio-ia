@@ -19,7 +19,7 @@ describe("CMS Engine V2", async () => {
   const { gateCmsExport, mandatoryCriteria, verdictMessage, DIMENSIONS } = await import("@/lib/cms-v2/quality");
   const { cmsExport, checkCmsExport, CMS_PLATFORMS } = await import("@/lib/cms-v2/export");
   const { blockAttrs } = await import("@/lib/cms-v2/adapters/wordpress");
-  const { toSmarty, pageZones } = await import("@/lib/cms-v2/adapters/prestashop");
+  const { toSmarty, pageZones, adaptFeaturedProduct } = await import("@/lib/cms-v2/adapters/prestashop");
   const { phpAvailable, staticChecks } = await import("@/lib/cms-v2/checks");
   const { exportStatus, missingInfo } = await import("@/lib/cms-v2/status");
   const { wooProductsCsv, shopifyProductsCsv } = await import("@/lib/theme/catalog-export");
@@ -130,6 +130,12 @@ describe("CMS Engine V2", async () => {
     const all = textOf(z);
     expect(all).not.toMatch(/\/cart\/add\.js|shopify-section-cart-drawer/);
     expect(strFromU8(z[`${root}/inc/es-woo.php`])).toContain("wc_get_cart_url");
+    // Bloc d'achat de l'accueil (boutique d'un produit) : celui de WooCommerce, retrouvé par le SKU du produit.
+    if (Object.values(shop.templates.index.sections).some((x) => x.type === "featured-product")) {
+      const front = strFromU8(z[`${root}/templates/front-page.html`]);
+      expect(front).toContain(`[product_page sku="${shop.store.product.handle}"]`);
+      expect(front).not.toContain('"type":"featured-product"');
+    }
     const c = await fr(() => checkCmsExport("woocommerce", exp, shop, { projectId: ids.cosmetic }));
     expect(c.static.codes).toEqual([]);
     expect(c.gate.decision.verdict).not.toBe("FINAL");
@@ -295,4 +301,18 @@ describe("CMS Engine V2", async () => {
     spy.mockRestore();
     expect(aiCalls()).toBe(0);
   }, 120_000);
+
+  it("PrestaShop : le bloc d'achat de l'accueil devient une présentation avec un lien vers la fiche (achat sur la fiche)", async () => {
+    const { cloneSpec } = await import("@/lib/theme/spec");
+    const spec = cloneSpec(shop);
+    const sid = "fp_test";
+    spec.templates.index.sections[sid] = { type: "featured-product", settings: { product: spec.store.product.handle, eyebrow: "Soin", text: "<p>Texte</p>" } };
+    spec.templates.index.order.push(sid);
+    expect(adaptFeaturedProduct(spec, (f) => f)).toBe(true);
+    const sec = spec.templates.index.sections[sid];
+    expect(sec.type).toBe("v2-split");
+    expect(sec.settings.button_link).toBe(`/products/${spec.store.product.handle}`);
+    expect(sec.settings.heading).toBe(spec.store.product.title);
+  });
 });
+

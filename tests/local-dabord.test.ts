@@ -62,4 +62,37 @@ describe("moteur local d'abord", () => {
     const img = fr(() => localFirst(spec, "fais la même ambiance que cette photo", { template: "index", section: first, kind: "Image", tag: "img" }, [{ assetId: "x", name: "ambiance.jpg", kind: "image" }], "products", noMedia));
     expect(img).toBeNull();
   });
+
+  it("dupliquer une section désignée, la placer tout en haut ou tout en bas : sans IA, appliqué au vrai projet", async () => {
+    const { applyOps } = await import("@/lib/theme/ops");
+    const sel = { template: "index", section: second, kind: "Section" };
+    const r = lf("duplique cette section", sel)!;
+    expect(r.ops[0]).toMatchObject({ op: "duplicate_section", section: second });
+    const out = fr(() => applyOps(spec, r.ops));
+    expect(out.rejected).toEqual([]);
+    const copy = out.spec;
+    const order: string[] = copy.templates.index.order;
+    const i = order.indexOf(second);
+    const dup = order[i + 1];
+    expect(dup).not.toBe(second);
+    expect(copy.templates.index.sections[dup].type).toBe(copy.templates.index.sections[second].type);
+    expect(copy.templates.index.sections[dup].settings).toEqual(copy.templates.index.sections[second].settings);
+    expect(lf("mets-la tout en bas", sel)?.ops[0]).toMatchObject({ op: "move_section", position: { index: spec.templates.index.order.length } });
+    // Désigner un simple titre ne suffit pas pour dupliquer toute la section.
+    expect(lf("duplique", { template: "index", section: second, kind: "Titre", text: "x" })).toBeNull();
+  });
+
+  it("taille des boutons : le bouton désigné seul (×1,15), sinon tous les boutons du site ; sans IA", async () => {
+    const { applyOps } = await import("@/lib/theme/ops");
+    const { elementStylesCss } = await import("@/lib/theme/spec");
+    const btn = { template: "index", section: first, kind: "Bouton", role: "button", path: "div:nth-child(1) > a:nth-child(2)", text: "Acheter" };
+    const one = lf("agrandis le bouton", btn)!;
+    expect(one.ops[0]).toMatchObject({ op: "element_style", scale: 1.15 });
+    const r = fr(() => applyOps(spec, one.ops));
+    expect(r.rejected).toEqual([]);
+    expect(elementStylesCss(r.spec)).toMatch(/zoom:1\.15/);
+    const all = lf("agrandis les boutons")!;
+    expect(all.ops[0]).toMatchObject({ op: "set_global", key: "button_scale", value: 110 });
+  });
 });
+

@@ -36,7 +36,12 @@ const LAYOUTS: Record<string, string[]> = {
   "v2-faq": ["side", "center"],
   "v2-cta": ["band", "card", "split"],
   "v2-media": ["bento", "rail"],
+  "v2-specs": ["table", "tiles", "columns"],
   "v2-split": ["media-left", "media-right", "overlap"],
+  "v2-cards": ["below", "overlay", "numbered", "tiles"],
+  "v2-banner": ["overlay", "panel", "panorama"],
+  "v2-benefits": ["images", "icons"],
+  "v2-band": ["rule", "icons", "swatches"],
 };
 
 function findSection(spec: ThemeSpec, sel: Sel, types: string[], template = "index") {
@@ -44,6 +49,8 @@ function findSection(spec: ThemeSpec, sel: Sel, types: string[], template = "ind
     const c = containerOf(spec, sel.template);
     const s = c?.sections[sel.section];
     if (s && types.includes(s.type)) return { template: sel.template, id: sel.section, s };
+    // Une section est désignée : on n'en modifie jamais une autre à sa place.
+    if (s) return null;
   }
   const t = sel?.template ?? template;
   const c = containerOf(spec, t);
@@ -83,7 +90,9 @@ export function v2ThemeCommand(spec: ThemeSpec, message: string, selection: Sel)
   }
 
   // Disposition d'une section (désignée, ou nommée).
-  if (/(disposition|mise en page|composition|présentation|layout|arrangement)/.test(m)) {
+  // « Transforme ce bloc en présentation de… » : changer de TYPE de section (avec ses contenus) — l'IA s'en charge.
+  if (/(transforme|convertis|change[rz]? (ce|cette|le|la) (bloc|section) en|turn (this|it) into|convert)/.test(m)) return null;
+  if (/(disposition|mise en page|composition|recompose|présentation|layout|arrangement)/.test(m)) {
     const wantHero = /(ouverture|hero|héros|bannière|haut de page|banner)/.test(m);
     const types = wantHero ? ["v2-hero"] : /(appel final|appel à l'action|\bcta\b|call to action|final)/.test(m) ? ["v2-cta"] : /(galerie|images|photos|gallery)/.test(m) ? ["v2-media"] : /(en détail|détail|image et texte|detail)/.test(m) ? ["v2-split"] : /(bénéfice|atout|prestation|service|liste|carte|menu|offre|fonctionnalit|benefit|feature|list)/.test(m) ? ["v2-index"] : /(étape|méthode|step|process)/.test(m) ? ["v2-steps"] : /(question|faq)/.test(m) ? ["v2-faq"] : Object.keys(LAYOUTS).concat("v2-hero");
     const hit = findSection(spec, selection, types);

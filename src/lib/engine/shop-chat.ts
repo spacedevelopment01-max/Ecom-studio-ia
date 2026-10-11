@@ -25,7 +25,10 @@ export function honestChatNote(input: { reply: string; mode: "ai" | "local"; rev
   if (!input.revert && !input.applied.length) {
     // Des opérations étaient prévues mais aucune n'a passé la validation, ou la réponse affirme un changement
     // sans aucune opération : on ne laisse pas croire au client que sa boutique a changé.
+    // L'IA décrit souvent au présent ce qu'elle « fait » (« J'agrandis le bouton… ») : sans rien d'appliqué, c'est
+    // faux. Seule une vraie question de précision (qui finit par « ? ») est gardée telle quelle.
     if ((input.mode === "ai" && input.opsCount) || claimsChange(reply)) reply = nothing;
+    else if (input.mode === "ai" && !/\?\s*$/.test(reply)) reply = reply ? `${nothing}\n\n${L("Ce qui était envisagé :", "What was considered:")} ${reply}` : nothing;
   } else if (input.applied.length && input.rejected.length) {
     reply = `${L("Modification appliquée en partie (détail ci-dessous).", "Change partly applied (details below).")}${reply ? `\n\n${reply}` : ""}`;
   }
