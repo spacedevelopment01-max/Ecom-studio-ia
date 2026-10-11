@@ -49,7 +49,7 @@ export function storeProducts(spec: { store: { product: StoreProduct; products?:
   return [spec.store.product, ...(spec.store.products ?? []).filter((p) => p.handle !== spec.store.product.handle)];
 }
 
-export type StorePage = { handle: string; title: string; template_suffix: string; body_html: string };
+export type StorePage = { handle: string; title: string; template_suffix: string; body_html: string; /** Titre et description pour Google (envoyés à la plateforme). */ seo?: { title: string; description: string } };
 
 /**
  * Style d'un élément précis : section, chemin CSS depuis l'enveloppe de la section (« div:nth-child(1) > h1:nth-child(2) »),
@@ -114,6 +114,8 @@ export type ThemeSpec = {
     collections?: StoreCollection[];
     /** Site d'une entreprise de services : pas de produit à vendre (exports et envoi à Shopify sans produits). */
     business?: "products" | "services";
+    /** Titre et description de la page d'accueil pour Google (Theme V2). */
+    seo?: { title: string; description: string };
     pages: StorePage[];
     menus: Record<string, { title: string; links: MenuLink[] }>;
     policies: { handle: string; title: string; body_html: string }[];

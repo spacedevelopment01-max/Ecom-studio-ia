@@ -10,7 +10,7 @@ import { pick, type Lang } from "../i18n";
 import type { BlockInstance, MenuLink, SectionInstance, StorePage, TemplateJson } from "../theme/spec";
 import type { ArtDirection, HeroLayout } from "./art-direction";
 import type { WebsiteIntent } from "./intent";
-import { TODO, para, type Fact, type SiteContent } from "./content";
+import { TODO, fitText, para, type Fact, type SiteContent } from "./content";
 
 export type PagePlan = { key: string; title: string; handle: string; url: string; template: string; inNav: boolean; required: string[]; missing: string[]; complete: boolean };
 
@@ -175,7 +175,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   const offers: Sec | null = offerItems.length >= 2 ? [
     "v2-index",
     { layout: offerLayout, eyebrow: services ? c.category : "", heading: offersHeading, intro: "", note: intent.site === "restaurant" ? t("[À compléter : carte du jour, prix et allergènes]", "[To complete: today's menu, prices and allergens]") : "", color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
-    offerItems.map((o) => ({ type: "item", settings: { title: o.title, text: o.text, meta: o.meta, icon: o.icon ?? "none", image_asset: o.image ?? "", link_label: services && L === "craft" ? t("Devis", "Quote") : "", link: services ? url("contact") : "" } })),
+    offerItems.map((o) => ({ type: "item", settings: { title: o.title, text: o.text, meta: o.meta, icon: o.icon ?? "none", image_asset: o.image ?? "", link_label: services && L === "craft" ? (intent.conversion === "quote" ? t("Devis", "Quote") : intent.conversion === "book" ? t("Réserver", "Book") : t("Contact", "Contact")) : "", link: services ? url("contact") : "" } })),
   ] : null;
   const steps: Sec | null = c.steps.length >= 2 ? [
     "v2-steps",
@@ -203,6 +203,13 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     "v2-media",
     { layout: L === "precision" ? "bento" : "rail", eyebrow: "", heading: t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
     mediaFiles.slice(0, 5).map((f) => ({ type: "image", settings: { image_asset: f, caption: "" } })),
+  ] : null;
+  // Site de services : galerie « En images » avec les photos qui n'ont pas déjà une place (au moins 4, au plus 8).
+  const servicePics = services ? [...c.gallery.slice(7), ...c.gallery.slice(0, 7)].filter((f) => !used.has(f)).filter((f, i, a) => a.indexOf(f) === i).slice(0, 8) : [];
+  const serviceMedia: Sec | null = servicePics.length >= 4 ? [
+    "v2-media",
+    { layout: L === "craft" ? "bento" : "rail", eyebrow: c.category, heading: t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
+    servicePics.map((f) => ({ type: "image", settings: { image_asset: f, caption: "" } })),
   ] : null;
   const specs: Sec | null = c.specs.length >= 2 ? [
     "v2-specs",
@@ -232,11 +239,18 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     { layout: L === "craft" || L === "precision" ? "side" : "center", eyebrow: "", heading: t("Questions fréquentes", "Frequently asked questions"), text: "", color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
     realFaq.slice(0, 6).map((f) => ({ type: "question", settings: { question: f.q, answer: f.a } })),
   ] : null;
-  const ctaHeading = services ? (c.city ? t(`Un projet à ${c.city} ?`, `A project in ${c.city}?`) : t("Un projet ?", "A project?"))
+  // Appel final selon le mode de contact choisi (réservation, devis, appel…) — jamais « un projet » pour un loisir.
+  const ctaHeading = services ? (intent.conversion === "book" ? (c.city ? t(`Réservez à ${c.city}`, `Book in ${c.city}`) : t("Réservez votre créneau", "Book your slot"))
+      : intent.conversion === "quote" ? (c.city ? t(`Un projet à ${c.city} ?`, `A project in ${c.city}?`) : t("Un projet ?", "A project?"))
+      : intent.conversion === "call" ? t("Parlons-en de vive voix", "Let's talk")
+      : c.city ? t(`Une question ? ${c.name} à ${c.city}`, `A question? ${c.name} in ${c.city}`) : t("Une question ?", "A question?"))
     : intent.site === "restaurant" ? (/^chez\s/i.test(c.name) ? t(`À table ${c.name.charAt(0).toLowerCase()}${c.name.slice(1)}`, `Join us at ${c.name}`) : t(`À table chez ${c.name}`, `Join us at ${c.name}`))
     : intent.site === "saas" ? t(`Voir ${c.name} en action`, `See ${c.name} in action`)
     : c.name;
-  const ctaText = services ? t("Décrivez votre projet : la réponse se fait sur devis.", "Describe your project: we reply with a quote.") : intent.site === "saas" ? t("Une démonstration sur vos propres questions.", "A demo built around your own questions.") : shop && c.facts.length >= 2 ? c.facts.slice(0, 3).map((f) => f.value).join(" · ") : ""; // une valeur seule (« stabilisée ») ne veut rien dire hors contexte
+  const ctaText = services ? (intent.conversion === "quote" ? t("Décrivez votre projet : la réponse se fait sur devis.", "Describe your project: we reply with a quote.")
+      : intent.conversion === "book" ? t("Choisissez votre date et réservez en quelques instants.", "Pick your date and book in moments.")
+      : intent.conversion === "call" ? t("Appelez-nous : nous répondons à vos questions.", "Call us: we'll answer your questions.")
+      : t("Écrivez-nous : nous vous répondons rapidement.", "Write to us: we'll get back to you.")) : intent.site === "saas" ? t("Une démonstration sur vos propres questions.", "A demo built around your own questions.") : shop && c.facts.length >= 2 ? c.facts.slice(0, 3).map((f) => f.value).join(" · ") : ""; // une valeur seule (« stabilisée ») ne veut rien dire hors contexte
   const cta: Sec = [
     "v2-cta",
     {
@@ -260,7 +274,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   switch (intent.site) {
     case "services_trade":
     case "local_service":
-      home = [hero, offers, steps, facts, faqHome, cta];
+      home = [hero, offers, serviceMedia, steps, facts, faqHome, cta];
       break;
     case "restaurant":
       // L'ardoise de l'ouverture liste déjà les formules : la liste n'est répétée que si elle apporte un détail confirmé.
@@ -287,7 +301,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   templates["page.v2-faq"] = template(ids, [pageHead(c.name, t("Questions fréquentes", "Frequently asked questions")), faqAll, cta]);
   templates["page.v2-contact"] = template(ids, [
     pageHead(c.category, plan.find((p) => p.key === "contact")!.title, intent.site === "saas" ? t("Laissez vos coordonnées : nous revenons vers vous pour organiser une démonstration.", "Leave your details: we will get back to you to arrange a demo.") : ""),
-    ["contact-form", { eyebrow: "", heading: intent.site === "saas" ? t("Demander une démo", "Request a demo") : services ? t("Demander un devis", "Request a quote") : t("Écrivez-nous", "Write to us"), text: para(services ? t("Décrivez votre projet (pièces, surfaces, délais souhaités).", "Describe your project (rooms, surfaces, preferred timing).") : ""), email: c.contact.email ?? "", hours: c.contact.hours ?? "", response: "", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 64 }],
+    ["contact-form", { eyebrow: "", heading: intent.site === "saas" ? t("Demander une démo", "Request a demo") : services && intent.conversion === "quote" ? t("Demander un devis", "Request a quote") : services && intent.conversion === "book" ? t("Réserver ou poser une question", "Book or ask a question") : t("Écrivez-nous", "Write to us"), text: para(intent.site === "services_trade" && intent.conversion === "quote" ? t("Décrivez votre projet (pièces, surfaces, délais souhaités).", "Describe your project (rooms, surfaces, preferred timing).") : services ? t("Décrivez votre demande : nous vous répondons rapidement.", "Tell us what you need: we'll get back to you quickly.") : ""), email: c.contact.email ?? "", hours: c.contact.hours ?? "", response: "", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 64 }],
     contactFacts.length ? ["v2-facts", { layout: "grid", heading: t("Coordonnées", "Contact details"), color_scheme: "scheme-2", padding_top: 80, padding_bottom: 96 }, factBlocks(contactFacts)] : null,
   ]);
   if (services) templates["page.v2-services"] = template(ids, [pageHead(c.category, t("Prestations", "Services"), c.contact.area ? t(`Intervention : ${c.contact.area}.`, `Area: ${c.contact.area}.`) : ""), offers ? ["v2-index", { ...offers[1], layout: L === "craft" ? "cards" : offerLayout, heading: "", eyebrow: "" }, offers[2]] : null, steps, cta]);
@@ -326,9 +340,26 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     templates.product = { sections: { ...Object.fromEntries(kept.map((k) => [k, productTemplate.sections[k]])), ...extra.sections }, order: [...kept.filter((k) => productTemplate.sections[k].type === "main-product"), ...extra.order, ...kept.filter((k) => productTemplate.sections[k].type === "product-recommendations")] };
   }
 
+  // Référencement de chaque page : titre (≤ 60 signes) et description (≤ 155) avec le métier, la ville et la marque.
+  const where = c.city ? t(` à ${c.city}`, ` in ${c.city}`) : "";
+  const cat = c.category || c.name;
+  const pageSeo = (key: string, title: string): { title: string; description: string } => {
+    const names = c.offers.slice(0, 4).map((o) => o.title).join(", ");
+    switch (key) {
+      case "services":
+        return { title: fitText(`${title} — ${cat}${where} | ${c.name}`, 60), description: fitText(names ? `${c.name}, ${cat.toLowerCase()}${where} : ${names}.` : `${title} de ${c.name}, ${cat.toLowerCase()}${where}.`, 155) };
+      case "contact":
+        return { title: fitText(`${title} — ${c.name}${where}`, 60), description: fitText([t(`Contactez ${c.name}, ${cat.toLowerCase()}${where}.`, `Contact ${c.name}, ${cat.toLowerCase()}${where}.`), c.contact.phone ? t(`Téléphone : ${c.contact.phone}.`, `Phone: ${c.contact.phone}.`) : "", c.contact.address ?? ""].filter(Boolean).join(" "), 155) };
+      case "faq":
+        return { title: fitText(`${title} — ${c.name}`, 60), description: fitText(t(`Réponses aux questions fréquentes sur ${c.name}, ${cat.toLowerCase()}${where}.`, `Answers to frequently asked questions about ${c.name}, ${cat.toLowerCase()}${where}.`), 155) };
+      default:
+        return { title: fitText(`${title} — ${c.name}`, 60), description: fitText(c.seo.description, 155) };
+    }
+  };
   const pages: StorePage[] = plan.map((p) => ({
     handle: p.handle,
     title: p.title,
+    seo: pageSeo(p.key, p.title),
     template_suffix: p.template.startsWith("page.") ? p.template.slice(5) : "",
     body_html: p.template === "page" ? para(p.key === "legal" ? t("[À compléter : éditeur du site, hébergeur, numéro SIRET, directeur de la publication]", "[To complete: site publisher, host, company number, publication director]") : t("[À compléter : délais et frais de livraison, conditions de retour — rien n'est affiché tant que ce n'est pas confirmé]", "[To complete: delivery times and costs, returns policy — nothing is shown until confirmed]")) : "",
   }));

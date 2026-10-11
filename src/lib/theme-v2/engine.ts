@@ -7,6 +7,7 @@
  * faits vérifiés du SEO Engine V2, textes de la boutique, verrous de marque du Project Brain.
  * 100 % local : aucun appel d'IA, aucune dépense.
  */
+import { homeSeoDoc } from "../seo-v2/theme-copy";
 import { loadProject, saveThemeVersion } from "../projects";
 import type { JobContext } from "../jobs";
 import { validateSpec } from "../theme/ops";
@@ -39,7 +40,9 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
   const { slots, gallery } = collectImages(projectId);
   // Site de services : les photos du marchand ont été placées par la composition de base (mêmes emplacements).
   const images = { ...slots, ...(base.store.business === "services" ? pickServiceSlots(base) : {}) };
-  const content = siteContent(p, intent, copy, images, gallery);
+  // Site de services : sa galerie, ce sont ses photos (les vôtres d'abord, puis les photos libres du métier).
+  const servicePhotos = base.store.business === "services" ? Object.keys(base.files).filter((f) => /^es-photo-\d/.test(f)) : null;
+  const content = siteContent(p, intent, copy, images, servicePhotos ?? gallery, homeSeoDoc(projectId, intent.lang));
   const shop = intent.site === "shop_mono" || intent.site === "shop_multi";
   const c = compose(intent, art, content, shop ? base.store.product.handle : null, shop ? base.templates.product : null);
 
@@ -71,7 +74,7 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
   }
   // SaaS : ni panier ni fiche produit dans le parcours (le gabarit produit reste présent pour la validité Shopify).
   if (intent.site === "saas") spec.settings.cart_type = "none";
-  spec.store = { ...spec.store, pages: c.pages, menus: { ...spec.store.menus, ...c.menus } };
+  spec.store = { ...spec.store, seo: content.seo, pages: c.pages, menus: { ...spec.store.menus, ...c.menus } };
   if (shop && content.descriptionHtml) spec.store.product = { ...spec.store.product, description_html: content.descriptionHtml };
   spec.meta = {
     engine: "v2",

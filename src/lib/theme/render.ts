@@ -741,7 +741,9 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   }));
 
   let page: any = null;
-  let pageTitle = opts.spec.store.shopName;
+  // Accueil : titre pour Google (Theme V2) quand il existe, sinon le nom de la boutique.
+  let pageTitle = tplKey === "index" && opts.spec.store.seo?.title ? opts.spec.store.seo.title : opts.spec.store.shopName;
+  let seoDescription: string | null = tplKey === "index" ? opts.spec.store.seo?.description || null : null;
   if (route.handle?.startsWith("policy:")) {
     const pol = store.policies.find((p) => p.url.endsWith(route.handle!.slice(7)));
     page = { title: pol?.title ?? pick(lang, "Politique", "Policy"), content: pol?.body ?? "", handle: route.handle };
@@ -749,7 +751,8 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   } else if (tplKey.startsWith("page")) {
     const sp = opts.spec.store.pages.find((x) => x.handle === route.handle);
     if (sp) page = { title: sp.title, content: sp.body_html, handle: sp.handle, url: `${opts.base}/pages/${sp.handle}`, template_suffix: sp.template_suffix };
-    pageTitle = sp?.title ?? pageTitle;
+    pageTitle = sp?.seo?.title || sp?.title || pageTitle;
+    seoDescription = sp?.seo?.description || null;
   } else if (tplKey === "product") pageTitle = store.product.title;
   else if (tplKey === "collection") pageTitle = store.collection.title;
   else if (tplKey === "404") pageTitle = pick(lang, "Page introuvable", "Page not found");
@@ -783,7 +786,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },
     canonical_url: `${opts.base}${pathname}`,
     page_title: pageTitle,
-    page_description: (tplKey === "product" ? store.product.description : opts.spec.store.product.description_html).replace(/<[^>]+>/g, " ").slice(0, 160),
+    page_description: seoDescription ?? (tplKey === "product" ? store.product.description : opts.spec.store.product.description_html).replace(/<[^>]+>/g, " ").slice(0, 160),
     page_image: null,
     // Objet global attendu par les scripts des thèmes Shopify (Dawn : global.js, cart, animations).
     content_for_header: `<script>window.Shopify=window.Shopify||{designMode:false,locale:"${lang}",country:"FR",currency:{active:"EUR",rate:"1.0"},routes:{root:"${opts.base}/"},shop:"apercu",theme:{name:"${pick(lang, "aperçu", "preview")}"}};</script>`,

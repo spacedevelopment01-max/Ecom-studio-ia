@@ -36,6 +36,17 @@ export function docHtml(blocks: Block[]): string {
 
 export type CopySource = { product: string | null; home: string | null };
 
+/** Page d'accueil rédigée par SEO & Copywriting V2 (par l'IA quand elle est active, sinon à partir des faits). */
+export type HomeSeo = { h1: string; intro: string; seoTitle: string; metaDescription: string; by: "ai" | "local" | null };
+
+export function homeSeoDoc(projectId: string, lang: string): HomeSeo | null {
+  const home = referenceDoc(projectId, "home_page", lang);
+  if (!home) return null;
+  const h1 = home.blocks.find((b): b is Extract<Block, { kind: "h1" | "h2" | "h3" }> => b.kind === "h1")?.text ?? "";
+  const intro = (home.blocks.find((b) => b.kind === "p") as Extract<Block, { kind: "p" }> | undefined)?.text ?? "";
+  return { h1, intro, seoTitle: home.meta.seoTitle ?? "", metaDescription: home.meta.metaDescription ?? "", by: home.meta2?.by ?? null };
+}
+
 /** Kit de textes complété par les documents V2 de référence (même structure, aucun champ inventé). */
 export function overlayV2Copy(copy: ShopCopy, projectId: string, lang: string, business: "products" | "services"): { copy: ShopCopy; sources: CopySource } {
   const next: ShopCopy = structuredClone(copy);

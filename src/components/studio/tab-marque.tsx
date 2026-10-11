@@ -116,12 +116,14 @@ export default function TabMarque() {
   async function save(extra: Record<string, unknown> = {}) {
     setBusy(true);
     try {
-      const r = await api<{ recolored?: boolean }>(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, palette: exactPal ?? b!.palette, ...(exactPal ? { paletteExact: true } : {}), direction: b!.direction, ...extra } });
+      const r = await api<{ recolored?: boolean; siteUpdated?: boolean }>(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, palette: exactPal ?? b!.palette, ...(exactPal ? { paletteExact: true } : {}), direction: b!.direction, ...extra } });
       toast(
         "ok",
         r?.recolored
           ? t("Nouvelles couleurs appliquées partout : logo de la piste, site, bannières, kit réseaux sociaux et charte.", "New colors applied everywhere: route logo, site, banners, social media kit and brand guide.")
-          : t("Marque enregistrée. Les prochaines créations utiliseront ces choix.", "Brand saved. Everything created next will use these choices."),
+          : r?.siteUpdated
+            ? t("Marque enregistrée : votre site a pris les nouvelles couleurs. Votre palette est maintenant validée (un nouveau logo ne la changera pas).", "Brand saved: your website now uses the new colors. Your palette is now approved (a new logo won't change it).")
+            : t("Marque enregistrée. Les prochaines créations utiliseront ces choix.", "Brand saved. Everything created next will use these choices."),
       );
       reloadLogos();
       reloadIdent();

@@ -11,6 +11,7 @@ import { verifiedFacts } from "../seo-v2/facts";
 import { mainCity } from "../seo-v2/keywords";
 import { pick, type Lang } from "../i18n";
 import type { WebsiteIntent } from "./intent";
+import type { HomeSeo } from "../seo-v2/theme-copy";
 
 export type Fact = { label: string; value: string; link?: string; icon?: string };
 export type Offer = { title: string; text: string; meta: string; image?: string; icon?: string };
@@ -36,8 +37,17 @@ export type SiteContent = {
   images: ImageSlots;
   /** Galerie (produit) : fichiers d'images dans l'ordre. */
   gallery: string[];
+  /** Titre (≤ 60 signes) et description (≤ 155 signes) de l'accueil pour Google. */
+  seo: { title: string; description: string };
   todo: string[];
 };
+
+/** Coupe sur un mot sans dépasser `max` signes (titres et descriptions pour Google). */
+export function fitText(s: string, max: number): string {
+  const t = clean(s);
+  if (t.length <= max) return t;
+  return t.slice(0, max - 1).replace(/\s+\S*$/, "").replace(/[\s,;:–—-]+$/, "") + "…";
+}
 
 export const TODO = /\[(À|A) compléter|\[To complete/i;
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -60,7 +70,7 @@ export function servicesHeading(names: string[], lang: Lang): string {
   return parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(", ")} ${pick(lang, "et", "and")} ${parts[parts.length - 1]}`;
 }
 
-export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, images: ImageSlots, gallery: string[]): SiteContent {
+export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, images: ImageSlots, gallery: string[], seoDoc: HomeSeo | null = null): SiteContent {
   const lang = intent.lang;
   const t = (fr: string, en: string) => pick(lang, fr, en);
   const vf = verifiedFacts(p);
@@ -82,12 +92,22 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
   let hero: SiteContent["hero"];
   if (intent.site === "services_trade" || intent.site === "local_service") {
     const heading = servicesHeading(services.map((s) => s.name), lang) || category || name;
-    hero = {
-      eyebrow: [category, area].filter(Boolean).join(" · "),
-      heading,
-      em: city ? t(`à ${city}.`, `in ${city}.`) : "",
-      text: [area ? t(`${name} intervient ${/^(à|a|dans|sur|en)\s/i.test(area) ? area : `à ${area}`}.`, `${name} works in ${area}.`) : "", intent.conversion === "quote" ? t("Devis sur demande.", "Quotes on request.") : ""].filter(Boolean).join(" "),
-    };
+    const localText = [area ? t(`${name} intervient ${/^(à|a|dans|sur|en)\s/i.test(area) ? area : `à ${area}`}.`, `${name} works in ${area}.`) : "", intent.conversion === "quote" ? t("Devis sur demande.", "Quotes on request.") : ""].filter(Boolean).join(" ");
+    // Accueil rédigé par SEO & Copywriting V2 (l'IA quand elle est active) : son titre principal (métier + ville,
+    // c'est ce que Google lit en premier) et son introduction remplacent le titre construit avec les noms de prestations.
+    const docH1 = clean(seoDoc?.h1).replace(/\s+[—–-]\s+[^—–-]+$/, "");
+    const docIntro = clean(seoDoc?.intro);
+    if (docH1 && !TODO.test(docH1)) {
+      const sp = splitHeading(docH1);
+      hero = { eyebrow: [category, area].filter(Boolean).join(" · "), heading: sp.heading, em: sp.em, text: docIntro && !TODO.test(docIntro) ? docIntro : localText };
+    } else {
+      hero = {
+        eyebrow: [category, area].filter(Boolean).join(" · "),
+        heading,
+        em: city ? t(`à ${city}.`, `in ${city}.`) : "",
+        text: docIntro && !TODO.test(docIntro) ? docIntro : localText,
+      };
+    }
   } else if (intent.site === "restaurant") {
     hero = { eyebrow: [category, area].filter(Boolean).join(" · "), heading: name, em: "", text: positioning || summary };
   } else {
@@ -150,6 +170,17 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
   if (intent.site.startsWith("shop") && !vf.shipping) todo.push(t("conditions de livraison", "shipping terms"));
   if (faq.length && !faq.some((f) => f.real)) todo.push(t("réponses aux questions fréquentes", "FAQ answers"));
 
+  // ------------------------------------------------------------ référencement de l'accueil
+  const docTitle = clean(seoDoc?.seoTitle);
+  const docDesc = clean(seoDoc?.metaDescription);
+  const where = city ? t(` à ${city}`, ` in ${city}`) : "";
+  const localTitle = intent.site === "services_trade" || intent.site === "local_service" || intent.site === "restaurant" ? `${cap(category || name)}${where} — ${name}` : `${name}${category ? ` — ${cap(category)}` : ""}`;
+  const localDesc = [summary || positioning, services.length ? services.slice(0, 4).map((s) => s.name).join(", ") + "." : "", area ? t(`Intervention : ${area}.`, `Area: ${area}.`) : ""].filter(Boolean).join(" ");
+  const seo = {
+    title: fitText(docTitle && !TODO.test(docTitle) ? docTitle : localTitle, 60),
+    description: fitText(docDesc && !TODO.test(docDesc) ? docDesc : localDesc || name, 155),
+  };
+
   return {
     name,
     lang,
@@ -171,6 +202,7 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
     audience,
     images,
     gallery,
+    seo,
     todo,
   };
 }

@@ -12,6 +12,7 @@ import { HttpError } from "@/lib/auth";
 import { DIRECTIONS } from "@/lib/theme/directions";
 import { L } from "@/lib/i18n-server";
 import { brandIssues } from "@/lib/engine/brand-check";
+import { applyPaletteToSite } from "@/lib/workflow/propagation";
 
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
@@ -45,7 +46,11 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       remember(p.id, { kind: "decision", key: `marque.${k}`, value: typeof b[k] === "string" ? (b[k] as string) : JSON.stringify(b[k]), source: "user", scope: "brand" });
     }
   }
-  brand.validated = [...new Set([...(brand.validated ?? []), ...(b.validate ?? [])])].filter((x: string) => !(b.unvalidate ?? []).includes(x));
+  // Palette changée par le client : c'est SA décision, elle est validée (un nouveau logo ou une reconstruction du site
+  // ne la remplace plus par les couleurs mesurées dans le logo ou celles du style de boutique).
+  const paletteChanged = b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette);
+  const autoValidate = paletteChanged && !(b.unvalidate ?? []).includes("palette") ? ["palette"] : [];
+  brand.validated = [...new Set([...(brand.validated ?? []), ...(b.validate ?? []), ...autoValidate])].filter((x: string) => !(b.unvalidate ?? []).includes(x));
   if (b.validate?.includes("logo")) brand.logo = { ...brand.logo, status: "validated" };
   // Verrous posés ou levés par le client : décision mémorisée (l'état précédent reste dans l'historique).
   if (b.validate?.length || b.unvalidate?.length) recordBrandDecision(p.id, "verrous", [...brand.validated].sort().join(", ") || "aucun");
@@ -67,7 +72,9 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   const v2 = regenerate && p.brand.logo?.engine === "v2" ? await runForUser(owner, () => reapplyLogoV2(null, p.id)) : false;
   if (regenerate && !v2 && latestProposals(p.id).length) await runForUser(owner, () => generateLogos(null, p.id));
   if (!recolored) await saveBrandGuide(p.id);
-  return ok({ brand: loadProject(p.id).brand ?? brand, logoUpdated: v2 || (regenerate && latestProposals(p.id).length > 0) || recolored, recolored, logoKept: touchesLogo && logoLocked && !recolored });
+  // Le site actuel prend la nouvelle palette tout de suite (sans IA, retouches conservées).
+  const siteUpdated = paletteChanged ? await applyPaletteToSite(p.id).catch((e) => (console.warn("[brand] palette du site", (e as Error).message), false)) : false;
+  return ok({ brand: loadProject(p.id).brand ?? brand, logoUpdated: v2 || (regenerate && latestProposals(p.id).length > 0) || recolored, recolored, siteUpdated, logoKept: touchesLogo && logoLocked && !recolored });
 });
 
 /** Nouvelle proposition de marque (les éléments validés sont conservés). */

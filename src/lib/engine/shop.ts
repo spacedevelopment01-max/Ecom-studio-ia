@@ -142,12 +142,14 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
 export const serviceKey = (name: string) => name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
 function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string, string>) {
-  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC LIMIT 24", projectId).filter(isAutoUsable).slice(0, 8);
+  const life = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (origin = 'upload') DESC, (origin != 'generated') DESC, (status = 'approved') DESC, (json_extract(meta, '$.qcWarning') IS NULL) DESC, created_at DESC LIMIT 36", projectId).filter(isAutoUsable).slice(0, 12);
   const order: Exclude<keyof ImageSlots, "reels" | "byService">[] = ["lifestyle", "scene1", "scene2", "scene3", "detail1", "detail2", "lifestyle2"];
-  life.slice(0, order.length).forEach((a, i) => {
+  // Toutes les photos (jusqu'à 12) sont jointes au thème : les 7 premières ont un emplacement, les suivantes vont dans
+  // la galerie « En images » du site (Theme V2).
+  life.forEach((a, i) => {
     const f = themeFileName(a, `photo-${i + 1}`);
     files[f] = a.id;
-    slots[order[i]] = f;
+    if (i < order.length) slots[order[i]] = f;
   });
   // Photo propre à chaque prestation (votre photo d'abord, puis photo libre, puis image IA) : la carte « Carrelage » montre du
   // carrelage, jamais la photo d'une autre prestation.

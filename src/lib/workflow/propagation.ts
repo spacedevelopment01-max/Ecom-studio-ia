@@ -174,9 +174,12 @@ export async function rebrandTheme(p: Project, spec0: ThemeSpec, oldS: BrandSnap
     const language = spec.meta.v2?.language;
     const withBrand = (s: BrandSnapshot): Project => ({ ...p, brand: { ...p.brand!, name: s.name, palette: s.palette as any, fonts: s.fonts ?? p.brand!.fonts } });
     const intent = websiteIntent(p);
-    const before = colorSchemesV2(artDirection(withBrand(oldS), intent, { language }));
+    // Anciens schémas : calculés avec ou sans palette validée (le client vient peut-être de la valider en la changeant).
+    const unlocked = (q: Project): Project => ({ ...q, brand: { ...q.brand!, validated: (q.brand!.validated ?? []).filter((k) => k !== "palette") } });
+    const lockedQ = (q: Project): Project => ({ ...q, brand: { ...q.brand!, validated: [...new Set([...(q.brand!.validated ?? []), "palette"])] } });
+    const befores = [withBrand(oldS), unlocked(withBrand(oldS)), lockedQ(withBrand(oldS))].map((q) => JSON.stringify(colorSchemesV2(artDirection(q, intent, { language }))));
     const after = artDirection(withBrand(newS), intent, { language });
-    if (JSON.stringify(spec.settings.color_schemes) === JSON.stringify(before)) spec.settings.color_schemes = colorSchemesV2(after) as any;
+    if (befores.includes(JSON.stringify(spec.settings.color_schemes))) spec.settings.color_schemes = colorSchemesV2(after) as any;
     else {
       spec.settings.color_schemes = JSON.parse(remapJson(JSON.stringify(spec.settings.color_schemes), colorMap(oldS, newS)));
       notes.push(L("couleurs du site retouchées à la main : seules les couleurs exactes de l'ancienne palette ont été remplacées", "site colours edited by hand: only the exact old palette colours were replaced"));
@@ -286,4 +289,15 @@ export async function applyBrandUpdate(projectId: string, keys: string[], o: { i
   }
   remember(p.id, { kind: "decision", key: "marque.propagation", value: propagationSummary(res), source: "user", scope: "brand" });
   return res;
+}
+
+/**
+ * Palette changée par le client (onglet Marque) : le site actuel prend aussitôt ses nouvelles couleurs (localement,
+ * gratuitement, nouvelle version du thème, mise en page et retouches conservées). Rien à faire s'il est déjà à jour.
+ */
+export async function applyPaletteToSite(projectId: string): Promise<boolean> {
+  const item = brandImpact(loadProject(projectId)).items.find((i) => i.kind === "theme" && i.changes.includes("palette"));
+  if (!item) return false;
+  const r = await applyBrandUpdate(projectId, [item.key], { includeEdited: true });
+  return r.updated.length > 0;
 }
