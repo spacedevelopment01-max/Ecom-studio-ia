@@ -1,0 +1,367 @@
+{%- comment -%}
+  Calendrier de réservation : rendez-vous, salle ou espace, table. Le visiteur choisit la salle ou la prestation, le
+  jour dans un calendrier, l'horaire parmi les créneaux, le nombre de personnes, des options et répond aux champs
+  personnalisés ; la demande part par le formulaire de contact de la boutique. Aucune disponibilité n'est inventée :
+  ce sont les jours, horaires et jours de fermeture réglés ici, et la réservation est confirmée par la boutique.
+  Sans JavaScript : champs date et heure natifs (mêmes limites).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign days = ''
+  if s.day_sun
+    assign days = days | append: '0,'
+  endif
+  if s.day_mon
+    assign days = days | append: '1,'
+  endif
+  if s.day_tue
+    assign days = days | append: '2,'
+  endif
+  if s.day_wed
+    assign days = days | append: '3,'
+  endif
+  if s.day_thu
+    assign days = days | append: '4,'
+  endif
+  if s.day_fri
+    assign days = days | append: '5,'
+  endif
+  if s.day_sat
+    assign days = days | append: '6,'
+  endif
+  assign closed = s.closed_dates | newline_to_br | split: '<br />' | join: ',' | strip_newlines | remove: ' '
+  assign item_label = 'sections.booking_cal.item_appointment' | t
+  assign choose_label = 'sections.booking_cal.choose_appointment' | t
+  if s.kind == 'room'
+    assign item_label = 'sections.booking_cal.item_room' | t
+    assign choose_label = 'sections.booking_cal.choose_room' | t
+  elsif s.kind == 'table'
+    assign item_label = 'sections.booking_cal.item_table' | t
+    assign choose_label = 'sections.booking_cal.choose_table' | t
+  endif
+  assign date_label = 'sections.booking_cal.date' | t
+  assign time_label = 'sections.booking_cal.time' | t
+  assign people_label = 'sections.booking_cal.people' | t
+  assign duration_label = 'sections.booking_cal.duration' | t
+  assign items_count = 0
+  assign options_count = 0
+  for block in section.blocks
+    if block.type == 'item'
+      assign items_count = items_count | plus: 1
+    elsif block.type == 'option'
+      assign options_count = options_count | plus: 1
+    endif
+  endfor
+  assign people_min = s.people_min | default: 1
+  assign people_max = s.people_max | default: 10
+  if people_max < people_min
+    assign people_max = people_min
+  endif
+  assign slot_seconds = s.slot_minutes | times: 60
+  assign form_id = 'BookingCal-' | append: section.id
+-%}
+<section class="es-section es-bcal color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+  <div class="es-container">
+    <header class="es-bcal__head">
+      {%- if s.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2 class="es-heading es-h2" data-reveal="words">{{ s.heading }}</h2>
+      {%- if s.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ s.text }}</div>{%- endif -%}
+    </header>
+
+    {%- form 'contact', id: form_id, class: 'es-form es-bcal__form' -%}
+      {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'sections.booking_cal.sent' | t }}</p>{%- endif -%}
+      {%- if form.errors -%}<div class="es-form-error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+      <input type="hidden" name="contact[{{ 'sections.booking.request' | t }}]" value="{{ s.heading | escape }}">
+      <div class="es-bcal__layout"
+        data-booking-cal
+        data-days="{{ days }}"
+        data-open="{{ s.open_time | strip }}"
+        data-close="{{ s.close_time | strip }}"
+        data-break-start="{{ s.break_start | strip }}"
+        data-break-end="{{ s.break_end | strip }}"
+        data-slot="{{ s.slot_minutes }}"
+        data-notice="{{ s.notice_days }}"
+        data-horizon="{{ s.horizon_days }}"
+        data-closed="{{ closed | escape }}"
+        data-label-prev="{{ 'sections.booking_cal.prev_month' | t | escape }}"
+        data-label-next="{{ 'sections.booking_cal.next_month' | t | escape }}"
+        data-label-pick-date="{{ 'sections.booking_cal.pick_date' | t | escape }}"
+        data-label-no-slot="{{ 'sections.booking_cal.no_slot' | t | escape }}"
+        data-label-missing="{{ 'sections.booking_cal.missing' | t | escape }}"
+        data-label-people="{{ people_label | escape }}"
+        data-label-too-many="{{ 'sections.booking_cal.too_many' | t | escape }}">
+        <div class="es-bcal__main">
+          {%- if items_count > 0 -%}
+            <fieldset class="es-bcal__step" data-reveal="up">
+              <legend class="es-bcal__legend"><span class="es-bcal__num" aria-hidden="true">1</span>{{ choose_label }}</legend>
+              <div class="es-bcal__items">
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'item' -%}
+                    <label class="es-bcal__item" {{ block.shopify_attributes }} data-capacity="{{ block.settings.capacity }}">
+                      <input type="radio" name="contact[{{ item_label }}]" value="{{ block.settings.title | escape }}" {% if items_count == 1 %}checked{% endif %} required data-bcal-item>
+                      {%- if block.settings.image != blank -%}
+                        <span class="es-bcal__item-media">{{ block.settings.image | image_url: width: 640 | image_tag: loading: 'lazy', widths: '320, 480, 640', sizes: '(min-width: 990px) 280px, 90vw', alt: block.settings.title }}</span>
+                      {%- endif -%}
+                      <span class="es-bcal__item-body">
+                        <strong class="es-bcal__item-title">{{ block.settings.title }}</strong>
+                        {%- if block.settings.text != blank -%}<span class="es-bcal__item-text">{{ block.settings.text }}</span>{%- endif -%}
+                        <span class="es-bcal__item-meta">
+                          {%- if block.settings.capacity > 0 -%}<span>{% render 'icon', name: 'account' %}{{ 'sections.booking_cal.up_to' | t: number: block.settings.capacity }}</span>{%- endif -%}
+                          {%- if block.settings.duration != blank -%}<span>{% render 'icon', name: 'clock' %}{{ block.settings.duration }}</span>{%- endif -%}
+                          {%- if block.settings.price != blank -%}<span class="es-bcal__price">{{ block.settings.price }}</span>{%- endif -%}
+                        </span>
+                        <span class="es-bcal__item-full es-small" data-bcal-full hidden>{{ 'sections.booking_cal.too_many' | t }}</span>
+                      </span>
+                    </label>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            </fieldset>
+          {%- endif -%}
+
+          <fieldset class="es-bcal__step" data-reveal="up">
+            <legend class="es-bcal__legend"><span class="es-bcal__num" aria-hidden="true">{% if items_count > 0 %}2{% else %}1{% endif %}</span>{{ 'sections.booking_cal.when' | t }}</legend>
+            <div class="es-bcal__when">
+              <div class="es-bcal__calendar" data-bcal-calendar></div>
+              <div class="es-bcal__slots-wrap">
+                <p class="es-bcal__slots-title es-small" data-bcal-day-label>{{ 'sections.booking_cal.pick_date' | t }}</p>
+                <div class="es-bcal__slots" data-bcal-slots role="group" aria-label="{{ time_label | escape }}"></div>
+              </div>
+              <div class="es-bcal__native" data-bcal-native>
+                <label>{{ date_label }} *<input type="date" name="contact[{{ date_label }}]" required data-bcal-date></label>
+                <label>{{ time_label }} *<input type="time" name="contact[{{ time_label }}]" required step="{{ slot_seconds }}"{% if s.open_time != blank %} min="{{ s.open_time | strip }}"{% endif %}{% if s.close_time != blank %} max="{{ s.close_time | strip }}"{% endif %} data-bcal-time></label>
+              </div>
+            </div>
+            {%- if s.durations != blank -%}
+              {%- assign durations = s.durations | newline_to_br | split: '<br />' -%}
+              <label class="es-bcal__field">{{ duration_label }}
+                <select name="contact[{{ duration_label }}]" data-bcal-duration>
+                  {%- for d in durations -%}{%- assign v = d | strip -%}{%- if v != blank -%}<option value="{{ v | escape }}">{{ v }}</option>{%- endif -%}{%- endfor -%}
+                </select>
+              </label>
+            {%- endif -%}
+          </fieldset>
+
+          {%- if s.ask_people or options_count > 0 -%}
+            <fieldset class="es-bcal__step" data-reveal="up">
+              <legend class="es-bcal__legend"><span class="es-bcal__num" aria-hidden="true">{% if items_count > 0 %}3{% else %}2{% endif %}</span>{{ 'sections.booking_cal.details_step' | t }}</legend>
+              {%- if s.ask_people -%}
+                <div class="es-bcal__people">
+                  <span class="es-bcal__people-label" id="{{ form_id }}-people">{{ people_label }}</span>
+                  <div class="es-bcal__stepper">
+                    <button type="button" class="es-bcal__step-btn" data-bcal-people-step="-1" aria-label="{{ 'sections.booking_cal.less' | t | escape }}">−</button>
+                    <input type="number" name="contact[{{ people_label }}]" value="{{ people_min }}" min="{{ people_min }}" max="{{ people_max }}" inputmode="numeric" aria-labelledby="{{ form_id }}-people" data-bcal-people>
+                    <button type="button" class="es-bcal__step-btn" data-bcal-people-step="1" aria-label="{{ 'sections.booking_cal.more' | t | escape }}">+</button>
+                  </div>
+                  <span class="es-small es-muted">{{ 'sections.booking_cal.people_range' | t: min: people_min, max: people_max }}</span>
+                </div>
+              {%- endif -%}
+              {%- if options_count > 0 -%}
+                <div class="es-bcal__options">
+                  {%- for block in section.blocks -%}
+                    {%- if block.type == 'option' -%}
+                      <label class="es-bcal__option" {{ block.shopify_attributes }}>
+                        <input type="checkbox" name="contact[{{ 'sections.booking_cal.option' | t }} : {{ block.settings.title | escape }}]" value="{{ 'sections.booking_cal.yes' | t }}" data-bcal-option="{{ block.settings.title | escape }}">
+                        <span>{{ block.settings.title }}</span>
+                        {%- if block.settings.price != blank -%}<span class="es-bcal__price">{{ block.settings.price }}</span>{%- endif -%}
+                      </label>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+              {%- endif -%}
+            </fieldset>
+          {%- endif -%}
+
+          <fieldset class="es-bcal__step" data-reveal="up">
+            <legend class="es-bcal__legend">{{ 'sections.booking_cal.contact_step' | t }}</legend>
+            <div class="es-form__row">
+              <label>{{ 'contact.name' | t }} *<input type="text" name="contact[name]" autocomplete="name" required value="{{ form.name }}"></label>
+              <label>{{ 'contact.email' | t }} *<input type="email" name="contact[email]" autocomplete="email" required value="{{ form.email }}"></label>
+            </div>
+            {%- if s.ask_phone -%}
+              <label>{{ 'contact.phone' | t }}{% if s.phone_required %} *{% endif %}<input type="tel" name="contact[phone]" autocomplete="tel" {% if s.phone_required %}required{% endif %} value="{{ form.phone }}"></label>
+            {%- endif -%}
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'field' and block.settings.label != blank -%}
+                {%- assign fname = 'contact[' | append: block.settings.label | append: ']' -%}
+                {%- case block.settings.field_type -%}
+                  {%- when 'textarea' -%}
+                    <label {{ block.shopify_attributes }}>{{ block.settings.label }}{% if block.settings.required %} *{% endif %}<textarea name="{{ fname | escape }}" rows="3" class="es-textarea" {% if block.settings.required %}required{% endif %}></textarea></label>
+                  {%- when 'select' -%}
+                    {%- assign choices = block.settings.choices | newline_to_br | split: '<br />' -%}
+                    <label {{ block.shopify_attributes }}>{{ block.settings.label }}{% if block.settings.required %} *{% endif %}
+                      <select name="{{ fname | escape }}" {% if block.settings.required %}required{% endif %}>
+                        <option value="">{{ 'sections.booking_cal.choose' | t }}</option>
+                        {%- for c in choices -%}{%- assign v = c | strip -%}{%- if v != blank -%}<option value="{{ v | escape }}">{{ v }}</option>{%- endif -%}{%- endfor -%}
+                      </select>
+                    </label>
+                  {%- when 'checkbox' -%}
+                    <label class="es-bcal__option" {{ block.shopify_attributes }}><input type="checkbox" name="{{ fname | escape }}" value="{{ 'sections.booking_cal.yes' | t }}" {% if block.settings.required %}required{% endif %}><span>{{ block.settings.label }}</span></label>
+                  {%- when 'number' -%}
+                    <label {{ block.shopify_attributes }}>{{ block.settings.label }}{% if block.settings.required %} *{% endif %}<input type="number" name="{{ fname | escape }}" min="0" inputmode="numeric" {% if block.settings.required %}required{% endif %}></label>
+                  {%- else -%}
+                    <label {{ block.shopify_attributes }}>{{ block.settings.label }}{% if block.settings.required %} *{% endif %}<input type="text" name="{{ fname | escape }}" {% if block.settings.required %}required{% endif %}></label>
+                {%- endcase -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if s.ask_message -%}
+              <label>{{ 'contact.message' | t }}<textarea name="contact[body]" rows="3" class="es-textarea">{{ form.body }}</textarea></label>
+            {%- endif -%}
+          </fieldset>
+        </div>
+
+        <aside class="es-bcal__summary" data-reveal="up" style="--d: 1">
+          <p class="es-eyebrow">{{ 'sections.booking_cal.summary' | t }}</p>
+          <dl class="es-bcal__recap" data-bcal-summary aria-live="polite">
+            {%- if items_count > 0 -%}<div><dt>{{ item_label }}</dt><dd data-bcal-sum="item">—</dd></div>{%- endif -%}
+            <div><dt>{{ date_label }}</dt><dd data-bcal-sum="date">—</dd></div>
+            <div><dt>{{ time_label }}</dt><dd data-bcal-sum="time">—</dd></div>
+            {%- if s.durations != blank -%}<div><dt>{{ duration_label }}</dt><dd data-bcal-sum="duration">—</dd></div>{%- endif -%}
+            {%- if s.ask_people -%}<div><dt>{{ people_label }}</dt><dd data-bcal-sum="people">{{ people_min }}</dd></div>{%- endif -%}
+            {%- if options_count > 0 -%}<div><dt>{{ 'sections.booking_cal.options' | t }}</dt><dd data-bcal-sum="options">—</dd></div>{%- endif -%}
+          </dl>
+          {%- if s.price_note != blank -%}<p class="es-small es-bcal__price-note">{{ s.price_note }}</p>{%- endif -%}
+          <p class="es-form-error es-bcal__error" role="alert" data-bcal-error hidden></p>
+          <button type="submit" class="es-button es-button--full">{{ s.button_label }}</button>
+          {%- if s.note != blank -%}<p class="es-small es-muted es-bcal__note">{{ s.note }}</p>{%- endif -%}
+        </aside>
+      </div>
+    {%- endform -%}
+  </div>
+</section>
+
+{% stylesheet %}
+.es-bcal__head { max-width: 720px; margin-bottom: clamp(24px, 4vw, 44px); }
+.es-bcal__head .es-heading { margin-bottom: 12px; }
+.es-bcal__layout { display: grid; gap: clamp(20px, 3vw, 36px); align-items: start; }
+@media (min-width: 990px) { .es-bcal__layout { grid-template-columns: minmax(0, 1fr) minmax(280px, 340px); } .es-bcal__summary { position: sticky; top: calc(var(--header-h, 72px) + 20px); } }
+.es-bcal__main { display: grid; gap: 18px; min-width: 0; }
+.es-bcal__step { margin: 0; padding: clamp(18px, 2.6vw, 30px); border: 1px solid var(--c-border); border-radius: var(--radius-card); background: var(--c-surface); display: grid; gap: 16px; min-width: 0; }
+.es-bcal__legend { display: flex; align-items: center; gap: 12px; padding: 0; font-family: var(--font-heading-family); font-size: 1.15rem; font-weight: var(--font-heading-weight, 600); float: left; width: 100%; }
+.es-bcal__legend + * { clear: both; }
+.es-bcal__num { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--c-accent); color: var(--c-accent-contrast, #fff); font-size: .9rem; flex: none; font-family: var(--font-body-family); }
+.es-bcal__items { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.es-bcal__item { position: relative; display: grid; border: 1.5px solid var(--c-border); border-radius: calc(var(--radius-card) * .7); overflow: hidden; cursor: pointer; background: var(--c-bg); transition: border-color .25s, box-shadow .25s; }
+.es-bcal__item input { position: absolute; opacity: 0; inset: 0; pointer-events: none; }
+.es-bcal__item:has(input:checked) { border-color: var(--c-accent); box-shadow: 0 0 0 3px rgba(var(--c-accent-rgb), .18); }
+.es-bcal__item:has(input:focus-visible) { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.es-bcal__item.is-full { opacity: .5; cursor: not-allowed; }
+.es-bcal__item-media img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.es-bcal__item-body { display: grid; gap: 6px; padding: 14px 16px 16px; }
+.es-bcal__item-title { font-size: 1.02rem; }
+.es-bcal__item-text { color: var(--c-muted); font-size: .92rem; }
+.es-bcal__item-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .88rem; color: var(--c-muted); }
+.es-bcal__item-meta > span { display: inline-flex; align-items: center; gap: 6px; }
+.es-bcal__item-meta .es-icon { width: 15px; height: 15px; }
+.es-bcal__price { font-weight: var(--font-body-weight-bold); color: var(--c-text); }
+.es-bcal__item-full { color: var(--c-muted); }
+.es-bcal__when { display: grid; gap: 18px; }
+@media (min-width: 750px) { .es-bcal__when.is-enhanced { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }
+.es-bcal__when.is-enhanced .es-bcal__native { display: none; }
+.es-bcal__when:not(.is-enhanced) .es-bcal__calendar, .es-bcal__when:not(.is-enhanced) .es-bcal__slots-wrap { display: none; }
+.es-bcal__native { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.es-bcal__native label, .es-bcal__field, .es-bcal__step > label, .es-bcal__step .es-form__row label { display: grid; gap: 6px; font-weight: var(--font-body-weight-bold); }
+.es-bcal__step input:not([type=checkbox]):not([type=radio]), .es-bcal__step select, .es-bcal__step .es-textarea { width: 100%; font-weight: 400; }
+.es-bcal__step select { min-height: 48px; padding: 0 14px; border-radius: var(--radius-input, 10px); border: 1px solid var(--c-border); background: var(--c-bg); color: inherit; }
+.es-bcal__cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.es-bcal__cal-title { font-weight: var(--font-body-weight-bold); text-transform: capitalize; }
+.es-bcal__nav { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--c-border); background: var(--c-bg); color: inherit; cursor: pointer; font-size: 1.1rem; }
+.es-bcal__nav:disabled { opacity: .35; cursor: default; }
+.es-bcal__grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center; }
+.es-bcal__dow { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--c-muted); padding: 4px 0; }
+.es-bcal__day { aspect-ratio: 1; min-height: 40px; border: 0; border-radius: 12px; background: rgba(var(--c-accent-rgb), .1); color: inherit; font: inherit; font-variant-numeric: tabular-nums; cursor: pointer; transition: background .2s, color .2s; }
+.es-bcal__day:hover:not(:disabled) { background: rgba(var(--c-accent-rgb), .22); }
+.es-bcal__day:disabled { background: transparent; color: var(--c-muted); opacity: .45; cursor: default; text-decoration: line-through; text-decoration-color: rgba(var(--c-text-rgb), .25); }
+.es-bcal__day.is-today { box-shadow: inset 0 0 0 1.5px rgba(var(--c-text-rgb), .35); }
+.es-bcal__day[aria-pressed=true] { background: var(--c-accent); color: var(--c-accent-contrast, #fff); font-weight: var(--font-body-weight-bold); }
+.es-bcal__slots-title { margin: 0 0 10px; font-weight: var(--font-body-weight-bold); }
+.es-bcal__slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; max-height: 340px; overflow-y: auto; }
+.es-bcal__slot { min-height: 44px; border-radius: 10px; border: 1.5px solid var(--c-border); background: var(--c-bg); color: inherit; font: inherit; font-variant-numeric: tabular-nums; cursor: pointer; transition: border-color .2s, background .2s; }
+.es-bcal__slot:hover { border-color: var(--c-accent); }
+.es-bcal__slot[aria-pressed=true] { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-contrast, #fff); font-weight: var(--font-body-weight-bold); }
+.es-bcal__people { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.es-bcal__people-label { font-weight: var(--font-body-weight-bold); }
+.es-bcal__stepper { display: inline-flex; align-items: center; border: 1px solid var(--c-border); border-radius: 999px; overflow: hidden; background: var(--c-bg); }
+.es-bcal__stepper input { width: 64px !important; text-align: center; border: 0 !important; background: transparent; min-height: 44px; -moz-appearance: textfield; }
+.es-bcal__stepper input::-webkit-inner-spin-button, .es-bcal__stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.es-bcal__step-btn { width: 44px; height: 44px; border: 0; background: transparent; color: inherit; font-size: 1.25rem; cursor: pointer; }
+.es-bcal__options { display: grid; gap: 10px; }
+.es-bcal__option, .es-bcal__step .es-bcal__option { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--c-border); border-radius: 12px; background: var(--c-bg); cursor: pointer; font-weight: 400 !important; }
+.es-bcal__option input { width: 20px; height: 20px; accent-color: var(--c-accent); flex: none; }
+.es-bcal__option .es-bcal__price { margin-left: auto; }
+.es-bcal__summary { padding: clamp(20px, 2.6vw, 30px); border-radius: var(--radius-card); background: var(--c-surface); border: 1px solid var(--c-border); box-shadow: 0 30px 70px -50px rgba(0, 0, 0, .45); display: grid; gap: 14px; }
+.es-bcal__summary .es-eyebrow { margin: 0; }
+.es-bcal__recap { margin: 0; display: grid; gap: 10px; }
+.es-bcal__recap div { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--c-border); }
+.es-bcal__recap dt { color: var(--c-muted); }
+.es-bcal__recap dd { margin: 0; text-align: right; font-weight: var(--font-body-weight-bold); overflow-wrap: anywhere; }
+.es-bcal__price-note, .es-bcal__note, .es-bcal__error { margin: 0; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Calendrier de réservation",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Réservation" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Réservez votre créneau" },
+    { "type": "richtext", "id": "text", "label": "Introduction", "default": "<p>Choisissez le jour et l'horaire qui vous conviennent : nous confirmons votre réservation par e-mail.</p>" },
+    { "type": "select", "id": "kind", "label": "Type de réservation", "default": "appointment", "options": [{ "value": "appointment", "label": "Rendez-vous ou prestation" }, { "value": "room", "label": "Salle ou espace" }, { "value": "table", "label": "Table" }] },
+    { "type": "header", "content": "Jours d'ouverture" },
+    { "type": "checkbox", "id": "day_mon", "label": "Lundi", "default": true },
+    { "type": "checkbox", "id": "day_tue", "label": "Mardi", "default": true },
+    { "type": "checkbox", "id": "day_wed", "label": "Mercredi", "default": true },
+    { "type": "checkbox", "id": "day_thu", "label": "Jeudi", "default": true },
+    { "type": "checkbox", "id": "day_fri", "label": "Vendredi", "default": true },
+    { "type": "checkbox", "id": "day_sat", "label": "Samedi", "default": false },
+    { "type": "checkbox", "id": "day_sun", "label": "Dimanche", "default": false },
+    { "type": "textarea", "id": "closed_dates", "label": "Jours de fermeture", "info": "Une date par ligne au format AAAA-MM-JJ (ex. 2026-12-25). Ces jours ne sont pas réservables." },
+    { "type": "header", "content": "Horaires et créneaux" },
+    { "type": "text", "id": "open_time", "label": "Heure d'ouverture", "default": "09:00", "info": "Format HH:MM, ex. 09:00." },
+    { "type": "text", "id": "close_time", "label": "Heure de fermeture", "default": "18:00", "info": "Format HH:MM. Le dernier créneau se termine à cette heure." },
+    { "type": "text", "id": "break_start", "label": "Début de la pause", "info": "Facultatif, format HH:MM (ex. 12:00)." },
+    { "type": "text", "id": "break_end", "label": "Fin de la pause", "info": "Facultatif, format HH:MM (ex. 14:00)." },
+    { "type": "range", "id": "slot_minutes", "min": 15, "max": 240, "step": 15, "unit": "min", "label": "Durée d'un créneau", "default": 60 },
+    { "type": "range", "id": "notice_days", "min": 0, "max": 30, "step": 1, "unit": "j", "label": "Délai minimum avant réservation", "default": 1, "info": "0 : réservable le jour même (créneaux passés masqués)." },
+    { "type": "select", "id": "horizon_days", "label": "Réservable jusqu'à", "default": "90", "options": [{ "value": "14", "label": "2 semaines" }, { "value": "30", "label": "1 mois" }, { "value": "60", "label": "2 mois" }, { "value": "90", "label": "3 mois" }, { "value": "180", "label": "6 mois" }, { "value": "365", "label": "1 an" }] },
+    { "type": "textarea", "id": "durations", "label": "Durées proposées", "info": "Facultatif. Une par ligne (ex. 1 heure, Demi-journée, Journée)." },
+    { "type": "header", "content": "Personnes" },
+    { "type": "checkbox", "id": "ask_people", "label": "Demander le nombre de personnes", "default": true },
+    { "type": "number", "id": "people_min", "label": "Minimum de personnes", "default": 1 },
+    { "type": "number", "id": "people_max", "label": "Maximum de personnes", "default": 10, "info": "La capacité de chaque salle ou prestation peut aussi être indiquée dans ses blocs." },
+    { "type": "header", "content": "Coordonnées et envoi" },
+    { "type": "checkbox", "id": "ask_phone", "label": "Demander le téléphone", "default": true },
+    { "type": "checkbox", "id": "phone_required", "label": "Téléphone obligatoire", "default": false },
+    { "type": "checkbox", "id": "ask_message", "label": "Champ message", "default": true },
+    { "type": "text", "id": "price_note", "label": "Note sur le tarif", "info": "Facultatif. Uniquement un tarif ou une condition réels." },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Envoyer ma demande de réservation" },
+    { "type": "text", "id": "note", "label": "Note sous le bouton", "default": "Votre créneau est réservé après notre confirmation par e-mail." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Salle ou prestation", "settings": [
+      { "type": "text", "id": "title", "label": "Nom", "default": "Salle de réunion" },
+      { "type": "text", "id": "text", "label": "Description" },
+      { "type": "number", "id": "capacity", "label": "Capacité (personnes)", "info": "Facultatif. Au-delà, la salle n'est plus proposée." },
+      { "type": "text", "id": "duration", "label": "Durée" },
+      { "type": "text", "id": "price", "label": "Prix", "info": "Facultatif. Uniquement un prix réel." },
+      { "type": "image_picker", "id": "image", "label": "Photo" }
+    ] },
+    { "type": "option", "name": "Option", "settings": [
+      { "type": "text", "id": "title", "label": "Nom", "default": "Vidéoprojecteur" },
+      { "type": "text", "id": "price", "label": "Prix", "info": "Facultatif. Uniquement un prix réel." }
+    ] },
+    { "type": "field", "name": "Champ personnalisé", "settings": [
+      { "type": "text", "id": "label", "label": "Question", "default": "Entreprise" },
+      { "type": "select", "id": "field_type", "label": "Type de réponse", "default": "text", "options": [{ "value": "text", "label": "Texte court" }, { "value": "textarea", "label": "Texte long" }, { "value": "number", "label": "Nombre" }, { "value": "select", "label": "Liste de choix" }, { "value": "checkbox", "label": "Case à cocher" }] },
+      { "type": "textarea", "id": "choices", "label": "Choix", "info": "Pour une liste de choix : un choix par ligne." },
+      { "type": "checkbox", "id": "required", "label": "Réponse obligatoire", "default": false }
+    ] }
+  ],
+  "max_blocks": 30,
+  "presets": [{ "name": "Calendrier de réservation" }]
+}
+{% endschema %}

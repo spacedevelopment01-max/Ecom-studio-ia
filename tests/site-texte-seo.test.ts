@@ -51,7 +51,8 @@ describe("Texte et SEO du site", async () => {
     run("UPDATE projects SET business_json = ? WHERE id = ?", JSON.stringify({ ...(p.services ?? {}), contactMode: "booking" }), pid);
     await fr(() => buildShopV2(null, pid));
     const spec = currentTheme(pid)!.spec;
-    const cta = Object.values((spec.templates.index as any).sections).find((s: any) => s.type === "v2-cta") as any;
+    // Appel final : bouton « Réserver », ou calendrier de réservation quand les horaires du client sont lisibles.
+    const cta = Object.values((spec.templates.index as any).sections).find((s: any) => s.type === "v2-cta" || s.type === "booking-calendar") as any;
     expect(cta.settings.heading).toMatch(/Réserv/);
     expect(JSON.stringify(cta.settings)).not.toMatch(/sur devis/);
   });

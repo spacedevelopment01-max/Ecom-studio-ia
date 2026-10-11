@@ -25,6 +25,7 @@ const IGNORED_ATTRS = new Set(["data-es-block", "data-es-section", "data-es-type
 export const PLATFORM_ADAPTATIONS = [
   { id: "form-action", label: "destination des formulaires (traitée par le CMS)" },
   { id: "payment-icons", label: "icônes des moyens de paiement (fournies par la plateforme)" },
+  { id: "section-id", label: "identifiant technique des sections (préfixe « template--…__ » propre à Shopify)" },
   { id: "featured-product", label: "bloc d'achat d'une page : celui du CMS (WooCommerce), avec son vrai panier" },
 ] as const;
 
@@ -47,6 +48,8 @@ export function canonicalHtml(html: string, opts: { adapt?: boolean } = {}): str
       const attrs = Object.entries(el.attribs)
         .filter(([k]) => !IGNORED_ATTRS.has(k) && !(opts.adapt && el.name === "form" && (k === "action" || k === "accept-charset")))
         .map(([k, v]) => `${k}="${(k === "class" ? v.split(/\s+/).filter(Boolean).join(" ") : v.replace(/\s+/g, " ").trim())}"`)
+        // Identifiant de section : préfixe de gabarit propre à Shopify (« template--…__ »), absent dans le CMS.
+        .map((a) => (opts.adapt ? a.replace(/template--[\w-]*?__/g, "") : a))
         .sort();
       out.push(`<${el.name}${attrs.length ? " " + attrs.join(" ") : ""}>`);
       for (const c of el.children) walk(c);

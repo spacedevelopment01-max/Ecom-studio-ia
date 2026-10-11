@@ -11,6 +11,7 @@ import type { BlockInstance, MenuLink, SectionInstance, StoreCollection, StorePa
 import type { ArtDirection, HeroLayout } from "./art-direction";
 import type { WebsiteIntent } from "./intent";
 import { TODO, fitText, para, type Fact, type SiteContent } from "./content";
+import { parseOpeningHours } from "./hours";
 
 /** Nom de prestation normalisé (clé des photos par prestation). */
 const serviceNorm = (n: string) => n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -408,13 +409,36 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     },
   ] : null;
 
+  // Réservation sans service en ligne : vrai calendrier (jour, horaire, prestation) réglé sur les horaires donnés par le
+  // client. Horaires absents ou illisibles : rien n'est deviné, le bouton « Réserver » reste.
+  const hours = services && intent.conversion === "book" && !c.contact.bookingUrl ? parseOpeningHours(c.contact.hours) : null;
+  const bookingCal: Sec | null = hours ? [
+    "booking-calendar",
+    {
+      eyebrow: c.city ? `${c.category} · ${c.city}` : c.category,
+      heading: ctaHeading,
+      text: para(t("Choisissez la prestation, le jour et l'horaire : nous confirmons votre rendez-vous par e-mail.", "Choose the service, the day and the time: we confirm your appointment by email.")),
+      kind: "appointment",
+      day_mon: hours.days.includes(1), day_tue: hours.days.includes(2), day_wed: hours.days.includes(3), day_thu: hours.days.includes(4),
+      day_fri: hours.days.includes(5), day_sat: hours.days.includes(6), day_sun: hours.days.includes(0),
+      open_time: hours.open, close_time: hours.close, break_start: hours.breakStart, break_end: hours.breakEnd,
+      ask_people: false, ask_phone: true, ask_message: true,
+      button_label: t("Envoyer ma demande de rendez-vous", "Send my appointment request"),
+      note: t("Votre rendez-vous est réservé après notre confirmation par e-mail.", "Your appointment is booked once we confirm it by email."),
+      color_scheme: L === "precision" ? "scheme-4" : "scheme-3",
+      padding_top: 104,
+      padding_bottom: 104,
+    },
+    c.offers.filter((o) => o.title && !TODO.test(o.title)).slice(0, 6).map((o) => ({ type: "item", settings: { title: o.title, text: o.text && !TODO.test(o.text) ? fitText(o.text, 90) : "" } })),
+  ] : null;
+
   // ------------------------------------------------------------ accueil selon le type de site (ordre = parcours)
   let home: (Sec | null)[];
   switch (intent.site) {
     case "services_trade":
     case "local_service":
       // Cartes illustrées des prestations (photo de chacune) ; la liste complète reste sur la page Prestations.
-      home = [hero, serviceBand, cards ?? offers, banner, serviceMedia, steps, facts, faqHome, quoteForm ?? cta];
+      home = [hero, serviceBand, cards ?? offers, banner, serviceMedia, steps, facts, faqHome, quoteForm ?? bookingCal ?? cta];
       break;
     case "restaurant":
       // L'ardoise de l'ouverture liste déjà les formules : la liste n'est répétée que si elle apporte un détail confirmé.

@@ -223,7 +223,17 @@ function es_handle_form() {
 		wp_safe_redirect(add_query_arg('es_form', 'error', $back));
 		exit;
 	}
-	$entry = ['type' => $type, 'email' => $email, 'name' => sanitize_text_field($c['name'] ?? ''), 'phone' => sanitize_text_field($c['phone'] ?? ''), 'body' => sanitize_textarea_field($c['body'] ?? ''), 'date' => current_time('mysql')];
+	// Autres champs du formulaire (réservation : salle, date, horaire, personnes, options, questions) : gardés en tête
+	// du message, comme Shopify les transmet ; nombre et longueur limités.
+	$extra = [];
+	foreach ($c as $k => $v) {
+		if (in_array($k, ['email', 'name', 'phone', 'body'], true) || !is_scalar($v) || count($extra) >= 40) continue;
+		$v = sanitize_text_field((string) $v);
+		if ($v !== '') $extra[] = mb_substr(sanitize_text_field((string) $k), 0, 80) . ' : ' . mb_substr($v, 0, 500);
+	}
+	$body = sanitize_textarea_field($c['body'] ?? '');
+	if ($extra) $body = implode("\n", $extra) . ($body !== '' ? "\n\n" . $body : '');
+	$entry = ['type' => $type, 'email' => $email, 'name' => sanitize_text_field($c['name'] ?? ''), 'phone' => sanitize_text_field($c['phone'] ?? ''), 'body' => $body, 'date' => current_time('mysql')];
 	$all = get_option('es_form_entries', []);
 	$all[] = $entry;
 	update_option('es_form_entries', array_slice($all, -500), false);
@@ -236,7 +246,7 @@ add_action('admin_post_es_form', 'es_handle_form');
 add_action('admin_menu', function () {
 	add_management_page(__('Messages du site', 'es-theme'), __('Messages du site', 'es-theme'), 'manage_options', 'es-messages', function () {
 		echo '<div class="wrap"><h1>' . esc_html__('Messages du site', 'es-theme') . '</h1><table class="widefat striped"><thead><tr><th>Date</th><th>Type</th><th>E-mail</th><th>Nom</th><th>Message</th></tr></thead><tbody>';
-		foreach (array_reverse(get_option('es_form_entries', [])) as $e) echo '<tr><td>' . esc_html($e['date']) . '</td><td>' . esc_html($e['type']) . '</td><td>' . esc_html($e['email']) . '</td><td>' . esc_html($e['name']) . '</td><td>' . esc_html($e['body']) . '</td></tr>';
+		foreach (array_reverse(get_option('es_form_entries', [])) as $e) echo '<tr><td>' . esc_html($e['date']) . '</td><td>' . esc_html($e['type']) . '</td><td>' . esc_html($e['email']) . '</td><td>' . esc_html($e['name']) . '</td><td>' . nl2br(esc_html($e['body'])) . '</td></tr>';
 		echo '</tbody></table></div>';
 	});
 });

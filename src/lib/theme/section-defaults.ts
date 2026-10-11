@@ -17,7 +17,7 @@ type Blocks = { type: string; settings?: Record<string, unknown> }[];
 /** Sections dont les blocs portent des images (galeries, cartes) : on les illustre aussi. */
 const BLOCK_IMAGES = new Set(["gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio"]);
 /** Sections « Services » sans photo de produit imposée (portraits d'équipe, cartes de contact, tarifs). */
-const NO_SECTION_IMAGE = new Set(["team", "booking", "practical-info", "pricing", "services-list"]);
+const NO_SECTION_IMAGE = new Set(["team", "booking", "booking-calendar", "practical-info", "pricing", "services-list"]);
 
 export function mediaPools(spec: ThemeSpec) {
   const files = Object.keys(spec.files);

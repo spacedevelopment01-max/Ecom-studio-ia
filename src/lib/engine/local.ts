@@ -968,6 +968,8 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   const adds: [RegExp, string[]][] = [
     [/faq|questions/, ["faq", "collapsible-content"]],
     [/vidéo|video/, ["video-showcase", "video"]],
+    // Calendrier de réservation (rendez-vous, salle, table) : jours, horaires, créneaux et nombre de personnes.
+    [/calendrier|agenda|planning|créneaux?|réserv\w* (une |d'une |de |la )?(salle|table|espace)|calendar|time ?slots?|room booking|book (a )?(room|table)/, ["booking-calendar", "booking"]],
     // Entreprises de services : prestations, tarifs, rendez-vous, infos pratiques, réalisations, équipe, déroulé.
     ...(services ? SERVICE_ADDS : []),
     [/défil|scroll|animation/, ["scroll-story", "multirow", "image-with-text"]],
