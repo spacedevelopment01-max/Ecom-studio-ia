@@ -309,6 +309,27 @@ describe("tri des photos et détourages d'un projet (lien Alibaba, IA simulée)"
     });
   });
 
+  it("détourage du modèle refusé (partie retirée) sur fond uni : second essai gratuit par le fond, gardé s'il est validé ; jamais pour une main restée", async () => {
+    await fr(async () => {
+      const p = await newProject();
+      const pack = await photo(p, "packshot", await image(220, 220, WHITE, sova));
+      ai.triage = { photos: [{ index: 1, kind: "packshot" }], best: 1 };
+      ai.checks = [{ verdict: "rejected", score: 3, problems: ["missing_parts"], note: "côté gauche effacé" }, { verdict: "ok", score: 9, problems: [], note: "" }];
+      const valid = await ensureCutouts(null, loadProject(p.projectId));
+      expect(valid.map((c) => c.source_asset_id)).toEqual([pack]);
+      expect(String(json<any>(valid[0].meta, {}).method)).toContain("fond uni");
+      expect(ai.calls.filter((t) => t === "cutout_check")).toHaveLength(2);
+
+      const q = await newProject();
+      const hand = await photo(q, "packshot-main", await image(220, 220, WHITE, sova));
+      ai.calls = [];
+      ai.checks = [{ verdict: "rejected", score: 3, problems: ["person_left"], note: "main visible" }];
+      expect(await ensureCutouts(null, loadProject(q.projectId))).toHaveLength(0);
+      expect(cutOf(hand)!.status).toBe("rejected");
+      expect(ai.calls.filter((t) => t === "cutout_check")).toHaveLength(1);
+    });
+  });
+
   it("sans IA : packshot sur fond uni détouré et contrôlé localement ; photo sur fond chargé jamais détourée", async () => {
     await fr(async () => {
       ai.on = false;

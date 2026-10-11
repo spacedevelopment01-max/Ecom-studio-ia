@@ -74,6 +74,21 @@ export type Catalog = { collections: StoreCollection[]; products: StoreProduct[]
 
 const money = (cents: number, lang: Lang) => new Intl.NumberFormat(lang === "en" ? "en-GB" : "fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100);
 
+/** Pictogramme d'un fait confirmé, d'après ses mots (matière, protection, livraison…) ; coche par défaut. */
+function factIcon(x: string): string {
+  const v = x.toLowerCase();
+  if (/coton|lin|laine|bois|bambou|végétal|naturel|plante|cotton|linen|wool|wood|natural/.test(v)) return "leaf";
+  if (/eau|étanche|imperm|liquide|water|liquid/.test(v)) return "drop";
+  if (/garanti|protection|sécur|resist|résist|solide|warranty|safe|durable/.test(v)) return "shield";
+  if (/livr|expédi|shipping|delivery/.test(v)) return "truck";
+  if (/main|artisan|fait à|hand/.test(v)) return "hand";
+  if (/batterie|autonomie|charge|watt|volt|battery|power/.test(v)) return "bolt";
+  if (/minute|heure|temps|hour|time/.test(v)) return "clock";
+  if (/son|audio|sound/.test(v)) return "sound";
+  if (/origine|fabriqué|made in|origin/.test(v)) return "globe";
+  return "check";
+}
+
 export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent, productHandle: string | null, productTemplate: TemplateJson | null, catalog: Catalog = { collections: [], products: [] }): Composition {
   const lang: Lang = c.lang;
   const t = (fr: string, en: string) => pick(lang, fr, en);
@@ -233,6 +248,10 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   const said = (x: string) => heroSaid.includes(x.toLowerCase().replace(/[.!]+$/, "").replace(/\s+/g, " ").trim());
   const bandText = [c.tagline, c.positioning].find((x) => x && x.length <= 70 && !said(x)) ?? "";
   const band: Sec | null = bandText && (shop || intent.site === "restaurant") ? ["v2-band", { layout: "rule", text: bandText, color_scheme: "scheme-2", padding_top: 28, padding_bottom: 28 }] : null;
+  // Boutique : les faits confirmés courts en pictogrammes juste sous l'ouverture (repères d'achat, comme sur les
+  // fiches de référence) — seulement avec au moins trois faits réels, jamais un atout supposé.
+  const stripFacts = shop ? c.facts.filter((f) => f.label !== t("Prix", "Price") && f.value.length <= 34 && !TODO.test(f.value)).slice(0, 4) : [];
+  const shopStrip: Sec | null = stripFacts.length >= 3 ? ["v2-band", { layout: "icons", text: c.category, color_scheme: "scheme-2", padding_top: 24, padding_bottom: 24 }, stripFacts.map((f) => ({ type: "item", settings: { icon: factIcon(f.label + " " + f.value), label: f.value.charAt(0).toUpperCase() + f.value.slice(1), sub: f.label } }))] : null;
   // Site de services : les prestations en pictogrammes, juste sous l'ouverture (repères avant le détail).
   const serviceBand: Sec | null = services && c.offers.length >= 3 ? ["v2-band", { layout: "icons", text: c.category, color_scheme: "scheme-2", padding_top: 24, padding_bottom: 24 }, c.offers.slice(0, 4).map((o) => ({ type: "item", settings: { icon: "check", label: o.title, sub: "" } }))] : null;
   // Cartes : collections réelles (avec photo), sinon produits réels du catalogue (photo, prix réel), sinon prestations illustrées.
@@ -277,8 +296,10 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   const mediaFiles = uniqMedia([im.packshot, im.detail1, im.scene1, im.scene2, im.detail2, im.scene3].filter((f): f is string => !!f && !used.has(f)));
   const media: Sec | null = shop && mediaFiles.length >= 3 ? [
     "v2-media",
-    { layout: L === "precision" ? "bento" : "rail", eyebrow: "", heading: c.lines.gallery || t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
-    mediaFiles.slice(0, 5).map((f) => ({ type: "image", settings: { image_asset: f, caption: "" } })),
+    // Mosaïque seulement avec des photos paysage (sinon ses grandes cases coupent le produit) ; le packshot est montré
+    // en entier.
+    { layout: L === "precision" && mediaFiles.filter((f) => (c.wide ?? []).includes(f)).length >= 2 ? "bento" : "rail", eyebrow: "", heading: c.lines.gallery || t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
+    mediaFiles.slice(0, 5).map((f) => ({ type: "image", settings: { image_asset: f, fit: f === im.packshot ? "v2-contain" : "v2-cover", caption: "" } })),
   ] : null;
   // Site de services : galerie « En images » avec les photos qui n'ont pas déjà une place (au moins 4, au plus 8).
   const servicePics = services ? [...c.gallery.slice(7), ...c.gallery.slice(0, 7)].filter((f) => !used.has(f)).filter((f, i, a) => a.findIndex((x) => mediaKey(x) === mediaKey(f)) === i).slice(0, 8) : [];
@@ -357,7 +378,10 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       break;
     default:
       // Parcours d'une boutique : ouverture, signature, catalogue, détail, ambiance, bénéfices, images, questions, achat.
-      home = L === "precision" ? [hero, band, cards, media, split, benefits ?? offers, banner, faqHome, cta] : [hero, band, cards, split, banner, benefits ?? offers, media, faqHome, cta];
+      // Bandeau de faits sous l'ouverture ; la signature passe alors avant la bannière (jamais deux bandeaux collés).
+      home = L === "precision"
+        ? [hero, shopStrip ?? band, cards, media, split, benefits ?? offers, shopStrip ? band : null, banner, faqHome, cta]
+        : [hero, shopStrip ?? band, cards, split, shopStrip ? band : null, banner, benefits ?? offers, media, faqHome, cta];
   }
   // Rythme : fonds alternés (principal / surface) entre l'ouverture et l'appel final, jamais deux fois le même d'affilée.
   const present = home.filter(Boolean) as Sec[];
@@ -464,13 +488,16 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     phone: services || intent.site === "restaurant" ? c.contact.phone ?? "" : "",
     color_scheme: "scheme-1",
   };
+  // Pied de page : présentation courte rédigée, sinon la signature ; jamais la longue phrase de positionnement interne.
+  const shortPos = art.positioning && !TODO.test(art.positioning) && art.positioning.length <= 140 ? art.positioning : "";
+  const brandLine = c.lines?.about || c.tagline || shortPos || c.category;
   const footerBlocks = [
-    { type: "text", settings: { heading: c.name, text: para(art.positioning && !TODO.test(art.positioning) ? art.positioning : c.category) } },
+    { type: "text", settings: { heading: c.name, text: para(brandLine) } },
     { type: "links", settings: { heading: t("Le site", "Site"), menu: "main-menu" } },
     { type: "links", settings: { heading: t("Informations", "Information"), menu: "footer" } },
     ...(services || intent.site === "restaurant") && contactFacts.length ? [{ type: "contact", settings: { heading: t("Nous trouver", "Find us"), address: c.contact.address ?? c.contact.area ?? "", phone: c.contact.phone ?? "", email: c.contact.email ?? "", hours: c.contact.hours ?? "" } }] : [],
     ...(shop ? [{ type: "newsletter", settings: { heading: t("Lettre d'information", "Newsletter"), text: "" } }] : []),
   ];
-  const footer = { style: art.footer.style, tagline: art.positioning && !TODO.test(art.positioning) ? art.positioning : c.category, show_wordmark: false, show_policies: shop, show_payment: shop, color_scheme: art.footer.scheme };
+  const footer = { style: art.footer.style, tagline: c.tagline || brandLine, show_wordmark: false, show_policies: shop, show_payment: shop, color_scheme: art.footer.scheme };
   return { templates, pages, plan, menus, header, footer, footerBlocks, secondary: services ? url("services") : intent.site === "restaurant" ? url("menu") : intent.site === "saas" ? url("features") : productUrl, hero: heroLayout };
 }

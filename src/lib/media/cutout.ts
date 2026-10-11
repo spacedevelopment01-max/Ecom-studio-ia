@@ -167,7 +167,32 @@ async function floodCutout(input: Buffer): Promise<Buffer> {
     if (y > 0) stack.push(p - w);
     if (y < h - 1) stack.push(p + w);
   }
-  return sharp(data, { raw: { width: w, height: h, channels: 4 } }).blur(0.6).png().toBuffer();
+  // Bords : un pixel du contour mêle le produit et le fond (liseré clair visible sur un fond sombre). Sur deux pixels
+  // de profondeur, l'opacité suit l'écart à la couleur du fond et la part du fond est retirée de la couleur.
+  const ring = new Uint8Array(w * h);
+  for (let pass = 1; pass <= 2; pass++) {
+    const next: number[] = [];
+    for (let p = 0; p < w * h; p++) {
+      if (seen[p] || ring[p]) continue;
+      const x = p % w;
+      const y = (p / w) | 0;
+      const near = (q: number) => seen[q] || (pass > 1 && ring[q] === pass - 1);
+      if ((x > 0 && near(p - 1)) || (x < w - 1 && near(p + 1)) || (y > 0 && near(p - w)) || (y < h - 1 && near(p + w))) next.push(p);
+    }
+    for (const p of next) ring[p] = pass;
+  }
+  for (let p = 0; p < w * h; p++) {
+    if (!ring[p]) continue;
+    const i = p * 4;
+    const d = Math.max(Math.abs(data[i] - avg[0]), Math.abs(data[i + 1] - avg[1]), Math.abs(data[i + 2] - avg[2]));
+    const a = Math.max(0, Math.min(1, (d - tol) / 64)) * (ring[p] === 1 ? 0.85 : 1);
+    data[i + 3] = Math.round(a * 255);
+    if (a > 0.05) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, Math.round((data[i + k] - (1 - a) * avg[k]) / a)));
+  }
+  // Fond retiré : sa couleur ne doit jamais déborder sur le produit à l'adoucissement (seule l'opacité est adoucie).
+  const rgb = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).removeAlpha().raw().toBuffer();
+  const alpha = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).extractChannel(3).blur(0.6).raw().toBuffer();
+  return sharp(rgb, { raw: { width: w, height: h, channels: 3 } }).joinChannel(alpha, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
 }
 
 /**
@@ -175,13 +200,18 @@ async function floodCutout(input: Buffer): Promise<Buffer> {
  * par couleur du fond n'est utilisé que si le fond est réellement uni ; sinon `CutoutUnavailable` est levée et
  * aucun détourage n'est produit (jamais un détourage grossier sur un fond chargé).
  */
-export async function cutoutProduct(input: Buffer): Promise<Cutout> {
+export async function cutoutProduct(input: Buffer, opts: { method?: "flood" } = {}): Promise<Cutout> {
   let png: Buffer;
   let method: Cutout["method"] = "model";
   let model: CutoutModel | undefined;
   const bg = await measureBackground(input);
+  // Second essai demandé (premier détourage refusé au contrôle) : détourage par la couleur du fond, seulement sur fond uni.
+  if (opts.method === "flood" && !bg.flat) throw new CutoutUnavailable(L("Fond non uni : pas de second détourage possible.", "Background not plain: no second cutout possible."));
   try {
-    if (bg.transparent >= 0.9) {
+    if (opts.method === "flood") {
+      png = await floodCutout(input);
+      method = "flood";
+    } else if (bg.transparent >= 0.9) {
       // Photo déjà détourée (PNG à fond transparent) : sa transparence est gardée telle quelle.
       png = await sharp(input, { failOn: "none" }).rotate().resize(2048, 2048, { fit: "inside", withoutEnlargement: true }).ensureAlpha().png().toBuffer();
       method = "existing";

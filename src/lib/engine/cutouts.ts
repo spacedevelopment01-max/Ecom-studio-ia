@@ -204,7 +204,25 @@ async function makeCutout(project: Project, base: Base, o: Asset, opts: { force:
     setMeta(o, { cutoutError: { at: now(), message: (e as Error).message.slice(0, 300), unavailable: e instanceof CutoutUnavailable } });
     return;
   }
-  const quality = await judge(base, cut, original, opts.fallback, o.id);
+  let quality = await judge(base, cut, original, opts.fallback, o.id);
+  // Détourage du modèle refusé (partie effacée, fond resté) sur une photo à fond uni : second essai gratuit par la
+  // couleur du fond, contrôlé de la même façon. Le meilleur des deux est gardé ; sans détourage valide, aucune image
+  // du produit ne pourrait être créée.
+  // Seulement pour un défaut du découpage lui-même : une main, un texte ou un autre objet resteraient aussi avec le fond retiré.
+  const FIXABLE = ["product_cut", "missing_parts", "background_left", "blurry"];
+  if (quality.verdict !== "ok" && quality.by === "ai" && cut.method === "model" && quality.reasons.length > 0 && quality.reasons.every((x) => FIXABLE.includes(x))) {
+    const alt = await cutoutProduct(original, { method: "flood" }).catch((e) => {
+      if (isStop(e)) throw e;
+      return null;
+    });
+    if (alt) {
+      const q2 = await judge(base, alt, original, opts.fallback, `${o.id}:flood`);
+      if (q2.verdict === "ok" || (q2.score ?? 0) > (quality.score ?? 0)) {
+        cut = alt;
+        quality = q2;
+      }
+    }
+  }
   const t = meta(o).triage as PhotoTriage | undefined;
   const n = all("SELECT id FROM assets WHERE project_id = ? AND role = 'cutout'", project.id).length + 1;
   const methodLabel =

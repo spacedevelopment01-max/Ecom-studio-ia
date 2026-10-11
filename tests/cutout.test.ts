@@ -30,3 +30,29 @@ describe("détourage", () => {
     expect(a(1, 1)).toBe(0); // le fond reste transparent
   });
 });
+
+describe("second détourage par la couleur du fond", () => {
+  it("fond uni : produit gardé entier, fond transparent ; fond chargé : refusé (jamais un détourage grossier)", async () => {
+    const { cutoutProduct, CutoutUnavailable } = await import("@/lib/media/cutout");
+    const W = 400, H = 300;
+    const plain = await sharp({ create: { width: W, height: H, channels: 3, background: "#f4f4f2" } })
+      .composite([{ input: await sharp({ create: { width: 220, height: 120, channels: 3, background: "#6b6f75" } }).png().toBuffer(), left: 90, top: 90 }])
+      .jpeg().toBuffer();
+    const cut = await cutoutProduct(plain, { method: "flood" });
+    expect(cut.method).toBe("flood");
+    // Le produit entier est gardé (bord gauche compris) et le fond est retiré : le cadre retenu est celui du produit.
+    expect(cut.bbox.x).toBeGreaterThanOrEqual(78);
+    expect(cut.bbox.x).toBeLessThanOrEqual(92);
+    expect(cut.bbox.w).toBeGreaterThanOrEqual(214);
+    expect(cut.bbox.w).toBeLessThanOrEqual(240);
+    const { data, info } = await sharp(cut.png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const a = (x: number, y: number) => data[(Math.floor(y) * info.width + Math.floor(x)) * 4 + 3];
+    expect(a(info.width / 2, info.height / 2)).toBeGreaterThan(200);
+    expect(a(info.width * 0.08, info.height / 2)).toBeGreaterThan(200);
+    expect(a(0, 0)).toBeLessThan(60);
+    const noise = Buffer.alloc(W * H * 3);
+    for (let i = 0; i < noise.length; i++) noise[i] = (i * 2654435761) % 251;
+    const busy = await sharp(noise, { raw: { width: W, height: H, channels: 3 } }).jpeg().toBuffer();
+    await expect(cutoutProduct(busy, { method: "flood" })).rejects.toBeInstanceOf(CutoutUnavailable);
+  });
+});

@@ -34,6 +34,8 @@ export type SiteContent = {
     statement: { eyebrow: string; heading: string; text: string } | null;
     detail: { eyebrow: string; heading: string; text: string } | null;
     cta: { heading: string; text: string; button: string } | null;
+    /** Présentation courte de la marque pour le pied de page (textes de la boutique). */
+    about?: string;
     gallery: string;
     features: string;
   };
@@ -128,8 +130,12 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
   } else if (intent.site === "restaurant") {
     hero = { eyebrow: [category, area].filter(Boolean).join(" · "), heading: name, em: "", text: positioning || summary };
   } else {
-    const s = splitHeading(positioning || clean(b.tagline) || summary || name);
-    hero = { eyebrow: category, heading: s.heading, em: s.em, text: summary && summary !== positioning ? summary : "" };
+    // Titre d'ouverture : celui rédigé pour l'accueil (textes de la boutique), sinon la signature de marque. Le
+    // positionnement est une phrase de stratégie interne (« Pour la personne qui… ») : jamais un titre s'il est long.
+    const short = (x: string) => (okHeading(x) && x.length <= 70 && x.split(/\s+/).length <= 10 ? clean(x) : "");
+    const s = splitHeading(short(copy.hero?.heading) || short(clean(b.tagline)) || short(positioning) || short(summary) || name);
+    const lead = okText(copy.hero?.text);
+    hero = { eyebrow: category, heading: s.heading, em: s.em, text: lead || (summary && summary !== positioning ? summary : "") };
   }
 
   // ------------------------------------------------------------ faits confirmés
@@ -242,5 +248,6 @@ function sectionLines(copy: ShopCopy): SiteContent["lines"] {
     cta: copy.cta && okHeading(copy.cta.heading) ? { heading: okHeading(copy.cta.heading), text: okText(copy.cta.text), button: okText(copy.cta.button) } : null,
     gallery: okHeading(copy.gallery?.heading),
     features: okHeading(copy.features?.heading),
+    about: okText(copy.footer?.about).length <= 160 ? okText(copy.footer?.about) : "",
   };
 }

@@ -20,7 +20,7 @@ vi.mock("@/lib/ai/llm", async (orig) => ({
 }));
 vi.mock("@/lib/ai/context", async (orig) => ({ ...(await orig<typeof import("@/lib/ai/context")>()), projectContext: () => "<contexte_projet></contexte_projet>", brainContext: () => "<contexte_projet></contexte_projet>", brainView: () => ({ stable: "<contexte_projet></contexte_projet>", kept: [], label: "test", hash: "h", brainVersion: "test" }) }));
 
-import { aiShopCopyChecked, copyQuality, CopyReviewSchema, copyReviewPassed, lintClaims, lintHollow } from "@/lib/ai/tasks";
+import { aiShopCopyChecked, copyQuality, CopyReviewSchema, copyReviewPassed, lintClaims, lintHollow, lintJargon } from "@/lib/ai/tasks";
 import { platformContext } from "@/lib/ai/context";
 import { systemPrompts } from "@/lib/ai/prompts";
 import { coversKeyword, localTopics, seoIssues, type ArticleDraft } from "@/lib/engine/blog";
@@ -255,3 +255,11 @@ describe("moteur local (version du studio, sans IA)", () => {
     expect(runWithLang({ ui: "en", content: "en" }, () => localSeoTitle({ category: "plumber" }, "Plumbing", "Plumb", "Leeds"))).toBe("Plumber in Leeds | Plumb");
   });
 });
+
+describe("titres de marque, pas de rapport", () => {
+  it("le vocabulaire de vérification dans un titre client est signalé ; une phrase de FAQ ne l'est pas", () => {
+    const base = { hero: { eyebrow: "", heading: "Trois faits pour choisir", line1: "", line2: "", text: "", cta: "" }, statement: { eyebrow: "", heading: "La nuque soutenue", text: "" }, features: { heading: "L'essentiel", items: [{ title: "Consultez les informations disponibles", text: "", icon: "check" }, { title: "Se lave en machine", text: "La housse est confirmée lavable.", icon: "drop" }] }, faq: { heading: "", items: [{ q: "Est-ce confirmé ?", a: "Oui, c'est confirmé." }] } } as any;
+    expect(lintJargon(base).map((x) => x.path)).toEqual(["hero.heading", "features.items[0].title"]);
+  });
+});
+

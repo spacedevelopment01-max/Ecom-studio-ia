@@ -106,7 +106,7 @@ export const LANGUAGES: LanguageDef[] = [
     accentHues: [[0, 70], [300, 360]],
     base: { bg: "#F7F3EE", surface: "#EFE7DD", text: "#241C16", accent: "#8E5426", dark: false },
     header: { layout: "logo-center", shape: "theme", icons: "plain", mobile_menu: "drawer", show_search: true, show_cart: true, sticky: true },
-    footer: { style: "centered", scheme: "scheme-2" },
+    footer: { style: "split", scheme: "scheme-2" },
     hero: { layouts: ["immersive", "halfbleed", "stage", "split", "type"], texture: "none" },
     preset: "atelier",
     pageWidth: 1280,

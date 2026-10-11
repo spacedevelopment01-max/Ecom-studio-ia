@@ -604,9 +604,26 @@ export function tidyCopy<T>(copy: T): T {
   return c as T;
 }
 
+/** Vocabulaire interne de vérification : jamais dans un titre lu par le client (« Trois faits pour choisir »). */
+const JARGON = /\b(faits|confirmée?s?|constatée?s?|vérifiée?s?|informations? disponibles?|caractéristiques indiquées|présentée? comme|facts?|confirmed|verified|available information)\b/i;
+export function lintJargon(copy: ShopCopy): { path: string; term: string }[] {
+  const c = copy as any;
+  const heads: [string, unknown][] = [
+    ["hero.heading", c.hero?.heading], ["hero.line1", c.hero?.line1], ["hero.line2", c.hero?.line2], ["hero.eyebrow", c.hero?.eyebrow],
+    ["statement.heading", c.statement?.heading], ["statement.eyebrow", c.statement?.eyebrow], ["features.heading", c.features?.heading],
+    ["detail.heading", c.detail?.heading], ["story.heading", c.story?.heading], ["cta.heading", c.cta?.heading], ["gallery.heading", c.gallery?.heading],
+    ...((c.features?.items ?? []) as { title: string }[]).map((x, i) => [`features.items[${i}].title`, x?.title] as [string, unknown]),
+  ];
+  return heads.flatMap(([path, v]) => {
+    const m = typeof v === "string" ? v.match(JARGON) : null;
+    return m ? [{ path, term: m[0] }] : [];
+  });
+}
+
 export function copyQuality(copy: ShopCopy, p: Project): string[] {
   const out: string[] = [];
   for (const h of lintHollow(copy)) out.push(L(`${h.path} : formule creuse « ${h.term} ». Remplace-la par un fait concret du produit.`, `${h.path}: empty phrase "${h.term}". Replace it with a concrete product fact.`));
+  for (const h of lintJargon(copy)) out.push(L(`${h.path} : vocabulaire de vérification « ${h.term} » dans un titre client. Écris un titre de marque qui donne envie (usage, sensation, moment de vie) à partir des mêmes faits.`, `${h.path}: verification wording "${h.term}" in a customer-facing heading. Write a brand heading that creates desire (use, feeling, moment) from the same facts.`));
   const c = copy as any;
   // Longueurs et tirets : mêmes limites que tidyCopy (qui les corrige gratuitement avant) ; gardés ici pour tout
   // appelant qui n'aurait pas nettoyé le texte.

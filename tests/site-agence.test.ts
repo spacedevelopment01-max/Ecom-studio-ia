@@ -134,4 +134,39 @@ describe("Sites niveau agence", async () => {
     expect(secs.find((x) => x.type === "v2-cta")?.settings.heading).toBe("Prêt pour le prochain départ ?");
     expect(secs.find((x) => x.type === "v2-cta")?.settings.button_label).toBe("Commander");
   });
+
+  it("titre d'ouverture : le titre rédigé pour l'accueil, jamais la longue phrase de positionnement", async () => {
+    const { siteContent } = await import("@/lib/theme-v2/content");
+    const { loadProject } = await import("@/lib/projects");
+    const { localCopy } = await import("@/lib/engine/local-copy");
+    const p = loadProject(hid);
+    p.brand!.positioning = "Pour la personne qui souhaite filmer ses voyages sans porter de matériel lourd, Ostral est un drone pliable qui se range dans un sac parce que ses bras se replient.";
+    const copy = fr(() => localCopy(p.product, p.brand!, p));
+    copy.hero.heading = "Partez léger, filmez loin";
+    copy.hero.text = "Un drone pliable pour vos voyages.";
+    const c = fr(() => siteContent(p, hightech.intent, copy, hightech.content.images, []));
+    expect(`${c.hero.heading} ${c.hero.em}`.trim()).toBe("Partez léger, filmez loin");
+    expect(c.hero.text).toBe("Un drone pliable pour vos voyages.");
+    copy.hero.heading = "[À compléter : titre]";
+    const none = fr(() => siteContent(p, hightech.intent, copy, hightech.content.images, []));
+    expect(`${none.hero.heading} ${none.hero.em}`).not.toMatch(/Pour la personne/);
+    expect(`${none.hero.heading} ${none.hero.em}`.length).toBeLessThanOrEqual(80);
+  });
+
+  it("boutique : faits confirmés en pictogrammes sous l'ouverture ; pied de page sans la phrase de positionnement", () => {
+    const facts = [{ label: "Garnissage", value: "mousse à mémoire de forme" }, { label: "Housse", value: "amovible" }, { label: "Conception", value: "ergonomique" }];
+    const long = "Pour la personne qui souhaite remplacer un oreiller classique par une forme plus structurée, Noryme est un oreiller ergonomique en mousse à mémoire de forme.";
+    const c = fr(() => compose(base.intent, { ...base.art, positioning: long }, content({ facts, lines: { ...base.content.lines, about: "" } }), "ostral", null));
+    const order = types(c.templates.index);
+    expect(order[1]).toBe("v2-band");
+    const strip = c.templates.index.sections[c.templates.index.order[1]];
+    expect(strip.settings.layout).toBe("icons");
+    expect(Object.values(strip.blocks ?? {}).map((b) => b.settings.label)).toEqual(["Mousse à mémoire de forme", "Amovible", "Ergonomique"]);
+    // Jamais deux bandeaux collés.
+    order.forEach((x, i) => { if (x === "v2-band") expect(order[i + 1]).not.toBe("v2-band"); });
+    expect(String(c.footer.tagline)).not.toMatch(/Pour la personne/);
+    expect(JSON.stringify(c.footerBlocks)).not.toMatch(/Pour la personne/);
+    const two = fr(() => compose(base.intent, base.art, content({ facts: facts.slice(0, 2) }), "ostral", null));
+    expect(Object.values(two.templates.index.sections).some((x) => x.type === "v2-band" && x.settings.layout === "icons")).toBe(false);
+  });
 });
