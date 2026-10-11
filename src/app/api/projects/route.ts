@@ -45,7 +45,7 @@ export const GET = handle(async () => {
   return ok({
     projects: rows.filter((r) => !r.hidden).map(card),
     hidden: rows.filter((r) => r.hidden).map((r) => ({ id: r.id, name: r.name, updatedAt: r.updated_at })),
-    pending: pendingSubscriptions(user.id).map((s) => ({ id: s.user_id, plan: s.plan ?? "creer", billing: s.billing, createdAt: s.created_at })),
+    pending: pendingSubscriptions(user.id).map((s) => ({ id: s.user_id, plan: s.plan ?? "creer", billing: s.billing, status: s.status, createdAt: s.created_at })),
     subscriptions: subscriptionsOf(user.id).length,
   });
 });

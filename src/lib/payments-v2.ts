@@ -184,19 +184,22 @@ export async function applyV2Event(evt: any): Promise<boolean> {
   switch (evt?.type) {
     case "checkout.session.completed":
     case "checkout.session.async_payment_succeeded": {
-      if (!["subscription_v2", "reactivate_v2", "topup_v2"].includes(kind)) return false;
+      if (!["subscription_v2", "reactivate_v2", "topup_v2", "call_v2"].includes(kind)) return false;
       const userId = o.metadata?.user_id ?? o.client_reference_id;
       if (!userId || !one("SELECT 1 FROM users WHERE id = ?", userId)) return true;
       // Paiement différé (SEPA…) : rien tant que le paiement n'est pas confirmé.
       if (!paidSession(o)) return true;
       if (kind === "topup_v2") applyTopup(userId, o);
+      else if (kind === "call_v2") await applyCallSession(userId, o);
       else await applySubscriptionSession(userId, kind === "reactivate_v2" ? (o.metadata?.project_id ?? null) : null, evt, o);
       markSession(o.id, "complete");
       return true;
     }
     case "checkout.session.expired":
       if (o.id) markSession(o.id, "expired");
-      return ["subscription_v2", "reactivate_v2", "topup_v2"].includes(kind);
+      // Rendez-vous non payé : le créneau se libère.
+      if (kind === "call_v2" && o.metadata?.booking_id) run("UPDATE call_bookings SET status = 'canceled', canceled_at = ?, updated_at = ? WHERE id = ? AND status = 'pending_payment'", now(), now(), o.metadata.booking_id);
+      return ["subscription_v2", "reactivate_v2", "topup_v2", "call_v2"].includes(kind);
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const row = o.id ? one<ProjectSubscription & { stripe_event_at: number | null }>("SELECT * FROM subscriptions WHERE stripe_subscription_id = ?", o.id) : null;
@@ -394,4 +397,65 @@ export async function repriceLegacySubscriptions(dryRun = true): Promise<Reprice
     }
   }
   return out;
+}
+
+// ------------------------------------------------------------------ rendez-vous téléphoniques
+
+/** Session de paiement d'un rendez-vous réservé (en attente de paiement). Le webhook confirme le rendez-vous. */
+export async function callCheckout(user: { id: string; email: string }, bookingId: string) {
+  const { attachCallSession, PAYMENT_HOLD_MS } = await import("./appointments");
+  const b = one<{ id: string; status: string; price_cents: number; project_id: string; stripe_session: string | null; created_at: number }>("SELECT * FROM call_bookings WHERE id = ? AND user_id = ?", bookingId, user.id);
+  if (!b || b.status !== "pending_payment" || b.created_at < now() - PAYMENT_HOLD_MS) throw new HttpError(409, L("Cette réservation a expiré : choisissez de nouveau un créneau.", "This booking has expired: pick a slot again."));
+  const reuse = b.stripe_session ? one<{ url: string }>("SELECT url FROM checkout_sessions WHERE id = ? AND status = 'open'", b.stripe_session) : null;
+  if (reuse) return { url: reuse.url, reused: true };
+  const s = await stripe(
+    "checkout/sessions",
+    {
+      mode: "payment",
+      customer_email: user.email,
+      client_reference_id: user.id,
+      "metadata[kind]": "call_v2",
+      "metadata[user_id]": user.id,
+      "metadata[booking_id]": b.id,
+      "metadata[project_id]": b.project_id,
+      success_url: `${appUrl()}/studio/rendez-vous?paiement=ok`,
+      cancel_url: `${appUrl()}/studio/rendez-vous?paiement=annule`,
+      locale: uiLang(),
+      // La session expire avant la fin du blocage du créneau (31 min ; Stripe exige au moins 30 min).
+      expires_at: String(Math.floor((now() + 31 * 60_000) / 1000)),
+      "line_items[0][quantity]": "1",
+      "line_items[0][price_data][currency]": "eur",
+      "line_items[0][price_data][unit_amount]": String(b.price_cents),
+      "line_items[0][price_data][tax_behavior]": "inclusive",
+      "line_items[0][price_data][product_data][name]": L("E-COM STUDIO IA — rendez-vous téléphonique (60 min)", "E-COM STUDIO IA — phone appointment (60 min)"),
+    },
+    `ck:${user.id}:call:${b.id}`,
+  );
+  attachCallSession(b.id, s.id);
+  run("INSERT OR IGNORE INTO checkout_sessions (id, user_id, kind, project_id, ref, url, status, created_at) VALUES (?,?,?,?,?,?,?,?)", s.id, user.id, "appointment", b.project_id, b.id, s.url, "open", now());
+  return { url: s.url as string, reused: false };
+}
+
+/** Remboursement d'un rendez-vous annulé dans les délais (appel serveur à Stripe). */
+export async function refundCall(bookingId: string, paymentIntent: string, cents: number) {
+  await stripe("refunds", { payment_intent: paymentIntent, amount: String(cents), "metadata[booking_id]": bookingId }, `refund:call:${bookingId}`);
+  run("UPDATE call_bookings SET refunded = 1, updated_at = ? WHERE id = ?", now(), bookingId);
+}
+
+async function applyCallSession(userId: string, o: any) {
+  const { confirmPaidCall } = await import("./appointments");
+  const bookingId = o.metadata?.booking_id;
+  const b = bookingId ? one<{ user_id: string; price_cents: number }>("SELECT user_id, price_cents FROM call_bookings WHERE id = ?", bookingId) : null;
+  if (!b || b.user_id !== userId) {
+    logStripe("stripe:call", new Error(`Rendez-vous ${bookingId} introuvable pour le paiement ${o.id}`), userId);
+    return;
+  }
+  run("INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, label, project_id, payment_intent, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)", id(), userId, "call", Number(o.amount_total) || b.price_cents, "paid", o.id, "call", o.metadata?.project_id ?? null, subId(o.payment_intent), now());
+  if (confirmPaidCall(bookingId, subId(o.payment_intent)) === "lost") {
+    // Payé trop tard et le créneau a été repris entre-temps : remboursement automatique, l'équipe est prévenue.
+    const pi = subId(o.payment_intent);
+    if (pi) await refundCall(bookingId, pi, b.price_cents).catch((e) => logStripe("stripe:call-refund", e as Error, userId));
+    const { notifyAdmins } = await import("./payments");
+    notifyAdmins("Rendez-vous payé sans créneau", `Le paiement ${o.id} est arrivé après l'expiration de la réservation ${bookingId} et le créneau a été repris : remboursement demandé à Stripe.`);
+  }
 }

@@ -590,6 +590,38 @@ CREATE TABLE IF NOT EXISTS checkout_sessions (
 );
 CREATE INDEX IF NOT EXISTS checkout_sessions_user ON checkout_sessions(user_id, kind, status, created_at);
 
+-- Rendez-vous téléphoniques (60 min) : créneaux réels ouverts par l'équipe, un rendez-vous par créneau (index unique
+-- partiel : deux réservations simultanées ne peuvent pas prendre le même créneau), heure offerte DOMINER une seule
+-- fois par compte client (index unique partiel sur les réservations gratuites non annulées).
+CREATE TABLE IF NOT EXISTS call_slots (
+  id TEXT PRIMARY KEY,
+  starts_at INTEGER NOT NULL UNIQUE,
+  ends_at INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open', -- open | blocked
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS call_bookings (
+  id TEXT PRIMARY KEY,
+  slot_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  project_id TEXT NOT NULL,
+  plan TEXT NOT NULL,
+  price_cents INTEGER NOT NULL,
+  free INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL,          -- pending_payment | confirmed | done | canceled
+  topic TEXT,
+  phone TEXT,
+  stripe_session TEXT,
+  payment_intent TEXT,
+  refunded INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  canceled_at INTEGER
+);
+CREATE UNIQUE INDEX IF NOT EXISTS call_bookings_slot ON call_bookings(slot_id) WHERE status != 'canceled';
+CREATE UNIQUE INDEX IF NOT EXISTS call_bookings_free ON call_bookings(user_id) WHERE free = 1 AND status != 'canceled';
+CREATE INDEX IF NOT EXISTS call_bookings_user ON call_bookings(user_id, status);
+
 -- Webhook Stripe : journal des événements traités (un événement relivré n'est jamais appliqué deux fois).
 CREATE TABLE IF NOT EXISTS stripe_events (
   id TEXT PRIMARY KEY,

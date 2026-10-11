@@ -9,6 +9,8 @@ import { LangSwitch, useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
 import dynamic from "next/dynamic";
 // Onglets lourds de l'administration : chargés à leur ouverture.
+const SubscriptionsAdmin = dynamic(() => import("./admin-plans").then((m) => m.SubscriptionsAdmin), { ssr: false });
+const CallsAdmin = dynamic(() => import("./admin-plans").then((m) => m.CallsAdmin), { ssr: false });
 const AccountingView = dynamic(() => import("./admin-accounting").then((m) => m.AccountingView), { ssr: false });
 import { TextRoutingPanel, type TextRoutingData } from "./admin-text-routing";
 import type { MediaRoutingData } from "./admin-media-routing";
@@ -42,6 +44,8 @@ type Overview = {
 const SECTIONS = [
   ["bord", "Tableau de bord", "Dashboard"],
   ["clients", "Clients", "Customers"],
+  ["abonnements", "Abonnements", "Subscriptions"],
+  ["rdv", "Rendez-vous", "Appointments"],
   ["compta", "Comptabilité", "Accounting"],
   ["ia", "Fournisseurs IA", "AI providers"],
   ["routes", "Modèles et tarifs", "Models and pricing"],
@@ -125,6 +129,8 @@ export function AdminConsole() {
             {tab === "bord" && (dash ? <DashboardView d={dash} onClients={() => setTab("clients")} /> : <div className="skeleton h-72 rounded-3xl" />)}
             {tab === "clients" && (dash ? <Clients d={dash} reload={() => { reload(); reloadDash(); }} /> : <div className="skeleton h-72 rounded-3xl" />)}
             {tab === "compta" && <AccountingView />}
+            {tab === "abonnements" && <SubscriptionsAdmin />}
+            {tab === "rdv" && <CallsAdmin />}
             {tab === "conso" && <Usage data={data} />}
             {tab === "sante" && <Health data={data} reload={reload} />}
           </div>

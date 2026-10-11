@@ -2,24 +2,26 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowRight, Briefcase, Camera, Film, Globe, ImagePlus, Link2, Palette, Plus, Settings, Shield, Sparkles, Store, Type, X } from "lucide-react";
+import { ArrowRight, Phone, Briefcase, Camera, Film, Globe, ImagePlus, Link2, Palette, Plus, Settings, Shield, Sparkles, Store, Type, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, formatDate, Input, Logo, Select, Textarea, ThemeToggle, useApi, useToast } from "../ui";
 import { STORE_TYPES, storeTypeInfo, type BusinessType, type ContactMode, type ServiceItem, type ServiceProfile, type StoreType } from "@/lib/project-types";
 import { LANGS } from "@/lib/i18n";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useCostConfirm } from "./cost-confirm";
-import { QuotaBanner, useBilling } from "../billing-client";
+import { QuotaBanner, UsageMeter, useBilling } from "../billing-client";
 import { LogoutButton } from "../password-forms";
-import { PLANS } from "@/lib/plans";
+import { PLANS, type Billing, type PlanId } from "@/lib/plans";
+import { NewSubscription } from "./new-subscription";
+import { ProjectSubscriptionDialog, SUB_STATUS } from "./project-subscription";
 import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type PlatformId } from "./platform-picker";
 import { cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
 import { DeleteProjectButton } from "./delete-project";
 import { ActivityBrief } from "./activity-brief";
 
-type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null };
+type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null };
 
 /** Formulaire de départ. Sans « projectId » : crée un projet ; avec : démarre la création d'un projet existant. */
-export function NewProject({ onDone, compact, projectId, existingPhotos = 0, initialBusiness = "products", initialPlatform, initialServices }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number; initialBusiness?: BusinessType; initialPlatform?: string; initialServices?: Partial<ServiceProfile> }) {
+export function NewProject({ onDone, compact, projectId, existingPhotos = 0, initialBusiness = "products", initialPlatform, initialServices, subscription, plan }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number; initialBusiness?: BusinessType; initialPlatform?: string; initialServices?: Partial<ServiceProfile>; /** Nouveau projet : abonnement payé (encore libre) qui lui sera rattaché. */ subscription?: string | null; plan?: PlanId | null }) {
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
@@ -38,15 +40,17 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   // Vidéos de la création complète : choix annoncé dès le départ. Les plans filmés par l'IA utilisent
   // 2 vidéos IA du forfait (la création initiale de la boutique ne décompte pas les visuels).
   const [videos, setVideos] = useState<"ai" | "edited" | "none">("ai");
-  const { billing } = useBilling();
-  const AI_VIDEOS_NEEDED = 2;
-  const videoAiBlocked: string | null = !billing
-    ? null
-    : !billing.plan
-      ? t("Inclus dans les forfaits : choisissez un forfait pour en profiter.", "Included in the plans: choose a plan to use it.")
-      : billing.quotas.aiVideos.left < AI_VIDEOS_NEEDED
-        ? t(`Il vous reste ${billing.quotas.aiVideos.left} vidéo${billing.quotas.aiVideos.left > 1 ? "s" : ""} IA ce mois-ci (il en faut ${AI_VIDEOS_NEEDED}).`, `You have ${billing.quotas.aiVideos.left} AI video${billing.quotas.aiVideos.left === 1 ? "" : "s"} left this month (${AI_VIDEOS_NEEDED} needed).`)
-        : null;
+  // Vidéos IA : selon le forfait du projet (Créer : aucune ; Développer : courtes ; Dominer : avancées), dans son budget IA.
+  const { data: projSub } = useApi<{ subscription: { plan: PlanId; status: string } | null }>(projectId && !plan ? `/api/projects/${projectId}/subscription` : null);
+  const effPlan: PlanId | null = plan ?? (projSub?.subscription && ["active", "manual"].includes(projSub.subscription.status) ? projSub.subscription.plan : null);
+  const videoAiBlocked: string | null =
+    projectId && !plan && !projSub
+      ? null
+      : !effPlan
+        ? t("Inclus dans les forfaits Développer et Dominer.", "Included in the Grow and Dominate plans.")
+        : PLANS[effPlan].videos === "none"
+          ? t("Les vidéos IA sont incluses à partir du forfait Développer.", "AI videos are included from the Grow plan.")
+          : null;
   useEffect(() => {
     if (videoAiBlocked && videos === "ai") setVideos("edited");
   }, [videoAiBlocked, videos]);
@@ -123,7 +127,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
         setBusy(false);
         return;
       }
-      const r = await api<{ id: string; started: boolean }>("/api/projects", { form: fd });
+      const r = await api<{ id: string; started: boolean }>(`/api/projects${subscription ? `?subscription=${encodeURIComponent(subscription)}` : ""}`, { form: fd });
       toast("ok", r.started ? t("Projet créé : le studio se met au travail.", "Project created: the studio is getting to work.") : t("Projet créé. Ajoutez votre produit quand vous voulez depuis le Pilote ou l'onglet Produit.", "Project created. Add your product whenever you like from the Pilot or the Product tab."));
       onDone?.(r.id);
       router.push(`/studio/${r.id}/pilote`);
@@ -317,7 +321,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
         <input type="hidden" name="videos" value={videos} />
         <div role="radiogroup" aria-label={t("Vidéos de la création", "Videos in the creation")} className="grid gap-2">
           {([
-            ["ai", Sparkles, t("Avec plans filmés par l'IA", "With AI-filmed shots"), t(`Meilleur rendu : chaque vidéo contient un plan tourné par l'IA à partir de votre produit. Utilise ${AI_VIDEOS_NEEDED} vidéos IA de votre forfait.`, `Best result: each video includes a shot filmed by AI from your product. Uses ${AI_VIDEOS_NEEDED} AI videos from your plan.`), videoAiBlocked],
+            ["ai", Sparkles, t("Avec plans filmés par l'IA", "With AI-filmed shots"), t("Meilleur rendu : chaque vidéo contient un plan tourné par l'IA à partir de votre produit. Utilise le budget IA de ce projet.", "Best result: each video includes a shot filmed by AI from your product. Uses this project's AI budget."), videoAiBlocked],
             ["edited", Film, t("Montées à partir de vos images", "Edited from your images"), t("Animation, textes et musique à partir de vos photos. N'utilise pas vos vidéos IA.", "Animation, captions and music from your photos. Doesn't use your AI videos."), null],
             ["none", X, t("Pas de vidéo pour l'instant", "No video for now"), t("Aucune vidéo : vous les créerez plus tard, quand vous voudrez, dans l'onglet Vidéos.", "No video: you'll create them later, whenever you like, in the Videos tab."), null],
           ] as const).map(([id, Icon, label, hint, blocked]) => {
@@ -430,17 +434,62 @@ function ExistingSiteFields({ url, onUrl, owner, onOwner, errors, showLanguage }
   );
 }
 
+type Pending = { id: string; plan: PlanId; billing: Billing | null; createdAt: number | null };
+type Hidden = { id: string; name: string; updatedAt: number };
+
+/** Paramètres d'adresse : ?nouveau=1 (créer un projet), ?plan=&billing= (forfait présélectionné), ?abonnement= (abonnement payé à utiliser). */
+function useStudioParams() {
+  const [p, setP] = useState<{ nouveau: boolean; plan: PlanId | null; abonnement: string | null; paiement: string | null }>({ nouveau: false, plan: null, abonnement: null, paiement: null });
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    const plan = u.searchParams.get("plan");
+    setP({ nouveau: u.searchParams.has("nouveau") || u.searchParams.has("abonnement"), plan: plan && plan in PLANS ? (plan as PlanId) : null, abonnement: u.searchParams.get("abonnement"), paiement: u.searchParams.get("paiement") });
+  }, []);
+  return p;
+}
+
 export function StudioHome() {
   const t = useT();
   const { lang } = useLang();
-  const { data, error, reload: reloadProjects } = useApi<{ projects: ProjectCard[]; subscription: { status: string; stores: number } }>("/api/projects", { poll: 8000 });
+  const toast = useToast();
+  const params = useStudioParams();
+  const { data, error, reload: reloadProjects } = useApi<{ projects: ProjectCard[]; pending: Pending[]; hidden: Hidden[]; subscriptions: number }>("/api/projects", { poll: 8000 });
   const { data: me } = useApi<{ user: { role: string; name: string } }>("/api/me");
   const [creating, setCreating] = useState(false);
+  const [useSub, setUseSub] = useState<string | null>(null);
+  const [manage, setManage] = useState<ProjectCard | null>(null);
   const { billing } = useBilling({ poll: 60000 });
   const projects = data?.projects ?? [];
-  // Tant que la liste n'est pas chargée : squelette (jamais « 0 projet · découverte gratuite » à un abonné).
+  const pending = data?.pending ?? [];
+  const hidden = data?.hidden ?? [];
+  // Retour du paiement : l'abonnement n'existe qu'une fois le paiement confirmé par le serveur (quelques secondes).
+  useEffect(() => {
+    if (!params.paiement) return;
+    toast(params.paiement === "ok" ? "ok" : "bad", params.paiement === "ok" ? t("Paiement reçu. Votre abonnement apparaît dès sa confirmation (quelques secondes), puis vous créez votre projet.", "Payment received. Your subscription appears as soon as it's confirmed (a few seconds), then you create your project.") : t("Paiement annulé : rien n'a été débité.", "Payment canceled: nothing was charged."));
+    window.history.replaceState(null, "", "/studio");
+  }, [params.paiement, toast, t]);
+  useEffect(() => {
+    if (params.nouveau) setCreating(true);
+    if (params.abonnement) setUseSub(params.abonnement);
+  }, [params.nouveau, params.abonnement]);
+  // Tant que la liste n'est pas chargée : squelette.
   const firstLoad = !data && !error;
-  const showNew = creating || (!!data && projects.length === 0);
+  const freeSub = pending.find((s) => s.id === useSub) ?? pending[0] ?? null;
+  const discovery = !!data && data.subscriptions === 0 && projects.length === 0;
+  const showNew = creating || (!!data && projects.length === 0 && pending.length > 0);
+  const startNew = () => {
+    setCreating(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const resume = async (h: Hidden) => {
+    try {
+      await api(`/api/projects/hidden/${h.id}`, { body: freeSub ? { subscription: freeSub.id } : {} });
+      toast("ok", t("Projet repris : il est maintenant rattaché à cet abonnement.", "Project resumed: it is now tied to this subscription."));
+      reloadProjects();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    }
+  };
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
@@ -448,6 +497,7 @@ export function StudioHome() {
           <Link href="/" aria-label="E-COM STUDIO IA" className="shrink-0"><span className="hidden sm:inline"><Logo /></span><span className="sm:hidden"><Logo compact /></span></Link>
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
             {me?.user.role === "admin" && <Link href="/admin" className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm sm:inline-flex"><Shield className="size-4" /> {t("Administration", "Admin")}</Link>}
+            <Link href="/studio/rendez-vous" aria-label={t("Rendez-vous", "Appointments")} className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4"><Phone className="size-4" /> <span className="hidden lg:inline">{t("Rendez-vous", "Appointments")}</span></Link>
             <Link href="/studio/themes" aria-label={t("Thèmes", "Themes")} className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4"><Palette className="size-4" /> <span className="hidden sm:inline">{t("Thèmes", "Themes")}</span></Link>
             <Link href="/studio/compte" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4" aria-label={t("Mon compte", "My account")}><Settings className="size-4" /> <span className="hidden sm:inline">{t("Mon compte", "My account")}</span></Link>
             <LangSwitch />
@@ -476,59 +526,134 @@ export function StudioHome() {
               ))}
             </div>
           </div>
-        ) : showNew ? (
+        ) : showNew && freeSub ? (
           <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
             <div>
               <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Nouveau projet", "New project")}</p>
               <h1 className="mt-3 font-display text-4xl font-semibold leading-[0.95] sm:text-5xl">{t("Une boutique ou le site de votre activité.", "An online store, or your business website.")}</h1>
               <p className="mt-4 max-w-md text-lg text-ink-2">{t("Vous vendez des produits, ou vous proposez des services (artisan, coach, salon, cabinet, agence, restaurant…) : le studio analyse, construit la marque, le site, les images, les vidéos et un premier calendrier de publications. Vous suivez l'avancement en direct et intervenez quand vous voulez.", "Whether you sell products or offer services (trades, coaching, salon, practice, agency, restaurant…), the studio analyzes, then builds the brand, the website, the images, the videos and a first posting calendar. You follow progress live and step in whenever you want.")}</p>
+              <div className="mt-6 rounded-2xl border border-line bg-card p-4 text-sm">
+                <p className="font-medium">{t(`Abonnement utilisé : ${PLANS[freeSub.plan].name.fr}`, `Subscription used: ${PLANS[freeSub.plan].name.en}`)}</p>
+                <p className="mt-1 text-ink-2">{t("Ce projet lui sera rattaché définitivement (1 abonnement = 1 projet).", "This project will be tied to it for good (1 subscription = 1 project).")}</p>
+                {pending.length > 1 && (
+                  <Select className="mt-3" aria-label={t("Abonnement à utiliser", "Subscription to use")} value={freeSub.id} onChange={(e) => setUseSub(e.target.value)}>
+                    {pending.map((s) => <option key={s.id} value={s.id}>{PLANS[s.plan].name[lang]}</option>)}
+                  </Select>
+                )}
+              </div>
               {projects.length > 0 && <Button variant="ghost" className="mt-6" onClick={() => setCreating(false)}>{t("← Retour à mes projets", "← Back to my projects")}</Button>}
             </div>
-            <Card className="p-5 sm:p-7"><NewProject /></Card>
+            <Card className="p-5 sm:p-7"><NewProject key={freeSub.id} subscription={freeSub.id} plan={freeSub.plan} onDone={() => reloadProjects()} /></Card>
+          </div>
+        ) : creating || discovery ? (
+          <div>
+            {discovery && !creating ? (
+              <div className="mb-10 grid gap-6 rounded-[2rem] border border-line bg-card p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+                <div>
+                  <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Forfait Découverte · gratuit", "Discovery plan · free")}</p>
+                  <h1 className="mt-3 font-display text-4xl font-semibold">{t("Découvrez le studio, gratuitement.", "Discover the studio, for free.")}</h1>
+                  <p className="mt-3 text-ink-2">{t("Votre compte gratuit ouvre le studio de démonstration : les 30 thèmes, des marques, boutiques, publicités et calendriers d'exemple. Pour créer votre vrai projet, choisissez un forfait ci-dessous.", "Your free account opens the demo studio: all 30 themes, sample brands, stores, ads and calendars. To create your real project, choose a plan below.")}</p>
+                </div>
+                <Link href="/studio/decouverte" className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ink px-6 font-semibold text-paper"><Sparkles className="size-4" aria-hidden /> {t("Ouvrir le studio de démonstration", "Open the demo studio")}</Link>
+              </div>
+            ) : (
+              <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Nouveau projet", "New project")}</p>
+                  <h1 className="mt-2 font-display text-4xl font-semibold">{t("Choisissez l'abonnement de ce projet", "Choose this project's subscription")}</h1>
+                </div>
+                {projects.length > 0 && <Button variant="ghost" onClick={() => setCreating(false)}>{t("← Retour à mes projets", "← Back to my projects")}</Button>}
+              </div>
+            )}
+            <NewSubscription paymentsOpen={!!billing?.paymentsLive} initialPlan={params.plan} />
+            {hidden.length > 0 && <p className="mt-6 text-center text-sm text-ink-2">{t(`Vos ${hidden.length} essai(s) gratuit(s) précédent(s) sont conservés : après votre premier abonnement, vous pourrez reprendre l'un d'eux comme projet.`, `Your ${hidden.length} previous free trial(s) are kept: after your first subscription, you can take one of them as your project.`)}</p>}
           </div>
         ) : (
           <>
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="font-display text-4xl font-semibold">{t("Mes projets", "My projects")}</h1>
-                <p className="mt-1 text-muted">
-                  {t(`${projects.length} projet${projects.length > 1 ? "s" : ""}`, `${projects.length} project${projects.length > 1 ? "s" : ""}`)}{billing ? " · " : ""}
-                  {!billing ? null : billing.plan ? t(`forfait ${PLANS[billing.plan].name.fr} (1 boutique ou 1 site)`, `${PLANS[billing.plan].name.en} plan (1 store or 1 website)`) : t("découverte gratuite", "free discovery")}
-                </p>
+                <p className="mt-1 text-muted">{t(`${projects.length} projet${projects.length > 1 ? "s" : ""} · 1 abonnement par projet`, `${projects.length} project${projects.length > 1 ? "s" : ""} · 1 subscription per project`)}</p>
               </div>
-              <Button variant="signal" icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t("Nouveau projet", "New project")}</Button>
+              <Button variant="signal" icon={<Plus className="size-4" />} onClick={startNew}>{t("Nouveau projet", "New project")}</Button>
             </div>
+            {pending.length > 0 && (
+              <div className="mb-6 grid gap-2">
+                {pending.map((s) => (
+                  <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-signal bg-signal-soft p-4">
+                    <p className="text-sm"><strong>{t(`Abonnement ${PLANS[s.plan].name.fr} payé`, `${PLANS[s.plan].name.en} subscription paid`)}</strong> · {t("en attente de création de projet. Vous ne payez pas une seconde fois.", "waiting for its project. You don't pay twice.")}</p>
+                    <Button size="sm" variant="signal" onClick={() => (setUseSub(s.id), startNew())}>{t("Créer ce projet", "Create this project")}</Button>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {projects.map((p) => (
-                <div key={p.id} className="group relative">
-                <Link href={`/studio/${p.id}/pilote`} className="block overflow-hidden rounded-3xl border border-line bg-card transition hover:-translate-y-1 hover:shadow-soft">
-                  <div className="relative aspect-[4/3] bg-paper-2">
-                    {p.cover ? <img src={p.cover} alt="" className="size-full object-cover transition duration-700 group-hover:scale-105" /> : p.business === "services" ? <Briefcase className="absolute inset-0 m-auto size-8 text-muted" /> : <Store className="absolute inset-0 m-auto size-8 text-muted" />}
-                    <Badge tone={STATUS[p.status]?.tone ?? "neutral"} dot className="absolute left-3 top-3">{(lang === "en" ? STATUS[p.status]?.labelEn : STATUS[p.status]?.label) ?? p.status}</Badge>
-                    <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-card/90 px-2.5 py-0.5 text-xs font-medium text-ink backdrop-blur">
-                      {p.business === "services" ? <Briefcase className="size-3" aria-hidden /> : <Store className="size-3" aria-hidden />}
-                      {p.business === "services" ? t("Services", "Services") : t("Boutique", "Store")}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 p-4">
-                    <div className="min-w-0">
-                      <p className="truncate font-display text-lg font-semibold">{p.brand ?? p.name}</p>
-                      <p className="text-xs text-muted">{isPlatform(p.platform) ? `${platformInfo(p.platform, p.business, t).short} · ` : ""}{t("Modifié le", "Updated")} {formatDate(p.updatedAt, { day: "numeric", month: "long" })}</p>
-                    </div>
-                    {p.palette && (
-                      <div className="flex -space-x-1.5">
-                        {Object.values(p.palette).slice(0, 4).map((c) => <span key={c} className="size-5 rounded-full border-2 border-card" style={{ background: c }} />)}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-                <DeleteProjectButton compact projectId={p.id} name={p.brand ?? p.name} onDeleted={() => reloadProjects()} className="absolute right-3 top-12 opacity-100 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover:opacity-100" />
-                </div>
-              ))}
+              {projects.map((p) => <ProjectTile key={p.id} p={p} onManage={() => setManage(p)} onDeleted={() => reloadProjects()} />)}
+              <button type="button" onClick={startNew} className="grid min-h-64 place-items-center rounded-3xl border-2 border-dashed border-line bg-card/50 p-6 text-center transition hover:border-ink">
+                <span>
+                  <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-paper-2"><Plus className="size-5" aria-hidden /></span>
+                  <span className="mt-3 block font-display text-lg font-semibold">{t("Créer un nouveau projet", "Create a new project")}</span>
+                  <span className="mt-1 block text-sm text-muted">{pending.length ? t("Avec votre abonnement payé en attente", "With your paid subscription waiting") : t("Avec un nouvel abonnement", "With a new subscription")}</span>
+                </span>
+              </button>
             </div>
+            {hidden.length > 0 && (
+              <section className="mt-12">
+                <h2 className="font-display text-xl font-semibold">{t("Anciens essais gratuits", "Former free trials")}</h2>
+                <p className="mt-1 text-sm text-ink-2">{t("Conservés tels quels. Un abonnement payé encore libre peut reprendre l'un d'eux comme son projet.", "Kept as they are. A paid subscription that's still free can take one of them as its project.")}</p>
+                <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-card">
+                  {hidden.map((h) => (
+                    <li key={h.id} className="flex flex-wrap items-center justify-between gap-3 p-3 text-sm">
+                      <span>{h.name} <span className="text-muted">· {formatDate(h.updatedAt, { day: "numeric", month: "short", year: "numeric" })}</span></span>
+                      {pending.length ? <Button size="sm" variant="secondary" onClick={() => resume(h)}>{t("Reprendre avec mon abonnement", "Resume with my subscription")}</Button> : <span className="text-muted">{t("Nécessite un abonnement", "Needs a subscription")}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </>
         )}
       </main>
+      {manage && <ProjectSubscriptionDialog open projectId={manage.id} name={manage.brand ?? manage.name} onClose={() => setManage(null)} onChanged={() => reloadProjects()} />}
+    </div>
+  );
+}
+
+/** Carte d'un projet : visuel ou logo, activité, forfait, statut de l'abonnement, échéance, IA restante, actions. */
+function ProjectTile({ p, onManage, onDeleted }: { p: ProjectCard; onManage: () => void; onDeleted: () => void }) {
+  const t = useT();
+  const { lang } = useLang();
+  const s = p.subscription;
+  const st = SUB_STATUS[s?.status ?? "none"] ?? SUB_STATUS.none;
+  return (
+    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-card transition hover:shadow-soft">
+      <Link href={`/studio/${p.id}/pilote`} className="relative block aspect-[4/3] bg-paper-2" aria-label={t(`Ouvrir ${p.brand ?? p.name}`, `Open ${p.brand ?? p.name}`)}>
+        {p.cover ? <img src={p.cover} alt="" className="size-full object-cover transition duration-700 group-hover:scale-105" /> : p.logo ? <img src={p.logo} alt="" className="absolute inset-0 m-auto max-h-20 max-w-[60%] object-contain" /> : p.business === "services" ? <Briefcase className="absolute inset-0 m-auto size-8 text-muted" /> : <Store className="absolute inset-0 m-auto size-8 text-muted" />}
+        <Badge tone={STATUS[p.status]?.tone ?? "neutral"} dot className="absolute left-3 top-3">{(lang === "en" ? STATUS[p.status]?.labelEn : STATUS[p.status]?.label) ?? p.status}</Badge>
+        {p.logo && p.cover && <img src={p.logo} alt="" className="absolute bottom-3 left-3 h-9 max-w-[40%] rounded-lg bg-card/90 object-contain p-1 backdrop-blur" />}
+      </Link>
+      <div className="grid flex-1 gap-3 p-4">
+        <div className="min-w-0">
+          <p className="truncate font-display text-lg font-semibold">{p.brand ?? p.name}</p>
+          <p className="truncate text-xs text-muted">{p.business === "services" ? t("Services", "Services") : t("Boutique", "Store")}{p.sector ? ` · ${p.sector}` : ""}{isPlatform(p.platform) ? ` · ${platformInfo(p.platform, p.business, t).short}` : ""}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          {s ? <span className="font-medium">{PLANS[s.plan].name[lang]}</span> : <span className="text-muted">{t("Sans abonnement", "No subscription")}</span>}
+          <Badge tone={st.tone} dot>{st[lang]}</Badge>
+          {s?.periodEnd && <span className="text-xs text-muted">{s.cancelAtPeriodEnd || s.status === "canceled" ? t("fin le", "ends") : t("échéance le", "renews")} {formatDate(s.periodEnd, { day: "numeric", month: "short" })}</span>}
+        </div>
+        {p.ai && (
+          <div>
+            <p className="flex justify-between text-xs text-ink-2"><span>{t("IA du forfait", "Plan AI")}</span><span className="tabular-nums">{p.ai.paused ? t("En pause", "Paused") : t(`reste ${100 - p.ai.plan.used} %`, `${100 - p.ai.plan.used}% left`)}</span></p>
+            <div className="mt-1"><UsageMeter used={p.ai.plan.used} label={t("IA du forfait", "Plan AI")} thin /></div>
+          </div>
+        )}
+        <div className="mt-auto grid gap-2 pt-1">
+          <Link href={`/studio/${p.id}/pilote`} className="inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-ink px-4 text-sm font-medium text-paper">{t("Ouvrir le studio", "Open the studio")} <ArrowRight className="size-4" aria-hidden /></Link>
+          {s && <button type="button" onClick={onManage} className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full border border-line px-4 text-sm font-medium hover:border-ink">{t("Gérer mon abonnement", "Manage my subscription")}</button>}
+        </div>
+      </div>
+      <DeleteProjectButton compact projectId={p.id} name={p.brand ?? p.name} onDeleted={onDeleted} className="absolute right-3 top-3 opacity-100 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover:opacity-100" />
     </div>
   );
 }
