@@ -31,6 +31,7 @@ import { planAngles } from "./angles";
 import { copyPrompt, copySystem, localCopy } from "./copy";
 import { claimIssues, type ClaimIssue } from "./claims";
 import { composeAd } from "./compose";
+import { adArt, layoutForConcept, textZoneFor, toAdLayout, type AdArt } from "./art";
 import { gateAd, localAdChecks } from "./quality";
 import { peopleAllowedFor } from "../people-policy";
 import { CTAS, defaultPlatforms, formatsFor, strictestText } from "./platforms";
@@ -38,7 +39,7 @@ import { realAdDeps, type AdsV2Deps } from "./deps";
 import { engineDocKey, latestDoc, saveVersion, userOwned } from "../ad-doc/store";
 import type { AdConcept, AdCopy, AdInsight, AdOutcome, AdReview, AnglePlan, FormatSpec, Platform, VisualConcept } from "./types";
 
-export const ADS_V2_VERSION = "6a.1";
+export const ADS_V2_VERSION = "6b.1";
 export const DEFAULT_AD_CAP_EUR = 3;
 
 export type AdRequestV2 = {
@@ -80,7 +81,7 @@ export function visualFor(a: AnglePlan, i: AdInsight, hasCutout: boolean): Visua
 
 const LAYOUTS: VisualConcept["layout"][] = ["hero_left", "split", "full_bleed", "hero_center", "typographic"];
 const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x)).digest("hex").slice(0, 16);
-const orientation = (a: AspectId): AspectId => (a === "1:1" ? "1:1" : a === "16:9" || a === "3:2" || a === "3:1" || a === "4:1" ? "16:9" : "4:5");
+const orientation = (a: AspectId): AspectId => (a === "1:1" ? "1:1" : a === "16:9" || a === "1.91:1" || a === "3:2" || a === "3:1" || a === "4:1" ? "16:9" : "4:5");
 
 export async function runAdEngineV2(ctx: JobContext | null, projectId: string, req: AdRequestV2 = {}, injected?: AdsV2Deps): Promise<AdRunResult> {
   const p = loadProject(projectId);
@@ -117,7 +118,7 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
     const ctas = CTAS[p.business][lang];
     const local = new Map(angles.map((a) => [a.id, localCopy(insight, a, lang, limits)]));
     const copies = new Map<string, { copy: AdCopy; by: "ai" | "local" }>(angles.map((a) => [a.id, { copy: local.get(a.id)!, by: "local" as const }]));
-    const fromAi = (x: { hook: string; hookB?: string; primary: string; headline: string; description: string; cta: string }): AdCopy => ({ hook: x.hook.trim(), hookB: x.hookB?.trim() || null, primary: x.primary.trim(), headline: x.headline.trim(), description: x.description.trim(), cta: ctas.includes(x.cta) ? x.cta : local.get(angles[0].id)!.cta });
+    const fromAi = (x: { hook: string; hookB?: string; primary: string; headline: string; description: string; cta: string; sub?: string; visual?: string }): AdCopy => ({ hook: x.hook.trim(), hookB: x.hookB?.trim() || null, primary: x.primary.trim(), headline: x.headline.trim(), description: x.description.trim(), cta: ctas.includes(x.cta) ? x.cta : local.get(angles[0].id)!.cta, sub: x.sub?.trim() || null, visual: x.visual?.trim() || null });
     if (deps.canWrite) {
       const sys = copySystem(lang, insight, ctas, limits);
       let feedback: string | undefined;
@@ -144,19 +145,25 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
     const allClaims = claimIssues(angles.map((a) => ({ id: a.id, copy: copies.get(a.id)!.copy })), p, insight, limits);
     const cut = deps.cutout();
     const logo = deps.logo();
-    for (const a of angles) result.concepts.push({ id: a.id, angle: a, copy: copies.get(a.id)!.copy, visual: visualFor(a, insight, !!cut), copyBy: copies.get(a.id)!.by, claims: allClaims.get(a.id)! });
+    const logoLight = deps.logoLight?.() ?? null;
+    const pal = palette(p);
+    const typo = brandTypo(p);
+    // Direction artistique du projet : chaque création de la campagne a sa propre composition.
+    const art = adArt(p, typo);
+    angles.forEach((a, k) => {
+      const v = visualFor(a, insight, !!cut);
+      result.concepts.push({ id: a.id, angle: a, copy: copies.get(a.id)!.copy, visual: { ...v, layout: layoutForConcept(art, k) }, copyBy: copies.get(a.id)!.by, claims: allClaims.get(a.id)! });
+    });
 
     if (req.copyOnly) return result;
     // 2. Créations par concept et par format.
-    const pal = palette(p);
-    const typo = brandTypo(p);
     const formats = formatsFor(platforms);
     for (const concept of result.concepts) {
-      const images = new Map<AspectId, { assetId: string; data: Buffer } | null>();
+      const images = new Map<AspectId, { assetId: string; data: Buffer; withProduct: boolean } | null>();
       let conceptReview: AdReview | null = null;
       let reviewed = false;
       for (const [fi, f] of formats.entries()) {
-        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, logo, cut, insight, limits, stats, prior: conceptReview });
+        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, insight, limits, stats, prior: conceptReview });
         if (out.review) {
           conceptReview = out.review;
           reviewed = true;
@@ -173,6 +180,22 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
   return result;
 }
 
+/**
+ * Ligne secondaire de la création : celle du rédacteur (contrôlée), sinon des faits confirmés du projet
+ * (prestations réelles, catégorie, titre court) — jamais une promesse.
+ */
+export function sublineFor(i: AdInsight, copy: AdCopy): string | null {
+  if (copy.sub?.trim() && !/\[(À|A) compléter/i.test(copy.sub)) return copy.sub.trim();
+  if (i.business === "services" && i.services.length) {
+    const heads = i.services.map((s) => s.name.split(/\s+(?:et|and|&)\s+|,/i)[0].trim()).filter(Boolean).slice(0, 3);
+    const line = heads.join(" • ");
+    if (line.length <= 48) return line;
+  }
+  const head = copy.headline?.trim();
+  if (head && head.length <= 44 && head.toLowerCase() !== copy.hook.trim().toLowerCase()) return head;
+  return i.category.label && i.category.label.length <= 44 ? i.category.label.charAt(0).toUpperCase() + i.category.label.slice(1) : null;
+}
+
 /** Création validée existante pour la même empreinte (même concept, même format, même charte) : réutilisée. */
 export function reusableAd(projectId: string, h: string): Asset | null {
   const rows = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'ad' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.adV2.hash') = ? ORDER BY created_at DESC LIMIT 3", projectId, h);
@@ -186,10 +209,12 @@ type OneInput = {
   concept: AdConcept & { claims: ClaimIssue[] };
   f: FormatSpec;
   main: boolean;
-  images: Map<AspectId, { assetId: string; data: Buffer } | null>;
+  images: Map<AspectId, { assetId: string; data: Buffer; withProduct: boolean } | null>;
   pal: ReturnType<typeof palette>;
   typo: ReturnType<typeof brandTypo>;
+  art: AdArt;
   logo: { id: string; data: Buffer } | null;
+  logoLight: { id: string; data: Buffer } | null;
   cut: { id: string; data: Buffer } | null;
   insight: AdInsight;
   limits: ReturnType<typeof strictestText>;
@@ -200,7 +225,7 @@ type OneInput = {
 async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdReview | null }> {
   const { p, deps, concept, f, stats } = o;
   const jobId = o.ctx?.job.id ?? null;
-  const h = hash({ v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout });
+  const h = hash({ v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, art: o.art.style });
   // Création modifiée par le client (éditeur visuel) : jamais écrasée en silence par une régénération.
   const docKey = engineDocKey(p.id, concept.id, f.platform, f.aspect);
   if (userOwned(p.id, docKey)) {
@@ -225,14 +250,31 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
     const key = `${orientation(f.aspect)}:${variant}` as AspectId;
     if (!o.images.has(key)) {
       stats.images++;
-      const services = p.business === "services";
-      o.images.set(key, await o.deps.image({ kind: concept.visual.kind, support: "ad", aspect: orientation(f.aspect), topic: concept.visual.subject, variant: variant || null, allowGenerate: true, name: `pub-${concept.angle.type}`, maxControls: 3, ...(services ? {} : {}) }));
+      const aspect = orientation(f.aspect);
+      const fmt = { "1:1": [1080, 1080], "16:9": [1920, 1080] }[aspect as string] ?? [1080, 1350];
+      const textZone = textZoneFor(toAdLayout(layout), fmt[0], fmt[1]);
+      const topic = [concept.visual.subject, copy.visual].filter(Boolean).join(" — ").slice(0, 300);
+      const common = { support: "ad" as const, aspect, topic, variant: variant || null, allowGenerate: true, name: `pub-${concept.angle.type}`, maxControls: 3, textZone };
+      // Produit : d'abord une vraie mise en scène publicitaire AVEC le produit réel (photo de référence, pixels
+      // d'origine remis par-dessus) ; à défaut, un décor d'univers et le détourage posé par la composition.
+      let got: { assetId: string; data: Buffer; withProduct: boolean } | null = null;
+      if (p.business === "products" && o.cut) {
+        const scene = await o.deps.image({ ...common, kind: "lifestyle", references: [o.cut.id] });
+        if (scene) got = { ...scene, withProduct: true };
+      }
+      if (!got) {
+        const plain = await o.deps.image({ ...common, kind: concept.visual.kind });
+        got = plain ? { ...plain, withProduct: false } : null;
+      }
+      o.images.set(key, got);
     }
     const img = o.images.get(key) ?? null;
     const sig = `${layout}|${copy.hook}|${key}`;
     if (tried.has(sig)) break;
     tried.add(sig);
-    const { jpg, metrics, doc } = await composeAd({ format: f, layout: img ? layout : layout === "full_bleed" || layout === "split" || layout === "hero_left" ? "typographic" : layout, palette: o.pal, typo: o.typo, brand: o.insight.brand, headline: copy.hook, cta: copy.cta, background: img?.data ?? null, product: concept.visual.productOnTop ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null }, conceptId: concept.id });
+    // Le produit réel est posé par la composition seulement quand l'image ne le montre pas déjà.
+    const pasteProduct = !!o.cut && p.business === "products" && !img?.withProduct && (concept.visual.productOnTop || !img);
+    const { jpg, metrics, doc } = await composeAd({ format: f, layout: img ? layout : "typographic", palette: o.pal, typo: o.typo, art: o.art, brand: o.insight.brand, headline: copy.hook, subline: sublineFor(o.insight, copy), eyebrow: o.insight.category.label || null, cta: copy.cta, background: img?.data ?? null, product: pasteProduct ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, logoLight: o.logoLight?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null, logoLight: o.logoLight?.id ?? null }, conceptId: concept.id });
     const local = localAdChecks(metrics, claims, f.platform);
     let review: AdReview | null = null;
     let reviewError: string | null = null;
@@ -274,7 +316,10 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
     const codes = [...d.blockingCodes];
     const target = review?.fix.target ?? (codes.some((c) => c === "illegible" || c === "safe_zone" || c === "product_overlap" || c === "too_much_text") ? "layout" : codes.some((c) => c === "unverified_claim" || c === "copy_policy") ? "copy" : "visual");
     if (target === "layout") {
-      layout = LAYOUTS[(LAYOUTS.indexOf(layout) + 1) % LAYOUTS.length];
+      // Composition suivante de la direction artistique du projet (gratuite) : jamais la même deux fois.
+      const cycle = o.art.cycle;
+      const at = cycle.indexOf(toAdLayout(layout) as never);
+      layout = at >= 0 ? cycle[(at + 1) % cycle.length] : LAYOUTS[(LAYOUTS.indexOf(layout) + 1) % LAYOUTS.length];
       stats.layoutChanges++;
     } else if (target === "hook" || target === "copy" || target === "cta") {
       // Seconde accroche du concept (déjà écrite, gratuite) ; sinon version locale contrôlée.

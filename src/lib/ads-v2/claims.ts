@@ -30,8 +30,8 @@ export function claimIssues(copies: { id: string; copy: AdCopy }[], p: Project, 
   const offerText = norm(i.offer ?? "");
   for (const { id, copy } of copies) {
     const list: ClaimIssue[] = [];
-    const fields: [string, string][] = [["hook", copy.hook], ["primary", copy.primary], ["headline", copy.headline], ["description", copy.description], ...(copy.hookB ? ([["hookB", copy.hookB]] as [string, string][]) : [])];
-    for (const c of lintClaims({ hook: copy.hook, primary: copy.primary, headline: copy.headline, description: copy.description }, p)) list.push({ code: "unverified_claim", field: c.path, term: c.term, fix: `« ${c.term} » (${c.label}) n'est pas confirmé : retire-le ou remplace-le par un fait confirmé` });
+    const fields: [string, string][] = [["hook", copy.hook], ["primary", copy.primary], ["headline", copy.headline], ["description", copy.description], ...(copy.hookB ? ([["hookB", copy.hookB]] as [string, string][]) : []), ...(copy.sub ? ([["sub", copy.sub]] as [string, string][]) : [])];
+    for (const c of lintClaims({ hook: copy.hook, primary: copy.primary, headline: copy.headline, description: copy.description, ...(copy.sub ? { sub: copy.sub } : {}) }, p)) list.push({ code: "unverified_claim", field: c.path, term: c.term, fix: `« ${c.term} » (${c.label}) n'est pas confirmé : retire-le ou remplace-le par un fait confirmé` });
     for (const h of lintHollow({ hook: copy.hook, primary: copy.primary, headline: copy.headline })) list.push({ code: "hollow", field: h.path, term: h.term, fix: `formule creuse « ${h.term} » : remplace-la par un détail concret` });
     for (const [field, text] of fields) {
       const t = norm(text);
@@ -55,6 +55,7 @@ export function claimIssues(copies: { id: string; copy: AdCopy }[], p: Project, 
     const first = copy.primary.split(/\n/)[0] ?? "";
     if (first.length > limits.primaryFirstLine) list.push({ code: "length", field: "primary", term: "", fix: `première ligne de ${first.length} caractères : ${limits.primaryFirstLine} au plus` });
     if (copy.headline.length > limits.headline) list.push({ code: "length", field: "headline", term: "", fix: `titre de ${copy.headline.length} caractères : ${limits.headline} au plus` });
+    if (copy.sub && copy.sub.length > 60) list.push({ code: "length", field: "sub", term: "", fix: `ligne secondaire de ${copy.sub.length} caractères : 60 au plus` });
     if (copy.description.length > limits.description) list.push({ code: "length", field: "description", term: "", fix: `description de ${copy.description.length} caractères : ${limits.description} au plus` });
     out.set(id, dedupe(list));
   }

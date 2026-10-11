@@ -13,6 +13,7 @@ export const FORMATS: Record<AspectId, FormatSpec> = {
   "3:2": { aspect: "3:2", width: 1620, height: 1080, label: "paysage 3:2", textZone: "left" },
   "9:16": { aspect: "9:16", width: 1080, height: 1920, label: "vertical 9:16", textZone: "top" },
   "16:9": { aspect: "16:9", width: 1920, height: 1080, label: "paysage 16:9", textZone: "left" },
+  "1.91:1": { aspect: "1.91:1", width: 1200, height: 628, label: "paysage 1,91:1", textZone: "left" },
   "3:1": { aspect: "3:1", width: 2400, height: 800, label: "bannière 3:1", textZone: "left" },
   "4:1": { aspect: "4:1", width: 2400, height: 600, label: "bannière large 4:1", textZone: "left" },
 };

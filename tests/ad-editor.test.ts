@@ -44,7 +44,9 @@ describe("Éditeur visuel des publicités — documents en calques", async () =>
     const cur = latestDoc(p.id, docKey)!;
     expect(cur.version.source).toBe("engine");
     const roles = cur.doc.layers.map((l) => l.role);
-    expect(roles).toEqual(expect.arrayContaining(["title", "cta", "product", "logo", "subtitle"]));
+    expect(roles).toEqual(expect.arrayContaining(["title", "cta", "logo", "subtitle"]));
+    // Produit réel : mis en scène dans la photo (référence du détourage) ou, à défaut, posé par la composition.
+    expect(roles.includes("product") || roles.includes("background") || roles.includes("image")).toBe(true);
     expect(AdDocumentSchema.safeParse(cur.doc).success).toBe(true);
     // Ce que l'on voit est ce que l'on exporte : même moteur, même image.
     const again = await renderDocToBuffer(cur.doc, await docImages(p.id, cur.doc), "jpeg");

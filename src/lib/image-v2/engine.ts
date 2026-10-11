@@ -230,6 +230,9 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   // 3. Génération (dernier recours pour le métier ; seul parcours pour le produit réel).
   if (!stages.includes("generate") || req.allowGenerate === false) return { outcome: none(lastReason), changeDirection: false };
   if (!deps.canGenerate) return { outcome: none(`${lastReason} ; génération non disponible (forfait ou fournisseur)`), changeDirection: false };
+  // Une image générée n'est utilisable qu'après son contrôle : sans contrôle IA possible, elle ne serait jamais
+  // validée — elle serait payée pour rien. Aucune génération payante dans ce cas.
+  if (!deps.canReview) return { outcome: none(`${lastReason} ; génération non lancée : aucun contrôle IA disponible pour la valider (rien n'est payé)`), changeDirection: false };
   const path = deps.path(brief);
   if (path === "none") return { outcome: none(brief.productFidelity ? "aucune image du produit sans photo de référence détourée et un parcours fidèle (aucun produit inventé)" : "aucun fournisseur d'images disponible"), changeDirection: false };
   const reference = brief.references[0] ? deps.reference(brief.references[0]) : null;

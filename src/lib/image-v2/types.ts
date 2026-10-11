@@ -47,7 +47,7 @@ export const ART_DIRECTIONS = [
 ] as const;
 export type ArtDirectionId = (typeof ART_DIRECTIONS)[number];
 
-export type AspectId = "1:1" | "4:5" | "2:3" | "3:2" | "9:16" | "16:9" | "3:1" | "4:1";
+export type AspectId = "1:1" | "4:5" | "2:3" | "3:2" | "9:16" | "16:9" | "1.91:1" | "3:1" | "4:1";
 
 export type FormatSpec = { aspect: AspectId; width: number; height: number; label: string; textZone: "none" | "left" | "right" | "top" | "bottom" | "center" };
 

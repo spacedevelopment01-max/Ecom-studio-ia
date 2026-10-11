@@ -88,11 +88,19 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     // Autre format : nouvelle création (lignée dupliquée) ; textes, couleurs, images et calques ajoutés conservés.
     const platform = (b.platform ?? latestDoc(p.id, docKey)!.doc.format.platform ?? "meta_feed") as Platform;
     const spec = PLATFORM_SPECS[platform];
-    const f = spec?.formats.find((x) => x.aspect === b.aspect) ?? (b.aspect === "16:9" ? { aspect: "16:9", width: 1920, height: 1080 } : b.aspect === "9:16" ? { aspect: "9:16", width: 1080, height: 1920 } : b.aspect === "4:5" ? { aspect: "4:5", width: 1080, height: 1350 } : b.aspect === "3:1" ? { aspect: "3:1", width: 2400, height: 800 } : b.aspect === "1:1" ? { aspect: "1:1", width: 1080, height: 1080 } : null);
+    const f = spec?.formats.find((x) => x.aspect === b.aspect) ?? (b.aspect === "16:9" ? { aspect: "16:9", width: 1920, height: 1080 } : b.aspect === "1.91:1" ? { aspect: "1.91:1", width: 1200, height: 628 } : b.aspect === "9:16" ? { aspect: "9:16", width: 1080, height: 1920 } : b.aspect === "4:5" ? { aspect: "4:5", width: 1080, height: 1350 } : b.aspect === "3:1" ? { aspect: "3:1", width: 2400, height: 800 } : b.aspect === "1:1" ? { aspect: "1:1", width: 1080, height: 1080 } : null);
     if (!f || !spec) throw new HttpError(400, L("Format inconnu.", "Unknown format."));
     const d = duplicateDoc(p.id, docKey);
     const src = latestDoc(p.id, d.docKey)!.doc;
-    const next = reflow(src, { width: f.width, height: f.height, aspect: f.aspect, platform, safe: { top: Math.round(f.height * spec.safe.top), bottom: Math.round(f.height * spec.safe.bottom), side: Math.round(f.width * spec.safe.side) } });
+    // Création du moteur : RECOMPOSÉE pour le format (colonne, tailles, marges, produit) ; sinon adaptation géométrique.
+    const { relayoutDoc } = await import("@/lib/ads-v2/compose");
+    const { assetData, getAsset } = await import("@/lib/library");
+    const load = (id: string) => {
+      const a = getAsset(id);
+      return a && a.project_id === p.id && !a.deleted_at ? assetData(a) : null;
+    };
+    const recomposed = await relayoutDoc(src, { platform, aspect: f.aspect as never, width: f.width, height: f.height, label: f.aspect, safe: spec.safe }, load).catch(() => null);
+    const next = recomposed ?? reflow(src, { width: f.width, height: f.height, aspect: f.aspect, platform, safe: { top: Math.round(f.height * spec.safe.top), bottom: Math.round(f.height * spec.safe.bottom), side: Math.round(f.width * spec.safe.side) } });
     await saveAndRender(p.id, user.id, d.docKey, { ...next, meta: { ...next.meta, source: "user" } }, `adaptation au format ${f.aspect}`);
     return ok(await view(p, d.docKey));
   }

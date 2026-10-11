@@ -241,6 +241,15 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     expect(a.role).toBe("lifestyle");
   });
 
+  it("sans contrôle IA possible : aucune image payante générée (elle ne pourrait jamais être validée)", async () => {
+    const p = withPeople("artisan");
+    const { deps, log } = mockDeps({ providers: [], canReview: false, canGenerate: true });
+    const r = await fr(() => runImageEngineV2(null, p.id, { kind: "trade_photo", aspect: "16:9", allowGenerate: true }, deps));
+    expect(log.generations).toHaveLength(0);
+    expect(r.outcomes[0].assetId).toBeNull();
+    expect(r.outcomes[0].reason).toMatch(/aucun contrôle IA/);
+  });
+
   it("hors sujet au contrôle : refus retenu, jamais retéléchargé ni recontrôlé au passage suivant", async () => {
     const p = withPeople("artisan");
     const prov = mockProvider("pexels", () => [candidate("faux", "plasterer at work"), candidate("vrai", "plasterer smoothing a ceiling")]);

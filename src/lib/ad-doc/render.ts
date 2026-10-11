@@ -32,16 +32,38 @@ export function wrap(ctx: Ctx2D, text: string, maxWidth: number): string[] {
 }
 
 /** Taille effective d'un texte (ajustement automatique au cadre) et ses lignes. */
-export function layoutText(ctx: Ctx2D, l: Pick<TextLayer, "text" | "font" | "w" | "h" | "lineHeight" | "uppercase" | "autoFit" | "letterSpacing">, env: Pick<RenderEnv, "font">): { size: number; lines: string[] } {
+export function layoutText(ctx: Ctx2D, l: Pick<TextLayer, "text" | "font" | "w" | "h" | "lineHeight" | "uppercase" | "autoFit" | "letterSpacing" | "balance">, env: Pick<RenderEnv, "font">): { size: number; lines: string[] } {
   const text = l.uppercase ? l.text.toUpperCase() : l.text;
   const min = l.autoFit ? Math.max(6, l.autoFit.minSize) : l.font.size;
+  ctx.letterSpacing = `${l.letterSpacing ?? 0}px`;
+  const done = (size: number, lines: string[]) => {
+    ctx.letterSpacing = "0px";
+    return { size, lines: l.balance ? balanced(ctx, text, l.w, lines) : lines };
+  };
   for (let size = l.font.size; size >= min; size -= 2) {
     ctx.font = env.font(l.font.family, l.font.weight, size, l.font.italic);
     const lines = wrap(ctx, text, l.w);
-    if (!l.autoFit || (lines.length * size * l.lineHeight <= l.h + 0.5 && lines.every((x) => ctx.measureText(x).width <= l.w + 0.5))) return { size, lines };
+    if (!l.autoFit || (lines.length * size * l.lineHeight <= l.h + 0.5 && lines.every((x) => ctx.measureText(x).width <= l.w + 0.5))) return done(size, lines);
   }
   ctx.font = env.font(l.font.family, l.font.weight, min, l.font.italic);
-  return { size: min, lines: wrap(ctx, text, l.w) };
+  return done(min, wrap(ctx, text, l.w));
+}
+
+/** Même nombre de lignes, coupées dans une largeur plus étroite : pas de mot seul sur la dernière ligne. */
+function balanced(ctx: Ctx2D, text: string, w: number, lines: string[]): string[] {
+  if (lines.length < 2 || /\n/.test(text)) return lines;
+  let lo = w * 0.45;
+  let hi = w;
+  let best = lines;
+  for (let i = 0; i < 12; i++) {
+    const mid = (lo + hi) / 2;
+    const t = wrap(ctx, text, mid);
+    if (t.length <= lines.length && t.every((x) => ctx.measureText(x).width <= w + 0.5)) {
+      best = t;
+      hi = mid;
+    } else lo = mid;
+  }
+  return best;
 }
 
 function fillStyle(ctx: Ctx2D, f: Fill, x: number, y: number, w: number, h: number) {

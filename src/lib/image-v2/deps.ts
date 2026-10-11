@@ -55,13 +55,15 @@ Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composit
 }
 
 /** Image du produit posée sur un décor (pixels du produit inchangés), ombre de contact douce. */
-export async function compositeProduct(plate: Buffer, cutout: Buffer, aspect: VisualBrief["format"]["aspect"]): Promise<Buffer> {
+export async function compositeProduct(plate: Buffer, cutout: Buffer, aspect: VisualBrief["format"]["aspect"], textZone: VisualBrief["format"]["textZone"] = "none"): Promise<Buffer> {
   const f = FORMATS[aspect];
   const base = await sharp(plate, { failOn: "none" }).resize(f.width, f.height, { fit: "cover" }).toBuffer();
-  const prod = await sharp(cutout).resize({ width: Math.round(f.width * 0.5), height: Math.round(f.height * 0.62), fit: "inside" }).png().toBuffer();
+  const side = textZone === "left";
+  const prod = await sharp(cutout).resize({ width: Math.round(f.width * (side ? 0.4 : 0.5)), height: Math.round(f.height * (textZone === "top" ? 0.5 : 0.62)), fit: "inside" }).png().toBuffer();
   const pm = await sharp(prod).metadata();
-  const left = Math.round((f.width - (pm.width ?? 0)) / 2);
-  const top = Math.round(f.height * 0.86 - (pm.height ?? 0));
+  // Le produit se place à l'opposé de la zone gardée pour le texte (publicités) : jamais sous le titre.
+  const left = Math.round(side ? f.width * 0.72 - (pm.width ?? 0) / 2 : (f.width - (pm.width ?? 0)) / 2);
+  const top = Math.round(f.height * (textZone === "top" ? 0.9 : 0.86) - (pm.height ?? 0));
   const shadow = await sharp({ create: { width: Math.max(1, Math.round((pm.width ?? 10) * 0.9)), height: Math.max(1, Math.round((pm.height ?? 10) * 0.06)), channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.28 } } }).blur(12).png().toBuffer();
   return sharp(base)
     .composite([
@@ -126,10 +128,12 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       if (path === "masked_edit" && reference) {
         const size = aspect === "16:9" ? "1536x1024" : aspect === "1:1" ? "1024x1024" : "1024x1536";
         const [W, H] = size.split("x").map(Number);
-        const prod = await sharp(reference).resize({ height: Math.round(H * 0.6), width: Math.round(W * 0.7), fit: "inside" }).png().toBuffer();
+        const tz = brief.format.textZone;
+        const prod = await sharp(reference).resize({ height: Math.round(H * (tz === "top" ? 0.5 : 0.6)), width: Math.round(W * (tz === "left" ? 0.42 : 0.7)), fit: "inside" }).png().toBuffer();
         const pm = await sharp(prod).metadata();
-        const left = Math.round((W - (pm.width ?? 0)) / 2);
-        const top = Math.round(H * 0.82 - (pm.height ?? 0));
+        // Produit à l'opposé de la zone du texte (publicités) : à droite si le texte est à gauche, en bas s'il est en haut.
+        const left = Math.round(tz === "left" ? W * 0.72 - (pm.width ?? 0) / 2 : (W - (pm.width ?? 0)) / 2);
+        const top = Math.round(H * (tz === "top" ? 0.88 : 0.82) - (pm.height ?? 0));
         const composite = await sharp({ create: { width: W, height: H, channels: 4, background: { r: 235, g: 230, b: 224, alpha: 1 } } }).composite([{ input: prod, left, top }]).png().toBuffer();
         const mask = await sharp({ create: { width: W, height: H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: prod, left, top }]).png().toBuffer();
         const painted = await openaiScene({ ...base, usageKey: key }, { composite, productMask: mask, prompt, size: size as "1024x1024", usage });
@@ -139,7 +143,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       if (path === "composite_plate" && reference) {
         const r = mediaRouteFor(usage);
         const plate = await productPlate({ ...base, usageKey: key }, { prompt, aspect, usage });
-        return { img: await compositeProduct(plate, reference, brief.format.aspect), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
+        return { img: await compositeProduct(plate, reference, brief.format.aspect, brief.format.textZone), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       if (path === "text_to_image") {
         const r = mediaRouteFor(usage);
