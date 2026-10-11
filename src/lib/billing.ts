@@ -159,7 +159,8 @@ function ensureWallet(userId: string): Wallet {
 
 /** Budget fournisseur auquel les packs et recharges payés donnent droit (50 % du HT de chaque paiement). */
 function packEntitlementMicro(userId: string) {
-  return all<{ amount_cents: number }>("SELECT amount_cents FROM payments WHERE user_id = ? AND kind IN ('pack','topup') AND status = 'paid'", userId).reduce((a, p) => a + packBudgetMicro(p.amount_cents / 100), 0);
+  // Anciens packs (rattachés au compte) et recharges V2 (rattachées à l'abonnement d'un projet), remboursements déduits.
+  return all<{ amount_cents: number; refunded_cents: number }>("SELECT amount_cents, refunded_cents FROM payments WHERE (account_key = ? OR (account_key IS NULL AND user_id = ?)) AND kind IN ('pack','topup') AND status = 'paid'", userId, userId).reduce((a, p) => a + packBudgetMicro(Math.max(0, p.amount_cents - (p.refunded_cents ?? 0)) / 100), 0);
 }
 
 /**
@@ -505,6 +506,23 @@ export function creditPackBudget(userId: string, paidTtcEur: number, ref: string
     if (one("SELECT 1 FROM ledger WHERE type='topup' AND ref=?", ref)) return;
     run("UPDATE wallets SET topup_balance = topup_balance + ?, topup_period_added = topup_period_added + ?, updated_at=? WHERE user_id=?", ai, ai, now(), userId);
     run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), userId, "topup", "topup", ai, ref, note, now());
+  });
+}
+
+/**
+ * Recharge remboursée (en tout ou partie) : le budget fournisseur qu'elle avait ouvert est retiré, dans la limite de
+ * ce qu'il en reste (jamais de solde négatif). Une seule fois par remboursement (`ref`).
+ */
+export function revokeTopupBudget(userId: string, refundedTtcEur: number, ref: string, note: string) {
+  const micro = packBudgetMicro(refundedTtcEur);
+  if (micro <= 0 || isNoPlanKey(userId)) return;
+  ensureWallet(userId);
+  tx(() => {
+    if (one("SELECT 1 FROM ledger WHERE type='adjustment' AND ref=?", ref)) return;
+    const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
+    const take = Math.min(micro, Math.max(0, w.topup_balance - w.reserved_topup));
+    run("UPDATE wallets SET topup_balance = topup_balance - ?, updated_at = ? WHERE user_id = ?", take, now(), userId);
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), userId, "adjustment", "topup", -take, ref, note, now());
   });
 }
 

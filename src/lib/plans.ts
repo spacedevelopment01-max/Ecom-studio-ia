@@ -280,7 +280,13 @@ export type BillingView = {
 };
 
 /** Corps de POST /api/billing/checkout. Réponse : { url } (page de paiement Stripe). */
-export type CheckoutBody = { kind: "plan"; plan: PlanId; billing: Billing } | { kind: "pack"; pack: PackId };
+export type CheckoutBody =
+  | { kind: "plan"; plan: PlanId; billing: Billing }
+  | { kind: "pack"; pack: PackId }
+  /** Forfaits V2 : nouvel abonnement (= un nouveau projet), réactivation d'un projet résilié, recharge IA d'un projet. */
+  | { kind: "subscription"; plan: PlanId; billing: Billing }
+  | { kind: "reactivate"; projectId: string; plan: PlanId; billing: Billing }
+  | { kind: "topup"; projectId: string };
 
 /** Code d'erreur (champ `code` des réponses API et des tâches) quand un quota est épuisé : l'écran propose le pack adapté. */
 export const QUOTA_ERROR = "quota_exhausted";

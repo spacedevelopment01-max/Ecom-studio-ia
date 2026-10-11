@@ -573,6 +573,23 @@ CREATE TABLE IF NOT EXISTS blog_articles (
 );
 CREATE INDEX IF NOT EXISTS blog_articles_project ON blog_articles(project_id, deleted_at, updated_at);
 
+-- Sessions de paiement ouvertes (forfaits V2) : une actualisation ou un double clic renvoie la même session au lieu
+-- d'en créer une seconde ; une session expirée ou abandonnée ne donne aucun droit.
+CREATE TABLE IF NOT EXISTS checkout_sessions (
+  id TEXT PRIMARY KEY,           -- identifiant Stripe de la session
+  user_id TEXT NOT NULL,
+  kind TEXT NOT NULL,            -- subscription | reactivate | topup | appointment
+  plan TEXT,
+  billing TEXT,
+  project_id TEXT,
+  ref TEXT,
+  url TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open', -- open | complete | expired
+  created_at INTEGER NOT NULL,
+  completed_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS checkout_sessions_user ON checkout_sessions(user_id, kind, status, created_at);
+
 -- Webhook Stripe : journal des événements traités (un événement relivré n'est jamais appliqué deux fois).
 CREATE TABLE IF NOT EXISTS stripe_events (
   id TEXT PRIMARY KEY,
@@ -877,6 +894,11 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["subscriptions", "price_cents", "INTEGER"],
   ["subscriptions", "cancel_at_period_end", "INTEGER NOT NULL DEFAULT 0"],
   ["projects", "hidden", "INTEGER NOT NULL DEFAULT 0"],
+  // Paiements V2 : projet et abonnement (compte de facturation) concernés, paiement Stripe, remboursement.
+  ["payments", "project_id", "TEXT"],
+  ["payments", "account_key", "TEXT"],
+  ["payments", "payment_intent", "TEXT"],
+  ["payments", "refunded_cents", "INTEGER NOT NULL DEFAULT 0"],
 ];
 
 function migrate(db: Database.Database) {
