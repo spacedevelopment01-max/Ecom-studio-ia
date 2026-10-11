@@ -188,7 +188,7 @@ describe("Sites niveau agence", async () => {
     if (hightech.intent.site === "shop_mono") expect(html).toMatch(/data-featured-product[\s\S]*data-add-button/);
   });
 
-  it("site de services (devis) : formulaire de demande en fin d'accueil à la place du simple bouton ; réservation par lien : le bouton reste", () => {
+  it("site de services (devis) : formulaire de demande en fin d'accueil à la place du simple bouton ; réservation : le bouton « Réserver » reste", () => {
     const offers = ["Plâtrerie", "Enduits", "Peinture"].map((title) => ({ title, text: "", meta: "" }));
     const quote = fr(() => compose({ ...base.intent, site: "services_trade" as const, conversion: "quote" as const }, base.art, content({ offers }), null, null));
     const list = types(quote.templates.index);

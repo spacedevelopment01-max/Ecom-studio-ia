@@ -385,8 +385,8 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   ];
 
   // Site de services (devis ou contact) : le formulaire de demande directement en fin d'accueil, à la place du simple
-  // bouton final (une étape de moins pour le visiteur). Réservation par lien ou appel : le bouton reste.
-  const quoteForm: Sec | null = services && (intent.conversion === "quote" || intent.conversion === "contact" || (intent.conversion === "book" && !c.contact.bookingUrl)) ? [
+  // bouton final (une étape de moins pour le visiteur). Réservation ou appel : le bouton « Réserver » / « Appeler » reste.
+  const quoteForm: Sec | null = services && (intent.conversion === "quote" || intent.conversion === "contact") ? [
     "contact-form",
     {
       eyebrow: c.city ? `${c.category} · ${c.city}` : c.category,
