@@ -265,7 +265,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   if (hasTextAdapter(route.provider)) return otherCall(call, decision, messages, format, suffix, callTry);
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
   // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non.
-  assertAiAllowed(call.userId);
+  assertAiAllowed(call.userId, call.projectId);
   // Seul Haiku 4.5 n'a pas d'effort réglable (réflexion par budget de jetons) ; Haiku 5.5 suit le chemin commun.
   const isHaiku = route.model === "claude-haiku-4-5";
   const effort = mapEffort("anthropic", route.model, route.effort ?? "medium") ?? "medium";
@@ -434,7 +434,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   if (!m) throw new PermanentError(L(`Modèle ${provider}:${model} absent du catalogue des modèles de texte.`, `Model ${provider}:${model} isn't in the text model catalog.`));
   const key = activeProviderKey(provider);
   if (!key) throw new UserFacingError(L(`La clé ${provider} est absente ou désactivée dans l'administration.`, `The ${provider} key is missing or disabled in the admin settings.`));
-  assertAiAllowed(call.userId);
+  assertAiAllowed(call.userId, call.projectId);
   const adapter = textDeps.adapters[provider];
   const effort = mapEffort(provider, model, decision.effort ?? null);
   const schema = format && typeof format === "object" && (format as any).schema ? ((format as any).schema as Record<string, unknown>) : null;

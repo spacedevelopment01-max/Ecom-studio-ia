@@ -12,6 +12,7 @@ import type { ServiceProfile } from "../project-types";
 import { servicesPlan } from "./services-site";
 import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
+import { planForTheme, themeRank } from "./theme-access";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 
 /** Onze directions d'origine, puis les thèmes du catalogue (theme-catalog.ts) : trente compositions distinctes. */
@@ -476,9 +477,11 @@ const CHROME_LABEL = {
 };
 
 /** Directions présentées dans la galerie : description, aperçu et combinaison d'en-tête / pied de page (langue de l'interface). */
+/** Cartes de la galerie, dans l'ordre de la bibliothèque (1 → 30), avec le premier forfait qui ouvre chaque thème. */
 export function directionCards(lang: Lang = "fr") {
   const cl = CHROME_LABEL[lang];
-  return DIRECTIONS.map((d) => ({
+  const rank = (id: string) => themeRank(id) ?? 99;
+  return [...DIRECTIONS].sort((a, b) => rank(a.id) - rank(b.id)).map((d) => ({
     id: d.id,
     name: d.name,
     tagline: pick(lang, d.tagline, DIRECTIONS_EN[d.id].tagline),
@@ -486,6 +489,7 @@ export function directionCards(lang: Lang = "fr") {
     dark: DARK_DIRECTIONS.includes(d.id),
     preview: `/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`,
     chrome: [cl.shape[CHROME[d.id].shape], cl.footer[CHROME[d.id].footer], cl.ann[CHROME[d.id].ann], cl.card[CHROME[d.id].card]],
+    plan: planForTheme(d.id),
   }));
 }
 export type DirectionCard = ReturnType<typeof directionCards>[number];

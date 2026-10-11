@@ -3,6 +3,9 @@
  * complètes (texte, légende, média au bon format, date), puis programmation
  * réelle exécutée par le worker — même navigateur fermé.
  */
+import { projectPlan } from "../project-billing";
+import { scheduledPostsOn } from "../plan-gates";
+import { PLANS } from "../plans";
 import { decide } from "../quality/gate";
 import { saveCheck } from "../quality/store";
 import { autopublishAllowed } from "../quotas";
@@ -803,7 +806,12 @@ export async function createContentPlan(ctx: JobContext, projectId: string, para
     for (const m of mediaIds) addUsage(m, "post", postId, `${fmt.label} — ${new Date(post.scheduled_at).toLocaleDateString(intlLocale(uiLang()))}`);
     // Une publication signalée par le contrôle des allégations n'est jamais programmée automatiquement.
     const flagged = !!json<{ claims?: string[] }>(post.brief, {}).claims?.length;
-    const status = !mediaIds.length && post.network !== "facebook" ? "draft" : flagged ? "review" : decideStatus(p, post.network, post.connection_id, params.approval, mediaIds);
+    let status = !mediaIds.length && post.network !== "facebook" ? "draft" : flagged ? "review" : decideStatus(p, post.network, post.connection_id, params.approval, mediaIds);
+    // Programmation automatique dans la limite de publications par jour du forfait du projet (sinon : à valider).
+    if (status === "scheduled") {
+      const plan = projectPlan(projectId);
+      if (!plan || scheduledPostsOn(projectId, post.scheduled_at, postId) >= PLANS[plan].postsPerDay) status = "review";
+    }
     run("UPDATE posts SET media = ?, status = ?, auto_approved = ?, approved_at = CASE WHEN ? = 'scheduled' THEN ? ELSE approved_at END, updated_at = ? WHERE id = ?", JSON.stringify(mediaIds), status, status === "scheduled" ? 1 : 0, status, now(), now(), postId);
   }
   if (needVideo) {

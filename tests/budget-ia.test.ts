@@ -93,7 +93,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
 
   it("budget mensuel = 40 % du prix HT ; annuel = 40 % de l'équivalent mensuel HT ; ≤ 40 % pour toutes les formules", () => {
     const cases = [
-      ["creer", "month", 49.9], ["creer", "year", 499 / 12], ["vendre", "month", 79.9], ["vendre", "year", 799 / 12], ["dominer", "month", 99.9], ["dominer", "year", 999 / 12],
+      ["creer", "month", 49], ["creer", "year", 490 / 12], ["vendre", "month", 89], ["vendre", "year", 890 / 12], ["dominer", "month", 129], ["dominer", "year", 1290 / 12],
     ] as const;
     for (const [plan, b, ttc] of cases) {
       const m = monthlyAllowanceMicro({ status: "active", plan, billing: b });
@@ -106,7 +106,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
 
   it("première création : aucune enveloppe en plus du budget mensuel ; découverte : 0 €", async () => {
     const u = await client("vendre");
-    expect(balance(u.id).available).toBe(Math.floor(0.4 * (79.9 / 1.2) * EUR));
+    expect(balance(u.id).available).toBe(Math.floor(0.4 * (89 / 1.2) * EUR));
     expect(one("SELECT 1 FROM ledger WHERE user_id = ? AND type IN ('creation','discovery')", u.id)).toBeFalsy();
     const free = await client(null);
     expect(balance(free.id).available).toBe(0);
@@ -118,8 +118,8 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     const m = await client("vendre", "month");
     const y = await client("vendre", "year");
     expect(wallet(y.id).monthly_allowance).toBeLessThan(wallet(m.id).monthly_allowance);
-    expect(wallet(y.id).monthly_allowance).toBeLessThanOrEqual(Math.floor(0.4 * (799 / 12 / 1.2) * EUR));
-    expect(wallet(y.id).monthly_allowance).toBeGreaterThan(Math.floor(0.4 * (799 / 12 / 1.2) * EUR) - EUR / 100);
+    expect(wallet(y.id).monthly_allowance).toBeLessThanOrEqual(Math.floor(0.4 * (890 / 12 / 1.2) * EUR));
+    expect(wallet(y.id).monthly_allowance).toBeGreaterThan(Math.floor(0.4 * (890 / 12 / 1.2) * EUR) - EUR / 100);
   });
 
   it("appel réussi : coût maximal réservé avant l'envoi, puis réglé au coût réel ; réservation rendue", async () => {
@@ -308,9 +308,9 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     const u = await client("vendre");
     run("UPDATE wallets SET monthly_allowance = ?, topup_balance = ?, rule_version = 0 WHERE user_id = ?", 34 * EUR, 12 * EUR, u.id);
     const b = balance(u.id);
-    expect(wallet(u.id).monthly_allowance).toBe(Math.floor(0.4 * (79.9 / 1.2) * EUR));
+    expect(wallet(u.id).monthly_allowance).toBe(Math.floor(0.4 * (89 / 1.2) * EUR));
     expect(wallet(u.id).topup_balance).toBe(0);
-    expect(b.available).toBeLessThanOrEqual(0.4 * (79.9 / 1.2) * EUR);
+    expect(b.available).toBeLessThanOrEqual(0.4 * (89 / 1.2) * EUR);
     expect(all("SELECT 1 FROM ledger WHERE user_id = ? AND type = 'adjustment'", u.id).length).toBe(2);
   });
 

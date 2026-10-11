@@ -105,12 +105,15 @@ describe("demande unique : accord, plafond, statuts, Réessayer", async () => {
   }, 120_000);
 
   it("vidéo : jamais approuvée d'office sans accord payant", async () => {
+    // Vidéos IA : à partir du forfait Développer (Créer n'en a pas).
+    run("UPDATE subscriptions SET plan = 'vendre' WHERE project_id = ?", shop);
     video.approve.length = 0;
     const w = await fr(() => wf.prepareWorkflow(shop, creer.id, "Crée une vidéo de présentation de mon produit", { aiActive: false }));
     const s = wf.startWorkflow(w.id, {});
     await runOrFail(s.jobId!);
     expect(video.approve.length).toBeGreaterThan(0);
     expect(video.approve.every((a) => a === false)).toBe(true);
+    run("UPDATE subscriptions SET plan = 'creer' WHERE project_id = ?", shop);
   }, 120_000);
 
   it("blog inaccessible (forfait Créer) : étape non faite avec sa raison, la demande continue et aboutit", async () => {

@@ -129,9 +129,10 @@ export type ProjectRow = {
 
 /** Isolation stricte : un projet n'est accessible qu'à son propriétaire. */
 export function ownedProject(user: User, projectId: string): ProjectRow {
-  // Un projet supprimé (archivé) n'est plus utilisable : sinon la limite d'une boutique par abonnement serait
-  // contournée (archiver puis continuer à travailler dessus). Ses données restent conservées en base.
-  const p = one<ProjectRow>("SELECT * FROM projects WHERE id = ? AND user_id = ? AND archived = 0", projectId, user.id);
+  // Un projet supprimé (archivé) n'est plus utilisable, et son abonnement reste rattaché (jamais réutilisé pour un
+  // autre projet). Un projet masqué (ancienne découverte gratuite) n'est accessible qu'une fois repris par un
+  // abonnement. Les données restent conservées en base.
+  const p = one<ProjectRow>("SELECT * FROM projects WHERE id = ? AND user_id = ? AND archived = 0 AND hidden = 0", projectId, user.id);
   if (!p) throw new HttpError(404, L("Projet introuvable.", "Project not found."));
   return p;
 }

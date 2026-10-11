@@ -21,6 +21,7 @@ import { charter, placeholder } from "../ai/prompts";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { aiCopyReview, copyReviewFeedback, copyReviewMean, copyReviewPassed, lintClaims, lintHollow, scrubClaims } from "../ai/tasks";
 import { assertQuota, consumeQuota, quotaMessage, quotaView, userPlan } from "../quotas";
+import { accountKeyFor } from "../project-billing";
 import { PLANS, QUOTA_ERROR, type PlanId } from "../plans";
 import { assetUrl, getAsset } from "../library";
 import { countWords, escHtml, fitLength, placeholders, sanitizeBlogHtml, slugify, stripTags } from "../blog-html";
@@ -96,30 +97,30 @@ export type ArticleView = ReturnType<typeof articleView>;
 // ---------------------------------------------------------------- accès (forfait, quota)
 
 /** Ce que le compte peut faire avec le blog (selon son forfait). */
-export function blogAccess(userId: string) {
+export function blogAccess(userId: string, projectId?: string | null) {
   // L'administrateur suit son forfait comme un client (il teste le studio en gratuit comme en payant).
   const admin = false;
-  const plan: PlanId | null = userPlan(userId);
-  const q = quotaView(userId, "blog");
-  // Forfait sans articles (Créer) : seuls des articles ajoutés autrement (pack) ouvriraient l'accès.
-  const included = !!plan && (PLANS[plan].quotas.blog > 0 || q.pack > 0);
+  // Forfait et compteur d'articles du PROJET (4 par mois avec Développer, 12 avec Dominer).
+  const plan: PlanId | null = userPlan(userId, projectId);
+  const q = quotaView(userId, "blog", projectId);
+  const included = !!plan && PLANS[plan].quotas.blog > 0;
   return { admin, plan, allowed: admin || included, left: q.left, included: q.included + q.rollover, used: q.used };
 }
 
 /** Raison du refus (forfait), ou null si le blog est ouvert. */
-export function blogPlanReason(userId: string): string | null {
-  const a = blogAccess(userId);
+export function blogPlanReason(userId: string, projectId?: string | null): string | null {
+  const a = blogAccess(userId, projectId);
   if (a.allowed) return null;
   const v = PLANS.vendre.quotas.blog;
   const d = PLANS.dominer.quotas.blog;
   return a.plan
     ? L(
-        `Votre forfait ${PLANS[a.plan].name.fr} n'inclut pas les articles de blog. Ils sont inclus dans les forfaits Vendre (${v} par mois) et Dominer (${d} par mois) : changez de forfait dans « Mon compte ».`,
-        `Your ${PLANS[a.plan].name.en} plan doesn't include blog posts. They come with the Sell (${v} a month) and Dominate (${d} a month) plans: change plan in "My account".`,
+        `Votre forfait ${PLANS[a.plan].name.fr} n'inclut pas les articles de blog. Ils sont inclus dans les forfaits Développer (${v} par mois) et Dominer (${d} par mois) : changez de forfait dans « Mon compte ».`,
+        `Your ${PLANS[a.plan].name.en} plan doesn't include blog posts. They come with the Grow (${v} a month) and Dominate (${d} a month) plans: change plan in "My account".`,
       )
     : L(
-        `Les articles de blog écrits par l'IA sont inclus dans les forfaits Vendre (${v} par mois) et Dominer (${d} par mois). Choisissez un forfait dans « Mon compte ».`,
-        `AI-written blog posts come with the Sell (${v} a month) and Dominate (${d} a month) plans. Choose a plan in "My account".`,
+        `Les articles de blog écrits par l'IA sont inclus dans les forfaits Développer (${v} par mois) et Dominer (${d} par mois). Choisissez un forfait dans « Mon compte ».`,
+        `AI-written blog posts come with the Grow (${v} a month) and Dominate (${d} a month) plans. Choose a plan in "My account".`,
       );
 }
 
@@ -131,13 +132,13 @@ export class BlogAccessError extends UserFacingError {
 }
 
 /** Avant d'écrire (ou de réécrire avec l'IA) un article : forfait puis quota. */
-export function assertBlogWrite(userId: string) {
-  const reason = blogPlanReason(userId);
+export function assertBlogWrite(userId: string, projectId?: string | null) {
+  const reason = blogPlanReason(userId, projectId);
   if (reason) throw new BlogAccessError(reason);
   try {
-    assertQuota(userId, "blog");
+    assertQuota(userId, "blog", 1, projectId);
   } catch {
-    throw new BlogAccessError(quotaMessage(userId, "blog"), QUOTA_ERROR);
+    throw new BlogAccessError(quotaMessage(accountKeyFor(userId, projectId), "blog"), QUOTA_ERROR);
   }
 }
 
@@ -408,7 +409,7 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
   // Déjà écrit lors d'un essai précédent (décompte compris) : rien à refaire.
   const done = ctx.checkpoint.saved as string | undefined;
   if (done) return { articleId: done, resumed: true };
-  assertBlogWrite(p.userId);
+  assertBlogWrite(p.userId, p.id);
   if (!llmConfigured()) throw new UserFacingError(L("L'écriture d'articles demande l'IA, qui n'est pas disponible pour le moment. Aucun article n'a été décompté ; réessayez plus tard.", "Writing blog posts requires AI, which isn't available right now. No post was counted; please try again later."));
   const links = storeLinks(projectId);
   // Requête et intention de recherche : celles du sujet choisi (envoyées par l'écran), sinon celles de l'article
@@ -473,7 +474,7 @@ export async function writeBlogArticle(ctx: JobContext, projectId: string, req: 
   );
   saveCheck(gate, { userId: p.userId, projectId, jobId: ctx.job.id, candidateId: `blog:${articleId}` });
   // Un article écrit (ou réécrit avec l'IA) = 1 article du forfait, décompté une seule fois par tâche.
-  consumeQuota(p.userId, "blog", 1, `blog:${ctx.job.id}`);
+  consumeQuota(p.userId, "blog", 1, `blog:${ctx.job.id}`, projectId);
   ctx.save("saved", articleId);
   return { articleId, words: countWords(a.bodyHtml), notes: notes.length, verdict: gate.verdict };
 }

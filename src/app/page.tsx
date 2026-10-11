@@ -3,7 +3,7 @@ import path from "node:path";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight, ArrowUpRight, Briefcase, Check, Clapperboard, FileCheck2, Lock, Minus, PackageOpen, PlugZap, ShieldCheck, Sparkles, UserRound, Wand2 } from "lucide-react";
-import { pick, type Lang } from "@/lib/i18n";
+import { pick } from "@/lib/i18n";
 import { serverLang } from "@/lib/i18n-server";
 import { SiteFooter } from "@/components/site-footer";
 import { FilesSorter } from "@/components/files-sorter";
@@ -13,8 +13,9 @@ import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
 import { directionById, directionCards } from "@/lib/theme/directions";
-import { DISCOVERY, PLAN_IDS, PLANS, REFUND_DAYS } from "@/lib/plans";
-import { CompareTable, PackCards, PricingCards } from "@/components/pricing";
+import { PLANS, REFUND_DAYS, TOPUP_PRICE_EUR } from "@/lib/plans";
+import { demos, localizeDemo } from "@/lib/demo-content";
+import { CompareTable, PricingCards } from "@/components/pricing";
 import { paymentsLive } from "@/lib/payments";
 import { currentUser } from "@/lib/auth";
 import { SECTORS } from "@/lib/project-types";
@@ -34,38 +35,6 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: { canonical: "/" },
     openGraph: { title, description, type: "website", siteName: "E-COM STUDIO IA", images: [{ url: "/explainers/film-court.jpg", width: 1280, height: 720 }] },
-  };
-}
-
-/** Démonstrations : manifest.json (français) ou manifest.en.json (projets créés en anglais, fichiers « .en » à côté des français). */
-function demos(file: "manifest.json" | "manifest.en.json" = "manifest.json"): Demo[] {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(process.cwd(), "public", "demo", file), "utf8")).demos;
-  } catch {
-    return [];
-  }
-}
-
-/** Repli si public/demo/manifest.en.json n'est pas généré : textes des démonstrations françaises traduits pour l'interface anglaise. */
-const DEMO_EN: Record<string, { product?: string; note?: string }> = {
-  verger: { product: "Peach iced tea", note: "A supplier's 33 cl can of iced tea, relabeled: the brand and the three flavors are created by the studio." },
-  oreiller: { product: "Papillon ergonomic pillow", note: "A white-label ergonomic pillow from a supplier, in two colors: the brand, the visuals and the store are created by the studio." },
-  drone: { product: "Foldable drone with stabilized camera", note: "A white-label foldable drone from a supplier; the manufacturer's markings were removed from the photo, and the brand and store are created by the studio." },
-  chat: { product: "De-shedding glove", note: "White-label cat products from suppliers: the brand, the visuals and the store are created by the studio." },
-  tribunes: { product: "Lavender supporter T-shirt", note: "Supporter T-shirts from a supplier (supplier visuals): the brand and the store are created by the studio. Designs featuring the federation's official crest were excluded." },
-};
-const SECTOR_EN: Record<string, string> = { Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids" };
-const IMAGE_LABEL_EN: Record<string, string> = { Bannière: "Banner", Détail: "Detail", Détourage: "Cutout", Packshot: "Packshot", Publicité: "Ad", Scène: "Scene", "Visuel social": "Social visual" };
-
-function localizeDemo(d: Demo, lang: Lang): Demo {
-  if (lang !== "en") return d;
-  const en = DEMO_EN[d.id] ?? {};
-  return {
-    ...d,
-    product: en.product ?? d.product,
-    sector: SECTOR_EN[d.sector] ?? d.sector,
-    images: d.images.map((im) => ({ ...im, label: IMAGE_LABEL_EN[im.label] ?? im.label })),
-    source: d.source ? { ...d.source, note: en.note ?? d.source.note } : d.source,
   };
 }
 
@@ -198,15 +167,6 @@ export default async function Home() {
     { key: "social", label: T("Réseaux", "Social"), text: T("Le calendrier puise dans les mêmes visuels et textes ; rien ne part sans votre accord.", "The calendar draws on the same visuals and copy; nothing goes out without your approval.") },
   ];
 
-  const discoveryLabel: Record<(typeof DISCOVERY.includes)[number], string> = {
-    analysis: T("L'analyse de votre produit", "An analysis of your product"),
-    brand: T("Votre marque : nom, couleurs, ton", "Your brand: name, colors, tone"),
-    logos: T("Vos logos", "Your logos"),
-    homePreview: T("Un aperçu de votre page d'accueil", "A preview of your home page"),
-  };
-  const packDiscount = PLAN_IDS.filter((id) => PLANS[id].packDiscount > 0)
-    .map((id) => T(`-${Math.round(PLANS[id].packDiscount * 100)} % avec ${PLANS[id].name.fr}`, `${Math.round(PLANS[id].packDiscount * 100)}% off with ${PLANS[id].name.en}`))
-    .join(", ");
   const ba = list.find((d) => d.id === "drone");
 
   // Plateformes : uniquement ce qui existe (src/lib/cms-v2/capabilities.ts, src/lib/social-v2/platforms.ts).
@@ -241,10 +201,11 @@ export default async function Home() {
     [T("Le thème Shopify est-il vraiment installable ?", "Can the Shopify theme really be installed?"), T("Oui : c'est un thème Online Store 2.0 complet (sections, blocs, réglages natifs, panier latéral, recherche, pages), vérifié par Theme Check, l'outil officiel de Shopify. Vous l'importez en ZIP. L'envoi direct dans votre boutique est développé mais pas encore essayé sur une vraie boutique.", "Yes: it's a complete Online Store 2.0 theme (sections, blocks, native settings, cart drawer, search, pages), checked by Theme Check, Shopify's official tool. You upload it as a ZIP. Direct upload to your store is built but not yet tried on a real store.")],
     [T("Que se passe-t-il si une information manque ?", "What happens if some information is missing?"), T("Elle reste visible « à compléter » dans les textes, et le studio vous pose la question. Quand vous répondez, seuls les passages concernés sont mis à jour, sans écraser ce que vous avez validé.", "It stays visible as \"to complete\" in the copy, and the studio asks you about it. When you answer, only the relevant passages are updated, without overwriting what you've approved.")],
     [T("Mes publications partent-elles toutes seules ?", "Do my posts go out on their own?"), T("Seulement celles que vous avez approuvées, et une fois vos comptes connectés. La publication par les connexions officielles (Instagram, Facebook, TikTok, YouTube, Pinterest) est développée mais pas encore essayée sur de vrais comptes ; pour LinkedIn, le studio prépare les publications à publier vous-même.", "Only the ones you've approved, once your accounts are connected. Publishing through the official connections (Instagram, Facebook, TikTok, YouTube, Pinterest) is built but not yet tried on real accounts; for LinkedIn, the studio prepares posts for you to publish yourself.")],
-    [T("La découverte gratuite, c'est quoi ?", "What is the free discovery?"), T("Sans carte bancaire, le moteur du studio analyse votre produit, crée votre marque et vos logos, et vous montre un aperçu de votre page d'accueil. La découverte n'utilise pas l'IA : pour profiter de l'IA, créer des images et des vidéos, et exporter ou publier la boutique, choisissez un forfait. Une découverte par compte.", "With no credit card, the studio engine analyzes your product, creates your brand and logos, and shows you a preview of your home page. The discovery doesn't use AI: to get AI, create images and videos, and export or publish the store, choose a plan. One discovery per account.")],
-    [T("Puis-je gérer plusieurs boutiques ?", "Can I manage several stores?"), T("Une boutique par abonnement : pour une deuxième boutique, un deuxième abonnement.", "One store per subscription: for a second store, a second subscription.")],
-    [T("Que se passe-t-il si j'arrive au bout de mes visuels ?", "What happens when I run out of visuals?"), T("Vous ajoutez un pack (il n'expire pas), ou vous attendez le mois suivant : vos quotas reviennent à la date de renouvellement. Avec Vendre et Dominer, ce que vous n'utilisez pas est reporté au mois suivant.", "You add a pack (it never expires), or you wait for next month: your quotas come back on the renewal date. With Sell and Dominate, whatever you don't use rolls over to the next month.")],
-    [T("Puis-je changer de forfait ?", "Can I change plans?"), T("Oui, à tout moment, depuis « Mon compte » dans le studio.", "Yes, at any time, from \"My account\" in the studio.")],
+    [T("La découverte gratuite, c'est quoi ?", "What is the free discovery?"), T("Un compte gratuit, sans carte bancaire, qui ouvre le studio de démonstration : les 30 thèmes en aperçu, des marques, boutiques, publicités, vidéos et calendriers d'exemple que vous manipulez dans votre navigateur. Aucun projet réel, aucun appel IA, aucune publication ni export. Pour créer votre projet, choisissez un forfait.", "A free account, with no credit card, that opens the demo studio: all 30 themes in preview, plus sample brands, stores, ads, videos and calendars you can play with in your browser. No real project, no AI calls, no posting or export. To create your project, choose a plan.")],
+    [T("Un abonnement permet-il de créer plusieurs projets ?", "Can one subscription create several projects?"), T("Non : 1 abonnement = 1 projet unique (une boutique ou un site), définitivement. Supprimer, archiver ou dupliquer un projet ne libère pas son abonnement. Pour une nouvelle activité, vous souscrivez un nouvel abonnement.", "No: 1 subscription = 1 unique project (a store or a website), for good. Deleting, archiving or duplicating a project doesn't free its subscription. For a new business, you take out a new subscription.")],
+    [T("Puis-je gérer plusieurs activités ?", "Can I manage several businesses?"), T("Oui, depuis un seul compte : chaque projet a son propre abonnement, son budget IA, ses recharges et ses droits. Vous pouvez changer le forfait d'un projet ou le résilier sans toucher aux autres.", "Yes, from a single account: each project has its own subscription, AI budget, top-ups and features. You can change one project's plan or cancel it without affecting the others.")],
+    [T("Et si le budget IA de mon projet est épuisé ?", "What if my project's AI budget runs out?"), T(`Vous ajoutez une recharge de ${TOPUP_PRICE_EUR} € à ce projet (elle n'expire pas), ou vous attendez le renouvellement. En attendant, le moteur local du studio continue sans IA.`, `You add a €${TOPUP_PRICE_EUR} top-up to that project (it never expires), or you wait for the renewal. Meanwhile, the studio's local engine keeps working without AI.`)],
+    [T("Puis-je changer de forfait ?", "Can I change plans?"), T("Oui, projet par projet, depuis « Mes projets » › « Gérer mon abonnement ». Une hausse est facturée au prorata.", "Yes, project by project, from \"My projects\" › \"Manage my subscription\". An upgrade is prorated.")],
     [T("Puis-je me faire rembourser ?", "Can I get a refund?"), T(`Oui : satisfait ou remboursé pendant ${REFUND_DAYS} jours. En mensuel, sans engagement et résiliable à tout moment.`, `Yes: ${REFUND_DAYS}-day money-back guarantee. Monthly billing has no commitment and can be canceled anytime.`)],
   ];
 
@@ -378,7 +339,7 @@ export default async function Home() {
                   [T("Sections inédites", "Brand-new sections"), T("Avec l'IA, une section nouvelle peut être codée pour votre idée, réglable dans l'éditeur.", "With AI, a new section can be coded for your idea, adjustable in the theme editor.")],
                   [T("Relecture visuelle", "Visual review"), T("La boutique est photographiée sur ordinateur et téléphone, puis corrigée.", "The store is captured on desktop and mobile, then corrected.")],
                   [T("Retouches", "Edits"), T("Seul l'élément visé change ; chaque version reste restaurable.", "Only the targeted element changes; every version can be restored.")],
-                  [T("Onze directions", "Eleven directions"), T("Sans IA, le moteur intégré part de l'une des onze directions, à vos couleurs.", "Without AI, the built-in engine starts from one of eleven directions, in your colors.")],
+                  [T("Trente thèmes", "Thirty themes"), T("Une bibliothèque de 30 thèmes : 10 avec Créer, 20 avec Développer, les 30 avec Dominer.", "A library of 30 themes: 10 with Create, 20 with Grow, all 30 with Dominate.")],
                 ].map(([t, d], i) => (
                   <li key={t} className="reveal flex gap-4 border-t border-line py-5" style={{ ["--d" as any]: i % 2 }}>
                     <span className="font-display text-sm font-semibold tabular-nums text-signal">{String(i + 1).padStart(2, "0")}</span>
@@ -390,15 +351,15 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Les onze directions (défilement horizontal fixé sur ordinateur, carrousel sur téléphone) */}
+        {/* Les 30 thèmes (défilement horizontal fixé sur ordinateur, carrousel sur téléphone) */}
         <ThemeShowcase themes={themes}>
           <div className="grid items-end gap-6 lg:grid-cols-2 lg:gap-12">
             <div>
               <p className="hp-eyebrow reveal">{T("Les thèmes", "The themes")}</p>
-              <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("Onze points de départ.", "Eleven starting points.")} <span className="hp-accent">{T("Ou aucun.", "Or none.")}</span></h2>
+              <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("Trente points de départ.", "Thirty starting points.")} <span className="hp-accent">{T("Ou aucun.", "Or none.")}</span></h2>
             </div>
             <div>
-              <p className="hp-lead reveal">{T("L'IA peut partir de l'une de ces onze directions ou composer un thème entièrement nouveau. Tout reste modifiable : en discutant avec le studio, puis dans l'éditeur de votre plateforme.", "The AI can start from one of these eleven directions or design an entirely new theme. Everything stays editable: by chatting with the studio, then in your platform's editor.")}</p>
+              <p className="hp-lead reveal">{T("L'IA peut partir de l'un de ces 30 thèmes ou composer un thème entièrement nouveau. Tout reste modifiable : en discutant avec le studio, puis dans l'éditeur de votre plateforme.", "The AI can start from one of these 30 themes or design an entirely new theme. Everything stays editable: by chatting with the studio, then in your platform's editor.")}</p>
               <Link href={user ? "/studio/themes" : "/inscription"} className="hp-btn hp-btn-ghost reveal mt-5">{T("Voir la galerie", "View the gallery")} <ArrowUpRight className="size-4" aria-hidden /></Link>
             </div>
           </div>
@@ -607,38 +568,28 @@ export default async function Home() {
         {/* ───────────── Tarifs (tout vient de src/lib/plans.ts) ───────────── */}
         <section id="offre" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <Head center eyebrow={T("Tarifs", "Pricing")} title={T("Un forfait, une boutique,", "One plan, one store,")} accent={T("l'IA comprise.", "AI included.")} lead={T("Vous savez chaque mois combien de visuels et de vidéos vous pouvez créer.", "Every month you know exactly how many visuals and videos you can create.")} />
-            <div className="reveal mt-12"><PricingCards loggedIn={!!user} /></div>
+            <Head center eyebrow={T("Tarifs", "Pricing")} title={T("Quatre offres claires,", "Four clear offers,")} accent={T("1 projet par abonnement.", "1 project per subscription.")} lead={T("Découvrez gratuitement, puis choisissez le forfait de chaque projet. Prix TTC.", "Discover for free, then choose each project's plan. Prices incl. VAT.")} />
+            <div className="reveal mt-12"><PricingCards loggedIn={!!user} withDiscovery /></div>
+            <p className="reveal mx-auto mt-6 max-w-2xl text-center text-[15px] text-ink-2">{T("Vous gérez plusieurs activités ? Souscrivez un abonnement par projet et retrouvez toutes vos activités dans un seul compte E-COM STUDIO IA.", "Running several businesses? Take out one subscription per project and find all your businesses in a single E-COM STUDIO IA account.")}</p>
             <ul className="reveal mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-ink-2">
               <li className="flex items-center gap-2"><ShieldCheck className="size-4 text-signal" aria-hidden /> {T(`Satisfait ou remboursé ${REFUND_DAYS} jours`, `${REFUND_DAYS}-day money-back guarantee`)}</li>
               <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Sans engagement en mensuel", "No commitment on monthly billing")}</li>
-              <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Résiliable à tout moment", "Cancel anytime")}</li>
+              <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Résiliable à tout moment, projet par projet", "Cancel anytime, project by project")}</li>
             </ul>
             <CompareTable className="reveal mt-8" />
-            {!live && <p className="mt-4 text-center text-xs text-muted">{T("Le paiement en ligne ouvre bientôt : vous pouvez déjà créer votre compte et faire la découverte gratuite.", "Online payment opens soon: you can already create your account and try the free discovery.")}</p>}
+            {!live && <p className="mt-4 text-center text-xs text-muted">{T("Le paiement en ligne ouvre bientôt : vous pouvez déjà créer votre compte et ouvrir le studio de démonstration.", "Online payment opens soon: you can already create your account and open the demo studio.")}</p>}
 
-            <div className="reveal mt-16 grid gap-8 overflow-hidden rounded-[2rem] border border-line bg-card p-6 hp-elev sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div>
-                <p className="hp-eyebrow">{T("Découverte gratuite", "Free discovery")}</p>
-                <h3 className="hp-title mt-3 text-3xl sm:text-4xl">{T("Voyez votre marque avant de payer.", "See your brand before you pay.")}</h3>
-                <ul className="mt-5 grid gap-2.5 text-[15px] text-ink sm:grid-cols-2">
-                  {DISCOVERY.includes.map((k) => <li key={k} className="flex gap-2.5"><Check className="mt-0.5 size-5 shrink-0 text-signal" aria-hidden /> {discoveryLabel[k]}</li>)}
-                </ul>
-                <p className="mt-4 text-sm text-ink-2">{T("Sans carte bancaire. Une découverte par compte, réalisée par le moteur du studio. L'IA, les images, les vidéos et l'export de la boutique sont inclus dans les forfaits.", "No credit card. One discovery per account, made by the studio engine. AI, images, videos and store export come with the plans.")}</p>
+            <div id="packs" className="reveal mt-16 grid scroll-mt-24 gap-4 sm:grid-cols-2">
+              <div className="rounded-[1.75rem] border border-line bg-card p-6 sm:p-8">
+                <p className="hp-eyebrow">{T("Recharge IA", "AI top-up")}</p>
+                <p className="mt-3 font-display text-3xl font-semibold">{T(`${TOPUP_PRICE_EUR} € TTC`, `€${TOPUP_PRICE_EUR} incl. VAT`)}</p>
+                <p className="mt-2 text-[15px] text-ink-2">{T("S'ajoute au budget IA d'un projet précis, quand le forfait du mois ne suffit plus. N'expire pas.", "Added to one specific project's AI budget when the month's plan isn't enough. Never expires.")}</p>
               </div>
-              <Link href={cta} className="hp-btn hp-btn-primary !min-h-14 !px-7 whitespace-nowrap"><Sparkles className="size-4" aria-hidden /> {T("Essayer gratuitement", "Try it for free")}</Link>
-            </div>
-
-            <div id="packs" className="mt-16 scroll-mt-24">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div className="max-w-2xl">
-                  <h3 className="hp-title reveal text-3xl sm:text-4xl">{T("Besoin de plus ? Les packs.", "Need more? Packs.")}</h3>
-                  <p className="reveal mt-2 text-ink-2">{T("À ajouter à votre forfait quand vous voulez. Ils n'expirent pas.", "Add them to your plan whenever you like. They never expire.")}</p>
-                </div>
-                {packDiscount && <p className="reveal rounded-full bg-card px-4 py-2 text-sm font-medium text-ink-2 ring-1 ring-line">{packDiscount}</p>}
+              <div className="rounded-[1.75rem] border border-line bg-card p-6 sm:p-8">
+                <p className="hp-eyebrow">{T("Accompagnement téléphonique", "Phone coaching")}</p>
+                <p className="mt-3 font-display text-3xl font-semibold">{T("1 heure", "1 hour")}</p>
+                <p className="mt-2 text-[15px] text-ink-2">{T(`${PLANS.creer.name.fr} : ${PLANS.creer.callPrice} € · ${PLANS.vendre.name.fr} : ${PLANS.vendre.callPrice} € · ${PLANS.dominer.name.fr} : la première heure est offerte, une seule fois.`, `${PLANS.creer.name.en}: €${PLANS.creer.callPrice} · ${PLANS.vendre.name.en}: €${PLANS.vendre.callPrice} · ${PLANS.dominer.name.en}: the first hour is free, once.`)}</p>
               </div>
-              <div className="reveal mt-6"><PackCards /></div>
-              <p className="mt-3 text-xs text-muted">{T("Prix TTC. Les packs s'ajoutent à un forfait.", "Prices incl. VAT. Packs are added to a plan.")}</p>
             </div>
           </div>
         </section>

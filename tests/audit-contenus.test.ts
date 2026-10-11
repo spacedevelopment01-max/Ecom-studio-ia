@@ -258,7 +258,7 @@ describe("I-3 sections sur mesure et aperçus cloisonnés", () => {
     const { POST } = await import("@/app/api/projects/[id]/theme/ops/route");
     const res = await POST(new Request("http://x/ops", { method: "POST", body: JSON.stringify({ ops: [{ op: "custom_section", type: "es-custom-demo", name: "Démo", liquid: section("") }] }) }), { params: Promise.resolve({ id: pid }) } as any);
     expect(res.status).toBe(402);
-    expect(JSON.stringify(await res.json())).toMatch(/Vendre et Dominer/);
+    expect(JSON.stringify(await res.json())).toMatch(/Développer et Dominer/);
     await login(null);
   });
 });

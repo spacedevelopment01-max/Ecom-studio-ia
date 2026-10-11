@@ -23,7 +23,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const b = await body(req, z.object({ count: z.number().int().min(1).max(6).optional(), objective: z.string().max(80).optional(), audience: z.string().max(600).optional(), networks: z.array(z.string().max(20)).max(6).optional() }));
   const lang = contentLang();
   const platforms = [...new Set((b.networks ?? []).map((n) => PLATFORM_OF[n]).filter(Boolean))];
-  const r = await runForUser(user.id, () => orchestrateNow(p, "ads.draft", `ads:${randomUUID()}`, () => runAdEngineV2(null, p.id, { count: b.count ?? 3, objective: b.objective ?? null, audience: b.audience ?? null, platforms: platforms.length ? platforms : undefined, copyOnly: true, maxCostEur: 0.5 })));
+  const r = await runForUser(user.id, () => orchestrateNow(p, "ads.draft", `ads:${randomUUID()}`, () => runAdEngineV2(null, p.id, { count: b.count ?? 3, objective: b.objective ?? null, audience: b.audience ?? null, platforms: platforms.length ? platforms : undefined, copyOnly: true, maxCostEur: 0.5 })), "normal", p.id);
   const ads = r.concepts.map((c) => ({ angle: c.angle.type, lever: c.angle.lever, hook: c.copy.hook, primary: c.copy.primary, headline: c.copy.headline, description: c.copy.description, cta: c.copy.cta }));
   return ok({ ads, by: r.concepts.some((c) => c.copyBy === "ai") ? "ai" : "local", strategy: { ...r.strategy, by: r.concepts.some((c) => c.copyBy === "ai") ? "ai" : "local" }, notes: r.notes, lang, engine: "ads-v2" });
 });

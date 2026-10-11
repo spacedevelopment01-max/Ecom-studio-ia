@@ -1,28 +1,17 @@
 "use client";
 /**
- * Mon compte : forfait en cours, ce qu'il reste ce mois-ci, changement de forfait, packs, historique des paiements.
- * Jamais de crédits ni de coûts d'IA : seulement des quotas concrets. Tout vient de src/lib/plans.ts et de GET /api/billing.
+ * Mon compte : un abonnement par projet (forfait, statut, échéance, IA en %, gestion), total mensuel, historique des
+ * paiements, sécurité. Jamais de coût d'IA en euros. Données : GET /api/projects et GET /api/billing.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles } from "lucide-react";
-import { api, Badge, Card, formatDate, Logo, ThemeToggle, useApi, useToast } from "./ui";
+import { ArrowLeft } from "lucide-react";
+import { Badge, Card, formatDate, Logo, ThemeToggle, useApi, useToast } from "./ui";
 import { LangSwitch, useLang, useT } from "./i18n";
-import { AiUsageBar, formatEur, Soon, useBilling } from "./billing-client";
-import { CompareTable, PackCards, PricingCards } from "./pricing";
+import { formatEur, useBilling } from "./billing-client";
+import { ProjectSubscriptionDialog, SUB_STATUS } from "./studio/project-subscription";
 import { SecurityCard } from "./password-forms";
-import { PACKS, PLANS, type Billing, type BillingView, type CheckoutBody, type PackId, type PlanId, type QuotaKey } from "@/lib/plans";
-
-const STATUS: Record<BillingView["status"], { fr: string; en: string; tone: "ok" | "warn" | "bad" | "neutral" } | null> = {
-  none: null,
-  trial: null,
-  active: null,
-  manual: { fr: "Activé par l'administration", en: "Activated by the admin", tone: "ok" },
-  past_due: { fr: "Paiement en retard", en: "Payment overdue", tone: "warn" },
-  canceled: { fr: "Résilié", en: "Canceled", tone: "bad" },
-};
-
-const QUOTA_ORDER: QuotaKey[] = ["visuals", "aiVideos", "ugc", "blog"];
+import { PLANS, type Billing, type PlanId } from "@/lib/plans";
 
 export function AccountPage() {
   const t = useT();
@@ -30,16 +19,14 @@ export function AccountPage() {
   const toast = useToast();
   const { billing: b, reload, error } = useBilling();
   const { data: me } = useApi<{ user: { email: string; name: string; role: string } }>("/api/me");
-  const [busy, setBusy] = useState<string | null>(null);
-  // Lien depuis la page d'accueil ou le studio : ?plan=vendre&billing=year, ?pack=visuals.
-  const [want, setWant] = useState<{ plan: PlanId | null; billing: Billing | null; pack: PackId | null }>({ plan: null, billing: null, pack: null });
-  const scrolled = useRef(false);
-
   useEffect(() => {
     const u = new URL(window.location.href);
     const plan = u.searchParams.get("plan");
-    const pack = u.searchParams.get("pack");
-    setWant({ plan: plan && plan in PLANS ? (plan as PlanId) : null, billing: u.searchParams.get("billing") === "year" ? "year" : u.searchParams.get("billing") === "month" ? "month" : null, pack: pack && pack in PACKS ? (pack as PackId) : null });
+    // Ancien lien « ?plan= » (accueil, studio) : un forfait = un nouvel abonnement pour un nouveau projet.
+    if (plan && plan in PLANS) {
+      window.location.replace(`/studio?nouveau=1&plan=${plan}&billing=${u.searchParams.get("billing") === "year" ? "year" : "month"}`);
+      return;
+    }
     const p = u.searchParams.get("paiement");
     if (!p) return;
     toast(p === "ok" ? "ok" : "bad", p === "ok" ? t("Paiement reçu. Votre compte se met à jour dès la confirmation du paiement (quelques secondes).", "Payment received. Your account updates as soon as the payment is confirmed (a few seconds).") : t("Paiement annulé : rien n'a été débité.", "Payment canceled: nothing was charged."));
@@ -47,31 +34,6 @@ export function AccountPage() {
     const timer = setTimeout(reload, 4000);
     return () => clearTimeout(timer);
   }, [toast, reload, t]);
-
-  // Défilement jusqu'aux forfaits ou aux packs une fois la page affichée.
-  useEffect(() => {
-    if (!b || scrolled.current) return;
-    const target = want.plan ? "forfaits" : want.pack ? "packs" : window.location.hash.slice(1);
-    if (!target) return;
-    scrolled.current = true;
-    setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
-  }, [b, want]);
-
-  const checkout = async (body: CheckoutBody, key: string) => {
-    setBusy(key);
-    try {
-      const r = await api<{ url: string }>("/api/billing/checkout", { body });
-      window.location.href = r.url;
-    } catch (e) {
-      toast("bad", (e as Error).message);
-      setBusy(null);
-    }
-  };
-
-  const plan = b?.plan ? PLANS[b.plan] : null;
-  const date = (ms: number) => formatDate(ms, { day: "numeric", month: "short" });
-  const status = b ? STATUS[b.status] : null;
-  const payOff = b && !b.paymentsLive ? t("Le paiement en ligne n'est pas encore ouvert. En attendant, l'administration peut activer un forfait pour vous.", "Online payment isn't open yet. In the meantime, the admin can activate a plan for you.") : null;
 
   return (
     <div className="min-h-dvh">
@@ -93,72 +55,8 @@ export function AccountPage() {
           error ? <p className="rounded-2xl bg-bad-soft p-4 text-sm text-bad">{error}</p> : <div className="skeleton h-64 rounded-3xl" />
         ) : (
           <>
-            {/* Forfait en cours */}
-            <Card className="p-6 sm:p-7">
-              {plan ? (
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="text-sm text-muted">{t("Votre forfait", "Your plan")}</p>
-                    <p className="mt-1 font-display text-3xl font-semibold">
-                      {plan.name[lang]} <span className="font-sans text-lg font-normal text-ink-2">({b.billing === "year" ? t("annuel", "yearly") : t("mensuel", "monthly")})</span>
-                    </p>
-                    <p className="mt-1 text-sm text-ink-2">
-                      {b.status === "canceled" ? t(`Se termine le ${date(b.periodEnd)}`, `Ends on ${date(b.periodEnd)}`) : t(`Renouvellement le ${date(b.periodEnd)}`, `Renews on ${date(b.periodEnd)}`)}
-                      {" · "}
-                      {t("1 boutique ou 1 site", "1 store or 1 website")}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {status && <Badge tone={status.tone} dot>{status[lang]}</Badge>}
-                    <a href="#forfaits" className="inline-flex h-10 items-center rounded-full border border-line bg-card px-4 text-sm font-medium hover:border-ink">{t("Changer de forfait", "Change plan")}</a>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="min-w-0 max-w-2xl">
-                    <p className="text-sm text-muted">{t("Votre forfait", "Your plan")}</p>
-                    <p className="mt-1 font-display text-3xl font-semibold">{t("Découverte gratuite", "Free discovery")}</p>
-                    <p className="mt-1 text-sm text-ink-2">
-                      {b.discovery.used
-                        ? t("Votre découverte est faite. Choisissez un forfait pour créer vos images et vidéos, et exporter ou publier votre boutique.", "Your discovery is done. Choose a plan to create your images and videos, and to export or publish your store.")
-                        : t("L'IA analyse votre produit, crée votre marque, vos logos et un aperçu de votre page d'accueil. Choisissez un forfait pour aller plus loin.", "AI analyzes your product, creates your brand, your logos and a preview of your home page. Choose a plan to go further.")}
-                    </p>
-                  </div>
-                  <a href="#forfaits" className="btn-glow inline-flex h-11 items-center gap-2 rounded-full bg-signal px-5 text-sm font-semibold text-signal-ink"><Sparkles className="size-4" aria-hidden /> {t("Choisir un forfait", "Choose a plan")}</a>
-                </div>
-              )}
-            </Card>
-
-            {/* Ce qu'il reste ce mois-ci */}
-            {(plan || QUOTA_ORDER.some((k) => b.quotas[k].pack > 0)) && (
-              <Card className="p-6 sm:p-7">
-                <h2 className="font-display text-2xl font-semibold">{t("Ce qu'il vous reste ce mois-ci", "What you have left this month")}</h2>
-                <AiUsageBar billing={b} variant="full" className="mt-5 rounded-2xl border border-line p-4" />
-                <p className="mt-5 border-t border-line pt-4 text-sm text-ink-2">
-                  {t("Langue de la boutique : une langue (français ou anglais). Boutique en plusieurs langues : ", "Store language: one language (French or English). Multilingual store: ")}
-                  <Soon />
-                </p>
-              </Card>
-            )}
-
-            {/* Forfaits */}
-            <section id="forfaits" className="scroll-mt-20">
-              <h2 className="font-display text-3xl font-semibold">{plan ? t("Changer de forfait", "Change plan") : t("Choisir un forfait", "Choose a plan")}</h2>
-              <p className="mt-1 text-ink-2">{t("Un forfait, une boutique, tout compris. Changez quand vous voulez.", "One plan, one store, all included. Change whenever you like.")}</p>
-              <div className="mt-6">
-                <PricingCards key={`${want.plan}-${want.billing}`} current={{ plan: b.plan, billing: b.billing }} initialBilling={want.billing ?? b.billing ?? "month"} selected={want.plan} onChoose={(p, bl) => checkout({ kind: "plan", plan: p, billing: bl }, `plan-${p}`)} busy={busy} disabledReason={payOff} />
-              </div>
-              <CompareTable className="mt-6" />
-            </section>
-
-            {/* Packs */}
-            <section id="packs" className="scroll-mt-20">
-              <h2 className="font-display text-3xl font-semibold">{t("Packs", "Packs")}</h2>
-              <p className="mt-1 text-ink-2">{t("Plus de visuels ou de vidéos ce mois-ci ? Ajoutez un pack : il n'expire pas.", "Need more visuals or videos this month? Add a pack: it never expires.")}</p>
-              <div className="mt-6">
-                <PackCards prices={b.packPrices} launchBought={b.launchPackBought} highlight={want.pack} busy={busy} onBuy={(id) => checkout({ kind: "pack", pack: id }, `pack-${id}`)} lockedReason={!b.plan ? t("Avec un forfait", "With a plan") : !b.paymentsLive ? t("Paiement bientôt ouvert", "Payment opening soon") : null} />
-              </div>
-            </section>
+            {/* Abonnements : un par projet */}
+            <Subscriptions paymentsOpen={b.paymentsLive} />
 
             {/* Historique */}
             <Card className="p-6 sm:p-7">
@@ -185,5 +83,74 @@ export function AccountPage() {
         <SecurityCard />
       </main>
     </div>
+  );
+}
+
+type SubRow = { id: string; name: string; brand: string | null; subscription: { plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null };
+
+/** Les abonnements du compte : un par projet, plus ceux payés en attente de création de projet. */
+function Subscriptions({ paymentsOpen }: { paymentsOpen: boolean }) {
+  const t = useT();
+  const { lang } = useLang();
+  const { data, reload } = useApi<{ projects: SubRow[]; pending: { id: string; plan: PlanId; billing: Billing | null; status: string }[] }>("/api/projects");
+  const [manage, setManage] = useState<SubRow | null>(null);
+  if (!data) return <div className="skeleton h-40 rounded-3xl" />;
+  const rows = data.projects.filter((p) => p.subscription);
+  // Montant facturé : abonnements payés (ceux offerts par l'équipe ne sont pas facturés).
+  const active = rows.filter((p) => p.subscription?.status === "active");
+  const monthly = [...active.map((p) => p.subscription!), ...data.pending.filter((s) => s.status === "active")].reduce((sum, s) => sum + (s.billing === "year" ? PLANS[s.plan].price.year / 12 : PLANS[s.plan].price.month), 0);
+  return (
+    <Card className="p-6 sm:p-7">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="font-display text-2xl font-semibold">{t("Mes abonnements", "My subscriptions")}</h2>
+          <p className="mt-1 text-sm text-ink-2">{t("1 abonnement = 1 projet. Chaque projet a son forfait, son budget IA et ses recharges.", "1 subscription = 1 project. Each project has its own plan, AI budget and top-ups.")}</p>
+        </div>
+        {monthly > 0 && <p className="text-sm text-ink-2">{t("Total des abonnements actifs :", "Total active subscriptions:")} <strong className="font-display text-xl text-ink">{formatEur(Math.round(monthly * 100) / 100, lang)}</strong> {t("TTC / mois", "incl. VAT / month")}</p>}
+      </div>
+      {rows.length === 0 && data.pending.length === 0 ? (
+        <div className="mt-5 rounded-2xl bg-paper-2 p-4 text-sm text-ink-2">
+          {t("Forfait Découverte (gratuit) : studio de démonstration, aucun projet réel.", "Discovery plan (free): demo studio, no real project.")}{" "}
+          <Link href="/studio?nouveau=1" className="font-semibold text-signal underline-offset-4 hover:underline">{t("Choisir un forfait", "Choose a plan")}</Link>
+          {!paymentsOpen && <p className="mt-2 text-xs text-muted">{t("Le paiement en ligne n'est pas encore ouvert. En attendant, l'administration peut activer un forfait pour vous.", "Online payment isn't open yet. In the meantime, the admin can activate a plan for you.")}</p>}
+        </div>
+      ) : (
+        <ul className="mt-5 divide-y divide-line">
+          {rows.map((p) => {
+            const s = p.subscription!;
+            const st = SUB_STATUS[s.status] ?? SUB_STATUS.none;
+            return (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{p.brand ?? p.name}</p>
+                  <p className="text-sm text-ink-2">
+                    {PLANS[s.plan].name[lang]} · {s.billing === "year" ? t("annuel", "yearly") : t("mensuel", "monthly")}
+                    {s.periodEnd ? ` · ${s.cancelAtPeriodEnd || s.status === "canceled" ? t("fin le", "ends") : t("échéance le", "renews")} ${formatDate(s.periodEnd, { day: "numeric", month: "short" })}` : ""}
+                    {p.ai ? ` · ${t(`IA : reste ${100 - p.ai.plan.used} %`, `AI: ${100 - p.ai.plan.used}% left`)}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge tone={st.tone} dot>{st[lang]}</Badge>
+                  <button type="button" onClick={() => setManage(p)} className="inline-flex h-10 items-center rounded-full border border-line bg-card px-4 text-sm font-medium hover:border-ink">{t("Gérer", "Manage")}</button>
+                </div>
+              </li>
+            );
+          })}
+          {data.pending.map((s) => (
+            <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <div>
+                <p className="font-medium">{t(`Forfait ${PLANS[s.plan].name.fr}`, `${PLANS[s.plan].name.en} plan`)}</p>
+                <p className="text-sm text-ink-2">{t("Payé · en attente de création de projet", "Paid · waiting for its project")}</p>
+              </div>
+              <Link href={`/studio?nouveau=1&abonnement=${encodeURIComponent(s.id)}`} className="inline-flex h-10 items-center rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink">{t("Créer le projet", "Create the project")}</Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-4 border-t border-line pt-4">
+        <Link href="/studio?nouveau=1" className="text-sm font-semibold text-signal underline-offset-4 hover:underline">{t("+ Créer un nouveau projet (nouvel abonnement)", "+ Create a new project (new subscription)")}</Link>
+      </div>
+      {manage && <ProjectSubscriptionDialog open projectId={manage.id} name={manage.brand ?? manage.name} onClose={() => setManage(null)} onChanged={() => reload()} />}
+    </Card>
   );
 }

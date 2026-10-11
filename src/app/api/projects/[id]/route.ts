@@ -32,7 +32,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     p.id,
   );
   const cutout = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at LIMIT 1", p.id);
-  const b = balance(user.id);
+  const b = balance(user.id, p.id);
   return ok({
     project: { id: p.id, name: p.name, status: p.status, platform: p.platform, storeUrl: p.row.store_url, createdAt: p.row.created_at, updatedAt: p.row.updated_at, sectorLabel: p.business === "services" && p.product.category ? p.product.category : sectorLabel(p.product.sector, uiLang()), business: p.business },
     // Questions posées au commerçant : dans la langue de son interface, quelle que soit celle du projet.
@@ -53,7 +53,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     coverUrl: cover ? `/api/files/${cover.id}?thumb=1` : null,
     cutoutUrl: cutout ? `/api/files/${cutout.id}?thumb=1` : null,
     // credits : l'IA est réellement utilisée pour ce client (budget caché suffisant ; sinon moteur local, sans le dire).
-    ai: { ...aiAvailability(), credits: hasAiCredits(user.id), mode: "ai" as const },
+    ai: { ...aiAvailability(), credits: hasAiCredits(user.id, p.id), mode: "ai" as const },
     credits: { usedPct: b.usedPct, alert: b.alert, paused: b.paused, empty: b.capacity === 0 },
   });
 });
@@ -95,7 +95,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       existingSite: z.object({ newSiteRequested: z.boolean() }).optional(),
     }),
   );
-  if (b.settings?.autopublish?.enabled) assertAutopublish(user);
+  if (b.settings?.autopublish?.enabled) assertAutopublish(user, p.id);
   if (b.existingSite && p.settings.existingSite) saveSettings(p.id, { ...p.settings, existingSite: { ...p.settings.existingSite, newSiteRequested: b.existingSite.newSiteRequested } });
   if (b.name) run("UPDATE projects SET name = ?, updated_at = ? WHERE id = ?", b.name, now(), p.id);
   if (b.platform) run("UPDATE projects SET platform = ?, updated_at = ? WHERE id = ?", b.platform, now(), p.id);

@@ -1,63 +1,131 @@
 /**
- * Ce que chaque forfait ouvre (côté serveur) : export et publication, jours de calendrier,
- * publication automatique, campagnes actives. Messages simples qui disent quel forfait débloque quoi.
- * L'administrateur suit son forfait comme un client : il teste le studio en gratuit comme en payant
- * (forfait attribué à la main dans Administration › Clients).
+ * Permissions des forfaits — système central, appliqué côté serveur (routes, worker, publication programmée).
+ *
+ * Les droits viennent TOUJOURS du forfait actif et confirmé de l'abonnement rattaché au projet (project-billing.ts),
+ * jamais d'une valeur envoyée par le navigateur : modifier une requête ne donne aucun droit. Un compte avec plusieurs
+ * projets a les droits de chaque projet séparément. L'administrateur suit son forfait comme un client.
+ * Messages simples qui disent quel forfait débloque quoi.
  */
 import { HttpError, type User } from "./auth";
 import { one } from "./db";
-import { getSubscription, planOf } from "./billing";
-import { PLANS, type PlanId } from "./plans";
+import { PLANS, type Plan, type PlanId } from "./plans";
+import { projectPlan } from "./project-billing";
+import { themeAllowed, planForTheme, themeRank } from "./theme/theme-access";
 import { L } from "./i18n-server";
 
-const planFor = (user: User): PlanId | null => planOf(getSubscription(user.id));
 const name = (p: PlanId) => L(PLANS[p].name.fr, PLANS[p].name.en);
+/** Premier forfait qui a la caractéristique demandée. */
+const firstWith = (ok: (p: Plan) => boolean): PlanId | null => (["creer", "vendre", "dominer"] as PlanId[]).find((id) => ok(PLANS[id])) ?? null;
+const needPlan = (p: PlanId | null) => (p ? L(`Disponible avec le forfait ${name(p)}.`, `Available with the ${name(p)} plan.`) : "");
 
-/** Export du thème, envoi vers Shopify, publication : réservés aux forfaits (la découverte gratuite reste un aperçu). */
-export function requirePlan(user: User) {
-  const plan = planFor(user);
-  if (!plan) throw new HttpError(402, L("La découverte gratuite est un aperçu. Choisissez un forfait dans « Mon compte » pour exporter et publier votre boutique.", "The free discovery is a preview. Choose a plan in \"My account\" to export and publish your store."));
+/** Forfait en vigueur pour le projet (null : aucun abonnement payé — découverte, ou abonnement résilié). */
+export function planOfProject(projectId: string): PlanId | null {
+  return projectPlan(projectId);
+}
+
+/** Droits complets du forfait du projet, ou null sans abonnement actif. */
+export function projectRights(projectId: string): Plan | null {
+  const p = projectPlan(projectId);
+  return p ? PLANS[p] : null;
+}
+
+/**
+ * Fonctions payantes (génération IA, export, envoi vers Shopify, publication) : abonnement actif du projet requis.
+ * Projet résilié : en lecture seule tant qu'il n'est pas réactivé.
+ */
+export function requirePlan(_user: User | null, projectId: string): PlanId {
+  const plan = projectPlan(projectId);
+  if (!plan) {
+    throw new HttpError(
+      402,
+      L("Ce projet n'a pas de forfait actif. Chaque projet a son propre abonnement : choisissez ou réactivez le forfait de ce projet dans « Mon compte » pour créer, exporter et publier.", "This project has no active plan. Each project has its own subscription: choose or reactivate this project's plan in \"My account\" to create, export and publish."),
+      "plan_required",
+    );
+  }
+  return plan;
+}
+
+/** Création d'images, de vidéos IA et de vidéos UGC selon le forfait du projet. */
+export function requireCreationPlan(user: User | null, projectId: string, what: "images" | "videos" | "ugc"): PlanId {
+  const plan = requirePlan(user, projectId);
+  const P = PLANS[plan];
+  if (what === "videos" && P.videos === "none") throw new HttpError(402, L(`Les vidéos IA ne sont pas incluses dans le forfait ${name(plan)}. ${needPlan(firstWith((p) => p.videos !== "none"))}`, `AI videos aren't included in the ${name(plan)} plan. ${needPlan(firstWith((p) => p.videos !== "none"))}`), "plan_upgrade");
+  if (what === "ugc" && !P.ugc) throw new HttpError(402, L(`Les vidéos UGC par l'IA ne sont pas incluses dans le forfait ${name(plan)}. ${needPlan(firstWith((p) => p.ugc))}`, `AI UGC videos aren't included in the ${name(plan)} plan. ${needPlan(firstWith((p) => p.ugc))}`), "plan_upgrade");
+  return plan;
+}
+
+/** Création, reconstruction et modification avancée de sections par l'IA ; pages personnalisées. */
+export function assertAiSections(projectId: string): PlanId {
+  const plan = requirePlan(null, projectId);
+  if (!PLANS[plan].aiSections) throw new HttpError(402, L(`La création de sections par l'IA n'est pas incluse dans le forfait ${name(plan)} : vous pouvez modifier les sections existantes et en ajouter depuis la bibliothèque. ${needPlan(firstWith((p) => p.aiSections))}`, `AI section creation isn't included in the ${name(plan)} plan: you can edit existing sections and add new ones from the library. ${needPlan(firstWith((p) => p.aiSections))}`), "plan_upgrade");
   return plan;
 }
 
 /**
- * Création d'images, de vidéos et de vidéos UGC : incluse dans les forfaits uniquement (la découverte gratuite
- * montre l'analyse, la marque, les logos et l'aperçu de la boutique). Réponse 402 au message clair.
+ * Sélection d'un thème de la bibliothèque : seuls les N premiers du forfait du projet. Le thème déjà utilisé par le
+ * projet reste utilisable (changement de forfait à la baisse : rien n'est détruit).
  */
-export function requireCreationPlan(user: User, what: "images" | "videos" | "ugc") {
-  const plan = planFor(user);
-  if (plan) return plan;
-  const label = { images: L("La création d'images", "Image creation"), videos: L("La création de vidéos", "Video creation"), ugc: L("La vidéo UGC", "UGC video") }[what];
-  throw new HttpError(
-    402,
-    L(`${label} est incluse dans les forfaits. La découverte gratuite montre l'analyse, la marque, les logos et l'aperçu de la boutique : choisissez un forfait dans « Mon compte » pour créer vos visuels et vidéos.`, `${label} is included in the plans. The free discovery shows the analysis, brand, logos and store preview: choose a plan in "My account" to create your visuals and videos.`),
-    "plan_required",
-  );
+export function assertThemeAllowed(projectId: string, directionId: string, currentDirection?: string | null) {
+  if (currentDirection && currentDirection === directionId) return;
+  const plan = requirePlan(null, projectId);
+  if (themeRank(directionId) == null) throw new HttpError(400, L("Thème inconnu.", "Unknown theme."));
+  if (!themeAllowed(plan, directionId)) {
+    const need = planForTheme(directionId);
+    throw new HttpError(402, L(`Ce thème n'est pas inclus dans le forfait ${name(plan)} (${PLANS[plan].themes} thèmes). ${needPlan(need)}`, `This theme isn't included in the ${name(plan)} plan (${PLANS[plan].themes} themes). ${needPlan(need)}`), "plan_upgrade");
+  }
 }
 
-/** Forfait d'un compte (par identifiant), pour les tâches en arrière-plan : l'administrateur n'est jamais bloqué. */
-export function planOfUserId(userId: string): PlanId | null {
-  const u = one<User>("SELECT id, email, name, role, timezone, created_at FROM users WHERE id = ?", userId);
-  return u ? planFor(u) : null;
-}
-
-/** Jours de publications préparés d'un coup (7 avec Créer, 30 avec Vendre et Dominer). */
-export function assertCalendarDays(user: User, days: number) {
-  const plan = requirePlan(user);
+/** Jours de calendrier de publications (7, 30 ou 90 selon le forfait). */
+export function assertCalendarDays(_user: User | null, projectId: string, days: number) {
+  const plan = requirePlan(null, projectId);
   const max = PLANS[plan].calendarDays;
-  if (days > max) throw new HttpError(402, L(`Votre forfait ${name(plan)} prépare jusqu'à ${max} jours de publications d'un coup. Le forfait Vendre en prépare 30.`, `Your ${name(plan)} plan prepares up to ${max} days of posts at once. The Sell plan prepares 30.`));
+  if (days > max) throw new HttpError(402, L(`Votre forfait ${name(plan)} programme jusqu'à ${max} jours de publications. ${needPlan(firstWith((p) => p.calendarDays >= days))}`, `Your ${name(plan)} plan schedules up to ${max} days of posts. ${needPlan(firstWith((p) => p.calendarDays >= days))}`));
 }
 
-/** Publication automatique : à partir du forfait Vendre. */
-export function assertAutopublish(user: User) {
-  const plan = requirePlan(user);
-  if (!PLANS[plan].autopublish) throw new HttpError(402, L("La publication automatique est incluse à partir du forfait Vendre. Avec Créer, vous validez et publiez chaque publication.", "Automatic publishing is included from the Sell plan. With Create, you approve and publish each post."));
+/** Publication automatique à l'heure prévue. */
+export function assertAutopublish(_user: User | null, projectId: string) {
+  const plan = requirePlan(null, projectId);
+  if (!PLANS[plan].autopublish) throw new HttpError(402, L("La publication automatique n'est pas incluse dans ce forfait.", "Automatic publishing isn't included in this plan."));
 }
 
 /** Campagnes publicitaires actives (brouillons et prêtes, hors archives). */
-export function assertCampaignSlot(user: User, projectId: string) {
-  const plan = requirePlan(user);
+export function assertCampaignSlot(_user: User | null, projectId: string) {
+  const plan = requirePlan(null, projectId);
   const max = PLANS[plan].campaigns;
   const n = one<{ n: number }>("SELECT COUNT(*) n FROM campaigns WHERE project_id = ? AND status != 'archived'", projectId)!.n;
   if (n >= max) throw new HttpError(402, L(`Votre forfait ${name(plan)} comprend ${max} campagne(s) active(s). Archivez-en une, ou passez au forfait supérieur.`, `Your ${name(plan)} plan includes ${max} active campaign(s). Archive one, or move up a plan.`));
+}
+
+/** Jour civil (UTC) d'un horodatage, pour compter les publications programmées par jour. */
+const dayBounds = (at: number) => {
+  const d = new Date(at);
+  const start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  return [start, start + 86_400_000] as const;
+};
+
+/** Publications programmées ce jour-là pour le projet (hors brouillons, échecs et publication `exceptId`). */
+export function scheduledPostsOn(projectId: string, at: number, exceptId?: string | null): number {
+  const [a, b] = dayBounds(at);
+  return one<{ n: number }>(
+    "SELECT COUNT(*) n FROM posts WHERE project_id = ? AND scheduled_at >= ? AND scheduled_at < ? AND status IN ('scheduled','approved','publishing','published') AND id != ?",
+    projectId,
+    a,
+    b,
+    exceptId ?? "",
+  )!.n;
+}
+
+/** Au plus 1, 3 ou 5 publications programmées par jour selon le forfait du projet. */
+export function assertPostsPerDay(projectId: string, at: number, exceptId?: string | null) {
+  const plan = requirePlan(null, projectId);
+  const max = PLANS[plan].postsPerDay;
+  if (scheduledPostsOn(projectId, at, exceptId) >= max) throw new HttpError(402, L(`Votre forfait ${name(plan)} programme au plus ${max} publication(s) par jour. Choisissez un autre jour. ${needPlan(firstWith((p) => p.postsPerDay > max))}`, `Your ${name(plan)} plan schedules at most ${max} post(s) per day. Pick another day. ${needPlan(firstWith((p) => p.postsPerDay > max))}`));
+}
+
+/**
+ * Forfait d'un projet pour les tâches en arrière-plan. `projectId` absent : forfait de l'ancien abonnement du compte
+ * (comptes sans projet) — jamais un droit plus large que celui d'un projet.
+ */
+export function planOfUserId(_userId: string, projectId?: string | null): PlanId | null {
+  return projectId ? projectPlan(projectId) : null;
 }

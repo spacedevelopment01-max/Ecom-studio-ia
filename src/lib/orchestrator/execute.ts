@@ -76,8 +76,8 @@ export const ACTION_STEPS: Record<string, StepKind[]> = {
 const GENERATED_IMAGE_ACTIONS = new Set(["images.generate", "image.single"]);
 
 /** Environnement de routage du compte (IA active, fournisseurs disponibles). */
-export function routingEnv(p: Pick<Project, "userId">) {
-  return { aiActive: aiActiveFor(p.userId) && !!activeProviderKey("anthropic"), available: (x: string) => !!activeProviderKey(x as never) };
+export function routingEnv(p: Pick<Project, "userId" | "id">) {
+  return { aiActive: aiActiveFor(p.userId, p.id) && !!activeProviderKey("anthropic"), available: (x: string) => !!activeProviderKey(x as never) };
 }
 
 /** Résultat d'une étape exécutée par un moteur existant (verdicts de sa barrière pendant l'étape). */
@@ -351,7 +351,7 @@ export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
     // Article de blog : SEO & Copywriting Engine V2 (faits vérifiés, contrôles, document éditable, rangé dans le blog).
     const { assertBlogWrite } = await import("../engine/blog");
     const { runContentEngineV2 } = await import("../seo-v2/engine");
-    assertBlogWrite(p.userId);
+    assertBlogWrite(p.userId, p.id);
     await ctx.step(`plan:${s.id}`, async () => (await runContentEngineV2(ctx, p.id, { type: "blog_article", request: String(s.input.text ?? "") || null })).docKey);
     return outcome(ctx.job.id, "blog", since);
   },

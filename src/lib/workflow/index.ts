@@ -113,7 +113,7 @@ export function parseWorkflowRequest(text: string, intents: Intent[]): { intents
 }
 
 /** L'IA réelle est-elle disponible pour ce compte (forfait, interrupteur, clé) ? Sinon : moteurs locaux, 0 €. */
-export const workflowAiActive = (userId: string) => aiActiveFor(userId) && !!activeProviderKey("anthropic");
+export const workflowAiActive = (userId: string, projectId: string) => aiActiveFor(userId, projectId) && !!activeProviderKey("anthropic");
 
 /**
  * Série de logos (Logo V2) : le devis du moteur lui-même (3 logos complets et leurs relectures, ou 4 logos construits),
@@ -177,7 +177,7 @@ export function estimateWorkflow(p: Project, plan: TaskPlan, params: WorkflowPar
       lines.push({ ...base, mode: "skip", paid: false, estimateMicro: 0, note: "non exécutée dans une demande (aucun moteur dédié)" });
       continue;
     }
-    const gate = planGate(s.kind, p.userId);
+    const gate = planGate(s.kind, p.userId, p.id);
     if (s.status === "skipped" || gate) {
       lines.push({ ...base, mode: "skip", paid: false, estimateMicro: 0, note: gate?.fr ?? s.reason ?? undefined });
       continue;
@@ -200,19 +200,23 @@ export function estimateWorkflow(p: Project, plan: TaskPlan, params: WorkflowPar
  * la marque, le logo, les textes et l'aperçu de la boutique ; export, visuels, vidéos et calendrier sont réservés aux
  * forfaits. Renvoie la raison d'un blocage (null : permis).
  */
-export function planGate(kind: StepKind | "pipeline", userId: string): { fr: string; en: string } | null {
+export function planGate(kind: StepKind | "pipeline", userId: string, projectId: string): { fr: string; en: string } | null {
   // Blog : forfait ET quota d'articles du mois (sinon l'étape échouerait et ferait échouer la demande).
   if (kind === "blog") {
     try {
-      assertBlogWrite(userId);
+      assertBlogWrite(userId, projectId);
     } catch (e) {
       const msg = (e as Error).message;
       return { fr: msg, en: msg };
     }
     return null;
   }
-  const plan = planOfUserId(userId);
-  if (plan) return null;
+  const plan = planOfUserId(userId, projectId);
+  if (plan) {
+    const P = PLANS[plan];
+    if (kind === "video" && P.videos === "none") return { fr: `vidéos IA non incluses dans le forfait ${P.name.fr}`, en: `AI videos aren't included in the ${P.name.en} plan` };
+    return null;
+  }
   if (kind === "cms_export" || kind === "publish") return { fr: "export et publication réservés aux forfaits (la découverte gratuite reste un aperçu)", en: "export and publishing are included in the plans (the free discovery is a preview)" };
   if (kind === "image_generate" || kind === "video" || kind === "ad") return { fr: "visuels, vidéos et publicités inclus dans les forfaits", en: "visuals, videos and ads are included in the plans" };
   if (kind === "social") return { fr: "calendrier de publications inclus dans les forfaits", en: "post calendar included in the plans" };
@@ -220,8 +224,8 @@ export function planGate(kind: StepKind | "pipeline", userId: string): { fr: str
 }
 
 /** Jours de calendrier préparés d'un coup par le forfait (7 avec Créer, 30 avec Vendre et Dominer). */
-export const planCalendarDays = (userId: string) => {
-  const plan = planOfUserId(userId);
+export const planCalendarDays = (userId: string, projectId: string) => {
+  const plan = planOfUserId(userId, projectId);
   return plan ? PLANS[plan].calendarDays : 0;
 };
 
@@ -279,7 +283,7 @@ export async function prepareWorkflow(projectId: string, userId: string, text: s
   // (pas de deuxième calendrier, campagne ni export identiques). Une autre formulation crée une nouvelle demande.
   const same = all<{ id: string; request: string }>("SELECT id, request FROM workflows WHERE project_id = ? AND status IN ('draft','queued','running','done') AND created_at > ? ORDER BY created_at DESC", projectId, now() - 86_400_000).find((w) => sameAsk(w.request, text));
   if (same) return loadWorkflow(same.id)!;
-  const aiActive = o.aiActive ?? workflowAiActive(userId);
+  const aiActive = o.aiActive ?? workflowAiActive(userId, projectId);
   const wid = id();
   const t = now();
   const intent = await understand({ text }, { aiActive: false });
@@ -402,9 +406,9 @@ export async function runWorkflow(ctx: JobContext) {
     const plan = loadOrCreatePlan({ projectId: p.id, userId: p.userId, requestKey: planKey(wf.id), intents: wf.intents, state: projectState(p), input: stepInput(wf.request, wf.params) });
     // Étapes de l'entrée enrichies de l'autorisation (montant accepté, plafond) : lues par les moteurs qui produisent.
     for (const s of plan.steps) {
-      s.input = { ...s.input, allowPaid, approvedMicro: wf.approvedMicro ?? 0, maxCostEur: (wf.capMicro ?? 0) / EUR, maxSocialDays: planCalendarDays(p.userId) || undefined, socialPlanId: `wf-social-${wf.id}` };
+      s.input = { ...s.input, allowPaid, approvedMicro: wf.approvedMicro ?? 0, maxCostEur: (wf.capMicro ?? 0) / EUR, maxSocialDays: planCalendarDays(p.userId, p.id) || undefined, socialPlanId: `wf-social-${wf.id}` };
       // Règle du forfait : l'étape n'est pas faite, la raison est affichée (jamais contournée).
-      const gate = s.status === "pending" ? planGate(s.kind, p.userId) : null;
+      const gate = s.status === "pending" ? planGate(s.kind, p.userId, p.id) : null;
       if (gate) Object.assign(s, { status: "skipped", reason: `forfait : ${gate.fr}` });
     }
     markCoveredByCreation(plan, wf.pipelineJobId);
@@ -424,7 +428,7 @@ export async function runWorkflow(ctx: JobContext) {
           ctx.progress(Math.min(0.95, i++ / Math.max(1, n)), `${STEP_INFO[s.kind].fr}…`);
           const ex = STEP_EXECUTORS[s.kind];
           if (!ex) return { skip: "non exécutée : aucun moteur dédié à cette étape dans une demande" };
-          const gate = planGate(s.kind, p.userId);
+          const gate = planGate(s.kind, p.userId, p.id);
           if (gate) return { skip: `forfait : ${gate.fr}` };
           // Plafond : une étape qui peut appeler l'IA n'est pas lancée si le reste ne couvre pas son estimation.
           if (allowPaid && (d.mode === "llm" || d.mode === "image" || d.mode === "video")) {

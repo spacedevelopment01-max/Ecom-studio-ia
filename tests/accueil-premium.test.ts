@@ -61,7 +61,7 @@ describe("Accueil premium", () => {
   });
 
   it("tarifs et capacités lus dans la configuration, connexions non essayées signalées", () => {
-    expect(page).toContain("<PricingCards loggedIn={!!user} />");
+    expect(page).toContain("<PricingCards loggedIn={!!user} withDiscovery />");
     expect(page).not.toMatch(/\d+[,.]\d{2}\s?€/); // aucun prix écrit à la main
     expect(page).toContain('T("Bêta", "Beta")');
     expect(page).toContain("pas encore essayé sur une vraie boutique");

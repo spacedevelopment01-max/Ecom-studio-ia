@@ -19,7 +19,7 @@ export const runtime = "nodejs";
  */
 export const GET = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  requirePlan(user);
+  requirePlan(user, p.id);
   const u = new URL(req.url).searchParams;
   const platform = u.get("platform") ?? "shopify";
   const v = u.get("version") ? themeVersion(p.id, u.get("version")!) : currentTheme(p.id);

@@ -78,7 +78,7 @@ export function PlanRequired({ what, className }: { what: "images" | "videos" | 
 /** Couleur d'une barre d'utilisation : normale, proche de la fin (80 %), épuisée (100 %). */
 const usageTone = (pct: number) => (pct >= 100 ? "bg-bad" : pct >= 80 ? "bg-warn" : "bg-signal");
 
-function UsageMeter({ used, label, thin }: { used: number; label: string; thin?: boolean }) {
+export function UsageMeter({ used, label, thin }: { used: number; label: string; thin?: boolean }) {
   return (
     <div className={cx("w-full overflow-hidden rounded-full bg-line", thin ? "h-1.5" : "h-2.5")} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={used} aria-label={label}>
       <div className={cx("h-full rounded-full transition-[width] duration-500", usageTone(used))} style={{ width: `${used > 0 ? Math.max(used, 2) : 0}%` }} />

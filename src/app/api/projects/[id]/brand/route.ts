@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { assertThemeAllowed } from "@/lib/plan-gates";
 import { runForUser } from "@/lib/ai/access";
 import { recordBrandDecision } from "@/lib/brain/brand-locks";
 import { body, handle, ok } from "@/lib/http";
@@ -38,6 +39,8 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       unvalidate: z.array(z.string()).optional(),
     }),
   );
+  // Thème choisi pour la boutique : uniquement ceux du forfait du projet (l'actuel reste conservé).
+  if (b.direction && b.direction !== p.brand.direction) assertThemeAllowed(p.id, b.direction, p.brand.direction ?? null);
   const brand = { ...p.brand } as any;
   for (const k of ["name", "tagline", "positioning", "audience", "story", "tone", "palette", "direction"] as const) {
     if (b[k] !== undefined) {
@@ -65,12 +68,12 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   // (logo, site, bannières, kit réseaux sociaux, charte), même si le logo est validé — c'est le client qui le demande.
   const paletteOnly = b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette) && (b.name === undefined || b.name === p.brand.name) && (b.tagline === undefined || b.tagline === p.brand.tagline);
   // Exécuté « pour » le client : une IA éventuelle (nouvelles pistes, ligne éditoriale) respecte son forfait et son budget.
-  const recolored = paletteOnly && !!brand.logo?.route ? await runForUser(owner, () => recolorChosenRoute(p.id, p.brand!.palette, { exact: !!b.paletteExact })) : false;
+  const recolored = paletteOnly && !!brand.logo?.route ? await runForUser(owner, () => recolorChosenRoute(p.id, p.brand!.palette, { exact: !!b.paletteExact }), "normal", p.id) : false;
   const regenerate = !recolored && touchesLogo && !hasClientLogo(p.id) && !logoLocked;
   // Logo V2 appliqué : même direction reconstruite avec le nouveau nom et la palette (sans IA). Ancien projet avec des
   // pistes de l'ancien moteur : ses pistes sont mises à jour comme avant (compatibilité, aucune nouvelle génération).
-  const v2 = regenerate && p.brand.logo?.engine === "v2" ? await runForUser(owner, () => reapplyLogoV2(null, p.id)) : false;
-  if (regenerate && !v2 && latestProposals(p.id).length) await runForUser(owner, () => generateLogos(null, p.id));
+  const v2 = regenerate && p.brand.logo?.engine === "v2" ? await runForUser(owner, () => reapplyLogoV2(null, p.id), "normal", p.id) : false;
+  if (regenerate && !v2 && latestProposals(p.id).length) await runForUser(owner, () => generateLogos(null, p.id), "normal", p.id);
   if (!recolored) await saveBrandGuide(p.id);
   // Le site actuel prend la nouvelle palette tout de suite (sans IA, retouches conservées).
   const siteUpdated = paletteChanged ? await applyPaletteToSite(p.id).catch((e) => (console.warn("[brand] palette du site", (e as Error).message), false)) : false;

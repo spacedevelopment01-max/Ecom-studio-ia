@@ -1,6 +1,7 @@
 /**
  * Phase 3B — orchestrateur branché sur les vrais parcours (tout est simulé : aucun appel payant).
  */
+import { paidProjects } from "./billing-fixtures";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as o from "@/lib/orchestrator";
 
@@ -58,6 +59,7 @@ describe("Phase 3B — orchestrateur branché", async () => {
   syncAllowance(u.id);
   const sbId = fr(() => seedSebastienBlanc(u.id));
   const serumId = fr(() => seedSerumEclat(u.id));
+  paidProjects("creer", sbId, serumId);
   let n = 0;
   const job = (type: string, payload: Record<string, unknown>) => {
     const id = `job-3b-${Date.now()}-${n++}`;

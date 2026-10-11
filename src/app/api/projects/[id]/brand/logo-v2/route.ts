@@ -96,14 +96,14 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (b.action === "quote") {
     // Devis AVANT tout appel payant : montant maximal de la série (ou d'une nouvelle version), qui sert aussi de plafond.
     const q = b.assetId ? logoRedrawQuote() : logoSeriesQuote();
-    const ai = aiActiveFor(p.userId);
+    const ai = aiActiveFor(p.userId, p.id);
     return ok({ ai, quote: q ? { ...q, maxEur: Math.round((q.maxMicro / 1e6) * 100) / 100 } : null });
   }
   if (b.action === "redraw") {
     // Nouvelle version d'un logo complet : une image payée, seulement à la demande du client (coût confirmé dans l'interface).
     const meta = json<any>(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-trial') AND deleted_at IS NULL", b.assetId ?? "", p.id)?.meta, null);
     if (!meta?.artwork) throw new HttpError(404, L("Logo complet introuvable.", "Full logo not found."));
-    if (!aiActiveFor(p.userId)) throw new HttpError(403, L("Une nouvelle version dessinée par l'IA demande un forfait avec IA.", "A new AI-drawn version needs a plan with AI."));
+    if (!aiActiveFor(p.userId, p.id)) throw new HttpError(403, L("Une nouvelle version dessinée par l'IA demande un forfait avec IA.", "A new AI-drawn version needs a plan with AI."));
     const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.redraw", label: L("Logo : nouvelle version", "Logo: new version"), payload: { projectId: p.id, assetId: b.assetId, feedback: b.feedback ?? "", ...(logoRedrawQuote() ? { costCapMicro: logoRedrawQuote()!.maxMicro } : {}) } });
     return ok({ jobId: job.id, ...view(p.id) });
   }

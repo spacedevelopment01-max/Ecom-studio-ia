@@ -282,8 +282,11 @@ CREATE TABLE IF NOT EXISTS campaigns (
 );
 
 -- Facturation : abonnements, portefeuille IA, recharges.
+-- Un abonnement est un « compte de facturation » (clé user_id, historique) : celui d'un ancien compte porte l'id
+-- de l'utilisateur, un abonnement souscrit par projet porte son propre id. owner_user_id est le compte client ;
+-- project_id le projet unique qu'il finance, rattaché une seule fois et pour toujours (voir billing-migration).
 CREATE TABLE IF NOT EXISTS subscriptions (
-  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT PRIMARY KEY,
   status TEXT NOT NULL DEFAULT 'none', -- none | trial | active | past_due | canceled | manual
   stores INTEGER NOT NULL DEFAULT 1,
   stripe_customer_id TEXT,
@@ -293,7 +296,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   updated_at INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS wallets (
-  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT PRIMARY KEY,
   period_start INTEGER NOT NULL,
   period_end INTEGER NOT NULL,
   monthly_allowance INTEGER NOT NULL DEFAULT 0, -- micro-euros
@@ -337,7 +340,7 @@ CREATE TABLE IF NOT EXISTS ai_reservations (
 );
 CREATE INDEX IF NOT EXISTS ai_reservations_held ON ai_reservations(user_id, status, created_at);
 CREATE TABLE IF NOT EXISTS quota_usage (
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
   period_start INTEGER NOT NULL,
   key TEXT NOT NULL,           -- visuals | aiVideos | ugc | blog
   included INTEGER NOT NULL,
@@ -346,14 +349,14 @@ CREATE TABLE IF NOT EXISTS quota_usage (
   PRIMARY KEY (user_id, period_start, key)
 );
 CREATE TABLE IF NOT EXISTS pack_balances (
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
   key TEXT NOT NULL,           -- visuals | aiVideos | ugc | languages
   balance INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id, key)
 );
 CREATE TABLE IF NOT EXISTS pack_purchases (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
   pack TEXT NOT NULL,
   ref TEXT NOT NULL UNIQUE,
   created_at INTEGER NOT NULL
@@ -569,6 +572,55 @@ CREATE TABLE IF NOT EXISTS blog_articles (
   deleted_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS blog_articles_project ON blog_articles(project_id, deleted_at, updated_at);
+
+-- Sessions de paiement ouvertes (forfaits V2) : une actualisation ou un double clic renvoie la même session au lieu
+-- d'en créer une seconde ; une session expirée ou abandonnée ne donne aucun droit.
+CREATE TABLE IF NOT EXISTS checkout_sessions (
+  id TEXT PRIMARY KEY,           -- identifiant Stripe de la session
+  user_id TEXT NOT NULL,
+  kind TEXT NOT NULL,            -- subscription | reactivate | topup | appointment
+  plan TEXT,
+  billing TEXT,
+  project_id TEXT,
+  ref TEXT,
+  url TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open', -- open | complete | expired
+  created_at INTEGER NOT NULL,
+  completed_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS checkout_sessions_user ON checkout_sessions(user_id, kind, status, created_at);
+
+-- Rendez-vous téléphoniques (60 min) : créneaux réels ouverts par l'équipe, un rendez-vous par créneau (index unique
+-- partiel : deux réservations simultanées ne peuvent pas prendre le même créneau), heure offerte DOMINER une seule
+-- fois par compte client (index unique partiel sur les réservations gratuites non annulées).
+CREATE TABLE IF NOT EXISTS call_slots (
+  id TEXT PRIMARY KEY,
+  starts_at INTEGER NOT NULL UNIQUE,
+  ends_at INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open', -- open | blocked
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS call_bookings (
+  id TEXT PRIMARY KEY,
+  slot_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  project_id TEXT NOT NULL,
+  plan TEXT NOT NULL,
+  price_cents INTEGER NOT NULL,
+  free INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL,          -- pending_payment | confirmed | done | canceled
+  topic TEXT,
+  phone TEXT,
+  stripe_session TEXT,
+  payment_intent TEXT,
+  refunded INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  canceled_at INTEGER
+);
+CREATE UNIQUE INDEX IF NOT EXISTS call_bookings_slot ON call_bookings(slot_id) WHERE status != 'canceled';
+CREATE UNIQUE INDEX IF NOT EXISTS call_bookings_free ON call_bookings(user_id) WHERE free = 1 AND status != 'canceled';
+CREATE INDEX IF NOT EXISTS call_bookings_user ON call_bookings(user_id, status);
 
 -- Webhook Stripe : journal des événements traités (un événement relivré n'est jamais appliqué deux fois).
 CREATE TABLE IF NOT EXISTS stripe_events (
@@ -864,6 +916,21 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["content_plans", "engine", "TEXT NOT NULL DEFAULT 'v1'"],
   ["content_plans", "paused", "INTEGER NOT NULL DEFAULT 0"],
   ["content_plans", "updated_at", "INTEGER"],
+  // Abonnement par projet (forfaits V2) : compte client, projet financé (rattachement définitif), origine, dates,
+  // prix réellement payé (ancien tarif conservé jusqu'au renouvellement) ; projet masqué (ancienne découverte).
+  ["subscriptions", "owner_user_id", "TEXT"],
+  ["subscriptions", "project_id", "TEXT"],
+  ["subscriptions", "bound_at", "INTEGER"],
+  ["subscriptions", "created_at", "INTEGER"],
+  ["subscriptions", "source", "TEXT"], // legacy | stripe | admin
+  ["subscriptions", "price_cents", "INTEGER"],
+  ["subscriptions", "cancel_at_period_end", "INTEGER NOT NULL DEFAULT 0"],
+  ["projects", "hidden", "INTEGER NOT NULL DEFAULT 0"],
+  // Paiements V2 : projet et abonnement (compte de facturation) concernés, paiement Stripe, remboursement.
+  ["payments", "project_id", "TEXT"],
+  ["payments", "account_key", "TEXT"],
+  ["payments", "payment_intent", "TEXT"],
+  ["payments", "refunded_cents", "INTEGER NOT NULL DEFAULT 0"],
 ];
 
 function migrate(db: Database.Database) {
@@ -887,6 +954,87 @@ function migrate(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS assets_project_role ON assets(project_id, role, created_at);
     CREATE INDEX IF NOT EXISTS assets_source ON assets(source_asset_id);
     CREATE INDEX IF NOT EXISTS ai_reservations_job ON ai_reservations(job_id, status);`);
+  migrateBillingV2(db);
+}
+
+/** Clé étrangère vers users sur une table (anciens schémas de subscriptions et wallets). */
+const hasUserFk = (db: Database.Database, table: string) => (db.prepare(`PRAGMA foreign_key_list(${table})`).all() as { table: string }[]).some((f) => f.table === "users");
+
+/**
+ * Forfaits V2 (un abonnement = un projet), migration non destructive et rejouable :
+ *  1. sauvegarde complète de la base avant toute modification (data/backups) ;
+ *  2. subscriptions et wallets reconstruites sans clé étrangère vers users (un abonnement par projet porte son propre
+ *     id) — toutes les lignes et colonnes copiées telles quelles ;
+ *  3. chaque ancien abonnement est rattaché au compte (owner_user_id) puis, s'il a été payé, au projet actif le plus
+ *     récent du compte ; les autres projets actifs d'un compte multi-boutiques restent visibles (régularisation par
+ *     l'administration) ; les projets des comptes jamais abonnés (ancienne découverte) sont masqués, pas supprimés ;
+ *  4. un projet ne peut être rattaché qu'à un seul abonnement, et ce rattachement ne peut plus jamais changer
+ *     (index unique + déclencheur), même par une requête forgée.
+ */
+export function migrateBillingV2(db: Database.Database) {
+  const FK_TABLES = ["subscriptions", "wallets", "quota_usage", "pack_balances", "pack_purchases"];
+  if (FK_TABLES.some((t) => hasUserFk(db, t))) {
+    const has = (db.prepare("SELECT COUNT(*) n FROM subscriptions").get() as { n: number }).n + (db.prepare("SELECT COUNT(*) n FROM projects").get() as { n: number }).n;
+    if (has > 0 && process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+      const dir = path.join(DATA_DIR, "backups");
+      fs.mkdirSync(dir, { recursive: true });
+      const file = path.join(dir, `avant-forfaits-v2-${new Date().toISOString().replace(/[:.]/g, "-")}.db`);
+      db.exec(`VACUUM INTO '${file.replace(/'/g, "''")}'`);
+    }
+    db.pragma("foreign_keys = OFF");
+    try {
+      db.transaction(() => {
+        for (const table of FK_TABLES) {
+          if (!hasUserFk(db, table)) continue;
+          const cols = (db.prepare(`PRAGMA table_info(${table})`).all() as { name: string; type: string; notnull: number; dflt_value: string | null; pk: number }[]);
+          // Clé primaire simple ou composée (quota_usage, pack_balances), contraintes UNIQUE recopiées.
+          const pk = cols.filter((c) => c.pk).sort((a, b) => a.pk - b.pk).map((c) => c.name);
+          const uniques = (db.prepare(`PRAGMA index_list(${table})`).all() as { name: string; unique: number; origin: string }[]).filter((i) => i.unique && i.origin === "u").map((i) => (db.prepare(`PRAGMA index_info(${i.name})`).all() as { name: string }[]).map((c) => c.name));
+          const ddl = [
+            ...cols.map((c) => `${c.name} ${c.type}${c.pk && pk.length === 1 ? " PRIMARY KEY" : ""}${c.notnull && !c.pk ? " NOT NULL" : ""}${c.dflt_value != null ? ` DEFAULT ${c.dflt_value}` : ""}`),
+            ...(pk.length > 1 ? [`PRIMARY KEY (${pk.join(", ")})`] : []),
+            ...uniques.map((u) => `UNIQUE (${u.join(", ")})`),
+          ].join(", ");
+          const names = cols.map((c) => c.name).join(", ");
+          db.exec(`CREATE TABLE ${table}__v2 (${ddl}); INSERT INTO ${table}__v2 (${names}) SELECT ${names} FROM ${table}; DROP TABLE ${table}; ALTER TABLE ${table}__v2 RENAME TO ${table};`);
+        }
+      })();
+    } finally {
+      db.pragma("foreign_keys = ON");
+    }
+  }
+  db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS subscriptions_project ON subscriptions(project_id) WHERE project_id IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS subscriptions_owner ON subscriptions(owner_user_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS subscriptions_stripe ON subscriptions(stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL;
+    CREATE TRIGGER IF NOT EXISTS subscriptions_project_lock BEFORE UPDATE OF project_id ON subscriptions
+      WHEN OLD.project_id IS NOT NULL AND NEW.project_id IS NOT OLD.project_id
+      BEGIN SELECT RAISE(ABORT, 'subscription project binding is permanent'); END;
+    CREATE TRIGGER IF NOT EXISTS subscriptions_owner_lock BEFORE UPDATE OF owner_user_id ON subscriptions
+      WHEN OLD.owner_user_id IS NOT NULL AND NEW.owner_user_id IS NOT OLD.owner_user_id
+      BEGIN SELECT RAISE(ABORT, 'subscription owner is permanent'); END;
+    CREATE TRIGGER IF NOT EXISTS subscriptions_bound_no_delete BEFORE DELETE ON subscriptions
+      WHEN OLD.project_id IS NOT NULL
+      BEGIN SELECT RAISE(ABORT, 'a subscription bound to a project is never deleted'); END;`);
+  // Rattachements (une seule fois par ligne ; rejouable sans effet).
+  db.transaction(() => {
+    db.exec("UPDATE subscriptions SET owner_user_id = user_id, source = COALESCE(source, 'legacy'), created_at = COALESCE(created_at, updated_at) WHERE owner_user_id IS NULL");
+    if ((db.prepare("SELECT value FROM settings WHERE key = 'billing.v2.migrated'").get() as { value: string } | undefined)) return;
+    // Anciens abonnés : prix payé conservé jusqu'au prochain renouvellement (budget IA calculé dessus, règle des 40 %).
+    db.exec(`UPDATE subscriptions SET price_cents = CASE COALESCE(plan, 'creer')
+        WHEN 'vendre' THEN CASE WHEN billing = 'year' THEN 79900 ELSE 7990 END
+        WHEN 'dominer' THEN CASE WHEN billing = 'year' THEN 99900 ELSE 9990 END
+        ELSE CASE WHEN billing = 'year' THEN 49900 ELSE 4990 END END
+      WHERE source = 'legacy' AND price_cents IS NULL AND status IN ('active','past_due','canceled','trial')`);
+    const paid = db.prepare("SELECT user_id FROM subscriptions WHERE source = 'legacy' AND project_id IS NULL AND status IN ('active','manual','past_due','canceled','trial')").all() as { user_id: string }[];
+    for (const s of paid) {
+      const p = db.prepare("SELECT p.id FROM projects p WHERE p.user_id = ? AND p.archived = 0 AND NOT EXISTS (SELECT 1 FROM subscriptions x WHERE x.project_id = p.id) ORDER BY p.updated_at DESC LIMIT 1").get(s.user_id) as { id: string } | undefined;
+      if (p) db.prepare("UPDATE subscriptions SET project_id = ?, bound_at = ? WHERE user_id = ? AND project_id IS NULL").run(p.id, Date.now(), s.user_id);
+    }
+    // Ancienne découverte gratuite (compte jamais abonné) : projets masqués, conservés, rendus visibles à la souscription.
+    db.exec(`UPDATE projects SET hidden = 1 WHERE hidden = 0 AND NOT EXISTS (SELECT 1 FROM subscriptions s WHERE s.project_id = projects.id)
+      AND NOT EXISTS (SELECT 1 FROM subscriptions s WHERE s.owner_user_id = projects.user_id AND s.status IN ('active','manual','past_due','canceled','trial'))`);
+    db.prepare("INSERT OR REPLACE INTO settings (key, value, secret, updated_at) VALUES ('billing.v2.migrated', ?, 0, ?)").run(JSON.stringify(Date.now()), Date.now());
+  })();
 }
 
 function open(): Database.Database {

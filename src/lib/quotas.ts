@@ -1,5 +1,7 @@
 /**
- * Quotas des forfaits (visuels, vidéos IA, vidéos UGC, articles) : ce que le client voit et consomme.
+ * Quotas des forfaits. Depuis les forfaits V2, seul le blog IA a une limite en nombre (4 ou 12 articles par mois et
+ * PAR PROJET) ; images, vidéos et UGC ne sont limités que par le budget IA du projet et les droits du forfait.
+ * Chaque projet a ses propres compteurs (clé de facturation de son abonnement, voir project-billing.ts).
  *  - Chaque mois (période de l'enveloppe, voir billing.ts), le forfait apporte ses quotas.
  *  - Forfaits avec report : ce qui n'a pas servi passe au mois suivant (au plus un mois de forfait).
  *  - Les packs s'ajoutent et n'expirent pas ; ils ne servent qu'une fois le mois épuisé.
@@ -12,10 +14,12 @@ import { UserFacingError } from "./jobs";
 import { L } from "./i18n-server";
 import { currentPeriod, getSubscription, planOf } from "./billing";
 import { PACKS, PLANS, type PackId, type QuotaKey, type QuotaView } from "./plans";
+import { accountKeyFor, isNoPlanKey } from "./project-billing";
 
 export const QUOTA_KEYS: QuotaKey[] = ["visuals", "aiVideos", "ugc", "blog"];
 
-export const userPlan = (userId: string) => planOf(getSubscription(userId));
+/** Forfait qui s'applique (projet de l'appel ou de la tâche en cours ; voir accountKeyFor). */
+export const userPlan = (userId: string, projectId?: string | null) => planOf(getSubscription(accountKeyFor(userId, projectId)));
 
 type Row = { user_id: string; period_start: number; key: QuotaKey; included: number; rollover: number; used: number };
 
@@ -45,7 +49,9 @@ function periodRow(userId: string, key: QuotaKey): Row {
 
 const packBalance = (userId: string, key: QuotaKey) => one<{ balance: number }>("SELECT balance FROM pack_balances WHERE user_id = ? AND key = ?", userId, key)?.balance ?? 0;
 
-export function quotaView(userId: string, key: QuotaKey): QuotaView {
+export function quotaView(user: string, key: QuotaKey, projectId?: string | null): QuotaView {
+  const userId = accountKeyFor(user, projectId);
+  if (isNoPlanKey(userId)) return { included: 0, rollover: 0, pack: 0, used: 0, left: 0 };
   const r = periodRow(userId, key);
   // Le report ne compte que dans la limite de ce qui reste du mois précédent ; « included » regroupe le report pour le calcul.
   const monthLeft = Math.max(0, r.included + r.rollover - r.used);
@@ -85,7 +91,8 @@ export function quotaMessage(userId: string, key: QuotaKey) {
 }
 
 /** Vérifie qu'il reste au moins `n` unités (sinon message clair pour le client). */
-export function assertQuota(userId: string, key: QuotaKey, n = 1) {
+export function assertQuota(user: string, key: QuotaKey, n = 1, projectId?: string | null) {
+  const userId = accountKeyFor(user, projectId);
   if (quotaView(userId, key).left < n) throw new UserFacingError(quotaMessage(userId, key));
 }
 
@@ -93,8 +100,9 @@ export function assertQuota(userId: string, key: QuotaKey, n = 1) {
  * Décompte `n` unités : le mois d'abord, puis les packs. `ref` évite un double décompte (reprise d'une tâche).
  * Ne bloque jamais après coup : ce qui a été créé est compté dans la limite de ce qui reste.
  */
-export function consumeQuota(userId: string, key: QuotaKey, n = 1, ref?: string | null) {
-  if (n <= 0) return;
+export function consumeQuota(user: string, key: QuotaKey, n = 1, ref?: string | null, projectId?: string | null) {
+  const userId = accountKeyFor(user, projectId);
+  if (n <= 0 || isNoPlanKey(userId)) return;
   tx(() => {
     if (ref) {
       const done = run("INSERT OR IGNORE INTO quota_events (ref, user_id, key, amount, created_at) VALUES (?,?,?,?,?)", ref, userId, key, n, now());

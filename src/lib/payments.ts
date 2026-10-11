@@ -21,17 +21,17 @@ export function paymentsLive(): boolean {
   return !!k.secret && !!k.webhookSecret && getSetting("stripe.verifiedAt") !== null;
 }
 
-async function stripe(path: string, params: Record<string, string>) {
+export async function stripe(path: string, params: Record<string, string>, idempotencyKey?: string) {
   const { secret } = stripeKeys();
   if (!secret) throw new Error(L("Paiement en ligne non configuré.", "Online payment is not configured."));
-  const r = await fetch(`https://api.stripe.com/v1/${path}`, { method: "POST", headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(params) });
+  const r = await fetch(`https://api.stripe.com/v1/${path}`, { method: "POST", headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded", ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}) }, body: new URLSearchParams(params) });
   const j: any = await r.json();
   if (!r.ok) throw new Error(L(`Stripe : ${j.error?.message ?? r.status}`, `Stripe: ${j.error?.message ?? r.status}`));
   return j;
 }
 
 /** Lecture d'un objet Stripe ; null si le paiement n'est pas configuré ou si Stripe ne répond pas. */
-async function stripeGet(path: string): Promise<any | null> {
+export async function stripeGet(path: string): Promise<any | null> {
   const { secret } = stripeKeys();
   if (!secret) return null;
   try {
@@ -57,7 +57,7 @@ async function stripeCancelRemote(subscriptionId: string): Promise<void> {
 }
 
 /** Alerte de l'administration (tableau de bord) : un paiement demande une action humaine. */
-function notifyAdmins(title: string, body: string) {
+export function notifyAdmins(title: string, body: string) {
   for (const a of all<{ id: string }>("SELECT id FROM users WHERE role = 'admin'")) {
     run("INSERT INTO notifications (id, user_id, project_id, level, title, body, created_at) VALUES (?,?,?,?,?,?,?)", id(), a.id, null, "error", title, body, now());
   }
@@ -189,15 +189,15 @@ export function verifyStripeSignature(payload: string, header: string | null): b
 }
 
 /** Période en cours d'un abonnement Stripe (champs à la racine, ou sur l'article depuis les versions récentes de l'API). */
-function periodOf(o: any): { start: number | null; end: number | null } {
+export function periodOf(o: any): { start: number | null; end: number | null } {
   const item = o?.items?.data?.[0];
   const start = Number(o?.current_period_start ?? item?.current_period_start) || 0;
   const end = Number(o?.current_period_end ?? item?.current_period_end) || 0;
   return { start: start ? start * 1000 : null, end: end ? end * 1000 : null };
 }
 
-const subId = (v: unknown): string | null => (typeof v === "string" ? v : v && typeof v === "object" && typeof (v as any).id === "string" ? (v as any).id : null);
-const ENDED = new Set(["canceled", "incomplete_expired"]);
+export const subId = (v: unknown): string | null => (typeof v === "string" ? v : v && typeof v === "object" && typeof (v as any).id === "string" ? (v as any).id : null);
+export const ENDED = new Set(["canceled", "incomplete_expired"]);
 
 /**
  * Traitement d'un événement Stripe signé. Stripe livre « au moins une fois », dans un ordre quelconque :
@@ -216,6 +216,8 @@ export async function handleStripeEvent(evt: any): Promise<void> {
 }
 
 async function applyStripeEvent(evt: any) {
+  // Forfaits V2 (abonnement par projet, recharges par projet, rendez-vous) : traités à part.
+  if (await (await import("./payments-v2")).applyV2Event(evt)) return;
   const o = evt.data?.object ?? {};
   switch (evt.type) {
     case "checkout.session.completed":

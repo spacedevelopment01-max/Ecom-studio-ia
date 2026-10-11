@@ -18,7 +18,7 @@ export const runtime = "nodejs";
 /** Envoi dans le blog de la boutique Shopify connectée, en brouillon ou publié. */
 export const POST = handle(async (req: Request, ctx: Ctx<{ id: string; aid: string }>) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  requirePlan(user);
+  requirePlan(user, p.id);
   const { aid } = await ctx.params;
   const a = articleOf(p.id, aid);
   if (a.deleted_at) throw new HttpError(409, L("Cet article est dans la corbeille.", "This post is in the trash."));

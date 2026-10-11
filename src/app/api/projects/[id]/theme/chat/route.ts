@@ -26,8 +26,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     }),
   );
   // Sections sur mesure écrites par l'IA : forfaits Vendre et Dominer (Créer compose avec la bibliothèque).
-  if (b.generate) assertSectionGeneration(user);
-  if (b.generate && !(await runForUser(user.id, async () => llmConfigured()))) throw new HttpError(402, L("La génération de section demande l'IA : passez sur « IA » en haut du studio.", "Section generation requires AI: switch to “AI” at the top of the studio."));
+  if (b.generate) assertSectionGeneration(user, p.id);
+  if (b.generate && !(await runForUser(user.id, async () => llmConfigured(), "normal", p.id))) throw new HttpError(402, L("La génération de section demande l'IA : passez sur « IA » en haut du studio.", "Section generation requires AI: switch to “AI” at the top of the studio."));
   // Consigne complète pour l'IA ; la discussion affiche seulement la demande du client.
   const instruction = b.generate
     ? L(

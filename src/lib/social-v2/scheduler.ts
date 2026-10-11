@@ -17,7 +17,8 @@ import crypto from "node:crypto";
 import { all, id, now, one, run } from "../db";
 import { enqueue, PermanentError } from "../jobs";
 import { notify } from "../projects";
-import { planOfUserId } from "../plan-gates";
+import { planOfUserId, scheduledPostsOn } from "../plan-gates";
+import { PLANS } from "../plans";
 import { L } from "../i18n-server";
 import { connectionFor, markConnection, type PostRow } from "../social/publish";
 import { approvalValid, type PostRowV2 } from "./approval";
@@ -57,7 +58,7 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
   const owner = one<{ user_id: string; project_id: string; plan_id: string | null; status: string }>("SELECT pr.user_id, p.project_id, p.plan_id, p.status FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId);
   if (!owner) return { outcome: "skipped", detail: "publication supprimée" };
   // Publication réservée aux forfaits : revérifiée au moment de l'envoi (forfait résilié depuis la programmation).
-  if (!planOfUserId(owner.user_id)) {
+  if (!planOfUserId(owner.user_id, owner.project_id)) {
     const msg = L("Publication non envoyée : la publication sur les réseaux est réservée aux forfaits. Choisissez un forfait dans « Mon compte », puis reprogrammez-la.", "Post not sent: publishing to social networks is included in the plans. Choose a plan in \"My account\", then reschedule it.");
     const moved = run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", msg, now(), postId);
     if (moved.changes) notify(owner.user_id, owner.project_id, L("Une publication n'a pas été envoyée", "A post was not sent"), msg, "error");
@@ -245,6 +246,20 @@ export function schedulePosts(ids: string[], gate: (postId: string) => { blockin
     const g = gate(pid);
     if (g.blocking.length) {
       refuse(g.blocking.join(" ; "));
+      continue;
+    }
+    // Forfait du projet : calendrier de 7, 30 ou 90 jours et 1, 3 ou 5 publications programmées par jour.
+    const plan = planOfUserId(r.user_id, r.project_id);
+    if (!plan) {
+      refuse("projet sans forfait actif");
+      continue;
+    }
+    if (r.scheduled_at > now() + PLANS[plan].calendarDays * 86_400_000 + 3_600_000) {
+      refuse(`au-delà des ${PLANS[plan].calendarDays} jours de calendrier du forfait`);
+      continue;
+    }
+    if (scheduledPostsOn(r.project_id, r.scheduled_at, pid) >= PLANS[plan].postsPerDay) {
+      refuse(`déjà ${PLANS[plan].postsPerDay} publication(s) programmée(s) ce jour-là (limite du forfait)`);
       continue;
     }
     run("UPDATE posts SET status = 'scheduled', error = NULL, updated_at = ? WHERE id = ?", now(), pid);

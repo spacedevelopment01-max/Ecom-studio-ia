@@ -21,14 +21,14 @@ describe("Barres d'utilisation de l'IA (forfait et crédits achetés, en %, sans
     run("UPDATE subscriptions SET status = 'manual', plan = 'creer' WHERE user_id = ?", u.id);
     syncAllowance(u.id);
     expect(aiUsage(u.id)).toEqual({ plan: { used: 0 }, credits: null, paused: false });
-    // Créer : 49,90 € TTC → 41,58 € HT → budget 16,63 € ; la moitié consommée ≈ 50 %.
-    spend(u.id, 8.3, "a");
+    // Créer : 49 € TTC → 40,83 € HT → budget 16,33 € ; la moitié consommée ≈ 50 %.
+    spend(u.id, 8.166, "a");
     expect(aiUsage(u.id)).toEqual({ plan: { used: 50 }, credits: null, paused: false });
     // Crédits achetés : seconde barre, intacte tant que le forfait n'est pas épuisé.
     creditTopup(u.id, 24, "pay_pct"); // 10 € de budget
     expect(aiUsage(u.id)).toEqual({ plan: { used: 50 }, credits: { used: 0 }, paused: false });
     // Forfait épuisé : la barre du forfait est à 100 %, les crédits prennent le relais (l'IA continue).
-    spend(u.id, 8.33 + 5, "b");
+    spend(u.id, 8.17 + 5, "b");
     const mid = aiUsage(u.id)!;
     expect(mid.plan.used).toBe(100);
     expect(mid.credits!.used).toBe(50);
@@ -44,7 +44,7 @@ describe("Barres d'utilisation de l'IA (forfait et crédits achetés, en %, sans
     getSubscription(u.id);
     run("UPDATE subscriptions SET status = 'manual', plan = 'creer' WHERE user_id = ?", u.id);
     syncAllowance(u.id);
-    spend(u.id, 8.3, "d");
+    spend(u.id, 8.166, "d");
     // Réserve du coût maximal (environ 25 % du budget) pendant l'appel : la barre reste à 50 %.
     const r = reserve(u.id, 4 * EUR, { task: "copywriting", provider: "anthropic", model: "m" });
     expect(aiUsage(u.id)!.plan.used).toBe(50);

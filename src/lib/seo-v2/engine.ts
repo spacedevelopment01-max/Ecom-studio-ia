@@ -85,7 +85,7 @@ export function targetPage(pages: PageRef[], type: ContentType, pageKey: string 
 
 export async function runContentEngineV2(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<ContentRunResult & { strategy: SeoStrategy; stoppedByCostCap: boolean }> {
   const p = loadProject(projectId);
-  let deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId));
+  let deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   // Articles écrits par l'IA : inclus selon le forfait (comme le blog existant) ; sinon brouillon local gratuit.
   const blogBlocked = req.type === "blog_article" && deps.canWrite && !blogAiAllowed(p.userId);
   if (blogBlocked) deps = localOnlyDeps();
@@ -273,7 +273,7 @@ export async function editContentV2(ctx: JobContext | null, projectId: string, d
     if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: checks.issues, ai: false, jobKey: "" });
     return { applied: true, by: "local", summary: plan.summary, version: v.version, doc: next, issues: checks.issues, costMicro: 0 };
   }
-  const deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId));
+  const deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   if (!deps.canWrite) return { applied: false, by: "none", summary: "cette retouche demande l'IA, non disponible pour ce compte (forfait ou IA coupée) : modifiez le texte directement dans l'éditeur", version: null, doc, issues: [], needsAi: true, costMicro: 0 };
   const capMicro = Math.round((o.maxCostEur ?? 0.2) * EUR);
   if (deps.estimate("rewrite") > capMicro) return { applied: false, by: "none", summary: "plafond de coût trop bas pour cette retouche", version: null, doc, issues: [], costMicro: 0 };

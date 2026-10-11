@@ -5,11 +5,13 @@ import { assertCanSpend, balance, creditTopup, EUR, getSubscription, monthlyAllo
 
 describe("forfaits et budget IA caché", () => {
   it("prix mensuel du forfait (équivalent mensuel en annuel) et budget IA caché du forfait", () => {
-    expect(monthlyPriceEur({ plan: "creer", billing: "month" })).toBe(49.9);
-    expect(monthlyPriceEur({ plan: "vendre", billing: "year" })).toBeCloseTo(66.58, 2);
-    expect(monthlyPriceEur({ plan: null, billing: null })).toBe(49.9); // ancien abonnement → « Créer »
-    // Budget = 40 % du prix mensuel HT (TVA 20 %) : Dominer 99,90 € TTC → 83,25 € HT → 33,30 €.
-    expect(monthlyAllowanceMicro({ status: "active", plan: "dominer", billing: "month" } as any) / EUR).toBeCloseTo(33.3, 5);
+    expect(monthlyPriceEur({ plan: "creer", billing: "month" })).toBe(49);
+    expect(monthlyPriceEur({ plan: "vendre", billing: "year" })).toBe(74.16);
+    expect(monthlyPriceEur({ plan: null, billing: null })).toBe(49); // ancien abonnement → « Créer »
+    // Ancien abonné : budget calculé sur le prix qu'il paie encore (79,90 €) jusqu'au renouvellement.
+    expect(monthlyPriceEur({ plan: "vendre", billing: "month", price_cents: 7990 })).toBe(79.9);
+    // Budget = 40 % du prix mensuel HT (TVA 20 %) : Dominer 129 € TTC → 107,50 € HT → 43,00 €.
+    expect(monthlyAllowanceMicro({ status: "active", plan: "dominer", billing: "month" } as any) / EUR).toBeCloseTo(43, 5);
     expect(monthlyAllowanceMicro({ status: "none", plan: "dominer" } as any)).toBe(0);
   });
 
@@ -30,7 +32,7 @@ describe("forfaits et budget IA caché", () => {
     const before = balance(u.id).available;
     run("UPDATE subscriptions SET status = 'manual', plan = 'vendre' WHERE user_id = ?", u.id);
     syncAllowance(u.id);
-    const vendre = Math.floor(0.4 * (79.9 / 1.2) * EUR);
+    const vendre = Math.floor(0.4 * (89 / 1.2) * EUR);
     expect(balance(u.id).available).toBe(before + vendre);
     syncAllowance(u.id);
     expect(balance(u.id).available).toBe(before + vendre);

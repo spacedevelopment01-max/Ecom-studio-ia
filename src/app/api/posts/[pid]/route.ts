@@ -6,7 +6,7 @@ import { enqueue } from "@/lib/jobs";
 import { addUsage, getAsset, removeUsages } from "@/lib/library";
 import { postView } from "@/lib/posts";
 import { L } from "@/lib/i18n-server";
-import { requirePlan } from "@/lib/plan-gates";
+import { assertPostsPerDay, requirePlan } from "@/lib/plan-gates";
 import { duplicatePostV2 } from "@/lib/social-v2/engine";
 import { loadProject } from "@/lib/projects";
 
@@ -71,12 +71,14 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ pid: st
     case "approve":
     case "schedule": {
       // Publication réservée aux forfaits (la découverte gratuite peut connecter ses comptes, pas publier).
-      requirePlan(user);
+      requirePlan(user, post.project_id);
       if (locked(post.status)) throw new HttpError(409, L("Déjà envoyée.", "Already sent."));
       if (!post.connection_id) throw new HttpError(409, L("Choisissez le compte destinataire avant de programmer.", "Choose the target account before scheduling."));
       if (!post.scheduled_at) throw new HttpError(409, L("Choisissez une date de publication.", "Choose a publishing date."));
       if (post.scheduled_at < Date.now() - 60_000) throw new HttpError(409, L("La date est passée : choisissez une nouvelle date ou « publier maintenant ».", "The date has passed: choose a new date or \"Publish now\"."));
       if (post.media === "[]" && post.network !== "facebook") throw new HttpError(409, L("Ce réseau exige un média.", "This network requires media."));
+      // Forfait du projet : 1, 3 ou 5 publications programmées par jour.
+      assertPostsPerDay(post.project_id, post.scheduled_at, post.id);
       run("UPDATE posts SET status = 'scheduled', approved_at = ?, approved_by = ?, error = NULL, updated_at = ? WHERE id = ?", now(), user.id, now(), post.id);
       break;
     }
@@ -89,7 +91,7 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ pid: st
       run("UPDATE posts SET status = 'cancelled', updated_at = ? WHERE id = ?", now(), post.id);
       break;
     case "publish_now": {
-      requirePlan(user);
+      requirePlan(user, post.project_id);
       if (locked(post.status)) throw new HttpError(409, L("Déjà envoyée.", "Already sent."));
       if (!post.connection_id) throw new HttpError(409, L("Choisissez le compte destinataire.", "Choose the target account."));
       run("UPDATE posts SET status = 'scheduled', scheduled_at = ?, approved_at = ?, approved_by = ?, updated_at = ? WHERE id = ?", now(), now(), user.id, now(), post.id);

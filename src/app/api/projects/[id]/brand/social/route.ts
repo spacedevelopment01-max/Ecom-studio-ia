@@ -42,7 +42,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const r = await runForUser(user.id, async () => {
     if (b.voice) await ensureSocialVoice(p.id, { force: true, requestId: crypto.randomUUID() });
     return saveSocialKit(p.id);
-  });
+  }, "normal", p.id);
   if (!r) throw new HttpError(409, L("Choisissez d'abord une piste de logo : le kit en reprend les couleurs et les typographies.", "Choose a logo route first: the kit uses its colors and typefaces."));
   return ok(view(p.id));
 });
