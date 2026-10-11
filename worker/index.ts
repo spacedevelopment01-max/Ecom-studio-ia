@@ -131,6 +131,20 @@ async function loop() {
   }
 }
 
+// Erreur asynchrone oubliée par un moteur (promesse sans catch) : journalisée, le worker continue — sans ce
+// garde-fou, Node 22 arrête TOUT le worker (et les autres tâches en cours) pour une seule promesse rejetée.
+process.on("unhandledRejection", (reason) => {
+  logError("worker:unhandledRejection", reason);
+  console.error("[worker] erreur asynchrone non interceptée (journalisée, le worker continue) :", reason instanceof Error ? reason.message : reason);
+});
+// Exception synchrone non interceptée : l'état du processus n'est plus sûr. Journalisée avec sa pile, puis arrêt
+// avec le code 1 (le lanceur affiche la raison et relance ; les tâches en cours sont reprises grâce à leur bail).
+process.on("uncaughtException", (err) => {
+  logError("worker:uncaughtException", err);
+  console.error("[worker] exception non interceptée, arrêt (code 1) :", err.stack ?? err.message);
+  process.exit(1);
+});
+
 for (const sig of ["SIGINT", "SIGTERM"]) {
   process.on(sig, () => {
     stopping = true;
