@@ -4,8 +4,9 @@
  * PROJECT BRAIN → VISUAL INTENT → ART DIRECTION → SEARCH OR GENERATION → QUALITY GATE → SELECTION → ASSET LIBRARY → REUSE
  *
  *  - réutilisation d'abord : une image FINAL faite pour le même brief n'est ni recherchée ni regénérée ;
- *  - recherche dans les banques (gratuite) avant toute génération payante, pour les intentions qui s'y prêtent ;
- *    jamais pour une image du produit réel ;
+ *  - recherche dans les banques (gratuite, Pixabay d'abord) avant toute génération payante ;
+ *  - image du produit réel : décor vide d'une banque, produit réel posé par le studio (pixels d'origine), relu ;
+ *    un décor n'est généré par l'IA qu'à défaut ;
  *  - seuls les meilleurs candidats sont contrôlés ; un candidat déjà refusé pour ce brief n'est ni retéléchargé ni
  *    recontrôlé ;
  *  - génération routée (Router V2), avec reprises CIBLÉES et limitées (jamais deux fois la même consigne) ; un produit
@@ -35,7 +36,8 @@ import { gateImage, localImageCheck } from "./quality";
 import { candidateKey, searchCandidates, shortlist, type SearchStats } from "./search";
 import { creditLine } from "./sources";
 import { memoOf, projectHashes, rejectedKeys, remember, reusableFor, saveImageV2, usedStockKeys, briefSummary } from "./assets";
-import { realImageDeps, type ImageV2Deps } from "./deps";
+import { compositeProduct, realImageDeps, type ImageV2Deps } from "./deps";
+import { plateQueries, scorePlate } from "./plates";
 import type { ArtDirectionId, ImageOutcome, ImageReview, VisualBrief } from "./types";
 
 export const IMAGE_V2_VERSION = "5a.1";
@@ -127,7 +129,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
         result.stats.directionChanges++;
         brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: [...rejectedDirs, brief.artDirection] });
         notes.push(`image ${i + 1} : direction changée (${out.outcome.reason})`);
-        const second = await one(ctx, p, req, deps, brief, stages.filter((s) => s !== "search" && s !== "reuse"), seriesHashes, result);
+        const second = await one(ctx, p, req, deps, brief, stages.filter((s) => s !== "search" && s !== "reuse" && s !== "plate"), seriesHashes, result);
         result.outcomes.push({ ...second.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
       } else result.outcomes.push({ ...out.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
     }
@@ -227,6 +229,17 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     }
   }
 
+  // 2 bis. Produit réel : décor vide d'une banque d'images (gratuit), produit réel posé par le studio (pixels
+  // d'origine, ombre de contact). Aucun produit n'est envoyé à une IA d'images : jamais un second produit redessiné.
+  if (stages.includes("plate") && brief.productFidelity && brief.references[0]) {
+    const plated = await fromPlate(p, req, deps, brief, bh, [...projectH, ...seriesHashes], result, base);
+    if (plated.outcome) {
+      seriesHashes.push(plated.hash ?? "");
+      return { outcome: plated.outcome, changeDirection: false };
+    }
+    if (plated.reason) lastReason = plated.reason;
+  }
+
   // 3. Génération (dernier recours pour le métier ; seul parcours pour le produit réel).
   if (!stages.includes("generate") || req.allowGenerate === false) return { outcome: none(lastReason), changeDirection: false };
   if (!deps.canGenerate) return { outcome: none(`${lastReason} ; génération non disponible (forfait ou fournisseur)`), changeDirection: false };
@@ -299,4 +312,86 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     corrections.push(plan.instruction);
   }
   return { outcome: { ...last, verdict: last.verdict === "FINAL" ? "FINAL" : last.verdict === "PROVISIONAL" ? "PROVISIONAL" : "REJECTED" }, changeDirection: false };
+}
+
+/**
+ * Décor libre de droits + produit réel (Image V2). Seuls les meilleurs décors (description de la banque) sont
+ * composés et relus ; un décor refusé pour ce brief n'est ni retéléchargé ni relu. Composition locale gratuite :
+ * seule la relecture (si disponible) est payante, jamais une génération d'image.
+ */
+async function fromPlate(p: Project, req: ImageRequestV2, deps: ImageV2Deps, brief: VisualBrief, bh: string, hashes: string[], result: ImageRunResult, base: { userId: string; projectId: string; jobId: string | null }): Promise<{ outcome: ImageOutcome | null; hash?: string; reason?: string }> {
+  const reference = deps.reference(brief.references[0]);
+  if (!reference) return { outcome: null };
+  const plateBrief: VisualBrief = { ...brief, queries: plateQueries(p, brief), must: [] };
+  const exclude = new Set([...usedStockKeys(p.id), ...rejectedKeys(p.id, bh)]);
+  const { ranked, stats } = await searchCandidates(plateBrief, deps.providers, { exclude, enough: 4, score: scorePlate });
+  result.search.push(stats);
+  result.stats.candidatesSeen += ranked.length;
+  let reason: string | undefined;
+  for (const c of shortlist(ranked, deps.canReview, deps.canReview ? 2 : 1)) {
+    const key = `plate:${candidateKey(c)}`;
+    if (memoOf(p.id, key, bh)?.verdict === "REJECTED") {
+      result.stats.controlsSkippedByMemo++;
+      continue;
+    }
+    let raw: Buffer;
+    try {
+      raw = await deps.download(c);
+    } catch {
+      remember(p.id, key, "*", { verdict: "REJECTED", codes: ["corrupt"] });
+      continue;
+    }
+    const plate = await frameTo(raw, brief.format.aspect);
+    if (!plate) {
+      remember(p.id, key, bh, { verdict: "REJECTED", codes: ["bad_crop"] });
+      continue;
+    }
+    let img: Buffer;
+    try {
+      img = await compositeProduct(plate, reference, brief.format.aspect, brief.format.textZone);
+    } catch {
+      // Détourage illisible : aucun décor n'y changera rien (la suite du parcours décide).
+      return { outcome: null, reason };
+    }
+    const local = await localImageCheck(img, brief, hashes);
+    let review: ImageReview | null = null;
+    let reviewError: string | null = null;
+    if (local.ok && deps.canReview) {
+      result.stats.controls++;
+      try {
+        review = await withCandidate(`img2:${bh}:${key}`, 0, () => deps.review(brief, img, reference, `${base.jobId ?? "img2"}:img2:review:${bh}:${key}`, "stock"));
+      } catch (e) {
+        if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
+        reviewError = (e as Error).message;
+      }
+    }
+    const d = gateImage({ brief, origin: "stock", local, review, reviewError, metadataMatch: c.metadataMatch, attempt: 0 });
+    const usable = d.verdict === "FINAL" || (d.verdict === "PROVISIONAL" && d.provisional?.use === "auto");
+    if (!usable) {
+      const checkId = saveCheck(d, { ...base, candidateId: key });
+      if (d.checked) remember(p.id, key, bh, { verdict: "REJECTED", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], check_id: checkId, phash: local.hash });
+      reason = `décor libre refusé : ${d.reason}`;
+      continue;
+    }
+    const g = gateSave({ ...base, candidateId: key }, d);
+    const asset = await saveImageV2({
+      projectId: p.id,
+      userId: p.userId,
+      img,
+      name: `${req.name ?? `${brief.kind}-${(brief.variant?.index ?? 0) + 1}`}.jpg`,
+      business: p.business,
+      brief,
+      meta: { version: IMAGE_V2_VERSION, origin: "edited", provider: `${c.source}+studio`, model: null, briefHash: bh, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [], license: c.license, productRef: brief.references[0], corrections: [], phash: local.hash, attempts: 1 },
+      gate: g,
+      stock: { source: c.source, id: c.id, page: c.page, author: c.author, license: c.license.name },
+      recipe: `${creditLine(c).split(" — ")[0]} — décor ; votre produit réel posé par le studio (aucune image générée)`,
+      status: "review",
+      slot: req.slot ?? null,
+      service: req.service?.name ?? null,
+      sourceAssetId: brief.references[0],
+    });
+    remember(p.id, key, bh, { verdict: d.verdict, score: d.score, check_id: g.meta.gate.checkId, asset_id: asset.id, phash: local.hash });
+    return { outcome: { briefHash: bh, verdict: d.verdict, score: d.score, codes: [], reason: `décor libre de droits + produit réel : ${d.reason}`, origin: "stock", assetId: asset.id, attempts: 1, candidateKey: key }, hash: local.hash };
+  }
+  return { outcome: null, reason };
 }

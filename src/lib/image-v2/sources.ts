@@ -76,18 +76,8 @@ const offline = () => process.env.STOCK_OFFLINE === "1";
 const toCandidates = async (source: "pexels" | "pixabay" | "openverse", query: string, orientation: Orientation, lang: "en" | "fr", license: (raw: { license?: string }) => LicenseInfo): Promise<StockCandidate[]> =>
   (offline() ? [] : await searchSource(source, query, orientation, lang)).map((p) => ({ source: p.source, id: p.id, url: p.url, page: p.page, author: p.author, width: p.width, height: p.height, alt: p.alt, license: license({ license: p.license }), query }));
 
+/** Ordre de recherche : Pixabay d'abord (choix du propriétaire), puis Pexels, puis Openverse. */
 export const STOCK_PROVIDERS: StockProvider[] = [
-  {
-    id: "pexels",
-    label: "Pexels",
-    available: () => !!activeProviderKey("pexels"),
-    capabilities: { orientation: true, languages: ["en", "fr"], negativeTerms: false, perPage: 15 },
-    metadata: ["alt", "author", "dimensions"],
-    license: () => PEXELS_LICENSE,
-    formats: ["jpeg"],
-    rateLimit: "200 requêtes par heure et 20 000 par mois (documentation Pexels)",
-    search: (q, o, lang) => toCandidates("pexels", q, o, lang, () => PEXELS_LICENSE),
-  },
   {
     id: "pixabay",
     label: "Pixabay",
@@ -98,6 +88,17 @@ export const STOCK_PROVIDERS: StockProvider[] = [
     formats: ["jpeg", "png"],
     rateLimit: "100 requêtes par minute (documentation Pixabay)",
     search: (q, o, lang) => toCandidates("pixabay", q, o, lang, () => PIXABAY_LICENSE),
+  },
+  {
+    id: "pexels",
+    label: "Pexels",
+    available: () => !!activeProviderKey("pexels"),
+    capabilities: { orientation: true, languages: ["en", "fr"], negativeTerms: false, perPage: 15 },
+    metadata: ["alt", "author", "dimensions"],
+    license: () => PEXELS_LICENSE,
+    formats: ["jpeg"],
+    rateLimit: "200 requêtes par heure et 20 000 par mois (documentation Pexels)",
+    search: (q, o, lang) => toCandidates("pexels", q, o, lang, () => PEXELS_LICENSE),
   },
   {
     id: "openverse",

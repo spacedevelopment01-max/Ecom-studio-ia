@@ -263,7 +263,9 @@ describe("rendus locaux et mises en page", () => {
     expect(providers).toMatch(/Keep the existing product exactly as it is/);
     const images = fs.readFileSync("src/lib/engine/images.ts", "utf8");
     expect(images).toMatch(/verifyAiImage/);
-    expect(images).toMatch(/On replace exactement les pixels du produit/);
+    // Le produit réel est composé par le studio : aucune photo du produit n'est envoyée à une IA d'images.
+    expect(images).toMatch(/aucune photo du produit n'est envoyée à une IA d'images/);
+    expect(images).not.toMatch(/openaiScene\(/);
     const prompts = fs.readFileSync("src/lib/ai/prompts.ts", "utf8");
     expect(prompts).toMatch(/tu ne décris JAMAIS le produit lui-même/);
   });

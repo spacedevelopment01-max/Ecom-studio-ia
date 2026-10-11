@@ -5,7 +5,7 @@
  */
 import type { VisualKind, Support } from "./types";
 
-export type Stage = "reuse" | "search" | "generate" | "edit" | "cutout" | "frame";
+export type Stage = "reuse" | "search" | "plate" | "generate" | "edit" | "cutout" | "frame";
 
 /** Étapes utiles par intention (dans l'ordre). La génération n'est qu'un dernier recours pour les photos du métier. */
 export const PIPELINE: Record<VisualKind, Stage[]> = {
@@ -15,12 +15,13 @@ export const PIPELINE: Record<VisualKind, Stage[]> = {
   site_image: ["reuse", "search", "generate"],
   social_image: ["reuse", "search", "generate"],
   banner: ["reuse", "search", "generate"],
-  // Images du produit RÉEL : jamais une banque d'images (elle n'a pas votre produit).
-  product_image: ["reuse", "generate"],
+  // Images du produit RÉEL : la banque d'images n'a pas votre produit, mais elle a des décors vides (« plate ») où le
+  // studio pose le produit réel, gratuitement ; la génération d'un décor n'est qu'un dernier recours.
+  product_image: ["reuse", "plate", "generate"],
   packshot: ["reuse", "cutout", "generate"],
-  lifestyle: ["reuse", "generate"],
-  usage_scene: ["reuse", "generate"],
-  ad_image: ["reuse", "generate"],
+  lifestyle: ["reuse", "plate", "generate"],
+  usage_scene: ["reuse", "plate", "generate"],
+  ad_image: ["reuse", "plate", "generate"],
   // Demandes simples : un seul outil.
   retouch: ["edit"],
   cutout: ["cutout"],

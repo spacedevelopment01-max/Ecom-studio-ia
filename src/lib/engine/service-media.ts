@@ -212,7 +212,7 @@ async function topicQueries(ictx: { userId: string; projectId: string; jobId?: s
 }
 
 /** Photo libre de droits propre à une publication (jamais reprise d'une autre publication ni des visuels du site). */
-async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }): Promise<Asset | null> {
+async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }, place: { role: string; folderKey: string } = { role: "post-photo", folderKey: "content.calendar" }): Promise<Asset | null> {
   const { lang, queries } = await topicQueries(ictx, p, post.topic);
   const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
   const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
@@ -225,7 +225,7 @@ async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?:
   const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`, must.length > 0);
   if (!pick) return null;
   const { photo, img, gate } = pick;
-  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: "post-photo", folderKey: "content.calendar", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, business: "services", format: post.aspect, ...gate.meta } });
+  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: place.role, folderKey: place.folderKey, origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, business: "services", format: post.aspect, ...gate.meta } });
 }
 
 /** Recherches de photos libres de droits par emplacement : mots du métier (IA légère si disponible, sinon le texte du projet). */
@@ -987,7 +987,17 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
   ctx.progress(0.2, L("Composition de l'image", "Composing the image"));
 
   if (kind === "ambiance") {
-    if (!imageProviderAvailable({ usage: "scene" }) || req.useAi === false || !llmConfigured()) throw new UserFacingError(L("Les images d'ambiance sont créées par l'IA d'images (non disponible ici). Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "Mood images are created by the AI image generator (not available here). Upload photos of your work, team or premises instead."));
+    // D'abord une photo libre de droits du métier (Pixabay en premier, gratuite) ; l'IA d'images seulement à défaut.
+    const fs = FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
+    const free = await ctx.step("ambiance:stock", async () => {
+      const a = await postStockPhoto({ userId: p.userId, projectId, jobId: ctx.job.id }, p, { key: `single-${ctx.job.id}`, topic: req.subline || clip(p.product.summary, 160) || name, aspect: aspectFor(fs), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg` }, { role: "lifestyle", folderKey: "images.scenes" }).catch((e) => {
+        if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+        return null;
+      });
+      return a?.id ?? null;
+    });
+    if (free) return { assetId: free };
+    if (!imageProviderAvailable({ usage: "scene" }) || req.useAi === false || !llmConfigured()) throw new UserFacingError(L("Aucune photo libre de droits ne convient et l'IA d'images n'est pas disponible ici. Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "No royalty-free photo fits and the AI image generator is not available here. Upload photos of your work, team or premises instead."));
     const f = FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
     const prompts = ambiancePrompts(p);
     const img = await ctx.step("ambiance", async () => {

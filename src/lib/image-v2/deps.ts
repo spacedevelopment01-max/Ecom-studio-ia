@@ -4,15 +4,15 @@
  * fournisseurs simulés (aucun appel réel, aucune dépense).
  *
  * Génération routée par le Router V2 :
- *  - image du PRODUIT réel : jamais un texte vers image (le produit serait réinventé). Retouche par masque autour des
- *    pixels du produit (OpenAI) ou décor vide généré puis produit réel composé (Google) ; dans les deux cas, les
- *    pixels du produit sont remis exactement à la fin. Sans détourage valide : aucune image du produit ;
+ *  - image du PRODUIT réel : jamais un texte vers image avec le produit (il serait réinventé), jamais une retouche par
+ *    masque (le modèle redessine un second produit à côté du vrai). Décor vide (banque d'images d'abord, sinon généré)
+ *    puis produit réel composé par le studio, pixels d'origine. Sans détourage valide : aucune image du produit ;
  *  - ambiance, métier, univers : génération d'ambiance (consignes d'honnêteté du studio).
  */
 import sharp from "sharp";
 import { activeProviderKey } from "../ai/config";
 import { llmConfigured, llmJson } from "../ai/llm";
-import { ambianceImage, imageProviderAvailable, mediaRouteFor, openaiScene, productImagePath, productPlate } from "../ai/media-providers";
+import { ambianceImage, imageProviderAvailable, mediaRouteFor, productImagePath, productPlate } from "../ai/media-providers";
 import type { MediaUsage } from "../ai/media-routing";
 import { brainContext } from "../ai/context";
 import { assetData, getAsset } from "../library";
@@ -64,10 +64,18 @@ export async function compositeProduct(plate: Buffer, cutout: Buffer, aspect: Vi
   // Le produit se place à l'opposé de la zone gardée pour le texte (publicités) : jamais sous le titre.
   const left = Math.round(side ? f.width * 0.72 - (pm.width ?? 0) / 2 : (f.width - (pm.width ?? 0)) / 2);
   const top = Math.round(f.height * (textZone === "top" ? 0.9 : 0.86) - (pm.height ?? 0));
-  const shadow = await sharp({ create: { width: Math.max(1, Math.round((pm.width ?? 10) * 0.9)), height: Math.max(1, Math.round((pm.height ?? 10) * 0.06)), channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.28 } } }).blur(12).png().toBuffer();
+  const pw = pm.width ?? 10;
+  const ph = pm.height ?? 10;
+  // Ombre en deux couches : contact serré et sombre sous le produit, puis ombre portée large et douce (le produit
+  // repose sur la surface au lieu de flotter).
+  const contact = await sharp({ create: { width: Math.max(1, Math.round(pw * 0.78)), height: Math.max(2, Math.round(ph * 0.035)), channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.5 } } }).blur(Math.max(2, Math.round(pw * 0.012))).png().toBuffer();
+  const soft = await sharp({ create: { width: Math.max(1, Math.round(pw * 1.05)), height: Math.max(2, Math.round(ph * 0.09)), channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.22 } } }).blur(Math.max(4, Math.round(pw * 0.05))).png().toBuffer();
+  const clampX = (x: number) => Math.max(0, Math.min(f.width - 1, x));
+  const clampY = (y: number) => Math.max(0, Math.min(f.height - 1, y));
   return sharp(base)
     .composite([
-      { input: shadow, left: left + Math.round((pm.width ?? 0) * 0.05), top: top + (pm.height ?? 0) - Math.round((pm.height ?? 0) * 0.03) },
+      { input: soft, left: clampX(left - Math.round(pw * 0.025)), top: clampY(top + ph - Math.round(ph * 0.05)) },
+      { input: contact, left: clampX(left + Math.round(pw * 0.11)), top: clampY(top + ph - Math.round(ph * 0.025)) },
       { input: prod, left, top },
     ])
     .jpeg({ quality: 90 })
@@ -84,9 +92,10 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
     if (!b.aiActive) return { path: "none", usage };
     if (brief.productFidelity) {
       if (!brief.references.length) return { path: "none", usage };
-      // Retouche par masque si un modèle capable est choisi ; sinon décor vide du modèle choisi + produit réel composé.
+      // Décor vide généré par le modèle choisi, puis produit réel composé par le studio. Jamais de retouche par masque :
+      // le modèle y redessine le produit (second produit, plus sombre, derrière le vrai — constaté à l'essai réel).
       const r = productImagePath(usage === "ad_visual" ? "ad_visual" : "product_image");
-      return r ? { path: r.path, usage: r.usage } : { path: "none", usage };
+      return r ? { path: "composite_plate", usage: r.usage } : { path: "none", usage };
     }
     return { path: imageProviderAvailable({ usage }) ? "text_to_image" : "none", usage };
   };
@@ -125,21 +134,6 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
     async generate(brief, prompt, reference, key) {
       const { path, usage } = routeFor(brief);
       const aspect = generationAspect(brief.format.aspect);
-      if (path === "masked_edit" && reference) {
-        const size = aspect === "16:9" ? "1536x1024" : aspect === "1:1" ? "1024x1024" : "1024x1536";
-        const [W, H] = size.split("x").map(Number);
-        const tz = brief.format.textZone;
-        const prod = await sharp(reference).resize({ height: Math.round(H * (tz === "top" ? 0.5 : 0.6)), width: Math.round(W * (tz === "left" ? 0.42 : 0.7)), fit: "inside" }).png().toBuffer();
-        const pm = await sharp(prod).metadata();
-        // Produit à l'opposé de la zone du texte (publicités) : à droite si le texte est à gauche, en bas s'il est en haut.
-        const left = Math.round(tz === "left" ? W * 0.72 - (pm.width ?? 0) / 2 : (W - (pm.width ?? 0)) / 2);
-        const top = Math.round(H * (tz === "top" ? 0.88 : 0.82) - (pm.height ?? 0));
-        const composite = await sharp({ create: { width: W, height: H, channels: 4, background: { r: 235, g: 230, b: 224, alpha: 1 } } }).composite([{ input: prod, left, top }]).png().toBuffer();
-        const mask = await sharp({ create: { width: W, height: H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: prod, left, top }]).png().toBuffer();
-        const painted = await openaiScene({ ...base, usageKey: key }, { composite, productMask: mask, prompt, size: size as "1024x1024", usage });
-        // Pixels du produit d'origine remis exactement par-dessus (fidélité garantie par construction).
-        return { img: await sharp(painted).resize(W, H).composite([{ input: prod, left, top }]).jpeg({ quality: 90 }).toBuffer(), provider: "openai", model: mediaRouteFor(usage, { mask: true })?.model ?? null, path };
-      }
       if (path === "composite_plate" && reference) {
         const r = mediaRouteFor(usage);
         const plate = await productPlate({ ...base, usageKey: key }, { prompt, aspect, usage });
