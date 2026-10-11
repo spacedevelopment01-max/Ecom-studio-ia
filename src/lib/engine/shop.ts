@@ -89,14 +89,18 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'ambiance' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (status = 'approved') DESC, created_at DESC LIMIT 8", projectId).filter(isAutoUsable).slice(0, 2);
   put("lifestyle2", life[1] ?? amb[0], "en-situation-2");
   put("cutout", pick("cutout"), "produit-detoure");
-  put("packshot", pick("packshot"), "packshot");
+  // Sans packshot produit (détourage refusé, images non créées) : la photo du client elle-même, quand le tri l'a
+  // reconnue comme un packshot sur fond uni — c'est le vrai produit, jamais redessiné. Mieux qu'un cadre vide.
+  const clientPack = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'original' AND deleted_at IS NULL AND json_extract(meta, '$.triage.kind') = 'packshot' AND json_extract(meta, '$.triage.plain') = 1 ORDER BY (json_extract(meta, '$.triage.best') = 1) DESC, created_at ASC", projectId).filter(isAutoUsable)[0];
+  const packshot = pick("packshot") ?? clientPack;
+  put("packshot", packshot, "packshot");
   put("detail1", pick("detail", 0), "detail-1");
   put("detail2", pick("detail", 1), "detail-2");
   put("scene1", life[1] ?? pick("scene", 0), "scene-1");
   put("scene2", pick("scene", 1), "scene-2");
   put("scene3", pick("scene", 2) ?? amb[1] ?? amb[0], "scene-3");
   put("banner", pick("banner"), "banniere");
-  put("hero", pick("scene", 0) ?? pick("banner") ?? pick("packshot"), "hero");
+  put("hero", pick("scene", 0) ?? pick("banner") ?? packshot, "hero");
   const video = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'video' AND deleted_at IS NULL AND (json_extract(meta, '$.format') = '16:9') ORDER BY created_at DESC LIMIT 6", projectId).filter(isAutoUsable)[0];
   if (video) {
     put("video", video, "video");
@@ -125,9 +129,9 @@ export function collectImages(projectId: string): { slots: ImageSlots; files: Re
   put("favicon", pick("favicon"), "favicon");
   // Galerie produit : packshots puis détails puis scènes.
   const gallery: string[] = [];
-  for (const a of [pick("packshot"), life[0], pick("detail", 0), life[1], pick("scene", 0), pick("detail", 1), pick("scene", 1)]) {
+  for (const a of [packshot, life[0], pick("detail", 0), life[1], pick("scene", 0), pick("detail", 1), pick("scene", 1)]) {
     if (!a) continue;
-    const f = themeFileName(a, a.role === "packshot" ? "galerie-packshot" : `galerie-${a.role}-${a.id.slice(0, 4)}`);
+    const f = themeFileName(a, a.role === "packshot" || a === clientPack ? "galerie-packshot" : `galerie-${a.role}-${a.id.slice(0, 4)}`);
     files[f] = a.id;
     gallery.push(f);
   }

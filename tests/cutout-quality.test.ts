@@ -330,6 +330,20 @@ describe("tri des photos et détourages d'un projet (lien Alibaba, IA simulée)"
     });
   });
 
+  it("détourage refusé : la vraie photo du client (packshot sur fond uni) illustre quand même la boutique, jamais un cadre vide", async () => {
+    await fr(async () => {
+      const p = await newProject();
+      const pack = await photo(p, "packshot", await image(220, 220, WHITE, sova));
+      ai.triage = { photos: [{ index: 1, kind: "packshot" }], best: 1 };
+      ai.checks = [{ verdict: "rejected", score: 3, problems: ["person_left"], note: "main visible" }];
+      expect(await ensureCutouts(null, loadProject(p.projectId))).toHaveLength(0);
+      const { slots, files, gallery } = collectImages(p.projectId);
+      expect(slots.packshot).toBeTruthy();
+      expect(files[slots.packshot!]).toBe(pack);
+      expect(gallery.length).toBe(1);
+    });
+  });
+
   it("sans IA : packshot sur fond uni détouré et contrôlé localement ; photo sur fond chargé jamais détourée", async () => {
     await fr(async () => {
       ai.on = false;

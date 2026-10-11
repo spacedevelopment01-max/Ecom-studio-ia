@@ -532,3 +532,6 @@
 .v2-specs--tiles .v2-specs__row dt { font-size: .82rem; letter-spacing: .04em; }
 .v2-specs--columns .v2-specs__table { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(24px, 4vw, 56px); }
 @media (max-width: 749px) { .v2-specs--columns .v2-specs__table { grid-template-columns: minmax(0, 1fr); } }
+
+/* Bloc d'achat (sites V2) : le produit est toujours montré en entier, jamais recadré. */
+.es-fp .es-fp__slide .es-fp__img { object-fit: contain; background: var(--c-surface); }

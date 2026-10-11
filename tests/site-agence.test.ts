@@ -221,5 +221,15 @@ describe("Sites niveau agence", async () => {
     const ok = fr(() => siteContent(p, intent, copy, hightech.content.images, [], { ...doc, intro: "Meubles sur mesure dessinés avec vous, fabriqués à l'atelier." }));
     expect(ok.hero.text).toBe("Meubles sur mesure dessinés avec vous, fabriqués à l'atelier.");
   });
+
+  it("seule photo : le packshot du client — jamais agrandi en ouverture plein écran, montré en entier, pas répété", () => {
+    const art = { ...base.art, hero: { ...base.art.hero, layouts: ["immersive", "halfbleed", "split", "type"] as typeof base.art.hero.layouts } };
+    const imgs = { logo: base.content.images.logo, packshot: "es-packshot-abc123.jpg", hero: "es-hero-abc123.jpg" };
+    const c = fr(() => compose({ ...base.intent, site: "shop_mono" as const }, art, content({ images: imgs as any, wide: ["es-hero-abc123.jpg"] }), "ostral", null));
+    const hero = Object.values(c.templates.index.sections).find((x) => x.type === "v2-hero")!;
+    expect(hero.settings.layout).toBe("frame");
+    expect(hero.settings.image_asset).toBe("es-packshot-abc123.jpg");
+    expect(types(c.templates.index)).not.toContain("v2-split");
+  });
 });
 

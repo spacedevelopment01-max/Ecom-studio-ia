@@ -148,20 +148,25 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
 
   // ------------------------------------------------------------ ouverture
   // Ouverture pleine largeur : uniquement avec une vraie photo paysage (un portrait recadré en bandeau serait flou et coupé).
-  const wideHero = [im.hero, im.lifestyle, im.scene1, im.lifestyle2, im.banner].find((f) => f && (c.wide ?? []).includes(f));
+  // Le packshot (produit sur fond uni) n'est jamais une photo d'ambiance : agrandi en plein écran, il serait coupé.
+  const keyOf = (f?: string) => f?.match(/-([a-z0-9]{6})\.\w+$/)?.[1] ?? f;
+  const isPack = (f?: string) => !!f && !!im.packshot && keyOf(f) === keyOf(im.packshot);
+  const heroScene = isPack(im.hero) ? undefined : im.hero;
+  const wideHero = [heroScene, im.lifestyle, im.scene1, im.lifestyle2, im.banner].find((f) => f && !isPack(f) && (c.wide ?? []).includes(f));
   const heroLayout: HeroLayout = (() => {
     for (const l of art.hero.layouts) {
       // Photo de campagne (le produit ou le métier en situation, pas un détourage) : ouverture pleine largeur.
       if (l === "immersive" && wideHero) return l;
-      if (l === "halfbleed" && (im.lifestyle || im.hero || im.scene1)) return l;
+      if (l === "halfbleed" && (im.lifestyle || heroScene || im.scene1)) return l;
       if (l === "stage" && im.cutout) return l;
-      if (l === "split" && (im.lifestyle || im.scene1 || im.hero)) return l;
+      if (l === "split" && (im.lifestyle || im.scene1 || heroScene)) return l;
       if (l === "frame" && (im.packshot || im.scene1)) return l;
-      if (l === "board" || l === "type") return l;
+      // Seule photo : le packshot du client — montré en entier dans un cadre plutôt qu'une ouverture sans image.
+      if ((l === "board" || l === "type") && !(im.packshot && shop)) return l;
     }
-    return "type";
+    return im.packshot && shop ? "frame" : "type";
   })();
-  const heroImage = heroLayout === "immersive" ? wideHero : heroLayout === "halfbleed" ? im.lifestyle ?? im.hero ?? im.scene1 : heroLayout === "stage" ? im.cutout : heroLayout === "split" ? im.lifestyle ?? im.scene1 ?? im.hero : heroLayout === "frame" ? im.packshot ?? im.scene1 : undefined;
+  const heroImage = heroLayout === "immersive" ? wideHero : heroLayout === "halfbleed" ? im.lifestyle ?? heroScene ?? im.scene1 : heroLayout === "stage" ? im.cutout : heroLayout === "split" ? im.lifestyle ?? im.scene1 ?? heroScene : heroLayout === "frame" ? im.packshot ?? im.scene1 : undefined;
   const contactFacts: Fact[] = [
     c.contact.phone ? { label: t("Téléphone", "Phone"), value: c.contact.phone, link: tel(c.contact.phone), icon: "phone" } : null,
     c.contact.area ? { label: intent.site === "restaurant" ? t("Quartier", "Area") : t("Zone d'intervention", "Service area"), value: c.contact.area, icon: "globe" } : null,
@@ -223,7 +228,9 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     // Boutique : « En détail » — image de détail et faits CONFIRMÉS (le texte de l'ouverture n'est jamais répété).
     const ticks = c.facts.filter((f) => f.label !== t("Prix", "Price")).map((f) => `${f.label} : ${f.value}`);
     const dl = c.lines.detail;
-    if (shop && splitImage && ticks.length) return ["v2-split", { layout: L === "precision" ? "overlap" : "media-left", fit: "v2-cover", eyebrow: dl?.eyebrow || c.category, heading: dl && dl.heading !== c.name ? dl.heading : t("En détail", "Up close"), text: dl?.text && !c.hero.text.includes(dl.text) ? para(dl.text) : "", image_asset: splitImage, image_alt: c.name, button_label: t("Voir le produit", "View the product"), button_link: productUrl, color_scheme: "scheme-2", padding_top: 112, padding_bottom: 112 }, ticks.map((x) => ({ type: "point", settings: { text: x } }))];
+    // Seule photo disponible : le packshot, déjà montré par l'ouverture ou le bloc d'achat — pas une troisième fois.
+    if (isPack(splitImage) && (isPack(heroImage) || (intent.site === "shop_mono" && productHandle))) return null;
+    if (shop && splitImage && ticks.length) return ["v2-split", { layout: L === "precision" ? "overlap" : "media-left", fit: isPack(splitImage) ? "v2-contain" : "v2-cover", eyebrow: dl?.eyebrow || c.category, heading: dl && dl.heading !== c.name ? dl.heading : t("En détail", "Up close"), text: dl?.text && !c.hero.text.includes(dl.text) ? para(dl.text) : "", image_asset: splitImage, image_alt: c.name, button_label: t("Voir le produit", "View the product"), button_link: productUrl, color_scheme: "scheme-2", padding_top: 112, padding_bottom: 112 }, ticks.map((x) => ({ type: "point", settings: { text: x } }))];
     return null;
   })();
   // Une même photo peut porter plusieurs noms de fichier (un par emplacement) : on compare le média lui-même
