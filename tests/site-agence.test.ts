@@ -112,4 +112,26 @@ describe("Sites niveau agence", async () => {
     expect(band.settings.layout).toBe("icons");
     expect(Object.values(band.blocks ?? {}).map((b) => b.settings.label)).toEqual(["Plâtrerie", "Enduits", "Peinture"]);
   });
+
+  it("ouverture pleine largeur : seulement avec une vraie photo paysage ; en-tête transparent posé dessus", () => {
+    const art = { ...base.art, hero: { ...base.art.hero, layouts: ["immersive", "stage", "split"] as typeof base.art.hero.layouts } };
+    const imgs = { ...base.content.images, lifestyle: "campagne.jpg" };
+    const wide = fr(() => compose(base.intent, art, content({ images: imgs, wide: ["campagne.jpg"] }), "ostral", null));
+    const hero = Object.values(wide.templates.index.sections).find((x) => x.type === "v2-hero")!;
+    expect(hero.settings.layout).toBe("immersive");
+    expect(hero.settings.image_asset).toBe("campagne.jpg");
+    expect(wide.header.transparent_on_home).toBe(true);
+    const portrait = fr(() => compose(base.intent, art, content({ images: imgs, wide: [] }), "ostral", null));
+    expect(Object.values(portrait.templates.index.sections).find((x) => x.type === "v2-hero")!.settings.layout).not.toBe("immersive");
+    expect(portrait.header.transparent_on_home).toBe(false);
+  });
+
+  it("textes de section rédigés : utilisés pour la bannière, le détail et l'appel final ; un titre d'un seul mot ou « à compléter » est ignoré", () => {
+    const lines = { statement: { eyebrow: "Le voyage", heading: "Faites de la place à l'horizon.", text: "Ostral vous suit partout." }, detail: { eyebrow: "", heading: "Pensé pour partir léger.", text: "" }, cta: { heading: "Prêt pour le prochain départ ?", text: "", button: "Commander" }, gallery: "", features: "" };
+    const c = fr(() => compose(base.intent, base.art, content({ lines }), "ostral", null));
+    const secs = Object.values(c.templates.index.sections);
+    expect(secs.find((x) => x.type === "v2-banner")?.settings.heading).toBe("Faites de la place à l'horizon.");
+    expect(secs.find((x) => x.type === "v2-cta")?.settings.heading).toBe("Prêt pour le prochain départ ?");
+    expect(secs.find((x) => x.type === "v2-cta")?.settings.button_label).toBe("Commander");
+  });
 });

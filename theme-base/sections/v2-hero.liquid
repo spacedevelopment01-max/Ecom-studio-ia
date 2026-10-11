@@ -5,6 +5,8 @@
   - type : typographie seule (aucune photo authentique), carte de contact et matière en aplat ;
   - frame : titre centré puis capture d'interface dans un cadre de navigateur ;
   - board : enseigne (nom en très grand), phrase de positionnement, ardoise des formules et des infos pratiques.
+  - immersive : photo de campagne pleine largeur, voile directionnel, texte posé dessus (en-tête transparent) ;
+  - halfbleed : photo qui va jusqu'au bord de l'écran sur une moitié, texte sur l'autre.
   Les blocs « Fait » n'affichent que des informations confirmées par le client.
 {%- endcomment -%}
 {%- liquid
@@ -15,12 +17,15 @@
   endif
   assign layout = s.layout
   if has_media == false
-    if layout == 'stage' or layout == 'split' or layout == 'frame'
+    if layout == 'stage' or layout == 'split' or layout == 'frame' or layout == 'immersive' or layout == 'halfbleed'
       assign layout = 'type'
     endif
   endif
 -%}
-<section class="v2-hero v2-hero--{{ layout }} v2-texture--{{ s.texture }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;" data-v2-hero>
+<section class="v2-hero v2-hero--{{ layout }} v2-texture--{{ s.texture }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px; --veil: {{ s.veil | default: 55 | divided_by: 100.0 }};" data-v2-hero>
+  {%- if layout == 'immersive' or layout == 'halfbleed' -%}
+    <div class="v2-hero__bg">{% render 'es-image', image: s.image, asset: s.image_asset, alt: s.image_alt, class: 'v2-cover', loading: 'eager', fetchpriority: 'high', sizes: '100vw' %}</div>
+  {%- endif -%}
   <div class="es-container v2-hero__grid">
     <div class="v2-hero__copy">
       {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
@@ -55,6 +60,8 @@
           {% render 'es-image', image: s.image, asset: s.image_asset, alt: s.image_alt, class: 'v2-frame__img', loading: 'eager', fetchpriority: 'high', sizes: '(min-width: 990px) 1100px, 96vw' %}
           {%- if s.caption != blank -%}<figcaption class="v2-hero__caption">{{ s.caption }}</figcaption>{%- endif -%}
         </figure>
+      {%- when 'immersive', 'halfbleed' -%}
+        {%- comment -%} Photo en fond de section (ci-dessus) : aucune colonne supplémentaire. {%- endcomment -%}
       {%- else -%}
         {%- assign facts = section.blocks | where: 'type', 'fact' -%}
         {%- assign items = section.blocks | where: 'type', 'item' -%}
@@ -86,6 +93,8 @@
   "class": "es-section-wrapper",
   "settings": [
     { "type": "select", "id": "layout", "label": "Composition", "default": "split", "options": [
+      { "value": "immersive", "label": "Photo pleine largeur, texte posé dessus" },
+      { "value": "halfbleed", "label": "Image jusqu'au bord, texte à côté" },
       { "value": "stage", "label": "Produit en scène" },
       { "value": "split", "label": "Photo et texte" },
       { "value": "type", "label": "Typographique (sans photo)" },
@@ -104,6 +113,7 @@
     { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
     { "type": "text", "id": "image_alt", "label": "Texte alternatif de l'image" },
     { "type": "text", "id": "caption", "label": "Légende de l'image" },
+    { "type": "range", "id": "veil", "min": 0, "max": 90, "step": 5, "unit": "%", "label": "Voile sur la photo", "info": "Composition « Photo pleine largeur »." , "default": 55 },
     { "type": "text", "id": "card_title", "label": "Titre de la carte d'informations" },
     { "type": "select", "id": "texture", "label": "Matière du fond", "default": "none", "options": [
       { "value": "none", "label": "Aucune" },

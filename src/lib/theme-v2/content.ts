@@ -26,6 +26,17 @@ export type SiteContent = {
   tagline: string;
   /** Positionnement confirmé de la marque (vide sinon). */
   positioning: string;
+  /**
+   * Textes rédigés pour chaque grande section (rédaction du studio, IA quand elle est active) : jamais « à compléter »,
+   * jamais un titre d'un seul mot (un fait isolé ne fait pas un titre). Vide : la section prend son titre par défaut.
+   */
+  lines: {
+    statement: { eyebrow: string; heading: string; text: string } | null;
+    detail: { eyebrow: string; heading: string; text: string } | null;
+    cta: { heading: string; text: string; button: string } | null;
+    gallery: string;
+    features: string;
+  };
   /** Informations confirmées (jamais de valeur inventée). */
   facts: Fact[];
   contact: { phone: string | null; email: string | null; address: string | null; hours: string | null; area: string | null; bookingUrl: string | null };
@@ -41,6 +52,8 @@ export type SiteContent = {
   images: ImageSlots;
   /** Galerie (produit) : fichiers d'images dans l'ordre. */
   gallery: string[];
+  /** Images en format paysage (largeur ≥ 1,3 × hauteur) : seules capables d'ouvrir le site en pleine largeur. */
+  wide?: string[];
   /** Titre (≤ 60 signes) et description (≤ 155 signes) de l'accueil pour Google. */
   seo: { title: string; description: string };
   todo: string[];
@@ -192,6 +205,7 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
     city,
     hero,
     tagline: clean(b.tagline) && !TODO.test(b.tagline ?? "") ? clean(b.tagline) : "",
+    lines: sectionLines(copy),
     positioning,
     facts,
     contact,
@@ -210,5 +224,23 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
     gallery,
     seo,
     todo,
+  };
+}
+
+/** Titre de section utilisable : rédigé, confirmé, au moins deux mots. */
+const okHeading = (s: string | undefined) => {
+  const t = clean(s);
+  return t && !TODO.test(t) && t.split(/\s+/).length >= 2 ? t : "";
+};
+const okText = (s: string | undefined) => (clean(s) && !TODO.test(s ?? "") ? clean(s) : "");
+
+function sectionLines(copy: ShopCopy): SiteContent["lines"] {
+  const block = (x: { eyebrow: string; heading: string; text: string } | undefined) => (x && okHeading(x.heading) ? { eyebrow: okText(x.eyebrow), heading: okHeading(x.heading), text: okText(x.text) } : null);
+  return {
+    statement: block(copy.statement),
+    detail: block(copy.detail),
+    cta: copy.cta && okHeading(copy.cta.heading) ? { heading: okHeading(copy.cta.heading), text: okText(copy.cta.text), button: okText(copy.cta.button) } : null,
+    gallery: okHeading(copy.gallery?.heading),
+    features: okHeading(copy.features?.heading),
   };
 }

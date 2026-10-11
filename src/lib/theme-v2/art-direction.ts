@@ -12,7 +12,7 @@ import { routeFonts } from "../engine/shop";
 import type { WebsiteIntent } from "./intent";
 
 export type LanguageId = "craft" | "maison" | "precision" | "bistro" | "product";
-export type HeroLayout = "stage" | "split" | "type" | "frame" | "board";
+export type HeroLayout = "immersive" | "halfbleed" | "stage" | "split" | "type" | "frame" | "board";
 
 export type Palette = { bg: string; surface: string; text: string; muted: string; accent: string; inverseBg: string; inverseText: string; source: "brand-locked" | "brand" | "language" };
 
@@ -85,7 +85,7 @@ export const LANGUAGES: LanguageDef[] = [
     base: { bg: "#F4F1EB", surface: "#EAE5DB", text: "#1D1B18", accent: "#A9502C", warmAccent: "#A9502C", dark: false },
     header: { layout: "logo-left", shape: "bar", icons: "plain", mobile_menu: "sheet", show_search: false, show_cart: false, sticky: true },
     footer: { style: "columns", scheme: "scheme-3" },
-    hero: { layouts: ["split", "type"], texture: "plaster" },
+    hero: { layouts: ["immersive", "split", "type"], texture: "plaster" },
     preset: "galerie",
     pageWidth: 1320,
   },
@@ -107,7 +107,7 @@ export const LANGUAGES: LanguageDef[] = [
     base: { bg: "#F7F3EE", surface: "#EFE7DD", text: "#241C16", accent: "#8E5426", dark: false },
     header: { layout: "logo-center", shape: "theme", icons: "plain", mobile_menu: "drawer", show_search: true, show_cart: true, sticky: true },
     footer: { style: "centered", scheme: "scheme-2" },
-    hero: { layouts: ["stage", "split", "type"], texture: "none" },
+    hero: { layouts: ["immersive", "halfbleed", "stage", "split", "type"], texture: "none" },
     preset: "atelier",
     pageWidth: 1280,
   },
@@ -129,7 +129,7 @@ export const LANGUAGES: LanguageDef[] = [
     base: { bg: "#0D0F13", surface: "#161A20", text: "#F1F3F6", accent: "#8E89E6", dark: true },
     header: { layout: "menu-right", shape: "bar", icons: "plain", mobile_menu: "fullscreen", show_search: true, show_cart: true, sticky: true },
     footer: { style: "split", scheme: "scheme-2" },
-    hero: { layouts: ["stage", "split"], texture: "grid" },
+    hero: { layouts: ["immersive", "stage", "split"], texture: "grid" },
     preset: "flux",
     pageWidth: 1360,
   },
@@ -151,7 +151,7 @@ export const LANGUAGES: LanguageDef[] = [
     base: { bg: "#F5EEE1", surface: "#ECE2CF", text: "#2B201A", accent: "#8C2A2E", dark: false },
     header: { layout: "split", shape: "bar", icons: "plain", mobile_menu: "fullscreen", show_search: false, show_cart: false, sticky: true },
     footer: { style: "brand-left", scheme: "scheme-3" },
-    hero: { layouts: ["board"], texture: "paper" },
+    hero: { layouts: ["halfbleed", "board"], texture: "paper" },
     preset: "terroir",
     pageWidth: 1280,
   },

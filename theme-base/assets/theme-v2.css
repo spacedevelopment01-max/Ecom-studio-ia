@@ -83,6 +83,42 @@
 .v2-hero--split { padding-top: calc(var(--pt, 64px) * .5); }
 .v2-hero__media { position: relative; aspect-ratio: 4 / 5; border-radius: var(--v2-radius); overflow: hidden; box-shadow: var(--v2-shadow); }
 
+/* immersive : photo pleine largeur, voile directionnel, texte posé dessus (Onde, Nomade, Brume…) */
+.v2-hero__bg { position: absolute; inset: 0; z-index: 0; }
+.v2-hero--immersive { min-height: min(92vh, 900px); display: flex; align-items: center; color: #fff; padding-top: calc(var(--header-h, 72px) + 48px); padding-bottom: 72px; }
+.v2-hero.v2-hero--immersive::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(0, 0, 0, var(--veil, .55)) 0%, rgba(0, 0, 0, calc(var(--veil, .55) * .6)) 42%, rgba(0, 0, 0, 0) 72%), linear-gradient(0deg, rgba(0, 0, 0, calc(var(--veil, .55) * .5)), transparent 35%); }
+.v2-hero--immersive .v2-hero__grid { grid-template-columns: minmax(0, 40rem); width: 100%; z-index: 2; }
+.v2-hero--immersive .v2-display { font-size: clamp(2.6rem, 1rem + 5.8vw, calc(var(--v2-h1) * 1.06)); text-shadow: 0 2px 30px rgba(0, 0, 0, .25); }
+.v2-hero--immersive .v2-em { color: inherit; opacity: .9; }
+.v2-hero--immersive .v2-lead, .v2-hero--immersive .v2-eyebrow, .v2-hero--immersive .v2-hero__facts dt { color: rgba(255, 255, 255, .86); }
+.v2-hero--immersive .v2-hero__facts, .v2-hero--immersive .v2-hero__fact { border-color: rgba(255, 255, 255, .28); }
+.v2-hero--immersive .v2-btn--ghost { color: #fff; border-color: rgba(255, 255, 255, .6); }
+.v2-hero--immersive .v2-btn--ghost:hover { border-color: #fff; background: rgba(255, 255, 255, .08); }
+/* halfbleed : image jusqu'au bord droit (Nuance, Lumen) */
+.v2-hero--halfbleed { min-height: min(84vh, 820px); display: flex; align-items: center; }
+.v2-hero.v2-hero--halfbleed::before { display: none; }
+.v2-hero--halfbleed .v2-hero__bg { left: 50%; }
+.v2-hero--halfbleed .v2-hero__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); width: 100%; }
+.v2-hero--halfbleed .v2-hero__copy { padding-right: clamp(16px, 4vw, 64px); }
+@media (max-width: 989px) {
+  /* Téléphone : la photo d'abord (cadrée sur le produit, posé à droite), le texte dessous sur le fond de la marque —
+     jamais le titre par-dessus le produit. */
+  .v2-hero--immersive { min-height: 0; flex-direction: column; align-items: stretch; padding-top: 0; padding-bottom: 40px; color: var(--c-text); }
+  .v2-hero--immersive .v2-hero__bg { position: relative; inset: auto; aspect-ratio: 4 / 5; max-height: 64svh; width: 100%; }
+  .v2-hero--immersive .v2-hero__bg img { object-position: 74% 60%; }
+  .v2-hero.v2-hero--immersive::before { inset: 0 0 auto; height: calc(var(--header-h, 64px) + 90px); background: linear-gradient(180deg, rgba(0, 0, 0, .45), transparent); }
+  .v2-hero--immersive .v2-hero__grid { padding-top: 28px; }
+  .v2-hero--immersive .v2-display { text-shadow: none; }
+  .v2-hero--immersive .v2-em { color: var(--c-accent); opacity: 1; }
+  .v2-hero--immersive .v2-lead, .v2-hero--immersive .v2-eyebrow, .v2-hero--immersive .v2-hero__facts dt { color: var(--c-muted); }
+  .v2-hero--immersive .v2-btn--ghost { color: var(--c-text); border-color: rgba(var(--c-text-rgb), .28); }
+  .v2-hero--immersive .v2-hero__facts { display: none; }
+  .v2-hero--halfbleed { flex-direction: column; align-items: stretch; min-height: 0; padding-top: 0; }
+  .v2-hero--halfbleed .v2-hero__bg { position: relative; left: 0; aspect-ratio: 4 / 5; max-height: 62svh; width: 100%; }
+  .v2-hero--halfbleed .v2-hero__grid { grid-template-columns: minmax(0, 1fr); padding-top: 32px; }
+  .v2-hero--halfbleed .v2-hero__copy { padding-right: 0; }
+}
+
 /* type : typographique, sans photo */
 .v2-hero--type .v2-hero__grid { grid-template-columns: minmax(0, 1.5fr) minmax(280px, .75fr); align-items: end; }
 .v2-hero--type .v2-display { font-size: clamp(2.5rem, 1rem + 6.2vw, calc(var(--v2-h1) * 1.08)); }
@@ -484,6 +520,7 @@
   [data-ds] .es-product__thumb { width: 84px; border-radius: calc(var(--v2-radius) * .6); }
 }
 [data-ds] .es-highlights li { font-size: 1rem; }
+[data-ds] .es-product__grid { align-items: start; }
 
 /* Fiche produit : la description respire après les points forts. */
 [data-ds] .es-product__description { margin-top: 1.25rem; }

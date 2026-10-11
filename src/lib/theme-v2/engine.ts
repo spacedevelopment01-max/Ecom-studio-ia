@@ -9,6 +9,7 @@
  */
 import { homeSeoDoc } from "../seo-v2/theme-copy";
 import { loadProject, saveThemeVersion } from "../projects";
+import { all } from "../db";
 import type { JobContext } from "../jobs";
 import { validateSpec } from "../theme/ops";
 import { gateMeta, saveCheck } from "../quality/store";
@@ -37,12 +38,13 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
   const intent = websiteIntent(p);
   const art = artDirection(p, intent, opts);
   const copy = savedCopy(projectId) ?? localCopy(p.product, p.brand!, p);
-  const { slots, gallery } = collectImages(projectId);
+  const { slots, gallery, files } = collectImages(projectId);
   // Site de services : les photos du marchand ont été placées par la composition de base (mêmes emplacements).
   const images = { ...slots, ...(base.store.business === "services" ? pickServiceSlots(base) : {}) };
   // Site de services : sa galerie, ce sont ses photos (les vôtres d'abord, puis les photos libres du métier).
   const servicePhotos = base.store.business === "services" ? Object.keys(base.files).filter((f) => /^es-photo-\d/.test(f)) : null;
   const content = siteContent(p, intent, copy, images, servicePhotos ?? gallery, homeSeoDoc(projectId, intent.lang));
+  content.wide = wideFiles(files);
   const shop = intent.site === "shop_mono" || intent.site === "shop_multi";
   const c = compose(intent, art, content, shop ? base.store.product.handle : null, shop ? base.templates.product : null, { collections: base.store.collections ?? [], products: shop ? storeProducts(base) : [] });
 
@@ -96,6 +98,15 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
   };
   const tidied = tidyComposition(spec, { strictAssets: true });
   return { spec: tidied, intent, art, content, plan: c.plan };
+}
+
+/** Fichiers du thème dont l'image est en format paysage (dimensions enregistrées dans la bibliothèque). */
+function wideFiles(files: Record<string, string>): string[] {
+  const ids = Object.values(files);
+  if (!ids.length) return [];
+  const rows = all<{ id: string; width: number | null; height: number | null }>(`SELECT id, width, height FROM assets WHERE id IN (${ids.map(() => "?").join(",")})`, ...ids);
+  const wide = new Set(rows.filter((r) => r.width && r.height && r.width >= r.height * 1.3).map((r) => r.id));
+  return Object.entries(files).filter(([, id]) => wide.has(id)).map(([f]) => f);
 }
 
 /** Emplacements photo d'un site de services déjà résolus par la composition de base (photos réelles du marchand). */

@@ -132,8 +132,13 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     : { label: t("Questions fréquentes", "FAQ"), link: url("faq") };
 
   // ------------------------------------------------------------ ouverture
+  // Ouverture pleine largeur : uniquement avec une vraie photo paysage (un portrait recadré en bandeau serait flou et coupé).
+  const wideHero = [im.hero, im.lifestyle, im.scene1, im.lifestyle2, im.banner].find((f) => f && (c.wide ?? []).includes(f));
   const heroLayout: HeroLayout = (() => {
     for (const l of art.hero.layouts) {
+      // Photo de campagne (le produit ou le métier en situation, pas un détourage) : ouverture pleine largeur.
+      if (l === "immersive" && wideHero) return l;
+      if (l === "halfbleed" && (im.lifestyle || im.hero || im.scene1)) return l;
       if (l === "stage" && im.cutout) return l;
       if (l === "split" && (im.lifestyle || im.scene1 || im.hero)) return l;
       if (l === "frame" && (im.packshot || im.scene1)) return l;
@@ -141,7 +146,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     }
     return "type";
   })();
-  const heroImage = heroLayout === "stage" ? im.cutout : heroLayout === "split" ? im.lifestyle ?? im.scene1 ?? im.hero : heroLayout === "frame" ? im.packshot ?? im.scene1 : undefined;
+  const heroImage = heroLayout === "immersive" ? wideHero : heroLayout === "halfbleed" ? im.lifestyle ?? im.hero ?? im.scene1 : heroLayout === "stage" ? im.cutout : heroLayout === "split" ? im.lifestyle ?? im.scene1 ?? im.hero : heroLayout === "frame" ? im.packshot ?? im.scene1 : undefined;
   const contactFacts: Fact[] = [
     c.contact.phone ? { label: t("Téléphone", "Phone"), value: c.contact.phone, link: tel(c.contact.phone), icon: "phone" } : null,
     c.contact.area ? { label: intent.site === "restaurant" ? t("Quartier", "Area") : t("Zone d'intervention", "Service area"), value: c.contact.area, icon: "globe" } : null,
@@ -169,6 +174,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       card_title: heroLayout === "board" ? t("Au menu", "On the menu") : heroLayout === "type" ? t("Coordonnées", "Contact details") : "",
       texture: art.hero.texture,
       color_scheme: "scheme-1",
+      veil: art.language === "maison" ? 45 : 55,
       padding_top: heroLayout === "frame" ? 88 : 64,
       padding_bottom: heroLayout === "frame" ? 64 : 96,
     },
@@ -201,7 +207,8 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     }
     // Boutique : « En détail » — image de détail et faits CONFIRMÉS (le texte de l'ouverture n'est jamais répété).
     const ticks = c.facts.filter((f) => f.label !== t("Prix", "Price")).map((f) => `${f.label} : ${f.value}`);
-    if (shop && splitImage && ticks.length) return ["v2-split", { layout: L === "precision" ? "overlap" : "media-left", fit: "v2-cover", eyebrow: c.category, heading: t("En détail", "Up close"), text: "", image_asset: splitImage, image_alt: c.name, button_label: t("Voir le produit", "View the product"), button_link: productUrl, color_scheme: "scheme-2", padding_top: 112, padding_bottom: 112 }, ticks.map((x) => ({ type: "point", settings: { text: x } }))];
+    const dl = c.lines.detail;
+    if (shop && splitImage && ticks.length) return ["v2-split", { layout: L === "precision" ? "overlap" : "media-left", fit: "v2-cover", eyebrow: dl?.eyebrow || c.category, heading: dl && dl.heading !== c.name ? dl.heading : t("En détail", "Up close"), text: dl?.text && !c.hero.text.includes(dl.text) ? para(dl.text) : "", image_asset: splitImage, image_alt: c.name, button_label: t("Voir le produit", "View the product"), button_link: productUrl, color_scheme: "scheme-2", padding_top: 112, padding_bottom: 112 }, ticks.map((x) => ({ type: "point", settings: { text: x } }))];
     return null;
   })();
   const used = new Set([heroImage, splitImage].filter(Boolean));
@@ -244,17 +251,19 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   // Bannière : photo d'ambiance réelle (jamais une création publicitaire) et la phrase de la marque.
   const bannerImage = [im.lifestyle2, im.scene3, im.scene2, im.scene1, im.lifestyle].find((f) => f && !used.has(f));
   if (bannerImage) used.add(bannerImage);
-  const bannerHeading = [c.tagline, c.positioning].find((x) => x && x !== bandText && x.length <= 80 && !said(x)) ?? (shop ? c.name : "");
+  const st = c.lines.statement && !said(c.lines.statement.heading) ? c.lines.statement : null;
+  const bannerHeading = st?.heading ?? [c.tagline, c.positioning].find((x) => x && x !== bandText && x.length <= 80 && !said(x)) ?? (shop ? c.name : "");
+  const bannerText = st?.text && !said(st.text) ? st.text : c.summary && !inHero && c.summary !== bannerHeading && !said(c.summary) ? fitText(c.summary, 160) : "";
   const banner: Sec | null = bannerImage && bannerHeading ? [
     "v2-banner",
-    { layout: bannerLayout, align: "start", full_width: L !== "maison", veil: L === "precision" ? 60 : 50, image_asset: bannerImage, image_alt: c.name, eyebrow: shop ? c.category : c.category || "", heading: bannerHeading, text: c.summary && !inHero && c.summary !== bannerHeading ? para(fitText(c.summary, 160)) : "", button_label: shop ? t("Découvrir", "Discover") : primary.label, button_link: shop ? (intent.site === "shop_multi" ? "/collections/all" : productUrl) : primary.link, color_scheme: L === "precision" ? "scheme-3" : L === "craft" || L === "bistro" ? "scheme-4" : "scheme-3", padding_top: L === "maison" ? 24 : 0, padding_bottom: L === "maison" ? 24 : 0 },
+    { layout: bannerLayout, align: "start", full_width: L !== "maison", veil: L === "precision" ? 60 : 50, image_asset: bannerImage, image_alt: c.name, eyebrow: st?.eyebrow || c.category || "", heading: bannerHeading, text: bannerText ? para(bannerText) : "", button_label: shop ? t("Découvrir", "Discover") : primary.label, button_link: shop ? (intent.site === "shop_multi" ? "/collections/all" : productUrl) : primary.link, color_scheme: L === "precision" ? "scheme-3" : L === "craft" || L === "bistro" ? "scheme-4" : "scheme-3", padding_top: L === "maison" ? 24 : 0, padding_bottom: L === "maison" ? 24 : 0 },
   ] : null;
   // Bénéfices illustrés : atouts confirmés, chacun avec une photo de détail encore inutilisée (sinon son pictogramme).
   const detailPics = [im.detail1, im.detail2, im.scene1, im.scene2, im.packshot].filter((f): f is string => !!f && !used.has(f)).filter((f, i, a) => a.indexOf(f) === i);
   const benefitItems = (shop || intent.site === "saas") ? offerItems.slice(0, 3) : [];
   const benefits: Sec | null = benefitItems.length >= 2 ? [
     "v2-benefits",
-    { layout: detailPics.length >= benefitItems.length ? "images" : "icons", columns: benefitItems.length, eyebrow: "", heading: t("Pensé dans les détails", "Designed down to the details"), text: "", color_scheme: "scheme-1", padding_top: 96, padding_bottom: 96 },
+    { layout: detailPics.length >= benefitItems.length ? "images" : "icons", columns: benefitItems.length, eyebrow: "", heading: c.lines.features || t("Pensé dans les détails", "Designed down to the details"), text: "", color_scheme: "scheme-1", padding_top: 96, padding_bottom: 96 },
     benefitItems.map((o, i) => ({ type: "benefit", settings: { image_asset: detailPics[i] ?? "", icon: o.icon && o.icon !== "none" ? o.icon : "check", title: o.title, text: o.text } })),
   ] : null;
   for (const f of detailPics.slice(0, benefits && benefits[1].layout === "images" ? benefitItems.length : 0)) used.add(f);
@@ -263,7 +272,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   const mediaFiles = [im.packshot, im.detail1, im.scene1, im.scene2, im.detail2, im.scene3].filter((f): f is string => !!f && !used.has(f)).filter((f, i, a) => a.indexOf(f) === i);
   const media: Sec | null = shop && mediaFiles.length >= 3 ? [
     "v2-media",
-    { layout: L === "precision" ? "bento" : "rail", eyebrow: "", heading: t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
+    { layout: L === "precision" ? "bento" : "rail", eyebrow: "", heading: c.lines.gallery || t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
     mediaFiles.slice(0, 5).map((f) => ({ type: "image", settings: { image_asset: f, caption: "" } })),
   ] : null;
   // Site de services : galerie « En images » avec les photos qui n'ont pas déjà une place (au moins 4, au plus 8).
@@ -303,11 +312,11 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       : c.city ? t(`Une question ? ${c.name} à ${c.city}`, `A question? ${c.name} in ${c.city}`) : t("Une question ?", "A question?"))
     : intent.site === "restaurant" ? (/^chez\s/i.test(c.name) ? t(`À table ${c.name.charAt(0).toLowerCase()}${c.name.slice(1)}`, `Join us at ${c.name}`) : t(`À table chez ${c.name}`, `Join us at ${c.name}`))
     : intent.site === "saas" ? t(`Voir ${c.name} en action`, `See ${c.name} in action`)
-    : c.name;
+    : c.lines.cta?.heading ?? c.name;
   const ctaText = services ? (intent.conversion === "quote" ? t("Décrivez votre projet : la réponse se fait sur devis.", "Describe your project: we reply with a quote.")
       : intent.conversion === "book" ? t("Choisissez votre date et réservez en quelques instants.", "Pick your date and book in moments.")
       : intent.conversion === "call" ? t("Appelez-nous : nous répondons à vos questions.", "Call us: we'll answer your questions.")
-      : t("Écrivez-nous : nous vous répondons rapidement.", "Write to us: we'll get back to you.")) : intent.site === "saas" ? t("Une démonstration sur vos propres questions.", "A demo built around your own questions.") : shop && c.facts.length >= 2 ? c.facts.slice(0, 3).map((f) => f.value).join(" · ") : ""; // une valeur seule (« stabilisée ») ne veut rien dire hors contexte
+      : t("Écrivez-nous : nous vous répondons rapidement.", "Write to us: we'll get back to you.")) : intent.site === "saas" ? t("Une démonstration sur vos propres questions.", "A demo built around your own questions.") : shop && c.lines.cta?.text ? c.lines.cta.text : shop && c.facts.length >= 2 ? c.facts.slice(0, 3).map((f) => f.value).join(" · ") : ""; // une valeur seule (« stabilisée ») ne veut rien dire hors contexte
   const cta: Sec = [
     "v2-cta",
     {
@@ -315,7 +324,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       eyebrow: shop ? c.category : "",
       heading: ctaHeading,
       text: para(ctaText),
-      button_label: primary.label,
+      button_label: shop && c.lines.cta?.button ? c.lines.cta.button : primary.label,
       button_link: primary.link,
       button2_label: shop ? "" : secondary.link.startsWith("tel:") ? secondary.label : "",
       button2_link: shop ? "" : secondary.link.startsWith("tel:") ? secondary.link : "",
@@ -441,7 +450,8 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     ...art.header,
     menu: "main-menu",
     mega_menu: "none",
-    transparent_on_home: false,
+    // Ouverture photo pleine largeur : l'en-tête se pose dessus (il reprend son fond au défilement).
+    transparent_on_home: heroLayout === "immersive",
     desktop_icons: false,
     cta_label: shop ? "" : primary.label,
     cta_link: shop ? "" : primary.link,
