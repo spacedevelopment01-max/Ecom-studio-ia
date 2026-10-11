@@ -70,5 +70,16 @@ describe("éditeur de sections", async () => {
     const r = lf("Recompose cette section");
     if (r) for (const op of r.ops) expect((op as any).section).toBe(banner);
   });
+
+  it("réponse de l'IA sous une autre forme (« operations », { replace_section: {…} }) : ramenée à la forme attendue, rien n'est perdu", async () => {
+    const { normalizeOps } = await import("@/lib/ai/tasks");
+    const { OpSchema } = await import("@/lib/theme/ops");
+    const raw = { reply: "ok", ops: [], operations: [{ replace_section: { template: "index", section: "v2_banner_1", type: "services-list", settings: { heading: "Prestations" } } }, { op: "move_section", template: "index", section: "a", position: { index: 0 } }] };
+    const n = normalizeOps(raw) as { ops: unknown[]; operations?: unknown };
+    expect(n.operations).toBeUndefined();
+    expect(n.ops).toHaveLength(2);
+    expect(n.ops.every((o) => OpSchema.safeParse(o).success)).toBe(true);
+    expect((n.ops[0] as { op: string }).op).toBe("replace_section");
+  });
 });
 

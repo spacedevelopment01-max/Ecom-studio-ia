@@ -33,6 +33,8 @@ export type LlmImage = { data: Buffer; label?: string };
 
 export type LlmCall = {
   task: TaskId;
+  /** Remise en forme de la réponse JSON avant sa vérification (alias, forme d'une liste…). */
+  prepare?: (raw: unknown) => unknown;
   userId: string;
   projectId?: string | null;
   jobId?: string | null;
@@ -563,7 +565,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
       budget = Math.min(MAX_OUTPUT_TOKENS, budget * 2);
       continue;
     }
-    const parsed = extractJson(r.text);
+    const parsed = call.prepare ? call.prepare(extractJson(r.text)) : extractJson(r.text);
     const res = schema.safeParse(parsed);
     if (res.success) return res.data;
     // Écarts de forme (liste trop longue, texte trop long, valeur hors liste, nombre en texte) : réparés ici,
