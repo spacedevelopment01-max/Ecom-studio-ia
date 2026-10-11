@@ -139,7 +139,29 @@ erreur. Theme Check est vert sur les 11 directions (FR, EN, multi, niche, servic
 donc moteur local seulement, 0 € d'IA). Résultats complets dans `reports/stabilite/resultats.json`, avec des captures
 sur ordinateur et téléphone.
 
-[RÉSULTATS DU TEST — complétés à la fin du test]
+| Scénario | Résultat |
+|---|---|
+| A. Projet produit (photo + description), pilote complet | ✓ terminé en 24 s (détourage, analyse, marque, textes, boutique, rangement ; images, vidéo et calendrier sautés sans IA, comme prévu) |
+| B. Projet de services « Sébastien Blanc » | ✓ terminé en 4 s (moteur local) |
+| C. Marque et logo (fournisseurs simulés) | ✓ par les tests automatisés (moteur Logo V2 complet avec IA simulée) ; dans le navigateur, marque et logo construits par le moteur local |
+| G, H. Boutique, thème | ✓ boutique créée par le pilote ; onglet Boutique ouvert 58 fois sans erreur ; Theme Check vert sur les 11 directions |
+| L. Reprise après arrêt du worker | ✓ worker tué (SIGKILL) **pendant** le détourage, à 5 s : relancé seul par le lanceur, tâche reprise après l'expiration de son bail (90 s), **terminée en 100 s**, toutes les étapes faites une seule fois ; arrêt journalisé avec sa raison (`reprise-worker.json`) |
+| M, N. Fournisseur indisponible, budget épuisé | ✓ sans clé ni budget : le studio bascule sur le moteur local sans erreur ; les créations payantes affichent « incluse dans les forfaits » ; cas simulés (refus, 5xx, budget insuffisant) couverts par les tests automatisés |
+| O. Navigation entre les onglets pendant une tâche | ✓ pendant les deux pilotes et la reprise |
+| **P. 30 minutes d'utilisation continue** | ✓ **29 tours** des 13 onglets des deux projets, **7 014 requêtes API : 0 erreur serveur (5xx), 0 erreur JavaScript, 0 arrêt** du site ou du worker (hors l'arrêt volontaire) |
+| Téléphone (iPhone 13) | ✓ 6 onglets, **aucun débordement horizontal** |
+| Arrêt demandé (Ctrl+C) | ✓ site et worker arrêtés, port libéré, aucun processus restant |
+
+Temps d'ouverture médian d'un onglet (jusqu'au calme du réseau, rafraîchissements compris) : **0,78 à 1,07 s**
+(Marque 1,03 s, Boutique 1,07 s, les autres entre 0,78 et 0,86 s).
+
+Mémoire pendant les 30 min (production, 16 Go) : site **262 Mo au départ, puis 438 → 465 Mo** de la 3e à la 30e
+minute (palier, +1 Mo par minute environ, à surveiller sur une session plus longue) ; worker stable à **238–241 Mo**.
+
+D, E, F, I, J, K (images IA, publicité, vidéo IA, article SEO, calendrier, export CMS) : couverts par les tests
+automatisés avec des fournisseurs simulés (moteurs V2 complets) ; dans le navigateur, sans IA, leurs onglets
+s'ouvrent et affichent correctement « création incluse dans les forfaits » ou le moteur local. **Non vérifiés avec
+de vrais fournisseurs** (voir section 9).
 
 ## 7. Fonctionnalités vérifiées
 

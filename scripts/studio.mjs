@@ -92,14 +92,18 @@ function oomKills() {
     return null;
   }
 }
-/** Mémoire réellement occupée par un processus (Linux), en Mo ; null ailleurs. */
+/** Mémoire réellement occupée par un processus ET ses sous-processus (Linux), en Mo ; null ailleurs. */
 function rssOf(pid) {
-  try {
-    const m = fs.readFileSync(`/proc/${pid}/status`, "utf8").match(/^VmRSS:\s+(\d+) kB/m);
-    return m ? Math.round(Number(m[1]) / 1024) : null;
-  } catch {
-    return null;
-  }
+  let kb = 0;
+  const visit = (p, depth) => {
+    try {
+      kb += Number(/^VmRSS:\s+(\d+) kB/m.exec(fs.readFileSync(`/proc/${p}/status`, "utf8"))?.[1] ?? 0);
+      if (depth > 4) return;
+      for (const t of fs.readdirSync(`/proc/${p}/task`)) for (const c of fs.readFileSync(`/proc/${p}/task/${t}/children`, "utf8").split(" ").filter(Boolean)) visit(Number(c), depth + 1);
+    } catch {}
+  };
+  visit(pid, 0);
+  return kb ? Math.round(kb / 1024) : null;
 }
 
 const pidFile = path.resolve(".studio-dev.pid");
@@ -160,7 +164,9 @@ function start(name) {
     const why = oomNow
       ? "tué par le système : mémoire du conteneur saturée"
       : signal === "SIGKILL"
-        ? "tué de l'extérieur (SIGKILL), sans arrêt demandé — le plus souvent la mémoire"
+        ? kills != null
+          ? "tué de l'extérieur (SIGKILL) par un autre programme ou une commande — pas par manque de mémoire (compteur du noyau inchangé)"
+          : "tué de l'extérieur (SIGKILL), sans arrêt demandé — le plus souvent la mémoire"
         : signal
           ? `signal ${signal} reçu sans arrêt demandé`
           : code === 0
