@@ -14,21 +14,31 @@ if [ "${1:-}" = "--rapide" ]; then ALL="atelier pop galerie vitrine cinema"; MUL
 
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/verify-theme-XXXX")"
 FAIL=0
-run() { # libellé, variables d'environnement…, -- arguments de theme-check.ts
-  local label="$1"; shift
+# Cas vérifiés en parallèle (JOBS à la fois, 4 par défaut) ; résultats affichés dans l'ordre à la fin.
+JOBS="${JOBS:-4}"
+N=0
+run() { # numéro, libellé, variables d'environnement…, -- arguments de theme-check.ts
+  local n="$1" label="$2"; shift 2
   local envs=(); while [ "$1" != "--" ]; do envs+=("$1"); shift; done; shift
-  local log="$TMP/$(echo "$label" | tr ' /' '__').log"
+  local log="$TMP/$n.log" out="$TMP/$n.out"
   if env "${envs[@]}" npx tsx scripts/theme-check.ts "$@" >"$log" 2>&1; then
-    echo "✓ $label  (aucune erreur, $(grep -o 'Total [0-9]*' "$log" | head -1 | cut -d' ' -f2) avertissement(s))"
+    echo "✓ $label  (aucune erreur, $(grep -o 'Total [0-9]*' "$log" | head -1 | cut -d' ' -f2) avertissement(s))" >"$out"
   else
-    FAIL=1; echo "✗ $label"; grep -E "^ERROR|Error|error TS" "$log" | head -20 | sed 's/^/    /'
+    touch "$TMP/failed"; { echo "✗ $label"; grep -E "^ERROR|Error|error TS" "$log" | head -20 | sed 's/^/    /'; } >"$out"
   fi
 }
+spawn() {
+  while [ "$(jobs -rp | wc -l)" -ge "$JOBS" ]; do wait -n; done
+  N=$((N + 1)); run "$(printf '%04d' "$N")" "$@" &
+}
 
-for d in $ALL; do run "$d (fr)" LANG_THEME=fr -- "$TMP/fr-$d" "$d"; done
-for d in $ALL; do run "$d (en)" LANG_THEME=en -- "$TMP/en-$d" "$d"; done
-for d in $MULTI; do for t in multi niche; do run "$d / $t" LANG_THEME=fr -- "$TMP/$d-$t" "$d" "$t"; done; done
-for d in $ALL; do for l in fr en; do run "$d / services ($l)" BUSINESS=services LANG_THEME=$l -- "$TMP/svc-$l-$d" "$d"; done; done
+for d in $ALL; do spawn "$d (fr)" LANG_THEME=fr -- "$TMP/fr-$d" "$d"; done
+for d in $ALL; do spawn "$d (en)" LANG_THEME=en -- "$TMP/en-$d" "$d"; done
+for d in $MULTI; do for t in multi niche; do spawn "$d / $t" LANG_THEME=fr -- "$TMP/$d-$t" "$d" "$t"; done; done
+for d in $ALL; do for l in fr en; do spawn "$d / services ($l)" BUSINESS=services LANG_THEME=$l -- "$TMP/svc-$l-$d" "$d"; done; done
+wait
+cat "$TMP"/*.out
+[ -e "$TMP/failed" ] && FAIL=1
 
 if npx tsx scripts/theme-check-zip.ts "$TMP/zip" >"$TMP/zip.log" 2>&1; then echo "✓ ZIP client (section sur mesure)"; else FAIL=1; echo "✗ ZIP client"; tail -20 "$TMP/zip.log" | sed 's/^/    /'; fi
 
