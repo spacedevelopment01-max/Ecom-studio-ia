@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 
 describe("Video Engine V2 — moteur et rendu", async () => {
   const { createUser } = await import("@/lib/auth");
-  const { all, json } = await import("@/lib/db");
+  const { all, json, run } = await import("@/lib/db");
   const { loadProject } = await import("@/lib/projects");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { getAsset, assetData } = await import("@/lib/library");
@@ -118,6 +118,8 @@ describe("Video Engine V2 — moteur et rendu", async () => {
 
   it("UGC : personnage synthétique signalé, même image de départ pour tous ses plans ; incohérence → reprise ciblée du plan ; faux témoignage écarté", async () => {
     const p = await cosmetic();
+    // UGC : le client autorise les personnes (règle de présence humaine), sinon aucun personnage n'est créé.
+    run("UPDATE projects SET settings_json = json_set(COALESCE(settings_json, '{}'), '$.peopleAllowed', json('true')) WHERE id = ?", p.id);
     let n = 0;
     const { deps, log } = mockVideoDeps({ userId: u.id, projectId: p.id, shot: () => (++n === 2 ? goodShot({ characterConsistent: false, score: 7.5, issues: ["visage différent du premier plan"] }) : goodShot()), canWrite: true, script: () => ({ sections: [{ part: "hook", voice: "Je l'utilise depuis 6 mois, vraiment.", onScreen: "" }, { part: "development", voice: "Une formule courte, sans parfum.", onScreen: "" }, { part: "demonstration", voice: "Regardez la texture.", onScreen: "" }, { part: "conclusion", voice: "Sérum Éclat.", onScreen: "" }, { part: "cta", voice: "Découvrez-le.", onScreen: "Découvrir" }] }) });
     const r = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Une vidéo UGC face caméra" }, approveGeneration: true, ...R }, deps));

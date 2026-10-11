@@ -7,10 +7,14 @@ import { api, Badge, Button, Card, cx, formatDate, Input, Logo, Modal, Select, T
 import { formatEur } from "./billing-client";
 import { LangSwitch, useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
-import { AccountingView } from "./admin-accounting";
+import dynamic from "next/dynamic";
+// Onglets lourds de l'administration : chargés à leur ouverture.
+const AccountingView = dynamic(() => import("./admin-accounting").then((m) => m.AccountingView), { ssr: false });
 import { TextRoutingPanel, type TextRoutingData } from "./admin-text-routing";
-import { MediaRoutingPanel, type MediaRoutingData } from "./admin-media-routing";
-import { MediaUsagesPanel, type MediaUsageData } from "./admin-media-usages";
+import type { MediaRoutingData } from "./admin-media-routing";
+const MediaRoutingPanel = dynamic(() => import("./admin-media-routing").then((m) => m.MediaRoutingPanel), { ssr: false });
+import type { MediaUsageData } from "./admin-media-usages";
+const MediaUsagesPanel = dynamic(() => import("./admin-media-usages").then((m) => m.MediaUsagesPanel), { ssr: false });
 
 type Overview = {
   appUrl: string;

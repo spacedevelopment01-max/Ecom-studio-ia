@@ -34,6 +34,20 @@ export async function api<T = any>(url: string, opts: { method?: string; body?: 
   return data as T;
 }
 
+/**
+ * Lectures identiques partagées : plusieurs composants qui demandent la même adresse au même moment (ex. le budget,
+ * lu par l'en-tête, l'onglet et le panneau) n'envoient qu'UNE requête ; la réponse sert pendant 1,5 s.
+ */
+const shared = new Map<string, { at: number; p: Promise<unknown> }>();
+function sharedGet<T>(url: string): Promise<T> {
+  const hit = shared.get(url);
+  if (hit && Date.now() - hit.at < 1500) return hit.p as Promise<T>;
+  const p = api<T>(url);
+  shared.set(url, { at: Date.now(), p });
+  p.catch(() => shared.delete(url));
+  return p;
+}
+
 /** Lecture avec rafraîchissement périodique facultatif. */
 export function useApi<T = any>(url: string | null, opts: { poll?: number } = {}) {
   const [data, setData] = useState<T | null>(null);
@@ -44,11 +58,13 @@ export function useApi<T = any>(url: string | null, opts: { poll?: number } = {}
   // sinon elle écraserait les données de la nouvelle adresse.
   const current = useRef(url);
   current.current = url;
-  const load = useCallback(async () => {
+  const load = useCallback(async (force?: unknown) => {
     if (!url) return;
     const fresh = () => alive.current && current.current === url;
     try {
-      const d = await api<T>(url);
+      // Rechargement demandé (après une action) : toujours une nouvelle lecture ; sinon lecture partagée.
+      if (force === true) shared.delete(url);
+      const d = await sharedGet<T>(url);
       if (fresh()) {
         setData(d);
         setError(null);
@@ -71,7 +87,8 @@ export function useApi<T = any>(url: string | null, opts: { poll?: number } = {}
       poller.stop();
     };
   }, [url, opts.poll, load]);
-  return { data, error, loading, reload: load, setData };
+  const reload = useCallback(() => load(true), [load]);
+  return { data, error, loading, reload, setData };
 }
 
 // ---------------------------------------------------------------- notifications

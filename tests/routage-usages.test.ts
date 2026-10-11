@@ -426,4 +426,35 @@ describe("routage multimédia par usage", async () => {
     expect(billing.SUBSCRIPTION_AI_SHARE).toBe(0.4);
     expect(billing.PACK_AI_SHARE).toBe(0.5);
   });
+  it("audit : logo écrit jamais routé vers un modèle sans texte ; tarifs à la mauvaise unité et modèles non confirmés refusés", async () => {
+    // Seul Google actif, aucun réglage propre aux logos : plus de repli silencieux vers Gemini (pas de texte fiable).
+    keys = { google: "cle-google-test-123456" };
+    expect(fr(() => mp.routeMedia("image_generation", undefined, { usage: "logo", text: true }))).toBeNull();
+    // Principal général non confirmé : jamais retenu, même désigné.
+    keys = { anthropic: "sk-ant-test-1234567890abcdef", openai: "sk-openai-test-123456", google: "cle-google-test-123456", fal: "fal-id:fal-secret" };
+    setJsonSetting("ai.routes", { image_generation: { provider: "openai", model: "gpt-image-2" } });
+    setJsonSetting("ai.prices", { "openai:gpt-image-2": { unit: "image", perImage: 0.2 } });
+    expect(fr(() => routing.selectMedia({ kind: "image" }, { mode: "manual" }))?.model).not.toBe("gpt-image-2");
+    setJsonSetting("ai.routes", {});
+    // Tarif à la mauvaise unité : modèle inutilisable (coût faux, jusqu'à 0 €).
+    setJsonSetting("ai.prices", { "google:veo-3.0-generate-001": { unit: "tokens", inputPerM: 0.3, outputPerM: 30 } });
+    expect(fr(() => routing.mediaStatus(mediaModel("google", "veo-3.0-generate-001")!)).usable).toBe(false);
+    // Administration : unité refusée à l'enregistrement, nom libre de modèle média refusé, texte non confirmé refusé.
+    const { POST } = await import("@/app/api/admin/settings/route");
+    const admin = await createUser(`adm2${Date.now()}@test.fr`, "motdepasse-test", "A");
+    run("UPDATE users SET role = 'admin' WHERE id = ?", admin.id);
+    const token = `tok2-${Date.now()}`;
+    run("INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?,?,?,?)", sha256(token), admin.id, now() + 3600_000, now());
+    jar.token = token;
+    const send = (b: unknown) => fr(() => POST(new Request("http://x/api/admin/settings", { method: "POST", body: JSON.stringify(b), headers: { "Content-Type": "application/json" } })));
+    let res = await send({ price: { key: "google:veo-3.0-generate-001", value: { unit: "tokens", inputPerM: 0.3, outputPerM: 30 } } });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/seconde/);
+    expect((await send({ price: { key: "google:gemini-2.5-flash-image", value: { unit: "tokens", inputPerM: 0.3, outputPerM: 30 } } })).status).toBe(400);
+    expect((await send({ price: { key: "google:veo-3.0-generate-001", value: { unit: "video_second", perSecond: 0.4 } } })).status).toBe(200);
+    expect((await send({ route: { task: "image_generation", provider: "openai", model: "gpt-image-2" } })).status).toBe(400);
+    expect((await send({ route: { task: "image_generation", provider: "openai", model: "modele-invente" } })).status).toBe(400);
+    expect((await send({ route: { task: "copywriting", provider: "openai", model: "gpt-5.6-sol" } })).status).toBe(400);
+    jar.token = "";
+  });
 });

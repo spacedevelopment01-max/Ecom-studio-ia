@@ -40,6 +40,8 @@ export const GET = handle(async (req: Request, ctx: { params: Promise<{ fid: str
     "X-Content-Type-Options": "nosniff",
   };
   if (mime === "image/svg+xml") headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'";
+  // XML et autres documents actifs : aucun script exécuté (bac à sable).
+  else if (/xml|html/.test(mime)) headers["Content-Security-Policy"] = "default-src 'none'; sandbox";
   if (u.get("download") === "1") headers["Content-Disposition"] = `attachment; filename*=UTF-8''${encodeURIComponent(a.name)}`;
   const range = key === a.storage_key ? parseRange(req.headers.get("range"), stat.size) : null;
   if (range === "unsatisfiable") return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${stat.size}` } });

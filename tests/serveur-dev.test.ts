@@ -107,4 +107,17 @@ describe("serveur de développement", () => {
       expect(s).not.toMatch(/setInterval\(async/);
     }
   });
+  it("arrêts : la vraie raison est journalisée (signal, code, mémoire, oom_kill) ; même secret qu'en développement ; worker protégé", () => {
+    const studio = fs.readFileSync(path.join("scripts", "studio.mjs"), "utf8");
+    expect(studio).toMatch(/\/proc\/vmstat/);
+    expect(studio).toMatch(/tué par le système : mémoire du conteneur saturée/);
+    expect(studio).toMatch(/logs", "studio.log"/);
+    expect(studio).toMatch(/VmRSS/);
+    // Sans APP_SECRET, « next start » refuse de démarrer : le lanceur reprend data/.app-secret (celui du mode dev).
+    expect(studio).toMatch(/\.app-secret/);
+    expect(studio.indexOf("process.env.APP_SECRET = value")).toBeLessThan(studio.indexOf('spawnSync(bin("next"), ["build"]'));
+    const worker = fs.readFileSync(path.join("worker", "index.ts"), "utf8");
+    expect(worker).toMatch(/process\.on\("unhandledRejection"/);
+    expect(worker).toMatch(/process\.on\("uncaughtException"/);
+  });
 });

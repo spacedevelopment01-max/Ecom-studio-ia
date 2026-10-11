@@ -834,18 +834,6 @@ export function attachVideoToPlan(planId: string, videoId: string) {
   }
 }
 
-/** Planificateur : met en file les publications arrivées à échéance (exécuté par le worker). */
-export function enqueueDuePosts() {
-  const due = all<{ id: string; project_id: string; scheduled_at: number; user_id: string }>(
-    "SELECT p.id, p.project_id, p.scheduled_at, pr.user_id FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.status = 'scheduled' AND p.scheduled_at <= ? LIMIT 50",
-    now(),
-  );
-  for (const d of due) {
-    enqueue({ userId: d.user_id, projectId: d.project_id, type: "post.publish", label: L("Publication programmée", "Scheduled post"), payload: { postId: d.id }, idempotencyKey: `publish:${d.id}:${d.scheduled_at}`, maxAttempts: 4 });
-  }
-  return due.length;
-}
-
 /**
  * Titre demandé pour un nouveau visuel : seulement un texte entre guillemets (« Rose ou bleu ? »). Une consigne
  * (« plus court », « plus pédagogique ») n'est jamais imprimée telle quelle sur l'image.

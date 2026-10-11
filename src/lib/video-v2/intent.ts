@@ -4,6 +4,7 @@
  * production complexe inutile. Ce qui n'est pas dit est déduit du projet, et chaque choix est expliqué.
  */
 import type { Project } from "../projects";
+import { peopleAllowedFor } from "../people-policy";
 import type { Complexity, VideoAspect, VideoIntent, VideoIntentKind, VideoPlatform } from "./types";
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -72,6 +73,8 @@ export type VideoAsk = {
   audience?: string | null;
   /** Le client accepte des plans générés par l'IA (sinon : uniquement l'existant et le montage local). */
   allowGeneration?: boolean;
+  /** Personnes autorisées (sinon : règle de présence humaine du projet, `people-policy.ts`). */
+  peopleAllowed?: boolean;
 };
 
 const DURATION_RE = /(\d{1,3})\s*(s\b|sec|secondes?|seconds?)|(\d{1,2})\s*(min|minutes?)\b/;
@@ -110,11 +113,17 @@ export function videoIntent(p: Project, ask: VideoAsk = {}): VideoIntent {
     complexity = "simple";
     reasons.push("UGC impossible sans génération autorisée : contenu social monté à partir de l'existant");
   }
+  // Règle de présence humaine : un UGC (personnage face caméra) exige l'autorisation du client, même demandé.
+  const people = ask.peopleAllowed ?? peopleAllowedFor(p);
+  if (kind === "ugc" && !people) {
+    kind = "social_content";
+    reasons.push("UGC impossible : aucune personne autorisée par le client (aucune photo du client avec une personne, aucun accord explicite) — contenu social sans personnage");
+  }
   reasons.push(`complexité : ${complexity}${modest ? " (demande modeste)" : ""}`);
   const goal = (ask.text ?? "").trim() || goalFor(kind, services);
   const placeholder = (x: string | null | undefined) => !x?.trim() || /\[(À|A) (compléter|définir|préciser)|\[To (complete|define|specify)/i.test(x);
   const audience = !placeholder(ask.audience) ? ask.audience!.trim() : !placeholder(p.brand?.audience) ? p.brand!.audience!.trim() : null;
-  return { kind, goal, audience, platform, aspect, durationS, complexity, reasons };
+  return { kind, goal, audience, platform, aspect, durationS, complexity, reasons, people };
 }
 
 function goalFor(kind: VideoIntentKind, services: boolean): string {

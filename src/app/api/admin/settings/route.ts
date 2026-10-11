@@ -3,9 +3,9 @@ import { body, handle, ok } from "@/lib/http";
 import { HttpError, requireAdmin } from "@/lib/auth";
 import { setSetting, setJsonSetting, getJsonSetting } from "@/lib/settings";
 import { DEFAULT_ROUTES, TASKS, priceFor, priceValid, type TaskId } from "@/lib/ai/config";
-import { effortValues, textModel } from "@/lib/ai/text-models";
+import { effortValues, modelStatus, textModel } from "@/lib/ai/text-models";
 import { mediaModel } from "@/lib/ai/media-models";
-import { incompatibility, MEDIA_USAGES, mediaPrimary, mediaStatus, USAGE_INFO, usageNeed, usagePrimary, usageSettings, type UsageSetting } from "@/lib/ai/media-routing";
+import { incompatibility, MEDIA_USAGES, mediaPrimary, mediaStatus, priceUnitFits, USAGE_INFO, usageNeed, usagePrimary, usageSettings, type UsageSetting } from "@/lib/ai/media-routing";
 import { L } from "@/lib/i18n-server";
 
 const pos = z.number().positive().finite();
@@ -70,14 +70,31 @@ export const POST = handle(async (req: Request) => {
       const m = textModel(b.route.provider, b.route.model);
       if (!m) throw new HttpError(400, L(`Modèle de texte inconnu : ${b.route.provider}:${b.route.model}. Choisissez un modèle du catalogue.`, `Unknown text model: ${b.route.provider}:${b.route.model}. Pick a model from the catalog.`));
       if (b.route.effort && !effortValues(m.provider, m.model).includes(b.route.effort)) throw new HttpError(400, L(`Effort « ${b.route.effort} » non accepté par ${m.label}.`, `Effort "${b.route.effort}" isn't accepted by ${m.label}.`));
-    } else if (b.route.effort) {
-      throw new HttpError(400, L("Les modèles d'image et de vidéo n'ont pas de réglage d'effort.", "Image and video models have no effort setting."));
+      // Modèle non confirmé ou sans tarif : chaque appel échouerait — refusé ici plutôt qu'une tâche cassée.
+      const st = modelStatus(m);
+      if (!st.usable) throw new HttpError(400, L(`${m.label} n'est pas utilisable : ${st.reasons.join(", ")}.`, `${m.label} isn't usable: ${st.reasons.join(", ")}.`));
+    } else {
+      if (b.route.effort) throw new HttpError(400, L("Les modèles d'image et de vidéo n'ont pas de réglage d'effort.", "Image and video models have no effort setting."));
+      // Image / vidéo : seulement un modèle du catalogue, du bon type, confirmé et tarifé (mêmes garde-fous que la
+      // page « Images & Vidéos ») — jamais un nom libre qui contournerait le verrou.
+      const mm = mediaModel(b.route.provider, b.route.model);
+      const kind = b.route.task === "video_generation" ? "video" : "image";
+      if (!mm || mm.kind !== kind) throw new HttpError(400, L(`Modèle ${kind === "video" ? "vidéo" : "d'image"} inconnu du catalogue : ${b.route.provider}:${b.route.model}.`, `Unknown ${kind} model: ${b.route.provider}:${b.route.model}.`));
+      const st = mediaStatus(mm);
+      if (!st.usable) throw new HttpError(400, L(`${mm.label} n'est pas utilisable : ${st.reasons.join(", ")}.`, `${mm.label} isn't usable: ${st.reasons.join(", ")}.`));
     }
     const routes = getJsonSetting<Record<string, unknown>>("ai.routes", {});
     routes[b.route.task as TaskId] = { provider: b.route.provider, model: b.route.model, ...(b.route.effort ? { effort: b.route.effort } : {}) };
     setJsonSetting("ai.routes", routes);
   }
   if (b.price) {
+    // Unité de tarif cohérente avec le modèle (sinon coût maximal faux, jusqu'à 0 €).
+    if (b.price.value) {
+      const [prov, ...rest] = b.price.key.split(":");
+      const mm = mediaModel(prov, rest.join(":"));
+      if (mm && !priceUnitFits(mm, b.price.value.unit)) throw new HttpError(400, L(`Unité de tarif incompatible avec ${mm.label} : ${mm.kind === "video" ? "prix à la seconde attendu" : mm.provider === "openai" ? "prix aux jetons ou à l'image attendu" : "prix à l'image attendu"}.`, `Price unit incompatible with ${mm.label}: ${mm.kind === "video" ? "per-second price expected" : mm.provider === "openai" ? "token or per-image price expected" : "per-image price expected"}.`));
+      if (!mm && textModel(prov, rest.join(":")) && b.price.value.unit !== "tokens") throw new HttpError(400, L("Un modèle de texte se paie aux jetons.", "A text model is priced per token."));
+    }
     const prices = getJsonSetting<Record<string, unknown>>("ai.prices", {});
     if (b.price.value === null) delete prices[b.price.key];
     else prices[b.price.key] = b.price.value;

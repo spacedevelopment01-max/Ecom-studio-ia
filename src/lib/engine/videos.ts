@@ -8,10 +8,9 @@
 import { decide } from "../quality/gate";
 import { gateSave } from "../quality/store";
 import { checkAmbiance } from "./service-media";
-import { execFile } from "node:child_process";
+import { NO_PEOPLE_EN, peopleAllowedFor, queriesFor, UNAUTHORIZED_PERSON } from "../people-policy";
 import fs from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
 import { loadImage } from "@napi-rs/canvas";
 import sharp from "sharp";
 import { assetData, saveAsset, type Asset } from "../library";
@@ -32,8 +31,9 @@ import { C, L } from "../i18n-server";
 import { activityPhotos, isServices, localServiceVideoPlan } from "./service-media";
 import { aiCraftReview, brandCraftBrief, craftLoop, paceVideoPlan, videoPlanIssues, type CraftQuality } from "./ad-craft";
 import { brainView } from "../ai/context";
+import { execTool } from "../exec-tool";
 
-const exec = promisify(execFile);
+const exec = execTool;
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
 
 export type VideoRequest = { format: VideoFormat; goal?: string; useAiClip?: boolean; plan?: VideoSpec; music?: VideoSpec["music"]; url?: string; target?: "ads" | "social" | "shop" };
@@ -83,8 +83,10 @@ export function clipCamera(sector: string | null | undefined, format: VideoForma
  * toutes ont été réellement contrôlées, qu'aucune n'est inutilisable et que la moyenne atteint le seuil (7/10).
  * Une panne du contrôle, une image manquante ou une image inutilisable : jamais FINAL.
  */
-export function clipDecision(r: { scores: number[]; bad: number; wrong: boolean; issues: string[]; error?: string; expected: number }) {
+export function clipDecision(r: { scores: number[]; bad: number; wrong: boolean; issues: string[]; error?: string; expected: number; person?: boolean }) {
   if (r.error) return decide("video_clip", { checker: "ai", score: null, error: r.error });
+  // Personne visible sans autorisation du client (règle de présence humaine) : plan refusé, jamais monté.
+  if (r.person) return decide("video_clip", { checker: "ai", score: r.scores.length ? r.scores.reduce((a, b) => a + b, 0) / r.scores.length : 0, codes: [UNAUTHORIZED_PERSON, ...(r.wrong ? ["wrong_product"] : [])], issues: r.issues });
   if (r.scores.length < r.expected && !r.bad && !r.wrong) return decide("video_clip", { checker: "ai", score: null, error: L("toutes les images du plan n'ont pas été contrôlées", "not every frame of the shot was checked") });
   const mean = r.scores.length ? r.scores.reduce((a, b) => a + b, 0) / r.scores.length : null;
   return decide("video_clip", { checker: "ai", score: r.bad ? Math.min(mean ?? 0, 6.9) : mean, codes: r.wrong ? ["wrong_product"] : [], issues: r.issues });
@@ -99,6 +101,8 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
   project = loadProject(projectId);
   const brand = project.brand;
   if (!brand) throw new UserFacingError(L("Définissez la marque avant de produire une vidéo.", "Set up the brand before producing a video."));
+  // Règle de présence humaine (`people-policy.ts`) : sans autorisation, aucune personne ajoutée par le studio.
+  const people = peopleAllowedFor(project);
   // Photos en situation d'abord (celles du marchand avant les générées) : elles ouvrent les vidéos.
   // Services : photos réelles de l'activité (réalisations, équipe, lieu), puis ambiances générées.
   // Seules les images réutilisables automatiquement (jamais un refusé ni un « à vérifier ») entrent dans le montage.
@@ -121,9 +125,9 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
     const clipFile = await ctx.step("ai-clip", async () => {
       ctx.progress(0.1, L("Génération d'un plan vidéo d'ambiance", "Generating a mood video shot"));
       const scene = imgs.find((a) => a.role === "scene") ?? imgs[0];
-      const prompt = services
+      const prompt = (services
         ? `Slow cinematic push-in on this real photo of the business, soft light shift, subtle depth of field. Keep every person, object and place exactly as they are; add no people, no text, no logo.`
-        : `${clipCamera(project.product.sector, req.format)} Motion starts on the very first frame (no static opening), ${brand.palette.secondary} color accents in the light, natural soft shadows, crisp focus on the product. The product stays perfectly still and exactly identical to the first frame (same shape, proportions, label, text and colors); it is never redrawn, duplicated, cropped or hidden. No text overlay, no new objects, no people.`;
+        : `${clipCamera(project.product.sector, req.format)} Motion starts on the very first frame (no static opening), ${brand.palette.secondary} color accents in the light, natural soft shadows, crisp focus on the product. The product stays perfectly still and exactly identical to the first frame (same shape, proportions, label, text and colors); it is never redrawn, duplicated, cropped or hidden. No text overlay, no new objects, no people.`) + (people ? "" : ` ${NO_PEOPLE_EN}`);
       const buf = await aiClip(provider, { userId: project.userId, projectId, jobId: ctx.job.id, usageKey: clipKey }, { image: assetData(scene), prompt, aspect: req.format === "16:9" ? "16:9" : "9:16", usage: "product_video" }, (m) => ctx.progress(0.15, m));
       const a = await saveAsset({ projectId, userId: project.userId, data: buf, name: `${slug(project.product.name)}-${C("plan-genere", "generated-shot")}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: scene.id, meta: { provider, recipe: L("Plan d'ambiance généré (image vers vidéo)", "Generated mood shot (image to video)") }, status: "review" });
       return a.id;
@@ -159,13 +163,15 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
         const scores: number[] = [];
         const issues: string[] = [];
         let wrong = false;
+        let person = false;
         let bad = 0;
         let error = "";
         for (const idx of [0, Math.floor(frames.length / 2), frames.length - 1]) {
           const usage = { userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:clipqc:${req.format}:${idx}` };
           const frame = fs.readFileSync(frames[idx]);
           try {
-            const r = ref ? await aiQcImage(usage, ref, frame) : await aiQcScene(usage, frame, subject);
+            const r = ref ? await aiQcImage(usage, ref, frame, { peopleAllowed: people }) : await aiQcScene(usage, frame, subject, false, { peopleAllowed: people });
+            if (!people && r.personVisible === true) person = true;
             const tier = qcTier(r);
             scores.push(qcScore(r.score));
             if (ref && (r as { sameProduct?: boolean }).sameProduct === false) wrong = true;
@@ -176,14 +182,14 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
             error = (e as Error).message || L("contrôle automatique impossible", "automatic check unavailable");
             break;
           }
-          if (bad >= 1 || wrong) break;
+          if (bad >= 1 || wrong || person) break;
         }
-        const d = clipDecision({ scores, bad, wrong, issues, error, expected: 3 });
+        const d = clipDecision({ scores, bad, wrong, issues, error, expected: 3, person });
         const keep = gateSave({ userId: project.userId, projectId, jobId: ctx.job.id }, d);
         run("UPDATE assets SET meta = ? WHERE id = ?", JSON.stringify({ ...json<Record<string, unknown>>(clipAsset.meta, {}), ...keep.meta }), clipAsset.id);
         if (d.verdict !== "FINAL") {
           ok = false;
-          reason = wrong ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : [d.reason, d.feedback].filter(Boolean).join(L(" — ", " — "));
+          reason = person ? L("une personne apparaît dans le plan sans votre autorisation", "a person appears in the shot without your permission") : wrong ? L("le produit du plan ne correspond pas au vôtre", "the product in the shot doesn't match yours") : [d.reason, d.feedback].filter(Boolean).join(L(" — ", " — "));
         }
       }
       if (ok) clipDirs.push(frames);
@@ -220,7 +226,8 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
       const must = (tradeStock(`${trade} ${items[0]?.name ?? ""}`) ?? tradeStock(`${project.product.category ?? ""} ${project.product.sector ?? ""}`))?.must ?? [];
       const ai = llmConfigured();
       if (!ai && !must.length) return null;
-      const found = rankStock(await searchStockVideos(q.queries, req.format === "16:9" ? "landscape" : "portrait", q.lang, taken).catch(() => []), must, ai);
+      // Règle de présence humaine : sans autorisation, requêtes et plans sans personne (descriptions de la banque).
+      const found = rankStock(await searchStockVideos(queriesFor(q.queries, people), req.format === "16:9" ? "landscape" : "portrait", q.lang, taken).catch(() => []), must, ai, undefined, { people });
       const subject = services ? [trade, items[0]?.name].filter(Boolean).join(" — ") : C(`univers du produit « ${project.product.name} » (sans le produit lui-même)`, `world of the product "${project.product.name}" (without the product itself)`);
       for (const v of found.slice(0, 3)) {
         try {
@@ -233,7 +240,8 @@ export async function produceVideo(ctx: JobContext, projectId: string, req: Vide
               await exec("ffmpeg", ["-y", "-ss", String(Math.max(0.5, Math.min(3, (v.duration || 4) / 2))), "-i", path.join(dir, "in.mp4"), "-frames:v", "1", "-q:v", "3", path.join(dir, "f.jpg")]);
               const frame = fs.readFileSync(path.join(dir, "f.jpg"));
               d = (await checkAmbiance({ userId: project.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:stockclipqc:${v.source}:${v.id}` }, frame, subject, services)).decision;
-              if (d.deliverable !== "stock_video") d = decide("stock_video", d.checked ? { checker: "ai", score: d.score, issues: d.feedback ? [d.feedback] : [] } : { checker: "ai", score: null, error: d.reason });
+              // Défauts relevés (dont une personne non autorisée) repris dans la décision du plan libre.
+              if (d.deliverable !== "stock_video") d = decide("stock_video", d.checked ? { checker: "ai", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], issues: d.feedback ? [d.feedback] : [] } : { checker: "ai", score: null, error: d.reason });
             } catch (e) {
               if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
               d = decide("stock_video", { checker: "ai", score: null, error: (e as Error).message });

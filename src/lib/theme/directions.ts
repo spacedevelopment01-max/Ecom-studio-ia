@@ -181,94 +181,128 @@ function scheme(bg: string, text: string, accent: string, surfaceT = 0.045): Sch
   };
 }
 
+/**
+ * Couleurs de la MARQUE, telles quelles : boutons et accents prennent la première couleur de la palette qui se lit sur
+ * le fond (contraste ≥ 3:1) — primaire ou accent sur fond clair, accent ou clair sur fond sombre — sans être
+ * éclaircies ni saturées (un bordeaux reste bordeaux, jamais rouge vif ; un or reste or, jamais jaune). Seulement si
+ * aucune ne se lit, la plus proche est ajustée au contraste minimal. Chaque direction garde son ambiance (clair,
+ * sombre, contrasté) avec les fonds tirés du clair et du sombre de la marque.
+ */
+function brandAccent(bg: string, ...candidates: string[]): string {
+  return candidates.find((c) => contrast(c, bg) >= 3) ?? ensureContrast(candidates[0], bg, 3);
+}
+
+/** Bloc plein de la couleur de marque (bandeau, appel à l'action) : texte noir ou blanc lisible dessus. */
+const filled = (c: string) => scheme(c, onColor(c), onColor(c));
+
 export function colorSchemes(direction: DirectionId, p: BrandPalette): Record<string, { settings: Scheme }> {
   const warmLight = withLightness(p.light, Math.max(0.93, hsl(p.light)[2]), 0.6);
   const deep = isDark(p.dark) ? p.dark : withLightness(p.dark, 0.12);
+  // Fond clair de la marque quand il est vraiment clair, sinon le blanc ou le gris clair de la direction.
+  const light = (fallback: string) => (hsl(p.light)[2] >= 0.94 ? p.light : fallback);
+  const night = (l: number) => withLightness(deep, l, 0.5);
+  const onLight = (bg: string) => brandAccent(bg, p.primary, p.accent, p.dark, p.secondary);
+  const onDark = (bg: string) => brandAccent(bg, p.accent, p.secondary, p.light, p.primary);
   let s1: Scheme, s2: Scheme, s3: Scheme, s4: Scheme;
   switch (direction) {
     case "nocturne": {
       const bg = withLightness(deep, 0.075, 0.9);
-      const acc = withLightness(p.accent, 0.64, 1.15);
+      const acc = onDark(bg);
       s1 = scheme(bg, "#EEF3F8", acc, 0.06);
-      s2 = scheme(withLightness(deep, 0.11, 0.9), "#EEF3F8", acc, 0.06);
+      s2 = scheme(withLightness(deep, 0.11, 0.9), "#EEF3F8", onDark(withLightness(deep, 0.11, 0.9)), 0.06);
       s3 = scheme(withLightness(deep, 0.05, 0.9), "#EEF3F8", acc, 0.06);
-      s4 = scheme(acc, "#06121A", "#06121A");
+      s4 = filled(acc);
       break;
     }
     case "brut": {
-      const acc = withLightness(p.accent, 0.62, 1.4);
-      s1 = scheme("#0A0A0B", "#F5F5F2", acc, 0.06);
-      s2 = scheme("#141416", "#F5F5F2", acc, 0.06);
-      s3 = scheme("#F2F2EE", "#0A0A0B", "#0A0A0B");
-      s4 = scheme(acc, "#0A0A0B", "#0A0A0B");
+      const bg = night(0.045);
+      const acc = onDark(bg);
+      s1 = scheme(bg, "#F5F5F2", acc, 0.06);
+      s2 = scheme(night(0.08), "#F5F5F2", onDark(night(0.08)), 0.06);
+      s3 = scheme(light("#F2F2EE"), bg, bg);
+      s4 = filled(acc);
       break;
     }
     case "elan": {
-      const acc = withLightness(p.accent, 0.58, 1.4);
-      s1 = scheme(withLightness(deep, 0.085, 0.35), "#F4F6F6", acc, 0.06);
-      s2 = scheme(withLightness(deep, 0.12, 0.35), "#F4F6F6", acc, 0.06);
+      const bg = withLightness(deep, 0.085, 0.35);
+      const acc = onDark(bg);
+      s1 = scheme(bg, "#F4F6F6", acc, 0.06);
+      s2 = scheme(withLightness(deep, 0.12, 0.35), "#F4F6F6", onDark(withLightness(deep, 0.12, 0.35)), 0.06);
       s3 = scheme(withLightness(deep, 0.05, 0.35), "#F4F6F6", acc, 0.06);
-      s4 = scheme(acc, onColor(acc), onColor(acc));
+      s4 = filled(acc);
       break;
     }
     case "flux": {
-      const acc = withLightness(p.accent, 0.5, 1.5);
-      s1 = scheme("#FFFFFF", "#0D0D0D", acc);
-      s2 = scheme("#F2F2F2", "#0D0D0D", acc);
-      s3 = scheme("#0D0D0D", "#FFFFFF", withLightness(p.accent, 0.6, 1.5), 0.07);
-      s4 = scheme(acc, onColor(acc), onColor(acc));
+      const bg = light("#FFFFFF");
+      s1 = scheme(bg, "#0D0D0D", onLight(bg));
+      s2 = scheme("#F2F2F2", "#0D0D0D", onLight("#F2F2F2"));
+      s3 = scheme(night(0.05), "#FFFFFF", onDark(night(0.05)), 0.07);
+      s4 = filled(onLight(bg));
       break;
     }
     case "joaillerie": {
-      const acc = withLightness(p.primary, 0.4, 0.9);
-      s1 = scheme("#FFFFFF", "#262626", acc);
-      s2 = scheme("#F3F2F0", "#262626", acc);
-      s3 = scheme("#1A1A1C", "#F5F4F2", withLightness(p.accent, 0.75, 0.8), 0.07);
+      const bg = light("#FFFFFF");
+      s1 = scheme(bg, "#262626", onLight(bg));
+      s2 = scheme("#F3F2F0", "#262626", onLight("#F3F2F0"));
+      s3 = scheme(night(0.1), "#F5F4F2", onDark(night(0.1)), 0.07);
       s4 = scheme("#333333", "#FFFFFF", "#FFFFFF", 0.07);
       break;
     }
     case "gourmand": {
       const green = withLightness(p.primary, 0.3, 0.9);
-      s1 = scheme("#FBF5EC", withLightness(p.primary, 0.17, 0.8), withLightness(p.primary, 0.2, 0.8));
-      s2 = scheme(withLightness(p.secondary, 0.86, 1.1), withLightness(p.primary, 0.17, 0.8), withLightness(p.primary, 0.2, 0.8));
-      s3 = scheme(green, "#FBF5EC", "#FFF27A", 0.07);
-      s4 = scheme(withLightness(p.accent, 0.82, 1.1), withLightness(p.primary, 0.17, 0.8), withLightness(p.primary, 0.2, 0.8));
+      const ink = withLightness(p.primary, 0.17, 0.8);
+      const s2bg = withLightness(p.secondary, 0.86, 1.1);
+      const s4bg = withLightness(p.accent, 0.82, 1.1);
+      s1 = scheme("#FBF5EC", ink, onLight("#FBF5EC"));
+      s2 = scheme(s2bg, ink, onLight(s2bg));
+      s3 = scheme(green, "#FBF5EC", onDark(green), 0.07);
+      s4 = scheme(s4bg, ink, onLight(s4bg));
       break;
     }
     case "pop": {
-      s1 = scheme(withLightness(p.light, 0.975, 0.8), withLightness(deep, 0.14), withLightness(p.primary, 0.5, 1.3));
-      s2 = scheme(withLightness(p.secondary, 0.91, 1.2), withLightness(deep, 0.14), withLightness(p.primary, 0.45, 1.3));
-      s3 = scheme(withLightness(p.primary, 0.22, 1.1), "#FFFFFF", withLightness(p.accent, 0.68, 1.3));
-      s4 = scheme(withLightness(p.accent, 0.62, 1.3), "#111111", "#111111");
+      const bg1 = withLightness(p.light, 0.975, 0.8);
+      const bg2 = withLightness(p.secondary, 0.91, 1.2);
+      const bg3 = withLightness(p.primary, 0.22, 1.1);
+      s1 = scheme(bg1, withLightness(deep, 0.14), onLight(bg1));
+      s2 = scheme(bg2, withLightness(deep, 0.14), onLight(bg2));
+      s3 = scheme(bg3, "#FFFFFF", onDark(bg3));
+      s4 = filled(p.accent);
       break;
     }
     case "galerie": {
-      s1 = scheme("#FFFFFF", "#141414", withLightness(p.primary, 0.32, 0.8));
-      s2 = scheme("#F6F5F2", "#141414", withLightness(p.primary, 0.32, 0.8));
-      s3 = scheme("#141414", "#F4F3EF", "#F4F3EF");
+      const bg = light("#FFFFFF");
+      s1 = scheme(bg, "#141414", onLight(bg));
+      s2 = scheme("#F6F5F2", "#141414", onLight("#F6F5F2"));
+      s3 = scheme(night(0.06), "#F4F3EF", "#F4F3EF");
       s4 = scheme(withLightness(p.primary, 0.9, 0.4), "#141414", "#141414");
       break;
     }
     case "clinique": {
-      const acc = withLightness(p.primary, 0.45, 1.2);
-      s1 = scheme("#FFFFFF", "#1D1D1F", acc);
-      s2 = scheme("#F5F5F7", "#1D1D1F", acc);
-      s3 = scheme("#0B0B0D", "#F5F5F7", withLightness(p.primary, 0.66, 1.2), 0.07);
-      s4 = scheme(acc, "#FFFFFF", "#FFFFFF");
+      const bg = light("#FFFFFF");
+      const acc = onLight(bg);
+      s1 = scheme(bg, "#1D1D1F", acc);
+      s2 = scheme("#F5F5F7", "#1D1D1F", onLight("#F5F5F7"));
+      s3 = scheme(night(0.04), "#F5F5F7", onDark(night(0.04)), 0.07);
+      s4 = filled(acc);
       break;
     }
     case "terroir": {
-      s1 = scheme(withLightness(p.light, 0.955, 0.9), withLightness(deep, 0.15, 0.9), withLightness(p.primary, 0.4, 1.1));
-      s2 = scheme(withLightness(p.secondary, 0.9, 0.8), withLightness(deep, 0.15, 0.9), withLightness(p.primary, 0.36, 1.1));
-      s3 = scheme(withLightness(p.primary, 0.14, 0.7), withLightness(p.light, 0.94, 0.8), withLightness(p.accent, 0.7, 1.1));
-      s4 = scheme(withLightness(p.accent, 0.56, 1.1), "#1A140F", "#1A140F");
+      const bg1 = withLightness(p.light, 0.955, 0.9);
+      const bg2 = withLightness(p.secondary, 0.9, 0.8);
+      const bg3 = withLightness(p.primary, 0.14, 0.7);
+      s1 = scheme(bg1, withLightness(deep, 0.15, 0.9), onLight(bg1));
+      s2 = scheme(bg2, withLightness(deep, 0.15, 0.9), onLight(bg2));
+      s3 = scheme(bg3, withLightness(p.light, 0.94, 0.8), onDark(bg3));
+      s4 = filled(p.accent);
       break;
     }
     default: {
       // atelier
-      s1 = scheme(warmLight, withLightness(deep, 0.12, 0.7), withLightness(p.primary, 0.36, 1));
-      s2 = scheme(mix(warmLight, p.secondary, 0.2), withLightness(deep, 0.12, 0.7), withLightness(p.primary, 0.34, 1));
-      s3 = scheme(withLightness(deep, 0.09, 0.6), withLightness(p.light, 0.95, 0.5), withLightness(p.accent, 0.74, 0.9), 0.06);
+      const bg2 = mix(warmLight, p.secondary, 0.2);
+      const bg3 = withLightness(deep, 0.09, 0.6);
+      s1 = scheme(warmLight, withLightness(deep, 0.12, 0.7), onLight(warmLight));
+      s2 = scheme(bg2, withLightness(deep, 0.12, 0.7), onLight(bg2));
+      s3 = scheme(bg3, withLightness(p.light, 0.95, 0.5), onDark(bg3), 0.06);
       s4 = scheme(withLightness(p.accent, 0.82, 0.7), withLightness(deep, 0.12, 0.7), withLightness(deep, 0.12, 0.7));
     }
   }

@@ -4,7 +4,7 @@
  */
 import { all, run, now } from "@/lib/db";
 import { HttpError } from "@/lib/auth";
-import { handle, ok } from "@/lib/http";
+import { handle, ok, readForm } from "@/lib/http";
 import { saveAsset, type Asset } from "@/lib/library";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
@@ -20,7 +20,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const form = await req.formData();
+  const form = await readForm(req, 30 * 1048576);
   const value = typeof form.get("value") === "string" ? String(form.get("value")).trim() : "";
   const photo = form.get("photo");
   const values = p.product.variants.flatMap((v) => v.values);

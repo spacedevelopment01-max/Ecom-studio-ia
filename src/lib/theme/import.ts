@@ -61,15 +61,34 @@ function normalizeSections(sections: Record<string, any>): Record<string, any> {
 
 export type ThemeArchive = { root: string; text: Map<string, string>; binary: Map<string, Uint8Array> };
 
+const MAX_ENTRY = 25 * 1024 * 1024;
+const MAX_UNZIPPED = 200 * 1024 * 1024;
+const MAX_ENTRIES = 5000;
+
 /** Ouvre le ZIP et repère la racine du thème (dossier contenant layout/theme.liquid). */
 export function openThemeZip(zip: Uint8Array): ThemeArchive {
   if (zip.length > MAX_ZIP) throw new Error(L("Le fichier dépasse 60 Mo : exportez le thème depuis Shopify sans médias volumineux.", "The file is larger than 60 MB: export the theme from Shopify without large media files."));
   let entries: Record<string, Uint8Array>;
+  // Bombe de décompression : chaque fichier, leur nombre et leur taille totale DÉCLARÉE sont plafonnés AVANT
+  // toute décompression (un ZIP de 300 Ko peut se décompresser en plusieurs Go et faire tomber le serveur).
+  let count = 0;
+  let total = 0;
+  let tooBig = false;
   try {
-    entries = unzipSync(zip);
+    entries = unzipSync(zip, {
+      filter: (f) => {
+        if (f.name.endsWith("/") || f.name.includes("__MACOSX")) return false;
+        count++;
+        total += f.originalSize;
+        if (f.originalSize > MAX_ENTRY || total > MAX_UNZIPPED || count > MAX_ENTRIES) tooBig = true;
+        return !tooBig;
+      },
+    });
   } catch {
+    if (tooBig) throw new Error(L("Ce ZIP est trop volumineux une fois décompressé (plus de 200 Mo, un fichier de plus de 25 Mo ou plus de 5 000 fichiers) : ce n'est pas un export de thème Shopify ordinaire.", "This ZIP is too large once decompressed (over 200 MB, a file over 25 MB or over 5,000 files): it isn't an ordinary Shopify theme export."));
     throw new Error(L("Ce fichier n'est pas un ZIP lisible. Dans Shopify : Boutique en ligne › Thèmes › … › Télécharger le fichier du thème.", "This file isn't a readable ZIP. In Shopify: Online Store › Themes › … › Download theme file."));
   }
+  if (tooBig) throw new Error(L("Ce ZIP est trop volumineux une fois décompressé (plus de 200 Mo, un fichier de plus de 25 Mo ou plus de 5 000 fichiers) : ce n'est pas un export de thème Shopify ordinaire.", "This ZIP is too large once decompressed (over 200 MB, a file over 25 MB or over 5,000 files): it isn't an ordinary Shopify theme export."));
   const layout = Object.keys(entries).find((p) => /(^|\/)layout\/theme\.liquid$/.test(p) && !p.includes("__MACOSX"));
   if (!layout) throw new Error(L("Aucun fichier layout/theme.liquid : ce ZIP ne contient pas un thème Shopify.", "No layout/theme.liquid file: this ZIP doesn't contain a Shopify theme."));
   const root = layout.slice(0, layout.length - "layout/theme.liquid".length);

@@ -11,6 +11,7 @@ import { assetData, getAsset } from "../library";
 import type { Project } from "../projects";
 import { validCutouts } from "../engine/cutouts";
 import { L } from "../i18n-server";
+import { peopleAllowedFor, personCheckFr } from "../people-policy";
 import type { ImageRequestV2 } from "../image-v2/engine";
 import { CopySetSchema, type CopySet } from "./copy";
 import { AD_REVIEW_SYSTEM, AdReviewSchema } from "./quality";
@@ -62,7 +63,7 @@ export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean
           system: AD_REVIEW_SYSTEM,
           context: brainView(p, "advertising").stable,
           images: [{ data: small, label: L("création publicitaire à juger", "ad creative to review") }],
-          prompt: `${text}\nRéponds { "criteria": { "hook": 0, "clarity": 0, "relevance": 0, "brand": 0, "visual": 0, "hierarchy": 0, "legibility": 0, "cta": 0, "platform": 0, "distinctiveness": 0 }, "issues": [], "claimProblems": [], "productAltered": false, "textIllegible": false, "generic": false, "fix": { "target": "copy|hook|layout|visual|cta|none", "instruction": "…" } }.`,
+          prompt: `${text}\n${personCheckFr(peopleAllowedFor(p))}\nRéponds { "criteria": { "hook": 0, "clarity": 0, "relevance": 0, "brand": 0, "visual": 0, "hierarchy": 0, "legibility": 0, "cta": 0, "platform": 0, "distinctiveness": 0 }, "issues": [], "claimProblems": [], "productAltered": false, "textIllegible": false, "generic": false, "personVisible": false, "fix": { "target": "copy|hook|layout|visual|cta|none", "instruction": "…" } }.`,
           maxTokens: 2500,
         },
         AdReviewSchema,

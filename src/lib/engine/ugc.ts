@@ -12,10 +12,8 @@
  */
 import { decide } from "../quality/gate";
 import { gateSave, saveCheck } from "../quality/store";
-import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import sharp from "sharp";
 import { assetData, getAsset, saveAsset } from "../library";
@@ -34,10 +32,11 @@ import { aiCraftReview, brandCraftBrief, craftLoop, ugcCraftIssues, ugcStructure
 import { brainView } from "../ai/context";
 import { C, L, contentLang, uiLang } from "../i18n-server";
 import { activityName, contactLine, realActivityPhotos, isServices, placeLine, serviceCta, serviceItems } from "./service-media";
+import { execTool } from "../exec-tool";
 
 export { cleanUgcScript, ugcIssues };
 
-const exec = promisify(execFile);
+const exec = execTool;
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
 
 export type UgcFormat = "9:16" | "16:9";
@@ -364,12 +363,14 @@ async function hasAudio(file: string) {
  * aucune personne déformée, aucun texte ni logo inventé (services). Note ramenée sur 10.
  */
 async function ugcCheck(base: { userId: string; projectId: string; jobId?: string | null }, usageKey: string, services: boolean, reference: Buffer, image: Buffer): Promise<{ ok: boolean; score: number; issues: string[] }> {
+  // Vidéo UGC commandée explicitement par le client dans l'onglet UGC : la personne générée (signalée) en est le sujet
+  // même ; la règle de présence humaine ne refuse donc pas sa présence ici.
   if (services) {
-    const r = await aiQcScene({ ...base, usageKey }, image);
+    const r = await aiQcScene({ ...base, usageKey }, image, undefined, false, { peopleAllowed: true });
     const score = r.ok ? qcScore(r.score) : 0;
     return { ok: r.ok && score >= QC_MIN_SCORE, score, issues: r.issues };
   }
-  const r = await aiQcImage({ ...base, usageKey }, reference, image);
+  const r = await aiQcImage({ ...base, usageKey }, reference, image, { peopleAllowed: true });
   return { ok: qcPassed(r), score: r.sameProduct ? qcScore(r.score) : 0, issues: r.issues };
 }
 

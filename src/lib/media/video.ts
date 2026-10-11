@@ -17,6 +17,7 @@ import { MAX_PRODUCT_UPSCALE, wrapLines } from "./compose";
 import type { Palette, Typo } from "./compose";
 import { contentLang, L } from "../i18n-server";
 import { intlLocale } from "../i18n";
+import { TOOL_TIMEOUT_MS } from "../exec-tool";
 
 /** Capitales selon la langue des contenus (« fr-FR » en français, comme avant). */
 const upper = (s: string) => s.toLocaleUpperCase(intlLocale(contentLang()));
@@ -1063,6 +1064,9 @@ export async function renderVideo(spec: VideoSpec, a: VideoAssets, outFile: stri
   const ff = spawn("ffmpeg", args, { stdio: ["pipe", "ignore", "pipe"] });
   let stderr = "";
   ff.stderr.on("data", (d) => (stderr = (stderr + d.toString()).slice(-4000)));
+  // Encodeur bloqué : arrêté au bout de la durée maximale des outils (la tâche échoue au lieu de rester en cours).
+  const ffTimer = setTimeout(() => ff.kill("SIGKILL"), TOOL_TIMEOUT_MS);
+  ff.on("close", () => clearTimeout(ffTimer));
   const done = new Promise<void>((resolve, reject) => {
     ff.on("error", reject);
     ff.on("close", (code) => (code === 0 ? resolve() : reject(new Error(L(`Encodage vidéo impossible (ffmpeg ${code}) : ${stderr.slice(-400)}`, `Video encoding failed (ffmpeg ${code}): ${stderr.slice(-400)}`)))));

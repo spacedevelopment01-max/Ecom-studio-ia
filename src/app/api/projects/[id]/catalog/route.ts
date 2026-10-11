@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { id as newId } from "@/lib/db";
 import { HttpError } from "@/lib/auth";
-import { body, handle, ok } from "@/lib/http";
+import { body, handle, ok, readForm } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { saveAsset } from "@/lib/library";
 import { saveCatalog } from "@/lib/projects";
@@ -34,7 +34,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   if (p.catalog.length >= 40) throw new HttpError(400, L("Le catalogue est limité à 40 produits par boutique.", "The catalog is limited to 40 products per store."));
-  const form = await req.formData();
+  const form = await readForm(req, 260 * 1048576);
   const get = (k: string) => (typeof form.get(k) === "string" ? String(form.get(k)).trim() : "");
   const name = get("name");
   if (!name) throw new HttpError(400, L("Donnez un nom au produit.", "Give the product a name."));

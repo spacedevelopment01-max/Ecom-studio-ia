@@ -4,6 +4,7 @@
  * qu'elle soit retenue. Un mur, une texture ou un bâtiment sans le geste du métier n'y figurent pas.
  */
 import { GLOBAL_NEGATIVES, resolveTrade } from "../brain/trade";
+import { mentionsPerson } from "../people-policy";
 
 type Trade = { re: RegExp; queries: string[]; must: string[] };
 
@@ -86,7 +87,10 @@ export function tagsMatch(alt: string, must: string[]): boolean {
  * description ne parle que d'un concept hors sujet (mur de briques, texture, pièce vide…) passent en dernier ;
  * citer le métier les rachète (« plasterer on a brick wall » reste pertinente).
  */
-export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean, negative: string[] = GLOBAL_NEGATIVES): T[] {
+export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean, negative: string[] = GLOBAL_NEGATIVES, opts: { people?: boolean } = {}): T[] {
+  // Règle de présence humaine : personnes non autorisées → toute photo (ou vidéo) décrite avec une personne est
+  // écartée d'emblée ; le contrôle visuel refuse ensuite celles dont la description ne le disait pas.
+  if (opts.people === false) found = found.filter((p) => !mentionsPerson(p.alt));
   // Image V2 : on comprend la scène — un concept hors sujet, ou une surface seule (mur, texture, façade) sans personne
   // ni geste, passe en dernier ; citer le métier rachète la photo (« plasterer smoothing a wall »).
   const surfaceOnly = (p: T) => {

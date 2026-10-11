@@ -120,6 +120,9 @@ export async function saveStartFiles(projectId: string, userId: string, files: F
     else await saveAsset({ projectId, userId, data: Buffer.from(await f.arrayBuffer()), name: f.name || `photo-${i + 1}.jpg`, mime: f.type, role: "original", folderKey: "product.originals", origin: "upload", meta: { uploadedAt: now() } });
   }
   if (logo) {
+    // Logo fourni : une image (PNG, JPEG, WebP, AVIF ou SVG) de 25 Mo au plus — jamais un autre type de fichier.
+    if (logo.size > MAX_FILE) throw new HttpError(413, L(`Le logo « ${logo.name} » dépasse 25 Mo.`, `The logo "${logo.name}" exceeds 25 MB.`));
+    if (!/^image\/(jpeg|png|webp|avif|svg\+xml)$/.test(logo.type)) throw new HttpError(415, L(`Format de logo non pris en charge pour « ${logo.name} » (PNG, JPEG, WebP, AVIF, SVG).`, `Unsupported logo format for "${logo.name}" (PNG, JPEG, WebP, AVIF, SVG).`));
     await saveAsset({ projectId, userId, data: Buffer.from(await logo.arrayBuffer()), name: logo.name || "logo.png", mime: logo.type, kind: "image", role: "logo", folderKey: "brand.logos", origin: "upload", meta: { provided: true } });
   }
 }

@@ -18,6 +18,7 @@ import { validCutouts } from "../engine/cutouts";
 import { activityPhotos, realActivityPhotos } from "../engine/service-media";
 import { isAutoUsable, usableByRole } from "../quality/usable";
 import { L } from "../i18n-server";
+import { peopleAllowedFor, personCheckFr } from "../people-policy";
 import type { ImageRequestV2 } from "../image-v2/engine";
 import { ScriptSchema, type ScriptDraft } from "./script";
 import { SHOT_REVIEW_SYSTEM, ShotReviewSchema, VIDEO_REVIEW_SYSTEM, VideoReviewSchema } from "./quality";
@@ -91,11 +92,11 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       const images = [...(await Promise.all(frames.map(small))).map((data, k) => ({ data, label: L(`image ${k + 1} du plan`, `shot frame ${k + 1}`) }))];
       if (refs.product) images.push({ data: await small(refs.product), label: L("référence : produit réel", "reference: real product") });
       if (refs.character) images.push({ data: await small(refs.character), label: L("référence : personnage", "reference: character") });
-      return (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-shot-review", routing: { difficulty: "complex", deliverable: "video_shot_v2" }, system: SHOT_REVIEW_SYSTEM, context: brainView(p, "qc").stable, images, prompt: `${text}\nRéponds { "score": 0, "sameProduct": null, "productAltered": false, "characterConsistent": null, "offTopic": false, "artifacts": false, "issues": [] }.`, maxTokens: 1500 }, ShotReviewSchema)) as ShotReview;
+      return (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-shot-review", routing: { difficulty: "complex", deliverable: "video_shot_v2" }, system: SHOT_REVIEW_SYSTEM, context: brainView(p, "qc").stable, images, prompt: `${text}\n${personCheckFr(peopleAllowedFor(p))}\nRéponds { "score": 0, "sameProduct": null, "productAltered": false, "characterConsistent": null, "offTopic": false, "artifacts": false, "personVisible": false, "issues": [] }.`, maxTokens: 1500 }, ShotReviewSchema)) as ShotReview;
     },
     async reviewVideo(frames, text, key) {
       const images = (await Promise.all(frames.map(small))).map((data, k) => ({ data, label: L(`image clé ${k + 1}`, `key frame ${k + 1}`) }));
-      return (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-review", routing: { difficulty: "complex", deliverable: "video_v2" }, system: VIDEO_REVIEW_SYSTEM, context: brainView(p, "video").stable, images, prompt: `${text}\nRéponds { "criteria": { "relevance": 0, "narrative": 0, "visual": 0, "continuity": 0, "product_fidelity": 0, "brand": 0, "realism": 0, "motion": 0, "editing": 0, "audio": 0, "sync": 0, "subtitles": 0, "commercial": 0 }, "issues": [], "fix": { "target": "shot|audio|subtitles|editing|script|none", "shotId": null, "instruction": "…" } }.`, maxTokens: 2500 }, VideoReviewSchema)) as VideoReview;
+      return (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-review", routing: { difficulty: "complex", deliverable: "video_v2" }, system: VIDEO_REVIEW_SYSTEM, context: brainView(p, "video").stable, images, prompt: `${text}\n${personCheckFr(peopleAllowedFor(p))}\nRéponds { "criteria": { "relevance": 0, "narrative": 0, "visual": 0, "continuity": 0, "product_fidelity": 0, "brand": 0, "realism": 0, "motion": 0, "editing": 0, "audio": 0, "sync": 0, "subtitles": 0, "commercial": 0 }, "issues": [], "personVisible": false, "fix": { "target": "shot|audio|subtitles|editing|script|none", "shotId": null, "instruction": "…" } }.`, maxTokens: 2500 }, VideoReviewSchema)) as VideoReview;
     },
     async image(req) {
       const { runImageEngineV2 } = await import("../image-v2/engine");

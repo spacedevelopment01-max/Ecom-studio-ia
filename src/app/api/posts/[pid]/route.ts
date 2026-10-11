@@ -30,11 +30,12 @@ const refuseV2 = (post: { engine?: string }) => {
 };
 
 export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ pid: string }> }) => {
-  const { post } = await postOf(ctx);
+  const { user, post } = await postOf(ctx);
   refuseV2(post);
   if (locked(post.status)) throw new HttpError(409, L("Une publication envoyée ne peut plus être modifiée.", "A post that has been sent can no longer be edited."));
   const b = await body(req, z.object({ title: z.string().max(200).optional(), caption: z.string().max(5000).optional(), hashtags: z.string().max(500).optional(), media: z.array(z.string()).max(10).optional(), scheduledAt: z.number().nullable().optional(), connectionId: z.string().nullable().optional(), network: z.enum(["instagram", "facebook", "tiktok", "youtube", "pinterest"]).optional(), format: z.string().optional(), link: z.string().max(500).nullable().optional() }));
   if (b.media) for (const m of b.media) if (getAsset(m)?.project_id !== post.project_id) throw new HttpError(400, L("Média étranger au projet.", "Media does not belong to this project."));
+  if (b.connectionId && !one("SELECT 1 FROM connections WHERE id = ? AND user_id = ?", b.connectionId, user.id)) throw new HttpError(400, L("Compte de réseau social introuvable.", "Social account not found."));
   const fields: [string, unknown][] = [];
   for (const [k, col] of [["title", "title"], ["caption", "caption"], ["hashtags", "hashtags"], ["scheduledAt", "scheduled_at"], ["connectionId", "connection_id"], ["network", "network"], ["format", "format"], ["link", "link"]] as const) if ((b as any)[k] !== undefined) fields.push([col, (b as any)[k]]);
   if (b.media) fields.push(["media", JSON.stringify(b.media)]);

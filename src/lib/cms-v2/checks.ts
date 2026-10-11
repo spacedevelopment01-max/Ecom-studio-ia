@@ -58,7 +58,7 @@ const PS_REQUIRED_PROPS = ["name:", "display_name:", "version:", "author:", "com
 
 export function phpAvailable(): boolean {
   try {
-    execFileSync("php", ["-v"], { stdio: "ignore" });
+    execFileSync("php", ["-v"], { stdio: "ignore", timeout: 15_000 });
     return true;
   } catch {
     return false;
@@ -162,7 +162,7 @@ export async function staticChecks(platform: CmsPlatform, exp: PlatformExport, s
           const f = path.join(dir, n.replace(/\//g, "__"));
           fs.writeFileSync(f, entries[n]);
           try {
-            execFileSync("php", ["-l", f], { stdio: "ignore" });
+            execFileSync("php", ["-l", f], { stdio: "ignore", timeout: 30_000 });
           } catch {
             phpErrors++;
             issues.push(`erreur de syntaxe PHP : ${n}`);

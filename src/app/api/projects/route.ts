@@ -1,7 +1,7 @@
 import { requireUser, HttpError } from "@/lib/auth";
 import { all, id, now, one, run } from "@/lib/db";
 import { attachStartRequest } from "@/lib/workflow";
-import { handle, ok } from "@/lib/http";
+import { handle, ok, readForm } from "@/lib/http";
 import { ensureFolders } from "@/lib/library";
 import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
 import { getSubscription, subscriptionActive } from "@/lib/billing";
@@ -34,7 +34,7 @@ export const GET = handle(async () => {
  */
 export const POST = handle(async (req: Request) => {
   const user = await requireUser();
-  const { input, files, logo } = readStartForm(await req.formData());
+  const { input, files, logo } = readStartForm(await readForm(req, 260 * 1048576));
   // « J'ai déjà mon site et mon logo » : adresse et accord vérifiés ; type d'activité et plateforme fixés après lecture du site.
   const site = existingSiteFromInput(input);
   const services = !site && input.businessType === "services" ? serviceProfileFromInput(input) : null;

@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 /** Demandes globales du projet (Studio Workflow V2) et éléments à valider. */
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  return ok({ workflows: projectWorkflows(p.id, 5).map((w) => workflowView(w.id)), validations: pendingValidations(p) });
+  return ok({ workflows: projectWorkflows(p.id, 5).map((w) => workflowView(w.id, p)), validations: pendingValidations(p) });
 });
 
 /** Prépare une demande : plan de l'orchestrateur et devis. Rien n'est lancé ni dépensé. */

@@ -15,7 +15,7 @@ function LegacyPublications() {
   const toast = useToast();
   const t = useT();
   const active = useActive(["calendar.plan", "post."]);
-  const { data, reload } = useApi<{ posts: PostView[] }>(`/api/projects/${id}/posts`, { poll: 10000 });
+  const { data, reload } = useApi<{ posts: PostView[] }>(`/api/projects/${id}/posts`, { poll: 30000 });
   const [filter, setFilter] = useState("review");
   const [open, setOpen] = useState<PostView | null>(null);
   const [sel, setSel] = useState<Set<string>>(new Set());

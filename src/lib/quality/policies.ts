@@ -4,8 +4,11 @@
  * Une note n'est jamais la seule règle : la décision tient aussi compte des critères individuels, des défauts
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
+ *
+ * Règle de présence humaine (`people-policy.ts`) : une personne visible sans autorisation du client est un défaut
+ * FATAL (`unauthorized_person`) pour toutes les images et vidéos : le média est refusé, jamais publié.
  */
-export const POLICY_VERSION = "2026-10-p11d";
+export const POLICY_VERSION = "2026-10-p11f";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -77,8 +80,8 @@ export type Policy = {
 };
 
 const TEXT: Policy = { final: 8, retryFloor: 6, maxRetries: 2, minCriterion: 6, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: [], blocking: ["claim"] };
-const IMAGE: Policy = { final: 7, retryFloor: 5, maxRetries: 1, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["wrong_product", "corrupt", "forbidden"], blocking: ["deformed", "text_in_image"] };
-const STOCK: Policy = { final: 7, retryFloor: 7, maxRetries: 0, finalCheckers: ["ai", "human", "metadata"], minConfidence: 0.5, fatal: ["off_topic", "corrupt", "forbidden"], blocking: [] };
+const IMAGE: Policy = { final: 7, retryFloor: 5, maxRetries: 1, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["wrong_product", "corrupt", "forbidden", "unauthorized_person"], blocking: ["deformed", "text_in_image"] };
+const STOCK: Policy = { final: 7, retryFloor: 7, maxRetries: 0, finalCheckers: ["ai", "human", "metadata"], minConfidence: 0.5, fatal: ["off_topic", "corrupt", "forbidden", "unauthorized_person"], blocking: [] };
 const SEO_V2 = (criteriaFloors: Record<string, number>): Policy => ({
   final: 7.5,
   retryFloor: 5,
@@ -136,12 +139,14 @@ export const POLICIES: Record<Deliverable, Policy> = {
   // un détail illustré ne sont pas des défauts ; la lisibilité se juge aux tailles réellement prévues, une version
   // simplifiée servant aux favicons, tampons et broderies). Barrière inchangée : 8/10, nom exact, aucun texte inventé.
   // La seule reprise automatique est GRATUITE (nom réécrit par le studio) : aucune image n'est regénérée sans accord.
+  // Logos de petites entreprises : originalité et singularité ont un plancher plus bas (5) que les autres critères —
+  // montrer le métier par ses éléments attendus n'est pas un défaut ; la beauté du dessin (craft) reste exigée.
   logo_artwork: {
     final: 8,
     retryFloor: 5.5,
     maxRetries: 1,
     minCriterion: 6,
-    criteriaFloors: { relevance: 7, legibility: 7, typography: 7, craft: 7 },
+    criteriaFloors: { relevance: 7, legibility: 7, typography: 7, craft: 7, originality: 5, distinctiveness: 5 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
     fatal: ["resembles_known_brand", "corrupt", "forbidden"],
@@ -162,7 +167,7 @@ export const POLICIES: Record<Deliverable, Policy> = {
     criteriaFloors: { relevance: 7, fidelity: 8, aesthetics: 6.5, composition: 6, brief: 6.5 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
-    fatal: ["off_topic", "wrong_product", "product_altered", "corrupt", "forbidden"],
+    fatal: ["off_topic", "wrong_product", "product_altered", "corrupt", "forbidden", "unauthorized_person"],
     blocking: ["deformed", "text_in_image", "artifacts", "low_resolution", "bad_crop", "weak_aesthetics", "brand_mismatch", "brief_mismatch", "duplicate", "license_unverified"],
   },
   stock_photo: STOCK,
@@ -175,14 +180,14 @@ export const POLICIES: Record<Deliverable, Policy> = {
     criteriaFloors: { relevance: 7, aesthetics: 6, support: 6 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
-    fatal: ["off_topic", "corrupt", "forbidden", "license_unverified"],
+    fatal: ["off_topic", "corrupt", "forbidden", "license_unverified", "unauthorized_person"],
     blocking: ["text_in_image", "artifacts", "low_resolution", "bad_crop", "weak_aesthetics", "duplicate", "deformed"],
     provisional: { checkers: ["metadata"], floor: 7, use: "auto", label: "needs_improvement" },
   },
   stock_video: STOCK,
-  video_clip: { final: 7, retryFloor: 7, maxRetries: 0, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["wrong_product", "corrupt", "forbidden"], blocking: [] },
+  video_clip: { final: 7, retryFloor: 7, maxRetries: 0, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["wrong_product", "corrupt", "forbidden", "unauthorized_person"], blocking: [] },
   ugc_frame: { ...IMAGE },
-  ugc_clip: { final: 7, retryFloor: 5, maxRetries: 1, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["wrong_product", "corrupt", "forbidden"], blocking: ["deformed"] },
+  ugc_clip: { final: 7, retryFloor: 5, maxRetries: 1, finalCheckers: ["ai", "human"], minConfidence: 0.7, fatal: ["wrong_product", "corrupt", "forbidden", "unauthorized_person"], blocking: ["deformed"] },
   copy_shop: TEXT,
   seo_meta: { ...TEXT, maxRetries: 1 },
   blog_article: TEXT,
@@ -200,7 +205,7 @@ export const POLICIES: Record<Deliverable, Policy> = {
     criteriaFloors: { hook: 7, relevance: 7, legibility: 7, cta: 6.5, brand: 6.5 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
-    fatal: ["forbidden_claim", "product_altered", "wrong_product", "corrupt", "forbidden"],
+    fatal: ["forbidden_claim", "product_altered", "wrong_product", "corrupt", "forbidden", "unauthorized_person"],
     blocking: ["unverified_claim", "copy_policy", "illegible", "safe_zone", "product_overlap", "too_much_text", "generic", "duplicate_concept"],
     provisional: { checkers: ["local"], floor: 0, use: "manual", label: "needs_improvement" },
   },
@@ -216,7 +221,7 @@ export const POLICIES: Record<Deliverable, Policy> = {
     criteriaFloors: { relevance: 7, narrative: 6.5, product_fidelity: 8, continuity: 6.5, audio: 6, subtitles: 6.5, commercial: 6.5 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
-    fatal: ["product_altered", "wrong_product", "invented_claim", "corrupt", "forbidden"],
+    fatal: ["product_altered", "wrong_product", "invented_claim", "corrupt", "forbidden", "unauthorized_person"],
     blocking: ["character_inconsistent", "off_topic", "major_artifacts", "audio_unusable", "illegible_text", "out_of_sync", "duration_mismatch", "safe_zone", "missing_disclosure", "repetitive_editing"],
     provisional: { checkers: ["local"], floor: 0, use: "manual", label: "needs_improvement" },
   },
@@ -228,7 +233,7 @@ export const POLICIES: Record<Deliverable, Policy> = {
     maxRetries: 1,
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
-    fatal: ["product_altered", "wrong_product", "corrupt", "forbidden"],
+    fatal: ["product_altered", "wrong_product", "corrupt", "forbidden", "unauthorized_person"],
     blocking: ["character_inconsistent", "off_topic", "major_artifacts"],
   },
   // SEO & Copywriting V2 (phase 8A) : une politique par type de contenu. Affirmation inventée, source inexistante,

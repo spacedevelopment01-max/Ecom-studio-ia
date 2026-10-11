@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { api, Badge, Button, Card, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { SectionTitle } from "./common";
+import { SectionTitle, useActive } from "./common";
 import { useT } from "../i18n";
 
 type View = { logos: { id: string; url: string; concept: string; warning: string | null; score: number | null; verdict: string | null }[]; rejected: number; running: boolean; current: string | null };
@@ -17,7 +17,7 @@ export function FullLogoPanel({ onApplied }: { onApplied?: () => void }) {
   const t = useT();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
-  const { data, reload } = useApi<View>(`/api/projects/${id}/brand/full-logo`, { poll: 5000 });
+  const { data, reload } = useApi<View>(`/api/projects/${id}/brand/full-logo`, { poll: useActive("brand.").length ? 5000 : undefined });
   async function post(body: Record<string, unknown>, ok: string, key: string) {
     setBusy(key);
     try {

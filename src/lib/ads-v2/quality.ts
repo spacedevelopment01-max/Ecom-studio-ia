@@ -9,6 +9,7 @@
  */
 import { z } from "zod";
 import { decide, type GateDecision } from "../quality/gate";
+import { personCodes } from "../people-policy";
 import { claimCodes, type ClaimIssue } from "./claims";
 import type { ComposeMetrics } from "./compose";
 import { PLATFORM_SPECS } from "./platforms";
@@ -51,17 +52,21 @@ export const AdReviewSchema = z.object({
   productAltered: z.boolean().catch(false),
   textIllegible: z.boolean().catch(false),
   generic: z.boolean().catch(false),
+  personVisible: z.boolean().catch(false),
   fix: z.object({ target: z.enum(["copy", "hook", "layout", "visual", "cta", "none"]).catch("none"), instruction: z.string().catch("") }).catch({ target: "none", instruction: "" }),
 });
 
 export const AD_REVIEW_SYSTEM = `Rôle : directeur de création d'une agence de publicité exigeante (niveau 2026). Tu juges UNE création publicitaire (image composée + texte de l'annonce) avant diffusion.
 Note de 0 à 10 : hook (l'accroche arrête-t-elle le défilement en 3 secondes ?), clarity (on comprend l'offre en un regard), relevance (produit et audience réels), brand (couleurs, typographie, ton de la marque), visual (qualité esthétique de l'image, niveau agence), hierarchy (marque → accroche → bouton, lecture évidente), legibility (texte lisible sur mobile), cta (bouton clair et adapté), platform (format, zones de sécurité, ton de la plateforme), distinctiveness (pas une affiche automatique générique).
-claimProblems : toute affirmation invérifiable (chiffre, superlatif, garantie, avis, promotion, urgence, santé). productAltered : le produit montré n'est pas le produit réel ou est déformé. textIllegible : texte illisible. generic : création interchangeable avec n'importe quelle marque.
+claimProblems : toute affirmation invérifiable (chiffre, superlatif, garantie, avis, promotion, urgence, santé). productAltered : le produit montré n'est pas le produit réel ou est déformé. textIllegible : texte illisible. generic : création interchangeable avec n'importe quelle marque. personVisible : une personne, un visage, une main, un corps ou une silhouette est visible (même flou ou partiel).
 Sois strict : 8 se mérite. « fix » : LA correction la plus utile — copy, hook, layout, visual, cta ou none — avec l'instruction précise.`;
 
-export function reviewAdCodes(r: AdReview): string[] {
+/** `peopleAllowed` : règle de présence humaine (`people-policy.ts`) ; non précisé = personnes non autorisées. */
+export function reviewAdCodes(r: AdReview, peopleAllowed = false): string[] {
   const codes: string[] = [];
   if (r.productAltered) codes.push("product_altered");
+  // Personne visible sans autorisation du client : création refusée (défaut fatal), jamais diffusée.
+  codes.push(...personCodes(r.personVisible, peopleAllowed));
   if (r.claimProblems.length) codes.push("unverified_claim");
   if (r.textIllegible || r.criteria.legibility < 5) codes.push("illegible");
   if (r.generic || r.criteria.distinctiveness < 5) codes.push("generic");
@@ -75,10 +80,11 @@ export const adScore = (r: AdReview) => {
 };
 
 /** Décision : contrôles locaux d'abord ; sans relecture, jamais FINAL ; relecture en panne, jamais validée. */
-export function gateAd(o: { local: { codes: string[]; issues: string[] }; review: AdReview | null; reviewError?: string | null; attempt: number }): GateDecision {
-  if (o.local.codes.length) return decide("ad_v2", { checker: o.review ? "ai" : "local", score: o.review ? adScore(o.review) : 0, codes: [...o.local.codes, ...(o.review ? reviewAdCodes(o.review) : [])], issues: o.local.issues }, { attempt: o.attempt });
+export function gateAd(o: { local: { codes: string[]; issues: string[] }; review: AdReview | null; reviewError?: string | null; attempt: number; peopleAllowed?: boolean }): GateDecision {
+  const people = o.peopleAllowed === true;
+  if (o.local.codes.length) return decide("ad_v2", { checker: o.review ? "ai" : "local", score: o.review ? adScore(o.review) : 0, codes: [...o.local.codes, ...(o.review ? reviewAdCodes(o.review, people) : [])], issues: o.local.issues }, { attempt: o.attempt });
   if (o.reviewError) return decide("ad_v2", { checker: "ai", score: null, error: o.reviewError }, { attempt: o.attempt });
   if (!o.review) return decide("ad_v2", { checker: "local", score: 6 }, { attempt: o.attempt });
   const issues = [...o.review.issues, ...o.review.claimProblems, ...(o.review.fix.target !== "none" && o.review.fix.instruction ? [`${o.review.fix.target} : ${o.review.fix.instruction}`] : [])];
-  return decide("ad_v2", { checker: "ai", score: adScore(o.review), criteria: o.review.criteria, codes: reviewAdCodes(o.review), issues }, { attempt: o.attempt });
+  return decide("ad_v2", { checker: "ai", score: adScore(o.review), criteria: o.review.criteria, codes: reviewAdCodes(o.review, people), issues }, { attempt: o.attempt });
 }

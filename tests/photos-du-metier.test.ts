@@ -55,7 +55,8 @@ describe("remplissage des emplacements", () => {
     vi.doMock("@/lib/library", async (orig) => ({ ...(await orig<object>()), saveAsset: vi.fn(async (a: any) => (saved.push(a), { id: `a${saved.length}`, ...a })) }));
     const { stockFill } = await import("@/lib/engine/service-media");
     const { emptyProduct, emptyServiceProfile } = await import("@/lib/project-types");
-    const p: any = { id: `p-${Date.now()}`, userId: "u", name: "Blanc", business: "services", product: { ...emptyProduct(), category: "Plâtrier peintre" }, brand: { name: "Blanc" }, services: { ...emptyServiceProfile(), services: [] } };
+    // Client qui autorise les personnes (règle de présence humaine) : la photo « plasterer, trowel » est admise.
+    const p: any = { id: `p-${Date.now()}`, userId: "u", name: "Blanc", business: "services", settings: { peopleAllowed: true }, product: { ...emptyProduct(), category: "Plâtrier peintre" }, brand: { name: "Blanc" }, services: { ...emptyServiceProfile(), services: [] } };
     const got = await stockFill({ userId: "u", projectId: p.id, jobId: "j" }, p, [{ slot: "hero", aspect: "16:9" }], "blanc");
     expect(got).toHaveLength(1);
     expect(saved[0].meta.stock.id).toBe("bon");

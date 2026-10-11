@@ -167,10 +167,21 @@ export function mediaStatus(m: MediaModel, admin: Record<string, MediaAdmin> = m
   if (shutDown(m)) reasons.push(L(`arrêté par le fournisseur (${m.shutdown})`, `shut down by the provider (${m.shutdown})`));
   const p = priceFor(m.provider, m.model);
   if (!p || !priceValid(p)) reasons.push(L("tarif non renseigné", "price not set"));
+  else if (!priceUnitFits(m, p.unit)) reasons.push(L(`unité de tarif incompatible (${p.unit})`, `incompatible price unit (${p.unit})`));
   const confirmed = (m.verified.id && m.verified.price) || !!a.confirmedAt;
   if (!confirmed) reasons.push(L("identifiant ou tarif à confirmer", "ID or price to confirm"));
   // Activés par défaut : seulement les modèles déjà en service (vérifiés) ; les nouveaux attendent l'administration.
   return { key, usable: reasons.length === 0, confirmed, enabled: a.enabled ?? (m.verified.id && m.verified.price), connected, reasons };
+}
+
+/**
+ * Unité de tarif cohérente avec le modèle : une vidéo se paie à la seconde ; une image Gemini ou fal à l'image ;
+ * une image OpenAI aux jetons (gpt-image-1) ou à l'image. Une autre unité donnerait un coût maximal faux (jusqu'à
+ * 0 € : génération gratuite et illimitée hors enveloppe) — refusée à l'enregistrement et rendue inutilisable.
+ */
+export function priceUnitFits(m: Pick<MediaModel, "kind" | "provider">, unit: string): boolean {
+  if (m.kind === "video") return unit === "video_second";
+  return m.provider === "openai" ? unit === "tokens" || unit === "image" : unit === "image";
 }
 
 /** Capacité manquante pour ce besoin (null : compatible). */
@@ -297,6 +308,9 @@ export function selectMedia(n0: MediaNeed, o: SelectOptions = {}): MediaChoice |
     if (!st.connected || shutDown(m) || !m.adapter) return null;
     // Le secours doit être utilisable (tarif connu, vérifié) : sa réservation couvre alors son coût.
     if (role === "backup" && !st.usable) return null;
+    // Le principal doit être vérifié ou confirmé par l'administration (verrou des nouveaux modèles), quel que soit
+    // l'écran qui l'a désigné.
+    if (role === "primary" && !st.confirmed) return null;
     if (incompatibility(m, n)) return null;
     return { provider: r.provider, model: r.model, role, reason: `${role === "primary" ? "admin primary" : "admin backup (compatible, price covered)"}${u ? ` [${u}]` : ""}` };
   };

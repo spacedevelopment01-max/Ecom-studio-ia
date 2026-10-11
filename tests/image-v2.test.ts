@@ -37,6 +37,12 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
 
   const u = await createUser(`img2-${Date.now()}@test.fr`, "motdepasse-test", "I");
   const fresh = (kind: (typeof IMAGE_FIXTURES)[number]) => loadProject(seedImageFixture(u.id, kind));
+  // Projet dont le client a autorisé les personnes (règle de présence humaine) : photos de banque avec un artisan admises.
+  const withPeople = (kind: (typeof IMAGE_FIXTURES)[number]) => {
+    const pid = seedImageFixture(u.id, kind);
+    run("UPDATE projects SET settings_json = json_set(COALESCE(settings_json, '{}'), '$.peopleAllowed', json('true')) WHERE id = ?", pid);
+    return loadProject(pid);
+  };
   const job = (projectId: string) => {
     const jid = id();
     run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, u.id, projectId, "image.v2", "test", "{}", "running", now(), now(), now());
@@ -46,7 +52,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
   // ------------------------------------------------------------------ compréhension
 
   it("métier compris (A — Sébastien Blanc) : requêtes MÉTIER + ACTION + LIEU, jamais « wall » seul", () => {
-    const p = fresh("artisan");
+    const p = withPeople("artisan");
     const b = buildBrief(p, { kind: "trade_photo", support: "site" });
     expect(b.understanding).toMatchObject({ source: "trade", confidence: "high" });
     expect(b.queries.length).toBeGreaterThanOrEqual(2);
@@ -115,7 +121,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
   // ------------------------------------------------------------------ recherche et classement
 
   it("classement : mur nu et texture écartés ; le geste du métier retenu (le mot « wall » n'est pas interdit)", () => {
-    const b = buildBrief(fresh("artisan"), { kind: "trade_photo" });
+    const b = buildBrief(withPeople("artisan"), { kind: "trade_photo" });
     const wall = scoreCandidate(candidate("1", "white wall, empty room"), b);
     const brick = scoreCandidate(candidate("2", "brick wall texture background"), b);
     const stone = scoreCandidate(candidate("3", "old stone wall"), b);
@@ -217,7 +223,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
   // ------------------------------------------------------------------ moteur complet (simulé)
 
   it("A — Sébastien Blanc : murs nus jamais téléchargés ni contrôlés ; photo du métier retenue, licence conservée", async () => {
-    const p = fresh("artisan");
+    const p = withPeople("artisan");
     const prov = mockProvider("pexels", () => [candidate("mur", "white wall empty room"), candidate("brique", "brick wall texture"), candidate("bon", "plasterer applying finishing plaster to interior wall"), candidate("bon2", "painter rolling paint on living room wall")]);
     const { deps, log } = mockDeps({ providers: [prov] });
     const r = await fr(() => runImageEngineV2(job(p.id), p.id, { kind: "trade_photo", support: "site", aspect: "16:9", allowGenerate: false }, deps));
@@ -236,7 +242,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
   });
 
   it("hors sujet au contrôle : refus retenu, jamais retéléchargé ni recontrôlé au passage suivant", async () => {
-    const p = fresh("artisan");
+    const p = withPeople("artisan");
     const prov = mockProvider("pexels", () => [candidate("faux", "plasterer at work"), candidate("vrai", "plasterer smoothing a ceiling")]);
     const { deps, log } = mockDeps({ providers: [prov], reviewFor: (k) => (k === "faux" ? review(8, { offTopic: true }) : review(8.6)) });
     const req = { kind: "trade_photo" as const, aspect: "16:9" as const, allowGenerate: false };
@@ -251,7 +257,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
   });
 
   it("forfait sans IA : photo du métier gardée sur sa description seulement → PROVISOIRE, jamais FINAL", async () => {
-    const p = fresh("artisan");
+    const p = withPeople("artisan");
     const { deps } = mockDeps({ providers: [mockProvider("pexels", () => [candidate("ok", "plasterer applying plaster with trowel")])], canReview: false, canGenerate: false });
     const r = await fr(() => runImageEngineV2(null, p.id, { kind: "trade_photo", aspect: "16:9" }, deps));
     expect(r.outcomes[0]).toMatchObject({ verdict: "PROVISIONAL", origin: "stock" });
@@ -353,7 +359,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
   });
 
   it("idempotence et réutilisation : même brief → image FINAL réutilisée, aucun nouvel appel ; jamais une image refusée", async () => {
-    const p = fresh("artisan");
+    const p = withPeople("artisan");
     const prov = mockProvider("pexels", () => [candidate("r1", "plasterer applying plaster")]);
     const { deps, log } = mockDeps({ providers: [prov] });
     const req = { kind: "trade_photo" as const, aspect: "16:9" as const, allowGenerate: false };

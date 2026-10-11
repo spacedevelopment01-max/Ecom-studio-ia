@@ -27,7 +27,10 @@ const nextConfig: NextConfig = {
   // recompilait ~4 400 modules (2 à 5 s, et jusqu'à 3 fois la même route en 6 min, mesuré).
   onDemandEntries: { maxInactiveAge: 30 * 60_000, pagesBufferLength: 60 },
   poweredByHeader: false,
-  experimental: { serverActions: { bodySizeLimit: "60mb" } },
+  // Production : chaque route est chargée à sa première visite, pas toutes au démarrage (sinon sharp, canvas,
+  // Playwright et le contrôle des thèmes occupent la mémoire du site avant la moindre requête — mesuré 365 Mo au
+  // démarrage). Important dans un Codespace de 8 Go.
+  experimental: { serverActions: { bodySizeLimit: "60mb" }, preloadEntriesOnStart: false },
 };
 
 export default nextConfig;

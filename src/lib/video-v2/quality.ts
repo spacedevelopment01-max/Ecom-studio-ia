@@ -10,6 +10,7 @@
  */
 import { z } from "zod";
 import { decide, type GateDecision } from "../quality/gate";
+import { personCodes } from "../people-policy";
 import { absoluteCues, timeline } from "./doc";
 import type { AudioMeasure } from "./audio";
 import { VIDEO_CRITERIA, type ShotReview, type VideoCriterion, type VideoDocument, type VideoReview } from "./types";
@@ -22,24 +23,29 @@ export const ShotReviewSchema = z.object({
   characterConsistent: z.boolean().nullable().catch(null),
   offTopic: z.boolean().catch(false),
   artifacts: z.boolean().catch(false),
+  personVisible: z.boolean().catch(false),
   issues: z.array(z.string()).catch([]),
 });
 export const VideoReviewSchema = z.object({
   criteria: z.object(Object.fromEntries(VIDEO_CRITERIA.map((k) => [k, score])) as Record<VideoCriterion, typeof score>),
   issues: z.array(z.string()).catch([]),
+  personVisible: z.boolean().catch(false),
   fix: z.object({ target: z.enum(["shot", "audio", "subtitles", "editing", "script", "none"]).catch("none"), shotId: z.string().nullable().catch(null), instruction: z.string().catch("") }).catch({ target: "none", shotId: null, instruction: "" }),
 });
 
 export const SHOT_REVIEW_SYSTEM = `Rôle : chef opérateur et contrôleur qualité d'une agence vidéo exigeante. Tu juges UN plan vidéo généré à partir de trois images (début, milieu, fin) et, si fournies, de l'image de référence du produit réel et de l'image de référence du personnage.
-score : qualité globale du plan sur 10. sameProduct : le produit montré est-il le même que la référence (forme, couleurs, proportions, logo, packaging, textes) ? productAltered : le produit est-il déformé ou transformé à un moment du plan ? characterConsistent : le personnage (visage, tenue) est-il le même que sur la référence ? offTopic : le plan est-il hors du sujet demandé ? artifacts : artefacts majeurs (mains, visages, objets fondus, texte inventé) ?
+score : qualité globale du plan sur 10. sameProduct : le produit montré est-il le même que la référence (forme, couleurs, proportions, logo, packaging, textes) ? productAltered : le produit est-il déformé ou transformé à un moment du plan ? characterConsistent : le personnage (visage, tenue) est-il le même que sur la référence ? offTopic : le plan est-il hors du sujet demandé ? artifacts : artefacts majeurs (mains, visages, objets fondus, texte inventé) ? personVisible : une personne, un visage, une main, un corps ou une silhouette est-il visible, même flou ou partiel ?
 Sois strict : un produit transformé n'est jamais acceptable.`;
 
 export const VIDEO_REVIEW_SYSTEM = `Rôle : directeur de création d'une agence vidéo (niveau 2026). Tu juges UNE vidéo commerciale à partir d'images clés, de son script et de ses mesures techniques.
-Note de 0 à 10 : relevance, narrative (le récit tient-il de l'accroche au CTA ?), visual, continuity, product_fidelity, brand, realism, motion, editing, audio, sync, subtitles, commercial (exploitable pour vendre ?).
+Note de 0 à 10 : relevance, narrative (le récit tient-il de l'accroche au CTA ?), visual, continuity, product_fidelity, brand, realism, motion, editing, audio, sync, subtitles, commercial (exploitable pour vendre ?). personVisible : une personne, un visage, une main, un corps ou une silhouette est-il visible sur l'une des images, même flou ou partiel ?
 Sois strict : 8 se mérite ; une vidéo propre mais générique ne dépasse pas 6 en commercial. « fix » : LA correction la plus utile (shot avec son identifiant, audio, subtitles, editing, script ou none).`;
 
-export function shotCodes(r: ShotReview, o: { expectsProduct: boolean; expectsCharacter: boolean }): string[] {
+/** `peopleAllowed` : règle de présence humaine (`people-policy.ts`) ; non précisé = personnes non autorisées. */
+export function shotCodes(r: ShotReview, o: { expectsProduct: boolean; expectsCharacter: boolean; peopleAllowed?: boolean }): string[] {
   const codes: string[] = [];
+  // Personne visible sans autorisation du client : plan refusé (défaut fatal), jamais monté.
+  codes.push(...personCodes(r.personVisible, o.peopleAllowed === true));
   if (o.expectsProduct && (r.productAltered || r.sameProduct === false)) codes.push(r.sameProduct === false ? "wrong_product" : "product_altered");
   if (o.expectsCharacter && r.characterConsistent === false) codes.push("character_inconsistent");
   if (r.offTopic) codes.push("off_topic");
@@ -48,7 +54,7 @@ export function shotCodes(r: ShotReview, o: { expectsProduct: boolean; expectsCh
 }
 
 /** Décision sur un plan généré : contrôle obligatoire ; panne du contrôle → jamais FINAL. */
-export function gateShot(o: { review: ShotReview | null; error?: string | null; expectsProduct: boolean; expectsCharacter: boolean; attempt: number }): GateDecision {
+export function gateShot(o: { review: ShotReview | null; error?: string | null; expectsProduct: boolean; expectsCharacter: boolean; attempt: number; peopleAllowed?: boolean }): GateDecision {
   if (o.error || !o.review) return decide("video_shot_v2", { checker: "ai", score: null, error: o.error ?? "plan non contrôlé" }, { attempt: o.attempt });
   return decide("video_shot_v2", { checker: "ai", score: o.review.score, codes: shotCodes(o.review, o), issues: o.review.issues }, { attempt: o.attempt });
 }
@@ -145,8 +151,9 @@ export function localVideoChecks(doc: VideoDocument, o: { targetS: number; scrip
   return { codes: [...new Set(codes)], issues: [...new Set(issues)], measures: { durationS: total, clips: doc.clips.length, cues: cues.length, lufs: o.audio?.lufs ?? null, truePeakDb: o.audio?.truePeakDb ?? null } };
 }
 
-export function reviewVideoCodes(r: VideoReview): string[] {
+export function reviewVideoCodes(r: VideoReview, peopleAllowed = false): string[] {
   const codes: string[] = [];
+  codes.push(...personCodes(r.personVisible, peopleAllowed));
   if (r.criteria.product_fidelity < 4) codes.push("product_altered");
   if (r.criteria.continuity < 5) codes.push("character_inconsistent");
   if (r.criteria.relevance < 5) codes.push("off_topic");
@@ -163,11 +170,12 @@ export const videoScore = (r: VideoReview) => {
 };
 
 /** Décision vidéo : contrôles locaux d'abord ; sans relecture, jamais FINAL ; relecture en panne, jamais validée. */
-export function gateVideo(o: { local: LocalVideoCheck; review: VideoReview | null; reviewError?: string | null; shotCodes?: string[]; attempt: number }): GateDecision {
+export function gateVideo(o: { local: LocalVideoCheck; review: VideoReview | null; reviewError?: string | null; shotCodes?: string[]; attempt: number; peopleAllowed?: boolean }): GateDecision {
   const extra = o.shotCodes ?? [];
-  if (o.local.codes.length || extra.length) return decide("video_v2", { checker: o.review ? "ai" : "local", score: o.review ? videoScore(o.review) : 0, codes: [...o.local.codes, ...extra, ...(o.review ? reviewVideoCodes(o.review) : [])], issues: o.local.issues }, { attempt: o.attempt });
+  const people = o.peopleAllowed === true;
+  if (o.local.codes.length || extra.length) return decide("video_v2", { checker: o.review ? "ai" : "local", score: o.review ? videoScore(o.review) : 0, codes: [...o.local.codes, ...extra, ...(o.review ? reviewVideoCodes(o.review, people) : [])], issues: o.local.issues }, { attempt: o.attempt });
   if (o.reviewError) return decide("video_v2", { checker: "ai", score: null, error: o.reviewError }, { attempt: o.attempt });
   if (!o.review) return decide("video_v2", { checker: "local", score: 6 }, { attempt: o.attempt });
   const issues = [...o.review.issues, ...(o.review.fix.target !== "none" && o.review.fix.instruction ? [`${o.review.fix.target}${o.review.fix.shotId ? ` ${o.review.fix.shotId}` : ""} : ${o.review.fix.instruction}`] : [])];
-  return decide("video_v2", { checker: "ai", score: videoScore(o.review), criteria: o.review.criteria, codes: reviewVideoCodes(o.review), issues }, { attempt: o.attempt });
+  return decide("video_v2", { checker: "ai", score: videoScore(o.review), criteria: o.review.criteria, codes: reviewVideoCodes(o.review, people), issues }, { attempt: o.attempt });
 }

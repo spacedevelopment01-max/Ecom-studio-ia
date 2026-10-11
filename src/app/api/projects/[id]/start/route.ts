@@ -1,7 +1,7 @@
 import { HttpError } from "@/lib/auth";
 import { one, run } from "@/lib/db";
 import { attachStartRequest } from "@/lib/workflow";
-import { handle, ok } from "@/lib/http";
+import { handle, ok, readForm } from "@/lib/http";
 import { existingSiteFromInput, hasProductInput, launchPipeline, readStartForm, saveStartFiles, serviceProfileFromInput } from "@/lib/project-start";
 import { saveServices, saveSettings } from "@/lib/projects";
 import { mergeServiceProfile } from "@/lib/engine/local";
@@ -16,7 +16,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status IN ('queued','running','paused')", p.id)) {
     throw new HttpError(409, L("Une création est déjà en cours pour ce projet.", "A creation is already in progress for this project."));
   }
-  const form = await req.formData();
+  const form = await readForm(req, 260 * 1048576);
   const { input, files, logo } = readStartForm(form);
   // « J'ai déjà mon site et mon logo » : le site est lu par le pilote (type d'activité et plateforme fixés ensuite).
   const site = existingSiteFromInput(input);

@@ -14,6 +14,7 @@
 import type { DirectionId, BrandPalette } from "../theme/directions";
 import { colorName, contrast, ensureContrast, hsl, isDark, mix, withLightness } from "../color";
 import type { SceneStyle } from "../media/compose";
+import { NO_PEOPLE_EN } from "../people-policy";
 
 type T = { fr: string; en: string };
 const t = (fr: string, en: string): T => ({ fr, en });
@@ -415,10 +416,10 @@ export function photoLineText(l: PhotoLine, lang: "fr" | "en" = "fr"): string[] 
  * Consigne de décor SANS IA de rédaction (repli), déjà au niveau d'un brief de photographe :
  * décor, plateau, accessoires, lumière, optique, palette, saison, étalonnage, clichés à éviter.
  */
-export function scenePromptFromLine(l: PhotoLine, opts: { lifestyle?: string; format?: string } = {}): { prompt: string; surface: string; lightFrom: "left" | "right" } {
+export function scenePromptFromLine(l: PhotoLine, opts: { lifestyle?: string; format?: string; people?: boolean } = {}): { prompt: string; surface: string; lightFrom: "left" | "right" } {
   const surface = l.materials[0].en;
   const set = opts.lifestyle
-    ? `Authentic everyday editorial photograph, ${opts.lifestyle}; real lived-in place with ${l.living.en} textures, props: ${l.livingProps.map((p) => p.en).join(", ")}; people may appear naturally, partially framed or out of focus, never covering the product`
+    ? `Authentic everyday editorial photograph, ${opts.lifestyle}; real lived-in place with ${l.living.en} textures, props: ${l.livingProps.map((p) => p.en).join(", ")}; ${opts.people === false ? "nobody in frame, the place shown as if its owner just stepped out" : "people may appear naturally, partially framed or out of focus, never covering the product"}`
     : `Product photograph on ${surface}, set: ${l.sets[0].en}, a few real props kept secondary and out of focus (${l.props.slice(0, 2).map((p) => p.en).join(", ")})`;
   // La ligne complète et les clichés à éviter sont ajoutés par finalImagePrompt (une seule fois).
   return {
@@ -527,6 +528,7 @@ export function critiqueImageBrief(d: ImageBriefDraft | null | undefined, l: Pho
  * Consigne finale envoyée au modèle d'image : le paragraphe du brief, complété par la ligne de campagne et les
  * garde-fous (le produit réel n'est jamais redessiné, aucun texte, aucun cliché).
  */
-export function finalImagePrompt(brief: { prompt: string }, l: PhotoLine, opts: { lifestyle?: boolean } = {}): string {
-  return `${brief.prompt.trim().replace(/\s+/g, " ")} ${photoLinePrompt(l, opts)} Photorealistic, real optics and real materials, no CGI look. ${avoidPrompt(l)} No text, no lettering, no logo, no other branded product.`;
+export function finalImagePrompt(brief: { prompt: string }, l: PhotoLine, opts: { lifestyle?: boolean; people?: boolean } = {}): string {
+  // Règle de présence humaine : sans autorisation du client, la consigne « aucune personne » termine toujours l'image.
+  return `${brief.prompt.trim().replace(/\s+/g, " ")} ${photoLinePrompt(l, opts)} Photorealistic, real optics and real materials, no CGI look. ${avoidPrompt(l)} No text, no lettering, no logo, no other branded product.${opts.people === false ? ` ${NO_PEOPLE_EN}` : ""}`;
 }

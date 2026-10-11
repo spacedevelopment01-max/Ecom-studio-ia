@@ -39,7 +39,7 @@ const pidFile = path.resolve(".studio-dev.pid");
 const pid = fs.existsSync(pidFile) ? Number(fs.readFileSync(pidFile, "utf8").trim()) : 0;
 if (pid && alive(pid)) {
   process.kill(pid, "SIGTERM");
-  for (let i = 0; i < 40 && (alive(pid) || (await portInUse(PORT))); i++) await wait(500);
+  for (let i = 0; i < 130 && (alive(pid) || (await portInUse(PORT))); i++) await wait(500);
 }
 if (await portInUse(PORT)) {
   console.error(`\n✗ Le port ${PORT} est toujours occupé par un autre programme : fermez le terminal où le studio tourne (Ctrl+C), puis relancez « npm run maj ».`);

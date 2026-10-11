@@ -12,6 +12,7 @@
 import sharp from "sharp";
 import { z } from "zod";
 import { decide, type GateDecision } from "../quality/gate";
+import { personCodes } from "../people-policy";
 import { fitsFormat } from "./formats";
 import { IMAGE_CRITERIA, type ImageCriterion, type ImageReview, type VisualBrief } from "./types";
 
@@ -93,19 +94,22 @@ export const ImageReviewSchema = z.object({
   textInImage: z.boolean().catch(false),
   deformed: z.boolean().catch(false),
   artifacts: z.boolean().catch(false),
+  personVisible: z.boolean().catch(false),
   issues: z.array(z.string()).catch([]),
   fix: z.object({ target: z.enum(["lighting", "composition", "background", "crop", "product", "direction", "none"]).catch("none"), instruction: z.string().catch("") }).catch({ target: "none", instruction: "" }),
 });
 
 export const REVIEW_SYSTEM = `Rôle : directeur artistique exigeant d'une agence de création visuelle (niveau 2026). Tu juges UNE image avant qu'elle soit utilisée par une marque, à partir de son brief.
 Note chaque critère de 0 à 10 : relevance (montre exactement le sujet du brief : le métier ET son geste, ou l'univers du produit), fidelity (si un produit de référence est fourni : même forme, couleurs, logo, étiquette, proportions ; sinon 10), aesthetics (qualité esthétique réelle, pas seulement technique), composition (hiérarchie, cadrage, équilibre, espace pour le texte si demandé), realism, brand (cohérence avec la palette et le ton), brief (direction artistique, lumière, cadrage demandés), support (adaptée au format et à l'usage), artifacts (10 = aucun artefact), commercial (exploitable par une marque sans gêne).
-offTopic = vrai si l'image ne montre pas le sujet (mur nu ou texture pour un artisan, décor sans lien, autre métier ou autre prestation) — même si elle est belle. productAltered = vrai si le produit est redessiné, déformé, recoloré, si son texte ou son logo change. wrongProduct = vrai si ce n'est pas le même produit. textInImage = texte, lettres, logo ou filigrane ajoutés. deformed = mains, visages ou objets déformés. artifacts = défauts de génération visibles.
+offTopic = vrai si l'image ne montre pas le sujet (mur nu ou texture pour un artisan, décor sans lien, autre métier ou autre prestation) — même si elle est belle. productAltered = vrai si le produit est redessiné, déformé, recoloré, si son texte ou son logo change. wrongProduct = vrai si ce n'est pas le même produit. textInImage = texte, lettres, logo ou filigrane ajoutés. deformed = mains, visages ou objets déformés. artifacts = défauts de génération visibles. personVisible = vrai si une personne, un visage, une main, un corps ou une silhouette est visible (même flou ou partiel) ; quand le brief dit que les personnes ne sont pas autorisées, l'image est alors refusée.
 Sois strict : 8 se mérite ; une image correcte mais banale n'a pas plus de 6 en esthétique. « issues » : défauts concrets. « fix » : LA correction la plus utile — lighting, composition, background, crop, product (abandonner la transformation et revenir à la photo d'origine), direction (scène hors sujet : changer de direction) ou none — avec l'instruction précise.`;
 
 /** Codes de défauts tirés d'une relecture. */
 export function reviewCodes(r: ImageReview, brief: VisualBrief): string[] {
   const codes: string[] = [];
   if (r.offTopic || r.criteria.relevance < 4) codes.push("off_topic");
+  // Règle de présence humaine : personne visible sans autorisation du client = refus (défaut fatal).
+  codes.push(...personCodes(r.personVisible, brief.people !== false));
   if (brief.productFidelity && r.wrongProduct) codes.push("wrong_product");
   if (brief.productFidelity && (r.productAltered || r.criteria.fidelity < 6)) codes.push("product_altered");
   if (r.textInImage) codes.push("text_in_image");

@@ -4,10 +4,14 @@ import { ArrowDown, ArrowUp, Crosshair, Maximize2, Minimize2, PanelTop, Palette,
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
-import { ThemeImportModal } from "./theme-import";
+import dynamic from "next/dynamic";
+// Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
+const ThemeImportModal = dynamic(() => import("./theme-import").then((m) => m.ThemeImportModal), { ssr: false });
+const SectionLibrary = dynamic(() => import("./section-library").then((m) => m.SectionLibrary), { ssr: false });
+const ThemeGallery = dynamic(() => import("./theme-gallery").then((m) => m.ThemeGallery), { ssr: false });
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
-import { ThemeGallery, ThemeGrid } from "./theme-gallery";
-import { SectionLibrary, type LibraryItem } from "./section-library";
+import { ThemeGrid } from "./theme-gallery";
+import type { LibraryItem } from "./section-library";
 import { SortableList } from "./sortable";
 import type { DirectionCard } from "@/lib/theme/directions";
 import type { ImportReport } from "@/lib/theme/import";

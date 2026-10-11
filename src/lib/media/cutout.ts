@@ -49,11 +49,17 @@ export function chooseModel(availMB = availableMemoryMB(), shipped = shippedMode
   return shipped[0] ?? "medium";
 }
 
+/** Environnement minimal du processus de détourage : jamais le secret de l'application ni les clés d'API. */
+function childEnv(model: CutoutModel): NodeJS.ProcessEnv {
+  const keep = ["PATH", "HOME", "TMPDIR", "TMP", "TEMP", "LANG", "NODE_PATH", "XDG_CACHE_HOME"];
+  return { ...Object.fromEntries(keep.filter((k) => process.env[k] != null).map((k) => [k, process.env[k]])), NODE_ENV: process.env.NODE_ENV, CUTOUT_MODEL: model } as NodeJS.ProcessEnv;
+}
+
 /** Lance le modèle dans un processus séparé (un plantage ou un manque de mémoire n'arrête pas le studio). */
 function runModel(png: Buffer, model: CutoutModel): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const script = path.join(process.cwd(), "src", "lib", "media", "cutout-child.mjs");
-    const child = spawn(process.execPath, [script], { env: { ...process.env, CUTOUT_MODEL: model }, stdio: ["pipe", "pipe", "pipe"] });
+    const child = spawn(process.execPath, [script], { env: childEnv(model), stdio: ["pipe", "pipe", "pipe"] });
     const out: Buffer[] = [];
     let err = "";
     const timer = setTimeout(() => child.kill("SIGKILL"), MODEL_TIMEOUT_MS);

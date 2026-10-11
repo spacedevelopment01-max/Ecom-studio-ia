@@ -102,8 +102,27 @@ export async function artworkSymbol(png: Buffer, box?: TextBox | null): Promise<
   const H = info.height;
   const ink = (x: number, y: number) => data[(y * W + x) * 4 + 3] >= 128;
   let region: { left: number; top: number; width: number; height: number } | null = null;
-  if (box && box.y > 0.25) region = { left: 0, top: 0, width: W, height: Math.floor(box.y * H) };
-  else if (box && box.x > 0.2) region = { left: 0, top: 0, width: Math.floor(box.x * W), height: H };
+  // Coupe seulement dans un BLANC entre le symbole et le nom (ligne ou colonne sans encre près du bord du nom) :
+  // dans un emblème où le nom passe sur le dessin (bandeau sur une horloge, un blason…), aucune coupe ne coupe le
+  // dessin en deux — on cherche alors autrement, ou le logo entier sert de marque réduite.
+  const blankRow = (y: number) => {
+    let n = 0;
+    for (let x = 0; x < W; x++) if (ink(x, y)) n++;
+    return n <= W * 0.004;
+  };
+  const blankCol = (x: number) => {
+    let n = 0;
+    for (let y = 0; y < H; y++) if (ink(x, y)) n++;
+    return n <= H * 0.004;
+  };
+  const cutNear = (edge: number, size: number, blank: (i: number) => boolean) => {
+    for (let i = Math.min(size - 1, Math.round(edge + size * 0.02)); i >= Math.max(1, Math.round(edge - size * 0.06)); i--) if (blank(i)) return i;
+    return -1;
+  };
+  const yCut = box && box.y > 0.25 ? cutNear(box.y * H, H, blankRow) : -1;
+  const xCut = box && box.y <= 0.25 && box.x > 0.2 ? cutNear(box.x * W, W, blankCol) : -1;
+  if (yCut > 0) region = { left: 0, top: 0, width: W, height: yCut };
+  else if (xCut > 0) region = { left: 0, top: 0, width: xCut, height: H };
   else {
     const rows = Array.from({ length: H }, (_, y) => {
       let n = 0;
@@ -139,6 +158,15 @@ export async function artworkSymbol(png: Buffer, box?: TextBox | null): Promise<
   // Trop petit par rapport au logo : ce n'est pas un symbole (accent, filet, point).
   if ((m.width ?? 0) * (m.height ?? 0) < W * H * 0.06) return null;
   const side = Math.round(Math.max(m.width!, m.height!) * 1.16);
+  const square = await sharp({ create: { width: side, height: side, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: trimmed, gravity: "center" }]).png().toBuffer();
+  return sharp(square).resize(1024, 1024).png().toBuffer();
+}
+
+/** Logo entier en carré (1024 px, fond transparent, marges égales) : marque réduite d'un emblème indivisible. */
+export async function squareMark(png: Buffer): Promise<Buffer> {
+  const trimmed = await sharp(png).trim({ threshold: 5 }).png().toBuffer().catch(() => png);
+  const m = await sharp(trimmed).metadata();
+  const side = Math.round(Math.max(m.width!, m.height!) * 1.08);
   const square = await sharp({ create: { width: side, height: side, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: trimmed, gravity: "center" }]).png().toBuffer();
   return sharp(square).resize(1024, 1024).png().toBuffer();
 }

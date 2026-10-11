@@ -19,5 +19,17 @@ export function startPolling(load: () => Promise<unknown>, everyMs: number, visi
     }
   };
   const t = setInterval(tick, everyMs);
-  return { stop: () => ((stopped = true), clearInterval(t)), inFlight: () => busy };
+  // Retour sur l'onglet après l'avoir masqué : rafraîchi tout de suite (sans attendre le tour suivant).
+  const onVisible = () => {
+    if (visible()) void tick();
+  };
+  if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVisible);
+  return {
+    stop: () => {
+      stopped = true;
+      clearInterval(t);
+      if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVisible);
+    },
+    inFlight: () => busy,
+  };
 }

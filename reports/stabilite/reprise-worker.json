@@ -1,0 +1,20 @@
+{
+  "killedAtS": 5,
+  "workerRestarted": true,
+  "totalS": 100,
+  "status": "done",
+  "message": "Done",
+  "error": null,
+  "steps": [
+    "sources:done",
+    "cutout:done",
+    "analysis:done",
+    "brand:done",
+    "copy:done",
+    "images:skipped",
+    "video:skipped",
+    "shop:done",
+    "calendar:skipped",
+    "organize:done"
+  ]
+}

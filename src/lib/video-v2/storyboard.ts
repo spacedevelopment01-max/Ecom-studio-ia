@@ -29,29 +29,35 @@ const ENV: Record<CreativeStrategy["style"]["language"], string> = {
   lifestyle_natural: "intérieur lumineux du quotidien",
   local_trust: "lieu de l'activité, équipe au travail",
 };
+/** Décors sans personne (règle de présence humaine) : seuls ceux qui en citaient une changent. */
+const ENV_NO_PEOPLE: Partial<Record<CreativeStrategy["style"]["language"], string>> = {
+  local_trust: "lieu de l'activité, outils et matériaux en place, personne à l'image",
+};
 
 /** Découpe d'une section en temps (plans de durée proche du rythme visé, jamais sous 1,6 s). */
 function beatsFor(part: ScriptPart, i: AdInsight, st: CreativeStrategy, intent: VideoIntent): Beat[] {
   const services = i.business === "services";
-  const env = ENV[st.style.language];
+  // Règle de présence humaine : sans autorisation, aucun personnage et aucun plan qui demande une personne.
+  const people = intent.people !== false;
+  const env = people ? ENV[st.style.language] : (ENV_NO_PEOPLE[st.style.language] ?? ENV[st.style.language]);
   const product = services ? (i.services[0]?.name ?? i.category.label) : i.offerName;
-  const ugc = intent.kind === "ugc";
+  const ugc = intent.kind === "ugc" && people;
   const digital = st.style.language === "digital_explainer";
   const sound = st.style.music === "none" ? "ambiance du lieu" : "musique, ambiance discrète";
   switch (part) {
     case "hook":
       if (ugc) return [{ subject: "personnage (synthétique, signalé)", action: "regarde la caméra et pose la question d'ouverture", environment: "pièce du quotidien crédible", framing: "medium", camera: "handheld", purpose: "arrêter le défilement en 2 secondes", showsProduct: false, character: true, sound: "voix naturelle" }];
-      return [{ subject: services ? `le geste clé du métier : ${product}` : `${product}, détail qui intrigue`, action: services ? "geste précis en cours" : "révélation progressive", environment: env, framing: "close", camera: st.rhythm.energy === "calm" ? "push_in" : "handheld", purpose: "arrêter le défilement en 2 secondes", showsProduct: !services, character: false, sound }];
+      return [{ subject: services ? (people ? `le geste clé du métier : ${product}` : `l'outil clé du métier : ${product}, sans personne`) : `${product}, détail qui intrigue`, action: services ? (people ? "geste précis en cours" : "outil et matière en gros plan, ouvrage en cours") : "révélation progressive", environment: env, framing: "close", camera: st.rhythm.energy === "calm" ? "push_in" : "handheld", purpose: "arrêter le défilement en 2 secondes", showsProduct: !services, character: false, sound }];
     case "development":
       return [
-        { subject: services ? `l'équipe ou l'artisan, ${i.category.label}` : `${product} en situation d'usage`, action: services ? "présente son travail" : (i.usage[0] ?? "utilisé au quotidien"), environment: env, framing: "medium", camera: "pan_right", purpose: "dire ce que c'est et pour qui", showsProduct: !services, character: ugc, sound },
+        { subject: services ? (people ? `l'équipe ou l'artisan, ${i.category.label}` : `le lieu de travail, les outils et les matériaux, ${i.category.label}, sans personne`) : people ? `${product} en situation d'usage` : `${product} dans son décor d'usage, sans personne`, action: services ? (people ? "présente son travail" : "outils rangés, ouvrage visible") : people ? (i.usage[0] ?? "utilisé au quotidien") : "posé, prêt à servir", environment: env, framing: "medium", camera: "pan_right", purpose: "dire ce que c'est et pour qui", showsProduct: !services, character: ugc, sound },
         ...(st.durationS >= 20 ? [{ subject: services ? "le lieu, la zone d'intervention" : `${product}, détail de fabrication`, action: services ? "plan d'ensemble" : "détail net", environment: env, framing: services ? ("wide" as Framing) : ("extreme_close" as Framing), camera: "static" as CameraMove, purpose: "ancrer dans le réel", showsProduct: !services, character: false, sound }] : []),
       ];
     case "demonstration":
       if (digital) return [{ subject: "interface du logiciel", action: "parcours d'une tâche, de la donnée au tableau de bord", environment: env, framing: "screen", camera: "push_in", purpose: "montrer le service rendu", showsProduct: false, character: false, sound }];
       if (ugc) return [{ subject: `personnage et ${product}`, action: "utilise le produit réel, geste naturel", environment: "même pièce que l'ouverture", framing: "close", camera: "handheld", purpose: "montrer l'usage réel", showsProduct: !services, character: true, sound: "voix naturelle" }];
       return [
-        { subject: services ? "le travail en cours" : `${product} en action`, action: services ? "étape de la prestation" : "le geste d'usage", environment: env, framing: "close", camera: st.rhythm.energy === "dynamic" ? "orbit" : "push_in", purpose: "prouver par l'image", showsProduct: !services, character: false, sound },
+        { subject: services ? (people ? "le travail en cours" : "l'ouvrage en cours, sans personne") : people ? `${product} en action` : `${product} en fonctionnement, sans personne`, action: services ? (people ? "étape de la prestation" : "étape de la prestation montrée par les outils et la matière") : people ? "le geste d'usage" : "le produit montre sa fonction, sans main", environment: env, framing: "close", camera: st.rhythm.energy === "dynamic" ? "orbit" : "push_in", purpose: "prouver par l'image", showsProduct: !services, character: false, sound },
         { subject: services ? "le résultat fini" : `${product}, résultat`, action: services ? "avant / après, finition" : "le résultat de l'usage", environment: env, framing: "medium", camera: "pull_out", purpose: "montrer le résultat", showsProduct: !services, character: false, sound },
       ];
     case "proof":
@@ -124,7 +130,8 @@ export function buildStoryboard(i: AdInsight, st: CreativeStrategy, intent: Vide
         transition: shots.length === 0 ? "cut" : transitions[shots.length % transitions.length],
         purpose: b.purpose,
         showsProduct: b.showsProduct && !!inv.cutout,
-        character: b.character,
+        // Personnage seulement si les personnes sont autorisées (règle de présence humaine).
+        character: b.character && intent.people !== false,
       });
     });
   }

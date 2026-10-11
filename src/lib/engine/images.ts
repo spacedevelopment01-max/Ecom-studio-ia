@@ -19,6 +19,7 @@ import { ensureCutouts } from "./cutouts";
 import { FORMATS, renderCreative, renderPackshot, renderScene, renderBanner, type FormatId, type Layout, type SceneStyle, type Typo } from "../media/compose";
 import { canvasFamily } from "../media/fonts";
 import { aiImageBrief, aiQcImage, qcScore, qcTier, type QcTier } from "../ai/tasks";
+import { peopleAllowed, peopleAllowedFor, personCodes } from "../people-policy";
 import { llmConfigured } from "../ai/llm";
 import { mediaRouteFor, openaiScene, productImagePath, productPlate, refundMediaQuota } from "../ai/media-providers";
 import { JobCancelled, JobPaused, type JobContext } from "../jobs";
@@ -95,14 +96,16 @@ export async function verifyAiImage(ictx: ImgCtx & { usageKey: string }, referen
   };
   if (!llmConfigured()) return done(decide(deliverable, { checker: "none", score: null }, { attempt: opts.attempt }), null);
   let check: Awaited<ReturnType<typeof aiQcImage>>;
+  // Règle de présence humaine : personne visible sans autorisation du client = défaut fatal.
+  const people = peopleAllowed(ictx.projectId);
   try {
-    check = await aiQcImage(ictx, reference, image);
+    check = await aiQcImage(ictx, reference, image, { peopleAllowed: people });
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     // Contrôle en panne : l'image payée est gardée (à vérifier), jamais réutilisée automatiquement.
     return done(decide(deliverable, { checker: "ai", score: null, error: (e as Error).message }, { attempt: opts.attempt }), null);
   }
-  const d = decide(deliverable, { checker: "ai", score: check.score, codes: check.sameProduct === false ? ["wrong_product"] : [], issues: check.issues }, { attempt: opts.attempt });
+  const d = decide(deliverable, { checker: "ai", score: check.score, codes: [...(check.sameProduct === false ? ["wrong_product"] : []), ...personCodes(check.personVisible, people)], issues: check.issues }, { attempt: opts.attempt });
   return done(d, check);
 }
 
@@ -121,8 +124,9 @@ async function imageBrief(ictx: ImgCtx, project: Project, style: string, formatI
   return llmConfigured()
     ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}`) : C(`mise en scène produit (style ${style})`, `product staging (${style} style)`), { line, lifestyle, format: FORMATS[formatId].label })
     : (() => {
-        const st = scenePromptFromLine(line, { lifestyle, format: FORMATS[formatId].label });
-        return { ...st, prompt: finalImagePrompt(st, line, { lifestyle: !!lifestyle }) };
+        const people = peopleAllowedFor(project);
+        const st = scenePromptFromLine(line, { lifestyle, format: FORMATS[formatId].label, people });
+        return { ...st, prompt: finalImagePrompt(st, line, { lifestyle: !!lifestyle, people }) };
       })();
 }
 

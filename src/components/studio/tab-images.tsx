@@ -116,6 +116,7 @@ function ProductImages() {
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6">
       {cost.dialog}
       <EngineNotice what={t("les décors (studio, podium, arche, lumière de fenêtre…)", "the backdrops (studio, podium, arch, window light…)")} />
+      <PeopleConsent />
       <ImageV2Panel />
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
@@ -303,5 +304,36 @@ function ServiceImages() {
       </div>
       <AssetViewer asset={viewer} onClose={() => setViewer(null)} onChanged={reload} />
     </div>
+  );
+}
+
+/**
+ * Accord du client pour des personnes dans les visuels créés. Sans accord (ni photo du client montrant une personne),
+ * le studio n'en ajoute aucune : une image, une vidéo ou une publicité qui en montre une est refusée.
+ */
+function PeopleConsent() {
+  const { id, data, reload } = useProject();
+  const t = useT();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  if (!data) return null;
+  const on = data.settings.peopleAllowed === true;
+  const change = async (v: boolean) => {
+    setBusy(true);
+    try {
+      await api(`/api/projects/${id}`, { method: "PATCH", body: { settings: { peopleAllowed: v } } });
+      toast("ok", v ? t("Personnes autorisées dans les visuels créés.", "People allowed in created visuals.") : t("Aucune personne dans les visuels créés.", "No people in created visuals."));
+      await reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Card className="p-4">
+      <Toggle checked={on} onChange={change} disabled={busy} label={t("Autoriser des personnes dans les visuels créés (images, vidéos, publicités)", "Allow people in created visuals (images, videos, ads)")} />
+      <p className="mt-2 text-xs text-muted">{on ? t("Le studio peut montrer des personnes quand la scène s'y prête.", "The studio may show people when the scene calls for it.") : t("Par défaut, aucune personne n'est ajoutée : un visuel qui en montre une est refusé. Vos propres photos avec des personnes restent utilisables.", "By default no person is added: a visual showing one is rejected. Your own photos with people remain usable.")}</p>
+    </Card>
   );
 }

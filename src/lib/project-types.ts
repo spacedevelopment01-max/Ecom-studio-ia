@@ -1,5 +1,4 @@
 /** Modèle de données d'un projet (une boutique) : produit, marque, stratégie. */
-import { z } from "zod";
 import type { BrandPalette, DirectionId } from "./theme/directions";
 
 export const SECTORS = [
@@ -41,24 +40,10 @@ export const sectorLabel = (id?: string | null, lang: "fr" | "en" = "fr") => {
   return s ? (lang === "en" ? s.labelEn : s.label) : lang === "en" ? "Not determined" : "Non déterminé";
 };
 
-export const FactSchema = z.object({
-  key: z.string(),
-  label: z.string(),
-  value: z.string(),
-  status: z.enum(["confirmed", "inferred", "unknown"]),
-  source: z.enum(["user", "photo", "link", "ai", "description"]),
-});
-export type Fact = z.infer<typeof FactSchema>;
-
-export const QuestionSchema = z.object({
-  id: z.string(),
-  question: z.string(),
-  why: z.string(),
-  required: z.boolean(),
-  factKey: z.string(),
-  answer: z.string().optional(),
-});
-export type Question = z.infer<typeof QuestionSchema>;
+// Types seulement : les schémas de validation (zod) sont dans project-schemas.ts, côté serveur — ce fichier est aussi
+// lu par l'interface, qui n'a pas à embarquer la bibliothèque de validation (≈ 25 Ko compressés).
+export type Fact = { key: string; label: string; value: string; status: "confirmed" | "inferred" | "unknown"; source: "user" | "photo" | "link" | "ai" | "description" };
+export type Question = { id: string; question: string; why: string; required: boolean; factKey: string; answer?: string };
 
 export type ProductProfile = {
   name: string;
@@ -226,6 +211,11 @@ export type ProjectSettings = {
   language?: "fr" | "en";
   /** « J'ai déjà mon site et mon logo » : résumé de la lecture du site du client (le détail est dans la mémoire, artefact « site_import »). */
   existingSite?: ExistingSiteSummary;
+  /**
+   * Accord explicite du client pour des personnes dans les visuels créés (images, vidéos, publicités, photos de banque).
+   * Sans cet accord (ni photo du client montrant une personne), le studio n'en ajoute aucune (voir people-policy.ts).
+   */
+  peopleAllowed?: boolean;
 };
 
 /** Résumé du site existant du client, affiché dans le studio (Pilote, Boutique, Marque). Tout vient du site lui-même. */
