@@ -51,16 +51,24 @@ class TagUnless extends \Liquid\Tag\TagUnless { use EsBlankAware; }
 class TagForm extends \Liquid\AbstractBlock {
 	private $attrs = [];
 	private $formType = '';
+	private $vars = [];
 	public function __construct($markup, array &$tokens, ?\Liquid\FileSystem $fileSystem = null) {
 		if (preg_match('/^\s*[\'"]([\w-]+)[\'"]/', $markup, $t)) $this->formType = $t[1];
 		if (preg_match_all('/(\w+)\s*:\s*(\'[^\']*\'|"[^"]*")/', $markup, $m, PREG_SET_ORDER)) {
 			foreach ($m as $x) $this->attrs[$x[1]] = substr($x[2], 1, -1);
 		}
+		// Valeur venant d'une variable (« id: form_id ») : lue au rendu, comme Shopify.
+		if (preg_match_all('/(\w+)\s*:\s*([A-Za-z_][\w.]*)\s*(?:,|$)/', $markup, $v, PREG_SET_ORDER)) {
+			foreach ($v as $x) if (!isset($this->attrs[$x[1]])) $this->vars[$x[1]] = $x[2];
+		}
 		parent::__construct($markup, $tokens, $fileSystem);
 	}
 	public function render(\Liquid\Context $context) {
 		$a = '';
-		foreach (['id', 'class'] as $k) if (!empty($this->attrs[$k])) $a .= ' ' . $k . '="' . htmlspecialchars($this->attrs[$k], ENT_QUOTES) . '"';
+		foreach (['id', 'class'] as $k) {
+			$val = $this->attrs[$k] ?? (isset($this->vars[$k]) ? (string) $context->get($this->vars[$k]) : '');
+			if ($val !== '') $a .= ' ' . $k . '="' . htmlspecialchars($val, ENT_QUOTES) . '"';
+		}
 		$context->push();
 		$context->set('form', ['posted_successfully?' => false, 'errors' => null]);
 		// Mêmes champs cachés que Shopify ; l'adresse d'envoi est fournie par le CMS (es_form_action).

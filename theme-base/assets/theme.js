@@ -618,7 +618,135 @@
     if (mq.addEventListener) mq.addEventListener('change', apply);
   }
 
+  /* ---------- Calendrier de réservation ----------
+     Jours ouverts, fermetures, délai minimum et horizon réglés dans la section ; créneaux entre l'ouverture et la
+     fermeture (pause exclue, créneaux passés masqués). Les champs date / heure natifs restent la source envoyée. */
+  function initBookingCal(root) {
+    $$('[data-booking-cal]', root).forEach(function (box) {
+      if (box.__bcal) return; box.__bcal = true;
+      var lang = doc.lang || undefined;
+      var A = function (k) { return box.getAttribute('data-' + k) || ''; };
+      var mins = function (v) { var m = /^(\d{1,2})\s*[:hH]\s*(\d{2})?$/.exec((v || '').trim()); return m ? (+m[1]) * 60 + (+(m[2] || 0)) : null; };
+      var hhmm = function (m) { return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2); };
+      var iso = function (d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
+      var days = A('days').split(',').filter(Boolean).map(Number);
+      var closed = A('closed').split(',').filter(Boolean);
+      var open = mins(A('open')), close = mins(A('close'));
+      if (open == null) open = 9 * 60; if (close == null || close <= open) close = 18 * 60;
+      var bs = mins(A('break-start')), be = mins(A('break-end'));
+      var slot = Math.max(5, parseInt(A('slot'), 10) || 60);
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+      var first = new Date(today); first.setDate(first.getDate() + (parseInt(A('notice'), 10) || 0));
+      var last = new Date(today); last.setDate(last.getDate() + (parseInt(A('horizon'), 10) || 90));
+      var form = box.closest('form');
+      var when = $('.es-bcal__when', box), cal = $('[data-bcal-calendar]', box), slotsBox = $('[data-bcal-slots]', box);
+      var dayLabel = $('[data-bcal-day-label]', box);
+      var dateIn = $('[data-bcal-date]', box), timeIn = $('[data-bcal-time]', box), people = $('[data-bcal-people]', box);
+      var err = $('[data-bcal-error]', box);
+      if (!cal || !dateIn || !timeIn) return;
+      dateIn.min = iso(first); dateIn.max = iso(last);
+      function slotsFor(d) {
+        var out = [], now = new Date(), isToday = iso(d) === iso(now), nowM = now.getHours() * 60 + now.getMinutes();
+        for (var m = open; m + slot <= close; m += slot) {
+          if (bs != null && be != null && m < be && m + slot > bs) continue;
+          if (isToday && m <= nowM) continue;
+          out.push(m);
+        }
+        return out;
+      }
+      function isOpen(d) { return d >= first && d <= last && days.indexOf(d.getDay()) !== -1 && closed.indexOf(iso(d)) === -1 && slotsFor(d).length > 0; }
+      // Premier mois affiché : celui du premier jour réservable.
+      var view = new Date(first.getFullYear(), first.getMonth(), 1);
+      for (var probe = new Date(first), n = 0; n < 400 && probe <= last; n++, probe.setDate(probe.getDate() + 1)) if (isOpen(probe)) { view = new Date(probe.getFullYear(), probe.getMonth(), 1); break; }
+      var picked = null;
+      function renderMonth() {
+        var y = view.getFullYear(), mo = view.getMonth();
+        var title = view.toLocaleDateString(lang, { month: 'long', year: 'numeric' });
+        var monday = new Date(2024, 0, 1); // un lundi
+        var html = '<div class="es-bcal__cal-head"><button type="button" class="es-bcal__nav" data-nav="-1" aria-label="' + A('label-prev') + '"' + (new Date(y, mo, 1) <= new Date(first.getFullYear(), first.getMonth(), 1) ? ' disabled' : '') + '>‹</button>'
+          + '<span class="es-bcal__cal-title" aria-live="polite">' + title + '</span>'
+          + '<button type="button" class="es-bcal__nav" data-nav="1" aria-label="' + A('label-next') + '"' + (new Date(y, mo + 1, 1) > last ? ' disabled' : '') + '>›</button></div><div class="es-bcal__grid" role="grid">';
+        for (var i = 0; i < 7; i++) { var wd = new Date(monday); wd.setDate(monday.getDate() + i); html += '<span class="es-bcal__dow" aria-hidden="true">' + wd.toLocaleDateString(lang, { weekday: 'short' }).replace('.', '') + '</span>'; }
+        var lead = (new Date(y, mo, 1).getDay() + 6) % 7;
+        for (i = 0; i < lead; i++) html += '<span></span>';
+        var count = new Date(y, mo + 1, 0).getDate();
+        for (var d = 1; d <= count; d++) {
+          var dt = new Date(y, mo, d), ok = isOpen(dt), id = iso(dt);
+          html += '<button type="button" class="es-bcal__day' + (id === iso(today) ? ' is-today' : '') + '" data-day="' + id + '" aria-pressed="' + (picked === id) + '" aria-label="' + dt.toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' }) + '"' + (ok ? '' : ' disabled') + '>' + d + '</button>';
+        }
+        cal.innerHTML = html + '</div>';
+      }
+      function renderSlots() {
+        slotsBox.innerHTML = '';
+        if (!picked) { dayLabel.textContent = A('label-pick-date'); return; }
+        var parts = picked.split('-'), d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        var list = slotsFor(d);
+        var dayText = d.toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' });
+        dayLabel.textContent = list.length ? dayText.charAt(0).toUpperCase() + dayText.slice(1) : A('label-no-slot');
+        list.forEach(function (m) {
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'es-bcal__slot'; b.textContent = hhmm(m); b.setAttribute('data-slot', hhmm(m));
+          b.setAttribute('aria-pressed', String(timeIn.value === hhmm(m)));
+          slotsBox.appendChild(b);
+        });
+      }
+      function sum(key, val) { var el = $('[data-bcal-sum="' + key + '"]', box); if (el) el.textContent = val || '—'; }
+      function update() {
+        var item = $('[data-bcal-item]:checked', box);
+        sum('item', item && item.value);
+        if (picked) { var p = picked.split('-'); sum('date', new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(lang, { weekday: 'short', day: 'numeric', month: 'long' })); } else sum('date', '');
+        sum('time', timeIn.value);
+        var dur = $('[data-bcal-duration]', box); if (dur) sum('duration', dur.value);
+        if (people) sum('people', people.value);
+        sum('options', $$('[data-bcal-option]:checked', box).map(function (o) { return o.getAttribute('data-bcal-option'); }).join(', '));
+        // Capacité : une salle trop petite pour le nombre de personnes n'est plus proposée.
+        var n = people ? parseInt(people.value, 10) || 0 : 0;
+        $$('.es-bcal__item', box).forEach(function (card) {
+          var cap = parseInt(card.getAttribute('data-capacity'), 10) || 0, full = cap > 0 && n > cap;
+          var r = $('[data-bcal-item]', card);
+          card.classList.toggle('is-full', full); r.disabled = full; if (full && r.checked) r.checked = false;
+          var note = $('[data-bcal-full]', card); if (note) note.hidden = !full;
+        });
+      }
+      when.classList.add('is-enhanced');
+      // Les champs natifs masqués ne bloquent plus l'envoi : la vérification se fait ci-dessous, avec un message clair.
+      dateIn.required = false; timeIn.required = false;
+      renderMonth(); renderSlots(); update();
+      cal.addEventListener('click', function (e) {
+        var nav = e.target.closest('[data-nav]');
+        if (nav && !nav.disabled) { view = new Date(view.getFullYear(), view.getMonth() + (+nav.getAttribute('data-nav')), 1); renderMonth(); return; }
+        var day = e.target.closest('[data-day]'); if (!day || day.disabled) return;
+        picked = day.getAttribute('data-day'); dateIn.value = picked; timeIn.value = '';
+        renderMonth(); renderSlots(); update();
+        var firstSlot = $('.es-bcal__slot', slotsBox); if (firstSlot && window.matchMedia('(max-width: 749px)').matches) slotsBox.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+      });
+      slotsBox.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-slot]'); if (!b) return;
+        timeIn.value = b.getAttribute('data-slot');
+        $$('.es-bcal__slot', slotsBox).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        if (err) err.hidden = true;
+        update();
+      });
+      $$('[data-bcal-people-step]', box).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var min = parseInt(people.min, 10) || 1, max = parseInt(people.max, 10) || 999;
+          people.value = String(Math.min(max, Math.max(min, (parseInt(people.value, 10) || min) + (+b.getAttribute('data-bcal-people-step')))));
+          update();
+        });
+      });
+      box.addEventListener('change', update);
+      box.addEventListener('input', update);
+      if (form) form.addEventListener('submit', function (e) {
+        if (dateIn.value && timeIn.value) return;
+        e.preventDefault();
+        if (err) { err.textContent = A('label-missing'); err.hidden = false; }
+        cal.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      });
+    });
+  }
+
   function init() {
+    initBookingCal(document);
     initWords(document);
     initReveal(document);
     initParallax();
@@ -648,5 +776,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
   /* Éditeur de thème Shopify : réinitialise les sections rechargées. */
-  document.addEventListener('shopify:section:load', function (e) { initNarrative(e.target); initWords(e.target); initCounters(e.target); initCompare(e.target); initGlow(e.target); initScrollEffects(); initReveal(e.target); initBuy(e.target); initOffers(e.target); initEta(e.target); initStory(); initRoutine(); initHGallery(); initParallax(); initVideos(); initGallery(); });
+  document.addEventListener('shopify:section:load', function (e) { initBookingCal(e.target); initNarrative(e.target); initWords(e.target); initCounters(e.target); initCompare(e.target); initGlow(e.target); initScrollEffects(); initReveal(e.target); initBuy(e.target); initOffers(e.target); initEta(e.target); initStory(); initRoutine(); initHGallery(); initParallax(); initVideos(); initGallery(); });
 })();
