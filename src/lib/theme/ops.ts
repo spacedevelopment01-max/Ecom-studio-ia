@@ -40,6 +40,8 @@ export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("remove_section"), template: z.string(), section: z.string() }),
   z.object({ op: z.literal("move_section"), template: z.string(), section: z.string(), position: z.object({ after: z.string().optional(), before: z.string().optional(), index: z.number().int().optional() }) }),
   z.object({ op: z.literal("toggle_section"), template: z.string(), section: z.string(), disabled: z.boolean() }),
+  /** Copie d'une section (réglages et blocs), placée juste après l'originale sauf position précisée. */
+  z.object({ op: z.literal("duplicate_section"), template: z.string(), section: z.string(), position: Position }),
   z.object({ op: z.literal("replace_section"), template: z.string(), section: z.string(), type: z.string(), settings: Settings.optional(), blocks: z.array(z.object({ type: z.string(), settings: Settings.optional() })).optional() }),
   z.object({ op: z.literal("add_block"), template: z.string(), section: z.string(), type: z.string(), settings: Settings.optional(), position: Position }),
   z.object({ op: z.literal("remove_block"), template: z.string(), section: z.string(), block: z.string() }),
@@ -416,6 +418,30 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           }
           s.disabled = op.disabled || undefined;
           applied.push(L(`Section ${op.section} ${op.disabled ? "masquée" : "affichée"}`, `Section ${op.section} ${op.disabled ? "hidden" : "shown"}`));
+          break;
+        }
+        case "duplicate_section": {
+          const c = containerOf(spec, op.template);
+          const s = c?.sections[op.section];
+          if (!c || !s) {
+            reject(L(`section ${op.section} introuvable`, `section ${op.section} not found`));
+            break;
+          }
+          if (op.template.startsWith("group:")) {
+            reject(L("l'en-tête et le pied de page ne se dupliquent pas", "the header and footer can't be duplicated"));
+            break;
+          }
+          if (s.type.startsWith("main-")) {
+            reject(L(`la section principale ${s.type} est unique sur sa page`, `the main section ${s.type} is unique on its page`));
+            break;
+          }
+          const sid = newId(c, s.type);
+          const copy = JSON.parse(JSON.stringify(s)) as SectionInstance;
+          delete (copy as { locked?: boolean }).locked;
+          c.sections[sid] = copy;
+          c.order = [...c.order, sid];
+          c.order = insertAt(c.order, sid, op.position ?? { after: op.section });
+          applied.push(L(`Section ${op.section} dupliquée (${sid})`, `Section ${op.section} duplicated (${sid})`));
           break;
         }
         case "replace_section": {

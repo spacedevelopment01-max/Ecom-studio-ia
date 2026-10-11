@@ -27,6 +27,7 @@ const KEYS: Record<string, string[]> = {
   "v2-faq": ["layout"],
   "v2-cta": ["layout"],
   "v2-media": ["layout"],
+  "v2-specs": ["layout"],
   "v2-cards": ["layout", "columns", "fit"],
   "v2-banner": ["layout", "align", "full_width", "veil"],
   "v2-benefits": ["layout", "columns"],

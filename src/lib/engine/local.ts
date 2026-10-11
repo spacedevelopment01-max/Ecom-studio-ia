@@ -1019,6 +1019,21 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
       return { ops: [], reply: L(`Je ne trouve pas cette section sur la page. Sections présentes : ${names.join(", ")}. Désignez-la dans l'aperçu ou reprenez son nom.`, `I can't find that section on this page. Sections present: ${names.join(", ")}. Select it in the preview or use its name.`), revert: false };
     }
   }
+  if (selection && /(duplique|dupliquer|copie|copier|clone|duplicate|\bcopy\b)/.test(m)) {
+    ops.push({ op: "duplicate_section", template: selection.template, section: selection.section });
+    return { ops, reply: L("Section dupliquée : la copie est juste en dessous, prête à être modifiée.", "Section duplicated: the copy is right below, ready to edit."), revert: false };
+  }
+  if (selection && /(tout en haut|en haut de (la )?page|to the top)/.test(m)) {
+    const c = containerOf(spec, selection.template);
+    const first = c?.order.findIndex((id) => /hero|main-/.test(c.sections[id]?.type ?? "")) ?? -1;
+    ops.push({ op: "move_section", template: selection.template, section: selection.section, position: { index: first + 1 } });
+    return { ops, reply: L("Section placée en haut de la page (sous l'ouverture).", "Section moved to the top of the page (below the opening)."), revert: false };
+  }
+  if (selection && /(tout en bas|en bas de (la )?page|to the bottom)/.test(m)) {
+    const c = containerOf(spec, selection.template);
+    ops.push({ op: "move_section", template: selection.template, section: selection.section, position: { index: c?.order.length ?? 0 } });
+    return { ops, reply: L("Section placée en bas de la page.", "Section moved to the bottom of the page."), revert: false };
+  }
   if (selection && /(supprime|retire|enlève|remove|delete)/.test(m)) {
     ops.push({ op: "remove_section", template: selection.template, section: selection.section });
     return { ops, reply: L("Section supprimée.", "Section removed."), revert: false };

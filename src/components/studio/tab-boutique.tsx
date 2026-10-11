@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Crosshair, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
@@ -158,7 +158,7 @@ export default function TabBoutique() {
   const [exportOpen, setExportOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [importOpen, setImportOpen] = useState<null | "upload" | "report">(null);
-  const [libTarget, setLibTarget] = useState<{ template: string; index?: number; label: string } | null>(null);
+  const [libTarget, setLibTarget] = useState<{ template: string; index?: number; label: string; replace?: string } | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
   // Lien direct « …/boutique?themes » (depuis le Pilote) : ouvre la galerie.
   useEffect(() => {
@@ -322,8 +322,8 @@ export default function TabBoutique() {
     if (!libTarget) return;
     setAdding(type);
     try {
-      await api(`/api/projects/${id}/theme/sections`, { body: { type, template: libTarget.template, index: libTarget.index }, lang: cl.lang });
-      toast("ok", t("Section ajoutée : retouchez-la en discutant ou désignez-la dans l'aperçu.", "Section added: refine it in the chat or select it in the preview."));
+      await api(`/api/projects/${id}/theme/sections`, { body: { type, template: libTarget.template, index: libTarget.index, replace: libTarget.replace }, lang: cl.lang });
+      toast("ok", libTarget.replace ? t("Section remplacée : ses titres, textes et images ont été repris.", "Section replaced: its headings, text and images were kept.") : t("Section ajoutée : retouchez-la en discutant ou désignez-la dans l'aperçu.", "Section added: refine it in the chat or select it in the preview."));
       setLibTarget(null);
       reload();
       reloadProject();
@@ -524,6 +524,8 @@ export default function TabBoutique() {
                     ) : null}
                     <button onClick={() => ops([{ op: "toggle_section", template: tp.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? t("affichée", "shown") : t("masquée", "hidden")}`)} className="grid size-7 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? t("Afficher", "Show") : t("Masquer", "Hide")}>{s.disabled ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</button>
                     <button onClick={() => ops([{ op: "lock", template: tp.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? t("déverrouillée", "unlocked") : t("validée", "approved")}`)} className={cx("grid size-7 place-items-center rounded-full hover:bg-paper-2", s.locked && "text-ok")} aria-label={s.locked ? t("Déverrouiller", "Unlock") : t("Valider et verrouiller", "Approve and lock")} title={s.locked ? t("Validée : protégée des modifications non ciblées", "Approved: protected from non-targeted changes") : t("Valider cette section", "Approve this section")}>{s.locked ? <Lock className="size-3.5" /> : <Unlock className="size-3.5" />}</button>
+                    {isPage && !s.type.startsWith("main-") && <button onClick={() => ops([{ op: "duplicate_section", template: tp.template, section: s.id }], t(`${s.name} dupliquée`, `${s.name} duplicated`))} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2" aria-label={t(`Dupliquer « ${s.name} »`, `Duplicate “${s.name}”`)} title={t("Dupliquer", "Duplicate")}><Copy className="size-3.5" /></button>}
+                    {isPage && !s.type.startsWith("main-") && <button onClick={() => setLibTarget({ template: tp.template, label: t(`Remplacer « ${s.name} » (titres, textes et images repris)`, `Replace “${s.name}” (headings, text and images kept)`), replace: s.id })} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2" aria-label={t(`Remplacer « ${s.name} » par une autre section`, `Replace “${s.name}” with another section`)} title={t("Remplacer par une autre section", "Replace with another section")}><Replace className="size-3.5" /></button>}
                     {isPage && <button onClick={() => { if (confirm(t(`Supprimer la section « ${s.name} » ? Vous pourrez revenir à la version précédente.`, `Delete the “${s.name}” section? You can go back to the previous version.`))) ops([{ op: "remove_section", template: tp.template, section: s.id }], t(`${s.name} supprimée`, `${s.name} deleted`)); }} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-bad" aria-label={t("Supprimer la section", "Delete section")}><Trash2 className="size-3.5" /></button>}
                   </div>
                   {isPage && !dragging && (

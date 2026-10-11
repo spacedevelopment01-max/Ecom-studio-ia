@@ -234,7 +234,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   const uniqMedia = (fs: string[]) => fs.filter((f, i, a) => a.findIndex((x) => mediaKey(x) === mediaKey(f)) === i);
   const specs: Sec | null = c.specs.length >= 2 ? [
     "v2-specs",
-    { eyebrow: t("Fiche", "Details"), heading: t("Caractéristiques", "Specifications"), image_asset: L === "precision" ? im.packshot ?? "" : "", note: t("Seules les caractéristiques confirmées sont affichées.", "Only confirmed specifications are shown."), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
+    { layout: L === "precision" || L === "product" ? (c.specs.length >= 3 && c.specs.every((x) => x.value.length <= 28) ? "tiles" : "table") : L === "maison" && c.specs.length >= 6 ? "columns" : "table", eyebrow: t("Fiche", "Details"), heading: t("Caractéristiques", "Specifications"), image_asset: L === "precision" ? im.packshot ?? "" : "", note: t("Seules les caractéristiques confirmées sont affichées.", "Only confirmed specifications are shown."), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
     c.specs.map((s) => ({ type: "spec", settings: { label: s.label, value: s.value } })),
   ] : null;
   // ------------------------------------------------------------ sections de composition (niveau agence)

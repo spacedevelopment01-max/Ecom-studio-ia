@@ -1,8 +1,8 @@
-{%- comment -%} Caractéristiques (Theme Engine V2) : tableau de caractéristiques CONFIRMÉES, avec une image facultative. {%- endcomment -%}
+{%- comment -%} Caractéristiques (Theme Engine V2) : caractéristiques CONFIRMÉES en tableau, en tuiles (valeur en grand) ou sur deux colonnes, avec une image facultative. {%- endcomment -%}
 {%- assign s = section.settings -%}
 {%- assign has_media = false -%}
 {%- if s.image != blank or s.image_asset != blank -%}{%- assign has_media = true -%}{%- endif -%}
-<section class="v2-specs{% if has_media %} has-media{% endif %} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+<section class="v2-specs v2-specs--{{ s.layout | default: 'table' }}{% if has_media %} has-media{% endif %} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
   <div class="es-container v2-specs__grid">
     {%- if has_media -%}<div class="v2-specs__media" data-reveal="zoom">{% render 'es-image', image: s.image, asset: s.image_asset, alt: s.heading, class: 'v2-cover', sizes: '(min-width: 990px) 45vw, 100vw' %}</div>{%- endif -%}
     <div>
@@ -26,6 +26,11 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
+    { "type": "select", "id": "layout", "label": "Composition", "default": "table", "options": [
+      { "value": "table", "label": "Tableau" },
+      { "value": "tiles", "label": "Tuiles (valeur en grand)" },
+      { "value": "columns", "label": "Deux colonnes" }
+    ] },
     { "type": "text", "id": "eyebrow", "label": "Surtitre" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Caractéristiques" },
     { "type": "image_picker", "id": "image", "label": "Image" },

@@ -79,6 +79,7 @@ export function localFirst(
       case "remove_section":
       case "move_section":
       case "toggle_section":
+      case "duplicate_section":
         if (sel && !whole) return null;
         break;
       // Ajout d'une section « nue » : seulement pour une demande courte, sans précision de contenu.

@@ -36,6 +36,7 @@ const LAYOUTS: Record<string, string[]> = {
   "v2-faq": ["side", "center"],
   "v2-cta": ["band", "card", "split"],
   "v2-media": ["bento", "rail"],
+  "v2-specs": ["table", "tiles", "columns"],
   "v2-split": ["media-left", "media-right", "overlap"],
   "v2-cards": ["below", "overlay", "numbered", "tiles"],
   "v2-banner": ["overlay", "panel", "panorama"],
