@@ -85,11 +85,15 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   // Panier de PrestaShop (pas de tiroir Shopify) ; le reste du design est identique.
   const spec = cloneSpec(spec0);
   spec.settings = { ...spec.settings, cart_type: "page" };
+  // Bloc d'achat de l'accueil : son formulaire est celui de Shopify. Dans PrestaShop, le produit y est présenté (photo,
+  // prix, texte) avec un bouton vers SA fiche PrestaShop, où se trouvent les déclinaisons et le vrai panier.
+  const adaptedHome = adaptFeaturedProduct(spec, (fr, en) => pick(lang, fr, en));
   const files = compileTheme(spec);
   const design = await designLayer(spec, files);
   const services = spec.store.business === "services";
   const name = `es${slug(spec.store.shopName)}`.slice(0, 30);
   const issues: ExportIssue[] = [];
+  if (adaptedHome) issues.push({ code: "featured_product_adapted", severity: "warning", detail: t("accueil : le bloc d'achat devient une présentation du produit avec un lien vers sa fiche PrestaShop (achat sur la fiche)", "home: the buy box becomes a product presentation linking to its PrestaShop product page (purchase on that page)") });
   const out: Record<string, Uint8Array> = {};
   const put = (p: string, data: string | Uint8Array | Buffer) => (out[p] = typeof data === "string" ? strToU8(data) : new Uint8Array(data));
   const render = async (p: string) => (await renderPage({ spec, base: "", files, cart: [] }, p, new URLSearchParams())).html;
@@ -247,3 +251,24 @@ theme_settings:
     media,
   };
 }
+
+/** Remplace chaque « featured-product » d'une page par une présentation (photo, titre, prix, texte, lien vers la fiche). */
+export function adaptFeaturedProduct(spec: ThemeSpec, t: (fr: string, en: string) => string): boolean {
+  let n = 0;
+  for (const tpl of Object.values(spec.templates)) {
+    for (const [id, sec] of Object.entries(tpl.sections)) {
+      if (sec.type !== "featured-product") continue;
+      const handle = String(sec.settings.product ?? "") || spec.store.product.handle;
+      const prod = [spec.store.product, ...(spec.store.products ?? [])].find((x) => x.handle === handle) ?? spec.store.product;
+      const price = prod.price != null ? new Intl.NumberFormat(t("fr-FR", "en-GB"), { style: "currency", currency: prod.currency || "EUR" }).format(prod.price / 100) : "";
+      const text = [price ? `<p><strong>${price}</strong></p>` : "", String(sec.settings.text ?? "")].join("");
+      tpl.sections[id] = {
+        type: "v2-split",
+        settings: { layout: "media-left", fit: "v2-contain", eyebrow: String(sec.settings.eyebrow ?? ""), heading: prod.title, text, image_asset: String(sec.settings.image_asset ?? "") || prod.images[0] || "", image_alt: prod.title, button_label: t("Choisir et commander", "Choose and order"), button_link: `/products/${prod.handle}`, color_scheme: String(sec.settings.color_scheme ?? "scheme-1"), padding_top: 96, padding_bottom: 96 },
+      };
+      n++;
+    }
+  }
+  return n > 0;
+}
+

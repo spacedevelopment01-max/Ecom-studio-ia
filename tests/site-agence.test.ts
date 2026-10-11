@@ -169,4 +169,23 @@ describe("Sites niveau agence", async () => {
     const two = fr(() => compose(base.intent, base.art, content({ facts: facts.slice(0, 2) }), "ostral", null));
     expect(Object.values(two.templates.index.sections).some((x) => x.type === "v2-band" && x.settings.layout === "icons")).toBe(false);
   });
+
+  it("boutique d'un produit : le produit à acheter dès l'accueil (vrai produit, galerie, quantité) ; points forts seulement confirmés", async () => {
+    const intent = { ...base.intent, site: "shop_mono" as const };
+    const facts = [{ label: "Caméra", value: "stabilisée" }, { label: "Bras", value: "pliables" }, { label: "Poids", value: "249 g" }];
+    const c = fr(() => compose(intent, base.art, content({ facts }), "ostral", null));
+    const fp = Object.values(c.templates.index.sections).find((x) => x.type === "featured-product")!;
+    expect(fp.settings.product).toBe("ostral");
+    expect(fp.settings.show_quantity).toBe(true);
+    expect(fp.settings.enable_zoom).toBe(true);
+    expect(Object.values(fp.blocks ?? {}).map((b) => b.settings.text)).toEqual(["Caméra : stabilisée", "Bras : pliables", "Poids : 249 g"]);
+    const few = fr(() => compose(intent, base.art, content({ facts: facts.slice(0, 1) }), "ostral", null));
+    expect(Object.keys(Object.values(few.templates.index.sections).find((x) => x.type === "featured-product")!.blocks ?? {})).toHaveLength(0);
+    const multi = fr(() => compose({ ...intent, site: "shop_multi" as const }, base.art, content({ facts }), "ostral", null));
+    expect(types(multi.templates.index)).not.toContain("featured-product");
+    // Rendu réel : formulaire d'ajout au panier du vrai produit.
+    const html = (await fr(() => renderPage({ spec: hightech.spec, base: "/p", files: compileTheme(hightech.spec), cart: [] }, "/", new URLSearchParams()))).html;
+    if (hightech.intent.site === "shop_mono") expect(html).toMatch(/data-featured-product[\s\S]*data-add-button/);
+  });
 });
+

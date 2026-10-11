@@ -292,6 +292,29 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   ] : null;
   for (const f of detailPics.slice(0, benefits && benefits[1].layout === "images" ? benefitItems.length : 0)) used.add(f);
 
+  // Boutique d'un produit : le produit à acheter dès l'accueil (galerie et zoom, variantes, quantité, vrai panier),
+  // avec ses points forts CONFIRMÉS (3 à 5) au plus près du bouton d'achat — jamais un atout supposé.
+  const buyFacts = c.facts.filter((f) => f.label !== t("Prix", "Price") && f.value.length <= 60 && !TODO.test(f.value)).slice(0, 5);
+  const buy: Sec | null = intent.site === "shop_mono" && productHandle ? [
+    "featured-product",
+    {
+      product: productHandle,
+      eyebrow: c.category,
+      text: c.lines.detail?.text ? para(fitText(c.lines.detail.text, 220)) : "",
+      show_gallery: true,
+      thumbs_position: L === "precision" || L === "product" ? "left" : "bottom",
+      enable_zoom: true,
+      show_sale_badge: true,
+      picker: "buttons",
+      show_quantity: true,
+      show_dynamic_checkout: false,
+      color_scheme: "scheme-1",
+      padding_top: 96,
+      padding_bottom: 96,
+    },
+    buyFacts.length >= 3 ? buyFacts.map((f) => ({ type: "highlight", settings: { icon: factIcon(f.label + " " + f.value), text: `${f.label} : ${f.value}` } })) : [],
+  ] : null;
+
   // Bannières exclues : ce sont des créations publicitaires avec du texte incrusté, pas des photos.
   const mediaFiles = uniqMedia([im.packshot, im.detail1, im.scene1, im.scene2, im.detail2, im.scene3].filter((f): f is string => !!f && !used.has(f)));
   const media: Sec | null = shop && mediaFiles.length >= 3 ? [
@@ -380,8 +403,8 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
       // Parcours d'une boutique : ouverture, signature, catalogue, détail, ambiance, bénéfices, images, questions, achat.
       // Bandeau de faits sous l'ouverture ; la signature passe alors avant la bannière (jamais deux bandeaux collés).
       home = L === "precision"
-        ? [hero, shopStrip ?? band, cards, media, split, benefits ?? offers, shopStrip ? band : null, banner, faqHome, cta]
-        : [hero, shopStrip ?? band, cards, split, shopStrip ? band : null, banner, benefits ?? offers, media, faqHome, cta];
+        ? [hero, shopStrip ?? band, cards, buy, media, split, benefits ?? offers, shopStrip ? band : null, banner, faqHome, cta]
+        : [hero, shopStrip ?? band, cards, buy, split, shopStrip ? band : null, banner, benefits ?? offers, media, faqHome, cta];
   }
   // Rythme : fonds alternés (principal / surface) entre l'ouverture et l'appel final, jamais deux fois le même d'affilée.
   const present = home.filter(Boolean) as Sec[];
