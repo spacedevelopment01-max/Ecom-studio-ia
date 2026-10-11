@@ -11,6 +11,34 @@ Check-up général : `reports/general-checkup.md`. Phase 11A fusionnée (PR #63)
 (PR #62) ; **qualité visuelle finale avec les vrais fournisseurs d'IA NON VALIDÉE** ; 10B non commencée ; 9A validée
 techniquement, 9B reportée ; 8A validée techniquement, 8B reportée. Phase 13 non commencée.
 
+## Audit de stabilisation (octobre 2026) — branche `claude/ecom-studio-ia-platform-8cwl79`, non fusionnée
+
+Détail : `reports/audit-stabilisation-global.md` et `reports/optimisation-performance.md`.
+
+- **Arrêts du serveur dans le Codespace** : cause exacte non reproduite ici (la plus probable : mémoire saturée en
+  mode développement). Le lanceur `npm run studio` écrit désormais la raison réelle de chaque arrêt dans
+  `data/logs/studio.log` : à relever au prochain arrêt.
+- **npm audit** : 4 restants, aucun critique (`postcss` interne à Next → correctif = Next 16 ; `sharp` de l'outil de
+  détourage → aucun correctif publié).
+- **Règle de présence humaine** : appliquée partout. Restent :
+  - la détection automatique des personnes dans les photos produits du client ;
+  - le filtrage sans IA des photos de banque (sur la description seulement) ;
+  - l'UGC V1 commandé par le client (non bloqué) ;
+  - aucune revérification rétroactive.
+- **Code ancien à retirer après vérification en base** (tâches anciennes encore en file ?) :
+  - types de tâches sans créateur : `video.ugc`, `ugc.script`, `calendar.plan`, `post.regenerate`, `brand.fulllogo`,
+    `stock.search`, `blog.write` ;
+  - routes `/api/projects/[id]/copy` et `/api/estimate` ;
+  - `engine/logo-symbol.ts`.
+- **Limites de débit** : adresse IP lue dans `X-Forwarded-For`, à fixer selon l'hébergeur (`TRUST_PROXY`).
+- **Performances restantes** :
+  - `sanitize-html` dans l'onglet Blog (côté navigateur) ;
+  - calculs lourds du worker sur le fil principal ;
+  - page d'accueil rendue à chaque requête (non touchée, consigne).
+- **Vidéo V2** : le choix du fournisseur ne suit pas encore le réglage par usage (modèle le moins cher compatible).
+- **Validations payantes à faire avec accord** : relecture réelle des 6 logos avec la nouvelle notation (≈ 0,30 €),
+  image et publicité réelles (champ `personVisible`), vidéo Veo/fal réelle, texte OpenAI/Gemini long.
+
 ## PRIORITÉ — fal.ai dans l'administration vidéo (à terminer)
 
 - **Avancement (routage multimédia V2)** : fal.ai apparaît maintenant dans « Administration › Images & Vidéos »
