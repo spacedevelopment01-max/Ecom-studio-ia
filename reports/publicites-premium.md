@@ -101,3 +101,35 @@ l'IA : **indisponibles** ici (aucune clé Anthropic) ; les textes étaient donc 
 
 À faire avec une clé Anthropic disponible (votre Codespace) : le même essai avec la rédaction et la relecture par
 l'IA.
+
+## Images : Pixabay d'abord, et plus jamais de second produit (suite de l'essai)
+
+Demande du propriétaire : chercher d'abord sur Pixabay pour toutes les images du studio, IA seulement à défaut. Il
+garde la direction des décors de l'essai, mais refuse le drone noir en double.
+
+- **Ordre des banques** : Pixabay, puis Pexels, puis Openverse, pour les photos comme pour les vidéos.
+- **Images avec le produit** (publicités, photos en situation, images produit) : nouvelle étape « décor libre »
+  (`src/lib/image-v2/plates.ts`).
+  1. Le studio cherche un décor **vide** sur Pixabay : plan de travail, étagère, table, socle, fond flou adapté à la
+     famille du produit.
+  2. Il choisit le décor d'après la description de la photo, sans IA. Une photo avec une personne ou un autre objet
+     au premier plan est écartée.
+  3. Il pose le vrai produit sur ce décor, avec une ombre de contact en deux couches. Les pixels du produit ne
+     changent pas.
+  4. La relecture IA (si elle est disponible) juge le résultat avec la photo de référence du produit.
+  5. Si aucun décor ne convient, l'IA crée un décor vide, puis le studio y pose le produit de la même façon.
+- **Cause du drone noir supprimée** : la retouche par masque n'est plus utilisée. Avec elle, la photo du produit était
+  envoyée à l'IA, qui le redessinait derrière le vrai. Désormais, aucune photo du produit n'est envoyée à une IA
+  d'images : un second produit est impossible par construction.
+- **Image seule** (onglet Images, produits) : même ordre, décor Pixabay d'abord. Pour une entreprise de services,
+  l'image d'ambiance cherche d'abord une photo libre du métier avant l'IA.
+- **Économie** :
+  - un décor Pixabay posé par le studio ne coûte aucune image (0 €) ;
+  - seule la relecture IA de l'image composée est payée : un contrôle, et non une génération à 0,15–0,23 €.
+- **Forfait Découverte** : décor Pixabay et produit posé, gratuits. Ces images ne sont jamais validées comme
+  définitives sans contrôle.
+
+Vérifié ici : `npx tsc --noEmit`, toute la suite de tests, et le nouveau test `tests/image-plates.test.ts`.
+
+Non vérifié ici : la qualité réelle des décors Pixabay. Le réseau de ce conteneur bloque Pixabay. À juger dans votre
+Codespace, sur un projet produit, dans les onglets Publicités et Images.

@@ -106,18 +106,6 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
     files.filter((f) => f.link && Math.max(f.width, f.height) >= 1080 && Math.max(f.width, f.height) <= 2160).sort((a, b) => a.width * a.height - b.width * b.height)[0] ?? files.filter((f) => f.link).sort((a, b) => b.width * b.height - a.width * a.height)[0];
   for (const query of queries.filter(Boolean)) {
     const q = encodeURIComponent(query);
-    const pexels = activeProviderKey("pexels");
-    if (pexels) {
-      try {
-        const j = await get(`https://api.pexels.com/videos/search?query=${q}&per_page=10&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: pexels });
-        for (const v of j.videos ?? []) {
-          const f = pick((v.video_files ?? []).filter((x: any) => /mp4/.test(x.file_type ?? "video/mp4")).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.link })));
-          if (f && v.duration >= 4 && !exclude.has(`pexels:${v.id}`)) out.push({ source: "pexels", id: String(v.id), url: f.link, page: v.url, author: v.user?.name ?? "", license: "Pexels", width: f.width, height: f.height, duration: v.duration, alt: slugWords(v.url ?? "") });
-        }
-      } catch (e) {
-        console.warn("[vidéos libres] pexels indisponible :", (e as Error).message);
-      }
-    }
     const pixabay = activeProviderKey("pixabay");
     if (pixabay) {
       try {
@@ -129,6 +117,18 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
         }
       } catch (e) {
         console.warn("[vidéos libres] pixabay indisponible :", (e as Error).message);
+      }
+    }
+    const pexels = activeProviderKey("pexels");
+    if (pexels) {
+      try {
+        const j = await get(`https://api.pexels.com/videos/search?query=${q}&per_page=10&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: pexels });
+        for (const v of j.videos ?? []) {
+          const f = pick((v.video_files ?? []).filter((x: any) => /mp4/.test(x.file_type ?? "video/mp4")).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.link })));
+          if (f && v.duration >= 4 && !exclude.has(`pexels:${v.id}`)) out.push({ source: "pexels", id: String(v.id), url: f.link, page: v.url, author: v.user?.name ?? "", license: "Pexels", width: f.width, height: f.height, duration: v.duration, alt: slugWords(v.url ?? "") });
+        }
+      } catch (e) {
+        console.warn("[vidéos libres] pexels indisponible :", (e as Error).message);
       }
     }
     // Présélection plus large : le filtre du métier (gratuit) et le contrôle d'une image choisissent ensuite.

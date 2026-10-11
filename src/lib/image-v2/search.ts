@@ -100,7 +100,7 @@ export const candidateKey = (c: Pick<StockCandidate, "source" | "id">) => `${c.s
  * Recherche dans les sources disponibles. Arrêt dès qu'assez de bons candidats sont trouvés (moins de requêtes).
  * `exclude` : photos déjà utilisées dans le projet ou déjà refusées pour ce brief.
  */
-export async function searchCandidates(brief: VisualBrief, providers: StockProvider[], opts: { exclude?: Set<string>; enough?: number; fallbackFr?: string | null } = {}): Promise<{ ranked: (RankedCandidate & { metadataMatch: boolean; offTopicLikely: boolean })[]; stats: SearchStats }> {
+export async function searchCandidates(brief: VisualBrief, providers: StockProvider[], opts: { exclude?: Set<string>; enough?: number; fallbackFr?: string | null; score?: typeof scoreCandidate } = {}): Promise<{ ranked: (RankedCandidate & { metadataMatch: boolean; offTopicLikely: boolean })[]; stats: SearchStats }> {
   const stats: SearchStats = { requests: 0, results: 0, kept: 0, byProvider: {}, queries: [], errors: [] };
   const seen = new Set<string>();
   const seenUrl = new Set<string>();
@@ -126,7 +126,7 @@ export async function searchCandidates(brief: VisualBrief, providers: StockProvi
       seenUrl.add(c.url);
       // Licence non établie : jamais retenue automatiquement.
       if (!licenseUsable(c.license)) continue;
-      out.push(scoreCandidate(c, brief));
+      out.push((opts.score ?? scoreCandidate)(c, brief));
       stats.byProvider[prov.id] = (stats.byProvider[prov.id] ?? 0) + 1;
     }
   };

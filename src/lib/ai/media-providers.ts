@@ -367,16 +367,17 @@ export function imageUnavailableReason(usage?: MediaUsage): string | null {
 }
 
 /**
- * Parcours d'une image qui montre le produit RÉEL, selon l'usage :
- *  - retouche par masque (le modèle repeint autour du produit, pixels remis) si un modèle capable est choisi pour
- *    « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) ;
- *  - sinon décor généré par le modèle de l'usage, puis produit réel composé par le studio ;
+ * Parcours d'une image qui montre le produit RÉEL, selon l'usage : toujours un décor VIDE généré (aucune photo du
+ * produit envoyée), puis le produit réel composé par le studio, pixels d'origine. La retouche par masque n'est plus
+ * utilisée : à l'essai réel, le modèle y redessinait un second produit (plus sombre) derrière le vrai.
+ *  - modèle choisi pour « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) s'il est OpenAI ;
+ *  - sinon modèle de l'usage ;
  *  - null : aucun modèle utilisable (rien n'est généré).
  */
-export function productImagePath(usage: "product_image" | "ad_visual"): { path: "masked_edit"; usage: MediaUsage } | { path: "composite_plate"; usage: MediaUsage } | null {
+export function productImagePath(usage: "product_image" | "ad_visual"): { path: "composite_plate"; usage: MediaUsage } | null {
   const editUsage: MediaUsage = usage === "product_image" ? "product_edit" : usage;
   const edit = routeMedia("image_generation", "mask", { usage: editUsage });
-  if (edit && edit.provider === "openai") return { path: "masked_edit", usage: editUsage };
+  if (edit && edit.provider === "openai") return { path: "composite_plate", usage: editUsage };
   const gen = routeMedia("image_generation", undefined, { usage });
   return gen ? { path: "composite_plate", usage } : null;
 }

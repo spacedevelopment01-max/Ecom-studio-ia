@@ -176,7 +176,8 @@ describe("routage multimédia par usage", async () => {
 
   it("photos produit : « Retouches produit » (masque, OpenAI) d'abord ; coupé → « Images produit » (décor du modèle choisi + composition)", async () => {
     const c = await client();
-    expect(fr(() => mp.productImagePath("product_image"))).toEqual({ path: "masked_edit", usage: "product_edit" });
+    // Jamais de retouche par masque (second produit redessiné) : décor vide du modèle choisi, produit composé.
+    expect(fr(() => mp.productImagePath("product_image"))).toEqual({ path: "composite_plate", usage: "product_edit" });
     await fr(() => mp.openaiScene(ctx(c), { composite: png, productMask: png, prompt: "scène", size: "1024x1024", usage: "product_edit" }));
     expect(oa.calls.at(-1)).toMatchObject({ kind: "edit", model: "gpt-image-1" });
     // Retouche coupée par l'administration + Images produit → Gemini 2.5 : décor vide demandé à Gemini.
@@ -196,7 +197,7 @@ describe("routage multimédia par usage", async () => {
     setUsage("ad_visual", { primary: "google:gemini-2.5-flash-image" });
     expect(fr(() => mp.productImagePath("ad_visual"))).toEqual({ path: "composite_plate", usage: "ad_visual" });
     setUsage("ad_visual", {});
-    expect(fr(() => mp.productImagePath("ad_visual"))).toEqual({ path: "masked_edit", usage: "ad_visual" });
+    expect(fr(() => mp.productImagePath("ad_visual"))).toEqual({ path: "composite_plate", usage: "ad_visual" });
     const fal = mediaModel("fal", "fal-ai/nano-banana-2/edit")!;
     expect(routing.incompatibility(fal, routing.usageNeed("ad_visual"))).toMatch(/référence/);
     expect(routing.incompatibility(mediaModel("google", "gemini-3.1-flash-image")!, routing.usageNeed("product_edit"))).toMatch(/masque/);
