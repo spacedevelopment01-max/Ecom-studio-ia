@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { all, now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
-import { FactSchema } from "@/lib/project-types";
+import { FactSchema } from "@/lib/project-schemas";
 import { currentTheme, factPlaceholderRegex, saveProduct, saveThemeVersion, remember } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { eachSection } from "@/lib/theme/spec";

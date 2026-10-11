@@ -363,12 +363,14 @@ async function hasAudio(file: string) {
  * aucune personne déformée, aucun texte ni logo inventé (services). Note ramenée sur 10.
  */
 async function ugcCheck(base: { userId: string; projectId: string; jobId?: string | null }, usageKey: string, services: boolean, reference: Buffer, image: Buffer): Promise<{ ok: boolean; score: number; issues: string[] }> {
+  // Vidéo UGC commandée explicitement par le client dans l'onglet UGC : la personne générée (signalée) en est le sujet
+  // même ; la règle de présence humaine ne refuse donc pas sa présence ici.
   if (services) {
-    const r = await aiQcScene({ ...base, usageKey }, image);
+    const r = await aiQcScene({ ...base, usageKey }, image, undefined, false, { peopleAllowed: true });
     const score = r.ok ? qcScore(r.score) : 0;
     return { ok: r.ok && score >= QC_MIN_SCORE, score, issues: r.issues };
   }
-  const r = await aiQcImage({ ...base, usageKey }, reference, image);
+  const r = await aiQcImage({ ...base, usageKey }, reference, image, { peopleAllowed: true });
   return { ok: qcPassed(r), score: r.sameProduct ? qcScore(r.score) : 0, issues: r.issues };
 }
 

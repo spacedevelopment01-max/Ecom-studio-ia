@@ -19,6 +19,7 @@ import { assetData, getAsset } from "../library";
 import type { Project } from "../projects";
 import { downloadStock } from "../stock/photos";
 import { L } from "../i18n-server";
+import { personCheckEn } from "../people-policy";
 import { FORMATS, generationAspect } from "./formats";
 import { ImageReviewSchema, REVIEW_SYSTEM } from "./quality";
 import { STOCK_PROVIDERS, type StockProvider } from "./sources";
@@ -48,8 +49,9 @@ Subject that MUST be shown: ${b.subject}.${b.action ? ` Action: ${b.action}.` : 
 Art direction: ${b.artDirection} — composition: ${b.composition}; lighting: ${b.lighting}; camera: ${b.framing}.
 Relevant concepts: ${b.positive.slice(0, 8).join("; ")}.
 Off-topic (fail relevance if this is all the image shows): ${b.negative.slice(0, 10).join("; ")}.
-${b.productFidelity ? "A reference image of the REAL product is attached second: the product in the image must be the same, unchanged (shape, colours, logo, label text, proportions).\n" : ""}Constraints: ${b.facts.slice(0, 8).join("; ")}.
-Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composition": 0, "realism": 0, "brand": 0, "brief": 0, "support": 0, "artifacts": 0, "commercial": 0 }, "shows": "…", "offTopic": false, "productAltered": false, "wrongProduct": false, "textInImage": false, "deformed": false, "artifacts": false, "issues": [], "fix": { "target": "lighting|composition|background|crop|product|direction|none", "instruction": "…" } }.`;
+${b.productFidelity ? "A reference image of the REAL product is attached second: the product in the image must be the same, unchanged (shape, colours, logo, label text, proportions).\n" : ""}Constraints: ${b.facts.slice(0, 9).join("; ")}.
+${personCheckEn(b.people !== false)}
+Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composition": 0, "realism": 0, "brand": 0, "brief": 0, "support": 0, "artifacts": 0, "commercial": 0 }, "shows": "…", "offTopic": false, "productAltered": false, "wrongProduct": false, "textInImage": false, "deformed": false, "artifacts": false, "personVisible": false, "issues": [], "fix": { "target": "lighting|composition|background|crop|product|direction|none", "instruction": "…" } }.`;
 }
 
 /** Image du produit posée sur un décor (pixels du produit inchangés), ombre de contact douce. */

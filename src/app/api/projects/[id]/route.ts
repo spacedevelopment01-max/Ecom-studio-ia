@@ -10,7 +10,8 @@ import { hasAiCredits } from "@/lib/ai/access";
 import { assertAutopublish } from "@/lib/plan-gates";
 import { aiAvailability } from "@/lib/ai/config";
 import { balance } from "@/lib/billing";
-import { contactModesOf, FactSchema, sectorLabel } from "@/lib/project-types";
+import { contactModesOf, sectorLabel } from "@/lib/project-types";
+import { FactSchema } from "@/lib/project-schemas";
 import { previewSandbox } from "@/lib/theme/preview-access";
 import { HttpError } from "@/lib/auth";
 import { L, uiLang } from "@/lib/i18n-server";
@@ -71,6 +72,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
           autopublish: z.object({ enabled: z.boolean(), networks: z.array(z.string()), requireApprovalFor: z.array(z.string()) }).optional(),
           socialLinks: z.record(z.string(), z.string()).optional(),
           language: z.enum(["fr", "en"]).optional(),
+          peopleAllowed: z.boolean().optional(),
         })
         .optional(),
       /** Offre de services (projets « entreprise de services »). */

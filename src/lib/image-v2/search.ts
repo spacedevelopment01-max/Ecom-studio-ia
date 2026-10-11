@@ -11,6 +11,7 @@
  * Les banques actuelles n'acceptent pas de termes d'exclusion : les concepts négatifs sont appliqués ici et au
  * contrôle, jamais collés dans la requête.
  */
+import { mentionsPerson } from "../people-policy";
 import { fitsFormat, orientationOf } from "./formats";
 import { licenseUsable, type StockProvider } from "./sources";
 import type { RankedCandidate, StockCandidate, VisualBrief } from "./types";
@@ -52,7 +53,9 @@ export function scoreCandidate(c: StockCandidate, brief: VisualBrief): RankedCan
     reasons.push(`${hits} concept(s) du brief`);
   }
   const human = HUMAN_ACTION.test(text);
-  if (human) s += 0.5;
+  // Règle de présence humaine : personnes non autorisées → une photo décrite avec une personne est écartée.
+  const personNotAllowed = brief.people === false && mentionsPerson(text);
+  if (human && brief.people !== false) s += 0.5;
   const negHit = brief.negative.find((n) => has(text, n));
   const surfaceOnly = SURFACES.some((w) => has(text, w)) && !human && !mustHit;
   // Comprendre la scène : un concept hors sujet n'écarte la photo que si rien du métier ni du geste ne s'y voit.
@@ -70,6 +73,11 @@ export function scoreCandidate(c: StockCandidate, brief: VisualBrief): RankedCan
     offTopicLikely = true;
     reasons.push("surface ou décor seul, sans geste ni personne");
   }
+  if (personNotAllowed) {
+    s -= 6;
+    offTopicLikely = true;
+    reasons.push("personne visible (non autorisée par le client)");
+  }
   const fit = c.width && c.height ? fitsFormat(c.width, c.height, brief.format.aspect) : { ok: true, reason: null };
   if (!fit.ok) {
     s -= 2;
@@ -80,7 +88,7 @@ export function scoreCandidate(c: StockCandidate, brief: VisualBrief): RankedCan
     reasons.push("aucune description");
   }
   const relevance = Math.max(0, Math.min(10, Math.round(s * 10) / 10));
-  return { ...c, relevance, reasons, metadataMatch: mustHit || (!brief.must.length && hits >= 2), offTopicLikely };
+  return { ...c, relevance, reasons, metadataMatch: !personNotAllowed && (mustHit || (!brief.must.length && hits >= 2)), offTopicLikely };
 }
 
 export type SearchStats = { requests: number; results: number; kept: number; byProvider: Record<string, number>; queries: string[]; errors: string[] };

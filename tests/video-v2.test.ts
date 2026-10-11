@@ -38,7 +38,8 @@ describe("Video Engine V2 — modules", async () => {
       const a = videoIntent(cosmetic, { text: "Fais une publicité TikTok de 20 secondes" });
       expect(a).toMatchObject({ kind: "video_ad", platform: "tiktok", aspect: "9:16", durationS: 20 });
       expect(videoIntent(cosmetic, { text: "Un tutoriel pour la page produit" })).toMatchObject({ kind: "product_tutorial", platform: "shop_page" });
-      expect(videoIntent(cosmetic, { text: "Une vidéo UGC face caméra" }).kind).toBe("ugc");
+      // UGC : seulement si le client autorise les personnes (règle de présence humaine).
+      expect(videoIntent(cosmetic, { text: "Une vidéo UGC face caméra", peopleAllowed: true }).kind).toBe("ugc");
       expect(videoIntent(artisan, { text: "Présente mon savoir-faire sur le chantier" }).kind).toBe("trade_video");
       // Demande modeste : montage local, jamais une production complexe.
       expect(videoIntent(cosmetic, { text: "Juste une petite vidéo rapide de mon produit" }).complexity).toBe("simple");

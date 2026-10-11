@@ -8,7 +8,8 @@ import { decide } from "../quality/gate";
 import { saveCheck } from "../quality/store";
 import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "../seo-limits";
 import { z } from "zod";
-import { FactSchema, QuestionSchema, SECTOR_IDS, type Brand, type ProductProfile, type Strategy } from "../project-types";
+import { SECTOR_IDS, type Brand, type ProductProfile, type Strategy } from "../project-types";
+import { FactSchema, QuestionSchema } from "../project-schemas";
 import { ShopCopySchema, type ShopCopy } from "../theme/copy";
 import { DIRECTIONS, type DirectionId } from "../theme/directions";
 import { OpSchema, outline, type ThemeOp } from "../theme/ops";
@@ -23,6 +24,7 @@ import { charter, DIRECTION_LIST, FONT_LIST, globalSettingsCatalog, placeholder,
 import { contentLang, L } from "../i18n-server";
 import { JobCancelled, JobPaused } from "../jobs";
 import type { Project } from "../projects";
+import { NO_PEOPLE_EN, peopleAllowed, peopleAllowedFor, personCheckFr } from "../people-policy";
 import { BRIEF_MIN_SCORE, critiqueImageBrief, finalImagePrompt, photoLineText, scenePromptFromLine, type BriefReview, type PhotoLine } from "../engine/photo-line";
 
 /** Instructions des tâches dans la langue des contenus de l'exécution en cours. */
@@ -1057,6 +1059,8 @@ export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { li
   const line = opts.line;
   const view = brainView(p, "image");
   const lifestyle = !!opts.lifestyle;
+  // Règle de présence humaine : sans autorisation du client, aucune personne dans la scène.
+  const people = peopleAllowedFor(p);
   const ask = (feedback?: { review: BriefReview; previous: unknown }) =>
     llmJson(
       {
@@ -1068,7 +1072,7 @@ export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { li
         system: S().imageBrief,
         context: view.stable,
         prompt: `Visuel à produire : ${kind}${opts.format ? ` (format ${opts.format})` : ""}.
-${lifestyle ? `PHOTO EN SITUATION : ${opts.lifestyle}. Une vraie scène de vie, jamais un studio.` : "MISE EN SCÈNE PRODUIT : le produit réel posé au centre du premier plan, sur le plateau."}
+${lifestyle ? `PHOTO EN SITUATION : ${opts.lifestyle}. Une vraie scène de vie, jamais un studio.` : "MISE EN SCÈNE PRODUIT : le produit réel posé au centre du premier plan, sur le plateau."}${people ? "" : `\nAUCUNE PERSONNE : le client n'a pas autorisé de personne à l'image. Ni personne, ni visage, ni main, ni silhouette (la règle « une personne ou un animal peuvent être présents » ne s'applique pas) ; la consigne finale se termine par : « ${NO_PEOPLE_EN} »`}
 LIGNE PHOTOGRAPHIQUE DE LA MARQUE (à respecter, toutes les images forment une même campagne) :
 ${photoLineText(line, "fr").map((x) => `- ${x}`).join("\n")}
 Couleurs de la ligne en anglais : ${line.palette.words.en.join(", ")}. Accessoires possibles : ${line.props.map((x) => x.en).join(", ")}. Situations de la marque : ${line.situations.map((x) => x.en).join(" | ")}.
@@ -1078,7 +1082,7 @@ Réponds { "intent": "…", "set": "…", "surface": "…", "props": ["…"], "l
       },
       ImageBriefSchema,
     );
-  const studio = scenePromptFromLine(line, { lifestyle: opts.lifestyle, format: opts.format });
+  const studio = scenePromptFromLine(line, { lifestyle: opts.lifestyle, format: opts.format, people });
   let best: { draft: z.infer<typeof ImageBriefSchema>; review: BriefReview } | null = null;
   let attempts = 0;
   for (let k = 0; k < 2; k++) {
@@ -1097,12 +1101,14 @@ Réponds { "intent": "…", "set": "…", "surface": "…", "props": ["…"], "l
     if (best.review.score >= BRIEF_MIN_SCORE) break;
   }
   if (!best || best.review.score < 6) {
-    return { prompt: finalImagePrompt(studio, line, { lifestyle }), surface: studio.surface, lightFrom: studio.lightFrom, review: best?.review ?? { score: 0, failed: [], feedback: ["IA indisponible"] }, source: "studio", attempts, draft: best?.draft };
+    return { prompt: finalImagePrompt(studio, line, { lifestyle, people }), surface: studio.surface, lightFrom: studio.lightFrom, review: best?.review ?? { score: 0, failed: [], feedback: ["IA indisponible"] }, source: "studio", attempts, draft: best?.draft };
   }
-  return { prompt: finalImagePrompt(best.draft, line, { lifestyle }), surface: best.draft.surface, lightFrom: best.draft.lightFrom, review: best.review, source: "ai", attempts, draft: best.draft, brain: brainTraceOf(view) };
+  return { prompt: finalImagePrompt(best.draft, line, { lifestyle, people }), surface: best.draft.surface, lightFrom: best.draft.lightFrom, review: best.review, source: "ai", attempts, draft: best.draft, brain: brainTraceOf(view) };
 }
 
-export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
+export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer, opts: { peopleAllowed?: boolean } = {}) {
+  // Règle de présence humaine : « personVisible » demandé ; sans autorisation, une personne visible est un échec.
+  const people = opts.peopleAllowed ?? peopleAllowed(b.projectId);
   return llmJson(
     {
       task: "quality_control",
@@ -1115,10 +1121,11 @@ export async function aiQcImage(b: Base, reference: Buffer, candidate: Buffer) {
         { data: reference, label: "référence (photo du client)" },
         { data: candidate, label: "création à contrôler" },
       ],
-      prompt: `Réponds { "sameProduct": true|false, "score": 0-10, "issues": ["…"] }.`,
+      prompt: `${personCheckFr(people)}
+Réponds { "sameProduct": true|false, "score": 0-10, "issues": ["…"], "personVisible": true|false }.`,
       maxTokens: 3000,
     },
-    z.object({ sameProduct: z.boolean(), score: z.number(), issues: z.array(z.string()) }),
+    z.object({ sameProduct: z.boolean(), score: z.number(), issues: z.array(z.string()), personVisible: z.boolean().catch(false) }),
   );
 }
 
@@ -1155,7 +1162,9 @@ export function qcTier(r: { sameProduct?: unknown; ok?: unknown; score?: unknown
  * Contrôle d'une image d'ambiance générée sans produit à comparer (entreprise de services) :
  * texte ou logo inventé, visage reconnaissable, mains ou corps déformés, artefacts, flou.
  */
-export async function aiQcScene(b: Base, candidate: Buffer, subject?: string, stock = false) {
+export async function aiQcScene(b: Base, candidate: Buffer, subject?: string, stock = false, opts: { peopleAllowed?: boolean } = {}) {
+  // Règle de présence humaine : sans autorisation du client, aucune personne n'est acceptée, même sur une photo libre.
+  const people = opts.peopleAllowed ?? peopleAllowed(b.projectId);
   return llmJson(
     {
       task: "quality_control",
@@ -1165,10 +1174,10 @@ export async function aiQcScene(b: Base, candidate: Buffer, subject?: string, st
       usageKey: b.usageKey,
       system: S().qcScene,
       images: [{ data: candidate, label: stock ? "photo libre de droits à contrôler" : "image générée à contrôler" }],
-      prompt: `${stock ? "C'est une vraie photo libre de droits (pas une image générée) : un artisan ou un professionnel au travail y est accepté. Elle doit montrer clairement le métier : le travail en train de se faire, ses outils, ses matériaux ou un résultat que l'on reconnaît comme le sien. Un mur nu, une texture, un fond, une façade ou un objet sans lien visible avec le métier est un échec : « ok » faux et note de 4 au plus.\n" : ""}${subject ? `Sujet que l'image doit montrer : ${subject}. Une image d'un autre sujet, même du même métier (par exemple de la peinture au lieu du carrelage), est un échec : « ok » faux et note de 4 au plus.\n` : ""}Réponds { "ok": true|false, "score": 0-10, "issues": ["…"] }.`,
+      prompt: `${stock ? `C'est une vraie photo libre de droits (pas une image générée)${people ? " : un artisan ou un professionnel au travail y est accepté" : " : aucune personne n'y est acceptée (le métier se montre par ses outils, ses matériaux, le chantier ou le résultat)"}. Elle doit montrer clairement le métier : ${people ? "le travail en train de se faire, " : ""}ses outils, ses matériaux ou un résultat que l'on reconnaît comme le sien. Un mur nu, une texture, un fond, une façade ou un objet sans lien visible avec le métier est un échec : « ok » faux et note de 4 au plus.\n` : ""}${subject ? `Sujet que l'image doit montrer : ${subject}. Une image d'un autre sujet, même du même métier (par exemple de la peinture au lieu du carrelage), est un échec : « ok » faux et note de 4 au plus.\n` : ""}${personCheckFr(people)}\nRéponds { "ok": true|false, "score": 0-10, "issues": ["…"], "personVisible": true|false }.`,
       maxTokens: 2000,
     },
-    z.object({ ok: z.boolean(), score: z.number(), issues: z.array(z.string()) }),
+    z.object({ ok: z.boolean(), score: z.number(), issues: z.array(z.string()), personVisible: z.boolean().catch(false) }),
   );
 }
 

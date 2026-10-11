@@ -8,6 +8,7 @@ import type { Project } from "../projects";
 import { resolveTrade, tradeText, GLOBAL_NEGATIVES, type TradeProfile } from "../brain/trade";
 import { tradeStock } from "../stock/trade-queries";
 import { POLICIES } from "../quality/policies";
+import { mentionsPerson, NO_PEOPLE_EN, peopleAllowedFor, peopleFreeQueries } from "../people-policy";
 import { productIdentity, resolveProductCategory, type ProductCategoryProfile } from "./categories";
 import { chooseDirection, DIRECTIONS } from "./direction";
 import { defaultAspect, FORMATS } from "./formats";
@@ -36,12 +37,27 @@ const uniq = <T,>(a: T[]) => [...new Set(a.filter(Boolean))];
 const ANGLES = ["medium shot on hands and work", "wide shot showing the whole space", "close-up detail of the result", "three-quarter view of the person at work"];
 const LIGHTS = ["soft side daylight", "bright even daylight", "warm late-afternoon light", "cool morning light"];
 const INTENTS = ["show the skill", "show the setting", "show the result", "show the human"];
+/** Mêmes axes sans personne (règle de présence humaine) : outils, lieu, résultat, matière. */
+const ANGLES_NO_PEOPLE = ["medium shot on tools and work surface", "wide shot showing the whole space", "close-up detail of the result", "three-quarter view of the workspace and materials"];
+const INTENTS_NO_PEOPLE = ["show the tools", "show the setting", "show the result", "show the materials"];
+/** Directions artistiques dont la composition, le cadrage ou l'ambiance supposent une personne : version sans personne. */
+const DIRECTION_NO_PEOPLE: Partial<Record<ArtDirectionId, { composition?: string; framing?: string; mood?: string }>> = {
+  documentary_trade: { composition: "real job site, tools, materials and work in progress clearly visible, nobody in frame", framing: "35-50 mm, medium shot on tools and work, eye level" },
+  natural_lifestyle: { composition: "real everyday place, the subject ready to use, candid, nobody in frame" },
+  product_demo: { composition: "the product set up on a real task, result visible, no hands" },
+  warm_universe: { mood: "welcoming, generous, warm" },
+};
 
 const WEAK_MUST = new Set(["interior", "exterior", "renovation", "construction", "tools", "repair", "diy", "builder", "design", "home", "work", "service", "professional"]);
 const words = (s: string) => s.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3);
 
-export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirections?: ArtDirectionId[] } = {}): VisualBrief {
+export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirections?: ArtDirectionId[]; peopleAllowed?: boolean } = {}): VisualBrief {
   const services = p.business === "services";
+  // Règle de présence humaine : sans photo du client avec une personne ni accord explicite, aucune personne demandée.
+  const people = opts.peopleAllowed ?? peopleAllowedFor(p);
+  const angles = people ? ANGLES : ANGLES_NO_PEOPLE;
+  const intents = people ? INTENTS : INTENTS_NO_PEOPLE;
+  const noPerson = (xs: string[]) => (people ? xs : xs.filter((x) => !mentionsPerson(x)));
   const productKind = PRODUCT_KINDS.includes(req.kind) && !services;
   const support = req.support ?? "site";
   const aspect = req.aspect ?? defaultAspect(support, req.kind);
@@ -68,17 +84,30 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     const ts = tradeStock(`${req.service?.name ?? ""} ${tradeText(p)}`) ?? tradeStock(tradeText(p));
     const legacyMust = req.service ? (tradeStock(`${req.service.name} ${req.service.description ?? ""}`)?.must ?? ts?.must ?? []) : (ts?.must ?? []);
     const prof = trade.labels.en || trade.labels.fr || "professional";
-    action = trade.actions.length ? trade.actions[v % trade.actions.length] : null;
-    environment = trade.visuals.positive.length ? trade.visuals.positive[v % trade.visuals.positive.length] : null;
-    subject = req.service ? `${req.service.name} — ${prof} at work` : `${prof} at work`;
-    positive = uniq([...trade.visuals.positive, ...trade.actions]);
+    const gesture = trade.actions.length ? trade.actions[v % trade.actions.length] : null;
+    const scenes = noPerson(trade.visuals.positive);
+    if (people) {
+      action = gesture;
+      environment = scenes.length ? scenes[v % scenes.length] : null;
+      subject = req.service ? `${req.service.name} — ${prof} at work` : `${prof} at work`;
+    } else {
+      // Sans personne : le métier se prouve par ses outils, ses matériaux, le chantier et le résultat.
+      action = gesture ? `${gesture} shown through its tools, materials and finished result, nobody in frame` : "tools, materials and finished result of the trade, nobody in frame";
+      environment = scenes.length ? scenes[v % scenes.length] : `${gesture ?? "work"} site with tools and materials in place, nobody in frame`;
+      // Le nom du métier désigne une personne (« plasterer ») : le sujet est l'ouvrage, pas l'artisan.
+      subject = `${req.service ? `${req.service.name} — ` : ""}${gesture ?? "trade"} work: tools, materials and finished result (no people)`;
+    }
+    positive = uniq(noPerson([...trade.visuals.positive, ...trade.actions]));
     // Mots trop généraux pour prouver le métier (« interior », « renovation », « tools »…) : jamais suffisants seuls.
     must = uniq([...legacyMust, ...(trade.source === "generic" || trade.source === "sector" ? [] : words(trade.labels.en))]).filter((w) => !WEAK_MUST.has(w));
     negative = uniq([...trade.search.negative, ...GLOBAL_NEGATIVES]);
     // MÉTIER + ACTION + ENVIRONNEMENT + INTENTION : requêtes du registre (déjà composées), puis composées pour la variante.
     const reg = trade.search.queries;
     const composed = action ? `${prof.split(/[ /]/)[0]} ${action} ${req.kind === "banner" ? "finished interior" : "interior"}` : null;
-    queries = uniq([reg[v % Math.max(1, reg.length)], composed ?? "", ...reg.filter((_, i) => i !== v % Math.max(1, reg.length))]).slice(0, 3);
+    queries = people
+      ? uniq([reg[v % Math.max(1, reg.length)], composed ?? "", ...reg.filter((_, i) => i !== v % Math.max(1, reg.length))]).slice(0, 3)
+      : // Sans personne : requêtes d'outils, de matériaux et de résultat d'abord, puis le registre sans mots de personne.
+        uniq([...(gesture ? [`${gesture} tools materials`, `finished ${gesture} ${req.kind === "banner" ? "interior" : "work"}`] : []), ...peopleFreeQueries([reg[v % Math.max(1, reg.length)] ?? "", ...reg])]).slice(0, 3);
     understanding = { source: trade.source === "generic" ? "generic" : "trade", id: trade.id, confidence: trade.source === "core" || trade.source === "combo" ? "high" : trade.source === "sector" ? "medium" : "low" };
   } else {
     category = resolveProductCategory(p.product);
@@ -86,16 +115,18 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     if (productKind) {
       const id = productIdentity(p, { hasReference: !!req.references?.length });
       subject = `the real product "${id.name || p.product.category}"${id.colors.length ? ` (${id.colors.join(", ")})` : ""}`;
-      action = req.kind === "usage_scene" || req.kind === "lifestyle" ? (category.usage[v % category.usage.length] ?? null) : null;
+      action = req.kind === "usage_scene" || req.kind === "lifestyle" ? (people ? (category.usage[v % category.usage.length] ?? null) : "the product ready to use in its real everyday setting, nobody in frame") : null;
       positive = uniq([id.name, p.product.category]);
       // Images du produit : aucune recherche dans les banques (elles n'ont pas votre produit).
       queries = [];
     } else {
       // Univers du produit : lieu, matière, usage — jamais le produit lui-même.
       subject = `world of ${category.labels.en || p.product.category || "the product"} (without the product itself)`;
-      action = category.usage[v % category.usage.length] ?? null;
-      positive = uniq([...category.environments, ...category.usage]);
-      queries = uniq([category.universeQueries[v % Math.max(1, category.universeQueries.length)], ...category.universeQueries]).slice(0, 3);
+      const usage = noPerson(category.usage);
+      action = people ? (category.usage[v % category.usage.length] ?? null) : usage.length ? `${usage[v % usage.length]}, objects only, nobody in frame` : "objects and materials of everyday use in place, nobody in frame";
+      positive = uniq(noPerson([...category.environments, ...category.usage]));
+      const uq = [category.universeQueries[v % Math.max(1, category.universeQueries.length)], ...category.universeQueries];
+      queries = uniq(people ? uq : peopleFreeQueries(uq)).slice(0, 3);
     }
     negative = uniq([...category.negative, ...GLOBAL_NEGATIVES.filter((n) => n !== "isolated object")]);
     understanding = { source: category.source === "generic" ? "generic" : "product", id: category.id, confidence: category.source === "core" ? "high" : category.source === "sector" ? "medium" : "low" };
@@ -112,7 +143,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     support,
     rejected: opts.rejectedDirections ?? [],
   });
-  const d = DIRECTIONS[dir.id];
+  const d = { ...DIRECTIONS[dir.id], ...(people ? {} : DIRECTION_NO_PEOPLE[dir.id]) };
   const identity = productKind ? productIdentity(p, { hasReference: !!req.references?.length }) : null;
   const palette = brand?.palette ? uniq(Object.values(brand.palette).filter((x): x is string => typeof x === "string" && /^#/.test(x))).slice(0, 5) : [];
 
@@ -128,31 +159,33 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     artDirection: dir.id,
     composition: d.composition,
     lighting: vIndex == null ? d.lighting : `${d.lighting}; ${LIGHTS[v % LIGHTS.length]}`,
-    framing: vIndex == null ? d.framing : `${d.framing}; ${ANGLES[v % ANGLES.length]}`,
+    framing: vIndex == null ? d.framing : `${d.framing}; ${angles[v % angles.length]}`,
     palette,
     format: FORMATS[aspect],
     positive,
     must,
     queries,
     negative,
-    facts: identity ? identity.neverInvent : ["no invented reviews, figures, certifications or results", "no text, logo or watermark added"],
+    facts: [...(identity ? identity.neverInvent : ["no invented reviews, figures, certifications or results", "no text, logo or watermark added"]), ...(people ? [] : ["no people: no person, face, hands or silhouette"])],
     references: req.references ?? [],
     productFidelity: productKind,
     expectedQuality: POLICIES.image_v2.final,
-    variant: vIndex == null ? null : { index: vIndex, angle: ANGLES[v % ANGLES.length], setting: environment ?? "", light: LIGHTS[v % LIGHTS.length], intent: INTENTS[v % INTENTS.length] },
+    variant: vIndex == null ? null : { index: vIndex, angle: angles[v % angles.length], setting: environment ?? "", light: LIGHTS[v % LIGHTS.length], intent: intents[v % intents.length] },
     understanding,
+    people,
   };
 }
 
 /** Empreinte stable du brief : même brief → même image réutilisable, même contrôle déjà payé. */
 export function briefHash(b: VisualBrief): string {
-  const key = { v: b.version, k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity };
+  // Sans personne : clé distincte (une image faite quand les personnes étaient permises n'est pas réutilisée).
+  const key = { v: b.version, k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.people === false ? { np: 1 } : {}) };
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 
 /** Consigne de génération tirée du brief (anglais) : sujet, geste, lieu, direction, lumière, cadrage, interdits. */
 export function generationPrompt(b: VisualBrief, extra?: string | null): string {
-  const d = DIRECTIONS[b.artDirection];
+  const d = { ...DIRECTIONS[b.artDirection], ...(b.people === false ? DIRECTION_NO_PEOPLE[b.artDirection] : {}) };
   return [
     `${d.label} photograph. Subject: ${b.subject}.`,
     b.action ? `Action: ${b.action}.` : "",
@@ -162,6 +195,7 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
     `Format ${b.format.aspect}${b.format.textZone !== "none" ? `, ${b.format.textZone} area kept calm for text` : ""}.`,
     b.productFidelity ? "The product must stay EXACTLY as in the reference: same shape, colours, logo, label text and proportions; do not redraw or restyle it." : "",
     `Never show: ${b.negative.slice(0, 8).join(", ")}; no text, letters, logos or watermarks.`,
+    b.people === false ? NO_PEOPLE_EN : "",
     extra ? `Correction for this attempt: ${extra}` : "",
   ]
     .filter(Boolean)

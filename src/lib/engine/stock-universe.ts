@@ -13,6 +13,7 @@ import { JobCancelled, JobPaused } from "../jobs";
 import { C } from "../i18n-server";
 import { searchStock, stockCredit } from "../stock/photos";
 import { rankStock, tradeStock } from "../stock/trade-queries";
+import { NO_PEOPLE_QUERY_EN, peopleAllowedFor, queriesFor } from "../people-policy";
 import { firstOnTopic } from "./service-media";
 import { resolveProductCategory } from "../image-v2/categories";
 import { licenseOf } from "../image-v2/sources";
@@ -34,7 +35,7 @@ export async function universeQueries(ictx: Ictx, p: Project): Promise<{ lang: "
         task: "classification",
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:universe-queries`,
-        system: "You write search queries for royalty-free photo and video libraries. Short English queries (2 to 4 words) showing the WORLD of a product without the product itself: where and how it is used, its raw material, its origin, the mood of its customers' daily life. No brand names, never the product as such.",
+        system: `You write search queries for royalty-free photo and video libraries. Short English queries (2 to 4 words) showing the WORLD of a product without the product itself: where and how it is used, its raw material, its origin, the mood of its customers' daily life. No brand names, never the product as such.${peopleAllowedFor(p) ? "" : NO_PEOPLE_QUERY_EN}`,
         // Produit, métier compris, scènes utiles et hors sujet : contexte du Brain (scope stock).
         context: brainContext(p, "stock"),
         prompt: `${p.product.summary ? `Summary: ${p.product.summary.slice(0, 300)}\n` : ""}${p.brand?.audience ? `Audience: ${p.brand.audience}\n` : ""}Answer { "queries": ["…", "…", "…"] }.`,
@@ -60,7 +61,9 @@ export async function universePhotos(ictx: Ictx, p: Project, n = 2): Promise<Ass
   const known = tradeStock(`${p.product.category ?? ""} ${p.product.sector ?? ""} ${p.product.name ?? ""}`);
   const must = known?.must ?? [];
   // Univers d'un produit : une matière ou une texture peut être justement recherchée (aucun concept écarté ici).
-  const found = rankStock(await searchStock(queries, "landscape", lang, used), must, llmConfigured(), []);
+  // Règle de présence humaine : sans autorisation, requêtes et photos d'univers sans personne.
+  const people = peopleAllowedFor(p);
+  const found = rankStock(await searchStock(queriesFor(queries, people), "landscape", lang, used), must, llmConfigured(), [], { people });
   const subject = C(`univers du produit « ${p.product.name} » (${p.product.category ?? ""}) : lieu, matière, usage, sans le produit lui-même`, `world of the product "${p.product.name}" (${p.product.category ?? ""}): place, material, use, without the product itself`);
   const out: Asset[] = [];
   let rest = found;

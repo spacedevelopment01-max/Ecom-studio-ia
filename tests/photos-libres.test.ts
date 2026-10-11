@@ -47,7 +47,8 @@ describe("publications : photo libre avant l'IA", () => {
     vi.doMock("@/lib/library", async (orig) => ({ ...(await orig<object>()), saveAsset: vi.fn(async (a: any) => (saved.push(a), { id: "s1", ...a })) }));
     const { postAmbiance } = await import("@/lib/engine/service-media");
     const { emptyProduct, emptyServiceProfile } = await import("@/lib/project-types");
-    const p: any = { id: `p-${Date.now()}`, userId: "u", name: "Blanc", business: "services", product: { ...emptyProduct(), category: "Plâtrerie" }, brand: { name: "Blanc", palette: { primary: "#446274", secondary: "#D0D8DD", accent: "#446274", light: "#F2F5F7", dark: "#14181F" } }, services: { ...emptyServiceProfile(), services: [] } };
+    // Client qui autorise les personnes (règle de présence humaine) : « plasterer plastering a ceiling » est admise.
+    const p: any = { id: `p-${Date.now()}`, userId: "u", name: "Blanc", business: "services", settings: { peopleAllowed: true }, product: { ...emptyProduct(), category: "Plâtrerie" }, brand: { name: "Blanc", palette: { primary: "#446274", secondary: "#D0D8DD", accent: "#446274", light: "#F2F5F7", dark: "#14181F" } }, services: { ...emptyServiceProfile(), services: [] } };
     const a = await postAmbiance({ userId: "u", projectId: p.id, jobId: "j" }, p, { key: "k", topic: "Rénover un plafond", aspect: "1:1", name: "x.jpg" });
     expect(a?.id).toBe("s1");
     expect(saved[0]).toMatchObject({ role: "post-photo", origin: "import", meta: { stock: { source: "openverse", id: "z9" } } });

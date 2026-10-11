@@ -48,6 +48,11 @@ export type VideoIntent = {
   complexity: Complexity;
   /** Ce qui a conduit à ce choix (traçable, en clair). */
   reasons: string[];
+  /**
+   * Personnes autorisées à l'image (règle de présence humaine, `people-policy.ts`). Faux : ni personnage, ni UGC, aucun
+   * plan qui demande une personne, et toute personne visible fait refuser le plan ou la vidéo. Absent : autorisées.
+   */
+  people?: boolean;
 };
 
 export const NARRATIVE_STYLES = ["direct", "demonstrative", "emotional", "educational", "premium", "conversational", "storytelling"] as const;
@@ -242,10 +247,12 @@ export type ShotReview = {
   characterConsistent: boolean | null;
   offTopic: boolean;
   artifacts: boolean;
+  /** Une personne (visage, main, corps, silhouette) est visible dans le plan. */
+  personVisible?: boolean;
   issues: string[];
 };
 
-export type VideoReview = { criteria: Record<VideoCriterion, number>; issues: string[]; fix: { target: "shot" | "audio" | "subtitles" | "editing" | "script" | "none"; shotId: string | null; instruction: string } };
+export type VideoReview = { criteria: Record<VideoCriterion, number>; issues: string[]; personVisible?: boolean; fix: { target: "shot" | "audio" | "subtitles" | "editing" | "script" | "none"; shotId: string | null; instruction: string } };
 
 export type ShotOutcome = {
   shotId: string;

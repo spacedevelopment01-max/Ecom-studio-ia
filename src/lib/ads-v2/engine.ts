@@ -32,6 +32,7 @@ import { copyPrompt, copySystem, localCopy } from "./copy";
 import { claimIssues, type ClaimIssue } from "./claims";
 import { composeAd } from "./compose";
 import { gateAd, localAdChecks } from "./quality";
+import { peopleAllowedFor } from "../people-policy";
 import { CTAS, defaultPlatforms, formatsFor, strictestText } from "./platforms";
 import { realAdDeps, type AdsV2Deps } from "./deps";
 import { engineDocKey, latestDoc, saveVersion, userOwned } from "../ad-doc/store";
@@ -244,7 +245,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
         reviewError = (e as Error).message;
       }
     } else if (!local.codes.length && o.prior) review = o.prior; // autre format du même concept : relecture du format principal reprise
-    const d = gateAd({ local, review, reviewError, attempt });
+    const d = gateAd({ local, review, reviewError, attempt, peopleAllowed: peopleAllowedFor(p) });
     const g = gateSave({ userId: p.userId, projectId: p.id, jobId, candidateId: `ads2:${concept.id}:${f.platform}:${f.aspect}` }, d);
     const asset = await saveAsset({
       projectId: p.id,

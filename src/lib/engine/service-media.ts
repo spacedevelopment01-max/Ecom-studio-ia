@@ -15,6 +15,7 @@ import { all, json, run } from "../db";
 import { assetData, saveAsset, type Asset } from "../library";
 import { downloadStock, searchStock, stockCredit } from "../stock/photos";
 import { rankStock, tradeStock } from "../stock/trade-queries";
+import { NO_PEOPLE_EN, NO_PEOPLE_QUERY_EN, peopleAllowed, peopleAllowedFor, personCodes, queriesFor } from "../people-policy";
 import { loadProject, type Project } from "../projects";
 import type { ServiceItem } from "../project-types";
 import { FORMATS, renderServiceCard, type Format } from "../media/compose";
@@ -50,15 +51,17 @@ export async function checkAmbiance(b: { userId: string; projectId: string; jobI
   };
   if (!llmConfigured()) return done(decide(deliverable, { checker: "none", score: null }, { attempt }));
   let r: Awaited<ReturnType<typeof aiQcScene>>;
+  // Règle de présence humaine : personne visible sans autorisation du client = refus (défaut fatal).
+  const people = peopleAllowed(b.projectId);
   try {
-    r = await aiQcScene(b, img, subject, stock);
+    r = await aiQcScene(b, img, subject, stock, { peopleAllowed: people });
   } catch (e) {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     return done(decide(deliverable, { checker: "ai", score: null, error: (e as Error).message }, { attempt }));
   }
   // Refus explicite du contrôleur (« ok » faux) : jamais FINAL, même avec une note haute.
   const score = r.ok === false ? Math.min(qcScore(r.score), 6.9) : qcScore(r.score);
-  return done(decide(deliverable, { checker: "ai", score, issues: r.issues }, { attempt }));
+  return done(decide(deliverable, { checker: "ai", score, codes: personCodes(r.personVisible, people), issues: r.issues }, { attempt }));
 }
 
 /**
@@ -100,18 +103,21 @@ export async function tagRealPhotos(ictx: { userId: string; projectId: string; j
       system: "Tu regardes des photos fournies par un artisan ou un professionnel et tu dis ce que chacune montre. Tu ne devines pas : si la prestation n'est pas clairement visible, réponds null.",
       images: imgs.map((data, i) => ({ data, label: `photo ${i + 1}` })),
       prompt: `Prestations : ${items.map((s, i) => `${i + 1}. ${s.name}${s.description ? ` (${clip(s.description, 80)})` : ""}`).join(" ; ")}.
-Pour chaque photo, dans l'ordre : le numéro de la prestation clairement montrée (ou null si c'est une photo générale : équipe, lieu, outils, logo…) et une courte description en français (8 mots au plus).
-Réponds { "photos": [ { "index": 1, "service": 2 | null, "subject": "…" } ] }.`,
+Pour chaque photo, dans l'ordre : le numéro de la prestation clairement montrée (ou null si c'est une photo générale : équipe, lieu, outils, logo…), une courte description en français (8 mots au plus) et « person » : vrai seulement si une personne est clairement visible sur la photo.
+Réponds { "photos": [ { "index": 1, "service": 2 | null, "subject": "…", "person": false } ] }.`,
       maxTokens: 1500,
     },
-    z.object({ photos: z.array(z.object({ index: z.coerce.number(), service: z.coerce.number().nullable().catch(null), subject: z.string().catch("") })) }),
+    z.object({ photos: z.array(z.object({ index: z.coerce.number(), service: z.coerce.number().nullable().catch(null), subject: z.string().catch(""), person: z.boolean().catch(false) })) }),
   );
   let n = 0;
   for (const x of r.photos) {
     const a = todo[x.index - 1];
     if (!a) continue;
     const s = x.service ? items[x.service - 1] : undefined;
-    const meta = { ...json<Record<string, unknown>>(a.meta as any, {}), subjectChecked: true, subject: x.subject || undefined, ...(s ? { service: s.name } : {}) };
+    const prev = json<Record<string, unknown>>(a.meta as any, {});
+    // Photo du client où une personne se voit : repère de la règle de présence humaine (un choix du client, déjà
+    // enregistré dans `hasPerson`, n'est jamais remplacé).
+    const meta = { ...prev, subjectChecked: true, subject: x.subject || undefined, ...(s ? { service: s.name } : {}), ...(x.person && prev.hasPerson === undefined ? { hasPerson: true } : {}) };
     run("UPDATE assets SET meta = ? WHERE id = ?", JSON.stringify(meta), a.id);
     n++;
   }
@@ -184,7 +190,7 @@ async function topicQueries(ictx: { userId: string; projectId: string; jobId?: s
         task: "classification",
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:topic-queries:${clip(topic, 40)}`,
-        system: "You write search queries for royalty-free photo libraries. Short English queries (2 to 4 words) for a concrete, photographable scene that illustrates the post and names the trade: the work being done, its tools or materials, a recognisable result. Never a bare wall, texture, background or building. No brand names, no people's names.",
+        system: `You write search queries for royalty-free photo libraries. Short English queries (2 to 4 words) for a concrete, photographable scene that illustrates the post and names the trade: the work being done, its tools or materials, a recognisable result. Never a bare wall, texture, background or building. No brand names, no people's names.${peopleAllowedFor(p) ? "" : NO_PEOPLE_QUERY_EN}`,
         // Métier, gestes, scènes utiles et hors sujet, prestations, zone : contexte du Brain (scope stock).
         context: brainContext(p, "stock"),
         prompt: `Post: ${clip(topic, 300)}\nAnswer { "queries": ["query 1", "query 2"] }.`,
@@ -207,7 +213,9 @@ async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?:
   const ts = tradeStock(`${post.topic} ${trade}`) ?? tradeStock(trade);
   const must = ts?.must ?? [];
   // Concepts hors sujet du métier (registre) : les photos qui ne montrent que ça passent en dernier.
-  const found = rankStock(await searchStock(queries, post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured(), ts?.negative);
+  // Règle de présence humaine : sans autorisation, requêtes et photos sans personne.
+  const people = peopleAllowedFor(p);
+  const found = rankStock(await searchStock(queriesFor(queries, people), post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured(), ts?.negative, { people });
   const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`, must.length > 0);
   if (!pick) return null;
   const { photo, img, gate } = pick;
@@ -240,7 +248,7 @@ async function stockQueries(ictx: { userId: string; projectId: string; jobId?: s
         task: "classification",
         ...ictx,
         usageKey: `${ictx.jobId ?? "stock"}:stock-queries`,
-        system: "You write search queries for royalty-free photo libraries (Pexels, Pixabay). Short English queries (2 to 4 words) describing a concrete, photographable scene of the trade that names it: the work being done, its tools, its materials, a recognisable finished result. Never a bare wall, texture, background or building alone. No people's names, no brand names, no abstract words.",
+        system: `You write search queries for royalty-free photo libraries (Pexels, Pixabay). Short English queries (2 to 4 words) describing a concrete, photographable scene of the trade that names it: the work being done, its tools, its materials, a recognisable finished result. Never a bare wall, texture, background or building alone. No people's names, no brand names, no abstract words.${peopleAllowedFor(p) ? "" : NO_PEOPLE_QUERY_EN}`,
         context: brainContext(p, "stock"),
         prompt: `${p.product.summary ? `Summary: ${p.product.summary}\n` : ""}Slots: ${slots.map((s) => { const m = /^service:(\d+)$/.exec(s); return m && items[Number(m[1])] ? `${s} = ONLY the service "${items[Number(m[1])].name}"${items[Number(m[1])].description ? ` (${clip(items[Number(m[1])].description, 120)})` : ""}` : s; }).join("; ")} (hero = the trade at a glance; banner = a finished job; ad = tools or work in progress). Each service query must show that exact service and nothing else (tiling is not painting).\nAnswer { "queries": { "<slot>": ["query 1", "query 2"] } }.`,
         maxTokens: 800,
@@ -279,7 +287,8 @@ export async function firstOnTopic<T extends Parameters<typeof downloadStock>[0]
     }
     // Photo d'un métier : consigne « le métier doit se voir » ; univers d'un produit : contrôle d'ambiance avec le sujet.
     const checked = ai ? (await checkAmbiance({ ...ictx, usageKey: key(photo) }, img, subject, opts.stockPrompt !== false)).decision : null;
-    const decision = checked ? (checked.deliverable === "stock_photo" ? checked : decide("stock_photo", { checker: checked.checked ? "ai" : "none", score: checked.score, issues: checked.feedback ? [checked.feedback] : [], ...(checked.checked ? {} : { error: checked.reason }) })) : decide("stock_photo", { checker: "metadata", score: 7 });
+    // Défauts relevés (dont une personne non autorisée) repris tels quels dans la décision de la photo libre.
+    const decision = checked ? (checked.deliverable === "stock_photo" ? checked : decide("stock_photo", { checker: checked.checked ? "ai" : "none", score: checked.score, codes: [...checked.fatalCodes, ...checked.blockingCodes], issues: checked.feedback ? [checked.feedback] : [], ...(checked.checked ? {} : { error: checked.reason }) })) : decide("stock_photo", { checker: "metadata", score: 7 });
     if (decision.verdict === "FINAL") return { photo, img, decision, gate: gateSave(ictx, decision) };
     const checkId = saveCheck(decision, { userId: ictx.userId, projectId: ictx.projectId, jobId: ictx.jobId, candidateId: `${photo.source}:${photo.id}` });
     // Contrôle réellement fait (pas une panne) : le refus est retenu pour ce sujet.
@@ -297,11 +306,12 @@ export async function stockFill(ictx: { userId: string; projectId: string; jobId
   const bySlot = await stockQueries(ictx, p, slots.map((x) => x.slot));
   const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
   const out: { id: string; slot: PhotoSlot }[] = [];
+  const people = peopleAllowedFor(p);
   for (const { slot, aspect } of slots) {
     const orientation = aspect === "16:9" ? "landscape" : aspect === "1:1" ? "square" : "portrait";
     const q = bySlot[slot];
     if (!q) continue;
-    const found = rankStock(await searchStock(q.queries, orientation, q.lang, used), q.must, llmConfigured());
+    const found = rankStock(await searchStock(queriesFor(q.queries, people), orientation, q.lang, used), q.must, llmConfigured(), undefined, { people });
     const want = slotSubject(p, slot);
     const pick = await firstOnTopic(ictx, found, want.subject, (ph) => `${ictx.jobId ?? "stock"}:stockqc:${slot}:${ph.source}:${ph.id}`, q.must.length > 0);
     if (!pick) continue;
@@ -559,7 +569,7 @@ export async function postAmbiance(ictx: { userId: string; projectId: string; jo
   // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).
   if (!imageProviderAvailable({ usage: "scene" }) || !llmConfigured()) return null;
   const [, , base, look] = ambianceParts(p);
-  const prompt = `${base} Photograph illustrating this social media post: "${clip(post.topic, 220)}". Show the real work, tools, materials or place it talks about, a fresh angle and framing specific to this subject. ${look}`;
+  const prompt = `${base} Photograph illustrating this social media post: "${clip(post.topic, 220)}". Show the real work, tools, materials or place it talks about, a fresh angle and framing specific to this subject. ${look}${peopleAllowedFor(p) ? "" : ` ${NO_PEOPLE_EN}`}`;
   const usageKey = `${ictx.jobId ?? "post"}:post-ambiance:${post.key}`;
   let generated = false;
   try {
@@ -613,9 +623,11 @@ function ambianceParts(p: Project): [string, string, string, string] {
   const base = `Business activity: ${what}.${services ? ` Services offered: ${services}.` : ""}${placeLine(p) ? ` Location: ${placeLine(p)}.` : ""}`;
   // Ligne photographique de la marque : ambiances, bannières et visuels forment une même campagne.
   const line = photoLine(photoLineInput(p));
-  const look = `${photoLinePrompt(line)} ${avoidPrompt(line)}`;
+  // Règle de présence humaine : sans autorisation, chaque ambiance porte la consigne « aucune personne ».
+  const people = peopleAllowedFor(p);
+  const look = `${photoLinePrompt(line)} ${avoidPrompt(line)}${people ? "" : ` ${NO_PEOPLE_EN}`}`;
   return [
-    `${base} The place where this activity happens (workshop, practice room, studio, salon or venue), tidy, lived-in and inviting, seen at eye level with a 35mm lens, nobody looking at the camera, real tools and materials of the trade visible. ${look}`,
+    `${base} The place where this activity happens (workshop, practice room, studio, salon or venue), tidy, lived-in and inviting, seen at eye level with a 35mm lens, ${people ? "nobody looking at the camera" : "nobody in frame"}, real tools and materials of the trade visible. ${look}`,
     `${base} Close-up of the real tools and materials of this activity on the work surface, a job in progress, 50mm lens slightly above, shallow depth of field, the tools sharp and the background soft. No people, no hands. ${look}`,
     base,
     look,

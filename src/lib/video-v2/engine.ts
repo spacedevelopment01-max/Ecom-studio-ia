@@ -36,6 +36,7 @@ import { planShots } from "./shots";
 import { chooseProvider, estimateMicro, shootDuration, VIDEO_CAPABILITIES } from "./providers";
 import { cuesForVoice, defaultSubtitleStyle, endCardDoc, interfaceDoc, kineticDoc, overlayText, packshotDoc, safeZone, SIZES, VIDEO_DOC_VERSION, voiceClip } from "./doc";
 import { gateShot, gateVideo, localVideoChecks } from "./quality";
+import { NO_PEOPLE_EN } from "../people-policy";
 import { engineVideoKey, keyFrames, rememberShot, renderVideoFile, saveRendered, saveVideoVersion, shotKey, shotMemo, videoUserOwned } from "./store";
 import { disclosureLabel, honestLine, personaPrompt, personaSheet, ugcScriptIssues, type PersonaSheet } from "./ugc";
 import { realVideoDeps, type VideoV2Deps } from "./deps";
@@ -182,7 +183,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
             reviewError = (e as Error).message;
           }
         }
-        decision = gateVideo({ local, review, reviewError, shotCodes, attempt });
+        decision = gateVideo({ local, review, reviewError, shotCodes, attempt, peopleAllowed: intent.people !== false });
         result.issues = [...local.issues, ...(review?.issues ?? [])];
         const g = gateSave({ userId: p.userId, projectId: p.id, jobId, candidateId: `video2:${docKey}` }, decision);
         const saved = await saveRendered(p.id, p.userId, docKey, doc, ex, { ...g.meta, videoV2Run: { runId, version: VIDEO_V2_VERSION, attempt, verdict: decision.verdict, codes: [...decision.fatalCodes, ...decision.blockingCodes] } });
@@ -311,13 +312,14 @@ async function clipFrames(buf: Buffer): Promise<Buffer[]> {
 }
 
 /** Consigne de tournage d'un plan : sujet, action, cadrage, mouvement, lumière ; produit à garder identique. */
-function shotPrompt(s: ShotPlan, st: CreativeStrategy, persona: PersonaSheet | null, feedback?: string): string {
+function shotPrompt(s: ShotPlan, st: CreativeStrategy, persona: PersonaSheet | null, feedback?: string, people = true): string {
   const cam: Record<string, string> = { static: "locked-off camera", push_in: "slow push-in", pull_out: "slow pull-out", pan_left: "slow pan left", pan_right: "slow pan right", tilt_up: "gentle tilt up", orbit: "slow orbit around the subject", handheld: "subtle handheld movement" };
   return [
     `${s.subject} — ${s.action}. Setting: ${s.environment}. Framing: ${s.framing.replace("_", " ")}; camera: ${cam[s.camera] ?? s.camera}; light: ${s.lighting}.`,
     `Visual language: ${st.style.camera}; ${st.style.light}. Motion starts on the first frame.`,
     s.showsProduct ? "The product must remain exactly identical to the start frame (shape, colors, proportions, logo, packaging, printed text); never redraw or invent it." : "",
-    persona && s.character ? personaPrompt(persona) : "No people in frame unless already present in the start frame.",
+    // Règle de présence humaine : sans autorisation, aucune personne, même déjà présente dans l'image de départ.
+    !people ? NO_PEOPLE_EN : persona && s.character ? personaPrompt(persona) : "No people in frame unless already present in the start frame.",
     "No text overlay, no captions, no watermark.",
     feedback ? `Fix from the previous take: ${feedback}` : "",
   ]
@@ -382,7 +384,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
       break;
     }
     o.ctx?.progress(0.3, `Tournage du plan ${s.id}`);
-    const buf = await withCandidate(`video2:${s.id}`, attempt, () => deps.generateClip({ provider, model, image: start!, prompt: shotPrompt(s, o.strategy, o.persona, feedback), aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", seconds, people: s.character }, `${o.ctx?.job.id ?? "video2"}:video2:shot:${key}:${attempt}`));
+    const buf = await withCandidate(`video2:${s.id}`, attempt, () => deps.generateClip({ provider, model, image: start!, prompt: shotPrompt(s, o.strategy, o.persona, feedback, o.intent.people !== false), aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", seconds, people: s.character }, `${o.ctx?.job.id ?? "video2"}:video2:shot:${key}:${attempt}`));
     o.budget.spentMicro += est;
     spent += est;
     stats.generated++;
@@ -396,7 +398,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
       error = (e as Error).message;
     }
     if (!frames.length) error = "plan illisible (aucune image extraite)";
-    const d = gateShot({ review, error, expectsProduct: s.showsProduct, expectsCharacter: s.character && !!o.characterRef, attempt });
+    const d = gateShot({ review, error, expectsProduct: s.showsProduct, expectsCharacter: s.character && !!o.characterRef, attempt, peopleAllowed: o.intent.people !== false });
     const g = gateSave({ userId: p.userId, projectId: p.id, jobId: o.ctx?.job.id ?? null, candidateId: `video2:${s.id}` }, d);
     const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `plan-${s.id}-${s.part}${attempt ? `-essai-${attempt + 1}` : ""}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: startAsset ?? null, status: d.verdict === "FINAL" ? "review" : "rejected", meta: { videoV2Shot: { key, shotId: s.id, provider, model, attempt, verdict: d.verdict }, ...g.meta } });
     last = { verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], reason: [d.reason, d.feedback].filter(Boolean).join(" — "), assetId: asset.id };

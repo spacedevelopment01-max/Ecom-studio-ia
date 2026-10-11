@@ -89,6 +89,12 @@ export type VisualBrief = {
   variant: { index: number; angle: string; setting: string; light: string; intent: string } | null;
   /** D'où vient la compréhension : métier (services), catégorie produit, ou repli générique. */
   understanding: { source: "trade" | "product" | "generic"; id: string; confidence: "high" | "medium" | "low" };
+  /**
+   * Personnes autorisées dans l'image (règle de présence humaine, `people-policy.ts`). Faux : aucune personne demandée,
+   * consigne « no people », photos de banque avec une personne écartées, personne visible = refus (`unauthorized_person`).
+   * Absent (anciens briefs) : autorisées.
+   */
+  people?: boolean;
 };
 
 /** Licence et provenance d'une image de banque : jamais « libre de droits » sans vérification. */
@@ -134,7 +140,8 @@ export type ImageCode =
   | "duplicate"
   | "license_unverified"
   | "corrupt"
-  | "forbidden";
+  | "forbidden"
+  | "unauthorized_person";
 
 export const IMAGE_CRITERIA = ["relevance", "fidelity", "aesthetics", "composition", "realism", "brand", "brief", "support", "artifacts", "commercial"] as const;
 export type ImageCriterion = (typeof IMAGE_CRITERIA)[number];
@@ -152,6 +159,8 @@ export type ImageReview = {
   textInImage: boolean;
   deformed: boolean;
   artifacts: boolean;
+  /** Une personne (visage, main, corps, silhouette) est visible. */
+  personVisible?: boolean;
   issues: string[];
   fix: { target: FixTarget; instruction: string };
 };

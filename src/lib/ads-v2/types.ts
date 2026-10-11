@@ -103,6 +103,8 @@ export type AdReview = {
   productAltered: boolean;
   textIllegible: boolean;
   generic: boolean;
+  /** Une personne (visage, main, corps, silhouette) est visible sur la création. */
+  personVisible?: boolean;
   fix: { target: "copy" | "hook" | "layout" | "visual" | "cta" | "none"; instruction: string };
 };
 
