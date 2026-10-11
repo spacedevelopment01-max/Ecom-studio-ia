@@ -605,7 +605,7 @@ export function tidyCopy<T>(copy: T): T {
 }
 
 /** Vocabulaire interne de vérification : jamais dans un titre lu par le client (« Trois faits pour choisir »). */
-const JARGON = /\b(faits|confirmée?s?|constatée?s?|vérifiée?s?|informations? disponibles?|caractéristiques indiquées|présentée? comme|facts?|confirmed|verified|available information)\b/i;
+const JARGON = /\b(faits|confirmée?s?|constatée?s?|vérifiée?s?|informations? disponibles?|caractéristiques indiquées|présentée? comme|différence crédible|proposition de valeur|personas?|facts?|confirmed|verified|available information|credible difference|value proposition)\b/i;
 export function lintJargon(copy: ShopCopy): { path: string; term: string }[] {
   const c = copy as any;
   const heads: [string, unknown][] = [

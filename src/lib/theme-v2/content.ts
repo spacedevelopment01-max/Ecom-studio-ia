@@ -69,6 +69,8 @@ export function fitText(s: string, max: number): string {
 }
 
 export const TODO = /\[(À|A) compléter|\[To complete/i;
+/** Vocabulaire de la plateforme de marque et de la vérification des faits : interne, jamais dans un texte du site. */
+export const STRATEGY_TALK = /différence crédible|proposition de valeur|\bpersonas?\b|positionnement|faits confirmés|informations disponibles|credible difference|value proposition|confirmed facts/i;
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 export const para = (s: string) => (s ? (/^\s*</.test(s) ? s : `<p>${esc(s)}</p>`) : "");
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -115,7 +117,8 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
     // Accueil rédigé par SEO & Copywriting V2 (l'IA quand elle est active) : son titre principal (métier + ville,
     // c'est ce que Google lit en premier) et son introduction remplacent le titre construit avec les noms de prestations.
     const docH1 = clean(seoDoc?.h1).replace(/\s+[—–-]\s+[^—–-]+$/, "");
-    const docIntro = clean(seoDoc?.intro);
+    // Introduction rédigée : écartée si elle expose le vocabulaire interne de la stratégie (jamais lu par un client).
+    const docIntro = STRATEGY_TALK.test(clean(seoDoc?.intro)) ? "" : clean(seoDoc?.intro);
     if (docH1 && !TODO.test(docH1)) {
       const sp = splitHeading(docH1);
       hero = { eyebrow: [category, area].filter(Boolean).join(" · "), heading: sp.heading, em: sp.em, text: docIntro && !TODO.test(docIntro) ? docIntro : localText };

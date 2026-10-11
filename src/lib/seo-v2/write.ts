@@ -342,6 +342,7 @@ Règles absolues :
 - N'utilise QUE les faits fournis. Toute information absente (dimensions, matières, certifications, garanties, efficacité, avis, résultats, délais, tarifs, années d'expérience, qualifications, livraison, retours) s'écrit « ${langPack(lang).unknown("…")} » — jamais devinée.
 - Aucune étude, statistique, citation, source, note ou témoignage inventés. Aucun volume de recherche.
 - Écris concret et naturel : un fait précis plutôt qu'un adjectif. Interdit : « expérience unique », « révolutionnez », « qualité exceptionnelle », « solution idéale », « au cœur de », « n'attendez plus » et équivalents.
+- Ton d'une marque, pas d'un dossier de stratégie : jamais « différence crédible », « proposition de valeur », « persona », « positionnement », « faits confirmés » ni « informations disponibles » dans le texte ; dis directement ce que le client obtient.
 - Le mot-clé visé apparaît naturellement (H1, début du texte, un intertitre) — jamais répété pour le répéter.
 - Pas de remplissage : la longueur suit ce que le lecteur a besoin de savoir.
 - Liens : uniquement les pages fournies avec une adresse ; écris-les [texte](adresse). Jamais d'autre adresse.

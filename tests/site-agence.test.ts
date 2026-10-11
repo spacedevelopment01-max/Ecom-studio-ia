@@ -207,5 +207,19 @@ describe("Sites niveau agence", async () => {
     expect(js).toMatch(/\[data-add-button\]/);
     expect(css).toMatch(/\.es-fab\.is-avoiding \{[^}]*pointer-events: none/);
   });
+
+  it("ouverture d'un site de services : une introduction qui expose le vocabulaire de stratégie est écartée", async () => {
+    const { siteContent } = await import("@/lib/theme-v2/content");
+    const { loadProject } = await import("@/lib/projects");
+    const { localCopy } = await import("@/lib/engine/local-copy");
+    const p = loadProject(hid);
+    const copy = fr(() => localCopy(p.product, p.brand!, p));
+    const intent = { ...hightech.intent, site: "services_trade" as const, conversion: "quote" as const };
+    const doc = { h1: "Ébéniste à Lyon", intro: "La différence crédible repose sur un parcours continu : dessin, fabrication, pose." } as any;
+    const c = fr(() => siteContent(p, intent, copy, hightech.content.images, [], doc));
+    expect(c.hero.text).not.toMatch(/différence crédible/);
+    const ok = fr(() => siteContent(p, intent, copy, hightech.content.images, [], { ...doc, intro: "Meubles sur mesure dessinés avec vous, fabriqués à l'atelier." }));
+    expect(ok.hero.text).toBe("Meubles sur mesure dessinés avec vous, fabriqués à l'atelier.");
+  });
 });
 

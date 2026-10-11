@@ -224,13 +224,46 @@ export async function defringe(png: Buffer, original: Buffer, depth = 1): Promis
     }
     for (const p of next) ring[p] = pass;
   }
+  // Chaque pixel du bord est un mélange de la couleur du produit voisin (intérieur, à quelques pixels) et de celle du
+  // fond : sa part de produit donne son opacité (un gris entre un produit noir et un fond blanc est à moitié transparent).
+  const src0 = Buffer.from(data);
+  const R = depth + 3;
   for (let p = 0; p < w * h; p++) {
     if (!ring[p]) continue;
     const i = p * 4;
-    const d = Math.max(Math.abs(data[i] - avg[0]), Math.abs(data[i + 1] - avg[1]), Math.abs(data[i + 2] - avg[2]));
-    const a = Math.min(data[i + 3] / 255, Math.max(0, Math.min(1, (d - 12) / 70)) * (ring[p] === 1 ? 0.8 : 1));
+    const x0 = p % w;
+    const y0 = (p / w) | 0;
+    const fg = [0, 0, 0];
+    let m = 0;
+    for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) {
+      const x = x0 + dx, y = y0 + dy;
+      if (x < 0 || y < 0 || x >= w || y >= h) continue;
+      const q = y * w + x;
+      if (clear[q] || ring[q] || src0[q * 4 + 3] < 250) continue;
+      for (let k = 0; k < 3; k++) fg[k] += src0[q * 4 + k];
+      m++;
+    }
+    let a: number;
+    if (m) {
+      for (let k = 0; k < 3; k++) fg[k] /= m;
+      const span = [fg[0] - avg[0], fg[1] - avg[1], fg[2] - avg[2]];
+      const len2 = span[0] ** 2 + span[1] ** 2 + span[2] ** 2;
+      // Produit de la couleur du fond : impossible de les séparer, l'opacité du modèle est gardée.
+      a = len2 < 900 ? src0[i + 3] / 255 : Math.max(0, Math.min(1, ((src0[i] - avg[0]) * span[0] + (src0[i + 1] - avg[1]) * span[1] + (src0[i + 2] - avg[2]) * span[2]) / len2));
+    } else {
+      const d = Math.max(Math.abs(src0[i] - avg[0]), Math.abs(src0[i + 1] - avg[1]), Math.abs(src0[i + 2] - avg[2]));
+      a = Math.max(0, Math.min(1, (d - 12) / 70));
+    }
+    a = Math.min(src0[i + 3] / 255, a * (ring[p] === 1 ? 0.9 : 1));
     data[i + 3] = Math.round(a * 255);
-    if (a > 0.05) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, Math.round((data[i + k] - (1 - a) * avg[k]) / a)));
+    if (a > 0.05) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, Math.round((src0[i + k] - (1 - a) * avg[k]) / a)));
+  }
+  // Voile presque transparent de la couleur du fond autour du produit (visible en liseré sur un fond sombre) : retiré.
+  for (let p = 0; p < w * h; p++) {
+    const i = p * 4;
+    if (data[i + 3] >= 128) continue;
+    const d = Math.max(Math.abs(src0[i] - avg[0]), Math.abs(src0[i + 1] - avg[1]), Math.abs(src0[i + 2] - avg[2]));
+    if (d < 40) data[i + 3] = 0;
   }
   const rgb = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).removeAlpha().raw().toBuffer();
   const alpha = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).extractChannel(3).blur(0.5).raw().toBuffer();
