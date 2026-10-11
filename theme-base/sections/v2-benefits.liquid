@@ -1,0 +1,66 @@
+{%- comment -%}
+  Bénéfices illustrés (Theme Engine V2) : chaque bénéfice VÉRIFIÉ avec sa photo de détail (images) ou son pictogramme
+  (icons). Un bénéfice sans photo en composition « images » prend son pictogramme : jamais de cadre vide.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="v2-benefits v2-benefits--{{ s.layout }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px; --cols: {{ s.columns }};">
+  <div class="es-container">
+    {%- if s.heading != blank or s.eyebrow != blank -%}
+      <header class="v2-head{% if s.text != blank %} v2-head--side{% endif %}">
+        {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="v2-h2" data-reveal="up">{{ s.heading }}</h2>{%- endif -%}
+        {%- if s.text != blank -%}<div class="v2-intro" data-reveal="up" style="--d: 1">{{ s.text }}</div>{%- endif -%}
+      </header>
+    {%- endif -%}
+    <ul class="v2-benefits__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        {%- assign has_img = false -%}
+        {%- if s.layout == 'images' -%}{%- if b.image != blank or b.image_asset != blank -%}{%- assign has_img = true -%}{%- endif -%}{%- endif -%}
+        <li class="v2-benefits__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+          {%- if has_img -%}
+            <div class="v2-benefits__media">{% render 'es-image', image: b.image, asset: b.image_asset, alt: b.title, class: 'v2-cover', sizes: '(min-width: 990px) 33vw, 90vw' %}</div>
+          {%- elsif b.icon != 'none' -%}
+            <span class="v2-benefits__icon">{% render 'icon', name: b.icon %}</span>
+          {%- endif -%}
+          <h3 class="v2-h3">{{ b.title }}</h3>
+          {%- if b.text != blank -%}<div class="v2-rte">{{ b.text }}</div>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bénéfices illustrés V2",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition", "default": "images", "options": [
+      { "value": "images", "label": "Photos de détail" },
+      { "value": "icons", "label": "Pictogrammes" }
+    ] },
+    { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes (ordinateur)", "default": 3 },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Pensé dans les détails" },
+    { "type": "richtext", "id": "text", "label": "Introduction" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+  ],
+  "blocks": [
+    { "type": "benefit", "name": "Bénéfice", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "check", "options": [
+        { "value": "none", "label": "Aucun" }, { "value": "check", "label": "Coche" }, { "value": "leaf", "label": "Feuille" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "drop", "label": "Goutte" }, { "value": "hand", "label": "Main" }, { "value": "shield", "label": "Protection" }, { "value": "truck", "label": "Livraison" }, { "value": "heart", "label": "Cœur" }, { "value": "bolt", "label": "Éclair" }, { "value": "globe", "label": "Monde" }, { "value": "clock", "label": "Horloge" }, { "value": "sound", "label": "Son" }, { "value": "star", "label": "Étoile" }
+      ] },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Un bénéfice vérifié" },
+      { "type": "richtext", "id": "text", "label": "Texte" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Bénéfices illustrés V2", "blocks": [{ "type": "benefit" }, { "type": "benefit" }, { "type": "benefit" }] }]
+}
+{% endschema %}

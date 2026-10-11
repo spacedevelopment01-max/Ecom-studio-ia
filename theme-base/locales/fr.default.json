@@ -201,7 +201,11 @@
           "one": "Sous {{ count }} jour",
           "other": "Sous {{ count }} jours"
         }
-      }
+      },
+      "zoom": "Agrandir l'image",
+      "zoom_close": "Fermer l'agrandissement",
+      "zoom_prev": "Image précédente",
+      "zoom_next": "Image suivante"
     }
   },
   "collections": {

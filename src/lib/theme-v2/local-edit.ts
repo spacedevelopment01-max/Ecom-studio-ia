@@ -37,6 +37,10 @@ const LAYOUTS: Record<string, string[]> = {
   "v2-cta": ["band", "card", "split"],
   "v2-media": ["bento", "rail"],
   "v2-split": ["media-left", "media-right", "overlap"],
+  "v2-cards": ["below", "overlay", "numbered", "tiles"],
+  "v2-banner": ["overlay", "panel", "panorama"],
+  "v2-benefits": ["images", "icons"],
+  "v2-band": ["rule", "icons", "swatches"],
 };
 
 function findSection(spec: ThemeSpec, sel: Sel, types: string[], template = "index") {

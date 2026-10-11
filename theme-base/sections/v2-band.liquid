@@ -1,0 +1,66 @@
+{%- comment -%}
+  Bandeau de transition (Theme Engine V2) : une phrase entre deux filets, une rangée de pictogrammes (atouts vérifiés,
+  métiers, catégories) ou un nuancier de couleurs. Respiration entre deux grandes sections.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="v2-band v2-band--{{ s.layout }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+  <div class="es-container">
+    {%- case s.layout -%}
+      {%- when 'rule' -%}
+        <p class="v2-band__line" data-reveal="up"><span>{{ s.text }}</span></p>
+      {%- when 'swatches' -%}
+        <div class="v2-band__swatches" data-reveal="up">
+          <ul class="v2-band__chips" role="list">
+            {%- for block in section.blocks -%}
+              <li class="v2-band__chip" style="--chip: {{ block.settings.color }};" {{ block.shopify_attributes }}><span class="visually-hidden">{{ block.settings.label | default: block.settings.color }}</span></li>
+            {%- endfor -%}
+          </ul>
+          {%- if s.text != blank -%}<p class="v2-band__caption">{{ s.text }}</p>{%- endif -%}
+        </div>
+      {%- else -%}
+        {%- if s.text != blank -%}<p class="visually-hidden">{{ s.text }}</p>{%- endif -%}
+        <ul class="v2-band__items" role="list" style="--n: {{ section.blocks.size }};">
+          {%- for block in section.blocks -%}
+            <li class="v2-band__item" data-reveal="up" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+              {%- if block.settings.icon != 'none' -%}<span class="v2-band__icon">{% render 'icon', name: block.settings.icon %}</span>{%- endif -%}
+              <span class="v2-band__label">{{ block.settings.label }}{%- if block.settings.sub != blank -%}<small>{{ block.settings.sub }}</small>{%- endif -%}</span>
+            </li>
+          {%- endfor -%}
+        </ul>
+    {%- endcase -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau V2",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition", "default": "rule", "options": [
+      { "value": "rule", "label": "Phrase entre deux filets" },
+      { "value": "icons", "label": "Pictogrammes en ligne" },
+      { "value": "swatches", "label": "Nuancier de couleurs" }
+    ] },
+    { "type": "text", "id": "text", "label": "Texte", "default": "Votre phrase de marque" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-2" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 120, "step": 4, "unit": "px", "label": "Marge haute", "default": 32 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 120, "step": 4, "unit": "px", "label": "Marge basse", "default": 32 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Pictogramme", "settings": [
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "check", "options": [
+        { "value": "none", "label": "Aucun" }, { "value": "check", "label": "Coche" }, { "value": "leaf", "label": "Feuille" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "drop", "label": "Goutte" }, { "value": "hand", "label": "Main" }, { "value": "shield", "label": "Protection" }, { "value": "truck", "label": "Livraison" }, { "value": "return", "label": "Retour" }, { "value": "heart", "label": "Cœur" }, { "value": "bolt", "label": "Éclair" }, { "value": "globe", "label": "Monde" }, { "value": "clock", "label": "Horloge" }, { "value": "sound", "label": "Son" }, { "value": "waves", "label": "Vagues" }, { "value": "gift", "label": "Cadeau" }, { "value": "star", "label": "Étoile" }
+      ] },
+      { "type": "text", "id": "label", "label": "Titre", "default": "Un atout vérifié" },
+      { "type": "text", "id": "sub", "label": "Sous-titre" }
+    ] },
+    { "type": "swatch", "name": "Couleur", "settings": [
+      { "type": "color", "id": "color", "label": "Couleur", "default": "#C8B89A" },
+      { "type": "text", "id": "label", "label": "Nom de la couleur" }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Bandeau V2" }]
+}
+{% endschema %}

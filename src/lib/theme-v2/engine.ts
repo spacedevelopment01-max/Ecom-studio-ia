@@ -18,7 +18,7 @@ import { checkThemeV2 } from "./quality";
 import { isDark } from "../color";
 import { composeShop, collectImages, savedCopy } from "../engine/shop";
 import { localCopy } from "../engine/local-copy";
-import { cloneSpec, type ThemeSpec } from "../theme/spec";
+import { cloneSpec, storeProducts, type ThemeSpec } from "../theme/spec";
 import { tidyComposition } from "../theme/tidy";
 import { websiteIntent, type WebsiteIntent } from "./intent";
 import { artDirection, type ArtDirection, type LanguageId } from "./art-direction";
@@ -44,7 +44,7 @@ export async function composeThemeV2(projectId: string, opts: { language?: Langu
   const servicePhotos = base.store.business === "services" ? Object.keys(base.files).filter((f) => /^es-photo-\d/.test(f)) : null;
   const content = siteContent(p, intent, copy, images, servicePhotos ?? gallery, homeSeoDoc(projectId, intent.lang));
   const shop = intent.site === "shop_mono" || intent.site === "shop_multi";
-  const c = compose(intent, art, content, shop ? base.store.product.handle : null, shop ? base.templates.product : null);
+  const c = compose(intent, art, content, shop ? base.store.product.handle : null, shop ? base.templates.product : null, { collections: base.store.collections ?? [], products: shop ? storeProducts(base) : [] });
 
   const spec = cloneSpec(base);
   spec.direction = base.direction;

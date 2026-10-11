@@ -201,7 +201,11 @@
           "one": "Within {{ count }} day",
           "other": "Within {{ count }} days"
         }
-      }
+      },
+      "zoom": "Enlarge image",
+      "zoom_close": "Close enlarged view",
+      "zoom_prev": "Previous image",
+      "zoom_next": "Next image"
     }
   },
   "collections": {

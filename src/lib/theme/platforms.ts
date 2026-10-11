@@ -68,6 +68,14 @@ export function fromV2(s: SectionInstance): SectionInstance {
       return { ...s, type: "faq", settings: { ...st, heading } };
     case "v2-media":
       return { ...s, type: "gallery-mosaic", settings: { ...st, heading }, ...blocks(bl.map((b) => ({ type: "image", settings: { image_asset: b.settings.image_asset ?? "" } }))) };
+    case "v2-cards":
+      return { ...s, type: "features-grid", settings: { ...st, heading }, ...blocks(bl.map((b) => ({ type: "feature", settings: { title: b.settings.title, text: strip(b.settings.text) } }))) };
+    case "v2-benefits":
+      return { ...s, type: "features-grid", settings: { ...st, heading }, ...blocks(bl.map((b) => ({ type: "feature", settings: { title: b.settings.title, text: strip(b.settings.text) } }))) };
+    case "v2-banner":
+      return { ...s, type: "image-with-text", settings: { ...st, heading, text: strip(st.text) } };
+    case "v2-band":
+      return { ...s, type: "rich-text", settings: { ...st }, ...blocks([{ type: "text", settings: { text: [st.text, ...bl.map((b) => [b.settings.label, b.settings.sub].filter(Boolean).join(" — "))].filter(Boolean).join(" · ") } }]) };
     case "v2-cta":
       return { ...s, type: "rich-text", settings: { ...st }, ...blocks([{ type: "heading", settings: { text: heading } }, ...(strip(st.text) ? [{ type: "text", settings: { text: st.text } }] : []), ...(st.button_label ? [{ type: "button", settings: { label: st.button_label, link: st.button_link } }] : [])]) };
     default:

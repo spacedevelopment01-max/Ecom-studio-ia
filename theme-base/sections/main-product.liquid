@@ -12,6 +12,9 @@
               {%- when 'image' -%}
                 {%- if forloop.first -%}{%- assign media_loading = 'eager' -%}{%- else -%}{%- assign media_loading = 'lazy' -%}{%- endif -%}
                 {{ media | image_url: width: 1800 | image_tag: loading: media_loading, sizes: '(min-width: 990px) 55vw, 100vw', widths: '550, 750, 1100, 1500, 1800', alt: media.alt, class: 'es-product__img' }}
+                {%- if section.settings.enable_zoom -%}
+                  <button type="button" class="es-product__zoom" data-zoom-open data-zoom-src="{{ media | image_url: width: 2400 }}" data-zoom-alt="{{ media.alt | escape }}" aria-label="{{ 'products.product.zoom' | t }}">{% render 'icon', name: 'search' %}</button>
+                {%- endif -%}
               {%- when 'video' -%}
                 {{ media | video_tag: controls: true, playsinline: true, class: 'es-product__img' }}
               {%- when 'external_video' -%}
@@ -32,6 +35,14 @@
             </button>
           {%- endfor -%}
         </div>
+      {%- endif -%}
+      {%- if section.settings.enable_zoom -%}
+        <dialog class="es-zoom" data-zoom aria-label="{{ 'products.product.media' | t }}">
+          <div class="es-zoom__stage" data-zoom-stage></div>
+          <button type="button" class="es-zoom__btn es-zoom__close" data-zoom-close aria-label="{{ 'products.product.zoom_close' | t }}">{% render 'icon', name: 'close' %}</button>
+          <button type="button" class="es-zoom__btn es-zoom__prev" data-zoom-step="-1" aria-label="{{ 'products.product.zoom_prev' | t }}">{% render 'icon', name: 'arrow-left' %}</button>
+          <button type="button" class="es-zoom__btn es-zoom__next" data-zoom-step="1" aria-label="{{ 'products.product.zoom_next' | t }}">{% render 'icon', name: 'arrow' %}</button>
+        </dialog>
       {%- endif -%}
     </div>
 
@@ -235,6 +246,7 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
+    { "type": "checkbox", "id": "enable_zoom", "label": "Agrandissement des images au clic", "default": true },
     { "type": "select", "id": "gallery_layout", "label": "Galerie", "default": "stack", "options": [
       { "value": "stack", "label": "Images empilées" },
       { "value": "carousel", "label": "Carrousel avec miniatures" },

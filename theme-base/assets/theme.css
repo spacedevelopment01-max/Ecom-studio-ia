@@ -363,6 +363,21 @@ a { color: inherit; }
 .es-product__thumb.is-active { opacity: 1; border-color: var(--c-text); }
 .es-product__thumb img { width: 100%; height: 100%; object-fit: cover; }
 .es-product--carousel .es-product__thumbs { display: flex; }
+.es-product__slide { position: relative; }
+.es-product__zoom { position: absolute; right: 14px; bottom: 14px; width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; background: rgba(var(--c-bg-rgb), .9); color: var(--c-text); cursor: zoom-in; box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .35); transition: transform .3s var(--ease-out); }
+.es-product__zoom:hover { transform: scale(1.06); }
+.es-product__zoom:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.es-product__zoom .es-icon { width: 18px; height: 18px; }
+.es-zoom { padding: 0; border: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; background: rgba(var(--c-bg-rgb), .97); color: var(--c-text); }
+.es-zoom::backdrop { background: rgba(0, 0, 0, .55); }
+.es-zoom__stage { width: 100%; height: 100%; display: grid; place-items: center; padding: clamp(16px, 4vw, 56px); box-sizing: border-box; cursor: zoom-out; }
+.es-zoom__img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: default; }
+.es-zoom__btn { position: absolute; width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(var(--c-text-rgb), .2); background: var(--c-bg); color: var(--c-text); display: grid; place-items: center; cursor: pointer; }
+.es-zoom__btn .es-icon { width: 20px; height: 20px; }
+.es-zoom__close { top: 16px; right: 16px; }
+.es-zoom__prev { left: 16px; top: 50%; transform: translateY(-50%); }
+.es-zoom__next { right: 16px; top: 50%; transform: translateY(-50%); }
+.es-zoom__btn:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
 @media (max-width: 989px) {
   .es-product__track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 8px; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }
   .es-product__track::-webkit-scrollbar { display: none; }

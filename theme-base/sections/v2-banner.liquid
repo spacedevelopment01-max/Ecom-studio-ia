@@ -1,0 +1,56 @@
+{%- comment -%}
+  Grande bannière photo (Theme Engine V2) : overlay (photo pleine largeur, voile et texte à gauche), panel (photo et
+  aplat de couleur côte à côte), panorama (bande large et basse, texte posé en bas). Sans photo : rien n'est affiché
+  (jamais un cadre vide).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if s.image != blank or s.image_asset != blank -%}
+<section class="v2-banner v2-banner--{{ s.layout }} v2-banner--{{ s.align }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px; --veil: {{ s.veil | divided_by: 100.0 }};">
+  <div class="{% if s.full_width %}v2-banner__frame--full{% else %}es-container{% endif %}">
+    <div class="v2-banner__frame">
+      <div class="v2-banner__media">{% render 'es-image', image: s.image, asset: s.image_asset, alt: s.image_alt, class: 'v2-cover', sizes: '100vw' %}</div>
+      <div class="v2-banner__copy">
+        {%- if s.eyebrow != blank -%}<p class="v2-eyebrow" data-reveal="up">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="v2-h2 v2-banner__title" data-reveal="up">{{ s.heading }}</h2>{%- endif -%}
+        {%- if s.text != blank -%}<div class="v2-rte v2-lead-sm" data-reveal="up" style="--d: 1">{{ s.text }}</div>{%- endif -%}
+        {%- if s.button_label != blank -%}
+          <div class="v2-actions" data-reveal="up" style="--d: 2"><a class="v2-btn v2-btn--primary" href="{{ s.button_link | default: '#' }}">{{ s.button_label }}<span class="v2-btn__arrow">{% render 'icon', name: 'arrow' %}</span></a></div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Bannière photo V2",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition", "default": "overlay", "options": [
+      { "value": "overlay", "label": "Texte sur la photo" },
+      { "value": "panel", "label": "Photo et aplat côte à côte" },
+      { "value": "panorama", "label": "Bande panoramique" }
+    ] },
+    { "type": "select", "id": "align", "label": "Position du texte", "default": "start", "options": [
+      { "value": "start", "label": "À gauche" },
+      { "value": "end", "label": "À droite" }
+    ] },
+    { "type": "checkbox", "id": "full_width", "label": "Pleine largeur", "default": true },
+    { "type": "range", "id": "veil", "min": 0, "max": 90, "step": 5, "unit": "%", "label": "Voile sur la photo", "default": 55 },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de l'image" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Une phrase forte" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 0 }
+  ],
+  "presets": [{ "name": "Bannière photo V2" }]
+}
+{% endschema %}

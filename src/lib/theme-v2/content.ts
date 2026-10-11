@@ -22,6 +22,10 @@ export type SiteContent = {
   category: string;
   city: string | null;
   hero: { eyebrow: string; heading: string; em: string; text: string };
+  /** Signature de la marque (confirmée, jamais « à compléter ») : bandeau et bannière. */
+  tagline: string;
+  /** Positionnement confirmé de la marque (vide sinon). */
+  positioning: string;
   /** Informations confirmées (jamais de valeur inventée). */
   facts: Fact[];
   contact: { phone: string | null; email: string | null; address: string | null; hours: string | null; area: string | null; bookingUrl: string | null };
@@ -187,6 +191,8 @@ export function siteContent(p: Project, intent: WebsiteIntent, copy: ShopCopy, i
     category: cap(category),
     city,
     hero,
+    tagline: clean(b.tagline) && !TODO.test(b.tagline ?? "") ? clean(b.tagline) : "",
+    positioning,
     facts,
     contact,
     offers,
