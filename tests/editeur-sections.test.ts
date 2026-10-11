@@ -59,4 +59,16 @@ describe("éditeur de sections", async () => {
     const main = cur.templates.product.order.find((k) => cur.templates.product.sections[k].type === "main-product")!;
     expect(fr(() => applyOps(cur, [{ op: "duplicate_section", template: "product", section: main }])).rejected).toHaveLength(1);
   });
+
+  it("chat : une section désignée n'est jamais remplacée par une autre ; « transforme ce bloc en… » va à l'IA", async () => {
+    const { localFirst } = await import("@/lib/engine/local-first");
+    const cur = currentTheme(pid)!.spec;
+    const banner = cur.templates.index.order.find((k) => cur.templates.index.sections[k].type === "v2-banner" || cur.templates.index.sections[k].type === "v2-band")!;
+    const sel = { template: "index", section: banner, kind: "Section" };
+    const lf = (m: string) => fr(() => localFirst(cur, m, sel, [], "products", () => null));
+    expect(lf("Transforme ce bloc en présentation de prestations")).toBeNull();
+    const r = lf("Recompose cette section");
+    if (r) for (const op of r.ops) expect((op as any).section).toBe(banner);
+  });
 });
+

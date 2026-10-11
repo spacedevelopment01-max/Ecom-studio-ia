@@ -1019,6 +1019,21 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
       return { ops: [], reply: L(`Je ne trouve pas cette section sur la page. Sections présentes : ${names.join(", ")}. Désignez-la dans l'aperçu ou reprenez son nom.`, `I can't find that section on this page. Sections present: ${names.join(", ")}. Select it in the preview or use its name.`), revert: false };
     }
   }
+  // Taille des boutons : le bouton désigné seul, sinon tous les boutons du site (réglage « Taille des boutons »).
+  const bigger = /(agrandi|plus grand|plus gros|grossi|bigger|larger|enlarge)/.test(m);
+  const smaller = /(rédui|plus petit|diminue|smaller|shrink|reduce)/.test(m);
+  if ((bigger || smaller) && /(bouton|button|cta)/.test(m)) {
+    if (selection?.role === "button" && selection.path) {
+      const prev = (spec.elementStyles ?? []).find((e) => e.template === selection.template && e.section === selection.section && e.path === selection.path)?.scale ?? 1;
+      const scale = Math.round(Math.max(0.8, Math.min(1.6, prev + (bigger ? 0.15 : -0.1))) * 100) / 100;
+      ops.push({ op: "element_style", template: selection.template, section: selection.section, path: selection.path, role: "button", text: selection.text, scale });
+      return { ops, reply: bigger ? L(`Bouton agrandi (×${scale}) — lui seul. Redemandez pour l'agrandir encore.`, `Button enlarged (×${scale}) — this one only. Ask again to enlarge it more.`) : L(`Bouton réduit (×${scale}) — lui seul.`, `Button reduced (×${scale}) — this one only.`), revert: false };
+    }
+    const cur = Number(spec.settings.button_scale ?? 100);
+    const next = Math.max(85, Math.min(140, cur + (bigger ? 10 : -10)));
+    ops.push({ op: "set_global", key: "button_scale", value: next });
+    return { ops, reply: bigger ? L(`Boutons agrandis sur tout le site (${next} %). Pour un seul bouton, désignez-le dans l'aperçu.`, `Buttons enlarged across the site (${next}%). For a single button, select it in the preview.`) : L(`Boutons réduits sur tout le site (${next} %).`, `Buttons reduced across the site (${next}%).`), revert: false };
+  }
   if (selection && /(duplique|dupliquer|copie|copier|clone|duplicate|\bcopy\b)/.test(m)) {
     ops.push({ op: "duplicate_section", template: selection.template, section: selection.section });
     return { ops, reply: L("Section dupliquée : la copie est juste en dessous, prête à être modifiée.", "Section duplicated: the copy is right below, ready to edit."), revert: false };

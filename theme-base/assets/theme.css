@@ -1218,3 +1218,6 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 
 /* Boutons flottants effacés pendant qu'une action principale (achat, envoi) est à l'écran sur téléphone. */
 .es-fab.is-avoiding { opacity: 0; pointer-events: none; transform: translateY(12px); transition: opacity .3s, transform .3s; }
+
+/* Taille des boutons (réglage « Taille des boutons ») : texte, marges et hauteur ensemble. */
+.es-button, .v2-btn { zoom: var(--btn-scale, 1); }

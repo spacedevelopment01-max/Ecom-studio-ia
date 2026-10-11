@@ -81,5 +81,18 @@ describe("moteur local d'abord", () => {
     // Désigner un simple titre ne suffit pas pour dupliquer toute la section.
     expect(lf("duplique", { template: "index", section: second, kind: "Titre", text: "x" })).toBeNull();
   });
+
+  it("taille des boutons : le bouton désigné seul (×1,15), sinon tous les boutons du site ; sans IA", async () => {
+    const { applyOps } = await import("@/lib/theme/ops");
+    const { elementStylesCss } = await import("@/lib/theme/spec");
+    const btn = { template: "index", section: first, kind: "Bouton", role: "button", path: "div:nth-child(1) > a:nth-child(2)", text: "Acheter" };
+    const one = lf("agrandis le bouton", btn)!;
+    expect(one.ops[0]).toMatchObject({ op: "element_style", scale: 1.15 });
+    const r = fr(() => applyOps(spec, one.ops));
+    expect(r.rejected).toEqual([]);
+    expect(elementStylesCss(r.spec)).toMatch(/zoom:1\.15/);
+    const all = lf("agrandis les boutons")!;
+    expect(all.ops[0]).toMatchObject({ op: "set_global", key: "button_scale", value: 110 });
+  });
 });
 

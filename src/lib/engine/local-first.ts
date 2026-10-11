@@ -75,6 +75,10 @@ export function localFirst(
       case "use_media":
       case "add_block":
         break;
+      // Réglage général : seulement la taille des boutons (demande explicite, valeur bornée).
+      case "set_global":
+        if (op.key !== "button_scale") return null;
+        break;
       // Supprimer / déplacer / masquer : seulement si c'est bien la section entière qui est désignée.
       case "remove_section":
       case "move_section":
