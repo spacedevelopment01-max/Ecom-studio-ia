@@ -79,3 +79,25 @@ Nuance, Lumen, Onde, Net & Clair, Minuit 13, Atelier Carrosserie).
   formats passent les contrôles locaux gratuits.
 - La police condensée très haute de la référence « Brume » n'existe pas dans les polices embarquées. Le studio
   utilise les familles disponibles les plus proches.
+
+## Essai réel du 11 octobre (vos API, projets d'essai)
+
+Projets d'essai créés par Claude : un produit (drone, avec une vraie photo détourée) et un service (Sébastien Blanc,
+plâtrier-peintre). Images générées avec la clé OpenAI de l'environnement (gpt-image-1). Rédaction et relecture par
+l'IA : **indisponibles** ici (aucune clé Anthropic) ; les textes étaient donc ceux du moteur local.
+
+- **Coût réel : 2,70 € pour 14 images** (0,15 à 0,23 € l'image), budget autorisé de 3 €.
+- **Défaut trouvé et corrigé** : sans relecture IA possible, une image générée ne peut jamais être validée. Elle
+  était pourtant payée, puis mise de côté, et les publicités sortaient sans photo.
+  Correctif : **aucune génération payante quand le contrôle est impossible** (`src/lib/image-v2/engine.ts`). Un test
+  le garantit (`tests/image-v2.test.ts`). Ces 2,70 € n'auraient pas été dépensés.
+- **Qualité des images obtenues** : photographies réalistes et soignées (lumière, matières), avec le vrai drone mis en
+  scène et des outils de plâtrier sur chantier.
+- **Défaut du modèle, déjà visé par la relecture finale** : sur 3 des 4 mises en scène du drone, le modèle a redessiné
+  un second drone plus sombre derrière le vrai, que le studio pose ensuite par-dessus. La relecture IA (« produit
+  altéré ») doit écarter ces images : c'est une raison de plus de ne jamais générer sans elle.
+- Les images payées ont été recomposées dans les nouvelles mises en page, sans aucun frais supplémentaire, pour juger
+  le rendu réel. Les textes de cette planche ont été écrits pour la démonstration et ne sont pas ceux du moteur.
+
+À faire avec une clé Anthropic disponible (votre Codespace) : le même essai avec la rédaction et la relecture par
+l'IA.
