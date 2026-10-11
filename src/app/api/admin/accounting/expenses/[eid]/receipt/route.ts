@@ -1,4 +1,4 @@
-import { handle, ok } from "@/lib/http";
+import { handle, ok, readForm } from "@/lib/http";
 import { HttpError, requireAdmin } from "@/lib/auth";
 import { nanoid } from "nanoid";
 import { now, one, run } from "@/lib/db";
@@ -33,7 +33,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   await requireAdmin();
   const { eid } = await ctx.params;
   if (!one("SELECT 1 FROM expenses WHERE id = ?", eid)) throw new HttpError(404, L("Dépense introuvable.", "Expense not found."));
-  const form = await req.formData();
+  const form = await readForm(req, 30 * 1048576);
   const f = form.get("file");
   if (!f || typeof f === "string" || !f.size) throw new HttpError(400, L("Choisissez un fichier.", "Choose a file."));
   if (f.size > RECEIPT_MAX) throw new HttpError(413, L("Le justificatif dépasse 10 Mo.", "The receipt exceeds 10 MB."));

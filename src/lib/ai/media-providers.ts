@@ -205,6 +205,17 @@ function refusal<E extends Error>(e: E): E {
   return e;
 }
 
+/**
+ * Réponse HTTP en erreur d'une génération SYNCHRONE (image Gemini). 4xx (sauf 408) = refus net, rien n'est facturé :
+ * la réservation est rendue. 5xx ou 408 = résultat INCERTAIN (un relais peut couper après la facturation) : aucun
+ * repli automatique, coût maximal retenu puis rendu après réconciliation — même règle que pour OpenAI.
+ */
+async function providerHttpError(r: Response, label: string): Promise<Error> {
+  const detail = (await r.text().catch(() => "")).slice(0, 200);
+  if (r.status >= 500 || r.status === 408) return new Error(`${label} ${r.status}${L(" (résultat incertain) : ", " (uncertain result): ")}${detail}`);
+  return refusal(new Error(`${label} ${r.status}${L(" : ", ": ")}${detail}`));
+}
+
 /** Après une génération : consommation réelle (budget caché) et décompte du quota. */
 function recordMedia(u: Parameters<typeof recordUsage>[0]) {
   const t = mediaTrace.getStore();
@@ -329,6 +340,9 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   }
   // Usage réglé explicitement : son choix (principal, secours) est respecté — aucun autre modèle en silence.
   if (usage && usageExplicit(usage)) return null;
+  // Besoin précis (nom écrit dans l'image, références, son, personnes) : l'ancien routeur ne connaît que « image »
+  // ou « vidéo » et pourrait choisir un modèle incapable (ex. un logo payé avec un nom illisible). Aucun repli.
+  if (need && (need.text || (need.references ?? 0) > 0 || need.audio || need.people)) return null;
   // Aucun modèle du catalogue ne convient : comportement historique du Router V2 (repli vers un fournisseur capable).
   const custom = getJsonSetting<Partial<Record<string, unknown>>>("ai.routes", {});
   const d = route({ task, inputType, aiActive: true, allowLocal: false, available: (p) => !!activeProviderKey(p) && !exclude.some((x) => x.startsWith(`${p}:`)), overrides: custom[task] ? { [task]: routeFor(task) } : undefined });
@@ -530,7 +544,7 @@ async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" 
     });
     if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel.")));
     if (r.status === 400) throw refusal(new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300)));
-    if (!r.ok) throw refusal(new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`));
+    if (!r.ok) throw await providerHttpError(r, "Gemini");
     const j: any = await r.json();
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
@@ -595,6 +609,8 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
     }),
   });
   if (start.status === 401 || start.status === 403) throw refusal(new PermanentError(L("Clé Google refusée pour Veo.", "Google key rejected for Veo.")));
+  // Dépôt d'une opération (Veo) : une erreur, même 5xx, signifie qu'aucune opération n'a été créée (la facturation
+  // n'a lieu qu'à la fin d'une opération) : refus net, réservation rendue, secours possible.
   if (!start.ok) throw refusal(new PermanentError(L("Veo a refusé la demande : ", "Veo rejected the request: ") + (await start.text()).slice(0, 300)));
   const op: any = await start.json();
   const name = op.name;
@@ -650,7 +666,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
     });
     if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(L("Clé Google refusée : vérifiez-la dans l'administration.", "Google key rejected: check it in the admin panel.")));
     if (r.status === 400) throw refusal(new PermanentError(L("Requête refusée par Gemini : ", "Request rejected by Gemini: ") + (await r.text()).slice(0, 300)));
-    if (!r.ok) throw refusal(new Error(`Gemini ${r.status}${L(" : ", ": ")}${(await r.text()).slice(0, 200)}`));
+    if (!r.ok) throw await providerHttpError(r, "Gemini");
     const j: any = await r.json();
     const img = j.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData || p.inline_data);
     const b64 = img?.inlineData?.data ?? img?.inline_data?.data;
@@ -662,19 +678,19 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   const model = pickModel("openai", "image");
   const ugcSize = input.aspect === "9:16" ? "1024x1536" : "1536x1024";
   gate(ctx, openaiImageMax(model, { prompt: text, images: persona ? 2 : 1, size: ugcSize, quality: "high" }), "image", "openai", model);
-  const client = new OpenAI({ apiKey: key, maxRetries: 0, timeout: 300_000 });
+  // Même client que les autres images OpenAI (flux, relais réseau) : une connexion silencieuse n'est plus coupée.
+  const client = openaiClient(key);
   const images = [await toFile(product, "produit.jpg", { type: "image/jpeg" })];
   if (persona) images.push(await toFile(persona, "personne.jpg", { type: "image/jpeg" }));
-  let res: any;
+  let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
-    sent();
-    res = await client.images.edit({ model, image: images as any, prompt: text, size: ugcSize, quality: "high", n: 1 } as any);
+    res = await openaiImage(client, "edit", { model, image: images as any, prompt: text, size: ugcSize, quality: "high", n: 1 }, sent);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
     throw e;
   }
-  const b64 = res.data?.[0]?.b64_json;
+  const b64 = res.b64;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage, idempotencyKey: ctx.usageKey });
@@ -701,6 +717,7 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
   const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
   // (Kling 2.1 et Kling 3 : « image_url », « duration » en texte — paramètres du dépôt officiel fal-ai/fal-blender-extension.)
   if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
+  // Dépôt dans la file fal : aucune génération créée en cas d'erreur (facturation à la fin) : refus net.
   if (!r.ok) throw refusal(new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300)));
   const q: any = await r.json();
   for (let i = 0; i < 120; i++) {
@@ -737,6 +754,7 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
   const headers = { Authorization: `Key ${key}`, "Content-Type": "application/json" };
   const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt, image_urls: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), num_images: 1, output_format: "png", aspect_ratio: aspect }) });
   if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
+  // Dépôt dans la file fal : aucune génération créée en cas d'erreur (facturation à la fin) : refus net.
   if (!r.ok) throw refusal(new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300)));
   const q: any = await r.json();
   for (let i = 0; i < 100; i++) {

@@ -1,4 +1,4 @@
-import { handle, ok } from "@/lib/http";
+import { handle, ok, readForm } from "@/lib/http";
 import { HttpError } from "@/lib/auth";
 import { L } from "@/lib/i18n-server";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 /** Import du thème Shopify du client (fichier ZIP téléchargé depuis Shopify › Thèmes). */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const form = await req.formData();
+  const form = await readForm(req, 62 * 1048576);
   const file = form.get("theme");
   if (!(file instanceof File)) throw new HttpError(400, L("Joignez le fichier ZIP du thème.", "Attach the theme ZIP file."));
   if (file.size > 60 * 1024 * 1024) throw new HttpError(413, L("Le fichier dépasse 60 Mo.", "The file is larger than 60 MB."));

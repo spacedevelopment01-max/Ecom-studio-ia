@@ -3,17 +3,16 @@
  * usages. Les originaux ne sont jamais écrasés : une retouche crée une
  * nouvelle version liée (version_of / source_asset_id).
  */
-import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
 import sharp from "sharp";
 import { all, id, json, now, one, run, tx } from "./db";
 import { EXT_BY_MIME, kindFromMime, putFile, readFile, storagePath, tmpDir } from "./storage";
 import { L } from "./i18n-server";
 import { HttpError } from "./auth";
+import { execTool } from "./exec-tool";
 
-const exec = promisify(execFile);
+const exec = execTool;
 
 export type Asset = {
   id: string;
@@ -172,9 +171,14 @@ async function probeVideo(file: string): Promise<{ width?: number; height?: numb
   }
 }
 
+const SAFE_EXT = new Set(["png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "heif", "svg", "mp4", "mov", "webm", "m4v", "mp3", "wav", "m4a", "ogg", "pdf", "zip", "csv", "txt", "json", "md", "docx", "xlsx", "pptx", "ttf", "otf", "woff", "woff2", "psd", "ai", "eps"]);
+
 export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
   const aid = id();
-  const ext = EXT_BY_MIME[input.mime] || input.name.split(".").pop() || "bin";
+  // Extension du fichier stocké : celle du type, sinon celle du nom SEULEMENT si elle est connue et inoffensive
+  // (jamais « .m3u8 », « .ffconcat »… qu'un outil comme ffmpeg interpréterait comme une liste de lecture).
+  const fromName = (input.name.split(".").pop() ?? "").toLowerCase();
+  const ext = EXT_BY_MIME[input.mime] || (SAFE_EXT.has(fromName) ? fromName : "bin");
   const key = `${input.userId}/${input.projectId}/${aid}.${ext}`;
   putFile(key, input.data);
   const kind = input.kind || kindFromMime(input.mime);

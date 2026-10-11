@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { HttpError } from "./auth";
 import { logError } from "./db";
+import { redact } from "./redact";
 import { L, langFromRequest, runWithLang } from "./i18n-server";
 
 export function ok(data: unknown = { ok: true }, init?: ResponseInit) {
@@ -28,10 +29,24 @@ export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response
         return fail(400, L(`Donnée invalide : ${first?.path.join(".") || "requête"} — ${first?.message}`, `Invalid data: ${first?.path.join(".") || "request"} — ${first?.message}`));
       }
       logError("api", e);
-      console.error(e);
+      // Journal du serveur : jamais de clé d'API ni de jeton (message et pile passés au caviardage).
+      console.error(redact(e instanceof Error ? (e.stack ?? e.message) : String(e)));
       return fail(500, L("Une erreur inattendue est survenue. Elle a été enregistrée ; réessayez dans un instant.", "An unexpected error occurred. It has been logged; please try again in a moment."));
     }
   }
+}
+
+/**
+ * Lecture d'un envoi de fichiers (multipart) avec une taille MAXIMALE vérifiée AVANT la lecture : sans cela, le
+ * serveur charge tout le corps en mémoire avant de pouvoir refuser un fichier trop gros (épuisement de la mémoire).
+ */
+export async function readForm(req: Request, maxBytes: number): Promise<FormData> {
+  const declared = Number(req.headers.get("content-length") ?? "");
+  const mb = Math.round(maxBytes / 1048576);
+  if (!Number.isFinite(declared) || declared <= 0) {
+    if (req.headers.get("transfer-encoding")) throw new HttpError(411, L("Envoi sans taille annoncée refusé.", "Upload without a declared size refused."));
+  } else if (declared > maxBytes) throw new HttpError(413, L(`Envoi trop volumineux (${mb} Mo au maximum).`, `Upload too large (${mb} MB maximum).`));
+  return req.formData();
 }
 
 export async function body<T>(req: Request, schema: ZodType<T>): Promise<T> {

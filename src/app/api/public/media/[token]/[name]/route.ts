@@ -13,5 +13,17 @@ export async function GET(_req: Request, ctx: { params: Promise<{ token: string 
   const a = getAsset(v.ref);
   if (!a || a.deleted_at) return new Response("Introuvable / Not found", { status: 404 });
   const file = storagePath(a.storage_key);
-  return new Response(fs.createReadStream(file) as any, { headers: { "Content-Type": a.mime, "Content-Length": String(fs.statSync(file).size), "Cache-Control": "public, max-age=600" } });
+  // Seuls les images matricielles, vidéos et sons sont servis tels quels ; tout autre type (SVG, document…) est
+  // téléchargé comme fichier brut. Jamais de script exécuté sur le domaine du studio (nosniff + bac à sable).
+  const inline = /^(image\/(png|jpeg|webp|gif|avif)|video\/[\w.+-]+|audio\/[\w.+-]+)$/.test(a.mime);
+  return new Response(fs.createReadStream(file) as any, {
+    headers: {
+      "Content-Type": inline ? a.mime : "application/octet-stream",
+      ...(inline ? {} : { "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(a.name)}` }),
+      "Content-Length": String(fs.statSync(file).size),
+      "Cache-Control": "public, max-age=600",
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "default-src 'none'; sandbox",
+    },
+  });
 }
