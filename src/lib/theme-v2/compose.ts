@@ -384,13 +384,30 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     factBlocks(services || intent.site === "restaurant" ? contactFacts.filter((f) => f.link).slice(0, 2) : []),
   ];
 
+  // Site de services (devis ou contact) : le formulaire de demande directement en fin d'accueil, à la place du simple
+  // bouton final (une étape de moins pour le visiteur). Réservation par lien ou appel : le bouton reste.
+  const quoteForm: Sec | null = services && (intent.conversion === "quote" || intent.conversion === "contact" || (intent.conversion === "book" && !c.contact.bookingUrl)) ? [
+    "contact-form",
+    {
+      eyebrow: c.city ? `${c.category} · ${c.city}` : c.category,
+      heading: ctaHeading,
+      text: para(intent.conversion === "quote" ? (intent.site === "services_trade" ? t("Décrivez votre projet (pièces, surfaces, délais souhaités) : la réponse se fait sur devis.", "Describe your project (rooms, surfaces, preferred timing): we reply with a quote.") : t("Décrivez votre projet : la réponse se fait sur devis.", "Describe your project: we reply with a quote.")) : t("Décrivez votre demande : nous vous répondons rapidement.", "Tell us what you need: we'll get back to you quickly.")),
+      email: c.contact.email ?? "",
+      hours: c.contact.hours ?? "",
+      response: "",
+      color_scheme: L === "precision" ? "scheme-4" : "scheme-3",
+      padding_top: 104,
+      padding_bottom: 104,
+    },
+  ] : null;
+
   // ------------------------------------------------------------ accueil selon le type de site (ordre = parcours)
   let home: (Sec | null)[];
   switch (intent.site) {
     case "services_trade":
     case "local_service":
       // Cartes illustrées des prestations (photo de chacune) ; la liste complète reste sur la page Prestations.
-      home = [hero, serviceBand, cards ?? offers, banner, serviceMedia, steps, facts, faqHome, cta];
+      home = [hero, serviceBand, cards ?? offers, banner, serviceMedia, steps, facts, faqHome, quoteForm ?? cta];
       break;
     case "restaurant":
       // L'ardoise de l'ouverture liste déjà les formules : la liste n'est répétée que si elle apporte un détail confirmé.
