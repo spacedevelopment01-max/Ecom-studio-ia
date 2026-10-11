@@ -17,7 +17,7 @@ describe("forfaits et budget IA caché", () => {
     const u = await createUser(`b${Date.now()}@test.fr`, "motdepasse-test", "B");
     run("UPDATE users SET role = 'client' WHERE id = ?", u.id); // le premier compte de la base est administrateur
     expect(balance(u.id).available).toBe(0);
-    expect(() => assertCanSpend(u.id, 2 * EUR)).toThrow(/limite d'utilisation équitable/);
+    expect(() => assertCanSpend(u.id, 2 * EUR)).toThrow(/utilisée à 100 %/);
     creditTopup(u.id, 24, "pay_1"); // ancienne recharge : 50 % de son prix HT (24 € TTC → 20 € HT → 10 €)
     expect(balance(u.id).available).toBe(10 * EUR);
     recordUsage({ userId: u.id, task: "copywriting", provider: "anthropic", model: "m", unit: "tokens", inputUnits: 1, outputUnits: 1, costMicro: 8.5 * EUR, estimated: false, idempotencyKey: "u1" });

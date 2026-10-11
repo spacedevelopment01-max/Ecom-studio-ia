@@ -287,11 +287,26 @@ export function balance(userId: string): Balance {
   };
 }
 
+/**
+ * Les deux réserves d'IA d'un compte, en proportions (jamais de montant affiché au client) : le forfait du mois, et
+ * les crédits achetés en plus (packs, recharges), qui ne servent qu'une fois le forfait épuisé et n'expirent pas.
+ */
+export function aiReserves(userId: string): { plan: { used: number } | null; credits: { used: number } | null } {
+  const w = ensureWallet(userId);
+  const ratio = (used: number, total: number) => (total > 0 ? Math.min(1, Math.max(0, used / total)) : 1);
+  // Crédits : tout ce qui a été acheté (budget des packs et recharges payés), dont ce qu'il reste à utiliser.
+  const bought = Math.max(packEntitlementMicro(userId), w.topup_balance + w.topup_period_used);
+  return {
+    plan: w.monthly_allowance > 0 ? { used: ratio(w.monthly_used + w.reserved, w.monthly_allowance) } : null,
+    credits: bought > 0 ? { used: ratio(bought - Math.max(0, w.topup_balance - w.reserved_topup), bought) } : null,
+  };
+}
+
 /** Message de budget épuisé (limite d'usage équitable, sans montant affiché). */
 function budgetError(userId: string) {
   const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId);
   const end = new Date(w?.period_end ?? now()).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
-  return new UserFacingError(L(`Vous avez atteint la limite d'utilisation équitable de l'IA de votre forfait pour ce mois-ci. Elle se renouvelle le ${end}.`, `You've reached your plan's fair-use AI limit for this month. It renews on ${end}.`));
+  return new UserFacingError(L(`L'IA de votre forfait est utilisée à 100 % pour ce mois-ci. Elle reprend le ${end}, ou tout de suite avec un pack (Mon compte).`, `Your plan's AI is 100% used for this month. It resumes on ${end}, or right away with a pack (My account).`));
 }
 
 /** Pré-contrôle avant de proposer une génération payante (le vrai garde-fou est la réservation, `reserve`). */

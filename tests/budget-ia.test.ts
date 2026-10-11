@@ -150,7 +150,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     for (const r of llm.waiting.splice(0)) r();
     const out = await Promise.all(runs);
     expect(out.filter((o) => o === "ok")).toHaveLength(2);
-    expect(out.filter((o) => /limite d'utilisation équitable|budget IA de votre forfait est épuisé/.test(o))).toHaveLength(3);
+    expect(out.filter((o) => /utilisée à 100 %/.test(o))).toHaveLength(3);
     expect(wallet(u.id).reserved).toBe(0);
     expect(wallet(u.id).monthly_used).toBeLessThanOrEqual(wallet(u.id).monthly_allowance);
   });
@@ -176,7 +176,7 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
   it("budget épuisé : l'appel est bloqué avant l'envoi (coût maximal non couvert)", async () => {
     const u = await client("creer");
     setAvailable(u.id, 1000); // 0,001 €
-    await expect(text(u.id)).rejects.toThrow(/limite d'utilisation équitable|budget IA de votre forfait est épuisé/);
+    await expect(text(u.id)).rejects.toThrow(/utilisée à 100 %/);
     expect(llm.calls).toBe(0);
     expect(llm.calls).toBe(0);
     expect(reservations(u.id)).toHaveLength(0);
