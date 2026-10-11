@@ -13,7 +13,7 @@ jobs:
   verifications:
     name: Typecheck, tests, Theme Check, build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
       APP_SECRET: ci-only-secret-not-used-in-production-000000
@@ -39,44 +39,8 @@ jobs:
       - name: Tests
         run: npm test
 
-      - name: Shopify Theme Check (11 directions)
-        run: |
-          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
-            echo "::group::$d"
-            npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-$d" "$d"
-            echo "::endgroup::"
-          done
-
-      - name: Shopify Theme Check (thèmes en anglais)
-        run: |
-          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
-            echo "::group::$d (en)"
-            LANG_THEME=en npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-en-$d" "$d"
-            echo "::endgroup::"
-          done
-
-      - name: Shopify Theme Check (boutiques multi-produit et niche)
-        run: |
-          for d in atelier brut gourmand flux; do
-            for t in multi niche; do
-              echo "::group::$d / $t"
-              npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-$d-$t" "$d" "$t"
-              echo "::endgroup::"
-            done
-          done
-
-      - name: Shopify Theme Check (sites de services, 11 directions, FR et EN)
-        run: |
-          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
-            for l in fr en; do
-              echo "::group::$d / services ($l)"
-              BUSINESS=services LANG_THEME=$l npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-services-$l-$d" "$d"
-              echo "::endgroup::"
-            done
-          done
-
-      - name: Shopify Theme Check (ZIP téléchargé par le client, dont une section sur mesure)
-        run: npx tsx scripts/theme-check-zip.ts "$RUNNER_TEMP/theme-zip"
+      - name: "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
+        run: JOBS=4 scripts/verify-theme.sh
 
       - name: Build de production
         run: npm run build

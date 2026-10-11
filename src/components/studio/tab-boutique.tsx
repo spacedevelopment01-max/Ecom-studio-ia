@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Copy, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
@@ -310,6 +310,8 @@ export default function TabBoutique() {
 
   /** Clic sur une section de la structure : l'aperçu défile jusqu'à elle et la surligne. */
   const [focused, setFocused] = useState<string | null>(null);
+  // Menu « … » d'une section ouvert (une seule à la fois).
+  const [menuFor, setMenuFor] = useState<string | null>(null);
   function focusSection(sectionId: string, hidden?: boolean) {
     setFocused(sectionId);
     if (hidden) return toast("info", t("Cette section est masquée : réaffichez-la (icône œil) pour la voir dans l'aperçu.", "This section is hidden: show it again (eye icon) to see it in the preview."));
@@ -511,22 +513,42 @@ export default function TabBoutique() {
               onMove={(from, to) => ops([{ op: "move_section", template: tp.template, section: tp.sections[from].id, position: { index: to } }], t(`${tp.sections[from].name} déplacée`, `${tp.sections[from].name} moved`))}
               render={(s, i, handle, dragging) => (
                 <div>
-                  <div className={cx("group flex items-center gap-1 rounded-xl border bg-card p-1.5 pr-1.5 text-sm", dragging ? "border-signal shadow-soft" : "border-line", s.disabled && "opacity-50")}>
+                  <div className={cx("relative flex items-center gap-1.5 rounded-xl border bg-card p-1.5 text-sm", dragging ? "border-signal shadow-soft" : "border-line", s.disabled && "opacity-60")}>
                     {handle}
-                    <button type="button" onClick={() => focusSection(s.id, s.disabled)} className={cx("min-w-0 flex-1 rounded-lg px-1 py-0.5 text-left hover:bg-paper-2", focused === s.id && "bg-signal-soft/60")} title={t("Voir cette section dans l'aperçu", "Show this section in the preview")}>
-                      <p className="truncate font-medium">{theme.library.find((l) => l.type === s.type)?.name ?? s.name}</p>
-                      {s.heading && <p className="truncate text-xs text-muted">{s.heading}</p>}
+                    <button type="button" onClick={() => focusSection(s.id, s.disabled)} className={cx("min-w-0 flex-1 rounded-lg px-1.5 py-1 text-left hover:bg-paper-2", focused === s.id && "bg-signal-soft/60")} title={t("Voir cette section dans l'aperçu", "Show this section in the preview")}>
+                      <p className="flex items-center gap-1.5 font-medium leading-snug">
+                        <span className="line-clamp-2">{theme.library.find((l) => l.type === s.type)?.name ?? s.name}</span>
+                        {s.locked && <Lock className="size-3 shrink-0 text-ok" aria-label={t("Validée", "Approved")} />}
+                      </p>
+                      {s.disabled ? <p className="text-xs text-muted">{t("Masquée", "Hidden")}</p> : s.heading ? <p className="line-clamp-1 text-xs text-muted">{s.heading}</p> : null}
                     </button>
-                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`))} disabled={i === 0} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Monter", "Move up")}><ArrowUp className="size-3.5" /></button>
-                    <button onClick={() => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`))} disabled={i === tp.sections.length - 1} className="hidden size-7 place-items-center rounded-full hover:bg-paper-2 disabled:opacity-30 sm:group-hover:grid sm:group-focus-within:grid" aria-label={t("Descendre", "Move down")}><ArrowDown className="size-3.5" /></button>
-                    {(!isPage || theme.v2) && s.layout?.length ? (
-                      <button onClick={() => setLayoutOpen(true)} className="grid size-7 place-items-center rounded-lg text-signal hover:bg-signal-soft" title={t("Choisir la disposition", "Choose the layout")} aria-label={t(`Disposition : ${s.name}`, `Layout: ${s.name}`)}><PanelTop className="size-3.5" /></button>
-                    ) : null}
-                    <button onClick={() => ops([{ op: "toggle_section", template: tp.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? t("affichée", "shown") : t("masquée", "hidden")}`)} className="grid size-7 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? t("Afficher", "Show") : t("Masquer", "Hide")}>{s.disabled ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</button>
-                    <button onClick={() => ops([{ op: "lock", template: tp.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? t("déverrouillée", "unlocked") : t("validée", "approved")}`)} className={cx("grid size-7 place-items-center rounded-full hover:bg-paper-2", s.locked && "text-ok")} aria-label={s.locked ? t("Déverrouiller", "Unlock") : t("Valider et verrouiller", "Approve and lock")} title={s.locked ? t("Validée : protégée des modifications non ciblées", "Approved: protected from non-targeted changes") : t("Valider cette section", "Approve this section")}>{s.locked ? <Lock className="size-3.5" /> : <Unlock className="size-3.5" />}</button>
-                    {isPage && !s.type.startsWith("main-") && <button onClick={() => ops([{ op: "duplicate_section", template: tp.template, section: s.id }], t(`${s.name} dupliquée`, `${s.name} duplicated`))} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2" aria-label={t(`Dupliquer « ${s.name} »`, `Duplicate “${s.name}”`)} title={t("Dupliquer", "Duplicate")}><Copy className="size-3.5" /></button>}
-                    {isPage && !s.type.startsWith("main-") && <button onClick={() => setLibTarget({ template: tp.template, label: t(`Remplacer « ${s.name} » (titres, textes et images repris)`, `Replace “${s.name}” (headings, text and images kept)`), replace: s.id })} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2" aria-label={t(`Remplacer « ${s.name} » par une autre section`, `Replace “${s.name}” with another section`)} title={t("Remplacer par une autre section", "Replace with another section")}><Replace className="size-3.5" /></button>}
-                    {isPage && <button onClick={() => { if (confirm(t(`Supprimer la section « ${s.name} » ? Vous pourrez revenir à la version précédente.`, `Delete the “${s.name}” section? You can go back to the previous version.`))) ops([{ op: "remove_section", template: tp.template, section: s.id }], t(`${s.name} supprimée`, `${s.name} deleted`)); }} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-bad" aria-label={t("Supprimer la section", "Delete section")}><Trash2 className="size-3.5" /></button>}
+                    {/* Une seule action visible (afficher / masquer) ; les autres sont rangées dans le menu « … », loin d'un clic involontaire. */}
+                    <button onClick={() => ops([{ op: "toggle_section", template: tp.template, section: s.id, disabled: !s.disabled }], `${s.name} ${s.disabled ? t("affichée", "shown") : t("masquée", "hidden")}`)} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-paper-2" aria-label={s.disabled ? t(`Afficher « ${s.name} »`, `Show “${s.name}”`) : t(`Masquer « ${s.name} »`, `Hide “${s.name}”`)} title={s.disabled ? t("Afficher", "Show") : t("Masquer", "Hide")}>{s.disabled ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button>
+                    <button onClick={() => setMenuFor(menuFor === s.id ? null : s.id)} className={cx("grid size-9 shrink-0 place-items-center rounded-full hover:bg-paper-2", menuFor === s.id && "bg-paper-2")} aria-haspopup="menu" aria-expanded={menuFor === s.id} aria-label={t(`Actions pour « ${s.name} »`, `Actions for “${s.name}”`)}><MoreHorizontal className="size-4" /></button>
+                    {menuFor === s.id && (
+                      <>
+                        <button type="button" className="fixed inset-0 z-30 cursor-default" aria-label={t("Fermer le menu", "Close the menu")} onClick={() => setMenuFor(null)} />
+                        <div role="menu" className="absolute right-1 top-full z-40 mt-1 w-60 overflow-hidden rounded-xl border border-line bg-card py-1 text-sm shadow-soft" onClick={() => setMenuFor(null)}>
+                          {(() => {
+                            const item = (icon: React.ReactNode, label: string, run: () => void, opts: { disabled?: boolean; danger?: boolean } = {}) => (
+                              <button role="menuitem" disabled={opts.disabled} onClick={run} className={cx("flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-paper-2 disabled:opacity-40", opts.danger && "text-bad")}>{icon}{label}</button>
+                            );
+                            return (
+                              <>
+                                {item(<ArrowUp className="size-4" />, t("Monter", "Move up"), () => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: Math.max(0, i - 1) } }], t(`${s.name} remontée`, `${s.name} moved up`)), { disabled: i === 0 })}
+                                {item(<ArrowDown className="size-4" />, t("Descendre", "Move down"), () => ops([{ op: "move_section", template: tp.template, section: s.id, position: { index: i + 1 } }], t(`${s.name} descendue`, `${s.name} moved down`)), { disabled: i === tp.sections.length - 1 })}
+                                {(!isPage || theme.v2) && s.layout?.length ? item(<PanelTop className="size-4" />, t("Choisir la disposition", "Choose the layout"), () => setLayoutOpen(true)) : null}
+                                {item(s.locked ? <Unlock className="size-4" /> : <Lock className="size-4" />, s.locked ? t("Déverrouiller", "Unlock") : t("Valider et verrouiller", "Approve and lock"), () => ops([{ op: "lock", template: tp.template, section: s.id, locked: !s.locked }], `${s.name} ${s.locked ? t("déverrouillée", "unlocked") : t("validée", "approved")}`))}
+                                {isPage && !s.type.startsWith("main-") && item(<Copy className="size-4" />, t("Dupliquer", "Duplicate"), () => ops([{ op: "duplicate_section", template: tp.template, section: s.id }], t(`${s.name} dupliquée`, `${s.name} duplicated`)))}
+                                {isPage && !s.type.startsWith("main-") && item(<Replace className="size-4" />, t("Remplacer par une autre section", "Replace with another section"), () => setLibTarget({ template: tp.template, label: t(`Remplacer « ${s.name} » (titres, textes et images repris)`, `Replace “${s.name}” (headings, text and images kept)`), replace: s.id }))}
+                                {isPage && <div className="my-1 border-t border-line" />}
+                                {isPage && item(<Trash2 className="size-4" />, t("Supprimer la section", "Delete section"), () => { if (confirm(t(`Supprimer la section « ${s.name} » ? Vous pourrez revenir à la version précédente.`, `Delete the “${s.name}” section? You can go back to the previous version.`))) ops([{ op: "remove_section", template: tp.template, section: s.id }], t(`${s.name} supprimée`, `${s.name} deleted`)); }, { danger: true })}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </>
+                    )}
                   </div>
                   {isPage && !dragging && (
                     <button onClick={() => insert(i + 1)} className="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100" aria-label={t(`Ajouter une section après « ${s.name} »`, `Add a section after “${s.name}”`)}>

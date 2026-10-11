@@ -894,8 +894,12 @@ export function localThemeCommand(spec: ThemeSpec, message: string, selection: {
   const bgColor = toHex(m.match(new RegExp(`(?:fond|arrière[- ]plan|background)\\s+(?:en\\s+|de\\s+|couleur\\s+)?(${colorWords})(?![\\p{L}])`, "u"))?.[1] ?? m.match(new RegExp(`(?<![\\p{L}])(${colorWords})\\s+(?:background|fond)\\b`, "u"))?.[1]);
   const textColor = toHex([...m.matchAll(new RegExp(`(?<![\\p{L}#])(${colorWords})(?![\\p{L}])`, "gu"))].map((x) => x[1]).find((w) => toHex(w) !== bgColor));
   const ops: ThemeOp[] = [];
-  const dir = DIRECTIONS.find((d) => m.includes(d.name.toLowerCase()) || m.includes(d.id));
-  if (dir && /(style|direction|thème|theme|passe|switch|apply)/.test(m)) return { ops: [], reply: L(`J'applique la direction ${dir.name} en conservant vos textes et images.`, `Applying the ${dir.name} direction while keeping your copy and images.`), revert: false, direction: dir.id };
+  // Changement de thème : le nom doit suivre « direction », « thème », « style »… (« Jardin », « Signal » ou « Magazine »
+  // sont aussi des mots courants : « la photo du jardin » ne change jamais de thème).
+  const plain = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const pm = plain(m);
+  const dir = DIRECTIONS.find((d) => [...new Set([plain(d.name), d.id])].some((w) => new RegExp(`(?:direction|theme|style|look|passe[rz]?\\s+(?:en|au|sur)|switch\\s+to|apply(?:\\s+the)?)\\s+(?:[a-z'’]+\\s+){0,2}?[«"]?\\s*${w}(?![a-z])`).test(pm)));
+  if (dir) return { ops: [], reply: L(`J'applique la direction ${dir.name} en conservant vos textes et images.`, `Applying the ${dir.name} direction while keeping your copy and images.`), revert: false, direction: dir.id };
   // Élément ou section désigné dans l'aperçu : la couleur ne touche QUE lui, jamais tout le site.
   // Élément précis désigné (titre, texte, bouton…) : ses couleurs à lui seul (texte, fond).
   if (color && selection?.path && (!selection.kind || selection.kind !== "Section") && !/(tous les boutons|tout le site|toute la page|all buttons|whole site|entire site)/.test(m)) {

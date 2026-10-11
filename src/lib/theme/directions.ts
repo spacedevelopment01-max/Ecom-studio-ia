@@ -11,8 +11,11 @@ import type { BlockInstance, GroupJson, SectionInstance, StoreCollection, StoreP
 import type { ServiceProfile } from "../project-types";
 import { servicesPlan } from "./services-site";
 import { tidyComposition } from "./tidy";
+import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 
-export type DirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
+/** Onze directions d'origine, puis les thèmes du catalogue (theme-catalog.ts) : trente compositions distinctes. */
+export type BaseDirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
+export type DirectionId = BaseDirectionId | CatalogThemeId;
 
 export type Direction = {
   id: DirectionId;
@@ -25,7 +28,7 @@ export type Direction = {
   motion: "subtle" | "normal" | "expressive";
 };
 
-export const DIRECTIONS: Direction[] = [
+const BASE_DIRECTIONS: Direction[] = [
   {
     id: "atelier",
     name: "Atelier",
@@ -138,8 +141,14 @@ export const DIRECTIONS: Direction[] = [
   },
 ];
 
+export const DIRECTIONS: Direction[] = [
+  ...BASE_DIRECTIONS,
+  ...CATALOG_THEMES.map((x): Direction => ({ id: x.id, name: x.name, tagline: x.tagline, description: x.description, bestFor: x.bestFor, fonts: x.fonts, previewFonts: x.previewFonts, motion: x.motion })),
+];
+
 /** Présentation des directions en anglais (le français est dans DIRECTIONS). */
 export const DIRECTIONS_EN: Record<DirectionId, { tagline: string; description: string; bestFor: string[] }> = {
+  ...(Object.fromEntries(CATALOG_THEMES.map((x) => [x.id, x.en])) as Record<CatalogThemeId, { tagline: string; description: string; bestFor: string[] }>),
   atelier: { tagline: "Editorial luxury", description: "Luminous ivory, a large high-contrast serif with words in golden italics, a floating cut-out product, frosted-glass cards and shine on the buttons. For objects meant to be admired up close.", bestFor: ["beauty", "fragrance", "jewelry", "luxury home"] },
   clinique: { tagline: "Big-tech clarity", description: "Pure white and pearl gray, tight extra-bold type, the product shown large, animated key figures and sections that light up as you scroll. Reassurance through precision.", bestFor: ["skincare", "wellness", "tech", "baby"] },
   brut: { tagline: "Dark and bold", description: "Deep black background, giant capitals, an outlined scrolling banner, sharp neon outlines and glowing cards. For brands that own it.", bestFor: ["streetwear", "accessories", "gadgets", "drinks"] },
@@ -157,7 +166,10 @@ export const DIRECTIONS_EN: Record<DirectionId, { tagline: string; description: 
 export const ACCENT_FONT = "cormorant_i5";
 
 /** Directions sombres par défaut : utile à l'IA et à l'aperçu. */
-export const DARK_DIRECTIONS: DirectionId[] = ["brut", "nocturne", "elan"];
+export const DARK_DIRECTIONS: DirectionId[] = ["brut", "nocturne", "elan", ...CATALOG_THEMES.filter((x) => x.look.dark).map((x) => x.id)];
+
+/** Direction d'origine la plus proche (ambiance photographique des visuels) : la direction elle-même ou celle du thème du catalogue. */
+export const baseDirection = (id: DirectionId): BaseDirectionId => catalogTheme(id)?.photoMood ?? (id as BaseDirectionId);
 
 export const directionById = (id: string) => DIRECTIONS.find((d) => d.id === id) ?? DIRECTIONS[0];
 
@@ -204,6 +216,22 @@ export function colorSchemes(direction: DirectionId, p: BrandPalette): Record<st
   const onLight = (bg: string) => brandAccent(bg, p.primary, p.accent, p.dark, p.secondary);
   const onDark = (bg: string) => brandAccent(bg, p.accent, p.secondary, p.light, p.primary);
   let s1: Scheme, s2: Scheme, s3: Scheme, s4: Scheme;
+  const cat = catalogTheme(direction);
+  if (cat) {
+    const kit: PaletteKit = {
+      p,
+      scheme,
+      filled,
+      onLight,
+      onDark,
+      night: (l: number, sat = 0.5) => withLightness(deep, l, sat),
+      light,
+      tint: (c: string, l: number, sat = 1) => withLightness(c, l, sat),
+      mix,
+    };
+    [s1, s2, s3, s4] = cat.palette(kit);
+    return { "scheme-1": { settings: s1 }, "scheme-2": { settings: s2 }, "scheme-3": { settings: s3 }, "scheme-4": { settings: s4 } };
+  }
   switch (direction) {
     case "nocturne": {
       const bg = withLightness(deep, 0.075, 0.9);
@@ -332,12 +360,14 @@ function blocksOf(ids: Ids, list: { type: string; settings: Record<string, unkno
   return { blocks, block_order: order };
 }
 
-function tpl(ids: Ids, sections: [string, Record<string, unknown>, { type: string; settings: Record<string, unknown> }[]?][]): TemplateJson {
+function tpl(ids: Ids, sections: Row[]): TemplateJson {
   const out: TemplateJson = { sections: {}, order: [] };
-  for (const [type, settings, blocks] of sections) {
+  for (const [type, settings, blocks, opts] of sections) {
     const sid = ids.next(type);
     const s: SectionInstance = { type, settings };
     if (blocks?.length) Object.assign(s, blocksOf(ids, blocks));
+    // Section posée mais masquée : elle attend une information du marchand (avis, offre, délais…).
+    if (opts?.disabled) s.disabled = true;
     out.sections[sid] = s;
     out.order.push(sid);
   }
@@ -367,7 +397,19 @@ export type ImageSlots = {
   favicon?: string;
 };
 
+/**
+ * Remplissage d'une section de la bibliothèque avec le projet (textes vrais, photos du projet), fourni côté serveur
+ * (library-fill.ts). `complete` est faux s'il manque une information du marchand ou les médias de la section.
+ */
+export type LibraryFill = (type: string, settings: Record<string, unknown>, blocks?: { type: string; settings: Record<string, unknown> }[], opts?: { dropBlocks?: string[] }) => {
+  settings: Record<string, unknown>;
+  blocks: { type: string; settings: Record<string, unknown> }[];
+  complete: boolean;
+};
+
 export type BuildInput = {
+  /** Remplissage des sections de la bibliothèque utilisées par les thèmes du catalogue (sans lui : sections masquées). */
+  fill?: LibraryFill;
   direction: DirectionId;
   shopName: string;
   palette: BrandPalette;
@@ -398,6 +440,7 @@ const p = (html: string) => (/^\s*</.test(html) ? html : `<p>${html}</p>`);
 
 /** Combinaisons d'en-tête, pied de page, bandeau et cartes : chaque direction montre une autre possibilité. */
 const CHROME: Record<DirectionId, { shape: string; icons: string; menu: string; footer: string; ann: string; card: string }> = {
+  ...(Object.fromEntries(CATALOG_THEMES.map((x) => [x.id, { shape: x.look.shape, icons: x.look.icons, menu: x.look.menu, footer: x.look.footer, ann: x.look.ann, card: x.look.card }])) as Record<CatalogThemeId, { shape: string; icons: string; menu: string; footer: string; ann: string; card: string }>),
   atelier: { shape: "floating", icons: "circles", menu: "fullscreen", footer: "wordmark", ann: "rotate", card: "minimal" },
   clinique: { shape: "pill", icons: "plain", menu: "drawer", footer: "columns", ann: "static", card: "boxed" },
   brut: { shape: "bar", icons: "plain", menu: "fullscreen", footer: "wordmark", ann: "marquee", card: "overlay" },
@@ -414,13 +457,13 @@ const CHROME: Record<DirectionId, { shape: string; icons: string; menu: string; 
 const CHROME_LABEL = {
   fr: {
     shape: { floating: "En-tête flottant", pill: "En-tête pilule", bar: "En-tête barre", boxed: "En-tête encadré" } as Record<string, string>,
-    footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal" } as Record<string, string>,
+    footer: { columns: "Pied en colonnes", wordmark: "Pied à nom géant", card: "Pied avec carte d'inscription", centered: "Pied centré", minimal: "Pied minimal", "brand-left": "Pied avec marque à gauche", split: "Pied en deux parties", stacked: "Pied empilé", boxed: "Pied encadré" } as Record<string, string>,
     ann: { rotate: "Bandeau rotatif", marquee: "Bandeau défilant", static: "Bandeau fixe" } as Record<string, string>,
     card: { minimal: "Cartes épurées", boxed: "Cartes encadrées", overlay: "Cartes à texte sur image" } as Record<string, string>,
   },
   en: {
     shape: { floating: "Floating header", pill: "Pill header", bar: "Bar header", boxed: "Boxed header" } as Record<string, string>,
-    footer: { columns: "Column footer", wordmark: "Giant-name footer", card: "Footer with sign-up card", centered: "Centered footer", minimal: "Minimal footer" } as Record<string, string>,
+    footer: { columns: "Column footer", wordmark: "Giant-name footer", card: "Footer with sign-up card", centered: "Centered footer", minimal: "Minimal footer", "brand-left": "Brand-left footer", split: "Two-part footer", stacked: "Stacked footer", boxed: "Boxed footer" } as Record<string, string>,
     ann: { rotate: "Rotating banner", marquee: "Scrolling banner", static: "Static banner" } as Record<string, string>,
     card: { minimal: "Minimal cards", boxed: "Boxed cards", overlay: "Text-over-image cards" } as Record<string, string>,
   },
@@ -465,7 +508,13 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   }));
   const features = c.features.items.map((f) => ({ type: "feature", settings: { title: f.title, text: p(f.text), icon: f.icon } }));
   const specs = c.specs.items.map((s) => ({ type: "spec", settings: { label: s.label, value: s.value } }));
-  const faq = svc ? svc.faqBlocks(8) : c.faq.items.map((f) => ({ type: "question", settings: { question: f.q, answer: p(f.a) } }));
+  // Thèmes du catalogue : sur l'accueil, seules les questions dont la réponse est connue (les autres restent sur la page FAQ).
+  const faqAll = svc ? svc.faqBlocks(8) : c.faq.items.map((f) => ({ type: "question", settings: { question: f.q, answer: p(f.a) } }));
+  const faqHome = faqAll.filter((b) => !/\[(?:À compléter|To complete)/.test(String(b.settings.answer ?? "") + String(b.settings.question ?? "")));
+  const isCat = !!catalogTheme(d.id);
+  const faq = isCat && faqHome.length >= 2 ? faqHome : faqAll;
+  // Moins de deux réponses connues : la FAQ de l'accueil est posée masquée, à compléter.
+  const faqHidden = isCat && faqHome.length < 2;
   const marquee = c.marquee.join("\n");
   const gallerySlides = [im.scene1, im.detail1, im.scene2, im.detail2, im.scene3]
     .filter(Boolean)
@@ -524,10 +573,10 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   ];
   // Chiffres clés : uniquement des caractéristiques confirmées et courtes.
   const statItems = c.specs.items.filter((x) => x.value && x.value.length <= 14 && !x.value.includes("[") && /\d/.test(x.value)).slice(0, 3);
-  const stats = (sch: 1 | 2 | 3): Row[] =>
-    statItems.length >= 2 ? [["stats", { eyebrow: c.specs.heading, heading: "", accent_values: true, color_scheme: scheme(sch), ...pad(72) }, statItems.map((x) => ({ type: "stat", settings: { value: x.value, label: x.label } }))]] : [];
+  const stats = (sch: 1 | 2 | 3, layout = "grid"): Row[] =>
+    statItems.length >= 2 ? [["stats", { eyebrow: c.specs.heading, heading: "", accent_values: true, ...(layout !== "grid" ? { layout } : {}), color_scheme: scheme(sch), ...pad(72) }, statItems.map((x) => ({ type: "stat", settings: { value: x.value, label: x.label } }))]] : [];
   const specList = (sch: 1 | 2 | 3): [string, Record<string, unknown>, typeof specs] => ["specs-list", { heading: c.specs.heading, color_scheme: scheme(sch), ...pad(104) }, specs];
-  const faqSec = (sch: 1 | 2, limit = 5): [string, Record<string, unknown>, typeof faq] => ["faq", { heading: c.faq.heading, style: "cards", structured_data: true, color_scheme: scheme(sch), ...pad(104) }, faq.slice(0, limit)];
+  const faqSec = (sch: 1 | 2, limit = 5, style = "cards"): Row => ["faq", { heading: c.faq.heading, style, structured_data: true, color_scheme: scheme(sch), ...pad(104) }, faq.slice(0, limit), faqHidden ? { disabled: true } : undefined];
   const marq = (sch: 1 | 2 | 3 | 4, size: string, reverse = false): [string, Record<string, unknown>] => ["marquee", { items: marquee, separator: d.id === "brut" ? "●" : d.id === "pop" ? "★" : "✦", size, speed: size === "huge" ? 40 : 30, reverse, color_scheme: scheme(sch) }];
   const cta = (sch: 1 | 3 | 4, asset = im.scene3 ?? im.scene2 ?? im.banner ?? im.hero): [string, Record<string, unknown>] => ["cta-banner", { heading: c.cta.heading, text: p(c.cta.text), button_label: c.cta.button, button_link: productUrl, image_asset: img(asset), overlay: 45, style: "center", parallax: true, color_scheme: scheme(sch), ...pad(152) }];
   const newsletter = (sch: 1 | 2 | 3 | 4): [string, Record<string, unknown>] => ["newsletter", { heading: c.newsletter.heading, text: p(c.newsletter.text), button_label: t("S'inscrire", "Subscribe"), legal: t("Désinscription possible à tout moment.", "Unsubscribe at any time."), color_scheme: scheme(sch), ...pad(104) }];
@@ -559,8 +608,122 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     im.reels?.length ? [["video-reels", { heading: t("En mouvement", "In motion"), heading_accent: "", color_scheme: scheme(sch), ...pad(88) }, im.reels.map((r) => ({ type: "reel", settings: { video_asset: r.video, poster_asset: r.poster ?? "", caption: "" } }))]] : [];
   const wave = (from: 1 | 2 | 3 | 4, to: 1 | 2 | 3 | 4): Row => ["wave-divider", { from_scheme: scheme(from), color_scheme: scheme(to), amplitude: 40 }];
   const hasVideo = !!im.video;
-  type Row = [string, Record<string, unknown>, { type: string; settings: Record<string, unknown> }[]?];
-  let index: Row[];
+
+  // ---------------------------------------------------------------- sections V2 et bibliothèque (thèmes du catalogue)
+  const isTodo = (x: string) => !x.trim() || x.includes("[");
+  const realSpecs = c.specs.items.filter((x) => x.value && !isTodo(x.value) && !isTodo(x.label));
+  const shortFacts = realSpecs.filter((x) => x.value.length <= 34);
+  const detailPics = [im.detail1, im.detail2, im.scene1, im.scene2, im.packshot].filter((f): f is string => !!f);
+  const life = im.lifestyle ?? im.hero ?? im.scene1 ?? im.banner;
+  const v2: Kit["v2"] = {
+    hero: (layout, sch, texture = "none") => {
+      const image = layout === "stage" ? im.cutout ?? im.packshot : layout === "frame" ? im.packshot ?? im.scene1 : layout === "type" || layout === "board" ? undefined : life;
+      // Ouverture qui demande une photo sans photo disponible : ouverture typographique (jamais un cadre vide).
+      const l = (layout === "type" || layout === "board" || image) ? layout : "type";
+      const contact = svc ? [input.services?.phone ? { label: t("Téléphone", "Phone"), value: input.services.phone } : null, input.services?.area ? { label: t("Zone d'intervention", "Service area"), value: input.services.area } : null, input.services?.hours ? { label: t("Horaires", "Hours"), value: input.services.hours.split("\n")[0] } : null].filter((x): x is { label: string; value: string } => !!x) : [];
+      const facts = (svc ? contact : shortFacts.map((x) => ({ label: x.label, value: x.value }))).slice(0, l === "type" ? 4 : 3);
+      const items = (svc ? (input.services?.services ?? []).map((x) => ({ label: x.name, value: x.price || x.duration || "" })) : c.features.items.map((f) => ({ label: f.title, value: "" }))).slice(0, 5);
+      return ["v2-hero", {
+        layout: l, eyebrow: c.hero.eyebrow, heading: heroHead, heading_em: heroAccent, text: p(c.hero.text), button_label: c.hero.cta, button_link: productUrl, ...second,
+        image_asset: img(l === "type" || l === "board" ? undefined : image), image_alt: input.product.title,
+        card_title: l === "board" ? (svc ? t("Nos prestations", "Our services") : t("À découvrir", "To discover")) : l === "type" && facts.length ? (svc ? t("Coordonnées", "Contact details") : t("En bref", "At a glance")) : "",
+        texture, veil: 45, color_scheme: scheme(sch), ...pad(l === "frame" ? 88 : 64, 96),
+      }, l === "board" ? items.map((x) => ({ type: "item", settings: x })) : facts.map((x) => ({ type: "fact", settings: { label: x.label, value: x.value } }))];
+    },
+    index: (layout, sch) => {
+      const list = svc ? (input.services?.services ?? []).map((x) => ({ title: x.name, text: x.description, meta: [x.price, x.duration].filter(Boolean).join(" · "), icon: "none" })) : c.features.items.map((f) => ({ title: f.title, text: f.text, meta: "", icon: f.icon }));
+      return list.length >= 2 ? [["v2-index", { layout, eyebrow: svc ? t("Prestations", "Services") : "", heading: svc ? t("Ce que nous faisons", "What we do") : c.features.heading, intro: "", note: "", color_scheme: scheme(sch), ...pad(104) }, list.slice(0, 6).map((x, i) => ({ type: "item", settings: { title: x.title, text: x.text, meta: x.meta, icon: x.icon || "none", image_asset: layout === "bento" || layout === "cards" ? img(detailPics[i]) : "", link_label: "", link: "" } }))]] : [];
+    },
+    cards: (layout, sch) => {
+      const cols = (input.collections ?? []).filter((x) => x.image);
+      const prods = (input.products ?? []).filter((x) => x.images?.[0]);
+      const cards = cols.length >= 2
+        ? cols.slice(0, 4).map((x) => ({ image_asset: x.image ?? "", title: x.title, text: "", link: `/collections/${x.handle}`, link_label: t("Découvrir", "Discover") }))
+        : prods.length >= 2
+          ? prods.slice(0, 4).map((x) => ({ image_asset: x.images[0], title: x.title, text: "", link: `/products/${x.handle}`, link_label: t("Voir le produit", "View product") }))
+          : detailPics.length >= 2 ? c.features.items.slice(0, Math.min(4, detailPics.length)).map((f, i) => ({ image_asset: detailPics[i], title: f.title, text: p(f.text), link: "", link_label: "" })) : [];
+      return cards.length >= 2 ? [["v2-cards", { layout, columns: Math.min(4, Math.max(2, cards.length)), fit: "v2-cover", eyebrow: "", heading: cols.length >= 2 ? t("Explorer la boutique", "Explore the shop") : prods.length >= 2 ? t("Nos produits", "Our products") : c.features.heading, intro: "", link_label: cols.length >= 2 || prods.length >= 2 ? t("Tout voir", "View all") : "", link: cols.length >= 2 || prods.length >= 2 ? "/collections/all" : "", color_scheme: scheme(sch), ...pad(96) }, cards.map((x) => ({ type: "card", settings: x }))]] : [];
+    },
+    band: (layout, sch) => {
+      if (layout === "icons") {
+        const items = svc ? (input.services?.services ?? []).slice(0, 4).map((x) => ({ icon: "check", label: x.name, sub: "" })) : shortFacts.slice(0, 4).map((x) => ({ icon: "check", label: x.value.charAt(0).toUpperCase() + x.value.slice(1), sub: x.label }));
+        return items.length >= 3 ? [["v2-band", { layout: "icons", text: "", color_scheme: scheme(sch), ...pad(24) }, items.map((x) => ({ type: "item", settings: x }))]] : [];
+      }
+      const text = [c.statement.heading, shortItems.slice(0, 3).join(" · ")].find((x) => x && x.length <= 80 && !isTodo(x) && norm(x) !== norm(c.hero.heading));
+      return text ? [["v2-band", { layout: "rule", text, color_scheme: scheme(sch), ...pad(28) }]] : [];
+    },
+    split: (layout, sch) => {
+      const image = layout === "overlap" ? im.scene2 ?? im.detail1 : im.detail1 ?? im.scene2 ?? im.scene1;
+      if (!image || isTodo(c.detail.heading)) return [];
+      const points = (svc ? [] : c.product.highlights).filter((x) => !isTodo(x)).slice(0, 4);
+      return [["v2-split", { layout, fit: "v2-cover", eyebrow: c.detail.eyebrow, heading: c.detail.heading, text: p(c.detail.text), image_asset: image, image_alt: input.product.title, button_label: c.hero.cta, button_link: productUrl, color_scheme: scheme(sch), ...pad(112) }, points.map((x) => ({ type: "point", settings: { text: x } }))]];
+    },
+    benefits: (layout, sch) => {
+      const items = c.features.items.slice(0, 4);
+      const withImages = layout === "images" && detailPics.length >= items.length;
+      return items.length >= 2 ? [["v2-benefits", { layout: withImages ? "images" : "icons", columns: Math.min(4, items.length), eyebrow: "", heading: c.features.heading, text: "", color_scheme: scheme(sch), ...pad(96) }, items.map((f, i) => ({ type: "benefit", settings: { image_asset: withImages ? detailPics[i] : "", icon: f.icon || "check", title: f.title, text: f.text } }))]] : [];
+    },
+    steps: (layout, sch) => c.story.steps.length >= 2 ? [["v2-steps", { layout, eyebrow: "", heading: c.story.heading, color_scheme: scheme(sch), ...pad(104) }, c.story.steps.map((x) => ({ type: "step", settings: { title: x.title, text: p(x.text) } }))]] : [],
+    faq: (layout, sch) => {
+      const qs = faq.slice(0, 6);
+      return qs.length >= 2 ? [["v2-faq", { layout, eyebrow: "", heading: c.faq.heading, text: "", color_scheme: scheme(sch), ...pad(104) }, qs.map((b) => ({ type: "question", settings: { question: String(b.settings.question ?? ""), answer: String(b.settings.answer ?? "") } })), faqHidden ? { disabled: true } : undefined]] : [];
+    },
+    cta: (layout, sch) => [["v2-cta", { layout, eyebrow: "", heading: c.cta.heading, text: p(c.cta.text), button_label: c.cta.button, button_link: productUrl, ...second, color_scheme: scheme(sch), ...pad(112) }, layout === "band" ? [] : shortFacts.slice(0, 3).map((x) => ({ type: "fact", settings: { label: x.label, value: x.value } }))]],
+    specs: (layout, sch) => realSpecs.length >= 2 ? [["v2-specs", { layout: layout === "tiles" && realSpecs.some((x) => x.value.length > 28) ? "table" : layout, eyebrow: t("Fiche", "Details"), heading: c.specs.heading, image_asset: img(layout === "table" ? im.packshot ?? im.cutout : undefined), note: "", color_scheme: scheme(sch), ...pad(104) }, realSpecs.slice(0, 10).map((x) => ({ type: "spec", settings: { label: x.label, value: x.value } }))]] : [],
+    media: (layout, sch) => {
+      const pics = [im.scene1, im.detail1, im.scene2, im.detail2, im.scene3, im.packshot].filter((f, i, a): f is string => !!f && a.indexOf(f) === i);
+      return pics.length >= 3 ? [["v2-media", { layout, eyebrow: "", heading: c.gallery.heading, color_scheme: scheme(sch), ...pad(96) }, pics.slice(0, layout === "rail" ? 6 : 5).map((f, i) => ({ type: "image", settings: { image_asset: f, fit: "v2-cover", caption: c.gallery.captions[i] ?? "" } }))]] : [];
+    },
+    banner: (layout, sch, opening = false) => {
+      // En ouverture : la photo de campagne et le message principal ; plus bas : l'appel final de la marque.
+      const image = opening ? im.lifestyle ?? im.banner ?? im.hero ?? im.scene1 : im.scene3 ?? im.scene2 ?? im.banner ?? im.lifestyle2;
+      const text = opening ? { eyebrow: c.hero.eyebrow, heading: c.hero.heading, text: p(c.hero.text), button_label: c.hero.cta } : { eyebrow: c.statement.eyebrow, heading: c.cta.heading, text: p(c.cta.text), button_label: c.cta.button };
+      return image ? [["v2-banner", { layout, align: "start", full_width: true, veil: opening ? 40 : 50, image_asset: image, image_alt: input.shopName, ...text, button_link: productUrl, color_scheme: scheme(sch), ...pad(0) }]] : [];
+    },
+    facts: (layout, sch) => {
+      const sv = input.services;
+      const list = svc && sv
+        ? [sv.address ? { icon: "globe", label: t("Adresse", "Address"), value: sv.address.replace(/\n+/g, ", ") } : sv.area ? { icon: "globe", label: t("Zone d'intervention", "Service area"), value: sv.area } : null, sv.hours ? { icon: "clock", label: t("Horaires", "Hours"), value: sv.hours.replace(/\n+/g, " · ") } : null, sv.phone ? { icon: "phone", label: t("Téléphone", "Phone"), value: sv.phone } : null, sv.email ? { icon: "mail", label: t("E-mail", "Email"), value: sv.email } : null].filter((x): x is { icon: string; label: string; value: string } => !!x)
+        : shortFacts.slice(0, 4).map((x) => ({ icon: "check", label: x.label, value: x.value }));
+      return list.length >= 2 ? [["v2-facts", { layout, eyebrow: "", heading: svc ? t("Infos pratiques", "Practical info") : c.specs.heading, text: "", color_scheme: scheme(sch), ...pad(layout === "strip" ? 40 : 96) }, list.map((x) => ({ type: "fact", settings: { icon: x.icon, label: x.label, value: x.value, link: "" } }))]] : [];
+    },
+  };
+  const DIVIDERS = new Set(["creative-divider", "wave-divider", "marquee", "curved-marquee"]);
+  // Ouvertures et médias pleine largeur : collés au bord, sans marge.
+  const FULL_BLEED = new Set(["immersive-video", "slideshow", "hero", "hero-flex", "day-night", "double-banner", "video-showcase"]);
+  const lib: Kit["lib"] = (type, sch, settings = {}, opts = {}) => {
+    const base = { ...settings, color_scheme: scheme(sch), ...(DIVIDERS.has(type) ? {} : FULL_BLEED.has(type) ? pad(0) : pad(96)) };
+    if (!input.fill) return [type, base, [], { disabled: true }];
+    const r = input.fill(type, base, undefined, { dropBlocks: opts.dropBlocks });
+    // Site de services : aucun lien vers une fiche produit ou une collection, les boutons mènent à la prise de contact.
+    // Un bouton sans lien mènerait au catalogue par défaut : il reçoit lui aussi le lien de prise de contact.
+    const relink = (o: Record<string, unknown>) => {
+      if (!svc) return o;
+      const out = Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === "string" && /^\/(products|collections)(\/|$)/.test(v) ? productUrl : v]));
+      for (const [label, link] of [["button_label", "button_link"], ["button2_label", "button2_link"], ["label", "link"]]) if (out[label] && !out[link]) out[link] = productUrl;
+      return out;
+    };
+    return [type, relink(r.settings), r.blocks.map((b) => ({ type: b.type, settings: relink(b.settings) })), { disabled: !r.complete || !!opts.hide }];
+  };
+  // Prêt à montrer : blocs « [À compléter] » retirés quand les autres suffisent, sinon section masquée (réalisations et
+  // infos pratiques exceptées : leurs photos et coordonnées réelles comptent plus qu'un titre ou un horaire à préciser).
+  const PENDING = /\[(?:À compléter|To complete)/;
+  const KEEP_VISIBLE = new Set(["portfolio", "practical-info"]);
+  const WHOLE = new Set(["comparison-table", "routine-steps", "how-to", "exploded-view", "shipping-journey", "scroll-steps", "pricing"]);
+  const NEEDS_BLOCKS = new Set(["features-grid", "stats", "specs-list", "faq", "timeline", "story-circles", "stack-cards", "scroll-story", "horizontal-gallery", "gallery-mosaic", "video-reels", "collection-list", "v2-index", "v2-benefits", "v2-steps", "v2-faq", "v2-specs", "v2-media", "v2-facts"]);
+  const prepare = (r: Row): Row => {
+    if (r[3]?.disabled || KEEP_VISIBLE.has(r[0])) return r;
+    let blocks = r[2];
+    const real = blocks?.filter((b) => !PENDING.test(JSON.stringify(b.settings)));
+    if (blocks && real && real.length < blocks.length && real.length >= Math.min(2, blocks.length) && !WHOLE.has(r[0])) blocks = real;
+    const empty = NEEDS_BLOCKS.has(r[0]) && !blocks?.length;
+    return empty || PENDING.test(JSON.stringify([r[1], blocks ?? []])) ? [r[0], r[1], blocks, { disabled: true }] : [r[0], r[1], blocks, r[3]];
+  };
+  const either: Kit["either"] = (...alts) => {
+    const rows = alts.map((a) => (Array.isArray(a[0]) ? (a as Row[]) : a.length ? [a as Row] : [])).filter((x) => x.length);
+    return rows.find((x) => x.map(prepare).every((r) => !r[3]?.disabled)) ?? rows[0] ?? [];
+  };
+  let index: Row[] = [];
   let gallery = "stack";
   let headerLayout = "logo-left";
   let radius = { button: 40, card: 28 };
@@ -678,6 +841,47 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       break;
   }
 
+  // Thème du catalogue : son caractère (réglages) et sa composition d'accueil, avec les sections de la bibliothèque.
+  const cat = catalogTheme(d.id);
+  const flat = (rows: (Row | Row[])[]): Row[] => rows.flatMap((r) => (Array.isArray(r[0]) ? (r as Row[]) : r.length ? [r as Row] : [])).map(prepare).filter(saysSomethingNew());
+  // Section de texte seul (grande phrase, bandeau) qui redit un titre déjà affiché plus haut : retirée (un projet aux
+  // textes courts ne répète pas trois fois la même phrase).
+  function saysSomethingNew() {
+    const said = new Set<string>();
+    const TEXT_ONLY = new Set(["rich-text", "v2-band"]);
+    return (r: Row) => {
+      if (r[3]?.disabled) return true;
+      const own = [r[1].heading, r[1].heading_em ? `${r[1].heading} ${r[1].heading_em}` : "", r[0] === "v2-band" ? r[1].text : "", ...(r[2] ?? []).filter((b) => b.type === "heading").map((b) => b.settings.text)].map((x) => norm(String(x ?? ""))).filter((x) => x.length > 3);
+      if (TEXT_ONLY.has(r[0]) && own.length && own.every((x) => said.has(x))) return false;
+      for (const x of own) said.add(x);
+      return true;
+    };
+  }
+  const kit: Kit = {
+    t, im, services: !!svc,
+    privacy: t('<p>Désinscription possible à tout moment grâce au lien présent dans chaque e-mail. <a href="/policies/privacy-policy">Politique de confidentialité</a></p>', '<p>Unsubscribe at any time using the link in every email. <a href="/policies/privacy-policy">Privacy policy</a></p>'),
+    heroSplit: (sch, pos, asset) => heroSplit(sch, pos, asset),
+    heroFull, feat, iwt, statementRow, stats, specList, faqSec, marq, cta, newsletter, hgallery, mosaicSec, featured,
+    video: (sch, ratio) => (hasVideo ? [video(sch, ratio)] : []),
+    circles, stackCards, timelineSec, curve, reels, wave, story,
+    v2, lib, either,
+    R: svc?.R,
+  };
+  if (cat) {
+    const L = cat.look;
+    headerLayout = L.headerLayout;
+    radius = L.radius;
+    buttonStyle = L.button;
+    headingCase = L.headingCase;
+    tracking = L.tracking;
+    headingScale = L.headingScale;
+    glow = L.glow;
+    shine = L.shine;
+    darkTheme = L.dark;
+    gallery = L.gallery;
+    index = flat(cat.home(kit));
+  }
+
   // Boutiques multi-produit et niche : grille de produits dès l'ouverture, univers à explorer,
   // liens vers le catalogue. La niche garde le récit du produit phare ; le multi-produit l'allège.
   const catalogProducts = input.products ?? [];
@@ -707,7 +911,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     const why = (sch: 1 | 2 | 3, style = "glow"): Row[] => (features.length >= 2 ? [feat(sch, style)] : []);
     const svcHero = (sch: 1 | 2, pos: "right" | "left"): Row => heroSplit(sch, pos, im.lifestyle ?? im.hero ?? im.scene1 ?? im.banner);
     const svcMarq = (sch: 1 | 2 | 3 | 4, size: string): Row[] => (c.marquee.length >= 2 ? [marq(sch, size)] : []);
-    const recipes: Record<DirectionId, Row[]> = {
+    const recipes: Partial<Record<DirectionId, Row[]>> = {
       atelier: [svcHero(1, "right"), R.servicesList(1, "cards", { withImages: true }), ...why(2), R.method(1, "howto-v"), ...R.portfolio(2, "editorial"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
       clinique: [svcHero(1, "right"), ...R.trust(2), R.servicesList(1, "list"), ...why(2, "cards"), R.method(1, "howto-h"), R.testimonials(1), ...R.portfolio(2, "grid"), R.practical(1), faqSec(2), cta(3)],
       brut: [heroFull(1, "bottom-left", "heading"), ...svcMarq(4, "huge"), R.servicesList(1, "cards"), R.method(2, "timeline"), ...R.portfolio(1, "grid"), R.testimonials(1), R.practical(2), faqSec(1), cta(4)],
@@ -720,7 +924,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       joaillerie: [heroFull(3, "bottom-left", "heading"), R.servicesList(1, "list"), ...statementRow(4, "statement", true), ...R.portfolio(1, "editorial"), R.method(2, "howto-v"), R.testimonials(2), R.practical(1), faqSec(2), cta(3)],
       gourmand: [svcHero(1, "right"), ...statementRow(3, "statement", true), wave(3, 1), R.servicesList(1, "cards", { withImages: true }), wave(1, 4), R.method(4, "howto-h"), wave(4, 1), ...R.portfolio(1, "grid"), R.testimonials(1), R.practical(2), faqSec(1), wave(1, 3), cta(3)],
     };
-    index = recipes[d.id];
+    index = cat ? flat(cat.services(kit)) : recipes[d.id]!;
     // Vague d'ouverture sans phrase centrée (phrase identique au titre) : la vague n'a plus rien à relier.
     if (index[1]?.[0] === "wave-divider") index.splice(1, 1);
   }
@@ -855,13 +1059,15 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     heading_case: headingCase,
     heading_tracking: tracking,
     heading_weight_boost: 0,
-    page_width: d.id === "galerie" ? 1400 : 1320,
-    spacing_scale: d.id === "galerie" ? 110 : 100,
+    page_width: cat ? cat.look.pageWidth : d.id === "galerie" ? 1400 : 1320,
+    spacing_scale: cat ? cat.look.spacing : d.id === "galerie" ? 110 : 100,
+    // Langage des sections V2 (ornements, cadres, rythme) : propre à chaque thème du catalogue.
+    ...(cat ? { ds_language: cat.look.ds, ds_density: cat.look.density } : {}),
     style_preset: d.id,
     button_radius: Math.min(40, radius.button),
     card_radius: Math.min(40, radius.card),
     button_style: buttonStyle,
-    button_uppercase: buttonStyle !== "frame" && d.id !== "gourmand",
+    button_uppercase: cat ? cat.look.buttonUppercase : buttonStyle !== "frame" && d.id !== "gourmand",
     button_shine: shine,
     glow_enabled: glow > 20,
     glow_intensity: glow,

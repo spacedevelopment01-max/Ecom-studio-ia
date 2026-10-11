@@ -330,6 +330,82 @@
           {
             "value": "gourmand",
             "label": "Gourmand"
+          },
+          {
+            "value": "vitrine",
+            "label": "Vitrine — grand magasin, achat direct"
+          },
+          {
+            "value": "manifeste",
+            "label": "Manifeste — typographie engagée"
+          },
+          {
+            "value": "laboratoire",
+            "label": "Laboratoire — précision scientifique"
+          },
+          {
+            "value": "magazine",
+            "label": "Magazine — éditorial à feuilleter"
+          },
+          {
+            "value": "cinema",
+            "label": "Cinéma — tout en vidéo"
+          },
+          {
+            "value": "rituel",
+            "label": "Rituel — soin et gestes lents"
+          },
+          {
+            "value": "horizon",
+            "label": "Horizon — grands espaces"
+          },
+          {
+            "value": "lookbook",
+            "label": "Lookbook — la mode en images"
+          },
+          {
+            "value": "marche",
+            "label": "Marché — ardoise et comptoir"
+          },
+          {
+            "value": "signal",
+            "label": "Signal — technologie sombre"
+          },
+          {
+            "value": "jardin",
+            "label": "Jardin — botanique douce"
+          },
+          {
+            "value": "reception",
+            "label": "Réception — hôtellerie et accueil"
+          },
+          {
+            "value": "cabinet",
+            "label": "Cabinet — expertise et confiance"
+          },
+          {
+            "value": "recre",
+            "label": "Récré — pastels et jeux"
+          },
+          {
+            "value": "epure",
+            "label": "Épure — minimalisme nordique"
+          },
+          {
+            "value": "tribu",
+            "label": "Tribu — communauté et vidéos clients"
+          },
+          {
+            "value": "etabli",
+            "label": "Établi — atelier et savoir-faire"
+          },
+          {
+            "value": "velours",
+            "label": "Velours — luxe sombre et feutré"
+          },
+          {
+            "value": "lancement",
+            "label": "Lancement — sortie de produit"
           }
         ]
       },

@@ -3,6 +3,7 @@
  * les pages attendues, l'appel à l'action selon le mode de contact, et des exports sans produits obligatoires.
  */
 import { describe, expect, it } from "vitest";
+import { CATALOG_IDS } from "@/lib/theme/theme-catalog";
 import { unzipSync, strFromU8 } from "fflate";
 import { compileTheme } from "@/lib/theme/compile";
 import { validateSpec } from "@/lib/theme/ops";
@@ -24,6 +25,7 @@ const visible = (html: string) =>
 const PAGES_FR = ["/", "/pages/prestations", "/pages/a-propos", "/pages/contact", "/pages/faq", "/pages/mentions-legales"];
 const PAGES_EN = ["/", "/pages/services", "/pages/about", "/pages/contact", "/pages/faq", "/pages/legal-notice"];
 const loader = () => null;
+const CATALOG = new Set<string>(CATALOG_IDS);
 
 describe("site d'entreprise de services", () => {
   it.each(DIRECTIONS.map((d) => d.id))("%s : pages attendues, ni panier ni produit ni livraison (FR et EN)", async (dir) => {
@@ -44,7 +46,11 @@ describe("site d'entreprise de services", () => {
         expect(r.html).not.toMatch(/es-cart-link|data-cart-drawer|href="\/p\/products\/|href="\/p\/collections/);
       }
       const home = (await renderPage({ spec, base: "/p", files, cart: [] }, "/", new URLSearchParams())).html;
-      for (const type of ["services-list", "practical-info", "portfolio", "testimonials", "faq", "cta-banner"]) expect(home, `${dir} ${type}`).toContain(`data-es-type="${type}"`);
+      if (CATALOG.has(dir)) {
+        // Thèmes du catalogue : chacun sa composition, mais toujours l'offre et un moyen de joindre l'entreprise.
+        expect(["services-list", "v2-index", "v2-hero"].some((t) => home.includes(`data-es-type="${t}"`)), `${dir} offre`).toBe(true);
+        expect(["practical-info", "v2-facts", "booking", "booking-calendar", "contact-form"].some((t) => home.includes(`data-es-type="${t}"`)), `${dir} contact`).toBe(true);
+      } else for (const type of ["services-list", "practical-info", "portfolio", "testimonials", "faq", "cta-banner"]) expect(home, `${dir} ${type}`).toContain(`data-es-type="${type}"`);
       // Pas d'« Équipe » à compléter sur l'accueil : elle reste sur la page À propos.
       expect(home, `${dir} team`).not.toContain('data-es-type="team"');
       const about = (await renderPage({ spec, base: "/p", files, cart: [] }, pages[2], new URLSearchParams())).html;
