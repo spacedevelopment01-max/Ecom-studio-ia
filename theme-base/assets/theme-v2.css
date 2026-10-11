@@ -86,7 +86,7 @@
 /* immersive : photo pleine largeur, voile directionnel, texte posé dessus (Onde, Nomade, Brume…) */
 .v2-hero__bg { position: absolute; inset: 0; z-index: 0; }
 .v2-hero--immersive { min-height: min(92vh, 900px); display: flex; align-items: center; color: #fff; padding-top: calc(var(--header-h, 72px) + 48px); padding-bottom: 72px; }
-.v2-hero.v2-hero--immersive::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(0, 0, 0, var(--veil, .55)) 0%, rgba(0, 0, 0, calc(var(--veil, .55) * .6)) 42%, rgba(0, 0, 0, 0) 72%), linear-gradient(0deg, rgba(0, 0, 0, calc(var(--veil, .55) * .5)), transparent 35%); }
+.v2-hero.v2-hero--immersive::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(0, 0, 0, .5) 0, rgba(0, 0, 0, 0) calc(var(--header-h, 72px) + 120px)), linear-gradient(90deg, rgba(0, 0, 0, var(--veil, .55)) 0%, rgba(0, 0, 0, calc(var(--veil, .55) * .6)) 42%, rgba(0, 0, 0, 0) 72%), linear-gradient(0deg, rgba(0, 0, 0, calc(var(--veil, .55) * .5)), transparent 35%); }
 .v2-hero--immersive .v2-hero__grid { grid-template-columns: minmax(0, 40rem); width: 100%; z-index: 2; }
 .v2-hero--immersive .v2-display { font-size: clamp(2.6rem, 1rem + 5.8vw, calc(var(--v2-h1) * 1.06)); text-shadow: 0 2px 30px rgba(0, 0, 0, .25); }
 .v2-hero--immersive .v2-em { color: inherit; opacity: .9; }

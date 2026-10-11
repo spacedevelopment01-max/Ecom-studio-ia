@@ -101,6 +101,8 @@ async function shot(page: Page, file: string, full = false) {
   if (full) await page.evaluate(`(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += 600) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 120)); } scrollTo(0, 0); })()`);
   if (full) await page.evaluate(`Promise.all([...document.images].map((i) => { i.loading = "eager"; return i.complete && i.naturalWidth ? null : new Promise((r) => { i.onload = i.onerror = r; setTimeout(r, 15000); }); }))`);
   await page.addStyleTag({ content: still }).catch(() => {});
+  // Capture pleine page : l'en-tête fixe resterait figé au milieu de l'image ; il est replacé en haut.
+  if (full) await page.addStyleTag({ content: "[data-header]{position:absolute!important;top:0!important}" }).catch(() => {});
   await page.waitForTimeout(250);
   await page.screenshot({ path: file, fullPage: full });
 }

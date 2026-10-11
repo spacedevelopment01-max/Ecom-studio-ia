@@ -84,4 +84,25 @@ describe("Décors libres de droits pour les images du produit", async () => {
     expect(log.generations).toEqual([]);
     expect(r.outcomes[0].verdict).not.toBe("FINAL");
   });
+
+  it("produit posé : les restes presque transparents du détourage n'impriment aucun rectangle sur le décor", async () => {
+    const { compositeProduct } = await import("@/lib/image-v2/deps");
+    // Détourage avec une bande voilée (alpha 20) sur toute sa largeur, comme certains détourages réels.
+    const w = 400, h = 300, raw = Buffer.alloc(w * h * 4);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const body = x > 150 && x < 250 && y > 60 && y < 220;
+      raw[i] = raw[i + 1] = raw[i + 2] = body ? 60 : 255;
+      raw[i + 3] = body ? 255 : y > 240 ? 20 : 0;
+    }
+    const cutout = await sharp(raw, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+    const plate = await sharp({ create: { width: 1600, height: 900, channels: 3, background: { r: 200, g: 180, b: 150 } } }).jpeg().toBuffer();
+    const out = await compositeProduct(plate, cutout, "16:9", "none");
+    const { data, info } = await sharp(out).raw().toBuffer({ resolveWithObject: true });
+    // Dans la bande voilée du détourage, loin du produit et au-dessus de son ombre : couleur du décor intacte.
+    const at = (x: number, y: number) => { const i = (y * info.width + x) * info.channels; return Math.abs(data[i] - 200) + Math.abs(data[i + 1] - 180) + Math.abs(data[i + 2] - 150); };
+    const maxDiff = Math.max(at(450, 690), at(1150, 690), at(500, 700), at(1100, 700));
+    expect(maxDiff).toBeLessThan(8);
+  });
 });
+

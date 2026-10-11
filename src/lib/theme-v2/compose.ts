@@ -211,7 +211,12 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     if (shop && splitImage && ticks.length) return ["v2-split", { layout: L === "precision" ? "overlap" : "media-left", fit: "v2-cover", eyebrow: dl?.eyebrow || c.category, heading: dl && dl.heading !== c.name ? dl.heading : t("En détail", "Up close"), text: dl?.text && !c.hero.text.includes(dl.text) ? para(dl.text) : "", image_asset: splitImage, image_alt: c.name, button_label: t("Voir le produit", "View the product"), button_link: productUrl, color_scheme: "scheme-2", padding_top: 112, padding_bottom: 112 }, ticks.map((x) => ({ type: "point", settings: { text: x } }))];
     return null;
   })();
-  const used = new Set([heroImage, splitImage].filter(Boolean));
+  // Une même photo peut porter plusieurs noms de fichier (un par emplacement) : on compare le média lui-même
+  // (identifiant en fin de nom), jamais deux fois la même photo sur une page.
+  const mediaKey = (f: string) => f.match(/-([a-z0-9]{6})\.\w+$/)?.[1] ?? f;
+  const usedKeys = new Set([heroImage, splitImage].filter((f): f is string => !!f).map(mediaKey));
+  const used = { has: (f: string) => usedKeys.has(mediaKey(f)), add: (f: string) => usedKeys.add(mediaKey(f)) };
+  const uniqMedia = (fs: string[]) => fs.filter((f, i, a) => a.findIndex((x) => mediaKey(x) === mediaKey(f)) === i);
   const specs: Sec | null = c.specs.length >= 2 ? [
     "v2-specs",
     { eyebrow: t("Fiche", "Details"), heading: t("Caractéristiques", "Specifications"), image_asset: L === "precision" ? im.packshot ?? "" : "", note: t("Seules les caractéristiques confirmées sont affichées.", "Only confirmed specifications are shown."), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
@@ -259,7 +264,7 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     { layout: bannerLayout, align: "start", full_width: L !== "maison", veil: L === "precision" ? 60 : 50, image_asset: bannerImage, image_alt: c.name, eyebrow: st?.eyebrow || c.category || "", heading: bannerHeading, text: bannerText ? para(bannerText) : "", button_label: shop ? t("Découvrir", "Discover") : primary.label, button_link: shop ? (intent.site === "shop_multi" ? "/collections/all" : productUrl) : primary.link, color_scheme: L === "precision" ? "scheme-3" : L === "craft" || L === "bistro" ? "scheme-4" : "scheme-3", padding_top: L === "maison" ? 24 : 0, padding_bottom: L === "maison" ? 24 : 0 },
   ] : null;
   // Bénéfices illustrés : atouts confirmés, chacun avec une photo de détail encore inutilisée (sinon son pictogramme).
-  const detailPics = [im.detail1, im.detail2, im.scene1, im.scene2, im.packshot].filter((f): f is string => !!f && !used.has(f)).filter((f, i, a) => a.indexOf(f) === i);
+  const detailPics = uniqMedia([im.detail1, im.detail2, im.scene1, im.scene2, im.packshot].filter((f): f is string => !!f && !used.has(f)));
   const benefitItems = (shop || intent.site === "saas") ? offerItems.slice(0, 3) : [];
   const benefits: Sec | null = benefitItems.length >= 2 ? [
     "v2-benefits",
@@ -269,14 +274,14 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
   for (const f of detailPics.slice(0, benefits && benefits[1].layout === "images" ? benefitItems.length : 0)) used.add(f);
 
   // Bannières exclues : ce sont des créations publicitaires avec du texte incrusté, pas des photos.
-  const mediaFiles = [im.packshot, im.detail1, im.scene1, im.scene2, im.detail2, im.scene3].filter((f): f is string => !!f && !used.has(f)).filter((f, i, a) => a.indexOf(f) === i);
+  const mediaFiles = uniqMedia([im.packshot, im.detail1, im.scene1, im.scene2, im.detail2, im.scene3].filter((f): f is string => !!f && !used.has(f)));
   const media: Sec | null = shop && mediaFiles.length >= 3 ? [
     "v2-media",
     { layout: L === "precision" ? "bento" : "rail", eyebrow: "", heading: c.lines.gallery || t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
     mediaFiles.slice(0, 5).map((f) => ({ type: "image", settings: { image_asset: f, caption: "" } })),
   ] : null;
   // Site de services : galerie « En images » avec les photos qui n'ont pas déjà une place (au moins 4, au plus 8).
-  const servicePics = services ? [...c.gallery.slice(7), ...c.gallery.slice(0, 7)].filter((f) => !used.has(f)).filter((f, i, a) => a.indexOf(f) === i).slice(0, 8) : [];
+  const servicePics = services ? [...c.gallery.slice(7), ...c.gallery.slice(0, 7)].filter((f) => !used.has(f)).filter((f, i, a) => a.findIndex((x) => mediaKey(x) === mediaKey(f)) === i).slice(0, 8) : [];
   const serviceMedia: Sec | null = servicePics.length >= 4 ? [
     "v2-media",
     { layout: L === "craft" ? "bento" : "rail", eyebrow: c.category, heading: t("En images", "In pictures"), color_scheme: "scheme-1", padding_top: 104, padding_bottom: 104 },
