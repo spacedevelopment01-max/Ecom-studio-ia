@@ -39,7 +39,7 @@ jobs:
       - name: Tests
         run: npm test
 
-      - name: Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)
+      - name: "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
         run: JOBS=4 scripts/verify-theme.sh
 
       - name: Build de production
