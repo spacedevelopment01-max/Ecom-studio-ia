@@ -38,6 +38,7 @@ import { CTAS, defaultPlatforms, formatsFor, strictestText } from "./platforms";
 import { realAdDeps, type AdsV2Deps } from "./deps";
 import { engineDocKey, latestDoc, saveVersion, userOwned } from "../ad-doc/store";
 import type { AdConcept, AdCopy, AdInsight, AdOutcome, AdReview, AnglePlan, FormatSpec, Platform, VisualConcept } from "./types";
+import { projectRights } from "../plan-gates";
 
 export const ADS_V2_VERSION = "6b.1";
 export const DEFAULT_AD_CAP_EUR = 3;
@@ -101,7 +102,11 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
   const platforms = req.platforms?.length ? req.platforms : defaultPlatforms(p.business);
   const limits = strictestText(platforms);
   const insight = adInsight(p, { audience: req.audience, offer: req.offer });
-  const count = Math.max(1, Math.min(6, req.count ?? 3));
+  // Variantes selon le forfait du projet : essentielles (1 annonce), avancées (jusqu'à 3), complètes (jusqu'à 6).
+  const rights = projectRights(p.id);
+  // (Sans forfait : aucun appel payant possible, la limite ne change rien aux droits.)
+  const maxVariants = !rights || rights.ads === "full" ? 6 : rights.ads === "advanced" ? 3 : 1;
+  const count = Math.max(1, Math.min(maxVariants, req.count ?? 3));
   const { angles, missing } = planAngles(insight, count);
   if (missing) notes.push(`${missing} angle(s) de moins que demandé : pas assez de matière confirmée (rien n'est inventé)`);
   notes.push(...insight.gaps.map((g) => `à compléter : ${g}`));

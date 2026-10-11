@@ -593,7 +593,7 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
   // Modèle explicite (Video Engine V2, s'il est bien un modèle Veo du catalogue), sinon le choix du routage.
   const chosen = input.model && mediaModel("google", input.model)?.adapter === "veo" ? input.model : pickModel("google", "video");
   // Forfait « Créer » : vidéos en qualité standard (modèle rapide) ; les autres forfaits gardent le modèle réglé.
-  const plan = userPlan(ctx.userId);
+  const plan = userPlan(ctx.userId, ctx.projectId);
   const model = plan && PLANS[plan].videoQuality === "fast" ? (FAST_VEO[chosen] ?? chosen) : chosen;
   // Veo facture la durée produite : Veo 3 = 8 s (au moins 8 s réservées) ; Veo 3.1 = 4, 6 ou 8 s demandées.
   const seconds = veoBilledSeconds(input.seconds, model);

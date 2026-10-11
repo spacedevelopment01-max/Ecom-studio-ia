@@ -4,7 +4,7 @@ import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { all, json, one } from "@/lib/db";
 import { L } from "@/lib/i18n-server";
-import { requireCreationPlan } from "@/lib/plan-gates";
+import { requireCreationPlan, requirePlan } from "@/lib/plan-gates";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { runVideoEngineV2 } from "@/lib/video-v2/engine";
 import { VIDEO_FORMATS, VIDEO_INTENTS, VIDEO_PLATFORMS, type VideoDocument } from "@/lib/video-v2/types";
@@ -73,8 +73,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const r = await runVideoEngineV2(null, p.id, { ask: b.ask, offer: b.offer, planOnly: true, maxCostEur: b.maxCostEur });
     return ok({ intent: r.intent, strategy: r.strategy, script: r.script, shots: r.shots.map((s) => ({ id: s.id, part: s.part, durationS: s.durationS, subject: s.subject, method: s.method, why: s.why, paid: s.source.kind === "generate", estimateMicro: s.source.estimateMicro ?? 0 })), estimateMicro: r.estimateMicro, notes: r.notes });
   }
-  // Même droit que les autres créations de vidéos : un forfait de création est requis (aucun passe-droit).
-  requireCreationPlan(user, p.id, b.ask.kind === "ugc" ? "ugc" : "videos");
+  // Montage sans IA (photos et vidéos du projet) : tout forfait ; plans filmés par l'IA : vidéos IA du forfait du
+  // projet (Développer : courtes, Dominer : avancées) ; UGC : Dominer.
+  if (b.ask.kind === "ugc" || b.approveGeneration) requireCreationPlan(user, p.id, b.ask.kind === "ugc" ? "ugc" : "videos");
+  else requirePlan(user, p.id);
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type LIKE 'video.v2%' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
   const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2", label: L("Vidéo : script, plans, montage", "Video: script, shots, editing"), payload: { projectId: p.id, request: { ask: b.ask, offer: b.offer, approveGeneration: !!b.approveGeneration, maxCostEur: b.maxCostEur } } });
   return ok({ jobId: job.id });

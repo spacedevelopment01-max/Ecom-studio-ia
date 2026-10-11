@@ -202,23 +202,24 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
     const { enqueue } = await import("@/lib/jobs");
     const { run } = await import("@/lib/db");
     for (const plan of [null, "creer", "vendre"] as const) {
-      const { user } = await setup(plan);
-      expect(customThemeAccess(user).allowed).toBe(false);
-      expect(customThemeAccess(user).reason).toMatch(/forfait Dominer/);
-      expect(() => assertFullyCustomTheme(user)).toThrow(/forfait Dominer/);
+      const { user, pid } = await setup(plan);
+      expect(customThemeAccess(user, pid).allowed).toBe(false);
+      expect(customThemeAccess(user, pid).reason).toMatch(/forfait Dominer/);
+      expect(() => assertFullyCustomTheme(user, pid)).toThrow(/forfait Dominer/);
     }
     const { user, pid } = await setup("dominer");
-    expect(customThemeAccess(user).allowed).toBe(true);
+    expect(customThemeAccess(user, pid).allowed).toBe(true);
     for (let i = 0; i < CUSTOM_THEMES_PER_MONTH; i++) {
       const j = enqueue({ userId: user.id, projectId: pid, type: "theme.custom", payload: { projectId: pid } });
       run("UPDATE jobs SET status = 'done' WHERE id = ?", j.id);
     }
-    expect(customThemeAccess(user)).toMatchObject({ allowed: false, used: 2 });
-    expect(customThemeAccess(user).reason).toMatch(/déjà créé 2 thèmes/);
+    expect(customThemeAccess(user, pid)).toMatchObject({ allowed: false, used: 2 });
+    expect(customThemeAccess(user, pid).reason).toMatch(/déjà créé 2 thèmes/);
     // Une création échouée ne compte pas ; l'administrateur suit son forfait comme un client (il teste en gratuit et en payant).
     const admin = await setup(null, "admin");
-    expect(customThemeAccess(admin.user).allowed).toBe(false);
-    expect(customThemeAccess((await setup("dominer", "admin")).user).allowed).toBe(true);
+    expect(customThemeAccess(admin.user, admin.pid).allowed).toBe(false);
+    const adm = await setup("dominer", "admin");
+    expect(customThemeAccess(adm.user, adm.pid).allowed).toBe(true);
 
     // Route : 402 clair pour le forfait Vendre.
     const vendre = await setup("vendre");
@@ -232,12 +233,16 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
   it("génération d'une section par l'IA : refusée avec Créer (402), acceptée avec Vendre", async () => {
     const { assertSectionGeneration, sectionGenerationAllowed } = await import("@/lib/theme/custom-access");
     const creer = await setup("creer");
-    expect(sectionGenerationAllowed(creer.user)).toBe(false);
-    expect(() => assertSectionGeneration(creer.user)).toThrow(/Vendre et Dominer/);
-    expect(sectionGenerationAllowed((await setup("vendre")).user)).toBe(true);
-    expect(sectionGenerationAllowed((await setup("dominer")).user)).toBe(true);
-    expect(sectionGenerationAllowed((await setup(null, "admin")).user)).toBe(false);
-    expect(sectionGenerationAllowed((await setup("vendre", "admin")).user)).toBe(true);
+    const allowed = async (plan: Parameters<typeof setup>[0], role?: Parameters<typeof setup>[1]) => {
+      const x = await setup(plan, role);
+      return sectionGenerationAllowed(x.user, x.pid);
+    };
+    expect(sectionGenerationAllowed(creer.user, creer.pid)).toBe(false);
+    expect(() => assertSectionGeneration(creer.user, creer.pid)).toThrow(/Développer et Dominer/);
+    expect(await allowed("vendre")).toBe(true);
+    expect(await allowed("dominer")).toBe(true);
+    expect(await allowed(null, "admin")).toBe(false);
+    expect(await allowed("vendre", "admin")).toBe(true);
 
     const { POST } = await import("@/app/api/projects/[id]/theme/chat/route");
     const send = (pid: string, generate: boolean) =>
@@ -245,7 +250,7 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
     await login(creer.user.id);
     const refused = await send(creer.pid, true);
     expect(refused.status).toBe(402);
-    expect(JSON.stringify(await refused.json())).toMatch(/Vendre et Dominer/);
+    expect(JSON.stringify(await refused.json())).toMatch(/Développer et Dominer/);
     // Une retouche ordinaire par la discussion reste ouverte à Créer.
     expect((await send(creer.pid, false)).status).toBe(200);
     const vendre = await setup("vendre");

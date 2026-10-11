@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { assertThemeAllowed } from "@/lib/plan-gates";
 import { runForUser } from "@/lib/ai/access";
 import { recordBrandDecision } from "@/lib/brain/brand-locks";
 import { body, handle, ok } from "@/lib/http";
@@ -38,6 +39,8 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       unvalidate: z.array(z.string()).optional(),
     }),
   );
+  // Thème choisi pour la boutique : uniquement ceux du forfait du projet (l'actuel reste conservé).
+  if (b.direction && b.direction !== p.brand.direction) assertThemeAllowed(p.id, b.direction, p.brand.direction ?? null);
   const brand = { ...p.brand } as any;
   for (const k of ["name", "tagline", "positioning", "audience", "story", "tone", "palette", "direction"] as const) {
     if (b[k] !== undefined) {

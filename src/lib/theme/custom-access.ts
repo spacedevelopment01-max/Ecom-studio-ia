@@ -1,50 +1,52 @@
 /**
  * Accès aux fonctions « sur mesure » du thème, selon le forfait (source de vérité : PLANS[plan].theme) :
  *  - Créer (« composed ») : thème composé avec la bibliothèque de sections ;
- *  - Vendre (« custom-sections ») : en plus, sections sur mesure écrites par l'IA (« Générer ») ;
+ *  - Développer (« custom-sections ») : en plus, sections sur mesure écrites par l'IA (« Générer ») ;
  *  - Dominer (« fully-custom ») : en plus, thème entièrement sur mesure (chaque section écrite par l'IA).
  * L'administrateur n'est jamais bloqué. Messages clairs, sans crédits ni euros d'IA.
  */
 import { HttpError, type User } from "../auth";
 import { one } from "../db";
-import { currentPeriod, getSubscription, planOf } from "../billing";
+import { currentPeriod } from "../billing";
+import { projectAccountKey, projectPlan } from "../project-billing";
 import { CUSTOM_THEMES_PER_MONTH, PLANS, type PlanId } from "../plans";
 import { L } from "../i18n-server";
 
 export { CUSTOM_THEMES_PER_MONTH };
 
-const planFor = (user: Pick<User, "id" | "role">): PlanId | null => planOf(getSubscription(user.id));
+/** Forfait du PROJET (un abonnement par projet) : le compte n'a pas de forfait global. */
+const planFor = (_user: Pick<User, "id" | "role">, projectId: string): PlanId | null => projectPlan(projectId);
 
 /** Génération d'une section par l'IA : forfaits Vendre et Dominer. */
-export function sectionGenerationAllowed(user: Pick<User, "id" | "role">): boolean {
-  const plan = planFor(user);
+export function sectionGenerationAllowed(user: Pick<User, "id" | "role">, projectId: string): boolean {
+  const plan = planFor(user, projectId);
   return !!plan && PLANS[plan].theme !== "composed";
 }
 
-export function assertSectionGeneration(user: Pick<User, "id" | "role">) {
-  if (sectionGenerationAllowed(user)) return;
+export function assertSectionGeneration(user: Pick<User, "id" | "role">, projectId: string) {
+  if (sectionGenerationAllowed(user, projectId)) return;
   throw new HttpError(
     402,
     L(
-      "Les sections sur mesure écrites par l'IA sont incluses dans les forfaits Vendre et Dominer. Vous pouvez ajouter toutes les sections de la bibliothèque, ou changer de forfait dans « Mon compte ».",
-      "Custom sections written by AI are included in the Sell and Dominate plans. You can add any section from the library, or change your plan in “My account”.",
+      "Les sections sur mesure écrites par l'IA sont incluses dans les forfaits Développer et Dominer. Vous pouvez ajouter toutes les sections de la bibliothèque, ou changer de forfait dans « Mon compte ».",
+      "Custom sections written by AI are included in the Grow and Dominate plans. You can add any section from the library, or change your plan in “My account”.",
     ),
     "plan_required",
   );
 }
 
 /** Thèmes entièrement sur mesure lancés ce mois-ci (tâches en cours, en pause ou terminées ; les échecs et annulations ne comptent pas). */
-export function customThemesUsed(userId: string): number {
-  const { start } = currentPeriod(userId);
-  return one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE user_id = ? AND type = 'theme.custom' AND created_at >= ? AND status NOT IN ('failed','cancelled')", userId, start)!.n;
+export function customThemesUsed(projectId: string): number {
+  const { start } = currentPeriod(projectAccountKey(projectId));
+  return one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id = ? AND type = 'theme.custom' AND created_at >= ? AND status NOT IN ('failed','cancelled')", projectId, start)!.n;
 }
 
 export type CustomThemeAccess = { allowed: boolean; blocked: "plan" | "limit" | null; reason: string | null; used: number; limit: number; renewsAt: number };
 
-export function customThemeAccess(user: Pick<User, "id" | "role">): CustomThemeAccess {
-  const plan = planFor(user);
-  const used = customThemesUsed(user.id);
-  const renewsAt = currentPeriod(user.id).end;
+export function customThemeAccess(user: Pick<User, "id" | "role">, projectId: string): CustomThemeAccess {
+  const plan = planFor(user, projectId);
+  const used = customThemesUsed(projectId);
+  const renewsAt = currentPeriod(projectAccountKey(projectId)).end;
   if (!plan || PLANS[plan].theme !== "fully-custom") {
     return {
       allowed: false,
@@ -73,7 +75,7 @@ export function customThemeAccess(user: Pick<User, "id" | "role">): CustomThemeA
 }
 
 /** Refus clair (402) hors forfait Dominer ou au-delà de la limite mensuelle. */
-export function assertFullyCustomTheme(user: Pick<User, "id" | "role">) {
-  const a = customThemeAccess(user);
+export function assertFullyCustomTheme(user: Pick<User, "id" | "role">, projectId: string) {
+  const a = customThemeAccess(user, projectId);
   if (!a.allowed) throw new HttpError(402, a.reason!, a.blocked === "limit" ? "limit_reached" : "plan_required");
 }

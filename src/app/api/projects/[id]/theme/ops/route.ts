@@ -16,7 +16,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!cur) throw new HttpError(409, L("Aucune boutique.", "No store yet."));
   const b = await body(req, z.object({ ops: z.array(OpSchema).min(1).max(50), summary: z.string().max(200).optional() }));
   // Section sur mesure (Liquid libre) : réservée aux forfaits qui l'incluent, comme « Générer » à l'écran.
-  if (b.ops.some((o) => o.op === "custom_section")) assertSectionGeneration(user);
+  if (b.ops.some((o) => o.op === "custom_section")) assertSectionGeneration(user, p.id);
   const targeted = new Set(b.ops.filter((o: any) => o.template && o.section).map((o: any) => `${o.template}:${o.section}`));
   const res = applyOps(cur.spec, b.ops, {
     targeted,

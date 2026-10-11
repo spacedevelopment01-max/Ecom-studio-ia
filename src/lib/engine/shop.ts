@@ -30,7 +30,7 @@ import { effectivePalette, paletteKey } from "../route-palette";
 import { SHOPIFY_TO_CANVAS } from "../media/fonts";
 import { tidyComposition } from "../theme/tidy";
 import { llmConfigured } from "../ai/llm";
-import { JobCancelled, JobPaused, type JobContext } from "../jobs";
+import { JobCancelled, JobPaused, UserFacingError, type JobContext } from "../jobs";
 import { C, L, contentLang, inBothLangs } from "../i18n-server";
 import type { Bi } from "../step-notes";
 import type { LanguageId } from "../theme-v2/art-direction";
@@ -359,6 +359,13 @@ export async function buildShop(ctx: JobContext | null, projectId: string, opts:
 
 /** Change de direction en conservant les retouches de contenu ? Non : nouvelle version complète, l'ancienne reste restaurable. */
 export async function switchDirection(ctx: JobContext | null, projectId: string, direction: DirectionId) {
+  // Thèmes du forfait du projet (10, 20 ou 30) — revérifié ici, dans le worker, quel que soit le chemin (écran, chat).
+  const { assertThemeAllowed } = await import("../plan-gates");
+  try {
+    assertThemeAllowed(projectId, direction, currentTheme(projectId)?.spec.direction ?? loadProject(projectId).brand?.direction ?? null);
+  } catch (e) {
+    throw new UserFacingError((e as Error).message);
+  }
   return buildShop(ctx, projectId, { direction, useAi: false, summary: inBothLangs(() => L(`Direction ${directionById(direction).name} appliquée`, `${directionById(direction).name} direction applied`)) });
 }
 

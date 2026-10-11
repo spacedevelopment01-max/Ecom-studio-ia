@@ -267,10 +267,16 @@ describe("Social V2 — parcours", async () => {
   });
 
   it("sans forfait : jamais publiée ; publieur réel refusé dans les tests", async () => {
+    // Programmation refusée sans forfait (projet d'un compte gratuit).
     const u = await account(null);
-    const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const free = loadProject(seedImageFixture(u.id, "cosmetic"));
+    const draft = fr(() => createPlanV2(free, { startDate: start(), days: 1, perDay: 1, timezone: "Europe/Paris", platforms: [{ platform: "instagram", connectionId: connect(u.id, "instagram") }], formatMix: { image: 100 } }));
+    expect(schedulePosts(postsOfPlan(draft.planId), (x) => checkPost(free, x)).scheduled).toEqual([]);
+    // Forfait résilié après la programmation : rien ne part au moment de publier.
     const pro = await account();
-    const a = await readyPost(p, "instagram", u.id);
+    const p = loadProject(seedImageFixture(pro.id, "cosmetic"));
+    const a = await readyPost(p, "instagram", pro.id);
+    run("UPDATE subscriptions SET status = 'canceled' WHERE project_id = ?", p.id);
     expect((await publishOne(a.pid, mockPublisher().publisher)).detail).toBe("sans forfait");
     await expect(realPublisher.publish({} as never, {} as never)).rejects.toThrow(/désactivée/);
     expect(pro.id).toBeTruthy();

@@ -209,13 +209,13 @@ export const handlers: Record<string, Handler> = {
       if (mediaTarget && firstMedia && !revert && REPLACE_INTENT.test(message) && !ops.some((o) => o.op === "use_media")) {
         ops.push({ op: "use_media", template: mediaTarget.template, section: mediaTarget.section, ...(mediaTarget.block ? { block: mediaTarget.block } : {}), key: mediaTarget.key, assetId: firstMedia.id });
       }
-      // Sections sur mesure écrites par l'IA : forfaits Vendre et Dominer seulement (Créer : sections de la bibliothèque).
+      // Sections sur mesure écrites par l'IA : forfaits Développer et Dominer seulement (Créer : sections de la bibliothèque).
       const owner = one<{ id: string; role: "client" | "admin" }>("SELECT id, role FROM users WHERE id = ?", p.userId);
-      if (owner && ops.some((o) => o.op === "custom_section") && !sectionGenerationAllowed(owner)) {
+      if (owner && ops.some((o) => o.op === "custom_section") && !sectionGenerationAllowed(owner, p.id)) {
         ops = ops.filter((o) => o.op !== "custom_section");
         reply += L(
-          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans les forfaits Vendre et Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
-          "\n\nPart of the request needed a custom section written by AI: it's included in the Sell and Dominate plans. I did the rest with the library sections.",
+          "\n\nUne partie de la demande demandait une section sur mesure écrite par l'IA : elle est incluse dans les forfaits Développer et Dominer. J'ai fait le reste avec les sections de la bibliothèque.",
+          "\n\nPart of the request needed a custom section written by AI: it's included in the Grow and Dominate plans. I did the rest with the library sections.",
         );
       }
       // Préférences DÉDUITES par l'IA de la demande du client : provenance honnête (déduction, priorité inférieure).

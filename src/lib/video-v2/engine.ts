@@ -10,6 +10,7 @@
  * budget ne suffit pas), plans FINAL mémorisés et réutilisés (une reprise ne repaie jamais un plan accepté), aucune
  * génération sans contrôle de vision disponible, aucune génération sans accord du client (`approveGeneration`).
  */
+import { projectRights } from "../plan-gates";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -43,6 +44,9 @@ import { realVideoDeps, type VideoV2Deps } from "./deps";
 import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, VideoReview, VideoRunResult, VideoScript } from "./types";
 import type { GateDecision } from "../quality/gate";
 import { execTool } from "../exec-tool";
+
+/** Durée maximale d'une vidéo IA « courte » (forfait Développer). */
+export const SHORT_VIDEO_MAX_S = 30;
 
 const exec = execTool;
 export const VIDEO_V2_VERSION = "7a.1";
@@ -87,7 +91,12 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
   const stats = { generated: 0, reused: 0, retries: 0, localShots: 0, skippedForBudget: 0, reviews: 0 };
 
   // 1-2. Intention et stratégie (gratuites).
-  const intent = videoIntent(p, req.ask);
+  const intent0 = videoIntent(p, req.ask);
+  // Forfait du projet (revérifié dans le worker) : Créer = montage sans plans filmés par l'IA ; Développer = vidéos
+  // courtes (au plus SHORT_VIDEO_MAX_S) ; Dominer = vidéos avancées.
+  const rights = projectRights(p.id);
+  const intent = rights?.videos === "short" && intent0.durationS > SHORT_VIDEO_MAX_S ? { ...intent0, durationS: SHORT_VIDEO_MAX_S, reasons: [...intent0.reasons, `durée ramenée à ${SHORT_VIDEO_MAX_S} s (vidéos courtes du forfait ${rights.name.fr})`] } : intent0;
+  if (rights?.videos === "none" && req.approveGeneration) req = { ...req, approveGeneration: false };
   const insight = adInsight(p, { audience: intent.audience, offer: req.offer });
   const strategy = videoStrategy(p, intent, { offer: req.offer, insight });
   notes.push(...strategy.gaps.map((g) => `à compléter : ${g}`));
