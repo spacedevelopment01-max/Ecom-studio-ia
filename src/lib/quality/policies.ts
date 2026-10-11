@@ -5,7 +5,7 @@
  * bloquants (corrigeables) et fatals (direction à abandonner), de la confiance accordée au contrôle et de sa
  * provenance (IA, contrôle local, métadonnées, humain). Changer une politique change POLICY_VERSION.
  */
-export const POLICY_VERSION = "2026-10-p11d";
+export const POLICY_VERSION = "2026-10-p11e";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -136,12 +136,14 @@ export const POLICIES: Record<Deliverable, Policy> = {
   // un détail illustré ne sont pas des défauts ; la lisibilité se juge aux tailles réellement prévues, une version
   // simplifiée servant aux favicons, tampons et broderies). Barrière inchangée : 8/10, nom exact, aucun texte inventé.
   // La seule reprise automatique est GRATUITE (nom réécrit par le studio) : aucune image n'est regénérée sans accord.
+  // Logos de petites entreprises : originalité et singularité ont un plancher plus bas (5) que les autres critères —
+  // montrer le métier par ses éléments attendus n'est pas un défaut ; la beauté du dessin (craft) reste exigée.
   logo_artwork: {
     final: 8,
     retryFloor: 5.5,
     maxRetries: 1,
     minCriterion: 6,
-    criteriaFloors: { relevance: 7, legibility: 7, typography: 7, craft: 7 },
+    criteriaFloors: { relevance: 7, legibility: 7, typography: 7, craft: 7, originality: 5, distinctiveness: 5 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
     fatal: ["resembles_known_brand", "corrupt", "forbidden"],

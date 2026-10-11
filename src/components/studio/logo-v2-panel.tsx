@@ -5,11 +5,11 @@
  * Les logos complets écartés restent visibles (image originale et défauts) ; une nouvelle version dessinée ne se fait
  * qu'à sa demande, coût confirmé.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, RefreshCw, Sparkles, X } from "lucide-react";
 import { api, Badge, Button, Card, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { SectionTitle } from "./common";
+import { JobProgress, SectionTitle, useActive } from "./common";
 import { useT } from "../i18n";
 
 type Proposal = {
@@ -74,6 +74,13 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [style, setStyle] = useState("auto");
   const { data, reload } = useApi<View>(`/api/projects/${id}/brand/logo-v2`, { poll: 5000 });
+  // Logo choisi : l'avancement de son application est montré ici ; à la fin, tout l'onglet se met à jour.
+  const applying = useActive("brand.logo.v2.choose")[0];
+  const wasApplying = useRef(false);
+  useEffect(() => {
+    if (applying) wasApplying.current = true;
+    else if (wasApplying.current) (wasApplying.current = false), reload(), onApplied?.();
+  }, [applying, reload, onApplied]);
   async function post(body: Record<string, unknown>, ok: string, key: string) {
     setBusy(key);
     try {
@@ -129,7 +136,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
               {isStudio && <Badge tone="warn">{t("Provisoire", "Provisional")}</Badge>}
               {data?.applied === p.id && <Badge tone="info">{t("Appliqué", "Applied")}</Badge>}
             </div>
-            {p.url && <img src={p.url} alt={p.territory.name} className="mb-3 w-full rounded-lg bg-[#F4F3EF] object-contain p-4" />}
+            {p.url && <img src={p.url} alt={p.territory.name} className="mb-3 aspect-square w-full rounded-lg bg-[#F4F3EF] object-contain p-3" />}
             <p className="text-sm"><span className="font-medium">{t("Concept : ", "Concept: ")}</span>{p.territory.concept}</p>
             <p className="mt-1 text-sm text-ink-2"><span className="font-medium">{t("Pourquoi : ", "Why: ")}</span>{p.territory.why}</p>
             {p.artwork ? (
@@ -165,25 +172,26 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
       >
         {t("Comme en agence : plusieurs directions vraiment différentes (illustré, minimaliste, typographique, monogramme, emblème, texturé, dégradés…). Avec un modèle d'images capable d'écrire le nom, chaque direction est un logo complet dessiné par l'IA : l'image originale est gardée telle quelle, le nom exact est vérifié (et réécrit par le studio s'il est faux), et le contrôle juge selon le style. Sinon, le logo est construit avec de vraies polices.", "Like an agency: several genuinely different directions (illustrated, minimal, typographic, monogram, emblem, textured, gradients…). With an image model able to write the name, each direction is a full logo drawn by the AI: the original image is kept as is, the exact name is checked (and rewritten by the studio if wrong), and the review judges by style. Otherwise the logo is built with real fonts.")}
       </SectionTitle>
+      {applying && <JobProgress job={applying} className="mb-4" />}
       {data?.job && <SeriesProgress job={data.job} live={data.live ?? null} runId={data.run?.id ?? null} runAt={data.run?.at ?? null} />}
       {data?.tagline && !data.tagline.validated && <p className="mb-3 text-xs text-muted">{t(`Slogan « ${data.tagline.text} » : proposition à valider dans Identité. Il n'apparaîtra dans un logo qu'une fois validé par vous.`, `Slogan "${data.tagline.text}": a proposal to validate in Identity. It will only appear in a logo once you validate it.`)}</p>}
       {data?.run?.stoppedByCostCap && <p className="mb-3 text-xs text-warn">{t("Série arrêtée au plafond de dépense fixé.", "Series stopped at the set spending cap.")}</p>}
       {data?.run && !proposals.length && <p className="mb-3 text-sm text-ink-2">{studio.length ? t("Aucune direction relue par l'IA dans cette série : les versions du studio ci-dessous servent de logo provisoire.", "No AI-reviewed direction in this series: the studio versions below serve as a provisional logo.") : data.run.failures?.length && !data.discarded.length ? t("Aucune proposition : les images n'ont pas pu être produites (raisons ci-dessous).", "No proposal: the images could not be produced (reasons below).") : t("Aucune direction n'a atteint le niveau attendu dans cette série : les essais écartés sont montrés ci-dessous.", "No direction reached the expected level in this series: the rejected attempts are shown below.")}</p>}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {proposals.map((p) => card(p, false))}
       </div>
       {studio.length > 0 && (
         <div className="mt-5">
           <p className="mb-1 text-sm font-medium">{t("Versions du studio (sans relecture par l'IA)", "Studio versions (not reviewed by AI)")}</p>
           <p className="mb-3 text-xs text-muted">{t("Construites et contrôlées localement (nom exact, lisibilité), mais non relues par l'IA : elles servent de logo provisoire. En choisir une en fait votre logo.", "Built and checked locally (exact name, legibility) but not reviewed by AI: they serve as a provisional logo. Choosing one makes it your logo.")}</p>
-          <div className="grid gap-4 sm:grid-cols-2">{studio.map((p) => card(p, true))}</div>
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">{studio.map((p) => card(p, true))}</div>
         </div>
       )}
       {!!data?.discarded.filter((d) => d.artwork && d.url).length && (
         <div className="mt-5">
           <p className="mb-1 text-sm font-medium">{t("Logos complets écartés par le contrôle (images originales)", "Full logos rejected by the check (original images)")}</p>
           <p className="mb-3 text-xs text-muted">{t("Gardés et montrés tels que l'IA les a dessinés, avec la raison. Vous pouvez en choisir un quand le nom est exact (il restera marqué « non validé par le contrôle »), ou demander une nouvelle version.", "Kept and shown as the AI drew them, with the reason. You can choose one when the name is exact (it stays marked \"not validated by the check\"), or ask for a new version.")}</p>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {data.discarded.filter((d) => d.artwork && d.url).map((d) => (
               <div key={d.id} className="min-w-0 rounded-xl border border-dashed border-line p-4">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -192,7 +200,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
                   <Badge tone="warn">{d.score != null ? t(`Non validé ${d.score}/10`, `Not approved ${d.score}/10`) : t("Non validé", "Not approved")}</Badge>
                   {d.artwork && <Badge tone="info">{provenance(d.artwork)}</Badge>}
                 </div>
-                <img src={d.url} alt={d.territory.name} className="mb-3 w-full rounded-lg bg-[#F4F3EF] object-contain p-4" />
+                <img src={d.url} alt={d.territory.name} className="mb-3 aspect-square w-full rounded-lg bg-[#F4F3EF] object-contain p-3" />
                 <p className="text-xs text-ink-2">{d.reason}</p>
                 {!!d.artwork?.issues.length && <p className="mt-1 text-xs text-muted">{d.artwork.issues.join(" ; ")}</p>}
                 {d.artwork?.fix && <p className="mt-1 text-xs text-ink-2"><strong>{t("À corriger dans une nouvelle version :", "To fix in a new version:")}</strong> {d.artwork.fix}</p>}

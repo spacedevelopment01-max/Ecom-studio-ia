@@ -111,7 +111,13 @@ export function renewLease(jid: string): boolean {
   return run("UPDATE jobs SET locked_until=? WHERE id=? AND locked_by=? AND status IN ('running','queued','paused')", now() + LEASE_MS, jid, WORKER_ID).changes === 1;
 }
 
-/** Réserve atomiquement la prochaine tâche prête dont les dépendances sont terminées. */
+/**
+ * Tâches courtes, sans IA, que le client attend devant l'écran (ex. appliquer le logo choisi) : servies AVANT les
+ * longues tâches en file (création complète, série d'images), qui ne passent plus devant elles.
+ */
+export const QUICK_JOBS = ["brand.logo.v2.choose"] as const;
+
+/** Réserve atomiquement la prochaine tâche prête dont les dépendances sont terminées (tâches courtes d'abord). */
 export function claimNext(types?: string[]): Job | null {
   return tx(() => {
     const t = now();
@@ -121,7 +127,7 @@ export function claimNext(types?: string[]): Job | null {
        WHERE ((status = 'queued' AND run_at <= ? AND (locked_until IS NULL OR locked_until < ?)) OR (status = 'running' AND locked_until < ?))
        ${types?.length ? `AND type IN (${types.map(() => "?").join(",")})` : ""}
        ${mine.length ? `AND id NOT IN (${mine.map(() => "?").join(",")})` : ""}
-       ORDER BY run_at ASC LIMIT 25`,
+       ORDER BY CASE WHEN type IN (${QUICK_JOBS.map((q) => `'${q}'`).join(",")}) THEN 0 ELSE 1 END, run_at ASC LIMIT 25`,
       t,
       t,
       t,

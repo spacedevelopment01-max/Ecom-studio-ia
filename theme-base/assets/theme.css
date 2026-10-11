@@ -994,7 +994,7 @@ body.menu-open .es-header, body.menu-open .es-header__inner { backdrop-filter: n
 .dir-gourmand .es-ambient::after { display: none; }
 .dir-gourmand .es-media-frame, .dir-gourmand .es-card__media { border-radius: max(var(--radius-card), 24px); }
 .dir-gourmand .es-richtext--statement .es-heading, .dir-gourmand .es-richtext--reveal .es-heading { text-align: center; }
-.dir-gourmand .es-sticker { background: #fff27a; color: #1e3d33; clip-path: polygon(50% 0, 61% 12%, 77% 6%, 80% 22%, 96% 26%, 90% 41%, 100% 54%, 88% 64%, 92% 80%, 76% 82%, 70% 97%, 55% 90%, 42% 100%, 34% 86%, 18% 92%, 16% 76%, 2% 70%, 10% 56%, 0 42%, 12% 32%, 8% 16%, 24% 14%, 32% 0, 44% 10%); box-shadow: none; }
+.dir-gourmand .es-sticker { background: var(--c-accent); color: var(--c-accent-text); clip-path: polygon(50% 0, 61% 12%, 77% 6%, 80% 22%, 96% 26%, 90% 41%, 100% 54%, 88% 64%, 92% 80%, 76% 82%, 70% 97%, 55% 90%, 42% 100%, 34% 86%, 18% 92%, 16% 76%, 2% 70%, 10% 56%, 0 42%, 12% 32%, 8% 16%, 24% 14%, 32% 0, 44% 10%); box-shadow: none; }
 
 /* ==========================================================================
    Styles d'en-tête de pied de page, de bandeau et de cartes produit

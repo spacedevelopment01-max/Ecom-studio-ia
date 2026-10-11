@@ -104,6 +104,11 @@ export default function TabMarque() {
   useEffect(() => {
     if (!active.length) reloadLogos();
   }, [active.length, reloadLogos]);
+  // Logo V2 choisi : logo, déclinaisons, planche et charte rechargés dès que la tâche d'application est finie.
+  const applying = useActive("brand.logo.v2.choose").length;
+  useEffect(() => {
+    if (!applying) (reloadLogos(), reloadIdent());
+  }, [applying, reloadLogos, reloadIdent]);
   if (!data) return null;
   if (!b) return <div className="mx-auto max-w-3xl"><JobProgress job={active[0]} className="mb-6" /><Empty title={t("La marque n'est pas encore créée", "The brand hasn't been created yet")} icon={<Sparkles className="size-5" />}>{t("Elle apparaît ici dès que l'analyse du produit est terminée.", "It will appear here as soon as the product analysis is complete.")}</Empty></div>;
   const set = (patch: Partial<Brand>) => (setB({ ...b, ...patch }), setDirty(true));

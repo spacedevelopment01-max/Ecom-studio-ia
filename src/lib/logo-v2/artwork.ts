@@ -177,12 +177,63 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
   typographic: { widths: [360, 160, 80], uses: "tous supports ; le nom doit rester lisible en petit" },
 };
 
-/** Pixels sombres (encre) passés en blanc, couleurs gardées : version fidèle pour fonds sombres (déclinaison du studio). */
+/**
+ * Version pour fonds sombres, fidèle au dessin : seuls les traits NOIRS ou gris foncé (contours, texte noir) passent
+ * en blanc ; les couleurs du logo sont gardées. Si des couleurs foncées de la marque restent (brun, bordeaux, bleu
+ * nuit…), elles disparaîtraient sur fond sombre : le logo garde alors ses couleurs et reçoit un liseré clair tout
+ * autour (version « autocollant »), au lieu d'être délavé en blanc.
+ */
 export async function onDarkVersion(png: Buffer): Promise<Buffer> {
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  let opaque = 0;
+  let colouredDark = 0;
   for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 128) continue;
+    opaque++;
+    const mx = Math.max(data[i], data[i + 1], data[i + 2]);
+    const mn = Math.min(data[i], data[i + 1], data[i + 2]);
     const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
-    if (lum < 0.38) data[i] = data[i + 1] = data[i + 2] = 255;
+    const sat = (mx - mn) / 255;
+    if (lum < 0.35 && sat < 0.16) data[i] = data[i + 1] = data[i + 2] = 255;
+    else if (lum < 0.3) colouredDark++;
+  }
+  const flipped = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+  if (!opaque || colouredDark / opaque < 0.1) return flipped;
+  const r = Math.max(4, Math.round(Math.max(info.width, info.height) * 0.014));
+  const pad = { top: r * 2, bottom: r * 2, left: r * 2, right: r * 2, background: { r: 0, g: 0, b: 0, alpha: 0 } };
+  const ext = await sharp(png).extend(pad).png().toBuffer();
+  const m = await sharp(ext).metadata();
+  const mask = await sharp(ext).extractChannel("alpha").blur(r * 0.7).threshold(6).png().toBuffer();
+  const halo = await sharp({ create: { width: m.width!, height: m.height!, channels: 3, background: "#FBF8F2" } }).joinChannel(mask).png().toBuffer();
+  return sharp(halo).composite([{ input: ext }]).png().toBuffer();
+}
+
+/**
+ * Version une couleur (noir seul, blanc seul) qui GARDE le dessin : tout ce qui est coloré ou foncé devient l'encre ;
+ * seules les parties très claires (fond d'assiette, cadran crème, reflets blancs) deviennent des réserves
+ * transparentes, comme un tampon ou une gravure — jamais une tache pleine, et aucun mot coloré perdu.
+ */
+export async function oneColourVersion(png: Buffer, hex: string): Promise<Buffer> {
+  const [cr, cg, cb] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const T = 0.8 * 255;
+  const soft = 12;
+  let opaque = 0;
+  let reserve = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 128) continue;
+    opaque++;
+    if (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2] > T) reserve++;
+  }
+  // Logo presque entièrement clair (encre pâle) : version pleine, sinon il disparaîtrait.
+  const keepAll = !opaque || reserve / opaque > 0.85;
+  for (let i = 0; i < data.length; i += 4) {
+    const lum = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+    const k = keepAll ? 1 : Math.max(0, Math.min(1, (T + soft - lum) / (2 * soft)));
+    data[i] = cr;
+    data[i + 1] = cg;
+    data[i + 2] = cb;
+    data[i + 3] = Math.round(data[i + 3] * k);
   }
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
@@ -220,16 +271,19 @@ export async function artworkBoard(png: Buffer, style: LogoStyle): Promise<Buffe
 /**
  * Poids des critères selon le style : un logo illustré est jugé d'abord sur le métier de l'illustration et la
  * pertinence, un signe minimaliste aussi sur sa tenue en petit, un logo typographique d'abord sur la typographie.
+ * Ligne des petites entreprises (emblème illustré, icône + nom, signature script) : l'originalité et la
+ * singularité pèsent moins que la beauté du dessin et le métier compris au premier regard — ce que le propriétaire
+ * a validé. Le signe minimaliste et le monogramme, eux, vivent de leur idée : leurs poids restent forts.
  */
 export const STYLE_WEIGHTS: Record<LogoStyle, Record<ArtCriterion, number>> = {
-  illustrated: { relevance: 1.3, originality: 1.1, craft: 1.5, typography: 1, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 0.8 },
-  textured: { relevance: 1.2, originality: 1.1, craft: 1.5, typography: 1, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 0.8 },
-  emblem: { relevance: 1.2, originality: 1, craft: 1.3, typography: 1.1, composition: 1.3, colour: 1, legibility: 1, memorability: 1.1, distinctiveness: 1.2, intendedUse: 0.9 },
+  illustrated: { relevance: 1.3, originality: 0.8, craft: 1.5, typography: 1, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 0.9, intendedUse: 0.8 },
+  textured: { relevance: 1.2, originality: 0.8, craft: 1.5, typography: 1, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 0.9, intendedUse: 0.8 },
+  emblem: { relevance: 1.2, originality: 0.8, craft: 1.3, typography: 1.1, composition: 1.3, colour: 1, legibility: 1, memorability: 1.1, distinctiveness: 0.9, intendedUse: 0.9 },
   gradient: { relevance: 1.1, originality: 1.2, craft: 1.3, typography: 1, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 0.9 },
   premium: { relevance: 1.1, originality: 1.1, craft: 1.3, typography: 1.5, composition: 1.2, colour: 1, legibility: 1.1, memorability: 1.1, distinctiveness: 1.2, intendedUse: 1 },
   minimal: { relevance: 1.2, originality: 1.3, craft: 1.1, typography: 1.1, composition: 1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 1.2 },
   monogram: { relevance: 1.1, originality: 1.3, craft: 1.2, typography: 1.2, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 1.1 },
-  typographic: { relevance: 1.1, originality: 1.2, craft: 1.1, typography: 1.6, composition: 1.1, colour: 1, legibility: 1.2, memorability: 1.1, distinctiveness: 1.2, intendedUse: 1 },
+  typographic: { relevance: 1.1, originality: 0.9, craft: 1.1, typography: 1.6, composition: 1.1, colour: 1, legibility: 1.2, memorability: 1.1, distinctiveness: 0.9, intendedUse: 1 },
 };
 
 export function artworkScore(r: Pick<ArtworkReview, "criteria">, style: LogoStyle): number {
@@ -258,15 +312,18 @@ export function gateArtwork(r: ArtworkReview, t: Territory, expected: { name: st
   return decide("logo_artwork", { checker: "ai", score: artworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues: r.issues }, { attempt });
 }
 
-export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur de création exigeant d'une grande agence de branding. Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre (la VERSION CLAIRE produite automatiquement par le studio à partir de ce logo : juge sa tenue, pas le contraste des couleurs d'origine sur fond sombre), puis aux tailles prévues pour ce style.
+export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur artistique qui crée les logos de PETITES ENTREPRISES (artisans, commerces, restaurants, services de proximité). Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre (la VERSION CLAIRE produite automatiquement par le studio à partir de ce logo : juge sa tenue, pas le contraste des couleurs d'origine sur fond sombre), puis aux tailles prévues pour ce style.
 Style demandé : ${style}. Juge-le selon CE style : ${STYLE_GUIDE[style]}
 Une texture, plusieurs couleurs, des dégradés ou un détail illustré ne sont PAS des défauts quand le style les demande. La lisibilité se juge aux usages réellement prévus (${INTENDED_SIZES[style].uses}), pas à 16 px pour un logo illustré : une version simplifiée distincte servira aux favicons, tampons et broderies.
-Juge comme le ferait le client final (une petite entreprise et sa clientèle) : le logo est-il BEAU, soigné, professionnel, et fait-il comprendre le métier au premier regard ? Les éléments attendus du métier (outils, matières, produits, lieu), un emblème rond ou un arc, une écriture script, deux couleurs franches ne sont PAS des défauts quand ils sont bien dessinés ; « clumsyCliche » = seulement un dessin grossier, mal exécuté, façon clip-art bas de gamme.
-Note de 0 à 10 : relevance (évoque CETTE entreprise, son positionnement et sa clientèle), originality, craft (qualité d'exécution du dessin : traits, matière, cohérence, finition), typography (choix, dessin et traitement du texte : graisses, approches, hiérarchie nom / activité), composition (équilibre, proportions, hiérarchie), colour (accord et cohérence des couleurs, contraste), legibility (le nom se lit d'un coup d'œil aux tailles prévues), memorability, distinctiveness (n'appartient qu'à CETTE marque, se distingue des logos du secteur), intendedUse (tient aux usages professionnels prévus).
+Juge comme le ferait le client final (une petite entreprise et sa clientèle) : le logo est-il BEAU, chaleureux, soigné, professionnel, et fait-il comprendre le métier au premier regard ? C'est ce qu'on attend ici, pas un logo conceptuel de grande agence. Les éléments attendus du métier (outils, matières, produits, lieu), un emblème rond ou un arc, une écriture script, deux couleurs franches ne sont PAS des défauts quand ils sont bien dessinés ; « clumsyCliche » = seulement un dessin grossier, mal exécuté, façon clip-art bas de gamme.
+Note de 0 à 10 : relevance (évoque CETTE entreprise, son positionnement et sa clientèle), originality, craft (qualité d'exécution du dessin : traits, matière, cohérence, finition), typography (choix, dessin et traitement du texte : graisses, approches, hiérarchie nom / activité), composition (équilibre, proportions, hiérarchie), colour (accord et cohérence des couleurs, contraste), legibility (le nom se lit d'un coup d'œil aux tailles prévues), memorability, distinctiveness, intendedUse (tient aux usages professionnels prévus).
+originality et distinctiveness se jugent PARMI LES LOGOS DE PETITES ENTREPRISES du même métier : montrer le métier par ses éléments attendus n'est pas un manque d'originalité ; un dessin propre à la marque (composition, couleurs, un détail lié au nom, au lieu ou au caractère de l'enseigne) suffit pour 7 à 8. Réserve les notes basses aux logos interchangeables, à une image de banque posée à côté d'un nom.
+Une ligne d'activité très fine qui devient difficile à lire à la PLUS PETITE taille de la planche est un point d'amélioration à citer dans « issues », pas une raison de descendre legibility sous 7 tant que le NOM se lit.
+Échelle (la même pour chaque critère) : 9-10 = remarquable, rien à reprendre ; 8 = beau et soigné, métier compris au premier regard, aucun défaut visible : le patron serait fier de l'afficher sur sa devanture, son camion, ses cartes ; 7 = correct mais un défaut visible (dessin maladroit par endroits, déséquilibre, couleurs ternes) ; 5-6 = faible ou banal ; 0-4 = raté.
 « genericConcept » = true quand la proposition repose SEULEMENT sur une forme vide sans rien du métier (cercle, triangle ou carré sans contenu), une abstraction que personne ne peut relier au métier, une police standard posée sans composition ou une décoration sans intention. Une icône du métier bien dessinée, un emblème rond réunissant les éléments du métier ou une signature script soignée ne sont PAS des concepts pauvres.
 Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : un mot non autorisé (slogan inventé, lettres parasites). « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
 « artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA. « resemblesKnownBrand » : rappelle un logo connu. « amateur » : rendu de générateur, déséquilibré, daté.
-Sois strict : 8 se mérite ; un logo seulement correct n'est pas présenté. Ne relève pas une note pour faire passer un logo moyen. « issues » : défauts concrets et précis (ce qui ne va pas, où, pourquoi), jamais des généralités. « fix » : LA correction la plus utile pour une nouvelle version — cible (symbol, typography, composition, colour, concept) et consigne précise qui change vraiment la proposition (ex. « symbole trop générique : remplacer le cadre par une construction des deux lettres en réserve », « référence au métier trop littérale : garder le geste, abandonner l'objet ») ; « none » si rien à corriger. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;
+Sois juste : note ce que tu vois selon l'échelle, ni plus ni moins ; ne relève pas une note pour faire passer un logo moyen, ne la baisse pas parce que le logo montre simplement le métier. « issues » : défauts concrets et précis (ce qui ne va pas, où, pourquoi), jamais des généralités. « fix » : LA correction la plus utile pour une nouvelle version — cible (symbol, typography, composition, colour, concept) et consigne précise qui change vraiment la proposition (ex. « symbole trop générique : remplacer le cadre par une construction des deux lettres en réserve », « référence au métier trop littérale : garder le geste, abandonner l'objet ») ; « none » si rien à corriger. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;
 
 // ---------------------------------------------------------------- correction du texte sans redessin
 
