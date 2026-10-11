@@ -225,7 +225,9 @@ export function WorkflowPanel() {
   const { lang } = useLang();
   const t = useT();
   const toast = useToast();
-  const { data, reload } = useApi<List>(`/api/projects/${id}/workflow`, { poll: 3000 });
+  // Rythme rapide seulement pendant une tâche du projet (sinon rien ne change sans action de l'utilisateur).
+  const running = (useProject().data?.active.length ?? 0) > 0;
+  const { data, reload } = useApi<List>(`/api/projects/${id}/workflow`, { poll: running ? 3000 : 20000 });
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const current = data?.workflows.find((w): w is View => !!w && w.workflow.status !== "cancelled") ?? null;

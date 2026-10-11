@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useApi } from "../ui";
 import type { Brand, BusinessType, ProductProfile, ProjectSettings, ServiceProfile, Strategy } from "@/lib/project-types";
 
@@ -29,7 +29,13 @@ export type Overview = {
 const Ctx = createContext<{ id: string; data: Overview | null; reload: () => Promise<void>; error: string | null } | null>(null);
 
 export function ProjectProvider({ id, children }: { id: string; children: ReactNode }) {
-  const first = useApi<Overview>(`/api/projects/${id}`, { poll: 3500 });
+  // Rafraîchi toutes les 3,5 s seulement pendant une tâche ; au repos toutes les 15 s (un lancement depuis l'écran
+  // recharge aussitôt et repasse en rythme rapide).
+  const [busy, setBusy] = useState(true);
+  const first = useApi<Overview>(`/api/projects/${id}`, { poll: busy ? 3500 : 15000 });
+  useEffect(() => {
+    if (first.data) setBusy(first.data.active.length > 0);
+  }, [first.data]);
   return <Ctx.Provider value={{ id, data: first.data, reload: first.reload, error: first.error }}>{children}</Ctx.Provider>;
 }
 

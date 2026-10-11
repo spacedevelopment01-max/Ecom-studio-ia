@@ -544,11 +544,11 @@ export function pendingValidations(p: Project, wf?: Workflow | null): Validation
   return out;
 }
 
-/** Vue complète d'un parcours pour le studio. */
-export function workflowView(wid: string) {
+/** Vue complète d'un parcours pour le studio (projet déjà chargé : passé par l'appelant, une seule lecture). */
+export function workflowView(wid: string, loaded?: Project) {
   const wf = loadWorkflow(wid);
   if (!wf) return null;
-  const p = loadProject(wf.projectId);
+  const p = loaded && loaded.id === wf.projectId ? loaded : loadProject(wf.projectId);
   const plan = wf.planId ? loadPlan(wf.planId) : null;
   const job = wf.jobId ? getJob(wf.jobId) : null;
   const pipe = wf.pipelineJobId ? getJob(wf.pipelineJobId) : null;

@@ -67,7 +67,7 @@ function LegacyCalendrier() {
   }, [mode, cursor]);
   const from = fromZonedTime(format(range[0], "yyyy-MM-dd") + "T00:00:00", tz).getTime();
   const to = fromZonedTime(format(addDays(range[1], 1), "yyyy-MM-dd") + "T00:00:00", tz).getTime();
-  const { data, reload } = useApi<{ posts: PostView[] }>(`/api/projects/${id}/posts?from=${from}&to=${to}`, { poll: 10000 });
+  const { data, reload } = useApi<{ posts: PostView[] }>(`/api/projects/${id}/posts?from=${from}&to=${to}`, { poll: 30000 });
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);

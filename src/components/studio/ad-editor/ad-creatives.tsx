@@ -11,7 +11,9 @@ import { useT } from "../../i18n";
 import { useProject } from "../project-context";
 import { JobProgress, SectionTitle, useActive } from "../common";
 import { useCostConfirm } from "../cost-confirm";
-import { AdEditor } from "./ad-editor";
+import dynamic from "next/dynamic";
+// Éditeur à calques (le plus lourd du studio) : chargé seulement à son ouverture.
+const AdEditor = dynamic(() => import("./ad-editor").then((m) => m.AdEditor), { ssr: false });
 
 type DocItem = { docKey: string; version: number; source: string; edited: boolean; aspect: string | null; platform: string | null; width: number | null; height: number | null; title: string; url: string | null; at: number };
 

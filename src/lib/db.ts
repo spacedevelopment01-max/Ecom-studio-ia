@@ -880,6 +880,13 @@ function migrate(db: Database.Database) {
   }
   // Index sur des colonnes ajoutées : créés après elles.
   db.exec("CREATE INDEX IF NOT EXISTS memory_active ON memory(project_id, state, norm_key)");
+  // Lectures fréquentes (cloche toutes les 30 s, logo / couverture à chaque rafraîchissement du projet, dérivés d'un
+  // fichier, réservations d'une tâche reprise) : index au lieu d'un parcours complet de la table. Aucune donnée
+  // n'est modifiée.
+  db.exec(`CREATE INDEX IF NOT EXISTS notifications_user ON notifications(user_id, created_at);
+    CREATE INDEX IF NOT EXISTS assets_project_role ON assets(project_id, role, created_at);
+    CREATE INDEX IF NOT EXISTS assets_source ON assets(source_asset_id);
+    CREATE INDEX IF NOT EXISTS ai_reservations_job ON ai_reservations(job_id, status);`);
 }
 
 function open(): Database.Database {

@@ -73,7 +73,9 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   const [style, setStyle] = useState("auto");
-  const { data, reload } = useApi<View>(`/api/projects/${id}/brand/logo-v2`, { poll: 5000 });
+  // Rafraîchi seulement pendant une tâche de logo (série, nouvelle version, application du logo choisi).
+  const logoActive = useActive("brand.logo").length > 0;
+  const { data, reload } = useApi<View>(`/api/projects/${id}/brand/logo-v2`, { poll: logoActive ? 5000 : undefined });
   // Logo choisi : l'avancement de son application est montré ici ; à la fin, tout l'onglet se met à jour.
   const applying = useActive("brand.logo.v2.choose")[0];
   const wasApplying = useRef(false);
@@ -81,6 +83,12 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
     if (applying) wasApplying.current = true;
     else if (wasApplying.current) (wasApplying.current = false), reload(), onApplied?.();
   }, [applying, reload, onApplied]);
+  // Fin d'une série ou d'une nouvelle version : dernier rechargement (le rafraîchissement s'arrête au repos).
+  const wasLogoActive = useRef(false);
+  useEffect(() => {
+    if (logoActive) wasLogoActive.current = true;
+    else if (wasLogoActive.current) (wasLogoActive.current = false), reload();
+  }, [logoActive, reload]);
   async function post(body: Record<string, unknown>, ok: string, key: string) {
     setBusy(key);
     try {
