@@ -186,7 +186,7 @@ describe("mêmes garde-fous budgétaires pour OpenAI et Gemini", async () => {
     const u = await client("creer");
     // Reste minuscule : l'accès est ouvert, mais la réservation du coût maximal est refusée.
     run("UPDATE wallets SET monthly_used = monthly_allowance - 50, topup_balance = 0 WHERE user_id = ?", u.id);
-    await expect(text(u.id)).rejects.toThrow(/limite d'utilisation équitable|épuisé/);
+    await expect(text(u.id)).rejects.toThrow(/utilisée à 100 %/);
     expect(calls.send).toBe(0);
     expect(reservations(u.id)).toHaveLength(0);
   });

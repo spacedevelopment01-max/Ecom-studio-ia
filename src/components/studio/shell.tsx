@@ -8,7 +8,8 @@ import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 import { missingActivity } from "./services-editor";
 import { TutorialButton, TutorialsMenuLink } from "./tutorial";
-import { PlanLink, QuotaBanner, useBilling } from "../billing-client";
+import { AiUsageBar, PlanLink, QuotaBanner, useBilling } from "../billing-client";
+import type { BillingView } from "@/lib/plans";
 import { DeleteProjectButton } from "./delete-project";
 
 export const TABS = [
@@ -178,7 +179,7 @@ function MobileLangToggle() {
 }
 
 /** Menu de l'en-tête sur téléphone et tablette (le menu latéral n'y est pas affiché) : compte, tutoriels, déconnexion. */
-function MobileMenu({ tab, business, isAdmin }: { tab: string; business?: "products" | "services"; isAdmin: boolean }) {
+function MobileMenu({ tab, business, isAdmin, billing }: { tab: string; business?: "products" | "services"; isAdmin: boolean; billing: BillingView | null }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -204,6 +205,8 @@ function MobileMenu({ tab, business, isAdmin }: { tab: string; business?: "produ
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-2 grid w-64 gap-0.5 rounded-2xl border border-line bg-card p-1.5 shadow-soft">
+          {/* Téléphone : l'utilisation de l'IA du forfait, en tête du menu (l'en-tête n'a pas la place). */}
+          {billing?.ai && <div onClick={() => setOpen(false)} className="mb-1 border-b border-line px-3 pb-3 pt-2"><AiUsageBar billing={billing} variant="full" /></div>}
           <Link role="menuitem" href="/studio" onClick={() => setOpen(false)} className={item}><LayoutGrid className="size-4 shrink-0" /> {t("Mes projets", "My projects")}</Link>
           <Link role="menuitem" href="/studio/compte" onClick={() => setOpen(false)} className={item}><Settings className="size-4 shrink-0" /> {t("Mon compte", "My account")}</Link>
           <TutorialsMenuLink tab={tab} business={business} />
@@ -343,12 +346,13 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             <TutorialButton tab={tab} business={data?.business} />
             {status ? <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span> : <span className="skeleton hidden h-6 w-24 rounded-full sm:inline-flex" aria-hidden />}
             <ActiveJobs />
+            <AiUsageBar billing={billing} />
             <PlanLink billing={billing} />
             <Notifications />
             <div className="hidden shrink-0 sm:flex"><LangSwitch /></div>
             <MobileLangToggle />
             <ThemeToggle className="shrink-0" />
-            <MobileMenu tab={tab} business={data?.business} isAdmin={me?.user.role === "admin"} />
+            <MobileMenu tab={tab} business={data?.business} isAdmin={me?.user.role === "admin"} billing={billing} />
           </div>
           {/* Onglets (téléphone et tablette) */}
           <nav className="scrollbar-none flex gap-1.5 overflow-x-auto px-4 pb-3 lg:hidden" aria-label={t("Espaces du projet", "Project spaces")}>

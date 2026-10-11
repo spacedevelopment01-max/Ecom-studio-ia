@@ -5,7 +5,7 @@
  * Le worker exécute chaque tâche « pour » son utilisateur (AsyncLocalStorage), avec la portée de décompte des quotas.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
-import { balance, EUR, getSubscription, planOf } from "../billing";
+import { aiReserves, balance, EUR, getSubscription, planOf } from "../billing";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
 
@@ -73,6 +73,31 @@ export function currentUserHasAiCredits(): boolean {
  * forfait et un budget IA suffisant, que l'appel soit fait dans une tâche de fond (runForUser) ou non. Le compte
  * administrateur suit la même règle (pas de passe-droit). Lève une erreur claire, sans rien dépenser.
  */
+export type AiUsage = {
+  /** IA du forfait ce mois-ci, en % utilisé (le reste = 100 − used). */
+  plan: { used: number };
+  /** Crédits achetés en plus du forfait, en % utilisé ; null tant qu'aucun n'a été acheté. */
+  credits: { used: number } | null;
+  /** Forfait et crédits épuisés : l'IA est en pause jusqu'au renouvellement ou à un nouvel achat. */
+  paused: boolean;
+};
+
+/**
+ * Utilisation de l'IA en pourcentages seulement (jamais de montant affiché au client) : une barre pour le forfait du
+ * mois, une pour les crédits achetés. Une barre n'atteint 100 % que lorsqu'elle ne peut plus servir ; l'IA est en
+ * pause quand les deux sont épuisées. `null` sans forfait (découverte gratuite : l'IA n'est pas incluse).
+ */
+export function aiUsage(userId: string): AiUsage | null {
+  if (!planOf(getSubscription(userId))) return null;
+  const paused = balance(userId).available < AI_MIN_AVAILABLE;
+  const r = aiReserves(userId);
+  // Arrondi qui n'affiche jamais 100 % pour une réserve encore utilisable, ni 0 % pour une réserve entamée.
+  const pct = (u: number) => (u >= 1 ? 100 : u <= 0 ? 0 : Math.min(99, Math.max(1, Math.round(u * 100))));
+  const planUsed = r.plan ? pct(r.plan.used) : 100;
+  const credits = r.credits ? { used: pct(r.credits.used) } : null;
+  return { plan: { used: paused ? 100 : planUsed }, credits: credits && paused ? { used: 100 } : credits, paused };
+}
+
 export function assertAiAllowed(userId: string | null | undefined): void {
   if (!userId) throw new UserFacingError(L("Appel à l'IA refusé : aucun compte n'est associé à la demande.", "AI call refused: no account is attached to the request."));
   const off = aiOff.getStore();
@@ -85,5 +110,5 @@ export function assertAiAllowed(userId: string | null | undefined): void {
     throw new UserFacingError(L("Appel à l'IA refusé : compte introuvable.", "AI call refused: account not found."));
   }
   if (!planOf(sub)) throw new UserFacingError(L("L'IA n'est pas incluse dans la découverte gratuite : le moteur local du studio est utilisé.", "AI isn't included in the free discovery: the studio's local engine is used."));
-  if (!hasAiCredits(userId)) throw new UserFacingError(L("Le budget IA de votre forfait est épuisé pour cette période : le moteur local du studio prend le relais.", "Your plan's AI budget is used up for this period: the studio's local engine takes over."));
+  if (!hasAiCredits(userId)) throw new UserFacingError(L("L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait, ou tout de suite avec un pack (Mon compte). En attendant, le moteur local du studio prend le relais.", "Your plan's AI is 100% used: it resumes when your plan renews, or right away with a pack (My account). Meanwhile, the studio's local engine takes over."));
 }

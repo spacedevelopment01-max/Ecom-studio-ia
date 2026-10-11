@@ -6,7 +6,7 @@
  */
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Lock, Sparkles, X } from "lucide-react";
+import { Gauge, Lock, Sparkles, X } from "lucide-react";
 import { cx, formatDate, useApi } from "./ui";
 import { useLang, useT } from "./i18n";
 import { intlLocale, type Lang } from "@/lib/i18n";
@@ -71,6 +71,67 @@ export function PlanRequired({ what, className }: { what: "images" | "videos" | 
         {text} {t("La découverte gratuite montre l'analyse, la marque, les logos et l'aperçu de la boutique.", "The free discovery shows the analysis, brand, logos and store preview.")}{" "}
         <Link href="/studio/compte#forfaits" className="font-semibold underline underline-offset-2">{t("Choisir un forfait", "Choose a plan")}</Link>
       </p>
+    </div>
+  );
+}
+
+/** Couleur d'une barre d'utilisation : normale, proche de la fin (80 %), épuisée (100 %). */
+const usageTone = (pct: number) => (pct >= 100 ? "bg-bad" : pct >= 80 ? "bg-warn" : "bg-signal");
+
+function UsageMeter({ used, label, thin }: { used: number; label: string; thin?: boolean }) {
+  return (
+    <div className={cx("w-full overflow-hidden rounded-full bg-line", thin ? "h-1.5" : "h-2.5")} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={used} aria-label={label}>
+      <div className={cx("h-full rounded-full transition-[width] duration-500", usageTone(used))} style={{ width: `${used > 0 ? Math.max(used, 2) : 0}%` }} />
+    </div>
+  );
+}
+
+/**
+ * Utilisation de l'IA en pourcentages seulement (aucun prix) : une barre pour le forfait du mois (remise à 0 % au
+ * renouvellement), une pour les crédits achetés en plus (seulement s'il y en a). Compacte dans l'en-tête du studio,
+ * détaillée dans « Mon compte » et le menu du téléphone. Forfait et crédits épuisés : l'IA est en pause.
+ */
+export function AiUsageBar({ billing, variant = "compact", className }: { billing: BillingView | null; variant?: "compact" | "full"; className?: string }) {
+  const t = useT();
+  if (!billing?.ai) return null;
+  const { plan, credits, paused } = billing.ai;
+  const date = formatDate(billing.periodEnd, { day: "numeric", month: "long" });
+  const left = (u: number) => 100 - u;
+  if (variant === "compact") {
+    const title = [t(`Forfait : ${plan.used} % utilisés, reste ${left(plan.used)} %`, `Plan: ${plan.used}% used, ${left(plan.used)}% left`), credits && t(`Crédits achetés : reste ${left(credits.used)} %`, `Purchased credits: ${left(credits.used)}% left`), paused && t(`IA en pause jusqu'au ${date}`, `AI paused until ${date}`)].filter(Boolean).join(" · ");
+    return (
+      <Link href="/studio/compte#ia" className={cx("hidden h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-xs font-medium hover:border-ink md:inline-flex", paused ? "text-bad" : "text-ink-2", className)} title={title} aria-label={title}>
+        <Gauge className="size-4 shrink-0" aria-hidden />
+        <span className="grid w-16 gap-1">
+          <UsageMeter used={plan.used} label={t("IA du forfait", "Plan AI")} thin />
+          {credits && <UsageMeter used={credits.used} label={t("Crédits achetés", "Purchased credits")} thin />}
+        </span>
+        <span className="whitespace-nowrap tabular-nums">{paused ? t("En pause", "Paused") : plan.used >= 100 && credits ? t(`Crédits : reste ${left(credits.used)} %`, `Credits: ${left(credits.used)}% left`) : t(`Reste ${left(plan.used)} %`, `${left(plan.used)}% left`)}</span>
+      </Link>
+    );
+  }
+  const row = (title: string, used: number, note: string) => (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="font-medium">{title}</p>
+        <p className="text-sm tabular-nums text-ink-2"><strong className={cx("font-display text-xl", used >= 100 && "text-bad")}>{used} %</strong> {t("utilisés", "used")} · {t(`reste ${left(used)} %`, `${left(used)}% left`)}</p>
+      </div>
+      <div className="mt-2"><UsageMeter used={used} label={title} /></div>
+      <p className="mt-1.5 text-xs text-muted">{note}</p>
+    </div>
+  );
+  return (
+    <div id="ia" className={cx("grid scroll-mt-20 gap-4", className)}>
+      {row(t("IA du forfait", "Plan AI"), plan.used, t(`Repart à 0 % le ${date}.`, `Back to 0% on ${date}.`))}
+      {credits && row(t("Crédits achetés", "Purchased credits"), credits.used, t("Utilisés une fois le forfait épuisé ; ils n'expirent pas.", "Used once the plan is used up; they don't expire."))}
+      {paused ? (
+        <div className="rounded-xl bg-bad/10 p-3 text-sm text-bad">
+          {t(`L'IA est en pause : elle reprend le ${date}, ou tout de suite avec un achat. En attendant, le moteur local du studio continue (sans IA).`, `AI is paused: it resumes on ${date}, or right away with a purchase. Meanwhile, the studio's local engine keeps working (without AI).`)}
+          <div><Link href="/studio/compte#packs" className="mt-2 inline-flex h-10 items-center rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink">{t("Voir les packs", "See the packs")}</Link></div>
+        </div>
+      ) : plan.used >= 80 && !credits ? (
+        <p className="text-sm text-warn">{t(`Bientôt à 100 % : l'IA se mettra en pause jusqu'au ${date}, ou jusqu'à un achat.`, `Almost at 100%: AI will pause until ${date}, or until a purchase.`)}</p>
+      ) : null}
     </div>
   );
 }

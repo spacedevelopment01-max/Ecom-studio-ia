@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ArrowLeft, Plus, Sparkles } from "lucide-react";
 import { api, Badge, Card, cx, formatDate, Logo, ThemeToggle, useApi, useToast } from "./ui";
 import { LangSwitch, useLang, useT } from "./i18n";
-import { formatEur, PACK_FOR_QUOTA, QUOTA_LABEL, Soon, useBilling } from "./billing-client";
+import { AiUsageBar, formatEur, PACK_FOR_QUOTA, QUOTA_LABEL, Soon, useBilling } from "./billing-client";
 import { CompareTable, PackCards, PricingCards } from "./pricing";
 import { SecurityCard } from "./password-forms";
 import { PACKS, PLANS, type Billing, type BillingView, type CheckoutBody, type PackId, type PlanId, type QuotaKey } from "@/lib/plans";
@@ -134,6 +134,7 @@ export function AccountPage() {
               <Card className="p-6 sm:p-7">
                 <h2 className="font-display text-2xl font-semibold">{t("Ce qu'il vous reste ce mois-ci", "What you have left this month")}</h2>
                 <p className="mt-1 text-sm text-muted">{t(`Vos quotas reviennent le ${formatDate(b.periodEnd, { day: "numeric", month: "long" })}.`, `Your quotas come back on ${formatDate(b.periodEnd, { day: "numeric", month: "long" })}.`)}</p>
+                <AiUsageBar billing={b} variant="full" className="mt-5 rounded-2xl border border-line p-4" />
                 <ul className="mt-5 grid gap-5">
                   {QUOTA_ORDER.map((k) => {
                     const q = b.quotas[k];
