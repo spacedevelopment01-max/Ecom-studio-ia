@@ -202,7 +202,15 @@ export async function pushPages(c: Connection, spec: ThemeSpec) {
   const created: string[] = [];
   for (const page of spec.store.pages) {
     const d = await gql(c, `mutation($page: PageCreateInput!){ pageCreate(page: $page){ page{ id handle } userErrors{ field message code } } }`, {
-      page: { title: page.title, handle: page.handle, body: page.body_html || "<p></p>", templateSuffix: page.template_suffix, isPublished: true },
+      page: {
+        title: page.title,
+        handle: page.handle,
+        body: page.body_html || "<p></p>",
+        templateSuffix: page.template_suffix,
+        isPublished: true,
+        // Titre et description pour Google (champs SEO de la page dans Shopify).
+        ...(page.seo?.title ? { metafields: [{ namespace: "global", key: "title_tag", type: "single_line_text_field", value: page.seo.title }, ...(page.seo.description ? [{ namespace: "global", key: "description_tag", type: "multi_line_text_field", value: page.seo.description }] : [])] } : {}),
+      },
     });
     const errs = d?.pageCreate?.userErrors ?? [];
     if (errs.length && !errs.some((e: any) => /taken|already/i.test(e.message))) throw new Error(L(`Page ${page.title} : ${errs.map((e: any) => e.message).join(" ; ")}`, `Page ${page.title}: ${errs.map((e: any) => e.message).join("; ")}`));

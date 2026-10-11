@@ -22,20 +22,21 @@ const get = async (url: string, headers: Record<string, string> = {}) => {
 /** Tests automatiques : jamais d'appel aux banques d'images réelles (réseau lent ou absent, résultats changeants). */
 const offline = () => process.env.STOCK_OFFLINE === "1";
 
-export const stockSources = (): StockSource[] => [...(activeProviderKey("pexels") ? (["pexels"] as const) : []), ...(activeProviderKey("pixabay") ? (["pixabay"] as const) : []), "openverse"];
+/** Pixabay d'abord (le plus riche en photos d'univers et de lieux, bien décrites par mots-clés), puis Pexels, puis Openverse. */
+export const stockSources = (): StockSource[] => [...(activeProviderKey("pixabay") ? (["pixabay"] as const) : []), ...(activeProviderKey("pexels") ? (["pexels"] as const) : []), "openverse"];
 
 export async function searchSource(source: StockSource, query: string, orientation: Orientation, lang: "fr" | "en"): Promise<StockPhoto[]> {
   const q = encodeURIComponent(query);
   if (source === "pexels") {
     const key = activeProviderKey("pexels");
     if (!key) return [];
-    const j = await get(`https://api.pexels.com/v1/search?query=${q}&per_page=15&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: key });
+    const j = await get(`https://api.pexels.com/v1/search?query=${q}&per_page=30&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: key });
     return (j.photos ?? []).map((x: any) => ({ source: "pexels", id: String(x.id), url: x.src?.large2x ?? x.src?.original, page: x.url, author: x.photographer ?? "", license: "Pexels", width: x.width, height: x.height, alt: x.alt ?? "" }));
   }
   if (source === "pixabay") {
     const key = activeProviderKey("pixabay");
     if (!key) return [];
-    const j = await get(`https://pixabay.com/api/?key=${encodeURIComponent(key)}&q=${q}&image_type=photo&orientation=${orientation === "portrait" ? "vertical" : "horizontal"}&safesearch=true&per_page=20&lang=${lang}`);
+    const j = await get(`https://pixabay.com/api/?key=${encodeURIComponent(key)}&q=${q}&image_type=photo&orientation=${orientation === "portrait" ? "vertical" : "horizontal"}&safesearch=true&per_page=60&min_width=1600&order=popular&lang=${lang}`);
     return (j.hits ?? []).map((x: any) => ({ source: "pixabay", id: String(x.id), url: x.largeImageURL ?? x.webformatURL, page: x.pageURL, author: x.user ?? "", license: "Pixabay", width: x.imageWidth, height: x.imageHeight, alt: x.tags ?? "" }));
   }
   const j = await get(`https://api.openverse.org/v1/images/?q=${q}&license=cc0,pdm&page_size=20&mature=false`);
@@ -44,8 +45,11 @@ export async function searchSource(source: StockSource, query: string, orientati
     .map((x: any) => ({ source: "openverse", id: String(x.id), url: x.url, page: x.foreign_landing_url ?? x.url, author: x.creator ?? "", license: String(x.license ?? "cc0").toUpperCase(), width: x.width, height: x.height, alt: x.title ?? "" }));
 }
 
-/** Recherche dans les banques disponibles, dans l'ordre (Pexels, Pixabay, Openverse), sans les photos déjà prises. */
-export async function searchStock(queries: string[], orientation: Orientation, lang: "fr" | "en", exclude: Set<string>): Promise<StockPhoto[]> {
+/**
+ * Recherche dans les banques disponibles, dans l'ordre (Pixabay, Pexels, Openverse), sans les photos déjà prises.
+ * `enough` : nombre de candidates à réunir avant de s'arrêter (une galerie en demande beaucoup plus qu'un emplacement).
+ */
+export async function searchStock(queries: string[], orientation: Orientation, lang: "fr" | "en", exclude: Set<string>, enough = 12): Promise<StockPhoto[]> {
   const out: StockPhoto[] = [];
   if (offline()) return out;
   for (const source of stockSources()) {
@@ -55,7 +59,7 @@ export async function searchStock(queries: string[], orientation: Orientation, l
       } catch (e) {
         console.warn(`[photos libres] ${source} indisponible :`, (e as Error).message);
       }
-      if (out.length >= 6) return out;
+      if (out.length >= enough) return out;
     }
   }
   return out;

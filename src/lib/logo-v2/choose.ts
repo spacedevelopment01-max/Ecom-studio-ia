@@ -88,7 +88,11 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   // simplifiée construite par le studio aux couleurs du logo, vectorielle.
   // Emblème indivisible (nom posé sur le dessin) : le logo entier, en carré, sert de marque réduite — jamais un
   // dessin coupé en deux ni une version reconstruite qui ne lui ressemble pas.
-  const symbol = (await artworkSymbol(png, meta.artwork?.textBox ?? null)) ?? (t.markType === "wordmark" || t.markType === "lettermark" ? null : await squareMark(png));
+  // Emblème (sceau, blason, badge, horloge…) : le nom fait partie du dessin, AUCUNE découpe — le logo entier, en carré.
+  const symbol =
+    t.markType === "emblem" || t.style === "emblem"
+      ? await squareMark(png)
+      : ((await artworkSymbol(png, meta.artwork?.textBox ?? null)) ?? (t.markType === "wordmark" || t.markType === "lettermark" ? null : await squareMark(png)));
   let markPng: Buffer;
   let mark;
   if (symbol) {

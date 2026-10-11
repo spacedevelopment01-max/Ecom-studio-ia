@@ -8,7 +8,7 @@
  * Règle de présence humaine (`people-policy.ts`) : une personne visible sans autorisation du client est un défaut
  * FATAL (`unauthorized_person`) pour toutes les images et vidéos : le média est refusé, jamais publié.
  */
-export const POLICY_VERSION = "2026-10-p11f";
+export const POLICY_VERSION = "2026-10-p11g";
 
 export type Checker = "ai" | "local" | "metadata" | "human" | "none";
 
@@ -142,11 +142,13 @@ export const POLICIES: Record<Deliverable, Policy> = {
   // Logos de petites entreprises : originalité et singularité ont un plancher plus bas (5) que les autres critères —
   // montrer le métier par ses éléments attendus n'est pas un défaut ; la beauté du dessin (craft) reste exigée.
   logo_artwork: {
-    final: 8,
-    retryFloor: 5.5,
+    // Assoupli à la demande du propriétaire (« encore trop sévère, le résultat est très bien ») : un logo beau et
+    // lisible qui montre le métier passe ; seuls les vrais défauts (nom faux, texte en trop, dessin raté) bloquent.
+    final: 7.5,
+    retryFloor: 5,
     maxRetries: 1,
-    minCriterion: 6,
-    criteriaFloors: { relevance: 7, legibility: 7, typography: 7, craft: 7, originality: 5, distinctiveness: 5 },
+    minCriterion: 5.5,
+    criteriaFloors: { relevance: 6.5, legibility: 6.5, typography: 6.5, craft: 6.5, originality: 4.5, distinctiveness: 4.5 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
     fatal: ["resembles_known_brand", "corrupt", "forbidden"],

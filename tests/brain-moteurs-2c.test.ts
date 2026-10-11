@@ -99,7 +99,8 @@ describe("Project Brain 2C — branchement des moteurs", async () => {
     // Seule exception : l'essai d'un prompt libre du client (demande ouverte, pas un moteur) garde la vue complète.
     expect(offenders).toEqual([path.join("src", "app", "api", "projects", "[id]", "prompt-run", "route.ts")]);
     const media = fs.readFileSync(path.join(root, "src/lib/engine/service-media.ts"), "utf8");
-    expect(media.match(/brainContext\(p, "stock"\)/g)).toHaveLength(2);
+    // Recherches des emplacements, des publications et de la galerie du métier : toutes avec le scope « stock ».
+    expect(media.match(/brainContext\(p, "stock"\)/g)).toHaveLength(3);
     expect(fs.readFileSync(path.join(root, "src/lib/engine/full-logo.ts"), "utf8")).toMatch(/brainView\(p, "logo"\)/);
   });
 

@@ -157,7 +157,7 @@ describe("règle de présence humaine", async () => {
   // ------------------------------------------------------------------ barrière de qualité
 
   it("politiques : unauthorized_person est fatal pour toutes les images et vidéos (version des politiques changée)", () => {
-    expect(POLICY_VERSION).toBe("2026-10-p11f");
+    expect(POLICY_VERSION).toBe("2026-10-p11g");
     for (const d of ["image_product", "image_lifestyle", "image_ambiance", "image_v2", "stock_photo", "stock_v2", "stock_video", "video_clip", "ugc_clip", "ad_v2", "video_v2", "video_shot_v2"] as const) expect(POLICIES[d].fatal, d).toContain("unauthorized_person");
   });
 

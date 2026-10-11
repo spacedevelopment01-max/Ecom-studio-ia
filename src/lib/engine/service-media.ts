@@ -175,7 +175,13 @@ export async function earlyServicePhotos(ctx: JobContext, projectId: string): Pr
     console.warn("[photos libres] indisponibles :", (e as Error).message);
     return [] as { id: string; slot: PhotoSlot }[];
   });
-  return got.length;
+  // Galerie du métier : au moins 10 belles photos libres (Pixabay d'abord) pour le site, les publications et les pubs.
+  const more = await stockGallery(ictx, loadProject(projectId), slug(activityName(project))).catch((e) => {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    console.warn("[photos libres] galerie indisponible :", (e as Error).message);
+    return [] as string[];
+  });
+  return got.length + more.length;
 }
 
 /** Recherches de photos libres de droits pour un sujet de publication (IA légère si active, sinon le métier). */
@@ -319,6 +325,72 @@ export async function stockFill(ictx: { userId: string; projectId: string; jobId
     used.add(`${photo.source}:${photo.id}`);
     const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${slot.replace(":", "-")}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, business: "services", format: aspect, slot, subject: want.subject, ...(want.service ? { service: want.service } : {}), ...gate.meta }, status: "review" });
     out.push({ id: a.id, slot });
+  }
+  return out;
+}
+
+/** Photos libres du métier visées pour un site de services (galerie « En images », publications, publicités). */
+export const STOCK_GALLERY_TARGET = 12;
+
+/** Recherches d'une galerie du métier : registre (sans IA) ; métier inconnu et IA active : 8 recherches écrites une fois. */
+async function galleryQueries(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project): Promise<{ lang: "fr" | "en"; queries: string[]; must: string[] }> {
+  const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
+  const known = tradeStock(`${trade} ${p.product.summary ?? ""}`) ?? tradeStock(trade);
+  if (known) return { lang: "en", queries: known.queries.slice(0, 10), must: known.must };
+  if (!llmConfigured()) return { lang: "fr", queries: [trade].filter(Boolean), must: [] };
+  try {
+    const r = await llmJson(
+      {
+        task: "classification",
+        ...ictx,
+        usageKey: `${ictx.jobId ?? "stock"}:stock-gallery-queries`,
+        system: `You write search queries for royalty-free photo libraries (Pixabay first, then Pexels). Short English queries (2 to 4 words), each a DIFFERENT concrete, photographable scene of this business's world: the place, its atmosphere, its props and objects, its tools, a typical moment. Leisure or venue businesses (escape game, bar, spa, bowling…): show the venue, the decor and the props, not generic stock. Never a bare texture or background. No brand names.${peopleAllowedFor(p) ? "" : NO_PEOPLE_QUERY_EN} Also give "must": 8 to 15 single English keywords; a photo whose library tags contain none of them is off-topic.`,
+        context: brainContext(p, "stock"),
+        prompt: `Business: ${trade}${p.product.summary ? `\nSummary: ${p.product.summary}` : ""}\nAnswer { "queries": ["…", 8 queries], "must": ["…"] }.`,
+        maxTokens: 600,
+      },
+      z.object({ queries: z.array(z.string()).max(10), must: z.array(z.string()).max(20) }),
+    );
+    const queries = r.queries.map((q) => q.trim()).filter(Boolean).slice(0, 8);
+    return queries.length ? { lang: "en", queries, must: r.must.map((m) => m.trim().toLowerCase()).filter(Boolean) } : { lang: "fr", queries: [trade], must: [] };
+  } catch (e) {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    return { lang: "fr", queries: [trade].filter(Boolean), must: [] };
+  }
+}
+
+/**
+ * Galerie du métier : complète les photos libres du projet jusqu'à STOCK_GALLERY_TARGET (12), Pixabay en premier, avec
+ * le même contrôle que les emplacements (sujet visible, pas de texte ni de logo, règle de présence humaine). Au plus
+ * 30 candidates regardées ; sans IA, seules les photos dont la description cite le métier sont gardées.
+ */
+export async function stockGallery(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, base: string, target = STOCK_GALLERY_TARGET): Promise<string[]> {
+  const have = all<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'lifestyle' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.stock') IS NOT NULL", p.id).length;
+  if (have >= target) return [];
+  const q = await galleryQueries(ictx, p);
+  if (!q.queries.length) return [];
+  const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
+  const people = peopleAllowedFor(p);
+  let pool = rankStock(await searchStock(queriesFor(q.queries, people), "landscape", q.lang, used, 80), q.must, llmConfigured(), undefined, { people });
+  const subject = slotSubject(p, "hero").subject;
+  const out: string[] = [];
+  let examined = 0;
+  while (pool.length && have + out.length < target && examined < 30) {
+    const chunk = pool.slice(0, 5);
+    const pick = await firstOnTopic(ictx, chunk, subject, (ph) => `${ictx.jobId ?? "stock"}:stockqc:gallery:${ph.source}:${ph.id}`, q.must.length > 0);
+    if (!pick) {
+      examined += chunk.length;
+      pool = pool.slice(chunk.length);
+      continue;
+    }
+    const at = pool.indexOf(pick.photo);
+    examined += at + 1;
+    pool = pool.slice(at + 1);
+    const { photo, img, gate } = pick;
+    used.add(`${photo.source}:${photo.id}`);
+    const n = have + out.length + 1;
+    const a = await saveAsset({ projectId: p.id, userId: p.userId, data: img, name: `${base}-${C("photo-metier", "trade-photo")}-${C("galerie", "gallery")}-${n}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, business: "services", format: "16:9", slot: `gallery:${n}`, subject, ...gate.meta }, status: "review" });
+    out.push(a.id);
   }
   return out;
 }
@@ -481,7 +553,7 @@ export async function refreshSiteBanners(projectId: string) {
 
 export function activityPhotos(projectId: string): Asset[] {
   // Images faites pour un emplacement : photos libres de droits (gratuites) d'abord, puis ambiances générées par IA.
-  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND (origin = 'generated' OR json_extract(meta, '$.stock') IS NOT NULL) AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (json_extract(meta, '$.stock') IS NOT NULL) DESC, created_at DESC LIMIT 24", projectId).filter(isAutoUsable).slice(0, 8);
+  const amb = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'lifestyle' AND (origin = 'generated' OR json_extract(meta, '$.stock') IS NOT NULL) AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' ORDER BY (json_extract(meta, '$.stock') IS NOT NULL) DESC, created_at DESC LIMIT 36", projectId).filter(isAutoUsable).slice(0, 12);
   return [...realActivityPhotos(projectId), ...amb];
 }
 
@@ -806,6 +878,16 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
   });
   created.push(...stockIds.map((x) => x.id));
   const filled = new Set(stockIds.map((x) => x.slot));
+  // Galerie du métier (photos libres, Pixabay d'abord) jusqu'à 12 photos.
+  const galleryIds = await ctx.step("svc:stock-gallery", async () => {
+    ctx.progress(0.2, L("Galerie de photos libres du métier", "Gallery of royalty-free trade photos"));
+    return stockGallery(ictx, loadProject(projectId), base).catch((e) => {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      console.warn("[photos libres] galerie indisponible :", (e as Error).message);
+      return [] as string[];
+    });
+  });
+  created.push(...galleryIds);
 
   // 3. Images d'ambiance (IA d'images disponible) pour les emplacements encore vides : consignes honnêtes, aucun faux client.
   // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).

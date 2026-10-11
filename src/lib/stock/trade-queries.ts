@@ -9,7 +9,7 @@ import { mentionsPerson } from "../people-policy";
 type Trade = { re: RegExp; queries: string[]; must: string[] };
 
 const TRADES: Trade[] = [
-  { re: /platr|plaquist|placo|staff|enduit|stuc/, queries: ["plasterer plastering wall", "drywall plasterboard installation"], must: ["plaster", "plasterer", "plastering", "drywall", "plasterboard", "trowel", "stucco", "putty", "spackle"] },
+  { re: /platr|plaquist|placo|\bstaffeur|\benduit|\bstuc/, queries: ["plasterer plastering wall", "drywall plasterboard installation"], must: ["plaster", "plasterer", "plastering", "drywall", "plasterboard", "trowel", "stucco", "putty", "spackle"] },
   { re: /peint|peinture/, queries: ["painter paint roller wall", "house painter painting room"], must: ["painter", "paint roller", "paintbrush", "paint brush", "painting wall", "wall painting", "paint can", "roller", "decorator"] },
   { re: /carrel|faience|mosaiq/, queries: ["tiler laying floor tiles", "bathroom wall tiling"], must: ["tile", "tiles", "tiling", "tiler", "ceramic", "grout", "mosaic"] },
   { re: /plomb|sanitair|chauffagist/, queries: ["plumber fixing pipes", "plumbing repair wrench"], must: ["plumber", "plumbing", "pipe", "pipes", "faucet", "tap", "wrench", "boiler", "sink"] },
@@ -24,11 +24,12 @@ const TRADES: Trade[] = [
   { re: /facad|ravalement/, queries: ["facade renovation scaffolding", "house exterior painting"], must: ["facade", "scaffolding", "exterior", "render"] },
   { re: /paysag|jardin|elagu|espaces? verts/, queries: ["landscaping garden work", "gardener trimming hedge"], must: ["garden", "gardening", "gardener", "landscaping", "lawn", "hedge", "pruning", "plants"] },
   { re: /piscin/, queries: ["swimming pool maintenance", "pool cleaning"], must: ["pool", "swimming"] },
-  { re: /nettoy|menage|propret/, queries: ["professional cleaning service", "house cleaning mop"], must: ["cleaning", "cleaner", "clean", "mop", "vacuum", "housework"] },
+  { re: /\bnettoy|\bmenage\b|\bproprete/, queries: ["professional cleaning service", "house cleaning mop"], must: ["cleaning", "cleaner", "clean", "mop", "vacuum", "housework"] },
   { re: /demenag/, queries: ["moving boxes removal", "moving truck boxes"], must: ["moving", "boxes", "removal", "cardboard", "relocation"] },
-  { re: /serrur/, queries: ["locksmith door lock", "door lock repair key"], must: ["lock", "locksmith", "key", "keys", "padlock"] },
+  { re: /escape ?(game|room)|salles? d.?enigmes?|jeux? d.?evasion/, queries: ["escape room", "padlock old key"], must: ["escape", "puzzle", "padlock", "lock", "key", "keys", "mystery", "riddle", "clue", "chest", "hourglass", "clock", "labyrinth", "maze", "vintage", "detective", "magnifying", "door"] },
+  { re: /\bserrurier|\bserrurerie/, queries: ["locksmith door lock", "door lock repair key"], must: ["lock", "locksmith", "key", "keys", "padlock"] },
   { re: /vitrer|vitrier|miroit/, queries: ["glazier window installation", "window glass fitting"], must: ["glass", "glazier", "window", "windows", "glazing"] },
-  { re: /garag|mecani|carross|automobil/, queries: ["car mechanic repair garage", "auto repair workshop"], must: ["mechanic", "garage", "car", "engine", "repair", "auto", "vehicle"] },
+  { re: /\bgarag|\bmecanicien|\bmecanique auto|carross/, queries: ["car mechanic repair garage", "auto repair workshop"], must: ["mechanic", "garage", "car", "engine", "repair", "auto", "vehicle"] },
   { re: /coiff/, queries: ["hair salon hairdresser", "hairdresser cutting hair"], must: ["hair", "hairdresser", "salon", "haircut", "hairstyle"] },
   { re: /barbi|barber/, queries: ["barber shop haircut", "barber shaving beard"], must: ["barber", "beard", "haircut", "shaving"] },
   { re: /esthet|beaute|manucur|ongl/, queries: ["beauty salon treatment", "manicure nails salon"], must: ["beauty", "spa", "manicure", "nails", "cosmetic", "skincare", "salon"] },
@@ -37,8 +38,8 @@ const TRADES: Trade[] = [
   { re: /boulang|patiss/, queries: ["artisan bakery bread", "pastry baking kitchen"], must: ["bread", "bakery", "pastry", "baking", "croissant", "cake"] },
   { re: /traiteur|restaura|cuisine du monde/, queries: ["catering food buffet", "chef plating dish"], must: ["food", "catering", "dish", "buffet", "chef", "meal", "cuisine"] },
   { re: /informati|ordinateur|depannage pc/, queries: ["computer repair technician", "laptop repair desk"], must: ["computer", "laptop", "technology", "repair", "keyboard"] },
-  { re: /coach|sport|fitness/, queries: ["fitness training gym", "personal trainer workout"], must: ["fitness", "gym", "workout", "training", "exercise", "sport"] },
-  { re: /architect|decorat|amenagement interieur/, queries: ["interior design living room", "architect plans desk"], must: ["interior", "design", "architecture", "architect", "blueprint", "furniture"] },
+  { re: /\bcoach sportif|\bcoaching sportif|fitness|\bsalle de sport/, queries: ["fitness training gym", "personal trainer workout"], must: ["fitness", "gym", "workout", "training", "exercise", "sport"] },
+  { re: /\barchitect|\bdecorat(eur|rice) d.?interieur|\bamenagement interieur/, queries: ["interior design living room", "architect plans desk"], must: ["interior", "design", "architecture", "architect", "blueprint", "furniture"] },
   { re: /renov|travaux|batiment|multiservice|bricol/, queries: ["home renovation work tools", "house renovation construction"], must: ["renovation", "construction", "tools", "repair", "diy", "builder"] },
 ];
 
