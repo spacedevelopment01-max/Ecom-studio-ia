@@ -10,11 +10,9 @@
  * budget ne suffit pas), plans FINAL mémorisés et réutilisés (une reprise ne repaie jamais un plan accepté), aucune
  * génération sans contrôle de vision disponible, aucune génération sans accord du client (`approveGeneration`).
  */
-import { execFile } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
 import type { JobContext } from "../jobs";
 import { JobCancelled, JobPaused } from "../jobs";
 import { aiActiveFor } from "../ai/access";
@@ -43,8 +41,9 @@ import { disclosureLabel, honestLine, personaPrompt, personaSheet, ugcScriptIssu
 import { realVideoDeps, type VideoV2Deps } from "./deps";
 import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, VideoReview, VideoRunResult, VideoScript } from "./types";
 import type { GateDecision } from "../quality/gate";
+import { execTool } from "../exec-tool";
 
-const exec = promisify(execFile);
+const exec = execTool;
 export const VIDEO_V2_VERSION = "7a.1";
 export const DEFAULT_VIDEO_CAP_EUR = 6;
 

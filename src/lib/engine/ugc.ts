@@ -12,10 +12,8 @@
  */
 import { decide } from "../quality/gate";
 import { gateSave, saveCheck } from "../quality/store";
-import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import sharp from "sharp";
 import { assetData, getAsset, saveAsset } from "../library";
@@ -34,10 +32,11 @@ import { aiCraftReview, brandCraftBrief, craftLoop, ugcCraftIssues, ugcStructure
 import { brainView } from "../ai/context";
 import { C, L, contentLang, uiLang } from "../i18n-server";
 import { activityName, contactLine, realActivityPhotos, isServices, placeLine, serviceCta, serviceItems } from "./service-media";
+import { execTool } from "../exec-tool";
 
 export { cleanUgcScript, ugcIssues };
 
-const exec = promisify(execFile);
+const exec = execTool;
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
 
 export type UgcFormat = "9:16" | "16:9";

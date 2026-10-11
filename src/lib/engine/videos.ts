@@ -8,10 +8,8 @@
 import { decide } from "../quality/gate";
 import { gateSave } from "../quality/store";
 import { checkAmbiance } from "./service-media";
-import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
 import { loadImage } from "@napi-rs/canvas";
 import sharp from "sharp";
 import { assetData, saveAsset, type Asset } from "../library";
@@ -32,8 +30,9 @@ import { C, L } from "../i18n-server";
 import { activityPhotos, isServices, localServiceVideoPlan } from "./service-media";
 import { aiCraftReview, brandCraftBrief, craftLoop, paceVideoPlan, videoPlanIssues, type CraftQuality } from "./ad-craft";
 import { brainView } from "../ai/context";
+import { execTool } from "../exec-tool";
 
-const exec = promisify(execFile);
+const exec = execTool;
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || C("produit", "product");
 
 export type VideoRequest = { format: VideoFormat; goal?: string; useAiClip?: boolean; plan?: VideoSpec; music?: VideoSpec["music"]; url?: string; target?: "ads" | "social" | "shop" };

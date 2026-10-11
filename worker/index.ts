@@ -5,7 +5,8 @@
  */
 import "./env";
 import os from "node:os";
-import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, WORKER_ID, getJob, releaseJob, jobQuotaScope, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
+import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, LeaseLost, WORKER_ID, getJob, releaseJob, jobQuotaScope, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
+import { stopInterruptedPaidJob } from "../src/lib/job-recovery";
 import { retryStripeCancellations } from "../src/lib/payments";
 import { db, logError, now, run } from "../src/lib/db";
 import { enqueueDueV2, recoverStale } from "../src/lib/social-v2/scheduler";
@@ -44,6 +45,11 @@ let stopping = false;
 async function runOne() {
   const job = claimNext(HANDLER_TYPES);
   if (!job) return false;
+  // Reprise d'une tâche interrompue pendant un appel payant : jamais relancée d'office (voir job-recovery.ts).
+  if (job.recovered && runWithLang({ ui: userLang(job.user_id) }, () => stopInterruptedPaidJob(job))) {
+    console.log(`[worker] ✗ ${job.type} ${job.id} : interrompue pendant un appel payant, non relancée d'office`);
+    return true;
+  }
   running++;
   markRunning(job.id);
   // Battement : le bail est prolongé pendant toute l'exécution (un appel IA peut durer plusieurs minutes sans
@@ -65,10 +71,23 @@ async function runOne() {
       const exec = () => handlers[job.type](ctx);
       const guarded = (ctx.payload as { aiOff?: boolean })?.aiOff ? () => withAiDisabled("demande lancée sans devis payant accepté", exec) : exec;
       const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload) }, guarded), jobQuotaScope(job)));
-      runWithLang({ ui: userLang(job.user_id) }, () => completeJob(job.id, result));
+      // Écriture du résultat : en cas d'échec (base occupée…), nouvel essai — jamais une relance du traitement,
+      // qui referait (et repaierait) ce qui vient d'être fait.
+      for (let i = 0; ; i++) {
+        try {
+          runWithLang({ ui: userLang(job.user_id) }, () => completeJob(job.id, result));
+          break;
+        } catch (e) {
+          if (i >= 4) throw e;
+          await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+        }
+      }
       console.log(`[worker] ✓ ${job.type} ${job.id} en ${((Date.now() - started) / 1000).toFixed(1)} s`);
     } catch (e) {
-      if (e instanceof JobCancelled) {
+      if (e instanceof LeaseLost) {
+        // Un autre processus a repris la tâche : celui-ci s'efface sans rien écrire.
+        console.log(`[worker] ⇄ ${job.type} ${job.id} reprise ailleurs, abandon ici`);
+      } else if (e instanceof JobCancelled) {
         releaseJob(job.id);
         console.log(`[worker] ■ ${job.type} ${job.id} annulée`);
       } else if (e instanceof JobPaused) {
@@ -145,11 +164,22 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
+// Arrêt demandé : plus aucune nouvelle tâche ; celles en cours ont jusqu'à 45 s pour finir (un appel payant en
+// cours arrive alors à son terme et son résultat est enregistré). Au-delà, elles sont reprises au redémarrage.
+const STOP_GRACE_MS = 45_000;
 for (const sig of ["SIGINT", "SIGTERM"]) {
   process.on(sig, () => {
+    if (stopping) return;
     stopping = true;
-    console.log("[worker] arrêt demandé ; les tâches en cours seront reprises au redémarrage.");
-    setTimeout(() => process.exit(0), running ? 3000 : 0);
+    console.log(`[worker] arrêt demandé${running ? ` ; ${running} tâche(s) en cours, jusqu'à ${STOP_GRACE_MS / 1000} s pour finir` : ""}.`);
+    const started = Date.now();
+    const wait = setInterval(() => {
+      if (running === 0 || Date.now() - started > STOP_GRACE_MS) {
+        clearInterval(wait);
+        if (running) console.log("[worker] tâches encore en cours : elles seront reprises au redémarrage.");
+        process.exit(0);
+      }
+    }, 250);
   });
 }
 

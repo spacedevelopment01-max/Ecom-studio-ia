@@ -13,6 +13,7 @@ import { serverFont } from "../ad-doc/server";
 import type { AdDocument, Layer } from "../ad-doc/types";
 import { absoluteCues, timeline } from "./doc";
 import type { CameraMove, Clip, VideoDocument } from "./types";
+import { TOOL_TIMEOUT_MS } from "../exec-tool";
 
 type Ctx = any;
 export type VideoSources = { images: RenderEnv["images"]; videos: Map<string, string> };
@@ -238,6 +239,9 @@ export async function renderVideoDoc(doc: VideoDocument, src: VideoSources, outF
   const ff = spawn("ffmpeg", args, { stdio: ["pipe", "ignore", "pipe"] });
   let stderr = "";
   ff.stderr.on("data", (d) => (stderr = (stderr + d.toString()).slice(-3000)));
+  // Encodeur bloqué : arrêté au bout de la durée maximale des outils (la tâche échoue au lieu de rester en cours).
+  const ffTimer = setTimeout(() => ff.kill("SIGKILL"), TOOL_TIMEOUT_MS);
+  ff.on("close", () => clearTimeout(ffTimer));
   const done = new Promise<void>((res, rej) => {
     ff.on("error", rej);
     ff.on("close", (code) => (code === 0 ? res() : rej(new Error(`encodage vidéo impossible (ffmpeg ${code}) : ${stderr.slice(-300)}`))));

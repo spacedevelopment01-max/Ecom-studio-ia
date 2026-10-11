@@ -3,15 +3,14 @@
  * du studio — ou piste de la bibliothèque AVEC licence enregistrée, jamais inventée), effets, atténuation de la
  * musique sous la voix (sidechain), normalisation à l'intensité visée (LUFS) et mesure du résultat.
  */
-import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
 import { synthMusic } from "../media/video";
 import { timeline } from "./doc";
 import type { VideoDocument } from "./types";
+import { execTool } from "../exec-tool";
 
-const exec = promisify(execFile);
+const exec = execTool;
 
 export type AudioFiles = { voice: Map<string, string>; sfx: Map<string, string>; music: string | null };
 export type AudioMeasure = { lufs: number | null; truePeakDb: number | null; durationS: number; silent: boolean };

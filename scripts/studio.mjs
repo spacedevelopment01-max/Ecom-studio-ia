@@ -134,7 +134,7 @@ function stop() {
   for (const p of Object.values(parts)) p.child?.kill("SIGTERM");
   setTimeout(() => {
     for (const p of Object.values(parts)) p.child?.kill("SIGKILL");
-  }, 15_000).unref();
+  }, 60_000).unref();
   finish();
 }
 
