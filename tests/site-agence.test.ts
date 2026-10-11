@@ -198,5 +198,14 @@ describe("Sites niveau agence", async () => {
     expect(types(book.templates.index)).not.toContain("contact-form");
     expect(types(book.templates.index)).toContain("v2-cta");
   });
+
+  it("téléphone : les boutons flottants s'effacent quand un bouton d'achat ou d'envoi est à l'écran (script et style livrés)", () => {
+    const files = compileTheme(hightech.spec);
+    const js = String(files.get("assets/theme.js"));
+    const css = String(files.get("assets/theme.css"));
+    expect(js).toContain("initFabAvoid");
+    expect(js).toMatch(/\[data-add-button\]/);
+    expect(css).toMatch(/\.es-fab\.is-avoiding \{[^}]*pointer-events: none/);
+  });
 });
 

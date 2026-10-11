@@ -1215,3 +1215,6 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .es-trust__icon svg { width: 20px; height: 20px; }
 @media (min-width: 750px) { .es-trust__list { grid-template-columns: repeat(min(var(--n), 4), minmax(0, 1fr)); } }
 .es-custom, .es-apps { padding: var(--pt) 0 var(--pb); }
+
+/* Boutons flottants effacés pendant qu'une action principale (achat, envoi) est à l'écran sur téléphone. */
+.es-fab.is-avoiding { opacity: 0; pointer-events: none; transform: translateY(12px); transition: opacity .3s, transform .3s; }
