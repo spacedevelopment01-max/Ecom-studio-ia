@@ -39,9 +39,9 @@ jobs:
       - name: Tests
         run: npm test
 
-      - name: Shopify Theme Check (11 directions)
+      - name: Shopify Theme Check (30 thèmes)
         run: |
-          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
+          for d in $(npx tsx scripts/list-directions.ts); do
             echo "::group::$d"
             npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-$d" "$d"
             echo "::endgroup::"
@@ -49,7 +49,7 @@ jobs:
 
       - name: Shopify Theme Check (thèmes en anglais)
         run: |
-          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
+          for d in $(npx tsx scripts/list-directions.ts); do
             echo "::group::$d (en)"
             LANG_THEME=en npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-en-$d" "$d"
             echo "::endgroup::"
@@ -57,7 +57,7 @@ jobs:
 
       - name: Shopify Theme Check (boutiques multi-produit et niche)
         run: |
-          for d in atelier brut gourmand flux; do
+          for d in atelier brut gourmand flux vitrine lookbook marche tribu; do
             for t in multi niche; do
               echo "::group::$d / $t"
               npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-$d-$t" "$d" "$t"
@@ -65,9 +65,9 @@ jobs:
             done
           done
 
-      - name: Shopify Theme Check (sites de services, 11 directions, FR et EN)
+      - name: Shopify Theme Check (sites de services, 30 thèmes, FR et EN)
         run: |
-          for d in atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand; do
+          for d in $(npx tsx scripts/list-directions.ts); do
             for l in fr en; do
               echo "::group::$d / services ($l)"
               BUSINESS=services LANG_THEME=$l npx tsx scripts/theme-check.ts "$RUNNER_TEMP/theme-services-$l-$d" "$d"

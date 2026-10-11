@@ -11,7 +11,7 @@
  * Fonctions pures et déterministes (testables, sans coût IA). Le produit réel n'est JAMAIS redessiné : la ligne
  * ne décrit que l'environnement, la lumière et la prise de vue.
  */
-import type { DirectionId, BrandPalette } from "../theme/directions";
+import { baseDirection, type BaseDirectionId, type DirectionId, type BrandPalette } from "../theme/directions";
 import { colorName, contrast, ensureContrast, hsl, isDark, mix, withLightness } from "../color";
 import type { SceneStyle } from "../media/compose";
 import { NO_PEOPLE_EN } from "../people-policy";
@@ -34,7 +34,7 @@ type Mood = {
   creative: CreativeMode;
 };
 
-const MOODS: Record<DirectionId, Mood> = {
+const MOODS: Record<BaseDirectionId, Mood> = {
   atelier: {
     name: t("Lumière de fin de matinée, matières nobles", "Late-morning light, noble materials"),
     light: { source: t("grande fenêtre diffusée par un voilage", "large window diffused through sheer linen"), quality: "soft", from: "left", kelvin: 4800, time: t("fin de matinée", "late morning") },
@@ -302,7 +302,7 @@ export function photoLineInput(p: { product?: { sector?: string | null; visual?:
 /** Ligne photographique d'une marque (déterministe). */
 export function photoLine(input: PhotoLineInput): PhotoLine {
   const direction = (input.direction && input.direction in MOODS ? input.direction : "atelier") as DirectionId;
-  const m = MOODS[direction];
+  const m = MOODS[baseDirection(direction)];
   const pal = input.palette ?? DEFAULT_PAL;
   const sector = SECTOR[input.sector ?? ""] ?? SECTOR.maison;
   const aud = AUDIENCE.filter((a) => a.re.test(input.audience ?? ""));

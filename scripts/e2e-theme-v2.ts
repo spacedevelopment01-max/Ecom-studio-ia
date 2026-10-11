@@ -199,7 +199,9 @@ check("Section déplacée depuis le panneau Structure", homeTypes().join(">") !=
 page.once("dialog", (d) => d.accept());
 const nBefore = idx().order.length;
 await faqRow.hover().catch(() => {});
-await structure.locator("li", { hasText: "Questions V2" }).first().getByRole("button", { name: "Supprimer la section" }).click({ force: true }).catch(() => {});
+// Actions d'une section rangées dans son menu « … » : ouverture du menu, puis « Supprimer la section ».
+await structure.locator("li", { hasText: "Questions V2" }).first().getByRole("button", { name: /^Actions pour/ }).click({ force: true }).catch(() => {});
+await structure.getByRole("menuitem", { name: "Supprimer la section" }).click({ force: true }).catch(() => {});
 await page.waitForTimeout(2500);
 check("Section supprimée (versionnée, réversible)", idx().order.length === nBefore - 1, `${nBefore} → ${idx().order.length}`);
 

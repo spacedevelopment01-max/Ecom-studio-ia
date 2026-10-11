@@ -12,6 +12,8 @@ import { all, json, one } from "../db";
 import { getAsset, type Asset } from "../library";
 import { loadProject, saveThemeVersion, currentTheme, type Project } from "../projects";
 import { buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
+import { libraryFiller } from "../theme/library-fill";
+import { contentContext } from "../theme/section-content";
 import type { ShopCopy } from "../theme/copy";
 import { applyOps, validateSpec, type ThemeOp } from "../theme/ops";
 import type { StoreProduct, ThemeSpec } from "../theme/spec";
@@ -234,7 +236,10 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
   }
   const direction = directionOpt ?? brand.direction;
   ctx?.progress(0.2, L(`Composition de la boutique (direction ${directionById(direction).name})`, `Composing the store (${directionById(direction).name} direction)`));
+  // Sections de la bibliothèque des thèmes du catalogue : remplies avec les textes et les photos du projet.
+  const fill = libraryFiller(files, contentContext(p, { language: contentLang(), store: { shopName: brand.name, product: main, collections: catalog?.collections ?? [], products: catalog?.products } } as unknown as ThemeSpec, false), p.settings.socialLinks);
   const spec = buildSpec({
+    fill,
     direction,
     shopName: brand.name,
     // Couleurs de la piste de logo retenue : le site suit l'identité choisie.

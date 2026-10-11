@@ -1221,3 +1221,118 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 
 /* Taille des boutons (réglage « Taille des boutons ») : texte, marges et hauteur ensemble. */
 .es-button, .v2-btn { zoom: var(--btn-scale, 1); }
+
+/* ===================================================================== Thèmes du catalogue
+   Signature de chaque thème ajouté (theme-catalog.ts) : détails qui le distinguent des autres. */
+
+/* Vitrine — grand magasin : titres compacts, cartes nettes à ombre portée, prix et boutons très lisibles. */
+.dir-vitrine .es-heading { letter-spacing: -.02em; font-weight: 700; }
+.dir-vitrine .es-card, .dir-vitrine .es-features--cards .es-feature { box-shadow: 0 1px 0 rgba(var(--c-text-rgb), .06), 0 12px 28px -18px rgba(var(--c-text-rgb), .35); }
+.dir-vitrine .es-button { letter-spacing: .06em; font-weight: 700; }
+.dir-vitrine .es-eyebrow { color: var(--c-accent); font-weight: 700; }
+
+/* Manifeste — affiche typographique : titres serrés, filets épais, liens et boutons soulignés d'un trait d'accent. */
+.dir-manifeste .es-heading, .dir-manifeste .v2-display, .dir-manifeste .v2-h2 { letter-spacing: -.05em; line-height: .92; }
+.dir-manifeste .es-section + .es-section { border-top: 2px solid rgba(var(--c-text-rgb), .9); }
+.dir-manifeste .es-button, .dir-manifeste .v2-btn { text-decoration-thickness: 3px; text-decoration-color: var(--c-accent); }
+.dir-manifeste .es-eyebrow { font-weight: 700; letter-spacing: .2em; }
+
+/* Laboratoire — précision : chiffres tabulaires, quadrillage discret, cadres fins comme des fiches techniques. */
+.dir-laboratoire .es-section { background-image: linear-gradient(rgba(var(--c-text-rgb), .035) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--c-text-rgb), .035) 1px, transparent 1px); background-size: 48px 48px; }
+.dir-laboratoire .es-media-frame, .dir-laboratoire .es-card__media { box-shadow: 0 0 0 1px rgba(var(--c-text-rgb), .14); }
+.dir-laboratoire .es-specs__row dd, .dir-laboratoire .es-stat__value { font-variant-numeric: tabular-nums; }
+.dir-laboratoire .es-eyebrow { font-family: var(--font-heading); letter-spacing: .16em; }
+
+/* Magazine — mise en page de presse : titres fins, chapeaux en petites capitales, filet sous les titres de section. */
+.dir-magazine .es-heading { font-weight: 500; letter-spacing: -.01em; }
+.dir-magazine .es-section-head { border-bottom: 1px solid rgba(var(--c-text-rgb), .25); padding-bottom: 18px; max-width: none; }
+.dir-magazine .es-eyebrow { font-variant: small-caps; letter-spacing: .08em; text-transform: lowercase; }
+.dir-magazine .es-richtext--quote .es-heading::before { font-size: 3.4em; }
+
+/* Cinéma — salle obscure : images en format large, halo chaud sous les médias, titres espacés. */
+.dir-cinema .es-heading { letter-spacing: .06em; font-weight: 500; }
+.dir-cinema .es-media-frame { box-shadow: 0 60px 120px -70px rgba(var(--c-accent-rgb), calc(var(--glow) * 1.4)); }
+.dir-cinema .es-section { background-image: radial-gradient(900px 400px at 50% 0%, rgba(var(--c-accent-rgb), .06), transparent 70%); }
+.dir-cinema .es-eyebrow { letter-spacing: .3em; }
+
+/* Rituel — douceur : très grandes rondeurs, ombres diffuses rosées, titres en italique léger. */
+.dir-rituel .es-heading em, .dir-rituel .es-accent { font-style: italic; color: var(--c-accent); }
+.dir-rituel .es-media-frame, .dir-rituel .es-card__media { border-radius: max(var(--radius-card), 32px); box-shadow: 0 40px 80px -50px rgba(var(--c-accent-rgb), .45); }
+.dir-rituel .es-feature, .dir-rituel .es-card { border-radius: max(var(--radius-card), 28px); }
+
+/* Horizon — grands espaces : capitales larges, images panoramiques, lignes d'horizon entre les sections. */
+.dir-horizon .es-heading { letter-spacing: .02em; }
+.dir-horizon .es-section + .es-section::before { content: ""; position: absolute; left: 50%; top: 0; width: min(120px, 20%); height: 1px; transform: translateX(-50%); background: rgba(var(--c-text-rgb), .35); }
+.dir-horizon .es-media-frame { border-radius: max(var(--radius-card), 4px); }
+.dir-horizon .es-features--lines .es-feature { border-top-width: 2px; }
+
+/* Lookbook — mode : capitales très espacées, cadres nets, légendes en petites capitales. */
+.dir-lookbook .es-heading { letter-spacing: .14em; font-weight: 500; }
+.dir-lookbook .es-media-frame, .dir-lookbook .es-card__media, .dir-lookbook .es-mosaic__item img { border-radius: 0; }
+.dir-lookbook .es-mosaic__item figcaption { background: transparent; position: static; padding: 8px 0 0; text-transform: uppercase; letter-spacing: .18em; font-size: .72rem; }
+.dir-lookbook .es-eyebrow { letter-spacing: .3em; }
+
+/* Marché — comptoir : titres gras, cartes à bordure franche, fonds kraft et ardoise. */
+.dir-marche .es-heading { font-weight: 700; letter-spacing: -.015em; }
+.dir-marche .es-card, .dir-marche .es-feature { border: 2px solid rgba(var(--c-text-rgb), .85); box-shadow: 4px 4px 0 rgba(var(--c-text-rgb), .85); }
+.dir-marche .es-button { box-shadow: 3px 3px 0 rgba(var(--c-text-rgb), .9); }
+.dir-marche .es-button:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 rgba(var(--c-text-rgb), .9); }
+
+/* Signal — technologie : contours lumineux, coins coupés, titres très serrés. */
+.dir-signal .es-heading { letter-spacing: -.045em; line-height: .98; }
+.dir-signal .es-media-frame, .dir-signal .es-card { box-shadow: 0 0 0 1px rgba(var(--c-accent-rgb), .35), 0 0 calc(var(--glow) * 60px) -20px rgba(var(--c-accent-rgb), .5); }
+.dir-signal .es-card, .dir-signal .es-feature { clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
+.dir-signal .es-eyebrow { font-family: var(--font-body); letter-spacing: .22em; color: var(--c-accent); }
+
+/* Jardin — botanique : grain végétal discret, médias en arche, titres fins. */
+.dir-jardin .es-heading { font-weight: 400; letter-spacing: -.01em; }
+.dir-jardin .es-media-frame { border-radius: 999px 999px max(var(--radius-card), 24px) max(var(--radius-card), 24px); }
+.dir-jardin .es-section::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .035; background-image: radial-gradient(currentColor .8px, transparent .8px); background-size: 6px 6px; }
+
+/* Réception — hôtellerie : capitales fines espacées, double filet sous les titres, cadres dorés. */
+.dir-reception .es-heading { letter-spacing: .12em; font-weight: 400; }
+.dir-reception .es-section-head::after { content: ""; display: block; width: 56px; height: 5px; margin-top: 18px; border-top: 1px solid var(--c-accent); border-bottom: 1px solid var(--c-accent); }
+.dir-reception .es-section-head--center::after { margin-inline: auto; }
+.dir-reception .es-media-frame { box-shadow: 0 0 0 1px rgba(var(--c-accent-rgb), .5); outline: 1px solid rgba(var(--c-accent-rgb), .25); outline-offset: 8px; }
+
+/* Cabinet — expertise : serif de presse, numérotation sobre, filets verticaux, aucune fantaisie. */
+.dir-cabinet .es-heading { letter-spacing: -.01em; }
+.dir-cabinet .es-section-head { border-left: 3px solid var(--c-accent); padding-left: 18px; }
+.dir-cabinet .es-section-head--center { border-left: 0; padding-left: 0; }
+.dir-cabinet .es-button { letter-spacing: .02em; }
+
+/* Récré — jeu : rebonds, cartes inclinées en alternance, gros contours ronds. */
+.dir-recre { --ease-out: cubic-bezier(.34, 1.7, .64, 1); }
+.dir-recre .es-heading { letter-spacing: -.03em; }
+.dir-recre .es-features--cards .es-feature:nth-child(odd) { transform: rotate(-1.5deg); }
+.dir-recre .es-features--cards .es-feature:nth-child(even) { transform: rotate(1.5deg); }
+.dir-recre .es-media-frame, .dir-recre .es-card__media { border-radius: max(var(--radius-card), 36px); border: 4px solid var(--c-surface); }
+
+/* Épure — minimalisme : aucun ornement, titres légers, beaucoup de respiration, boutons soulignés fins. */
+.dir-epure .es-heading { font-weight: 400; letter-spacing: -.03em; }
+.dir-epure .es-button { box-shadow: none; text-decoration-thickness: 1px; }
+.dir-epure .es-media-frame, .dir-epure .es-card__media { border-radius: 0; box-shadow: none; }
+.dir-epure .es-eyebrow { color: var(--c-muted); letter-spacing: .1em; }
+
+/* Tribu — communauté : autocollants inclinés, images arrondies à bord épais, titres gras. */
+.dir-tribu .es-heading { letter-spacing: -.035em; }
+.dir-tribu .es-media-frame, .dir-tribu .es-card__media { border-radius: max(var(--radius-card), 20px); box-shadow: 0 0 0 3px var(--c-text); }
+.dir-tribu .es-eyebrow { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--c-accent); color: var(--c-accent-text); transform: rotate(-2deg); }
+
+/* Établi — atelier : capitales franches, cadres à double trait, texte courant en serif. */
+.dir-etabli .es-heading { letter-spacing: .03em; }
+.dir-etabli .es-media-frame, .dir-etabli .es-card { box-shadow: 0 0 0 1px rgba(var(--c-text-rgb), .8), 6px 6px 0 -1px rgba(var(--c-text-rgb), .12); }
+.dir-etabli .es-eyebrow { font-family: var(--font-heading); letter-spacing: .18em; }
+.dir-etabli .es-button { letter-spacing: .1em; text-transform: uppercase; }
+
+/* Velours — luxe sombre : reflets dorés, titres lumineux, voile chaud sur les sections. */
+.dir-velours .es-heading { letter-spacing: -.01em; }
+.dir-velours .es-heading em, .dir-velours .es-accent { font-style: italic; color: var(--c-accent); }
+.dir-velours .es-section { background-image: radial-gradient(1000px 500px at 0% 0%, rgba(var(--c-accent-rgb), .07), transparent 60%); }
+.dir-velours .es-media-frame { box-shadow: 0 0 0 1px rgba(var(--c-accent-rgb), .35), 0 50px 100px -60px rgba(0, 0, 0, .8); }
+
+/* Lancement — sortie : capitales géantes, bandeau incliné, contours néon sur les cartes. */
+.dir-lancement .es-heading { letter-spacing: -.035em; line-height: .9; }
+.dir-lancement .es-marquee { transform: rotate(-1.5deg) scale(1.02); }
+.dir-lancement .es-card, .dir-lancement .es-media-frame { box-shadow: 0 0 0 1px rgba(var(--c-accent-rgb), .6); }
+.dir-lancement .es-eyebrow { color: var(--c-accent); letter-spacing: .3em; }

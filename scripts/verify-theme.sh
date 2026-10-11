@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # Vérification du thème Shopify, comme la CI GitHub (.github/workflows/ci.yml), lancée en local avant d'envoyer.
 #
-#   scripts/verify-theme.sh            complet : 11 directions FR et EN, multi-produit et niche, services FR et EN, ZIP client
-#   scripts/verify-theme.sh --rapide   échantillon : 3 directions (produits FR, EN, multi, services FR/EN) + ZIP
+#   scripts/verify-theme.sh            complet : 30 thèmes FR et EN, multi-produit et niche, services FR et EN, ZIP client
+#   scripts/verify-theme.sh --rapide   échantillon : 5 thèmes (produits FR, EN, multi, services FR/EN) + ZIP
 #
 # Sortie : une ligne par cas (✓ ou ✗) ; le détail des erreurs Theme Check des cas en échec ; code de sortie 1 s'il y en a.
 set -u
 cd "$(dirname "$0")/.."
 
-ALL="atelier clinique brut terroir nocturne pop galerie elan flux joaillerie gourmand"
-MULTI="atelier brut gourmand flux"
-if [ "${1:-}" = "--rapide" ]; then ALL="atelier pop galerie"; MULTI="atelier"; fi
+ALL="$(npx tsx scripts/list-directions.ts)"
+MULTI="atelier brut gourmand flux vitrine lookbook marche tribu"
+if [ "${1:-}" = "--rapide" ]; then ALL="atelier pop galerie vitrine cinema"; MULTI="atelier vitrine"; fi
 
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/verify-theme-XXXX")"
 FAIL=0

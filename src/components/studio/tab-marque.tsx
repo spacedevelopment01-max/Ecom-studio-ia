@@ -7,7 +7,7 @@ import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Textarea, use
 import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
 import type { Brand } from "@/lib/project-types";
-import { DIRECTIONS } from "@/lib/theme/directions";
+import { DIRECTIONS, DIRECTIONS_EN } from "@/lib/theme/directions";
 import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { FromSiteBadge } from "./existing-site";
@@ -22,20 +22,6 @@ const PALETTE_LABEL: Record<string, { fr: string; en: string }> = {
   accent: { fr: "Accent", en: "Accent" },
   light: { fr: "Clair", en: "Light" },
   dark: { fr: "Sombre", en: "Dark" },
-};
-/** Accroches des directions en anglais (le français vient de DIRECTIONS). */
-const DIRECTION_TAGLINE_EN: Record<string, string> = {
-  atelier: "Editorial luxury",
-  clinique: "Big-tech clarity",
-  brut: "Dark and bold",
-  terroir: "Modern warmth",
-  nocturne: "Deep night and glow",
-  pop: "Bright and bouncy",
-  galerie: "Gallery stillness",
-  elan: "Athletic energy",
-  flux: "Premium sportswear",
-  joaillerie: "Intimate luxury",
-  gourmand: "Joyful and generous",
 };
 
 export default function TabMarque() {
@@ -294,7 +280,7 @@ export default function TabMarque() {
               {DIRECTIONS.map((d) => (
                 <button key={d.id} onClick={() => set({ direction: d.id })} className={cx("overflow-hidden rounded-2xl border text-left transition", b.direction === d.id ? "border-signal ring-2 ring-signal" : "border-line hover:border-ink")} aria-pressed={b.direction === d.id}>
                   <DirectionThumb className="aspect-[4/3]" projectId={id} direction={d.id} version={`${data?.brand?.logo.assetId ?? ""}-${data?.project.updatedAt ?? ""}`} sandbox={data?.previewSandbox} fallback={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} />
-                  <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTION_TAGLINE_EN[d.id] ?? d.tagline)}</span></span>
+                  <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTIONS_EN[d.id].tagline)}</span></span>
                 </button>
               ))}
             </div>
