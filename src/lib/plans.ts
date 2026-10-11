@@ -1,37 +1,67 @@
 /**
- * Forfaits et packs : la seule source de vérité (page d'accueil, abonnement, studio, paiement, quotas).
- * Une seule boutique ou un seul site par abonnement, quel que soit le forfait.
- * Les crédits d'IA ne sont jamais affichés au client : il voit des quotas concrets (visuels, vidéos…).
- * Le budget IA interne (caché) découle des prix : 40 % du HT du forfait, 50 % du HT des packs (voir billing.ts).
+ * Forfaits (V2) : la seule source de vérité des droits (page d'accueil, abonnement, studio, serveur, worker).
+ *
+ * UN ABONNEMENT = UN PROJET UNIQUE. Un compte peut avoir plusieurs projets, chacun avec son propre abonnement
+ * (et son propre budget IA, ses recharges, ses droits) — voir project-billing.ts.
+ * Découverte gratuite : aucun projet réel, démonstration seulement (aucun appel d'IA payant).
+ * Le budget IA interne (caché, affiché en %) découle des prix : 40 % du HT du forfait, 50 % du HT des recharges.
+ * Seuls achats complémentaires : la recharge IA à 10 € (par projet) et le rendez-vous téléphonique de 60 minutes.
  */
 
 export type PlanId = "creer" | "vendre" | "dominer";
 export type Billing = "month" | "year";
-/** Ce qui se compte chaque mois (et ce que les packs ajoutent). */
+/** Ce qui se compte chaque mois. Depuis les forfaits V2 seul le blog IA a une limite en nombre (le reste : budget IA). */
 export type QuotaKey = "visuals" | "aiVideos" | "ugc" | "blog";
 
 export type Plan = {
   id: PlanId;
   name: { fr: string; en: string };
   tagline: { fr: string; en: string };
-  /** Prix TTC en euros. À l'année : 2 mois offerts. */
+  /** Accroche de la grille tarifaire. */
+  pitch: { fr: string; en: string };
+  /** Bouton de la grille tarifaire. */
+  cta: { fr: string; en: string };
+  /** Prix TTC en euros. À l'année : 10 mois payés. */
   price: { month: number; year: number };
-  /** Mis en avant sur la page des tarifs. */
+  /** Mis en avant sur la page des tarifs (« Notre recommandation »). */
   featured?: boolean;
+  /** Limites en nombre par mois (seul le blog compte encore ; images et vidéos : budget IA du projet). */
   quotas: Record<QuotaKey, number>;
+  /** Thèmes utilisables (les N premiers de la bibliothèque des 30). */
+  themes: number;
+  /** Propositions initiales de direction artistique (sous réserve du budget IA). */
+  artDirections: number;
+  /** Vidéos IA : aucune, courtes, avancées. */
+  videos: "none" | "short" | "advanced";
   /** Qualité des vidéos filmées par l'IA. */
   videoQuality: "fast" | "max";
+  /** Vidéos UGC (une personne présente le produit) par l'IA. */
+  ugc: boolean;
+  /** Création, reconstruction et modification avancée des sections par l'IA ; pages personnalisées. */
+  aiSections: boolean;
+  /** Publicités : essentielles, avancées (variantes), complètes (multivariantes). */
+  ads: "essential" | "advanced" | "full";
+  seo: "essential" | "advanced" | "full";
+  /** Jours de calendrier de publications. */
   calendarDays: number;
+  /** Publications programmées par jour (au plus). */
+  postsPerDay: number;
   autopublish: boolean;
+  /** Automatisations marketing : essentielles, intermédiaires, avancées. */
+  automation: "essential" | "intermediate" | "advanced";
   /** Campagnes publicitaires actives (Infinity = illimitées). */
   campaigns: number;
   adVariants: boolean;
   languages: number;
   theme: "composed" | "custom-sections" | "fully-custom";
   support: "email" | "priority" | "priority-call";
-  /** Quotas non utilisés reportés au mois suivant (dans la limite d'un mois). */
+  /** Rendez-vous téléphonique de 60 minutes, prix TTC en euros (null : réglé par l'administration). */
+  callPrice: number | null;
+  /** Première heure d'accompagnement offerte (une seule fois par compte client). */
+  freeFirstCall: boolean;
+  /** Quotas non utilisés reportés (anciens forfaits ; plus utilisé). */
   rollover: boolean;
-  /** Remise sur les packs. */
+  /** Remise sur les anciens packs (plus vendus). */
   packDiscount: number;
 };
 
@@ -39,66 +69,107 @@ export const PLANS: Record<PlanId, Plan> = {
   creer: {
     id: "creer",
     name: { fr: "Créer", en: "Create" },
-    tagline: { fr: "Lancer sa boutique", en: "Launch your store" },
-    price: { month: 49.9, year: 499 },
-    quotas: { visuals: 30, aiVideos: 4, ugc: 0, blog: 0 },
+    tagline: { fr: "Lancer son e-commerce", en: "Launch your e-commerce" },
+    pitch: { fr: "Lancez votre e-commerce avec l'intelligence artificielle.", en: "Launch your e-commerce with artificial intelligence." },
+    cta: { fr: "Créer mon e-commerce", en: "Build my e-commerce" },
+    price: { month: 49, year: 490 },
+    quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 0 },
+    themes: 10,
+    artDirections: 1,
+    videos: "none",
     videoQuality: "fast",
+    ugc: false,
+    aiSections: false,
+    ads: "essential",
+    seo: "essential",
     calendarDays: 7,
-    autopublish: false,
+    postsPerDay: 1,
+    autopublish: true,
+    automation: "essential",
     campaigns: 1,
     adVariants: false,
     languages: 1,
     theme: "composed",
     support: "email",
+    callPrice: 60,
+    freeFirstCall: false,
     rollover: false,
     packDiscount: 0,
   },
   vendre: {
     id: "vendre",
-    name: { fr: "Vendre", en: "Sell" },
-    tagline: { fr: "Faire grandir ses ventes", en: "Grow your sales" },
-    price: { month: 79.9, year: 799 },
+    name: { fr: "Développer", en: "Grow" },
+    tagline: { fr: "Développer ses ventes", en: "Grow your sales" },
+    pitch: { fr: "Créez vos publicités, vidéos et contenus pour développer vos ventes.", en: "Create your ads, videos and content to grow your sales." },
+    cta: { fr: "Développer mon activité", en: "Grow my business" },
+    price: { month: 89, year: 890 },
     featured: true,
-    quotas: { visuals: 80, aiVideos: 8, ugc: 1, blog: 2 },
-    videoQuality: "max",
+    quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 4 },
+    themes: 20,
+    artDirections: 3,
+    videos: "short",
+    videoQuality: "fast",
+    ugc: false,
+    aiSections: true,
+    ads: "advanced",
+    seo: "advanced",
     calendarDays: 30,
+    postsPerDay: 3,
     autopublish: true,
+    automation: "intermediate",
     campaigns: 5,
     adVariants: true,
     languages: 2,
     theme: "custom-sections",
     support: "priority",
-    rollover: true,
-    packDiscount: 0.1,
+    callPrice: 30,
+    freeFirstCall: false,
+    rollover: false,
+    packDiscount: 0,
   },
   dominer: {
     id: "dominer",
     name: { fr: "Dominer", en: "Dominate" },
-    tagline: { fr: "Viser le haut de gamme", en: "Go premium" },
-    price: { month: 99.9, year: 999 },
-    quotas: { visuals: 150, aiVideos: 10, ugc: 2, blog: 8 },
+    tagline: { fr: "Le studio complet", en: "The complete studio" },
+    pitch: { fr: "Automatisez votre marketing et exploitez toute la puissance du studio IA.", en: "Automate your marketing and use the full power of the AI studio." },
+    cta: { fr: "Accéder au studio complet", en: "Get the complete studio" },
+    price: { month: 129, year: 1290 },
+    quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 12 },
+    themes: 30,
+    artDirections: 5,
+    videos: "advanced",
     videoQuality: "max",
-    calendarDays: 30,
+    ugc: true,
+    aiSections: true,
+    ads: "full",
+    seo: "full",
+    calendarDays: 90,
+    postsPerDay: 5,
     autopublish: true,
+    automation: "advanced",
     campaigns: Infinity,
     adVariants: true,
     languages: 5,
     theme: "fully-custom",
     support: "priority-call",
-    rollover: true,
-    packDiscount: 0.2,
+    callPrice: null,
+    freeFirstCall: true,
+    rollover: false,
+    packDiscount: 0,
   },
 };
+/** Recharge IA : seul complément payant avec le rendez-vous, rattachée à un projet précis. */
+export const TOPUP_PRICE_EUR = 10;
 export const PLAN_IDS = Object.keys(PLANS) as PlanId[];
 
 /** Thèmes entièrement sur mesure par compte et par mois, forfait Dominer (garde-fou : chaque thème mobilise beaucoup d'IA). */
 export const CUSTOM_THEMES_PER_MONTH = 2;
 
-/** Découverte gratuite : faite par le moteur du studio, sans IA (pas d'export, pas d'images ni de vidéos). */
+/** Découverte gratuite : studio de démonstration (exemples préexistants), aucun projet réel, aucun appel d'IA payant. */
 export const DISCOVERY = {
   includes: ["analysis", "brand", "logos", "homePreview"] as const,
-  /** Une découverte par compte (e-mail vérifié). */
-  perAccount: 1,
+  /** Aucun projet réel. */
+  perAccount: 0,
 };
 
 export type PackId = "visuals" | "videos" | "ugc" | "launch" | "language";
@@ -156,8 +227,11 @@ export const PACKS: Record<PackId, Pack> = {
   },
 };
 export const PACK_IDS = Object.keys(PACKS) as PackId[];
-/** Packs en vente (les packs « bientôt » ne sont ni affichés ni vendus). */
-export const PACKS_FOR_SALE = PACK_IDS.filter((id) => !PACKS[id].soon);
+/**
+ * Anciens packs : plus vendus depuis les forfaits V2 (seuls la recharge IA et le rendez-vous restent). Les soldes
+ * déjà achetés restent honorés.
+ */
+export const PACKS_FOR_SALE: PackId[] = [];
 
 /** Prix d'un pack pour un forfait (remise comprise), arrondi au centime. */
 export const packPrice = (pack: PackId, plan?: PlanId | null) => Math.round(PACKS[pack].price * (1 - (plan ? PLANS[plan].packDiscount : 0)) * 100) / 100;

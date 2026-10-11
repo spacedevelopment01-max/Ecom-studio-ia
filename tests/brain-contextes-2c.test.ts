@@ -6,6 +6,7 @@
  *  - trace : appel texte → brain_scope / brain_hash / brain_version ; génération d'image écrite depuis le Brain → idem ;
  *  - stable / volatil : créations récentes jamais dans le stable, seulement dans le volatil des scopes qui en ont besoin.
  */
+import { paidProjects } from "./billing-fixtures";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 const sent: any[] = [];
@@ -53,6 +54,7 @@ describe("Project Brain 2C — contextes ciblés et traces", async () => {
   syncAllowance(u.id);
   const sbId = fr(() => seedSebastienBlanc(u.id));
   const serumId = fr(() => seedSerumEclat(u.id));
+  paidProjects("creer", sbId, serumId);
   const sb = () => loadProject(sbId);
   const serum = () => loadProject(serumId);
   const view = (p: ReturnType<typeof sb>, s: Parameters<typeof brainView>[1]) => fr(() => brainView(p, s));

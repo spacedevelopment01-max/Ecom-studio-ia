@@ -112,7 +112,6 @@ export const handlers: Record<string, Handler> = {
   // La vidéo UGC compte pour une vidéo UGC du forfait, une fois terminée (ses images et plans ne sont pas décomptés à part).
   "video.ugc": async (ctx) => {
     const r = await withQuotaScope("ugc", () => produceUgc(ctx, ctx.job.project_id!, { options: ctx.payload.options, script: ctx.payload.script }));
-    consumeQuota(ctx.job.user_id!, "ugc", 1, `ugc:${ctx.job.id}`);
     return r;
   },
 
@@ -335,7 +334,7 @@ export const handlers: Record<string, Handler> = {
     const { realSocialDeps } = await import("../src/lib/social-v2/deps");
     const { aiActiveFor } = await import("../src/lib/ai/access");
     const p = loadProject(ctx.payload.projectId);
-    const deps = realSocialDeps(ctx, p, aiActiveFor(p.userId));
+    const deps = realSocialDeps(ctx, p, aiActiveFor(p.userId, p.id));
     return ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null }));
   },
   "post.publish": async (ctx) => {

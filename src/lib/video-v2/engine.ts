@@ -71,7 +71,7 @@ const hash = (x: unknown) => crypto.createHash("sha256").update(JSON.stringify(x
 export async function runVideoEngineV2(ctx: JobContext | null, projectId: string, req: VideoRequestV2, injected?: VideoV2Deps): Promise<VideoRunResult> {
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;
-  const deps = injected ?? realVideoDeps(ctx, p, aiActiveFor(p.userId));
+  const deps = injected ?? realVideoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   const before = jobId ? (all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", jobId)[0]?.c ?? 0) : 0;
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_VIDEO_CAP_EUR) * EUR);
   const cur = currentTrace();
@@ -559,7 +559,7 @@ async function targetedFix(o: FixInput): Promise<VideoDocument | null> {
 export async function regenerateClip(ctx: JobContext | null, projectId: string, docKey: string, clipId: string, o: { approve: boolean; maxCostEur?: number; instruction?: string }, injected?: VideoV2Deps): Promise<{ doc: VideoDocument; outcome: ShotOutcome; notes: string[] }> {
   const { latestVideo } = await import("./store");
   const p = loadProject(projectId);
-  const deps = injected ?? realVideoDeps(ctx, p, aiActiveFor(p.userId));
+  const deps = injected ?? realVideoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   const cur = latestVideo(projectId, docKey);
   if (!cur) throw new Error("vidéo introuvable");
   const k = cur.doc.clips.findIndex((c) => c.id === clipId);

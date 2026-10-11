@@ -8,7 +8,7 @@ import { assertBlogWrite, BlogAccessError, blogPlanReason, getArticle, type Blog
 /** Avant une action qui consomme 1 article (écrire, réécrire avec l'IA). */
 export function gateBlogWrite(userId: string, projectId: string) {
   try {
-    assertBlogWrite(userId);
+    assertBlogWrite(userId, projectId);
   } catch (e) {
     if (e instanceof BlogAccessError) throw new HttpError(402, e.message, e.code);
     throw e;
@@ -20,8 +20,8 @@ export function gateBlogWrite(userId: string, projectId: string) {
 }
 
 /** Forfait qui inclut le blog (sujets proposés : gratuits mais réservés aux forfaits concernés). */
-export function gateBlogPlan(userId: string) {
-  const reason = blogPlanReason(userId);
+export function gateBlogPlan(userId: string, projectId: string) {
+  const reason = blogPlanReason(userId, projectId);
   if (reason) throw new HttpError(402, reason);
 }
 

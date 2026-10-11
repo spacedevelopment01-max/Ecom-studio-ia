@@ -65,12 +65,12 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   // (logo, site, bannières, kit réseaux sociaux, charte), même si le logo est validé — c'est le client qui le demande.
   const paletteOnly = b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette) && (b.name === undefined || b.name === p.brand.name) && (b.tagline === undefined || b.tagline === p.brand.tagline);
   // Exécuté « pour » le client : une IA éventuelle (nouvelles pistes, ligne éditoriale) respecte son forfait et son budget.
-  const recolored = paletteOnly && !!brand.logo?.route ? await runForUser(owner, () => recolorChosenRoute(p.id, p.brand!.palette, { exact: !!b.paletteExact })) : false;
+  const recolored = paletteOnly && !!brand.logo?.route ? await runForUser(owner, () => recolorChosenRoute(p.id, p.brand!.palette, { exact: !!b.paletteExact }), "normal", p.id) : false;
   const regenerate = !recolored && touchesLogo && !hasClientLogo(p.id) && !logoLocked;
   // Logo V2 appliqué : même direction reconstruite avec le nouveau nom et la palette (sans IA). Ancien projet avec des
   // pistes de l'ancien moteur : ses pistes sont mises à jour comme avant (compatibilité, aucune nouvelle génération).
-  const v2 = regenerate && p.brand.logo?.engine === "v2" ? await runForUser(owner, () => reapplyLogoV2(null, p.id)) : false;
-  if (regenerate && !v2 && latestProposals(p.id).length) await runForUser(owner, () => generateLogos(null, p.id));
+  const v2 = regenerate && p.brand.logo?.engine === "v2" ? await runForUser(owner, () => reapplyLogoV2(null, p.id), "normal", p.id) : false;
+  if (regenerate && !v2 && latestProposals(p.id).length) await runForUser(owner, () => generateLogos(null, p.id), "normal", p.id);
   if (!recolored) await saveBrandGuide(p.id);
   // Le site actuel prend la nouvelle palette tout de suite (sans IA, retouches conservées).
   const siteUpdated = paletteChanged ? await applyPaletteToSite(p.id).catch((e) => (console.warn("[brand] palette du site", (e as Error).message), false)) : false;

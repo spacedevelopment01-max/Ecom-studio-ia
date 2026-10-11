@@ -55,7 +55,7 @@ Rôle : directeur de création et stratège e-commerce qui exécute la demande d
       usageKey: stableKey("prompt-run", p.id, requestId),
       promptKey: "prompt-run",
     });
-  });
+  }, "normal", p.id);
   // Affirmations à vérifier (label, garantie, chiffre, prix non confirmés…) : signalées au client, jamais cachées.
   const claims = lintClaims(answer, p);
   return ok({ prompt, answer, claims });

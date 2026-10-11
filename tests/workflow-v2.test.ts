@@ -35,6 +35,8 @@ describe("Studio Workflow V2", async () => {
   const cosmetic = await seedThemeScenario(vendre.id, "cosmetic");
   await fr(() => buildShopV2(null, cosmetic));
   const artisan = await seedThemeScenario(vendre.id, "artisan");
+  // Un abonnement = un projet : le second projet du compte a son propre abonnement Développer.
+  (await import("@/lib/project-subscriptions")).grantProjectPlan(artisan, "vendre");
   await fr(() => buildShopV2(null, artisan));
   const ctxOf = (jobId: string) => new JobContext(getJob(jobId)!);
   const aiCalls = (userId: string) => one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls WHERE user_id = ?", userId)!.n;

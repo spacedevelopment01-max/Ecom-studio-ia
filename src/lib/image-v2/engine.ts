@@ -94,7 +94,7 @@ const hash = (s: string) => crypto.createHash("sha256").update(s).digest("hex").
 export async function runImageEngineV2(ctx: JobContext | null, projectId: string, req: ImageRequestV2, injected?: ImageV2Deps): Promise<ImageRunResult> {
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;
-  const aiActive = aiActiveFor(p.userId);
+  const aiActive = aiActiveFor(p.userId, p.id);
   const deps = injected ?? realImageDeps(p, { jobId, aiActive });
   // Plafond de CETTE tâche d'images : ce que la tâche de fond a déjà dépensé avant (autres étapes d'un plan) n'est pas
   // compté contre lui. Un plafond plus strict déjà posé par l'appelant (benchmark) est conservé.

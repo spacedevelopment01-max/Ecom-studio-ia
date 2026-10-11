@@ -211,23 +211,23 @@ describe("I3 : période des quotas alignée sur la facturation", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(T0);
     const u = await newUser("i3");
-    quotaView(u.id, "visuals"); // période née à l'inscription : 5/10 → 5/11
+    quotaView(u.id, "blog"); // période née à l'inscription : 5/10 → 5/11
     // Abonnement Vendre payé le 3/11 (Stripe : période 3/11 → 3/12).
     const paidAt = T0 + 29 * DAY;
     vi.setSystemTime(paidAt);
     remote.set("sub_i3", { status: "active", start: paidAt, end: paidAt + 30 * DAY });
     await handleStripeEvent(checkout(u.id, { session: "cs_i3", sub: "sub_i3", plan: "vendre", created: Math.floor(paidAt / 1000) - 60 }));
-    expect(quotaView(u.id, "visuals")).toMatchObject({ included: 80, rollover: 0, left: 80 });
+    expect(quotaView(u.id, "blog")).toMatchObject({ included: 4, rollover: 0, left: 4 });
     // 5/11 : l'ancienne période (inscription) aurait renouvelé les quotas avec un report de 80 (160 visuels).
     vi.setSystemTime(T0 + 31 * DAY);
-    expect(quotaView(u.id, "visuals")).toMatchObject({ included: 80, rollover: 0, left: 80 });
+    expect(quotaView(u.id, "blog")).toMatchObject({ included: 4, rollover: 0, left: 4 });
     const p = currentPeriod(u.id);
     expect(p.start).toBe(Math.floor(paidAt / 1000) * 1000);
     expect(p.end).toBe(Math.floor((paidAt + 30 * DAY) / 1000) * 1000);
     // La date du message de quota est celle de la période (la même que « Mon compte »).
-    consumeQuota(u.id, "visuals", 80, "i3-all");
+    consumeQuota(u.id, "blog", 4, "i3-all");
     const date = new Date(p.end).toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-    expect(quotaMessage(u.id, "visuals")).toContain(date);
+    expect(quotaMessage(u.id, "blog")).toContain(date);
   });
 
   it("le report ne vient que de la période immédiatement précédente", async () => {
@@ -472,10 +472,11 @@ describe("I12 : publication réservée aux forfaits", () => {
   it("forfait résilié après la programmation : rien n'est envoyé au moment de publier", async () => {
     const { planOfUserId } = await import("@/lib/plan-gates");
     const { u, postId } = await setupPost("creer");
-    expect(planOfUserId(u.id)).toBe("creer");
+    const { pid } = { pid: one<{ project_id: string }>("SELECT project_id FROM posts WHERE id = ?", postId)!.project_id };
+    expect(planOfUserId(u.id, pid)).toBe("creer");
     run("UPDATE subscriptions SET status = 'canceled' WHERE user_id = ?", u.id);
     run("UPDATE posts SET status = 'scheduled' WHERE id = ?", postId);
-    expect(planOfUserId(u.id)).toBe(null);
+    expect(planOfUserId(u.id, pid)).toBe(null);
     const { handlers } = await import("../worker/handlers");
     const { JobContext } = await import("@/lib/jobs");
     const ctx = new JobContext({ id: "j", user_id: u.id, project_id: null, type: "post.publish", payload: JSON.stringify({ postId }), checkpoint: "{}", attempts: 1, max_attempts: 3 } as any);

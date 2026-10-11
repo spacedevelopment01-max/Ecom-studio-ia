@@ -86,7 +86,7 @@ const orientation = (a: AspectId): AspectId => (a === "1:1" ? "1:1" : a === "16:
 export async function runAdEngineV2(ctx: JobContext | null, projectId: string, req: AdRequestV2 = {}, injected?: AdsV2Deps): Promise<AdRunResult> {
   const p = loadProject(projectId);
   const jobId = ctx?.job.id ?? null;
-  const deps = injected ?? realAdDeps(ctx, p, aiActiveFor(p.userId));
+  const deps = injected ?? realAdDeps(ctx, p, aiActiveFor(p.userId, p.id));
   const before = jobId ? (all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", jobId)[0]?.c ?? 0) : 0;
   const own = before + Math.round((req.maxCostEur ?? DEFAULT_AD_CAP_EUR) * EUR);
   const cur = currentTrace();

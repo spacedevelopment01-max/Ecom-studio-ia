@@ -76,7 +76,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     return ok(view(p.id));
   }
   // Même droit que les autres créations d'images : un forfait de création est requis (aucun passe-droit).
-  requireCreationPlan(user, "images");
+  requireCreationPlan(user, p.id, "images");
   const r = b.request ?? {};
   const intent = r.kind ? { kind: r.kind, support: r.support } : visualIntent(r.text ?? "", p.business);
   const job = enqueue({

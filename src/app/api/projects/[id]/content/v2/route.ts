@@ -42,7 +42,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     topics: blogTopicsV2(p, strategy),
     cms: cmsTargets(p),
     audit: technicalAudit(p.id, docs, pages),
-    ai: aiActiveFor(p.userId),
+    ai: aiActiveFor(p.userId, p.id),
   });
 });
 
@@ -73,7 +73,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     force: !!b.force,
     maxCostEur: b.maxCostEur,
   };
-  if (!aiActiveFor(p.userId)) {
+  if (!aiActiveFor(p.userId, p.id)) {
     const r = await runContentEngineV2(null, p.id, request);
     return ok({ docKey: r.docKey, verdict: r.verdict, by: r.by, skipped: r.skipped, notes: r.notes, issues: r.issues });
   }

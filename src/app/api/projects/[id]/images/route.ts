@@ -45,7 +45,7 @@ const imageLabel = (kind: string) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  requireCreationPlan(user, "images");
+  requireCreationPlan(user, p.id, "images");
   const b = await body(req, Req);
   const kind = b.kind ?? "scene";
   // Visuels avec texte : Advertising Engine V2 (onglet Publicités, éditeur à calques) et Social V2 (Publications).

@@ -22,7 +22,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   return ok({
     ...access,
     sectionsAllowed: sectionGenerationAllowed(user),
-    ai: await runForUser(user.id, async () => llmConfigured()),
+    ai: await runForUser(user.id, async () => llmConfigured(), "normal", p.id),
     hasTheme: !!cur,
     imported: !!cur?.spec.imported,
     job: (() => {
@@ -43,10 +43,10 @@ export const POST = handle(async (_req: Request, ctx: Ctx) => {
   const cur = currentTheme(p.id);
   if (!cur) throw new HttpError(409, L("Créez d'abord la boutique : le thème sur mesure part de votre marque et de vos textes.", "Build the store first: the custom theme starts from your brand and copy."));
   if (cur.spec.imported) throw new HttpError(409, L("Votre thème importé est conservé tel quel : le thème entièrement sur mesure se crée à partir d'un thème du studio. Choisissez d'abord un thème dans « Thèmes ».", "Your imported theme is kept as is: the fully custom theme is built from a studio theme. Pick a theme in “Themes” first."));
-  if (!(await runForUser(user.id, async () => llmConfigured()))) throw new HttpError(402, L("Le thème entièrement sur mesure est écrit par l'IA, indisponible pour le moment. Réessayez un peu plus tard.", "The fully custom theme is written by AI, which is unavailable right now. Try again a little later."));
+  if (!(await runForUser(user.id, async () => llmConfigured(), "normal", p.id))) throw new HttpError(402, L("Le thème entièrement sur mesure est écrit par l'IA, indisponible pour le moment. Réessayez un peu plus tard.", "The fully custom theme is written by AI, which is unavailable right now. Try again a little later."));
   // Plusieurs sections écrites par l'IA : on vérifie d'abord que l'utilisation équitable du mois le permet.
   try {
-    assertCanSpend(user.id, estimateMicro("theme-custom"));
+    assertCanSpend(user.id, estimateMicro("theme-custom"), p.id);
   } catch (e) {
     throw new HttpError(402, (e as Error).message);
   }

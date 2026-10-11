@@ -6,6 +6,7 @@
  *  - compatibilité : les informations nécessaires restent présentes (service et produit) ;
  *  - plus de doublons « marque.* » dans le contexte (la mémoire, elle, est conservée).
  */
+import { paidProjects } from "./billing-fixtures";
 import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -53,6 +54,7 @@ describe("Project Brain 2.1 — façade projectContext", async () => {
   run("UPDATE subscriptions SET status = 'active', plan = 'creer' WHERE user_id = ?", u.id);
   syncAllowance(u.id);
 
+  let first = "";
   const insert = (business: "services" | "products", product: any, services: any, strategyPatch?: (s: any) => any) => {
     const { brand, strategy } = localBrand(product, product.name, { business, services } as any);
     const pid = id();
@@ -60,6 +62,7 @@ describe("Project Brain 2.1 — façade projectContext", async () => {
       "INSERT INTO projects (id, user_id, name, status, platform, product_json, brand_json, strategy_json, settings_json, sources_json, business_type, business_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       pid, u.id, product.name, "ready", "shopify", JSON.stringify(product), JSON.stringify(brand), JSON.stringify(strategyPatch ? strategyPatch(strategy) : strategy), JSON.stringify({ language: "fr" }), "[]", business, JSON.stringify(services ?? {}), now(), now(),
     );
+    paidProjects("creer", ...(first ? [first, pid] : [(first = pid)]));
     return pid;
   };
   const service = () =>

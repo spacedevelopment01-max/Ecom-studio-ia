@@ -70,7 +70,7 @@ async function runOne() {
       // Création lancée par une demande sans devis payant accepté : moteurs locaux seulement (aucune dépense).
       const exec = () => handlers[job.type](ctx);
       const guarded = (ctx.payload as { aiOff?: boolean })?.aiOff ? () => withAiDisabled("demande lancée sans devis payant accepté", exec) : exec;
-      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload) }, guarded), jobQuotaScope(job)));
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload) }, guarded), jobQuotaScope(job), job.project_id ?? null));
       // Écriture du résultat : en cas d'échec (base occupée…), nouvel essai — jamais une relance du traitement,
       // qui referait (et repaierait) ce qui vient d'être fait.
       for (let i = 0; ; i++) {

@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 /** Export : page HTML prête à coller (?format=html) ou fichier d'import WordPress / WooCommerce (?format=wxr). */
 export const GET = handle(async (req: Request, ctx: Ctx<{ id: string; aid: string }>) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  requirePlan(user);
+  requirePlan(user, p.id);
   const { aid } = await ctx.params;
   const a = articleOf(p.id, aid);
   const format = new URL(req.url).searchParams.get("format") ?? "html";

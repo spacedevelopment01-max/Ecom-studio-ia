@@ -7,7 +7,7 @@ import { gateBlogPlan } from "../gate";
 /** Sujets d'articles proposés (léger, ne consomme aucun article du forfait). */
 export const GET = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  gateBlogPlan(user.id);
+  gateBlogPlan(user.id, p.id);
   const refresh = new URL(req.url).searchParams.get("refresh") === "1";
-  return ok(await runForUser(user.id, () => suggestTopics(p, { refresh })));
+  return ok(await runForUser(user.id, () => suggestTopics(p, { refresh }), "normal", p.id));
 });

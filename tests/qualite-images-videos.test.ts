@@ -164,8 +164,10 @@ describe("vidéos", () => {
     run("UPDATE subscriptions SET status = 'active', plan = 'dominer' WHERE user_id = ?", u.id);
     syncAllowance(u.id);
     const before = quotaView(u.id, "aiVideos").used;
+    // Forfaits V2 : les vidéos IA ne sont plus comptées en nombre (seul le budget IA du projet les limite) ;
+    // un ancien décompte se rend toujours sans erreur.
     consumeQuota(u.id, "aiVideos", 1, "aiVideos:job1:clip:9:16:ads");
-    expect(quotaView(u.id, "aiVideos").used).toBe(before + 1);
+    expect(quotaView(u.id, "aiVideos").used).toBe(before);
     expect(refundMediaQuota(u.id, "job1:clip:9:16:ads", "aiVideos")).toBe(1);
     expect(quotaView(u.id, "aiVideos").used).toBe(before);
   });

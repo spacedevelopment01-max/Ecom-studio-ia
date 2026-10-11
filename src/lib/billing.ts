@@ -29,6 +29,7 @@ import { getJsonSetting } from "./settings";
 import { pick } from "./i18n";
 import { L, userLang } from "./i18n-server";
 import { PLANS, type Billing, type PlanId } from "./plans";
+import { accountKeyFor, isNoPlanKey } from "./project-billing";
 
 /** Texte enregistré pour un compte (relevé, notification) : dans la langue mémorisée de ce compte. */
 const forUser = (userId: string, fr: string, en: string) => pick(userLang(userId), fr, en);
@@ -65,6 +66,11 @@ export type Subscription = {
   stripe_event_at?: number | null;
   /** Création (secondes) de la session de paiement qui a souscrit l'abonnement en cours. */
   stripe_checkout_at?: number | null;
+  /**
+   * Prix TTC réellement payé par période (centimes) : un ancien abonné garde l'ancien prix jusqu'à son
+   * renouvellement, et son budget IA reste calculé sur ce qu'il paie (règle des 40 %).
+   */
+  price_cents?: number | null;
 };
 
 export type Wallet = {
@@ -85,10 +91,17 @@ export type Wallet = {
   rule_version: number;
 };
 
+/**
+ * Abonnement d'un compte de facturation (clé : id du client pour un ancien abonnement, id propre pour un abonnement
+ * par projet — voir project-billing.ts). Projet sans abonnement : abonnement vide, jamais enregistré.
+ */
 export function getSubscription(userId: string): Subscription {
+  if (isNoPlanKey(userId)) return { user_id: userId, status: "none", stores: 1, plan: null, billing: null, stripe_customer_id: null, stripe_subscription_id: null, current_period_start: null, current_period_end: null };
   const s = one<Subscription>("SELECT * FROM subscriptions WHERE user_id = ?", userId);
   if (s) return s;
-  run("INSERT OR IGNORE INTO subscriptions (user_id, status, stores, updated_at) VALUES (?,?,?,?)", userId, "none", 1, now());
+  // Seul un compte client existant reçoit un abonnement vide (un abonnement par projet est créé par le paiement).
+  if (!one("SELECT 1 FROM users WHERE id = ?", userId)) throw new Error("compte introuvable");
+  run("INSERT OR IGNORE INTO subscriptions (user_id, owner_user_id, status, stores, source, created_at, updated_at) VALUES (?,?,?,?,?,?,?)", userId, userId, "none", 1, "legacy", now(), now());
   return one<Subscription>("SELECT * FROM subscriptions WHERE user_id = ?", userId)!;
 }
 
@@ -101,18 +114,25 @@ export function planOf(sub: Subscription): PlanId | null {
 }
 
 /** Prix mensuel (TTC) d'un abonnement payant : prix du forfait, ou équivalent mensuel en annuel. */
-export function monthlyPriceEur(sub: Pick<Subscription, "plan" | "billing">) {
+export function monthlyPriceEur(sub: Pick<Subscription, "plan" | "billing"> & { price_cents?: number | null }) {
+  // Arrondi conservateur : l'équivalent mensuel d'un prix annuel est arrondi au centime INFÉRIEUR (le budget IA qui
+  // en découle ne dépasse jamais 40 % du prix réellement payé).
+  if (sub.price_cents && sub.price_cents > 0) return (sub.billing === "year" ? Math.floor(sub.price_cents / 12) : sub.price_cents) / 100;
   const plan: PlanId = sub.plan && sub.plan in PLANS ? sub.plan : "creer";
-  return sub.billing === "year" ? Math.round((PLANS[plan].price.year / 12) * 100) / 100 : PLANS[plan].price.month;
+  return sub.billing === "year" ? Math.floor((PLANS[plan].price.year * 100) / 12) / 100 : PLANS[plan].price.month;
 }
 
 /** Budget IA mensuel caché d'un abonnement : 40 % du prix mensuel HT applicable (arrondi à l'inférieur). */
-export function monthlyAllowanceMicro(sub: Pick<Subscription, "status" | "plan" | "billing">) {
+export function monthlyAllowanceMicro(sub: Pick<Subscription, "status" | "plan" | "billing"> & { price_cents?: number | null }) {
   const plan = planOf(sub as Subscription);
   return plan ? Math.floor(SUBSCRIPTION_AI_SHARE * htEur(monthlyPriceEur(sub)) * EUR) : 0;
 }
 
+/** Portefeuille vide d'un projet sans abonnement (jamais enregistré : aucun budget). */
+const emptyWallet = (key: string): Wallet => ({ user_id: key, period_start: now(), period_end: addMonths(now(), 1).getTime(), prev_period_start: null, monthly_allowance: 0, monthly_used: 0, topup_balance: 0, topup_period_added: 0, topup_period_used: 0, alert80_sent_at: null, reserved: 0, reserved_topup: 0, rule_version: BUDGET_RULE_VERSION });
+
 function ensureWallet(userId: string): Wallet {
+  if (isNoPlanKey(userId)) return emptyWallet(userId);
   let w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId);
   if (!w) {
     const sub = getSubscription(userId);
@@ -266,8 +286,8 @@ export type Balance = {
 const freeMonthly = (w: Wallet) => Math.max(0, w.monthly_allowance - w.monthly_used - w.reserved);
 const freeTopup = (w: Wallet) => Math.max(0, w.topup_balance - w.reserved_topup);
 
-export function balance(userId: string): Balance {
-  const w = ensureWallet(userId);
+export function balance(userId: string, projectId?: string | null): Balance {
+  const w = ensureWallet(accountKeyFor(userId, projectId));
   const monthlyRemaining = Math.max(0, w.monthly_allowance - w.monthly_used);
   const available = freeMonthly(w) + freeTopup(w);
   const used = w.monthly_used + w.topup_period_used;
@@ -291,7 +311,8 @@ export function balance(userId: string): Balance {
  * Les deux réserves d'IA d'un compte, en proportions (jamais de montant affiché au client) : le forfait du mois, et
  * les crédits achetés en plus (packs, recharges), qui ne servent qu'une fois le forfait épuisé et n'expirent pas.
  */
-export function aiReserves(userId: string): { plan: { used: number } | null; credits: { used: number } | null } {
+export function aiReserves(key: string): { plan: { used: number } | null; credits: { used: number } | null } {
+  const userId = key;
   const w = ensureWallet(userId);
   const ratio = (used: number, total: number) => (total > 0 ? Math.min(1, Math.max(0, used / total)) : 1);
   // Crédits : tout ce qui a été acheté (budget des packs et recharges payés), dont ce qu'il reste à utiliser.
@@ -312,9 +333,10 @@ function budgetError(userId: string) {
 }
 
 /** Pré-contrôle avant de proposer une génération payante (le vrai garde-fou est la réservation, `reserve`). */
-export function assertCanSpend(userId: string, estimateMicro: number) {
+export function assertCanSpend(userId: string, estimateMicro: number, projectId?: string | null) {
   if (estimateMicro <= 0) return;
-  if (balance(userId).available < estimateMicro) throw budgetError(userId);
+  const key = accountKeyFor(userId, projectId);
+  if (balance(key).available < estimateMicro) throw budgetError(key);
 }
 
 // ------------------------------------------------------------------ réservations
@@ -328,7 +350,10 @@ type ReservationRow = { id: string; user_id: string; amount: number; res_monthly
  * et l'appel est refusé. Atomique entre processus (site, worker) : deux appels simultanés ne peuvent pas réserver
  * le même reste.
  */
-export function reserve(userId: string, maxMicro: number, meta: ReservationMeta): string {
+export function reserve(user: string, maxMicro: number, meta: ReservationMeta): string {
+  // Budget de l'abonnement qui finance le projet de l'appel (jamais celui d'un autre projet du compte).
+  const userId = accountKeyFor(user, meta.projectId);
+  if (isNoPlanKey(userId)) throw budgetError(userId);
   const amount = Math.ceil(maxMicro);
   // Coût maximal inconnu ou non borné : l'opération est bloquée (jamais d'appel « à découvert »).
   if (!Number.isFinite(amount) || amount <= 0) throw new UserFacingError(L("Coût maximal de l'appel d'IA inconnu : opération bloquée par sécurité.", "Maximum cost of the AI call is unknown: operation blocked for safety."));
@@ -456,7 +481,7 @@ export function sweepStaleReservations(userId?: string) {
 
 /** Débite une consommation sans réservation préalable (ancien chemin) : jamais au-delà du disponible. */
 export function charge(userId: string, amountMicro: number, ref: string | null, note: string) {
-  if (amountMicro <= 0) return;
+  if (amountMicro <= 0 || isNoPlanKey(userId)) return;
   ensureWallet(userId);
   tx(() => {
     if (ref && one("SELECT 1 FROM ledger WHERE type='usage' AND ref=?", ref)) return; // déjà débité
@@ -552,6 +577,6 @@ export function recordUsage(u: UsageInput, o: { reservationId?: string | null } 
   }
   const note = `${u.task} · ${u.provider}/${u.model}`;
   if (o.reservationId) settle(o.reservationId, billed, `usage:${uid}`, note);
-  else charge(u.userId, billed, `usage:${uid}`, note);
+  else charge(accountKeyFor(u.userId, u.projectId), billed, `usage:${uid}`, note);
   return { eventId: uid, dedup: false };
 }

@@ -74,7 +74,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     return ok({ intent: r.intent, strategy: r.strategy, script: r.script, shots: r.shots.map((s) => ({ id: s.id, part: s.part, durationS: s.durationS, subject: s.subject, method: s.method, why: s.why, paid: s.source.kind === "generate", estimateMicro: s.source.estimateMicro ?? 0 })), estimateMicro: r.estimateMicro, notes: r.notes });
   }
   // Même droit que les autres créations de vidéos : un forfait de création est requis (aucun passe-droit).
-  requireCreationPlan(user, b.ask.kind === "ugc" ? "ugc" : "videos");
+  requireCreationPlan(user, p.id, b.ask.kind === "ugc" ? "ugc" : "videos");
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type LIKE 'video.v2%' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
   const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2", label: L("Vidéo : script, plans, montage", "Video: script, shots, editing"), payload: { projectId: p.id, request: { ask: b.ask, offer: b.offer, approveGeneration: !!b.approveGeneration, maxCostEur: b.maxCostEur } } });
   return ok({ jobId: job.id });

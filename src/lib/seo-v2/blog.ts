@@ -65,6 +65,6 @@ export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: 
   );
   run("UPDATE blog_articles SET v2_hash = ? WHERE id = ?", articleHash(title, body), articleId);
   // Un article écrit par l'IA = 1 article du forfait, décompté une seule fois par rédaction.
-  if (o.ai) consumeQuota(p.userId, "blog", 1, `blog2:${o.jobKey}:${docKey}`);
+  if (o.ai) consumeQuota(p.userId, "blog", 1, `blog2:${o.jobKey}:${docKey}`, p.id);
   return articleId;
 }

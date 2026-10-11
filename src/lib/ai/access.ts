@@ -6,17 +6,13 @@
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import { aiReserves, balance, EUR, getSubscription, planOf } from "../billing";
+import { runScope, type QuotaScope } from "../billing-scope";
+import { accountKeyFor } from "../project-billing";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
 
-/**
- * Portée du décompte des quotas pendant une tâche :
- *  - « creation » : création initiale de la boutique (visuels non décomptés, vidéos IA décomptées) ;
- *  - « ugc » : la vidéo UGC est décomptée une fois en entier (ses images et plans ne comptent pas à part) ;
- *  - « normal » : chaque visuel et chaque vidéo IA est décompté.
- */
-export type QuotaScope = "normal" | "creation" | "ugc";
-const store = new AsyncLocalStorage<{ userId: string; scope: QuotaScope }>();
+export type { QuotaScope };
+const store = runScope;
 
 /**
  * IA coupée pour une portée d'exécution (demande du client sans devis payant accepté) : moteurs locaux seulement,
@@ -31,8 +27,12 @@ export const aiDisabledReason = () => aiOff.getStore()?.reason ?? null;
 /** En dessous de ce disponible, une génération IA ne pourrait pas aboutir : moteur local. */
 export const AI_MIN_AVAILABLE = 0.5 * EUR;
 
-export function runForUser<T>(userId: string | null | undefined, fn: () => Promise<T>, scope: QuotaScope = "normal"): Promise<T> {
-  return userId ? store.run({ userId, scope }, fn) : fn();
+/**
+ * Exécute `fn` pour le compte `userId` et, quand il est connu, pour le projet `projectId` : toute dépense d'IA est
+ * alors prise sur le budget de l'abonnement de CE projet (jamais sur celui d'un autre projet du compte).
+ */
+export function runForUser<T>(userId: string | null | undefined, fn: () => Promise<T>, scope: QuotaScope = "normal", projectId: string | null = null): Promise<T> {
+  return userId ? store.run({ userId, projectId, scope }, fn) : fn();
 }
 
 /** Change la portée de décompte pour la suite de la tâche en cours (ex. production d'une vidéo UGC). */
@@ -49,16 +49,17 @@ export function currentQuotaScope(): QuotaScope {
 }
 
 /** L'IA sera réellement utilisée pour ce client (budget suffisant). */
-export function aiActiveFor(userId: string): boolean {
+export function aiActiveFor(userId: string, projectId?: string | null): boolean {
   if (aiOff.getStore()) return false;
+  const key = accountKeyFor(userId, projectId);
   // Découverte gratuite (aucun forfait) : tout est fait par le moteur local, aucun appel à l'IA.
-  if (!planOf(getSubscription(userId))) return false;
-  return hasAiCredits(userId);
+  if (!planOf(getSubscription(key))) return false;
+  return hasAiCredits(key);
 }
 
-/** Le budget IA caché du compte permet-il encore une génération ? */
-export function hasAiCredits(userId: string): boolean {
-  return balance(userId).available >= AI_MIN_AVAILABLE;
+/** Le budget IA de l'abonnement du projet permet-il encore une génération ? */
+export function hasAiCredits(userId: string, projectId?: string | null): boolean {
+  return balance(accountKeyFor(userId, projectId)).available >= AI_MIN_AVAILABLE;
 }
 
 /** IA autorisée pour la tâche en cours. Hors tâche : seule la configuration des fournisseurs compte. */
@@ -87,7 +88,8 @@ export type AiUsage = {
  * mois, une pour les crédits achetés. Une barre n'atteint 100 % que lorsqu'elle ne peut plus servir ; l'IA est en
  * pause quand les deux sont épuisées. `null` sans forfait (découverte gratuite : l'IA n'est pas incluse).
  */
-export function aiUsage(userId: string): AiUsage | null {
+export function aiUsage(user: string, projectId?: string | null): AiUsage | null {
+  const userId = accountKeyFor(user, projectId);
   if (!planOf(getSubscription(userId))) return null;
   const paused = balance(userId).available < AI_MIN_AVAILABLE;
   const r = aiReserves(userId);
@@ -98,7 +100,8 @@ export function aiUsage(userId: string): AiUsage | null {
   return { plan: { used: paused ? 100 : planUsed }, credits: credits && paused ? { used: 100 } : credits, paused };
 }
 
-export function assertAiAllowed(userId: string | null | undefined): void {
+export function assertAiAllowed(user: string | null | undefined, projectId?: string | null): void {
+  const userId = user ? accountKeyFor(user, projectId) : user;
   if (!userId) throw new UserFacingError(L("Appel à l'IA refusé : aucun compte n'est associé à la demande.", "AI call refused: no account is attached to the request."));
   const off = aiOff.getStore();
   if (off) throw new UserFacingError(L(`Appel à l'IA refusé : ${off.reason}.`, `AI call refused: ${off.reason}.`));

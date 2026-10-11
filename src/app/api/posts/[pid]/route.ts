@@ -71,7 +71,7 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ pid: st
     case "approve":
     case "schedule": {
       // Publication réservée aux forfaits (la découverte gratuite peut connecter ses comptes, pas publier).
-      requirePlan(user);
+      requirePlan(user, post.project_id);
       if (locked(post.status)) throw new HttpError(409, L("Déjà envoyée.", "Already sent."));
       if (!post.connection_id) throw new HttpError(409, L("Choisissez le compte destinataire avant de programmer.", "Choose the target account before scheduling."));
       if (!post.scheduled_at) throw new HttpError(409, L("Choisissez une date de publication.", "Choose a publishing date."));
@@ -89,7 +89,7 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ pid: st
       run("UPDATE posts SET status = 'cancelled', updated_at = ? WHERE id = ?", now(), post.id);
       break;
     case "publish_now": {
-      requirePlan(user);
+      requirePlan(user, post.project_id);
       if (locked(post.status)) throw new HttpError(409, L("Déjà envoyée.", "Already sent."));
       if (!post.connection_id) throw new HttpError(409, L("Choisissez le compte destinataire.", "Choose the target account."));
       run("UPDATE posts SET status = 'scheduled', scheduled_at = ?, approved_at = ?, approved_by = ?, updated_at = ? WHERE id = ?", now(), now(), user.id, now(), post.id);

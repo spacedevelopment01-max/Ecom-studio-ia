@@ -39,8 +39,8 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     platforms: PLATFORMS.map((pl) => ({ ...PLATFORM_SPECS[pl] })),
     stats: socialStats(p.id, user.id),
     automations: listAutomations(p.id),
-    ai: aiActiveFor(p.userId),
-    canPublish: !!planOfUserId(user.id),
+    ai: aiActiveFor(p.userId, p.id),
+    canPublish: !!planOfUserId(user.id, p.id),
     timezone: p.settings.timezone,
   });
 });
@@ -98,7 +98,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     case "plan": {
       // Période demandée (jours de calendrier, jours exclus compris) : limite du forfait, comme le calendrier existant.
       const span = b.request.endDate ? Math.round((Date.parse(b.request.endDate) - Date.parse(b.request.startDate)) / 86_400_000) + 1 : (b.request.days ?? 30);
-      assertCalendarDays(user, span);
+      assertCalendarDays(user, p.id, span);
       if (!publishingDates(b.request).length) throw new HttpError(400, L("Aucun jour de publication dans cette période.", "No publishing day in this period."));
       for (const x of b.request.platforms) if (x.connectionId && !projectAccounts(p).some((a) => a.id === x.connectionId)) throw new HttpError(400, L("Compte inconnu.", "Unknown account."));
       return ok(createPlanV2(p, { ...b.request, lang: p.settings.language === "en" ? "en" : "fr" }));
@@ -108,10 +108,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       return ok(r);
     }
     case "estimate":
-      return ok(estimateProduction(p, own(b.ids, b.planId), { estimate: realSocialDeps(null, p, aiActiveFor(p.userId)).estimate, aiActive: aiActiveFor(p.userId) }, { allowPaid: b.allowPaid }));
+      return ok(estimateProduction(p, own(b.ids, b.planId), { estimate: realSocialDeps(null, p, aiActiveFor(p.userId, p.id)).estimate, aiActive: aiActiveFor(p.userId, p.id) }, { allowPaid: b.allowPaid }));
     case "produce": {
       const list = own(b.ids, b.planId);
-      if (b.allowPaid && aiActiveFor(p.userId)) {
+      if (b.allowPaid && aiActiveFor(p.userId, p.id)) {
         const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Production des publications", "Producing posts"), payload: { projectId: p.id, ids: list, allowPaid: true, maxCostEur: b.maxCostEur, approvedEstimateMicro: b.approvedEstimateMicro ?? null } });
         return ok({ jobId: job.id });
       }
@@ -124,7 +124,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       return ok(approve(p, list, user.id));
     }
     case "schedule":
-      requirePlan(user);
+      requirePlan(user, p.id);
       return ok(schedulePosts(own(b.ids, b.planId), (pid) => checkPost(p, pid)));
     case "unschedule":
       unschedule(own(b.ids));
@@ -135,7 +135,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       setPlanPaused(b.planId, b.action === "pause");
       return ok({ ok: true });
     case "edit":
-      return ok(await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId)), { confirm: b.confirm, maxCostEur: b.maxCostEur, planId: b.planId }));
+      return ok(await applySocialEdit(p, b.text, realSocialDeps(null, p, aiActiveFor(p.userId, p.id)), { confirm: b.confirm, maxCostEur: b.maxCostEur, planId: b.planId }));
     case "automation":
       return ok({ id: createAutomation(p.id, b.kind, b.config ?? {}) });
     case "automation_status":

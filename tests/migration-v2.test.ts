@@ -44,6 +44,12 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   run("UPDATE users SET role = 'client' WHERE id = ?", u.id);
   getSubscription(u.id);
   run("UPDATE subscriptions SET status = 'active', plan = 'dominer' WHERE user_id = ?", u.id);
+  // Un abonnement = un projet : chaque projet de ce compte a son propre abonnement Dominer.
+  const seedPaid = async (kind: Parameters<typeof seedThemeScenario>[1]) => {
+    const pid = await fr(() => seedThemeScenario(u.id, kind));
+    (await import("@/lib/project-subscriptions")).grantProjectPlan(pid, "dominer");
+    return pid;
+  };
   alignPeriod(u.id, Date.now());
   syncAllowance(u.id);
   const ctxFor = (pid: string, type = "pipeline.run") => {
@@ -56,7 +62,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) }) as any;
 
   it("création complète — marque : logo par Brand & Logo Engine V2, aucune piste de l'ancien moteur", async () => {
-    const pid = await fr(() => seedThemeScenario(u.id, "cosmetic"));
+    const pid = await seedPaid("cosmetic");
     const before = all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-proposal'", pid).length;
     const { buildBrand } = await import("@/lib/engine/brand");
     await fr(() => buildBrand(ctxFor(pid), pid, {}));
@@ -82,7 +88,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   }, 120_000);
 
   it("images : jeu orchestré par Image Engine V2 (composants locaux seulement, univers et photos en situation par V2)", async () => {
-    const pid = await fr(() => seedThemeScenario(u.id, "cosmetic"));
+    const pid = await seedPaid("cosmetic");
     const { runImageSetV2 } = await import("@/lib/image-v2/set");
     await fr(() => runImageSetV2(ctxFor(pid, "images.generate"), pid));
     expect(calls.set).toEqual([{ localOnly: true }]);
@@ -91,7 +97,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   });
 
   it("calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon", async () => {
-    const pid = await fr(() => seedThemeScenario(u.id, "cosmetic"));
+    const pid = await seedPaid("cosmetic");
     run("DELETE FROM content_plans WHERE project_id = ?", pid);
     run("DELETE FROM posts WHERE project_id = ?", pid);
     const { startWeekCalendar, creationPlanId } = await import("@/lib/engine/pipeline");
@@ -105,7 +111,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
     expect(all("SELECT id FROM posts WHERE project_id = ?", pid)).toHaveLength(n.length);
     expect(all("SELECT id FROM content_plans WHERE project_id = ?", pid)).toHaveLength(1);
     // Ancien projet qui a déjà un calendrier (ancien moteur) : rien de plus.
-    const pid2 = await fr(() => seedThemeScenario(u.id, "artisan"));
+    const pid2 = await seedPaid("artisan");
     run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", id(), pid2, "{}", "done", now());
     const before = all("SELECT id FROM posts WHERE project_id = ?", pid2).length;
     await fr(() => startWeekCalendar(ctxFor(pid2), pid2));
@@ -113,7 +119,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   }, 120_000);
 
   it("anciennes routes : plus de nouvelle génération V1 ; l'ancien point d'accès des publications ne contourne pas V2", async () => {
-    const pid = await fr(() => seedThemeScenario(u.id, "cosmetic"));
+    const pid = await seedPaid("cosmetic");
     sessionUser = { ...u, role: "client" };
     const plans = await import("@/app/api/projects/[id]/plans/route");
     expect((await plans.POST(req(`/api/projects/${pid}/plans`, {}), ctx({ id: pid }))).status).toBe(410);
@@ -147,7 +153,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   }, 120_000);
 
   it("textes : le document SEO V2 est la référence de la boutique ; le kit ne complète que le reste", async () => {
-    const pid = await fr(() => seedThemeScenario(u.id, "cosmetic"));
+    const pid = await seedPaid("cosmetic");
     const { localCopy } = await import("@/lib/engine/local-copy");
     const p = loadProject(pid);
     remember(pid, { kind: "artifact", key: "shop_copy", value: JSON.stringify(fr(() => localCopy(p.product, p.brand!, p))), source: "local", status: "confirmed" });
@@ -167,7 +173,7 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   }, 120_000);
 
   it("blog : un article modifié par le client dans l'onglet Blog n'est jamais écrasé par une nouvelle rédaction V2", async () => {
-    const pid = await fr(() => seedThemeScenario(u.id, "cosmetic"));
+    const pid = await seedPaid("cosmetic");
     const { saveBlogDraftV2 } = await import("@/lib/seo-v2/blog");
     const { runContentEngineV2 } = await import("@/lib/seo-v2/engine");
     const r = await fr(() => runContentEngineV2(null, pid, { type: "blog_article", lang: "fr", request: "conseils d'utilisation" }));

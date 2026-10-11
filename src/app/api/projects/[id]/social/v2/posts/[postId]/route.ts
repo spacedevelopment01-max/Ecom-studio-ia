@@ -53,7 +53,7 @@ export const POST = handle(async (req: Request, ctx: PostCtx) => {
         break;
       }
       case "schedule": {
-        requirePlan(user);
+        requirePlan(user, p.id);
         const r = schedulePosts([postId], (pid) => checkPost(p, pid));
         if (r.refused.length) throw new Error(r.refused[0].reason);
         break;
@@ -68,7 +68,7 @@ export const POST = handle(async (req: Request, ctx: PostCtx) => {
         return ok({ deleted: true });
       case "publish_now": {
         // Publier maintenant : même chemin que la programmation (version approuvée, compte actif), échéance immédiate.
-        requirePlan(user);
+        requirePlan(user, p.id);
         const cur = one<{ scheduled_at: number | null }>("SELECT scheduled_at FROM posts WHERE id = ?", postId)!;
         run("UPDATE posts SET scheduled_at = ? WHERE id = ? AND status IN ('approved','review','paused')", now() + 1000, postId);
         const r = schedulePosts([postId], (pid) => checkPost(p, pid));

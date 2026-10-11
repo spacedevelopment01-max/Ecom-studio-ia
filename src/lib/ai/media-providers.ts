@@ -34,12 +34,12 @@ const brainCols = (c?: Ctx) => ({ brainScope: c?.brain?.scope ?? null, brainHash
 /** Raison, repli et escalade du Router V2 pour la génération en cours. */
 const routingCols = (t?: MediaTrace) => (t?.routing ? { routingReason: t.routing.reason, fallback: t.routing.fallback, escalation: t.routing.escalation } : {});
 
-/** Quota du forfait concerné par une génération (selon la portée de la tâche en cours), null si rien n'est décompté. */
-function quotaFor(media: "image" | "video") {
-  const scope = currentQuotaScope();
-  if (scope === "ugc") return null; // la vidéo UGC est décomptée une fois, en entier
-  if (media === "image") return scope === "creation" ? null : "visuals";
-  return "aiVideos";
+/**
+ * Quota en nombre concerné par une génération : aucun depuis les forfaits V2 (images, vidéos et UGC ne sont limités
+ * que par le budget IA du projet et les droits de son forfait). Conservé pour les décomptes déjà faits.
+ */
+function quotaFor(_media: "image" | "video"): "visuals" | "aiVideos" | null {
+  return null;
 }
 
 /**
@@ -176,7 +176,7 @@ const MEDIA_MAX_FACTOR = 1.25;
  */
 function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: string, model: string) {
   // Droits du compte vérifiés à chaque génération (forfait, budget), dans une tâche de fond ou non.
-  assertAiAllowed(ctx.userId);
+  assertAiAllowed(ctx.userId, ctx.projectId);
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
   const max = Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));

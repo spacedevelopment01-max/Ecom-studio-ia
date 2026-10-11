@@ -42,7 +42,7 @@ export const stepContext = (p: Project, step: Pick<PlanStep, "requiredContext">)
  * classement par l'IA seulement si elle est active pour le compte (sinon une question de clarification).
  */
 export async function planRequest(p: Project, req: { action?: string; payload?: { regenerate?: boolean }; text?: string; requestKey: string }, opts: { classify?: Parameters<typeof understand>[1]["classify"] } = {}): Promise<{ intent: IntentResult; plan: TaskPlan | null }> {
-  const aiActive = aiActiveFor(p.userId) && !!activeProviderKey("anthropic");
+  const aiActive = aiActiveFor(p.userId, p.id) && !!activeProviderKey("anthropic");
   const intent = await understand(req, { aiActive, classify: opts.classify ?? aiIntentClassifier({ userId: p.userId, projectId: p.id }) });
   if (!intent.intents.length) return { intent, plan: null };
   return { intent, plan: loadOrCreatePlan({ projectId: p.id, userId: p.userId, requestKey: req.requestKey, intents: intent.intents, state: projectState(p) }) };
