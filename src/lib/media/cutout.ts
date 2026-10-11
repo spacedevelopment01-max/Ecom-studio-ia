@@ -196,11 +196,53 @@ async function floodCutout(input: Buffer): Promise<Buffer> {
 }
 
 /**
+ * Bords d'un détourage sur fond uni : le contour garde souvent un liseré de la couleur du fond (halo clair visible sur
+ * un fond sombre). Sur `depth` pixels depuis la transparence, l'opacité suit l'écart à la couleur du fond et la part
+ * du fond est retirée de la couleur ; seule l'opacité est ensuite adoucie (le fond ne redéborde jamais).
+ */
+export async function defringe(png: Buffer, original: Buffer, depth = 1): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  const src = await sharp(original, { failOn: "none" }).rotate().resize(w, h, { fit: "fill" }).removeAlpha().raw().toBuffer();
+  // Couleur du fond : moyenne du pourtour de la photo d'origine.
+  const avg = [0, 0, 0];
+  let n = 0;
+  for (let x = 0; x < w; x += 4) for (const y of [0, h - 1]) { for (let k = 0; k < 3; k++) avg[k] += src[(y * w + x) * 3 + k]; n++; }
+  for (let y = 0; y < h; y += 4) for (const x of [0, w - 1]) { for (let k = 0; k < 3; k++) avg[k] += src[(y * w + x) * 3 + k]; n++; }
+  for (let k = 0; k < 3; k++) avg[k] /= n;
+  const clear = new Uint8Array(w * h);
+  for (let p = 0; p < w * h; p++) clear[p] = data[p * 4 + 3] < 24 ? 1 : 0;
+  const ring = new Uint8Array(w * h);
+  for (let pass = 1; pass <= depth; pass++) {
+    const next: number[] = [];
+    for (let p = 0; p < w * h; p++) {
+      if (clear[p] || ring[p]) continue;
+      const x = p % w;
+      const y = (p / w) | 0;
+      const near = (q: number) => clear[q] === 1 || (pass > 1 && ring[q] === pass - 1);
+      if ((x > 0 && near(p - 1)) || (x < w - 1 && near(p + 1)) || (y > 0 && near(p - w)) || (y < h - 1 && near(p + w))) next.push(p);
+    }
+    for (const p of next) ring[p] = pass;
+  }
+  for (let p = 0; p < w * h; p++) {
+    if (!ring[p]) continue;
+    const i = p * 4;
+    const d = Math.max(Math.abs(data[i] - avg[0]), Math.abs(data[i + 1] - avg[1]), Math.abs(data[i + 2] - avg[2]));
+    const a = Math.min(data[i + 3] / 255, Math.max(0, Math.min(1, (d - 12) / 70)) * (ring[p] === 1 ? 0.8 : 1));
+    data[i + 3] = Math.round(a * 255);
+    if (a > 0.05) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, Math.round((data[i + k] - (1 - a) * avg[k]) / a)));
+  }
+  const rgb = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).removeAlpha().raw().toBuffer();
+  const alpha = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).extractChannel(3).blur(0.5).raw().toBuffer();
+  return sharp(rgb, { raw: { width: w, height: h, channels: 3 } }).joinChannel(alpha, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
+}
+
+/**
  * Détoure le produit. Si le modèle ne peut pas tourner (mémoire insuffisante, plantage), le détourage de secours
  * par couleur du fond n'est utilisé que si le fond est réellement uni ; sinon `CutoutUnavailable` est levée et
  * aucun détourage n'est produit (jamais un détourage grossier sur un fond chargé).
  */
-export async function cutoutProduct(input: Buffer, opts: { method?: "flood" } = {}): Promise<Cutout> {
+export async function cutoutProduct(input: Buffer, opts: { method?: "flood" | "tight" } = {}): Promise<Cutout> {
   let png: Buffer;
   let method: Cutout["method"] = "model";
   let model: CutoutModel | undefined;
@@ -215,7 +257,11 @@ export async function cutoutProduct(input: Buffer, opts: { method?: "flood" } = 
       // Photo déjà détourée (PNG à fond transparent) : sa transparence est gardée telle quelle.
       png = await sharp(input, { failOn: "none" }).rotate().resize(2048, 2048, { fit: "inside", withoutEnlargement: true }).ensureAlpha().png().toBuffer();
       method = "existing";
-    } else ({ png, model } = await modelCutout(input));
+    } else {
+      ({ png, model } = await modelCutout(input));
+      // Fond clair et assez uni : liseré du fond retiré des bords (plus profondément pour un second essai « resserré »).
+      if (bg.plain) png = await defringe(png, input, opts.method === "tight" ? 3 : 1);
+    }
   } catch (e) {
     if (!bg.flat) {
       console.warn("[cutout] modèle indisponible et fond non uni : pas de détourage :", (e as Error).message);

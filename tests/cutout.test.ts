@@ -56,3 +56,28 @@ describe("second détourage par la couleur du fond", () => {
     await expect(cutoutProduct(busy, { method: "flood" })).rejects.toBeInstanceOf(CutoutUnavailable);
   });
 });
+
+describe("bords d'un détourage sur fond uni", () => {
+  it("le liseré clair laissé par le modèle autour du produit devient transparent ; le produit reste opaque", async () => {
+    const { defringe } = await import("@/lib/media/cutout");
+    const W = 60, H = 40;
+    const rgb = Buffer.alloc(W * H * 3, 250);
+    const rgba = Buffer.alloc(W * H * 4);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const p = y * W + x;
+      const inside = x >= 15 && x < 45 && y >= 10 && y < 30;
+      const ring = !inside && x >= 14 && x < 46 && y >= 9 && y < 31;
+      const c = inside ? 30 : ring ? 238 : 250; // produit sombre, liseré presque blanc (reste du fond)
+      rgb.fill(c, p * 3, p * 3 + 3);
+      rgba.fill(c, p * 4, p * 4 + 3);
+      rgba[p * 4 + 3] = inside || ring ? 255 : 0;
+    }
+    const original = await sharp(rgb, { raw: { width: W, height: H, channels: 3 } }).png().toBuffer();
+    const cut = await sharp(rgba, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
+    const out = await sharp(await defringe(cut, original)).raw().toBuffer();
+    const a = (x: number, y: number) => out[(y * W + x) * 4 + 3];
+    expect(a(30, 9)).toBeLessThan(90); // liseré
+    expect(a(14, 20)).toBeLessThan(90);
+    expect(a(30, 20)).toBe(255); // cœur du produit
+  });
+});

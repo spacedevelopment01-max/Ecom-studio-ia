@@ -211,12 +211,19 @@ async function makeCutout(project: Project, base: Base, o: Asset, opts: { force:
   // Seulement pour un défaut du découpage lui-même : une main, un texte ou un autre objet resteraient aussi avec le fond retiré.
   const FIXABLE = ["product_cut", "missing_parts", "background_left", "blurry"];
   if (quality.verdict !== "ok" && quality.by === "ai" && cut.method === "model" && quality.reasons.length > 0 && quality.reasons.every((x) => FIXABLE.includes(x))) {
-    const alt = await cutoutProduct(original, { method: "flood" }).catch((e) => {
+    // Par la couleur du fond si elle est parfaitement unie ; sinon le modèle avec des bords resserrés (liseré retiré).
+    const retry = async (method: "flood" | "tight") => cutoutProduct(original, { method }).catch((e) => {
       if (isStop(e)) throw e;
       return null;
     });
+    let how: "flood" | "tight" = "flood";
+    let alt = await retry("flood");
+    if (!alt && quality.reasons.includes("background_left")) {
+      how = "tight";
+      alt = await retry("tight");
+    }
     if (alt) {
-      const q2 = await judge(base, alt, original, opts.fallback, `${o.id}:flood`);
+      const q2 = await judge(base, alt, original, opts.fallback, `${o.id}:${how}`);
       if (q2.verdict === "ok" || (q2.score ?? 0) > (quality.score ?? 0)) {
         cut = alt;
         quality = q2;
