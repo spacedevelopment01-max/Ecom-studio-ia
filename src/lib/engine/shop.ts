@@ -11,6 +11,7 @@ import { sectionSchema } from "../theme/spec";
 import { all, json, one } from "../db";
 import { getAsset, type Asset } from "../library";
 import { loadProject, saveThemeVersion, currentTheme, type Project } from "../projects";
+import { tradeText } from "../brain/trade";
 import { buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
 import { libraryFiller } from "../theme/library-fill";
 import { contentContext } from "../theme/section-content";
@@ -253,7 +254,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     product: main,
     social: p.settings.socialLinks,
     language: contentLang(),
-    ...(services ? { business: "services" as const, services: p.services, servicesTermsHtml: serviceTermsHtml(p.services) } : {}),
+    ...(services ? { business: "services" as const, services: p.services, servicesTermsHtml: serviceTermsHtml(p.services), activity: tradeText(p) } : {}),
     ...(catalog ? { storeType: p.storeType, products: catalog.products, collections: catalog.collections } : {}),
   });
   return { p, direction, services, catalog, spec };

@@ -229,7 +229,8 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   const status = data ? (STATUS[data.project.status] ?? STATUS.draft) : null;
   const { data: me } = useApi<{ user: { role: string; email: string } }>("/api/me");
   // Forfait et quotas (lien « Mon compte », bandeau quand un quota est épuisé) : jamais de crédits.
-  const { billing } = useBilling({ poll: 60000 });
+  // Barre d'IA à jour peu après chaque action (coût réel compté dès la fin de l'appel).
+  const { billing } = useBilling({ poll: 15000 });
   // Menu latéral replié ou déplié (ordinateur), mémorisé sur cet appareil.
   const [folded, setFolded] = useState(false);
   useEffect(() => {

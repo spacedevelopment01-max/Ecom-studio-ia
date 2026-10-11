@@ -82,7 +82,7 @@ export const serviceProfile = {
 };
 export const serviceProduct = { ...emptyProduct(), name: "Cabinet Ondine", sector: "sante" as const, summary: "Cabinet de kinésithérapie à Lyon.", facts: [] };
 
-export function serviceSpec(direction: DirectionId = "atelier", lang: "fr" | "en" = "fr", services: typeof serviceProfile | (Omit<typeof serviceProfile, "contactMode"> & { contactMode: "booking" | "quote" | "call" | "form" }) = serviceProfile, opts: { noPhotos?: boolean; rich?: boolean } = {}) {
+export function serviceSpec(direction: DirectionId = "atelier", lang: "fr" | "en" = "fr", services: typeof serviceProfile | (Omit<typeof serviceProfile, "contactMode"> & { contactMode: "booking" | "quote" | "call" | "form" }) = serviceProfile, opts: { noPhotos?: boolean; rich?: boolean; activity?: string } = {}) {
   const copy = runWithLang({ content: lang }, () => localCopy(serviceProduct, { name: "Cabinet Ondine", tagline: "Bouger mieux, durablement.", story: "", values: [] }, { business: "services", services }));
   return build({
     direction,
@@ -96,5 +96,6 @@ export function serviceSpec(direction: DirectionId = "atelier", lang: "fr" | "en
     business: "services",
     services,
     servicesTermsHtml: runWithLang({ content: lang }, () => serviceTermsHtml(services)),
+    activity: opts.activity,
   });
 }

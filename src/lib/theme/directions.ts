@@ -10,6 +10,7 @@ import { pick, type Lang } from "../i18n";
 import type { BlockInstance, GroupJson, SectionInstance, StoreCollection, StoreProduct, TemplateJson, ThemeSpec } from "./spec";
 import type { ServiceProfile } from "../project-types";
 import { servicesPlan } from "./services-site";
+import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 
@@ -433,6 +434,11 @@ export type BuildInput = {
   services?: ServiceProfile;
   /** Conditions de prestation (HTML, espaces réservés honnêtes) pour la page « Conditions générales » d'un site de services. */
   servicesTermsHtml?: string;
+  /**
+   * Activité décrite par le client (catégorie, résumé, prestations) : une activité qui vit de réservations (salle de
+   * jeu, location de salle, restaurant…) reçoit d'office le calendrier de réservation (booking-need.ts).
+   */
+  activity?: string;
 };
 
 const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -497,6 +503,9 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   const im = input.images;
   // Entreprise de services : plan du site (appel à l'action, pages, sections) et textes sans vocabulaire de vente.
   const svc = input.business === "services" && input.services ? servicesPlan({ lang, shopName: input.shopName, services: input.services, copy: input.copy, images: im, termsHtml: input.servicesTermsHtml }) : null;
+  const need = svc ? bookingNeed(input.services, input.activity ?? "") : null;
+  const booking = need && svc ? bookingCalendar(need, lang, svc.services) : null;
+  const calRow = (colorScheme: string): Row => ["booking-calendar", { ...booking!.settings, color_scheme: colorScheme, padding_top: 104, padding_bottom: 104 }, booking!.blocks, booking!.hidden ? { disabled: true } : undefined];
   const c = svc ? svc.copy : input.copy;
   const scheme = (n: 1 | 2 | 3 | 4) => `scheme-${n}`;
   const pad = (top: number, bottom = top) => ({ padding_top: top, padding_bottom: bottom });
@@ -927,6 +936,31 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     index = cat ? flat(cat.services(kit)) : recipes[d.id]!;
     // Vague d'ouverture sans phrase centrée (phrase identique au titre) : la vague n'a plus rien à relier.
     if (index[1]?.[0] === "wave-divider") index.splice(1, 1);
+    // Réservation exigée par l'activité : le vrai calendrier, réglé sur les horaires du client, dans tous les thèmes.
+    if (booking) {
+      const at = index.findIndex((r) => r[0] === "booking-calendar");
+      const last = index.length - 1;
+      const replace = at >= 0 ? at : index[last]?.[0] === "cta-banner" && !booking.hidden ? last : -1;
+      const row = calRow(String(index[replace]?.[1]?.color_scheme ?? scheme(1)));
+      if (replace >= 0) index[replace] = row;
+      else index.splice(last >= 0 && index[last][0] === "cta-banner" ? last : index.length, 0, row);
+      // Horaires inconnus : calendrier masqué, et la demande de réservation avec date reste visible sur l'accueil.
+      if (booking.hidden) {
+        const shown = index.findIndex((r) => r[0] === "booking" && !r[3]?.disabled);
+        if (shown >= 0) index[shown] = [index[shown][0], { ...index[shown][1], ask_date: true }, index[shown][2], index[shown][3]];
+        else {
+          const b = R.booking(2);
+          index.splice(index.findIndex((r) => r[0] === "booking-calendar"), 0, [b[0], { ...b[1], ask_date: true }, b[2]]);
+        }
+      }
+    } else {
+      // Pas de réservation à faire ici (ou faite par un service en ligne, intégré à la page Rendez-vous) : jamais un
+      // calendrier aux horaires par défaut, il est posé masqué.
+      // Sans autre moyen de contact sur l'accueil, la section de prise de contact (ou de réservation en ligne) le remplace.
+      const at = index.findIndex((r) => r[0] === "booking-calendar");
+      const contact = index.some((r, i) => i !== at && ["practical-info", "v2-facts", "booking", "contact-form"].includes(r[0]) && !r[3]?.disabled);
+      if (at >= 0) index[at] = contact ? [index[at][0], index[at][1], index[at][2], { disabled: true }] : R.booking(Number(String(index[at][1].color_scheme ?? "").replace("scheme-", "")) || 1);
+    }
   }
 
   // Catalogue : les textes rédigés pour le produit principal ne s'affichent que sur sa fiche.
@@ -1007,7 +1041,9 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       R.method(1, "timeline"),
       cta(3),
     ]);
-    templates["page.contact"] = tpl(ids, [R.booking(1), R.practical(2, false), ...(svc.bookingUrl ? [R.contactForm(1)] : [])]);
+    templates["page.contact"] = tpl(ids, booking && !booking.hidden
+      ? [calRow(scheme(1)), R.practical(2, false), R.contactForm(1, t("Une autre demande ?", "Something else?"))]
+      : [booking ? (([a, b, c]) => [a, { ...b, ask_date: true }, c] as Row)(R.booking(1)) : R.booking(1), R.practical(2, false), ...(svc.bookingUrl ? [R.contactForm(1)] : []), ...(booking ? [calRow(scheme(2))] : [])]);
     templates["page.faq"] = tpl(ids, [R.faq(1, 8), R.contactForm(2, t("Une autre question ?", "Still have a question?"))]);
     templates["page.legal"] = tpl(ids, [R.legal()]);
     templates["404"] = tpl(ids, [["main-404", { heading: t("Cette page s'est égarée.", "This page has wandered off."), text: t("Le lien est peut-être ancien. Le reste du site vous attend.", "The link may be out of date. The rest of the site is waiting for you."), color_scheme: "scheme-1" }]]);
