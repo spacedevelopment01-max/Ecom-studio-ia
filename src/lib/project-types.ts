@@ -216,7 +216,15 @@ export type ProjectSettings = {
    * Sans cet accord (ni photo du client montrant une personne), le studio n'en ajoute aucune (voir people-policy.ts).
    */
   peopleAllowed?: boolean;
+  /**
+   * Catégorie d'activité confirmée ou corrigée par le client (modèles de pages proposés, boutons principaux).
+   * Absente : déduite du projet (voir activityOf dans theme/page-templates.ts), jamais imposée.
+   */
+  activity?: ActivityCategory;
 };
+
+/** Vente en ligne, prestations sur rendez-vous, artisan sur devis, commerce de proximité, ou activité mixte. */
+export type ActivityCategory = "products" | "booking" | "quote" | "local" | "mixed";
 
 /** Résumé du site existant du client, affiché dans le studio (Pilote, Boutique, Marque). Tout vient du site lui-même. */
 export type ExistingSiteSummary = {

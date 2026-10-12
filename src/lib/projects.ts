@@ -180,9 +180,17 @@ export function themeVersion(projectId: string, versionId: string): { version: T
   return v ? { version: { ...v, summary: storedText(v.summary, uiLang()) }, spec: JSON.parse(v.spec) } : null;
 }
 
-export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown): ThemeVersion {
+/** La version de référence d'une modification n'est plus la version en cours (autre onglet, double clic, tâche). */
+export class ThemeConflict extends Error {}
+
+/**
+ * Nouvelle version du thème. `expectedParent` : la modification a été préparée sur cette version ; si une autre
+ * modification est passée entre-temps, rien n'est écrit (ThemeConflict) au lieu d'écraser silencieusement.
+ */
+export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown, expectedParent?: string): ThemeVersion {
   return tx(() => {
     const cur = one<{ current_theme_version_id: string | null }>("SELECT current_theme_version_id FROM projects WHERE id = ?", projectId);
+    if (expectedParent && cur?.current_theme_version_id !== expectedParent) throw new ThemeConflict("theme_conflict");
     const n = (one<{ n: number }>("SELECT MAX(number) n FROM theme_versions WHERE project_id = ?", projectId)?.n ?? 0) + 1;
     const vid = id();
     run(

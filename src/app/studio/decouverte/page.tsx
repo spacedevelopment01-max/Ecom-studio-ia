@@ -9,6 +9,7 @@ import { directionById, directionCards } from "@/lib/theme/directions";
 import { demoList, localMedia, webpOf } from "@/lib/demo-content";
 import { serverLang } from "@/lib/i18n-server";
 import { pick } from "@/lib/i18n";
+import { PAGE_MODELS } from "@/lib/theme/page-templates";
 
 export async function generateMetadata() {
   const lang = await serverLang();
@@ -50,6 +51,7 @@ export default async function DiscoveryPage() {
     ["marque", T("Marque", "Brand")],
     ["boutique", T("Boutique", "Store")],
     ["themes", T("30 thèmes", "30 themes")],
+    ["modeles", T("Modèles de pages", "Page templates")],
     ["images", T("Images", "Images")],
     ["publicites", T("Publicités", "Ads")],
     ["textes", T("Textes", "Copy")],
@@ -87,6 +89,18 @@ export default async function DiscoveryPage() {
         <section id="marque" className={section}>{h(T("Marque", "Brand"), T("Logos, palettes et typographies de marques d'exemple.", "Logos, palettes and typefaces of sample brands."))}<BrandLab brands={brands} /></section>
         <section id="boutique" className={section}>{h(T("Boutique", "Store"), T("Boutiques et site d'exemple, sur ordinateur et sur téléphone.", "Sample stores and website, on desktop and on mobile."))}<StoreDevices stores={stores} /></section>
         <section id="themes" className={section}>{h(T("Les 30 thèmes", "The 30 themes"), T("Tous les thèmes en aperçu. Créer : 10 · Développer : 20 · Dominer : 30.", "Every theme in preview. Create: 10 · Grow: 20 · Dominate: 30."))}<ThemeGrid directions={themes} /></section>
+        <section id="modeles" className={section}>
+          {h(T("Modèles de pages", "Page templates"), T("Avec Développer et Dominer : ajoutez des pages à votre site depuis ces modèles, et donnez à chaque produit ou prestation sa propre mise en page.", "With Grow and Dominate: add pages to your site from these templates, and give each product or service its own layout."))}
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {PAGE_MODELS.map((m) => (
+              <li key={m.id} className="rounded-2xl border border-line bg-card p-4">
+                <p className="font-display text-lg font-semibold">{pick(lang, m.name.fr, m.name.en)}</p>
+                <p className="mt-1 text-sm text-ink-2">{pick(lang, m.description.fr, m.description.en)}</p>
+                <p className="mt-2 text-xs text-muted">{pick(lang, m.usage.fr, m.usage.en)}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
         <section id="images" className={section}>{h(T("Images et vidéos", "Images and videos"), T("Détourages, packshots, scènes, visuels sociaux et vidéos des démonstrations.", "Cutouts, packshots, scenes, social visuals and videos from the demos."))}<DemoTabs demos={list} /></section>
         {hero && <section id="publicites" className={section}>{h(T("Publicités", "Ads"), T("Déplacez le texte, changez les couleurs : l'éditeur de publicités en miniature.", "Move the text, change the colors: the ad editor in miniature."))}<AdEditorDemo cutout={img(/détourage|cutout/i)} logo={hero.logo} palette={hero.palette} brand={hero.brand} /></section>}
         <section id="textes" className={section}>{h(T("Textes et SEO", "Copy and SEO"), T("Des documents modifiables ; une information inconnue reste « à compléter ».", "Editable documents; unknown information stays \"to complete\"."))}<SeoDocDemo docs={docs} /></section>

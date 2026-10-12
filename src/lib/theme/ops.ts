@@ -596,6 +596,10 @@ export function validateSpec(spec: ThemeSpec): string[] {
   // Thème importé : ses propres règles s'appliquent (sections et polices propres au thème du client).
   if (spec.imported) return problems;
   if (!spec.templates.product?.order.some((id) => spec.templates.product.sections[id]?.type === "main-product")) problems.push(L("la fiche produit doit contenir la section Produit", "the product page must contain the Product section"));
+  // Mises en page propres à un produit : elles gardent toujours la section Produit (prix, variantes, achat du catalogue).
+  for (const [key, t] of Object.entries(spec.templates)) {
+    if (key.startsWith("product.") && !t.order.some((id) => t.sections[id]?.type === "main-product")) problems.push(L(`la mise en page produit « ${key.slice(8)} » doit contenir la section Produit`, `product layout "${key.slice(8)}" must contain the Product section`));
+  }
   const defaults = globalSettingDefaults();
   for (const k of ["type_heading_font", "type_body_font"]) if (!spec.settings[k] && !defaults[k]) problems.push(L(`police manquante : ${k}`, `missing font: ${k}`));
   return problems;

@@ -39,6 +39,8 @@ export type StoreProduct = {
   tags: string[];
   /** Titre et méta-description du produit pour les moteurs de recherche (envoyés à la plateforme). */
   seo?: { title: string; description: string };
+  /** Mise en page propre à ce produit (« product.<suffixe> ») ; absente : la fiche produit commune. */
+  template_suffix?: string;
 };
 
 /** Collection de la boutique : liste ordonnée de produits (par identifiant « handle »). */
@@ -49,7 +51,20 @@ export function storeProducts(spec: { store: { product: StoreProduct; products?:
   return [spec.store.product, ...(spec.store.products ?? []).filter((p) => p.handle !== spec.store.product.handle)];
 }
 
-export type StorePage = { handle: string; title: string; template_suffix: string; body_html: string; /** Titre et description pour Google (envoyés à la plateforme). */ seo?: { title: string; description: string } };
+export type StorePage = {
+  handle: string;
+  title: string;
+  template_suffix: string;
+  body_html: string;
+  /** Titre et description pour Google (envoyés à la plateforme). */
+  seo?: { title: string; description: string };
+  /** Modèle de page d'origine (bibliothèque des modèles) : simple repère, la page reste indépendante du modèle. */
+  model?: string;
+  /** Brouillon : visible dans l'aperçu du studio, absente des menus et non publiée sur la plateforme. */
+  status?: "draft" | "published";
+  /** Prestation présentée par la page (nom dans le profil de services) ; destination du bouton « Prendre rendez-vous ». */
+  links?: { service?: string; booking?: string };
+};
 
 /**
  * Style d'un élément précis : section, chemin CSS depuis l'enveloppe de la section (« div:nth-child(1) > h1:nth-child(2) »),
