@@ -1,4 +1,5 @@
 "use client";
+import { AiWait } from "../wait-time";
 import { useEffect, useState } from "react";
 import { DirectionThumb } from "./direction-thumb";
 import { paletteSources } from "@/lib/route-palette";
@@ -134,6 +135,7 @@ export default function TabMarque() {
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
+      <AiWait busy={busy} label={t("Mise à jour de la marque (logo, site, charte)…", "Updating the brand (logo, website, guide)…")} waitKey="brand-save" expectedMs={15000} className="mb-4" />
       {active[0] && <JobProgress job={active[0]} />}
       {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
       <BrandPropagationCard />
@@ -497,6 +499,7 @@ function SocialKit({ tick }: { tick: number }) {
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Exemples de légendes", "Sample captions")}</p>
             <div className="mt-2 grid gap-2">{v.captions.map((c, i) => <div key={i} className="rounded-xl bg-paper-2 p-3 text-sm"><p className="text-[11px] font-medium text-muted">{c.pillar}</p><p className="mt-1 whitespace-pre-line">{c.text}</p></div>)}</div>
+            <AiWait busy={busy} label={t("Préparation de la ligne éditoriale…", "Preparing the editorial line…")} waitKey="brand-social" expectedMs={20000} className="mt-2" />
             <Button size="sm" variant="ghost" className="mt-2" icon={<Sparkles className="size-4" />} loading={busy} onClick={() => redo(true)}>{t("Refaire la ligne éditoriale", "Redo the editorial line")}</Button>
           </div>
         </div>
@@ -557,6 +560,7 @@ function BrandBook() {
           <ContentLangPicker {...cl} compact />
         </div>
       )}
+      <AiWait busy={busy} label={t("Préparation de la charte de marque…", "Preparing the brand guidelines…")} waitKey="brand-book" expectedMs={20000} className="mt-3" />
     </Card>
   );
 }

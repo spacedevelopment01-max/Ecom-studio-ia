@@ -5,6 +5,7 @@
  * approbation et exports (MP4, sous-titres SRT/VTT, document JSON).
  * Il n'y a PAS encore de timeline interactive (montage plan par plan à la souris) : voir reports/v1-to-v2-migration.md.
  */
+import { AiWait } from "../wait-time";
 import { useState } from "react";
 import { Check, Download, Film, History, Play, Wand2 } from "lucide-react";
 import { api, Badge, Button, Card, Field, Input, Modal, Select, Textarea, Toggle, useApi, useToast } from "../ui";
@@ -90,6 +91,7 @@ export function VideoV2Panel() {
         <Button variant="secondary" icon={<Film className="size-4" />} loading={busy === "plan"} disabled={locked} onClick={preparePlan}>{t("Préparer le plan et l'estimation", "Prepare the plan and estimate")}</Button>
       </div>
       {locked && <PlanRequired what="videos" />}
+      <AiWait busy={busy === "plan"} label={t("Préparation du plan de la vidéo et de l'estimation…", "Preparing the video plan and estimate…")} waitKey="video-plan" expectedMs={20000} className="mt-3" />
       {plan && (
         <div className="mt-4 rounded-xl border border-line p-4 text-sm">
           <p className="font-medium">{t(`${plan.shots.length} plan(s) · coût estimé : ${eur(plan.estimateMicro)}`, `${plan.shots.length} shot(s) · estimated cost: ${eur(plan.estimateMicro)}`)}</p>

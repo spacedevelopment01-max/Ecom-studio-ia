@@ -1,4 +1,5 @@
 "use client";
+import { TimeInfo } from "../wait-time";
 import Link from "next/link";
 import { useState } from "react";
 import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe, Image as ImageIcon } from "lucide-react";
@@ -301,6 +302,7 @@ export default function TabPilote() {
           </div>
           {pl && <Progress value={running ? pl.job.progress : done / pl.steps.length} className="mt-4" />}
           {running && <p className="mt-3 text-sm text-ink-2" role="status">{pl!.job.message}</p>}
+          {(running || paused) && <TimeInfo startedAt={pl!.job.startedAt ?? pl!.job.createdAt} progress={pl!.job.progress} estimate={pl!.job.estimate} paused={paused} className="mt-1.5" />}
           {running && <LiveStatus job={pl!.job} />}
           {paused && (
             <p className="mt-4 flex items-center gap-2 rounded-2xl bg-warn-soft p-4 text-sm text-warn" role="status">

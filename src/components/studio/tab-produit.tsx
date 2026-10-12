@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Ban, ImagePlus, Plus, Trash2, RefreshCw } from "lucide-react";
 import { api, Badge, Button, Card, cx, Field, Input, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { AssetThumb, EngineNotice, SectionTitle, useActive, type AssetView } from "./common";
+import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
 import { FromSiteBadge } from "./existing-site";
 import { CatalogPanel } from "./catalog-panel";
 import { ContentPanel } from "./content-panel";
@@ -152,7 +152,8 @@ function ProductPhotosCard() {
   const t = useT();
   const { lang } = useLang();
   const upload = useRef<HTMLInputElement>(null);
-  const running = useActive(["cutout.run", "pipeline.run"]).length > 0;
+  const runningJobs = useActive(["cutout.run", "pipeline.run", "shop.build"]);
+  const running = runningJobs.some((j) => j.type !== "shop.build");
   const { data, reload: reloadPhotos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=original,cutout,lifestyle`, { poll: running ? 3000 : undefined });
   const [busy, setBusy] = useState<string | null>(null);
   const all = data?.assets ?? [];
@@ -201,7 +202,7 @@ function ProductPhotosCard() {
         />
       </div>
       <p className="mt-1 text-xs text-muted">{t("Seules les photos du produit seul sur fond uni sont détourées ; chaque détourage est contrôlé et un détourage refusé n'est jamais utilisé.", "Only photos of the product alone on a plain background are cut out; each cutout is checked and a rejected cutout is never used.")}</p>
-      {running && <p className="mt-2 text-xs text-info">{t("Tri et détourage en cours…", "Sorting and cutting out…")}</p>}
+      {runningJobs.map((j) => <JobProgress key={j.id} job={j} className="mt-3" />)}
       <ul className="mt-3 grid gap-3">
         {photos.map((o) => {
           const c = cutouts.find((x) => x.sourceAssetId === o.id);

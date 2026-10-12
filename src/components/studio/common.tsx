@@ -6,6 +6,7 @@ import { Badge, Button, cx, formatBytes, Input, Modal, Progress, Spinner, useApi
 import { useProject, type JobView } from "./project-context";
 import { currentLang, useLang, useT } from "../i18n";
 import { useBilling } from "../billing-client";
+import { TimeInfo } from "../wait-time";
 import { pick, type Lang } from "@/lib/i18n";
 
 export type AssetView = {
@@ -161,6 +162,8 @@ export function JobProgress({ job, className }: { job: JobView | null | undefine
       </div>
       <p className="mt-1 text-xs text-muted">{job.message}</p>
       <Progress value={job.progress} className="mt-3" />
+      {/* Temps écoulé et temps restant estimé (durée habituelle de cette préparation, corrigée par l'avancement). */}
+      {job.status !== "done" && job.status !== "failed" && <TimeInfo startedAt={job.startedAt ?? job.createdAt} progress={job.progress} estimate={job.estimate} paused={job.status === "paused"} className="mt-2" />}
     </div>
   );
 }
@@ -193,14 +196,16 @@ export function EngineNotice({ what }: { what: string }) {
   const { data } = useProject();
   const { billing } = useBilling();
   if (!data) return null;
+  // Forfait du PROJET (un abonnement = un projet) ; l'ancien abonnement du compte seulement s'il n'est pas connu.
+  const plan = "plan" in data ? data.plan : billing?.plan;
   // Forfait payant sur une installation sans IA : problème de configuration, pas une question de forfait.
-  if (!data.ai.llm && billing?.plan)
+  if (!data.ai.llm && plan)
     return (
       <div className="mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info">
         {t(<>L'IA n'est pas encore connectée sur cette installation : version simplifiée pour {what}.</>, <>AI isn't connected on this installation yet: simplified version for {what}.</>)}
       </div>
     );
-  if (!billing || billing.plan) return null;
+  if ("plan" in data ? !!plan : !billing || billing.plan) return null;
   // Sans forfait (ou sans IA) : on dit franchement que le rendu reste basique, et comment passer à la version complète.
   return (
     <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-info/30 bg-info-soft px-4 py-3.5 text-sm text-info sm:flex-row sm:items-center" data-engine-notice>

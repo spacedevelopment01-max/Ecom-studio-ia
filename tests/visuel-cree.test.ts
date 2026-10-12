@@ -38,6 +38,11 @@ describe("Créer un visuel de prestation", async () => {
     // L'écran ouvre la création d'après le forfait DU PROJET (abonnement par projet, sans abonnement du compte).
     const ov = await (await fr(() => overview.GET(new Request(`http://localhost:3000/api/projects/${pid}`), { params: Promise.resolve({ id: pid }) } as any))).json();
     expect(ov.plan).toBe("vendre");
+    // Blog : ouvert selon le forfait du projet (Développer : articles inclus), pas selon un abonnement du compte.
+    const blog = await import("@/app/api/projects/[id]/blog/route");
+    const bl = await (await fr(() => blog.GET(new Request(`http://localhost:3000/api/projects/${pid}/blog`), { params: Promise.resolve({ id: pid }) } as any))).json();
+    expect(bl.access.allowed).toBe(true);
+    expect(bl.access.reason).toBeNull();
     // Corps envoyé par l'écran (titre, texte et bouton vides : tirés de l'offre).
     const body = { mode: "single", kind: "service", format: "story", serviceIndex: 0, usePhoto: false };
     const r = await fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ id: pid }) } as any));

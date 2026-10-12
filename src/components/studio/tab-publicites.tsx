@@ -1,4 +1,5 @@
 "use client";
+import { AiWait } from "../wait-time";
 import { useState } from "react";
 import { Download, Megaphone, Plus, Send, Trash2, Wand2 } from "lucide-react";
 import { api, Badge, Button, Card, Empty, Field, Input, Modal, Select, Textarea, useApi, useToast } from "../ui";
@@ -196,6 +197,7 @@ export default function TabPublicites() {
             <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-paper-2 p-3">
               <ContentLangPicker lang={editLang} setLang={(l) => setLanguage(edit, l)} projectLang={projectLang} />
               <Button size="sm" variant="secondary" icon={<Wand2 className="size-3.5" />} loading={drafting} onClick={() => draft(edit)}>{t("Proposer les annonces dans cette langue", "Draft ads in this language")}</Button>
+              <AiWait busy={drafting} label={t("Rédaction des annonces…", "Writing the ads…")} waitKey="ads-draft" expectedMs={30000} className="w-full" />
               <p className="w-full text-[11px] text-muted">{t("Annonces, boutons, export et publications de cette campagne sont dans cette langue, même si le reste du projet est dans une autre.", "This campaign's ads, buttons, export and posts use this language, even if the rest of the project uses another.")}</p>
             </div>
             {edit.plan.strategy && <StrategyPanel s={edit.plan.strategy} />}

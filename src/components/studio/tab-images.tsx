@@ -123,7 +123,7 @@ function ProductImages() {
   const [group, setGroup] = useState("all");
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [form, setForm] = useState({ kind: "scene", style: "window", format: "product", layout: "editorial", headline: "", subline: "", cta: "" });
-  const active = useActive(["images.generate", "image.single"]);
+  const active = useActive(["images.generate", "image.single", "canva."]);
   const cost = useCostConfirm();
   const locked = useCreationLocked();
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${GROUPS.find((g) => g.id === group)!.roles}`);
@@ -246,7 +246,7 @@ function ServiceImages() {
   const [group, setGroup] = useState("all");
   const [viewer, setViewer] = useState<AssetView | null>(null);
   const [form, setForm] = useState({ kind: "service", format: "portrait", headline: "", subline: "", cta: "", serviceIndex: 0, tips: "", usePhoto: true });
-  const active = useActive(["images.generate", "image.single"]);
+  const active = useActive(["images.generate", "image.single", "canva."]);
   const cost = useCostConfirm();
   const locked = useCreationLocked();
   const roles = SERVICE_GROUPS.find((g) => g.id === group)!.roles;

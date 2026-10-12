@@ -1,4 +1,5 @@
 "use client";
+import { TimeInfo } from "../wait-time";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Copy, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
@@ -122,7 +123,8 @@ export default function TabBoutique() {
   const cost = useCostConfirm();
   // Sans forfait (découverte gratuite) : aperçu filigrané « Aperçu », pas d'export ni de publication (bloqués aussi côté serveur).
   const { billing } = useBilling();
-  const discovery = !!billing && !billing.plan;
+  // Forfait du projet (abonnement par projet) ; l'ancien abonnement du compte seulement s'il n'est pas connu.
+  const discovery = data && "plan" in data ? !data.plan : !!billing && !billing.plan;
   const chatJobs = useActive(["shop.chat", "shop.build", "shop.direction", "shopify.push", "theme.custom"]);
   // Thème entièrement sur mesure (Dominer) et sections sur mesure (Vendre, Dominer) : accès selon le forfait.
   const custom = useCustomThemeStatus(id);
@@ -413,8 +415,9 @@ export default function TabBoutique() {
           </div>
         ))}
         {chatActive && (
-          <div className="flex max-w-[92%] items-center gap-2 rounded-2xl border border-line bg-card px-4 py-3 text-sm text-muted">
-            <Loader2 className="size-4 animate-spin text-signal" /> {chatActive.message || t("Le studio travaille…", "The studio is working…")}
+          <div className="grid max-w-[92%] gap-1.5 rounded-2xl border border-line bg-card px-4 py-3 text-sm text-muted">
+            <span className="flex items-center gap-2"><Loader2 className="size-4 animate-spin text-signal" /> {chatActive.message || t("Le studio travaille…", "The studio is working…")}</span>
+            <TimeInfo startedAt={chatActive.startedAt ?? chatActive.createdAt} progress={chatActive.progress} estimate={chatActive.estimate} paused={chatActive.status === "paused"} />
           </div>
         )}
         <div ref={chatEnd} />

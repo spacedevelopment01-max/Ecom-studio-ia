@@ -145,8 +145,11 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
 export function PlanLink({ billing, className }: { billing: BillingView | null; className?: string }) {
   const t = useT();
   const { lang } = useLang();
+  // Dans un projet : le forfait de SON abonnement (un abonnement = un projet), sinon celui de l'ancien abonnement du compte.
+  const project = useOptionalProject();
   if (!billing) return null;
-  const plan = billing.plan ? PLANS[billing.plan] : null;
+  const id = project?.data && "plan" in project.data ? project.data.plan : billing.plan;
+  const plan = id && id in PLANS ? PLANS[id as keyof typeof PLANS] : null;
   return (
     <div className={cx("flex shrink-0 items-center gap-1.5", className)}>
       <Link href="/studio/compte" className="hidden h-10 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs font-medium text-ink-2 hover:border-ink hover:text-ink md:inline-flex" title={t("Mon compte", "My account")}>

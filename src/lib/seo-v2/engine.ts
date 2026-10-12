@@ -87,7 +87,7 @@ export async function runContentEngineV2(ctx: JobContext | null, projectId: stri
   const p = loadProject(projectId);
   let deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   // Articles écrits par l'IA : inclus selon le forfait (comme le blog existant) ; sinon brouillon local gratuit.
-  const blogBlocked = req.type === "blog_article" && deps.canWrite && !blogAiAllowed(p.userId);
+  const blogBlocked = req.type === "blog_article" && deps.canWrite && !blogAiAllowed(p.userId, p.id);
   if (blogBlocked) deps = localOnlyDeps();
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_SEO_CAP_EUR) * EUR);
   const cur = currentTrace();

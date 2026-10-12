@@ -12,6 +12,8 @@ import { ArrowDown, ArrowUp, Bold, Download, Eye, FileText, Italic, Link2, Messa
 import { api, Badge, Button, Card, cx, Field, Input, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useT } from "../i18n";
 import { useProject } from "./project-context";
+import { JobProgress } from "./common";
+import { AiWait } from "../wait-time";
 
 type Lang = "fr" | "en" | "es";
 type PageRef = { key: string; title: string; url: string | null; kind: string; status: "existing" | "planned" };
@@ -67,7 +69,7 @@ const VERDICT: Record<string, ["ok" | "info" | "warn" | "bad", string, string]> 
 };
 
 export function ContentPanel({ types, title }: { types: string[]; title?: string }) {
-  const { id } = useProject();
+  const { id, data: projectData } = useProject();
   const t = useT();
   const toast = useToast();
   const [lang, setLang] = useState<Lang>("fr");
@@ -165,6 +167,11 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
           <Button variant="signal" icon={<Sparkles className="size-4" />} loading={busy || !!job} onClick={generate}>{data.ai ? t("Rédiger", "Write") : t("Rédiger (sans IA, 0 €)", "Write (no AI, €0)")}</Button>
         </div>
       </div>
+      {(() => {
+        // Rédaction en cours : avancement et temps de la tâche (IA), sinon temps de la rédaction directe.
+        const running = job ? projectData?.active.find((x) => x.id === job) : null;
+        return running ? <JobProgress job={running} className="mt-3" /> : <AiWait busy={busy || !!job} label={t("Rédaction du texte…", "Writing the text…")} waitKey="content-write" expectedMs={30000} className="mt-3" />;
+      })()}
 
       {list.length > 0 && (
         <ul className="mt-5 grid gap-2">
@@ -446,6 +453,7 @@ function DocEditor({ projectId, docKey, onSaved }: { projectId: string; docKey: 
           <Input value={chat} onChange={(e) => setChat(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={selected.length ? t(`${selected.length} bloc(s) ciblé(s)`, `${selected.length} block(s) targeted`) : t("Votre demande", "Your request")} />
           <Button loading={busy} onClick={send}>{t("Envoyer", "Send")}</Button>
         </div>
+        <AiWait busy={busy} label={t("Retouche du texte…", "Editing the text…")} waitKey="content-edit" expectedMs={15000} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

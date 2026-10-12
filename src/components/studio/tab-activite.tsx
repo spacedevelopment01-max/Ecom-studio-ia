@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, ImagePlus, Plus, RefreshCw, Save, Store, Trash2 } from "lucide-react";
 import { api, Badge, Button, Card, Field, Input, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { AssetThumb, EngineNotice, SectionTitle, type AssetView } from "./common";
+import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
 import { FromSiteBadge } from "./existing-site";
 import { cleanServices, ContactModePicker, missingActivity, ServicesEditor } from "./services-editor";
 import { contactModesOf, emptyServiceProfile, type Fact, type ServiceProfile } from "@/lib/project-types";
@@ -25,6 +25,8 @@ export default function TabActivite() {
   const [offer, setOffer] = useState<ServiceProfile>(emptyServiceProfile());
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  // Préparations lancées d'ici (reprise de l'analyse, mise à jour du site) : avancement et temps restant.
+  const jobs = useActive(["pipeline.run", "shop.build", "content.v2"]);
   useEffect(() => {
     if (!data || dirty) return;
     setName(data.product.name);
@@ -74,6 +76,7 @@ export default function TabActivite() {
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("l'analyse de l'activité et l'extraction des informations", "the business analysis and information extraction")} />
+      {jobs.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="grid min-w-0 content-start gap-6">
           <Card className="min-w-0 p-5 sm:p-7">

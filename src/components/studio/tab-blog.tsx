@@ -5,6 +5,7 @@
  * publication dans Shopify ou export (HTML à coller, fichier d'import WordPress).
  * Sans forfait ou avec Créer : présentation et « Inclus dans les forfaits Vendre et Dominer ».
  */
+import { AiWait } from "../wait-time";
 import { startPolling } from "@/lib/poll";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -89,7 +90,7 @@ export default function TabBlog() {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
-  const active = useActive("blog.write");
+  const active = useActive(["blog.write", "content.v2"]);
   const [showTrash, setShowTrash] = useState(false);
   const { data, reload, error } = useApi<BlogData>(`/api/projects/${id}/blog${showTrash ? "?trash=1" : ""}`);
   const [writeOpen, setWriteOpen] = useState(false);
@@ -313,8 +314,9 @@ function WriteDialog({ open, onClose, onStarted, confirm }: { open: boolean; onC
           <p className="text-sm font-medium">{t("Sujets proposés pour votre projet", "Topics suggested for your project")}</p>
           <Button size="sm" variant="ghost" icon={<RefreshCw className={cx("size-3.5", loading && "animate-spin")} />} disabled={loading} onClick={() => load(true)}>{t("Autres idées", "More ideas")}</Button>
         </div>
+        <AiWait busy={loading} label={t("Recherche de sujets pour votre projet…", "Finding topics for your project…")} waitKey="blog-topics" expectedMs={15000} />
         {loading && !topics?.length ? (
-          <div className="grid place-items-center py-8 text-muted"><Spinner /></div>
+          <div className="py-2" />
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
             {(topics ?? []).map((tp) => {
