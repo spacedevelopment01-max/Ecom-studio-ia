@@ -14,6 +14,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { chromium, devices, type BrowserContext, type Page } from "playwright";
+import { one } from "../src/lib/db";
+import { createSubscription } from "../src/lib/project-subscriptions";
 
 const BASE = process.env.BASE ?? "http://localhost:3000";
 const PHOTO = process.env.PHOTO!;
@@ -70,9 +72,13 @@ async function register(ctx: BrowserContext, name: string) {
   watch(page, name);
   await page.goto(`${BASE}/inscription`);
   await page.fill("#name", name);
-  await page.fill("#email", `stab-${name.toLowerCase().replace(/\W/g, "")}-${Date.now()}@exemple.fr`);
+  const email = `stab-${name.toLowerCase().replace(/\W/g, "")}-${Date.now()}@exemple.fr`;
+  await page.fill("#email", email);
   await page.fill("#password", "motdepasse-solide-123");
   await Promise.all([page.waitForURL(/\/studio/, { timeout: 60_000 }), page.click("button[type=submit]")]);
+  // Un abonnement = un projet : abonnement offert (comme le fait l'administration) pour pouvoir créer le projet.
+  const u = one<{ id: string }>("SELECT id FROM users WHERE email = ?", email);
+  if (u) createSubscription(u.id, { plan: "dominer", source: "admin", status: "manual" });
   return page;
 }
 
@@ -173,7 +179,8 @@ const summary = {
   ...res,
   rounds: round,
   tabMedianMs: Object.fromEntries(Object.entries(res.tabTimes).map(([k, v]) => [k, [...v].sort((x, y) => x - y)[Math.floor(v.length / 2)]])),
-  serverStops: res.launcherLog.filter((l) => /s'est arrêté/.test(l)),
+  // L'arrêt du worker provoqué volontairement par ce test (SIGKILL, scénario 2) n'est pas un arrêt subi.
+  serverStops: res.launcherLog.filter((l) => /s'est arrêté/.test(l)).filter((l, i, a) => !(res.workerKill.killedPids && /worker s'est arrêté \(SIGKILL\)/.test(l) && a.findIndex((x) => /worker s'est arrêté \(SIGKILL\)/.test(x)) === i)),
 };
 fs.writeFileSync(path.join(OUT, "resultats.json"), JSON.stringify(summary, null, 2));
 console.log(JSON.stringify({ rounds: round, api5xx: res.api5xx.length, jsErrors: res.jsErrors.length, serverStops: summary.serverStops.length, memory: res.memory.slice(-1)[0], tabMedianMs: summary.tabMedianMs }, null, 2));

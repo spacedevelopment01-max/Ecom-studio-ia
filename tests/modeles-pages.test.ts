@@ -152,6 +152,20 @@ describe("modèles de pages et pages multiples", async () => {
     if (contact) expect((await call(u, pid, { action: "remove_page", handle: contact.handle, confirm: true })).status).toBe(409);
   });
 
+  it("pages indispensables : adresse fixe (pas de contournement de la protection) ; thème importé refusé côté serveur", async () => {
+    const { u, pid } = await project("hightech", "dominer");
+    const spec = currentTheme(pid)!.spec;
+    const legal = spec.store.pages.find((p) => /mentions|legal|contact/.test(p.handle))!;
+    expect(legal).toBeTruthy();
+    // Renommer l'adresse puis supprimer : impossible ; le nom et le référencement restent modifiables.
+    expect((await call(u, pid, { action: "update_page", handle: legal.handle, newHandle: "autre-chose" })).status).toBe(409);
+    expect((await call(u, pid, { action: "update_page", handle: legal.handle, title: "Infos légales" })).status).toBe(200);
+    expect(currentTheme(pid)!.spec.store.pages.some((p) => p.handle === legal.handle)).toBe(true);
+    // Thème importé (ZIP du client) : les modèles ne s'y appliquent pas, même par un appel direct.
+    fr(() => saveThemeVersion(pid, { ...currentTheme(pid)!.spec, imported: {} as any }, "Import", "system"));
+    expect((await call(u, pid, { action: "add_page", model: "a-propos", title: "Qui sommes-nous" })).status).toBe(409);
+  });
+
   it("prestation sur rendez-vous : pas de panier, bouton vers un vrai calendrier (lien HTTPS) ou vers le contact", async () => {
     const { u, pid } = await project("artisan", "vendre");
     const p = loadProject(pid);

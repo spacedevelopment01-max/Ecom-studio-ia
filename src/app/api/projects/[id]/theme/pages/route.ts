@@ -87,6 +87,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     saveSettings(p.id, { ...p.settings, activity: b.activity });
     return ok(view({ ...p, settings: { ...p.settings, activity: b.activity } }, cur.spec, cur.version.id));
   }
+  // Thème importé (ZIP du client) : ses fichiers ne contiennent pas les sections des modèles ; il se modifie dans l'éditeur.
+  if (cur.spec.imported) throw new HttpError(409, L("Votre thème importé se modifie directement dans l'éditeur : les modèles de pages s'appliquent aux thèmes créés par le studio.", "Your imported theme is edited directly in the editor: page templates apply to themes created by the studio."));
   if (PREMIUM.has(b.action)) assertPageModels(p.id);
   // Affecter une autre mise en page qu'une fiche commune : fonction des modèles ; revenir à la fiche commune : toujours possible.
   if (b.action === "assign_layout" && b.layout) assertPageModels(p.id);
