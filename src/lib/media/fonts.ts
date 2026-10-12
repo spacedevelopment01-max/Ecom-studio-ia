@@ -51,6 +51,10 @@ export const CANVAS_FONTS: Record<string, { file: Record<number, string>; italic
   "Bricolage Grotesque": { file: { 400: "BricolageGrotesque-400.ttf", 600: "BricolageGrotesque-600.ttf", 800: "BricolageGrotesque-800.ttf" }, kind: "display" },
   "Instrument Serif": { file: { 400: "InstrumentSerif-400.ttf" }, italic: "InstrumentSerif-400italic.ttf", kind: "serif" },
   "Inter": { file: { 400: "Inter-400.ttf", 500: "Inter-500.ttf", 600: "Inter-600.ttf", 700: "Inter-700.ttf" }, kind: "sans" },
+  // Capitales condensées d'affiche (titres « Réveillez le goût. ») : marques franches, alimentaire, sport.
+  "Anton": { file: { 400: "Anton-400.ttf" }, kind: "display" },
+  "Bebas Neue": { file: { 400: "BebasNeue-400.ttf" }, kind: "display" },
+  "Oswald": { file: { 500: "Oswald-500.ttf", 700: "Oswald-700.ttf" }, kind: "display" },
 };
 
 /** Correspondance entre les polices Shopify des directions et les familles locales. */

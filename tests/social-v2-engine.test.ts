@@ -91,10 +91,11 @@ describe("Social V2 — parcours", async () => {
     expect(free.spentMicro).toBe(0);
     expect(log.paid).toBe(0);
     expect(free.produced).toBe(4);
-    // Médias validés déjà dans la bibliothèque : réutilisés avant toute dépense (aucune image repayée).
+    // Médias validés déjà dans la bibliothèque : aucune dépense — affiche gratuite (photo libre cherchée pour la
+    // publication, sinon photo validée de la bibliothèque), jamais une image repayée.
     const reuse = await produceBatch(p, ids.slice(4, 6), deps, { allowPaid: true, maxCostEur: 5, approvedEstimateMicro: 200_000 });
     expect(reuse.spentMicro).toBe(0);
-    expect(reuse.byMethod.library).toBe(2);
+    expect(reuse.byMethod.local).toBe(2);
     // Bibliothèque vide, estimation acceptée, plafond de 0,25 € : au plus 2 productions payantes, puis rendu local.
     const p2 = loadProject(seedImageFixture(u.id, "cosmetic"));
     const r2 = fr(() => createPlanV2(p2, { startDate: start(), days: 3, perDay: 2, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], formatMix: { image: 100 } }));

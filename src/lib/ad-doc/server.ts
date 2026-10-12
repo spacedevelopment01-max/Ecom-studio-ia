@@ -93,8 +93,9 @@ export function docMetrics(doc: AdDocument, images: RenderEnv["images"]): DocMet
     }
   }
   // Un texte qui passe sous (ou sur) le bouton : illisible, même si chacun est lisible seul.
-  for (const t of drawn.filter((d) => d.l.kind === "text"))
-    for (const btn of drawn.filter((d) => d.l.kind === "button"))
+  // Bouton plein ou lien souligné (texte de rôle « cta ») : même règle.
+  for (const t of drawn.filter((d) => d.l.kind === "text" && d.l.role !== "cta"))
+    for (const btn of drawn.filter((d) => d.l.kind === "button" || d.l.role === "cta"))
       if (overlap(t.b, btn.b) > 0) problems.push({ layerId: t.l.id, code: "text_overlap", message: "chevauche le bouton" });
   return { minFontPx: minFont === 999 ? 0 : minFont, textContrast: minContrast, textShare: Math.round((area / (W * H)) * 100) / 100, safeOverflow, productOverlap, textOverlap: problems.some((x) => x.code === "text_overlap"), headlineLines, problems };
 }

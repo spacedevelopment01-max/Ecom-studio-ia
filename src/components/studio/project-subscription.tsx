@@ -18,6 +18,8 @@ export type ProjectSub = {
   cancelAtPeriodEnd: boolean;
   managedByAdmin: boolean;
   ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null;
+  /** Date à laquelle le budget IA du forfait repart à 0 %. */
+  aiRenewsAt?: number;
   topups: { amountEur: number; refundedEur: number; at: number }[];
 };
 

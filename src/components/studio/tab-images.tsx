@@ -245,7 +245,7 @@ function ServiceImages() {
   const cl = useContentLang();
   const [group, setGroup] = useState("all");
   const [viewer, setViewer] = useState<AssetView | null>(null);
-  const [form, setForm] = useState({ kind: "service", format: "portrait", headline: "", subline: "", cta: "", serviceIndex: 0, tips: "", usePhoto: true });
+  const [form, setForm] = useState({ kind: "service", format: "portrait", headline: "", subline: "", cta: "", serviceIndex: 0, tips: "", background: "" as "" | "photo" | "image" | "none" });
   const active = useActive(["images.generate", "image.single", "canva."]);
   const cost = useCostConfirm();
   const locked = useCreationLocked();
@@ -259,12 +259,17 @@ function ServiceImages() {
   const photos = (data?.counts?.lifestyle ?? 0) + (data?.counts?.original ?? 0);
   const aiImage = !!data?.ai.image;
   const FORMAT_LABEL: Record<string, [string, string]> = { portrait: ["4:5 · Instagram, Facebook", "4:5 · Instagram, Facebook"], square: ["1:1 · fil d'actualité", "1:1 · news feed"], story: ["9:16 · story, reel", "9:16 · story, reel"], landscape: ["16:9 · site, YouTube, LinkedIn", "16:9 · website, YouTube, LinkedIn"], banner: ["2:1 · bannière du site", "2:1 · website banner"] };
+  const photoAllowed = ["service", "booking", "banner"].includes(form.kind);
+  // Fond du visuel : une photo de l'activité, une nouvelle image (photo libre du métier, sinon créée par l'IA) ou aucune.
+  const background = form.background || (photos > 0 ? "photo" : "image");
   const create = async (mode: "set" | "single") => {
     if (mode === "set" && aiImage && !(await cost.confirm("images"))) return;
+    // Nouvelle image : l'IA peut la créer si aucune photo libre ne convient (budget IA du projet).
+    if (mode === "single" && photoAllowed && background === "image" && aiImage && !(await cost.confirm("image"))) return;
     try {
       const body = mode === "set"
         ? { mode, useAi: aiImage }
-        : { mode, kind: form.kind, format: form.format, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined, serviceIndex: form.serviceIndex, items: form.kind === "tips" ? form.tips.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) : undefined, usePhoto: form.usePhoto };
+        : { mode, kind: form.kind, format: form.format, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined, serviceIndex: form.serviceIndex, items: form.kind === "tips" ? form.tips.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) : undefined, background: photoAllowed ? background : undefined };
       const r = await api<{ jobId?: string }>(`/api/projects/${id}/images`, { body, lang: cl.lang });
       toast("ok", mode === "set" ? t("Jeu de visuels en préparation.", "Visual set in progress.") : t("Visuel en préparation.", "Visual in progress."));
       follow(r?.jobId, mode === "set" ? t("Jeu de visuels prêt : à valider ci-dessous.", "Visual set ready: review it below.") : t("Visuel prêt : à valider ci-dessous.", "Visual ready: review it below."));
@@ -273,7 +278,6 @@ function ServiceImages() {
     }
   };
   const withText = form.kind !== "banner";
-  const photoAllowed = ["service", "booking", "banner"].includes(form.kind);
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6">
       {cost.dialog}
@@ -281,7 +285,7 @@ function ServiceImages() {
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <Card className="h-max p-5 lg:sticky lg:top-24">
-          <h2 className="font-display text-xl font-semibold">{t("Visuels typographiques du studio", "Studio typographic visuals")}</h2>
+          <h2 className="font-display text-xl font-semibold">{t("Visuels du studio", "Studio visuals")}</h2>
           <p className="mt-1 text-xs text-muted">{photos ? t("Les visuels partent de vos photos (réalisations, équipe, lieu) et de votre offre réelle : aucun avis ni chiffre inventé.", "Visuals start from your photos (work, team, premises) and your real offer: no made-up reviews or figures.") : t("Sans photo, les visuels sont typographiques et graphiques, à vos couleurs. Ajoutez des photos de vos réalisations, de votre équipe ou de votre lieu dans Fichiers pour des visuels plus vivants.", "Without photos, visuals are typographic and graphic, in your colors. Add photos of your work, team or premises in Files for livelier visuals.")}</p>
           <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             <Field label={t("Type", "Type")} htmlFor="skind">
@@ -311,7 +315,15 @@ function ServiceImages() {
                 {["service", "booking", "info"].includes(form.kind) && <Field label={t("Bouton", "Button")} htmlFor="scta"><Input id="scta" value={form.cta} onChange={(e) => setForm({ ...form, cta: e.target.value })} placeholder={t("Selon votre mode de contact", "Based on your contact method")} /></Field>}
               </>
             )}
-            {photoAllowed && photos > 0 && <Toggle checked={form.usePhoto} onChange={(v) => setForm({ ...form, usePhoto: v })} label={t("Utiliser une photo de l'activité", "Use a business photo")} />}
+            {photoAllowed && (
+              <Field label={t("Image du visuel", "Visual image")} htmlFor="sbg">
+                <Select id="sbg" value={background} onChange={(e) => setForm({ ...form, background: e.target.value as "photo" | "image" | "none" })}>
+                  {photos > 0 && <option value="photo">{t("Une photo de l'activité", "A business photo")}</option>}
+                  <option value="image">{aiImage ? t("Une nouvelle image (photo libre du métier ou créée par l'IA)", "A new image (royalty-free trade photo or AI-created)") : t("Une nouvelle image (photo libre du métier)", "A new image (royalty-free trade photo)")}</option>
+                  <option value="none">{t("Sans image (typographique)", "No image (typographic)")}</option>
+                </Select>
+              </Field>
+            )}
             <ContentLangPicker {...cl} />
             <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{form.kind === "tips" ? t("Créer le carrousel", "Create the carousel") : t("Créer le visuel", "Create visual")}</Button>
             <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (vos photos, photos libres du métier, images contrôlées par emplacement du site, bannières)", "Full set (your photos, royalty-free trade photos, checked images for each website slot, banners)")}</Button>

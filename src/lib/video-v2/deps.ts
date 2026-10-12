@@ -23,6 +23,7 @@ import type { ImageRequestV2 } from "../image-v2/engine";
 import { ScriptSchema, type ScriptDraft } from "./script";
 import { SHOT_REVIEW_SYSTEM, ShotReviewSchema, VIDEO_REVIEW_SYSTEM, VideoReviewSchema } from "./quality";
 import type { Inventory } from "./storyboard";
+import { findStockClip, type StockClipRequest } from "../stock/stock-clip";
 import type { ShotReview, VideoReview } from "./types";
 
 export type ClipRequest = { provider: string; model: string; image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds: number; people: boolean };
@@ -50,6 +51,11 @@ export type VideoV2Deps = {
   inventory: () => Inventory;
   /** Données d'un asset de la bibliothèque du projet. */
   data: (assetId: string) => Buffer | null;
+  /**
+   * Plan vidéo libre de droits (Pixabay d'abord) pour un moment de la vidéo, en rapport avec le métier ou le produit,
+   * jamais déjà utilisé (`exclude` : plans déjà pris dans cette vidéo). Gratuit. Absent : aucun plan libre.
+   */
+  stockClip?: (req: StockClipRequest, exclude: Set<string>) => Promise<{ assetId: string; durationS: number } | null>;
 };
 
 /** Inventaire de la bibliothèque : seulement ce qui est réutilisable automatiquement (jamais un refusé). */
@@ -115,6 +121,7 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
     // Aucun fournisseur de synthèse vocale branché dans le studio (vérifié) : la voix reste à enregistrer ou à
     // brancher (phase 7B) ; le message passe par les sous-titres et le texte à l'écran.
     voice: null,
+    stockClip: (req, exclude) => findStockClip(base, p, req, exclude),
     available: (provider) => !!activeProviderKey(provider as never),
     preferred: preferred.product,
     preferredFor: (people) => (people ? preferred.ugc : preferred.product),

@@ -8,6 +8,7 @@ import { changeProjectPlan, setProjectCancellation } from "@/lib/payments-v2";
 import { PLAN_IDS, type PlanId } from "@/lib/plans";
 import { subscriptionOfProject, type ProjectSubscription } from "@/lib/project-billing";
 import { aiUsage } from "@/lib/ai/access";
+import { currentPeriod } from "@/lib/billing";
 import { L } from "@/lib/i18n-server";
 
 const view = (projectId: string, s: ProjectSubscription | null) =>
@@ -20,6 +21,8 @@ const view = (projectId: string, s: ProjectSubscription | null) =>
         cancelAtPeriodEnd: !!s.cancel_at_period_end,
         managedByAdmin: !s.stripe_subscription_id,
         ai: aiUsage(s.owner_user_id ?? s.user_id, projectId),
+        // Date à laquelle le budget IA du forfait repart à 0 % (période mensuelle du budget, même en annuel).
+        aiRenewsAt: currentPeriod(s.user_id).end,
         topups: all<{ amount_cents: number; refunded_cents: number; created_at: number }>("SELECT amount_cents, refunded_cents, created_at FROM payments WHERE project_id = ? AND kind = 'topup' AND status = 'paid' ORDER BY created_at DESC LIMIT 20", projectId).map((p) => ({ amountEur: p.amount_cents / 100, refundedEur: (p.refunded_cents ?? 0) / 100, at: p.created_at })),
       }
     : null;

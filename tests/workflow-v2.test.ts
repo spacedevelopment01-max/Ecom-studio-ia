@@ -177,7 +177,8 @@ describe("Studio Workflow V2", async () => {
   it("propagation contrôlée : nouvelle palette → créations listées ; mise à jour locale des choisies, création modifiée par le client conservée", async () => {
     const p0 = loadProject(cosmetic);
     const themeBefore = currentTheme(cosmetic)!;
-    const docs = all<{ doc_key: string }>("SELECT DISTINCT doc_key FROM ad_documents WHERE project_id = ?", cosmetic).map((x) => x.doc_key);
+    // Publicités (les affiches de publications « post: » suivent leur publication).
+    const docs = all<{ doc_key: string }>("SELECT DISTINCT doc_key FROM ad_documents WHERE project_id = ? AND doc_key NOT LIKE 'post:%'", cosmetic).map((x) => x.doc_key);
     expect(docs.length).toBeGreaterThan(1);
     // Le client a modifié une publicité à la main.
     const { latestDoc, saveVersion } = await import("@/lib/ad-doc/store");

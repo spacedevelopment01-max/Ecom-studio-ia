@@ -5,8 +5,10 @@ import { searchSource, searchStock, stockCredit } from "@/lib/stock/photos";
 vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeProviderKey: (p: string) => (p === "pexels" ? "cle-pexels" : null) }));
 
 const reply = (body: unknown) => vi.fn(async () => new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } }));
-beforeEach(() => vi.stubEnv("STOCK_OFFLINE", "0"));
-afterEach(() => (vi.unstubAllGlobals(), vi.unstubAllEnvs()));
+// Ces tests couvrent le mode à plusieurs banques (réglage « stock.pixabayOnly » à 0) ; par défaut : Pixabay seul.
+const { setSetting } = await import("@/lib/settings");
+beforeEach(() => (vi.stubEnv("STOCK_OFFLINE", "0"), setSetting("stock.pixabayOnly", "0")));
+afterEach(() => (vi.unstubAllGlobals(), vi.unstubAllEnvs(), setSetting("stock.pixabayOnly", "1")));
 
 describe("photos libres de droits", () => {
   it("Pexels : photo, auteur, page et lien de téléchargement ; clé envoyée", async () => {

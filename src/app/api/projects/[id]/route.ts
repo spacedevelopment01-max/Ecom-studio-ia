@@ -6,10 +6,11 @@ import { currentTheme, saveProduct, saveServices, saveSettings } from "@/lib/pro
 import { pipelineState } from "@/lib/engine/pipeline";
 import { localizeQuestions } from "@/lib/engine/local";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { hasAiCredits } from "@/lib/ai/access";
+import { aiUsage, hasAiCredits } from "@/lib/ai/access";
 import { assertAutopublish, planOfProject } from "@/lib/plan-gates";
 import { aiAvailability } from "@/lib/ai/config";
-import { balance } from "@/lib/billing";
+import { balance, currentPeriod } from "@/lib/billing";
+import { accountKeyFor } from "@/lib/project-billing";
 import { contactModesOf, sectorLabel } from "@/lib/project-types";
 import { FactSchema } from "@/lib/project-schemas";
 import { previewSandbox } from "@/lib/theme/preview-access";
@@ -57,6 +58,11 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     // credits : l'IA est réellement utilisée pour ce client (budget caché suffisant ; sinon moteur local, sans le dire).
     ai: { ...aiAvailability(), credits: hasAiCredits(user.id, p.id), mode: "ai" as const },
     credits: { usedPct: b.usedPct, alert: b.alert, paused: b.paused, empty: b.capacity === 0 },
+    // Budget IA de CE projet en % (jauge « Reste X % » et confirmation avant une création) ; null en découverte.
+    aiBudget: (() => {
+      const usage = aiUsage(user.id, p.id);
+      return usage ? { usage, renewsAt: currentPeriod(accountKeyFor(user.id, p.id)).end } : null;
+    })(),
   });
 });
 

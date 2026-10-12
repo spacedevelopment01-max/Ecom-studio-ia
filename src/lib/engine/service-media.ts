@@ -11,9 +11,11 @@ import { isAutoUsable } from "../quality/usable";
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { z } from "zod";
-import { all, json, run } from "../db";
+import { all, json, one, run } from "../db";
+import { composePoster, savePosterDoc, type PosterAspect } from "../ads-v2/poster";
+import { adFitOrder } from "../stock/ad-fit";
 import { assetData, saveAsset, type Asset } from "../library";
-import { downloadStock, searchStock, stockCredit } from "../stock/photos";
+import { downloadStock, pixabayOnly, searchStock, stockCredit } from "../stock/photos";
 import { rankStock, tradeStock } from "../stock/trade-queries";
 import { NO_PEOPLE_EN, NO_PEOPLE_QUERY_EN, peopleAllowed, peopleAllowedFor, personCodes, queriesFor } from "../people-policy";
 import { loadProject, type Project } from "../projects";
@@ -212,7 +214,7 @@ async function topicQueries(ictx: { userId: string; projectId: string; jobId?: s
 }
 
 /** Photo libre de droits propre à une publication (jamais reprise d'une autre publication ni des visuels du site). */
-async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }, place: { role: string; folderKey: string } = { role: "post-photo", folderKey: "content.calendar" }): Promise<Asset | null> {
+export async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }, place: { role: string; folderKey: string } = { role: "post-photo", folderKey: "content.calendar" }): Promise<Asset | null> {
   const { lang, queries } = await topicQueries(ictx, p, post.topic);
   const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
   const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
@@ -221,11 +223,38 @@ async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?:
   // Concepts hors sujet du métier (registre) : les photos qui ne montrent que ça passent en dernier.
   // Règle de présence humaine : sans autorisation, requêtes et photos sans personne.
   const people = peopleAllowedFor(p);
-  const found = rankStock(await searchStock(queriesFor(queries, people), post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured(), ts?.negative, { people });
+  const ranked = rankStock(await searchStock(queriesFor(queries, people), post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured(), ts?.negative, { people });
+  // Parmi les photos pertinentes : celle qui fera la meilleure affiche (zone calme pour le texte, cadrage, définition).
+  const found = await adFitOrder(ranked, post.aspect);
   const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`, must.length > 0);
   if (!pick) return null;
   const { photo, img, gate } = pick;
   return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: place.role, folderKey: place.folderKey, origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, business: "services", format: post.aspect, ...gate.meta } });
+}
+
+/**
+ * LA photo d'une publicité ou d'une publication, cherchée pour elle (Pixabay d'abord, puis Pexels, Openverse) : en
+ * rapport direct avec le produit ou le service et le sujet du message, jamais déjà utilisée dans le projet, choisie
+ * pour faire une belle affiche (zone calme pour le texte), contrôlée. Services : photo du métier et de la prestation ;
+ * produits : l'univers du produit (lieu, matière, usage) — le vrai produit détouré y est posé ensuite par l'affiche.
+ * null si aucune photo libre ne convient (l'appelant passe alors à la bibliothèque ou à l'IA d'images).
+ */
+export async function bestAdPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, o: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }): Promise<Asset | null> {
+  if (p.business === "services") return postStockPhoto(ictx, p, o, { role: "lifestyle", folderKey: "images.scenes" });
+  const { universeQueries } = await import("./stock-universe");
+  const u = await universeQueries(ictx, p);
+  const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
+  const known = tradeStock(`${p.product.category ?? ""} ${p.product.sector ?? ""} ${p.product.name ?? ""}`);
+  const must = known?.must ?? [];
+  const people = peopleAllowedFor(p);
+  const orientation = o.aspect === "16:9" ? "landscape" : o.aspect === "1:1" ? "square" : "portrait";
+  const ranked = rankStock(await searchStock(queriesFor(u.queries, people), orientation, u.lang, used), must, llmConfigured(), [], { people });
+  const found = await adFitOrder(ranked, o.aspect);
+  const subject = C(`publicité pour « ${p.product.name} » (${p.product.category ?? ""}) — ${clip(o.topic, 120)} : l'univers du produit (lieu, matière, usage), sans le produit lui-même`, `ad for "${p.product.name}" (${p.product.category ?? ""}) — ${clip(o.topic, 120)}: the product's world (place, material, use), without the product itself`);
+  const pick = await firstOnTopic(ictx, found, subject, (ph) => `${ictx.jobId ?? "ad"}:ad-stockqc:${o.key}:${ph.source}:${ph.id}`, must.length > 0, { stockPrompt: false });
+  if (!pick) return null;
+  const { photo, img, gate } = pick;
+  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: o.name, mime: "image/jpeg", role: "ambiance", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, format: o.aspect, subject: clip(o.topic, 160), ...gate.meta }, status: "review" });
 }
 
 /** Recherches de photos libres de droits par emplacement : mots du métier (IA légère si disponible, sinon le texte du projet). */
@@ -781,9 +810,34 @@ const RECIPE: Record<ServiceCard["template"], [string, string]> = {
   graphic: ["Bannière d'ouverture sans texte (textes dans le site)", "Hero banner without text (text lives in the site)"],
 };
 
+const POSTER_OF: Record<ServiceFormat, PosterAspect> = { square: "1:1", portrait: "4:5", story: "9:16", landscape: "16:9", banner: "2:1" };
+
+/** Ligne courte sous le titre d'une affiche : faits de l'offre (« 40 € • 1 h • Sur rendez-vous »), sinon le texte. */
+function posterSubline(c: CardPlan["card"]): string | null {
+  const chips = (c.chips ?? []).filter(Boolean);
+  if (chips.length && chips.join(" • ").length <= 52) return chips.join(" • ");
+  const t = (c.text ?? "").split(/(?<=[.!?])\s/)[0]?.trim() ?? "";
+  return t ? clip(t, 70) : null;
+}
+
+/**
+ * Annonce d'une prestation et appel à réserver AVEC photo : affiche de qualité agence (photo pleine page, titre en
+ * grand, marque, ligne de faits, bouton) par le moteur à calques des publicités — modifiable ensuite dans l'éditeur.
+ * Les autres cartes (carrousels, citations, infos pratiques, visuels sans photo) gardent leur composition.
+ */
+async function renderPosterCard(p: Project, x: CardPlan & { photoAsset?: Asset }, jobId: string, k: number) {
+  const c = x.card;
+  const r = await composePoster(p, { aspect: POSTER_OF[c.format] ?? "4:5", headline: c.title ?? activityName(p), subline: posterSubline(c), eyebrow: c.eyebrow ?? null, cta: c.cta ?? null, background: x.photoAsset ?? null, seed: `${jobId}:${k}:${x.name}` });
+  return { jpg: r.jpg, label: SERVICE_SIZES[c.format].label, engine: "poster" as const, docKey: r.docKey, doc: r.doc, layout: r.layout };
+}
+
 async function saveCards(p: Project, plans: (CardPlan & { photoAsset?: Asset })[], jobId: string): Promise<Saved[]> {
-  const cards: ServiceCard[] = plans.map((x) => ({ ...x.card, photo: x.photoAsset ? assetData(x.photoAsset) : null }));
-  const rendered = await renderCards(p, cards);
+  const poster = (x: CardPlan & { photoAsset?: Asset }) => !!x.photoAsset && (x.card.template === "announce" || x.card.template === "booking");
+  const cards: ServiceCard[] = plans.filter((x) => !poster(x)).map((x) => ({ ...x.card, photo: x.photoAsset ? assetData(x.photoAsset) : null }));
+  const plain = await renderCards(p, cards);
+  const rendered: { jpg: Buffer; label: string; engine: string; docKey?: string; doc?: Awaited<ReturnType<typeof composePoster>>["doc"]; layout?: string }[] = [];
+  let n = 0;
+  for (const [k, x] of plans.entries()) rendered.push(poster(x) ? await renderPosterCard(p, x, jobId, k) : plain[n++]);
   const base = slug(activityName(p));
   const saved: Saved[] = [];
   for (const [k, r] of rendered.entries()) {
@@ -799,18 +853,20 @@ async function saveCards(p: Project, plans: (CardPlan & { photoAsset?: Asset })[
       origin: "generated",
       sourceAssetId: x.photoAsset?.id ?? null,
       meta: {
-        recipe: L(RECIPE[x.card.template][0], RECIPE[x.card.template][1]) + (x.photoAsset ? L(" · photo réelle de l'activité", " · real photo of the business") : L(" · composition typographique", " · typographic layout")),
+        recipe: L(RECIPE[x.card.template][0], RECIPE[x.card.template][1]) + (r.docKey ? L(" · affiche (photo pleine page, modifiable)", " · poster (full-bleed photo, editable)") : x.photoAsset ? L(" · photo réelle de l'activité", " · real photo of the business") : L(" · composition typographique", " · typographic layout")),
         format: r.label,
         business: "services",
         template: x.card.template,
         text: { headline: x.card.title, sub: x.card.text, cta: x.card.cta },
         ...(x.group ? { carousel: { group: `${jobId}:${x.group}`, index: x.card.index, total: x.card.total } } : {}),
         engine: r.engine,
+        ...(r.docKey ? { poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: x.photoAsset?.id ?? null } } : {}),
         // Couleurs avec lesquelles la carte a été dessinée : une carte d'une autre palette n'illustre plus le site.
         palette: paletteKey(palette(p)),
       },
       status: "review",
     });
+    if (r.docKey && r.doc) savePosterDoc(p.id, r.docKey, r.doc, a.id);
     saved.push({ id: a.id, role: x.role });
   }
   return saved;
@@ -891,7 +947,7 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
 
   // 3. Images d'ambiance (IA d'images disponible) pour les emplacements encore vides : consignes honnêtes, aucun faux client.
   // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).
-  const withAi = opts.withAi !== false && !!imageProviderAvailable({ usage: "scene" }) && llmConfigured();
+  const withAi = opts.withAi !== false && !pixabayOnly() && !!imageProviderAvailable({ usage: "scene" }) && llmConfigured();
   if (opts.v2) {
     // Image Engine V2 : par emplacement encore vide, brief du métier et de la prestation, recherche (photos déjà
     // refusées jamais recontrôlées) puis génération contrôlée seulement si possible et dans le plafond.
@@ -902,7 +958,8 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
         ctx.progress(0.2 + (i / Math.max(1, todo.length)) * 0.3, L("Images de l'activité (moteur d'images)", "Business images (image engine)"));
         const want = slotSubject(project, slot);
         const svc = want.service ? serviceItems(project).find((x) => x.name === want.service) : undefined;
-        const r = await runImageEngineV2(ctx, projectId, { kind: "trade_photo", support: slot === "ad" ? "ad" : "site", aspect, topic: want.subject, service: svc ? { name: svc.name, description: svc.description } : null, slot, count: 1 });
+        // Règle « Pixabay obligatoire » : à la création, photo trouvée sur Pixabay seulement, jamais générée.
+        const r = await runImageEngineV2(ctx, projectId, { kind: "trade_photo", support: slot === "ad" ? "ad" : "site", aspect, topic: want.subject, service: svc ? { name: svc.name, description: svc.description } : null, slot, count: 1, ...(pixabayOnly() ? { allowGenerate: false } : {}) });
         return r.outcomes.filter((o) => o.assetId && o.verdict === "FINAL").map((o) => o.assetId!);
       });
       created.push(...ids);
@@ -971,45 +1028,69 @@ export type ServiceSingleRequest = {
   serviceIndex?: number;
   items?: string[];
   usePhoto?: boolean;
+  /** Fond des visuels avec image : photo de l'activité, nouvelle image (libre de droits, sinon IA) ou aucune. */
+  background?: "photo" | "image" | "none";
   photoId?: string;
 };
 
 const FORMAT_OF: Record<string, ServiceFormat> = { square: "square", portrait: "portrait", story: "story", landscape: "landscape", banner: "banner", product: "portrait", packshot: "square", pin: "portrait" };
 
+/**
+ * Nouvelle image d'ambiance du métier (ni photo du client, ni image déjà utilisée) : d'abord une photo libre de droits
+ * (gratuite), l'IA d'images seulement à défaut (budget IA du projet, image contrôlée). Renvoie l'id du fichier créé.
+ */
+async function freshAmbiance(ctx: JobContext, p: Project, fs: ServiceFormat, topic: string, o: { useAi?: boolean; subline?: string; reference?: Asset | null }): Promise<string> {
+  const projectId = p.id;
+  const name = activityName(p);
+  const req = { subline: o.subline, useAi: o.useAi, format: fs as string };
+  const photo = o.reference ?? undefined;
+  // D'abord une photo libre de droits du métier (Pixabay en premier, gratuite) ; l'IA d'images seulement à défaut.
+  const free = await ctx.step("ambiance:stock", async () => {
+    const a = await postStockPhoto({ userId: p.userId, projectId, jobId: ctx.job.id }, p, { key: `single-${ctx.job.id}`, topic, aspect: aspectFor(fs), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg` }, { role: "lifestyle", folderKey: "images.scenes" }).catch((e) => {
+      if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      return null;
+    });
+    return a?.id ?? null;
+  });
+  if (free) return free;
+  if (!imageProviderAvailable({ usage: "scene" }) || req.useAi === false || !llmConfigured()) throw new UserFacingError(L("Aucune photo libre de droits ne convient et l'IA d'images n'est pas disponible ici. Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "No royalty-free photo fits and the AI image generator is not available here. Upload photos of your work, team or premises instead."));
+  const f = fs;
+  const prompts = ambiancePrompts(p);
+  const img = await ctx.step("ambiance", async () => {
+    const { img: buf, check, usageKey: finalKey } = await ambianceChecked({ userId: p.userId, projectId, jobId: ctx.job.id }, `${ctx.job.id}:ambiance`, { prompt: req.subline ? `${prompts[0]} ${req.subline}` : prompts[ctx.job.id.length % 2], aspect: aspectFor(f), reference: photo && photo.origin !== "generated" ? assetData(photo) : null });
+    if (check.decision.verdict === "REJECTED") refundMediaQuota(p.userId, finalKey);
+    const keep = gateSave({ userId: p.userId, projectId, jobId: ctx.job.id }, check.decision);
+    return JSON.stringify({ b64: buf.toString("base64"), keep });
+  });
+  // Image payée toujours livrée dans Images : FINAL utilisable ; sinon à vérifier ou écartée (non réutilisée).
+  const got = JSON.parse(img) as { b64: string; keep: ReturnType<typeof gateSave> };
+  const a = await saveAsset({ projectId, userId: p.userId, data: await sharp(Buffer.from(got.b64, "base64")).jpeg({ quality: 92 }).toBuffer(), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspectFor(f), ...got.keep.meta }, status: got.keep.status });
+  return a.id;
+}
+
 /** Image unique à la demande (studio Images) pour une entreprise de services. */
 export async function generateServiceSingleImage(ctx: JobContext, projectId: string, req: ServiceSingleRequest) {
   const p = loadProject(projectId);
   const photos = activityPhotos(projectId);
-  const photo = req.usePhoto === false ? undefined : (req.photoId && photos.find((a) => a.id === req.photoId)) || photos[0];
+  // Image de fond : une photo de l'activité (par défaut), une nouvelle image (libre de droits ou IA), ou aucune.
+  const background = req.background ?? (req.usePhoto === false ? "none" : "photo");
+  let photo = background !== "photo" ? undefined : (req.photoId && photos.find((a) => a.id === req.photoId)) || photos[0];
   const kind = req.kind === "scene" ? "ambiance" : req.kind === "social" ? "service" : req.kind === "ad" ? "booking" : req.kind;
   const items = serviceItems(p);
   const name = activityName(p);
   ctx.progress(0.2, L("Composition de l'image", "Composing the image"));
 
-  if (kind === "ambiance") {
-    // D'abord une photo libre de droits du métier (Pixabay en premier, gratuite) ; l'IA d'images seulement à défaut.
-    const fs = FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
-    const free = await ctx.step("ambiance:stock", async () => {
-      const a = await postStockPhoto({ userId: p.userId, projectId, jobId: ctx.job.id }, p, { key: `single-${ctx.job.id}`, topic: req.subline || clip(p.product.summary, 160) || name, aspect: aspectFor(fs), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg` }, { role: "lifestyle", folderKey: "images.scenes" }).catch((e) => {
-        if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
-        return null;
-      });
-      return a?.id ?? null;
-    });
-    if (free) return { assetId: free };
-    if (!imageProviderAvailable({ usage: "scene" }) || req.useAi === false || !llmConfigured()) throw new UserFacingError(L("Aucune photo libre de droits ne convient et l'IA d'images n'est pas disponible ici. Importez plutôt des photos de vos réalisations, de votre équipe ou de votre lieu.", "No royalty-free photo fits and the AI image generator is not available here. Upload photos of your work, team or premises instead."));
-    const f = FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
-    const prompts = ambiancePrompts(p);
-    const img = await ctx.step("ambiance", async () => {
-      const { img: buf, check, usageKey: finalKey } = await ambianceChecked({ userId: p.userId, projectId, jobId: ctx.job.id }, `${ctx.job.id}:ambiance`, { prompt: req.subline ? `${prompts[0]} ${req.subline}` : prompts[ctx.job.id.length % 2], aspect: aspectFor(f), reference: photo && photo.origin !== "generated" ? assetData(photo) : null });
-      if (check.decision.verdict === "REJECTED") refundMediaQuota(p.userId, finalKey);
-      const keep = gateSave({ userId: p.userId, projectId, jobId: ctx.job.id }, check.decision);
-      return JSON.stringify({ b64: buf.toString("base64"), keep });
-    });
-    // Image payée toujours livrée dans Images : FINAL utilisable ; sinon à vérifier ou écartée (non réutilisée).
-    const got = JSON.parse(img) as { b64: string; keep: ReturnType<typeof gateSave> };
-    const a = await saveAsset({ projectId, userId: p.userId, data: await sharp(Buffer.from(got.b64, "base64")).jpeg({ quality: 92 }).toBuffer(), name: `${slug(name)}-${C("ambiance", "mood")}-${Date.now().toString(36)}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "generated", meta: { recipe: L("Image d'ambiance générée par IA (illustration, pas une photo de vos clients ni de vos locaux)", "AI-generated mood image (illustration, not a photo of your customers or premises)"), aiGenerated: true, business: "services", format: aspectFor(f), ...got.keep.meta }, status: got.keep.status });
-    return { assetId: a.id };
+  if (kind === "ambiance") return { assetId: await freshAmbiance(ctx, p, FORMAT_OF[req.format ?? "portrait"] ?? "portrait", req.subline || clip(p.product.summary, 160) || name, { useAi: req.useAi, subline: req.subline, reference: photo }) };
+
+  // « Une nouvelle image » (pas une photo de l'activité) : photo libre de droits du métier, sinon image créée par l'IA,
+  // puis le visuel est composé dessus. « Sans image » : visuel typographique.
+  if (background === "image" && ["service", "booking", "banner"].includes(kind)) {
+    const s = kind === "service" ? items[Math.max(0, Math.min(items.length - 1, req.serviceIndex ?? 0))] : undefined;
+    const topic = [s?.name, s ? clip(s.description, 120) : req.subline || clip(p.product.summary, 140)].filter(Boolean).join(" — ") || name;
+    const fs: ServiceFormat = kind === "banner" ? (FORMAT_OF[req.format ?? "banner"] === "landscape" ? "landscape" : "banner") : FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
+    const fresh = await freshAmbiance(ctx, p, fs, topic, { useAi: req.useAi, subline: s?.name ?? req.subline, reference: null });
+    photo = one<Asset>("SELECT * FROM assets WHERE id = ?", fresh) ?? undefined;
+    ctx.progress(0.7, L("Composition du visuel sur la nouvelle image", "Composing the visual on the new image"));
   }
 
   const cta = req.cta || serviceCta(p, kind === "booking");

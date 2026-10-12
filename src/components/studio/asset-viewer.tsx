@@ -2,7 +2,8 @@
 /** Visionneuse d'un média : aperçu, informations, versions, usages, actions. */
 import Link from "next/link";
 import { useState } from "react";
-import { Check, Download, ExternalLink, Send, Store, X, Package } from "lucide-react";
+import { Check, Download, ExternalLink, PenLine, Send, Store, X, Package } from "lucide-react";
+import { AdEditor } from "./ad-editor/ad-editor";
 import { api, Badge, Button, cx, formatBytes, formatDate, Modal, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, ROLE_LABEL, StatusBadge, type AssetView } from "./common";
@@ -17,6 +18,7 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
   const { data, reload: reloadInfo } = useApi<Info>(asset ? `/api/files/${asset.id}?info=1` : null);
   const { data: theme } = useApi<any>(asset ? `/api/projects/${projectId}/theme` : null);
   const [target, setTarget] = useState("");
+  const [editDoc, setEditDoc] = useState<string | null>(null);
   if (!asset) return null;
   const a = data?.asset ?? asset;
   const status = async (s: string) => {
@@ -104,6 +106,13 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
               <Button size="sm" variant="ghost" className="mt-2" icon={<Send className="size-3.5" />} onClick={toPost}>{t("Créer une publication avec ce média", "Create a post with this media")}</Button>
             </div>
           )}
+          {a.meta?.poster?.docKey && (
+            <div className="rounded-2xl border border-line p-3" data-poster-edit>
+              <p className="text-xs font-medium">{t("Mise en page", "Layout")}</p>
+              <Button size="sm" variant="secondary" className="mt-2" icon={<PenLine className="size-3.5" />} onClick={() => setEditDoc(a.meta.poster.docKey)}>{t("Modifier le texte, les couleurs et la mise en page", "Edit text, colors and layout")}</Button>
+              <p className="mt-1.5 text-[11px] text-muted">{t("Titre, ligne, bouton, couleurs, placement : sans refaire la photo.", "Headline, line, button, colors, placement: without redoing the photo.")}</p>
+            </div>
+          )}
           {(a.kind === "image" || a.kind === "video") && (
             <div className="rounded-2xl border border-line p-3">
               <p className="text-xs font-medium">Canva</p>
@@ -138,6 +147,17 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
           )}
         </div>
       </div>
+      {editDoc && (
+        <AdEditor
+          projectId={projectId}
+          docKey={editDoc}
+          onClose={() => {
+            setEditDoc(null);
+            reloadInfo();
+            onChanged?.();
+          }}
+        />
+      )}
     </Modal>
   );
 }

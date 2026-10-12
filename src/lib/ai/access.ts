@@ -113,5 +113,5 @@ export function assertAiAllowed(user: string | null | undefined, projectId?: str
     throw new UserFacingError(L("Appel à l'IA refusé : compte introuvable.", "AI call refused: account not found."));
   }
   if (!planOf(sub)) throw new UserFacingError(L("L'IA n'est pas incluse dans la découverte gratuite : le moteur local du studio est utilisé.", "AI isn't included in the free discovery: the studio's local engine is used."));
-  if (!hasAiCredits(userId)) throw new UserFacingError(L("L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait, ou tout de suite avec un pack (Mon compte). En attendant, le moteur local du studio prend le relais.", "Your plan's AI is 100% used: it resumes when your plan renews, or right away with a pack (My account). Meanwhile, the studio's local engine takes over."));
+  if (!hasAiCredits(userId)) throw new UserFacingError(L("L'IA de votre forfait est utilisée à 100 % : elle reprend au renouvellement du forfait, ou tout de suite avec une recharge de l'IA du projet (Mon compte). En attendant, le moteur local du studio prend le relais.", "Your plan's AI is 100% used: it resumes when your plan renews, or right away with a project AI top-up (My account). Meanwhile, the studio's local engine takes over."));
 }

@@ -80,6 +80,8 @@ export function PlanRequired({ what, className }: { what: "images" | "videos" | 
   );
 }
 
+export { aiLeftPct } from "@/lib/ai-left";
+
 /** Couleur d'une barre d'utilisation : normale, proche de la fin (80 %), épuisée (100 %). */
 const usageTone = (pct: number) => (pct >= 100 ? "bg-bad" : pct >= 80 ? "bg-warn" : "bg-signal");
 
@@ -131,11 +133,11 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
       {credits && row(t("Crédits achetés", "Purchased credits"), credits.used, t("Utilisés une fois le forfait épuisé ; ils n'expirent pas.", "Used once the plan is used up; they don't expire."))}
       {paused ? (
         <div className="rounded-xl bg-bad/10 p-3 text-sm text-bad">
-          {t(`L'IA est en pause : elle reprend le ${date}, ou tout de suite avec un achat. En attendant, le moteur local du studio continue (sans IA).`, `AI is paused: it resumes on ${date}, or right away with a purchase. Meanwhile, the studio's local engine keeps working (without AI).`)}
-          <div><Link href="/studio/compte#packs" className="mt-2 inline-flex h-10 items-center rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink">{t("Voir les packs", "See the packs")}</Link></div>
+          {t(`L'IA est en pause : elle reprend le ${date}, ou tout de suite avec une recharge. En attendant, le moteur local du studio continue (sans IA).`, `AI is paused: it resumes on ${date}, or right away with a top-up. Meanwhile, the studio's local engine keeps working (without AI).`)}
+          <div><Link href="/studio/compte" className="mt-2 inline-flex h-10 items-center rounded-full bg-signal px-4 text-sm font-semibold text-signal-ink">{t("Recharger l'IA", "Top up AI")}</Link></div>
         </div>
       ) : plan.used >= 80 && !credits ? (
-        <p className="text-sm text-warn">{t(`Bientôt à 100 % : l'IA se mettra en pause jusqu'au ${date}, ou jusqu'à un achat.`, `Almost at 100%: AI will pause until ${date}, or until a purchase.`)}</p>
+        <p className="text-sm text-warn">{t(`Bientôt à 100 % : l'IA se mettra en pause jusqu'au ${date}, ou jusqu'à une recharge.`, `Almost at 100%: AI will pause until ${date}, or until a top-up.`)}</p>
       ) : null}
     </div>
   );
