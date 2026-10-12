@@ -110,7 +110,7 @@ export function imageLayer(id: string, name: string, role: ImageLayer["role"], b
   return { ...base(id, name, role, b), kind: "image", assetId, fit, crop: null, radius: 0, shadow: null };
 }
 
-function buttonLayer(id: string, b: { x: number; y: number; w: number; h: number }, text: string, o: { family: string; size: number; fill: string; color: string }): ButtonLayer {
+export function buttonLayer(id: string, b: { x: number; y: number; w: number; h: number }, text: string, o: { family: string; size: number; fill: string; color: string }): ButtonLayer {
   return { ...base(id, "Bouton", "cta", b), kind: "button", text, font: { family: o.family, weight: 600, size: o.size, italic: false }, fill: o.fill, color: o.color, radius: b.h / 2, stroke: null, shadow: null };
 }
 

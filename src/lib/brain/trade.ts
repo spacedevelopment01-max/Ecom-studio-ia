@@ -97,7 +97,7 @@ const CORE: CoreTrade[] = [
     match: /peintre|peinture|painter|\bdecorateur peintre/,
     actions: ["painting", "wall preparation", "filling", "masking", "finishing"],
     positive: ["painter rolling paint on an interior wall", "decorator preparing a wall before painting", "freshly painted living room", "clean renovation work"],
-    negative: ["art painting", "canvas painting", "isolated paint can", "graffiti", "brick wall"],
+    negative: ["art painting", "canvas painting", "isolated paint can", "graffiti", "brick wall", "artist", "canvas", "acrylic", "abstract", "fluid art", "palette knife", "easel", "watercolor", "model", "miniature", "airplane", "aircraft", "hobby", "toy", "figure"],
     queries: ["painter painting interior wall with roller", "decorator preparing wall before painting", "house painter painting living room ceiling"],
     icons: ["paint", "brush", "roller"],
     iconAvoid: ["palette", "wall", "bricks"],

@@ -105,7 +105,9 @@ export function rankStock<T extends { alt: string }>(found: T[], must: string[],
   const onTrade = (p: T) => must.length > 0 && tagsMatch(p.alt, must);
   if (!must.length) return [...found.filter((p) => !off(p)), ...found.filter(off)];
   const good = found.filter(onTrade);
-  if (!visualCheck) return good;
+  // Sans contrôle visuel, un mot exclu du métier (« artist », « canvas » pour un peintre en bâtiment) écarte la photo
+  // même si sa description cite le métier.
+  if (!visualCheck) return good.filter((p) => !negative.some((n) => ` ${norm(p.alt).replace(/[^a-z0-9]+/g, " ")} `.includes(` ${norm(n)} `)));
   const rest = found.filter((p) => !good.includes(p));
   return [...good, ...rest.filter((p) => !off(p)), ...rest.filter(off)];
 }

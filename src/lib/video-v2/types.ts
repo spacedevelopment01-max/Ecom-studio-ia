@@ -232,7 +232,7 @@ export type VideoDocument = {
   brand: AdDocument["brand"];
   /** Mention obligatoire quand un personnage ou des plans sont générés (ex. « Vidéo générée par IA »). */
   disclosure: string | null;
-  meta: { intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null };
+  meta: { intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null; /** Habillage publicitaire (titres, panneau, carte de fin posés sur les plans réels). */ promo?: boolean };
 };
 
 // ------------------------------------------------------------------------------------------- qualité et résultat

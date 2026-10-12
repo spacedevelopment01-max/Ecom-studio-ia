@@ -117,7 +117,7 @@ function animatedDoc(doc: AdDocument, local: number, mode: "rise" | "fade" | "no
     ...doc,
     layers: doc.layers.map((l, k): Layer => {
       if (l.role === "background") return l;
-      const p = easeOut((local - 0.08 * k) / 0.55);
+      const p = easeOut((local - 0.045 * Math.min(k, 12)) / 0.5);
       return { ...l, opacity: l.opacity * p, y: mode === "rise" ? l.y + (1 - p) * doc.height * 0.03 : l.y } as Layer;
     }),
   };
@@ -206,7 +206,7 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
   } else renderDoc(ctx, animatedDoc(s.doc, local, s.animate), env);
   if (c.overlays.length) {
     const ov: AdDocument = { version: 1, width: W, height: H, background: "transparent", safe: doc.safe, format: { platform: null, aspect: doc.aspect }, layers: c.overlays, brand: doc.brand, meta: { conceptId: null, source: "engine", createdFrom: null } };
-    renderDoc(ctx, animatedDoc(ov, local, "fade"), env, (l) => l.visible);
+    renderDoc(ctx, animatedDoc(ov, local, "rise"), env, (l) => l.visible);
   }
 }
 
