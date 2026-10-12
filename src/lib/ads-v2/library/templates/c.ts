@@ -16,6 +16,23 @@ const ctx = createCanvas(8, 8).getContext("2d");
 /** Couleur de la liste la plus éloignée (contraste) de toutes les couleurs données. */
 const farthest = (cands: string[], from: string[]) => [...cands].sort((a, b) => Math.min(...from.map((f) => contrast(b, f))) - Math.min(...from.map((f) => contrast(a, f))))[0];
 
+/**
+ * Fond de schéma de ton moyen (orange, rouge vif…) sur lequel aucune encre n'atteint 4,6:1 : il est assombri vers la
+ * couleur sombre de la marque, pour que les textes posés à même le fond restent lisibles sans voile ajouté.
+ */
+function legible(k: Kit) {
+  const c = k.c;
+  const best = (bg: string) => Math.max(contrast("#FFFFFF", bg), contrast("#111111", bg));
+  let bg = c.bg;
+  for (let n = 0; n < 10 && best(bg) < 5; n++) bg = mix(bg, c.dark, 0.12);
+  if (bg === c.bg) return;
+  c.bg = bg;
+  const ink = contrast(c.light, bg) >= contrast(c.dark, bg) ? c.light : c.dark;
+  c.ink = contrast(ink, bg) >= 4.6 ? ink : contrast("#FFFFFF", bg) >= contrast("#111111", bg) ? "#FFFFFF" : "#111111";
+  c.soft = mix(c.ink, bg, 0.25);
+  c.surface = isDark(bg) ? mix(bg, "#FFFFFF", 0.08) : mix(bg, "#000000", 0.05);
+}
+
 type TitleOpts = { max: number; display?: boolean; italic?: boolean; align?: TextLayer["align"]; upper?: boolean; maxLines?: number; color?: string; lineHeight?: number };
 
 /**
@@ -26,7 +43,7 @@ function fitTitle(k: Kit, b: Box, o: TitleOpts): TextLayer {
   const t = k.title({ x: b.x, y: b.y, w: b.w }, { size: o.max, display: o.display, italic: o.italic, align: o.align, upper: o.upper, maxLines: o.maxLines, color: o.color, lineHeight: o.lineHeight });
   const maxLines = o.maxLines ?? (k.cls === "story" ? 4 : 3);
   const text = t.uppercase ? t.text.toUpperCase() : t.text;
-  const ratio = (o.display ? -0.005 : -0.01) * (o.lineHeight === undefined ? 1 : 1);
+  const ratio = o.display ? -0.005 : -0.01;
   const fits = (s: number) => {
     ctx.font = serverFont(t.font.family, t.font.weight, s, t.font.italic);
     ctx.letterSpacing = `${Math.round(s * ratio)}px`;
@@ -120,6 +137,7 @@ export const TEMPLATES_C: Template[] = [
     schemes: ["accent", "brand", "dark", "light"],
     treatments: ["natural", "punch", "mono"],
     build(k) {
+      legible(k);
       k.fill();
       const { side, top, bottom } = k.m;
       const pic = k.hasPhoto;
@@ -137,8 +155,8 @@ export const TEMPLATES_C: Template[] = [
         column(k, { x: side, y: top + mk.h + gap, w, h: k.H - top - bottom - mk.h - gap }, { mark: false, valign: "bottom", title: k.H * 0.22, display: true, maxLines: 4, gap: k.U * 0.035 });
         return;
       }
-      const pw = k.W * k.pick(0, 0.25, 0.27, 0.3);
-      const ph = pw * k.pick(1, 1.35, 1.45, 1.55);
+      const pw = k.W * k.pick(0, 0.27, 0.29, 0.34);
+      const ph = pw * k.pick(1, 1.35, 1.45, 1.5);
       const mk = k.brandMark({ x: side, y: top, w: k.W * 0.5 });
       let y0 = top + mk.h + gap * 2;
       if (pic) {
@@ -146,11 +164,16 @@ export const TEMPLATES_C: Template[] = [
         k.rect({ x: px - pw * 0.16, y: top + pw * 0.16, w: pw, h: ph }, k.c.accent === k.c.bg ? k.c.ink : k.c.accent, { radius: pw / 2, name: "Pilule de couleur" });
         k.photo({ x: px, y: top, w: pw, h: ph }, { radius: pw / 2, focus: k.point(0) });
         y0 = top + ph + pw * 0.16 + gap;
-      } else {
-        const d = k.W * 0.5;
-        k.ellipse({ x: k.W - d * 0.72, y: y0 - gap - d, w: d, h: d }, k.c.accent, { name: "Disque" });
       }
-      column(k, { x: side, y: y0, w: k.W - side * 2, h: k.H - bottom - y0 }, { mark: false, valign: "bottom", title: k.U * 0.24, display: true, maxLines: k.cls === "story" ? 5 : 4, gap: k.U * 0.035 });
+      const col = column(k, { x: side, y: y0, w: k.W - side * 2, h: k.H - bottom - y0 }, { mark: false, valign: "bottom", title: k.U * 0.24, min: k.U * 0.08, display: true, maxLines: k.cls === "story" ? 5 : 4, gap: k.U * 0.035 });
+      if (!pic) {
+        // Sans photo : un grand disque de couleur occupe l'espace au-dessus du titre (contrepoint graphique).
+        const room = col.y - gap - top;
+        const d = Math.min(k.W * 0.86, Math.max(k.W * 0.4, room * 1.25));
+        const disc = k.ellipse({ x: k.W - d * 0.78, y: col.y - gap - d, w: d, h: d }, k.c.accent, { name: "Disque" });
+        k.layers.splice(k.layers.indexOf(disc), 1);
+        k.layers.splice(k.layers.indexOf(col.layers[0]), 0, disc);
+      }
     },
   },
 ];

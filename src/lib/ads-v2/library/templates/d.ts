@@ -3,10 +3,13 @@
  * pellicule, cercles, article de magazine, panorama, grille, loupe sur un détail, étiquette, épure.
  * Chaque modèle refait sa composition pour le format (paysage, carré, portrait, story).
  */
+import { createCanvas } from "@napi-rs/canvas";
+import { layoutText } from "../../../ad-doc/render";
+import { serverFont } from "../../../ad-doc/server";
+import type { Layer, TextLayer } from "../../../ad-doc/types";
 import { contrast, ensureContrast, isDark, mix } from "../../../color";
 import type { Box, Kit } from "../kit";
 import type { Template } from "../types";
-import type { Layer } from "../../../ad-doc/types";
 
 /** Épaisseur d'un filet fin. */
 const hair = (k: Kit) => Math.max(2, Math.round(k.U * 0.0025));
@@ -27,6 +30,25 @@ function fit(k: Kit, draw: (s: number) => boolean) {
     k.layers.splice(start);
   }
 }
+
+const probe = createCanvas(8, 8).getContext("2d");
+/**
+ * Titre d'affiche sur plusieurs lignes : le kit réduit d'abord le titre pour le faire tenir sur une ligne ; ici on
+ * lui rend sa taille voulue (ou la plus grande qui tient) sur `maxLines` lignes au plus.
+ */
+function grow(t: TextLayer, size: number, maxLines: number) {
+  for (let s = Math.round(size); s > t.font.size; s = Math.round(s * 0.96)) {
+    const r = layoutText(probe, { ...t, font: { ...t.font, size: s }, h: s * t.lineHeight * maxLines + 1 }, { font: serverFont });
+    if (r.size !== s || r.lines.length > maxLines) continue;
+    t.font.size = s;
+    t.h = Math.ceil(r.lines.length * s * t.lineHeight + s * 0.12);
+    return t;
+  }
+  return t;
+}
+
+/** Titre posé à la main (hors pile) : taille voulue sur plusieurs lignes. */
+const headline = (k: Kit, b: { x: number; y: number; w: number }, o: Parameters<Kit["title"]>[1] & { maxLines: number }) => grow(k.title(b, o), o.size, o.maxLines);
 
 /** Recolore le bouton (posé sur une case de la couleur du bouton, par exemple), libellé toujours lisible. */
 function recolorCta(k: Kit, fill: string) {
@@ -125,33 +147,36 @@ export const TEMPLATES_D: Template[] = [
           { x: W * 0.6, y: k.m.top, w: W * 0.4 - k.m.side, h: H - k.m.top - k.m.bottom },
         ],
         [
-          { x: W * 0.07, y: H * 0.08, w: W * 0.42, h: H * 0.56 },
-          { x: W * 0.55, y: H * 0.08, w: W * 0.38, h: H * 0.3 },
-          { x: W * 0.55, y: H * 0.43, w: W * 0.38, h: H * 0.51 - k.m.bottom + H * 0.06 },
+          { x: W * 0.07, y: H * 0.08, w: W * 0.4, h: H * 0.56 },
+          { x: W * 0.52, y: H * 0.08, w: W * 0.41, h: H * 0.3 },
+          { x: W * 0.52, y: H * 0.43, w: W * 0.41, h: H * 0.51 - k.m.bottom + H * 0.06 },
         ],
         [
-          { x: W * 0.08, y: H * 0.07, w: W * 0.5, h: H * 0.5 },
-          { x: W * 0.64, y: H * 0.19, w: W * 0.28, h: H * 0.26 },
-          { x: W * 0.08, y: H * 0.62, w: W * 0.84, h: H * 0.38 - k.m.bottom },
+          { x: W * 0.08, y: k.m.top, w: W * 0.48, h: H * 0.44 },
+          { x: W * 0.62, y: k.m.top + H * 0.1, w: W * 0.3, h: H * 0.24 },
+          { x: W * 0.08, y: k.m.top + H * 0.49, w: W * 0.84, h: H * 0.51 - k.m.top - k.m.bottom },
         ],
         [
-          { x: W * 0.08, y: k.m.top, w: W * 0.5, h: H * 0.33 },
-          { x: W * 0.64, y: k.m.top + H * 0.08, w: W * 0.28, h: H * 0.17 },
-          { x: W * 0.08, y: k.m.top + H * 0.37, w: W * 0.84, h: H - k.m.bottom - k.m.top - H * 0.37 },
+          { x: W * 0.07, y: k.m.top, w: W * 0.54, h: H * 0.37 },
+          { x: W * 0.66, y: k.m.top + H * 0.09, w: W * 0.27, h: H * 0.19 },
+          { x: W * 0.07, y: k.m.top + H * 0.41, w: W * 0.86, h: H - k.m.bottom - k.m.top - H * 0.41 },
         ],
       );
+      const first = k.layers.length;
       framed(k, big, { u: 0.5, v: 0.5 }, 1);
       framed(k, small, k.point(0), 2);
       // Cartel : petite carte claire, texte aligné à gauche comme une notice de musée.
       const pad = k.U * k.pick(0.05, 0.04, 0.045, 0.05);
       const cardL = k.rect(card, "#FBFAF6", { name: "Cartel", shadow: soft(k, 0.18) });
-      const st = k.stack({ x: card.x + pad, y: card.y + pad, w: card.w - pad * 2, h: card.h - pad * 2 }, { valign: "top", title: k.U * k.pick(0.068, 0.056, 0.068, 0.075), ctaStyle: "square", subUpper: true, gap: k.U * 0.028 });
+      const st = k.stack({ x: card.x + pad, y: card.y + pad, w: card.w - pad * 2, h: card.h - pad * 2 }, { valign: "top", title: k.U * k.pick(0.068, 0.06, 0.068, 0.085), ctaStyle: "square", subUpper: k.tall, gap: k.U * 0.028 });
       // La carte épouse son texte (centrée verticalement dans la place prévue en formats larges).
       const h = st.h + pad * 2;
       const dy = k.wide ? (card.h - h) / 2 : 0;
       for (const l of k.layers.slice(k.layers.indexOf(cardL) + 1)) l.y += dy;
       cardL.y += dy;
       cardL.h = h;
+      // Formats hauts : l'accrochage entier (cadres et cartel) se centre dans la hauteur disponible.
+      if (k.tall) for (const l of k.layers.slice(first)) l.y += Math.max(0, (card.y + card.h - (cardL.y + h)) / 2);
       reanchor(k, k.layers.slice(k.layers.indexOf(cardL)));
     },
   },
@@ -168,7 +193,7 @@ export const TEMPLATES_D: Template[] = [
       const base = isDark(k.c.bg) ? mix(k.c.bg, "#000000", 0.6) : "#151515";
       const vertical = k.cls === "land";
       // Bande de film : en paysage elle est verticale à droite (images empilées), sinon horizontale en haut.
-      const film: Box = vertical ? { x: k.W * 0.5, y: 0, w: k.W * 0.5, h: k.H } : { x: 0, y: k.pick(0, k.H * 0.05, k.H * 0.06, k.m.top - k.H * 0.02), w: k.W, h: k.H * k.pick(0, 0.55, 0.52, 0.42) };
+      const film: Box = vertical ? { x: k.W * 0.5, y: 0, w: k.W * 0.5, h: k.H } : { x: 0, y: k.pick(0, k.H * 0.05, k.H * 0.04, k.H * 0.06), w: k.W, h: k.H * k.pick(0, 0.55, 0.46, 0.4) };
       k.rect(film, base, { name: "Pellicule" });
       const perf = k.U * 0.05;
       const g = Math.max(4, Math.round(k.U * 0.01));
@@ -192,7 +217,7 @@ export const TEMPLATES_D: Template[] = [
         k.photo(b, { focus, zoom });
       });
       const col = vertical ? { x: k.m.side, y: k.m.top, w: film.x - k.m.side - k.W * 0.05, h: k.H - k.m.top - k.m.bottom } : { x: k.m.side, y: film.y + film.h + k.H * 0.045, w: k.W - k.m.side * 2, h: k.H - k.m.bottom - (film.y + film.h + k.H * 0.045) };
-      k.stack(col, { valign: "middle", title: k.U * k.pick(0.09, 0.07, 0.08, 0.095), eyebrow: true, sub: k.cls !== "square", ctaStyle: "square", gap: k.U * 0.03 });
+      k.stack(col, { valign: "middle", title: k.U * k.pick(0.09, 0.078, 0.08, 0.095), eyebrow: true, sub: k.cls !== "square", ctaStyle: "square", gap: k.U * 0.03 });
     },
   },
   {
@@ -205,18 +230,18 @@ export const TEMPLATES_D: Template[] = [
     treatments: ["natural", "warm", "punch"],
     build(k) {
       k.fill();
-      const [d1, d2] = k.pick([k.H * 0.74, k.H * 0.42], [k.W * 0.5, k.W * 0.28], [k.W * 0.6, k.W * 0.33], [k.W * 0.68, k.W * 0.38]);
+      const [d1, d2] = k.pick([k.H * 0.74, k.H * 0.42], [k.W * 0.5, k.W * 0.28], [k.W * 0.6, k.W * 0.33], [k.W * 0.64, k.W * 0.36]);
       const a = k.pick(
-        { x: k.W * 0.5, y: k.H * 0.1 },
+        { x: k.W * 0.44, y: k.H * 0.1 },
         { x: k.W * 0.1, y: k.H * 0.07 },
         { x: k.W * 0.1, y: k.H * 0.06 },
-        { x: k.W * 0.08, y: k.m.top - k.H * 0.02 },
+        { x: k.W * 0.08, y: k.m.top - k.H * 0.03 },
       );
       const b = k.pick(
-        { x: a.x + d1 * 0.78, y: a.y + d1 - d2 * 0.95 },
+        { x: a.x + d1 * 0.7, y: a.y + d1 - d2 * 1.05 },
         { x: a.x + d1 * 0.84, y: a.y + d1 - d2 * 0.85 },
         { x: a.x + d1 * 0.8, y: a.y + d1 - d2 * 0.82 },
-        { x: a.x + d1 * 0.76, y: a.y + d1 - d2 * 0.8 },
+        { x: a.x + d1 * 0.78, y: a.y + d1 - d2 * 0.9 },
       );
       const ring = Math.max(3, Math.round(k.U * 0.004));
       const o = k.U * 0.022;
@@ -230,7 +255,7 @@ export const TEMPLATES_D: Template[] = [
       k.ellipse({ x: b.x - sep * 0.5, y: b.y - sep * 0.5, w: d2 + sep, h: d2 + sep }, null, { stroke: { color: k.c.accent, width: ring }, name: "Anneau" });
       const bottom = Math.max(a.y + d1, b.y + d2 + sep);
       const col = k.cls === "land" ? { x: k.m.side, y: k.m.top, w: a.x - k.m.side - k.W * 0.06, h: k.H - k.m.top - k.m.bottom } : { x: k.m.side, y: bottom + k.H * 0.045, w: k.W - k.m.side * 2, h: k.H - k.m.bottom - bottom - k.H * 0.045 };
-      k.stack(col, { valign: "middle", title: k.U * k.pick(0.09, 0.066, 0.078, 0.09), italic: true, sub: k.cls !== "square", gap: k.U * 0.03 });
+      k.stack(col, { valign: "middle", title: k.U * k.pick(0.09, 0.066, 0.08, 0.1), italic: true, sub: k.cls !== "square", gap: k.U * 0.03 });
     },
   },
   {
@@ -266,7 +291,7 @@ export const TEMPLATES_D: Template[] = [
         if (k.cls === "land") {
           // Paysage : titre, ligne et bouton en colonne à gauche ; filet vertical ; photo à droite.
           const cw = Wd * 0.44;
-          const t = k.title({ x: X, y, w: cw }, { size: k.U * 0.085 * s, maxLines: 3 });
+          const t = headline(k, { x: X, y, w: cw }, { size: k.U * 0.085 * s, maxLines: 3 });
           let ty = y + t.h + gap * 0.6;
           const sub = k.subline({ x: X, y: ty, w: cw }, { size: k.U * 0.034 });
           if (sub) ty += sub.h;
@@ -277,23 +302,22 @@ export const TEMPLATES_D: Template[] = [
           k.photo({ x: px, y, w: X + Wd - px, h: bot - y }, { focus: k.point(0), zoom: 1 });
           return true;
         }
-        // Formats hauts : titre sur toute la largeur, puis photo en colonne et chapeau à côté, bouton en pied.
-        const t = k.title({ x: X, y, w: Wd }, { size: k.U * k.pick(0, 0.07, 0.085, 0.095) * s, maxLines: 3 });
-        y += t.h + gap * 0.7;
+        // Formats hauts : titre et chapeau sur toute la largeur, puis deux colonnes d'images (vue, détail), bouton en pied.
+        const t = headline(k, { x: X, y, w: Wd }, { size: k.U * k.pick(0, 0.075, 0.09, 0.1) * s, maxLines: 3 });
+        y += t.h + gap * 0.5;
+        const sub = k.subline({ x: X, y, w: Wd }, { size: k.U * 0.032 });
+        if (sub) y += sub.h + gap * 0.4;
         k.line(X, y, Wd, rule, hw);
         y += gap * 0.8;
         const by = bot - ctaH(k);
         const fy = by - gap * 0.7;
         const ph = fy - gap * 0.8 - y;
-        if (ph < k.H * 0.2) return false;
-        const hasSub = !!k.i.subline?.trim();
-        const pw = hasSub ? Wd * 0.6 : Wd;
+        if (ph < k.H * 0.22) return false;
+        const pw = Wd * 0.64;
         k.photo({ x: X, y, w: pw, h: ph }, { focus: k.point(0), zoom: 1 });
-        if (hasSub) {
-          k.rect({ x: X + pw + Wd * 0.04 - hw / 2, y, w: hw, h: ph }, rule, { name: "Filet vertical" });
-          const sx = X + pw + Wd * 0.08;
-          k.subline({ x: sx, y, w: X + Wd - sx }, { size: k.U * 0.03 });
-        }
+        k.rect({ x: X + pw + Wd * 0.03 - hw / 2, y, w: hw, h: ph }, rule, { name: "Filet vertical" });
+        const dx = X + pw + Wd * 0.06;
+        k.photo({ x: dx, y, w: X + Wd - dx, h: ph }, { focus: k.point(1), zoom: 2 });
         k.line(X, fy, Wd, rule, hw);
         k.button(X, by, { maxW: Wd, style: "square" });
         return true;
@@ -325,7 +349,7 @@ export const TEMPLATES_D: Template[] = [
       };
       if (k.cls === "land") {
         fit(k, (s) => {
-          const t = k.title({ x: X, y: top, w: Wd * 0.68 }, { size: k.U * 0.085 * s, maxLines: 2 });
+          const t = headline(k, { x: X, y: top, w: Wd * 0.68 }, { size: k.U * 0.085 * s, maxLines: 2 });
           const mark = k.brandMark({ x: X + Wd * 0.72, y: top, w: Wd * 0.28 }, { align: "right" });
           mark.y = top + Math.max(0, (Math.min(t.h, k.U * 0.1) - mark.h) / 2);
           const bh = ctaH(k);
@@ -344,7 +368,7 @@ export const TEMPLATES_D: Template[] = [
       fit(k, (s) => {
         const mark = k.brandMark({ x: X, y: top, w: Wd }, { align: "center" });
         let y = top + mark.h + gap * 0.8;
-        const t = k.title({ x: X, y, w: Wd }, { size: k.U * k.pick(0, 0.075, 0.085, 0.095) * s, align: "center", italic: true, maxLines: 3 });
+        const t = headline(k, { x: X, y, w: Wd }, { size: k.U * k.pick(0, 0.075, 0.085, 0.095) * s, align: "center", italic: true, maxLines: 3 });
         y += t.h + gap;
         const bh = ctaH(k);
         const hasSub = !!k.i.subline?.trim();
@@ -542,12 +566,12 @@ export const TEMPLATES_D: Template[] = [
         k.brandMark({ x: X, y: top, w: span(4) });
         fit(k, (s) => {
           const bh = ctaH(k);
-          const t = k.title({ x: X, y: 0, w: span(4) }, { size: k.U * 0.085 * s, maxLines: 3 });
+          const t = headline(k, { x: X, y: 0, w: span(4) }, { size: k.U * 0.085 * s, maxLines: 3 });
           const sub = k.subline({ x: X, y: 0, w: span(4) }, { size: k.U * 0.032 });
           const g = k.U * 0.04;
           const total = k.U * 0.004 + g + t.h + g * 0.6 + (sub ? sub.h + g : g * 0.4) + bh;
           let y = bot - total;
-          if (y < top + k.U * 0.14) return false;
+          if (y < top + k.U * 0.14 && s > 0.6) return false;
           k.rect({ x: X, y, w: colW, h: Math.max(4, k.U * 0.006) }, k.c.accent, { name: "Filet d'accent" });
           y += k.U * 0.006 + g;
           t.y = y;
@@ -563,20 +587,21 @@ export const TEMPLATES_D: Template[] = [
       // Formats hauts : marque en haut à gauche, petite photo calée à droite, texte en bas à gauche.
       const mark = k.brandMark({ x: X, y: top, w: span(3) });
       const pw = span(k.cls === "square" ? 3 : 4);
-      const ph = k.pick(0, pw * 1.15, pw * 1.22, pw * 1.45);
-      const py = k.cls === "story" ? top + mark.h + k.H * 0.05 : top;
+      const ph = k.pick(0, pw * 1.15, pw * 1.22, pw * 1.12);
+      const py = top;
       k.photo({ x: X + Wd - pw, y: py, w: pw, h: ph }, { focus: k.point(0), zoom: 1 });
       fit(k, (s) => {
         const tw = span(k.cls === "square" ? 3 : 5);
         const bh = ctaH(k);
-        const t = k.title({ x: X, y: 0, w: tw }, { size: k.U * k.pick(0, 0.062, 0.072, 0.08) * s, maxLines: 4 });
+        const t = headline(k, { x: X, y: 0, w: tw }, { size: k.U * k.pick(0, 0.062, 0.072, 0.08) * s, maxLines: 4 });
         const sub = k.subline({ x: X, y: 0, w: tw }, { size: k.U * 0.03 });
         const g = k.U * 0.035;
         const total = k.U * 0.006 + g + t.h + g * 0.6 + (sub ? sub.h + g : g * 0.4) + bh;
         // Le bloc de texte s'aligne en bas de la grille ; en carré il est à gauche de la photo.
         let y = bot - total;
         const limit = k.cls === "square" ? top + mark.h + k.U * 0.05 : py + ph + k.U * 0.05;
-        if (y < limit) return false;
+        if (y < limit && s > 0.6) return false;
+        y = Math.max(y, limit);
         k.rect({ x: X, y, w: colW, h: Math.max(4, k.U * 0.006) }, k.c.accent, { name: "Filet d'accent" });
         y += k.U * 0.006 + g;
         t.y = y;

@@ -68,7 +68,7 @@ export const TEMPLATES_B: Template[] = [
       const tz = k.cls === "story" ? k.m.top : k.H * 0.05;
       mk.y = tz + Math.max(0, (pic.y - tz - mk.h) / 2);
       const gap = k.H * 0.035;
-      k.stack({ x: side, y: below + gap, w: k.W - side * 2, h: k.H - k.m.bottom - below - gap }, { align: "center", valign: "middle", mark: false, title: k.U * k.pick(0.08, 0.075, 0.08, 0.085), subUpper: true, ctaStyle: "square", onDark: true });
+      k.stack({ x: side, y: below + gap, w: k.W - side * 2, h: k.H - k.m.bottom - below - gap }, { align: "center", valign: "middle", mark: false, title: k.U * k.pick(0.08, 0.075, 0.085, 0.1), subUpper: true, ctaStyle: "square", onDark: true });
     },
   },
   {
@@ -135,14 +135,14 @@ export const TEMPLATES_B: Template[] = [
       const a = (deg * Math.PI) / 180;
       const w = k.W * 2.2;
       const h = k.H * 1.4;
-      const E = k.H * k.pick(0.5, 0.48, 0.5, 0.48);
+      const E = k.H * k.pick(0.5, 0.43, 0.5, 0.48);
       const edgeY = (x: number) => E + (x - k.W / 2) * Math.tan(a);
       const cy = E + h / 2 / Math.cos(a);
       const off = k.U * 0.035;
       k.rect({ x: k.W / 2 - w / 2, y: cy - off / Math.cos(a) - h / 2, w, h }, k.c.accent, { rotation: deg, name: "Liseré" });
       k.rect({ x: k.W / 2 - w / 2, y: cy - h / 2, w, h }, k.c.bg, { rotation: deg, name: "Aplat", shadow: drop(k, 0.25) });
       const y0 = edgeY(side) + k.U * 0.05;
-      k.stack({ x: side, y: y0, w: k.W - side * 2, h: k.H - k.m.bottom - y0 }, { valign: "middle", title: k.U * k.pick(0.1, 0.085, 0.09, 0.1), display: true, ctaStyle: "square" });
+      k.stack({ x: side, y: y0, w: k.W - side * 2, h: k.H - k.m.bottom - y0 }, { valign: "middle", title: k.U * k.pick(0.1, 0.105, 0.115, 0.125), display: true, ctaStyle: "square" });
     },
   },
   {
@@ -161,8 +161,8 @@ export const TEMPLATES_B: Template[] = [
       const s = Math.max(k.W / p.width, k.H / p.height);
       const subj = { x: (k.W - p.width * s) / 2 + k.point(0).u * p.width * s, y: (k.H - p.height * s) / 2 + k.point(0).v * p.height * s };
       const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-      const spot = k.cls === "land" ? { x: clamp(subj.x, k.W * 0.62, k.W * 0.74), y: clamp(subj.y, k.H * 0.4, k.H * 0.6) } : { x: clamp(subj.x, k.W * 0.35, k.W * 0.65), y: clamp(subj.y, k.H * k.pick(0, 0.3, 0.3, 0.32), k.H * k.pick(0, 0.34, 0.36, 0.38)) };
-      const r0 = k.U * k.pick(0.36, 0.26, 0.3, 0.34);
+      const spot = k.cls === "land" ? { x: clamp(subj.x, k.W * 0.62, k.W * 0.74), y: clamp(subj.y, k.H * 0.4, k.H * 0.6) } : { x: clamp(subj.x, k.W * 0.35, k.W * 0.65), y: clamp(subj.y, k.H * k.pick(0, 0.26, 0.3, 0.27), k.H * k.pick(0, 0.3, 0.34, 0.3)) };
+      const r0 = k.U * k.pick(0.36, 0.22, 0.28, 0.3);
       const r1 = r0 * 2.1;
       // Grand carré centré sur le projecteur : dégradé radial transparent au centre, sombre sur les bords.
       const D = Math.hypot(Math.max(spot.x, k.W - spot.x), Math.max(spot.y, k.H - spot.y)) * 1.02;
@@ -173,8 +173,6 @@ export const TEMPLATES_B: Template[] = [
         return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
       };
       k.rect({ x: spot.x - D, y: spot.y - D, w: D * 2, h: D * 2 }, { type: "radial", angle: 0, stops: [{ offset: 0, color: rgba(0) }, { offset: (r0 * 0.6) / gr, color: rgba(0) }, { offset: r0 / gr, color: rgba(0.35) }, { offset: r1 / gr, color: rgba(0.9) }, { offset: 1, color: rgba(0.96) }] }, { name: "Projecteur", role: "scrim" });
-      // Halo fin autour du faisceau.
-      k.ellipse({ x: spot.x - r0 * 1.15, y: spot.y - r0 * 1.15, w: r0 * 2.3, h: r0 * 2.3 }, null, { stroke: { color: mix(k.c.accent, "#FFFFFF", 0.2), width: Math.max(2, Math.round(k.U * 0.003)) }, opacity: 0.55, name: "Halo" });
       const side = k.m.side;
       if (k.cls === "land") {
         const col = { x: side, y: k.m.top, w: spot.x - r0 * 1.25 - side - k.W * 0.02, h: k.H - k.m.top - k.m.bottom };
@@ -182,7 +180,7 @@ export const TEMPLATES_B: Template[] = [
         return;
       }
       const y0 = spot.y + r0 * 1.2 + k.H * 0.02;
-      k.stack({ x: side, y: y0, w: k.W - side * 2, h: k.H - k.m.bottom - y0 }, { align: "center", valign: "middle", title: k.U * k.pick(0.1, 0.075, 0.085, 0.1), italic: true, onDark: true, subUpper: true });
+      k.stack({ x: side, y: y0, w: k.W - side * 2, h: k.H - k.m.bottom - y0 }, { align: "center", valign: "middle", title: k.U * k.pick(0.1, 0.085, 0.095, 0.105), italic: true, onDark: true, subUpper: true });
     },
   },
   {
@@ -198,7 +196,7 @@ export const TEMPLATES_B: Template[] = [
       const n = k.pick(5, 5, 5, 6);
       const gap = Math.round(k.U * 0.016);
       // Zone de la photo : à droite en paysage (lames verticales), en haut ailleurs (lames horizontales).
-      const R: Box = k.cls === "land" ? { x: k.W * 0.44, y: 0, w: k.W * 0.56, h: k.H } : { x: 0, y: 0, w: k.W - k.m.side * 0.6, h: k.H * k.pick(0, 0.56, 0.58, 0.6) };
+      const R: Box = k.cls === "land" ? { x: k.W * 0.44, y: 0, w: k.W * 0.56, h: k.H } : { x: 0, y: 0, w: k.W - k.m.side * 0.6, h: k.H * k.pick(0, 0.5, 0.56, 0.5) };
       const g = k.cropFor(R, { u: 0.5, v: k.point(0).v })!;
       // Décalage des lames (escalier sur le bord libre) : la photo reste continue d'une lame à l'autre.
       const stag = [0, 0.11, 0.04, 0.15, 0.07, 0.12];
@@ -276,14 +274,14 @@ export const TEMPLATES_B: Template[] = [
         for (let y = tk.y + dn * 0.75; y < tk.y + tk.h - dn * 0.75; y += dash * 3.4) k.rect({ x: sx - dash / 2, y, w: dash, h: dash * 1.8 }, dashCol, { name: "Pointillé" });
         col = { x: sx + p * 1.6, y: Math.max(k.m.top, tk.y + p), w: tk.x + tk.w - sx - p * 3.2, h: Math.min(k.H - k.m.bottom, tk.y + tk.h - p) - Math.max(k.m.top, tk.y + p) };
       } else {
-        const sy = tk.y + tk.h * k.pick(0, 0.5, 0.54, 0.54);
+        const sy = tk.y + tk.h * k.pick(0, 0.5, 0.54, 0.46);
         k.photo({ x: tk.x + p, y: tk.y + p, w: tk.w - p * 2, h: sy - tk.y - p * 1.6 }, { focus: k.point(0), radius: Math.round(k.U * 0.016) });
         for (const x of [tk.x, tk.x + tk.w]) k.ellipse({ x: x - dn / 2, y: sy - dn / 2, w: dn, h: dn }, k.c.bg, { name: "Encoche" });
         for (let x = tk.x + dn * 0.75; x < tk.x + tk.w - dn * 0.75; x += dash * 3.4) k.rect({ x, y: sy - dash / 2, w: dash * 1.8, h: dash }, dashCol, { name: "Pointillé" });
         const y0 = Math.max(k.m.top, sy + p * 1.2);
         col = { x: tk.x + p * 1.5, y: y0, w: tk.w - p * 3, h: Math.min(k.H - k.m.bottom, tk.y + tk.h - p * 1.2) - y0 };
       }
-      k.stack(col, { align: "center", valign: "middle", title: k.U * k.pick(0.075, 0.07, 0.075, 0.085), display: true, gap: k.U * 0.028, ctaStyle: "square" });
+      k.stack(col, { align: "center", valign: "middle", title: k.U * k.pick(0.075, 0.07, 0.08, 0.1), display: true, gap: k.U * 0.028, ctaStyle: "square" });
       // Bouton de la couleur du fond : il rappelle les encoches.
       tintButton(k, k.c.bg);
     },
@@ -305,8 +303,8 @@ export const TEMPLATES_B: Template[] = [
       for (let y = step; y < k.H; y += step) k.rect({ x: 0, y, w: k.W, h: Math.max(1, k.U * 0.0015) }, grid, { name: "Quadrillage" });
       const land = k.cls === "land";
       // Tirage principal (bord blanc), incliné.
-      const pw = land ? k.W * 0.42 : k.W * k.pick(0, 0.62, 0.72, 0.76);
-      const ph = pw * (land ? 0.78 : 0.82);
+      const pw = land ? k.W * 0.42 : k.W * k.pick(0, 0.44, 0.62, 0.7);
+      const ph = pw * (land ? 0.78 : k.pick(0, 0.76, 0.8, 0.86));
       const px = land ? k.W - k.m.side - pw - k.W * 0.03 : (k.W - pw) / 2 + k.W * 0.04;
       const py = land ? (k.H - ph) / 2 - k.H * 0.03 : k.m.top * k.pick(0, 0.9, 0.9, 0.75) + k.U * 0.03;
       const bd = Math.round(pw * 0.035);
@@ -330,7 +328,7 @@ export const TEMPLATES_B: Template[] = [
       const bottomOf = sy + sw + sb + k.U * 0.04;
       const col = land ? { x: k.m.side, y: k.m.top, w: sx - k.m.side - k.W * 0.04, h: k.H - k.m.top - k.m.bottom } : { x: k.m.side, y: Math.max(bottomOf, py + ph + bd + k.U * 0.05), w: k.W - k.m.side * 2, h: 0 };
       if (!land) col.h = k.H - k.m.bottom - col.y;
-      k.stack(col, { valign: "middle", title: k.U * k.pick(0.09, 0.075, 0.08, 0.095), italic: true, align: land ? "left" : "center" });
+      k.stack(col, { valign: "middle", title: k.U * k.pick(0.09, 0.08, 0.09, 0.105), italic: true, align: land ? "left" : "center" });
     },
   },
   {
@@ -355,8 +353,8 @@ export const TEMPLATES_B: Template[] = [
         col = { x: side, y: k.m.top, w: edge - side - k.W * k.pick(0.05, 0.06, 0), h: k.H - k.m.top - k.m.bottom };
       } else {
         // Cercle qui sort par le bas ; texte en haut.
-        d = k.W * k.pick(0, 0, 1.08, 1.2);
-        c = { x: k.W * 0.56, y: k.H - d * k.pick(0, 0, 0.26, 0.24) };
+        d = k.W * k.pick(0, 0, 1.1, 1.2);
+        c = { x: k.W * 0.56, y: k.H - d * (0.5 - k.pick(0, 0, 0.32, 0.28)) };
         const top = c.y - d / 2;
         col = { x: side, y: k.m.top, w: k.W - side * 2, h: top - k.m.top - k.H * 0.035 };
       }
@@ -367,7 +365,7 @@ export const TEMPLATES_B: Template[] = [
       const dot = k.U * 0.09;
       const ang = k.wide ? Math.PI * 0.78 : Math.PI * 1.22;
       k.ellipse({ x: c.x + Math.cos(ang) * (d / 2 + ring) - dot / 2, y: c.y + Math.sin(ang) * (d / 2 + ring) - dot / 2, w: dot, h: dot }, k.c.accent, { name: "Pastille" });
-      k.stack(col, { valign: k.wide ? "middle" : "top", title: k.U * k.pick(0.1, 0.085, 0.09, 0.1), display: true });
+      k.stack(col, { valign: "middle", title: k.U * k.pick(0.1, 0.085, 0.1, 0.11), display: true });
     },
   },
   {
@@ -386,7 +384,7 @@ export const TEMPLATES_B: Template[] = [
       const land = k.cls === "land";
       // Photo dans un cadre épais (le fond) ; plus épais côté texte.
       const pic: Box = land ? { x: k.W * 0.46, y: t, w: k.W * 0.54 - t, h: k.H - t * 2 } : { x: t, y: k.cls === "story" ? k.m.top - tabPad : t, w: k.W - t * 2, h: 0 };
-      if (!land) pic.h = k.H * k.pick(0, 0.58, 0.6, 0.5) - pic.y + t;
+      if (!land) pic.h = k.H * k.pick(0, 0.5, 0.56, 0.48) - pic.y + t;
       k.photo(pic, { focus: k.point(0) });
       k.rect({ x: pic.x + t * 0.35, y: pic.y + t * 0.35, w: pic.w - t * 0.7, h: pic.h - t * 0.7 }, null, { stroke: { color: "rgba(255,255,255,0.7)", width: Math.max(2, Math.round(k.U * 0.0025)) }, name: "Filet" });
       // Onglet : étiquette de couleur qui pend du haut du cadre, avec le surtitre (ou la marque).
@@ -405,7 +403,7 @@ export const TEMPLATES_B: Template[] = [
       const side = k.m.side;
       const col = land ? { x: side, y: k.m.top, w: pic.x - side - k.W * 0.05, h: k.H - k.m.top - k.m.bottom } : { x: side, y: pic.y + pic.h + k.H * 0.035, w: k.W - side * 2, h: 0 };
       if (!land) col.h = k.H - k.m.bottom - col.y;
-      k.stack(col, { mark: !eb ? false : true, valign: "middle", title: k.U * k.pick(0.095, 0.075, 0.08, 0.095), align: land ? "left" : "center" });
+      k.stack(col, { mark: !eb ? false : true, valign: "middle", title: k.U * k.pick(0.1, 0.085, 0.095, 0.11), align: land ? "left" : "center" });
     },
   },
 ];
