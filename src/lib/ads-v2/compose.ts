@@ -25,7 +25,7 @@ import type { Palette, Typo } from "../media/compose";
 import { layoutText, renderDoc, type RenderEnv } from "../ad-doc/render";
 import { docMetrics, renderDocToBuffer, serverFont } from "../ad-doc/server";
 import { DOC_VERSION, type AdDocument, type ButtonLayer, type ImageLayer, type Layer, type ShapeLayer, type TextLayer } from "../ad-doc/types";
-import { nearestWeight, toAdLayout, type AdArt, type AdLayout } from "./art";
+import { nearestWeight, toAdLayout, TREATMENT_FILTER, treatmentsFor, type AdArt, type AdLayout, type AdVariant, type LogoPlacement, type Treatment } from "./art";
 import type { FormatSpec, VisualConcept } from "./types";
 
 export type ComposeInput = {
@@ -49,6 +49,8 @@ export type ComposeInput = {
   /** Assets de la bibliothèque correspondant aux images (le document y fait référence). */
   ids?: { background?: string | null; product?: string | null; logo?: string | null; logoLight?: string | null };
   conceptId?: string | null;
+  /** Variante (traitement de la photo, place du logo) : deux créations d'un projet ne se ressemblent pas. */
+  variant?: AdVariant | null;
 };
 
 export type ComposeMetrics = { minFontPx: number; textContrast: number; textShare: number; safeOverflow: boolean; productOverlap: boolean; textOverlap?: boolean; headlineLines: number };
@@ -107,6 +109,31 @@ export async function photoZones(buf: Buffer, W: number, H: number): Promise<Pho
   return { left: zone(0, hw, 0, gh), right: zone(gw - hw, gw, 0, gh), top: zone(0, gw, 0, hh), bottom: zone(0, gw, gh - hh, gh) };
 }
 
+/**
+ * Point d'intérêt de la photo cadrée (zone la plus détaillée hors de la zone du texte) : la loupe de la composition
+ * « détail » en montre un agrandissement. Coordonnées 0-1 dans le cadre.
+ */
+export async function subjectPoint(buf: Buffer, W: number, H: number, avoid: "left" | "right" | "top"): Promise<{ u: number; v: number }> {
+  const gh = 40;
+  const gw = Math.max(8, Math.round((gh * W) / H));
+  const { data } = await sharp(buf).rotate().resize(gw, gh, { fit: "cover" }).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const at = (x: number, y: number) => data[Math.min(gh - 1, y) * gw + Math.min(gw - 1, x)] / 255;
+  const n = 6;
+  let best = { u: avoid === "left" ? 0.72 : avoid === "right" ? 0.28 : 0.5, v: avoid === "top" ? 0.72 : 0.5, e: -1 };
+  for (let cy = 0; cy < n; cy++)
+    for (let cx = 0; cx < n; cx++) {
+      const u = (cx + 0.5) / n;
+      const v = (cy + 0.5) / n;
+      if ((avoid === "left" && u < 0.5) || (avoid === "right" && u > 0.5) || (avoid === "top" && v < 0.5) || u < 0.12 || u > 0.88 || v < 0.12 || v > 0.88) continue;
+      let e = 0;
+      const x0 = Math.floor((cx * gw) / n);
+      const y0 = Math.floor((cy * gh) / n);
+      for (let y = y0; y < Math.floor(((cy + 1) * gh) / n); y++) for (let x = x0; x < Math.floor(((cx + 1) * gw) / n); x++) e += Math.abs(at(x, y) - at(x + 1, y)) + Math.abs(at(x, y) - at(x, y + 1));
+      if (e > best.e) best = { u, v, e };
+    }
+  return { u: best.u, v: best.v };
+}
+
 /** Construit le document en calques d'une création (géométrie, polices, couleurs garanties lisibles). */
 export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocument; images: RenderEnv["images"] }> {
   ensureFonts();
@@ -133,6 +160,21 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   const zones = bgId && i.background ? await photoZones(i.background, W, H).catch(() => null) : null;
   const layers: Layer[] = [];
   const U = cls === "land" ? H : W;
+  // Traitement de la photo (étalonnage d'affiche, bichromie de la marque) : la photo est travaillée, pas seulement posée.
+  const treatment: Treatment = i.variant?.treatment ?? treatmentsFor(layout, art.style)[0];
+  const fx: Partial<ImageLayer> = treatment === "duotone" ? { filter: TREATMENT_FILTER.duotone, duotone: { dark: mix(mix(isDark(pal.dark) ? pal.dark : "#1A1A1A", pal.primary, 0.35), "#000000", 0.2), light: mix(isDark(pal.light) ? "#F6F3EE" : pal.light, pal.accent, 0.45) } } : TREATMENT_FILTER[treatment] ? { filter: TREATMENT_FILTER[treatment] } : {};
+  const bgImg = bgId ? images.get(bgId)! : null;
+  /** Recadrage qui aligne un calque posé en `b` sur la photo plein cadre (verre dépoli : le flou prolonge la photo). */
+  const aligned = (b: Box): ImageLayer["crop"] => {
+    if (!bgImg) return null;
+    const s = Math.max(W / bgImg.width, H / bgImg.height);
+    const ox = (W - bgImg.width * s) / 2;
+    const oy = (H - bgImg.height * s) / 2;
+    return { x: (b.x - ox) / (bgImg.width * s), y: (b.y - oy) / (bgImg.height * s), w: b.w / (bgImg.width * s), h: b.h / (bgImg.height * s) };
+  };
+  let textRight = false;
+  let glass: { img: ImageLayer; tint: ShapeLayer; pad: number } | null = null;
+  let card: Box | null = null;
 
   // ------------------------------------------------------------------ 1. fond, photo, voile, colonne de texte
   let col: Box;
@@ -141,12 +183,17 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   let productZone: Box;
   let ctaAtBottom = false;
   let titleK: number; // taille du titre en fraction de U
-  const photo = (b: Box, anchor: Layer["anchor"]) => layers.push(img("bg-photo", "Photo", "background", b, bgId!, "cover", anchor));
-  if (layout === "editorial") {
+  const photo = (b: Box, anchor: Layer["anchor"]) => {
+    layers.push(img("bg-photo", "Photo", "background", b, bgId!, "cover", anchor, fx));
+    // Ambiance sombre : vignette (les bords s'assombrissent, le regard va au centre).
+    if (treatment === "moody") layers.push(shape("vignette", "Vignette", "decor", b, { type: "radial", angle: 0, stops: [{ offset: 0.45, color: "rgba(0,0,0,0)" }, { offset: 1, color: "rgba(0,0,0,0.55)" }] }, anchor));
+  };
+  if (layout === "editorial" || layout === "detail") {
     photo({ x: 0, y: 0, w: W, h: H }, STRETCH);
     if (cls === "land" || cls === "square") {
       // Texte du côté le plus calme de la photo (le sujet reste visible de l'autre côté).
       const right = !prodId && !!zones && zones.right.busy < zones.left.busy * 0.8;
+      textRight = right;
       const z = zones ? (right ? zones.right : zones.left) : null;
       // Zone claire et calme (intérieur lumineux, ciel, mur) : on garde sa lumière, texte foncé sous un voile léger.
       const airy = !!z && z.lum > 0.62 && z.busy < 0.09;
@@ -163,6 +210,58 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
       productZone = { x: W * 0.12, y: H * 0.5, w: W * 0.76, h: H * 0.44 - m.bottom * 0.4 };
     }
     titleK = cls === "land" ? 0.125 : cls === "square" ? 0.105 : cls === "portrait" ? 0.11 : 0.118;
+  } else if (layout === "glass") {
+    // Verre dépoli : le texte dans une carte qui floute la photo (la photo continue dessous, adoucie).
+    photo({ x: 0, y: 0, w: W, h: H }, STRETCH);
+    const wide = cls === "land";
+    const right = wide && !!zones && zones.right.busy < zones.left.busy * 0.8;
+    const z = zones ? (wide ? (right ? zones.right : zones.left) : zones.bottom) : null;
+    const darkGlass = !z || z.lum < 0.58;
+    const cb: Box = wide ? { x: right ? W - m.side - W * 0.44 : m.side, y: m.top, w: W * 0.44, h: H - m.top - m.bottom } : { x: m.side, y: H * (cls === "square" ? 0.36 : 0.44), w: W - m.side * 2, h: H * (cls === "square" ? 0.64 : 0.56) - m.bottom };
+    const R = Math.round(U * 0.035);
+    const gi = img("glass", "Verre", "decor", cb, bgId!, "cover", wide ? { h: right ? "right" : "left", v: "stretch" } : { h: "stretch", v: "bottom" }, { crop: aligned(cb), radius: R, filter: `blur(${Math.round(U * 0.028)}px) saturate(1.15)` });
+    const gt = shape("glass-tint", "Teinte du verre", "decor", cb, darkGlass ? rgba(isDark(pal.dark) ? pal.dark : "#141414", 0.42) : "rgba(255,255,255,0.52)", gi.anchor, { radius: R, stroke: { color: darkGlass ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.7)", width: Math.max(2, Math.round(U * 0.002)) }, shadow: { color: "rgba(0,0,0,0.22)", blur: Math.round(U * 0.04), x: 0, y: Math.round(U * 0.012) } });
+    layers.push(gi, gt);
+    const pad = Math.round(U * (wide ? 0.06 : 0.055));
+    glass = { img: gi, tint: gt, pad };
+    col = { x: cb.x + pad, y: cb.y + pad, w: cb.w - pad * 2, h: cb.h - pad * 2 };
+    productZone = wide ? (right ? { x: W * 0.06, y: H * 0.14, w: W * 0.4, h: H * 0.8 } : { x: W * 0.54, y: H * 0.14, w: W * 0.4, h: H * 0.8 }) : { x: W * 0.18, y: m.top, w: W * 0.64, h: cb.y - m.top - H * 0.02 };
+    titleK = cls === "land" ? 0.1 : cls === "square" ? 0.08 : cls === "portrait" ? 0.088 : 0.098;
+  } else if (layout === "bigtype") {
+    // Titre géant en capitales sur la photo traitée (bichromie de la marque, noir et blanc) : l'affiche qui arrête le pouce.
+    photo({ x: 0, y: 0, w: W, h: H }, STRETCH);
+    layers.push(shape("scrim", "Voile", "scrim", { x: 0, y: H * (cls === "land" ? 0.1 : 0.3), w: W, h: H * (cls === "land" ? 0.9 : 0.7) }, veil(270, isDark(pal.dark) ? pal.dark : "#111111", 0.84), { h: "stretch", v: "bottom" }));
+    col = { x: m.side, y: m.top, w: cls === "land" ? W * 0.74 : W - m.side * 2, h: H - m.top - m.bottom };
+    productZone = cls === "land" ? { x: W * 0.62, y: H * 0.1, w: W * 0.34, h: H * 0.6 } : { x: W * 0.2, y: H * 0.12, w: W * 0.6, h: H * 0.36 };
+    titleK = cls === "land" ? 0.17 : cls === "square" ? 0.15 : cls === "portrait" ? 0.155 : 0.165;
+  } else if (layout === "capsule" || layout === "tilt") {
+    // Photo dans une forme (capsule cerclée ; carte inclinée sur un aplat en diagonale et sa pastille), sur la couleur de la marque.
+    const wide = cls === "land" || cls === "square";
+    const bgc = layout === "capsule" ? (isDark(pal.primary) || satOf(pal.primary) > 0.35 ? pal.primary : isDark(pal.dark) ? pal.dark : "#1A1A1A") : isDark(pal.light) ? "#F6F3EE" : pal.light;
+    panelColor = bgc;
+    layers.push(shape("bg-fill", "Fond", "background", { x: 0, y: 0, w: W, h: H }, { type: "radial", angle: 0, stops: [{ offset: 0, color: mix(bgc, "#FFFFFF", 0.08) }, { offset: 1, color: mix(bgc, "#000000", 0.1) }] }, STRETCH));
+    const anc: Layer["anchor"] = wide ? { h: "right", v: "middle" } : { h: "center", v: "top" };
+    let pic: Box;
+    if (layout === "capsule") {
+      pic = cls === "land" ? { x: W * 0.6, y: H * 0.08, w: W * 0.31, h: H * 0.84 } : cls === "square" ? { x: W * 0.56, y: H * 0.08, w: W * 0.37, h: H * 0.84 } : { x: W * 0.2, y: m.top, w: W * 0.6, h: H * (cls === "story" ? 0.32 : 0.4) };
+      const R = Math.min(pic.w, pic.h) / 2;
+      layers.push(shape("ring", "Contour", "decor", { x: pic.x + U * 0.035, y: pic.y + U * (wide ? -0.02 : 0.03), w: pic.w, h: pic.h }, null, anc, { radius: R, stroke: { color: ensureContrast(pal.accent, bgc, 2.2), width: Math.max(3, Math.round(U * 0.005)) } }));
+      layers.push(img("bg-photo", "Photo", "image", pic, bgId!, "cover", anc, { radius: R, ...fx }));
+      col = wide ? { x: m.side, y: m.top, w: pic.x - m.side - U * 0.08, h: H - m.top - m.bottom } : { x: m.side, y: pic.y + pic.h + H * 0.05, w: W - m.side * 2, h: H - m.bottom - (pic.y + pic.h + H * 0.05) };
+      if (!wide) align = "center";
+    } else {
+      pic = cls === "land" ? { x: W * 0.55, y: H * 0.13, w: W * 0.37, h: H * 0.74 } : cls === "square" ? { x: W * 0.5, y: H * 0.14, w: W * 0.42, h: H * 0.62 } : { x: W * 0.14, y: m.top + H * 0.015, w: W * 0.72, h: H * (cls === "story" ? 0.3 : 0.37) };
+      const vivid = [pal.primary, pal.accent, pal.secondary].sort((a, b) => satOf(b) - satOf(a))[0];
+      const blockC = contrast(vivid, bgc) >= 1.6 ? vivid : pal.primary;
+      layers.push(shape("block", "Aplat", "decor", { x: pic.x + pic.w * 0.22, y: pic.y + pic.h * 0.34, w: pic.w * 0.98, h: pic.h * 0.78 }, blockC, anc, { rotation: 7 }));
+      const bd = Math.round(U * 0.016);
+      layers.push(shape("card", "Cadre", "decor", { x: pic.x - bd, y: pic.y - bd, w: pic.w + bd * 2, h: pic.h + bd * 2 }, "#FFFFFF", anc, { rotation: -3, radius: Math.round(U * 0.008), shadow: { color: "rgba(0,0,0,0.26)", blur: Math.round(U * 0.04), x: 0, y: Math.round(U * 0.016) } }));
+      layers.push(img("bg-photo", "Photo", "image", pic, bgId!, "cover", anc, { rotation: -3, ...fx }));
+      card = pic;
+      col = wide ? { x: m.side, y: m.top, w: pic.x - m.side - U * 0.09, h: H - m.top - m.bottom } : { x: m.side, y: pic.y + pic.h + H * 0.065, w: W - m.side * 2, h: H - m.bottom - (pic.y + pic.h + H * 0.065) };
+    }
+    productZone = { x: pic.x + pic.w * 0.1, y: pic.y + pic.h * 0.1, w: pic.w * 0.8, h: pic.h * 0.86 };
+    titleK = cls === "land" ? 0.105 : cls === "square" ? 0.078 : cls === "portrait" ? 0.088 : 0.098;
   } else if (layout === "poster" || layout === "frame") {
     photo({ x: 0, y: 0, w: W, h: H }, STRETCH);
     const strong = layout === "frame" ? 0.86 : 0.68;
@@ -209,7 +308,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
     else if (cls === "square") ((panel = { x: 0, y: 0, w: W * 0.47, h: H }), (pic = { x: W * 0.47, y: 0, w: W * 0.53, h: H }));
     else ((panel = { x: 0, y: 0, w: W, h: H * (cls === "story" ? 0.52 : 0.48) }), (pic = { x: 0, y: H * (cls === "story" ? 0.52 : 0.48), w: W, h: H * (cls === "story" ? 0.48 : 0.52) }));
     layers.push(shape("panel", "Panneau", "shape", panel, panelColor, cls === "land" || cls === "square" ? { h: "left", v: "stretch" } : { h: "stretch", v: "top" }));
-    layers.push(img("bg-photo", "Photo", "image", pic, bgId!, "cover", cls === "land" || cls === "square" ? { h: "right", v: "stretch" } : { h: "stretch", v: "bottom" }));
+    layers.push(img("bg-photo", "Photo", "image", pic, bgId!, "cover", cls === "land" || cls === "square" ? { h: "right", v: "stretch" } : { h: "stretch", v: "bottom" }, fx));
     const pad = Math.max(m.side, panel.w * 0.1);
     col = cls === "land" || cls === "square" ? { x: panel.x + pad, y: m.top, w: panel.w - pad * 2, h: H - m.top - m.bottom } : { x: m.side, y: m.top, w: W - m.side * 2, h: panel.h - m.top - H * 0.03 };
     align = "center";
@@ -248,6 +347,25 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
     titleK = cls === "land" ? 0.12 : cls === "square" ? 0.1 : 0.11;
   }
 
+  // Loupe (« détail ») : un agrandissement cerclé de la zone la plus détaillée de la photo, posé à l'opposé du sujet.
+  if (layout === "detail" && bgImg && !prodId) {
+    const wide = cls === "land" || cls === "square";
+    const pt = await subjectPoint(i.background!, W, H, wide ? (textRight ? "right" : "left") : "top").catch(() => ({ u: 0.7, v: 0.7 }));
+    const d = Math.round(cls === "land" ? H * 0.5 : cls === "square" ? W * 0.36 : W * 0.42);
+    const lx = wide ? (textRight ? m.side + W * 0.02 : W - m.side - d - W * 0.02) : pt.u > 0.5 ? m.side : W - m.side - d;
+    const box: Box = { x: lx, y: H - m.bottom - d - (wide ? H * 0.02 : 0), w: d, h: d };
+    const s = Math.max(W / bgImg.width, H / bgImg.height);
+    const vw = W / s;
+    const vh = H / s;
+    const cs = Math.min(vw, vh) / 2.4;
+    const sx = Math.max(0, Math.min(bgImg.width - cs, (bgImg.width - vw) / 2 + pt.u * vw - cs / 2));
+    const sy = Math.max(0, Math.min(bgImg.height - cs, (bgImg.height - vh) / 2 + pt.v * vh - cs / 2));
+    const ring = Math.max(6, Math.round(U * 0.01));
+    const anc: Layer["anchor"] = { h: lx > W / 2 ? "right" : "left", v: "bottom" };
+    layers.push(shape("detail-ring", "Contour de la loupe", "decor", { x: box.x - ring, y: box.y - ring, w: d + ring * 2, h: d + ring * 2 }, isDark(pal.light) ? "#FFFFFF" : pal.light, anc, { shape: "ellipse", shadow: { color: "rgba(0,0,0,0.3)", blur: Math.round(U * 0.03), x: 0, y: Math.round(U * 0.01) } }));
+    layers.push(img("detail", "Détail", "image", box, bgId!, "cover", anc, { radius: d / 2, crop: { x: sx / bgImg.width, y: sy / bgImg.height, w: cs / bgImg.width, h: cs / bgImg.height }, ...fx }));
+  }
+
   // ------------------------------------------------------------------ 2. produit réel (pixels d'origine), hors texte
   if (prodId) {
     const p = images.get(prodId)!;
@@ -284,7 +402,12 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   const logoH = Math.round(cls === "land" ? H * 0.075 : cls === "story" ? W * 0.07 : W * 0.06);
   const useLight = darkUnder && logoLightId && layout !== "panel" && layout !== "band";
   const lid = useLight ? logoLightId : logoId;
-  if (layout === "frame") {
+  // Place du logo : colonne (par défaut), coin opposé au texte, ou signature au pied (titres posés en bas).
+  const logoMode: LogoPlacement = logoId && i.variant?.logo && i.variant.logo !== "column" && ["editorial", "detail", "lower", "bigtype", "corner"].includes(layout) && !(i.variant.logo === "foot" && !["lower", "bigtype"].includes(layout)) ? i.variant.logo : "column";
+  if (logoMode !== "column") {
+    // Posé plus bas, une fois le bouton placé (le logo ne doit jamais le toucher).
+    if (logoMode === "corner" && !["lower", "bigtype"].includes(layout) && cls !== "land" && cls !== "square") y += logoH + U * 0.05;
+  } else if (layout === "frame") {
     // Cadre : le surtitre porte le nom ; le logo, s'il existe, signe la création en bas à droite.
     if (lid) {
       const lg = images.get(lid)!;
@@ -336,14 +459,14 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
 
   // Titre (accroche) : grand, graisse franche, interlignage serré, lignes équilibrées.
   // Affiche franche (style « bold ») : titre en capitales condensées de la police d'affiche (« Réveillez le goût. »).
-  const heavyTitle = layout === "band" || (layout === "poster" && art.style === "bold");
+  const heavyTitle = layout === "band" || layout === "bigtype" || (layout === "poster" && art.style === "bold");
   const tFamily = heavyTitle ? art.display : art.heading;
   const tWeight = heavyTitle ? art.displayWeight : art.headingWeight;
   const tSize = Math.round(U * titleK);
   const subSize = Math.round(Math.max(U * (cls === "land" ? 0.042 : 0.034), 24));
   const subRoom = i.subline ? subSize * 2.6 + U * 0.025 : 0;
   const roomBottom = ctaAtBottom ? ctaBottomY - U * 0.06 : Math.min(col.y + col.h - bh, ctaBottomY) - U * 0.045 - subRoom;
-  const title: TextLayer = { ...base("title", "Titre", "title", { x: col.x, y, w: col.w, h: Math.max(tSize * 1.2, roomBottom - y - (ctaAtBottom ? subRoom : 0)) }, anchorText), kind: "text", text: i.headline, font: { family: tFamily, weight: tWeight, size: tSize, italic: false }, color: ink, align, lineHeight: heavyTitle ? 0.98 : 1.02, letterSpacing: heavyTitle ? -Math.round(tSize * 0.02) : -Math.round(tSize * 0.01), uppercase: art.uppercase && layout !== "editorial", autoFit: { minSize: Math.round(tSize * 0.55) }, shadow: null, balance: true };
+  const title: TextLayer = { ...base("title", "Titre", "title", { x: col.x, y, w: col.w, h: Math.max(tSize * 1.2, roomBottom - y - (ctaAtBottom ? subRoom : 0)) }, anchorText), kind: "text", text: i.headline, font: { family: tFamily, weight: tWeight, size: tSize, italic: false }, color: ink, align, lineHeight: layout === "bigtype" ? 0.92 : heavyTitle ? 0.98 : 1.02, letterSpacing: heavyTitle ? -Math.round(tSize * 0.02) : -Math.round(tSize * 0.01), uppercase: layout === "bigtype" || (art.uppercase && layout !== "editorial"), autoFit: { minSize: Math.round(tSize * 0.55) }, shadow: null, balance: true };
   // Trois lignes au plus (quatre en story) : au-delà, le titre se lit comme un paragraphe ; la taille baisse d'abord.
   const maxLines = cls === "story" ? 4 : 3;
   while (title.font.size > tSize * 0.7 && layoutText(ctx, title, { font: serverFont }).lines.length > maxLines) title.font.size = Math.round(title.font.size * 0.94);
@@ -377,7 +500,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   const btnText = contrast(btnText0, fill) >= 4.6 ? btnText0 : isDark(fill) ? "#FFFFFF" : "#111111";
   const fillOk = contrast(btnText, fill) >= 4.6 ? fill : ensureContrast(fill, btnText, 4.6);
   const by = ctaAtBottom ? ctaBottomY : Math.min(y + U * (cls === "land" ? 0.06 : 0.045), ctaBottomY);
-  const btn: ButtonLayer = { ...base("cta", "Bouton", "cta", { x: xFor(bw), y: by, w: bw, h: bh }, { h: align === "center" ? "center" : "left", v: ctaAtBottom ? "bottom" : "top" }), kind: "button", text: label, font: { family: art.body, weight: 600, size: ctaSize, italic: false }, fill: fillOk, color: btnText, radius: art.cta === "pill" || layout === "poster" || layout === "editorial" || layout === "band" ? bh / 2 : Math.round(bh * 0.16), stroke: null, shadow: layout === "poster" || layout === "frame" ? { color: "rgba(0,0,0,0.28)", blur: Math.round(bh * 0.4), x: 0, y: Math.round(bh * 0.12) } : null };
+  const btn: ButtonLayer = { ...base("cta", "Bouton", "cta", { x: xFor(bw), y: by, w: bw, h: bh }, { h: align === "center" ? "center" : "left", v: ctaAtBottom ? "bottom" : "top" }), kind: "button", text: label, font: { family: art.body, weight: 600, size: ctaSize, italic: false }, fill: fillOk, color: btnText, radius: layout === "bigtype" ? 0 : layout === "tilt" ? Math.round(bh * 0.12) : art.cta === "pill" || ["poster", "editorial", "band", "capsule", "glass"].includes(layout) ? bh / 2 : Math.round(bh * 0.16), stroke: null, shadow: ["poster", "frame", "tilt", "bigtype"].includes(layout) ? { color: "rgba(0,0,0,0.28)", blur: Math.round(bh * 0.4), x: 0, y: Math.round(bh * 0.12) } : null };
   layers.push(btn);
   // Bas de page : le bloc de texte est posé au bas de l'image (au-dessus de la marge), pas en haut du dégradé.
   if (layout === "lower") {
@@ -385,6 +508,84 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
     const bottom = Math.max(...moving.map((l) => l.y + l.h));
     const dy = Math.max(0, H - m.bottom - bottom);
     for (const l of moving) l.y += dy;
+  }
+  // Loupe : jamais sur le texte ni le bouton (formats hauts) ; elle descend sous eux, réduite au besoin.
+  {
+    const lp = layers.find((l): l is ImageLayer => l.id === "detail" && l.kind === "image");
+    const rg = layers.find((l) => l.id === "detail-ring");
+    if (lp && rg && (cls === "portrait" || cls === "story")) {
+      const texts = layers.filter((l) => ["title", "subline", "cta"].includes(l.id));
+      const minY = Math.max(...texts.map((l) => l.y + l.h)) + U * 0.05;
+      if (lp.y < minY) {
+        const ring = lp.x - rg.x;
+        const d = Math.max(U * 0.24, Math.min(lp.w, H - m.top * 0.4 - minY));
+        lp.x = lp.x > W / 2 ? W - m.side - d : m.side;
+        Object.assign(lp, { y: minY, w: d, h: d, radius: d / 2 });
+        Object.assign(rg, { x: lp.x - ring, y: minY - ring, w: d + ring * 2, h: d + ring * 2 });
+      }
+    }
+  }
+  // Titre géant : le titre, la ligne et le bouton descendent en bas ; le logo reste en haut.
+  if (layout === "bigtype") {
+    const moving = layers.filter((l) => ["title", "subline", "cta"].includes(l.id));
+    const dy = Math.max(0, H - m.bottom - Math.max(...moving.map((l) => l.y + l.h)));
+    for (const l of moving) l.y += dy;
+  }
+  // Verre dépoli : la carte épouse son contenu (posée en bas, ou centrée sur un format paysage).
+  if (glass) {
+    const content = layers.filter((l) => ["brand", "logo", "title", "subline", "cta"].includes(l.id));
+    const top = Math.min(...content.map((l) => l.y));
+    const bottom = Math.max(...content.map((l) => l.y + l.h));
+    const ch = bottom - top + glass.pad * 2;
+    const cy = cls === "land" ? (H - ch) / 2 : H - m.bottom - ch;
+    for (const l of content) l.y += cy + glass.pad - top;
+    for (const l of [glass.img, glass.tint]) ((l.y = cy), (l.h = ch));
+    glass.img.crop = aligned(glass.img);
+  }
+  // Pastille (carte inclinée) : un mot court du métier ou de la ligne, en cercle tourné, au coin de la photo.
+  if (layout === "tilt" && card) {
+    const segs = (i.subline ?? "").split(/\s+[•·|]\s+/).map((x) => x.trim()).filter(Boolean);
+    const word = [i.eyebrow?.trim() ?? "", segs[0] ?? ""].find((x) => x && x.length <= 20) ?? "";
+    if (word) {
+      const d = Math.round(U * (cls === "land" ? 0.26 : 0.2));
+      const wide = cls === "land" || cls === "square";
+      const cx = Math.min(W - m.side - d / 2, card.x + card.w - d * (wide ? 0.2 : 0.35));
+      const cy = wide ? Math.max(m.top + d / 2, card.y + d * 0.1) : card.y + card.h - d * 0.15;
+      const vivid = [pal.accent, pal.secondary, pal.primary].sort((a, b) => satOf(b) - satOf(a))[0];
+      const sf = contrast(vivid, "#FFFFFF") >= 1.4 ? vivid : pal.dark;
+      layers.push(shape("sticker", "Pastille", "decor", { x: cx - d / 2, y: cy - d / 2, w: d, h: d }, sf, { h: "right", v: "top" }, { shape: "ellipse", rotation: 10, shadow: { color: "rgba(0,0,0,0.22)", blur: Math.round(d * 0.12), x: 0, y: Math.round(d * 0.04) } }));
+      const ss = Math.max(22, Math.round(d * 0.12));
+      const st: TextLayer = { ...base("sticker-text", "Texte de la pastille", "body", { x: cx - d * 0.36, y: cy - ss * 1.2, w: d * 0.72, h: ss * 2.4 }, { h: "right", v: "top" }), kind: "text", text: word, font: { family: art.body, weight: 700, size: ss, italic: false }, color: bestInk(sf), align: "center", lineHeight: 1.1, letterSpacing: Math.round(ss * 0.06), uppercase: true, autoFit: { minSize: 22 }, shadow: null, rotation: 10, balance: true };
+      const lt = layoutText(ctx, st, { font: serverFont });
+      st.h = Math.ceil(lt.lines.length * lt.size * st.lineHeight);
+      st.y = cy - st.h / 2;
+      layers.push(st);
+    }
+  }
+  // Logo hors colonne : coin opposé au texte, ou signature au pied à droite (jamais sur le bouton).
+  if (logoMode !== "column" && logoId) {
+    const lg0 = images.get(logoId)!;
+    const lw = Math.min((lg0.width / lg0.height) * logoH * 0.9, W * 0.26);
+    const lh = (lg0.height / lg0.width) * lw;
+    const wide = cls === "land" || cls === "square";
+    // Formats larges : le coin opposé tomberait sur le sujet de la photo ; le logo signe le pied du côté du texte.
+    const right = wide && !["lower", "bigtype"].includes(layout) ? textRight : true;
+    let at: Box = { x: right ? W - m.side - lw : m.side, y: m.top, w: lw, h: lh };
+    if (wide && logoMode === "corner" && !["lower", "bigtype"].includes(layout)) {
+      at = { x: textRight ? W - m.side - lw : m.side, y: H - m.bottom - lh, w: lw, h: lh };
+      const hit = layers.some((l) => ["cta", "subline", "title"].includes(l.id) && l.y + l.h > at.y - U * 0.03);
+      if (hit) at = { x: textRight ? m.side : W - m.side - lw, y: m.top, w: lw, h: lh };
+    }
+    if (logoMode === "foot") {
+      at = { x: W - m.side - lw, y: H - m.bottom - lh, w: lw, h: lh };
+      const hit = layers.some((l) => ["cta", "subline", "title"].includes(l.id) && l.x < at.x + at.w + U * 0.03 && l.x + l.w > at.x - U * 0.03 && l.y < at.y + at.h && l.y + l.h > at.y);
+      if (hit) at = { x: W - m.side - lw, y: m.top, w: lw, h: lh };
+    }
+    const spot = isDark(avgColor(ctx, at, W, H));
+    const id = spot && logoLightId ? logoLightId : logoId;
+    const lg = images.get(id)!;
+    const h2 = (lg.height / lg.width) * lw;
+    layers.push(img("logo", "Logo", "logo", { ...at, h: h2, y: at.y === m.top ? at.y : H - m.bottom - h2 }, id, "contain", { h: at.x > W / 2 ? "right" : "left", v: at.y === m.top ? "top" : "bottom" }));
   }
   // Lisibilité réelle : chaque texte posé sur la photo est mesuré sur ce qui est dessiné dessous ; si l'un d'eux
   // passe sous 4,6:1, le voile se renforce et s'étend (3 fois au plus) — jamais un texte illisible livré.
@@ -411,12 +612,12 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
       if (contrast(t.color, bg) < 4.6) t.color = bestInk(bg);
     }
   }
-  const recipe = { layout, art: art as unknown as Record<string, unknown>, palette: { ...pal }, typo: { heading: i.typo.heading, body: i.typo.body, ...(i.typo.headingWeight ? { headingWeight: i.typo.headingWeight } : {}), ...(i.typo.uppercase ? { uppercase: true } : {}) }, brand: i.brand, eyebrow: i.eyebrow ?? null, logo: logoId, logoLight: logoLightId };
+  const recipe = { layout, art: art as unknown as Record<string, unknown>, palette: { ...pal }, typo: { heading: i.typo.heading, body: i.typo.body, ...(i.typo.headingWeight ? { headingWeight: i.typo.headingWeight } : {}), ...(i.typo.uppercase ? { uppercase: true } : {}) }, brand: i.brand, eyebrow: i.eyebrow ?? null, logo: logoId, logoLight: logoLightId, variant: { treatment, logo: logoMode } };
   return { doc: { ...pre, layers, meta: { ...pre.meta, recipe } }, images };
 }
 
 /** Calques posés par le moteur : un document qui n'a que ceux-là peut être recomposé dans un autre format. */
-const ENGINE_LAYERS = new Set(["bg-photo", "bg-fill", "scrim", "panel", "band", "rule", "product", "logo", "brand", "eyebrow", "title", "subline", "cta", "cta-line"]);
+const ENGINE_LAYERS = new Set(["bg-photo", "bg-fill", "scrim", "panel", "band", "rule", "product", "logo", "brand", "eyebrow", "title", "subline", "cta", "cta-line", "vignette", "ring", "block", "card", "sticker", "sticker-text", "detail", "detail-ring", "glass", "glass-tint"]);
 
 /**
  * Autre format (1:1, 4:5, 9:16, 1,91:1, 16:9…) : la création est RECOMPOSÉE avec sa recette (même composition,
@@ -458,6 +659,7 @@ export async function relayoutDoc(src: AdDocument, format: FormatSpec, load: (as
     logoLight: buf(r.logoLight),
     ids: { background: bg, product: prod, logo: r.logo, logoLight: r.logoLight },
     conceptId: src.meta.conceptId,
+    variant: (r.variant as AdVariant | undefined) ?? null,
   });
   return doc;
 }

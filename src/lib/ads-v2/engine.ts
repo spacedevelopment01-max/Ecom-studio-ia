@@ -31,7 +31,7 @@ import { planAngles } from "./angles";
 import { copyPrompt, copySystem, localCopy } from "./copy";
 import { claimIssues, type ClaimIssue } from "./claims";
 import { composeAd } from "./compose";
-import { adArt, layoutForConcept, textZoneFor, toAdLayout, type AdArt } from "./art";
+import { adArt, layoutForConcept, textZoneFor, toAdLayout, treatmentsFor, type AdArt, type LogoPlacement } from "./art";
 import { gateAd, localAdChecks } from "./quality";
 import { peopleAllowedFor } from "../people-policy";
 import { CTAS, defaultPlatforms, formatsFor, strictestText } from "./platforms";
@@ -189,6 +189,14 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
  * Ligne secondaire de la création : celle du rédacteur (contrôlée), sinon des faits confirmés du projet
  * (prestations réelles, catégorie, titre court) — jamais une promesse.
  */
+/** Traitement de la photo et place du logo d'une création (stables pour un concept, différents d'un concept à l'autre). */
+function adVariant(art: AdArt, layout: ReturnType<typeof toAdLayout>, conceptId: string) {
+  const n = [...conceptId].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const ts = treatmentsFor(layout, art.style);
+  const logos: LogoPlacement[] = ["column", "corner", "foot"];
+  return { treatment: ts[n % ts.length], logo: logos[Math.floor(n / 7) % 3] };
+}
+
 export function sublineFor(i: AdInsight, copy: AdCopy): string | null {
   if (copy.sub?.trim() && !/\[(À|A) compléter/i.test(copy.sub)) return copy.sub.trim();
   if (i.business === "services" && i.services.length) {
@@ -279,7 +287,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
     tried.add(sig);
     // Le produit réel est posé par la composition seulement quand l'image ne le montre pas déjà.
     const pasteProduct = !!o.cut && p.business === "products" && !img?.withProduct && (concept.visual.productOnTop || !img);
-    const { jpg, metrics, doc } = await composeAd({ format: f, layout: img ? layout : "typographic", palette: o.pal, typo: o.typo, art: o.art, brand: o.insight.brand, headline: copy.hook, subline: sublineFor(o.insight, copy), eyebrow: o.insight.category.label || null, cta: copy.cta, background: img?.data ?? null, product: pasteProduct ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, logoLight: o.logoLight?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null, logoLight: o.logoLight?.id ?? null }, conceptId: concept.id });
+    const { jpg, metrics, doc } = await composeAd({ format: f, layout: img ? layout : "typographic", palette: o.pal, typo: o.typo, art: o.art, brand: o.insight.brand, headline: copy.hook, subline: sublineFor(o.insight, copy), eyebrow: o.insight.category.label || null, cta: copy.cta, background: img?.data ?? null, product: pasteProduct ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, logoLight: o.logoLight?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null, logoLight: o.logoLight?.id ?? null }, conceptId: concept.id, variant: adVariant(o.art, toAdLayout(layout), concept.id) });
     const local = localAdChecks(metrics, claims, f.platform);
     let review: AdReview | null = null;
     let reviewError: string | null = null;

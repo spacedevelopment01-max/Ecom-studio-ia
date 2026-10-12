@@ -12,7 +12,8 @@ export const DOC_VERSION = 1;
 export type LayerRole = "background" | "image" | "product" | "title" | "subtitle" | "body" | "cta" | "logo" | "shape" | "decor" | "scrim";
 
 /** Couleur pleine, ou dégradé linéaire (angle en degrés, arrêts avec transparence). */
-export type Fill = string | { type: "linear"; angle: number; stops: { offset: number; color: string }[] };
+/** Couleur unie, dégradé linéaire, ou dégradé radial (vignette, halo : du centre vers les bords ; angle ignoré). */
+export type Fill = string | { type: "linear" | "radial"; angle: number; stops: { offset: number; color: string }[] };
 
 export type Shadow = { color: string; blur: number; x: number; y: number };
 
@@ -46,7 +47,17 @@ export type ImageLayer = LayerBase & {
   shadow: Shadow | null;
   /** Ombre de contact au sol (produit posé). */
   contactShadow?: boolean;
+  /**
+   * Traitement de la photo (étalonnage d'affiche) : filtre limité à IMAGE_FILTERS (luminosité, contraste,
+   * saturation, noir et blanc, sépia, flou, teinte), identique dans l'éditeur et à l'export.
+   */
+  filter?: string | null;
+  /** Bichromie aux couleurs de la marque : ombres dans `dark`, lumières dans `light`. */
+  duotone?: { dark: string; light: string } | null;
 };
+
+/** Fonctions de filtre autorisées sur une photo (aucune adresse, aucun script). */
+export const IMAGE_FILTER_RE = /^(none|((brightness|contrast|saturate|grayscale|sepia)\(\d+(\.\d+)?\)|blur\(\d+(\.\d+)?px\)|hue-rotate\(-?\d+(\.\d+)?deg\))( (brightness|contrast|saturate|grayscale|sepia)\(\d+(\.\d+)?\)| blur\(\d+(\.\d+)?px\)| hue-rotate\(-?\d+(\.\d+)?deg\))*)$/;
 
 export type TextLayer = LayerBase & {
   kind: "text";
@@ -104,4 +115,4 @@ export type AdDocument = {
 };
 
 /** Recette de composition (moteur publicitaire) : permet de RECOMPOSER la création dans un autre format. */
-export type AdRecipe = { layout: string; art: Record<string, unknown>; palette: Record<string, string>; typo: { heading: string; body: string; headingWeight?: number; uppercase?: boolean }; brand: string; eyebrow: string | null; logo: string | null; logoLight: string | null };
+export type AdRecipe = { layout: string; art: Record<string, unknown>; palette: Record<string, string>; typo: { heading: string; body: string; headingWeight?: number; uppercase?: boolean }; brand: string; eyebrow: string | null; logo: string | null; logoLight: string | null; variant?: { treatment?: string; logo?: string } };
