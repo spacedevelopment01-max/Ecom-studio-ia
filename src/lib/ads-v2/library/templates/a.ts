@@ -110,11 +110,11 @@ export const TEMPLATES_A: Template[] = [
     treatments: ["natural", "warm", "cool"],
     build(k) {
       k.fill();
-      const pic = k.wide ? { x: k.W * 0.5, y: 0, w: k.W * 0.5, h: k.H } : { x: 0, y: 0, w: k.W, h: k.H * 0.5 };
+      const pic = k.wide ? { x: k.W * 0.5, y: 0, w: k.W * 0.5, h: k.H } : { x: 0, y: 0, w: k.W, h: k.H * (k.cls === "story" ? 0.4 : 0.5) };
       k.photo(pic, { focus: k.point(0), zoom: 1 });
       const seam = Math.max(6, Math.round(k.U * 0.01));
       k.rect(k.wide ? { x: pic.x - seam, y: 0, w: seam, h: k.H } : { x: 0, y: pic.h, w: k.W, h: seam }, k.c.accent, { name: "Liseré" });
-      const col = k.wide ? { x: k.m.side, y: k.m.top, w: k.W * 0.5 - k.m.side * 2, h: k.H - k.m.top - k.m.bottom } : { x: k.m.side, y: pic.h + k.H * 0.05, w: k.W - k.m.side * 2, h: k.H * 0.5 - k.H * 0.05 - k.m.bottom };
+      const col = k.wide ? { x: k.m.side, y: k.m.top, w: k.W * 0.5 - k.m.side * 2, h: k.H - k.m.top - k.m.bottom } : { x: k.m.side, y: pic.h + k.H * 0.05, w: k.W - k.m.side * 2, h: k.H - pic.h - k.H * 0.05 - k.m.bottom };
       k.stack(col, { valign: "middle", title: k.U * k.pick(0.1, 0.078, 0.085, 0.1), eyebrow: true });
     },
   },
