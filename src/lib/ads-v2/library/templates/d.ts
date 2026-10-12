@@ -135,9 +135,9 @@ export const TEMPLATES_D: Template[] = [
           { x: W * 0.08, y: k.m.top + H * 0.49, w: W * 0.84, h: H * 0.51 - k.m.top - k.m.bottom },
         ],
         [
-          { x: W * 0.07, y: k.m.top, w: W * 0.54, h: H * 0.37 },
-          { x: W * 0.66, y: k.m.top + H * 0.09, w: W * 0.27, h: H * 0.19 },
-          { x: W * 0.07, y: k.m.top + H * 0.41, w: W * 0.86, h: H - k.m.bottom - k.m.top - H * 0.41 },
+          { x: W * 0.07, y: k.m.top, w: W * 0.54, h: H * 0.33 },
+          { x: W * 0.66, y: k.m.top + H * 0.08, w: W * 0.27, h: H * 0.17 },
+          { x: W * 0.07, y: k.m.top + H * 0.365, w: W * 0.86, h: H - k.m.bottom - k.m.top - H * 0.365 },
         ],
       );
       const first = k.layers.length;
@@ -581,7 +581,7 @@ export const TEMPLATES_D: Template[] = [
       fit(k, (s) => {
         const tw = span(k.cls === "square" ? 3 : 5);
         const bh = ctaH(k);
-        const t = k.title({ x: X, y: 0, w: tw }, { size: k.U * k.pick(0, 0.062, 0.072, 0.08) * s, maxLines: 4 });
+        const t = k.title({ x: X, y: 0, w: tw }, { size: k.U * k.pick(0, 0.062, 0.076, 0.09) * s, maxLines: 4 });
         const sub = k.subline({ x: X, y: 0, w: tw }, { size: k.U * 0.03 });
         const g = k.U * 0.035;
         const total = k.U * 0.006 + g + t.h + g * 0.6 + (sub ? sub.h + g : g * 0.4) + bh;

@@ -248,7 +248,8 @@ export class Kit {
     const t = this.i.subline?.trim();
     if (!t) return null;
     const size = o.size ?? this.U * (this.cls === "land" ? 0.04 : 0.032);
-    const text = / [•·|] /.test(t) ? t.split(/ ([•·|]) /).map((x, k) => (k % 2 ? ` ${x} ` : x.replace(/ /g, " "))).join("") : t;
+    // Segments insécables, et le séparateur collé au segment qui le précède (jamais « · Finitions » seul en début de ligne).
+    const text = / [•·|] /.test(t) ? t.split(/ ([•·|]) /).map((x, k) => (k % 2 ? `\u00A0${x} ` : x.replace(/ /g, " "))).join("") : t;
     return this.text("subtitle", text, b, { size, align: o.align, color: o.color, upper: o.upper, spacing: o.spacing ?? (o.upper ? Math.round(size * 0.14) : 0), weight: o.upper ? 500 : 400, maxLines: 2, minSize: 22 }, "subline", "Ligne");
   }
   /** Marque en capitales espacées (quand il n'y a pas de logo) ou surtitre. */
