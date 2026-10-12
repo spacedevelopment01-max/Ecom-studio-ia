@@ -39,8 +39,11 @@ function libraryPool(projectId: string, kind: "image" | "video"): Asset[] {
 
 function pick(r: Row, opts: { allowPaid: boolean }, pools: { image: Asset[]; video: Asset[] }): { method: ProduceMethod; paid: boolean } {
   if (needsVideo(r)) return pools.video.length ? { method: "library", paid: false } : { method: "video_v2", paid: opts.allowPaid };
-  if (r.objective === "convert" || r.objective === "sell") return { method: opts.allowPaid ? "ads_v2" : pools.image.length ? "library" : "local", paid: opts.allowPaid };
-  if (pools.image.length) return { method: "library", paid: false };
+  if (r.objective === "convert" || r.objective === "sell") return { method: opts.allowPaid && !pools.image.length ? "ads_v2" : "local", paid: opts.allowPaid && !pools.image.length };
+  // Image : une affiche par publication, sur LA photo cherchée pour elle (Pixabay d'abord, gratuite ; « local »),
+  // sinon une photo validée de la bibliothèque. L'IA d'images n'est utilisée que si elle est permise et acceptée.
+  // Bibliothèque déjà fournie : aucune dépense (affiche gratuite sur une photo libre ou une photo validée).
+  if (pools.image.length) return { method: "local", paid: false };
   return opts.allowPaid ? { method: "image_v2", paid: true } : { method: "local", paid: false };
 }
 

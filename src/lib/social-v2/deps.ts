@@ -8,7 +8,7 @@
  * Injectables : les tests utilisent des outils simulés (aucun appel, aucune dépense, aucune publication).
  */
 import crypto from "node:crypto";
-import type { JobContext } from "../jobs";
+import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { getAsset, saveAsset, type Asset } from "../library";
 import { all, one } from "../db";
 import type { Project } from "../projects";
@@ -76,7 +76,7 @@ function backgroundFor(p: Project, seed: string): Asset | null {
   const pool = all<Asset & { uses: number }>(
     `SELECT a.*, (SELECT COUNT(*) FROM ad_documents d WHERE d.project_id = a.project_id AND d.doc_json LIKE '%' || a.id || '%') uses
        FROM assets a WHERE a.project_id = ? AND a.kind = 'image' AND a.deleted_at IS NULL AND a.status != 'rejected'
-        AND a.role IN ('lifestyle', 'scene', 'post-photo', 'original') ORDER BY a.created_at DESC LIMIT 24`,
+        AND a.role IN ('lifestyle', 'scene', 'ambiance', 'post-photo', 'original') ORDER BY a.created_at DESC LIMIT 24`,
     p.id,
   ).filter(isAutoUsable);
   if (!pool.length) return null;
@@ -105,9 +105,19 @@ export async function posterForPost(p: Project, post: PostBrief, background: Ass
   return { assetId: a.id, costMicro, by };
 }
 
-/** Rendu local gratuit : affiche sur une photo déjà validée du projet (sinon composition typographique à la marque). */
-export async function localRender(p: Project, post: PostBrief): Promise<MediaResult> {
-  return posterForPost(p, post, backgroundFor(p, post.id), "local");
+/**
+ * Rendu gratuit : d'abord LA photo libre (Pixabay d'abord) cherchée pour cette publication — en rapport avec le
+ * produit ou le service et le sujet, jamais déjà utilisée, choisie pour faire une belle affiche ; sinon une photo
+ * déjà validée du projet ; sinon une composition typographique à la marque.
+ */
+export async function localRender(p: Project, post: PostBrief, ctx: JobContext | null = null): Promise<MediaResult> {
+  const aspect = aspectOf(post.network, post.format);
+  const { bestAdPhoto } = await import("../engine/service-media");
+  const fresh = await bestAdPhoto({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null }, p, { key: `post-${post.id}`, topic: [post.title, post.pillar].filter(Boolean).join(" — ") || p.product.name || p.name, aspect: aspect === "2:3" ? "4:5" : aspect, name: `publication-${post.network}-${post.id.slice(0, 6)}-photo.jpg` }).catch((e) => {
+    if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+    return null;
+  });
+  return posterForPost(p, post, fresh ?? backgroundFor(p, post.id), "local");
 }
 
 const PLATFORM_VIDEO: Record<string, "reels" | "tiktok" | "shorts" | "meta_feed"> = { instagram: "reels", tiktok: "tiktok", youtube: "shorts", facebook: "meta_feed", pinterest: "reels", linkedin: "meta_feed" };
@@ -131,13 +141,13 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       return { assetId: r.videoAssetId, costMicro: r.costMicro, by: "video_v2", note: r.videoAssetId ? undefined : r.reason };
     },
     async ad(pp, post, o) {
-      if (!o.allowPaid) return localRender(pp, post);
+      if (!o.allowPaid) return localRender(pp, post, ctx);
       const { runAdEngineV2 } = await import("../ads-v2/engine");
       const r = await runAdEngineV2(ctx, pp.id, { count: 1, platforms: [PLATFORM_AD[post.network] ?? "meta_feed"], objective: post.objective, maxCostEur: o.maxCostEur });
       const out = r.outcomes.find((x) => x.assetId);
       return { assetId: out?.assetId ?? null, costMicro: r.costMicro, by: "ads_v2" };
     },
-    local: (pp, post) => localRender(pp, post),
+    local: (pp, post) => localRender(pp, post, ctx),
     async rewrite(pp, post, instruction, key) {
       const { aiRewritePost } = await import("../ai/tasks");
       const r = await aiRewritePost({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null, usageKey: key }, pp, { network: post.network, format: post.format, caption: post.caption, title: post.title, angle: post.pillar ?? "" }, instruction);

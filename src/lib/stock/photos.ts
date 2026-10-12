@@ -9,7 +9,7 @@ import { activeProviderKey } from "../ai/config";
 import { L } from "../i18n-server";
 
 export type StockSource = "pexels" | "pixabay" | "openverse";
-export type StockPhoto = { source: StockSource; id: string; url: string; page: string; author: string; license: string; width: number; height: number; alt: string };
+export type StockPhoto = { source: StockSource; id: string; url: string; page: string; author: string; license: string; width: number; height: number; alt: string; /** Petite version (choix de la meilleure photo sans tout télécharger). */ thumb?: string; /** Popularité dans la banque (téléchargements, j'aime), quand elle est connue. */ popularity?: number };
 export type Orientation = "landscape" | "portrait" | "square";
 
 const TIMEOUT = 15_000;
@@ -31,18 +31,18 @@ export async function searchSource(source: StockSource, query: string, orientati
     const key = activeProviderKey("pexels");
     if (!key) return [];
     const j = await get(`https://api.pexels.com/v1/search?query=${q}&per_page=30&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: key });
-    return (j.photos ?? []).map((x: any) => ({ source: "pexels", id: String(x.id), url: x.src?.large2x ?? x.src?.original, page: x.url, author: x.photographer ?? "", license: "Pexels", width: x.width, height: x.height, alt: x.alt ?? "" }));
+    return (j.photos ?? []).map((x: any) => ({ source: "pexels", id: String(x.id), url: x.src?.large2x ?? x.src?.original, page: x.url, author: x.photographer ?? "", license: "Pexels", width: x.width, height: x.height, alt: x.alt ?? "", thumb: x.src?.medium }));
   }
   if (source === "pixabay") {
     const key = activeProviderKey("pixabay");
     if (!key) return [];
     const j = await get(`https://pixabay.com/api/?key=${encodeURIComponent(key)}&q=${q}&image_type=photo&orientation=${orientation === "portrait" ? "vertical" : "horizontal"}&safesearch=true&per_page=60&min_width=1600&order=popular&lang=${lang}`);
-    return (j.hits ?? []).map((x: any) => ({ source: "pixabay", id: String(x.id), url: x.largeImageURL ?? x.webformatURL, page: x.pageURL, author: x.user ?? "", license: "Pixabay", width: x.imageWidth, height: x.imageHeight, alt: x.tags ?? "" }));
+    return (j.hits ?? []).map((x: any) => ({ source: "pixabay", id: String(x.id), url: x.largeImageURL ?? x.webformatURL, page: x.pageURL, author: x.user ?? "", license: "Pixabay", width: x.imageWidth, height: x.imageHeight, alt: x.tags ?? "", thumb: x.webformatURL, popularity: (x.downloads ?? 0) + 20 * (x.likes ?? 0) }));
   }
   const j = await get(`https://api.openverse.org/v1/images/?q=${q}&license=cc0,pdm&page_size=20&mature=false`);
   return (j.results ?? [])
     .filter((x: any) => (x.width ?? 0) >= 1000)
-    .map((x: any) => ({ source: "openverse", id: String(x.id), url: x.url, page: x.foreign_landing_url ?? x.url, author: x.creator ?? "", license: String(x.license ?? "cc0").toUpperCase(), width: x.width, height: x.height, alt: x.title ?? "" }));
+    .map((x: any) => ({ source: "openverse", id: String(x.id), url: x.url, page: x.foreign_landing_url ?? x.url, author: x.creator ?? "", license: String(x.license ?? "cc0").toUpperCase(), width: x.width, height: x.height, alt: x.title ?? "", thumb: x.thumbnail }));
 }
 
 /**

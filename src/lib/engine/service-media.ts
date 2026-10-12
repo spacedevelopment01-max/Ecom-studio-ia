@@ -13,6 +13,7 @@ import { loadImage } from "@napi-rs/canvas";
 import { z } from "zod";
 import { all, json, one, run } from "../db";
 import { composePoster, savePosterDoc, type PosterAspect } from "../ads-v2/poster";
+import { adFitOrder } from "../stock/ad-fit";
 import { assetData, saveAsset, type Asset } from "../library";
 import { downloadStock, searchStock, stockCredit } from "../stock/photos";
 import { rankStock, tradeStock } from "../stock/trade-queries";
@@ -213,7 +214,7 @@ async function topicQueries(ictx: { userId: string; projectId: string; jobId?: s
 }
 
 /** Photo libre de droits propre à une publication (jamais reprise d'une autre publication ni des visuels du site). */
-async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }, place: { role: string; folderKey: string } = { role: "post-photo", folderKey: "content.calendar" }): Promise<Asset | null> {
+export async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, post: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }, place: { role: string; folderKey: string } = { role: "post-photo", folderKey: "content.calendar" }): Promise<Asset | null> {
   const { lang, queries } = await topicQueries(ictx, p, post.topic);
   const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
   const trade = [p.product.category, activityName(p)].filter(Boolean)[0] ?? "";
@@ -222,11 +223,38 @@ async function postStockPhoto(ictx: { userId: string; projectId: string; jobId?:
   // Concepts hors sujet du métier (registre) : les photos qui ne montrent que ça passent en dernier.
   // Règle de présence humaine : sans autorisation, requêtes et photos sans personne.
   const people = peopleAllowedFor(p);
-  const found = rankStock(await searchStock(queriesFor(queries, people), post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured(), ts?.negative, { people });
+  const ranked = rankStock(await searchStock(queriesFor(queries, people), post.aspect === "16:9" ? "landscape" : post.aspect === "1:1" ? "square" : "portrait", lang, used), must, llmConfigured(), ts?.negative, { people });
+  // Parmi les photos pertinentes : celle qui fera la meilleure affiche (zone calme pour le texte, cadrage, définition).
+  const found = await adFitOrder(ranked, post.aspect);
   const pick = await firstOnTopic(ictx, found, `${trade} — ${clip(post.topic, 200)}`, (ph) => `${ictx.jobId ?? "post"}:post-stockqc:${post.key}:${ph.source}:${ph.id}`, must.length > 0);
   if (!pick) return null;
   const { photo, img, gate } = pick;
   return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: post.name, mime: "image/jpeg", role: place.role, folderKey: place.folderKey, origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, business: "services", format: post.aspect, ...gate.meta } });
+}
+
+/**
+ * LA photo d'une publicité ou d'une publication, cherchée pour elle (Pixabay d'abord, puis Pexels, Openverse) : en
+ * rapport direct avec le produit ou le service et le sujet du message, jamais déjà utilisée dans le projet, choisie
+ * pour faire une belle affiche (zone calme pour le texte), contrôlée. Services : photo du métier et de la prestation ;
+ * produits : l'univers du produit (lieu, matière, usage) — le vrai produit détouré y est posé ensuite par l'affiche.
+ * null si aucune photo libre ne convient (l'appelant passe alors à la bibliothèque ou à l'IA d'images).
+ */
+export async function bestAdPhoto(ictx: { userId: string; projectId: string; jobId?: string | null }, p: Project, o: { key: string; topic: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; name: string }): Promise<Asset | null> {
+  if (p.business === "services") return postStockPhoto(ictx, p, o, { role: "lifestyle", folderKey: "images.scenes" });
+  const { universeQueries } = await import("./stock-universe");
+  const u = await universeQueries(ictx, p);
+  const used = new Set(all<{ k: string }>("SELECT json_extract(meta, '$.stock.source') || ':' || json_extract(meta, '$.stock.id') k FROM assets WHERE project_id = ? AND json_extract(meta, '$.stock') IS NOT NULL", p.id).map((x) => x.k));
+  const known = tradeStock(`${p.product.category ?? ""} ${p.product.sector ?? ""} ${p.product.name ?? ""}`);
+  const must = known?.must ?? [];
+  const people = peopleAllowedFor(p);
+  const orientation = o.aspect === "16:9" ? "landscape" : o.aspect === "1:1" ? "square" : "portrait";
+  const ranked = rankStock(await searchStock(queriesFor(u.queries, people), orientation, u.lang, used), must, llmConfigured(), [], { people });
+  const found = await adFitOrder(ranked, o.aspect);
+  const subject = C(`publicité pour « ${p.product.name} » (${p.product.category ?? ""}) — ${clip(o.topic, 120)} : l'univers du produit (lieu, matière, usage), sans le produit lui-même`, `ad for "${p.product.name}" (${p.product.category ?? ""}) — ${clip(o.topic, 120)}: the product's world (place, material, use), without the product itself`);
+  const pick = await firstOnTopic(ictx, found, subject, (ph) => `${ictx.jobId ?? "ad"}:ad-stockqc:${o.key}:${ph.source}:${ph.id}`, must.length > 0, { stockPrompt: false });
+  if (!pick) return null;
+  const { photo, img, gate } = pick;
+  return saveAsset({ projectId: p.id, userId: p.userId, data: img, name: o.name, mime: "image/jpeg", role: "ambiance", folderKey: "images.scenes", origin: "import", meta: { recipe: stockCredit(photo), stock: { source: photo.source, id: photo.id, page: photo.page, author: photo.author, license: photo.license, licenseInfo: licenseOf(photo.source, photo.license) }, format: o.aspect, subject: clip(o.topic, 160), ...gate.meta }, status: "review" });
 }
 
 /** Recherches de photos libres de droits par emplacement : mots du métier (IA légère si disponible, sinon le texte du projet). */
