@@ -144,8 +144,11 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     const safe = safeZone(intent.aspect, intent.platform);
     const media = new Map<string, Media>();
     let characterRef: { assetId: string; data: Buffer } | null = null;
+    // Plans libres déjà pris dans cette vidéo (jamais deux fois le même) et rotation des recherches.
+    const stockTaken = new Set<string>();
+    const stockIndex = { n: 0 };
     for (const s of shots) {
-      const out = await resolveShot({ p, ctx, deps, s, inv, strategy, intent, budget, stats, persona, characterRef, notes, pal, typo, size, safe, insight });
+      const out = await resolveShot({ p, ctx, deps, s, inv, strategy, intent, budget, stats, persona, characterRef, notes, pal, typo, size, safe, insight, stockTaken, stockIndex });
       media.set(s.id, out.media);
       result.outcomes.push(out.outcome);
       if (out.characterRef && !characterRef) characterRef = out.characterRef;
@@ -275,6 +278,9 @@ async function writeScript(p: Project, deps: VideoV2Deps, i: AdInsight, st: Crea
 // ------------------------------------------------------------------------------------------- plans
 
 type ResolveInput = {
+  /** Plans libres déjà pris dans cette vidéo et rang du prochain (rotation des recherches). */
+  stockTaken?: Set<string>;
+  stockIndex?: { n: number };
   p: Project;
   ctx: JobContext | null;
   deps: VideoV2Deps;
@@ -336,6 +342,16 @@ function shotPrompt(s: ShotPlan, st: CreativeStrategy, persona: PersonaSheet | n
     .join(" ");
 }
 
+/**
+ * Moments d'une vidéo illustrés par un plan vidéo libre de droits. Services : accroche, développement, démonstration
+ * (le métier en action). Boutique : accroche et développement (l'univers du produit) ; la démonstration et la
+ * conclusion montrent le VRAI produit (photos, packshot) — jamais un produit d'une banque d'images à sa place.
+ */
+function stockFor(p: Project, s: ShotPlan): boolean {
+  if (p.business === "services") return ["hook", "development", "demonstration"].includes(s.part);
+  return s.part === "hook" || s.part === "development";
+}
+
 async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: ShotOutcome; characterRef?: { assetId: string; data: Buffer } | null }> {
   const { p, deps, s, stats } = o;
   const base: ShotOutcome = { shotId: s.id, method: s.method, verdict: "FINAL", assetId: null, attempts: 0, reused: false, costMicro: 0, reason: s.why, codes: [] };
@@ -346,6 +362,21 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
     if (img) return { media: { kind: "image", assetId: img.assetId }, outcome: { ...base, assetId: img.assetId, reason: "image de l'Image Engine V2" } };
     o.notes.push(`${s.id} : aucune image retenue par l'Image Engine V2 — typographie animée`);
     return { media: { kind: "doc", assetId: null }, outcome: { ...base, method: "kinetic_type", reason: "aucune image : typographie animée" } };
+  }
+  // Plan libre de droits (Pixabay d'abord) : chaque moment de la vidéo qui ne montre pas le produit et n'a pas de
+  // vidéo du client reçoit SON plan vidéo réel, cherché pour lui (métier, prestation, univers du produit) — gratuit.
+  // Les plans du produit (photos réelles, packshot), la preuve, la conclusion et l'appel à l'action restent composés.
+  if (deps.stockClip && s.source.kind !== "generate" && s.method !== "existing_video" && stockFor(o.p, s)) {
+    const clip = await deps
+      .stockClip({ topic: s.subject, part: s.part, aspect: o.intent.aspect === "16:9" ? "16:9" : o.intent.aspect === "1:1" ? "1:1" : o.intent.aspect === "4:5" ? "4:5" : "9:16", durationS: s.durationS, index: o.stockIndex ? o.stockIndex.n++ : 0, key: `${o.ctx?.job.id ?? "video"}:${s.id}` }, o.stockTaken ?? new Set())
+      .catch((e) => {
+        if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+        return null;
+      });
+    if (clip) {
+      stats.localShots++;
+      return { media: { kind: "video", assetId: clip.assetId, durationS: clip.durationS }, outcome: { ...base, method: "existing_video", assetId: clip.assetId, reason: "plan vidéo libre de droits (Pixabay ou Pexels) choisi pour ce moment" } };
+    }
   }
   if (s.source.kind !== "generate") {
     stats.localShots++;
