@@ -4,6 +4,7 @@
  * prix en euros, libellés des quotas, badge « Bientôt », lien « forfait » et bandeau « quota épuisé » du studio.
  * Jamais de crédits ni de coûts d'IA : seulement des quotas concrets (visuels, vidéos…).
  */
+import { useOptionalProject } from "./studio/project-context";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Gauge, Lock, Sparkles, X } from "lucide-react";
@@ -53,6 +54,10 @@ export function Soon({ className }: { className?: string }) {
 /** Création d'images, de vidéos ou d'UGC fermée (découverte gratuite). Faux tant que le forfait n'est pas chargé. */
 export function useCreationLocked() {
   const { billing } = useBilling();
+  // Dans un projet : son propre abonnement décide (un abonnement = un projet) ; l'ancien abonnement du compte
+  // n'existe pas pour un client qui a souscrit par projet.
+  const project = useOptionalProject();
+  if (project?.data && "plan" in project.data) return !project.data.plan;
   return !!billing && billing.canCreate === false;
 }
 

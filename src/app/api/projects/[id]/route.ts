@@ -7,7 +7,7 @@ import { pipelineState } from "@/lib/engine/pipeline";
 import { localizeQuestions } from "@/lib/engine/local";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { hasAiCredits } from "@/lib/ai/access";
-import { assertAutopublish } from "@/lib/plan-gates";
+import { assertAutopublish, planOfProject } from "@/lib/plan-gates";
 import { aiAvailability } from "@/lib/ai/config";
 import { balance } from "@/lib/billing";
 import { contactModesOf, sectorLabel } from "@/lib/project-types";
@@ -34,6 +34,8 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const cutout = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at LIMIT 1", p.id);
   const b = balance(user.id, p.id);
   return ok({
+    // Forfait du PROJET (un abonnement = un projet) : ouvre les créations d'images et de vidéos dans l'écran.
+    plan: planOfProject(p.id),
     project: { id: p.id, name: p.name, status: p.status, platform: p.platform, storeUrl: p.row.store_url, createdAt: p.row.created_at, updatedAt: p.row.updated_at, sectorLabel: p.business === "services" && p.product.category ? p.product.category : sectorLabel(p.product.sector, uiLang()), business: p.business },
     // Questions posées au commerçant : dans la langue de son interface, quelle que soit celle du projet.
     product: { ...p.product, questions: localizeQuestions(p.product.questions ?? []) },

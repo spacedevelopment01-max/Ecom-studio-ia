@@ -21,6 +21,7 @@ import type { JobContext } from "../jobs";
 import { directionById } from "../theme/directions";
 import type { Brand } from "../project-types";
 import { effectivePalette } from "../route-palette";
+import { directionPalette } from "../theme/direction-palettes";
 
 export async function buildBrand(ctx: JobContext, projectId: string, opts: { providedBrand?: string; guidance?: string } = {}) {
   const p = loadProject(projectId);
@@ -79,6 +80,11 @@ export async function buildBrand(ctx: JobContext, projectId: string, opts: { pro
   // Un logo validé par le client (autre que ce fichier) n'est jamais remplacé automatiquement par une reconstruction.
   const logoKept = isLocked(p.brand, "logo") && p.brand?.logo.assetId && p.brand.logo.assetId !== clientLogo?.id;
   if (clientLogo && !site && !logoKept) brand.logo = { assetId: clientLogo.id, concept: C("Logo fourni par le client", "Logo provided by the client"), status: "provided" };
+  // Palette verrouillée par la direction : chaque direction a ses propres couleurs (site existant : celles du client).
+  if (!site) {
+    if (p.brand?.paletteMode === "client" && p.brand.clientPalette) Object.assign(brand, { paletteMode: "client", clientPalette: p.brand.clientPalette, palette: { ...p.brand.clientPalette } });
+    else Object.assign(brand, { paletteMode: "direction", clientPalette: p.brand?.clientPalette, palette: directionPalette(brand.direction) });
+  }
   saveBrand(projectId, brand);
   // Site existant : jamais de logo généré (celui du site ou du client est conservé).
   if (!site && !clientLogo && !keepValidated.includes("logo")) {

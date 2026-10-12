@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Sparkles, Wand2, ImagePlus } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Select, Textarea, Toggle, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
@@ -74,6 +74,47 @@ export default function TabImages() {
   return data?.business === "services" ? <ServiceImages /> : <ProductImages />;
 }
 
+/**
+ * Suit une création lancée depuis l'écran jusqu'à sa fin, puis recharge la liste : avec le moteur local, un visuel est
+ * prêt en 1 à 2 s, souvent avant le prochain rafraîchissement du projet (15 s) — sans ce suivi, rien n'apparaissait.
+ * Un échec est affiché tout de suite avec sa raison (plus de « en préparation » sans suite).
+ */
+function useFollowJob(onDone: () => unknown) {
+  const { reload: reloadProject } = useProject();
+  const toast = useToast();
+  const t = useT();
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const done = useRef(onDone);
+  done.current = onDone;
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  return useCallback(
+    (jobId: string | undefined, okMessage: string) => {
+      reloadProject().catch(() => {});
+      if (!jobId) return;
+      const started = Date.now();
+      const tick = async () => {
+        try {
+          const { job } = await api<{ job: { status: string; error: string | null } }>(`/api/jobs/${jobId}`);
+          if (job.status === "done") {
+            await done.current();
+            reloadProject().catch(() => {});
+            toast("ok", okMessage);
+            return;
+          }
+          if (job.status === "failed" || job.status === "cancelled" || job.status === "blocked") {
+            reloadProject().catch(() => {});
+            if (job.status === "failed") toast("bad", job.error || t("La création a échoué.", "Creation failed."));
+            return;
+          }
+        } catch {}
+        if (Date.now() - started < 20 * 60_000) timers.current.push(setTimeout(tick, Date.now() - started < 60_000 ? 1500 : 5000));
+      };
+      timers.current.push(setTimeout(tick, 800));
+    },
+    [reloadProject, toast, t],
+  );
+}
+
 function ProductImages() {
   const { id, data } = useProject();
   const toast = useToast();
@@ -86,6 +127,7 @@ function ProductImages() {
   const cost = useCostConfirm();
   const locked = useCreationLocked();
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${GROUPS.find((g) => g.id === group)!.roles}`);
+  const follow = useFollowJob(reload);
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
@@ -105,8 +147,9 @@ function ProductImages() {
   const create = async (mode: "set" | "single") => {
     if (mode === "set" && data?.ai.image && !(await cost.confirm("images"))) return;
     try {
-      await api(`/api/projects/${id}/images`, { body: { mode, ...form, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined }, lang: cl.lang });
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images`, { body: { mode, ...form, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined }, lang: cl.lang });
       toast("ok", mode === "set" ? t("Jeu d'images complet en préparation.", "Full image set in progress.") : t("Image en préparation.", "Image in progress."));
+      follow(r?.jobId, mode === "set" ? t("Jeu d'images prêt : à valider ci-dessous.", "Image set ready: review it below.") : t("Image prête : à valider ci-dessous.", "Image ready: review it below."));
     } catch (e) {
       toast("bad", (e as Error).message);
     }
@@ -208,6 +251,7 @@ function ServiceImages() {
   const locked = useCreationLocked();
   const roles = SERVICE_GROUPS.find((g) => g.id === group)!.roles;
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${roles}`);
+  const follow = useFollowJob(reload);
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
@@ -221,8 +265,9 @@ function ServiceImages() {
       const body = mode === "set"
         ? { mode, useAi: aiImage }
         : { mode, kind: form.kind, format: form.format, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined, serviceIndex: form.serviceIndex, items: form.kind === "tips" ? form.tips.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) : undefined, usePhoto: form.usePhoto };
-      await api(`/api/projects/${id}/images`, { body, lang: cl.lang });
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images`, { body, lang: cl.lang });
       toast("ok", mode === "set" ? t("Jeu de visuels en préparation.", "Visual set in progress.") : t("Visuel en préparation.", "Visual in progress."));
+      follow(r?.jobId, mode === "set" ? t("Jeu de visuels prêt : à valider ci-dessous.", "Visual set ready: review it below.") : t("Visuel prêt : à valider ci-dessous.", "Visual ready: review it below."));
     } catch (e) {
       toast("bad", (e as Error).message);
     }

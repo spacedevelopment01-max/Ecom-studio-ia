@@ -388,6 +388,9 @@ export function applySiteIdentity(projectId: string, brand: Brand, site: SiteImp
     alternatives: [],
     tagline,
     palette: pal,
+    // Vraies couleurs du client : gardées (« Vos couleurs »), jamais effacées, même s'il essaie une autre direction.
+    paletteMode: "client",
+    clientPalette: pal,
     fonts: { heading: hf.handle, body: bf.handle },
     direction: closestDirection(site),
     logo: logo

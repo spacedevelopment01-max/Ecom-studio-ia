@@ -113,7 +113,8 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   // Couleurs de la marque = couleurs mesurées dans le logo (sauf palette validée par le client).
   const after = loadProject(projectId).brand!;
   const inks = await artworkInks(png);
-  const fromLogo = isLocked(after, "palette") ? null : paletteFromInks(inks);
+  // Palette verrouillée par la direction (ou couleurs du client) : le logo ne la remplace pas.
+  const fromLogo = isLocked(after, "palette") || after.paletteMode ? null : paletteFromInks(inks);
   saveBrand(projectId, { ...after, ...(fromLogo ? { palette: fromLogo } : {}), logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
   markBrandLogo(projectId, main.id);
   const { swapThemeLogos } = await import("../engine/identity");

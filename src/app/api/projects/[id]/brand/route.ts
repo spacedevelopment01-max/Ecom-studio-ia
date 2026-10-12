@@ -11,6 +11,8 @@ import { reapplyLogoV2 } from "@/lib/logo-v2/choose";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { HttpError } from "@/lib/auth";
 import { DIRECTIONS } from "@/lib/theme/directions";
+import { lockedPalette } from "@/lib/theme/direction-palettes";
+import { effectivePalette } from "@/lib/route-palette";
 import { L } from "@/lib/i18n-server";
 import { brandIssues } from "@/lib/engine/brand-check";
 import { applyPaletteToSite } from "@/lib/workflow/propagation";
@@ -35,6 +37,8 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       /** La palette envoyée est celle affichée (cinq couleurs indépendantes), pas les couleurs d'origine. */
       paletteExact: z.boolean().optional(),
       direction: z.enum(DIRECTIONS.map((d) => d.id) as [string, ...string[]]).optional(),
+      /** « client » : revenir à ses vraies couleurs (site existant) ; « direction » : adopter la palette de la direction. */
+      paletteMode: z.enum(["direction", "client"]).optional(),
       validate: z.array(z.string()).optional(),
       unvalidate: z.array(z.string()).optional(),
     }),
@@ -42,6 +46,18 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   // Thème choisi pour la boutique : uniquement ceux du forfait du projet (l'actuel reste conservé).
   if (b.direction && b.direction !== p.brand.direction) assertThemeAllowed(p.id, b.direction, p.brand.direction ?? null);
   const brand = { ...p.brand } as any;
+  // Palette verrouillée par la direction : elle ne se modifie pas à la main ; elle change avec la direction.
+  const locked = lockedPalette(p.brand, { direction: b.direction, paletteMode: b.paletteMode, hasClientLogo: p.brand.logo?.status === "provided" || !!p.settings.existingSite });
+  const same = (x: object, y: object | null) => !!y && JSON.stringify(Object.entries(x).sort()) === JSON.stringify(Object.entries(y).sort());
+  if (!locked && b.palette && !same(b.palette, p.brand.palette) && !same(b.palette, effectivePalette(p.brand))) {
+    throw new HttpError(409, L("Les couleurs sont celles de la direction choisie : pour changer de couleurs, choisissez une autre direction.", "The colors are those of the chosen direction: to change colors, choose another direction."), "palette_locked");
+  }
+  if (b.paletteMode === "client" && !p.brand.clientPalette) throw new HttpError(409, L("Aucune couleur de votre site n'est enregistrée.", "No colors from your website are saved."));
+  if (locked) {
+    Object.assign(brand, locked);
+    b.palette = locked.palette;
+    b.paletteExact = true;
+  } else b.palette = undefined;
   for (const k of ["name", "tagline", "positioning", "audience", "story", "tone", "palette", "direction"] as const) {
     if (b[k] !== undefined) {
       brand[k] = b[k];
@@ -52,7 +68,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   // Palette changée par le client : c'est SA décision, elle est validée (un nouveau logo ou une reconstruction du site
   // ne la remplace plus par les couleurs mesurées dans le logo ou celles du style de boutique).
   const paletteChanged = b.palette !== undefined && JSON.stringify(b.palette) !== JSON.stringify(p.brand.palette);
-  const autoValidate = paletteChanged && !(b.unvalidate ?? []).includes("palette") ? ["palette"] : [];
+  const autoValidate = paletteChanged && !locked && !(b.unvalidate ?? []).includes("palette") ? ["palette"] : [];
   brand.validated = [...new Set([...(brand.validated ?? []), ...(b.validate ?? []), ...autoValidate])].filter((x: string) => !(b.unvalidate ?? []).includes(x));
   if (b.validate?.includes("logo")) brand.logo = { ...brand.logo, status: "validated" };
   // Verrous posés ou levés par le client : décision mémorisée (l'état précédent reste dans l'historique).
