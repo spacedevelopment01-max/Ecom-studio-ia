@@ -18,6 +18,7 @@
  * réel, part de texte, zones de sécurité, chevauchements) : la barrière s'en sert sans payer de contrôle.
  */
 import { createCanvas, loadImage } from "@napi-rs/canvas";
+import sharp from "sharp";
 import { contrast, ensureContrast, isDark, mix, onColor } from "../color";
 import { ensureFonts } from "../media/fonts";
 import type { Palette, Typo } from "../media/compose";
@@ -75,6 +76,37 @@ const shape = (id: string, name: string, role: Layer["role"], b: Box, fill: Shap
 /** Voile en dégradé teinté de la couleur sombre de la marque (plus naturel qu'un noir pur), trois paliers. */
 const veil = (angle: number, tint: string, alpha: number) => ({ type: "linear" as const, angle, stops: [{ offset: 0, color: rgba(tint, alpha) }, { offset: 0.55, color: rgba(tint, alpha * 0.55) }, { offset: 1, color: rgba(tint, 0) }] });
 
+
+/**
+ * Lecture de la photo telle qu'elle sera cadrée (remplissage du format) : agitation (contours) et luminosité des
+ * deux moitiés gauche/droite et haut/bas. Le texte va sur la zone la plus calme — jamais sur le sujet — et une zone
+ * claire et calme garde sa lumière (texte foncé, voile léger) au lieu d'être assombrie.
+ */
+export type PhotoZones = { left: Zone; right: Zone; top: Zone; bottom: Zone };
+type Zone = { busy: number; lum: number };
+export async function photoZones(buf: Buffer, W: number, H: number): Promise<PhotoZones> {
+  const gh = 48;
+  const gw = Math.max(8, Math.round((gh * W) / H));
+  const { data } = await sharp(buf).rotate().resize(gw, gh, { fit: "cover" }).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const at = (x: number, y: number) => data[y * gw + x] / 255;
+  const zone = (x0: number, x1: number, y0: number, y1: number): Zone => {
+    let busy = 0;
+    let lum = 0;
+    let n = 0;
+    for (let y = y0; y < y1; y++)
+      for (let x = x0; x < x1; x++) {
+        const v = at(x, y);
+        lum += v;
+        if (x + 1 < gw && y + 1 < gh) busy += Math.abs(v - at(x + 1, y)) + Math.abs(v - at(x, y + 1));
+        n++;
+      }
+    return { busy: busy / Math.max(1, n), lum: lum / Math.max(1, n) };
+  };
+  const hw = Math.round(gw * 0.48);
+  const hh = Math.round(gh * 0.5);
+  return { left: zone(0, hw, 0, gh), right: zone(gw - hw, gw, 0, gh), top: zone(0, gw, 0, hh), bottom: zone(0, gw, gh - hh, gh) };
+}
+
 /** Construit le document en calques d'une création (géométrie, polices, couleurs garanties lisibles). */
 export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocument; images: RenderEnv["images"] }> {
   ensureFonts();
@@ -96,7 +128,9 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   if (prodId) images.set(prodId, (await loadImage(i.product!)) as never);
   if (logoId) images.set(logoId, (await loadImage(i.logo!)) as never);
   if (logoLightId) images.set(logoLightId, (await loadImage(i.logoLight!)) as never);
-  const layout: AdLayout = bgId ? (toAdLayout(i.layout) === "typographic" ? "editorial" : toAdLayout(i.layout)) : "typographic";
+  // Aplat « band » réservé aux créations sans photo : posé sur une photo, il en masquait le sujet.
+  const layout: AdLayout = bgId ? (["typographic", "band"].includes(toAdLayout(i.layout)) ? "editorial" : toAdLayout(i.layout)) : "typographic";
+  const zones = bgId && i.background ? await photoZones(i.background, W, H).catch(() => null) : null;
   const layers: Layer[] = [];
   const U = cls === "land" ? H : W;
 
@@ -111,12 +145,20 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   if (layout === "editorial") {
     photo({ x: 0, y: 0, w: W, h: H }, STRETCH);
     if (cls === "land" || cls === "square") {
+      // Texte du côté le plus calme de la photo (le sujet reste visible de l'autre côté).
+      const right = !prodId && !!zones && zones.right.busy < zones.left.busy * 0.8;
+      const z = zones ? (right ? zones.right : zones.left) : null;
+      // Zone claire et calme (intérieur lumineux, ciel, mur) : on garde sa lumière, texte foncé sous un voile léger.
+      const airy = !!z && z.lum > 0.62 && z.busy < 0.09;
       const vw = W * (cls === "land" ? 0.66 : 0.78);
-      layers.push(shape("scrim", "Voile", "scrim", { x: 0, y: 0, w: vw, h: H }, veil(0, pal.dark, 0.74), { h: "left", v: "stretch" }));
-      col = { x: m.side, y: m.top, w: W * (cls === "land" ? 0.44 : 0.6), h: H - m.top - m.bottom };
-      productZone = { x: W * 0.54, y: H * 0.16, w: W * 0.42, h: H * 0.78 };
+      layers.push(shape("scrim", "Voile", "scrim", { x: right ? W - vw : 0, y: 0, w: vw, h: H }, airy ? veil(right ? 180 : 0, pal.light, 0.5) : veil(right ? 180 : 0, pal.dark, 0.74), { h: right ? "right" : "left", v: "stretch" }));
+      const cw = W * (cls === "land" ? 0.44 : 0.6);
+      col = { x: right ? W - m.side - cw : m.side, y: m.top, w: cw, h: H - m.top - m.bottom };
+      productZone = right ? { x: W * 0.04, y: H * 0.16, w: W * 0.42, h: H * 0.78 } : { x: W * 0.54, y: H * 0.16, w: W * 0.42, h: H * 0.78 };
     } else {
-      layers.push(shape("scrim", "Voile", "scrim", { x: 0, y: 0, w: W, h: H * 0.62 }, veil(90, pal.dark, 0.72), { h: "stretch", v: "top" }));
+      const z = zones?.top ?? null;
+      const airy = !!z && z.lum > 0.62 && z.busy < 0.09;
+      layers.push(shape("scrim", "Voile", "scrim", { x: 0, y: 0, w: W, h: H * 0.62 }, airy ? veil(90, pal.light, 0.5) : veil(90, pal.dark, 0.72), { h: "stretch", v: "top" }));
       col = { x: m.side, y: m.top + H * (cls === "story" ? 0.04 : 0.01), w: W - m.side * 2, h: H * 0.5 };
       productZone = { x: W * 0.12, y: H * 0.5, w: W * 0.76, h: H * 0.44 - m.bottom * 0.4 };
     }
@@ -141,7 +183,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
     panelColor = isDark(pal.light) ? "#F6F3EE" : pal.light;
     let panel: Box;
     let pic: Box;
-    if (cls === "land") ((panel = { x: 0, y: 0, w: W * 0.38, h: H }), (pic = { x: W * 0.38, y: 0, w: W * 0.62, h: H }));
+    if (cls === "land") ((panel = { x: 0, y: 0, w: W * 0.4, h: H }), (pic = { x: W * 0.4, y: 0, w: W * 0.6, h: H }));
     else if (cls === "square") ((panel = { x: 0, y: 0, w: W * 0.47, h: H }), (pic = { x: W * 0.47, y: 0, w: W * 0.53, h: H }));
     else ((panel = { x: 0, y: 0, w: W, h: H * (cls === "story" ? 0.52 : 0.48) }), (pic = { x: 0, y: H * (cls === "story" ? 0.52 : 0.48), w: W, h: H * (cls === "story" ? 0.48 : 0.52) }));
     layers.push(shape("panel", "Panneau", "shape", panel, panelColor, cls === "land" || cls === "square" ? { h: "left", v: "stretch" } : { h: "stretch", v: "top" }));
@@ -150,7 +192,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
     col = cls === "land" || cls === "square" ? { x: panel.x + pad, y: m.top, w: panel.w - pad * 2, h: H - m.top - m.bottom } : { x: m.side, y: m.top, w: W - m.side * 2, h: panel.h - m.top - H * 0.03 };
     align = "center";
     productZone = { x: pic.x + pic.w * 0.12, y: pic.y + pic.h * 0.12, w: pic.w * 0.76, h: pic.h * 0.8 - (cls === "land" || cls === "square" ? m.bottom * 0.5 : m.bottom) };
-    titleK = cls === "land" ? 0.13 : cls === "square" ? 0.085 : cls === "portrait" ? 0.1 : 0.105;
+    titleK = cls === "land" ? 0.15 : cls === "square" ? 0.095 : cls === "portrait" ? 0.1 : 0.105;
   } else if (layout === "band") {
     photo({ x: 0, y: 0, w: W, h: H }, STRETCH);
     // Couleur franche : la plus vive des couleurs de marque, éclaircie si besoin (le titre très gras s'y pose en sombre).
@@ -271,7 +313,8 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   const ctaBottomY = bottomLimit - bh;
 
   // Titre (accroche) : grand, graisse franche, interlignage serré, lignes équilibrées.
-  const heavyTitle = layout === "band";
+  // Affiche franche (style « bold ») : titre en capitales condensées de la police d'affiche (« Réveillez le goût. »).
+  const heavyTitle = layout === "band" || (layout === "poster" && art.style === "bold");
   const tFamily = heavyTitle ? art.display : art.heading;
   const tWeight = heavyTitle ? art.displayWeight : art.headingWeight;
   const tSize = Math.round(U * titleK);
@@ -291,6 +334,12 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   if (i.subline?.trim()) {
     const spaced = layout === "poster" || layout === "frame";
     const sub: TextLayer = { ...base("subline", "Ligne", "subtitle", { x: col.x, y, w: col.w, h: subSize * 2.6 }, anchorText), kind: "text", text: i.subline.trim(), font: { family: art.body, weight: spaced ? 500 : 400, size: subSize, italic: false }, color: ink2, align, lineHeight: 1.25, letterSpacing: spaced ? Math.round(subSize * 0.12) : 0, uppercase: layout === "frame", autoFit: { minSize: 22 }, shadow: null, balance: true };
+    // « Conception • Construction • Rénovation » : sur une ligne (taille réduite au besoin), jamais coupée dans un segment.
+    if (/ [•·|] /.test(sub.text)) {
+      sub.text = sub.text.split(/ ([•·|]) /).map((x, k) => (k % 2 ? ` ${x} ` : x.replace(/ /g, "\u00A0"))).join("");
+      while (sub.font.size > Math.max(18, subSize * 0.68) && layoutText(ctx, sub, { font: serverFont }).lines.length > 1) sub.font.size = Math.round(sub.font.size * 0.95);
+      sub.autoFit = { minSize: Math.min(22, sub.font.size) };
+    }
     layers.push(sub);
     const fs = layoutText(ctx, sub, { font: serverFont });
     sub.h = Math.ceil(fs.lines.length * fs.size * sub.lineHeight);

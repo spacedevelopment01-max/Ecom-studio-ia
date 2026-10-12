@@ -67,7 +67,8 @@ describe("Publicités premium — direction artistique et formats", async () => 
         // Pas un recadrage : la colonne de texte change de forme avec le format.
         const t = r.doc.layers.find((l) => l.role === "title")!;
         sizes.add(`${Math.round(t.w / f.width * 100)}-${Math.round(t.y / f.height * 100)}`);
-        expect(r.doc.meta.recipe?.layout).toBe(layout);
+        // L'aplat « band » ne se pose plus sur une photo (il en masquait le sujet) : composition éditoriale.
+        expect(r.doc.meta.recipe?.layout).toBe(layout === "band" ? "editorial" : layout);
       }
       expect(sizes.size, layout).toBeGreaterThan(1);
     }

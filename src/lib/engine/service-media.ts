@@ -12,6 +12,7 @@ import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { z } from "zod";
 import { all, json, one, run } from "../db";
+import { composePoster, savePosterDoc, type PosterAspect } from "../ads-v2/poster";
 import { assetData, saveAsset, type Asset } from "../library";
 import { downloadStock, searchStock, stockCredit } from "../stock/photos";
 import { rankStock, tradeStock } from "../stock/trade-queries";
@@ -781,9 +782,34 @@ const RECIPE: Record<ServiceCard["template"], [string, string]> = {
   graphic: ["Bannière d'ouverture sans texte (textes dans le site)", "Hero banner without text (text lives in the site)"],
 };
 
+const POSTER_OF: Record<ServiceFormat, PosterAspect> = { square: "1:1", portrait: "4:5", story: "9:16", landscape: "16:9", banner: "2:1" };
+
+/** Ligne courte sous le titre d'une affiche : faits de l'offre (« 40 € • 1 h • Sur rendez-vous »), sinon le texte. */
+function posterSubline(c: CardPlan["card"]): string | null {
+  const chips = (c.chips ?? []).filter(Boolean);
+  if (chips.length && chips.join(" • ").length <= 52) return chips.join(" • ");
+  const t = (c.text ?? "").split(/(?<=[.!?])\s/)[0]?.trim() ?? "";
+  return t ? clip(t, 70) : null;
+}
+
+/**
+ * Annonce d'une prestation et appel à réserver AVEC photo : affiche de qualité agence (photo pleine page, titre en
+ * grand, marque, ligne de faits, bouton) par le moteur à calques des publicités — modifiable ensuite dans l'éditeur.
+ * Les autres cartes (carrousels, citations, infos pratiques, visuels sans photo) gardent leur composition.
+ */
+async function renderPosterCard(p: Project, x: CardPlan & { photoAsset?: Asset }, jobId: string, k: number) {
+  const c = x.card;
+  const r = await composePoster(p, { aspect: POSTER_OF[c.format] ?? "4:5", headline: c.title ?? activityName(p), subline: posterSubline(c), eyebrow: c.eyebrow ?? null, cta: c.cta ?? null, background: x.photoAsset ?? null, seed: `${jobId}:${k}:${x.name}` });
+  return { jpg: r.jpg, label: SERVICE_SIZES[c.format].label, engine: "poster" as const, docKey: r.docKey, doc: r.doc, layout: r.layout };
+}
+
 async function saveCards(p: Project, plans: (CardPlan & { photoAsset?: Asset })[], jobId: string): Promise<Saved[]> {
-  const cards: ServiceCard[] = plans.map((x) => ({ ...x.card, photo: x.photoAsset ? assetData(x.photoAsset) : null }));
-  const rendered = await renderCards(p, cards);
+  const poster = (x: CardPlan & { photoAsset?: Asset }) => !!x.photoAsset && (x.card.template === "announce" || x.card.template === "booking");
+  const cards: ServiceCard[] = plans.filter((x) => !poster(x)).map((x) => ({ ...x.card, photo: x.photoAsset ? assetData(x.photoAsset) : null }));
+  const plain = await renderCards(p, cards);
+  const rendered: { jpg: Buffer; label: string; engine: string; docKey?: string; doc?: Awaited<ReturnType<typeof composePoster>>["doc"]; layout?: string }[] = [];
+  let n = 0;
+  for (const [k, x] of plans.entries()) rendered.push(poster(x) ? await renderPosterCard(p, x, jobId, k) : plain[n++]);
   const base = slug(activityName(p));
   const saved: Saved[] = [];
   for (const [k, r] of rendered.entries()) {
@@ -799,18 +825,20 @@ async function saveCards(p: Project, plans: (CardPlan & { photoAsset?: Asset })[
       origin: "generated",
       sourceAssetId: x.photoAsset?.id ?? null,
       meta: {
-        recipe: L(RECIPE[x.card.template][0], RECIPE[x.card.template][1]) + (x.photoAsset ? L(" · photo réelle de l'activité", " · real photo of the business") : L(" · composition typographique", " · typographic layout")),
+        recipe: L(RECIPE[x.card.template][0], RECIPE[x.card.template][1]) + (r.docKey ? L(" · affiche (photo pleine page, modifiable)", " · poster (full-bleed photo, editable)") : x.photoAsset ? L(" · photo réelle de l'activité", " · real photo of the business") : L(" · composition typographique", " · typographic layout")),
         format: r.label,
         business: "services",
         template: x.card.template,
         text: { headline: x.card.title, sub: x.card.text, cta: x.card.cta },
         ...(x.group ? { carousel: { group: `${jobId}:${x.group}`, index: x.card.index, total: x.card.total } } : {}),
         engine: r.engine,
+        ...(r.docKey ? { poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: x.photoAsset?.id ?? null } } : {}),
         // Couleurs avec lesquelles la carte a été dessinée : une carte d'une autre palette n'illustre plus le site.
         palette: paletteKey(palette(p)),
       },
       status: "review",
     });
+    if (r.docKey && r.doc) savePosterDoc(p.id, r.docKey, r.doc, a.id);
     saved.push({ id: a.id, role: x.role });
   }
   return saved;

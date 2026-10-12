@@ -63,7 +63,9 @@ export function adArt(p: Project, typo: Typo): AdArt {
   const style: AdStyle = premium || (serif && !heavy && !energetic) ? "premium" : heavy || energetic ? "bold" : services ? "craft" : "warm";
   // Titres d'affiche : graisse franche (le titre se lit d'un coup d'œil sur téléphone), même famille que la marque.
   const headingWeight = nearestWeight(typo.heading, Math.max(typo.headingWeight ?? 500, serif ? 600 : 700));
-  const display = kindOf(typo.heading) === "display" || (!serif && nearestWeight(typo.heading, 800) >= 700) ? typo.heading : kindOf(typo.body) === "display" ? typo.body : "Archivo";
+  // Police d'affiche : celle de la marque si elle est franche ; sinon une capitale condensée (Anton) pour les marques
+  // énergiques, Archivo ailleurs.
+  const display = kindOf(typo.heading) === "display" || (!serif && nearestWeight(typo.heading, 800) >= 700) ? typo.heading : kindOf(typo.body) === "display" ? typo.body : style === "bold" ? "Anton" : "Archivo";
   // Rotation propre au projet : deux marques du même style ne commencent pas par la même composition.
   const cycle = CYCLES[style];
   const seed = parseInt(crypto.createHash("sha256").update(p.id).digest("hex").slice(0, 6), 16) % cycle.length;
