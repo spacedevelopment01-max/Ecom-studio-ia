@@ -14,6 +14,8 @@ import type { AdDocument, Layer } from "../ad-doc/types";
 import { absoluteCues, timeline } from "./doc";
 import type { CameraMove, Clip, VideoDocument } from "./types";
 import { TOOL_TIMEOUT_MS } from "../exec-tool";
+import { accentOf } from "./promo";
+import type { Palette } from "./doc";
 
 type Ctx = any;
 export type VideoSources = { images: RenderEnv["images"]; videos: Map<string, string> };
@@ -211,13 +213,43 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
 }
 
 /** Transition à l'entrée d'un plan : mélange avec la dernière image du plan précédent (tenue). */
-function drawTransition(ctx: Ctx, kind: Clip["transitionIn"]["kind"], p: number, prev: any, W: number, H: number) {
+function drawTransition(ctx: Ctx, kind: Clip["transitionIn"]["kind"], p: number, prev: any, W: number, H: number, colors?: { a: string; b: string }) {
   if (!prev || kind === "cut" || p >= 1) return;
   const e = easeInOut(p);
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   const cw = prev.width;
   const ch = prev.height;
+  if (kind === "wipe" && colors) {
+    // Balayage aux couleurs de la marque : deux bandes diagonales traversent l'image ; l'ancien plan reste devant
+    // la bande, le nouveau apparaît derrière (comme les transitions des modèles d'agence).
+    const skew = cw * 0.35;
+    const x = -skew + (cw + skew * 2) * e;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(cw + skew, 0);
+    ctx.lineTo(cw + skew, ch);
+    ctx.lineTo(x - skew, ch);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(prev, 0, 0);
+    ctx.restore();
+    const band = (off: number, wd: number, color: string) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x - off, 0);
+      ctx.lineTo(x - off + wd, 0);
+      ctx.lineTo(x - off + wd - skew, ch);
+      ctx.lineTo(x - off - skew, ch);
+      ctx.closePath();
+      ctx.fill();
+    };
+    band(0, cw * 0.09, colors.a);
+    band(cw * 0.09, cw * 0.025, colors.b);
+    ctx.restore();
+    return;
+  }
   if (kind === "fade") {
     ctx.globalAlpha = 1 - e;
     ctx.drawImage(prev, 0, 0);
@@ -291,7 +323,7 @@ export async function renderVideoDoc(doc: VideoDocument, src: VideoSources, outF
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       ctx.clearRect(0, 0, doc.width, doc.height);
       await drawClip(ctx, doc, c, local, src, reader, scratch, scale);
-      if (ci > 0 && hasPrev && c.transitionIn.kind !== "cut" && local < c.transitionIn.durationS) drawTransition(ctx, c.transitionIn.kind, local / c.transitionIn.durationS, prevCanvas, OW, OH);
+      if (ci > 0 && hasPrev && c.transitionIn.kind !== "cut" && local < c.transitionIn.durationS) drawTransition(ctx, c.transitionIn.kind, local / c.transitionIn.durationS, prevCanvas, OW, OH, doc.meta.promo ? { a: accentOf(doc.brand.palette as Palette), b: "#FFFFFF" } : undefined);
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       const cue = cues.find((q) => t >= q.start && t < q.end);
       if (cue) drawSubtitle(ctx, doc, cue.text, t - cue.start);

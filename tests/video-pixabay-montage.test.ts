@@ -58,6 +58,22 @@ describe("Montage vidéo sur plans Pixabay", async () => {
     expect(s.asked.map((a) => a.excluded)).toEqual(s.asked.map((_, i) => i));
   }, 240_000);
 
+  it("musique : une piste libre de droits trouvée remplace la musique composée, avec sa licence et sa mention", async () => {
+    const { composeMusic } = await import("@/lib/media/music");
+    const p = loadProject(seedImageFixture(u.id, "artisan"));
+    const { deps } = mockVideoDeps({ userId: u.id, projectId: p.id });
+    const s = stockDeps(p.id);
+    const track = await saveAsset({ projectId: p.id, userId: u.id, data: composeMusic(30, "calm", 22050), name: "musique-libre.wav", mime: "audio/wav", role: "music", folderKey: "videos.ads", origin: "import", meta: {} });
+    const asked: { mood: string; durationS: number }[] = [];
+    const music = async (mood: "calm" | "pulse" | "warm", durationS: number) => (asked.push({ mood, durationS }), { assetId: track.id, licence: "CC BY 4.0", credit: "Musique : « Piste » par Auteur (CC BY 4.0) — https://exemple.test/piste" });
+    const r = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Publicité Instagram de 15 secondes", allowGeneration: false }, renderScale: 0.2, fps: 8 }, { ...deps, stockClip: s.stockClip, music }));
+    expect(r.videoAssetId).toBeTruthy();
+    expect(asked.length).toBe(1);
+    const doc = latestVideo(p.id, r.docKey!)!.doc;
+    expect(doc.audio.music).toMatchObject({ source: "library", assetId: track.id, licence: "CC BY 4.0" });
+    expect(r.notes.join(" ")).toMatch(/musique libre de droits — Musique : « Piste »/);
+  }, 240_000);
+
   it("services : la vidéo s'ouvre sur un vrai plan du métier", async () => {
     const p = loadProject(seedImageFixture(u.id, "restaurant"));
     const { deps } = mockVideoDeps({ userId: u.id, projectId: p.id });

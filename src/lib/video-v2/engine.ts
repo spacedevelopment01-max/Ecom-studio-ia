@@ -35,7 +35,7 @@ import { fromDraft, localScript, scriptIssues, scriptPrompt, scriptSystem } from
 import { buildStoryboard, storyboardIssues, type Inventory } from "./storyboard";
 import { planShots } from "./shots";
 import { chooseProvider, estimateMicro, shootDuration, VIDEO_CAPABILITIES } from "./providers";
-import { cuesForVoice, defaultSubtitleStyle, endCardDoc, interfaceDoc, kineticDoc, overlayText, packshotDoc, safeZone, SIZES, VIDEO_DOC_VERSION, voiceClip } from "./doc";
+import { cuesForVoice, defaultSubtitleStyle, endCardDoc, interfaceDoc, kineticDoc, overlayText, packshotDoc, safeZone, SIZES, timeline, VIDEO_DOC_VERSION, voiceClip, inkOn, type Palette } from "./doc";
 import { gateShot, gateVideo, localVideoChecks } from "./quality";
 import { NO_PEOPLE_EN } from "../people-policy";
 import { engineVideoKey, keyFrames, rememberShot, renderVideoFile, saveRendered, saveVideoVersion, shotKey, shotMemo, videoUserOwned } from "./store";
@@ -45,6 +45,7 @@ import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, Vide
 import type { GateDecision } from "../quality/gate";
 import { execTool } from "../exec-tool";
 import { dressPromo } from "./promo";
+import sharp from "sharp";
 
 /** Durée maximale d'une vidéo IA « courte » (forfait Développer). */
 export const SHORT_VIDEO_MAX_S = 30;
@@ -157,10 +158,23 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
 
     // 7. Document vidéo (timeline éditable), habillé façon publicité quand des plans réels existent.
     const thumbs = intent.kind === "ugc" ? [] : await promoThumbs(p, media, inv);
-    let doc = assemble({ p, intent, strategy, shots, media, inv, pal, typo, size, safe, insight, runId, thumbs });
+    const icons = intent.kind === "ugc" ? [] : await promoIcons(p, pal);
+    let doc = assemble({ p, intent, strategy, shots, media, inv, pal, typo, size, safe, insight, runId, thumbs, icons });
     // Voix off : seulement si un fournisseur de synthèse vocale existe (sinon la voix reste à enregistrer).
     if (deps.voice) await recordVoices(p, deps, doc, jobId, notes);
     else if (doc.audio.voice.length) notes.push("voix off : aucun fournisseur de synthèse vocale configuré — texte prêt à enregistrer, porté par les sous-titres");
+    // Musique : une vraie piste libre de droits (licence commerciale enregistrée) avant la musique composée.
+    if (doc.audio.music?.source === "synth" && doc.audio.music.mood !== "none" && deps.music) {
+      const mood = doc.audio.music.mood === "pulse" ? "pulse" : doc.audio.music.mood === "warm" ? "warm" : "calm";
+      const track = await deps.music(mood, timeline(doc).total).catch((e) => {
+        if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+        return null;
+      });
+      if (track) {
+        doc.audio.music = { source: "library", assetId: track.assetId, licence: track.licence, gainDb: -12 };
+        notes.push(`musique libre de droits — ${track.credit}`);
+      } else notes.push("musique : aucune piste libre de droits trouvée — musique composée par le studio");
+    }
     // Habillage publicitaire sans voix enregistrée : les titres portent le message, pas de sous-titres en double.
     if (doc.meta.promo && !doc.audio.voice.some((v) => v.assetId)) doc.subtitles.style.enabled = false;
 
@@ -468,6 +482,8 @@ type AssembleInput = {
   p: Project;
   /** Vignettes de l'habillage publicitaire (images extraites des plans réels, photos du projet). */
   thumbs?: string[];
+  /** Pictogrammes du panneau des prestations (un par élément). */
+  icons?: string[];
   intent: ReturnType<typeof videoIntent>;
   strategy: CreativeStrategy;
   shots: ShotPlan[];
@@ -537,11 +553,46 @@ async function promoThumbs(p: Project, media: Map<string, Media>, inv: Inventory
   return p.business === "services" ? [...out, ...photos] : [...photos, ...out];
 }
 
+/**
+ * Pictogrammes du panneau des prestations (bibliothèque libre Tabler, licence MIT) : un symbole par prestation
+ * (rouleau, truelle…) ou par point fort du produit, dans la couleur lisible sur sa pastille. Tous ou aucun (sinon
+ * les pastilles gardent leurs numéros).
+ */
+async function promoIcons(p: Project, pal: Palette): Promise<string[]> {
+  const { productPoints, accentOf } = await import("./promo");
+  const items = p.business === "services" ? (p.services?.services ?? []).map((s) => s.name.trim()).filter(Boolean).slice(0, 3) : productPoints(p);
+  if (items.length < 3) return [];
+  try {
+    const { iconSvg, searchIcons, tradeKeywords } = await import("../media/icon-library");
+    const acc = accentOf(pal);
+    // Pastille blanche sur un accent foncé (pictogramme couleur d'accent), pastille sombre sinon (pictogramme blanc).
+    const color = inkOn(acc) === "#FFFFFF" ? acc : "#FFFFFF";
+    const used = new Set<string>();
+    const out: string[] = [];
+    for (const it of items) {
+      // Le mot-clé de la prestation elle-même d'abord (« Plâtrerie » → truelle, « Peinture » → rouleau), dans
+      // l'ordre, puis la recherche large ; jamais deux fois le même pictogramme.
+      const own = tradeKeywords(it);
+      const words = [...own, ...tradeKeywords(`${p.product.category ?? ""} ${it}`), "sparkles", "circle-check", "star"];
+      const name = [...words.filter((w) => iconSvg(w)), ...searchIcons(words, 8)].find((n) => !used.has(n));
+      const svg = name ? iconSvg(name) : null;
+      if (!name || !svg) return [];
+      used.add(name);
+      const png = await sharp(Buffer.from(svg.replace(/currentColor/g, color).replace("<svg ", '<svg width="192" height="192" '))).png().toBuffer();
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: png, name: `picto-${name}.png`, mime: "image/png", role: "icon", folderKey: "videos.ads", origin: "generated", meta: { icon: { name, library: "tabler (MIT)" } } });
+      out.push(a.id);
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 function assemble(a: AssembleInput): VideoDocument {
   const { w, h } = a.size;
   let clips = a.shots.map((s, k) => clipFor(s, a.media.get(s.id) ?? { kind: "doc", assetId: null }, a, k));
   const promo = a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
-  if (promo) clips = dressPromo(clips, a.shots, { p: a.p, pal: a.pal, typo: a.typo, w, h, safe: a.safe, brand: a.insight.brand, logoId: a.inv.logo?.id ?? null, thumbs: a.thumbs ?? [], productPhotos: a.p.business === "services" ? [] : a.inv.photos.map((x) => x.id), cta: a.strategy.cta, message: a.strategy.message });
+  if (promo) clips = dressPromo(clips, a.shots, { p: a.p, pal: a.pal, typo: a.typo, w, h, safe: a.safe, brand: a.insight.brand, logoId: a.inv.logo?.id ?? null, thumbs: a.thumbs ?? [], productPhotos: a.p.business === "services" ? [] : a.inv.photos.map((x) => x.id), icons: a.icons ?? [], cta: a.strategy.cta, message: a.strategy.message });
   // Durée tenue : le temps perdu par un plan vidéo plus court revient au plan suivant composé.
   const lost = a.shots.reduce((t, s, k) => t + (s.durationS - clips[k].durationS), 0);
   if (lost > 0.05) {

@@ -59,6 +59,7 @@ export const EXT_BY_MIME: Record<string, string> = {
   "audio/mpeg": "mp3",
   "audio/wav": "wav",
   "audio/x-wav": "wav",
+  "audio/ogg": "ogg",
   "audio/aac": "aac",
   "application/pdf": "pdf",
   "application/zip": "zip",

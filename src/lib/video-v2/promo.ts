@@ -28,6 +28,8 @@ export type PromoInput = {
   thumbs: string[];
   /** Vraies photos du produit (boutique) : un plan de démonstration les montre en plein écran. */
   productPhotos?: string[];
+  /** Pictogrammes des éléments du panneau (un par prestation ou point fort), dans l'ordre ; sinon des numéros. */
+  icons?: string[];
   cta: string;
   message: string;
 };
@@ -46,7 +48,7 @@ function display(o: PromoInput): { family: string; weight: number; upper: boolea
 }
 
 /** Couleur d'accent lisible sur une vidéo assombrie (la plus vive des couleurs de la marque). */
-function accentOf(pal: Palette): string {
+export function accentOf(pal: Palette): string {
   const sat = (hex: string) => {
     const m = /^#?([0-9a-f]{6})/i.exec(hex);
     if (!m) return 0;
@@ -205,9 +207,11 @@ export function servicesOverlay(o: PromoInput, title: string, items: string[], t
   const cw = pw / n;
   items.slice(0, n).forEach((it, k) => {
     const cx = px + cw * k + cw / 2;
-    const d = w * 0.085;
+    const d = w * 0.1;
     L.push({ ...rect(`s-dot${k}`, `Pastille ${k + 1}`, { x: cx - d / 2, y: py + ph * 0.34, w: d, h: d }, ink === "#FFFFFF" ? "rgba(255,255,255,0.95)" : pal.dark), shape: "ellipse" });
-    L.push(txt(`s-num${k}`, `Numéro ${k + 1}`, { x: cx - d / 2, y: py + ph * 0.34 + d * 0.16, w: d, h: d * 0.7 }, String(k + 1), { family: "Montserrat", weight: 800, size: Math.round(d * 0.55), color: ink === "#FFFFFF" ? acc : "#FFFFFF", align: "center" }));
+    const icon = o.icons?.[k];
+    if (icon) L.push(imageLayer(`s-icon${k}`, `Pictogramme ${k + 1}`, "decor", { x: cx - d * 0.3, y: py + ph * 0.34 + d * 0.2, w: d * 0.6, h: d * 0.6 }, icon, "contain"));
+    else L.push(txt(`s-num${k}`, `Numéro ${k + 1}`, { x: cx - d / 2, y: py + ph * 0.34 + d * 0.16, w: d, h: d * 0.7 }, String(k + 1), { family: "Montserrat", weight: 800, size: Math.round(d * 0.55), color: ink === "#FFFFFF" ? acc : "#FFFFFF", align: "center" }));
     L.push(txt(`s-item${k}`, `Élément ${k + 1}`, { x: px + cw * k + w * 0.015, y: py + ph * 0.34 + d + h * 0.012, w: cw - w * 0.03, h: ph * 0.3 }, it, { family: "Montserrat", weight: 700, size: Math.round(w * 0.031), color: ink, align: "center" }));
   });
   L.push(...thumbRow(o, "s", h * 0.6, acc, 1));
@@ -281,7 +285,7 @@ export function productPoints(p: Project): string[] {
  * Habille les plans : chaque plan composé sans image reprend un passage d'un plan vidéo réel (jamais un aplat seul
  * quand des plans réels existent), puis reçoit son calque d'habillage selon son rôle dans le récit.
  */
-const RHYTHM = ["slide", "cut", "wipe", "cut", "zoom", "cut"] as const;
+const RHYTHM = ["wipe", "cut", "slide", "cut", "wipe", "zoom"] as const;
 
 export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Clip[] {
   const videos = clips.filter((c) => c.source.kind === "video");
@@ -339,7 +343,7 @@ export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Cli
       overlays = servicesOverlay(o, services ? C("Nos prestations", "Our services") : C("Les points forts", "Highlights"), items, area || tagline);
     } else overlays = statementOverlay(o, say(), `m${k}`);
     // Rythme varié (glissement, coupe franche, volet, zoom) : jamais le même effet à chaque plan ; la fin glisse.
-    const kind = k === 0 ? "cut" : c.part === "cta" ? "slide" : RHYTHM[(k - 1) % RHYTHM.length];
-    return { ...c, source, overlays, transitionIn: { kind, durationS: kind === "cut" ? 0 : 0.35 } };
+    const kind = k === 0 ? "cut" : c.part === "cta" ? "wipe" : RHYTHM[(k - 1) % RHYTHM.length];
+    return { ...c, source, overlays, transitionIn: { kind, durationS: kind === "cut" ? 0 : kind === "wipe" ? 0.5 : 0.35 } };
   });
 }

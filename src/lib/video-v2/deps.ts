@@ -56,6 +56,11 @@ export type VideoV2Deps = {
    * jamais déjà utilisé (`exclude` : plans déjà pris dans cette vidéo). Gratuit. Absent : aucun plan libre.
    */
   stockClip?: (req: StockClipRequest, exclude: Set<string>) => Promise<{ assetId: string; durationS: number } | null>;
+  /**
+   * Musique libre de droits (banque Openverse, licence commerciale enregistrée) pour l'humeur et la durée voulues.
+   * Absente ou sans résultat : la musique composée par le studio.
+   */
+  music?: (mood: "calm" | "pulse" | "warm", durationS: number) => Promise<{ assetId: string; licence: string; credit: string } | null>;
 };
 
 /** Inventaire de la bibliothèque : seulement ce qui est réutilisable automatiquement (jamais un refusé). */
@@ -122,6 +127,7 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
     // brancher (phase 7B) ; le message passe par les sous-titres et le texte à l'écran.
     voice: null,
     stockClip: (req, exclude) => findStockClip(base, p, req, exclude),
+    music: async (mood, durationS) => (await import("../stock/music")).projectMusic(p, mood, durationS),
     available: (provider) => !!activeProviderKey(provider as never),
     preferred: preferred.product,
     preferredFor: (people) => (people ? preferred.ugc : preferred.product),
