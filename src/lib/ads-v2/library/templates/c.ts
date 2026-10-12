@@ -369,12 +369,15 @@ export const TEMPLATES_C: Template[] = [
       }
       const mk = k.brandMark({ x: side, y: top, w: k.W - side * 2 }, { align: "center" });
       const bt = k.button(k.W / 2, 0, { maxW: k.W - side * 2, align: "center" });
-      bt.y = k.H - bottom - bt.h;
-      bt.anchor = { ...bt.anchor, v: "bottom" };
+      // L'anneau et le bouton forment un groupe centré entre la marque et la marge basse.
       const y0 = mk.y + mk.h + U * 0.07;
-      const y1 = bt.y - U * 0.07;
-      const d = Math.min(k.W * 0.84, y1 - y0);
-      const cy = (y0 + y1) / 2;
+      const yb = k.H - bottom;
+      const g = U * 0.06;
+      const d = Math.min(k.W * 0.84, yb - y0 - bt.h - g);
+      const start = y0 + (yb - y0 - (d + g + bt.h)) / 2;
+      const cy = start + d / 2;
+      bt.y = start + d + g;
+      bt.anchor = { ...bt.anchor, v: "bottom" };
       ring(k.W / 2, cy, d);
       inner(k.W / 2, cy, d);
     },
@@ -392,13 +395,13 @@ export const TEMPLATES_C: Template[] = [
       k.fill();
       const { side, top, bottom } = k.m;
       const U = k.U;
-      const card = k.cls === "land" ? { x: k.W * 0.47, y: top, w: k.W * 0.53 - side, h: k.H - top - bottom } : { x: side, y: top, w: k.W - side * 2, h: k.H * k.pick(0, 0.55, 0.56, 0.42) };
+      const card = k.cls === "land" ? { x: k.W * 0.47, y: top, w: k.W * 0.53 - side, h: k.H - top - bottom } : { x: side, y: top, w: k.W - side * 2, h: k.H * k.pick(0, 0.46, 0.48, 0.36) };
       k.rect({ x: card.x - U * 0.02, y: card.y + U * 0.02, w: card.w, h: card.h }, k.c.accent, { name: "Ombre décalée" });
       k.photo(card, { focus: k.point(0) });
       const word = k.shortWord();
       if (word) {
         // Ruban en travers du coin : mesuré sur le mot, le texte reste entièrement sur le ruban.
-        const size = Math.max(24, Math.round(U * 0.03));
+        const size = Math.max(24, Math.round(U * k.pick(0.036, 0.032, 0.032, 0.032)));
         const t = k.text("body", word, { x: 0, y: 0, w: U * 0.36 }, { weight: 700, size, align: "center", upper: true, spacing: Math.round(size * 0.12), lineHeight: 1.1, maxLines: 2, minSize: 22 }, "ribbon", "Ruban");
         ctx.font = serverFont(t.font.family, t.font.weight, t.font.size, false);
         ctx.letterSpacing = `${t.letterSpacing}px`;
@@ -406,7 +409,7 @@ export const TEMPLATES_C: Template[] = [
         ctx.letterSpacing = "0px";
         t.w = Math.ceil(wt + size * 0.3);
         const ht = t.h;
-        const pad = size * 0.55;
+        const pad = size * 0.35;
         const band = (t.w + ht) / Math.SQRT2 + pad * 2;
         const s = t.w / 2 + pad;
         const cx = card.x + card.w;
@@ -430,7 +433,7 @@ export const TEMPLATES_C: Template[] = [
         k.layers.push(t);
       }
       const col = k.cls === "land" ? { x: side, y: top, w: card.x - side - k.W * 0.06, h: k.H - top - bottom } : { x: side, y: card.y + card.h + U * 0.07, w: k.W - side * 2, h: k.H - bottom - card.y - card.h - U * 0.07 };
-      column(k, col, { valign: "middle", title: U * k.pick(0.11, 0.08, 0.09, 0.1), display: true, ctaStyle: "square" });
+      column(k, col, { valign: "middle", title: U * k.pick(0.11, 0.1, 0.1, 0.11), display: true, ctaStyle: "square", maxLines: 4 });
     },
   },
   {
@@ -468,7 +471,7 @@ export const TEMPLATES_C: Template[] = [
       k.ellipse({ x: (k.W - d) / 2 - ringW, y: py - ringW, w: d + ringW * 2, h: d + ringW * 2 }, k.c.bg, { name: "Liseré" });
       k.photo({ x: (k.W - d) / 2, y: py, w: d, h: d }, { radius: d / 2, focus: k.point(0), zoom: 1.1 });
       const y1 = py - U * 0.06;
-      column(k, { x: side, y: top, w: k.W - side * 2, h: y1 - top }, { align: "center", valign: "middle", title: U * k.pick(0.1, 0.085, 0.1, 0.11), eyebrow: true });
+      column(k, { x: side, y: top, w: k.W - side * 2, h: y1 - top }, { align: "center", valign: "middle", title: U * k.pick(0.1, 0.1, 0.12, 0.13), eyebrow: true });
     },
   },
   {
@@ -486,22 +489,30 @@ export const TEMPLATES_C: Template[] = [
       const U = k.U;
       k.rect({ x: 0, y: 0, w: k.W, h: k.H }, { type: "radial", angle: 0, stops: [{ offset: 0, color: mix(k.c.bg, "#FFFFFF", isDark(k.c.bg) ? 0.1 : 0.25) }, { offset: 1, color: k.c.bg }] }, { name: "Lumière" });
       const land = k.cls === "land";
-      const cw = land ? k.H * 0.5 : k.W * k.pick(0, 0.36, 0.4, 0.46);
+      const cw = land ? k.H * 0.44 : k.W * k.pick(0, 0.3, 0.34, 0.36);
       const ch = cw * 1.25;
-      const ccx = land ? k.W * 0.72 : k.W / 2;
-      const cy = land ? (k.H - ch) / 2 + k.H * 0.03 : top + U * 0.03;
+      const ccx = land ? k.W * 0.715 : k.W / 2;
+      const cy = land ? (k.H - ch) / 2 : top + U * k.pick(0, 0.04, 0.04, 0.12);
       const pad = cw * 0.045;
+      // Emprise réelle des cartes après rotation (pour placer le texte à côté, sans chevauchement).
+      const ext = { x0: k.W, x1: 0, y1: 0 };
       const card = (dx: number, deg: number, focus: { u: number; v: number }, zoom: number) => {
         const x = ccx - cw / 2 + dx;
         const fr = k.rect({ x, y: cy, w: cw, h: ch }, "#FFFFFF", { radius: U * 0.01, name: "Carte", shadow: { color: "rgba(0,0,0,0.28)", blur: Math.round(U * 0.035), x: 0, y: Math.round(U * 0.012) } });
         const ph = k.photo({ x: x + pad, y: cy + pad, w: cw - pad * 2, h: ch - pad * 2 }, { radius: U * 0.006, focus, zoom })!;
-        k.rotateGroup([fr, ph], deg, ccx + dx * 0.3, cy + ch * 2.4);
+        k.rotateGroup([fr, ph], deg, ccx + dx * 0.3, cy + ch * 1.3);
+        const a = (fr.rotation * Math.PI) / 180;
+        const ex = (Math.abs(Math.cos(a)) * fr.w + Math.abs(Math.sin(a)) * fr.h) / 2;
+        const ey = (Math.abs(Math.sin(a)) * fr.w + Math.abs(Math.cos(a)) * fr.h) / 2;
+        ext.x0 = Math.min(ext.x0, fr.x + fr.w / 2 - ex);
+        ext.x1 = Math.max(ext.x1, fr.x + fr.w / 2 + ex);
+        ext.y1 = Math.max(ext.y1, fr.y + fr.h / 2 + ey);
       };
-      card(-cw * 0.62, -8, k.point(1), 1.9);
-      card(cw * 0.62, 8, k.point(2), 1.9);
+      card(-cw * 0.6, -8, k.point(1), 1.9);
+      card(cw * 0.6, 8, k.point(2), 1.9);
       card(0, 0, k.point(0), 1);
-      const col = land ? { x: side, y: top, w: ccx - cw * 1.25 - side - k.W * 0.03, h: k.H - top - bottom } : { x: side, y: cy + ch + U * 0.09, w: k.W - side * 2, h: k.H - bottom - cy - ch - U * 0.09 };
-      column(k, col, { valign: "middle", title: U * k.pick(0.11, 0.085, 0.095, 0.11), align: land ? "left" : "center" });
+      const col = land ? { x: side, y: top, w: ext.x0 - side - k.W * 0.04, h: k.H - top - bottom } : { x: side, y: ext.y1 + U * 0.06, w: k.W - side * 2, h: k.H - bottom - ext.y1 - U * 0.06 };
+      column(k, col, { valign: "middle", title: U * k.pick(0.11, 0.1, 0.11, 0.12), align: land ? "left" : "center" });
     },
   },
   {
@@ -520,7 +531,7 @@ export const TEMPLATES_C: Template[] = [
       const land = k.cls === "land";
       const pic = k.hasPhoto;
       // Paysage avec photo : petite photo à gauche, le reste centré dans l'espace libre.
-      const ps = land ? k.H * 0.5 : k.W * k.pick(0, 0.2, 0.24, 0.28);
+      const ps = land ? k.H * 0.5 : k.W * k.pick(0, 0.2, 0.26, 0.32);
       const area = land && pic ? { x: side + ps + k.W * 0.06, w: k.W - side * 2 - ps - k.W * 0.06 } : { x: side, w: k.W - side * 2 };
       const cx = area.x + area.w / 2;
       const mk = k.brandMark({ x: area.x, y: top, w: area.w }, { align: "center" });
@@ -530,7 +541,7 @@ export const TEMPLATES_C: Template[] = [
       const tw = Math.min(area.w, k.W * k.pick(0.5, 0.7, 0.72, 0.76));
       const lw = U * 0.1;
       const gap = U * 0.045;
-      const t = fitTitle(k, { x: cx - tw / 2, y: 0, w: tw, h: k.H * 0.4 }, { max: U * k.pick(0.085, 0.07, 0.075, 0.085), italic: true, align: "center", maxLines: 3 });
+      const t = fitTitle(k, { x: cx - tw / 2, y: 0, w: tw, h: k.H * 0.4 }, { max: U * k.pick(0.085, 0.075, 0.085, 0.1), italic: true, align: "center", maxLines: 3 });
       const s = k.subline({ x: cx - tw / 2, y: 0, w: tw }, { align: "center", upper: true, size: Math.max(22, U * 0.024) });
       const showPic = pic && !land;
       const h = (showPic ? ps + gap * 1.4 : 0) + gap + t.h + gap + (s ? gap * 0.8 + s.h : 0);
@@ -565,10 +576,10 @@ export const TEMPLATES_C: Template[] = [
       const U = k.U;
       // Grandes rayures diagonales franches (fond et accent de la marque).
       const sw = U * 0.075;
-      const D = Math.hypot(k.W, k.H) * 1.1;
+      const D = (k.W + k.H) * 1.5;
       for (let x = -k.H; x < k.W + k.H; x += sw * 2) k.rect({ x: x - sw / 2, y: k.H / 2 - D / 2, w: sw, h: D }, k.c.accent, { rotation: 45, name: "Rayure" });
       const cardC = farthest([k.c.light, k.c.dark, "#FFFFFF"], [k.c.bg, k.c.accent]);
-      const card = k.pick({ x: k.W * 0.08, y: k.H * 0.1, w: k.W * 0.84, h: k.H * 0.8 }, { x: k.W * 0.11, y: k.H * 0.1, w: k.W * 0.78, h: k.H * 0.8 }, { x: k.W * 0.1, y: k.H * 0.09, w: k.W * 0.8, h: k.H * 0.82 }, { x: k.W * 0.1, y: top - k.H * 0.025, w: k.W * 0.8, h: k.H - top - bottom + k.H * 0.05 });
+      const card = k.pick({ x: k.W * 0.08, y: k.H * 0.1, w: k.W * 0.84, h: k.H * 0.8 }, { x: k.W * 0.085, y: k.H * 0.08, w: k.W * 0.83, h: k.H * 0.84 }, { x: k.W * 0.1, y: k.H * 0.09, w: k.W * 0.8, h: k.H * 0.82 }, { x: k.W * 0.1, y: top - k.H * 0.025, w: k.W * 0.8, h: k.H - top - bottom + k.H * 0.05 });
       const off = U * 0.022;
       k.rect({ x: card.x + off, y: card.y + off, w: card.w, h: card.h }, k.c.dark, { name: "Ombre décalée" });
       k.rect(card, cardC, { name: "Carte" });
@@ -581,7 +592,7 @@ export const TEMPLATES_C: Template[] = [
           k.photo({ x: inside.x, y: inside.y, w: pw, h: inside.h }, { focus: k.point(0) });
           col = { x: inside.x + pw + pad, y: inside.y, w: inside.w - pw - pad, h: inside.h };
         } else {
-          const ph = inside.h * k.pick(0, 0.42, 0.46, 0.44);
+          const ph = inside.h * k.pick(0, 0.36, 0.46, 0.44);
           k.photo({ x: inside.x, y: inside.y, w: inside.w, h: ph }, { focus: k.point(0) });
           col = { x: inside.x, y: inside.y + ph + pad, w: inside.w, h: inside.h - ph - pad };
         }
@@ -589,7 +600,7 @@ export const TEMPLATES_C: Template[] = [
       const y = Math.max(col.y, top);
       const y1 = Math.min(col.y + col.h, k.H - bottom);
       const x = Math.max(col.x, side);
-      column(k, { x, y, w: Math.min(col.x + col.w, k.W - side) - x, h: y1 - y }, { valign: "middle", align: k.hasPhoto && k.cls === "land" ? "left" : "center", title: U * (k.hasPhoto ? k.pick(0.1, 0.08, 0.09, 0.1) : k.pick(0.14, 0.13, 0.14, 0.15)), display: true, ctaStyle: "square", eyebrow: !k.hasPhoto });
+      column(k, { x, y, w: Math.min(col.x + col.w, k.W - side) - x, h: y1 - y }, { valign: "middle", align: k.hasPhoto && k.cls === "land" ? "left" : "center", title: U * (k.hasPhoto ? k.pick(0.1, 0.09, 0.1, 0.13) : k.pick(0.14, 0.13, 0.15, 0.17)), display: true, ctaStyle: "square", eyebrow: !k.hasPhoto, maxLines: 4 });
     },
   },
 ];
