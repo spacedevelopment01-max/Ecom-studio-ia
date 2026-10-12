@@ -441,7 +441,7 @@ export async function produceUgc(ctx: JobContext, projectId: string, req: { opti
   } catch (e) {
     throw new UserFacingError((e as Error).message);
   }
-  if (!hasAiCredits(project.userId, projectId)) throw new UserFacingError(L("L'IA de votre forfait est utilisée à 100 % pour ce mois-ci : la vidéo UGC pourra être créée au renouvellement, ou tout de suite avec un pack (Mon compte).", "Your plan's AI is 100% used for this month: the UGC video can be created when it renews, or right away with a pack (My account)."));
+  if (!hasAiCredits(project.userId, projectId)) throw new UserFacingError(L("L'IA de votre forfait est utilisée à 100 % pour ce mois-ci : la vidéo UGC pourra être créée au renouvellement, ou tout de suite avec une recharge de l'IA du projet (Mon compte).", "Your plan's AI is 100% used for this month: the UGC video can be created when it renews, or right away with a project AI top-up (My account)."));
   const video = videoProviderAvailable("ugc_video");
   if (!video) throw new UserFacingError(L("Aucun fournisseur vidéo configuré (Google Veo ou fal.ai) : la vidéo UGC ne peut pas être générée.", "No video provider configured (Google Veo or fal.ai): the UGC video can't be generated."));
   if (!imageProviderAvailable({ usage: "product_image", references: 1, people: true })) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini ou OpenAI) : la personne de la vidéo ne peut pas être créée.", "No image provider configured (Google Gemini or OpenAI): the person in the video can't be created."));

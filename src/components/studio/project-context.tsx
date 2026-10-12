@@ -26,7 +26,11 @@ export type Overview = {
   cutoutUrl: string | null;
   ai: { llm: boolean; image: boolean; video: boolean; ugc?: boolean; ugcVoice?: boolean; credits?: boolean; mode?: "ai" | "local" };
   credits: { usedPct: number; alert: boolean; paused: boolean; empty?: boolean };
+  /** Budget IA de ce projet en % (null : découverte, l'IA n'est pas incluse). */
+  aiBudget?: { usage: AiBudgetUsage; renewsAt: number } | null;
 };
+
+export type AiBudgetUsage = { plan: { used: number }; credits: { used: number } | null; paused: boolean };
 
 const Ctx = createContext<{ id: string; data: Overview | null; reload: () => Promise<void>; error: string | null } | null>(null);
 

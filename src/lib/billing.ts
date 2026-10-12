@@ -330,7 +330,7 @@ export function aiReserves(key: string): { plan: { used: number } | null; credit
 function budgetError(userId: string) {
   const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId);
   const end = new Date(w?.period_end ?? now()).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
-  return new UserFacingError(L(`L'IA de votre forfait est utilisée à 100 % pour ce mois-ci. Elle reprend le ${end}, ou tout de suite avec un pack (Mon compte).`, `Your plan's AI is 100% used for this month. It resumes on ${end}, or right away with a pack (My account).`));
+  return new UserFacingError(L(`L'IA de votre forfait est utilisée à 100 % pour ce mois-ci. Elle reprend le ${end}, ou tout de suite avec une recharge de l'IA du projet (Mon compte).`, `Your plan's AI is 100% used for this month. It resumes on ${end}, or right away with a project AI top-up (My account).`));
 }
 
 /** Pré-contrôle avant de proposer une génération payante (le vrai garde-fou est la réservation, `reserve`). */

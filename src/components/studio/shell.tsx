@@ -231,6 +231,8 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
   // Forfait et quotas (lien « Mon compte », bandeau quand un quota est épuisé) : jamais de crédits.
   // Barre d'IA à jour peu après chaque action (coût réel compté dès la fin de l'appel).
   const { billing } = useBilling({ poll: 15000 });
+  // Dans un projet, la jauge « Reste X % » est celle du budget IA DE CE PROJET (un abonnement = un projet).
+  const gauge = billing && data && "aiBudget" in data ? { ...billing, ai: data.aiBudget?.usage ?? null, periodEnd: data.aiBudget?.renewsAt ?? billing.periodEnd } : billing;
   // Menu latéral replié ou déplié (ordinateur), mémorisé sur cet appareil.
   const [folded, setFolded] = useState(false);
   useEffect(() => {
@@ -347,13 +349,13 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             <TutorialButton tab={tab} business={data?.business} />
             {status ? <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span> : <span className="skeleton hidden h-6 w-24 rounded-full sm:inline-flex" aria-hidden />}
             <ActiveJobs />
-            <AiUsageBar billing={billing} />
+            <AiUsageBar billing={gauge} />
             <PlanLink billing={billing} />
             <Notifications />
             <div className="hidden shrink-0 sm:flex"><LangSwitch /></div>
             <MobileLangToggle />
             <ThemeToggle className="shrink-0" />
-            <MobileMenu tab={tab} business={data?.business} isAdmin={me?.user.role === "admin"} billing={billing} />
+            <MobileMenu tab={tab} business={data?.business} isAdmin={me?.user.role === "admin"} billing={gauge} />
           </div>
           {/* Onglets (téléphone et tablette) */}
           <nav className="scrollbar-none flex gap-1.5 overflow-x-auto px-4 pb-3 lg:hidden" aria-label={t("Espaces du projet", "Project spaces")}>
