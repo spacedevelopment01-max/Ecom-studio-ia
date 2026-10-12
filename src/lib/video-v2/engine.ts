@@ -490,11 +490,12 @@ export function clipFor(s0: ShotPlan, m: Media, a: Pick<AssembleInput, "pal" | "
     return { ...base, durationS: Math.min(s.durationS, Math.max(0.8, dur)), source: { kind: "video", assetId: m.assetId, inS: 0, outS: Math.min(dur, s.durationS), muted: !(s.character && !!s.voice) }, overlays: s.onScreen ? overlayText({ ...common, text: s.onScreen, place: s.part === "hook" ? "lower" : "lower" }) : [], generated: !!m.generated };
   }
   if (m.kind === "image" && m.assetId) return { ...base, source: { kind: "image", assetId: m.assetId, motion: s.camera === "handheld" ? "push_in" : s.camera, crop: null }, overlays: s.onScreen ? overlayText({ ...common, text: s.onScreen, place: "lower" }) : [] };
-  // Compositions (calques de l'éditeur publicitaire).
+  // Compositions (calques de l'éditeur publicitaire). Le sujet du plan est une consigne de recherche interne
+  // (« le lieu de travail…, sans personne ») : il n'est jamais écrit à l'écran ; à défaut de texte, la marque.
   if (s.part === "cta") return { ...base, source: { kind: "doc", doc: endCardDoc({ ...common, cta: a.strategy.cta, line: a.strategy.message.slice(0, 70), logoId: a.inv.logo?.id ?? null }), animate: "rise" } };
   if (s.method === "packshot" && a.inv.cutout) return { ...base, source: { kind: "doc", doc: packshotDoc({ ...common, cutoutId: a.inv.cutout.id, title: s.onScreen || undefined }), animate: "rise" } };
-  if (s.method === "ui_animation") return { ...base, source: { kind: "doc", doc: interfaceDoc({ ...common, text: s.onScreen || s.subject }), animate: "rise" } };
-  return { ...base, source: { kind: "doc", doc: kineticDoc({ ...common, text: s.onScreen || s.subject, dark: s.part === "proof" }), animate: "fade" } };
+  if (s.method === "ui_animation") return { ...base, source: { kind: "doc", doc: interfaceDoc({ ...common, text: s.onScreen || s0.onScreen || a.insight.brand }), animate: "rise" } };
+  return { ...base, source: { kind: "doc", doc: kineticDoc({ ...common, text: s.onScreen || s0.onScreen || a.insight.brand, dark: s.part === "proof" }), animate: "fade" } };
 }
 
 function assemble(a: AssembleInput): VideoDocument {

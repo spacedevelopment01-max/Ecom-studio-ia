@@ -1,6 +1,7 @@
 /** Photos libres de droits : lecture des réponses Pexels, Pixabay et Openverse (sans réseau), crédit affiché. */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { searchSource, searchStock, stockCredit } from "@/lib/stock/photos";
+import { setSetting } from "@/lib/settings";
 
 vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeProviderKey: (p: string) => (p === "pexels" ? "cle-pexels" : null) }));
 
@@ -25,9 +26,12 @@ describe("photos libres de droits", () => {
     expect((f.mock.calls[0] as any[])[0]).toMatch(/license=cc0,pdm/);
   });
   it("une banque en panne ne bloque pas les autres ; photos déjà prises écartées", async () => {
+    // Plusieurs banques seulement quand « Pixabay obligatoire » est désactivé.
+    setSetting("stock.pixabayOnly", "0");
     vi.stubGlobal("fetch", vi.fn(async (url: string) => (url.includes("pexels") ? new Response("", { status: 500 }) : new Response(JSON.stringify({ results: [{ id: "a", url: "https://x/a.jpg", width: 2000, height: 1500, license: "pdm" }, { id: "c", url: "https://x/c.jpg", width: 2000, height: 1500, license: "cc0" }] }), { status: 200 }))));
     const r = await searchStock(["peinture"], "landscape", "fr", new Set(["openverse:a"]));
     expect(r.map((x) => `${x.source}:${x.id}`)).toEqual(["openverse:c"]);
+    setSetting("stock.pixabayOnly", null);
   });
   it("crédit : source et auteur, et précision que ce n'est pas une photo du client", () => {
     expect(stockCredit({ source: "pexels", author: "Ana", license: "Pexels" })).toMatch(/Pexels.*Ana.*pas une photo de vos réalisations/);

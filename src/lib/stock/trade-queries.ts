@@ -10,7 +10,7 @@ type Trade = { re: RegExp; queries: string[]; must: string[] };
 
 const TRADES: Trade[] = [
   { re: /platr|plaquist|placo|\bstaffeur|\benduit|\bstuc/, queries: ["plasterer plastering wall", "drywall plasterboard installation"], must: ["plaster", "plasterer", "plastering", "drywall", "plasterboard", "trowel", "stucco", "putty", "spackle"] },
-  { re: /peint|peinture/, queries: ["painter paint roller wall", "house painter painting room"], must: ["painter", "paint roller", "paintbrush", "paint brush", "painting wall", "wall painting", "paint can", "roller", "decorator"] },
+  { re: /peint|peinture/, queries: ["painter paint roller wall", "house painter painting room"], must: ["painter", "paint roller", "paintbrush", "paint brush", "painting wall", "wall painting", "paint can", "decorator"] },
   { re: /carrel|faience|mosaiq/, queries: ["tiler laying floor tiles", "bathroom wall tiling"], must: ["tile", "tiles", "tiling", "tiler", "ceramic", "grout", "mosaic"] },
   { re: /plomb|sanitair|chauffagist/, queries: ["plumber fixing pipes", "plumbing repair wrench"], must: ["plumber", "plumbing", "pipe", "pipes", "faucet", "tap", "wrench", "boiler", "sink"] },
   { re: /electri/, queries: ["electrician wiring electrical panel", "electrical installation work"], must: ["electrician", "electrical", "electricity", "wiring", "wire", "cable", "socket", "fuse", "switchboard"] },
@@ -89,6 +89,8 @@ export function tagsMatch(alt: string, must: string[]): boolean {
  * citer le métier les rachète (« plasterer on a brick wall » reste pertinente).
  */
 export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean, negative: string[] = GLOBAL_NEGATIVES, opts: { people?: boolean } = {}): T[] {
+  // Image ou vidéo générée par IA déposée sur la banque : jamais présentée comme une vraie photo ou un vrai plan.
+  found = found.filter((p) => !/\bai[ -]?generated\b|\bai[ -]art\b/i.test(p.alt));
   // Règle de présence humaine : personnes non autorisées → toute photo (ou vidéo) décrite avec une personne est
   // écartée d'emblée ; le contrôle visuel refuse ensuite celles dont la description ne le disait pas.
   if (opts.people === false) found = found.filter((p) => !mentionsPerson(p.alt));

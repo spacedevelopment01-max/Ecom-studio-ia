@@ -26,7 +26,10 @@ const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t 
 
 /** Lecture séquentielle des images d'un plan vidéo (ffmpeg → RGBA), à la taille du rendu. */
 class FrameReader {
-  private buf = Buffer.alloc(0);
+  // Morceaux reçus de ffmpeg, sans recopie : ffmpeg est mis en pause dès quelques images d'avance (sinon la mémoire
+  // tampon grossit sans fin et chaque morceau recopiait tout ce qui attendait — rendu très lent sur un vrai plan).
+  private chunks: Buffer[] = [];
+  private queued = 0;
   private ended = false;
   private waiters: (() => void)[] = [];
   private last: Buffer | null = null;
@@ -34,7 +37,9 @@ class FrameReader {
   constructor(file: string, inS: number, durS: number, private w: number, private h: number, fps: number) {
     this.proc = spawn("ffmpeg", ["-v", "error", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps}`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
     this.proc.stdout.on("data", (d: Buffer) => {
-      this.buf = Buffer.concat([this.buf, d]);
+      this.chunks.push(d);
+      this.queued += d.length;
+      if (this.queued >= this.w * this.h * 4 * 4) this.proc.stdout.pause();
       this.wake();
     });
     const end = () => {
@@ -52,11 +57,18 @@ class FrameReader {
   /** Image suivante (la dernière est tenue si le plan source est plus court que prévu). */
   async next(): Promise<Buffer | null> {
     const size = this.w * this.h * 4;
-    while (this.buf.length < size && !this.ended) await new Promise<void>((r) => this.waiters.push(r));
-    if (this.buf.length >= size) {
-      this.last = this.buf.subarray(0, size);
-      this.buf = this.buf.subarray(size);
+    while (this.queued < size && !this.ended) {
+      this.proc.stdout.resume();
+      await new Promise<void>((r) => this.waiters.push(r));
     }
+    if (this.queued >= size) {
+      const all = this.chunks.length === 1 ? this.chunks[0] : Buffer.concat(this.chunks, this.queued);
+      this.last = Buffer.from(all.subarray(0, size));
+      const rest = all.subarray(size);
+      this.chunks = rest.length ? [rest] : [];
+      this.queued = rest.length;
+    }
+    if (this.queued < this.w * this.h * 4 * 4) this.proc.stdout.resume();
     return this.last;
   }
   close() {
