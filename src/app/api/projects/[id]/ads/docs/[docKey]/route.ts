@@ -9,6 +9,7 @@ import { reflow } from "@/lib/ad-doc/reflow";
 import { localAdEdit } from "@/lib/ad-doc/local-edit";
 import { PLATFORM_SPECS } from "@/lib/ads-v2/platforms";
 import type { AdDocument } from "@/lib/ad-doc/types";
+import { ANIM_STYLES } from "@/lib/ad-doc/animate";
 import type { Platform } from "@/lib/ads-v2/types";
 import { lintClaims } from "@/lib/ai/tasks";
 import { adPolicyIssues } from "@/lib/engine/ad-craft";
@@ -56,7 +57,8 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
   const b = await body(
     req,
     z.object({
-      action: z.enum(["save", "restore", "duplicate", "reflow", "edit"]),
+      action: z.enum(["save", "restore", "duplicate", "reflow", "edit", "animate"]),
+      style: z.enum(ANIM_STYLES).optional(),
       doc: AdDocumentSchema.optional(),
       version: z.number().int().min(1).optional(),
       note: z.string().max(200).optional(),
@@ -79,6 +81,13 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     const cur = latestDoc(p.id, docKey)!;
     await saveAndRender(p.id, user.id, docKey, cur.doc, `rendu de la restauration de la version ${b.version}`);
     return ok(await view(p, docKey));
+  }
+  if (b.action === "animate") {
+    // Version animée (vidéo) : locale et gratuite, même rendu que l'image (moteur commun).
+    const { animateDocToAsset } = await import("@/lib/ad-doc/animate-server");
+    const a = await animateDocToAsset(p.id, user.id, docKey, b.style ?? "pop");
+    if (!a) throw new HttpError(404, L("Création introuvable.", "Creative not found."));
+    return ok({ ...(await view(p, docKey)), animated: { assetId: a.id, url: `/api/files/${a.id}` } });
   }
   if (b.action === "duplicate") {
     const d = duplicateDoc(p.id, docKey);
