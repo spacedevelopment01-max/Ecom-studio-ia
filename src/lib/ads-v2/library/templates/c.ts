@@ -55,7 +55,7 @@ function fitTitle(k: Kit, b: Box, o: TitleOpts): TextLayer {
   let s = Math.round(o.max);
   let n = fits(s);
   while (!n && s > 26) n = fits((s = Math.max(26, Math.floor(s * 0.96))));
-  t.font.size = s; if (process.env.DBG) console.log("fit", o.max, s, n, b.w, b.h);
+  t.font.size = s;
   t.letterSpacing = Math.round(s * ratio);
   t.autoFit = { minSize: Math.max(22, Math.round(s * 0.6)) };
   t.h = Math.ceil(Math.max(1, n || maxLines) * s * t.lineHeight + s * 0.12);
@@ -76,7 +76,7 @@ function column(k: Kit, col: Box, o: ColOpts) {
     const xw = { x: col.x, w: col.w };
     const items: { l: Layer; after: number }[] = [];
     if (o.mark !== false) items.push({ l: k.brandMark({ ...xw, y: y0 }, { align, onDark: o.onDark, color: o.markColor }), after: gap * 1.2 });
-    if (o.eyebrow && k.i.eyebrow) items.push({ l: k.label(k.i.eyebrow, { ...xw, y: y0 }, { size: Math.max(22, k.U * 0.026), align, color: k.c.accent, id: "eyebrow" }), after: gap * 0.5 });
+    if (o.eyebrow && k.i.eyebrow) items.push({ l: k.label(k.i.eyebrow, { ...xw, y: y0 }, { size: Math.max(22, k.U * 0.026), align, color: k.c.accent, id: "eyebrow" }), after: gap * 0.75 });
     const head = items.reduce((a, it) => a + it.l.h + it.after, 0);
     const s = withSub ? k.subline({ ...xw, y: y0 }, { align, upper: o.subUpper }) : null;
     const bx = align === "center" ? col.x + col.w / 2 : align === "right" ? col.x + col.w : col.x;
