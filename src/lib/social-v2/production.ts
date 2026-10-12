@@ -7,7 +7,7 @@
  * Une publication modifiée par le client garde ses médias (jamais remplacés sans sa demande).
  */
 import { all, json, now, run } from "../db";
-import { addUsage, type Asset } from "../library";
+import { addUsage, getAsset, type Asset } from "../library";
 import type { Project } from "../projects";
 import { isAutoUsable } from "../quality/usable";
 import { EUR } from "../billing";
@@ -18,7 +18,7 @@ export type ProduceMethod = "library" | "local" | "image_v2" | "ads_v2" | "video
 export type EstimateLine = { postId: string; method: ProduceMethod; paid: boolean; estimateMicro: number };
 export type ProductionEstimate = { posts: number; free: number; paid: number; estimateMicro: number; lines: EstimateLine[]; notes: string[] };
 
-type Row = PostBrief & { project_id: string; media: string; status: string; user_edited: number; brief: string; engine: string };
+type Row = PostBrief & { project_id: string; plan_id: string | null; media: string; status: string; user_edited: number; brief: string; engine: string };
 
 const VIDEO_FORMATS = new Set(["video", "reel", "short"]);
 const needsVideo = (r: Row) => VIDEO_FORMATS.has(r.format);
@@ -71,7 +71,23 @@ export type ProductionResult = { produced: number; skipped: number; failed: numb
  * Production d'un lot. `approvedEstimateMicro` : estimation vue et acceptée par le client — une production
  * payante n'est lancée que si elle a été acceptée et seulement dans le plafond `maxCostEur`.
  */
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number }): Promise<ProductionResult> {
+/**
+ * Photos de fond déjà prises pour les affiches d'un calendrier (de la moins à la plus utilisée) : quand le client a
+ * choisi un nombre d'images différentes, les publications suivantes les reprennent (autre texte, autre mise en page).
+ */
+function planBackgrounds(planId: string | null): { asset: Asset; uses: number }[] {
+  if (!planId) return [];
+  const rows = all<{ bg: string; uses: number }>(
+    `SELECT json_extract(a.meta, '$.poster.backgroundAssetId') bg, COUNT(*) uses FROM assets a
+      WHERE a.deleted_at IS NULL AND json_extract(a.meta, '$.poster.backgroundAssetId') IS NOT NULL
+        AND json_extract(a.meta, '$.post') IN (SELECT id FROM posts WHERE plan_id = ?)
+      GROUP BY bg ORDER BY uses ASC`,
+    planId,
+  );
+  return rows.map((r) => ({ asset: getAsset(r.bg)!, uses: r.uses })).filter((x) => x.asset && !x.asset.deleted_at);
+}
+
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
@@ -81,10 +97,16 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
   const used = new Map<string, number>();
   const res: ProductionResult = { produced: 0, skipped: 0, failed: 0, spentMicro: 0, stoppedByCap: false, notes, byMethod: {} };
   for (const r of rows) {
-    const m = pick(r, { allowPaid }, pools);
+    let m = pick(r, { allowPaid }, pools);
     let out: MediaResult | null = null;
+    // Nombre d'images différentes atteint pour ce calendrier : on reprend l'une d'elles (gratuit), sans nouvelle photo.
+    const bgs = o.distinctImages && !needsVideo(r) ? planBackgrounds(r.plan_id) : [];
+    const reuse = o.distinctImages && bgs.length >= o.distinctImages ? bgs.slice(0, o.distinctImages).sort((a, b) => a.uses - b.uses)[0].asset : null;
+    if (reuse) m = { method: "local", paid: false };
     try {
-      if (m.method === "library") {
+      if (reuse) {
+        out = await deps.local(p, r, { background: reuse });
+      } else if (m.method === "library") {
         const pool = needsVideo(r) ? pools.video : pools.image;
         const a = [...pool].sort((x, y) => (used.get(x.id) ?? 0) - (used.get(y.id) ?? 0))[0];
         out = a ? { assetId: a.id, costMicro: 0, by: "library" } : null;

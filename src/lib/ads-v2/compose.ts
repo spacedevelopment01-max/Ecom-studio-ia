@@ -179,6 +179,28 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
     ctaAtBottom = layout === "poster" && tallish;
     if (ctaAtBottom) productZone = { ...productZone, h: productZone.h - H * 0.06 };
     titleK = layout === "poster" ? (cls === "land" ? 0.13 : cls === "square" ? 0.112 : cls === "portrait" ? 0.118 : 0.128) : cls === "land" ? 0.12 : cls === "square" ? 0.1 : 0.106;
+  } else if (layout === "lower") {
+    // Bas de page : la photo respire en haut, texte en bas sur un dégradé de la couleur sombre de la marque.
+    photo({ x: 0, y: 0, w: W, h: H }, STRETCH);
+    const sh = H * (cls === "land" ? 0.78 : 0.62);
+    layers.push(shape("scrim", "Voile", "scrim", { x: 0, y: H - sh, w: W, h: sh }, veil(270, pal.dark, 0.8), { h: "stretch", v: "bottom" }));
+    col = { x: m.side, y: H - sh + H * 0.12, w: cls === "land" ? W * 0.62 : W - m.side * 2, h: sh - H * 0.12 - m.bottom };
+    productZone = cls === "land" ? { x: W * 0.62, y: H * 0.1, w: W * 0.34, h: H * 0.8 } : { x: W * 0.18, y: m.top, w: W * 0.64, h: H - sh - m.top + H * 0.08 };
+    titleK = cls === "land" ? 0.12 : cls === "square" ? 0.1 : cls === "portrait" ? 0.105 : 0.115;
+  } else if (layout === "corner") {
+    // Coin (« Changez la lumière. ») : texte élégant et plus petit dans le coin calme de la photo.
+    photo({ x: 0, y: 0, w: W, h: H }, STRETCH);
+    const wide = cls === "land" || cls === "square";
+    const right = wide && !!zones && zones.right.busy <= zones.left.busy;
+    const z = zones ? (wide ? (right ? zones.right : zones.left) : zones.top) : null;
+    const airy = !!z && z.lum > 0.62 && z.busy < 0.09;
+    const vw = W * (wide ? 0.7 : 1);
+    const vh = wide ? H : H * 0.55;
+    layers.push(shape("scrim", "Voile", "scrim", { x: right ? W - vw : 0, y: 0, w: vw, h: vh }, airy ? veil(wide ? (right ? 180 : 0) : 90, pal.light, 0.45) : veil(wide ? (right ? 180 : 0) : 90, pal.dark, 0.66), wide ? { h: right ? "right" : "left", v: "stretch" } : { h: "stretch", v: "top" }));
+    const cw = W * (cls === "land" ? 0.42 : wide ? 0.54 : 0.84);
+    col = { x: right ? W - m.side - cw : m.side, y: m.top + (wide ? H * 0.04 : 0), w: cw, h: (wide ? H * 0.72 : H * 0.48) - m.top };
+    productZone = wide ? (right ? { x: W * 0.06, y: H * 0.2, w: W * 0.4, h: H * 0.74 } : { x: W * 0.54, y: H * 0.2, w: W * 0.4, h: H * 0.74 }) : { x: W * 0.15, y: H * 0.5, w: W * 0.7, h: H * 0.44 - m.bottom * 0.5 };
+    titleK = cls === "land" ? 0.105 : cls === "square" ? 0.085 : cls === "portrait" ? 0.09 : 0.1;
   } else if (layout === "panel") {
     panelColor = isDark(pal.light) ? "#F6F3EE" : pal.light;
     let panel: Box;
@@ -357,6 +379,13 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   const by = ctaAtBottom ? ctaBottomY : Math.min(y + U * (cls === "land" ? 0.06 : 0.045), ctaBottomY);
   const btn: ButtonLayer = { ...base("cta", "Bouton", "cta", { x: xFor(bw), y: by, w: bw, h: bh }, { h: align === "center" ? "center" : "left", v: ctaAtBottom ? "bottom" : "top" }), kind: "button", text: label, font: { family: art.body, weight: 600, size: ctaSize, italic: false }, fill: fillOk, color: btnText, radius: art.cta === "pill" || layout === "poster" || layout === "editorial" || layout === "band" ? bh / 2 : Math.round(bh * 0.16), stroke: null, shadow: layout === "poster" || layout === "frame" ? { color: "rgba(0,0,0,0.28)", blur: Math.round(bh * 0.4), x: 0, y: Math.round(bh * 0.12) } : null };
   layers.push(btn);
+  // Bas de page : le bloc de texte est posé au bas de l'image (au-dessus de la marge), pas en haut du dégradé.
+  if (layout === "lower") {
+    const moving = layers.filter((l) => ["brand", "logo", "title", "subline", "cta", "rule", "eyebrow"].includes(l.id));
+    const bottom = Math.max(...moving.map((l) => l.y + l.h));
+    const dy = Math.max(0, H - m.bottom - bottom);
+    for (const l of moving) l.y += dy;
+  }
   // Lisibilité réelle : chaque texte posé sur la photo est mesuré sur ce qui est dessiné dessous ; si l'un d'eux
   // passe sous 4,6:1, le voile se renforce et s'étend (3 fois au plus) — jamais un texte illisible livré.
   const scrimLayer = layers.find((l): l is ShapeLayer => l.id === "scrim" && l.kind === "shape");
@@ -387,7 +416,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
 }
 
 /** Calques posés par le moteur : un document qui n'a que ceux-là peut être recomposé dans un autre format. */
-const ENGINE_LAYERS = new Set(["bg-photo", "bg-fill", "scrim", "panel", "band", "rule", "product", "logo", "brand", "eyebrow", "title", "subline", "cta"]);
+const ENGINE_LAYERS = new Set(["bg-photo", "bg-fill", "scrim", "panel", "band", "rule", "product", "logo", "brand", "eyebrow", "title", "subline", "cta", "cta-line"]);
 
 /**
  * Autre format (1:1, 4:5, 9:16, 1,91:1, 16:9…) : la création est RECOMPOSÉE avec sa recette (même composition,

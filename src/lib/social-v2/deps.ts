@@ -31,7 +31,7 @@ export type SocialDeps = {
   video: (p: Project, post: PostBrief, o: MediaOpts) => Promise<MediaResult>;
   ad: (p: Project, post: PostBrief, o: MediaOpts) => Promise<MediaResult>;
   /** Rendu local gratuit (visuel à la marque). */
-  local: (p: Project, post: PostBrief) => Promise<MediaResult>;
+  local: (p: Project, post: PostBrief, o?: { background?: Asset | null }) => Promise<MediaResult>;
   /** Réécriture IA d'une publication (réutilise la rédaction sociale existante, Router V2, budget du compte). */
   rewrite: (p: Project, post: PostBrief & { network: string; format: string }, instruction: string, key: string) => Promise<{ title: string; caption: string; hashtags: string[]; costMicro: number }>;
   /** Estimation prudente (micro-euros) d'une production payante, vérifiée avant l'envoi. */
@@ -105,15 +105,37 @@ export async function posterForPost(p: Project, post: PostBrief, background: Ass
   return { assetId: a.id, costMicro, by };
 }
 
+const fold = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+/**
+ * Sujet de la photo d'une publication : TOUJOURS le métier ou le produit, plus la prestation dont parle la publication
+ * (citée dans son titre ou son texte ; sinon une prestation de l'offre, à tour de rôle) et le sujet du message.
+ * Une photo qui ne montre pas ce métier, ce service ou ce produit n'est jamais retenue (voir bestAdPhoto).
+ */
+export function photoTopic(p: Project, post: Pick<PostBrief, "id" | "title" | "caption" | "pillar">): string {
+  const text = fold(`${post.title} ${post.caption} ${post.pillar ?? ""}`);
+  if (p.business === "services") {
+    const items = (p.services?.services ?? []).filter((x) => x.name?.trim());
+    const cited = items.find((x) => text.includes(fold(x.name).split(/\s+/).filter((w) => w.length > 3).slice(0, 2).join(" ")) || text.includes(fold(x.name)));
+    const n = parseInt(crypto.createHash("sha256").update(post.id).digest("hex").slice(0, 6), 16);
+    const svc = cited ?? (items.length ? items[n % items.length] : null);
+    const trade = p.product.category || p.product.name || p.name;
+    return [trade, svc ? `${svc.name}${svc.description ? ` (${svc.description.slice(0, 100)})` : ""}` : null, post.title].filter(Boolean).join(" — ");
+  }
+  return [p.product.name, p.product.category, post.title].filter(Boolean).join(" — ");
+}
+
 /**
  * Rendu gratuit : d'abord LA photo libre (Pixabay d'abord) cherchée pour cette publication — en rapport avec le
  * produit ou le service et le sujet, jamais déjà utilisée, choisie pour faire une belle affiche ; sinon une photo
  * déjà validée du projet ; sinon une composition typographique à la marque.
  */
-export async function localRender(p: Project, post: PostBrief, ctx: JobContext | null = null): Promise<MediaResult> {
+export async function localRender(p: Project, post: PostBrief, ctx: JobContext | null = null, o: { background?: Asset | null } = {}): Promise<MediaResult> {
+  // Photo imposée (nombre d'images différentes atteint) : reprise telle quelle, autre texte et autre mise en page.
+  if (o.background) return posterForPost(p, post, o.background, "local");
   const aspect = aspectOf(post.network, post.format);
   const { bestAdPhoto } = await import("../engine/service-media");
-  const fresh = await bestAdPhoto({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null }, p, { key: `post-${post.id}`, topic: [post.title, post.pillar].filter(Boolean).join(" — ") || p.product.name || p.name, aspect: aspect === "2:3" ? "4:5" : aspect, name: `publication-${post.network}-${post.id.slice(0, 6)}-photo.jpg` }).catch((e) => {
+  const fresh = await bestAdPhoto({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null }, p, { key: `post-${post.id}`, topic: photoTopic(p, post), aspect: aspect === "2:3" ? "4:5" : aspect, name: `publication-${post.network}-${post.id.slice(0, 6)}-photo.jpg` }).catch((e) => {
     if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
     return null;
   });
@@ -147,7 +169,7 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       const out = r.outcomes.find((x) => x.assetId);
       return { assetId: out?.assetId ?? null, costMicro: r.costMicro, by: "ads_v2" };
     },
-    local: (pp, post) => localRender(pp, post, ctx),
+    local: (pp, post, o) => localRender(pp, post, ctx, o),
     async rewrite(pp, post, instruction, key) {
       const { aiRewritePost } = await import("../ai/tasks");
       const r = await aiRewritePost({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null, usageKey: key }, pp, { network: post.network, format: post.format, caption: post.caption, title: post.title, angle: post.pillar ?? "" }, instruction);

@@ -76,7 +76,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       z.object({ action: z.literal("plan"), request: Plan }),
       z.object({ action: z.literal("ask"), text: z.string().min(5).max(600) }),
       z.object({ action: z.literal("estimate"), ids, planId: z.string().max(80).optional(), allowPaid: z.boolean().default(false) }),
-      z.object({ action: z.literal("produce"), ids, planId: z.string().max(80).optional(), allowPaid: z.boolean().default(false), maxCostEur: z.number().min(0).max(100).default(0), approvedEstimateMicro: z.number().int().min(0).nullable().optional() }),
+      z.object({ action: z.literal("produce"), ids, planId: z.string().max(80).optional(), allowPaid: z.boolean().default(false), maxCostEur: z.number().min(0).max(100).default(0), approvedEstimateMicro: z.number().int().min(0).nullable().optional(), distinctImages: z.number().int().min(1).max(60).nullable().optional() }),
       z.object({ action: z.literal("approve"), ids, planId: z.string().max(80).optional(), from: z.number().optional(), to: z.number().optional() }),
       z.object({ action: z.literal("schedule"), ids, planId: z.string().max(80).optional() }),
       z.object({ action: z.literal("unschedule"), ids }),
@@ -112,11 +112,11 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     case "produce": {
       const list = own(b.ids, b.planId);
       if (b.allowPaid && aiActiveFor(p.userId, p.id)) {
-        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Production des publications", "Producing posts"), payload: { projectId: p.id, ids: list, allowPaid: true, maxCostEur: b.maxCostEur, approvedEstimateMicro: b.approvedEstimateMicro ?? null } });
+        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Production des publications", "Producing posts"), payload: { projectId: p.id, ids: list, allowPaid: true, maxCostEur: b.maxCostEur, approvedEstimateMicro: b.approvedEstimateMicro ?? null, distinctImages: b.distinctImages ?? null } });
         return ok({ jobId: job.id });
       }
       // Gratuit (bibliothèque, rendu local) : immédiat, par lots de 30.
-      return ok(await produceBatch(p, list, realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, batchSize: 30 }));
+      return ok(await produceBatch(p, list, realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, batchSize: 30, distinctImages: b.distinctImages ?? null }));
     }
     case "approve": {
       let list = own(b.ids, b.planId);

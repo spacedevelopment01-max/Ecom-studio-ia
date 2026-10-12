@@ -201,19 +201,32 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   }, { key: "social-ask", label: t("Préparation de vos publications…", "Preparing your posts…"), ms: 25000 });
   // Gratuit, par petits lots (un montage vidéo local prend du temps) : chaque requête reste courte et la progression
   // s'affiche ; les 30 prochaines publications sans média du dernier calendrier.
+  // Nombre d'images différentes pour les publications (0 : une image par publication), mémorisé sur cet appareil.
+  const [distinct, setDistinctState] = useState(0);
+  useEffect(() => {
+    try {
+      setDistinctState(Number(localStorage.getItem(`es-distinct-${id}`) ?? 0) || 0);
+    } catch {}
+  }, [id]);
+  const setDistinct = (n: number) => {
+    setDistinctState(n);
+    try {
+      localStorage.setItem(`es-distinct-${id}`, String(n));
+    } catch {}
+  };
   const produceFree = () => run(async () => {
     if (!latest) throw new Error(t("Préparez d'abord un calendrier.", "Prepare a calendar first."));
     const todo = data.posts.filter((p) => p.planId === latest.id && p.media.length === 0 && ["planned", "draft", "failed"].includes(p.status)).sort((a, b) => (a.scheduledAt ?? 0) - (b.scheduledAt ?? 0)).slice(0, 30).map((p) => p.id);
     let produced = 0;
     setProgress({ done: 0, total: todo.length });
     for (let i = 0; i < todo.length; i += 3) {
-      const r = await api<{ produced: number }>(`/api/projects/${id}/social/v2`, { body: { action: "produce", ids: todo.slice(i, i + 3), allowPaid: false } });
+      const r = await api<{ produced: number }>(`/api/projects/${id}/social/v2`, { body: { action: "produce", ids: todo.slice(i, i + 3), allowPaid: false, distinctImages: distinct || null } });
       produced += r.produced;
       setProgress({ done: Math.min(todo.length, i + 3), total: todo.length });
       reload();
     }
     setProgress(null);
-    toast("ok", t(`${produced} visuels préparés gratuitement (bibliothèque et rendu local).`, `${produced} visuals prepared for free (library and local render).`));
+    toast("ok", t(`${produced} visuels préparés gratuitement (photos libres choisies pour votre activité, mises en page à la marque).`, `${produced} visuals prepared for free (royalty-free photos chosen for your business, branded layouts).`));
     reload();
   }, { key: "social-produce", label: t("Production des visuels…", "Producing visuals…"), ms: 60000 });
   const estimate = () => run(async () => {
@@ -222,7 +235,7 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   }, { key: "social-estimate", label: t("Estimation de la production…", "Estimating the production…"), ms: 10000 });
   const producePaid = () => run(async () => {
     if (!latest || !est) return;
-    await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", planId: latest.id, allowPaid: true, maxCostEur: cap, approvedEstimateMicro: est.estimateMicro } });
+    await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", planId: latest.id, allowPaid: true, maxCostEur: cap, approvedEstimateMicro: est.estimateMicro, distinctImages: distinct || null } });
     toast("ok", t("Production lancée dans le plafond accepté.", "Production started within the accepted cap."));
     setEst(null);
   });
@@ -304,7 +317,16 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
       </Card>
       <Card className="grid gap-3 p-5 sm:p-7">
         <h3 className="font-display text-xl font-semibold">{t("2. Produire les visuels et vidéos", "2. Produce visuals and videos")}</h3>
-        <p className="text-sm text-muted">{t("Par lots. Gratuit : vos médias validés de la bibliothèque et des visuels à la marque. Avec l'IA : estimation d'abord, puis plafond que vous fixez.", "In batches. Free: your validated library media and branded visuals. With AI: estimate first, then a cap you set.")}</p>
+        <p className="text-sm text-muted">{t("Par lots. Gratuit : pour chaque publication, la photo libre (Pixabay d'abord) la plus en rapport avec votre métier ou votre produit, mise en page à la marque. Avec l'IA : estimation d'abord, puis plafond que vous fixez.", "In batches. Free: for each post, the royalty-free photo (Pixabay first) that best matches your trade or product, in a branded layout. With AI: estimate first, then a cap you set.")}</p>
+        <Field label={t("Nombre d'images différentes", "Number of different images")} htmlFor="distinct-images">
+          <div className="flex flex-wrap items-center gap-2">
+            <Select id="distinct-images" value={String(distinct)} onChange={(e) => setDistinct(Number(e.target.value))} className="h-10 w-full sm:w-72" data-distinct-images>
+              <option value="0">{t("Une image par publication", "One image per post")}</option>
+              {[1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20].map((n) => <option key={n} value={n}>{t(`${n} image${n > 1 ? "s" : ""} différente${n > 1 ? "s" : ""}`, `${n} different image${n > 1 ? "s" : ""}`)}</option>)}
+            </Select>
+            <span className="text-xs text-muted">{t("Chaque image est cherchée pour votre métier ou votre produit ; au-delà, elles sont reprises avec un autre texte et une autre mise en page.", "Each image is searched for your trade or product; beyond that, they are reused with different text and layout.")}</span>
+          </div>
+        </Field>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" icon={<Sparkles className="size-4" />} loading={busy} disabled={!latest} onClick={produceFree} data-action="produce-free">{t("Produire gratuitement (30 publications)", "Produce for free (30 posts)")}</Button>
           <Button variant="secondary" loading={busy} disabled={!latest || !data.ai} onClick={estimate} title={!data.ai ? t("IA non disponible pour ce compte", "AI not available for this account") : undefined}>{t("Estimer la production avec l'IA", "Estimate AI production")}</Button>

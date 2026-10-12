@@ -114,4 +114,24 @@ describe("Affiches de publication", async () => {
       out(`format-${aspect.replace(":", "x")}-${r.layout}.jpg`, r.jpg);
     }
   }, 120_000);
+
+  it("nombre d'images différentes choisi : les publications du calendrier n'utilisent pas plus de photos que demandé", async () => {
+    const { pid } = await setup();
+    // Deux autres photos validées dans la bibliothèque (trois au total).
+    for (const k of [1, 2]) await saveAsset({ projectId: pid, userId: loadProject(pid).userId, data: await testPhoto(), name: `photo-${k}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "upload", meta: {} });
+    const { createPlanV2 } = await import("@/lib/social-v2/planner");
+    const { produceBatch, postsOfPlan } = await import("@/lib/social-v2/production");
+    const { realSocialDeps } = await import("@/lib/social-v2/deps");
+    const { all } = await import("@/lib/db");
+    const p = loadProject(pid);
+    const startDate = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
+    const plan = fr(() => createPlanV2(p, { startDate, days: 6, perDay: 1, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], formatMix: { image: 100 } }));
+    const ids = postsOfPlan(plan.planId);
+    // Production par petits lots, comme l'écran (le choix vaut pour tout le calendrier).
+    for (let i = 0; i < ids.length; i += 3) await fr(() => produceBatch(p, ids.slice(i, i + 3), realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, distinctImages: 2 }));
+    const bgs = all<{ bg: string }>("SELECT DISTINCT json_extract(a.meta, '$.poster.backgroundAssetId') bg FROM assets a WHERE json_extract(a.meta, '$.post') IN (SELECT id FROM posts WHERE plan_id = ?) AND json_extract(a.meta, '$.poster.backgroundAssetId') IS NOT NULL", plan.planId);
+    const produced = all<{ id: string }>("SELECT id FROM posts WHERE plan_id = ? AND media != '[]'", plan.planId);
+    expect(produced.length).toBeGreaterThanOrEqual(4);
+    expect(bgs.length).toBe(2);
+  }, 180_000);
 });

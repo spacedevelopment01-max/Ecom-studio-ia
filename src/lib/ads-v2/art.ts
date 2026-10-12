@@ -9,7 +9,7 @@ import { CANVAS_FONTS } from "../media/fonts";
 import type { Typo } from "../media/compose";
 import type { Project } from "../projects";
 
-export const AD_LAYOUTS = ["editorial", "poster", "panel", "band", "frame", "typographic"] as const;
+export const AD_LAYOUTS = ["editorial", "poster", "panel", "band", "frame", "typographic", "lower", "corner"] as const;
 export type AdLayout = (typeof AD_LAYOUTS)[number];
 
 /** Anciennes mises en page (créations et tests existants) → composition actuelle la plus proche. */
@@ -35,10 +35,10 @@ export type AdArt = {
 };
 
 const CYCLES: Record<AdStyle, AdLayout[]> = {
-  premium: ["editorial", "poster", "panel", "frame"],
-  bold: ["poster", "band", "frame", "editorial"],
-  craft: ["panel", "frame", "editorial", "poster"],
-  warm: ["editorial", "panel", "poster", "band"],
+  premium: ["editorial", "corner", "poster", "panel", "lower", "frame"],
+  bold: ["poster", "lower", "band", "frame", "editorial"],
+  craft: ["panel", "lower", "frame", "editorial", "corner", "poster"],
+  warm: ["editorial", "panel", "lower", "poster", "corner", "band"],
 };
 
 const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -94,6 +94,8 @@ export function textZoneFor(layout: AdLayout, width: number, height: number): "n
   const land = width / height >= 1.4;
   const square = !land && width / height > 0.9;
   if (layout === "panel" || layout === "typographic") return "none";
+  if (layout === "lower") return "top"; // le sujet reste en haut, le texte en bas (zone à garder « calme » : le bas)
+  if (layout === "corner") return land || square ? "left" : "top";
   if (layout === "editorial" || layout === "frame") return land || square ? "left" : "top";
   return land ? "left" : "top";
 }
