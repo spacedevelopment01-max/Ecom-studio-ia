@@ -55,7 +55,19 @@ export function schemeColors(s: Scheme, pal: Palette) {
   const light = isDark(pal.light) ? "#F6F3EE" : pal.light;
   const dark = isDark(pal.dark) ? pal.dark : "#161616";
   const vivid = [pal.accent, pal.secondary, pal.primary].sort((a, b) => satOf(b) - satOf(a))[0];
-  const bg = s === "dark" ? mix(dark, "#000000", 0.15) : s === "light" ? light : s === "brand" ? pal.primary : s === "accent" ? vivid : isDark(dark) ? "#111111" : "#F2EFEA";
+  const bg0 = s === "dark" ? mix(dark, "#000000", 0.15) : s === "light" ? light : s === "brand" ? pal.primary : s === "accent" ? vivid : isDark(dark) ? "#111111" : "#F2EFEA";
+  // Couleur de marque de ton moyen (ni texte clair ni texte foncé lisible) : assombrie ou éclaircie au plus juste
+  // pour porter un texte à 5,5:1, la teinte restant la plus proche possible.
+  const reads = (c: string) => Math.max(contrast(light, c), contrast(dark, c), contrast("#FFFFFF", c) * 0.97) >= 5.5;
+  const walk = (to: string) => {
+    let c = bg0;
+    let k = 0;
+    for (; k < 8 && !reads(c); k++) c = mix(c, to, 0.14);
+    return { c, k };
+  };
+  const dk = walk("#000000");
+  const lt = walk("#FFFFFF");
+  const bg = reads(bg0) ? bg0 : dk.k <= lt.k ? dk.c : lt.c;
   const ink = contrast(light, bg) >= contrast(dark, bg) ? light : dark;
   const inkOk = contrast(ink, bg) >= 4.6 ? ink : contrast("#FFFFFF", bg) >= contrast("#111111", bg) ? "#FFFFFF" : "#111111";
   let accent = [vivid, pal.accent, pal.secondary, pal.primary].find((c) => contrast(c, bg) >= 2.2 && c.toLowerCase() !== bg.toLowerCase()) ?? (isDark(bg) ? mix(vivid, "#FFFFFF", 0.5) : mix(vivid, "#000000", 0.4));
@@ -185,15 +197,24 @@ export class Kit {
     const pts = this.i.photo?.points ?? [];
     return pts.length ? pts[k % pts.length] : { u: 0.5, v: 0.5 };
   }
-  photo(b: Box, o: { radius?: number; rotation?: number; focus?: { u: number; v: number }; zoom?: number; shadow?: ImageLayer["shadow"]; full?: boolean; fx?: boolean; filter?: string; name?: string } = {}) {
+  photo(b: Box, o: { radius?: number; rotation?: number; focus?: { u: number; v: number }; zoom?: number; crop?: ImageLayer["crop"]; shadow?: ImageLayer["shadow"]; full?: boolean; fx?: boolean; filter?: string; name?: string } = {}) {
     if (!this.i.photo) return null;
-    const crop = o.full || (!o.focus && !o.zoom) ? null : this.cropFor(b, o.focus, o.zoom ?? 1);
+    const crop = o.crop !== undefined ? o.crop : o.full || (!o.focus && !o.zoom) ? null : this.cropFor(b, o.focus, o.zoom ?? 1);
     const l: ImageLayer = { ...this.base(o.full ? "bg-photo" : this.id("photo"), o.name ?? "Photo", o.full ? "background" : "image", b, o.full ? { h: "stretch", v: "stretch" } : this.anchorOf(b)), kind: "image", assetId: this.i.photo.id, fit: "cover", crop, radius: o.radius ?? 0, shadow: o.shadow ?? null, rotation: o.rotation ?? 0, ...(o.fx === false ? {} : this.fx), ...(o.filter ? { filter: o.filter } : {}) };
     this.layers.push(l);
     return l;
   }
   fullPhoto() {
     return this.photo({ x: 0, y: 0, w: this.W, h: this.H }, { full: true });
+  }
+
+  /** Largeur d'un texte sur une ligne (onglets, étiquettes ajustées à leur texte). */
+  textWidth(text: string, o: { family?: string; weight?: number; size: number; italic?: boolean; spacing?: number; upper?: boolean }) {
+    this.ctx.font = serverFont(o.family ?? this.i.art.body, o.weight ?? 400, o.size, !!o.italic);
+    this.ctx.letterSpacing = `${o.spacing ?? 0}px`;
+    const w = this.ctx.measureText(o.upper ? text.toUpperCase() : text).width;
+    this.ctx.letterSpacing = "0px";
+    return w;
   }
 
   // ------------------------------------------------------------------ textes
@@ -206,7 +227,10 @@ export class Kit {
   }
   text(role: Layer["role"], text: string, b: { x: number; y: number; w: number }, s: TextStyle, id?: string, name?: string): TextLayer {
     const size = Math.max(22, Math.round(s.size));
-    const l: TextLayer = { ...this.base(id ?? this.id("text"), name ?? "Texte", role, { ...b, h: size * 1.3 }, { h: s.align === "center" ? "center" : s.align === "right" ? "right" : "left", v: "top" }), kind: "text", text, font: { family: s.family ?? this.i.art.body, weight: s.weight ?? 400, size, italic: !!s.italic }, color: s.color ?? this.c.ink, align: s.align ?? "left", lineHeight: s.lineHeight ?? 1.2, letterSpacing: s.spacing ?? 0, uppercase: !!s.upper, autoFit: { minSize: Math.max(22, s.minSize ?? Math.round(size * 0.6)) }, shadow: s.shadow ?? null, balance: true };
+    // Cadre de départ assez haut pour le nombre de lignes permis (sinon l'ajustement automatique réduirait le
+    // texte jusqu'à le faire tenir sur une seule ligne) ; la hauteur réelle est mesurée ensuite.
+    const maxL = s.maxLines ?? 3;
+    const l: TextLayer = { ...this.base(id ?? this.id("text"), name ?? "Texte", role, { ...b, h: size * (s.lineHeight ?? 1.2) * maxL + size * 0.3 }, { h: s.align === "center" ? "center" : s.align === "right" ? "right" : "left", v: "top" }), kind: "text", text, font: { family: s.family ?? this.i.art.body, weight: s.weight ?? 400, size, italic: !!s.italic }, color: s.color ?? this.c.ink, align: s.align ?? "left", lineHeight: s.lineHeight ?? 1.2, letterSpacing: s.spacing ?? 0, uppercase: !!s.upper, autoFit: { minSize: Math.max(22, s.minSize ?? Math.round(size * 0.6)) }, shadow: s.shadow ?? null, balance: true };
     this.measure(l, s.maxLines ?? 3);
     l.anchor = { ...l.anchor, v: this.anchorOf(l).v === "bottom" ? "bottom" : "top" };
     this.layers.push(l);
