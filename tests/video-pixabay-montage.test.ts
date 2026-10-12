@@ -45,13 +45,15 @@ describe("Montage vidéo sur plans Pixabay", async () => {
     const doc = latestVideo(p.id, r.docKey!)!.doc;
     const stock = doc.clips.filter((c) => c.source.kind === "video" && assetMeta<any>(getAsset(c.source.assetId)!).stock);
     expect(stock.length).toBeGreaterThanOrEqual(1);
-    // Jamais deux fois le même plan dans une vidéo.
-    const ids = stock.map((c) => (c.source as { assetId: string }).assetId);
-    expect(new Set(ids).size).toBe(ids.length);
-    // Boutique : l'univers en plans libres (accroche, développement) ; le VRAI produit ensuite (photos, packshot).
-    for (const c of stock) expect(["hook", "development"]).toContain(c.part);
-    expect(doc.clips.some((c) => c.part === "demonstration" || c.part === "conclusion" ? c.source.kind !== "video" : false)).toBe(true);
-    expect(doc.clips.find((c) => c.part === "cta")?.source.kind).toBe("doc");
+    // Jamais deux fois le même passage dans une vidéo (un plan repris l'est à un autre moment du plan).
+    const segs = stock.map((c) => `${(c.source as { assetId: string }).assetId}@${(c.source as { inS: number }).inS}`);
+    expect(new Set(segs).size).toBe(segs.length);
+    // Boutique : l'univers en plans libres ; le VRAI produit sur ses plans (photos, packshot), jamais remplacé.
+    expect(doc.clips.some((c) => c.source.kind === "image" || (c.source.kind === "doc" && c.source.doc.layers.some((l) => l.kind === "image")))).toBe(true);
+    // Habillage publicitaire : la fin est une carte avec un vrai bouton, posée sur une image réelle.
+    const cta = doc.clips.find((c) => c.part === "cta")!;
+    expect(cta.source.kind).toBe("video");
+    expect(cta.overlays.some((l) => l.kind === "button")).toBe(true);
     // Chaque demande excluait les plans déjà pris dans la vidéo.
     expect(s.asked.map((a) => a.excluded)).toEqual(s.asked.map((_, i) => i));
   }, 240_000);

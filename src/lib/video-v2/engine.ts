@@ -21,7 +21,7 @@ import { all } from "../db";
 import { CostCapReached, currentTrace, withCandidate, withTrace } from "../ai/trace";
 import { gateSave } from "../quality/store";
 import { POLICIES } from "../quality/policies";
-import { saveAsset } from "../library";
+import { assetData, getAsset, saveAsset } from "../library";
 import { loadProject, type Project } from "../projects";
 import { contentLang } from "../i18n-server";
 import { EUR } from "../billing";
@@ -44,6 +44,7 @@ import { realVideoDeps, type VideoV2Deps } from "./deps";
 import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, VideoReview, VideoRunResult, VideoScript } from "./types";
 import type { GateDecision } from "../quality/gate";
 import { execTool } from "../exec-tool";
+import { dressPromo } from "./promo";
 
 /** Durée maximale d'une vidéo IA « courte » (forfait Développer). */
 export const SHORT_VIDEO_MAX_S = 30;
@@ -154,11 +155,14 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
       if (out.characterRef && !characterRef) characterRef = out.characterRef;
     }
 
-    // 7. Document vidéo (timeline éditable).
-    let doc = assemble({ p, intent, strategy, shots, media, inv, pal, typo, size, safe, insight, runId });
+    // 7. Document vidéo (timeline éditable), habillé façon publicité quand des plans réels existent.
+    const thumbs = intent.kind === "ugc" ? [] : await promoThumbs(p, media, inv);
+    let doc = assemble({ p, intent, strategy, shots, media, inv, pal, typo, size, safe, insight, runId, thumbs });
     // Voix off : seulement si un fournisseur de synthèse vocale existe (sinon la voix reste à enregistrer).
     if (deps.voice) await recordVoices(p, deps, doc, jobId, notes);
     else if (doc.audio.voice.length) notes.push("voix off : aucun fournisseur de synthèse vocale configuré — texte prêt à enregistrer, porté par les sous-titres");
+    // Habillage publicitaire sans voix enregistrée : les titres portent le message, pas de sous-titres en double.
+    if (doc.meta.promo && !doc.audio.voice.some((v) => v.assetId)) doc.subtitles.style.enabled = false;
 
     // 8. Lignée : une vidéo modifiée par le client n'est jamais écrasée (nouvelle lignée).
     let docKey = engineVideoKey(p.id, intent.kind, intent.aspect, intent.platform);
@@ -348,8 +352,10 @@ function shotPrompt(s: ShotPlan, st: CreativeStrategy, persona: PersonaSheet | n
  * conclusion montrent le VRAI produit (photos, packshot) — jamais un produit d'une banque d'images à sa place.
  */
 function stockFor(p: Project, s: ShotPlan): boolean {
-  if (p.business === "services") return ["hook", "development", "demonstration"].includes(s.part);
-  return s.part === "hook" || s.part === "development";
+  // Chaque moment reçoit une vraie image animée en fond (preuve, conclusion et fin comprises : le texte et la carte
+  // de fin se posent dessus) ; seuls les plans qui montrent le produit gardent ses vraies photos.
+  if (p.business === "services") return true;
+  return !s.showsProduct;
 }
 
 async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: ShotOutcome; characterRef?: { assetId: string; data: Buffer } | null }> {
@@ -460,6 +466,8 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
 
 type AssembleInput = {
   p: Project;
+  /** Vignettes de l'habillage publicitaire (images extraites des plans réels, photos du projet). */
+  thumbs?: string[];
   intent: ReturnType<typeof videoIntent>;
   strategy: CreativeStrategy;
   shots: ShotPlan[];
@@ -498,9 +506,42 @@ export function clipFor(s0: ShotPlan, m: Media, a: Pick<AssembleInput, "pal" | "
   return { ...base, source: { kind: "doc", doc: kineticDoc({ ...common, text: s.onScreen || s0.onScreen || a.insight.brand, dark: s.part === "proof" }), animate: "fade" } };
 }
 
+/**
+ * Vignettes de l'habillage : une image nette extraite de chaque plan réel (au tiers du plan), puis les photos du
+ * projet. Gardées dans la bibliothèque du projet (le rendu ne lit jamais de fichier extérieur).
+ */
+async function promoThumbs(p: Project, media: Map<string, Media>, inv: Inventory): Promise<string[]> {
+  const out: string[] = [];
+  const dir = tmpDir("vignettes");
+  try {
+    for (const m of media.values()) {
+      if (m.kind !== "video" || !m.assetId || out.length >= 6) continue;
+      const a = getAsset(m.assetId);
+      if (!a) continue;
+      const src = path.join(dir, `${m.assetId}.mp4`);
+      const jpg = path.join(dir, `${m.assetId}.jpg`);
+      fs.writeFileSync(src, assetData(a));
+      try {
+        await execTool("ffmpeg", ["-y", "-v", "error", "-ss", String(Math.max(0.3, (m.durationS ?? 3) * 0.35)), "-i", src, "-frames:v", "1", "-vf", "scale=540:-2", "-q:v", "3", jpg]);
+        const img = await saveAsset({ projectId: p.id, userId: p.userId, data: fs.readFileSync(jpg), name: "vignette-video.jpg", mime: "image/jpeg", role: "video-frame", folderKey: "videos.ads", origin: "import", meta: { videoThumbOf: m.assetId } });
+        out.push(img.id);
+      } catch {
+        // Image non extraite : la vignette suivante prend sa place.
+      }
+    }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  // Boutique : les vraies photos du produit d'abord (le produit se voit dès l'ouverture).
+  const photos = inv.photos.map((x) => x.id).filter((x) => !out.includes(x));
+  return p.business === "services" ? [...out, ...photos] : [...photos, ...out];
+}
+
 function assemble(a: AssembleInput): VideoDocument {
   const { w, h } = a.size;
-  const clips = a.shots.map((s, k) => clipFor(s, a.media.get(s.id) ?? { kind: "doc", assetId: null }, a, k));
+  let clips = a.shots.map((s, k) => clipFor(s, a.media.get(s.id) ?? { kind: "doc", assetId: null }, a, k));
+  const promo = a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
+  if (promo) clips = dressPromo(clips, a.shots, { p: a.p, pal: a.pal, typo: a.typo, w, h, safe: a.safe, brand: a.insight.brand, logoId: a.inv.logo?.id ?? null, thumbs: a.thumbs ?? [], productPhotos: a.p.business === "services" ? [] : a.inv.photos.map((x) => x.id), cta: a.strategy.cta, message: a.strategy.message });
   // Durée tenue : le temps perdu par un plan vidéo plus court revient au plan suivant composé.
   const lost = a.shots.reduce((t, s, k) => t + (s.durationS - clips[k].durationS), 0);
   if (lost > 0.05) {
@@ -520,7 +561,7 @@ function assemble(a: AssembleInput): VideoDocument {
     audio: { voice: [], voiceId: null, music: a.strategy.style.music === "none" ? null : { source: "synth", mood: a.strategy.style.music, gainDb: -14 }, sfx: [], duckingDb: -10, loudnessLufs: -14 },
     brand: { palette: { ...a.pal }, fonts: { heading: a.typo.heading, body: a.typo.body }, name: a.insight.brand },
     disclosure: null,
-    meta: { intent: a.intent.kind, source: "engine", createdFrom: null, runId: a.runId },
+    meta: { intent: a.intent.kind, source: "engine", createdFrom: null, runId: a.runId, ...(promo ? { promo: true } : {}) },
   };
   for (const [k, s] of a.shots.entries()) {
     const c = clips[k];
@@ -586,7 +627,11 @@ async function targetedFix(o: FixInput): Promise<VideoDocument | null> {
     if (!s || k < 0 || doc.clips[k].userEdited) return null;
     const out = await resolveShot({ ...o, s, feedback: o.review?.fix.instruction || o.decision.feedback });
     o.media.set(s.id, out.media);
-    doc.clips[k] = { ...clipFor(s, out.media, o, k), id: doc.clips[k].id };
+    const prev = doc.clips[k];
+    const next = clipFor(s, out.media, o, k);
+    // Vidéo habillée : le plan refait garde son habillage (titre, panneau, carte de fin) et sa transition.
+    const keep = doc.meta.promo && (next.source.kind === "video" || next.source.kind === "image") ? { overlays: prev.overlays, transitionIn: prev.transitionIn } : {};
+    doc.clips[k] = { ...next, ...keep, id: prev.id };
     o.notes.push(`reprise ciblée : plan ${s.id} seul (${out.outcome.reason})`);
     return doc;
   }

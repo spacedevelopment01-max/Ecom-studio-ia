@@ -44,25 +44,46 @@ export function takenStockVideos(projectId: string): Set<string> {
 }
 
 /** Recherches d'un plan : le métier (ou l'univers du produit) d'abord, nuancé par le sujet du plan, en rotation. */
-async function clipQueries(ictx: Ictx, p: Project, r: StockClipRequest): Promise<{ lang: "fr" | "en"; queries: string[]; must: string[] }> {
+async function clipQueries(ictx: Ictx, p: Project, r: StockClipRequest): Promise<{ lang: "fr" | "en"; queries: string[]; must: string[]; negative?: string[] }> {
   const services = p.business === "services";
   const trade = [p.product.category, p.product.name].filter(Boolean)[0] ?? "";
   if (services) {
     const items = (p.services?.services ?? []).filter((s) => s.name?.trim());
     const svc = items.length ? items[r.index % items.length] : null;
-    const known = tradeStock(`${r.topic} ${svc?.name ?? ""} ${trade}`) ?? tradeStock(`${trade} ${svc?.name ?? ""}`) ?? tradeStock(trade);
+    // La prestation de ce moment d'abord (« Peinture intérieure » → peintre), pour que chaque plan montre un geste
+    // différent du métier ; puis le métier entier (« plâtrier peintre » = les deux).
+    const own = svc ? tradeStock(svc.name) : null;
+    const whole = tradeStock(`${trade} ${svc?.name ?? ""}`) ?? tradeStock(`${r.topic} ${trade}`) ?? tradeStock(trade);
+    const known = own ?? whole;
     if (known) {
+      // La banque de vidéos répond aux mots-clés courts (« paint roller ») bien mieux qu'aux phrases ; ceux de la
+      // prestation d'abord, puis ceux de tout le métier (un plâtrier peintre sans plan de plâtrerie garde un plan de
+      // peinture), puis les phrases. Un plan déjà pris n'est jamais repris.
+      const both = [known, ...(whole && whole !== known ? [whole] : [])];
       const q = known.queries;
-      const k = r.index % Math.max(1, q.length);
-      return { lang: "en", queries: [...q.slice(k), ...q.slice(0, k)].slice(0, 3), must: known.must };
+      const k = Math.floor(r.index / Math.max(1, items.length)) % Math.max(1, q.length);
+      const queries = [...new Set([...both.flatMap((t) => shortQueries(t.must)), ...q.slice(k), ...q.slice(0, k)])];
+      return { lang: "en", queries, must: [...new Set(both.flatMap((t) => t.must))], negative: [...new Set(both.flatMap((t) => t.negative))] };
     }
-    return { lang: "fr", queries: [svc?.name ?? "", trade, `${trade} ${r.topic}`].filter(Boolean), must: [] };
+    return { lang: "fr", queries: [svc?.name ?? "", trade, `${trade} ${r.topic}`].filter(Boolean), must: [], negative: undefined };
   }
   const { universeQueries } = await import("../engine/stock-universe");
   const u = await universeQueries(ictx, p);
   const k = r.index % Math.max(1, u.queries.length);
   const known = tradeStock(`${p.product.category ?? ""} ${p.product.sector ?? ""} ${p.product.name ?? ""}`);
-  return { lang: u.lang, queries: [...u.queries.slice(k), ...u.queries.slice(0, k)], must: known?.must ?? [] };
+  // Mots-clés courts de la catégorie (« cosmetics / skincare » → « skincare », « cosmetics ») : la banque de vidéos
+  // y répond bien mieux qu'aux phrases ; ils valent aussi contrôle de la description sans IA.
+  const { resolveProductCategory } = await import("../image-v2/categories");
+  const cat = resolveProductCategory(p.product);
+  const words: string[] = cat.source === "core" ? [...new Set(cat.labels.en.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3))] : [];
+  const rotated = [...u.queries.slice(k), ...u.queries.slice(0, k)];
+  const short = [...words, ...rotated.map((q) => q.split(/\s+/).slice(0, 2).join(" "))];
+  return { lang: words.length ? "en" : u.lang, queries: [...new Set([...short, ...rotated])], must: [...new Set([...words, ...(known?.must ?? [])])] };
+}
+
+/** Mots-clés courts d'un métier (les expressions d'abord, puis trois mots simples). */
+export function shortQueries(must: string[]): string[] {
+  return [...must.filter((m) => m.includes(" ")), ...must.filter((m) => !m.includes(" ")).slice(0, 3)];
 }
 
 /** Ordre d'essai : pertinence (rankStock) d'abord, puis un plan assez long et bien défini avant un plan court. */
@@ -80,7 +101,7 @@ export async function findStockClip(ictx: Ictx, p: Project, r: StockClipRequest,
   if (!ai && !q.must.length) return null;
   const orientation = r.aspect === "16:9" ? "landscape" : "portrait";
   const taken = new Set([...takenStockVideos(p.id), ...exclude]);
-  const found = rankStock(await searchStockVideos(queriesFor(q.queries, people), orientation, q.lang, taken).catch(() => []), q.must, ai, undefined, { people });
+  const found = rankStock(await searchStockVideos(queriesFor(q.queries, people), orientation, q.lang, taken, 16).catch(() => []), q.must, ai, q.negative, { people });
   const trade = [p.product.category, p.product.name].filter(Boolean)[0] ?? "";
   const subject = services ? `${trade} — ${r.topic}` : C(`univers du produit « ${p.product.name} » (${p.product.category ?? ""}) — ${r.topic} ; sans le produit lui-même`, `world of the product "${p.product.name}" (${p.product.category ?? ""}) — ${r.topic}; without the product itself`);
   const { checkAmbiance } = await import("../engine/service-media");
