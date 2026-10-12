@@ -78,6 +78,12 @@ export type Brand = {
   personality: string[];
   tone: { voice: string; do: string[]; dont: string[] };
   palette: BrandPalette;
+  /**
+   * Origine de la palette : « direction » = palette verrouillée de la direction choisie ; « client » = vraies couleurs
+   * du client (site existant, logo fourni), gardées dans `clientPalette` et jamais effacées. Absent : ancienne marque.
+   */
+  paletteMode?: "direction" | "client";
+  clientPalette?: BrandPalette;
   fonts: { heading: string; body: string };
   logo: {
     assetId?: string;

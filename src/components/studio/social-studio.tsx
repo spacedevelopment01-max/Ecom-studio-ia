@@ -12,7 +12,8 @@ import { ArrowDown, ArrowUp, BarChart3, CalendarDays, Check, ChevronLeft, Chevro
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
-import { AssetThumb, MediaPicker, type AssetView } from "./common";
+import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
+import { AiWait } from "../wait-time";
 
 type PostV = {
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
@@ -169,14 +170,19 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const latest = data.plans.find((p) => p.engine === "v2");
   const days = Math.max(1, Math.round((Date.parse(f.endDate) - Date.parse(f.startDate)) / 86_400_000) + 1);
-  const run = async (fn: () => Promise<void>) => {
+  // Attente en cours (libellé et clé de mesure du temps) ; production payante : tâche de fond suivie ci-dessous.
+  const [what, setWhat] = useState<{ key: string; label: string; ms: number } | null>(null);
+  const jobs = useActive(["social.v2"]);
+  const run = async (fn: () => Promise<void>, w?: { key: string; label: string; ms: number }) => {
     setBusy(true);
+    setWhat(w ?? null);
     try {
       await fn();
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
       setBusy(false);
+      setWhat(null);
     }
   };
   const plan = () => run(async () => {
@@ -186,13 +192,13 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
     setResult(r);
     toast("ok", t(`${r.created} publications planifiées (textes proposés, aucun média payant).`, `${r.created} posts planned (proposed copy, no paid media).`));
     reload();
-  });
+  }, { key: "social-plan", label: t("Préparation du calendrier de publications…", "Preparing the posting calendar…"), ms: 20000 });
   const fromAsk = () => run(async () => {
     const r = await api<{ created: number; warnings: string[]; notes: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "ask", text: ask } });
     setResult(r);
     toast("ok", t(`${r.created} publications planifiées.`, `${r.created} posts planned.`));
     reload();
-  });
+  }, { key: "social-ask", label: t("Préparation de vos publications…", "Preparing your posts…"), ms: 25000 });
   // Gratuit, par petits lots (un montage vidéo local prend du temps) : chaque requête reste courte et la progression
   // s'affiche ; les 30 prochaines publications sans média du dernier calendrier.
   const produceFree = () => run(async () => {
@@ -209,11 +215,11 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
     setProgress(null);
     toast("ok", t(`${produced} visuels préparés gratuitement (bibliothèque et rendu local).`, `${produced} visuals prepared for free (library and local render).`));
     reload();
-  });
+  }, { key: "social-produce", label: t("Production des visuels…", "Producing visuals…"), ms: 60000 });
   const estimate = () => run(async () => {
     if (!latest) throw new Error(t("Préparez d'abord un calendrier.", "Prepare a calendar first."));
     setEst(await api(`/api/projects/${id}/social/v2`, { body: { action: "estimate", planId: latest.id, allowPaid: true } }));
-  });
+  }, { key: "social-estimate", label: t("Estimation de la production…", "Estimating the production…"), ms: 10000 });
   const producePaid = () => run(async () => {
     if (!latest || !est) return;
     await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", planId: latest.id, allowPaid: true, maxCostEur: cap, approvedEstimateMicro: est.estimateMicro } });
@@ -223,6 +229,8 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   const toggleDay = (d: number) => setF((x) => ({ ...x, weekdays: x.weekdays.includes(d) ? x.weekdays.filter((y) => y !== d) : [...x.weekdays, d].sort() }));
   return (
     <div className="grid min-w-0 grid-cols-1 gap-5" data-social-create>
+      {jobs.map((j) => <JobProgress key={j.id} job={j} />)}
+      <AiWait busy={busy && !!what} label={what?.label ?? ""} waitKey={what?.key ?? "social"} expectedMs={what?.ms ?? 20000} progress={progress ? progress.done / Math.max(1, progress.total) : undefined} />
       <Card className="grid gap-4 p-5 sm:p-7">
         <h3 className="font-display text-xl font-semibold">{t("Demander en une phrase", "Ask in one sentence")}</h3>
         <Textarea rows={2} value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Ex. Prépare mes publications pour les 30 prochains jours, avec 3 publications par jour, des images, des vidéos et des textes.", "E.g. Prepare my posts for the next 30 days, 3 posts a day, with images, videos and text.")} />
@@ -363,9 +371,11 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
     }
   };
   const step = (dir: 1 | -1) => setCursor((c) => (view === "month" ? addMonths(c, dir) : addDays(c, dir * (view === "week" ? 7 : 1))));
+  const [sending, setSending] = useState(false);
   const send = async (confirm = false) => {
     const text = confirm && pending ? pending.text : chat;
-    if (!text.trim()) return;
+    if (!text.trim() || sending) return;
+    setSending(true);
     try {
       const r = await api<{ applied: boolean; summary: string; needsConfirm?: boolean; estimateMicro?: number }>(`/api/projects/${id}/social/v2`, { body: { action: "edit", text, confirm } });
       if (r.needsConfirm) setPending({ text, estimateMicro: r.estimateMicro ?? 0 });
@@ -377,6 +387,8 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
       }
     } catch (e) {
       toast("bad", (e as Error).message);
+    } finally {
+      setSending(false);
     }
   };
   const latest = data.plans.find((p) => p.engine === "v2");
@@ -442,8 +454,9 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
         <p className="text-xs text-muted">{t("Ex. « Supprime les publications du dimanche », « Mets les vidéos le vendredi », « Programme deux publications par jour au lieu de trois », « Remplace les images des trois prochaines publications » (gratuit) ; « Rends les publications plus premium » (IA, avec estimation).", "E.g. \"Delete Sunday posts\", \"Put videos on Friday\", \"Two posts a day instead of three\", \"Replace the images of the next three posts\" (free); \"Make posts more premium\" (AI, with an estimate).")}</p>
         <div className="flex gap-2">
           <Input value={chat} onChange={(e) => setChat(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={t("Votre demande", "Your request")} />
-          <Button onClick={() => send()}>{t("Envoyer", "Send")}</Button>
+          <Button onClick={() => send()} loading={sending}>{t("Envoyer", "Send")}</Button>
         </div>
+        <AiWait busy={sending} label={t("Modification du calendrier…", "Editing the calendar…")} waitKey="social-edit" expectedMs={15000} />
         {pending && (
           <div className="flex flex-wrap items-center gap-2 rounded-xl bg-warn-soft p-2 text-sm text-warn">
             {t(`Cette retouche utilise l'IA : estimation ${(pending.estimateMicro / 1e6).toFixed(2)} €.`, `This edit uses AI: estimate €${(pending.estimateMicro / 1e6).toFixed(2)}.`)}

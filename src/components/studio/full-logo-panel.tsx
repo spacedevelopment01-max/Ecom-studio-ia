@@ -3,6 +3,7 @@
  * Logos complets créés par l'ancien générateur (avant le Logo V2 « logo complet ») : toujours consultables et
  * utilisables. Les nouveaux logos complets se créent dans le panneau Logo (styles, original conservé, contrôle adapté).
  */
+import { AiWait } from "../wait-time";
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { api, Badge, Button, Card, useApi, useToast } from "../ui";
@@ -38,6 +39,7 @@ export function FullLogoPanel({ onApplied }: { onApplied?: () => void }) {
       <SectionTitle title={t("Logos complets déjà créés", "Full logos already created")}>
         {t("Créés par l'ancien générateur : vous pouvez toujours en utiliser un. Les nouveaux logos complets se créent dans le panneau Logo ci-dessus.", "Created by the previous generator: you can still use one. New full logos are created in the Logo panel above.")}
       </SectionTitle>
+      <AiWait busy={!!busy} label={t("Application du logo…", "Applying the logo…")} waitKey="full-logo-use" expectedMs={15000} className="mb-3" />
       {!!logos.length && (
         <div className="grid gap-4 sm:grid-cols-3">
           {logos.map((l) => (

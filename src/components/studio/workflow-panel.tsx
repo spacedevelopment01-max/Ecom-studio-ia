@@ -1,4 +1,5 @@
 "use client";
+import { AiWait } from "../wait-time";
 import Link from "next/link";
 import { useState } from "react";
 import { AlertTriangle, Check, Circle, Clapperboard, FileText, FolderOpen, Loader2, Megaphone, Palette, RefreshCw, RotateCcw, SkipForward, Sparkles, Store, CalendarDays, X } from "lucide-react";
@@ -255,6 +256,7 @@ export function WorkflowPanel() {
           <Button onClick={prepare} loading={busy} disabled={text.trim().length < 3} icon={<Sparkles className="size-4" />} data-testid="wf-prepare">{t("Préparer le plan et le devis", "Prepare the plan and estimate")}</Button>
           <Button variant="ghost" size="sm" onClick={() => setText(EXAMPLE[lang])}>{t("Utiliser l'exemple", "Use the example")}</Button>
         </div>
+        <AiWait busy={busy} label={t("Préparation du plan et du devis…", "Preparing the plan and quote…")} waitKey="workflow-prepare" expectedMs={20000} />
       </div>
       {current && (
         <div className="mt-6 grid gap-4 border-t border-line pt-5" data-testid="wf-current">

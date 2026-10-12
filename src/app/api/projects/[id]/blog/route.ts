@@ -12,12 +12,12 @@ import { gateBlogWrite } from "./gate";
 export const GET = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const trash = new URL(req.url).searchParams.get("trash") === "1";
-  const a = blogAccess(user.id);
+  const a = blogAccess(user.id, p.id);
   return ok({
     articles: listArticles(p.id).map(articleView),
     trash: trash ? listArticles(p.id, true).map(articleView) : undefined,
     trashCount: countTrashed(p.id),
-    access: { allowed: a.allowed, admin: a.admin, plan: a.plan, left: a.left, included: a.included, reason: blogPlanReason(user.id) },
+    access: { allowed: a.allowed, admin: a.admin, plan: a.plan, left: a.left, included: a.included, reason: blogPlanReason(user.id, p.id) },
     shopify: !!shopifyConnection(user.id, p.id),
     ai: aiAvailability().llm,
     links: storeLinks(p.id),

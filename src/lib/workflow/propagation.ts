@@ -177,7 +177,9 @@ export async function rebrandTheme(p: Project, spec0: ThemeSpec, oldS: BrandSnap
     // Anciens schémas : calculés avec ou sans palette validée (le client vient peut-être de la valider en la changeant).
     const unlocked = (q: Project): Project => ({ ...q, brand: { ...q.brand!, validated: (q.brand!.validated ?? []).filter((k) => k !== "palette") } });
     const lockedQ = (q: Project): Project => ({ ...q, brand: { ...q.brand!, validated: [...new Set([...(q.brand!.validated ?? []), "palette"])] } });
-    const befores = [withBrand(oldS), unlocked(withBrand(oldS)), lockedQ(withBrand(oldS))].map((q) => JSON.stringify(colorSchemesV2(artDirection(q, intent, { language }))));
+    // … et sans le verrou de palette par direction (site créé avant ce verrou).
+    const legacy = (q: Project): Project => ({ ...q, brand: { ...q.brand!, paletteMode: undefined } });
+    const befores = [withBrand(oldS), unlocked(withBrand(oldS)), lockedQ(withBrand(oldS)), legacy(withBrand(oldS)), legacy(unlocked(withBrand(oldS))), legacy(lockedQ(withBrand(oldS)))].map((q) => JSON.stringify(colorSchemesV2(artDirection(q, intent, { language }))));
     const after = artDirection(withBrand(newS), intent, { language });
     if (befores.includes(JSON.stringify(spec.settings.color_schemes))) spec.settings.color_schemes = colorSchemesV2(after) as any;
     else {
@@ -190,7 +192,10 @@ export async function rebrandTheme(p: Project, spec0: ThemeSpec, oldS: BrandSnap
     }
   } else if (spec.direction) {
     const { colorSchemes } = await import("../theme/directions");
-    spec.settings.color_schemes = colorSchemes(spec.direction as never, newS.palette as never) as any;
+    // Palette verrouillée : le site garde les couleurs de SA direction (la marque a peut-être déjà choisi la suivante).
+    const { paletteFor } = await import("../theme/direction-palettes");
+    const pal = p.brand?.paletteMode ? paletteFor({ ...p.brand, palette: newS.palette as never }, spec.direction as never) : newS.palette;
+    spec.settings.color_schemes = colorSchemes(spec.direction as never, pal as never) as any;
   }
   // Logo : fichiers du thème remplacés par les déclinaisons actuelles (même mécanisme que le choix d'un logo).
   if (oldS.logoAssetId !== newS.logoAssetId && newS.logoAssetId) {

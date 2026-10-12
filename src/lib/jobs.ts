@@ -11,6 +11,7 @@
 import os from "node:os";
 import { all, id, json, now, one, run, tx } from "./db";
 import { jobLiveness } from "./job-liveness";
+import { jobEstimate } from "./job-estimate";
 import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
 import { friendlyToolError } from "./tool-errors";
@@ -373,6 +374,10 @@ export function publicJob(j: Job) {
     createdAt: j.created_at,
     updatedAt: j.updated_at,
     finishedAt: j.finished_at,
+    // Début de l'exécution en cours (création, ou dernière reprise / nouvelle tentative) : temps écoulé affiché.
+    startedAt: Math.min(now(), Math.max(j.created_at, j.run_at ?? 0)),
+    // Durée habituelle de ce type de tâche (médiane mesurée, sinon ordre de grandeur) : temps restant affiché.
+    ...(j.status === "queued" || j.status === "running" || j.status === "paused" ? { estimate: jobEstimate(j.type) } : {}),
     ...jobLiveness(j),
   };
 }

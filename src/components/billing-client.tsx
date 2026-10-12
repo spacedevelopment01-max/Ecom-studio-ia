@@ -4,6 +4,7 @@
  * prix en euros, libellés des quotas, badge « Bientôt », lien « forfait » et bandeau « quota épuisé » du studio.
  * Jamais de crédits ni de coûts d'IA : seulement des quotas concrets (visuels, vidéos…).
  */
+import { useOptionalProject } from "./studio/project-context";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Gauge, Lock, Sparkles, X } from "lucide-react";
@@ -53,6 +54,10 @@ export function Soon({ className }: { className?: string }) {
 /** Création d'images, de vidéos ou d'UGC fermée (découverte gratuite). Faux tant que le forfait n'est pas chargé. */
 export function useCreationLocked() {
   const { billing } = useBilling();
+  // Dans un projet : son propre abonnement décide (un abonnement = un projet) ; l'ancien abonnement du compte
+  // n'existe pas pour un client qui a souscrit par projet.
+  const project = useOptionalProject();
+  if (project?.data && "plan" in project.data) return !project.data.plan;
   return !!billing && billing.canCreate === false;
 }
 
@@ -140,8 +145,11 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
 export function PlanLink({ billing, className }: { billing: BillingView | null; className?: string }) {
   const t = useT();
   const { lang } = useLang();
+  // Dans un projet : le forfait de SON abonnement (un abonnement = un projet), sinon celui de l'ancien abonnement du compte.
+  const project = useOptionalProject();
   if (!billing) return null;
-  const plan = billing.plan ? PLANS[billing.plan] : null;
+  const id = project?.data && "plan" in project.data ? project.data.plan : billing.plan;
+  const plan = id && id in PLANS ? PLANS[id as keyof typeof PLANS] : null;
   return (
     <div className={cx("flex shrink-0 items-center gap-1.5", className)}>
       <Link href="/studio/compte" className="hidden h-10 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs font-medium text-ink-2 hover:border-ink hover:text-ink md:inline-flex" title={t("Mon compte", "My account")}>

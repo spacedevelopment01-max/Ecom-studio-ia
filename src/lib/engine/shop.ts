@@ -27,6 +27,7 @@ import { snapshotTheme } from "../theme/snapshot";
 import { FONT_HANDLES } from "../theme/render";
 import { overlayV2Copy } from "../seo-v2/theme-copy";
 import { effectivePalette, paletteKey } from "../route-palette";
+import { paletteFor } from "../theme/direction-palettes";
 import { SHOPIFY_TO_CANVAS } from "../media/fonts";
 import { tidyComposition } from "../theme/tidy";
 import { llmConfigured } from "../ai/llm";
@@ -243,8 +244,9 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     fill,
     direction,
     shopName: brand.name,
-    // Couleurs de la piste de logo retenue : le site suit l'identité choisie.
-    palette: effectivePalette(brand) ?? brand.palette,
+    // Palette verrouillée par la direction (ou « Vos couleurs » du client) ; ancienne marque dans sa direction
+    // actuelle : couleurs de la piste de logo retenue, comme avant.
+    palette: brand.paletteMode || direction !== brand.direction ? paletteFor(brand, direction) : (effectivePalette(brand) ?? brand.palette),
     // Typographies de la piste de logo retenue (logo, site et réseaux parlent d'une seule voix), quelle que soit la
     // direction ; à défaut, celles de la marque si elles ont été choisies (IA ou client), pas recopiées d'une direction.
     fonts: routeFonts(brand.logo?.route) ?? ((directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts),
@@ -366,6 +368,9 @@ export async function switchDirection(ctx: JobContext | null, projectId: string,
   } catch (e) {
     throw new UserFacingError((e as Error).message);
   }
+  // La marque prend la direction et ses couleurs (logo, charte) avant la construction du site.
+  const { adoptDirection } = await import("./brand-direction");
+  await adoptDirection(projectId, direction);
   return buildShop(ctx, projectId, { direction, useAi: false, summary: inBothLangs(() => L(`Direction ${directionById(direction).name} appliquée`, `${directionById(direction).name} direction applied`)) });
 }
 

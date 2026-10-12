@@ -1,5 +1,6 @@
 "use client";
 /** Import du thème Shopify du client (ZIP) et rapport d'analyse : pages, sections, réglages, points d'attention. */
+import { AiWait } from "../wait-time";
 import { useRef, useState } from "react";
 import { FileArchive, Layers, TriangleAlert, Upload } from "lucide-react";
 import { api, Badge, Button, Modal, useToast } from "../ui";
@@ -45,6 +46,7 @@ export function ThemeImportModal({ open, onClose, projectId, onImported, report:
           <button type="button" onClick={() => input.current?.click()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); upload(e.dataTransfer.files?.[0]); }} disabled={busy} className="grid place-items-center gap-2 rounded-3xl border-2 border-dashed border-line p-8 text-center hover:border-ink disabled:opacity-60">
             {busy ? <span className="text-sm">{t("Analyse du thème en cours…", "Analyzing the theme…")}</span> : <><Upload className="size-6 text-signal" /><span className="font-medium">{t("Choisir ou déposer le fichier .zip du thème", "Choose or drop the theme .zip file")}</span><span className="text-xs text-muted">{t("Thèmes Online Store 2.0 (Dawn, Sense, Prestige, Impulse…), 60 Mo au plus", "Online Store 2.0 themes (Dawn, Sense, Prestige, Impulse…), 60 MB max")}</span></>}
           </button>
+          <AiWait busy={busy} label={t("Analyse du thème en cours…", "Analyzing the theme…")} waitKey="theme-import" expectedMs={20000} />
           <p className="text-xs text-muted">{t("Votre thème actuel du studio reste disponible dans l'historique des versions.", "Your current studio theme remains available in the version history.")}</p>
         </div>
       ) : (

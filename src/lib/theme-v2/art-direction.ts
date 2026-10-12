@@ -193,7 +193,15 @@ function paletteFor(def: LanguageDef, p: Project, intent: WebsiteIntent): Palett
   let source: Palette["source"] = "language";
   let bg = base.bg;
   let text = base.text;
-  if (b?.palette && isLocked(b, "palette")) {
+  if (b?.palette && b.paletteMode) {
+    // Palette verrouillée par la direction (ou couleurs du client) : reprise telle quelle — fonds clair et foncé de la
+    // palette ; accent = la couleur de la palette qui se lit sur le fond (principale sur fond clair, accent sur sombre).
+    source = "brand-locked";
+    bg = base.dark ? (isDark(b.palette.dark) ? b.palette.dark : withLightness(b.palette.dark, 0.08)) : b.palette.light;
+    text = base.dark ? b.palette.light : b.palette.dark;
+    const order = base.dark ? [b.palette.accent, b.palette.secondary, b.palette.primary] : [b.palette.primary, b.palette.accent, b.palette.dark];
+    accent = order.find((c) => contrast(c, bg) >= 4.5) ?? order[0];
+  } else if (b?.palette && isLocked(b, "palette")) {
     // Décision du client : sa couleur principale devient l'accent, ses clair et foncé les fonds (langage sombre ou clair).
     source = "brand-locked";
     accent = b.palette.primary;

@@ -23,7 +23,9 @@ describe("incitations et aperçu plein écran", () => {
     expect(src).toContain("le rendu final reste très basique");
     expect(src).toContain("the final result stays very basic");
     expect(src).toMatch(/href="\/studio\/compte#forfaits" className="plan-sparkle/);
-    expect(src).toContain("if (!data.ai.llm && billing?.plan)");
+    // Message technique seulement avec un forfait — celui du PROJET (un abonnement = un projet).
+    expect(src).toContain('const plan = "plan" in data ? data.plan : billing?.plan;');
+    expect(src).toContain("if (!data.ai.llm && plan)");
   });
 
   it("aperçu de la boutique : bouton plein écran, sortie par Échap, même aperçu (pas de rechargement)", () => {

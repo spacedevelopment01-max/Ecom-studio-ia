@@ -3,8 +3,10 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { useApi } from "../ui";
 import type { Brand, BusinessType, ProductProfile, ProjectSettings, ServiceProfile, Strategy } from "@/lib/project-types";
 
-export type JobView = { id: string; type: string; label: string; status: string; progress: number; message: string; error: string | null; result: any; createdAt: number; updatedAt: number; finishedAt: number | null; alive?: boolean; idleMs?: number };
+export type JobView = { id: string; type: string; label: string; status: string; progress: number; message: string; error: string | null; result: any; createdAt: number; updatedAt: number; finishedAt: number | null; alive?: boolean; idleMs?: number; estimate?: { ms: number; source: "history" | "default" } | null; startedAt?: number };
 export type Overview = {
+  /** Forfait du projet (null : découverte, sans abonnement). */
+  plan?: string | null;
   project: { id: string; name: string; status: string; platform: string; storeUrl: string | null; createdAt: number; updatedAt: number; sectorLabel: string; business: BusinessType };
   /** Pour un projet de services, `product` décrit l'activité et `services` l'offre. */
   product: ProductProfile;
@@ -38,6 +40,9 @@ export function ProjectProvider({ id, children }: { id: string; children: ReactN
   }, [first.data]);
   return <Ctx.Provider value={{ id, data: first.data, reload: first.reload, error: first.error }}>{children}</Ctx.Provider>;
 }
+
+/** Projet ouvert, ou null hors d'un projet (pages du compte). */
+export const useOptionalProject = () => useContext(Ctx);
 
 export function useProject() {
   const v = useContext(Ctx);

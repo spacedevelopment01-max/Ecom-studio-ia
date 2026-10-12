@@ -15,7 +15,7 @@ const SCENE_LABEL_EN: Record<string, string> = { title: "Hook", reveal: "Reveal"
 export default function TabVideos() {
   const { id, data } = useProject();
   const t = useT();
-  const active = useActive(["video.render", "video.ugc"]);
+  const active = useActive(["video.render", "video.ugc", "canva."]);
   const locked = useCreationLocked();
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=video,clip,subtitles`);
   const [viewer, setViewer] = useState<AssetView | null>(null);

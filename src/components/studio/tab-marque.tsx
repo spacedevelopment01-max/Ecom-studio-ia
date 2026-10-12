@@ -1,4 +1,5 @@
 "use client";
+import { AiWait } from "../wait-time";
 import { useEffect, useState } from "react";
 import { DirectionThumb } from "./direction-thumb";
 import { paletteSources } from "@/lib/route-palette";
@@ -8,12 +9,12 @@ import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
 import type { Brand } from "@/lib/project-types";
 import { DIRECTIONS, DIRECTIONS_EN } from "@/lib/theme/directions";
+import { directionPalette } from "@/lib/theme/direction-palettes";
 import { useLang, useT } from "../i18n";
 import { ContentLangPicker, useContentLang } from "./content-lang";
 import { FromSiteBadge } from "./existing-site";
 import { LogoV2Panel } from "./logo-v2-panel";
 import { FullLogoPanel } from "./full-logo-panel";
-import { PalettePicker } from "./palette-picker";
 import { BrandPropagationCard } from "./workflow-panel";
 
 const PALETTE_LABEL: Record<string, { fr: string; en: string }> = {
@@ -102,7 +103,7 @@ export default function TabMarque() {
   async function save(extra: Record<string, unknown> = {}) {
     setBusy(true);
     try {
-      const r = await api<{ recolored?: boolean; siteUpdated?: boolean }>(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, palette: exactPal ?? b!.palette, ...(exactPal ? { paletteExact: true } : {}), direction: b!.direction, ...extra } });
+      const r = await api<{ recolored?: boolean; siteUpdated?: boolean }>(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, direction: b!.direction, ...extra } });
       toast(
         "ok",
         r?.recolored
@@ -134,6 +135,7 @@ export default function TabMarque() {
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
+      <AiWait busy={busy} label={t("Mise à jour de la marque (logo, site, charte)…", "Updating the brand (logo, website, guide)…")} waitKey="brand-save" expectedMs={15000} className="mb-4" />
       {active[0] && <JobProgress job={active[0]} />}
       {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
       <BrandPropagationCard />
@@ -191,41 +193,41 @@ export default function TabMarque() {
             </div>
             <Field label={t("Histoire de la marque", "Brand story")} htmlFor="bstory" hint={t("N'écrivez que des faits réels (origine, fondateurs, fabrication).", "Only write real facts (origin, founders, manufacturing).")}><Textarea autoGrow id="bstory" rows={4} value={b.story} onChange={(e) => set({ story: e.target.value })} /></Field>
             {(() => {
-              // Piste de logo retenue : la palette affichée est la sienne (celle du site, des visuels et des vignettes) ;
-              // modifier une couleur change la couleur d'origine qui l'alimente.
-              const logo = data.brand?.logo ?? b.logo;
-              const src = paletteSources({ palette: b.palette, logo });
-              const route = logo?.route;
-              const shown = (k: keyof Brand["palette"]) => (exactPal ? exactPal[k] : b.palette[src[k]]);
-              const edit = (k: keyof Brand["palette"], v: string) => {
-                if (!route) return set({ palette: { ...b.palette, [k]: v } });
-                // Piste retenue : on part de la palette affichée, chaque case se règle seule.
-                const base = exactPal ?? (Object.fromEntries((Object.keys(b.palette) as (keyof Brand["palette"])[]).map((x) => [x, b.palette[src[x]]])) as Brand["palette"]);
-                setExactPal({ ...base, [k]: v });
-                setDirty(true);
-              };
-              // Les cinq couleurs d'un coup (palette prête, une couleur de départ, codes collés).
-              const replaceAll = (pal: Brand["palette"]) => {
-                if (!route) return set({ palette: pal });
-                setExactPal(pal);
-                setDirty(true);
-              };
+              // Palette VERROUILLÉE par la direction : elle ne se modifie pas à la main. Une autre direction choisie (pas
+              // encore enregistrée) est montrée avec ses propres couleurs ; ancienne marque : couleurs de la piste de logo.
+              const saved = data.brand!;
+              const pending = b!.direction !== saved.direction;
+              const src = paletteSources(saved);
+              const pal: Brand["palette"] = pending
+                ? directionPalette(b!.direction)
+                : (Object.fromEntries((Object.keys(saved.palette) as (keyof Brand["palette"])[]).map((k) => [k, saved.palette[src[k]]])) as Brand["palette"]);
+              const dirName = DIRECTIONS.find((d) => d.id === b!.direction)?.name ?? b!.direction;
               return (
                 <div>
-                  <div className="mb-2 flex items-center justify-between"><p className="text-sm font-medium">{t("Palette", "Palette")}</p>{V("palette")}</div>
-                  {route && <p className="mb-2 text-xs text-muted">{t(`Couleurs de la piste « ${route.name} ». Cliquez sur une couleur pour la changer, puis enregistrez : la même piste est recolorée et tout se met à jour (logo, site, bannières, réseaux sociaux, charte).`, `Colors of the "${route.name}" route. Click a color to change it, then save: the same route is recolored and everything updates (logo, site, banners, social media, brand guide).`)}</p>}
-                  <div className="grid grid-cols-5 gap-2">
-                    {(Object.keys(b.palette) as (keyof Brand["palette"])[]).map((k) => (
-                      <label key={k} className="grid gap-1.5 text-center text-xs">
-                        <span className="relative h-16 overflow-hidden rounded-2xl border border-line" style={{ background: shown(k) }}>
-                          <input type="color" value={shown(k)} onChange={(e) => edit(k, e.target.value.toUpperCase())} className="absolute inset-0 size-full cursor-pointer opacity-0" aria-label={t(`Couleur ${PALETTE_LABEL[k].fr}`, `${PALETTE_LABEL[k].en} color`)} />
-                        </span>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium">{t("Palette", "Palette")}</p>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-paper-2 px-2.5 py-1 text-xs text-muted"><Lock className="size-3" /> {saved.paletteMode === "client" && !pending ? t("Vos couleurs", "Your colors") : t(`Direction ${dirName}`, `${dirName} direction`)}</span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2" data-testid="brand-palette">
+                    {(Object.keys(pal) as (keyof Brand["palette"])[]).map((k) => (
+                      <div key={k} className="grid gap-1.5 text-center text-xs">
+                        <span className="h-16 rounded-2xl border border-line" style={{ background: pal[k] }} aria-label={t(`Couleur ${PALETTE_LABEL[k].fr} ${pal[k]}`, `${PALETTE_LABEL[k].en} color ${pal[k]}`)} role="img" />
                         <span className="text-muted">{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)}</span>
-                        <span className="font-mono text-[10px]">{shown(k)}</span>
-                      </label>
+                        <span className="font-mono text-[10px]">{pal[k]}</span>
+                      </div>
                     ))}
                   </div>
-                  <PalettePicker current={Object.fromEntries((Object.keys(b.palette) as (keyof Brand["palette"])[]).map((k) => [k, shown(k)])) as Brand["palette"]} onPick={replaceAll} />
+                  <p className="mt-2 text-xs text-muted">
+                    {pending
+                      ? t(`Couleurs de la direction ${dirName} : enregistrez pour les appliquer à toute la marque (logo, site, charte, visuels).`, `Colors of the ${dirName} direction: save to apply them to the whole brand (logo, website, guide, visuals).`)
+                      : saved.paletteMode === "client"
+                        ? t("Vos couleurs, reprises de votre site. Choisir une autre direction applique ses propres couleurs ; vous pourrez revenir aux vôtres.", "Your colors, taken from your website. Choosing another direction applies its own colors; you can come back to yours.")
+                        : t("Les couleurs sont liées à la direction choisie. Pour changer de couleurs, choisissez une autre direction ci-dessous.", "Colors are tied to the chosen direction. To change colors, choose another direction below.")}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {!pending && saved.clientPalette && saved.paletteMode !== "client" && <Button size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "client" })}>{t("Revenir à vos couleurs", "Back to your colors")}</Button>}
+                    {!pending && !saved.paletteMode && <Button size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "direction" })}>{t(`Appliquer les couleurs de la direction ${dirName}`, `Apply the ${dirName} direction colors`)}</Button>}
+                  </div>
                 </div>
               );
             })()}
@@ -276,10 +278,13 @@ export default function TabMarque() {
           </Card>
           <Card className="p-5">
             <h3 className="font-display text-lg font-semibold">{t("Direction de la boutique", "Store direction")}</h3>
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <p className="mt-1 text-xs text-muted">{t("Chaque direction a ses propres couleurs.", "Each direction has its own colors.")}</p>
+            {/* Liste défilante sur ordinateur : la page ne s'allonge plus (plus de grand vide à gauche). */}
+            <div className="mt-3 grid grid-cols-2 gap-2 lg:max-h-[min(72dvh,760px)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1" data-testid="direction-list">
               {DIRECTIONS.map((d) => (
                 <button key={d.id} onClick={() => set({ direction: d.id })} className={cx("overflow-hidden rounded-2xl border text-left transition", b.direction === d.id ? "border-signal ring-2 ring-signal" : "border-line hover:border-ink")} aria-pressed={b.direction === d.id}>
                   <DirectionThumb className="aspect-[4/3]" projectId={id} direction={d.id} version={`${data?.brand?.logo.assetId ?? ""}-${data?.project.updatedAt ?? ""}`} sandbox={data?.previewSandbox} fallback={`/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg`} />
+                  <span className="flex h-1.5" aria-hidden>{Object.values(directionPalette(d.id)).map((c, i) => <span key={i} className="flex-1" style={{ background: c }} />)}</span>
                   <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTIONS_EN[d.id].tagline)}</span></span>
                 </button>
               ))}
@@ -494,6 +499,7 @@ function SocialKit({ tick }: { tick: number }) {
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Exemples de légendes", "Sample captions")}</p>
             <div className="mt-2 grid gap-2">{v.captions.map((c, i) => <div key={i} className="rounded-xl bg-paper-2 p-3 text-sm"><p className="text-[11px] font-medium text-muted">{c.pillar}</p><p className="mt-1 whitespace-pre-line">{c.text}</p></div>)}</div>
+            <AiWait busy={busy} label={t("Préparation de la ligne éditoriale…", "Preparing the editorial line…")} waitKey="brand-social" expectedMs={20000} className="mt-2" />
             <Button size="sm" variant="ghost" className="mt-2" icon={<Sparkles className="size-4" />} loading={busy} onClick={() => redo(true)}>{t("Refaire la ligne éditoriale", "Redo the editorial line")}</Button>
           </div>
         </div>
@@ -554,6 +560,7 @@ function BrandBook() {
           <ContentLangPicker {...cl} compact />
         </div>
       )}
+      <AiWait busy={busy} label={t("Préparation de la charte de marque…", "Preparing the brand guidelines…")} waitKey="brand-book" expectedMs={20000} className="mt-3" />
     </Card>
   );
 }

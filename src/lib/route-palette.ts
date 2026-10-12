@@ -22,8 +22,10 @@ function rolesOf(pal: Palette, route: NonNullable<Brand["logo"]["route"]>): { ac
  * Pour chaque couleur de la palette affichée, le rôle de la palette enregistrée d'où elle vient avec la piste retenue
  * (sans piste : chaque couleur vient d'elle-même). Sert à afficher la palette de la piste et à modifier la bonne couleur.
  */
-export function paletteSources(brand: Pick<Brand, "palette" | "logo"> | null | undefined): Record<Role, Role> {
+export function paletteSources(brand: (Pick<Brand, "palette" | "logo"> & Partial<Pick<Brand, "paletteMode">>) | null | undefined): Record<Role, Role> {
   const same = Object.fromEntries(ROLES.map((k) => [k, k])) as Record<Role, Role>;
+  // Palette verrouillée (direction ou couleurs du client) : chaque couleur reste à sa place, la piste ne la réarrange pas.
+  if (brand?.paletteMode) return same;
   const route = brand?.logo?.route;
   const r = brand && route ? rolesOf(brand.palette, route) : null;
   if (!r) return same;
@@ -32,7 +34,7 @@ export function paletteSources(brand: Pick<Brand, "palette" | "logo"> | null | u
   return { ...same, primary, accent: r.accent };
 }
 
-export function effectivePalette(brand: Pick<Brand, "palette" | "logo"> | null | undefined): Palette | null {
+export function effectivePalette(brand: (Pick<Brand, "palette" | "logo"> & Partial<Pick<Brand, "paletteMode">>) | null | undefined): Palette | null {
   if (!brand) return null;
   const src = paletteSources(brand);
   return Object.fromEntries(ROLES.map((k) => [k, brand.palette[src[k]]])) as Palette;

@@ -13,7 +13,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ChevronLeft, Circle, Download, Hand, History as HistoryIcon, ImagePlus, Layers, Maximize2, Minus, MoreHorizontal, Plus, Redo2, Save, Send, SlidersHorizontal, Square, Type, Undo2, X, Copy, Ratio, PenLine } from "lucide-react";
 import { api, Button, cx, Modal, Spinner, useToast } from "../../ui";
 import { useT } from "../../i18n";
-import { MediaPicker } from "../common";
+import { JobProgress, MediaPicker } from "../common";
+import { AiWait } from "../../wait-time";
 import { useCostConfirm } from "../cost-confirm";
 import { useProject } from "../project-context";
 import { History, type DocOp } from "@/lib/ad-doc/ops";
@@ -472,6 +473,9 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
         </div>
       )}
       {busy && <div className="flex items-center gap-2 border-b border-line bg-card px-4 py-2 text-sm"><Spinner /> {busy}</div>}
+      {/* Temps de la préparation (image IA en cours, nouvelle version demandée) : écoulé et restant estimé. */}
+      {busy && <AiWait busy={!!busy} label={busy} waitKey="ad-editor-image" expectedMs={60000} className="mx-3 my-2" />}
+      {(project?.active ?? []).filter((j) => j.type.startsWith("ads.v2")).map((j) => <JobProgress key={j.id} job={j} className="mx-3 my-2" />)}
 
       {mobile ? (
         <>

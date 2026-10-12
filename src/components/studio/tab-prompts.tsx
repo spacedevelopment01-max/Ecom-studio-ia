@@ -1,4 +1,5 @@
 "use client";
+import { AiWait } from "../wait-time";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Heart, Search, Sparkles, Save, Trash2, ArrowRight } from "lucide-react";
@@ -235,7 +236,7 @@ export default function TabPrompts() {
               </Button>
               {sel.mine && <Button variant="danger" icon={<Trash2 className="size-4" />} onClick={async () => { await api(`/api/prompts/${encodeURIComponent(sel.id)}`, { method: "DELETE" }); setSel(null); reload(); }}>{t("Supprimer", "Delete")}</Button>}
             </div>
-            {running && <p className="mt-3 text-xs text-muted">{t("L'IA travaille sur votre projet (jusqu'à une minute)…", "AI is working on your project (up to a minute)…")}</p>}
+            <AiWait busy={running} label={t("L'IA travaille sur votre projet…", "AI is working on your project…")} waitKey="prompt-run" expectedMs={40000} className="mt-3" />
             {answer && (
               <div className="mt-4 grid max-h-[45vh] gap-2 overflow-auto rounded-2xl border border-line bg-paper-2 p-4">
                 <div className="flex items-center justify-between gap-2">

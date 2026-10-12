@@ -40,7 +40,7 @@ const articleHash = (title: string, body: string) => crypto.createHash("sha256")
 export const blogIdFor = (docKey: string) => `b2${crypto.createHash("sha256").update(docKey).digest("hex").slice(0, 20)}`;
 
 /** Les articles écrits par l'IA suivent le forfait (comme le blog existant) ; un brouillon local reste gratuit. */
-export const blogAiAllowed = (userId: string) => blogPlanReason(userId) == null;
+export const blogAiAllowed = (userId: string, projectId?: string | null) => blogPlanReason(userId, projectId) == null;
 
 /** Range (ou met à jour) le brouillon dans le blog existant ; un article publié reste publié (statut « prêt »). */
 export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: { notes: string[]; ai: boolean; jobKey: string }) {
