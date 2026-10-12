@@ -55,7 +55,7 @@ function fitTitle(k: Kit, b: Box, o: TitleOpts): TextLayer {
   let s = Math.round(o.max);
   let n = fits(s);
   while (!n && s > 26) n = fits((s = Math.max(26, Math.floor(s * 0.96))));
-  t.font.size = s;
+  t.font.size = s; if (process.env.DBG) console.log("fit", o.max, s, n, b.w, b.h);
   t.letterSpacing = Math.round(s * ratio);
   t.autoFit = { minSize: Math.max(22, Math.round(s * 0.6)) };
   t.h = Math.ceil(Math.max(1, n || maxLines) * s * t.lineHeight + s * 0.12);
@@ -123,9 +123,15 @@ function dots(k: Kit, zone: Box, step: number, d: number, color: string) {
   for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) k.ellipse({ x: ox + x * step - d / 2, y: oy + y * step - d / 2, w: d, h: d }, color, { name: "Point" });
 }
 
-/** Tache de couleur floue (dégradé radial vers le transparent). */
-const blob = (k: Kit, cx: number, cy: number, r: number, color: string, a = 0.9) =>
-  k.rect({ x: cx - r, y: cy - r, w: r * 2, h: r * 2 }, { type: "radial", angle: 0, stops: [{ offset: 0, color: rgba(color, a) }, { offset: 0.32, color: rgba(color, a * 0.7) }, { offset: 0.7, color: rgba(color, 0) }, { offset: 1, color: rgba(color, 0) }] }, { name: "Tache de couleur" });
+/**
+ * Tache de couleur floue (dégradé radial vers le transparent). Son intensité est bornée pour que l'encre du schéma
+ * reste lisible partout où la tache passe (aucun voile ajouté sous les textes).
+ */
+function blob(k: Kit, cx: number, cy: number, r: number, color: string, a0 = 0.9) {
+  let a = a0;
+  while (a > 0.15 && contrast(k.c.ink, mix(k.c.bg, color, a)) < 5.6) a -= 0.05;
+  return k.rect({ x: cx - r, y: cy - r, w: r * 2, h: r * 2 }, { type: "radial", angle: 0, stops: [{ offset: 0, color: rgba(color, a) }, { offset: 0.32, color: rgba(color, a * 0.7) }, { offset: 0.7, color: rgba(color, 0) }, { offset: 1, color: rgba(color, 0) }] }, { name: "Tache de couleur" });
+}
 
 export const TEMPLATES_C: Template[] = [
   {
@@ -155,8 +161,8 @@ export const TEMPLATES_C: Template[] = [
         column(k, { x: side, y: top + mk.h + gap, w, h: k.H - top - bottom - mk.h - gap }, { mark: false, valign: "bottom", title: k.H * 0.22, display: true, maxLines: 4, gap: k.U * 0.035 });
         return;
       }
-      const pw = k.W * k.pick(0, 0.27, 0.29, 0.34);
-      const ph = pw * k.pick(1, 1.35, 1.45, 1.5);
+      const pw = k.W * k.pick(0, 0.26, 0.29, 0.3);
+      const ph = pw * k.pick(1, 1.3, 1.45, 1.3);
       const mk = k.brandMark({ x: side, y: top, w: k.W * 0.5 });
       let y0 = top + mk.h + gap * 2;
       if (pic) {
@@ -174,6 +180,416 @@ export const TEMPLATES_C: Template[] = [
         k.layers.splice(k.layers.indexOf(disc), 1);
         k.layers.splice(k.layers.indexOf(col.layers[0]), 0, disc);
       }
+    },
+  },
+  {
+    id: "dot-grid",
+    name: ["Motif de points", "Dot grid"],
+    family: "frame",
+    photo: "optional",
+    schemes: ["light", "brand", "dark"],
+    treatments: ["natural", "warm", "cool"],
+    build(k) {
+      legible(k);
+      k.fill();
+      const { side, top, bottom } = k.m;
+      const gap = k.U * 0.05;
+      // Zone à motif de points (moitié droite en paysage, haut de l'image sinon) et disque centré dedans.
+      const zone = k.cls === "land" ? { x: k.W * 0.5, y: 0, w: k.W * 0.5, h: k.H } : { x: 0, y: 0, w: k.W, h: k.H * k.pick(0.5, 0.46, 0.48, 0.45) };
+      const zt = k.cls === "land" ? 0 : top * 0.7;
+      const d = k.cls === "land" ? k.H * 0.7 : Math.min(k.W * 0.6, (zone.h - zt) * 0.86);
+      const cx = zone.x + zone.w / 2;
+      const cy = k.cls === "land" ? k.H / 2 : zt + (zone.h - zt) / 2;
+      dots(k, zone, k.U * k.pick(0.06, 0.055, 0.055, 0.058), k.U * 0.014, mix(k.c.bg, k.c.accent, isDark(k.c.bg) ? 0.6 : 0.55));
+      k.ellipse({ x: cx - d * 0.6, y: cy - d * 0.6, w: d * 1.2, h: d * 1.2 }, k.c.bg, { name: "Réserve" });
+      k.ellipse({ x: cx - d * 0.54, y: cy - d * 0.54, w: d * 1.08, h: d * 1.08 }, null, { stroke: { color: k.c.accent, width: Math.max(3, Math.round(k.U * 0.006)) }, name: "Anneau" });
+      if (k.hasPhoto) k.photo({ x: cx - d / 2, y: cy - d / 2, w: d, h: d }, { radius: d / 2, focus: k.point(0), zoom: 1.1 });
+      else {
+        k.ellipse({ x: cx - d / 2, y: cy - d / 2, w: d, h: d }, k.c.accent, { name: "Disque" });
+        k.ellipse({ x: cx - d * 0.05, y: cy - d * 0.45, w: d * 0.5, h: d * 0.5 }, mix(k.c.accent, k.c.bg, 0.45), { name: "Disque clair" });
+      }
+      const col = k.cls === "land" ? { x: side, y: top, w: zone.x - side - k.W * 0.05, h: k.H - top - bottom } : { x: side, y: zone.h + gap * 0.6, w: k.W - side * 2, h: k.H - bottom - zone.h - gap * 0.6 };
+      column(k, col, { valign: "middle", title: k.U * k.pick(0.11, 0.1, 0.12, 0.13), eyebrow: k.cls !== "square", align: k.cls === "land" ? "left" : "center" });
+    },
+  },
+  {
+    id: "gradient-blobs",
+    name: ["Taches de couleur", "Colour blobs"],
+    family: "type",
+    photo: "optional",
+    styles: ["premium", "warm", "bold"],
+    schemes: ["dark", "brand", "light"],
+    treatments: ["natural", "warm", "cool"],
+    build(k) {
+      legible(k);
+      k.fill();
+      const { side, top, bottom } = k.m;
+      const pal = k.i.palette;
+      const a = k.c.accent;
+      const b = farthest([pal.primary, pal.secondary, pal.accent, k.c.vivid], [k.c.bg, a]);
+      const pic = k.hasPhoto;
+      // Grandes taches floues aux couleurs de la marque, surtout autour de la photo.
+      const U = k.U;
+      if (k.cls === "land") {
+        blob(k, k.W * 0.62, k.H * 0.1, U * 0.8, a, 0.85);
+        blob(k, k.W * 0.98, k.H * 0.92, U * 0.85, b, 0.8);
+        blob(k, k.W * 0.05, k.H * 1.05, U * 0.5, mix(a, b, 0.5), 0.4);
+      } else {
+        blob(k, k.W * 0.12, k.H * 0.12, U * 0.75, a, 0.85);
+        blob(k, k.W * 0.95, k.H * 0.38, U * 0.7, b, 0.8);
+        blob(k, k.W * 0.1, k.H * 0.98, U * 0.55, mix(a, b, 0.5), 0.4);
+      }
+      if (!pic) {
+        const w = k.W * k.pick(0.66, 0.84, 0.84, 0.84);
+        column(k, { x: (k.W - w) / 2, y: top, w, h: k.H - top - bottom }, { align: "center", valign: "middle", title: U * k.pick(0.15, 0.14, 0.15, 0.16), eyebrow: true, ctaStyle: "pill" });
+        return;
+      }
+      if (k.cls === "land") {
+        const pw = k.H * 0.5;
+        const pic0 = { x: k.W * 0.78 - pw / 2, y: top, w: pw, h: k.H - top - bottom };
+        k.rect({ x: pic0.x - U * 0.02, y: pic0.y - U * 0.02, w: pic0.w + U * 0.04, h: pic0.h + U * 0.04 }, null, { radius: pic0.w / 2 + U * 0.02, stroke: { color: rgba(k.c.ink, 0.6), width: Math.max(2, Math.round(U * 0.003)) }, name: "Contour" });
+        k.photo(pic0, { radius: pw / 2, focus: k.point(0) });
+        column(k, { x: side, y: top, w: pic0.x - side - k.W * 0.07, h: k.H - top - bottom }, { valign: "middle", title: U * 0.12, eyebrow: true, ctaStyle: "pill" });
+        return;
+      }
+      const pw = k.W * k.pick(0, 0.42, 0.46, 0.5);
+      const ph = pw * k.pick(1, 1.15, 1.3, 1.25);
+      const pic0 = { x: (k.W - pw) / 2, y: top + U * 0.02, w: pw, h: ph };
+      k.rect({ x: pic0.x - U * 0.022, y: pic0.y - U * 0.022, w: pic0.w + U * 0.044, h: pic0.h + U * 0.044 }, null, { radius: pic0.w / 2 + U * 0.022, stroke: { color: rgba(k.c.ink, 0.6), width: Math.max(2, Math.round(U * 0.003)) }, name: "Contour" });
+      k.photo(pic0, { radius: pw / 2, focus: k.point(0) });
+      const y = pic0.y + ph + U * 0.07;
+      column(k, { x: side, y, w: k.W - side * 2, h: k.H - bottom - y }, { align: "center", valign: "middle", title: U * k.pick(0.1, 0.09, 0.1, 0.11), ctaStyle: "pill" });
+    },
+  },
+  {
+    id: "color-blocks",
+    name: ["Blocs de couleur", "Colour blocks"],
+    family: "split",
+    photo: "optional",
+    styles: ["bold", "craft", "warm"],
+    schemes: ["light", "brand", "dark"],
+    treatments: ["natural", "punch", "mono"],
+    build(k) {
+      legible(k);
+      const pal = k.i.palette;
+      const a = k.c.accent;
+      const b = farthest([pal.primary, pal.secondary, pal.accent, k.c.light, k.c.dark], [k.c.bg, a, k.c.ink]);
+      const third = farthest([pal.primary, pal.secondary, pal.accent, k.c.vivid, k.c.light, k.c.dark, mix(a, k.c.dark, 0.5)], [k.c.bg, a, b]);
+      // Composition à la Mondrian : des blocs séparés par des filets épais de la couleur d'encre.
+      k.fill(k.c.ink);
+      const g = Math.max(6, Math.round(k.U * 0.014));
+      const h2 = g / 2;
+      const { side, top, bottom } = k.m;
+      let text: { x: number; y: number; w: number; h: number };
+      let pic: { x: number; y: number; w: number; h: number };
+      let disc: { x: number; y: number; w: number; h: number };
+      if (k.cls === "land") {
+        const W = k.W;
+        const H = k.H;
+        text = { x: 0, y: 0, w: W * 0.47 - h2, h: H };
+        pic = { x: W * 0.47 + h2, y: 0, w: W * 0.35 - g, h: H * 0.68 - h2 };
+        k.rect({ x: W * 0.82 + h2, y: 0, w: W * 0.18 - h2, h: H * 0.38 - h2 }, b, { name: "Bloc" });
+        disc = { x: W * 0.82 + h2, y: H * 0.38 + h2, w: W * 0.18 - h2, h: H * 0.62 - h2 };
+        k.rect(disc, a, { name: "Bloc" });
+        k.rect({ x: W * 0.47 + h2, y: H * 0.68 + h2, w: W * 0.35 - g, h: H * 0.32 - h2 }, k.c.bg, { name: "Bloc" });
+        k.rect({ x: W * 0.47 + h2, y: H * 0.68 + h2, w: W * 0.12, h: H * 0.32 - h2 }, third, { name: "Bloc" });
+      } else {
+        const W = k.W;
+        const H = k.H;
+        const ht = H * k.pick(0.5, 0.5, 0.5, 0.4);
+        pic = { x: 0, y: 0, w: W * 0.64 - h2, h: ht - h2 };
+        k.rect({ x: W * 0.64 + h2, y: 0, w: W * 0.36 - h2, h: ht * 0.42 - h2 }, a, { name: "Bloc" });
+        disc = { x: W * 0.64 + h2, y: ht * 0.42 + h2, w: W * 0.36 - h2, h: ht * 0.58 - g };
+        k.rect(disc, b, { name: "Bloc" });
+        const sx = W * k.pick(0.8, 0.8, 0.82, 0.86);
+        text = { x: 0, y: ht + h2, w: sx - h2, h: H - ht - h2 };
+        k.rect({ x: sx + h2, y: ht + h2, w: W - sx - h2, h: (H - ht) * 0.3 - g }, third, { name: "Bloc" });
+        k.rect({ x: sx + h2, y: ht + (H - ht) * 0.3, w: W - sx - h2, h: (H - ht) * 0.7 }, a, { name: "Bloc" });
+      }
+      k.rect(text, k.c.bg, { name: "Bloc du texte" });
+      // Cercle (Bauhaus) dans un bloc de couleur.
+      const dd = Math.min(disc.w, disc.h) * 0.62;
+      k.ellipse({ x: disc.x + (disc.w - dd) / 2, y: disc.y + (disc.h - dd) / 2, w: dd, h: dd }, k.cls === "land" ? k.c.bg : a, { name: "Cercle" });
+      if (k.hasPhoto) k.photo(pic, { focus: k.point(0) });
+      else {
+        k.rect(pic, third, { name: "Bloc" });
+        const d = Math.min(pic.w, pic.h) * 0.78;
+        k.ellipse({ x: pic.x + (pic.w - d) / 2, y: pic.y + (pic.h - d) / 2, w: d, h: d }, a, { name: "Cercle" });
+        k.rect({ x: pic.x + (pic.w - d) / 2, y: pic.y + pic.h / 2, w: d, h: d / 2 }, b, { name: "Demi-cercle" });
+      }
+      const pad = k.U * 0.06;
+      const x = Math.max(side, text.x + pad);
+      const y = Math.max(top, text.y + pad);
+      const col = { x, y, w: text.x + text.w - pad - x, h: Math.min(text.y + text.h - pad, k.H - bottom) - y };
+      column(k, col, { valign: "middle", title: k.U * k.pick(0.11, 0.085, 0.1, 0.12), display: true, ctaStyle: "square", maxLines: k.cls === "story" ? 5 : 4 });
+    },
+  },
+  {
+    id: "ring-frame",
+    name: ["Grand anneau", "Bold ring"],
+    family: "frame",
+    photo: "optional",
+    styles: ["premium", "bold"],
+    schemes: ["dark", "brand", "accent"],
+    treatments: ["natural", "moody", "cool"],
+    build(k) {
+      legible(k);
+      k.fill();
+      const { side, top, bottom } = k.m;
+      const U = k.U;
+      if (k.hasPhoto) {
+        // Photo en fond, floutée et assombrie : l'ambiance, sans gêner la lecture.
+        k.photo({ x: 0, y: 0, w: k.W, h: k.H }, { full: true, fx: false, filter: "blur(18px) brightness(0.62) saturate(1.15)" });
+        k.rect({ x: 0, y: 0, w: k.W, h: k.H }, rgba(k.c.dark, 0.35), { role: "scrim", name: "Voile" });
+      } else {
+        let t = 0.3;
+        while (t > 0.04 && contrast(k.c.ink, mix(k.c.bg, k.c.accent, t)) < 5.6) t -= 0.04;
+        k.rect({ x: 0, y: 0, w: k.W, h: k.H }, { type: "radial", angle: 0, stops: [{ offset: 0, color: mix(k.c.bg, k.c.accent, t) }, { offset: 0.75, color: k.c.bg }] }, { name: "Lumière" });
+      }
+      const ringW = Math.max(8, Math.round(U * 0.024));
+      const ring = (cx: number, cy: number, d: number) => {
+        k.ellipse({ x: cx - d / 2 - U * 0.035, y: cy - d / 2 - U * 0.035, w: d + U * 0.07, h: d + U * 0.07 }, null, { stroke: { color: rgba(k.c.light, 0.5), width: Math.max(2, Math.round(U * 0.003)) }, name: "Anneau fin" });
+        k.ellipse({ x: cx - d / 2, y: cy - d / 2, w: d, h: d }, null, { stroke: { color: k.c.accent, width: ringW }, name: "Anneau" });
+      };
+      const inner = (cx: number, cy: number, d: number) =>
+        column(k, { x: cx - d * 0.37, y: cy - d * 0.34, w: d * 0.74, h: d * 0.68 }, { align: "center", valign: "middle", mark: false, cta: false, title: d * 0.16, italic: true, maxLines: 4 });
+      if (k.cls === "land") {
+        const d = k.H * 0.84;
+        const cx = side + d / 2;
+        ring(cx, k.H / 2, d);
+        inner(cx, k.H / 2, d);
+        const x = cx + d / 2 + k.W * 0.06;
+        const w = k.W - side - x;
+        const mk = k.brandMark({ x, y: 0, w });
+        const bt = k.button(x, 0, { maxW: w });
+        const h = mk.h + U * 0.08 + bt.h;
+        mk.y = (k.H - h) / 2;
+        bt.y = mk.y + mk.h + U * 0.08;
+        return;
+      }
+      const mk = k.brandMark({ x: side, y: top, w: k.W - side * 2 }, { align: "center" });
+      const bt = k.button(k.W / 2, 0, { maxW: k.W - side * 2, align: "center" });
+      bt.y = k.H - bottom - bt.h;
+      bt.anchor = { ...bt.anchor, v: "bottom" };
+      const y0 = mk.y + mk.h + U * 0.07;
+      const y1 = bt.y - U * 0.07;
+      const d = Math.min(k.W * 0.84, y1 - y0);
+      const cy = (y0 + y1) / 2;
+      ring(k.W / 2, cy, d);
+      inner(k.W / 2, cy, d);
+    },
+  },
+  {
+    id: "corner-ribbon",
+    name: ["Ruban en coin", "Corner ribbon"],
+    family: "promo",
+    photo: "required",
+    styles: ["bold", "warm", "craft"],
+    schemes: ["light", "brand", "accent"],
+    treatments: ["natural", "punch", "warm"],
+    build(k) {
+      legible(k);
+      k.fill();
+      const { side, top, bottom } = k.m;
+      const U = k.U;
+      const card = k.cls === "land" ? { x: k.W * 0.47, y: top, w: k.W * 0.53 - side, h: k.H - top - bottom } : { x: side, y: top, w: k.W - side * 2, h: k.H * k.pick(0, 0.55, 0.56, 0.42) };
+      k.rect({ x: card.x - U * 0.02, y: card.y + U * 0.02, w: card.w, h: card.h }, k.c.accent, { name: "Ombre décalée" });
+      k.photo(card, { focus: k.point(0) });
+      const word = k.shortWord();
+      if (word) {
+        // Ruban en travers du coin : mesuré sur le mot, le texte reste entièrement sur le ruban.
+        const size = Math.max(24, Math.round(U * 0.03));
+        const t = k.text("body", word, { x: 0, y: 0, w: U * 0.36 }, { weight: 700, size, align: "center", upper: true, spacing: Math.round(size * 0.12), lineHeight: 1.1, maxLines: 2, minSize: 22 }, "ribbon", "Ruban");
+        ctx.font = serverFont(t.font.family, t.font.weight, t.font.size, false);
+        ctx.letterSpacing = `${t.letterSpacing}px`;
+        const wt = Math.max(...wrap(ctx, word.toUpperCase(), t.w).map((x) => ctx.measureText(x).width));
+        ctx.letterSpacing = "0px";
+        t.w = Math.ceil(wt + size * 0.3);
+        const ht = t.h;
+        const pad = size * 0.55;
+        const band = (t.w + ht) / Math.SQRT2 + pad * 2;
+        const s = t.w / 2 + pad;
+        const cx = card.x + card.w;
+        const cy = card.y;
+        const px = cx - s;
+        const py = cy + s;
+        const uf = 2 * s - band / Math.SQRT2;
+        const q = Math.max(0, uf) * Math.SQRT2;
+        const ribbon = k.c.btn;
+        if (q > 0) k.rect({ x: cx - q / 2, y: cy - q / 2, w: q, h: q }, mix(ribbon, "#000000", 0.35), { rotation: 45, name: "Pli du ruban" });
+        const L = (2 * s + band) * 2;
+        k.rect({ x: px - L / 2, y: py - band / 2, w: L, h: band }, ribbon, { rotation: 45, name: "Ruban", shadow: { color: "rgba(0,0,0,0.25)", blur: Math.round(U * 0.02), x: 0, y: Math.round(U * 0.006) } });
+        // Le ruban s'arrête net aux bords de la photo (caches de la couleur du fond).
+        k.rect({ x: cx - 2 * s - band * 2, y: cy - L, w: L * 2, h: L }, k.c.bg, { name: "Cache" });
+        k.rect({ x: cx, y: cy - U * 0.05, w: L, h: L * 2 }, k.c.bg, { name: "Cache" });
+        k.layers.splice(k.layers.indexOf(t), 1);
+        t.x = px - t.w / 2;
+        t.y = py - t.h / 2;
+        t.rotation = 45;
+        t.color = k.c.btnInk;
+        k.layers.push(t);
+      }
+      const col = k.cls === "land" ? { x: side, y: top, w: card.x - side - k.W * 0.06, h: k.H - top - bottom } : { x: side, y: card.y + card.h + U * 0.07, w: k.W - side * 2, h: k.H - bottom - card.y - card.h - U * 0.07 };
+      column(k, col, { valign: "middle", title: U * k.pick(0.11, 0.08, 0.09, 0.1), display: true, ctaStyle: "square" });
+    },
+  },
+  {
+    id: "half-circle",
+    name: ["Demi-cercle de couleur", "Colour half-circle"],
+    family: "frame",
+    photo: "required",
+    styles: ["warm", "premium", "craft"],
+    schemes: ["light", "dark", "brand"],
+    treatments: ["natural", "warm", "punch"],
+    build(k) {
+      legible(k);
+      k.fill();
+      const { side, top, bottom } = k.m;
+      const U = k.U;
+      const ringW = Math.max(6, Math.round(U * 0.012));
+      if (k.cls === "land") {
+        const D = k.H * 1.5;
+        const d = k.H * 0.68;
+        const pcx = k.W - side - d / 2 - k.W * 0.03;
+        k.ellipse({ x: pcx - D * 0.42, y: k.H / 2 - D / 2, w: D, h: D }, k.c.accent, { name: "Demi-cercle" });
+        k.ellipse({ x: pcx - D * 0.42 - U * 0.06, y: k.H / 2 - D / 2 - U * 0.06, w: D + U * 0.12, h: D + U * 0.12 }, null, { stroke: { color: k.c.accent, width: Math.max(2, Math.round(U * 0.004)) }, name: "Arc" });
+        k.ellipse({ x: pcx - d / 2 - ringW, y: k.H / 2 - d / 2 - ringW, w: d + ringW * 2, h: d + ringW * 2 }, k.c.bg, { name: "Liseré" });
+        k.photo({ x: pcx - d / 2, y: k.H / 2 - d / 2, w: d, h: d }, { radius: d / 2, focus: k.point(0), zoom: 1.1 });
+        const x1 = pcx - D * 0.42 - U * 0.1;
+        column(k, { x: side, y: top, w: x1 - side, h: k.H - top - bottom }, { valign: "middle", title: U * 0.12, eyebrow: true });
+        return;
+      }
+      const d = k.W * k.pick(0, 0.46, 0.58, 0.7);
+      const py = k.H - d - k.H * k.pick(0, 0.06, 0.06, 0.09);
+      const D = k.W * 1.3;
+      const dy = py + d * 0.4;
+      k.ellipse({ x: k.W / 2 - D / 2, y: dy, w: D, h: D }, k.c.accent, { name: "Demi-cercle" });
+      k.ellipse({ x: k.W / 2 - D / 2 - U * 0.05, y: dy - U * 0.05, w: D + U * 0.1, h: D + U * 0.1 }, null, { stroke: { color: k.c.accent, width: Math.max(2, Math.round(U * 0.004)) }, name: "Arc" });
+      k.ellipse({ x: (k.W - d) / 2 - ringW, y: py - ringW, w: d + ringW * 2, h: d + ringW * 2 }, k.c.bg, { name: "Liseré" });
+      k.photo({ x: (k.W - d) / 2, y: py, w: d, h: d }, { radius: d / 2, focus: k.point(0), zoom: 1.1 });
+      const y1 = py - U * 0.06;
+      column(k, { x: side, y: top, w: k.W - side * 2, h: y1 - top }, { align: "center", valign: "middle", title: U * k.pick(0.1, 0.085, 0.1, 0.11), eyebrow: true });
+    },
+  },
+  {
+    id: "fanned-cards",
+    name: ["Cartes en éventail", "Fanned cards"],
+    family: "collage",
+    photo: "required",
+    styles: ["warm", "bold", "craft"],
+    schemes: ["brand", "light", "dark"],
+    treatments: ["natural", "warm", "punch"],
+    build(k) {
+      legible(k);
+      k.fill();
+      const { side, top, bottom } = k.m;
+      const U = k.U;
+      k.rect({ x: 0, y: 0, w: k.W, h: k.H }, { type: "radial", angle: 0, stops: [{ offset: 0, color: mix(k.c.bg, "#FFFFFF", isDark(k.c.bg) ? 0.1 : 0.25) }, { offset: 1, color: k.c.bg }] }, { name: "Lumière" });
+      const land = k.cls === "land";
+      const cw = land ? k.H * 0.5 : k.W * k.pick(0, 0.36, 0.4, 0.46);
+      const ch = cw * 1.25;
+      const ccx = land ? k.W * 0.72 : k.W / 2;
+      const cy = land ? (k.H - ch) / 2 + k.H * 0.03 : top + U * 0.03;
+      const pad = cw * 0.045;
+      const card = (dx: number, deg: number, focus: { u: number; v: number }, zoom: number) => {
+        const x = ccx - cw / 2 + dx;
+        const fr = k.rect({ x, y: cy, w: cw, h: ch }, "#FFFFFF", { radius: U * 0.01, name: "Carte", shadow: { color: "rgba(0,0,0,0.28)", blur: Math.round(U * 0.035), x: 0, y: Math.round(U * 0.012) } });
+        const ph = k.photo({ x: x + pad, y: cy + pad, w: cw - pad * 2, h: ch - pad * 2 }, { radius: U * 0.006, focus, zoom })!;
+        k.rotateGroup([fr, ph], deg, ccx + dx * 0.3, cy + ch * 2.4);
+      };
+      card(-cw * 0.62, -8, k.point(1), 1.9);
+      card(cw * 0.62, 8, k.point(2), 1.9);
+      card(0, 0, k.point(0), 1);
+      const col = land ? { x: side, y: top, w: ccx - cw * 1.25 - side - k.W * 0.03, h: k.H - top - bottom } : { x: side, y: cy + ch + U * 0.09, w: k.W - side * 2, h: k.H - bottom - cy - ch - U * 0.09 };
+      column(k, col, { valign: "middle", title: U * k.pick(0.11, 0.085, 0.095, 0.11), align: land ? "left" : "center" });
+    },
+  },
+  {
+    id: "type-minimal",
+    name: ["Épuré", "Minimal"],
+    family: "type",
+    photo: "optional",
+    styles: ["premium", "craft"],
+    schemes: ["light", "dark", "mono"],
+    treatments: ["natural", "mono", "warm"],
+    build(k) {
+      legible(k);
+      k.fill();
+      const { side, top, bottom } = k.m;
+      const U = k.U;
+      const land = k.cls === "land";
+      const pic = k.hasPhoto;
+      // Paysage avec photo : petite photo à gauche, le reste centré dans l'espace libre.
+      const ps = land ? k.H * 0.5 : k.W * k.pick(0, 0.2, 0.24, 0.28);
+      const area = land && pic ? { x: side + ps + k.W * 0.06, w: k.W - side * 2 - ps - k.W * 0.06 } : { x: side, w: k.W - side * 2 };
+      const cx = area.x + area.w / 2;
+      const mk = k.brandMark({ x: area.x, y: top, w: area.w }, { align: "center" });
+      const bt = k.button(cx, 0, { maxW: area.w, align: "center", style: "square", size: U * k.pick(0.034, 0.028, 0.028, 0.03), arrow: false });
+      bt.y = k.H - bottom - bt.h;
+      bt.anchor = { ...bt.anchor, v: "bottom" };
+      const tw = Math.min(area.w, k.W * k.pick(0.5, 0.7, 0.72, 0.76));
+      const lw = U * 0.1;
+      const gap = U * 0.045;
+      const t = fitTitle(k, { x: cx - tw / 2, y: 0, w: tw, h: k.H * 0.4 }, { max: U * k.pick(0.085, 0.07, 0.075, 0.085), italic: true, align: "center", maxLines: 3 });
+      const s = k.subline({ x: cx - tw / 2, y: 0, w: tw }, { align: "center", upper: true, size: Math.max(22, U * 0.024) });
+      const showPic = pic && !land;
+      const h = (showPic ? ps + gap * 1.4 : 0) + gap + t.h + gap + (s ? gap * 0.8 + s.h : 0);
+      const y0 = mk.y + mk.h + (bt.y - mk.y - mk.h - h) / 2;
+      let y = y0;
+      if (showPic) {
+        k.photo({ x: cx - ps / 2, y, w: ps, h: ps }, { radius: ps / 2, focus: k.point(0), zoom: 1.15 });
+        y += ps + gap * 1.4;
+      }
+      k.line(cx - lw / 2, y, lw, k.c.accent);
+      y += gap;
+      t.y = y;
+      y += t.h + gap;
+      k.line(cx - lw / 2, y, lw, k.c.accent);
+      if (s) s.y = y + gap * 0.8;
+      if (land && pic) k.photo({ x: side, y: (k.H - ps * 1.3) / 2, w: ps, h: ps * 1.3 }, { radius: ps / 2, focus: k.point(0) });
+      for (const l of [t, s]) if (l) l.anchor = { ...l.anchor, v: "top" };
+    },
+  },
+  {
+    id: "stripes-bold",
+    name: ["Rayures franches", "Bold stripes"],
+    family: "promo",
+    photo: "optional",
+    styles: ["bold", "warm"],
+    schemes: ["accent", "brand", "dark"],
+    treatments: ["punch", "natural", "warm"],
+    build(k) {
+      legible(k);
+      k.fill();
+      const { side, top, bottom } = k.m;
+      const U = k.U;
+      // Grandes rayures diagonales franches (fond et accent de la marque).
+      const sw = U * 0.075;
+      const D = Math.hypot(k.W, k.H) * 1.1;
+      for (let x = -k.H; x < k.W + k.H; x += sw * 2) k.rect({ x: x - sw / 2, y: k.H / 2 - D / 2, w: sw, h: D }, k.c.accent, { rotation: 45, name: "Rayure" });
+      const cardC = farthest([k.c.light, k.c.dark, "#FFFFFF"], [k.c.bg, k.c.accent]);
+      const card = k.pick({ x: k.W * 0.08, y: k.H * 0.1, w: k.W * 0.84, h: k.H * 0.8 }, { x: k.W * 0.11, y: k.H * 0.1, w: k.W * 0.78, h: k.H * 0.8 }, { x: k.W * 0.1, y: k.H * 0.09, w: k.W * 0.8, h: k.H * 0.82 }, { x: k.W * 0.1, y: top - k.H * 0.025, w: k.W * 0.8, h: k.H - top - bottom + k.H * 0.05 });
+      const off = U * 0.022;
+      k.rect({ x: card.x + off, y: card.y + off, w: card.w, h: card.h }, k.c.dark, { name: "Ombre décalée" });
+      k.rect(card, cardC, { name: "Carte" });
+      const pad = U * 0.045;
+      const inside = { x: card.x + pad, y: card.y + pad, w: card.w - pad * 2, h: card.h - pad * 2 };
+      let col = inside;
+      if (k.hasPhoto) {
+        if (k.cls === "land") {
+          const pw = inside.w * 0.44;
+          k.photo({ x: inside.x, y: inside.y, w: pw, h: inside.h }, { focus: k.point(0) });
+          col = { x: inside.x + pw + pad, y: inside.y, w: inside.w - pw - pad, h: inside.h };
+        } else {
+          const ph = inside.h * k.pick(0, 0.42, 0.46, 0.44);
+          k.photo({ x: inside.x, y: inside.y, w: inside.w, h: ph }, { focus: k.point(0) });
+          col = { x: inside.x, y: inside.y + ph + pad, w: inside.w, h: inside.h - ph - pad };
+        }
+      }
+      const y = Math.max(col.y, top);
+      const y1 = Math.min(col.y + col.h, k.H - bottom);
+      const x = Math.max(col.x, side);
+      column(k, { x, y, w: Math.min(col.x + col.w, k.W - side) - x, h: y1 - y }, { valign: "middle", align: k.hasPhoto && k.cls === "land" ? "left" : "center", title: U * (k.hasPhoto ? k.pick(0.1, 0.08, 0.09, 0.1) : k.pick(0.14, 0.13, 0.14, 0.15)), display: true, ctaStyle: "square", eyebrow: !k.hasPhoto });
     },
   },
 ];
