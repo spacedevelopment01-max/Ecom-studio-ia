@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Copy, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 // Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
 const ThemeImportModal = dynamic(() => import("./theme-import").then((m) => m.ThemeImportModal), { ssr: false });
 const SectionLibrary = dynamic(() => import("./section-library").then((m) => m.SectionLibrary), { ssr: false });
+const PagesManager = dynamic(() => import("./pages-manager").then((m) => m.PagesManager), { ssr: false });
 const ThemeGallery = dynamic(() => import("./theme-gallery").then((m) => m.ThemeGallery), { ssr: false });
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import { ThemeGrid } from "./theme-gallery";
@@ -41,7 +42,8 @@ type ThemeData = {
     summary: string;
     fingerprint: string;
     structure: { template: string; sections: { id: string; type: string; name: string; disabled: boolean; locked: boolean; heading: string; layout?: LayoutChoice[] }[] }[];
-    pages: { handle: string; title: string; template_suffix: string }[];
+    pages: { handle: string; title: string; template_suffix: string; status?: "draft" | "published" }[];
+    products?: { handle: string; title: string; template_suffix: string | null }[];
     product: { handle: string; title: string; price: number | null };
     motion?: { enabled: boolean; intensity: string; parallax: boolean };
     imported?: { name: string; report: ImportReport };
@@ -147,6 +149,7 @@ export default function TabBoutique() {
     if (window.innerWidth < 640) setDevice("mobile");
   }, []);
   const [page, setPage] = useState("/");
+  const [pagesOpen, setPagesOpen] = useState(false);
   const [picking, setPicking] = useState(false);
   const pickingRef = useRef(false);
   const [selection, setSelection] = useState<Selection>(null);
@@ -360,14 +363,20 @@ export default function TabBoutique() {
   const cur = theme.current;
   const v2Shop = !!theme.v2 && /^shop/.test(theme.v2.site);
   // Site V2 : les pages réellement prévues par le plan (un site de services ou un SaaS n'a ni fiche produit ni panier).
+  // Pages ajoutées depuis « Pages » (modèles) et produits ayant leur propre mise en page : aussi dans la liste.
+  const draft = (h: string) => cur.pages.find((p) => p.handle === h)?.status === "draft";
+  const extraPages = (known: Set<string>) => cur.pages.filter((p) => !known.has(`/pages/${p.handle}`)).map((p) => ({ path: `/pages/${p.handle}`, label: draft(p.handle) ? t(`${p.title} (brouillon)`, `${p.title} (draft)`) : p.title }));
+  const ownLayouts = (cur.products ?? []).filter((p) => p.template_suffix && p.handle !== cur.product.handle).map((p) => ({ path: `/products/${p.handle}`, label: t(`Fiche — ${p.title}`, `Product — ${p.title}`) }));
   const pages = theme.v2 ? [
     { path: "/", label: t("Accueil", "Home") },
-    ...(v2Shop ? [{ path: `/products/${cur.product.handle}`, label: t("Fiche produit", "Product page") }, { path: "/cart", label: t("Panier", "Cart") }] : []),
-    ...theme.v2.plan.map((p) => ({ path: p.url, label: p.complete ? p.title : t(`${p.title} (à compléter)`, `${p.title} (to complete)`) })),
+    ...(v2Shop ? [{ path: `/products/${cur.product.handle}`, label: t("Fiche produit", "Product page") }, ...ownLayouts, { path: "/cart", label: t("Panier", "Cart") }] : []),
+    ...theme.v2.plan.filter((p) => !p.handle || cur.pages.some((x) => x.handle === p.handle) || !p.url.startsWith("/pages/")).map((p) => ({ path: p.url, label: p.complete ? (draft(p.handle) ? t(`${p.title} (brouillon)`, `${p.title} (draft)`) : p.title) : t(`${p.title} (à compléter)`, `${p.title} (to complete)`) })),
+    ...extraPages(new Set(theme.v2.plan.map((p) => p.url))),
     { path: "/404", label: t("Page 404", "404 page") },
   ] : [
     { path: "/", label: t("Accueil", "Home") },
     { path: `/products/${cur.product.handle}`, label: t("Fiche produit", "Product page") },
+    ...ownLayouts,
     { path: "/collections/all", label: t("Collection", "Collection") },
     { path: "/collections", label: t("Catalogue", "Catalog") },
     { path: "/cart", label: t("Panier", "Cart") },
@@ -586,6 +595,7 @@ export default function TabBoutique() {
             {pages.map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}
           </Select>
         </div>
+        {!cur.imported && <button onClick={() => setPagesOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" data-pages-manager><FileStack className="size-3.5" /> {t("Pages", "Pages")}</button>}
         <div className="flex rounded-full border border-line bg-card p-0.5" role="group" aria-label={t("Appareil", "Device")}>
           {(Object.keys(DEVICES) as (keyof typeof DEVICES)[]).map((d) => {
             const I = DEVICES[d].icon;
@@ -687,6 +697,7 @@ export default function TabBoutique() {
       <ThemeImportModal open={!!importOpen} onClose={() => setImportOpen(null)} projectId={id} onImported={() => { reload(); reloadProject(); }} report={importOpen === "report" ? cur.imported?.report : null} />
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} />
       <ThemeGallery services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={() => (reload(), reloadProject())} />
+      {pagesOpen && <PagesManager open onClose={() => setPagesOpen(false)} projectId={id} sandbox={theme.sandbox} onOpenPage={(path) => (setPage(path), setView("preview"))} onChanged={() => reload()} />}
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} />
     </div>
   );
@@ -723,7 +734,12 @@ function V2Panel({ v2, onRebuild, onPage, busy }: { v2: NonNullable<ThemeData["v
 
 function pageTemplate(path: string, theme: ThemeData | null): string {
   if (path === "/" || path === "") return "index";
-  if (path.startsWith("/products/")) return "product";
+  if (path.startsWith("/products/")) {
+    // Produit avec sa propre mise en page : on modifie celle-ci, pas la fiche commune.
+    const h = path.slice(10).split(/[/?#]/)[0];
+    const own = theme?.current?.products?.find((p) => p.handle === h)?.template_suffix;
+    return own ? `product.${own}` : "product";
+  }
   if (path === "/collections") return "list-collections";
   if (path.startsWith("/collections/")) return "collection";
   if (path.startsWith("/cart")) return "cart";

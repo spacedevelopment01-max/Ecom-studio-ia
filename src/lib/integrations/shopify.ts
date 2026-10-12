@@ -74,7 +74,8 @@ export async function pushProduct(c: Connection, spec: ThemeSpec, product?: Stor
     descriptionHtml: p.description_html,
     vendor: p.vendor,
     status: "DRAFT",
-    templateSuffix: null,
+    // Mise en page propre au produit (templates/product.<suffixe>.json du thème), sinon la fiche commune.
+    templateSuffix: p.template_suffix && spec.templates[`product.${p.template_suffix}`] ? p.template_suffix : null,
     files,
     productOptions: hasOptions ? [{ name: p.options[0], values: p.variants.map((v) => ({ name: v.options[0] })) }] : [{ name: "Title", values: [{ name: "Default Title" }] }],
     variants: (hasOptions ? p.variants : [{ title: "Default Title", options: ["Default Title"], price: p.price }]).map((v) => ({
@@ -207,7 +208,8 @@ export async function pushPages(c: Connection, spec: ThemeSpec) {
         handle: page.handle,
         body: page.body_html || "<p></p>",
         templateSuffix: page.template_suffix,
-        isPublished: true,
+        // Brouillon dans le studio : créé non publié dans Shopify.
+        isPublished: page.status !== "draft",
         // Titre et description pour Google (champs SEO de la page dans Shopify).
         ...(page.seo?.title ? { metafields: [{ namespace: "global", key: "title_tag", type: "single_line_text_field", value: page.seo.title }, ...(page.seo.description ? [{ namespace: "global", key: "description_tag", type: "multi_line_text_field", value: page.seo.description }] : [])] } : {}),
       },

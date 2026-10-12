@@ -8,6 +8,7 @@
  * du site leurs adresses (/pages/…), relie les liens produits et collections aux pages natives et traite les
  * formulaires. Fiche produit, catégories, panier et commande : ceux de PrestaShop, habillés au design du site.
  */
+import { storeProducts as storeProductsOf } from "../../theme/spec";
 import fs from "node:fs";
 import path from "node:path";
 import { zipSync, strToU8 } from "fflate";
@@ -109,7 +110,11 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   // ------------------------------------------------------------ pages du site (module : /pages/<adresse>)
   const mod = "dependencies/modules/esstudio";
   const pages: { handle: string; title: string }[] = [];
-  for (const p of spec.store.pages) {
+  const drafts = spec.store.pages.filter((p) => p.status === "draft");
+  if (drafts.length) issues.push({ code: "draft_pages_skipped", severity: "warning", detail: t(`pages en brouillon non exportées : ${drafts.map((p) => p.title).join(", ")}`, `draft pages not exported: ${drafts.map((p) => p.title).join(", ")}`) });
+  const custom = storeProductsOf(spec).filter((p) => p.template_suffix && spec.templates[`product.${p.template_suffix}`]);
+  if (custom.length && !services) issues.push({ code: "product_layouts_shared", severity: "warning", detail: t(`PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à ${custom.map((p) => p.title).join(", ")} ne sont pas reprises (elles le sont dans l'export Shopify)`, `PrestaShop: one product page for all products; the layouts specific to ${custom.map((p) => p.title).join(", ")} aren't carried over (they are in the Shopify export)`) });
+  for (const p of spec.store.pages.filter((x) => x.status !== "draft")) {
     const r = await renderPage({ spec, base: "", files, cart: [] }, `/pages/${p.handle}`, new URLSearchParams());
     if (r.status !== 200) {
       issues.push({ code: "missing_page", severity: "blocking", detail: `page « ${p.title} » : rendu ${r.status}` });

@@ -693,7 +693,13 @@ export function routeFor(spec: ThemeSpec, pathname: string, search: URLSearchPar
   const p = pathname.replace(/\/+$/, "") || "/";
   if (p === "/") return { template: "index", status: 200 };
   let m = p.match(/^\/products\/([^/]+)$/);
-  if (m) return storeProducts(spec).some((x) => x.handle === m![1]) ? { template: "product", status: 200, handle: m[1] } : { template: "404", status: 404 };
+  if (m) {
+    const prod = storeProducts(spec).find((x) => x.handle === m![1]);
+    if (!prod) return { template: "404", status: 404 };
+    // Mise en page propre au produit si elle existe encore ; sinon la fiche produit commune.
+    const t = prod.template_suffix && spec.templates[`product.${prod.template_suffix}`] ? `product.${prod.template_suffix}` : "product";
+    return { template: t, status: 200, handle: m[1] };
+  }
   if (p === "/collections") return { template: "list-collections", status: 200 };
   m = p.match(/^\/collections\/([^/]+)(?:\/products\/([^/]+))?$/);
   if (m) {
@@ -723,7 +729,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const engine = createEngine(files, opts.base, lang);
   const route = routeFor(opts.spec, pathname, search);
   const tplKey = route.template;
-  const store = buildStore(opts, { product: tplKey === "product" ? route.handle : undefined, collection: tplKey === "collection" ? route.handle : undefined });
+  const store = buildStore(opts, { product: tplKey === "product" || tplKey.startsWith("product.") ? route.handle : undefined, collection: tplKey === "collection" ? route.handle : undefined });
   const templateRaw = files.get(`templates/${tplKey}.json`);
   const template = templateRaw ? JSON.parse(stripComment(templateRaw)) : { sections: {}, order: [] };
 
@@ -753,7 +759,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     if (sp) page = { title: sp.title, content: sp.body_html, handle: sp.handle, url: `${opts.base}/pages/${sp.handle}`, template_suffix: sp.template_suffix };
     pageTitle = sp?.seo?.title || sp?.title || pageTitle;
     seoDescription = sp?.seo?.description || null;
-  } else if (tplKey === "product") pageTitle = store.product.title;
+  } else if (tplKey === "product" || tplKey.startsWith("product.")) pageTitle = store.product.title;
   else if (tplKey === "collection") pageTitle = store.collection.title;
   else if (tplKey === "404") pageTitle = pick(lang, "Page introuvable", "Page not found");
 
@@ -771,7 +777,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     linklists: store.linklists,
     collections: store.collections,
     collection: tplKey === "collection" ? store.collection : null,
-    product: tplKey === "product" ? store.product : null,
+    product: tplKey === "product" || tplKey.startsWith("product.") ? store.product : null,
     cart: store.cart,
     page,
     blog: { title: "Journal", articles: [], url: `${opts.base}/blogs/journal` },
@@ -786,7 +792,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },
     canonical_url: `${opts.base}${pathname}`,
     page_title: pageTitle,
-    page_description: seoDescription ?? (tplKey === "product" ? store.product.description : opts.spec.store.product.description_html).replace(/<[^>]+>/g, " ").slice(0, 160),
+    page_description: seoDescription ?? (tplKey === "product" || tplKey.startsWith("product.") ? store.product.description : opts.spec.store.product.description_html).replace(/<[^>]+>/g, " ").slice(0, 160),
     page_image: null,
     // Objet global attendu par les scripts des thèmes Shopify (Dawn : global.js, cart, animations).
     content_for_header: `<script>window.Shopify=window.Shopify||{designMode:false,locale:"${lang}",country:"FR",currency:{active:"EUR",rate:"1.0"},routes:{root:"${opts.base}/"},shop:"apercu",theme:{name:"${pick(lang, "aperçu", "preview")}"}};</script>`,

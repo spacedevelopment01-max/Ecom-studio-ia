@@ -17,6 +17,8 @@ import type { ThemeSpec } from "@/lib/theme/spec";
 import { one } from "@/lib/db";
 import { DIRECTIONS, type DirectionId } from "@/lib/theme/directions";
 import { composedDirectionSpec } from "@/lib/theme/direction-thumb";
+import { modelById, previewModelSpec } from "@/lib/theme/page-templates";
+import { loadProject } from "@/lib/projects";
 
 export const runtime = "nodejs";
 
@@ -43,6 +45,16 @@ async function load(req: Request, ctx: P) {
     if (!DIRECTIONS.some((x) => x.id === d) || !one("SELECT 1 FROM projects WHERE id = ? AND brand_json IS NOT NULL AND brand_json != 'null'", id)) throw new HttpError(404, L("Direction introuvable.", "Direction not found."));
     const spec = await composedDirectionSpec(id, d as DirectionId, currentTheme(id)?.spec.language ?? uiLang());
     return { id, vid, spec, segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
+  }
+  // « model-<modèle> » : un modèle de page appliqué à une copie du site du projet (aperçu, rien d'enregistré).
+  if (vid.startsWith("model-")) {
+    const model = modelById(vid.slice(6));
+    const cur = currentTheme(id);
+    if (!model || !cur) throw new HttpError(404, L("Modèle introuvable.", "Template not found."));
+    const q = new URL(req.url).searchParams;
+    const r = previewModelSpec(cur.spec as ThemeSpec, loadProject(id), model, { productHandle: q.get("produit") ?? undefined, service: q.get("prestation") ?? undefined });
+    // Le chemin demandé est celui de la page du modèle ; les liens internes de l'aperçu mènent au site actuel.
+    return { id, vid, spec: r.spec, segs: path?.length ? path : r.path.split("/").filter(Boolean), base: `/preview/${id}/v/${seg}`, redirect };
   }
   const v = vid === "current" ? currentTheme(id) : themeVersion(id, vid);
   if (!v) throw new HttpError(404, L("Version de boutique introuvable.", "Store version not found."));

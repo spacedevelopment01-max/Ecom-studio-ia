@@ -62,6 +62,17 @@ export function assertAiSections(projectId: string): PlanId {
 }
 
 /**
+ * Modèles de pages : nouvelle page depuis un modèle, duplication, changement de modèle, mise en page propre à un
+ * produit (Développer et Dominer). Les pages déjà créées restent modifiables à la main avec tout forfait payant, et
+ * restent en place après une baisse de forfait. Une recharge IA n'ouvre jamais cette fonction.
+ */
+export function assertPageModels(projectId: string): PlanId {
+  const plan = requirePlan(null, projectId);
+  if (!PLANS[plan].pageModels) throw new HttpError(402, L(`Les modèles de pages et l'ajout de pages ne sont pas inclus dans le forfait ${name(plan)} : vous pouvez modifier les pages existantes. ${needPlan(firstWith((p) => p.pageModels))}`, `Page templates and adding pages aren't included in the ${name(plan)} plan: you can edit existing pages. ${needPlan(firstWith((p) => p.pageModels))}`), "plan_upgrade");
+  return plan;
+}
+
+/**
  * Sélection d'un thème de la bibliothèque : seuls les N premiers du forfait du projet. Le thème déjà utilisé par le
  * projet reste utilisable (changement de forfait à la baisse : rien n'est détruit).
  */

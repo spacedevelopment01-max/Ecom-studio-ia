@@ -33,6 +33,7 @@ function planLines(p: Plan, t: TFn): Line[] {
   ];
   if (p.videos !== "none") lines.push({ text: p.videos === "short" ? t("Vidéos IA courtes", "Short AI videos") : t("Vidéos IA avancées et vidéos UGC", "Advanced AI videos and UGC videos") });
   if (p.aiSections) lines.push({ text: t("Sections de boutique créées par l'IA", "Store sections created by AI") });
+  if (p.pageModels) lines.push({ text: t("Modèles de pages et mise en page par produit ou prestation", "Page templates and a layout per product or service") });
   if (p.quotas.blog) lines.push({ text: t(`${p.quotas.blog} articles de blog IA par mois`, `${p.quotas.blog} AI blog posts per month`) });
   lines.push({ text: t(`Calendrier ${p.calendarDays} jours · ${n(p.postsPerDay, "publication", "publications")} par jour`, `${p.calendarDays}-day calendar · ${n(p.postsPerDay, "post", "posts")} per day`) });
   lines.push({ text: p.freeFirstCall ? t("1 heure d'accompagnement offerte (une seule fois)", "1 hour of coaching included (once)") : t(`Accompagnement téléphonique : ${p.callPrice} € l'heure`, `Phone coaching: €${p.callPrice} per hour`) });
@@ -195,6 +196,7 @@ export function CompareTable({ className }: { className?: string }) {
     [t("Publicités IA", "AI ads"), t("Démo", "Demo"), (p) => lvl(p.ads)],
     [t("Vidéos IA", "AI videos"), no, (p) => (p.videos === "none" ? no : p.videos === "short" ? t("Courtes", "Short") : t("Avancées + UGC", "Advanced + UGC"))],
     [t("Création de sections IA", "AI section creation"), no, (p) => (p.aiSections ? yes : no)],
+    [t("Modèles de pages, ajout de pages, mise en page par produit", "Page templates, adding pages, layout per product"), t("Démo", "Demo"), (p) => (p.pageModels ? yes : no)],
     [t("Blog IA", "AI blog"), no, (p) => (p.quotas.blog ? t(`${p.quotas.blog}/mois`, `${p.quotas.blog}/month`) : no)],
     ["SEO", t("Démo", "Demo"), (p) => (p.seo === "essential" ? t("Essentiel", "Essential") : p.seo === "advanced" ? t("Avancé", "Advanced") : t("Complet", "Complete"))],
     [t("Calendrier", "Calendar"), t("Démo", "Demo"), (p) => t(`${p.calendarDays} jours`, `${p.calendarDays} days`)],

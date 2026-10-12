@@ -39,6 +39,8 @@ export type Plan = {
   ugc: boolean;
   /** Création, reconstruction et modification avancée des sections par l'IA ; pages personnalisées. */
   aiSections: boolean;
+  /** Bibliothèque des modèles de pages, ajout libre de pages, mise en page propre à un produit ou une prestation. */
+  pageModels: boolean;
   /** Publicités : essentielles, avancées (variantes), complètes (multivariantes). */
   ads: "essential" | "advanced" | "full";
   seo: "essential" | "advanced" | "full";
@@ -80,6 +82,7 @@ export const PLANS: Record<PlanId, Plan> = {
     videoQuality: "fast",
     ugc: false,
     aiSections: false,
+    pageModels: false,
     ads: "essential",
     seo: "essential",
     calendarDays: 7,
@@ -111,6 +114,7 @@ export const PLANS: Record<PlanId, Plan> = {
     videoQuality: "fast",
     ugc: false,
     aiSections: true,
+    pageModels: true,
     ads: "advanced",
     seo: "advanced",
     calendarDays: 30,
@@ -141,6 +145,7 @@ export const PLANS: Record<PlanId, Plan> = {
     videoQuality: "max",
     ugc: true,
     aiSections: true,
+    pageModels: true,
     ads: "full",
     seo: "full",
     calendarDays: 90,

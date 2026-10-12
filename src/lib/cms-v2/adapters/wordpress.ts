@@ -7,6 +7,7 @@
  * typographies, langage visuel, animations) vient des mêmes feuilles que le thème Shopify. Fiche produit, boutique,
  * panier et commande sont les blocs natifs de WooCommerce, habillés aux couleurs du site (aucun faux panier).
  */
+import { storeProducts as storeProductsOf } from "../../theme/spec";
 import fs from "node:fs";
 import path from "node:path";
 import { zipSync, strToU8 } from "fflate";
@@ -104,7 +105,12 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   put("parts/header.html", render(spec.groups.header, "en-tête"));
   put("parts/footer.html", render(spec.groups.footer, "pied de page"));
   put("templates/front-page.html", page(render(spec.templates.index, "accueil")));
-  const pages = spec.store.pages.map((p) => ({ handle: p.handle, title: p.title, body_html: p.template_suffix ? "" : p.body_html, template: p.template_suffix ? `page.${p.template_suffix}` : "page" }));
+  // Brouillons du studio : pas créés dans WordPress (ils n'apparaissent pas sur le site publié).
+  const drafts = spec.store.pages.filter((p) => p.status === "draft");
+  if (drafts.length) issues.push({ code: "draft_pages_skipped", severity: "warning", detail: t(`pages en brouillon non exportées : ${drafts.map((p) => p.title).join(", ")}`, `draft pages not exported: ${drafts.map((p) => p.title).join(", ")}`) });
+  const custom = storeProductsOf(spec).filter((p) => p.template_suffix && spec.templates[`product.${p.template_suffix}`]);
+  if (custom.length && !services) issues.push({ code: "product_layouts_shared", severity: "warning", detail: t(`WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à ${custom.map((p) => p.title).join(", ")} ne sont pas reprises (elles le sont dans l'export Shopify)`, `WooCommerce: one product page for all products; the layouts specific to ${custom.map((p) => p.title).join(", ")} aren't carried over (they are in the Shopify export)`) });
+  const pages = spec.store.pages.filter((p) => p.status !== "draft").map((p) => ({ handle: p.handle, title: p.title, body_html: p.template_suffix ? "" : p.body_html, template: p.template_suffix ? `page.${p.template_suffix}` : "page" }));
   for (const p of pages) {
     if (p.template === "page") continue;
     const tpl = spec.templates[p.template];
