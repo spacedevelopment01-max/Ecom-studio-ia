@@ -12,6 +12,7 @@ import { useProject } from "../project-context";
 import { JobProgress, SectionTitle, useActive } from "../common";
 import { useCostConfirm } from "../cost-confirm";
 import { AnimatePost } from "../animate-post";
+import { StyleGallery } from "../style-gallery";
 import dynamic from "next/dynamic";
 // Éditeur à calques (le plus lourd du studio) : chargé seulement à son ouverture.
 const AdEditor = dynamic(() => import("./ad-editor").then((m) => m.AdEditor), { ssr: false });
@@ -96,6 +97,7 @@ export function AdCreatives() {
                     <Download className="size-3.5" /> PNG
                   </a>
                 </div>
+                <StyleGallery projectId={id} docKey={d.docKey} compact onApplied={reload} />
                 <AnimatePost projectId={id} docKey={d.docKey} compact />
               </div>
             </Card>

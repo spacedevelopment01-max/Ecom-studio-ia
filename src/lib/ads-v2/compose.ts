@@ -27,10 +27,12 @@ import { docMetrics, renderDocToBuffer, serverFont } from "../ad-doc/server";
 import { DOC_VERSION, type AdDocument, type ButtonLayer, type ImageLayer, type Layer, type ShapeLayer, type TextLayer } from "../ad-doc/types";
 import { nearestWeight, toAdLayout, TREATMENT_FILTER, treatmentsFor, type AdArt, type AdLayout, type AdVariant, type LogoPlacement, type Treatment } from "./art";
 import type { FormatSpec, VisualConcept } from "./types";
+import { buildTemplateDocument, isTemplateLayout } from "./library";
 
 export type ComposeInput = {
   format: FormatSpec;
-  layout: VisualConcept["layout"] | AdLayout;
+  /** Composition du moteur, ou modèle de la bibliothèque (« tpl:<id> »). */
+  layout: VisualConcept["layout"] | AdLayout | `tpl:${string}`;
   palette: Palette;
   typo: Typo;
   brand: string;
@@ -136,6 +138,7 @@ export async function subjectPoint(buf: Buffer, W: number, H: number, avoid: "le
 
 /** Construit le document en calques d'une création (géométrie, polices, couleurs garanties lisibles). */
 export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocument; images: RenderEnv["images"] }> {
+  if (isTemplateLayout(i.layout)) return buildTemplateDocument(i, i.layout.slice(4));
   ensureFonts();
   const { width: W, height: H } = i.format;
   const r = W / H;
@@ -156,7 +159,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   if (logoId) images.set(logoId, (await loadImage(i.logo!)) as never);
   if (logoLightId) images.set(logoLightId, (await loadImage(i.logoLight!)) as never);
   // Aplat « band » réservé aux créations sans photo : posé sur une photo, il en masquait le sujet.
-  const layout: AdLayout = bgId ? (["typographic", "band"].includes(toAdLayout(i.layout)) ? "editorial" : toAdLayout(i.layout)) : "typographic";
+  const layout: AdLayout = bgId ? (["typographic", "band"].includes(toAdLayout(i.layout as string)) ? "editorial" : toAdLayout(i.layout as string)) : "typographic";
   const zones = bgId && i.background ? await photoZones(i.background, W, H).catch(() => null) : null;
   const layers: Layer[] = [];
   const U = cls === "land" ? H : W;
@@ -626,8 +629,24 @@ const ENGINE_LAYERS = new Set(["bg-photo", "bg-fill", "scrim", "panel", "band", 
  * les conserve, prend alors le relais).
  */
 export async function relayoutDoc(src: AdDocument, format: FormatSpec, load: (assetId: string) => Buffer | null): Promise<AdDocument | null> {
+  return recomposeDoc(src, format, load);
+}
+
+/**
+ * Même création dans une autre composition (modèle de la bibliothèque, schéma de couleurs, traitement de la
+ * photo) : textes actuels du client, mêmes images, même format. null si la création n'a pas de recette.
+ */
+export async function restyleDoc(src: AdDocument, o: { layout?: string; variant?: AdVariant }, load: (assetId: string) => Buffer | null): Promise<AdDocument | null> {
   const r = src.meta.recipe;
-  if (!r || src.layers.some((l) => !ENGINE_LAYERS.has(l.id))) return null;
+  if (!r) return null;
+  const format: FormatSpec = { platform: (src.format.platform ?? "meta_feed") as FormatSpec["platform"], aspect: src.format.aspect as FormatSpec["aspect"], width: src.width, height: src.height, label: src.format.aspect, safe: { top: src.safe.top / src.height, bottom: src.safe.bottom / src.height, side: src.safe.side / src.width } };
+  return recomposeDoc(src, format, load, { layout: o.layout ?? r.layout, variant: { ...(r.variant as AdVariant | undefined), ...o.variant }, force: true });
+}
+
+async function recomposeDoc(src: AdDocument, format: FormatSpec, load: (assetId: string) => Buffer | null, over?: { layout: string; variant: AdVariant; force: boolean }): Promise<AdDocument | null> {
+  const r = src.meta.recipe;
+  const tpl = !!r && isTemplateLayout(r.layout);
+  if (!r || (!over?.force && !tpl && src.layers.some((l) => !ENGINE_LAYERS.has(l.id)))) return null;
   const byId = (id: string) => src.layers.find((l) => l.id === id);
   const text = (id: string) => {
     const l = byId(id);
@@ -639,19 +658,20 @@ export async function relayoutDoc(src: AdDocument, format: FormatSpec, load: (as
   };
   const art = r.art as unknown as AdArt;
   const cta = (text("cta") ?? "").replace(/\s+→$/, "");
-  const bg = imgId("bg-photo");
+  // Photo de la création : celle du fond, sinon la photo d'un modèle (cadrée dans une forme).
+  const bg = imgId("bg-photo") ?? (src.layers.find((l) => l.kind === "image" && l.role !== "logo" && l.role !== "product" && !!l.assetId) as { assetId: string } | undefined)?.assetId ?? null;
   const prod = imgId("product");
   const buf = (id: string | null) => (id ? load(id) : null);
   const { doc } = await buildAdDocument({
     format,
-    layout: r.layout as AdLayout,
+    layout: (over?.layout ?? r.layout) as AdLayout,
     palette: r.palette as Palette,
     typo: r.typo,
     art,
     brand: r.brand,
     headline: text("title") ?? r.brand,
     subline: text("subline"),
-    eyebrow: text("eyebrow") ?? r.eyebrow,
+    eyebrow: (byId("eyebrow") && text("eyebrow")) || r.eyebrow,
     cta: cta || "OK",
     background: buf(bg),
     product: buf(prod),
@@ -659,8 +679,11 @@ export async function relayoutDoc(src: AdDocument, format: FormatSpec, load: (as
     logoLight: buf(r.logoLight),
     ids: { background: bg, product: prod, logo: r.logo, logoLight: r.logoLight },
     conceptId: src.meta.conceptId,
-    variant: (r.variant as AdVariant | undefined) ?? null,
+    variant: over?.variant ?? (r.variant as AdVariant | undefined) ?? null,
   });
+  // Modèle de la bibliothèque : un calque ajouté ou modifié à la main qui n'existe pas dans la composition refaite
+  // est gardé par l'adaptation géométrique (relayout refusé).
+  if (!over?.force && tpl && src.layers.some((l) => l.userEdited && !doc.layers.some((n) => n.id === l.id))) return null;
   return doc;
 }
 

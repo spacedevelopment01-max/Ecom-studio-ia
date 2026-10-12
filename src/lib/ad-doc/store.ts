@@ -41,7 +41,7 @@ export const AdDocumentSchema = z.object({
     conceptId: z.string().max(40).nullable(),
     source: z.enum(["engine", "user", "ai_local", "ai"]),
     createdFrom: z.string().max(60).nullable(),
-    recipe: z.object({ layout: z.string().max(20), art: z.record(z.string(), z.unknown()), palette: z.record(z.string(), z.string().max(30)), typo: z.object({ heading: z.string().max(60), body: z.string().max(60), headingWeight: z.number().optional(), uppercase: z.boolean().optional() }), brand: z.string().max(120), eyebrow: z.string().max(120).nullable(), logo: z.string().max(60).nullable(), logoLight: z.string().max(60).nullable(), variant: z.object({ treatment: z.string().max(20).optional(), logo: z.string().max(20).optional() }).optional() }).optional(),
+    recipe: z.object({ layout: z.string().max(60), art: z.record(z.string(), z.unknown()), palette: z.record(z.string(), z.string().max(30)), typo: z.object({ heading: z.string().max(60), body: z.string().max(60), headingWeight: z.number().optional(), uppercase: z.boolean().optional() }), brand: z.string().max(120), eyebrow: z.string().max(120).nullable(), logo: z.string().max(60).nullable(), logoLight: z.string().max(60).nullable(), variant: z.object({ treatment: z.string().max(20).optional(), logo: z.string().max(20).optional(), scheme: z.string().max(20).optional() }).optional() }).optional(),
   }),
 });
 
@@ -120,6 +120,8 @@ export async function exportDoc(projectId: string, doc: AdDocument, format: "png
 /** Enregistre une version ET son rendu dans la bibliothèque (création modifiée par le client). */
 export async function saveAndRender(projectId: string, userId: string, docKey: string, doc: AdDocument, note = ""): Promise<DocVersion> {
   const { data } = await exportDoc(projectId, doc, "jpeg");
-  const a = await saveAsset({ projectId, userId, data, name: `pub-modifiee-${doc.format.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: "ad", folderKey: "images.ads", origin: "generated", status: "review", meta: { adDoc: { docKey, source: doc.meta.source }, format: doc.format.aspect } });
+  // Affiche de publication (« post: ») : rangée avec les publications, et toujours modifiable / animable depuis sa fiche.
+  const post = docKey.startsWith("post:");
+  const a = await saveAsset({ projectId, userId, data, name: `${post ? "publication" : "pub"}-modifiee-${doc.format.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: post ? "social" : "ad", folderKey: post ? "images.social" : "images.ads", origin: "generated", status: "review", meta: { adDoc: { docKey, source: doc.meta.source }, format: doc.format.aspect, ...(post ? { poster: { docKey, layout: doc.meta.recipe?.layout ?? null } } : {}) } });
   return saveVersion(projectId, docKey, doc, { note, renderedAssetId: a.id });
 }

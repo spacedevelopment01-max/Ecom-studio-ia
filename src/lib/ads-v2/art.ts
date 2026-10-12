@@ -75,7 +75,7 @@ export function treatmentsFor(layout: AdLayout, style: AdStyle): Treatment[] {
 
 /** Placement du logo : dans la colonne de texte, au coin opposé, ou en signature au pied de la création. */
 export type LogoPlacement = "column" | "corner" | "foot";
-export type AdVariant = { treatment?: Treatment; logo?: LogoPlacement };
+export type AdVariant = { treatment?: Treatment; logo?: LogoPlacement; scheme?: string };
 
 const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 

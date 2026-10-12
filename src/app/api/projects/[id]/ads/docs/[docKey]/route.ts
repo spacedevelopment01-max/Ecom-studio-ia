@@ -57,7 +57,11 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
   const b = await body(
     req,
     z.object({
-      action: z.enum(["save", "restore", "duplicate", "reflow", "edit", "animate"]),
+      action: z.enum(["save", "restore", "duplicate", "reflow", "edit", "animate", "gallery", "restyle"]),
+      family: z.string().max(20).optional(),
+      layout: z.string().max(60).optional(),
+      scheme: z.enum(["dark", "light", "brand", "accent", "mono"]).optional(),
+      treatment: z.enum(["natural", "punch", "warm", "cool", "mono", "moody", "duotone"]).optional(),
       style: z.enum(ANIM_STYLES).optional(),
       doc: AdDocumentSchema.optional(),
       version: z.number().int().min(1).optional(),
@@ -80,6 +84,24 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     restoreVersion(p.id, docKey, b.version);
     const cur = latestDoc(p.id, docKey)!;
     await saveAndRender(p.id, user.id, docKey, cur.doc, `rendu de la restauration de la version ${b.version}`);
+    return ok(await view(p, docKey));
+  }
+  if (b.action === "gallery") {
+    // Galerie « Changer de modèle » : la création du client rendue dans chaque modèle d'une famille (gratuit).
+    const { styleGallery, GALLERY_FAMILIES } = await import("@/lib/ads-v2/library/gallery");
+    const family = (GALLERY_FAMILIES as readonly string[]).includes(b.family ?? "") ? (b.family as (typeof GALLERY_FAMILIES)[number]) : "studio";
+    const cur = latestDoc(p.id, docKey)!;
+    return ok({ families: GALLERY_FAMILIES, family, items: await styleGallery(p.id, cur.doc, family) });
+  }
+  if (b.action === "restyle") {
+    const { applyStyle } = await import("@/lib/ads-v2/library/gallery");
+    const { isTemplateLayout, templateById } = await import("@/lib/ads-v2/library");
+    const { AD_LAYOUTS } = await import("@/lib/ads-v2/art");
+    if (b.layout && !(isTemplateLayout(b.layout) ? templateById(b.layout.slice(4)) : (AD_LAYOUTS as readonly string[]).includes(b.layout))) throw new HttpError(400, L("Modèle inconnu.", "Unknown template."));
+    const cur = latestDoc(p.id, docKey)!;
+    const next = await applyStyle(p.id, cur.doc, { layout: b.layout, variant: { ...(b.scheme ? { scheme: b.scheme } : {}), ...(b.treatment ? { treatment: b.treatment } : {}) } });
+    if (!next) throw new HttpError(400, L("Cette création ne peut pas changer de modèle (elle n'a pas été composée par le studio).", "This creative cannot change template (it was not composed by the studio)."));
+    await saveAndRender(p.id, user.id, docKey, next, `modèle : ${next.meta.recipe?.layout ?? ""}`);
     return ok(await view(p, docKey));
   }
   if (b.action === "animate") {

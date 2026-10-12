@@ -115,4 +115,4 @@ export type AdDocument = {
 };
 
 /** Recette de composition (moteur publicitaire) : permet de RECOMPOSER la création dans un autre format. */
-export type AdRecipe = { layout: string; art: Record<string, unknown>; palette: Record<string, string>; typo: { heading: string; body: string; headingWeight?: number; uppercase?: boolean }; brand: string; eyebrow: string | null; logo: string | null; logoLight: string | null; variant?: { treatment?: string; logo?: string } };
+export type AdRecipe = { layout: string; art: Record<string, unknown>; palette: Record<string, string>; typo: { heading: string; body: string; headingWeight?: number; uppercase?: boolean }; brand: string; eyebrow: string | null; logo: string | null; logoLight: string | null; variant?: { treatment?: string; logo?: string; scheme?: string } };
