@@ -176,6 +176,8 @@ export function updatePage(input: ThemeSpec, handle: string, o: { title?: string
   let finalHandle = p.handle;
   if (o.handle !== undefined && slugify(o.handle) !== p.handle) {
     const next = slugify(o.handle);
+    // Contact et pages légales : adresse fixe (sinon une page renommée perdrait sa protection et pourrait être supprimée).
+    if (isProtectedPage(spec, p)) throw new PageError(L("L'adresse d'une page indispensable (contact ou informations légales) ne peut pas changer.", "The address of an essential page (contact or legal information) cannot change."), 409);
     if (spec.store.pages.some((x) => x.handle === next)) throw new PageError(L(`L'adresse /pages/${next} est déjà utilisée par une autre page.`, `The address /pages/${next} is already used by another page.`), 409);
     rewriteLinks(spec, pageUrl(p.handle), pageUrl(next));
     const plan = spec.meta?.v2?.plan as { handle?: string; url?: string }[] | undefined;
