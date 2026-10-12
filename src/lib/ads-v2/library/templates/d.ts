@@ -3,10 +3,7 @@
  * pellicule, cercles, article de magazine, panorama, grille, loupe sur un détail, étiquette, épure.
  * Chaque modèle refait sa composition pour le format (paysage, carré, portrait, story).
  */
-import { createCanvas } from "@napi-rs/canvas";
-import { layoutText } from "../../../ad-doc/render";
-import { serverFont } from "../../../ad-doc/server";
-import type { Layer, TextLayer } from "../../../ad-doc/types";
+import type { Layer } from "../../../ad-doc/types";
 import { contrast, ensureContrast, isDark, mix } from "../../../color";
 import type { Box, Kit } from "../kit";
 import type { Template } from "../types";
@@ -30,25 +27,6 @@ function fit(k: Kit, draw: (s: number) => boolean) {
     k.layers.splice(start);
   }
 }
-
-const probe = createCanvas(8, 8).getContext("2d");
-/**
- * Titre d'affiche sur plusieurs lignes : le kit réduit d'abord le titre pour le faire tenir sur une ligne ; ici on
- * lui rend sa taille voulue (ou la plus grande qui tient) sur `maxLines` lignes au plus.
- */
-function grow(t: TextLayer, size: number, maxLines: number) {
-  for (let s = Math.round(size); s > t.font.size; s = Math.round(s * 0.96)) {
-    const r = layoutText(probe, { ...t, font: { ...t.font, size: s }, h: s * t.lineHeight * maxLines + 1 }, { font: serverFont });
-    if (r.size !== s || r.lines.length > maxLines) continue;
-    t.font.size = s;
-    t.h = Math.ceil(r.lines.length * s * t.lineHeight + s * 0.12);
-    return t;
-  }
-  return t;
-}
-
-/** Titre posé à la main (hors pile) : taille voulue sur plusieurs lignes. */
-const headline = (k: Kit, b: { x: number; y: number; w: number }, o: Parameters<Kit["title"]>[1] & { maxLines: number }) => grow(k.title(b, o), o.size, o.maxLines);
 
 /** Recolore le bouton (posé sur une case de la couleur du bouton, par exemple), libellé toujours lisible. */
 function recolorCta(k: Kit, fill: string) {
@@ -157,9 +135,9 @@ export const TEMPLATES_D: Template[] = [
           { x: W * 0.08, y: k.m.top + H * 0.49, w: W * 0.84, h: H * 0.51 - k.m.top - k.m.bottom },
         ],
         [
-          { x: W * 0.07, y: k.m.top, w: W * 0.54, h: H * 0.37 },
-          { x: W * 0.66, y: k.m.top + H * 0.09, w: W * 0.27, h: H * 0.19 },
-          { x: W * 0.07, y: k.m.top + H * 0.41, w: W * 0.86, h: H - k.m.bottom - k.m.top - H * 0.41 },
+          { x: W * 0.07, y: k.m.top, w: W * 0.54, h: H * 0.33 },
+          { x: W * 0.66, y: k.m.top + H * 0.08, w: W * 0.27, h: H * 0.17 },
+          { x: W * 0.07, y: k.m.top + H * 0.365, w: W * 0.86, h: H - k.m.bottom - k.m.top - H * 0.365 },
         ],
       );
       const first = k.layers.length;
@@ -193,7 +171,7 @@ export const TEMPLATES_D: Template[] = [
       const base = isDark(k.c.bg) ? mix(k.c.bg, "#000000", 0.6) : "#151515";
       const vertical = k.cls === "land";
       // Bande de film : en paysage elle est verticale à droite (images empilées), sinon horizontale en haut.
-      const film: Box = vertical ? { x: k.W * 0.5, y: 0, w: k.W * 0.5, h: k.H } : { x: 0, y: k.pick(0, k.H * 0.05, k.H * 0.04, k.H * 0.06), w: k.W, h: k.H * k.pick(0, 0.55, 0.46, 0.4) };
+      const film: Box = vertical ? { x: k.W * 0.5, y: 0, w: k.W * 0.5, h: k.H } : { x: 0, y: k.pick(0, k.H * 0.05, k.H * 0.04, k.H * 0.06), w: k.W, h: k.H * k.pick(0, 0.5, 0.46, 0.4) };
       k.rect(film, base, { name: "Pellicule" });
       const perf = k.U * 0.05;
       const g = Math.max(4, Math.round(k.U * 0.01));
@@ -217,7 +195,7 @@ export const TEMPLATES_D: Template[] = [
         k.photo(b, { focus, zoom });
       });
       const col = vertical ? { x: k.m.side, y: k.m.top, w: film.x - k.m.side - k.W * 0.05, h: k.H - k.m.top - k.m.bottom } : { x: k.m.side, y: film.y + film.h + k.H * 0.045, w: k.W - k.m.side * 2, h: k.H - k.m.bottom - (film.y + film.h + k.H * 0.045) };
-      k.stack(col, { valign: "middle", title: k.U * k.pick(0.09, 0.078, 0.08, 0.095), eyebrow: true, sub: k.cls !== "square", ctaStyle: "square", gap: k.U * 0.03 });
+      k.stack(col, { valign: "middle", title: k.U * k.pick(0.09, 0.07, 0.08, 0.095), eyebrow: true, sub: k.cls !== "square", ctaStyle: "square", gap: k.U * 0.03 });
     },
   },
   {
@@ -291,7 +269,7 @@ export const TEMPLATES_D: Template[] = [
         if (k.cls === "land") {
           // Paysage : titre, ligne et bouton en colonne à gauche ; filet vertical ; photo à droite.
           const cw = Wd * 0.44;
-          const t = headline(k, { x: X, y, w: cw }, { size: k.U * 0.085 * s, maxLines: 3 });
+          const t = k.title({ x: X, y, w: cw }, { size: k.U * 0.085 * s, maxLines: 3 });
           let ty = y + t.h + gap * 0.6;
           const sub = k.subline({ x: X, y: ty, w: cw }, { size: k.U * 0.034 });
           if (sub) ty += sub.h;
@@ -303,7 +281,7 @@ export const TEMPLATES_D: Template[] = [
           return true;
         }
         // Formats hauts : titre et chapeau sur toute la largeur, puis deux colonnes d'images (vue, détail), bouton en pied.
-        const t = headline(k, { x: X, y, w: Wd }, { size: k.U * k.pick(0, 0.075, 0.09, 0.1) * s, maxLines: 3 });
+        const t = k.title({ x: X, y, w: Wd }, { size: k.U * k.pick(0, 0.075, 0.09, 0.1) * s, maxLines: 3 });
         y += t.h + gap * 0.5;
         const sub = k.subline({ x: X, y, w: Wd }, { size: k.U * 0.032 });
         if (sub) y += sub.h + gap * 0.4;
@@ -349,7 +327,7 @@ export const TEMPLATES_D: Template[] = [
       };
       if (k.cls === "land") {
         fit(k, (s) => {
-          const t = headline(k, { x: X, y: top, w: Wd * 0.68 }, { size: k.U * 0.085 * s, maxLines: 2 });
+          const t = k.title({ x: X, y: top, w: Wd * 0.68 }, { size: k.U * 0.085 * s, maxLines: 2 });
           const mark = k.brandMark({ x: X + Wd * 0.72, y: top, w: Wd * 0.28 }, { align: "right" });
           mark.y = top + Math.max(0, (Math.min(t.h, k.U * 0.1) - mark.h) / 2);
           const bh = ctaH(k);
@@ -358,7 +336,7 @@ export const TEMPLATES_D: Template[] = [
           const h = by - gap - y;
           if (h < k.H * 0.28) return false;
           band(y, h);
-          const sub = k.subline({ x: X, y: by, w: Wd * 0.55 }, { upper: true, size: k.U * 0.032 });
+          const sub = k.subline({ x: X, y: by, w: Wd * 0.58 }, { size: k.U * 0.036 });
           if (sub) sub.y = by + (bh - sub.h) / 2;
           k.button(X + Wd, by, { maxW: Wd * 0.4, align: "right" });
           return true;
@@ -368,7 +346,7 @@ export const TEMPLATES_D: Template[] = [
       fit(k, (s) => {
         const mark = k.brandMark({ x: X, y: top, w: Wd }, { align: "center" });
         let y = top + mark.h + gap * 0.8;
-        const t = headline(k, { x: X, y, w: Wd }, { size: k.U * k.pick(0, 0.075, 0.085, 0.095) * s, align: "center", italic: true, maxLines: 3 });
+        const t = k.title({ x: X, y, w: Wd }, { size: k.U * k.pick(0, 0.075, 0.085, 0.095) * s, align: "center", italic: true, maxLines: 3 });
         y += t.h + gap;
         const bh = ctaH(k);
         const hasSub = !!k.i.subline?.trim();
@@ -376,13 +354,13 @@ export const TEMPLATES_D: Template[] = [
         const avail = bot - y - gap - subH - bh;
         if (avail < k.H * 0.18) return false;
         // Hauteur panoramique (au plus la largeur / 2,2) ; le reste de la place est réparti autour.
-        const h = Math.min(avail, k.W / 2.2);
+        const h = Math.min(avail, k.W / k.pick(2.2, 2.4, 2.2, 1.8));
         const spare = avail - h;
         // Tout le bloc descend de la moitié de la place restante (composition centrée).
         const shift = spare / 2;
-        for (const l of [mark, t]) l.y += shift * 0.6;
+        for (const l of [mark, t]) l.y += shift;
         reanchor(k, [mark, t]);
-        y += shift * 0.6;
+        y += shift;
         band(y, h);
         y += h + gap;
         if (hasSub) {
@@ -408,7 +386,7 @@ export const TEMPLATES_D: Template[] = [
       const g = Math.round(k.U * k.pick(0.03, 0.03, 0.03, 0.03));
       const area = { x: g, y: g, w: k.W - g * 2, h: k.H - g * 2 };
       // Proportions des colonnes et rangées : la case de texte est la plus grande.
-      const [cx, ry] = k.pick([0.46, 0.58], [0.52, 0.52], [0.52, 0.55], [0.5, 0.56]);
+      const [cx, ry] = k.pick([0.46, 0.58], [0.52, 0.52], [0.55, 0.55], [0.6, 0.56]);
       const cw0 = (area.w - g) * cx;
       const cw1 = area.w - g - cw0;
       // En formats hauts, la case de texte est en bas à gauche (place pour le texte dans les marges).
@@ -431,13 +409,16 @@ export const TEMPLATES_D: Template[] = [
         k.photo(c, { focus, zoom, radius: r });
       });
       const tc = cells[textIdx];
-      k.rect(tc, k.c.accent, { name: "Case de couleur", radius: r });
+      // Case de la couleur d'accent, ajustée pour qu'une encre de la marque y reste lisible (5:1).
+      const ink = contrast(k.c.light, k.c.accent) >= contrast(k.c.dark, k.c.accent) ? k.c.light : k.c.dark;
+      const cell = contrast(ink, k.c.accent) >= 5 ? k.c.accent : ensureContrast(k.c.accent, ink, 5);
+      k.rect(tc, cell, { name: "Case de couleur", radius: r });
       const pad = k.U * k.pick(0.05, 0.045, 0.05, 0.055);
       const col = { x: Math.max(tc.x + pad, k.m.side), y: Math.max(tc.y + pad, k.m.top), w: 0, h: 0 };
       col.w = tc.x + tc.w - pad - col.x;
       col.h = Math.min(tc.y + tc.h - pad, k.H - k.m.bottom) - col.y;
       k.stack(col, { valign: k.tall ? "top" : "middle", title: k.U * k.pick(0.07, 0.06, 0.068, 0.075), sub: k.cls !== "square", ctaStyle: "square", gap: k.U * 0.028 });
-      recolorCta(k, isDark(k.c.accent) ? k.c.light : k.c.dark);
+      recolorCta(k, isDark(cell) ? k.c.light : k.c.dark);
     },
   },
   {
@@ -459,23 +440,30 @@ export const TEMPLATES_D: Template[] = [
       k.photo(pic, { focus: { u: 0.5, v: 0.5 }, zoom: 1 });
       const main = k.cropFor(pic, { u: 0.5, v: 0.5 }, 1)!;
       const size = k.U * k.pick(0.46, 0.36, 0.38, 0.42);
-      const zoom = 2.5;
-      // Détail : le premier point d'intérêt bien visible dans la photo affichée (sinon le centre).
-      const pts = [0, 1, 2, 3].map((i) => k.point(i));
-      const inside = (p: { u: number; v: number }) => (p.u - main.x) / main.w > 0.15 && (p.u - main.x) / main.w < 0.85 && (p.v - main.y) / main.h > 0.15 && (p.v - main.y) / main.h < 0.8;
-      const focus = pts.find(inside) ?? { u: 0.5, v: 0.5 };
       const med: Box = k.pick(
         { x: pic.w - size * 0.5, y: k.H - k.m.bottom - size, w: size, h: size },
         { x: k.W - k.m.side - size, y: pic.h - size * 0.55, w: size, h: size },
         { x: k.W - k.m.side - size, y: pic.h - size * 0.5, w: size, h: size },
         { x: k.W - k.m.side - size, y: pic.h - size * 0.45, w: size, h: size },
       );
-      // Zone du détail sur la photo : cadre fin de la taille réelle de la loupe.
-      const zc = k.cropFor(med, focus, zoom)!;
-      const zx = pic.x + ((zc.x - main.x) / main.w) * pic.w;
-      const zy = pic.y + ((zc.y - main.y) / main.h) * pic.h;
-      const zw = (zc.w / main.w) * pic.w;
-      const zh = (zc.h / main.h) * pic.h;
+      // Zone de la photo que montre la loupe, en coordonnées de l'image.
+      const zoneOf = (f: { u: number; v: number }, z: number): Box => {
+        const c = k.cropFor(med, f, z)!;
+        return { x: pic.x + ((c.x - main.x) / main.w) * pic.w, y: pic.y + ((c.y - main.y) / main.h) * pic.h, w: (c.w / main.w) * pic.w, h: (c.h / main.h) * pic.h };
+      };
+      // Vrai grossissement : la loupe montre une zone d'environ 2,3 fois plus petite qu'elle (zoom 2,5 au moins).
+      const zoom = Math.min(5, Math.max(2.5, zoneOf({ u: 0.5, v: 0.5 }, 1).w / (size / 2.3)));
+      // Détail : un point d'intérêt dont la zone est entière dans la photo affichée et loin de la loupe.
+      const free = (f: { u: number; v: number }) => {
+        const z = zoneOf(f, zoom);
+        const pad = k.U * 0.04;
+        const inPic = z.x >= pic.x + pad * 0.5 && z.y >= pic.y + pad * 0.5 && z.x + z.w <= pic.x + pic.w - pad * 0.5 && z.y + z.h <= pic.y + pic.h - pad * 0.5;
+        const clear = z.x + z.w < med.x - pad || z.x > med.x + med.w + pad || z.y + z.h < med.y - pad || z.y > med.y + med.h + pad;
+        return inPic && clear;
+      };
+      const cands = [0, 1, 2, 3].map((i) => k.point(i));
+      const focus = cands.find(free) ?? [{ u: 0.3, v: 0.35 }, { u: 0.5, v: 0.3 }, { u: 0.35, v: 0.5 }].find(free) ?? { u: 0.3, v: 0.3 };
+      const { x: zx, y: zy, w: zw, h: zh } = zoneOf(focus, zoom);
       const white = "#FFFFFF";
       k.rect({ x: zx, y: zy, w: zw, h: zh }, null, { radius: k.U * 0.01, stroke: { color: white, width: Math.max(3, Math.round(k.U * 0.004)) }, name: "Zone du détail", shadow: { color: "rgba(0,0,0,0.4)", blur: Math.round(k.U * 0.01), x: 0, y: 0 } });
       // Trait du coin de la zone vers le coin de la loupe le plus proche.
@@ -511,7 +499,7 @@ export const TEMPLATES_D: Template[] = [
       const maxH = k.H - k.m.top - k.m.bottom - k.U * 0.04;
       const tag = k.rect({ x, y: 0, w: tw, h: maxH }, k.c.bg, { radius: k.U * 0.03, name: "Étiquette", shadow: soft(k, 0.35) });
       const start = k.layers.length;
-      const st = k.stack({ x: x + pad, y: holeZone + pad * 0.6, w: tw - pad * 2, h: maxH - holeZone - pad * 1.6 }, { align: "center", valign: "top", title: k.U * k.pick(0.07, 0.062, 0.07, 0.08), italic: true, sub: true, subUpper: true, ctaStyle: "pill", gap: k.U * 0.026 });
+      const st = k.stack({ x: x + pad, y: holeZone + pad * 0.6, w: tw - pad * 2, h: maxH - holeZone - pad * 1.6 }, { align: "center", valign: "top", title: k.U * k.pick(0.07, 0.062, 0.07, 0.08), italic: true, sub: true, ctaStyle: "pill", gap: k.U * 0.026 });
       tag.h = holeZone + pad * 1.6 + st.h;
       // L'étiquette repose en bas (formats hauts) ou au centre (paysage), dans les marges.
       const ty = k.cls === "land" ? (k.H - tag.h) / 2 : k.H - k.m.bottom - tag.h - k.U * 0.02;
@@ -566,7 +554,7 @@ export const TEMPLATES_D: Template[] = [
         k.brandMark({ x: X, y: top, w: span(4) });
         fit(k, (s) => {
           const bh = ctaH(k);
-          const t = headline(k, { x: X, y: 0, w: span(4) }, { size: k.U * 0.085 * s, maxLines: 3 });
+          const t = k.title({ x: X, y: 0, w: span(4) }, { size: k.U * 0.085 * s, maxLines: 3 });
           const sub = k.subline({ x: X, y: 0, w: span(4) }, { size: k.U * 0.032 });
           const g = k.U * 0.04;
           const total = k.U * 0.004 + g + t.h + g * 0.6 + (sub ? sub.h + g : g * 0.4) + bh;
@@ -585,7 +573,7 @@ export const TEMPLATES_D: Template[] = [
         return;
       }
       // Formats hauts : marque en haut à gauche, petite photo calée à droite, texte en bas à gauche.
-      const mark = k.brandMark({ x: X, y: top, w: span(3) });
+      const mark = k.brandMark({ x: X, y: top, w: span(k.cls === "square" ? 3 : 2) });
       const pw = span(k.cls === "square" ? 3 : 4);
       const ph = k.pick(0, pw * 1.15, pw * 1.22, pw * 1.12);
       const py = top;
@@ -593,7 +581,7 @@ export const TEMPLATES_D: Template[] = [
       fit(k, (s) => {
         const tw = span(k.cls === "square" ? 3 : 5);
         const bh = ctaH(k);
-        const t = headline(k, { x: X, y: 0, w: tw }, { size: k.U * k.pick(0, 0.062, 0.072, 0.08) * s, maxLines: 4 });
+        const t = k.title({ x: X, y: 0, w: tw }, { size: k.U * k.pick(0, 0.062, 0.076, 0.09) * s, maxLines: 4 });
         const sub = k.subline({ x: X, y: 0, w: tw }, { size: k.U * 0.03 });
         const g = k.U * 0.035;
         const total = k.U * 0.006 + g + t.h + g * 0.6 + (sub ? sub.h + g : g * 0.4) + bh;
