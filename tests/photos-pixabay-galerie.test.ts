@@ -3,7 +3,6 @@
  * recherche de galerie réunit beaucoup plus de candidates qu'un emplacement. Fournisseurs simulés, aucun réseau.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { setSetting } from "@/lib/settings";
 
 vi.mock("@/lib/ai/config", async (orig) => {
   const real = await orig<typeof import("@/lib/ai/config")>();
@@ -17,11 +16,15 @@ afterEach(() => {
 describe("Photos libres : Pixabay d'abord, galerie fournie", async () => {
   const { stockSources, searchStock } = await import("@/lib/stock/photos");
 
-  it("ordre des banques : Pixabay seul par défaut ; Pixabay, Pexels, Openverse si « Pixabay obligatoire » est désactivé", () => {
+  it("ordre des banques : Pixabay seul par défaut (obligatoire) ; sinon Pixabay, Pexels, Openverse", async () => {
+    const { setSetting } = await import("@/lib/settings");
     expect(stockSources()).toEqual(["pixabay"]);
     setSetting("stock.pixabayOnly", "0");
-    expect(stockSources()).toEqual(["pixabay", "pexels", "openverse"]);
-    setSetting("stock.pixabayOnly", null);
+    try {
+      expect(stockSources()).toEqual(["pixabay", "pexels", "openverse"]);
+    } finally {
+      setSetting("stock.pixabayOnly", "1");
+    }
   });
 
   it("Pixabay : 60 résultats par page, photos de 1600 px au moins ; une galerie réunit jusqu'à 80 candidates", async () => {
