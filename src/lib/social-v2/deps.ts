@@ -74,7 +74,7 @@ const aspectOf = (network: string, format: string): "1:1" | "4:5" | "9:16" | "2:
  */
 function backgroundFor(p: Project, seed: string): Asset | null {
   const pool = all<Asset & { uses: number }>(
-    `SELECT a.*, (SELECT COUNT(*) FROM ad_documents d WHERE d.project_id = a.project_id AND d.doc_json LIKE '%' || a.id || '%') uses
+    `SELECT a.*, (SELECT COUNT(*) FROM assets b WHERE b.project_id = a.project_id AND b.deleted_at IS NULL AND json_extract(b.meta, '$.poster.backgroundAssetId') = a.id) uses
        FROM assets a WHERE a.project_id = ? AND a.kind = 'image' AND a.deleted_at IS NULL AND a.status != 'rejected'
         AND a.role IN ('lifestyle', 'scene', 'ambiance', 'post-photo', 'original') ORDER BY a.created_at DESC LIMIT 24`,
     p.id,

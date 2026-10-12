@@ -79,9 +79,10 @@ function planBackgrounds(planId: string | null): { asset: Asset; uses: number }[
   if (!planId) return [];
   const rows = all<{ bg: string; uses: number }>(
     `SELECT json_extract(a.meta, '$.poster.backgroundAssetId') bg, COUNT(*) uses FROM assets a
-      WHERE a.deleted_at IS NULL AND json_extract(a.meta, '$.poster.backgroundAssetId') IS NOT NULL
+      WHERE a.project_id = (SELECT project_id FROM posts WHERE plan_id = ? LIMIT 1) AND a.role = 'social' AND a.deleted_at IS NULL AND json_extract(a.meta, '$.poster.backgroundAssetId') IS NOT NULL
         AND json_extract(a.meta, '$.post') IN (SELECT id FROM posts WHERE plan_id = ?)
       GROUP BY bg ORDER BY uses ASC`,
+    planId,
     planId,
   );
   return rows.map((r) => ({ asset: getAsset(r.bg)!, uses: r.uses })).filter((x) => x.asset && !x.asset.deleted_at);
