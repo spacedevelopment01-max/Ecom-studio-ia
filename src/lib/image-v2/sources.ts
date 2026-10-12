@@ -9,7 +9,7 @@
  * personnes reconnaissables ni les marques visibles : c'est rappelé dans les restrictions conservées avec l'image.
  */
 import { activeProviderKey } from "../ai/config";
-import { searchSource, type Orientation } from "../stock/photos";
+import { pixabayOnly, searchSource, type Orientation } from "../stock/photos";
 import type { LicenseInfo, StockCandidate } from "./types";
 
 export type StockProvider = {
@@ -92,7 +92,7 @@ export const STOCK_PROVIDERS: StockProvider[] = [
   {
     id: "pexels",
     label: "Pexels",
-    available: () => !!activeProviderKey("pexels"),
+    available: () => !pixabayOnly() && !!activeProviderKey("pexels"),
     capabilities: { orientation: true, languages: ["en", "fr"], negativeTerms: false, perPage: 15 },
     metadata: ["alt", "author", "dimensions"],
     license: () => PEXELS_LICENSE,
@@ -103,7 +103,7 @@ export const STOCK_PROVIDERS: StockProvider[] = [
   {
     id: "openverse",
     label: "Openverse",
-    available: () => true,
+    available: () => !pixabayOnly(),
     // Recherche en anglais (métadonnées surtout anglaises), sans filtre d'orientation côté API.
     capabilities: { orientation: false, languages: ["en"], negativeTerms: false, perPage: 20 },
     metadata: ["title", "author", "dimensions", "license"],

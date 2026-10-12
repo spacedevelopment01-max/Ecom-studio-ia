@@ -14,9 +14,16 @@ const calmLeft = () => sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg
 const photo = (id: string, extra: Partial<StockPhoto> = {}): StockPhoto => ({ source: "pixabay", id, url: `https://x.test/${id}.jpg`, thumb: `https://x.test/${id}-small.jpg`, page: "", author: "", license: "Pixabay", width: 4000, height: 4000, alt: "coffee beans cup", ...extra });
 
 describe("meilleure photo pour une pub", () => {
-  it("Pixabay est la première banque consultée quand sa clé est enregistrée", () => {
-    // Sans clé dans l'environnement de test : Openverse seul ; l'ordre est fixé par le code (Pixabay, Pexels, Openverse).
-    expect(stockSources().at(-1)).toBe("openverse");
+  it("Pixabay obligatoire : aucune autre banque (réglage « stock.pixabayOnly », activé par défaut)", async () => {
+    const { setSetting } = await import("@/lib/settings");
+    expect(stockSources().every((s) => s === "pixabay")).toBe(true);
+    // Réglage désactivé : Pixabay d'abord, puis Pexels, puis Openverse.
+    setSetting("stock.pixabayOnly", "0");
+    try {
+      expect(stockSources().at(-1)).toBe("openverse");
+    } finally {
+      setSetting("stock.pixabayOnly", "1");
+    }
   });
 
   it("à pertinence voisine, la photo avec une zone calme pour le texte passe devant", async () => {

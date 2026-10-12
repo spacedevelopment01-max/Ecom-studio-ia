@@ -15,7 +15,7 @@ import { all, json, one, run } from "../db";
 import { composePoster, savePosterDoc, type PosterAspect } from "../ads-v2/poster";
 import { adFitOrder } from "../stock/ad-fit";
 import { assetData, saveAsset, type Asset } from "../library";
-import { downloadStock, searchStock, stockCredit } from "../stock/photos";
+import { downloadStock, pixabayOnly, searchStock, stockCredit } from "../stock/photos";
 import { rankStock, tradeStock } from "../stock/trade-queries";
 import { NO_PEOPLE_EN, NO_PEOPLE_QUERY_EN, peopleAllowed, peopleAllowedFor, personCodes, queriesFor } from "../people-policy";
 import { loadProject, type Project } from "../projects";
@@ -947,7 +947,7 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
 
   // 3. Images d'ambiance (IA d'images disponible) pour les emplacements encore vides : consignes honnêtes, aucun faux client.
   // Image payante seulement si son contrôle est possible (sinon elle ne pourrait jamais être validée).
-  const withAi = opts.withAi !== false && !!imageProviderAvailable({ usage: "scene" }) && llmConfigured();
+  const withAi = opts.withAi !== false && !pixabayOnly() && !!imageProviderAvailable({ usage: "scene" }) && llmConfigured();
   if (opts.v2) {
     // Image Engine V2 : par emplacement encore vide, brief du métier et de la prestation, recherche (photos déjà
     // refusées jamais recontrôlées) puis génération contrôlée seulement si possible et dans le plafond.
@@ -958,7 +958,8 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
         ctx.progress(0.2 + (i / Math.max(1, todo.length)) * 0.3, L("Images de l'activité (moteur d'images)", "Business images (image engine)"));
         const want = slotSubject(project, slot);
         const svc = want.service ? serviceItems(project).find((x) => x.name === want.service) : undefined;
-        const r = await runImageEngineV2(ctx, projectId, { kind: "trade_photo", support: slot === "ad" ? "ad" : "site", aspect, topic: want.subject, service: svc ? { name: svc.name, description: svc.description } : null, slot, count: 1 });
+        // Règle « Pixabay obligatoire » : à la création, photo trouvée sur Pixabay seulement, jamais générée.
+        const r = await runImageEngineV2(ctx, projectId, { kind: "trade_photo", support: slot === "ad" ? "ad" : "site", aspect, topic: want.subject, service: svc ? { name: svc.name, description: svc.description } : null, slot, count: 1, ...(pixabayOnly() ? { allowGenerate: false } : {}) });
         return r.outcomes.filter((o) => o.assetId && o.verdict === "FINAL").map((o) => o.assetId!);
       });
       created.push(...ids);

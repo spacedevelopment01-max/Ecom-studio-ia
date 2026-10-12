@@ -12,6 +12,7 @@
  */
 import type { JobContext } from "../jobs";
 import { loadProject } from "../projects";
+import { pixabayOnly } from "../stock/photos";
 import { L } from "../i18n-server";
 import { runImageEngineV2 } from "./engine";
 
@@ -36,7 +37,8 @@ export async function runImageSetV2(ctx: JobContext, projectId: string): Promise
   for (const [i, aspect] of (["16:9", "4:5"] as const).entries()) {
     const gen = await ctx.step(`img2:lifestyle:${i}`, async () => {
       ctx.progress(0.88 + i * 0.05, L("Photos du produit en situation", "Lifestyle product photos"));
-      const r = await runImageEngineV2(ctx, projectId, { kind: "lifestyle", support: i === 0 ? "banner" : "product_page", aspect, variant: i, name: `en-situation-${i + 1}` });
+      // Règle « Pixabay obligatoire » : aucune image générée à la création (photos de l'univers et vrai produit seulement).
+      const r = await runImageEngineV2(ctx, projectId, { kind: "lifestyle", support: i === 0 ? "banner" : "product_page", aspect, variant: i, name: `en-situation-${i + 1}`, ...(pixabayOnly() ? { allowGenerate: false } : {}) });
       return { ids: r.outcomes.filter((o) => o.assetId && o.verdict === "FINAL").map((o) => o.assetId!), notes: r.notes };
     });
     out.created.push(...gen.ids);

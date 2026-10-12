@@ -6,6 +6,7 @@
  */
 import sharp from "sharp";
 import { activeProviderKey } from "../ai/config";
+import { getSetting } from "../settings";
 import { L } from "../i18n-server";
 
 export type StockSource = "pexels" | "pixabay" | "openverse";
@@ -22,8 +23,16 @@ const get = async (url: string, headers: Record<string, string> = {}) => {
 /** Tests automatiques : jamais d'appel aux banques d'images réelles (réseau lent ou absent, résultats changeants). */
 const offline = () => process.env.STOCK_OFFLINE === "1";
 
+/**
+ * Règle du propriétaire : les images et vidéos TROUVÉES pour un projet (site, publications, publicités, vidéos)
+ * viennent obligatoirement de Pixabay — aucune autre banque, et aucune image générée à leur place pendant la
+ * création. Réglage « stock.pixabayOnly » (activé par défaut ; « 0 » pour revenir à Pixabay puis Pexels, Openverse).
+ */
+export const pixabayOnly = () => getSetting("stock.pixabayOnly") !== "0";
+
 /** Pixabay d'abord (le plus riche en photos d'univers et de lieux, bien décrites par mots-clés), puis Pexels, puis Openverse. */
-export const stockSources = (): StockSource[] => [...(activeProviderKey("pixabay") ? (["pixabay"] as const) : []), ...(activeProviderKey("pexels") ? (["pexels"] as const) : []), "openverse"];
+export const stockSources = (): StockSource[] =>
+  pixabayOnly() ? (activeProviderKey("pixabay") ? ["pixabay"] : []) : [...(activeProviderKey("pixabay") ? (["pixabay"] as const) : []), ...(activeProviderKey("pexels") ? (["pexels"] as const) : []), "openverse"];
 
 export async function searchSource(source: StockSource, query: string, orientation: Orientation, lang: "fr" | "en"): Promise<StockPhoto[]> {
   const q = encodeURIComponent(query);
@@ -119,7 +128,7 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
         console.warn("[vidéos libres] pixabay indisponible :", (e as Error).message);
       }
     }
-    const pexels = activeProviderKey("pexels");
+    const pexels = pixabayOnly() ? null : activeProviderKey("pexels");
     if (pexels) {
       try {
         const j = await get(`https://api.pexels.com/videos/search?query=${q}&per_page=10&orientation=${orientation}&locale=${lang === "fr" ? "fr-FR" : "en-US"}`, { Authorization: pexels });
