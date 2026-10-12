@@ -110,6 +110,7 @@ const slugWords = (url: string) => (url.match(/\/video\/([^/?#]+)/)?.[1] ?? "").
 /** Vidéos libres de droits (Pexels, Pixabay : clés gratuites) ; fichier HD de taille raisonnable choisi. */
 export async function searchStockVideos(queries: string[], orientation: "landscape" | "portrait", lang: "fr" | "en", exclude: Set<string>): Promise<StockVideo[]> {
   const out: StockVideo[] = [];
+  const spare: StockVideo[] = [];
   if (offline()) return out;
   const pick = (files: { width: number; height: number; link: string }[]) =>
     files.filter((f) => f.link && Math.max(f.width, f.height) >= 1080 && Math.max(f.width, f.height) <= 2160).sort((a, b) => a.width * a.height - b.width * b.height)[0] ?? files.filter((f) => f.link).sort((a, b) => b.width * b.height - a.width * a.height)[0];
@@ -122,7 +123,11 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
         for (const v of j.hits ?? []) {
           const f = pick(["large", "medium", "small"].map((k) => v.videos?.[k]).filter(Boolean).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.url })));
           const wantTall = orientation === "portrait";
-          if (f && v.duration >= 4 && (f.height > f.width) === wantTall && !exclude.has(`pixabay:${v.id}`)) out.push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration, alt: String(v.tags ?? "") });
+          // Pixabay n'a presque que des vidéos horizontales : pour un format vertical, un plan horizontal assez net
+          // (recadré au centre au montage) est gardé en réserve, après les plans déjà verticaux.
+          const fits = f && (f.height > f.width) === wantTall;
+          const croppable = f && wantTall && !fits && f.height >= 1080;
+          if (f && v.duration >= 4 && (fits || croppable) && !exclude.has(`pixabay:${v.id}`)) (fits ? out : spare).push({ source: "pixabay", id: String(v.id), url: f.link, page: v.pageURL, author: v.user ?? "", license: "Pixabay", width: f.width, height: f.height, duration: v.duration, alt: String(v.tags ?? "") });
         }
       } catch (e) {
         console.warn("[vidéos libres] pixabay indisponible :", (e as Error).message);
@@ -141,9 +146,9 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
       }
     }
     // Présélection plus large : le filtre du métier (gratuit) et le contrôle d'une image choisissent ensuite.
-    if (out.length >= 6) break;
+    if (out.length + spare.length >= 6) break;
   }
-  return out;
+  return [...out, ...spare];
 }
 
 /** Télécharge une vidéo libre de droits (MP4, 80 Mo au plus). */
