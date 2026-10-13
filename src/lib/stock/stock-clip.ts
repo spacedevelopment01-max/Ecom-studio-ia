@@ -75,10 +75,35 @@ async function clipQueries(ictx: Ictx, p: Project, r: StockClipRequest): Promise
   // y répond bien mieux qu'aux phrases ; ils valent aussi contrôle de la description sans IA.
   const { resolveProductCategory } = await import("../image-v2/categories");
   const cat = resolveProductCategory(p.product);
-  const words: string[] = cat.source === "core" ? [...new Set(cat.labels.en.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3))] : [];
+  // Le produit lui-même d'abord (« Casque audio sans fil » → headphones) : la catégorie seule (« consumer
+  // electronics ») ramène des cartes mères ; puis les mots de la catégorie et l'univers.
+  const nouns = productNouns(`${p.product.category ?? ""} ${p.product.name ?? ""}`);
+  const words: string[] = cat.source === "core" ? [...new Set(cat.labels.en.toLowerCase().split(/[^a-z]+/).filter((x) => x.length > 3 && !GENERIC_WORDS.has(x)))] : [];
   const rotated = [...u.queries.slice(k), ...u.queries.slice(0, k)];
-  const short = [...words, ...rotated.map((q) => q.split(/\s+/).slice(0, 2).join(" "))];
-  return { lang: words.length ? "en" : u.lang, queries: [...new Set([...short, ...rotated])], must: [...new Set([...words, ...(known?.must ?? [])])] };
+  const short = [...nouns.flatMap((n) => [n, ...(NOUN_CONTEXT[n] ?? []).map((c) => `${c} ${n}`)]), ...words, ...rotated.map((q) => q.split(/\s+/).slice(0, 2).join(" "))];
+  return { lang: nouns.length || words.length ? "en" : u.lang, queries: [...new Set([...short, ...rotated])], must: [...new Set([...nouns, ...words, ...(known?.must ?? [])])] };
+}
+
+/** Mots trop larges pour une recherche de vidéo (« consumer electronics » → cartes mères). */
+const GENERIC_WORDS = new Set(["consumer", "products", "product", "goods", "items", "accessories", "electronics", "general"]);
+
+/** Produits courants : mot français → nom anglais des banques (le produit lui-même, pas sa catégorie). */
+const PRODUCT_NOUNS: [RegExp, string][] = [
+  [/casque|ecouteur/, "headphones"], [/enceinte|haut-parleur/, "speaker"], [/montre/, "watch"], [/smartphone|telephone/, "smartphone"],
+  [/ordinateur|portable pc|laptop/, "laptop"], [/tablette/, "tablet"], [/camera|appareil photo/, "camera"], [/drone/, "drone"], [/console|manette/, "gaming"],
+  [/sac a dos/, "backpack"], [/sac/, "bag"], [/chaussure|basket|sneaker/, "sneakers"], [/lunette/, "sunglasses"], [/bijou|collier|bague|bracelet/, "jewelry"],
+  [/robe/, "dress"], [/t-shirt|tee-shirt/, "t-shirt"], [/veste|manteau/, "jacket"], [/lampe|luminaire/, "lamp"], [/bougie/, "candle"], [/canape/, "sofa"],
+  [/serum/, "serum"], [/creme/, "cream"], [/parfum/, "perfume"], [/savon/, "soap"], [/shampo/, "shampoo"], [/maquillage|rouge a levres/, "makeup"],
+  [/cafe/, "coffee"], [/the\b|infusion/, "tea"], [/chocolat/, "chocolate"], [/vin\b/, "wine"], [/biere/, "beer"], [/miel/, "honey"],
+  [/velo/, "bicycle"], [/trottinette/, "scooter"], [/tapis de yoga|yoga/, "yoga"], [/jouet|peluche/, "toys"], [/croquette|chien/, "dog"], [/chat\b/, "cat"],
+  [/plante/, "plants"], [/gourde|bouteille isotherme/, "water bottle"], [/valise/, "suitcase"], [/poussette/, "stroller"],
+];
+/** Contexte d'usage du produit pour varier les plans (« music headphones », « wearing headphones »). */
+const NOUN_CONTEXT: Record<string, string[]> = { headphones: ["music", "wearing"], speaker: ["music"], watch: ["wrist"], sneakers: ["running"], coffee: ["cafe"], perfume: ["luxury"], bicycle: ["city"] };
+
+export function productNouns(text: string): string[] {
+  const t = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return [...new Set(PRODUCT_NOUNS.filter(([re]) => re.test(t)).map(([, n]) => n))].slice(0, 2);
 }
 
 /** Mots-clés courts d'un métier (les expressions d'abord, puis trois mots simples). */

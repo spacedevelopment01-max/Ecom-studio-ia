@@ -12,6 +12,7 @@ import { serverFont } from "../ad-doc/server";
 import type { Layer, ShapeLayer, TextLayer } from "../ad-doc/types";
 import type { Project } from "../projects";
 import { C } from "../i18n-server";
+import { songStyleFor } from "../media/song";
 import { buttonLayer, imageLayer, inkOn, rectLayer, textLayer, type Palette, type Typo } from "./doc";
 import type { Clip, ShotPlan, VideoDocument } from "./types";
 
@@ -335,7 +336,10 @@ export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Cli
     let overlays = c.overlays;
     if (c.part === "cta") {
       const lines = services ? contactLines(p) : [price ? `${p.product.name} — ${price}` : p.product.name, o.brand].filter((x, i, a) => x && !a.slice(0, i).some((y) => y.toLowerCase().includes(x.toLowerCase())));
-      overlays = contactOverlay(o, services ? C("Un projet ? Parlons-en.", "A project? Let's talk.") : tagline || p.product.name, lines, services ? C("Contactez-nous", "Contact us") : o.cta);
+      // Fin adaptée au métier : on invite à table un client de restaurant, on propose d'en parler à un client d'artisan.
+      const hospitality = songStyleFor(p) === "bistro";
+      const title = services ? (hospitality ? C("À bientôt à table", "See you at the table") : C("Un projet ? Parlons-en.", "A project? Let's talk.")) : tagline || p.product.name;
+      overlays = contactOverlay(o, title, lines, o.cta?.trim() || (services ? C("Contactez-nous", "Contact us") : C("Découvrir", "Discover")));
     } else if (!isVideo) overlays = c.overlays;
     else if (k === 0) overlays = heroOverlay(o, heroLines, heroSub, services ? tagline : "");
     else if (!panelDone && items.length >= 3 && (c.part === "development" || c.part === "demonstration")) {

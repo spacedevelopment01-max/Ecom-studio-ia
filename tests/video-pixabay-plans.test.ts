@@ -15,9 +15,9 @@ describe("plans Pixabay d'une vidéo", () => {
   });
 
   it("une image ou vidéo générée par IA déposée sur la banque est écartée", () => {
-    const found = [{ alt: "ai generated, spa, candles, relaxation" }, { alt: "spa, candles, relaxation, towels" }];
-    expect(rankStock(found, ["spa"], false).map((p) => p.alt)).toEqual([found[1].alt]);
-    expect(rankStock(found, [], false).map((p) => p.alt)).toEqual([found[1].alt]);
+    const found = [{ alt: "ai generated, spa, candles, relaxation" }, { alt: "cafe, interior, spa, ai created" }, { alt: "spa, candles, relaxation, towels" }];
+    expect(rankStock(found, ["spa"], false).map((p) => p.alt)).toEqual([found[2].alt]);
+    expect(rankStock(found, [], false).map((p) => p.alt)).toEqual([found[2].alt]);
   });
 
   it("un plan sans texte n'affiche jamais sa consigne de recherche, mais la marque", () => {
@@ -28,5 +28,20 @@ describe("plans Pixabay d'une vidéo", () => {
     const text = JSON.stringify(clip);
     expect(text).not.toContain("sans personne");
     expect(text).toContain("Sébastien Blanc");
+  });
+});
+
+describe("recherche des plans par produit et métier", () => {
+  it("le produit lui-même est cherché (casque → headphones), pas sa seule catégorie", async () => {
+    const { productNouns } = await import("@/lib/stock/stock-clip");
+    expect(productNouns("Casque audio sans fil Onde Pro")).toEqual(["headphones"]);
+    expect(productNouns("Montre connectée")).toEqual(["watch"]);
+    expect(productNouns("Logiciel SaaS")).toEqual([]);
+  });
+
+  it("restaurant : une photo de nourriture quelconque ne suffit pas, un dessin animé est écarté", () => {
+    const k = tradeStock("Restaurant bistrot")!;
+    const found = [{ alt: "strawberries, fruit, food, red" }, { alt: "restaurant, table setting, wine, dinner" }, { alt: "restaurant, cafe, interior, cartoon" }];
+    expect(rankStock(found, k.must, false, k.negative).map((p) => p.alt)).toEqual([found[1].alt]);
   });
 });

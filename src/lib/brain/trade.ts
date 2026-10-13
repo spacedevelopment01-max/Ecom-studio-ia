@@ -264,6 +264,7 @@ const CORE: CoreTrade[] = [
     actions: ["cooking", "plating", "serving guests"],
     positive: ["chef plating dishes in a restaurant kitchen", "guests enjoying a meal in a restaurant"],
     queries: ["chef plating dishes in restaurant kitchen", "people enjoying a meal in a cosy restaurant"],
+    negative: ["cartoon", "3d", "street food", "raw meat", "fast food", "ufo", "alien", "anime"],
     icons: ["chef-hat", "tools-kitchen"],
     symbol: "cup",
   },
