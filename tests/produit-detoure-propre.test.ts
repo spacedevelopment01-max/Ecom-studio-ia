@@ -37,3 +37,20 @@ describe("Produit détouré propre", () => {
     expect(out.features).toEqual(["Fait main"]);
   });
 });
+
+describe("Modèles de publication sur une photo de produit", () => {
+  it("jamais un modèle qui voile ou rogne le produit (disque qui se lève, demi-teinte)", async () => {
+    const { pickPosterLook } = await import("@/lib/ads-v2/poster");
+    const { templateById } = await import("@/lib/ads-v2/library");
+    expect(templateById("rising-disc")?.coversSubject).toBe(true);
+    expect(templateById("half-tint")?.coversSubject).toBe(true);
+    const art = { style: "warm", heading: "Inter", headingWeight: 700, body: "Inter", display: "Inter", displayWeight: 800, uppercase: false, cta: "pill", arrow: true, cycle: ["editorial"] } as any;
+    const seen = new Set<string>();
+    for (let n = 0; n < 400; n++) seen.add(pickPosterLook(art, n * 7919, [], true, false, true).layout);
+    expect(seen.has("tpl:rising-disc")).toBe(false);
+    expect(seen.has("tpl:half-tint")).toBe(false);
+    const free = new Set<string>();
+    for (let n = 0; n < 400; n++) free.add(pickPosterLook(art, n * 7919, [], true, false, false).layout);
+    expect([...free].some((l) => l === "tpl:rising-disc" || l === "tpl:half-tint")).toBe(true);
+  });
+});

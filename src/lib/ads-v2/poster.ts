@@ -79,11 +79,11 @@ const familyOf = (layout: string) => (isTemplateLayout(layout) ? (templateById(l
  * schéma de couleurs, un traitement de photo et une place du logo différents de la précédente. La graine fait
  * varier l'ordre (deux projets ne suivent pas le même parcours).
  */
-export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; treatment: string | null; logo: string | null; scheme?: string | null }[], hasPhoto: boolean, hasProduct = false): { layout: string; variant: AdVariant } {
+export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; treatment: string | null; logo: string | null; scheme?: string | null }[], hasPhoto: boolean, hasProduct = false, productPhoto = false): { layout: string; variant: AdVariant } {
   const engine = (hasPhoto ? art.cycle.filter((l) => l !== "typographic" && l !== "band") : (["typographic"] as AdLayout[])) as string[];
   // Avec une photo, elle remplit le fond : pas de modèle où elle n'occupe qu'une case (collages, modèles typographiques).
   // Avec un produit détouré : les modèles « produit » qui le mettent en scène (les autres l'oublieraient).
-  const all = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto)) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage"))));
+  const all = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto)) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage")))).filter((t) => !(productPhoto && t.coversSubject));
   // Direction artistique : seules les familles qui portent la ligne de la marque (s'il en reste assez).
   const da = artDirection(art);
   const inLine = all.filter((t) => da.families.includes(t.family));
@@ -128,7 +128,8 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
   const typo = brandTypo(p);
   const art = adArt(p, typo);
   const n = parseInt(crypto.createHash("sha256").update(i.seed).digest("hex").slice(0, 6), 16);
-  const look = pickPosterLook(art, n, recentPosterLooks(p.id), !!i.background, !!i.product);
+  // Photo d'un produit (packshot, mise en scène, photo d'origine) : le produit est au centre, jamais voilé ni rogné.
+  const look = pickPosterLook(art, n, recentPosterLooks(p.id), !!i.background, !!i.product, p.business !== "services" && !!i.background);
   const layout = i.layout ?? look.layout;
   const variant: AdVariant = i.layout ? (isTemplateLayout(i.layout) ? {} : { ...look.variant, treatment: treatmentsFor(i.layout as AdLayout, art.style).includes(look.variant.treatment!) ? look.variant.treatment : treatmentsFor(i.layout as AdLayout, art.style)[0] }) : look.variant;
   const { logo, light } = brandLogos(p);

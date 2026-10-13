@@ -130,8 +130,19 @@ const EN_DEMOS: Record<string, Partial<DemoDef>> = {
 const ONLY_IDS = process.env.ONLY?.split(",");
 const PRODUCTS: DemoDef[] = (ONLY_IDS ? REAL_DEMOS.filter((d) => ONLY_IDS.includes(d.id)) : REAL_DEMOS).map((d) => (EN ? { ...d, ...EN_DEMOS[d.id] } : d));
 
-async function api(ctx: BrowserContext, url: string, init?: { method?: string; body?: unknown }) {
-  const r = await ctx.request.fetch(`${BASE}${url}`, { method: init?.method ?? (init?.body ? "POST" : "GET"), data: init?.body as any });
+async function api(ctx: BrowserContext, url: string, init?: { method?: string; body?: unknown }): Promise<any> {
+  const method = init?.method ?? (init?.body ? "POST" : "GET");
+  // Une lecture coupée (serveur de développement occupé) est relancée ; une écriture ne l'est jamais.
+  const send = async (k = 0): Promise<Awaited<ReturnType<typeof ctx.request.fetch>>> => {
+    try {
+      return await ctx.request.fetch(`${BASE}${url}`, { method, data: init?.body as any });
+    } catch (e) {
+      if (method !== "GET" || k >= 4) throw e;
+      await new Promise((r) => setTimeout(r, 3000 * (k + 1)));
+      return send(k + 1);
+    }
+  };
+  const r = await send();
   const j = await r.json();
   if (!r.ok()) throw new Error(`${url} → ${r.status()} ${JSON.stringify(j)}`);
   return j;
