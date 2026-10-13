@@ -16,7 +16,7 @@ import { ProjectSubscriptionDialog, SUB_STATUS } from "./project-subscription";
 import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type PlatformId } from "./platform-picker";
 import { cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
 import { DeleteProjectButton } from "./delete-project";
-import { ActivityBrief } from "./activity-brief";
+import { AiDescription } from "./ai-description";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null };
 
@@ -247,17 +247,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
       )}
       {svc ? (
         <div className="grid gap-5">
-          <Field
-            label={t("Décrivez votre activité", "Describe your business")}
-            htmlFor="description"
-            error={needDesc ? t("Indispensable : quelques lignes sur votre activité, ou le lien de votre site actuel ci-dessous.", "Required: a few lines about your business, or the link to your current website below.") : null}
-            hint={t("Quelques mots suffisent : votre métier, vos prestations, votre zone, ce qui vous distingue. Besoin d'aide ? « M'aider à le rédiger » pose quelques questions et écrit une description complète. Ce que vous écrivez est considéré comme confirmé ; rien n'est inventé.", "A few words are enough: your trade, your services, your area, what sets you apart. Need help? \"Help me write it\" asks a few questions and writes a complete description. Whatever you write is treated as confirmed; nothing is made up.")}
-          >
-            <ActivityBrief invalid={needDesc} onText={onBriefText} />
-          </Field>
-          <Field label={t("Votre site actuel (si vous en avez un)", "Your current website (if you have one)")} htmlFor="link" hint={t("Le studio y lit votre présentation, vos prestations et vos coordonnées, comme source d'information uniquement.", "The studio reads your introduction, services and contact details there, as a source of information only.")}>
-            <Input id="link" name="link" type="url" placeholder="https://…" />
-          </Field>
+          <p className="-mb-2 text-sm font-medium">{t("Vos informations", "Your details")}</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("Nom de l'entreprise", "Business name")} htmlFor="brandName"><Input id="brandName" name="brandName" maxLength={80} autoComplete="organization" placeholder={t("Vide : le studio vous en propose", "Empty: the studio suggests some")} /></Field>
             <Field label={t("Zone d'intervention", "Service area")} htmlFor="area"><Input id="area" name="area" defaultValue={known.area ?? ""} placeholder={t("Ex. Lyon et 30 km autour", "E.g. Leeds and 20 miles around")} maxLength={300} /></Field>
@@ -266,6 +256,17 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
             <Field label={t("Téléphone", "Phone")} htmlFor="phone"><Input id="phone" name="phone" defaultValue={known.phone ?? ""} type="tel" maxLength={40} autoComplete="tel" /></Field>
             <Field label={t("E-mail", "Email")} htmlFor="email"><Input id="email" name="email" defaultValue={known.email ?? ""} type="email" maxLength={160} autoComplete="email" /></Field>
           </div>
+          <Field
+            label={t("En quelques mots, votre activité", "Your business in a few words")}
+            htmlFor="description"
+            error={needDesc ? t("Indispensable : quelques mots sur votre activité, ou le lien de votre site actuel ci-dessous.", "Required: a few words about your business, or the link to your current website below.") : null}
+            hint={t("Votre métier, ce que vous proposez, ce qui vous distingue. Puis « Rédiger ma description avec l'IA » : elle en fait un vrai texte complet, que vous pouvez corriger.", "Your trade, what you offer, what sets you apart. Then \"Write my description with AI\": it turns it into a full text, which you can correct.")}
+          >
+            <AiDescription business="services" invalid={needDesc} onText={onBriefText} placeholder={t("Ex. : plombier chauffagiste, dépannage 7j/7, installation de chaudières.", "E.g.: plumber and heating engineer, 7-day emergency call-outs, boiler installation.")} />
+          </Field>
+          <Field label={t("Votre site actuel (si vous en avez un)", "Your current website (if you have one)")} htmlFor="link" hint={t("Le studio y lit votre présentation, vos prestations et vos coordonnées, comme source d'information uniquement.", "The studio reads your introduction, services and contact details there, as a source of information only.")}>
+            <Input id="link" name="link" type="url" placeholder="https://…" />
+          </Field>
           <fieldset className="grid gap-2">
             <legend className="mb-1 text-sm font-medium">{t("Vos prestations", "Your services")} <span className="font-normal text-muted">{t("(facultatif : sinon le studio les reprend de votre description)", "(optional: otherwise the studio takes them from your description)")}</span></legend>
             <ServicesEditor value={services} onChange={setServices} idPrefix="new-svc" />
@@ -303,8 +304,8 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
               <Input id="link" name="link" type="url" placeholder="https://…" />
             </Field>
           </div>
-          <Field label={mode === "text" ? t("Décrivez votre produit", "Describe your product") : t("Quelques précisions (facultatif)", "A few details (optional)")} hint={t("Exemple : « Contenance : 30 ml. Composition : … ». Ce que vous écrivez est considéré comme confirmé.", "Example: \"Volume: 30 ml. Ingredients: …\". Whatever you write is treated as confirmed.")} htmlFor="description">
-            <Textarea id="description" name="description" rows={mode === "text" ? 6 : 3} placeholder={t("Ce que le produit est, pour qui, ses caractéristiques réelles…", "What the product is, who it's for, its actual features…")} />
+          <Field label={mode === "text" ? t("Décrivez votre produit", "Describe your product") : t("Quelques précisions (facultatif)", "A few details (optional)")} hint={t("Quelques mots suffisent (ce que c'est, pour qui, ses vraies caractéristiques), puis « Rédiger ma description avec l'IA ».", "A few words are enough (what it is, who it's for, its real features), then \"Write my description with AI\".")} htmlFor="description">
+            <AiDescription business="products" onText={onBriefText} rows={mode === "text" ? 4 : 3} placeholder={t("Ex. : sérum visage à la vitamine C, 30 ml, texture légère.", "E.g.: vitamin C face serum, 30 ml, light texture.")} />
           </Field>
         </>
       )}
