@@ -52,7 +52,7 @@ export const TEMPLATES_B: Template[] = [
       const below = pic.y + pic.h;
       if (k.cls === "land") {
         // Paysage : marque à gauche et ligne à droite dans la bande haute ; titre et bouton côte à côte en bas.
-        const mk = k.brandMark({ x: side, y: 0, w: k.W * 0.4 }, { onDark: true, height: Math.round(k.H * 0.06) });
+        const mk = k.brandMark({ x: side, y: 0, w: k.W * 0.5 }, { onDark: true, height: Math.round(k.H * 0.09) });
         mk.y = Math.max(k.H * 0.05, (pic.y - mk.h) / 2);
         const s = k.subline({ x: k.W * 0.45, y: 0, w: k.W * 0.55 - side }, { align: "right", upper: true, size: k.U * 0.03 });
         if (s) s.y = Math.max(k.H * 0.05, (pic.y - s.h) / 2);
@@ -99,7 +99,7 @@ export const TEMPLATES_B: Template[] = [
       // Pied d'affiche : la marque à gauche, le bouton à droite.
       const b = k.button(k.W - side, bottom, { maxW: w * 0.58, align: "right", style: "square" });
       b.y = bottom - b.h;
-      const mk = k.brandMark({ x: side, y: bottom, w: w * 0.36 }, { onDark: true, height: Math.round(k.U * k.pick(0.07, 0.055, 0.055, 0.06)) });
+      const mk = k.brandMark({ x: side, y: bottom, w: w * 0.38 }, { onDark: true, height: Math.round(k.U * k.pick(0.105, 0.085, 0.085, 0.09)) });
       mk.y = b.y + (b.h - mk.h) / 2;
     },
   },

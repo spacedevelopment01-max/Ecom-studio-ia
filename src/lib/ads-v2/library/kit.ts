@@ -257,16 +257,20 @@ export class Kit {
     const size = o.size ?? Math.max(24, this.U * 0.03);
     return this.text("body", text, b, { family: o.serif ? this.i.art.heading : this.i.art.body, weight: o.weight ?? 600, size, align: o.align, color: o.color, upper: true, spacing: Math.round(size * 0.28), maxLines: 1, minSize: 22 }, o.id ?? "brand", o.id === "eyebrow" ? "Surtitre" : "Marque");
   }
+  /** Hauteur du logo : bien visible (il signe la création) ; `shrink` < 1 quand la colonne manque de place. */
+  logoHeight(shrink = 1) {
+    return Math.round(this.pick(this.H * 0.11, this.W * 0.09, this.W * 0.09, this.W * 0.105) * shrink);
+  }
   /** Logo (version claire sur fond sombre) ou, sans logo, la marque en capitales. Renvoie le calque posé. */
   brandMark(b: { x: number; y: number; w: number }, o: { height?: number; align?: TextLayer["align"]; onDark?: boolean; color?: string } = {}) {
     const lg = this.i.logo;
-    const hgt = o.height ?? Math.round(this.pick(this.H * 0.075, this.W * 0.06, this.W * 0.06, this.W * 0.07));
+    const hgt = o.height ?? this.logoHeight();
     if (lg) {
       // Fond sombre sous le logo (mesuré sur ce qui est déjà dessiné) : version claire du logo.
       const dark = o.onDark ?? isDark(this.under({ x: b.x, y: b.y, w: Math.min(b.w, this.W * 0.3), h: hgt }, this.layers.filter((l) => l.kind !== "text" && l.kind !== "button")));
       const id = dark && lg.lightId ? lg.lightId : lg.id;
       const im = this.i.images.get(id)!;
-      const lw = Math.min((im.width / im.height) * hgt, b.w, this.W * 0.36);
+      const lw = Math.min((im.width / im.height) * hgt, b.w, this.W * 0.5);
       const lh = (im.height / im.width) * lw;
       const x = o.align === "center" ? b.x + (b.w - lw) / 2 : o.align === "right" ? b.x + b.w - lw : b.x;
       const l: ImageLayer = { ...this.base("logo", "Logo", "logo", { x, y: b.y, w: lw, h: lh }, { h: o.align === "center" ? "center" : o.align === "right" ? "right" : "left", v: "top" }), kind: "image", assetId: id, fit: "contain", crop: null, radius: 0, shadow: null };
@@ -306,7 +310,8 @@ export class Kit {
       let y = col.y;
       const xw = { x: col.x, w: col.w };
       if (o.mark !== false) {
-        const l = this.brandMark({ ...xw, y }, { align, onDark: o.onDark, color: o.markColor });
+        // Le logo rétrécit avec le titre (jusqu'aux deux tiers) quand la pile ne tient pas.
+        const l = this.brandMark({ ...xw, y }, { align, onDark: o.onDark, color: o.markColor, height: this.logoHeight(Math.max(0.66, 0.9 ** k)) });
         y += l.h + gap * 1.3;
       }
       if (o.eyebrow && this.i.eyebrow) {

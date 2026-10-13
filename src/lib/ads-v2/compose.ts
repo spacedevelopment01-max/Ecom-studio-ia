@@ -402,7 +402,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   let y = col.y;
   const xFor = (w: number) => (align === "center" ? col.x + (col.w - w) / 2 : col.x);
   // Logo (version claire sur fond sombre) ; sans logo, le nom de la marque en capitales espacées.
-  const logoH = Math.round(cls === "land" ? H * 0.075 : cls === "story" ? W * 0.07 : W * 0.06);
+  const logoH = Math.round(cls === "land" ? H * 0.11 : cls === "story" ? W * 0.105 : W * 0.09);
   const useLight = darkUnder && logoLightId && layout !== "panel" && layout !== "band";
   const lid = useLight ? logoLightId : logoId;
   // Place du logo : colonne (par défaut), coin opposé au texte, ou signature au pied (titres posés en bas).
@@ -415,13 +415,13 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
     if (lid) {
       const lg = images.get(lid)!;
       const lh0 = logoH * 0.8;
-      const lw = Math.min((lg.width / lg.height) * lh0, W * 0.26);
+      const lw = Math.min((lg.width / lg.height) * lh0, W * 0.36);
       const lh = (lg.height / lg.width) * lw;
       layers.push(img("logo", "Logo", "logo", { x: W - m.side - lw, y: H - m.bottom - lh, w: lw, h: lh }, lid, "contain", { h: "right", v: "bottom" }));
     }
   } else if (lid) {
     const lg = images.get(lid)!;
-    const lw = Math.min((lg.width / lg.height) * logoH, W * (cls === "land" ? 0.22 : 0.36));
+    const lw = Math.min((lg.width / lg.height) * logoH, W * (cls === "land" ? 0.3 : 0.5));
     const lh = (lg.height / lg.width) * lw;
     layers.push(img("logo", "Logo", "logo", { x: xFor(lw), y, w: lw, h: lh }, lid, "contain", { h: align === "center" ? "center" : "left", v: "top" }));
     y += lh + U * (layout === "panel" ? 0.035 : 0.06);
@@ -568,7 +568,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   // Logo hors colonne : coin opposé au texte, ou signature au pied à droite (jamais sur le bouton).
   if (logoMode !== "column" && logoId) {
     const lg0 = images.get(logoId)!;
-    const lw = Math.min((lg0.width / lg0.height) * logoH * 0.9, W * 0.26);
+    const lw = Math.min((lg0.width / lg0.height) * logoH * 0.9, W * 0.36);
     const lh = (lg0.height / lg0.width) * lw;
     const wide = cls === "land" || cls === "square";
     // Formats larges : le coin opposé tomberait sur le sujet de la photo ; le logo signe le pied du côté du texte.

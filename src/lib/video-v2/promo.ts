@@ -148,7 +148,7 @@ function vignette(o: PromoInput, id: string): Layer {
 /** Logo (image) ou nom de la marque, centré en haut. */
 function brandMark(o: PromoInput, id: string, color = "#FFFFFF", delay = 0.1): Layer[] {
   const { w, h, safe } = o;
-  if (o.logoId) return [A({ ...imageLayer(`${id}-logo`, "Logo", "logo", { x: w * 0.3, y: safe.top + h * 0.005, w: w * 0.4, h: h * 0.07 }, o.logoId, "contain") }, "drop", delay)];
+  if (o.logoId) return [A({ ...imageLayer(`${id}-logo`, "Logo", "logo", { x: w * 0.25, y: safe.top + h * 0.005, w: w * 0.5, h: h * 0.085 }, o.logoId, "contain") }, "drop", delay)];
   return [A(txt(`${id}-brand`, "Marque", { x: safe.side, y: safe.top + h * 0.01, w: w - safe.side * 2, h: h * 0.04 }, o.brand, { family: "Montserrat", weight: 800, size: Math.round(w * 0.04), color, align: "center", upper: true, spacing: w * 0.006, shadow: true }), "drop", delay)];
 }
 
