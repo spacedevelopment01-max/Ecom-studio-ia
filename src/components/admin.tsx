@@ -1,4 +1,5 @@
 "use client";
+import { MusicLibraryAdmin } from "./admin-music";
 import { PACKS, PACKS_FOR_SALE, PLAN_IDS, PLANS } from "@/lib/plans";
 import { useId, useState } from "react";
 import Link from "next/link";
@@ -50,6 +51,7 @@ const SECTIONS = [
   ["ia", "Fournisseurs IA", "AI providers"],
   ["routes", "Modèles et tarifs", "Models and pricing"],
   ["medias", "Images & Vidéos", "Images & videos"],
+  ["musiques", "Musiques", "Music"],
   ["connexions", "Connexions OAuth", "OAuth connections"],
   ["paiements", "Paiements", "Payments"],
   ["emails", "E-mails", "Emails"],
@@ -123,6 +125,7 @@ export function AdminConsole() {
             {tab === "routes" && <Routes data={data} post={post} />}
             {tab === "medias" && <MediaUsagesPanel data={data.mediaUsages} post={post} />}
             {tab === "medias" && <MediaRoutingPanel data={data.mediaRouting} post={post} />}
+            {tab === "musiques" && <MusicLibraryAdmin />}
             {tab === "connexions" && <OAuthApps data={data} set={set} />}
             {tab === "paiements" && <Payments data={data} set={set} />}
             {tab === "emails" && <SmtpSettings data={data} set={set} />}

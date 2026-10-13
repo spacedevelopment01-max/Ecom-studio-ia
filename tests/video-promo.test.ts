@@ -87,3 +87,20 @@ describe("habillage : jamais la même image en boucle", async () => {
     for (let k = 1; k < ids.length; k++) if (out[k].source.kind === "image") expect(ids[k - 1]).not.toBe(ids[k]);
   });
 });
+
+describe("textes de la vidéo : un texte réel sur chaque plan", async () => {
+  const { projectTexts } = await import("@/lib/video-v2/promo");
+  it("artisan : prestations, zone, horaires, devis, téléphone, adresse — tirés du projet, sans doublon ni bouton", () => {
+    const p = { business: "services", product: { name: "Sébastien Blanc", category: "Plâtrier peintre", summary: "Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure.", facts: [], price: { amount: null, currency: "EUR", status: "unknown" }, variants: [] }, brand: { tagline: "Plâtrier peintre, Mâcon et 30 km autour.", positioning: "[À définir avec vous]" }, services: { services: [{ name: "Peinture intérieure", price: "sur devis" }], area: "Mâcon et 30 km autour", address: "12 rue des Artisans, Mâcon", phone: "06 11 22 33 44", email: "", hours: "lundi–vendredi 8 h–18 h", bookingUrl: "", contactMode: "quote" } } as any;
+    const t = projectTexts(p, { services: true, items: ["Peinture intérieure"], longForm: true, tagline: "Plâtrier peintre, Mâcon et 30 km autour", area: "Mâcon et 30 km autour", city: "Mâcon", price: null, cta: "Prendre rendez-vous", brand: "Sébastien Blanc", shots: [{ onScreen: "Prendre rendez-vous" }, { onScreen: "Sébastien Blanc" }] as any });
+    expect(t).toContain("Votre plâtrier peintre à Mâcon");
+    expect(t).toContain("Devis sur demande");
+    expect(t).toContain("Appelez le 06 11 22 33 44");
+    expect(t).toContain("Ouvert lundi–vendredi 8 h–18 h");
+    expect(t.length).toBeGreaterThanOrEqual(8);
+    expect(t).not.toContain("Prendre rendez-vous");
+    expect(t).not.toContain("Sébastien Blanc");
+    expect(t.join(" ")).not.toContain("[");
+    expect(new Set(t.map((x) => x.toLowerCase())).size).toBe(t.length);
+  });
+});
