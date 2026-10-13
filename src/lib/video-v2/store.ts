@@ -52,7 +52,7 @@ export const VideoDocumentSchema = z.object({
   audio: z.object({
     voice: z.array(audioClip).max(200),
     voiceId: z.string().max(60).nullable(),
-    music: z.union([z.object({ source: z.literal("synth"), mood: z.enum(["calm", "pulse", "warm", "none"]), gainDb: num, style: z.enum(SONG_STYLES).optional(), seed: z.string().max(80).optional() }), z.object({ source: z.literal("library"), assetId: z.string().max(40), licence: z.string().min(1).max(200), gainDb: num }), z.null()]),
+    music: z.union([z.object({ source: z.literal("synth"), mood: z.enum(["calm", "pulse", "warm", "none"]), gainDb: num, style: z.enum(SONG_STYLES).optional(), seed: z.string().max(80).optional() }), z.object({ source: z.literal("library"), assetId: z.string().max(40), licence: z.string().min(1).max(200), gainDb: num, startS: num.min(0).max(600).optional() }), z.null()]),
     sfx: z.array(audioClip).max(100),
     duckingDb: num,
     loudnessLufs: num.min(-30).max(-8),

@@ -60,7 +60,7 @@ export type VideoV2Deps = {
    * Musique libre de droits (banque Openverse, licence commerciale enregistrée) pour l'humeur et la durée voulues.
    * Absente ou sans résultat : la musique composée par le studio.
    */
-  music?: (mood: "calm" | "pulse" | "warm", durationS: number, style?: import("../media/song").SongStyle) => Promise<{ assetId: string; licence: string; credit: string } | null>;
+  music?: (mood: "calm" | "pulse" | "warm", durationS: number, style?: import("../media/song").SongStyle) => Promise<{ assetId: string; licence: string; credit: string; startS?: number } | null>;
 };
 
 /** Inventaire de la bibliothèque : seulement ce qui est réutilisable automatiquement (jamais un refusé). */

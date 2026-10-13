@@ -58,7 +58,7 @@ export const STYLE_MUSIC: Record<SongStyle, { queries: string[]; genres: string[
 };
 
 /** Mots qui écartent une piste (effet sonore, voix parlée, ambiance sombre ou angoissante). */
-const AVOID = /\b(sfx|sound ?effect|effect|foley|field recording|noise|speech|voice|spoken|podcast|horror|scary|creepy|dark|drone|siren|alarm|glitch|explosion|loop kit|sample pack|ringtone)\b/i;
+const AVOID = /\b(sfx|sound ?effect|effect|foley|field recording|noise|speech|voice|spoken|podcast|horror|scary|hardcore|metal|punk|dubstep|trap|drill|grindcore|creepy|dark|drone|siren|alarm|glitch|explosion|loop kit|sample pack|ringtone)\b/i;
 
 /** Licence utilisable pour une publicité (commerciale, modifiable) ; null sinon. */
 export function usableLicense(code: string, version?: string | null): string | null {
@@ -78,36 +78,43 @@ export function musicCredit(t: Pick<StockTrack, "title" | "author" | "license" |
 /** Pistes trouvées pour une humeur, assez longues pour la vidéo, licence commerciale seulement. */
 export async function searchStockMusic(mood: MusicMood, minS: number, exclude = new Set<string>(), style?: SongStyle): Promise<StockTrack[]> {
   if (offline()) return [];
-  const out: StockTrack[] = [];
+  const found: (StockTrack & { score: number })[] = [];
   const want = style ? STYLE_MUSIC[style] : null;
+  const has = (text: string, w: string) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(text);
   for (const q of want?.queries ?? MOOD_QUERIES[mood]) {
     try {
-      const r = await fetch(`https://api.openverse.org/v1/audio/?q=${encodeURIComponent(q)}&license_type=commercial&category=music&page_size=20&mature=false`, { headers: { "User-Agent": "E-COM-STUDIO-IA" }, signal: AbortSignal.timeout(TIMEOUT) });
+      // Jamendo : de vrais morceaux d'artistes (Freesound et Wikimedia : surtout des bruitages et des extraits).
+      const r = await fetch(`https://api.openverse.org/v1/audio/?q=${encodeURIComponent(q)}&license_type=commercial&source=jamendo&page_size=20&mature=false`, { headers: { "User-Agent": "E-COM-STUDIO-IA" }, signal: AbortSignal.timeout(TIMEOUT) });
       if (!r.ok) throw new Error(`openverse ${r.status}`);
       const j = (await r.json()) as { results?: any[] };
       for (const x of j.results ?? []) {
         const license = usableLicense(String(x.license ?? ""), x.license_version);
         const durationS = Number(x.duration ?? 0) / 1000;
         const tags: string[] = (x.tags ?? []).map((t: any) => String(t?.name ?? t)).filter(Boolean);
-        const text = `${x.title ?? ""} ${tags.join(" ")} ${(x.genres ?? []).join(" ")}`;
+        const genres: string[] = (x.genres ?? []).map(String);
+        const text = `${x.title ?? ""} ${tags.join(" ")} ${genres.join(" ")}`;
         const type = String(x.filetype ?? "").toLowerCase();
-        if (!license || !x.url || exclude.has(`openverse:${x.id}`) || out.some((o) => o.id === String(x.id))) continue;
+        if (!license || !x.url || exclude.has(`openverse:${x.id}`) || found.some((o) => o.id === String(x.id))) continue;
         // Assez longue pour toute la vidéo (une piste trop courte bouclerait), pas un fichier énorme.
         if (!(durationS >= minS + 2 && durationS <= 600)) continue;
         if (AVOID.test(text)) continue;
+        // Instrumental seulement (une voix chantée couvre les textes à l'écran), jamais triste ni sombre.
+        if (has(text, "vocal") || has(text, "female") || has(text, "male") || /\b(sad|melanchol\w*|depress\w*|aggressive|angry|dark)\b/i.test(text)) continue;
         // Style du produit ou du métier : la piste doit en citer un genre.
-        if (want && !want.genres.some((g) => new RegExp(`\\b${g}\\b`, "i").test(text))) continue;
-        if (type && !["mp3", "ogg", "wav", "flac", "m4a", "oga"].includes(type)) continue;
+        if (want && !want.genres.some((g) => has(text, g))) continue;
+        if (type && !["mp3", "mp32", "ogg", "wav", "flac", "m4a", "oga"].includes(type)) continue;
         if (Number(x.filesize ?? 0) > 25_000_000) continue;
-        out.push({ source: "openverse", id: String(x.id), title: String(x.title ?? "Sans titre").slice(0, 120), author: String(x.creator ?? "").slice(0, 80), license, licenseUrl: String(x.license_url ?? ""), page: String(x.foreign_landing_url ?? x.url), url: String(x.url), provider: String(x.provider ?? x.source ?? "openverse"), durationS, filetype: type || "mp3", tags });
+        // Préférence : instrumental déclaré, pensée pour la publicité, humeur positive, plusieurs genres du style.
+        const score = (has(text, "instrumental") ? 3 : 0) + (/\b(advertising|commercial|corporate)\b/i.test(text) ? 2 : 0) + (/\b(happy|upbeat|positive|uplifting|joyful|fun|energetic|bright|optimistic)\b/i.test(text) ? 2 : 0) + (want ? want.genres.filter((g) => has(text, g)).length : 0);
+        found.push({ source: "openverse", id: String(x.id), title: String(x.title ?? "Sans titre").slice(0, 120), author: String(x.creator ?? "").slice(0, 80), license, licenseUrl: String(x.license_url ?? ""), page: String(x.foreign_landing_url ?? x.url), url: String(x.url), provider: String(x.provider ?? x.source ?? "openverse"), durationS, filetype: type === "mp32" ? "mp3" : type || "mp3", tags: [...tags, ...genres], score });
       }
     } catch (e) {
       console.warn("[musique libre] openverse indisponible :", (e as Error).message);
       break;
     }
-    if (out.length >= 8) break;
+    if (found.length >= 12) break;
   }
-  return out;
+  return found.sort((a, b) => b.score - a.score).map(({ score: _s, ...t }) => t);
 }
 
 /** Télécharge une piste (audio, 25 Mo au plus). */
@@ -122,6 +129,25 @@ export async function downloadStockMusic(t: StockTrack): Promise<{ data: Buffer;
   return { data, mime: /octet-stream/.test(mime) ? (t.filetype === "ogg" ? "audio/ogg" : "audio/mpeg") : mime };
 }
 
+/**
+ * Moment où le morceau est vraiment lancé (fin de l'introduction calme) : volume mesuré par tranches de 2 s sur la
+ * première minute, premier instant proche du niveau habituel du morceau. 0 si l'analyse échoue ; 20 s au plus.
+ */
+export async function musicStart(file: string): Promise<number> {
+  try {
+    const { execTool } = await import("../exec-tool");
+    const { stdout } = await execTool("ffmpeg", ["-v", "error", "-t", "60", "-i", file, "-af", "aformat=channel_layouts=mono,aresample=8000,asetnsamples=16000,astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-", "-f", "null", "-"], { maxBuffer: 8 * 1024 * 1024 });
+    const lv = [...stdout.matchAll(/RMS_level=(-?[\d.]+|-inf)/g)].map((m) => (m[1] === "-inf" ? -120 : Number(m[1])));
+    if (lv.length < 3) return 0;
+    const sorted = [...lv].sort((a, b) => a - b);
+    const typical = sorted[Math.floor(sorted.length * 0.6)];
+    const k = lv.findIndex((v) => v >= typical - 3);
+    return Math.max(0, Math.min(20, k * 2));
+  } catch {
+    return 0;
+  }
+}
+
 /** Pistes de la banque déjà gardées dans le projet (réutilisées avant toute nouvelle recherche). */
 function keptTracks(projectId: string): Asset[] {
   return all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'music' AND deleted_at IS NULL AND status != 'rejected' AND json_extract(meta, '$.stockMusic') IS NOT NULL ORDER BY created_at DESC LIMIT 20", projectId);
@@ -131,7 +157,7 @@ function keptTracks(projectId: string): Asset[] {
  * Musique de la vidéo : une piste libre de droits de la bonne humeur, gardée dans la bibliothèque du projet avec sa
  * licence. `avoid` : pistes à ne pas reprendre (deux vidéos d'un même projet n'ont pas la même musique si possible).
  */
-export async function projectMusic(p: Project, mood: MusicMood, durationS: number, avoid = new Set<string>(), style?: SongStyle): Promise<{ assetId: string; licence: string; credit: string } | null> {
+export async function projectMusic(p: Project, mood: MusicMood, durationS: number, avoid = new Set<string>(), style?: SongStyle): Promise<{ assetId: string; licence: string; credit: string; startS?: number } | null> {
   if (!musicLibraryOn()) return null;
   const meta = (a: Asset) => {
     try {
@@ -142,15 +168,25 @@ export async function projectMusic(p: Project, mood: MusicMood, durationS: numbe
   };
   for (const a of keptTracks(p.id)) {
     const m = meta(a);
-    if (m && m.mood === mood && (m.style ?? null) === (style ?? null) && m.durationS >= durationS + 2 && !avoid.has(a.id)) return { assetId: a.id, licence: m.license, credit: musicCredit(m) };
+    const startS = Number((m as { startS?: number } | undefined)?.startS ?? 0);
+    if (m && m.mood === mood && (m.style ?? null) === (style ?? null) && m.durationS >= durationS + 2 + startS && !avoid.has(a.id)) return { assetId: a.id, licence: m.license, credit: musicCredit(m), startS };
   }
   const taken = new Set(keptTracks(p.id).map((a) => `openverse:${meta(a)?.id}`));
   for (const t of (await searchStockMusic(mood, durationS, taken, style)).slice(0, 3)) {
     try {
       const f = await downloadStockMusic(t);
       const ext = f.mime.includes("ogg") ? "ogg" : f.mime.includes("wav") ? "wav" : "mp3";
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: f.data, name: `musique-${t.id}.${ext}`, mime: f.mime, role: "music", folderKey: "videos.ads", origin: "import", meta: { stockMusic: { ...t, mood, ...(style ? { style } : {}) }, credit: musicCredit(t) } });
-      return { assetId: a.id, licence: t.license, credit: musicCredit(t) };
+      // Début du passage utilisé : là où le morceau est lancé (jamais une longue introduction calme sous la vidéo).
+      const { tmpDir } = await import("../storage");
+      const fs = await import("node:fs");
+      const pathMod = await import("node:path");
+      const dir = tmpDir("musique");
+      const probe = pathMod.join(dir, `piste.${ext}`);
+      fs.writeFileSync(probe, f.data);
+      const startS = t.durationS >= durationS + 25 ? await musicStart(probe) : 0;
+      fs.rmSync(dir, { recursive: true, force: true });
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: f.data, name: `musique-${t.id}.${ext}`, mime: f.mime, role: "music", folderKey: "videos.ads", origin: "import", meta: { stockMusic: { ...t, mood, startS, ...(style ? { style } : {}) }, credit: musicCredit(t) } });
+      return { assetId: a.id, licence: t.license, credit: musicCredit(t), startS };
     } catch (e) {
       console.warn("[musique libre] piste non téléchargée :", (e as Error).message);
     }

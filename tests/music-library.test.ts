@@ -47,6 +47,19 @@ describe("musique libre de droits pour les vidéos", async () => {
     expect((await searchStockMusic("pulse", 15, new Set(), "acoustic")).map((t) => t.id)).toEqual(["folk"]);
   });
 
+  it("Jamendo : format mp32 accepté, morceaux chantés écartés, instrumental pensé pour la publicité en premier", async () => {
+    vi.stubEnv("STOCK_OFFLINE", "0");
+    vi.stubGlobal("fetch", api([
+      track("chante", { filetype: "mp32", tags: [{ name: "vocal" }, { name: "happy" }], genres: ["pop"] }),
+      track("simple", { filetype: "mp32", tags: [{ name: "happy" }], genres: ["pop"] }),
+      track("pub", { filetype: "mp32", tags: [{ name: "instrumental" }, { name: "advertising" }, { name: "upbeat" }], genres: ["pop"] }),
+      track("hard", { filetype: "mp32", tags: [{ name: "instrumental" }], genres: ["hardcore"] }),
+    ]));
+    const r = await searchStockMusic("pulse", 15, new Set(), "pop");
+    expect(r.map((t) => t.id)).toEqual(["pub", "simple"]);
+    expect(r[0].filetype).toBe("mp3");
+  });
+
   it("projet : la piste est gardée avec sa licence et sa mention, puis réutilisée sans nouvelle recherche", async () => {
     vi.stubEnv("STOCK_OFFLINE", "0");
     const u = await createUser(`music-${Date.now()}@test.fr`, "motdepasse-test", "M");
@@ -68,4 +81,28 @@ describe("musique libre de droits pour les vidéos", async () => {
     vi.stubEnv("STOCK_OFFLINE", "1");
     expect(await searchStockMusic("calm", 15)).toEqual([]);
   });
+});
+
+describe("piste de la banque : introduction calme sautée", async () => {
+  const { mixAudio } = await import("@/lib/video-v2/audio");
+  const { musicStart } = await import("@/lib/stock/music");
+  const { execFileSync } = await import("node:child_process");
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  it("le passage utilisé commence là où le morceau est lancé", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "intro-"));
+    const track = path.join(dir, "piste.wav");
+    // 6 s presque silencieuses, puis 24 s de musique pleine.
+    execFileSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "sine=f=220:d=6", "-f", "lavfi", "-i", "sine=f=440:d=24", "-filter_complex", "[0]volume=0.01[a];[1]volume=0.8[b];[a][b]concat=n=2:v=0:a=1", track]);
+    const start = await musicStart(track);
+    expect(start).toBeGreaterThanOrEqual(4);
+    expect(start).toBeLessThanOrEqual(8);
+    const doc = { clips: [{ id: "c1", durationS: 4 }], audio: { voice: [], sfx: [], music: { source: "library", assetId: "m", licence: "CC BY 4.0", gainDb: 0, startS: start }, duckingDb: -10, loudnessLufs: -14 } } as any;
+    const out = await mixAudio(doc, { voice: new Map(), sfx: new Map(), music: track }, path.join(dir, "mix.wav"));
+    const stats = execFileSync("ffmpeg", ["-v", "error", "-t", "1.5", "-i", out, "-af", "astats=metadata=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-", "-f", "null", "-"]).toString();
+    const rms = Number(stats.match(/RMS_level=(-?[\d.]+)/g)!.at(-1)!.split("=")[1]);
+    expect(rms).toBeGreaterThan(-30); // la musique est déjà pleine au début de la vidéo
+    fs.rmSync(dir, { recursive: true, force: true });
+  }, 60_000);
 });

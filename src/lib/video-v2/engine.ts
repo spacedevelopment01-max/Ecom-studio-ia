@@ -178,7 +178,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
         return null;
       });
       if (track) {
-        doc.audio.music = { source: "library", assetId: track.assetId, licence: track.licence, gainDb: -12 };
+        doc.audio.music = { source: "library", assetId: track.assetId, licence: track.licence, gainDb: -12, ...(track.startS ? { startS: track.startS } : {}) };
         notes.push(`musique libre de droits — ${track.credit}`);
       } else notes.push(`musique : morceau composé par le studio (style ${doc.audio.music.style ?? doc.audio.music.mood}, vrais instruments)`);
     }
