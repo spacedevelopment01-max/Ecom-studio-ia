@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { ArrowRight, X, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
@@ -246,6 +247,13 @@ function QuickSearch({ projectId, business }: { projectId: string; business?: "p
   useEffect(() => {
     if (open) (setQ(""), setSel(0));
   }, [open]);
+  // Échap ferme la recherche où que soit le curseur (pas seulement dans le champ).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
   const fold = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const items = [
     ...TABS.map((x) => ({ key: x.id, label: tabLabel(x, lang, business), group: t("Espaces du projet", "Project spaces"), href: `/studio/${projectId}/${x.id}`, Icon: tabIcon(x, business), hint: spacePurpose(x.id, lang, business) })),
@@ -262,7 +270,8 @@ function QuickSearch({ projectId, business }: { projectId: string; business?: "p
       <button type="button" onClick={() => setOpen(true)} className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm text-muted hover:border-ink hover:text-ink md:flex" aria-label={t("Recherche rapide (Ctrl+K)", "Quick search (Ctrl+K)")} data-quick-search>
         <Search className="size-4" /> <span className="hidden xl:inline">{t("Aller à…", "Go to…")}</span> <kbd className="hidden rounded border border-line px-1.5 text-[10px] xl:inline">Ctrl K</kbd>
       </button>
-      {open && (
+      {/* Rendue hors de l'en-tête : son flou d'arrière-plan (backdrop-filter) confinerait sinon le fond sombre à la barre du haut. */}
+      {open && createPortal(
         <div className="fixed inset-0 z-[90] grid place-items-start justify-center bg-black/40 px-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label={t("Recherche rapide", "Quick search")} onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}>
           <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-line bg-card shadow-soft">
             <div className="flex items-center gap-2 border-b border-line px-4">
@@ -281,7 +290,9 @@ function QuickSearch({ projectId, business }: { projectId: string; business?: "p
                 className="h-12 flex-1 bg-transparent text-sm outline-none"
                 aria-label={t("Rechercher", "Search")}
               />
-              <kbd className="rounded border border-line px-1.5 text-[10px] text-muted">Échap</kbd>
+              <button type="button" onClick={() => setOpen(false)} className="flex h-8 items-center gap-1.5 rounded-full px-2 text-xs text-muted hover:bg-paper-2 hover:text-ink" aria-label={t("Fermer la recherche", "Close search")} data-quick-search-close>
+                <X className="size-3.5" /> <span className="hidden sm:inline">{t("Fermer", "Close")}</span> <kbd className="hidden rounded border border-line px-1 text-[10px] sm:inline">Échap</kbd>
+              </button>
             </div>
             <ul className="max-h-[50vh] overflow-y-auto p-1.5" role="listbox">
               {items.length === 0 && <li className="p-3 text-sm text-muted">{t("Aucun résultat.", "No results.")}</li>}
@@ -299,7 +310,8 @@ function QuickSearch({ projectId, business }: { projectId: string; business?: "p
               ))}
             </ul>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

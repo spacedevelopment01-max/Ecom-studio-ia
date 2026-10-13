@@ -709,6 +709,49 @@ function StatsPanel({ data }: { data: Data }) {
 
 // ------------------------------------------------------------------ éditeur de publication
 
+/**
+ * Aperçu de la publication telle qu'elle apparaîtra : compte, visuel complet (à sa taille, sans recadrage), légende et
+ * hashtags. Plusieurs médias : flèches pour les parcourir. « Agrandir » ouvre le visuel en grand.
+ */
+function PostPreview({ media, caption, hashtags, network }: { media: AssetView[]; caption: string; hashtags: string; network: string }) {
+  const t = useT();
+  const { data } = useProject();
+  const [i, setI] = useState(0);
+  const m = media[Math.min(i, media.length - 1)];
+  const name = data?.brand?.name ?? data?.project.name ?? "";
+  const tags = hashtags.split(/[\s,]+/).filter(Boolean).map((h) => (h.startsWith("#") ? h : `#${h}`)).join(" ");
+  return (
+    <div className="overflow-hidden rounded-2xl border border-line bg-card" data-post-preview>
+      <div className="flex items-center gap-2.5 border-b border-line px-3 py-2.5">
+        <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-paper-2 p-1">{data?.logoUrl ? <img src={data.logoUrl} alt="" className="max-h-full max-w-full object-contain" /> : null}</span>
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name}</span>
+        <span className="flex items-center gap-1.5 text-xs text-muted"><Dot n={network} /> {NET[network]?.label}</span>
+      </div>
+      <div className="relative bg-paper-2">
+        {!m ? (
+          <div className="grid aspect-square place-items-center text-sm text-muted">{t("Aucun média", "No media")}</div>
+        ) : m.kind === "video" ? (
+          <video key={m.id} src={m.url} controls playsInline className="mx-auto block max-h-[62vh] w-full bg-black object-contain" />
+        ) : (
+          <img key={m.id} src={m.url} alt={t("Visuel de la publication", "Post visual")} className="mx-auto block max-h-[62vh] w-full object-contain" />
+        )}
+        {media.length > 1 && (
+          <>
+            <button type="button" onClick={() => setI((x) => (x - 1 + media.length) % media.length)} className="absolute left-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-card/90 shadow" aria-label={t("Média précédent", "Previous media")}><ChevronLeft className="size-4" /></button>
+            <button type="button" onClick={() => setI((x) => (x + 1) % media.length)} className="absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-card/90 shadow" aria-label={t("Média suivant", "Next media")}><ChevronRight className="size-4" /></button>
+            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{Math.min(i, media.length - 1) + 1} / {media.length}</span>
+          </>
+        )}
+      </div>
+      <div className="grid gap-1.5 px-3 py-3 text-sm">
+        <p className="whitespace-pre-line break-words"><span className="font-semibold">{name}</span> {caption}</p>
+        {tags && <p className="break-words text-signal">{tags}</p>}
+        {m && <a href={m.url} target="_blank" rel="noreferrer" className="justify-self-start text-xs text-muted underline-offset-2 hover:underline">{t("Agrandir le visuel", "Enlarge the visual")}</a>}
+      </div>
+    </div>
+  );
+}
+
 function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; data: Data; onClose: () => void; onChanged: () => void }) {
   const { id } = useProject();
   const t = useT();
@@ -758,7 +801,7 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
   });
   const moveMedia = (i: number, dir: -1 | 1) => setF((x) => { if (!x) return x; const m = [...x.media]; const j = i + dir; if (j < 0 || j >= m.length) return x; [m[i], m[j]] = [m[j], m[i]]; return { ...x, media: m }; });
   return (
-    <Modal open onClose={onClose} title={t("Publication", "Post")} wide>
+    <Modal open onClose={onClose} title={t("Publication", "Post")} xl>
       <div className="grid min-w-0 grid-cols-1 gap-4" data-post-editor>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Dot n={p.network} /> {NET[p.network]?.label} · {p.format}
@@ -775,6 +818,12 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
           </div>
         )}
         {p.error && p.status !== "uncertain" && <p className="text-sm text-warn">{p.error}</p>}
+        <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
+        <div className="min-w-0 lg:sticky lg:top-0">
+          <p className="mb-1.5 text-sm font-medium">{t("Aperçu de la publication", "Post preview")}</p>
+          <PostPreview media={f.media} caption={f.caption} hashtags={f.hashtags} network={f.network} />
+        </div>
+        <div className="grid min-w-0 content-start gap-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("Titre", "Title")} htmlFor="pe-title"><Input id="pe-title" disabled={locked} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
           <Field label={t("Réseau", "Network")} htmlFor="pe-net"><Select id="pe-net" disabled={locked} value={f.network} onChange={(e) => setF({ ...f, network: e.target.value })}>{Object.entries(NET).map(([k, n]) => <option key={k} value={k}>{n.label}</option>)}</Select></Field>
@@ -794,7 +843,7 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
           <div className="flex flex-wrap gap-2">
             {f.media.map((m, i) => (
               <div key={m.id} className="relative">
-                <AssetThumb a={m} className="size-24 rounded-xl" />
+                <AssetThumb a={m} className="size-20 rounded-xl" />
                 {!locked && <div className="absolute inset-x-1 bottom-1 flex justify-between">
                   <button type="button" className="rounded bg-card/90 p-0.5" onClick={() => moveMedia(i, -1)} aria-label={t("Avant", "Earlier")}><ArrowUp className="size-3 -rotate-90" /></button>
                   <button type="button" className="rounded bg-card/90 p-0.5 text-bad" onClick={() => setF({ ...f, media: f.media.filter((x) => x.id !== m.id) })} aria-label={t("Retirer", "Remove")}><X className="size-3" /></button>
@@ -802,9 +851,11 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
                 </div>}
               </div>
             ))}
-            {!locked && <button type="button" onClick={() => setPicker(true)} className="grid size-24 place-items-center rounded-xl border border-dashed border-line text-xs text-muted">{t("+ Média", "+ Media")}</button>}
+            {!locked && <button type="button" onClick={() => setPicker(true)} className="grid size-20 place-items-center rounded-xl border border-dashed border-line text-xs text-muted">{t("+ Média", "+ Media")}</button>}
           </div>
           <MediaPicker open={picker} onClose={() => setPicker(false)} multiple kinds={["image", "video"]} onPick={(as) => (setF({ ...f, media: [...f.media, ...as].slice(0, 10) }), setPicker(false))} />
+        </div>
+        </div>
         </div>
         {!locked && (
           <div className="flex flex-wrap gap-2">
