@@ -116,13 +116,19 @@ export const tierSave = (tier: QcTier, reason: string) => ({ status: (tier === "
 
 type Brief = { prompt: string; lightFrom?: "left" | "right"; brain?: { scope: string; hash: string; version: string } };
 
+/**
+ * Formats publicitaires (réseaux sociaux, bannière) : le brief reçoit les compétences « visuel » ; les images du
+ * site (fiche produit, packshot) gardent leur brief habituel.
+ */
+const AD_FORMATS: Partial<Record<FormatId, "ad_visual" | "banner">> = { square: "ad_visual", portrait: "ad_visual", story: "ad_visual", pin: "ad_visual", landscape: "banner", banner: "banner" };
+
 /** Brief de directeur artistique d'une image (payé une fois ; une reprise le réutilise avec les défauts à éviter). */
 async function imageBrief(ictx: ImgCtx, project: Project, style: string, formatId: FormatId, key: string, lifestyle?: string): Promise<Brief> {
   // Brief de directeur artistique (grille notée, une reprise au plus) ; sans IA de rédaction, consigne du studio
   // tirée de la ligne photographique — dans les deux cas, la même ligne de campagne pour toutes les images.
   const line = brandPhotoLine(project);
   return llmConfigured()
-    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}`) : C(`mise en scène produit (style ${style})`, `product staging (${style} style)`), { line, lifestyle, format: FORMATS[formatId].label })
+    ? await aiImageBrief({ ...ictx, usageKey: `${key}:brief` }, project, lifestyle ? C(`PHOTO EN SITUATION (vie de tous les jours) : ${lifestyle}`, `LIFESTYLE PHOTO (everyday life): ${lifestyle}`) : C(`mise en scène produit (style ${style})`, `product staging (${style} style)`), { line, lifestyle, format: FORMATS[formatId].label, skills: AD_FORMATS[formatId] })
     : (() => {
         const people = peopleAllowedFor(project);
         const st = scenePromptFromLine(line, { lifestyle, format: FORMATS[formatId].label, people });

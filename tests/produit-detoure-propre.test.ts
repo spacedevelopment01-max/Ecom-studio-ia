@@ -35,6 +35,8 @@ describe("Produit détouré propre", () => {
     expect(out.subline).toBe("Savon doux");
     expect(out.eyebrow).toBeNull();
     expect(out.features).toEqual(["Fait main"]);
+    // Un texte sans espace réservé reste intact (signe d'une remise compris).
+    expect(noPlaceholders({ brand: "X", headline: "-20 % le jeudi", subline: "- Livraison", features: null } as any).headline).toBe("-20 % le jeudi");
   });
 });
 
@@ -77,5 +79,17 @@ describe("Titres des publications tirés d'une question", () => {
     const q = src.slice(src.indexOf("const QBANK"), src.indexOf("/** Lieu"));
     expect(q).not.toMatch(/headline: short\(x\.a\) \}/);
     expect(q).toMatch(/qmark\(short\(x\.a\)\)/);
+  });
+});
+
+describe("Fragments du détourage", () => {
+  it("beaucoup de taches : laissées telles quelles (le contrôle de qualité refuse ce détourage)", async () => {
+    const { dropIslands } = await import("@/lib/media/cutout");
+    const w = 200, h = 200, raw = Buffer.alloc(w * h * 4);
+    const set = (x: number, y: number) => { const i = (y * w + x) * 4; raw[i] = raw[i + 1] = raw[i + 2] = 40; raw[i + 3] = 255; };
+    for (let y = 40; y < 160; y++) for (let x = 40; x < 140; x++) set(x, y);
+    for (const [cx, cy] of [[10, 10], [180, 10], [10, 180], [180, 180], [100, 185], [185, 100]]) for (let y = cy; y < cy + 4; y++) for (let x = cx; x < cx + 4; x++) set(x, y);
+    const png = await sharp(raw, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+    expect(await dropIslands(png)).toBe(png);
   });
 });

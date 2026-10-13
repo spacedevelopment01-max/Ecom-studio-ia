@@ -3,6 +3,7 @@
  * et logo de la marque. Injectables : le studio et le benchmark utilisent `realAdDeps` ; les tests, des outils
  * simulés (aucun appel, aucune dépense).
  */
+import { adIntent, skillReference } from "../ai/skills";
 import sharp from "sharp";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
@@ -49,6 +50,8 @@ export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean
           routing: { difficulty: "complex", deliverable: "ad_v2" },
           system,
           context: brainView(p, "advertising").stable,
+          // Compétences publicitaires (ad-creative, image, canvas-design, brand-guidelines ; + ads pour un service).
+          reference: skillReference(adIntent(p)),
           prompt,
           maxTokens: 6000,
         },

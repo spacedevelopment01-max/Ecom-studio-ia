@@ -365,6 +365,9 @@ export async function dropIslands(png: Buffer, minShare = 0.04): Promise<Buffer>
   const biggest = Math.max(...sizes);
   const keep = sizes.map((s) => s >= biggest * minShare);
   if (keep.every(Boolean)) return png;
+  // Beaucoup de morceaux (taches, lettres d'un texte, reste de décor) : signe d'un mauvais détourage, laissé tel
+  // quel pour que le contrôle de qualité le refuse ; seuls quelques fragments isolés (bout de câble) sont effacés.
+  if (keep.filter((k) => !k).length > 4) return png;
   for (let k = 0; k < w * h; k++) {
     const id = label[k];
     if (id >= 0 && !keep[id]) data[k * 4 + 3] = 0;

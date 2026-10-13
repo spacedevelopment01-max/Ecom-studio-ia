@@ -4,6 +4,7 @@
  * n'est configuré, l'appelant bascule sur le moteur local (engine/local.ts),
  * clairement signalé comme tel dans le studio.
  */
+import { skillReference, type SkillIntent } from "./skills";
 import { decide } from "../quality/gate";
 import { saveCheck } from "../quality/store";
 import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "../seo-limits";
@@ -1097,7 +1098,7 @@ export type ImageBrief = { prompt: string; surface: string; lightFrom: "left" | 
  * en dessous → meilleure version gardée ; si aucune n'atteint 6/10, la consigne du studio (ligne photographique)
  * est utilisée. La ligne photographique de la marque est imposée à chaque image : même campagne partout.
  */
-export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { line: PhotoLine; lifestyle?: string; format?: string }): Promise<ImageBrief> {
+export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { line: PhotoLine; lifestyle?: string; format?: string; skills?: SkillIntent }): Promise<ImageBrief> {
   const line = opts.line;
   const view = brainView(p, "image");
   const lifestyle = !!opts.lifestyle;
@@ -1113,6 +1114,8 @@ export async function aiImageBrief(b: Base, p: Project, kind: string, opts: { li
         usageKey: feedback ? `${b.usageKey}:retake` : b.usageKey,
         system: S().imageBrief,
         context: view.stable,
+        // Visuel publicitaire ou bannière : compétences image, canvas-design, brand-guidelines (+ ad-creative).
+        ...(opts.skills ? { reference: skillReference(opts.skills) } : {}),
         prompt: `Visuel à produire : ${kind}${opts.format ? ` (format ${opts.format})` : ""}.
 ${lifestyle ? `PHOTO EN SITUATION : ${opts.lifestyle}. Une vraie scène de vie, jamais un studio.` : "MISE EN SCÈNE PRODUIT : le produit réel posé au centre du premier plan, sur le plateau."}${people ? "" : `\nAUCUNE PERSONNE : le client n'a pas autorisé de personne à l'image. Ni personne, ni visage, ni main, ni silhouette (la règle « une personne ou un animal peuvent être présents » ne s'applique pas) ; la consigne finale se termine par : « ${NO_PEOPLE_EN} »`}
 LIGNE PHOTOGRAPHIQUE DE LA MARQUE (à respecter, toutes les images forment une même campagne) :
