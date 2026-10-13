@@ -70,3 +70,20 @@ describe("habillage publicitaire des vidéos", async () => {
     expect(r[0].url).toBe("https://cdn/large.mp4");
   });
 });
+
+describe("habillage : jamais la même image en boucle", async () => {
+  const { dressPromo } = await import("@/lib/video-v2/promo");
+  it("une photo du produit apparaît au plus deux fois, jamais deux plans de suite", () => {
+    const pal = { primary: "#1B2A4A", secondary: "#E8E2D6", accent: "#2E6FA0", light: "#F6F3EE", dark: "#14213D" };
+    const p = { business: "products", product: { name: "Onde Pro", category: "Casque audio", summary: "", facts: [], price: { amount: null, currency: "EUR", status: "unknown" } }, brand: { tagline: "", positioning: "", personality: [] }, services: { services: [] } } as any;
+    const img = { kind: "image", assetId: "photo", motion: "push_in", crop: null };
+    const vid = (id: string) => ({ kind: "video", assetId: id, inS: 0, outS: 2, muted: true });
+    const clip = (k: number, part: string, source: any) => ({ id: `c${k}`, shotId: `s${k}`, label: "", part, durationS: 2, source, overlays: [], transitionIn: { kind: "cut", durationS: 0 } }) as any;
+    const clips = [clip(0, "hook", vid("a")), clip(1, "demonstration", img), clip(2, "demonstration", vid("b")), clip(3, "demonstration", img), clip(4, "demonstration", img), clip(5, "proof", img), clip(6, "cta", vid("c"))];
+    const shots = clips.map((c) => ({ id: c.shotId, part: c.part, onScreen: "", voice: "", method: "animated_image" })) as any;
+    const out = dressPromo(clips, shots, { p, pal, typo: { heading: "Archivo", body: "Jost" }, w: 1080, h: 1920, safe: { top: 120, bottom: 300, side: 60 }, brand: "Onde Pro", logoId: null, thumbs: [], productPhotos: ["photo"], cta: "Découvrir", message: "" });
+    const ids = out.map((c) => (c.source as { assetId?: string }).assetId);
+    expect(ids.filter((x) => x === "photo").length).toBeLessThanOrEqual(2);
+    for (let k = 1; k < ids.length; k++) if (out[k].source.kind === "image") expect(ids[k - 1]).not.toBe(ids[k]);
+  });
+});

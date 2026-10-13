@@ -245,7 +245,7 @@ function ServiceImages() {
   const cl = useContentLang();
   const [group, setGroup] = useState("all");
   const [viewer, setViewer] = useState<AssetView | null>(null);
-  const [form, setForm] = useState({ kind: "service", format: "portrait", headline: "", subline: "", cta: "", serviceIndex: 0, tips: "", background: "" as "" | "photo" | "image" | "none" });
+  const [form, setForm] = useState({ kind: "service", format: "portrait", headline: "", subline: "", cta: "", serviceIndex: 0, tips: "", background: "" as "" | "photo" | "image" | "none", photoId: "" });
   const active = useActive(["images.generate", "image.single", "canva."]);
   const cost = useCostConfirm();
   const locked = useCreationLocked();
@@ -256,10 +256,13 @@ function ServiceImages() {
     if (!active.length) reload();
   }, [active.length, reload]);
   const services = (data?.services?.services ?? []).filter((s) => s.name?.trim());
-  const photos = (data?.counts?.lifestyle ?? 0) + (data?.counts?.original ?? 0);
+  // Toutes les images du projet utilisables comme photo d'un visuel (vos photos, photos libres, ambiances, recadrages).
+  const { data: pool } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=lifestyle,original,scene,post-photo,ambiance`);
+  const choices = (pool?.assets ?? []).filter((a) => a.kind === "image" && a.status !== "rejected");
+  const photos = Math.max(choices.length, (data?.counts?.lifestyle ?? 0) + (data?.counts?.original ?? 0));
   const aiImage = !!data?.ai.image;
   const FORMAT_LABEL: Record<string, [string, string]> = { portrait: ["4:5 · Instagram, Facebook", "4:5 · Instagram, Facebook"], square: ["1:1 · fil d'actualité", "1:1 · news feed"], story: ["9:16 · story, reel", "9:16 · story, reel"], landscape: ["16:9 · site, YouTube, LinkedIn", "16:9 · website, YouTube, LinkedIn"], banner: ["2:1 · bannière du site", "2:1 · website banner"] };
-  const photoAllowed = ["service", "booking", "banner"].includes(form.kind);
+  const photoAllowed = true;
   // Fond du visuel : une photo de l'activité, une nouvelle image (photo libre du métier, sinon créée par l'IA) ou aucune.
   const background = form.background || (photos > 0 ? "photo" : "image");
   const create = async (mode: "set" | "single") => {
@@ -269,7 +272,7 @@ function ServiceImages() {
     try {
       const body = mode === "set"
         ? { mode, useAi: aiImage }
-        : { mode, kind: form.kind, format: form.format, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined, serviceIndex: form.serviceIndex, items: form.kind === "tips" ? form.tips.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) : undefined, background: photoAllowed ? background : undefined };
+        : { mode, kind: form.kind, format: form.format, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined, serviceIndex: form.serviceIndex, items: form.kind === "tips" ? form.tips.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4) : undefined, background: photoAllowed ? background : undefined, photoId: photoAllowed && background === "photo" && form.photoId ? form.photoId : undefined };
       const r = await api<{ jobId?: string }>(`/api/projects/${id}/images`, { body, lang: cl.lang });
       toast("ok", mode === "set" ? t("Jeu de visuels en préparation.", "Visual set in progress.") : t("Visuel en préparation.", "Visual in progress."));
       follow(r?.jobId, mode === "set" ? t("Jeu de visuels prêt : à valider ci-dessous.", "Visual set ready: review it below.") : t("Visuel prêt : à valider ci-dessous.", "Visual ready: review it below."));
@@ -318,10 +321,22 @@ function ServiceImages() {
             {photoAllowed && (
               <Field label={t("Image du visuel", "Visual image")} htmlFor="sbg">
                 <Select id="sbg" value={background} onChange={(e) => setForm({ ...form, background: e.target.value as "photo" | "image" | "none" })}>
-                  {photos > 0 && <option value="photo">{t("Une photo de l'activité", "A business photo")}</option>}
+                  {photos > 0 && <option value="photo">{t("Une de mes images (à choisir)", "One of my images (pick it)")}</option>}
                   <option value="image">{aiImage ? t("Une nouvelle image (photo libre du métier ou créée par l'IA)", "A new image (royalty-free trade photo or AI-created)") : t("Une nouvelle image (photo libre du métier)", "A new image (royalty-free trade photo)")}</option>
                   <option value="none">{t("Sans image (typographique)", "No image (typographic)")}</option>
                 </Select>
+                {background === "photo" && choices.length > 0 && (
+                  <div className="mt-2 grid max-h-56 grid-cols-4 gap-1.5 overflow-y-auto pr-1" role="radiogroup" aria-label={t("Choisir l'image", "Choose the image")} data-testid="photo-picker">
+                    {choices.map((a, i) => {
+                      const on = form.photoId ? form.photoId === a.id : i === 0;
+                      return (
+                        <button key={a.id} type="button" role="radio" aria-checked={on} aria-label={a.name} onClick={() => setForm({ ...form, photoId: a.id })} className={cx("aspect-square overflow-hidden rounded-lg border-2", on ? "border-ink" : "border-transparent opacity-80 hover:opacity-100")}>
+                          <img src={a.thumbUrl ?? a.url} alt="" loading="lazy" className="size-full object-cover" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </Field>
             )}
             <ContentLangPicker {...cl} />

@@ -32,8 +32,12 @@ describe("une image par visuel", () => {
     const used = photosOf(p, pool);
     const ads = used.filter((x) => x.role === "ad");
     expect(new Set(ads.map((x) => x.photo)).size).toBe(1);
-    const visuals = [...used.filter((x) => x.role !== "ad").map((x) => x.photo), ads[0].photo];
+    // Visuels principaux (bannières, annonces, publicité) : aucune reprise entre eux.
+    const secondary = (n: string) => /^(carrousel|citation|infos-pratiques)/.test(n);
+    const visuals = [...used.filter((x) => x.role !== "ad" && !secondary(x.name)).map((x) => x.photo), ads[0].photo];
     expect(new Set(visuals).size).toBe(visuals.length);
+    // Carrousel, citation et infos pratiques ont aussi une image en fond.
+    expect(used.filter((x) => secondary(x.name)).length).toBeGreaterThanOrEqual(2);
     // Chaque visuel reçoit l'image faite pour lui.
     const slotOf = (name: string) => JSON.parse(pool[used.find((x) => x.name.startsWith(name))!.photo].meta).slot;
     expect(slotOf("banniere-ouverture")).toBe("hero");
@@ -51,6 +55,16 @@ describe("une image par visuel", () => {
     expect(byName("prestation-peinture")).toBe(2);
     expect(byName("prestation-carrelage")).toBe(3);
     expect(used.filter((x) => x.role === "ad").every((x) => x.photo === 4)).toBe(true);
+  });
+
+  it("images en plus des emplacements : carrousel, citation et infos pratiques les prennent avant de reprendre une image", () => {
+    const p = project();
+    const pool = [...photoSlots(p).map(gen), real(), real(), real()];
+    const used = photosOf(p, pool);
+    const main = new Set(used.filter((x) => !/^(carrousel|citation|infos-pratiques)/.test(x.name)).map((x) => x.photo));
+    const extra = used.filter((x) => /^(citation|infos-pratiques)/.test(x.name)).map((x) => x.photo);
+    expect(extra.length).toBeGreaterThan(0);
+    expect(extra.every((k) => !main.has(k))).toBe(true);
   });
 
   it("une seule prestation : 4 images ; sans aucune image : visuels typographiques", () => {

@@ -34,7 +34,12 @@ export type LayerBase = {
   anchor: { h: "left" | "center" | "right" | "stretch"; v: "top" | "middle" | "bottom" | "stretch" };
   /** Modifié à la main par le client : jamais écrasé en silence par une régénération. */
   userEdited?: boolean;
+  /** Vidéo : animation d'entrée du calque (sortie automatique avant le plan suivant). Ignorée sur une image fixe. */
+  anim?: LayerAnim;
 };
+
+/** Animation d'un calque dans une vidéo : glisse, monte, se déroule, rebondit ; retard et durée en secondes. */
+export type LayerAnim = { in: "rise" | "drop" | "left" | "right" | "grow" | "pop" | "fade"; delay: number; dur?: number };
 
 export type ImageLayer = LayerBase & {
   kind: "image";

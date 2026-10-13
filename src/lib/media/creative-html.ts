@@ -427,6 +427,22 @@ function servicePage(c: ServiceCard, b: ServiceBrandInput, photoUri: string | nu
     const num = String(c.index ?? 1).padStart(2, "0");
     const dots = c.total ? Array.from({ length: c.total }, (_, k) => `<i style="width:${k + 1 === c.index ? 5 * u : 1.4 * u}px;background:${k + 1 === c.index ? ink : mix(ink, bg, 0.75)}"></i>`).join("") : "";
     const size = cover ? (tall ? 11 * u : 9.6 * u) : 7 * u;
+    // Avec une photo : photo pleine page assombrie, textes clairs (une image sur chaque page du carrousel).
+    if (photoUri) {
+      return `<style>${css}
+      .stage{background:#111;color:#fff}
+      .main{position:absolute;left:${side}px;right:${side}px;top:${top + 12 * u}px;bottom:${bottom + 12 * u}px;display:flex;flex-direction:column;justify-content:${cover ? "flex-end" : "flex-start"};gap:${3 * u}px;text-shadow:0 1px 12px rgba(0,0,0,.5)}
+      .main .h{font-size:${size}px;max-height:${size * 1.04 * (cover ? 4.2 : 3.2)}px}
+      .num{font-family:"${H}",serif;font-weight:${Math.max(hw, 600)};font-size:${16 * u}px;line-height:.9;color:${mix(accent, "#FFFFFF", 0.25)}}
+      .main .txt{-webkit-line-clamp:${tall ? 8 : 5};font-size:${3.5 * u}px;color:rgba(255,255,255,.92)}
+      .foot{position:absolute;left:${side}px;right:${side}px;bottom:${bottom}px;display:flex;justify-content:space-between;align-items:center}
+      .dots{display:flex;gap:${1 * u}px}.dots i{display:block;height:${1.4 * u}px;border-radius:999px}
+      .swipe{font-size:${2.8 * u}px;font-weight:600}
+      </style><div class="stage"><img class="bgimg" src="${photoUri}" alt=""><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,${cover ? ".25" : ".62"}) 40%,rgba(0,0,0,.82) 100%)"></div>
+      <div class="topbar">${c.eyebrow ? `<span class="pill" style="background:rgba(255,255,255,.92);color:${ink}">${esc(c.eyebrow)}</span>` : "<span></span>"}${c.total ? `<span class="pill" style="background:rgba(255,255,255,.18);color:#fff">${c.index ?? 1} / ${c.total}</span>` : ""}</div>
+      <div class="main">${cover ? "" : `<span class="num">${num}</span>`}<p class="h fit">${esc(c.title ?? "")}</p>${c.text ? `<p class="txt">${esc(c.text)}</p>` : ""}</div>
+      <div class="foot">${word}${cover && c.swipe ? `<span class="swipe">${esc(c.swipe)} →</span>` : `<span class="dots">${dots.replaceAll(mix(ink, bg, 0.75), "rgba(255,255,255,.4)").replaceAll(`background:${ink}`, "background:#fff")}</span>`}</div></div>`;
+    }
     return `<style>${css}
       .stage{background:${bg};color:${ink}}
       .main{position:absolute;left:${side}px;right:${side}px;top:${top + 12 * u}px;bottom:${bottom + 12 * u}px;display:flex;flex-direction:column;justify-content:${cover ? "center" : "flex-start"};gap:${3 * u}px}
@@ -452,7 +468,7 @@ function servicePage(c: ServiceCard, b: ServiceBrandInput, photoUri: string | nu
       .mark{font-family:"${H}",serif;font-size:${30 * u}px;line-height:.6;height:${12 * u}px;color:${accent}}
       .author{font-size:${3 * u}px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
       .main .txt{-webkit-line-clamp:3;opacity:.85}
-      </style><div class="stage">${deco(onDeep, accent, p.secondary, variant + 1)}
+      </style><div class="stage">${photoUri ? `<img class="bgimg" src="${photoUri}" alt=""><div style="position:absolute;inset:0;background:linear-gradient(180deg,${deep}b3 0%,${deep}d9 60%,${deeper}f2 100%)"></div>` : deco(onDeep, accent, p.secondary, variant + 1)}
       <div class="topbar">${word}${counter.replace(mix(ink, cream, 0.92), "rgba(255,255,255,.14)").replace(`color:${ink}`, `color:${onDeep}`)}</div>
       <div class="main">${quote ? `<span class="mark" aria-hidden="true">“</span>` : ""}${!quote && c.eyebrow ? `<p class="eyebrow" style="color:${mix(accent, "#FFFFFF", 0.3)}">${esc(c.eyebrow)}</p>` : ""}<p class="h fit">${esc(c.title ?? "")}</p>${c.text ? `<p class="txt">${esc(c.text)}</p>` : ""}${quote && c.author ? `<p class="author">${esc(c.author)}</p>` : ""}${cta}${c.contact ? `<p class="contact">${esc(c.contact)}</p>` : ""}</div></div>`;
   }

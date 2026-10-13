@@ -69,7 +69,10 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
     const i = add(files.music);
     // Piste de la banque : entrée et sortie en fondu (jamais une coupure sèche à la fin de la vidéo).
     const fades = doc.audio.music.source === "library" ? `,afade=t=in:st=0:d=0.5,afade=t=out:st=${Math.max(0, total - 1.6).toFixed(2)}:d=1.6` : "";
-    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,aloop=loop=-1:size=2e9,atrim=0:${total}${fades},volume=${doc.audio.music.gainDb}dB[mus]`);
+    // Piste de la banque : lue à partir du moment où elle est lancée (introduction calme sautée).
+    const start = doc.audio.music.source === "library" ? doc.audio.music.startS ?? 0 : 0;
+    const skip = start > 0 ? `atrim=start=${start.toFixed(2)},asetpts=PTS-STARTPTS,` : "";
+    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,${skip}aloop=loop=-1:size=2e9,atrim=0:${total}${fades},volume=${doc.audio.music.gainDb}dB[mus]`);
     music = "[mus]";
   }
   let mixInputs: string[] = [...effects];

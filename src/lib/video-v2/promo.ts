@@ -12,6 +12,7 @@ import { serverFont } from "../ad-doc/server";
 import type { Layer, ShapeLayer, TextLayer } from "../ad-doc/types";
 import type { Project } from "../projects";
 import { C } from "../i18n-server";
+import { songStyleFor } from "../media/song";
 import { buttonLayer, imageLayer, inkOn, rectLayer, textLayer, type Palette, type Typo } from "./doc";
 import type { Clip, ShotPlan, VideoDocument } from "./types";
 
@@ -123,6 +124,11 @@ function textWidth(text: string, family: string, weight: number, size: number, u
 
 const shadow = { color: "rgba(0,0,0,0.45)", blur: 18, x: 0, y: 4 };
 
+/** Animation d'entrée d'un calque (la sortie est automatique au rendu, juste avant le plan suivant). */
+function A<T extends Layer>(l: T, kind: NonNullable<Layer["anim"]>["in"], delay: number, dur?: number): T {
+  return { ...l, anim: { in: kind, delay: Math.round(delay * 1000) / 1000, ...(dur ? { dur } : {}) } };
+}
+
 function txt(id: string, name: string, b: { x: number; y: number; w: number; h: number }, text: string, o: { family: string; weight: number; size: number; color: string; align?: TextLayer["align"]; upper?: boolean; spacing?: number; shadow?: boolean }): TextLayer {
   const l = textLayer(id, name, "title", b, text, { family: o.family, weight: o.weight, size: o.size, color: o.color, align: o.align ?? "left", uppercase: o.upper });
   return { ...l, letterSpacing: o.spacing ?? 0, lineHeight: 1.05, shadow: o.shadow ? shadow : null };
@@ -133,15 +139,20 @@ function rect(id: string, name: string, b: { x: number; y: number; w: number; h:
   return { ...l, rotation: o.rotation ?? 0, stroke: o.stroke ?? null, shadow: o.shadow ? shadow : null };
 }
 
-/** Logo (image) ou nom de la marque, centré en haut. */
-function brandMark(o: PromoInput, id: string, color = "#FFFFFF"): Layer[] {
-  const { w, h, safe } = o;
-  if (o.logoId) return [{ ...imageLayer(`${id}-logo`, "Logo", "logo", { x: w * 0.3, y: safe.top + h * 0.005, w: w * 0.4, h: h * 0.07 }, o.logoId, "contain") }];
-  return [txt(`${id}-brand`, "Marque", { x: safe.side, y: safe.top + h * 0.01, w: w - safe.side * 2, h: h * 0.04 }, o.brand, { family: "Montserrat", weight: 800, size: Math.round(w * 0.04), color, align: "center", upper: true, spacing: w * 0.006, shadow: true })];
+/** Vignettage léger (bords assombris) : donne de la profondeur à l'image, comme une prise de vue de cinéma. */
+function vignette(o: PromoInput, id: string): Layer {
+  return rect(`${id}-vig`, "Vignettage", { x: -o.w * 0.1, y: -o.h * 0.05, w: o.w * 1.2, h: o.h * 1.1 }, { type: "radial", angle: 0, stops: [{ offset: 0.55, color: "rgba(0,0,0,0)" }, { offset: 1, color: "rgba(0,0,0,0.5)" }] }, { role: "scrim" });
 }
 
-/** Rangée de trois vignettes encadrées. */
-function thumbRow(o: PromoInput, id: string, y: number, accent: string, skip = 0): Layer[] {
+/** Logo (image) ou nom de la marque, centré en haut. */
+function brandMark(o: PromoInput, id: string, color = "#FFFFFF", delay = 0.1): Layer[] {
+  const { w, h, safe } = o;
+  if (o.logoId) return [A({ ...imageLayer(`${id}-logo`, "Logo", "logo", { x: w * 0.3, y: safe.top + h * 0.005, w: w * 0.4, h: h * 0.07 }, o.logoId, "contain") }, "drop", delay)];
+  return [A(txt(`${id}-brand`, "Marque", { x: safe.side, y: safe.top + h * 0.01, w: w - safe.side * 2, h: h * 0.04 }, o.brand, { family: "Montserrat", weight: 800, size: Math.round(w * 0.04), color, align: "center", upper: true, spacing: w * 0.006, shadow: true }), "drop", delay)];
+}
+
+/** Rangée de trois vignettes encadrées (elles rebondissent l'une après l'autre). */
+function thumbRow(o: PromoInput, id: string, y: number, accent: string, skip = 0, delay = 0.6): Layer[] {
   const { w, h, safe } = o;
   const ids = [...o.thumbs.slice(skip), ...o.thumbs.slice(0, skip)].slice(0, 3);
   if (ids.length < 3) return [];
@@ -151,8 +162,8 @@ function thumbRow(o: PromoInput, id: string, y: number, accent: string, skip = 0
   const out: Layer[] = [];
   ids.forEach((a, k) => {
     const x = safe.side + k * (tw + gap);
-    out.push(rect(`${id}-tf${k}`, `Cadre ${k + 1}`, { x: x - 5, y: y - 5, w: tw + 10, h: th + 10 }, accent, { radius: w * 0.014, shadow: true }));
-    out.push({ ...imageLayer(`${id}-t${k}`, `Vignette ${k + 1}`, "image", { x, y, w: tw, h: th }, a, "cover"), radius: w * 0.01 });
+    out.push(A(rect(`${id}-tf${k}`, `Cadre ${k + 1}`, { x: x - 5, y: y - 5, w: tw + 10, h: th + 10 }, accent, { radius: w * 0.014, shadow: true }), "pop", delay + k * 0.09, 0.4));
+    out.push(A({ ...imageLayer(`${id}-t${k}`, `Vignette ${k + 1}`, "image", { x, y, w: tw, h: th }, a, "cover"), radius: w * 0.01 }, "pop", delay + k * 0.09, 0.4));
   });
   return out;
 }
@@ -166,28 +177,29 @@ export function heroOverlay(o: PromoInput, title: string | string[], sub: string
   const size = Math.round(w * (f.upper ? 0.088 : 0.1));
   const y0 = safe.top + h * 0.1;
   const L: Layer[] = [
+    vignette(o, "h"),
     rect("h-scrim-top", "Voile haut", { x: 0, y: 0, w, h: h * 0.5 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0.8)" }, { offset: 0.6, color: "rgba(0,0,0,0.5)" }, { offset: 1, color: "rgba(0,0,0,0)" }] }, { role: "scrim" }),
     rect("h-scrim-bottom", "Voile bas", { x: 0, y: h * 0.55, w, h: h * 0.45 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0)" }, { offset: 1, color: "rgba(0,0,0,0.75)" }] }, { role: "scrim" }),
-    rect("h-corner-a", "Angle", { x: -w * 0.28, y: -h * 0.06, w: w * 0.62, h: h * 0.09 }, acc, { rotation: -32 }),
-    rect("h-corner-b", "Angle", { x: w * 0.72, y: h * 0.86, w: w * 0.6, h: h * 0.08 }, acc, { rotation: -32 }),
-    rect("h-corner-c", "Angle", { x: w * 0.8, y: h * 0.82, w: w * 0.5, h: h * 0.025 }, "#FFFFFF", { rotation: -32 }),
+    A(rect("h-corner-a", "Angle", { x: -w * 0.28, y: -h * 0.06, w: w * 0.62, h: h * 0.09 }, acc, { rotation: -32 }), "left", 0.05, 0.5),
+    A(rect("h-corner-b", "Angle", { x: w * 0.72, y: h * 0.86, w: w * 0.6, h: h * 0.08 }, acc, { rotation: -32 }), "right", 0.15, 0.5),
+    A(rect("h-corner-c", "Angle", { x: w * 0.8, y: h * 0.82, w: w * 0.5, h: h * 0.025 }, "#FFFFFF", { rotation: -32 }), "right", 0.25, 0.5),
     ...brandMark(o, "h"),
-    rect("h-bar", "Trait", { x: safe.side, y: y0 + size * 0.1, w: w * 0.012, h: size * lines.length * 1.05 }, acc),
+    A(rect("h-bar", "Trait", { x: safe.side, y: y0 + size * 0.1, w: w * 0.012, h: size * lines.length * 1.1 }, acc), "drop", 0.2),
   ];
   lines.forEach((t, k) => {
     const hi = k === lines.length - 1 && lines.length > 1;
     const x = safe.side + w * 0.04;
     const y = y0 + k * size * 1.12;
-    if (hi) L.push(rect(`h-hl${k}`, "Surlignage", { x: x - w * 0.015, y: y - size * 0.06, w: Math.min(w - x - safe.side * 0.5, textWidth(t, f.family, f.weight, size, f.upper) + w * 0.035), h: size * 1.14 }, acc, { radius: w * 0.008 }));
-    L.push(txt(`h-title${k}`, `Titre ${k + 1}`, { x, y, w: w - safe.side * 2 - w * 0.04, h: size * 1.1 }, t, { family: f.family, weight: f.weight, size, color: hi ? inkOn(acc) : "#FFFFFF", upper: f.upper, shadow: !hi }));
+    if (hi) L.push(A(rect(`h-hl${k}`, "Surlignage", { x: x - w * 0.015, y: y - size * 0.06, w: Math.min(w - x - safe.side * 0.5, textWidth(t, f.family, f.weight, size, f.upper) + w * 0.035), h: size * 1.14 }, acc, { radius: w * 0.008 }), "grow", 0.3 + k * 0.12, 0.4));
+    L.push(A(txt(`h-title${k}`, `Titre ${k + 1}`, { x, y, w: w - safe.side * 2 - w * 0.04, h: size * 1.1 }, t, { family: f.family, weight: f.weight, size, color: hi ? inkOn(acc) : "#FFFFFF", upper: f.upper, shadow: !hi }), "left", 0.25 + k * 0.12, 0.5));
   });
-  if (sub) L.push(txt("h-sub", "Accroche", { x: safe.side + w * 0.04, y: y0 + lines.length * size * 1.12 + h * 0.014, w: w - safe.side * 2 - w * 0.04, h: h * 0.03 }, sub, { family: "Montserrat", weight: 600, size: Math.round(w * 0.032), color: "#FFFFFF", upper: true, spacing: 2, shadow: true }));
-  L.push(...thumbRow(o, "h", h * 0.7, acc));
-  if (tagline) L.push(txt("h-tag", "Signature", { x: safe.side, y: h * 0.835, w: w - safe.side * 2, h: h * 0.035 }, tagline, { family: "Montserrat", weight: 700, size: Math.round(w * 0.034), color: "#FFFFFF", align: "center", upper: true, spacing: 2, shadow: true }));
+  if (sub) L.push(A(txt("h-sub", "Accroche", { x: safe.side + w * 0.04, y: y0 + lines.length * size * 1.12 + h * 0.014, w: w - safe.side * 2 - w * 0.04, h: h * 0.03 }, sub, { family: "Montserrat", weight: 600, size: Math.round(w * 0.032), color: "#FFFFFF", upper: true, spacing: 2, shadow: true }), "rise", 0.55));
+  L.push(...thumbRow(o, "h", h * 0.7, acc, 0, 0.7));
+  if (tagline) L.push(A(txt("h-tag", "Signature", { x: safe.side, y: h * 0.835, w: w - safe.side * 2, h: h * 0.035 }, tagline, { family: "Montserrat", weight: 700, size: Math.round(w * 0.034), color: "#FFFFFF", align: "center", upper: true, spacing: 2, shadow: true }), "rise", 1));
   return L;
 }
 
-/** Prestations (ou points forts) : panneau translucide, trois éléments numérotés. */
+/** Prestations (ou points forts) : panneau translucide, trois éléments avec pictogramme. */
 export function servicesOverlay(o: PromoInput, title: string, items: string[], tagline: string): Layer[] {
   const { w, h, safe, pal } = o;
   const acc = accentOf(pal);
@@ -198,46 +210,123 @@ export function servicesOverlay(o: PromoInput, title: string, items: string[], t
   const py = h * 0.3;
   const ph = h * 0.24;
   const L: Layer[] = [
+    vignette(o, "s"),
     rect("s-scrim", "Voile", { x: 0, y: 0, w, h }, "rgba(0,0,0,0.18)", { role: "scrim" }),
-    ...brandMark(o, "s"),
-    rect("s-panel", "Panneau", { x: px, y: py, w: pw, h: ph }, rgba(acc, 0.9), { radius: w * 0.035, shadow: true }),
-    txt("s-title", "Titre du panneau", { x: px, y: py + ph * 0.07, w: pw, h: ph * 0.2 }, title, { family: f.family, weight: f.weight, size: Math.round(w * 0.062), color: ink, align: "center", upper: false }),
+    ...brandMark(o, "s", "#FFFFFF", 0.05),
+    A(rect("s-panel", "Panneau", { x: px, y: py, w: pw, h: ph }, rgba(acc, 0.9), { radius: w * 0.035, shadow: true }), "rise", 0.05, 0.5),
+    A(txt("s-title", "Titre du panneau", { x: px, y: py + ph * 0.07, w: pw, h: ph * 0.2 }, title, { family: f.family, weight: f.weight, size: Math.round(w * 0.062), color: ink, align: "center", upper: false }), "rise", 0.2),
   ];
   const n = Math.min(3, items.length);
   const cw = pw / n;
   items.slice(0, n).forEach((it, k) => {
     const cx = px + cw * k + cw / 2;
     const d = w * 0.1;
-    L.push({ ...rect(`s-dot${k}`, `Pastille ${k + 1}`, { x: cx - d / 2, y: py + ph * 0.34, w: d, h: d }, ink === "#FFFFFF" ? "rgba(255,255,255,0.95)" : pal.dark), shape: "ellipse" });
+    const t0 = 0.4 + k * 0.14;
+    L.push(A({ ...rect(`s-dot${k}`, `Pastille ${k + 1}`, { x: cx - d / 2, y: py + ph * 0.34, w: d, h: d }, ink === "#FFFFFF" ? "rgba(255,255,255,0.95)" : pal.dark), shape: "ellipse" as const }, "pop", t0, 0.45));
     const icon = o.icons?.[k];
-    if (icon) L.push(imageLayer(`s-icon${k}`, `Pictogramme ${k + 1}`, "decor", { x: cx - d * 0.3, y: py + ph * 0.34 + d * 0.2, w: d * 0.6, h: d * 0.6 }, icon, "contain"));
-    else L.push(txt(`s-num${k}`, `Numéro ${k + 1}`, { x: cx - d / 2, y: py + ph * 0.34 + d * 0.16, w: d, h: d * 0.7 }, String(k + 1), { family: "Montserrat", weight: 800, size: Math.round(d * 0.55), color: ink === "#FFFFFF" ? acc : "#FFFFFF", align: "center" }));
-    L.push(txt(`s-item${k}`, `Élément ${k + 1}`, { x: px + cw * k + w * 0.015, y: py + ph * 0.34 + d + h * 0.012, w: cw - w * 0.03, h: ph * 0.3 }, it, { family: "Montserrat", weight: 700, size: Math.round(w * 0.031), color: ink, align: "center" }));
+    if (icon) L.push(A(imageLayer(`s-icon${k}`, `Pictogramme ${k + 1}`, "decor", { x: cx - d * 0.3, y: py + ph * 0.34 + d * 0.2, w: d * 0.6, h: d * 0.6 }, icon, "contain"), "pop", t0 + 0.06, 0.45));
+    else L.push(A(txt(`s-num${k}`, `Numéro ${k + 1}`, { x: cx - d / 2, y: py + ph * 0.34 + d * 0.16, w: d, h: d * 0.7 }, String(k + 1), { family: "Montserrat", weight: 800, size: Math.round(d * 0.55), color: ink === "#FFFFFF" ? acc : "#FFFFFF", align: "center" }), "pop", t0 + 0.06, 0.45));
+    L.push(A(txt(`s-item${k}`, `Élément ${k + 1}`, { x: px + cw * k + w * 0.015, y: py + ph * 0.34 + d + h * 0.012, w: cw - w * 0.03, h: ph * 0.3 }, it, { family: "Montserrat", weight: 700, size: Math.round(w * 0.031), color: ink, align: "center" }), "rise", t0 + 0.1));
   });
-  L.push(...thumbRow(o, "s", h * 0.6, acc, 1));
-  if (tagline) L.push(txt("s-tag", "Signature", { x: safe.side, y: h * 0.735, w: w - safe.side * 2, h: h * 0.035 }, tagline, { family: "Montserrat", weight: 700, size: Math.round(w * 0.036), color: "#FFFFFF", align: "center", upper: true, spacing: 2, shadow: true }));
+  L.push(...thumbRow(o, "s", h * 0.6, acc, 1, 0.9));
+  if (tagline) L.push(A(txt("s-tag", "Signature", { x: safe.side, y: h * 0.735, w: w - safe.side * 2, h: h * 0.035 }, tagline, { family: "Montserrat", weight: 700, size: Math.round(w * 0.036), color: "#FFFFFF", align: "center", upper: true, spacing: 2, shadow: true }), "rise", 1.15));
   return L;
 }
 
-/** Message : titre empilé, une ligne sur fond d'accent. */
-export function statementOverlay(o: PromoInput, text: string, id = "m"): Layer[] {
+/** Une prestation par plan (format long) : grand numéro, pictogramme, nom, étiquette — en bas de l'image. */
+export function stepOverlay(o: PromoInput, n: number, label: string, title: string, icon: string | null, id = "st"): Layer[] {
   const { w, h, safe, pal } = o;
   const acc = accentOf(pal);
   const f = display(o);
+  const size = Math.round(w * (f.upper ? 0.075 : 0.085));
+  const lines = splitLines(headline(title, 8), 2);
+  const y0 = h * 0.6;
+  const L: Layer[] = [
+    vignette(o, id),
+    rect(`${id}-scrim`, "Voile bas", { x: 0, y: h * 0.42, w, h: h * 0.58 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0)" }, { offset: 0.45, color: "rgba(0,0,0,0.6)" }, { offset: 1, color: "rgba(0,0,0,0.85)" }] }, { role: "scrim" }),
+    ...brandMark(o, id, "#FFFFFF", 0.05),
+    A(txt(`${id}-num`, "Numéro", { x: safe.side, y: y0 - size * 2.2, w: w * 0.5, h: size * 2 }, String(n).padStart(2, "0"), { family: "Montserrat", weight: 800, size: Math.round(size * 1.9), color: acc, shadow: true }), "pop", 0.1, 0.5),
+    A(rect(`${id}-rule`, "Trait", { x: safe.side, y: y0 - size * 0.25, w: w * 0.22, h: Math.max(6, w * 0.008) }, acc), "grow", 0.3, 0.4),
+    A(txt(`${id}-label`, "Étiquette", { x: safe.side + w * 0.25, y: y0 - size * 0.5, w: w * 0.6, h: h * 0.03 }, label, { family: "Montserrat", weight: 700, size: Math.round(w * 0.03), color: "#FFFFFF", upper: true, spacing: 3, shadow: true }), "left", 0.35),
+  ];
+  lines.forEach((t, k) => L.push(A(txt(`${id}-t${k}`, `Titre ${k + 1}`, { x: safe.side, y: y0 + k * size * 1.12 + h * 0.01, w: w - safe.side * 2 - (icon ? w * 0.2 : 0), h: size * 1.1 }, t, { family: f.family, weight: f.weight, size, color: "#FFFFFF", upper: f.upper, shadow: true }), "left", 0.4 + k * 0.12, 0.5)));
+  if (icon) {
+    const d = w * 0.16;
+    // Pastille claire : le pictogramme (couleur d'accent ou blanc selon la marque) y reste toujours visible.
+    L.push(A({ ...rect(`${id}-dot`, "Pastille", { x: w - safe.side - d, y: y0 - size * 2.0, w: d, h: d }, inkOn(acc) === "#FFFFFF" ? "rgba(255,255,255,0.95)" : pal.dark, { shadow: true }), shape: "ellipse" as const }, "pop", 0.25, 0.5));
+    L.push(A(imageLayer(`${id}-icon`, "Pictogramme", "decor", { x: w - safe.side - d * 0.8, y: y0 - size * 2.0 + d * 0.2, w: d * 0.6, h: d * 0.6 }, icon, "contain"), "pop", 0.32, 0.5));
+  }
+  return L;
+}
+
+/** Message, quatre mises en page (alternées pour ne jamais répéter le même habillage d'un plan à l'autre). */
+export type StatementLayout = "stack" | "lower" | "panel" | "center";
+
+export function statementOverlay(o: PromoInput, text: string, id = "m", layout: StatementLayout = "stack", eyebrow = ""): Layer[] {
+  const { w, h, safe, pal } = o;
+  const acc = accentOf(pal);
+  const ink = inkOn(acc);
+  const f = display(o);
+  if (layout === "lower") {
+    // Bandeau en bas : trait d'accent, petite étiquette, texte qui glisse depuis la gauche.
+    const size = Math.round(w * (f.upper ? 0.07 : 0.08));
+    const lines = splitLines(headline(text, 10), 3);
+    const y0 = h * 0.7 - lines.length * size * 1.12;
+    const L: Layer[] = [
+      vignette(o, id),
+      rect(`${id}-scrim`, "Voile bas", { x: 0, y: h * 0.4, w, h: h * 0.6 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0)" }, { offset: 0.5, color: "rgba(0,0,0,0.55)" }, { offset: 1, color: "rgba(0,0,0,0.8)" }] }, { role: "scrim" }),
+      ...brandMark(o, id, "#FFFFFF", 0.05),
+      A(rect(`${id}-bar`, "Trait", { x: safe.side, y: y0, w: w * 0.014, h: lines.length * size * 1.12 }, acc), "drop", 0.1, 0.4),
+    ];
+    if (eyebrow) L.push(A(txt(`${id}-eye`, "Étiquette", { x: safe.side + w * 0.045, y: y0 - h * 0.045, w: w * 0.8, h: h * 0.03 }, eyebrow, { family: "Montserrat", weight: 700, size: Math.round(w * 0.03), color: acc, upper: true, spacing: 3, shadow: true }), "left", 0.15));
+    lines.forEach((t, k) => L.push(A(txt(`${id}-l${k}`, `Ligne ${k + 1}`, { x: safe.side + w * 0.045, y: y0 + k * size * 1.12, w: w - safe.side * 2 - w * 0.045, h: size * 1.1 }, t, { family: f.family, weight: f.weight, size, color: "#FFFFFF", upper: f.upper, shadow: true }), "left", 0.22 + k * 0.1, 0.5)));
+    L.push(A(rect(`${id}-under`, "Soulignement", { x: safe.side + w * 0.045, y: y0 + lines.length * size * 1.12 + h * 0.015, w: w * 0.3, h: Math.max(5, w * 0.006) }, acc), "grow", 0.5, 0.45));
+    return L;
+  }
+  if (layout === "panel") {
+    // Panneau couleur de la marque qui monte du bas ; l'image reste visible au-dessus.
+    const size = Math.round(w * (f.upper ? 0.068 : 0.078));
+    const lines = splitLines(headline(text, 10), 3);
+    const ph = h * 0.14 + lines.length * size * 1.15 + (eyebrow ? h * 0.04 : 0);
+    const py = h - safe.bottom * 0.6 - ph;
+    const L: Layer[] = [
+      vignette(o, id),
+      ...brandMark(o, id, "#FFFFFF", 0.05),
+      A(rect(`${id}-panel`, "Panneau", { x: safe.side * 0.6, y: py, w: w - safe.side * 1.2, h: ph }, rgba(acc, 0.94), { radius: w * 0.04, shadow: true }), "rise", 0.05, 0.5),
+    ];
+    if (eyebrow) L.push(A(txt(`${id}-eye`, "Étiquette", { x: safe.side * 1.4, y: py + h * 0.035, w: w * 0.8, h: h * 0.03 }, eyebrow, { family: "Montserrat", weight: 700, size: Math.round(w * 0.03), color: ink, upper: true, spacing: 3 }), "rise", 0.2));
+    lines.forEach((t, k) => L.push(A(txt(`${id}-l${k}`, `Ligne ${k + 1}`, { x: safe.side * 1.4, y: py + h * (eyebrow ? 0.085 : 0.05) + k * size * 1.15, w: w - safe.side * 2.8, h: size * 1.1 }, t, { family: f.family, weight: f.weight, size, color: ink, upper: f.upper }), "rise", 0.28 + k * 0.1)));
+    return L;
+  }
+  if (layout === "center") {
+    // Grand texte centré qui rebondit, soulignement d'accent qui se déroule.
+    const size = Math.round(w * (f.upper ? 0.1 : 0.11));
+    const lines = splitLines(headline(text, 8), 3);
+    const y0 = h * 0.45 - (lines.length * size * 1.12) / 2;
+    const L: Layer[] = [
+      vignette(o, id),
+      rect(`${id}-scrim`, "Voile", { x: 0, y: 0, w, h }, "rgba(0,0,0,0.38)", { role: "scrim" }),
+      ...brandMark(o, id, "#FFFFFF", 0.05),
+    ];
+    lines.forEach((t, k) => L.push(A(txt(`${id}-l${k}`, `Ligne ${k + 1}`, { x: safe.side * 0.6, y: y0 + k * size * 1.12, w: w - safe.side * 1.2, h: size * 1.1 }, t, { family: f.family, weight: f.weight, size, color: k === lines.length - 1 && lines.length > 1 ? acc : "#FFFFFF", align: "center", upper: f.upper, shadow: true }), "pop", 0.1 + k * 0.12, 0.5)));
+    L.push(A(rect(`${id}-under`, "Soulignement", { x: w * 0.35, y: y0 + lines.length * size * 1.12 + h * 0.02, w: w * 0.3, h: Math.max(6, w * 0.008) }, acc), "grow", 0.45, 0.45));
+    return L;
+  }
+  // Empilé : une ligne surlignée (la plus forte).
   const lines = splitLines(headline(text, 10), 3);
   const size = Math.round(w * (f.upper ? 0.085 : 0.095));
   const y0 = h * 0.42 - (lines.length * size * 1.15) / 2;
-  // Ligne surlignée : la dernière (souvent le mot fort), jamais une ligne faite d'un seul petit mot.
   const hi = lines.length >= 3 && !STOP.has(lines[1].toLowerCase()) ? 1 : lines.length - 1;
   const L: Layer[] = [
+    vignette(o, id),
     rect(`${id}-scrim`, "Voile", { x: 0, y: h * 0.2, w, h: h * 0.6 }, { type: "linear", angle: 90, stops: [{ offset: 0, color: "rgba(0,0,0,0)" }, { offset: 0.5, color: "rgba(0,0,0,0.55)" }, { offset: 1, color: "rgba(0,0,0,0)" }] }, { role: "scrim" }),
     ...brandMark(o, id),
   ];
   lines.forEach((t, k) => {
     const y = y0 + k * size * 1.15;
     const est = Math.min(w - safe.side * 2 + w * 0.04, textWidth(t, f.family, f.weight, size, f.upper) + w * 0.05);
-    if (k === hi) L.push(rect(`${id}-hl`, "Surlignage", { x: safe.side - w * 0.02, y: y - size * 0.08, w: est, h: size * 1.16 }, acc, { radius: w * 0.008 }));
-    L.push(txt(`${id}-l${k}`, `Ligne ${k + 1}`, { x: safe.side, y, w: w - safe.side * 2, h: size * 1.1 }, t, { family: f.family, weight: f.weight, size, color: k === hi ? inkOn(acc) : "#FFFFFF", upper: f.upper, shadow: k !== hi }));
+    if (k === hi) L.push(A(rect(`${id}-hl`, "Surlignage", { x: safe.side - w * 0.02, y: y - size * 0.08, w: est, h: size * 1.16 }, acc, { radius: w * 0.008 }), "grow", 0.2 + k * 0.1, 0.4));
+    L.push(A(txt(`${id}-l${k}`, `Ligne ${k + 1}`, { x: safe.side, y, w: w - safe.side * 2, h: size * 1.1 }, t, { family: f.family, weight: f.weight, size, color: k === hi ? ink : "#FFFFFF", upper: f.upper, shadow: k !== hi }), "left", 0.15 + k * 0.1, 0.5));
   });
   return L;
 }
@@ -251,15 +340,15 @@ export function contactOverlay(o: PromoInput, title: string, lines: string[], bu
   const cardH = h * 0.075 + Math.max(1, rows.length) * rowH;
   const cardY = Math.min(h * 0.66, h - safe.bottom - cardH);
   const L: Layer[] = statementOverlay(o, title, "c").map((l) => (l.id === "c-scrim" ? { ...l, y: 0, h: cardY } : l.kind === "text" || l.id === "c-hl" ? { ...l, y: l.y - (h * 0.42 - cardY * 0.45) } : l));
-  L.push(rect("c-card", "Carte", { x: safe.side * 0.6, y: cardY, w: w - safe.side * 1.2, h: cardH }, "#FFFFFF", { radius: w * 0.05, shadow: true }));
+  L.push(A(rect("c-card", "Carte", { x: safe.side * 0.6, y: cardY, w: w - safe.side * 1.2, h: cardH }, "#FFFFFF", { radius: w * 0.05, shadow: true }), "rise", 0.3, 0.5));
   const bw = Math.min(w * 0.7, textWidth(button, "Montserrat", 800, Math.round(w * 0.045), false) + w * 0.14);
   // Vrai bouton de l'éditeur (modifiable comme celui d'une publicité).
   const btn = buttonLayer("c-btn", { x: (w - bw) / 2, y: cardY - h * 0.032, w: bw, h: h * 0.064 }, button, { family: "Montserrat", size: Math.round(w * 0.045), fill: acc, color: inkOn(acc) });
-  L.push({ ...btn, font: { ...btn.font, weight: 800 }, shadow });
+  L.push(A({ ...btn, font: { ...btn.font, weight: 800 }, shadow }, "pop", 0.55, 0.5));
   rows.forEach((t, k) => {
     const y = cardY + h * 0.058 + k * rowH;
-    if (k > 0) L.push(rect(`c-sep${k}`, `Séparateur ${k}`, { x: w * 0.3, y: y - rowH * 0.18, w: w * 0.4, h: 2 }, rgba(pal.dark, 0.12)));
-    L.push(txt(`c-line${k}`, `Coordonnée ${k + 1}`, { x: safe.side, y, w: w - safe.side * 2, h: h * 0.036 }, t, { family: "Montserrat", weight: k === 0 ? 800 : 600, size: Math.round(w * (k === 0 ? 0.046 : 0.038)), color: pal.dark, align: "center" }));
+    if (k > 0) L.push(A(rect(`c-sep${k}`, `Séparateur ${k}`, { x: w * 0.3, y: y - rowH * 0.18, w: w * 0.4, h: 2 }, rgba(pal.dark, 0.12)), "grow", 0.6 + k * 0.08));
+    L.push(A(txt(`c-line${k}`, `Coordonnée ${k + 1}`, { x: safe.side, y, w: w - safe.side * 2, h: h * 0.036 }, t, { family: "Montserrat", weight: k === 0 ? 800 : 600, size: Math.round(w * (k === 0 ? 0.046 : 0.038)), color: pal.dark, align: "center" }), "rise", 0.6 + k * 0.08));
   });
   return L;
 }
@@ -286,6 +375,7 @@ export function productPoints(p: Project): string[] {
  * quand des plans réels existent), puis reçoit son calque d'habillage selon son rôle dans le récit.
  */
 const RHYTHM = ["wipe", "cut", "slide", "cut", "wipe", "zoom"] as const;
+const LAYOUTS: StatementLayout[] = ["lower", "stack", "panel", "center"];
 
 export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Clip[] {
   const videos = clips.filter((c) => c.source.kind === "video");
@@ -293,6 +383,8 @@ export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Cli
   const p = o.p;
   const services = p.business === "services";
   const items = services ? (p.services?.services ?? []).map((s) => s.name.trim()).filter(Boolean).slice(0, 3) : productPoints(p);
+  // Format long (20 s et plus) : une prestation par plan après le panneau.
+  const longForm = clips.reduce((t, c) => t + c.durationS, 0) >= 20;
   const area = (p.services?.area ?? "").trim();
   const city = area ? cityOf(area) : "";
   const tagline = usable(p.brand?.tagline) ? headline(p.brand!.tagline, 7) : "";
@@ -302,48 +394,90 @@ export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Cli
   const heroSub = services ? items.slice(0, 2).join(" · ") : usable(p.brand?.positioning) ? headline(p.brand!.positioning, 10) : "";
   // Messages des plans suivants : uniquement des informations du projet (rien d'inventé), sans répétition.
   const pool = [
-    ...(services ? items : []),
+    ...(services && !longForm ? items : []),
     tagline,
     usable(p.brand?.positioning) ? headline(p.brand!.positioning, 10) : "",
     usable(p.product.summary) ? headline(p.product.summary, 10) : "",
     ...(services ? [area, p.services?.hours ?? ""] : productPoints(p)),
     ...shots.map((s) => s?.onScreen ?? "").filter((t) => usable(t) && t.split(/\s+/).length <= 10),
-  ].map((t) => (t ? headline(t, 10) : "")).filter((t, i, a) => usable(t) && a.findIndex((x) => x.toLowerCase() === t.toLowerCase()) === i);
+  ].map((t) => (t ? headline(t, 10) : "")).filter((t, i, a) => {
+    const low = t.toLowerCase();
+    if (!usable(t) || a.findIndex((x) => x.toLowerCase() === low) !== i) return false;
+    // Jamais le texte du bouton de fin, ni le seul nom de la marque, ni (format long) une prestation qui a déjà son plan.
+    if (low === (o.cta ?? "").trim().toLowerCase() || low === o.brand.trim().toLowerCase()) return false;
+    return !(longForm && items.some((it) => it.toLowerCase() === low));
+  });
   let next = 0;
-  const say = () => pool[next++ % Math.max(1, pool.length)] ?? o.brand;
+  // Chaque message une seule fois : une fois épuisés, les plans restants « respirent » (image seule et marque).
+  const say = (): string | null => pool[next++] ?? null;
   let reuse = 0;
+  const uses = new Map<string, number>();
+  const out: Clip[] = [];
+  const imageUses = new Map<string, number>();
   let photoNext = 0;
   let panelDone = false;
-  return clips.map((c, k) => {
+  let stepNext = 0;
+  let layoutNext = 0;
+  // Petite étiquette au-dessus des messages : le métier (services) ou la catégorie (boutique).
+  const eyebrow = (p.product.category || "").trim().slice(0, 40);
+  for (const [k, c] of clips.entries()) {
     const s = shots[k];
     let source = c.source;
-    if (source.kind === "doc" && !(s?.method === "packshot")) {
-      // Reprise d'un plan réel, à un autre moment du plan, pour ne jamais montrer deux fois la même image.
-      const v = videos[reuse++ % videos.length];
-      if (v.source.kind === "video") {
-        const inS = Math.max(0, v.source.outS + 0.2 * (reuse - 1));
-        source = { ...v.source, inS, outS: inS + c.durationS };
+    // Une même photo n'apparaît jamais plus de deux fois : au-delà, un passage d'un plan réel la remplace.
+    if (source.kind === "image") {
+      const n = (imageUses.get(source.assetId) ?? 0) + 1;
+      imageUses.set(source.assetId, n);
+      const sameAsPrev = k > 0 && out[k - 1]?.source.kind === "image" && (out[k - 1].source as { assetId: string }).assetId === source.assetId;
+      if (n > 2 || sameAsPrev) {
+        imageUses.set(source.assetId, n - 1);
+        source = { kind: "doc", doc: { layers: [] } as never, animate: "none" } as Clip["source"];
       }
     }
+    if (source.kind === "doc" && !(s?.method === "packshot")) {
+      // Reprise d'un plan réel : le moins utilisé, jamais celui du plan précédent, à un autre moment du plan.
+      const prevId = k > 0 && out[k - 1]?.source.kind === "video" ? (out[k - 1].source as { assetId: string }).assetId : null;
+      const pool2 = videos.filter((v) => v.source.kind === "video" && (v.source as { assetId: string }).assetId !== prevId);
+      const v = [...(pool2.length ? pool2 : videos)].sort((a, b) => (uses.get((a.source as { assetId: string }).assetId) ?? 0) - (uses.get((b.source as { assetId: string }).assetId) ?? 0))[0];
+      if (v?.source.kind === "video") {
+        const n = uses.get(v.source.assetId) ?? 1;
+        const inS = Math.max(0, v.source.outS + (n - 1) * (c.durationS + 0.4));
+        source = { ...v.source, inS, outS: inS + c.durationS };
+      }
+      reuse++;
+    }
+    if (source.kind === "video") uses.set(source.assetId, (uses.get(source.assetId) ?? 0) + 1);
     // Boutique : le plan de démonstration montre le VRAI produit (sa photo), en léger mouvement de caméra.
     const photo = !services && c.part === "demonstration" && o.productPhotos?.[photoNext];
-    if (photo && source.kind !== "image") {
+    if (photo && source.kind !== "image" && (imageUses.get(photo) ?? 0) < 2 && !(k > 0 && out[k - 1]?.source.kind === "image")) {
       source = { kind: "image", assetId: photo, motion: "push_in", crop: null };
+      imageUses.set(photo, (imageUses.get(photo) ?? 0) + 1);
       photoNext++;
     }
     const isVideo = source.kind === "video" || source.kind === "image";
     let overlays = c.overlays;
     if (c.part === "cta") {
       const lines = services ? contactLines(p) : [price ? `${p.product.name} — ${price}` : p.product.name, o.brand].filter((x, i, a) => x && !a.slice(0, i).some((y) => y.toLowerCase().includes(x.toLowerCase())));
-      overlays = contactOverlay(o, services ? C("Un projet ? Parlons-en.", "A project? Let's talk.") : tagline || p.product.name, lines, services ? C("Contactez-nous", "Contact us") : o.cta);
+      // Fin adaptée au métier : on invite à table un client de restaurant, on propose d'en parler à un client d'artisan.
+      const hospitality = songStyleFor(p) === "bistro";
+      const title = services ? (hospitality ? C("À bientôt à table", "See you at the table") : C("Un projet ? Parlons-en.", "A project? Let's talk.")) : tagline || p.product.name;
+      overlays = contactOverlay(o, title, lines, o.cta?.trim() || (services ? C("Contactez-nous", "Contact us") : C("Découvrir", "Discover")));
     } else if (!isVideo) overlays = c.overlays;
     else if (k === 0) overlays = heroOverlay(o, heroLines, heroSub, services ? tagline : "");
     else if (!panelDone && items.length >= 3 && (c.part === "development" || c.part === "demonstration")) {
       panelDone = true;
       overlays = servicesOverlay(o, services ? C("Nos prestations", "Our services") : C("Les points forts", "Highlights"), items, area || tagline);
-    } else overlays = statementOverlay(o, say(), `m${k}`);
+    } else if (longForm && panelDone && stepNext < items.length && c.part !== "conclusion") {
+      // Format long : chaque prestation a son plan (numéro, pictogramme, nom).
+      overlays = stepOverlay(o, stepNext + 1, services ? C("Prestation", "Service") : C("Point fort", "Highlight"), items[stepNext], o.icons?.[stepNext] ?? null, `st${k}`);
+      stepNext++;
+    } else {
+      const text = say();
+      overlays = text ? statementOverlay(o, text, `m${k}`, LAYOUTS[layoutNext++ % LAYOUTS.length], eyebrow) : [vignette(o, `b${k}`), ...brandMark(o, `b${k}`, "#FFFFFF", 0.1)];
+    }
     // Rythme varié (glissement, coupe franche, volet, zoom) : jamais le même effet à chaque plan ; la fin glisse.
     const kind = k === 0 ? "cut" : c.part === "cta" ? "wipe" : RHYTHM[(k - 1) % RHYTHM.length];
-    return { ...c, source, overlays, transitionIn: { kind, durationS: kind === "cut" ? 0 : kind === "wipe" ? 0.5 : 0.35 } };
-  });
+    out.push({ ...c, source, overlays, transitionIn: { kind, durationS: kind === "cut" ? 0 : kind === "wipe" ? 0.5 : 0.35 } });
+  }
+  void reuse;
+  return out;
 }

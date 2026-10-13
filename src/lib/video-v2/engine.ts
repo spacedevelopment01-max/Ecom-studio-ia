@@ -150,6 +150,12 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     // Plans libres déjà pris dans cette vidéo (jamais deux fois le même) et rotation des recherches.
     const stockTaken = new Set<string>();
     const stockIndex = { n: 0 };
+    // Rythme d'une publicité : un plan réel de plus de 3,2 s est coupé en deux plans différents (jamais une image
+    // qui s'éternise) — seulement sans voix enregistrée sur ce plan et sans génération.
+    if (intent.kind !== "ugc" && deps.stockClip) {
+      shots = splitLongShots(shots, !!deps.voice);
+      result.shots = shots;
+    }
     for (const s of shots) {
       const out = await resolveShot({ p, ctx, deps, s, inv, strategy, intent, budget, stats, persona, characterRef, notes, pal, typo, size, safe, insight, stockTaken, stockIndex });
       media.set(s.id, out.media);
@@ -172,7 +178,7 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
         return null;
       });
       if (track) {
-        doc.audio.music = { source: "library", assetId: track.assetId, licence: track.licence, gainDb: -12 };
+        doc.audio.music = { source: "library", assetId: track.assetId, licence: track.licence, gainDb: -12, ...(track.startS ? { startS: track.startS } : {}) };
         notes.push(`musique libre de droits — ${track.credit}`);
       } else notes.push(`musique : morceau composé par le studio (style ${doc.audio.music.style ?? doc.audio.music.mood}, vrais instruments)`);
     }
@@ -587,6 +593,16 @@ async function promoIcons(p: Project, pal: Palette): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+/** Coupe en deux les plans longs montés sur des images réelles (voir l'appel). */
+export function splitLongShots(shots: ShotPlan[], voiced: boolean): ShotPlan[] {
+  return shots.flatMap((s) => {
+    const splittable = s.durationS >= 3.2 && s.source.kind !== "generate" && s.method !== "packshot" && s.part !== "cta" && !(voiced && s.voice.trim());
+    if (!splittable) return [s];
+    const a = Math.round((s.durationS / 2) * 100) / 100;
+    return [{ ...s, durationS: a }, { ...s, id: `${s.id}b`, durationS: Math.round((s.durationS - a) * 100) / 100, onScreen: "", voice: "", transition: "cut" as const }];
+  });
 }
 
 /**

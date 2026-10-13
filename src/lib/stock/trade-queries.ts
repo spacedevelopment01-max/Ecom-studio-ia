@@ -36,7 +36,9 @@ const TRADES: Trade[] = [
   { re: /massag|kine|osteo/, queries: ["massage therapy room", "physiotherapy treatment"], must: ["massage", "therapy", "spa", "physiotherapy", "wellness"] },
   { re: /photograph/, queries: ["photographer camera studio", "photo shoot camera"], must: ["camera", "photographer", "photography", "photo", "lens"] },
   { re: /boulang|patiss/, queries: ["artisan bakery bread", "pastry baking kitchen"], must: ["bread", "bakery", "pastry", "baking", "croissant", "cake"] },
-  { re: /traiteur|restaura|cuisine du monde/, queries: ["catering food buffet", "chef plating dish"], must: ["food", "catering", "dish", "buffet", "chef", "meal", "cuisine"] },
+  // Restaurant (salle, chef, table, vin) distinct du traiteur (buffet) : « food » seul ramenait fraises et bacon cru.
+  { re: /restaura|bistro|brasserie/, queries: ["restaurant table", "chef cooking", "wine glass", "restaurant"], must: ["restaurant", "chef", "dining", "dinner", "lunch", "table setting", "wine", "cooking", "dish", "cuisine"] },
+  { re: /traiteur|cuisine du monde/, queries: ["catering food buffet", "chef plating dish"], must: ["food", "catering", "dish", "buffet", "chef", "meal", "cuisine"] },
   { re: /informati|ordinateur|depannage pc/, queries: ["computer repair technician", "laptop repair desk"], must: ["computer", "laptop", "technology", "repair", "keyboard"] },
   { re: /\bcoach sportif|\bcoaching sportif|fitness|\bsalle de sport/, queries: ["fitness training gym", "personal trainer workout"], must: ["fitness", "gym", "workout", "training", "exercise", "sport"] },
   { re: /\barchitect|\bdecorat(eur|rice) d.?interieur|\bamenagement interieur/, queries: ["interior design living room", "architect plans desk"], must: ["interior", "design", "architecture", "architect", "blueprint", "furniture"] },
@@ -90,7 +92,7 @@ export function tagsMatch(alt: string, must: string[]): boolean {
  */
 export function rankStock<T extends { alt: string }>(found: T[], must: string[], visualCheck: boolean, negative: string[] = GLOBAL_NEGATIVES, opts: { people?: boolean } = {}): T[] {
   // Image ou vidéo générée par IA déposée sur la banque : jamais présentée comme une vraie photo ou un vrai plan.
-  found = found.filter((p) => !/\bai[ -]?generated\b|\bai[ -]art\b/i.test(p.alt));
+  found = found.filter((p) => !/\bai[ -]?(generated|created|art|image|render)\b|\bgenerative ai\b|\bmidjourney\b|\bstable diffusion\b/i.test(p.alt));
   // Règle de présence humaine : personnes non autorisées → toute photo (ou vidéo) décrite avec une personne est
   // écartée d'emblée ; le contrôle visuel refuse ensuite celles dont la description ne le disait pas.
   if (opts.people === false) found = found.filter((p) => !mentionsPerson(p.alt));
