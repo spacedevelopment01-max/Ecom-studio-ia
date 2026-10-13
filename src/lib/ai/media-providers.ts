@@ -367,19 +367,19 @@ export function imageUnavailableReason(usage?: MediaUsage): string | null {
 }
 
 /**
- * Parcours d'une image qui montre le produit RÉEL, selon l'usage : toujours un décor VIDE généré (aucune photo du
- * produit envoyée), puis le produit réel composé par le studio, pixels d'origine. La retouche par masque n'est plus
- * utilisée : à l'essai réel, le modèle y redessinait un second produit (plus sombre) derrière le vrai.
- *  - modèle choisi pour « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) s'il est OpenAI ;
- *  - sinon modèle de l'usage ;
- *  - null : aucun modèle utilisable (rien n'est généré).
+ * Parcours d'une image qui montre le produit RÉEL : une vraie photographie publicitaire générée À PARTIR de la photo
+ * du produit (référence), le produit intégré à la scène (même lumière, ombre de contact, échelle réelle), comme les
+ * publicités de référence du propriétaire. Le produit n'est plus jamais découpé puis collé sur un décor (photo libre
+ * ou décor vide généré) : rendu « produit posé devant une photo floue », refusé par le propriétaire.
+ * La fidélité au vrai produit est vérifiée ensuite par le contrôle visuel (photo de référence à l'appui).
+ *  - modèle choisi pour « Retouches produit » (images produit) ou pour l'usage lui-même (publicités) ;
+ *  - seulement un modèle qui accepte une image de référence (OpenAI, Gemini, fal selon le modèle) ;
+ *  - null : aucun modèle utilisable (rien n'est généré, le studio garde ses mises en scène dessinées).
  */
-export function productImagePath(usage: "product_image" | "ad_visual"): { path: "composite_plate"; usage: MediaUsage } | null {
+export function productImagePath(usage: "product_image" | "ad_visual"): { path: "reference_scene"; usage: MediaUsage } | null {
   const editUsage: MediaUsage = usage === "product_image" ? "product_edit" : usage;
-  const edit = routeMedia("image_generation", "mask", { usage: editUsage });
-  if (edit && edit.provider === "openai") return { path: "composite_plate", usage: editUsage };
-  const gen = routeMedia("image_generation", undefined, { usage });
-  return gen ? { path: "composite_plate", usage } : null;
+  for (const u of [editUsage, usage] as MediaUsage[]) if (routeMedia("image_generation", undefined, { usage: u, references: 1 })) return { path: "reference_scene", usage: u };
+  return null;
 }
 
 /** Fournisseur et modèle que prendra une génération de cet usage (affichage, notes de la tâche), null si aucun. */
@@ -451,6 +451,22 @@ async function productPlateImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
   const text = `Photograph of an empty product-photography set, ${input.prompt}. The center foreground surface must be empty, flat and clear, seen at eye level from slightly above (a real product will be placed there later, standing on that surface). Aspect ratio ${input.aspect}. No text, no lettering, no logo, no product, no packaging, no bottle, no device, no people, no hands.`;
   const aspect = input.aspect === "2:3" ? "4:5" : input.aspect;
   return generateImageImpl(ctx, { text, aspect, reference: null, quality: "high", usage: input.usage ?? "product_image" });
+}
+
+/**
+ * Photographie publicitaire du produit réel, générée à partir de sa photo (référence) : le produit reproduit à
+ * l'identique, intégré à la scène décrite, avec un espace libre pour le titre (ajouté ensuite par le studio).
+ * `reference` : photo du produit (détourage posé sur fond blanc, ou packshot).
+ */
+async function productSceneImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3"; reference: Buffer; textZone?: string | null; usage?: MediaUsage }) {
+  const text = `Professional advertising photograph for a premium brand campaign. Scene: ${input.prompt}.
+The product shown in the reference image is the hero of the picture: reproduce it exactly as it is (same shape, proportions, materials, colours, details, label, logo and printed text); do not redesign it, do not change its colour, do not add a second product or copies of it.
+The product sits naturally in the scene at a realistic scale, sharp and in focus, lit by the same light as the scene, with a real contact shadow on the surface it rests on; shallow depth of field behind it, never a flat cut-out look.
+Leave clean, uncluttered negative space ${input.textZone ? `in the ${input.textZone}` : "on one side"} for a headline that will be added later.
+No text, no lettering, no captions, no watermark, no added logo, no price tag. No people, no hands, no faces. Aspect ratio ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
+  const aspect = input.aspect === "2:3" ? "4:5" : input.aspect;
+  const reference = await sharp(input.reference).rotate().flatten({ background: "#FFFFFF" }).jpeg({ quality: 90 }).toBuffer();
+  return generateImageImpl(ctx, { text, aspect, reference, quality: "high", usage: input.usage ?? "product_image" });
 }
 
 /**
@@ -832,6 +848,7 @@ export function falRefusal(status: number, body: string): string {
 
 export const openaiScene = withMediaBackup("image", traced("image_generation", openaiSceneImpl), { usage: (_c, i) => i.usage ?? "product_edit", providers: ["openai"] });
 export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
+export const productScene = withMediaBackup("image", traced("image_generation", productSceneImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 /** Ancien nom (décor vide) : même génération, par le modèle de l'usage. */
 export const geminiPlate = productPlate;
 export const veoClip = traced("video_generation", veoClipImpl);

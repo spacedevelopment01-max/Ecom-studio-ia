@@ -17,11 +17,11 @@ export const PIPELINE: Record<VisualKind, Stage[]> = {
   banner: ["reuse", "search", "generate"],
   // Images du produit RÉEL : la banque d'images n'a pas votre produit, mais elle a des décors vides (« plate ») où le
   // studio pose le produit réel, gratuitement ; la génération d'un décor n'est qu'un dernier recours.
-  product_image: ["reuse", "plate", "generate"],
+  product_image: ["reuse", "generate"],
   packshot: ["reuse", "cutout", "generate"],
-  lifestyle: ["reuse", "plate", "generate"],
-  usage_scene: ["reuse", "plate", "generate"],
-  ad_image: ["reuse", "plate", "generate"],
+  lifestyle: ["reuse", "generate"],
+  usage_scene: ["reuse", "generate"],
+  ad_image: ["reuse", "generate"],
   // Demandes simples : un seul outil.
   retouch: ["edit"],
   cutout: ["cutout"],

@@ -263,8 +263,11 @@ describe("rendus locaux et mises en page", () => {
     expect(providers).toMatch(/Keep the existing product exactly as it is/);
     const images = fs.readFileSync("src/lib/engine/images.ts", "utf8");
     expect(images).toMatch(/verifyAiImage/);
-    // Le produit réel est composé par le studio : aucune photo du produit n'est envoyée à une IA d'images.
-    expect(images).toMatch(/aucune photo du produit n'est envoyée à une IA d'images/);
+    // Photo publicitaire générée à partir de la photo du produit (référence), produit reproduit à l'identique ;
+    // plus jamais de produit détouré collé sur un décor (photo libre ou décor vide généré).
+    expect(providers).toMatch(/reproduce it exactly as it is/);
+    expect(images).toMatch(/productScene\(/);
+    expect(images).not.toMatch(/stockPlate|productPlate\(/);
     expect(images).not.toMatch(/openaiScene\(/);
     const prompts = fs.readFileSync("src/lib/ai/prompts.ts", "utf8");
     expect(prompts).toMatch(/tu ne décris JAMAIS le produit lui-même/);

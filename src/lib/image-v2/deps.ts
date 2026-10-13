@@ -12,7 +12,7 @@
 import sharp from "sharp";
 import { activeProviderKey } from "../ai/config";
 import { llmConfigured, llmJson } from "../ai/llm";
-import { ambianceImage, imageProviderAvailable, mediaRouteFor, productImagePath, productPlate } from "../ai/media-providers";
+import { ambianceImage, imageProviderAvailable, mediaRouteFor, productImagePath, productScene } from "../ai/media-providers";
 import type { MediaUsage } from "../ai/media-routing";
 import { brainContext } from "../ai/context";
 import { assetData, getAsset } from "../library";
@@ -25,7 +25,7 @@ import { ImageReviewSchema, REVIEW_SYSTEM } from "./quality";
 import { STOCK_PROVIDERS, type StockProvider } from "./sources";
 import type { ImageReview, StockCandidate, VisualBrief } from "./types";
 
-export type GenerationPath = "masked_edit" | "composite_plate" | "text_to_image" | "none";
+export type GenerationPath = "masked_edit" | "composite_plate" | "reference_scene" | "text_to_image" | "none";
 
 export type ImageV2Deps = {
   providers: StockProvider[];
@@ -122,10 +122,10 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
     if (!b.aiActive) return { path: "none", usage };
     if (brief.productFidelity) {
       if (!brief.references.length) return { path: "none", usage };
-      // Décor vide généré par le modèle choisi, puis produit réel composé par le studio. Jamais de retouche par masque :
-      // le modèle y redessine le produit (second produit, plus sombre, derrière le vrai — constaté à l'essai réel).
+      // Photographie publicitaire générée à partir de la photo du produit (référence) : le produit intégré à la scène.
+      // Plus jamais de produit détouré collé sur un décor (rendu « produit devant une photo floue », refusé).
       const r = productImagePath(usage === "ad_visual" ? "ad_visual" : "product_image");
-      return r ? { path: "composite_plate", usage: r.usage } : { path: "none", usage };
+      return r ? { path: "reference_scene", usage: r.usage } : { path: "none", usage };
     }
     return { path: imageProviderAvailable({ usage }) ? "text_to_image" : "none", usage };
   };
@@ -164,10 +164,10 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
     async generate(brief, prompt, reference, key) {
       const { path, usage } = routeFor(brief);
       const aspect = generationAspect(brief.format.aspect);
-      if (path === "composite_plate" && reference) {
-        const r = mediaRouteFor(usage);
-        const plate = await productPlate({ ...base, usageKey: key }, { prompt, aspect, usage });
-        return { img: await compositeProduct(plate, reference, brief.format.aspect, brief.format.textZone), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
+      if (path === "reference_scene" && reference) {
+        const r = mediaRouteFor(usage, { references: 1 });
+        const zone = brief.format.textZone && brief.format.textZone !== "none" ? `${brief.format.textZone} part of the frame` : null;
+        return { img: await productScene({ ...base, usageKey: key }, { prompt, aspect, reference, textZone: zone, usage }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       if (path === "text_to_image") {
         const r = mediaRouteFor(usage);
