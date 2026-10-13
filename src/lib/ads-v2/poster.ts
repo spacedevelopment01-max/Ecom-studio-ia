@@ -15,6 +15,7 @@ import { C } from "../i18n-server";
 import { saveVersion } from "../ad-doc/store";
 import type { AdDocument } from "../ad-doc/types";
 import { adArt, treatmentsFor, type AdArt, type AdLayout, type AdVariant, type LogoPlacement, type Treatment } from "./art";
+import { artDirection } from "../art-direction";
 import { isTemplateLayout, templateById, templatesFor, TEMPLATES } from "./library";
 import { composeAd, type ComposeInput, type ComposeMetrics } from "./compose";
 import type { FormatSpec } from "./types";
@@ -81,7 +82,11 @@ export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; 
   const engine = (hasPhoto ? art.cycle.filter((l) => l !== "typographic" && l !== "band") : (["typographic"] as AdLayout[])) as string[];
   // Avec une photo, elle remplit le fond : pas de modèle où elle n'occupe qu'une case (collages, modèles typographiques).
   // Avec un produit détouré : les modèles « produit » qui le mettent en scène (les autres l'oublieraient).
-  const tpls = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto)) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage")))).map((t) => `tpl:${t.id}`);
+  const all = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto)) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage"))));
+  // Direction artistique : seules les familles qui portent la ligne de la marque (s'il en reste assez).
+  const da = artDirection(art);
+  const inLine = all.filter((t) => da.families.includes(t.family));
+  const tpls = (inLine.length >= 6 ? inLine : all).map((t) => `tpl:${t.id}`);
   // Ordre propre à la graine : mélange déterministe, modèles et compositions du moteur entremêlés.
   const pool = [...tpls, ...engine].map((l, k) => ({ l, r: (Math.imul(n ^ (k * 2654435761), 2246822519) >>> 0) % 1000 })).sort((a, b) => a.r - b.r).map((x) => x.l);
   const avoid = new Set(recent.slice(0, Math.max(0, Math.min(10, pool.length - 2))).map((r) => r.layout));
@@ -90,7 +95,9 @@ export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; 
   const rot = <T,>(xs: T[], k: number) => [...xs.slice(k % xs.length), ...xs.slice(0, k % xs.length)];
   const tpl = isTemplateLayout(layout) ? templateById(layout.slice(4)) : null;
   const ts: Treatment[] = tpl ? (tpl.treatments ?? ["natural"]) : treatmentsFor(layout as AdLayout, art.style);
-  const treatment = rot(ts, Math.floor(n / 7)).find((t) => t !== recent[0]?.treatment) ?? ts[0];
+  // Étalonnage signature de la marque dès que la composition le permet (le fil garde une même lumière).
+  const sig = da.grades.filter((g) => ts.includes(g) && g !== recent[0]?.treatment);
+  const treatment = sig[0] ?? rot(ts, Math.floor(n / 7)).find((t) => t !== recent[0]?.treatment) ?? ts[0];
   const scheme = tpl ? (rot(tpl.schemes, Math.floor(n / 5)).find((x) => x !== recent[0]?.scheme) ?? tpl.schemes[0]) : undefined;
   const logos: LogoPlacement[] = ["column", "corner", "foot"];
   const logo = rot(logos, Math.floor(n / 3)).find((x) => x !== recent[0]?.logo) ?? "column";

@@ -15,7 +15,8 @@ import { C } from "../i18n-server";
 import { songStyleFor } from "../media/song";
 import { resolveProductCategory } from "../image-v2/categories";
 import { buttonLayer, imageLayer, inkOn, rectLayer, textLayer, type Palette, type Typo } from "./doc";
-import type { Clip, ShotPlan, VideoDocument } from "./types";
+import type { Clip, ShotPlan, Transition, VideoDocument } from "./types";
+import type { VideoLook } from "../art-direction";
 
 export type PromoInput = {
   p: Project;
@@ -34,6 +35,8 @@ export type PromoInput = {
   icons?: string[];
   cta: string;
   message: string;
+  /** Direction artistique de la marque (typographie, élément graphique, mot fort, rythme) ; sinon habillage franc. */
+  look?: VideoLook;
 };
 
 const rgba = (hex: string, a: number) => {
@@ -45,6 +48,7 @@ const rgba = (hex: string, a: number) => {
 
 /** Police d'affiche : bâton très gras pour les services et les marques directes, titre de la marque sinon. */
 function display(o: PromoInput): { family: string; weight: number; upper: boolean } {
+  if (o.look) return o.look.type === "brand" ? { family: o.typo.heading, weight: o.typo.headingWeight ?? 600, upper: false } : o.look.type === "sans" ? { family: "Montserrat", weight: 800, upper: false } : { family: "Montserrat", weight: 800, upper: true };
   const premium = (o.p.brand?.personality ?? []).some((x) => /premium|raffin|luxe|élégan|epur|épur/i.test(x));
   return premium ? { family: o.typo.heading, weight: o.typo.headingWeight ?? 600, upper: false } : { family: "Montserrat", weight: 800, upper: true };
 }
@@ -437,6 +441,80 @@ export function projectTexts(p: Project, x: { services: boolean; items: string[]
 
 const RHYTHM = ["wipe", "cut", "slide", "cut", "wipe", "zoom"] as const;
 const LAYOUTS: StatementLayout[] = ["lower", "stack", "panel", "center"];
+/** Rythme des transitions selon la direction artistique : posé (fondus), franc (coupes et volets), doux. */
+const MOTION_RHYTHM: Record<VideoLook["motion"], readonly Transition[]> = {
+  slow: ["fade", "cut", "fade", "zoom"],
+  punchy: RHYTHM,
+  gentle: ["fade", "slide", "cut", "fade", "wipe"],
+};
+
+/**
+ * Applique la direction artistique aux calques d'un plan :
+ *  - élément graphique : les formes inclinées (aplats francs) sont réservées à la ligne « affiche » ; la ligne
+ *    « éditoriale » reçoit un cadre de filets fins, la ligne « douce » des panneaux plus arrondis ;
+ *  - mot fort : souligné d'un filet (le texte reste blanc) au lieu d'un aplat ;
+ *  - rythme : animations plus lentes et posées (fondu, montée) ou douces, jamais de rebond pour une ligne raffinée.
+ */
+export function applyLook(layers: Layer[], o: PromoInput): Layer[] {
+  const look = o.look;
+  if (!look) return layers;
+  const acc = accentOf(o.pal);
+  let out = layers.filter((l) => look.motif === "block" || l.name !== "Angle");
+  if (look.highlight === "underline")
+    out = out.map((l, i, arr) => {
+      if (l.kind === "shape" && l.name === "Surlignage") {
+        const t = Math.max(4, Math.round(o.w * 0.006));
+        return { ...l, y: l.y + l.h - t * 0.5, h: t, radius: 0, fill: acc };
+      }
+      const prev = arr[i - 1];
+      if (l.kind === "text" && prev?.kind === "shape" && prev.name === "Surlignage") return { ...l, color: "#FFFFFF", shadow: shadow };
+      return l;
+    });
+  if (look.motif === "soft") {
+    // Ligne douce : formes arrondies partout (panneaux, cartes, mot fort en pastille, vignettes), accroche dans une pastille.
+    out = out.map((l) => {
+      if (l.kind !== "shape") return l;
+      if (l.name === "Panneau" || l.name === "Carte") return { ...l, radius: Math.round(o.w * 0.06) };
+      if (l.name === "Surlignage") return { ...l, radius: Math.round(l.h / 2), x: l.x - o.w * 0.01, w: l.w + o.w * 0.02 };
+      if (l.name.startsWith("Cadre ")) return { ...l, radius: Math.round(o.w * 0.04) };
+      if (l.name === "Trait") return { ...l, radius: Math.round(l.w / 2) };
+      return l;
+    });
+    out = out.map((l) => (l.kind === "image" && l.name.startsWith("Vignette ") ? { ...l, radius: Math.round(o.w * 0.035) } : l));
+    const sub = out.findIndex((l) => l.id === "h-sub");
+    if (sub >= 0) {
+      const s0 = out[sub] as TextLayer;
+      const pw = Math.min(o.w - o.safe.side * 2, textWidth(s0.text, s0.font.family, s0.font.weight, s0.font.size, s0.uppercase) + s0.font.size * 2.2);
+      // L'accroche descend un peu : la pastille ne touche jamais le titre.
+      const sy = s0.y + s0.font.size * 0.9;
+      const pill = A(rect("h-sub-pill", "Pastille", { x: s0.x - s0.font.size * 1.1, y: sy - s0.font.size * 0.55, w: pw, h: s0.font.size * 2.1 }, rgba(acc, 0.92), { radius: s0.font.size * 1.05 }), s0.anim?.in ?? "rise", Math.max(0, (s0.anim?.delay ?? 0.5) - 0.05));
+      out.splice(sub, 1, pill, { ...s0, y: sy, color: inkOn(acc), shadow: null });
+    }
+  }
+  // Nom de la marque (sans logo) dans la police des titres pour les lignes « marque ».
+  if (look.type === "brand") out = out.map((l) => (l.kind === "text" && l.name === "Marque" ? { ...l, font: { ...l.font, family: o.typo.heading, weight: Math.min(700, o.typo.headingWeight ?? 600) } } : l));
+  if (look.motif === "rule") out = out.map((l) => (l.kind === "shape" && l.name.startsWith("Cadre ") ? { ...l, fill: "rgba(255,255,255,0.92)", radius: 0 } : l.kind === "image" && l.name.startsWith("Vignette ") ? { ...l, radius: 0 } : l));
+  if (look.motif === "rule" && out.some((l) => l.id.startsWith("h-title"))) {
+    // Ouverture : cadre de filets fins dans les marges, qui se dessine.
+    const t = Math.max(2, Math.round(o.w * 0.0025));
+    const m = o.safe.side * 0.6, top = o.safe.top * 0.6, bottom = o.h - o.safe.bottom * 0.6;
+    const c = "rgba(255,255,255,0.75)";
+    out.push(
+      A(rect("h-frame-t", "Filet", { x: m, y: top, w: o.w - m * 2, h: t }, c), "grow", 0.3, 0.9),
+      A(rect("h-frame-b", "Filet", { x: m, y: bottom, w: o.w - m * 2, h: t }, c), "grow", 0.4, 0.9),
+      A(rect("h-frame-l", "Filet", { x: m, y: top, w: t, h: bottom - top }, c), "fade", 0.5, 0.9),
+      A(rect("h-frame-r", "Filet", { x: o.w - m - t, y: top, w: t, h: bottom - top }, c), "fade", 0.5, 0.9),
+    );
+  }
+  if (look.motion !== "punchy")
+    out = out.map((l) => {
+      if (!l.anim) return l;
+      const k = look.motion === "slow" ? 1.6 : 1.25;
+      const kind = l.anim.in === "pop" || l.anim.in === "drop" ? (look.motion === "slow" ? "fade" : "rise") : look.motion === "slow" && (l.anim.in === "left" || l.anim.in === "right") ? "rise" : l.anim.in;
+      return { ...l, anim: { in: kind, delay: Math.round(l.anim.delay * (look.motion === "slow" ? 1.3 : 1.1) * 1000) / 1000, dur: Math.round((l.anim.dur ?? 0.45) * k * 1000) / 1000 } };
+    });
+  return out;
+}
 
 export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Clip[] {
   const videos = clips.filter((c) => c.source.kind === "video");
@@ -524,8 +602,10 @@ export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Cli
       overlays = text ? statementOverlay(o, text, `m${k}`, LAYOUTS[layoutNext++ % LAYOUTS.length], eyebrow) : [vignette(o, `b${k}`), ...brandMark(o, `b${k}`, "#FFFFFF", 0.1)];
     }
     // Rythme varié (glissement, coupe franche, volet, zoom) : jamais le même effet à chaque plan ; la fin glisse.
-    const kind = k === 0 ? "cut" : c.part === "cta" ? "wipe" : RHYTHM[(k - 1) % RHYTHM.length];
-    out.push({ ...c, source, overlays, transitionIn: { kind, durationS: kind === "cut" ? 0 : kind === "wipe" ? 0.5 : 0.35 } });
+    const rhythm = o.look ? MOTION_RHYTHM[o.look.motion] : RHYTHM;
+    const kind: Transition = k === 0 ? "cut" : c.part === "cta" ? (o.look?.motion === "slow" ? "fade" : "wipe") : rhythm[(k - 1) % rhythm.length];
+    const slow = o.look?.motion === "slow" ? 1.6 : o.look?.motion === "gentle" ? 1.25 : 1;
+    out.push({ ...c, source, overlays: o.look ? applyLook(overlays, o) : overlays, transitionIn: { kind, durationS: kind === "cut" ? 0 : Math.round((kind === "wipe" ? 0.5 : 0.35) * slow * 100) / 100 } });
   }
   void reuse;
   return out;

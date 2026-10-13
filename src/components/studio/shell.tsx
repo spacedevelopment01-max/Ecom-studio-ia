@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ArrowRight, X, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -11,24 +11,27 @@ import { TutorialButton, TutorialsMenuLink } from "./tutorial";
 import { AiUsageBar, PlanLink, QuotaBanner, useBilling } from "../billing-client";
 import type { BillingView } from "@/lib/plans";
 import { DeleteProjectButton } from "./delete-project";
+import { advancedOpen, space, spacePurpose, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
+import { projectProgress } from "@/lib/project-progress";
 
 export const TABS = [
-  { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass, group: "Création", groupEn: "Create" },
-  { id: "produit", label: "Produit", labelEn: "Product", icon: Package, group: "Création", groupEn: "Create" },
-  { id: "marque", label: "Marque", labelEn: "Brand", icon: Palette, group: "Création", groupEn: "Create" },
-  { id: "boutique", label: "Boutique", labelEn: "Store", icon: Store, group: "Création", groupEn: "Create" },
-  { id: "images", label: "Images", labelEn: "Images", icon: ImageIcon, group: "Création", groupEn: "Create" },
-  { id: "videos", label: "Vidéos", labelEn: "Videos", icon: Film, group: "Création", groupEn: "Create" },
-  { id: "prompts", label: "Prompts", labelEn: "Prompts", icon: BookOpen, group: "Création", groupEn: "Create" },
-  { id: "publications", label: "Publications", labelEn: "Posts", icon: Send, group: "Diffusion", groupEn: "Publish" },
-  { id: "blog", label: "Blog", labelEn: "Blog", icon: Newspaper, group: "Diffusion", groupEn: "Publish" },
-  { id: "calendrier", label: "Calendrier", labelEn: "Calendar", icon: CalendarDays, group: "Diffusion", groupEn: "Publish" },
-  { id: "publicites", label: "Publicités", labelEn: "Ads", icon: Megaphone, group: "Diffusion", groupEn: "Publish" },
-  { id: "fichiers", label: "Fichiers", labelEn: "Files", icon: FolderTree, group: "Ressources", groupEn: "Resources" },
-  { id: "connexions", label: "Connexions", labelEn: "Connections", icon: Plug, group: "Ressources", groupEn: "Resources" },
-] as const;
+  { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass },
+  { id: "produit", label: "Produit", labelEn: "Product", icon: Package },
+  { id: "marque", label: "Marque", labelEn: "Brand", icon: Palette },
+  { id: "boutique", label: "Boutique", labelEn: "Store", icon: Store },
+  { id: "images", label: "Images", labelEn: "Images", icon: ImageIcon },
+  { id: "videos", label: "Vidéos", labelEn: "Videos", icon: Film },
+  { id: "publications", label: "Publications", labelEn: "Posts", icon: Send },
+  { id: "calendrier", label: "Calendrier", labelEn: "Calendar", icon: CalendarDays },
+  { id: "publicites", label: "Publicités", labelEn: "Ads", icon: Megaphone },
+  { id: "blog", label: "Blog", labelEn: "Blog", icon: Newspaper },
+  { id: "prompts", label: "Prompts", labelEn: "Prompts", icon: BookOpen },
+  { id: "fichiers", label: "Fichiers", labelEn: "Files", icon: FolderTree },
+  { id: "connexions", label: "Connexions", labelEn: "Connections", icon: Plug },
+] as const satisfies readonly { id: SpaceId; label: string; labelEn: string; icon: unknown }[];
 export type TabId = (typeof TABS)[number]["id"];
-const GROUPS = [["Création", "Create"], ["Diffusion", "Publish"], ["Ressources", "Resources"]] as const;
+/** Espaces d'un groupe du plan du studio (votre projet, créer, diffuser, outils avancés). */
+const tabsOf = (g: SpaceGroup) => TABS.filter((x) => space(x.id)?.group === g);
 /** Libellé d'un onglet dans la langue de l'interface ; pour un site de services, « Produit » devient « Activité » et « Boutique » « Site ». */
 export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en", business?: "products" | "services") =>
   t.id === "produit" && business === "services" ? (lang === "en" ? "Business" : "Activité") : t.id === "boutique" && business === "services" ? (lang === "en" ? "Website" : "Site") : lang === "en" ? t.labelEn : t.label;
@@ -218,6 +221,202 @@ function MobileMenu({ tab, business, isAdmin, billing }: { tab: string; business
   );
 }
 
+/**
+ * Recherche rapide (Ctrl+K ou ⌘K) : taper quelques lettres pour aller à un espace du projet, à un autre projet, au
+ * compte ou aux tutoriels. Flèches pour choisir, Entrée pour ouvrir, Échap pour fermer.
+ */
+function QuickSearch({ projectId, business }: { projectId: string; business?: "products" | "services" }) {
+  const t = useT();
+  const { lang } = useLang();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [sel, setSel] = useState(0);
+  const { data } = useApi<{ projects: { id: string; name: string }[] }>(open ? "/api/projects" : null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  useEffect(() => {
+    if (open) (setQ(""), setSel(0));
+  }, [open]);
+  const fold = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const items = [
+    ...TABS.map((x) => ({ key: x.id, label: tabLabel(x, lang, business), group: t("Espaces du projet", "Project spaces"), href: `/studio/${projectId}/${x.id}`, Icon: tabIcon(x, business), hint: spacePurpose(x.id, lang, business) })),
+    ...(data?.projects ?? []).filter((x) => x.id !== projectId).map((x) => ({ key: x.id, label: x.name, group: t("Autres projets", "Other projects"), href: `/studio/${x.id}/pilote`, Icon: Store, hint: null as string | null })),
+    { key: "all", label: t("Tous mes projets", "All my projects"), group: t("Compte", "Account"), href: "/studio", Icon: LayoutGrid, hint: null },
+    { key: "account", label: t("Mon compte et forfait", "My account and plan"), group: t("Compte", "Account"), href: "/studio/compte", Icon: Settings, hint: null },
+  ].filter((x) => !q.trim() || fold(`${x.label} ${x.hint ?? ""}`).includes(fold(q.trim())));
+  const go = (href: string) => {
+    setOpen(false);
+    router.push(href);
+  };
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm text-muted hover:border-ink hover:text-ink md:flex" aria-label={t("Recherche rapide (Ctrl+K)", "Quick search (Ctrl+K)")} data-quick-search>
+        <Search className="size-4" /> <span className="hidden xl:inline">{t("Aller à…", "Go to…")}</span> <kbd className="hidden rounded border border-line px-1.5 text-[10px] xl:inline">Ctrl K</kbd>
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-[90] grid place-items-start justify-center bg-black/40 px-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label={t("Recherche rapide", "Quick search")} onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}>
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-line bg-card shadow-soft">
+            <div className="flex items-center gap-2 border-b border-line px-4">
+              <Search className="size-4 text-muted" />
+              <input
+                autoFocus
+                value={q}
+                onChange={(e) => (setQ(e.target.value), setSel(0))}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setOpen(false);
+                  else if (e.key === "ArrowDown") (e.preventDefault(), setSel((v) => Math.min(items.length - 1, v + 1)));
+                  else if (e.key === "ArrowUp") (e.preventDefault(), setSel((v) => Math.max(0, v - 1)));
+                  else if (e.key === "Enter" && items[sel]) go(items[sel].href);
+                }}
+                placeholder={t("Que cherchez-vous ? logo, vidéo, publier…", "What are you looking for? logo, video, post…")}
+                className="h-12 flex-1 bg-transparent text-sm outline-none"
+                aria-label={t("Rechercher", "Search")}
+              />
+              <kbd className="rounded border border-line px-1.5 text-[10px] text-muted">Échap</kbd>
+            </div>
+            <ul className="max-h-[50vh] overflow-y-auto p-1.5" role="listbox">
+              {items.length === 0 && <li className="p-3 text-sm text-muted">{t("Aucun résultat.", "No results.")}</li>}
+              {items.map((x, i) => (
+                <li key={`${x.group}-${x.key}`} role="option" aria-selected={i === sel}>
+                  {(i === 0 || items[i - 1].group !== x.group) && <p className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-[.14em] text-muted">{x.group}</p>}
+                  <button type="button" onMouseEnter={() => setSel(i)} onClick={() => go(x.href)} className={cx("flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm", i === sel ? "bg-paper-2 text-ink" : "text-ink-2")}>
+                    <x.Icon className="size-4 shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block truncate">{x.label}</span>
+                      {x.hint && <span className="block truncate text-xs text-muted">{x.hint}</span>}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/** Onglets toujours à portée du pouce (téléphone, tablette) : quatre espaces principaux + « Plus » (tous les espaces). */
+const MOBILE_MAIN: TabId[] = ["pilote", "images", "videos", "publications"];
+
+function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab: TabId; business?: "products" | "services"; badge: (id: TabId) => string | number | null }) {
+  const t = useT();
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+  const inMore = !MOBILE_MAIN.includes(tab);
+  const cur = TABS.find((x) => x.id === tab);
+  const moreBadge = TABS.some((x) => !MOBILE_MAIN.includes(x.id) && badge(x.id) !== null);
+  return (
+    <>
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t("Tous les espaces du projet", "All project spaces")}>
+          <button type="button" className="absolute inset-0 bg-black/40" aria-label={t("Fermer", "Close")} onClick={() => setOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[80dvh] overflow-y-auto rounded-t-3xl border-t border-line bg-paper p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-soft">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line" aria-hidden />
+            {SPACE_GROUPS.map((g) => (
+              <div key={g.id} className="mb-3">
+                <p className="mb-1.5 px-1 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(...g.label)}</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {tabsOf(g.id).map((x) => {
+                    const Icon = tabIcon(x, business);
+                    const b = badge(x.id);
+                    return (
+                      <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} className={cx("relative flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border px-1 py-2 text-center text-[12px]", tab === x.id ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2")}>
+                        <Icon className="size-5" />
+                        <span className="leading-tight">{tabLabel(x, lang, business)}</span>
+                        {b !== null && <span className="absolute right-1.5 top-1.5 grid min-w-4 place-items-center rounded-full bg-signal px-1 text-[10px] font-bold text-signal-ink">{b}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden" aria-label={t("Espaces du projet", "Project spaces")} data-mobile-nav>
+        {MOBILE_MAIN.map((id) => {
+          const x = TABS.find((y) => y.id === id)!;
+          const Icon = tabIcon(x, business);
+          const b = badge(id);
+          return (
+            <Link key={id} href={`/studio/${projectId}/${id}`} aria-current={tab === id ? "page" : undefined} className={cx("relative flex h-16 flex-col items-center justify-center gap-0.5 text-[11px]", tab === id ? "font-semibold text-ink" : "text-muted")}>
+              {tab === id && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-ink" aria-hidden />}
+              <Icon className="size-5" />
+              <span>{tabLabel(x, lang, business)}</span>
+              {b !== null && <span className="absolute right-[22%] top-2 grid min-w-4 place-items-center rounded-full bg-signal px-1 text-[10px] font-bold text-signal-ink">{b}</span>}
+            </Link>
+          );
+        })}
+        <button type="button" onClick={() => setOpen(true)} aria-expanded={open} aria-haspopup="dialog" className={cx("relative flex h-16 flex-col items-center justify-center gap-0.5 text-[11px]", inMore ? "font-semibold text-ink" : "text-muted")}>
+          {inMore && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-ink" aria-hidden />}
+          <LayoutGrid className="size-5" />
+          <span className="max-w-full truncate px-1">{inMore && cur ? tabLabel(cur, lang, business) : t("Plus", "More")}</span>
+          {moreBadge && <span className="absolute right-[26%] top-2.5 size-2 rounded-full bg-signal" aria-hidden />}
+        </button>
+      </nav>
+    </>
+  );
+}
+
+/**
+ * Repère en haut de chaque espace : à quoi il sert (une phrase) et, s'il reste à faire ailleurs, la prochaine étape
+ * conseillée du projet en un clic — le client sait toujours où il est et quoi faire ensuite. Pas sur le Pilote, qui
+ * montre déjà l'avancement complet. Masquable (mémorisé sur cet appareil).
+ */
+function SpaceGuide({ projectId, tab }: { projectId: string; tab: TabId }) {
+  const t = useT();
+  const { lang } = useLang();
+  const { data } = useProject();
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    try {
+      setHidden(localStorage.getItem("ecs-space-guide") === "hidden");
+    } catch {}
+  }, []);
+  if (!data || tab === "pilote" || hidden) return null;
+  const purpose = spacePurpose(tab, lang, data.business);
+  if (!purpose) return null;
+  const { next } = projectProgress({ business: data.business, product: data.product, missingActivity: data.business === "services" ? missingActivity(data.services).length : 0, brand: data.brand, theme: data.theme, counts: data.counts, posts: data.posts });
+  const hide = () => {
+    setHidden(true);
+    try {
+      localStorage.setItem("ecs-space-guide", "hidden");
+    } catch {}
+  };
+  return (
+    <div className="mx-auto mb-5 flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-line bg-paper-2/60 px-4 py-2.5 text-sm" data-space-guide>
+      <p className="min-w-0 flex-1 text-ink-2">{purpose}</p>
+      {next && next.tab !== tab && (
+        <Link href={`/studio/${projectId}/${next.tab}`} className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-[13px] font-medium text-paper hover:opacity-90" data-space-next>
+          {t("Prochaine étape :", "Next step:")} {lang === "en" ? next.action[1] : next.action[0]} <ArrowRight className="size-3.5" />
+        </Link>
+      )}
+      {next && next.tab === tab && <span className="rounded-full bg-signal-soft px-3 py-1 text-[13px] font-medium text-signal">{t("C'est ici que ça se passe :", "This is the place:")} {lang === "en" ? next.action[1] : next.action[0]}</span>}
+      <button type="button" onClick={hide} className="grid size-7 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-ink" aria-label={t("Masquer ce repère", "Hide this guide")} title={t("Masquer ce repère", "Hide this guide")}>
+        <X className="size-3.5" />
+      </button>
+    </div>
+  );
+}
+
 export function StudioShell({ projectId, children }: { projectId: string; children: ReactNode }) {
   const t = useT();
   const { lang } = useLang();
@@ -240,6 +439,20 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
       setFolded(localStorage.getItem("ecs-sidebar") === "folded");
     } catch {}
   }, []);
+  // Groupe « Outils avancés » ouvert ou replié, mémorisé sur cet appareil (replié par défaut).
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  useEffect(() => {
+    try {
+      setShowAdvanced(localStorage.getItem("ecs-nav-advanced") === "open");
+    } catch {}
+  }, []);
+  const toggleAdvanced = () => {
+    const next = !advancedOpen(tab, showAdvanced);
+    setShowAdvanced(next);
+    try {
+      localStorage.setItem("ecs-nav-advanced", next ? "open" : "closed");
+    } catch {}
+  };
   const toggleFold = () =>
     setFolded((v) => {
       try {
@@ -276,7 +489,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
       nav.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [tab, folded]);
+  }, [tab, folded, showAdvanced]);
   const badge = (id: TabId) => {
     if (!data) return null;
     if (id === "produit") return (data.business === "services" ? missingActivity(data.services).length : 0) + data.product.questions.filter((q) => !q.answer).length || null;
@@ -305,15 +518,25 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
         )}
         <div className="relative -mx-1 flex min-h-0 flex-1 flex-col">
         <nav ref={navRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-1" aria-label={t("Espaces du projet", "Project spaces")}>
-          {GROUPS.map(([g, gEn]) => (
-            <div key={g} className="mb-4 short:mb-2">
-              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line short:mb-1" aria-hidden /> : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted short:mb-0.5">{t(g, gEn)}</p>}
-              {TABS.filter((x) => x.group === g).map((x) => {
+          {SPACE_GROUPS.map((g) => {
+            // Outils avancés : repliés tant que le client ne les ouvre pas (ou qu'il n'est pas dans l'un d'eux).
+            const shut = !folded && g.folded && !advancedOpen(tab, showAdvanced);
+            const hidden = shut ? tabsOf(g.id).filter((x) => badge(x.id) !== null).length : 0;
+            return (
+            <div key={g.id} className="mb-4 short:mb-2" data-nav-group={g.id}>
+              {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line short:mb-1" aria-hidden /> : g.folded ? (
+                <button type="button" onClick={toggleAdvanced} aria-expanded={!shut} className="mb-1.5 flex w-full items-center gap-1.5 rounded-lg px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted hover:text-ink short:mb-0.5" data-nav-advanced>
+                  <span className="flex-1 text-left">{t(...g.label)}</span>
+                  {hidden > 0 && <span className="size-2 rounded-full bg-signal" aria-hidden />}
+                  <ChevronDown className={cx("size-3.5 transition", !shut && "rotate-180")} />
+                </button>
+              ) : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted short:mb-0.5">{t(...g.label)}</p>}
+              {!shut && tabsOf(g.id).map((x) => {
                 const Icon = tabIcon(x, data?.business);
                 const b = badge(x.id);
                 const label = tabLabel(x, lang, data?.business);
                 return (
-                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : undefined} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition short:py-1.5 shorter:py-1", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
+                  <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} aria-label={folded ? label : undefined} title={folded ? label : (spacePurpose(x.id, lang, data?.business) ?? undefined)} className={cx("relative mb-0.5 flex items-center gap-3 rounded-xl py-2 text-[14px] transition short:py-1.5 shorter:py-1", folded ? "justify-center px-0" : "px-3", tab === x.id ? "bg-ink text-paper" : "text-ink-2 hover:bg-paper-2 hover:text-ink")}>
                     <Icon className="size-4 shrink-0" />
                     {!folded && <span className="flex-1">{label}</span>}
                     {b !== null && (folded ? <span className="absolute right-2 top-1.5 size-2 rounded-full bg-signal" aria-hidden /> : <span className={cx("grid min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-semibold", tab === x.id ? "bg-paper text-ink" : "bg-signal text-signal-ink")}>{b}</span>)}
@@ -321,7 +544,8 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
                 );
               })}
             </div>
-          ))}
+            );
+          })}
         </nav>
           {more.up && <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-paper to-transparent" aria-hidden />}
           {more.down && (
@@ -346,6 +570,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
               <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{(() => { const cur = TABS.find((x) => x.id === tab); return cur ? tabLabel(cur, lang, data?.business) : null; })()}</h1>
               {data ? <p className="truncate text-xs text-muted">{data.brand?.name ?? data.project.name}</p> : <span className="skeleton mt-1 block h-3 w-28 rounded" aria-hidden />}
             </div>
+            <QuickSearch projectId={projectId} business={data?.business} />
             <TutorialButton tab={tab} business={data?.business} />
             {status ? <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span> : <span className="skeleton hidden h-6 w-24 rounded-full sm:inline-flex" aria-hidden />}
             <ActiveJobs />
@@ -357,23 +582,14 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             <ThemeToggle className="shrink-0" />
             <MobileMenu tab={tab} business={data?.business} isAdmin={me?.user.role === "admin"} billing={gauge} />
           </div>
-          {/* Onglets (téléphone et tablette) */}
-          <nav className="scrollbar-none flex gap-1.5 overflow-x-auto px-4 pb-3 lg:hidden" aria-label={t("Espaces du projet", "Project spaces")}>
-            {TABS.map((x) => {
-              const Icon = tabIcon(x, data?.business);
-              const b = badge(x.id);
-              return (
-                <Link key={x.id} href={`/studio/${projectId}/${x.id}`} aria-current={tab === x.id ? "page" : undefined} className={cx("flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px]", tab === x.id ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink-2")}>
-                  <Icon className="size-3.5" /> {tabLabel(x, lang, data?.business)}
-                  {b !== null && <span className="grid min-w-4 place-items-center rounded-full bg-signal px-1 text-[10px] font-bold text-signal-ink">{b}</span>}
-                </Link>
-              );
-            })}
-          </nav>
         </header>
         <QuotaBanner billing={billing} />
-        <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-6">
+          <SpaceGuide projectId={projectId} tab={tab} />
+          {children}
+        </main>
       </div>
+      <MobileNav projectId={projectId} tab={tab} business={data?.business} badge={badge} />
     </div>
   );
 }
