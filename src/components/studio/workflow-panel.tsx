@@ -221,7 +221,11 @@ function EditorsHub() {
 }
 
 /** Studio Workflow V2 : une seule demande, un plan, un devis, une autorisation, un suivi. */
-export function WorkflowPanel() {
+/**
+ * `compact` : avant la première création, le formulaire « Démarrer la création » est LA porte d'entrée ; la demande
+ * libre reste accessible en une ligne repliée (dépliée dès qu'une demande existe).
+ */
+export function WorkflowPanel({ compact = false }: { compact?: boolean } = {}) {
   const { id, reload: reloadProject } = useProject();
   const { lang } = useLang();
   const t = useT();
@@ -247,6 +251,15 @@ export function WorkflowPanel() {
   }
   const refresh = () => { reload(); reloadProject(); };
   const status = current?.workflow.status;
+  const [unfolded, setUnfolded] = useState(false);
+  if (compact && !current && !unfolded)
+    return (
+      <button type="button" onClick={() => setUnfolded(true)} className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-line bg-card px-5 py-4 text-left text-sm hover:border-ink" data-testid="workflow-panel-folded">
+        <Sparkles className="size-4 shrink-0 text-signal" />
+        <span className="flex-1"><span className="font-medium">{t("Ou dites en une phrase tout ce que vous voulez obtenir", "Or say in one sentence everything you want")}</span><span className="block text-xs text-muted">{t("Le studio prépare le plan et le devis ; rien de payant ne part sans votre accord.", "The studio prepares the plan and the estimate; nothing paid starts without your approval.")}</span></span>
+        <span className="text-xs text-muted">{t("Ouvrir", "Open")}</span>
+      </button>
+    );
   return (
     <Card className="p-5 sm:p-7" data-testid="workflow-panel">
       <SectionTitle title={t("Que voulez-vous obtenir ?", "What do you want to get?")}>{t("Écrivez tout en une fois : le studio prépare le plan et le devis, puis enchaîne marque, visuels, boutique, publicités, vidéos et publications. Rien de payant ne part sans votre accord ; ce qui est déjà validé n'est pas refait.", "Write it all at once: the studio prepares the plan and the estimate, then chains brand, visuals, store, ads, videos and posts. Nothing paid starts without your approval; what is already validated is not redone.")}</SectionTitle>

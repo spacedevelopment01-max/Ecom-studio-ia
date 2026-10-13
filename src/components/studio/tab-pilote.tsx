@@ -1,8 +1,8 @@
 "use client";
 import { TimeInfo } from "../wait-time";
 import Link from "next/link";
-import { useState } from "react";
-import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe, Image as ImageIcon } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { AlertTriangle, ArrowRight, Briefcase, Check, Circle, Loader2, Palette, Pause, Play, RotateCcw, SkipForward, Store, X, Brain, Trash2, Plus, Languages, Globe, Image as ImageIcon, ChevronDown, Settings2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Input, Progress, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject, type JobView } from "./project-context";
 import { shortDuration } from "@/lib/job-liveness";
@@ -43,7 +43,8 @@ function ProgressCard() {
       <Progress value={pr.done / pr.steps.length} className="mt-4" />
       <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {pr.steps.map((s) => (
-          <li key={s.id}>
+          // Téléphone : seules les étapes restantes (le compte « X étapes sur 7 » dit déjà ce qui est fait).
+          <li key={s.id} className={cx(s.done && "max-sm:hidden")}>
             <Link href={`/studio/${id}/${s.tab}`} className={cx("flex h-full items-start gap-2.5 rounded-xl border p-3 text-sm transition hover:border-ink", s.done ? "border-line bg-paper-2/60" : s === pr.next ? "border-signal bg-signal-soft" : "border-line")} title={L2(s.hint)}>
               {s.done ? <span className="grid size-5 shrink-0 place-items-center rounded-full bg-ok text-white"><Check className="size-3" /></span> : <span className={cx("mt-0.5 size-4 shrink-0 rounded-full border-2", s === pr.next ? "border-signal" : "border-line")} />}
               <span className="min-w-0">
@@ -279,6 +280,20 @@ function ContentLanguage({ started = true }: { started?: boolean }) {
   );
 }
 
+/** Détail des étapes de la création automatique : ouvert pendant qu'elle travaille, replié une fois terminée. */
+function StepList({ open, children }: { open: boolean; children: ReactNode }) {
+  const t = useT();
+  if (open) return <div className="mt-6">{children}</div>;
+  return (
+    <details className="group mt-5" data-step-details>
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm text-muted hover:text-ink">
+        <ChevronDown className="size-4 transition group-open:rotate-180" /> {t("Voir le détail des étapes", "See step details")}
+      </summary>
+      <div className="mt-3">{children}</div>
+    </details>
+  );
+}
+
 export default function TabPilote() {
   const { id, data, reload } = useProject();
   const toast = useToast();
@@ -317,13 +332,29 @@ export default function TabPilote() {
     }
   }
   const done = pl?.steps.filter((s) => s.status === "done" || s.status === "skipped").length ?? 0;
+  // Création terminée sans rien à faire : le détail des étapes se replie (l'essentiel est dans « Où en est votre projet ? »).
+  const finished = !!pl && !running && !paused && !cancelled && !failed && !awaiting;
   const svc = data.business === "services";
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("l'analyse, la marque et les textes", "the analysis, the brand and the copy")} />
       {(pl || data.brand) && <ProgressCard />}
-      {!pl && <StartCreation />}
-      <WorkflowPanel />
+      {/* Projet déjà avancé (marque créée) sans création automatique : le grand formulaire de départ se replie. */}
+      {!pl && !data.brand && <StartCreation />}
+      {!pl && data.brand && (
+        <details className="group rounded-3xl border border-line bg-card" data-start-folded>
+          <summary className="flex cursor-pointer list-none items-center gap-3 p-5 sm:px-7">
+            <Play className="size-4 text-muted" />
+            <span className="flex-1">
+              <span className="block font-medium">{t("Lancer la création automatique complète", "Run the full automatic creation")}</span>
+              <span className="block text-xs text-muted">{t("À partir d'une photo, d'un lien ou d'une description : le studio enchaîne tout le reste.", "From a photo, a link or a description: the studio chains everything else.")}</span>
+            </span>
+            <ChevronDown className="size-4 text-muted transition group-open:rotate-180" />
+          </summary>
+          <div className="border-t border-line p-3 sm:p-4"><StartCreation /></div>
+        </details>
+      )}
+      <WorkflowPanel compact={!pl} />
       <BrandPropagationCard />
       {/* Projet pas encore lancé : pas de carte d'avancement vide ni d'aperçu « en cours » (rien ne tourne). */}
       {pl && <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
@@ -377,7 +408,8 @@ export default function TabPilote() {
               </div>
             </div>
           )}
-          <ol className="mt-6 grid gap-1">
+          <StepList open={!finished}>
+          <ol className="grid gap-1">
             {(pl?.steps ?? []).map((s) => (
               <li key={s.id} className={cx("flex items-start gap-3 rounded-2xl p-2.5", s.status === "running" && "bg-signal-soft")}>
                 <StepIcon status={s.status} />
@@ -393,6 +425,7 @@ export default function TabPilote() {
               </li>
             ))}
           </ol>
+          </StepList>
         </Card>
         <div className="grid content-start gap-6">
           <Card className="overflow-hidden">
@@ -436,8 +469,27 @@ export default function TabPilote() {
       </div>}
       <ActivityGaps />
       <Questions />
-      <ContentLanguage started={!!pl} />
-      <Memory />
+      {pl || data.brand ? (
+        <details className="group rounded-3xl border border-line bg-card" data-project-settings>
+          <summary className="flex cursor-pointer list-none items-center gap-3 p-5 sm:px-7">
+            <Settings2 className="size-4 text-muted" />
+            <span className="flex-1">
+              <span className="block font-medium">{t("Réglages du projet", "Project settings")}</span>
+              <span className="block text-xs text-muted">{t("Langue des contenus, plateforme, mémoire du projet.", "Content language, platform, project memory.")}</span>
+            </span>
+            <ChevronDown className="size-4 text-muted transition group-open:rotate-180" />
+          </summary>
+          <div className="grid gap-6 border-t border-line p-3 sm:p-4">
+            <ContentLanguage started={!!pl} />
+            <Memory />
+          </div>
+        </details>
+      ) : (
+        <>
+          <ContentLanguage started={false} />
+          <Memory />
+        </>
+      )}
     </div>
   );
 }
