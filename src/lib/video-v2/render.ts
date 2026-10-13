@@ -15,6 +15,7 @@ import { absoluteCues, timeline } from "./doc";
 import type { CameraMove, Clip, VideoDocument } from "./types";
 import { TOOL_TIMEOUT_MS } from "../exec-tool";
 import { accentOf } from "./promo";
+import { GRADE_CANVAS, GRADE_FFMPEG } from "../art-direction";
 import type { Palette } from "./doc";
 
 type Ctx = any;
@@ -36,8 +37,8 @@ class FrameReader {
   private waiters: (() => void)[] = [];
   private last: Buffer | null = null;
   private proc;
-  constructor(file: string, inS: number, durS: number, private w: number, private h: number, fps: number) {
-    this.proc = spawn("ffmpeg", ["-v", "error", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps},eq=contrast=1.05:saturation=1.12`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
+  constructor(file: string, inS: number, durS: number, private w: number, private h: number, fps: number, grade: string = GRADE_FFMPEG.default) {
+    this.proc = spawn("ffmpeg", ["-v", "error", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps},${grade}`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
     this.proc.stdout.on("data", (d: Buffer) => {
       this.chunks.push(d);
       this.queued += d.length;
@@ -241,7 +242,12 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
     const im = src.images.get(s.assetId) as Image | undefined;
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, W, H);
-    if (im) drawCover(ctx, im, W, H, s.crop, motionTransform(s.motion, p, W, H));
+    if (im) {
+      // Même lumière que les plans filmés (direction artistique de la marque).
+      if (doc.grade) ctx.filter = GRADE_CANVAS[doc.grade];
+      drawCover(ctx, im, W, H, s.crop, motionTransform(s.motion, p, W, H));
+      ctx.filter = "none";
+    }
   } else if (s.kind === "video") {
     const frame = reader ? await reader.next() : null;
     if (frame) {
@@ -372,7 +378,7 @@ export async function renderVideoDoc(doc: VideoDocument, src: VideoSources, outF
           hasPrev = true;
         }
         reader?.close();
-        reader = c.source.kind === "video" && src.videos.get(c.source.assetId) ? new FrameReader(src.videos.get(c.source.assetId)!, c.source.inS, c.durationS, OW, OH, fps) : null;
+        reader = c.source.kind === "video" && src.videos.get(c.source.assetId) ? new FrameReader(src.videos.get(c.source.assetId)!, c.source.inS, c.durationS, OW, OH, fps, GRADE_FFMPEG[doc.grade ?? "default"]) : null;
         current = ci;
       }
       const local = t - starts[ci];
@@ -408,7 +414,7 @@ export async function renderStill(doc: VideoDocument, src: VideoSources, atS: nu
   const ctx = canvas.getContext("2d");
   const scratchCanvas = createCanvas(OW, OH);
   const local = atS - starts[ci];
-  const reader = c.source.kind === "video" && src.videos.get(c.source.assetId) ? new FrameReader(src.videos.get(c.source.assetId)!, c.source.inS + local, 0.5, OW, OH, 2) : null;
+  const reader = c.source.kind === "video" && src.videos.get(c.source.assetId) ? new FrameReader(src.videos.get(c.source.assetId)!, c.source.inS + local, 0.5, OW, OH, 2, GRADE_FFMPEG[doc.grade ?? "default"]) : null;
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   try {
     await drawClip(ctx, doc, c, local, src, reader, { canvas: scratchCanvas, ctx: scratchCanvas.getContext("2d") }, scale);

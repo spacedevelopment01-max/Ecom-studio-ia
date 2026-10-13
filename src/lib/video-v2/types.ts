@@ -8,6 +8,7 @@
  * Le document vidéo réutilise le système de calques de l'éditeur publicitaire (`ad-doc/`) pour tout ce qui est
  * dessiné à l'écran (titres, packshots, cartes de fin) : un seul système de calques dans le studio.
  */
+import type { VideoGrade } from "../art-direction";
 import type { Verdict } from "../quality/gate";
 import type { AdDocument, Layer } from "../ad-doc/types";
 
@@ -235,6 +236,8 @@ export type VideoDocument = {
   brand: AdDocument["brand"];
   /** Mention obligatoire quand un personnage ou des plans sont générés (ex. « Vidéo générée par IA »). */
   disclosure: string | null;
+  /** Étalonnage de la direction artistique (plans filmés et photos) ; absent : étalonnage par défaut. */
+  grade?: VideoGrade;
   meta: { intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null; /** Habillage publicitaire (titres, panneau, carte de fin posés sur les plans réels). */ promo?: boolean };
 };
 

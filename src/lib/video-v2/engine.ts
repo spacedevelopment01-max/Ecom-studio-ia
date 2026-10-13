@@ -45,6 +45,8 @@ import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, Vide
 import type { GateDecision } from "../quality/gate";
 import { execTool } from "../exec-tool";
 import { dressPromo } from "./promo";
+import { artDirection } from "../art-direction";
+import { adArt } from "../ads-v2/art";
 import { songGrid, songStyleFor } from "../media/song";
 import sharp from "sharp";
 
@@ -640,7 +642,9 @@ function assemble(a: AssembleInput): VideoDocument {
   }
   const promo = a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
   if (promo && a.strategy.style.music !== "none") clips = snapToBeat(clips, songGrid(songStyleFor(a.p), clips.reduce((t, c) => t + c.durationS, 0)).beatS);
-  if (promo) clips = dressPromo(clips, a.shots, { p: a.p, pal: a.pal, typo: a.typo, w, h, safe: a.safe, brand: a.insight.brand, logoId: a.inv.logo?.id ?? null, thumbs: a.thumbs ?? [], productPhotos: a.p.business === "services" ? [] : a.inv.photos.map((x) => x.id), icons: a.icons ?? [], cta: a.strategy.cta, message: a.strategy.message });
+  // Direction artistique de la marque : la même ligne que les publications (typographie, élément graphique, rythme, lumière).
+  const look = artDirection(adArt(a.p, a.typo)).video;
+  if (promo) clips = dressPromo(clips, a.shots, { p: a.p, pal: a.pal, typo: a.typo, w, h, safe: a.safe, brand: a.insight.brand, logoId: a.inv.logo?.id ?? null, thumbs: a.thumbs ?? [], productPhotos: a.p.business === "services" ? [] : a.inv.photos.map((x) => x.id), icons: a.icons ?? [], cta: a.strategy.cta, message: a.strategy.message, look });
   const doc: VideoDocument = {
     version: VIDEO_DOC_VERSION,
     width: w,
@@ -654,6 +658,7 @@ function assemble(a: AssembleInput): VideoDocument {
     audio: { voice: [], voiceId: null, music: a.strategy.style.music === "none" ? null : { source: "synth", mood: a.strategy.style.music, gainDb: -14, style: songStyleFor(a.p), seed: a.p.id }, sfx: [], duckingDb: -10, loudnessLufs: -14 },
     brand: { palette: { ...a.pal }, fonts: { heading: a.typo.heading, body: a.typo.body }, name: a.insight.brand },
     disclosure: null,
+    grade: look.grade,
     meta: { intent: a.intent.kind, source: "engine", createdFrom: null, runId: a.runId, ...(promo ? { promo: true } : {}) },
   };
   for (const [k, s] of a.shots.entries()) {
