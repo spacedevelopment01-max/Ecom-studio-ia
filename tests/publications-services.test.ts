@@ -35,3 +35,34 @@ describe("publications d'une entreprise de services", () => {
     }
   }, 120_000);
 });
+
+describe("publications d'une entreprise de services avec ses propres photos", () => {
+  it("la plupart des publications montrent les vraies photos du client (pas une photo libre hors sujet)", async () => {
+    const sharp = (await import("sharp")).default;
+    const { saveAsset } = await import("@/lib/library");
+    const { localRender } = await import("@/lib/social-v2/deps");
+    const { loadProject } = await import("@/lib/projects");
+    const u = await createUser(`svcown${Date.now()}@test.fr`, "motdepasse-test", "S");
+    const product = { ...serviceProduct, name: "Le Comptoir", summary: "Barbier à Bordeaux." };
+    const services = { ...serviceProfile, contactMode: "booking" as const };
+    const { brand, strategy } = runWithLang({ ui: "fr", content: "fr" }, () => localBrand(product, "Le Comptoir", { business: "services", services } as any));
+    const pid = id();
+    run(
+      "INSERT INTO projects (id, user_id, name, status, platform, product_json, brand_json, strategy_json, settings_json, sources_json, business_type, business_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      pid, u.id, "Le Comptoir", "ready", "woocommerce", JSON.stringify(product), JSON.stringify(brand), JSON.stringify(strategy), JSON.stringify({ language: "fr" }), "[]", "services", JSON.stringify(services), now(), now(),
+    );
+    const own: string[] = [];
+    for (const k of [0, 1]) {
+      const data = await sharp({ create: { width: 1200, height: 1500, channels: 3, background: { r: 120 + k * 40, g: 80, b: 60 } } }).jpeg().toBuffer();
+      own.push((await saveAsset({ projectId: pid, userId: u.id, data, name: `salon-${k}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "upload", meta: {}, status: "ready" })).id);
+    }
+    const p = loadProject(pid);
+    let ownUsed = 0;
+    for (let n = 0; n < 9; n++) {
+      const r = await runWithLang({ ui: "fr", content: "fr" }, () => localRender(p, { id: `post-own-${n}`, network: "instagram", format: "image", title: "Coupe homme", caption: "Coupe homme aux ciseaux.", hashtags: [], headline: "Coupe homme", pillar: null } as any));
+      const bg = JSON.parse(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ?", r.assetId)!.meta).poster?.backgroundAssetId;
+      if (own.includes(bg)) ownUsed++;
+    }
+    expect(ownUsed).toBeGreaterThanOrEqual(5);
+  }, 120_000);
+});

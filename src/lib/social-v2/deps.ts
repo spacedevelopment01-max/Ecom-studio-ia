@@ -72,11 +72,11 @@ const aspectOf = (network: string, format: string): "1:1" | "4:5" | "9:16" | "2:
  * Photos de fond possibles d'une publication (scènes, photos du métier, photos du client), déjà validées. Une
  * publication prend celle qui a le moins servi, pour que deux publications voisines ne se ressemblent pas.
  */
-function backgroundFor(p: Project, seed: string, roles: string[] = ["lifestyle", "scene", "ambiance", "post-photo", "original"], productOnly = false): Asset | null {
+function backgroundFor(p: Project, seed: string, roles: string[] = ["lifestyle", "scene", "ambiance", "post-photo", "original"], productOnly = false, ownOnly = false): Asset | null {
   const pool = all<Asset & { uses: number }>(
     `SELECT a.*, (SELECT COUNT(*) FROM assets b WHERE b.project_id = a.project_id AND b.deleted_at IS NULL AND json_extract(b.meta, '$.poster.backgroundAssetId') = a.id) uses
        FROM assets a WHERE a.project_id = ? AND a.kind = 'image' AND a.deleted_at IS NULL AND a.status != 'rejected'
-        AND a.role IN (${roles.map(() => "?").join(",")}) ORDER BY a.created_at DESC LIMIT 24`,
+        AND a.role IN (${roles.map(() => "?").join(",")})${ownOnly ? " AND a.origin = 'upload'" : ""} ORDER BY a.created_at DESC LIMIT 24`,
     p.id,
     ...roles,
   ).filter((a) => isAutoUsable(a) && (!productOnly || !isPastedOnStock(a)));
@@ -155,6 +155,12 @@ export async function localRender(p: Project, post: PostBrief, ctx: JobContext |
   if (p.business !== "services" && validCutouts(p.id).length) {
     const hero = parseInt(crypto.createHash("sha256").update(`hero:${post.id}`).digest("hex").slice(0, 6), 16) % 5 < 3;
     return posterForPost(p, post, hero ? null : backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true), "local");
+  }
+  // Entreprise de services avec ses propres photos : deux publications sur trois les montrent (rien ne vaut le vrai
+  // salon, le vrai atelier) ; la troisième cherche une photo libre du métier.
+  if (p.business === "services" && parseInt(crypto.createHash("sha256").update(`own:${post.id}`).digest("hex").slice(0, 6), 16) % 3 < 2) {
+    const own = backgroundFor(p, post.id, ["lifestyle", "original", "scene", "post-photo"], false, true);
+    if (own) return posterForPost(p, post, own, "local");
   }
   const aspect = aspectOf(post.network, post.format);
   const { bestAdPhoto } = await import("../engine/service-media");
