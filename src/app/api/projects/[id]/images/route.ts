@@ -10,7 +10,7 @@ import { HttpError } from "@/lib/auth";
 const Req = z.object({
   mode: z.enum(["set", "single"]),
   // Entreprise de services : annonce de prestation, carrousel de conseils, citation, infos pratiques, rendez-vous, ambiance.
-  kind: z.enum(["packshot", "scene", "social", "ad", "banner", "service", "tips", "quote", "info", "booking", "ambiance"]).optional(),
+  kind: z.enum(["packshot", "scene", "social", "ad", "banner", "service", "tips", "quote", "info", "booking", "ambiance", "promo", "event", "new", "review", "question", "team", "closing"]).optional(),
   style: z.enum(SCENE_STYLES.map((s) => s.id) as [string, ...string[]]).optional(),
   format: z.enum(Object.keys(FORMATS) as [string, ...string[]]).optional(),
   layout: z.enum(["editorial", "bold", "minimal", "centered", "split"]).optional(),
@@ -39,6 +39,13 @@ const KIND_LABELS: Record<string, [string, string]> = {
   info: ["Infos pratiques", "Practical information"],
   booking: ["Prise de rendez-vous", "Booking"],
   ambiance: ["Image d'ambiance", "Mood image"],
+  promo: ["Offre du moment", "Current offer"],
+  event: ["Événement", "Event"],
+  new: ["Nouveauté", "What's new"],
+  review: ["Avis d'un client", "Customer review"],
+  question: ["Question à la communauté", "Community question"],
+  team: ["Coulisses et équipe", "Behind the scenes"],
+  closing: ["Horaires exceptionnels", "Special opening hours"],
 };
 const imageLabel = (kind: string) => {
   const [fr, en] = KIND_LABELS[kind] ?? ["Image", "Image"];

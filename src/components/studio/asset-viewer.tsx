@@ -1,7 +1,7 @@
 "use client";
 /** Visionneuse d'un média : aperçu, informations, versions, usages, actions. */
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Download, ExternalLink, PenLine, Send, Store, X, Package } from "lucide-react";
 import { AdEditor } from "./ad-editor/ad-editor";
 import { AnimatePost } from "./animate-post";
@@ -17,10 +17,26 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
   const { id: projectId, reload } = useProject();
   const toast = useToast();
   const t = useT();
-  const { data, reload: reloadInfo } = useApi<Info>(asset ? `/api/files/${asset.id}?info=1` : null);
+  // Après un changement de modèle ou une modification dans l'éditeur, le studio rend une NOUVELLE image : la fiche
+  // passe alors sur cette dernière version (l'ancienne reste dans les versions et restaurable dans l'éditeur).
+  const [swap, setSwap] = useState<string | null>(null);
+  useEffect(() => setSwap(null), [asset?.id]);
+  const viewId = swap ?? asset?.id ?? null;
+  const { data, reload: reloadInfo } = useApi<Info>(viewId ? `/api/files/${viewId}?info=1` : null);
   const { data: theme } = useApi<any>(asset ? `/api/projects/${projectId}/theme` : null);
   const [target, setTarget] = useState("");
   const [editDoc, setEditDoc] = useState<string | null>(null);
+  const followDoc = async (docKey: string) => {
+    try {
+      const r = await api<{ version?: { renderedAssetId?: string | null } }>(`/api/projects/${projectId}/ads/docs/${encodeURIComponent(docKey)}`);
+      const next = r.version?.renderedAssetId;
+      if (next && next !== viewId) setSwap(next);
+      else reloadInfo();
+    } catch {
+      reloadInfo();
+    }
+    onChanged?.();
+  };
   if (!asset) return null;
   const a = data?.asset ?? asset;
   const status = async (s: string) => {
@@ -114,7 +130,7 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
               <Button size="sm" variant="secondary" className="mt-2" icon={<PenLine className="size-3.5" />} onClick={() => setEditDoc(a.meta.poster.docKey)}>{t("Modifier le texte, les couleurs et la mise en page", "Edit text, colors and layout")}</Button>
               <p className="mt-1.5 text-[11px] text-muted">{t("Titre, ligne, bouton, couleurs, placement : sans refaire la photo.", "Headline, line, button, colors, placement: without redoing the photo.")}</p>
               <div className="mt-2">
-                <StyleGallery projectId={projectId} docKey={a.meta.poster.docKey} onApplied={() => (reloadInfo(), onChanged?.())} />
+                <StyleGallery projectId={projectId} docKey={a.meta.poster.docKey} onApplied={() => followDoc(a.meta.poster.docKey)} />
               </div>
               <div className="mt-3 border-t border-line pt-3">
                 <AnimatePost projectId={projectId} docKey={a.meta.poster.docKey} onDone={() => onChanged?.()} />
@@ -160,9 +176,9 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
           projectId={projectId}
           docKey={editDoc}
           onClose={() => {
+            const k = editDoc;
             setEditDoc(null);
-            reloadInfo();
-            onChanged?.();
+            void followDoc(k);
           }}
         />
       )}

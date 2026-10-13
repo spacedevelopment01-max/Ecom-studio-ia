@@ -1030,8 +1030,23 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
   return { created };
 }
 
+/**
+ * Autres publications (le texte vient du client, rien d'inventé) : surtitre propre au type, titre et ligne saisis,
+ * bouton selon le type ; rendues en affiches modifiables, sur la photo choisie.
+ */
+export const POST_KINDS = {
+  promo: { eyebrow: ["Offre du moment", "Current offer"], need: ["Écrivez l'offre (par exemple « -20 % sur la session du jeudi »).", "Write the offer (e.g. \"20% off Thursday sessions\")."], cta: true },
+  event: { eyebrow: ["Événement", "Event"], need: ["Écrivez l'événement et sa date.", "Write the event and its date."], cta: true },
+  new: { eyebrow: ["Nouveau", "New"], need: ["Écrivez la nouveauté.", "Write what's new."], cta: true },
+  review: { eyebrow: ["Avis client", "Customer review"], need: ["Collez le texte d'un vrai avis client (le studio n'en invente jamais).", "Paste the text of a real customer review (the studio never makes one up)."], cta: false },
+  question: { eyebrow: ["Et vous ?", "Your turn"], need: ["Écrivez la question à poser à votre communauté.", "Write the question to ask your community."], cta: false },
+  team: { eyebrow: ["Coulisses", "Behind the scenes"], need: ["Écrivez ce que montre la photo (l'équipe, la préparation…).", "Write what the photo shows (the team, the preparation…)."], cta: false },
+  closing: { eyebrow: ["Horaires exceptionnels", "Special hours"], need: ["Écrivez les horaires ou la fermeture à annoncer.", "Write the hours or closure to announce."], cta: false },
+} as const;
+export type PostKind = keyof typeof POST_KINDS;
+
 export type ServiceSingleRequest = {
-  kind: "banner" | "service" | "tips" | "quote" | "info" | "booking" | "ambiance" | "social" | "ad" | "scene";
+  kind: "banner" | "service" | "tips" | "quote" | "info" | "booking" | "ambiance" | "social" | "ad" | "scene" | PostKind;
   format?: string;
   headline?: string;
   subline?: string;
@@ -1098,7 +1113,7 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
 
   // « Une nouvelle image » (pas une photo de l'activité) : photo libre de droits du métier, sinon image créée par l'IA,
   // puis le visuel est composé dessus. « Sans image » : visuel typographique.
-  if (background === "image" && ["service", "booking", "banner", "quote", "info", "tips"].includes(kind)) {
+  if (background === "image" && ["service", "booking", "banner", "quote", "info", "tips", ...Object.keys(POST_KINDS)].includes(kind)) {
     const s = kind === "service" ? items[Math.max(0, Math.min(items.length - 1, req.serviceIndex ?? 0))] : undefined;
     const topic = [s?.name, s ? clip(s.description, 120) : req.subline || clip(p.product.summary, 140)].filter(Boolean).join(" — ") || name;
     const fs: ServiceFormat = kind === "banner" ? (FORMAT_OF[req.format ?? "banner"] === "landscape" ? "landscape" : "banner") : FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
@@ -1125,6 +1140,10 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
     const q = req.headline ? { text: req.headline, author: p.brand?.name ?? name } : brandQuote(p);
     if (!q) throw new UserFacingError(L("Aucune phrase de marque à citer : écrivez-la dans le champ « Titre » (votre engagement, votre signature).", "No brand line to quote: write it in the \"Headline\" field (your promise, your signature)."));
     plans = [{ role: "social", folder: "images.social", name: C("citation", "quote"), card: { template: "quote", format: FORMAT_OF[req.format ?? "square"] ?? "square", title: q.text, author: `— ${q.author}`, photo: photo ? 0 : undefined } }];
+  } else if (kind in POST_KINDS) {
+    const k = POST_KINDS[kind as PostKind];
+    if (!req.headline?.trim()) throw new UserFacingError(L(k.need[0], k.need[1]));
+    plans = [{ role: "social", folder: "images.social", name: slug(C(k.eyebrow[0], k.eyebrow[1])), card: { template: "announce", format: FORMAT_OF[req.format ?? "portrait"] ?? "portrait", eyebrow: C(k.eyebrow[0], k.eyebrow[1]), title: clip(req.headline, 140), text: req.subline ?? "", cta: k.cta ? cta : undefined, photo: photo ? 0 : undefined } }];
   } else if (kind === "info") {
     const base = pick("info");
     if (!base) throw new UserFacingError(L("Renseignez d'abord vos horaires, votre zone ou vos coordonnées (onglet Produit / Activité).", "First fill in your hours, area or contact details (Product / Business tab)."));
