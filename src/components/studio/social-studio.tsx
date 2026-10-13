@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
 import { enUS, fr } from "date-fns/locale";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
-import { ArrowDown, ArrowUp, BarChart3, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Link2, ListChecks, MessageSquare, Pause, Play, Plus, Send, Sparkles, Target, Trash2, Wand2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, BarChart3, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Link2, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, Type, Wand2, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -351,6 +351,62 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
 
 type View = "month" | "week" | "day" | "list";
 
+/** Couleur de statut (bord gauche de la carte, pastille, légende). */
+const STATUS_COLOR: Record<string, string> = { planned: "bg-line", draft: "bg-line", generating: "bg-info", review: "bg-warn", approved: "bg-signal", scheduled: "bg-ok", paused: "bg-line", publishing: "bg-info", published: "bg-ink", failed: "bg-bad", uncertain: "bg-bad", cancelled: "bg-line" };
+const LOCKED = ["publishing", "published", "uncertain"];
+
+/** Avatar du réseau (pastille de couleur avec son initiale). */
+const NetAvatar = ({ n }: { n: string }) => (
+  <span className="grid size-5 shrink-0 place-items-center rounded-full text-[9px] font-bold text-white ring-2 ring-card" style={{ background: NET[n]?.color ?? "#999" }} title={NET[n]?.label ?? n} aria-label={NET[n]?.label ?? n}>
+    {(NET[n]?.label ?? n).slice(0, 1)}
+  </span>
+);
+
+/**
+ * Carte d'une publication dans le calendrier (comme les outils de planification du marché) : heure, réseau, statut en
+ * couleur, thème, début du texte, VIGNETTE du visuel et actions rapides (modifier, dupliquer, supprimer).
+ * Glisser-déposer sur un autre jour pour la déplacer (ordinateur).
+ */
+function CalCard({ p, tz, onOpen, onAction, row = false }: { p: PostV; tz: string; onOpen: (id: string) => void; onAction: (id: string, a: "duplicate" | "delete") => void; row?: boolean }) {
+  const t = useT();
+  const st = STATUS[p.status];
+  const media = p.media[0];
+  const video = media?.kind === "video" || /reel|video|story/i.test(p.format);
+  const locked = LOCKED.includes(p.status);
+  const thumb = (
+    <button type="button" onClick={() => onOpen(p.id)} className={cx("relative block shrink-0 overflow-hidden rounded-lg bg-paper-2", row ? "size-20" : "aspect-[4/3] w-full")} aria-label={t("Ouvrir la publication", "Open the post")}>
+      {media ? <AssetThumb a={media} className="size-full object-cover" /> : <span className="grid size-full place-items-center text-muted"><Type className="size-5" aria-hidden /><span className="sr-only">{t("Texte seul", "Text only")}</span></span>}
+      {video && <span className="absolute left-1.5 top-1.5 grid size-5 place-items-center rounded-md bg-black/55 text-white"><Play className="size-3" aria-hidden /></span>}
+    </button>
+  );
+  return (
+    <div draggable={!locked && !row} onDragStart={(e) => e.dataTransfer.setData("text/post", p.id)} {...(row ? { "data-agenda-post": p.id } : { "data-post": p.id })} className={cx("group relative min-w-0 overflow-hidden rounded-xl border bg-card shadow-sm transition hover:shadow-md", p.blocking.length > 0 ? "border-warn" : "border-line", row && "flex gap-3 p-2")}>
+      <span className={cx("absolute inset-y-0 left-0 w-1", STATUS_COLOR[p.status] ?? "bg-line")} aria-hidden />
+      {row && thumb}
+      <div className={cx("min-w-0", row ? "flex-1" : "grid gap-1.5 p-2 pl-2.5")}>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] font-semibold tabular-nums">{p.scheduledAt ? formatInTimeZone(p.scheduledAt, tz, "HH:mm") : "—"}</span>
+          <span className="flex-1" />
+          <NetAvatar n={p.network} />
+        </div>
+        <div className="flex min-w-0 flex-wrap gap-1">
+          <span className={cx("inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium", { warn: "bg-warn-soft text-warn", ok: "bg-ok-soft text-ok", bad: "bg-bad-soft text-bad", info: "bg-info-soft text-info", signal: "bg-signal-soft text-signal", ink: "bg-ink text-paper", neutral: "bg-paper-2 text-muted" }[st?.[2] ?? "neutral"])}>
+            <span className={cx("size-1.5 rounded-full", STATUS_COLOR[p.status] ?? "bg-line")} aria-hidden />{t(st?.[0] ?? p.status, st?.[1] ?? p.status)}
+          </span>
+          {p.pillar && <span className="truncate rounded-full bg-paper-2 px-1.5 py-0.5 text-[10px] text-muted">{p.pillar}</span>}
+        </div>
+        <button type="button" onClick={() => onOpen(p.id)} className="line-clamp-2 text-left text-[11px] leading-snug text-muted hover:text-ink">{p.title || p.caption.slice(0, 90) || t("Sans texte", "No copy")}</button>
+        {!row && thumb}
+        <div className="flex items-center gap-0.5 text-muted">
+          <button type="button" onClick={() => onOpen(p.id)} className="grid size-7 place-items-center rounded-md hover:bg-paper-2 hover:text-ink" aria-label={t("Modifier", "Edit")} title={t("Modifier", "Edit")}><Pencil className="size-3.5" /></button>
+          <button type="button" onClick={() => onAction(p.id, "duplicate")} className="grid size-7 place-items-center rounded-md hover:bg-paper-2 hover:text-ink" aria-label={t("Dupliquer", "Duplicate")} title={t("Dupliquer", "Duplicate")}><Copy className="size-3.5" /></button>
+          {!locked && <button type="button" onClick={() => onAction(p.id, "delete")} className="grid size-7 place-items-center rounded-md hover:bg-bad-soft hover:text-bad" aria-label={t("Supprimer", "Delete")} title={t("Supprimer", "Delete")}><Trash2 className="size-3.5" /></button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: () => void; onOpen: (id: string) => void; onRange: (r: { from: number; to: number }) => void }) {
   const { id } = useProject();
   const t = useT();
@@ -414,15 +470,18 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
     }
   };
   const latest = data.plans.find((p) => p.engine === "v2");
-  const card = (p: PostV, compact: boolean) => (
-    <button key={p.id} type="button" draggable={!["publishing", "published", "uncertain"].includes(p.status)} onDragStart={(e) => e.dataTransfer.setData("text/post", p.id)} onClick={() => onOpen(p.id)} data-post={p.id} className={cx("flex w-full min-w-0 items-center gap-1 rounded-lg sm:gap-1.5 border border-line bg-card px-1.5 py-1 text-left text-[11px] hover:border-ink", p.blocking.length > 0 && "border-warn")}>
-      <Dot n={p.network} />
-      {!compact && p.media[0] && <AssetThumb a={p.media[0]} className="size-6 shrink-0 rounded" />}
-      <span className={cx("shrink-0 tabular-nums text-muted", compact && "hidden sm:inline")}>{p.scheduledAt ? formatInTimeZone(p.scheduledAt, tz, "HH:mm") : ""}</span>
-      <span className={cx("min-w-0 flex-1 truncate", compact && "hidden sm:block")}>{p.title || p.caption.slice(0, 40)}</span>
-      <span className={cx("size-1.5 shrink-0 rounded-full", { review: "bg-warn", planned: "bg-line", approved: "bg-signal", scheduled: "bg-ok", published: "bg-ink", failed: "bg-bad", uncertain: "bg-bad" }[p.status] ?? "bg-line")} aria-label={p.status} />
-    </button>
-  );
+  const quick = async (postId: string, a: "duplicate" | "delete") => {
+    if (a === "delete" && !window.confirm(t("Supprimer cette publication ?", "Delete this post?"))) return;
+    try {
+      await api(`/api/projects/${id}/social/v2/posts/${postId}`, { body: { action: a } });
+      toast("ok", a === "delete" ? t("Publication supprimée.", "Post deleted.") : t("Publication dupliquée.", "Post duplicated."));
+      reload();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    }
+  };
+  const todayKey = format(new Date(), "yyyy-MM-dd");
+  const perCell = view === "month" ? 2 : 20;
   return (
     <div className="grid min-w-0 grid-cols-1 gap-4" data-social-calendar>
       <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
@@ -451,25 +510,48 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
           ))}
         </Card>
       ) : (
-        <Card className="overflow-hidden">
-          {view !== "day" && <div className="grid grid-cols-7 border-b border-line bg-paper-2 text-center text-xs text-muted">{[1, 2, 3, 4, 5, 6, 0].map((d) => <div key={d} className="py-2">{t(["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"][d], ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d])}</div>)}</div>}
-          <div className={cx("grid", view === "day" ? "grid-cols-1" : "grid-cols-7")}>
-            {days.map((d) => {
-              const key = format(d, "yyyy-MM-dd");
-              const list = byDay.get(key) ?? [];
-              const out = view === "month" && !isSameMonth(d, cursor);
-              return (
-                <div key={key} data-day={key} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { const pid = e.dataTransfer.getData("text/post"); if (pid) move(pid, key); }} className={cx("min-h-24 min-w-0 overflow-hidden border-b border-r border-line p-1 sm:min-h-28 sm:p-1.5", out && "bg-paper-2/60", view === "day" && "min-h-64")}>
-                  <button type="button" onClick={() => (setCursor(d), setView("day"))} className={cx("mb-1 text-xs", key === format(new Date(), "yyyy-MM-dd") ? "rounded-full bg-ink px-1.5 text-paper" : "text-muted")}>{format(d, "d")}</button>
-                  <div className="grid min-w-0 grid-cols-1 gap-1">
-                    {list.slice(0, view === "month" ? 4 : 20).map((p) => card(p, view === "month"))}
-                    {view === "month" && list.length > 4 && <button type="button" onClick={() => (setCursor(d), setView("day"))} className="text-left text-[11px] text-muted">+{list.length - 4}</button>}
+        <>
+          {/* Ordinateur et tablette : grille des jours, une carte avec vignette par publication. */}
+          <Card className="hidden overflow-hidden sm:block">
+            {view !== "day" && <div className="grid grid-cols-7 border-b border-line bg-paper-2 text-center text-xs font-medium text-muted">{[1, 2, 3, 4, 5, 6, 0].map((d) => <div key={d} className="py-2">{t(["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"][d], ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d])}</div>)}</div>}
+            <div className={cx("grid", view === "day" ? "grid-cols-1" : "grid-cols-7")}>
+              {days.map((d) => {
+                const key = format(d, "yyyy-MM-dd");
+                const list = byDay.get(key) ?? [];
+                const out = view === "month" && !isSameMonth(d, cursor);
+                return (
+                  <div key={key} data-day={key} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { const pid = e.dataTransfer.getData("text/post"); if (pid) move(pid, key); }} className={cx("min-w-0 border-b border-r border-line bg-paper-2/30 p-1.5", view === "month" ? "min-h-40" : "min-h-72", out && "opacity-50", view === "day" && "min-h-64")}>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <button type="button" onClick={() => (setCursor(d), setView("day"))} className={cx("grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-xs font-semibold", key === todayKey ? "bg-ink text-paper" : "text-muted hover:text-ink")}>{format(d, "d")}</button>
+                      {list.length > 0 && <span className="text-[10px] text-muted">{list.length}</span>}
+                    </div>
+                    <div className={cx("grid min-w-0 gap-1.5", view === "day" ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1")}>
+                      {list.slice(0, perCell).map((p) => <CalCard key={p.id} p={p} tz={tz} onOpen={onOpen} onAction={quick} />)}
+                      {list.length > perCell && <button type="button" onClick={() => (setCursor(d), setView("day"))} className="rounded-lg border border-dashed border-line py-1 text-[11px] text-muted hover:border-ink">+{list.length - perCell} {t("autres", "more")}</button>}
+                    </div>
                   </div>
+                );
+              })}
+            </div>
+          </Card>
+          {/* Téléphone : les jours qui ont des publications, cartes en ligne avec vignette. */}
+          <div className="grid gap-3 sm:hidden" data-social-agenda>
+            {days.filter((d) => (byDay.get(format(d, "yyyy-MM-dd")) ?? []).length > 0 && (view !== "month" || isSameMonth(d, cursor))).map((d) => {
+              const key = format(d, "yyyy-MM-dd");
+              return (
+                <div key={key} className="grid gap-1.5">
+                  <p className={cx("text-xs font-semibold capitalize", key === todayKey ? "text-ink" : "text-muted")}>{format(d, "EEEE d MMMM", { locale })}</p>
+                  {(byDay.get(key) ?? []).map((p) => <CalCard key={p.id} p={p} tz={tz} onOpen={onOpen} onAction={quick} row />)}
                 </div>
               );
             })}
+            {!days.some((d) => (byDay.get(format(d, "yyyy-MM-dd")) ?? []).length > 0) && <Empty title={t("Aucune publication sur cette période", "No posts in this period")}>{t("Préparez un calendrier dans « Créer ».", "Prepare a calendar in \"Create\".")}</Empty>}
           </div>
-        </Card>
+          {/* Légende des statuts. */}
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted" data-calendar-legend>
+            {(["scheduled", "published", "review", "approved", "failed"] as const).map((k) => <span key={k} className="inline-flex items-center gap-1.5"><span className={cx("size-2.5 rounded-full", STATUS_COLOR[k])} aria-hidden /> {t(STATUS[k][0], STATUS[k][1])}</span>)}
+          </div>
+        </>
       )}
       <Card className="grid gap-2 p-4" data-social-chat>
         <p className="flex items-center gap-2 font-semibold"><MessageSquare className="size-4" /> {t("Modifier le calendrier en une phrase", "Edit the calendar in one sentence")}</p>
