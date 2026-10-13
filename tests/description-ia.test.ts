@@ -44,7 +44,8 @@ describe("Description rédigée par l'IA (offerte par la plateforme)", async () 
     // Modèle le moins cher, réponse courte, sans réflexion ; téléphone et e-mail jamais envoyés.
     expect(calls).toHaveLength(1);
     expect(calls[0].model).toBe("claude-haiku-5-5");
-    expect(calls[0].max).toBeLessThanOrEqual(500);
+    expect(calls[0].max).toBeLessThanOrEqual(600);
+    expect(calls[0].sys).toMatch(/150 à 200 mots/);
     expect(calls[0].user).toContain("<client>");
     expect(calls[0].user).toContain("Mâcon et 20 km");
     expect(calls[0].user).not.toContain("06 11 22 33 44");
