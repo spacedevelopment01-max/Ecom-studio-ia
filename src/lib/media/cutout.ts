@@ -304,6 +304,8 @@ export async function cutoutProduct(input: Buffer, opts: { method?: "flood" | "t
     png = await floodCutout(input);
     method = "flood";
   }
+  // Fragments détachés (câble cassé, poussière) retirés avant le recadrage.
+  png = await dropIslands(png);
   // Recadre sur le produit avec une petite marge.
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   let minX = info.width, minY = info.height, maxX = 0, maxY = 0;
@@ -325,6 +327,59 @@ export async function cutoutProduct(input: Buffer, opts: { method?: "flood" | "t
   const bbox = { x: x0, y: y0, w: Math.min(info.width, maxX + pad + 1) - x0, h: Math.min(info.height, maxY + 1) - y0 };
   const cropped = await sharp(png).extract({ left: bbox.x, top: bbox.y, width: bbox.w, height: bbox.h }).png().toBuffer();
   return { png: cropped, width: bbox.w, height: bbox.h, bbox, sourceW: info.width, sourceH: info.height, method, model };
+}
+
+/**
+ * Fragments détachés du produit (bout de câble cassé, poussière, reste du fond) : supprimés. On garde la plus grande
+ * forme et toute forme d'au moins 4 % de sa surface (deux chaussures, un lot de savons restent entiers).
+ */
+export async function dropIslands(png: Buffer, minShare = 0.04): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  const label = new Int32Array(w * h).fill(-1);
+  const sizes: number[] = [];
+  const stack: number[] = [];
+  for (let start = 0; start < w * h; start++) {
+    if (label[start] !== -1 || data[start * 4 + 3] <= 24) continue;
+    const id = sizes.length;
+    let n = 0;
+    label[start] = id;
+    stack.push(start);
+    while (stack.length) {
+      const k = stack.pop()!;
+      n++;
+      const x = k % w, y = (k - x) / w;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const j = ny * w + nx;
+        if (label[j] === -1 && data[j * 4 + 3] > 24) {
+          label[j] = id;
+          stack.push(j);
+        }
+      }
+    }
+    sizes.push(n);
+  }
+  if (sizes.length <= 1) return png;
+  const biggest = Math.max(...sizes);
+  const keep = sizes.map((s) => s >= biggest * minShare);
+  if (keep.every(Boolean)) return png;
+  for (let k = 0; k < w * h; k++) {
+    const id = label[k];
+    if (id >= 0 && !keep[id]) data[k * 4 + 3] = 0;
+    // Pixels presque transparents isolés (frange) rattachés à une forme supprimée : effacés aussi.
+    else if (id === -1 && data[k * 4 + 3] > 0) {
+      const x = k % w, y = (k - x) / w;
+      let near = false;
+      for (let dy = -2; dy <= 2 && !near; dy++) for (let dx = -2; dx <= 2 && !near; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < w && ny < h && label[ny * w + nx] >= 0 && keep[label[ny * w + nx]]) near = true;
+      }
+      if (!near) data[k * 4 + 3] = 0;
+    }
+  }
+  return sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
 }
 
 /** Palette dominante des pixels opaques (k-moyennes simplifiées). */

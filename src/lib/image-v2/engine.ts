@@ -231,7 +231,9 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
 
   // 2 bis. Produit réel : décor vide d'une banque d'images (gratuit), produit réel posé par le studio (pixels
   // d'origine, ombre de contact). Aucun produit n'est envoyé à une IA d'images : jamais un second produit redessiné.
-  if (stages.includes("plate") && brief.productFidelity && brief.references[0]) {
+  // Seulement si un contrôle visuel peut juger le résultat (échelle, lumière, contact) : sans lui, un produit collé
+  // sur une photo d'intérieur fait amateur ; le studio garde alors ses mises en scène propres.
+  if (stages.includes("plate") && deps.canReview && brief.productFidelity && brief.references[0]) {
     const plated = await fromPlate(p, req, deps, brief, bh, [...projectH, ...seriesHashes], result, base);
     if (plated.outcome) {
       seriesHashes.push(plated.hash ?? "");

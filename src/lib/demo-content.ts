@@ -18,7 +18,6 @@ export function demos(file: "manifest.json" | "manifest.en.json" = "manifest.jso
 
 /** Repli si public/demo/manifest.en.json n'est pas généré : textes des démonstrations françaises traduits pour l'interface anglaise. */
 const DEMO_EN: Record<string, { product?: string; note?: string }> = {
-  mug: { product: "Ceramic mug", note: "A real photo of an unbranded mug (Pixabay): the brand, the visuals and the store are created by the studio." },
   lunettes: { product: "Aviator sunglasses", note: "A real photo of sunglasses with no visible brand (Pixabay): the brand, the visuals and the store are created by the studio." },
   plante: { product: "Potted snake plant", note: "A real photo of a potted plant (Pixabay): the brand, the visuals and the store are created by the studio." },
   casque: { product: "Wired headphones", note: "A real photo of unbranded headphones (Pixabay): the brand, the visuals and the store are created by the studio." },

@@ -253,7 +253,8 @@ export function writeLocal(o: { pillar: Pillar; archetype: Archetype; f: Verifie
       atom = a;
     }
   }
-  if (!chosen) chosen = missing(o.pillar, lang, o.n);
+  // Sans matière confirmée : le titre de l'affiche nomme le produit (ou l'offre), pas l'intitulé interne du pilier.
+  if (!chosen) chosen = { ...missing(o.pillar, lang, o.n), ...(f.offerName ? { headline: short(f.offerName) } : {}) };
   o.used.add(fold(chosen.hook));
   const caption = [chosen.hook, chosen.body, o.cta].filter((x) => x && x.trim()).join("\n\n");
   const visual: Draft["visual"] = pillar.formats[0] === "reel" || pillar.formats[0] === "video" ? "video" : pillar.objective === "demonstrate" ? "detail" : pillar.objective === "brand" ? "scene" : "creative";

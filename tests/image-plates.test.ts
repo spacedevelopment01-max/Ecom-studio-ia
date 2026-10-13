@@ -74,7 +74,7 @@ describe("Décors libres de droits pour les images du produit", async () => {
     expect(log.downloads.slice(before)).not.toContain("deco2");
   });
 
-  it("sans IA (forfait Découverte) : décor libre bien décrit + produit réel, gratuit, jamais validé comme définitif", async () => {
+  it("sans contrôle visuel (forfait Découverte) : le produit n'est jamais collé sur une photo libre", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     const cutId = await seedCutout(u.id, p.id);
     const prov = mockProvider("pixabay", () => [candidate("deco3", "empty stone surface blurred background", { source: "pixabay" })]);
@@ -82,7 +82,9 @@ describe("Décors libres de droits pour les images du produit", async () => {
     const r = await fr(() => runImageEngineV2(null, p.id, { kind: "lifestyle", support: "ad", aspect: "4:5", references: [cutId] }, deps));
     expect(log.reviews).toEqual([]);
     expect(log.generations).toEqual([]);
+    expect(log.downloads).not.toContain("deco3");
     expect(r.outcomes[0].verdict).not.toBe("FINAL");
+    expect(r.outcomes[0].assetId).toBeNull();
   });
 
   it("produit posé : les restes presque transparents du détourage n'impriment aucun rectangle sur le décor", async () => {

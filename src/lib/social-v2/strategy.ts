@@ -92,7 +92,7 @@ export function pillarsFor(a: Archetype, lang: string): Pillar[] {
     case "tech":
       return [
         P("demo", t("Démonstration", "Demo"), "demonstrate", 0.3, ["reel", "video", "image"], t("le produit en action", "the product in action")),
-        P("specs", t("Caractéristiques confirmées", "Confirmed specs"), "educate", 0.25, ["carousel", "image"], t("une caractéristique confirmée par publication", "one confirmed spec per post")),
+        P("specs", t("Les caractéristiques", "The specs"), "educate", 0.25, ["carousel", "image"], t("une caractéristique confirmée par publication", "one confirmed spec per post")),
         P("usages", t("Cas d'usage", "Use cases"), "engage", 0.2, ["image", "reel"], t("situations d'usage crédibles, sans performance inventée", "credible use cases, no invented performance")),
         P("questions", t("Questions", "Questions"), "engage", 0.1, ["carousel"], t("réponses confirmées", "confirmed answers")),
         P("achat", t("Le choisir", "Choose it"), "convert", 0.15, ["image", "story"], t("prix confirmé, lien boutique", "confirmed price, shop link")),
@@ -146,7 +146,8 @@ export function socialStrategy(p: Project, o: { lang?: string; platforms?: Platf
     product: [t("Voir le produit", "See the product"), t("Enregistrez", "Save it"), t("Votre question en commentaire", "Your question in the comments")],
   }[a];
   // Entreprise de services : le premier appel à l'action est celui que le client a choisi (devis, rendez-vous, appel…).
-  const mode = p.business === "services" ? p.services?.contactMode : undefined;
+  // (Restaurant : « Réserver une table » reste en tête, c'est la réservation propre au métier.)
+  const mode = p.business === "services" && a !== "restaurant" ? p.services?.contactMode : undefined;
   const own = mode === "booking" ? t("Prendre rendez-vous", "Book an appointment") : mode === "quote" ? t("Demander un devis", "Request a quote") : mode === "call" ? t("Appeler", "Call") : mode === "form" ? t("Nous contacter", "Contact us") : null;
   const ctas = own ? [own, ...ctasByKind.filter((x) => x !== own && !/rendez-vous|appointment|devis|quote/i.test(x))].slice(0, 3) : ctasByKind;
   const moments = o.startDate ? keyMoments(o.startDate, o.days ?? 30, p.product.sector ?? null, lang === "en" ? "en" : "fr").map((m) => ({ label: m.label, date: m.date })) : [];

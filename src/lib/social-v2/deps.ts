@@ -72,17 +72,30 @@ const aspectOf = (network: string, format: string): "1:1" | "4:5" | "9:16" | "2:
  * Photos de fond possibles d'une publication (scènes, photos du métier, photos du client), déjà validées. Une
  * publication prend celle qui a le moins servi, pour que deux publications voisines ne se ressemblent pas.
  */
-function backgroundFor(p: Project, seed: string): Asset | null {
+function backgroundFor(p: Project, seed: string, roles: string[] = ["lifestyle", "scene", "ambiance", "post-photo", "original"], productOnly = false): Asset | null {
   const pool = all<Asset & { uses: number }>(
     `SELECT a.*, (SELECT COUNT(*) FROM assets b WHERE b.project_id = a.project_id AND b.deleted_at IS NULL AND json_extract(b.meta, '$.poster.backgroundAssetId') = a.id) uses
        FROM assets a WHERE a.project_id = ? AND a.kind = 'image' AND a.deleted_at IS NULL AND a.status != 'rejected'
-        AND a.role IN ('lifestyle', 'scene', 'ambiance', 'post-photo', 'original') ORDER BY a.created_at DESC LIMIT 24`,
+        AND a.role IN (${roles.map(() => "?").join(",")}) ORDER BY a.created_at DESC LIMIT 24`,
     p.id,
-  ).filter(isAutoUsable);
+    ...roles,
+  ).filter((a) => isAutoUsable(a) && (!productOnly || !isPastedOnStock(a)));
   if (!pool.length) return null;
   const min = Math.min(...pool.map((a) => a.uses));
   const least = pool.filter((a) => a.uses === min);
   return least[parseInt(crypto.createHash("sha256").update(seed).digest("hex").slice(0, 6), 16) % least.length];
+}
+
+/** Photos qui montrent déjà le vrai produit (aucun collage nécessaire). */
+const PRODUCT_PHOTO_ROLES = ["scene", "packshot", "lifestyle", "original", "detail"];
+
+/** Photo libre de droits sur laquelle le produit a été collé (décor d'une banque d'images) : jamais reprise en fond. */
+export function isPastedOnStock(a: { meta?: string | null }): boolean {
+  try {
+    return !!(JSON.parse(a.meta || "{}") as { stock?: unknown }).stock;
+  } catch {
+    return false;
+  }
 }
 
 const POSTER_ASPECT: Record<string, PosterAspect> = { "1:1": "1:1", "4:5": "4:5", "9:16": "9:16", "2:3": "2:3", "16:9": "16:9" };
@@ -94,8 +107,9 @@ const POSTER_ASPECT: Record<string, PosterAspect> = { "1:1": "1:1", "4:5": "4:5"
 export async function posterForPost(p: Project, post: PostBrief, background: Asset | null, by: MediaBy, costMicro = 0): Promise<MediaResult> {
   const aspect = POSTER_ASPECT[aspectOf(post.network, post.format)] ?? "4:5";
   const cut = p.business === "services" ? null : (validCutouts(p.id)[0] ?? null);
-  // Le produit réel est posé dans la scène quand la photo ne le montre pas déjà (photo d'ambiance, sans produit).
-  const product = cut && (!background || background.role !== "scene") ? cut : null;
+  // Le produit réel n'est posé que sur le décor de studio de la marque (sans photo) : sur une photo, il n'est jamais
+  // collé (une photo de produit le montre déjà ; une photo d'ambiance ne s'y prête pas : échelle et lumière fausses).
+  const product = cut && !background ? cut : null;
   const headline = (post.headline || post.title || p.brand?.tagline || p.brand?.name || p.name).slice(0, 70);
   const items = p.business === "services" ? (p.services?.services ?? []).map((x) => x.name.split(/\s+(?:et|and|&)\s+|,/i)[0].trim()).filter(Boolean).slice(0, 3) : [];
   const subline = items.length && items.join(" • ").length <= 48 ? items.join(" • ") : p.product.category || null;
@@ -133,6 +147,10 @@ export function photoTopic(p: Project, post: Pick<PostBrief, "id" | "title" | "c
 export async function localRender(p: Project, post: PostBrief, ctx: JobContext | null = null, o: { background?: Asset | null } = {}): Promise<MediaResult> {
   // Photo imposée (nombre d'images différentes atteint) : reprise telle quelle, autre texte et autre mise en page.
   if (o.background) return posterForPost(p, post, o.background, "local");
+  // Boutique avec détourage validé : jamais le produit collé sur une photo d'intérieur qui ne le montre pas
+  // (échelle, perspective et lumière fausses). Fond = une photo qui montre déjà le vrai produit (mise en scène du
+  // studio, packshot, photo du client) ; sinon le produit posé sur le décor de studio de la marque, avec son ombre.
+  if (p.business !== "services" && validCutouts(p.id).length) return posterForPost(p, post, backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true), "local");
   const aspect = aspectOf(post.network, post.format);
   const { bestAdPhoto } = await import("../engine/service-media");
   const fresh = await bestAdPhoto({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null }, p, { key: `post-${post.id}`, topic: photoTopic(p, post), aspect: aspect === "2:3" ? "4:5" : aspect, name: `publication-${post.network}-${post.id.slice(0, 6)}-photo.jpg` }).catch((e) => {

@@ -275,7 +275,9 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
         const scene = await o.deps.image({ ...common, kind: "lifestyle", references: [o.cut.id] });
         if (scene) got = { ...scene, withProduct: true };
       }
-      if (!got) {
+      // Jamais de produit collé sur une photo d'univers qui ne le montre pas (échelle, perspective et lumière fausses) :
+      // sans mise en scène réelle du produit, la publicité le pose sur le décor de studio de la marque.
+      if (!got && !(p.business === "products" && o.cut)) {
         const plain = await o.deps.image({ ...common, kind: concept.visual.kind });
         got = plain ? { ...plain, withProduct: false } : null;
       }
