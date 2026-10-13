@@ -35,6 +35,8 @@ const u = await createUser(`pixabay-videos-${Date.now()}@demo.local`, "motdepass
 const sources: string[] = [];
 // Projets de démonstration (3e argument facultatif : noms séparés par des virgules, ex. « restaurant,casque »).
 const ALL = [["peintre", "artisan"], ["serum", "cosmetic"], ["restaurant", "restaurant"], ["casque", "hightech"]] as const;
+// 4e argument facultatif : durée en secondes (15 par défaut).
+const DURATION = Number(process.argv[4] ?? 15) || 15;
 const only = (process.argv[3] ?? "peintre,serum").split(",").map((x) => x.trim());
 for (const [name, fixture] of ALL.filter(([n]) => only.includes(n))) {
   const pid = seedImageFixture(u.id, fixture);
@@ -58,7 +60,7 @@ for (const [name, fixture] of ALL.filter(([n]) => only.includes(n))) {
   }
   const p = loadProject(pid);
   const deps = realVideoDeps(null, p, false);
-  const r = await runWithLang({ ui: "fr", content: "fr" }, () => runVideoEngineV2(null, pid, { ask: { text: "Reel Instagram de 15 secondes", platform: "reels", aspect: "9:16", durationS: 15, allowGeneration: false } }, deps));
+  const r = await runWithLang({ ui: "fr", content: "fr" }, () => runVideoEngineV2(null, pid, { ask: { text: `Reel Instagram de ${DURATION} secondes`, platform: "reels", aspect: "9:16", durationS: DURATION, allowGeneration: false } }, deps));
   if (!r.videoAssetId) {
     sources.push(`${name} : aucune vidéo (${r.reason})`);
     continue;

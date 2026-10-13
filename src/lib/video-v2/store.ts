@@ -44,7 +44,7 @@ export const VideoDocumentSchema = z.object({
   aspect: z.enum(["9:16", "16:9", "1:1", "4:5"]),
   platform: z.enum(["tiktok", "reels", "shorts", "meta_feed", "youtube", "linkedin", "shop_page", "website"]),
   safe: z.object({ top: num, bottom: num, side: num }),
-  clips: z.array(z.object({ id: z.string().min(1).max(40), shotId: z.string().max(40), label: z.string().max(80), part, durationS: num.min(0.5).max(60), source, overlays: z.array(LayerSchema).max(20), transitionIn: transition, generated: z.boolean().optional(), userEdited: z.boolean().optional() })).min(1).max(120),
+  clips: z.array(z.object({ id: z.string().min(1).max(40), shotId: z.string().max(40), label: z.string().max(80), part, durationS: num.min(0.5).max(60), source, overlays: z.array(LayerSchema).max(48), transitionIn: transition, generated: z.boolean().optional(), userEdited: z.boolean().optional() })).min(1).max(120),
   subtitles: z.object({
     style: z.object({ enabled: z.boolean(), family: z.string().max(60), weight: num, size: num.min(8).max(400), color: z.string().max(64), background: z.string().max(64).nullable(), position: z.enum(["bottom", "middle", "top"]), offsetY: num, maxChars: num.min(8).max(80), uppercase: z.boolean() }),
     cues: z.array(z.object({ id: z.string().max(60), clipId: z.string().max(40), fromS: num.min(0), toS: num.min(0), text: z.string().max(200) })).max(600),
