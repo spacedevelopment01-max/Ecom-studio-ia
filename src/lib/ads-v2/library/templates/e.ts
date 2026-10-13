@@ -43,6 +43,7 @@ export const TEMPLATES_E: Template[] = [
   },
   {
     id: "floating-card",
+    coversSubject: true,
     name: ["Carte flottante", "Floating card"],
     family: "photo",
     photo: "required",
@@ -61,6 +62,7 @@ export const TEMPLATES_E: Template[] = [
   },
   {
     id: "frosted-strip",
+    coversSubject: true,
     name: ["Bande dépolie", "Frosted strip"],
     family: "photo",
     photo: "required",

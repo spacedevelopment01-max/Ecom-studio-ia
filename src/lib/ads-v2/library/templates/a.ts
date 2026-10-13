@@ -27,6 +27,7 @@ export const TEMPLATES_A: Template[] = [
   },
   {
     id: "frame-center",
+    coversSubject: true,
     name: ["Photo encadrée, titre centré", "Framed photo, centred headline"],
     family: "lux",
     photo: "required",

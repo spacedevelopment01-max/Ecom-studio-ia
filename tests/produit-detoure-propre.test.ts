@@ -47,10 +47,35 @@ describe("Modèles de publication sur une photo de produit", () => {
     const art = { style: "warm", heading: "Inter", headingWeight: 700, body: "Inter", display: "Inter", displayWeight: 800, uppercase: false, cta: "pill", arrow: true, cycle: ["editorial"] } as any;
     const seen = new Set<string>();
     for (let n = 0; n < 400; n++) seen.add(pickPosterLook(art, n * 7919, [], true, false, true).layout);
-    expect(seen.has("tpl:rising-disc")).toBe(false);
-    expect(seen.has("tpl:half-tint")).toBe(false);
+    for (const id of ["rising-disc", "half-tint", "frame-center", "floating-card", "frosted-strip", "centered-rules", "golden-ring"]) {
+      expect(templateById(id)?.coversSubject, id).toBe(true);
+      expect(seen.has(`tpl:${id}`), id).toBe(false);
+    }
     const free = new Set<string>();
     for (let n = 0; n < 400; n++) free.add(pickPosterLook(art, n * 7919, [], true, false, false).layout);
     expect([...free].some((l) => l === "tpl:rising-disc" || l === "tpl:half-tint")).toBe(true);
+  });
+});
+
+describe("Publicités : jamais une question sans réponse", () => {
+  it("une réponse « [À compléter] » ne devient ni un fait ni une objection", async () => {
+    const { adInsight } = await import("@/lib/ads-v2/insight");
+    const p: any = {
+      business: "products", name: "Cap Sud", brand: { name: "Cap Sud", personality: [] },
+      product: { name: "Lunettes", category: "Lunettes", facts: [{ label: "Verres", value: "[À compléter : catégorie]", status: "confirmed" }], questions: [{ question: "En quelle matière ?", answer: "[À compléter : matière]" }, { question: "Livraison ?", answer: "48 h" }], claimsToAvoid: [] },
+      strategy: { platform: { objections: [{ objection: "Trop cher", answer: "[À compléter]" }], proofs: [] } },
+    };
+    const i = adInsight(p);
+    expect(i.facts.map((f) => f.label)).toEqual(["Livraison"]);
+    expect(i.objections).toEqual([]);
+  });
+});
+
+describe("Titres des publications tirés d'une question", () => {
+  it("gardent leur point d'interrogation", () => {
+    const src = require("node:fs").readFileSync("src/lib/social-v2/copy.ts", "utf8");
+    const q = src.slice(src.indexOf("const QBANK"), src.indexOf("/** Lieu"));
+    expect(q).not.toMatch(/headline: short\(x\.a\) \}/);
+    expect(q).toMatch(/qmark\(short\(x\.a\)\)/);
   });
 });
