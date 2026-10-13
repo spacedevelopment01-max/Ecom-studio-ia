@@ -520,6 +520,11 @@ export function serviceCardPlan(p: Project, photos: number, tips?: { title: stri
   const ph = (i: number) => (photos ? i % photos : undefined);
   // Emplacement d'image de chaque visuel (une image différente par visuel ; mêmes formats d'une publicité = même image).
   const at = (slot: PhotoSlot, i: number) => (assign && assign[slot] !== undefined ? assign[slot] : ph(i));
+  // Carrousels, citation, infos pratiques : d'abord les images qu'aucun emplacement n'utilise (une image par visuel),
+  // sinon une image déjà prise plutôt qu'aucune (chaque visuel a une image en fond).
+  const taken = new Set(Object.values(assign ?? {}));
+  const spare = photos ? Array.from({ length: photos }, (_, k) => k).filter((k) => !taken.has(k)) : [];
+  const sp = (i: number) => (spare.length ? spare[i % spare.length] : ph(i));
   const tagline = p.brand?.tagline || name;
   const summary = clip(p.product.summary, 140);
 
@@ -537,14 +542,14 @@ export function serviceCardPlan(p: Project, photos: number, tips?: { title: stri
     const group = tips?.items.length ? "tips" : "services";
     const coverTitle = tips?.items.length ? clip(tips.title, 80) : C(`${name} : nos prestations en détail`, `${name}: our services in detail`);
     const eyebrow = tips?.items.length ? C("Conseil d'expert", "Expert tip") : C("Nos prestations", "Our services");
-    out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-01`, card: { template: "carousel-cover", format: "square", eyebrow, title: coverTitle, index: 1, total, swipe: C("Faites glisser", "Swipe"), photo: ph(2) } });
-    slides.forEach((s, k) => out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-${String(k + 2).padStart(2, "0")}`, card: { template: "carousel-slide", format: "square", eyebrow, title: s.title, text: s.text, index: k + 2, total, photo: ph(3 + k) } }));
-    out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-${String(total).padStart(2, "0")}`, card: { template: "carousel-end", format: "square", eyebrow: name, title: cta, text: place, contact, cta: ctaShort, index: total, total, photo: ph(1) } });
+    out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-01`, card: { template: "carousel-cover", format: "square", eyebrow, title: coverTitle, index: 1, total, swipe: C("Faites glisser", "Swipe"), photo: sp(0) } });
+    slides.forEach((s, k) => out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-${String(k + 2).padStart(2, "0")}`, card: { template: "carousel-slide", format: "square", eyebrow, title: s.title, text: s.text, index: k + 2, total, photo: sp(1 + k) } }));
+    out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-${String(total).padStart(2, "0")}`, card: { template: "carousel-end", format: "square", eyebrow: name, title: cta, text: place, contact, cta: ctaShort, index: total, total, photo: sp(5) } });
   }
   const q = brandQuote(p);
-  if (q) out.push({ role: "social", folder: "images.social", name: C("citation", "quote"), card: { template: "quote", format: "square", title: q.text, author: `— ${q.author}`, photo: ph(3) } });
+  if (q) out.push({ role: "social", folder: "images.social", name: C("citation", "quote"), card: { template: "quote", format: "square", title: q.text, author: `— ${q.author}`, photo: sp(6) } });
   const rows = infoRows(p);
-  if (rows.length) out.push({ role: "social", folder: "images.social", name: C("infos-pratiques", "practical-info"), card: { template: "info", format: "portrait", eyebrow: name, title: rows.some((r) => r.icon === "clock") && place ? C("Horaires et zone", "Hours and area") : rows.some((r) => r.icon === "clock") ? C("Nos horaires", "Opening hours") : C("Infos pratiques", "Practical info"), rows, cta, photo: ph(4) } });
+  if (rows.length) out.push({ role: "social", folder: "images.social", name: C("infos-pratiques", "practical-info"), card: { template: "info", format: "portrait", eyebrow: name, title: rows.some((r) => r.icon === "clock") && place ? C("Horaires et zone", "Hours and area") : rows.some((r) => r.icon === "clock") ? C("Nos horaires", "Opening hours") : C("Infos pratiques", "Practical info"), rows, cta, photo: sp(7) } });
 
   // Publicités : « Prenez rendez-vous » aux formats des régies (9:16, 1:1, 16:9).
   const adText = [name, place].filter(Boolean).join(" · ");
