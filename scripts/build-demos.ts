@@ -60,18 +60,32 @@ const PX = path.join(REAL, "pixabay");
  */
 const REAL_DEMOS: DemoDef[] = [
   {
-    id: "serum", sector: "Beauté", direction: "laboratoire", category: "Soins visage",
-    productName: "Sérum visage", brandName: "Maison Aube", price: "32 €",
-    description: "Sérum visage en flacon compte-gouttes en verre ambré, pipette noire. Texture légère à appliquer matin et soir sur peau propre.",
-    photo: path.join(PX, "serum.jpg"),
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/skincare-haircare-organic-9973091/", note: "Vraie photo de flacon de sérum (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
+    id: "huile", sector: "Beauté", direction: "rituel", category: "Huiles",
+    productName: "Huile corporelle", brandName: "Maison Aube", price: "26 €",
+    description: "Huile corporelle dans un flacon en verre transparent à bouchon de verre. Texture fluide et dorée.",
+    photo: path.join(PX, "huile.jpg"),
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/glass-bottle-oil-wellness-flowers-4108085/", note: "Vraie photo de flacon d'huile (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "bougie", sector: "Maison", direction: "rituel", category: "Bougies",
-    productName: "Bougie parfumée aux fleurs séchées", brandName: "Lueur", price: "28 €",
-    description: "Bougie parfumée coulée à la main dans un contenant blanc cannelé, décorée de fleurs séchées et de paillettes dorées.",
-    photo: path.join(PX, "bougie.jpg"),
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/handmade-scented-candle-7793755/", note: "Vraie photo de bougie artisanale (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
+    id: "mug", sector: "Maison", direction: "epure", category: "Arts de la table",
+    productName: "Mug en céramique", brandName: "Terre Blanche", price: "18 €",
+    description: "Mug en céramique blanche à fines stries horizontales, grande anse.",
+    photo: path.join(PX, "mug.jpg"),
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/mug-cup-coffee-drink-tea-beverage-3926033/", note: "Vraie photo de mug sans marque (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
+  },
+  {
+    id: "lunettes", sector: "Accessoires", direction: "lookbook", category: "Lunettes de soleil",
+    productName: "Lunettes de soleil aviateur", brandName: "Cap Sud", price: "65 €",
+    description: "Lunettes de soleil forme aviateur, monture métal argentée, verres dégradés, branches noires.",
+    photo: path.join(PX, "lunettes.jpg"),
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/sunglasses-glasses-trend-94813/", note: "Vraie photo de lunettes sans marque visible (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
+  },
+  {
+    id: "plante", sector: "Plantes", direction: "jardin", category: "Plantes d'intérieur",
+    productName: "Sansevieria en pot", brandName: "Verdure", price: "34 €",
+    description: "Sansevieria (langue de belle-mère) en pot blanc, feuilles vertes bordées de jaune. Plante d'intérieur.",
+    photo: path.join(PX, "plante.jpg"),
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/snake-plant-plant-plant-pot-5939187/", note: "Vraie photo de plante en pot (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
     id: "casque", sector: "High-tech", direction: "signal", category: "Audio",
@@ -81,14 +95,14 @@ const REAL_DEMOS: DemoDef[] = [
     source: { supplier: "Pixabay", url: "https://pixabay.com/photos/headsets-music-pink-background-1971383/", note: "Vraie photo de casque sans marque visible (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "savon", sector: "Beauté", direction: "jardin", category: "Savons",
+    id: "savon", sector: "Beauté", direction: "manifeste", category: "Savons",
     productName: "Savon artisanal", brandName: "Sève", price: "8,50 €",
-    description: "Savon solide artisanal en pain rectangulaire, teintes naturelles rosées et crème.",
+    description: "Savons solides artisanaux en pains, teinte jaune miel, décor de cœur incrusté.",
     photo: path.join(PX, "savon.jpg"),
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/soap-handmade-soap-body-care-1509963/", note: "Vraie photo de savons artisanaux (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/soap-soap-making-cosmetics-making-430437/", note: "Vraie photo de savons artisanaux (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "fleuriste", sector: "Fleuriste", direction: "jardin", business: "services", platform: "woocommerce",
+    id: "fleuriste", sector: "Fleuriste", direction: "magazine", business: "services", platform: "woocommerce",
     productName: "Atelier floral", brandName: "Atelier Pivoine", price: "",
     description: "Fleuriste artisan : bouquets du jour, compositions sur mesure pour mariages et événements, abonnements floraux pour les entreprises, livraison en ville.",
     photo: path.join(PX, "fleuriste-boutique.jpg"),
@@ -99,7 +113,7 @@ const REAL_DEMOS: DemoDef[] = [
       { name: "Abonnement entreprise", description: "Une composition renouvelée chaque semaine pour votre accueil." },
     ],
     area: "Lyon et alentours", hours: "Du mardi au samedi, 9 h – 19 h", contactModes: "quote,form",
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-shop-flowers-shop-2588972/", note: "Vraies photos de boutique et d'atelier de fleuriste (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-bouquet-petal-bloom-garden-2588972/", note: "Vraies photos de boutique et d'atelier de fleuriste (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
   },
   {
     id: "barbier", sector: "Barbier", direction: "etabli", business: "services", platform: "woocommerce",
@@ -114,18 +128,20 @@ const REAL_DEMOS: DemoDef[] = [
       { name: "Coupe enfant", description: "Jusqu'à 12 ans." },
     ],
     area: "Bordeaux centre", hours: "Du mardi au samedi, 9 h 30 – 19 h", contactModes: "booking,call",
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-shop-chair-barber-shop-1453064/", note: "Vraies photos de salon de barbier (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-chair-salon-hairdresser-1453064/", note: "Vraies photos de salon de barbier (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
   },
 ];
 
 /** Version anglaise des démonstrations (projets créés avec language=en). */
 const EN_DEMOS: Record<string, Partial<DemoDef>> = {
-  serum: { sector: "Beauty", category: "Face care", productName: "Face serum", price: "€32", description: "Face serum in an amber glass dropper bottle with a black pipette. Light texture to apply morning and evening on clean skin.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/skincare-haircare-organic-9973091/", note: "A real photo of a serum bottle (Pixabay): the brand, the visuals and the store are created by the studio." } },
-  bougie: { sector: "Home", category: "Candles", productName: "Dried-flower scented candle", price: "€28", description: "Hand-poured scented candle in a white fluted vessel, decorated with dried flowers and gold flakes.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/handmade-scented-candle-7793755/", note: "A real photo of a handmade candle (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  huile: { sector: "Beauty", category: "Oils", productName: "Body oil", price: "€26", description: "Body oil in a clear glass bottle with a glass stopper. Fluid, golden texture.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/glass-bottle-oil-wellness-flowers-4108085/", note: "A real photo of an oil bottle (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  mug: { sector: "Home", category: "Tableware", productName: "Ceramic mug", price: "€18", description: "White ceramic mug with fine horizontal ridges and a large handle.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/mug-cup-coffee-drink-tea-beverage-3926033/", note: "A real photo of an unbranded mug (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  lunettes: { sector: "Accessories", category: "Sunglasses", productName: "Aviator sunglasses", price: "€65", description: "Aviator sunglasses, silver metal frame, gradient lenses, black temples.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/sunglasses-glasses-trend-94813/", note: "A real photo of sunglasses with no visible brand (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  plante: { sector: "Plants", category: "Houseplants", productName: "Potted snake plant", price: "€34", description: "Snake plant (sansevieria) in a white pot, green leaves edged with yellow. Houseplant.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/snake-plant-plant-plant-pot-5939187/", note: "A real photo of a potted plant (Pixabay): the brand, the visuals and the store are created by the studio." } },
   casque: { sector: "Tech", category: "Audio", productName: "Wired headphones", price: "€59", description: "Wired on-ear headphones in white, with an adjustable headband and padded ear cushions.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/headsets-music-pink-background-1971383/", note: "A real photo of unbranded headphones (Pixabay): the brand, the visuals and the store are created by the studio." } },
-  savon: { sector: "Beauty", category: "Soaps", productName: "Handmade soap", price: "€8.50", description: "Handmade solid soap in a rectangular bar, natural pink and cream tones.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/soap-handmade-soap-body-care-1509963/", note: "A real photo of handmade soaps (Pixabay): the brand, the visuals and the store are created by the studio." } },
-  fleuriste: { sector: "Florist", productName: "Floral studio", description: "Artisan florist: daily bouquets, custom arrangements for weddings and events, flower subscriptions for businesses, local delivery.", services: [{ name: "Daily bouquets", description: "Seasonal flowers arranged in the shop, to take away or delivered." }, { name: "Weddings and events", description: "Bridal bouquet, table and venue decoration, by appointment." }, { name: "Business subscription", description: "A fresh arrangement every week for your reception." }], area: "Lyon and surroundings", hours: "Tuesday to Saturday, 9am – 7pm", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-shop-flowers-shop-2588972/", note: "Real photos of a florist's shop and workshop (Pixabay): the business is fictional, its website and brand are created by the studio." } },
-  barbier: { sector: "Barber", productName: "Barber shop", description: "Barber: men's haircuts with scissors and clippers, beard trimming and care, traditional straight-razor shave, kids' cuts.", services: [{ name: "Men's haircut", description: "Scissors and clippers, shampoo and styling." }, { name: "Beard trim", description: "Outline, fade and oil treatment." }, { name: "Traditional shave", description: "Straight razor, hot towel." }, { name: "Kids' cut", description: "Up to age 12." }], area: "Central Bordeaux", hours: "Tuesday to Saturday, 9:30am – 7pm", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-shop-chair-barber-shop-1453064/", note: "Real photos of a barber shop (Pixabay): the business is fictional, its website and brand are created by the studio." } },
+  savon: { sector: "Beauty", category: "Soaps", productName: "Handmade soap", price: "€8.50", description: "Handmade solid soap bars, honey-yellow, with an inlaid heart.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/soap-soap-making-cosmetics-making-430437/", note: "A real photo of handmade soaps (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  fleuriste: { sector: "Florist", productName: "Floral studio", description: "Artisan florist: daily bouquets, custom arrangements for weddings and events, flower subscriptions for businesses, local delivery.", services: [{ name: "Daily bouquets", description: "Seasonal flowers arranged in the shop, to take away or delivered." }, { name: "Weddings and events", description: "Bridal bouquet, table and venue decoration, by appointment." }, { name: "Business subscription", description: "A fresh arrangement every week for your reception." }], area: "Lyon and surroundings", hours: "Tuesday to Saturday, 9am – 7pm", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-bouquet-petal-bloom-garden-2588972/", note: "Real photos of a florist's shop and workshop (Pixabay): the business is fictional, its website and brand are created by the studio." } },
+  barbier: { sector: "Barber", productName: "Barber shop", description: "Barber: men's haircuts with scissors and clippers, beard trimming and care, traditional straight-razor shave, kids' cuts.", services: [{ name: "Men's haircut", description: "Scissors and clippers, shampoo and styling." }, { name: "Beard trim", description: "Outline, fade and oil treatment." }, { name: "Traditional shave", description: "Straight razor, hot towel." }, { name: "Kids' cut", description: "Up to age 12." }], area: "Central Bordeaux", hours: "Tuesday to Saturday, 9:30am – 7pm", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-chair-salon-hairdresser-1453064/", note: "Real photos of a barber shop (Pixabay): the business is fictional, its website and brand are created by the studio." } },
 };
 const ONLY_IDS = process.env.ONLY?.split(",");
 const PRODUCTS: DemoDef[] = (ONLY_IDS ? REAL_DEMOS.filter((d) => ONLY_IDS.includes(d.id)) : REAL_DEMOS).map((d) => (EN ? { ...d, ...EN_DEMOS[d.id] } : d));
@@ -199,6 +215,7 @@ await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: 
 // Le compte de démonstration a besoin de plusieurs boutiques : activation manuelle locale.
 const { db } = await import("../src/lib/db");
 const { syncAllowance, getSubscription } = await import("../src/lib/billing");
+const { createSubscription } = await import("../src/lib/project-subscriptions");
 const me = await api(ctx, "/api/me");
 getSubscription(me.user.id);
 db().prepare("UPDATE subscriptions SET status = 'manual', stores = 20, plan = 'dominer' WHERE user_id = ?").run(me.user.id);
@@ -218,6 +235,8 @@ for (const p of PRODUCTS) {
   const photoFile = p.photo ?? [".png", ".jpg"].map((x) => path.join(RENDERS, `${p.id}-photo${x}`)).find((f) => fs.existsSync(f))!;
   // Photo transparente (produit détouré) : posée sur un fond clair, comme une photo de fournisseur.
   const photo = photoFile.endsWith(".png") ? await sharp(photoFile).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(photoFile);
+  // Un abonnement = un projet : chaque démonstration reçoit son propre abonnement offert (forfait le plus complet).
+  createSubscription(me.user.id, { plan: "dominer", status: "manual", source: "admin" });
   // Formulaire de création, comme dans le studio (plusieurs photos possibles ; services : prestations et coordonnées).
   const form = new FormData();
   form.append("photos", new Blob([photo], { type: "image/jpeg" }), path.basename(photoFile).replace(/\.png$/, ".jpg"));
