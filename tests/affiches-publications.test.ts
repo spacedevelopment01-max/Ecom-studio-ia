@@ -124,11 +124,12 @@ describe("Affiches de publication", async () => {
     expect(im.poster.backgroundAssetId).toBe(other.id);
     // Carrousel de conseils : une image sur chaque page (couverture, pages, fin).
     const tips = await fr(() => generateServiceSingleImage(new JobContext(job), pid, { kind: "tips", format: "square", items: ["Arriver tôt : 10 minutes pour le briefing", "Communiquer : partagez chaque indice trouvé"], background: "photo", photoId: other.id }));
-    const pages = tips.assetIds.map((x) => assetMeta<any>(getAsset(x)!));
+    const tipIds = tips.assetIds ?? [];
+    const pages = tipIds.map((x) => assetMeta<any>(getAsset(x)!));
     expect(pages.length).toBeGreaterThanOrEqual(4);
     expect(pages.every((m) => /photo réelle/.test(m.recipe))).toBe(true);
     const lib = await import("@/lib/library");
-    tips.assetIds.forEach((x, k) => out(`carrousel-${k + 1}.jpg`, lib.assetData(getAsset(x)!)));
+    tipIds.forEach((x, k) => out(`carrousel-${k + 1}.jpg`, lib.assetData(getAsset(x)!)));
     out("citation-photo-1x1.jpg", lib.assetData(getAsset(quote.assetId)!));
     out("citation-1x1.jpg", lib.assetData(getAsset(plain.assetId)!));
     out("infos-4x5.jpg", lib.assetData(getAsset(info.assetId)!));
