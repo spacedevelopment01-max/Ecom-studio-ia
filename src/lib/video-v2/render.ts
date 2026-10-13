@@ -37,7 +37,7 @@ class FrameReader {
   private last: Buffer | null = null;
   private proc;
   constructor(file: string, inS: number, durS: number, private w: number, private h: number, fps: number) {
-    this.proc = spawn("ffmpeg", ["-v", "error", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps}`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
+    this.proc = spawn("ffmpeg", ["-v", "error", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps},eq=contrast=1.05:saturation=1.12`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
     this.proc.stdout.on("data", (d: Buffer) => {
       this.chunks.push(d);
       this.queued += d.length;
@@ -198,7 +198,11 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
       scratch.ctx.putImageData(id, 0, 0);
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.drawImage(scratch.canvas, 0, 0);
+      // Vidéo habillée : léger zoom lent sur la durée du plan (mouvement de caméra continu, jamais d'arrêt sur image).
+      const z = doc.meta.promo ? 1 + 0.06 * easeInOut(p) : 1;
+      const cw = scratch.canvas.width;
+      const ch = scratch.canvas.height;
+      ctx.drawImage(scratch.canvas, (cw - cw * z) / 2, (ch - ch * z) / 2, cw * z, ch * z);
       ctx.restore();
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
     } else {

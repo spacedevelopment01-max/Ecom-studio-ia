@@ -41,6 +41,12 @@ describe("musique libre de droits pour les vidéos", async () => {
     expect(musicCredit(r[0])).toMatch(/Piste ok.*Auteur.*CC BY 4\.0/);
   });
 
+  it("style du métier : une piste n'est gardée que si elle cite un genre du style (folk pour un artisan)", async () => {
+    vi.stubEnv("STOCK_OFFLINE", "0");
+    vi.stubGlobal("fetch", api([track("metal", { tags: [{ name: "metal" }, { name: "rock" }], genres: ["metal"] }), track("folk", { tags: [{ name: "folk" }, { name: "acoustic" }], genres: ["folk"] })]));
+    expect((await searchStockMusic("pulse", 15, new Set(), "acoustic")).map((t) => t.id)).toEqual(["folk"]);
+  });
+
   it("projet : la piste est gardée avec sa licence et sa mention, puis réutilisée sans nouvelle recherche", async () => {
     vi.stubEnv("STOCK_OFFLINE", "0");
     const u = await createUser(`music-${Date.now()}@test.fr`, "motdepasse-test", "M");

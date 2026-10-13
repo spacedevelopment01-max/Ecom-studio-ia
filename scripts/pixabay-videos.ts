@@ -65,7 +65,7 @@ for (const [name, fixture] of [["peintre", "artisan"], ["serum", "cosmetic"]] as
     sources.push(`${name} plan ${k + 1} (${c.part}, ${c.durationS.toFixed(1)} s) : ${src?.stock ? `${src.stock.page} — ${src.stock.author} (${src.stock.license})` : c.source.kind === "image" ? "photo du projet" : "composition du studio"}`);
   }
   const m = doc.audio.music;
-  sources.push(`${name} musique : ${m?.source === "library" ? (assetMeta<any>(getAsset(m.assetId)!)?.credit ?? m.licence) : "composée par le studio (aucune piste libre de droits trouvée ou banque inaccessible)"}`);
+  sources.push(`${name} musique : ${m?.source === "library" ? (assetMeta<any>(getAsset(m.assetId)!)?.credit ?? m.licence) : `morceau composé par le studio, style « ${m?.source === "synth" ? m.style ?? m.mood : "?"} », vrais instruments (banque GeneralUser GS, libre pour un usage commercial) — aucune piste de la banque Openverse (inaccessible ou sans résultat)`}`);
   console.log(`${name} : ${file}`);
 }
 fs.writeFileSync(path.join(out, "sources.txt"), sources.join("\n") + "\n");

@@ -3,6 +3,7 @@
  * recopie une ancienne version, rien n'est perdu), mémoire des plans produits (un plan FINAL payé est réutilisé,
  * jamais repayé), validation des documents reçus, chargement des médias et export (MP4, SRT, VTT, affiche, JSON).
  */
+import { SONG_STYLES } from "../media/song";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -51,7 +52,7 @@ export const VideoDocumentSchema = z.object({
   audio: z.object({
     voice: z.array(audioClip).max(200),
     voiceId: z.string().max(60).nullable(),
-    music: z.union([z.object({ source: z.literal("synth"), mood: z.enum(["calm", "pulse", "warm", "none"]), gainDb: num }), z.object({ source: z.literal("library"), assetId: z.string().max(40), licence: z.string().min(1).max(200), gainDb: num }), z.null()]),
+    music: z.union([z.object({ source: z.literal("synth"), mood: z.enum(["calm", "pulse", "warm", "none"]), gainDb: num, style: z.enum(SONG_STYLES).optional(), seed: z.string().max(80).optional() }), z.object({ source: z.literal("library"), assetId: z.string().max(40), licence: z.string().min(1).max(200), gainDb: num }), z.null()]),
     sfx: z.array(audioClip).max(100),
     duckingDb: num,
     loudnessLufs: num.min(-30).max(-8),
@@ -185,7 +186,7 @@ export async function loadVideoSources(projectId: string, doc: VideoDocument, di
     if (f) sfx.set(v.id, f);
   }
   const m = doc.audio.music;
-  const music = m?.source === "library" ? write(m.assetId, "audio") : m?.source === "synth" ? synthTrack(doc, path.join(dir, "music.wav")) : null;
+  const music = m?.source === "library" ? write(m.assetId, "audio") : m?.source === "synth" ? await synthTrack(doc, path.join(dir, "music.wav")) : null;
   return { images: await loadDocImages(images), videos, voice, sfx, music };
 }
 

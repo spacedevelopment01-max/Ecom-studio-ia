@@ -11,6 +11,7 @@ import { saveAsset, type Asset } from "../library";
 import type { Project } from "../projects";
 import { getSetting } from "../settings";
 import { L } from "../i18n-server";
+import type { SongStyle } from "../media/song";
 
 export type MusicMood = "calm" | "pulse" | "warm";
 
@@ -42,6 +43,20 @@ export const MOOD_QUERIES: Record<MusicMood, string[]> = {
   warm: ["acoustic", "feel good", "ukulele", "warm guitar", "positive"],
 };
 
+/**
+ * Recherches et genres attendus par style du produit ou du métier : une piste n'est gardée que si sa description
+ * cite l'un des genres du style (folk pour un artisan, lounge ou jazz pour un cosmétique, accordéon pour un bistrot…).
+ */
+export const STYLE_MUSIC: Record<SongStyle, { queries: string[]; genres: string[] }> = {
+  acoustic: { queries: ["acoustic guitar upbeat", "folk happy", "acoustic", "ukulele"], genres: ["acoustic", "folk", "guitar", "ukulele", "country", "singer-songwriter"] },
+  bistro: { queries: ["gypsy jazz", "accordion", "jazz manouche", "swing"], genres: ["jazz", "swing", "accordion", "manouche", "gypsy", "french", "bossa", "musette"] },
+  lounge: { queries: ["lounge", "chill jazz", "bossa nova", "chillout"], genres: ["lounge", "chill", "chillout", "jazz", "bossa", "smooth", "downtempo", "lofi", "lo-fi"] },
+  calm: { queries: ["calm piano", "ambient piano", "relaxing"], genres: ["piano", "ambient", "calm", "relax", "relaxing", "meditation", "peaceful", "new age"] },
+  cinematic: { queries: ["cinematic piano", "orchestral", "emotional strings"], genres: ["cinematic", "orchestral", "strings", "piano", "soundtrack", "score", "classical"] },
+  corporate: { queries: ["corporate", "inspiring", "motivational"], genres: ["corporate", "inspiring", "motivational", "uplifting", "business", "positive"] },
+  pop: { queries: ["upbeat pop", "happy", "energetic"], genres: ["pop", "upbeat", "happy", "energetic", "dance", "electronic", "funk", "indie"] },
+};
+
 /** Mots qui écartent une piste (effet sonore, voix parlée, ambiance sombre ou angoissante). */
 const AVOID = /\b(sfx|sound ?effect|effect|foley|field recording|noise|speech|voice|spoken|podcast|horror|scary|creepy|dark|drone|siren|alarm|glitch|explosion|loop kit|sample pack|ringtone)\b/i;
 
@@ -61,10 +76,11 @@ export function musicCredit(t: Pick<StockTrack, "title" | "author" | "license" |
 }
 
 /** Pistes trouvées pour une humeur, assez longues pour la vidéo, licence commerciale seulement. */
-export async function searchStockMusic(mood: MusicMood, minS: number, exclude = new Set<string>()): Promise<StockTrack[]> {
+export async function searchStockMusic(mood: MusicMood, minS: number, exclude = new Set<string>(), style?: SongStyle): Promise<StockTrack[]> {
   if (offline()) return [];
   const out: StockTrack[] = [];
-  for (const q of MOOD_QUERIES[mood]) {
+  const want = style ? STYLE_MUSIC[style] : null;
+  for (const q of want?.queries ?? MOOD_QUERIES[mood]) {
     try {
       const r = await fetch(`https://api.openverse.org/v1/audio/?q=${encodeURIComponent(q)}&license_type=commercial&category=music&page_size=20&mature=false`, { headers: { "User-Agent": "E-COM-STUDIO-IA" }, signal: AbortSignal.timeout(TIMEOUT) });
       if (!r.ok) throw new Error(`openverse ${r.status}`);
@@ -79,6 +95,8 @@ export async function searchStockMusic(mood: MusicMood, minS: number, exclude = 
         // Assez longue pour toute la vidéo (une piste trop courte bouclerait), pas un fichier énorme.
         if (!(durationS >= minS + 2 && durationS <= 600)) continue;
         if (AVOID.test(text)) continue;
+        // Style du produit ou du métier : la piste doit en citer un genre.
+        if (want && !want.genres.some((g) => new RegExp(`\\b${g}\\b`, "i").test(text))) continue;
         if (type && !["mp3", "ogg", "wav", "flac", "m4a", "oga"].includes(type)) continue;
         if (Number(x.filesize ?? 0) > 25_000_000) continue;
         out.push({ source: "openverse", id: String(x.id), title: String(x.title ?? "Sans titre").slice(0, 120), author: String(x.creator ?? "").slice(0, 80), license, licenseUrl: String(x.license_url ?? ""), page: String(x.foreign_landing_url ?? x.url), url: String(x.url), provider: String(x.provider ?? x.source ?? "openverse"), durationS, filetype: type || "mp3", tags });
@@ -113,25 +131,25 @@ function keptTracks(projectId: string): Asset[] {
  * Musique de la vidéo : une piste libre de droits de la bonne humeur, gardée dans la bibliothèque du projet avec sa
  * licence. `avoid` : pistes à ne pas reprendre (deux vidéos d'un même projet n'ont pas la même musique si possible).
  */
-export async function projectMusic(p: Project, mood: MusicMood, durationS: number, avoid = new Set<string>()): Promise<{ assetId: string; licence: string; credit: string } | null> {
+export async function projectMusic(p: Project, mood: MusicMood, durationS: number, avoid = new Set<string>(), style?: SongStyle): Promise<{ assetId: string; licence: string; credit: string } | null> {
   if (!musicLibraryOn()) return null;
   const meta = (a: Asset) => {
     try {
-      return (typeof a.meta === "string" ? JSON.parse(a.meta) : a.meta)?.stockMusic as (StockTrack & { mood: MusicMood }) | undefined;
+      return (typeof a.meta === "string" ? JSON.parse(a.meta) : a.meta)?.stockMusic as (StockTrack & { mood: MusicMood; style?: SongStyle }) | undefined;
     } catch {
       return undefined;
     }
   };
   for (const a of keptTracks(p.id)) {
     const m = meta(a);
-    if (m && m.mood === mood && m.durationS >= durationS + 2 && !avoid.has(a.id)) return { assetId: a.id, licence: m.license, credit: musicCredit(m) };
+    if (m && m.mood === mood && (m.style ?? null) === (style ?? null) && m.durationS >= durationS + 2 && !avoid.has(a.id)) return { assetId: a.id, licence: m.license, credit: musicCredit(m) };
   }
   const taken = new Set(keptTracks(p.id).map((a) => `openverse:${meta(a)?.id}`));
-  for (const t of (await searchStockMusic(mood, durationS, taken)).slice(0, 3)) {
+  for (const t of (await searchStockMusic(mood, durationS, taken, style)).slice(0, 3)) {
     try {
       const f = await downloadStockMusic(t);
       const ext = f.mime.includes("ogg") ? "ogg" : f.mime.includes("wav") ? "wav" : "mp3";
-      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: f.data, name: `musique-${t.id}.${ext}`, mime: f.mime, role: "music", folderKey: "videos.ads", origin: "import", meta: { stockMusic: { ...t, mood }, credit: musicCredit(t) } });
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data: f.data, name: `musique-${t.id}.${ext}`, mime: f.mime, role: "music", folderKey: "videos.ads", origin: "import", meta: { stockMusic: { ...t, mood, ...(style ? { style } : {}) }, credit: musicCredit(t) } });
       return { assetId: a.id, licence: t.license, credit: musicCredit(t) };
     } catch (e) {
       console.warn("[musique libre] piste non téléchargée :", (e as Error).message);

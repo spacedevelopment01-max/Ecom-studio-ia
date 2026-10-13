@@ -26,6 +26,7 @@
     "date-fns-tz": "^3.2.0",
     "fast-json-patch": "^3.1.1",
     "fflate": "^0.8.3",
+    "generaluser": "^1.47.1",
     "imagetracerjs": "^1.2.6",
     "liquidjs": "^10.30.0",
     "lucide-react": "^1.50.0",
@@ -38,6 +39,7 @@
     "react-dom": "^19.3.0",
     "sanitize-html": "^2.18.0",
     "sharp": "^0.35.5",
+    "spessasynth_core": "^4.3.22",
     "undici": "^7.30.0",
     "zod": "^4.6.5"
   },

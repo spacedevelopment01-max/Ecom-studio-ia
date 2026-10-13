@@ -45,6 +45,7 @@ import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, Vide
 import type { GateDecision } from "../quality/gate";
 import { execTool } from "../exec-tool";
 import { dressPromo } from "./promo";
+import { songGrid, songStyleFor } from "../media/song";
 import sharp from "sharp";
 
 /** Durée maximale d'une vidéo IA « courte » (forfait Développer). */
@@ -166,14 +167,14 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     // Musique : une vraie piste libre de droits (licence commerciale enregistrée) avant la musique composée.
     if (doc.audio.music?.source === "synth" && doc.audio.music.mood !== "none" && deps.music) {
       const mood = doc.audio.music.mood === "pulse" ? "pulse" : doc.audio.music.mood === "warm" ? "warm" : "calm";
-      const track = await deps.music(mood, timeline(doc).total).catch((e) => {
+      const track = await deps.music(mood, timeline(doc).total, doc.audio.music.style).catch((e) => {
         if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
         return null;
       });
       if (track) {
         doc.audio.music = { source: "library", assetId: track.assetId, licence: track.licence, gainDb: -12 };
         notes.push(`musique libre de droits — ${track.credit}`);
-      } else notes.push("musique : aucune piste libre de droits trouvée — musique composée par le studio");
+      } else notes.push(`musique : morceau composé par le studio (style ${doc.audio.music.style ?? doc.audio.music.mood}, vrais instruments)`);
     }
     // Habillage publicitaire sans voix enregistrée : les titres portent le message, pas de sous-titres en double.
     if (doc.meta.promo && !doc.audio.voice.some((v) => v.assetId)) doc.subtitles.style.enabled = false;
@@ -588,17 +589,42 @@ async function promoIcons(p: Project, pal: Palette): Promise<string[]> {
   }
 }
 
+/**
+ * Montage calé sur la musique : chaque coupe tombe sur un temps du morceau composé (durée totale inchangée, chaque
+ * plan garde au moins deux temps). Un plan vidéo lit la durée de son nouveau plan.
+ */
+export function snapToBeat(clips: Clip[], beatS: number): Clip[] {
+  if (!(beatS > 0.2) || clips.length < 2) return clips;
+  const total = clips.reduce((t, c) => t + c.durationS, 0);
+  let acc = 0;
+  let prev = 0;
+  const cuts: number[] = [];
+  for (const c of clips.slice(0, -1)) {
+    acc += c.durationS;
+    const snapped = Math.max(prev + 2 * beatS, Math.round(acc / beatS) * beatS);
+    cuts.push(Math.min(snapped, total - 2 * beatS * (clips.length - 1 - cuts.length)));
+    prev = cuts[cuts.length - 1];
+  }
+  const bounds = [0, ...cuts, total];
+  return clips.map((c, k) => {
+    const d = Math.round((bounds[k + 1] - bounds[k]) * 1000) / 1000;
+    const source = c.source.kind === "video" ? { ...c.source, outS: c.source.inS + d } : c.source;
+    return { ...c, durationS: d, source };
+  });
+}
+
 function assemble(a: AssembleInput): VideoDocument {
   const { w, h } = a.size;
   let clips = a.shots.map((s, k) => clipFor(s, a.media.get(s.id) ?? { kind: "doc", assetId: null }, a, k));
-  const promo = a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
-  if (promo) clips = dressPromo(clips, a.shots, { p: a.p, pal: a.pal, typo: a.typo, w, h, safe: a.safe, brand: a.insight.brand, logoId: a.inv.logo?.id ?? null, thumbs: a.thumbs ?? [], productPhotos: a.p.business === "services" ? [] : a.inv.photos.map((x) => x.id), icons: a.icons ?? [], cta: a.strategy.cta, message: a.strategy.message });
   // Durée tenue : le temps perdu par un plan vidéo plus court revient au plan suivant composé.
   const lost = a.shots.reduce((t, s, k) => t + (s.durationS - clips[k].durationS), 0);
   if (lost > 0.05) {
     const target = [...clips].reverse().find((c) => c.source.kind !== "video");
     if (target) target.durationS = Math.round((target.durationS + lost) * 100) / 100;
   }
+  const promo = a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
+  if (promo && a.strategy.style.music !== "none") clips = snapToBeat(clips, songGrid(songStyleFor(a.p), clips.reduce((t, c) => t + c.durationS, 0)).beatS);
+  if (promo) clips = dressPromo(clips, a.shots, { p: a.p, pal: a.pal, typo: a.typo, w, h, safe: a.safe, brand: a.insight.brand, logoId: a.inv.logo?.id ?? null, thumbs: a.thumbs ?? [], productPhotos: a.p.business === "services" ? [] : a.inv.photos.map((x) => x.id), icons: a.icons ?? [], cta: a.strategy.cta, message: a.strategy.message });
   const doc: VideoDocument = {
     version: VIDEO_DOC_VERSION,
     width: w,
@@ -609,7 +635,7 @@ function assemble(a: AssembleInput): VideoDocument {
     safe: a.safe,
     clips,
     subtitles: { style: defaultSubtitleStyle({ width: w, height: h }, a.typo, a.pal), cues: [] },
-    audio: { voice: [], voiceId: null, music: a.strategy.style.music === "none" ? null : { source: "synth", mood: a.strategy.style.music, gainDb: -14 }, sfx: [], duckingDb: -10, loudnessLufs: -14 },
+    audio: { voice: [], voiceId: null, music: a.strategy.style.music === "none" ? null : { source: "synth", mood: a.strategy.style.music, gainDb: -14, style: songStyleFor(a.p), seed: a.p.id }, sfx: [], duckingDb: -10, loudnessLufs: -14 },
     brand: { palette: { ...a.pal }, fonts: { heading: a.typo.heading, body: a.typo.body }, name: a.insight.brand },
     disclosure: null,
     meta: { intent: a.intent.kind, source: "engine", createdFrom: null, runId: a.runId, ...(promo ? { promo: true } : {}) },
