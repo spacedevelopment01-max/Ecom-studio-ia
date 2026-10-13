@@ -42,6 +42,8 @@ export type ComposeInput = {
   /** Surtitre (catégorie, métier) des compositions « cadre ». */
   eyebrow?: string | null;
   cta: string;
+  /** Atouts confirmés du produit ou prestations (listes à puces, légendes des modèles « produit »). */
+  features?: string[] | null;
   background: Buffer | null;
   product: Buffer | null;
   logo?: Buffer | null;

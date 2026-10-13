@@ -347,7 +347,8 @@ describe("dans le studio : pistes, choix, déclinaisons, kit (PNG + ZIP) et char
       const svgMain = all<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-mark-svg' ORDER BY created_at DESC LIMIT 1", pid)[0];
       expect(Buffer.from((await import("@/lib/library")).assetData((await import("@/lib/library")).getAsset(svgMain.id)!)).toString()).not.toMatch(/<text|<script/);
       const book = await saveBrandBook(pid);
-      expect(JSON.parse(book!.meta as any).pages).toBe(11);
+      // 11 planches + la planche d'identité de marque en page 2.
+      expect(JSON.parse(book!.meta as any).pages).toBe(12);
 
       // Changement de nom sans nouvelle création : pas d'appel à l'IA, pistes reprises.
       const { ai: ai2, calls } = fakeAi({});

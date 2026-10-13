@@ -26,6 +26,8 @@ export type BookInput = {
   /** Planche d'ensemble du kit réseaux sociaux et ligne éditoriale (planche « Réseaux sociaux »). */
   social?: Image | null;
   voice?: SocialVoice | null;
+  /** Planche d'identité de marque (tout le système sur une page), placée juste après la couverture. */
+  board?: Image | null;
 };
 
 const W = 1754, H = 1240, M = 110;
@@ -87,7 +89,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
   const paper = isDark(pal.light) ? "#F7F4EF" : pal.light;
   const accent = pal.primary;
   const HF = inp.headingFamily, BF = inp.bodyFamily;
-  const total = inp.social || inp.voice ? 11 : 10;
+  const total = (inp.social || inp.voice ? 11 : 10) + (inp.board ? 1 : 0);
   const canvases: Canvas[] = [];
   // Langue des contenus : toute la charte (titres, explications, dates) suit la langue du projet.
   const locale = intlLocale(contentLang());
@@ -128,7 +130,9 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     }
     return yy;
   };
-  const head = (ctx: SKRSContext2D, n: number, kicker: string, title: string, color = ink) => {
+  const head = (ctx: SKRSContext2D, n0: number, kicker: string, title: string, color = ink) => {
+    // La planche d'identité (page 2) décale la numérotation des planches suivantes.
+    const n = n0 + (inp.board ? 1 : 0);
     text(ctx, `${String(n).padStart(2, "0")} — ${kicker.toLocaleUpperCase(locale)}`, M, M + 10, font(BF, 600, 20), accent);
     text(ctx, title, M, M + 96, font(HF, 600, 72), color);
     // Pied de planche
@@ -501,6 +505,15 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
         para(ctx, v.captions[0].text.replace(/\n+/g, " "), M, 1020, kw, 22, mix(ink, paper, 0.2), 1.45, 400, 1120);
       }
     }
+  }
+
+  // Planche d'identité : tout le système de marque d'un coup d'œil, juste après la couverture.
+  if (inp.board) {
+    const ctx = page();
+    contain(ctx, inp.board, 40, 40, W - 80, H - 130);
+    text(ctx, b.name, M, H - 50, font(BF, 500, 18), mix(ink, paper, 0.45));
+    text(ctx, `${BOOK} · 2 / ${total}`, W - M, H - 50, font(BF, 500, 18), mix(ink, paper, 0.45), "right");
+    canvases.splice(1, 0, canvases.pop()!);
   }
 
   const pages = canvases.map((c) => c.toBuffer("image/jpeg", 88));

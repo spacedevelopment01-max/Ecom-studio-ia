@@ -133,19 +133,26 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   const svgNote = svg.ok ? L(`Version vectorielle fidèle disponible (${Math.round(svg.fidelity * 100)} %).`, `Faithful vector version available (${Math.round(svg.fidelity * 100)}%).`) : L(`Pas de version vectorielle : ${svg.reason}.`, `No vector version: ${svg.reason}.`);
   // Planche d'identité : logo original, déclinaisons, couleurs exactes, typographies, applications.
   ctx?.progress(0.7, L("Planche d'identité de marque", "Brand identity board"));
-  const board = await brandBoard({
-    name: fresh.name,
-    logo: png,
-    light: lightPng,
-    mono: monoPng,
-    mark: markPng,
-    palette: fresh.palette as unknown as Record<string, string>,
-    fonts: { heading: canvasFamily(fresh.fonts.heading), body: canvasFamily(fresh.fonts.body), headingWeight: spec.weight },
-    styleLabel: L(STYLE_LABEL[t.style][0], STYLE_LABEL[t.style][1]),
-    svgNote,
-    markIsSymbol: !!symbol,
-  });
-  await saveAsset({ ...base, data: board, name: C("planche-identite.png", "identity-board.png"), mime: "image/png", role: "brand-board", sourceAssetId: main.id });
+  // Planche « comme en agence » (logo, secondaire, sceau, couleurs, typographies, icônes, motif, applications) ;
+  // la planche technique d'avant reste le secours.
+  const { saveIdentityBoard } = await import("../engine/identity-board");
+  // Logo définitif : la planche est refaite avec la charte (saveBrandBook) ; ici seulement pour un logo provisoire.
+  const idBoard = opts.provisional ? await saveIdentityBoard(projectId).catch((e) => (console.error(`[planche] ${projectId} : ${(e as Error).message}`), null)) : true;
+  if (!idBoard) {
+    const board = await brandBoard({
+      name: fresh.name,
+      logo: png,
+      light: lightPng,
+      mono: monoPng,
+      mark: markPng,
+      palette: fresh.palette as unknown as Record<string, string>,
+      fonts: { heading: canvasFamily(fresh.fonts.heading), body: canvasFamily(fresh.fonts.body), headingWeight: spec.weight },
+      styleLabel: L(STYLE_LABEL[t.style][0], STYLE_LABEL[t.style][1]),
+      svgNote,
+      markIsSymbol: !!symbol,
+    });
+    await saveAsset({ ...base, data: board, name: C("planche-identite.png", "identity-board.png"), mime: "image/png", role: "brand-board", sourceAssetId: main.id });
+  }
   if (opts.provisional) return { main, svg: svg.ok };
   ctx?.progress(0.9, L("Charte de marque", "Brand guidelines"));
   const { saveBrandBook, saveBrandGuide } = await import("../engine/brand");

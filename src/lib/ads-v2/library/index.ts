@@ -20,13 +20,16 @@ import { TEMPLATES_F } from "./templates/f";
 import { TEMPLATES_G } from "./templates/g";
 import { TEMPLATES_H } from "./templates/h";
 import { TEMPLATES_I } from "./templates/i";
+import { TEMPLATES_J } from "./templates/j";
 
-export const TEMPLATES: Template[] = [...TEMPLATES_A, ...TEMPLATES_B, ...TEMPLATES_C, ...TEMPLATES_D, ...TEMPLATES_E, ...TEMPLATES_F, ...TEMPLATES_G, ...TEMPLATES_H, ...TEMPLATES_I];
+export const TEMPLATES: Template[] = [...TEMPLATES_A, ...TEMPLATES_B, ...TEMPLATES_C, ...TEMPLATES_D, ...TEMPLATES_E, ...TEMPLATES_F, ...TEMPLATES_G, ...TEMPLATES_H, ...TEMPLATES_I, ...TEMPLATES_J];
 export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? null;
 export const isTemplateLayout = (l: unknown): l is `tpl:${string}` => typeof l === "string" && l.startsWith("tpl:");
 
 /** Modèles utilisables pour une création (avec ou sans photo). */
 export const templatesFor = (hasPhoto: boolean) => TEMPLATES.filter((t) => (hasPhoto ? t.photo !== "none" : t.photo !== "required"));
+/** Modèles « produit » (produit détouré mis en scène). */
+export const productTemplates = (hasPhoto: boolean) => templatesFor(hasPhoto).filter((t) => t.product);
 
 export async function buildTemplateDocument(i: ComposeInput, id: string): Promise<{ doc: AdDocument; images: RenderEnv["images"] }> {
   ensureFonts();
@@ -37,6 +40,8 @@ export async function buildTemplateDocument(i: ComposeInput, id: string): Promis
   const bgId = i.background ? (i.ids?.background ?? "background") : null;
   const logoId = i.logo ? (i.ids?.logo ?? "logo") : null;
   const lightId = i.logoLight ? (i.ids?.logoLight ?? "logo-light") : null;
+  const productId = i.product ? (i.ids?.product ?? "product") : null;
+  if (productId) images.set(productId, (await loadImage(i.product!)) as never);
   if (bgId) images.set(bgId, (await loadImage(i.background!)) as never);
   if (logoId) images.set(logoId, (await loadImage(i.logo!)) as never);
   if (lightId) images.set(lightId, (await loadImage(i.logoLight!)) as never);
@@ -60,6 +65,8 @@ export async function buildTemplateDocument(i: ComposeInput, id: string): Promis
     treatment,
     photo: bg && bgId ? { id: bgId, width: bg.width, height: bg.height, points: await interestPoints(i.background!).catch(() => []) } : null,
     logo: lg && logoId ? { id: logoId, width: lg.width, height: lg.height, lightId } : null,
+    product: productId ? { id: productId, width: images.get(productId)!.width, height: images.get(productId)!.height } : null,
+    features: (i.features ?? []).filter(Boolean),
     images,
   });
   tpl.build(k);

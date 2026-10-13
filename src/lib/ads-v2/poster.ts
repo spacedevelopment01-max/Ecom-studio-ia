@@ -15,7 +15,7 @@ import { C } from "../i18n-server";
 import { saveVersion } from "../ad-doc/store";
 import type { AdDocument } from "../ad-doc/types";
 import { adArt, treatmentsFor, type AdArt, type AdLayout, type AdVariant, type LogoPlacement, type Treatment } from "./art";
-import { isTemplateLayout, templateById, templatesFor } from "./library";
+import { isTemplateLayout, templateById, templatesFor, TEMPLATES } from "./library";
 import { composeAd, type ComposeInput, type ComposeMetrics } from "./compose";
 import type { FormatSpec } from "./types";
 
@@ -54,6 +54,8 @@ export type PosterInput = {
   background?: Asset | null;
   /** Produit détouré (pixels d'origine), posé dans la scène quand la photo ne le montre pas. */
   product?: Asset | null;
+  /** Atouts confirmés (faits du produit, prestations) listés par les modèles « produit ». */
+  features?: string[] | null;
   /** Composition imposée (du moteur, ou « tpl:<id> » de la bibliothèque) ; sinon choisie sans répétition. */
   layout?: string;
   /** Graine de la composition (deux publications d'un même projet ne se ressemblent pas). */
@@ -75,10 +77,11 @@ const familyOf = (layout: string) => (isTemplateLayout(layout) ? (templateById(l
  * schéma de couleurs, un traitement de photo et une place du logo différents de la précédente. La graine fait
  * varier l'ordre (deux projets ne suivent pas le même parcours).
  */
-export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; treatment: string | null; logo: string | null; scheme?: string | null }[], hasPhoto: boolean): { layout: string; variant: AdVariant } {
+export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; treatment: string | null; logo: string | null; scheme?: string | null }[], hasPhoto: boolean, hasProduct = false): { layout: string; variant: AdVariant } {
   const engine = (hasPhoto ? art.cycle.filter((l) => l !== "typographic" && l !== "band") : (["typographic"] as AdLayout[])) as string[];
   // Avec une photo, elle remplit le fond : pas de modèle où elle n'occupe qu'une case (collages, modèles typographiques).
-  const tpls = templatesFor(hasPhoto).filter((t) => (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage"))).map((t) => `tpl:${t.id}`);
+  // Avec un produit détouré : les modèles « produit » qui le mettent en scène (les autres l'oublieraient).
+  const tpls = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto)) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage")))).map((t) => `tpl:${t.id}`);
   // Ordre propre à la graine : mélange déterministe, modèles et compositions du moteur entremêlés.
   const pool = [...tpls, ...engine].map((l, k) => ({ l, r: (Math.imul(n ^ (k * 2654435761), 2246822519) >>> 0) % 1000 })).sort((a, b) => a.r - b.r).map((x) => x.l);
   const avoid = new Set(recent.slice(0, Math.max(0, Math.min(10, pool.length - 2))).map((r) => r.layout));
@@ -94,6 +97,22 @@ export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; 
   return { layout, variant: { treatment, logo, ...(scheme ? { scheme } : {}) } };
 }
 
+/**
+ * Atouts listables d'un projet, uniquement confirmés : faits du produit donnés par le client ou lus sur sa source
+ * (« Autonomie 30 h »), sinon les prestations d'une entreprise de services. Jamais d'atout supposé par l'IA.
+ */
+export function confirmedFeatures(p: Project, max = 6): string[] {
+  if (p.business === "services") return (p.services?.services ?? []).map((s) => s.name.trim()).filter((s) => s && s.length <= 40).slice(0, max);
+  const out: string[] = [];
+  for (const f of p.product.facts ?? []) {
+    if (f.status !== "confirmed" || !f.value?.trim()) continue;
+    const both = `${f.label.trim()} ${f.value.trim()}`.replace(/\s+/g, " ");
+    const s = both.length <= 34 ? both : f.value.trim().length <= 34 ? f.value.trim() : null;
+    if (s && !out.includes(s)) out.push(s);
+  }
+  return out.slice(0, max);
+}
+
 /** Clé de document d'une affiche (lignée éditable : publication ou visuel). */
 export const posterDocKey = (projectId: string, seed: string, aspect: string) => `post:${crypto.createHash("sha256").update(`${projectId}|${seed}|${aspect}`).digest("hex").slice(0, 20)}`;
 
@@ -101,7 +120,7 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
   const typo = brandTypo(p);
   const art = adArt(p, typo);
   const n = parseInt(crypto.createHash("sha256").update(i.seed).digest("hex").slice(0, 6), 16);
-  const look = pickPosterLook(art, n, recentPosterLooks(p.id), !!i.background);
+  const look = pickPosterLook(art, n, recentPosterLooks(p.id), !!i.background, !!i.product);
   const layout = i.layout ?? look.layout;
   const variant: AdVariant = i.layout ? (isTemplateLayout(i.layout) ? {} : { ...look.variant, treatment: treatmentsFor(i.layout as AdLayout, art.style).includes(look.variant.treatment!) ? look.variant.treatment : treatmentsFor(i.layout as AdLayout, art.style)[0] }) : look.variant;
   const { logo, light } = brandLogos(p);
@@ -117,6 +136,7 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
     subline: i.subline?.trim() || null,
     eyebrow: i.eyebrow?.trim() || null,
     cta,
+    features: i.features ?? null,
     background: i.background ? assetData(i.background) : null,
     product: i.product ? assetData(i.product) : null,
     logo: logo ? assetData(logo) : null,

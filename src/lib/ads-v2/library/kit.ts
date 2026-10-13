@@ -35,6 +35,10 @@ export type KitInput = {
   scheme: Scheme;
   treatment: Treatment;
   photo: { id: string; width: number; height: number; points: { u: number; v: number }[] } | null;
+  /** Produit détouré (pixels d'origine) : posé en grand par les modèles « produit ». */
+  product?: { id: string; width: number; height: number } | null;
+  /** Atouts confirmés (jamais inventés) : listes, légendes, cases des modèles « produit ». */
+  features?: string[];
   logo: { id: string; width: number; height: number; lightId: string | null } | null;
   images: RenderEnv["images"];
 };
@@ -132,6 +136,32 @@ export class Kit {
   }
   get hasPhoto() {
     return !!this.i.photo;
+  }
+  get hasProduct() {
+    return !!this.i.product;
+  }
+  /**
+   * Atouts à lister : ceux du projet (faits confirmés, prestations), sinon les segments de la ligne secondaire
+   * (« Livraison offerte • Fabriqué en France »). Jamais complétés par du texte inventé.
+   */
+  features(max = 6): string[] {
+    const own = (this.i.features ?? []).map((s) => s.trim()).filter(Boolean);
+    const list = own.length ? own : (this.i.subline ?? "").split(/\s*[•·|]\s*/).map((s) => s.trim()).filter(Boolean);
+    return [...new Set(list)].filter((s) => s.length <= 48).slice(0, max);
+  }
+  /**
+   * Produit détouré posé dans la boîte (sans recadrage, proportions gardées), avec ombre portée douce et ombre de
+   * contact au sol. Renvoie la boîte réellement occupée, ou null sans produit.
+   */
+  productShot(b: Box, o: { shadow?: boolean; contact?: boolean; name?: string; align?: "center" | "bottom" } = {}): Box | null {
+    const p = this.i.product;
+    if (!p) return null;
+    const s = Math.min(b.w / p.width, b.h / p.height);
+    const w = p.width * s, h = p.height * s;
+    const box = { x: b.x + (b.w - w) / 2, y: o.align === "center" ? b.y + (b.h - h) / 2 : b.y + b.h - h, w, h };
+    const l: ImageLayer = { ...this.base(this.id("product"), o.name ?? "Produit", "product", box, this.anchorOf(box)), kind: "image", assetId: p.id, fit: "contain", crop: null, radius: 0, shadow: o.shadow === false ? null : { color: "rgba(0,0,0,0.28)", blur: Math.round(this.U * 0.04), x: 0, y: Math.round(this.U * 0.02) }, contactShadow: o.contact !== false };
+    this.layers.push(l);
+    return box;
   }
   /** Valeur selon le format (paysage, carré, portrait, story). */
   pick<T>(land: T, square: T, portrait: T, story: T = portrait): T {
