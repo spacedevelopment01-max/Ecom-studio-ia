@@ -58,8 +58,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   requireCreationPlan(user, p.id, "images");
   const b = await body(req, Req);
   const kind = b.kind ?? "scene";
-  // Même demande reçue deux fois de suite (double clic, renvoi) : la même tâche est rendue, rien n'est créé en double.
-  const dedup = `images:${p.id}:${crypto.createHash("sha256").update(JSON.stringify(b)).digest("hex").slice(0, 24)}:${Math.floor(Date.now() / 30_000)}`;
+  // Double clic (même demande dans les 4 secondes) : la même tâche est rendue. Une demande répétée ensuite donne
+  // volontairement un NOUVEAU visuel (autre formulation, autre mise en page).
+  const dedup = `images:${p.id}:${crypto.createHash("sha256").update(JSON.stringify(b)).digest("hex").slice(0, 24)}:${Math.floor(Date.now() / 4_000)}`;
   // Visuels avec texte : Advertising Engine V2 (onglet Publicités, éditeur à calques) et Social V2 (Publications).
   if (b.mode === "single" && p.business !== "services" && (kind === "social" || kind === "ad")) throw new HttpError(410, L("Les visuels avec texte se créent dans Publicités (modifiables dans l'éditeur visuel) ou Publications.", "Visuals with text are created in Ads (editable in the visual editor) or Posts."));
   // Image générée par IA : toujours Image Engine V2 (brief, fidélité au produit, contrôle, bibliothèque).

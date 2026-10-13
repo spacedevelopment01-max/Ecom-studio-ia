@@ -53,6 +53,20 @@ describe("Images : versions, tri, supprimées, nouveaux types", async () => {
     await expect(fr(() => generateServiceSingleImage(new JobContext(job), pid, { kind: "review", format: "square", background: "photo" }))).rejects.toThrow(/vrai avis/);
   }, 120_000);
 
+  it("même demande répétée : un texte et un bouton différents à chaque visuel (rien d'inventé)", async () => {
+    const { pid, ph, job } = await setup();
+    const docs = [];
+    for (let i = 0; i < 3; i++) {
+      const r = await fr(() => generateServiceSingleImage(new JobContext(job), pid, { kind: "service", format: "portrait", serviceIndex: 0, background: "photo", photoId: ph.id }));
+      const m = assetMeta<any>(getAsset(r.assetId)!);
+      docs.push(latestDoc(pid, m.poster.docKey)!.doc);
+    }
+    const sig = (d: any) => d.layers.filter((l: any) => ["title", "subline", "cta", "eyebrow"].includes(l.id)).map((l: any) => l.text).join(" | ");
+    expect(new Set(docs.map(sig)).size).toBe(3);
+    const ctas = docs.map((d: any) => d.layers.find((l: any) => l.id === "cta")?.text);
+    expect(new Set(ctas).size).toBeGreaterThan(1);
+  }, 180_000);
+
   it("double clic : la même demande envoyée deux fois ne crée qu'une seule tâche", async () => {
     const { pid } = await setup();
     const post = async () => (await (await fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode: "single", kind: "promo", format: "portrait", headline: "-20 % le jeudi", background: "none" }) }), { params: Promise.resolve({ id: pid }) } as any))).json()).jobId as string;
