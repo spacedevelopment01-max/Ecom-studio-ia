@@ -60,13 +60,6 @@ const PX = path.join(REAL, "pixabay");
  */
 const REAL_DEMOS: DemoDef[] = [
   {
-    id: "huile", sector: "Beauté", direction: "rituel", category: "Huiles",
-    productName: "Huile corporelle", brandName: "Maison Aube", price: "26 €",
-    description: "Huile corporelle dans un flacon en verre transparent à bouchon de verre. Texture fluide et dorée.",
-    photo: path.join(PX, "huile.jpg"),
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/glass-bottle-oil-wellness-flowers-4108085/", note: "Vraie photo de flacon d'huile (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
-  },
-  {
     id: "mug", sector: "Maison", direction: "epure", category: "Arts de la table",
     productName: "Mug en céramique", brandName: "Terre Blanche", price: "18 €",
     description: "Mug en céramique blanche à fines stries horizontales, grande anse.",
@@ -134,7 +127,6 @@ const REAL_DEMOS: DemoDef[] = [
 
 /** Version anglaise des démonstrations (projets créés avec language=en). */
 const EN_DEMOS: Record<string, Partial<DemoDef>> = {
-  huile: { sector: "Beauty", category: "Oils", productName: "Body oil", price: "€26", description: "Body oil in a clear glass bottle with a glass stopper. Fluid, golden texture.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/glass-bottle-oil-wellness-flowers-4108085/", note: "A real photo of an oil bottle (Pixabay): the brand, the visuals and the store are created by the studio." } },
   mug: { sector: "Home", category: "Tableware", productName: "Ceramic mug", price: "€18", description: "White ceramic mug with fine horizontal ridges and a large handle.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/mug-cup-coffee-drink-tea-beverage-3926033/", note: "A real photo of an unbranded mug (Pixabay): the brand, the visuals and the store are created by the studio." } },
   lunettes: { sector: "Accessories", category: "Sunglasses", productName: "Aviator sunglasses", price: "€65", description: "Aviator sunglasses, silver metal frame, gradient lenses, black temples.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/sunglasses-glasses-trend-94813/", note: "A real photo of sunglasses with no visible brand (Pixabay): the brand, the visuals and the store are created by the studio." } },
   plante: { sector: "Plants", category: "Houseplants", productName: "Potted snake plant", price: "€34", description: "Snake plant (sansevieria) in a white pot, green leaves edged with yellow. Houseplant.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/snake-plant-plant-plant-pot-5939187/", note: "A real photo of a potted plant (Pixabay): the brand, the visuals and the store are created by the studio." } },
