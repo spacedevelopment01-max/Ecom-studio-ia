@@ -40,150 +40,95 @@ type DemoDef = {
   pdp?: { type: string; after: string; settings: Record<string, unknown> }[];
   /** Variante (ex. coloris) : valeurs et photo de chaque valeur autre que celle de la photo principale. */
   variants?: { name: string; values: string[]; photos?: Record<string, string> };
+  /** Entreprise de services : prestations, zone, horaires, façons d'être contacté, plateforme. */
+  business?: "products" | "services";
+  platform?: "shopify" | "woocommerce";
+  services?: { name: string; description: string }[];
+  area?: string;
+  hours?: string;
+  contactModes?: string;
+  /** Autres photos fournies à la création (services : atelier, salon…). */
+  photos?: string[];
 };
 
 const REAL = path.join(process.cwd(), "scripts", "demo-products", "inputs");
-/** Démonstrations à partir de produits réels de fournisseurs (marque blanche ou ré-étiquetés). */
+const PX = path.join(REAL, "pixabay");
+/**
+ * Démonstrations à partir de vraies photos de produits et de vrais métiers (Pixabay, licence de contenu Pixabay :
+ * usage commercial autorisé, sans attribution obligatoire ; sources dans scripts/demo-products/inputs/pixabay/sources.json).
+ * Les marques sont fictives et créées par le studio ; aucune n'imite une marque existante.
+ */
 const REAL_DEMOS: DemoDef[] = [
   {
-    id: "verger", sector: "Boissons", direction: "gourmand", storeType: "niche", category: "Thés glacés",
-    productName: "Thé glacé Pêche", brandName: "Verger", price: "2,40 €",
-    description: "Thé glacé à la pêche en canette de 33 cl.",
-    photo: path.join(REAL, "boissons", "canette-peche.png"),
-    catalog: [
-      { name: "Thé glacé Citron", category: "Thés glacés", price: "2,40", description: "Thé glacé au citron en canette de 33 cl.", photo: path.join(REAL, "boissons", "canette-citron.png") },
-      { name: "Thé glacé Fruits rouges", category: "Thés glacés", price: "2,40", description: "Thé glacé aux fruits rouges en canette de 33 cl.", photo: path.join(REAL, "boissons", "canette-fruits-rouges.png") },
-    ],
-    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio." },
-    pdp: [
-      { type: "badges", after: "title", settings: { badge1: "🥫 Canette 33 cl", badge2: "♻️ Aluminium recyclable" } },
-      { type: "siblings", after: "badges", settings: { collection: "thes-glaces", heading: "Choisissez votre saveur" } },
-      { type: "bundles", after: "price", settings: { layout: "cards", heading: "Compose ton pack", units_per_pack: 1, unit_label: "canette", default_tier: "2", qty1: 6, label1: "Pack de 6", discount1: 0, qty2: 12, label2: "Pack de 12", discount2: 5, tag2: "-5 %", qty3: 24, label3: "Pack de 24", discount3: 10, tag3: "-10 %" } },
-      { type: "delivery", after: "buy_buttons", settings: { min_days: 2, max_days: 4, business_days: true, label: "Livraison estimée" } },
-    ],
+    id: "serum", sector: "Beauté", direction: "laboratoire", category: "Soins visage",
+    productName: "Sérum visage", brandName: "Maison Aube", price: "32 €",
+    description: "Sérum visage en flacon compte-gouttes en verre ambré, pipette noire. Texture légère à appliquer matin et soir sur peau propre.",
+    photo: path.join(PX, "serum.jpg"),
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/skincare-haircare-organic-9973091/", note: "Vraie photo de flacon de sérum (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "oreiller", sector: "Maison", direction: "clinique", category: "Sommeil",
-    productName: "Oreiller ergonomique Papillon", brandName: "Somnéa", price: "39,90 €",
-    description: "Oreiller ergonomique en forme de papillon. Deux côtés de hauteurs différentes (un côté bas, un côté haut), un creux central pour la tête et des ailes latérales pour dormir sur le côté. Housse respirante. Coloris : bleu ardoise ou vert sauge.",
-    photo: path.join(REAL, "maison", "oreiller-bleu.jpg"),
-    lifestyle: [path.join(REAL, "situations", "oreiller-sommeil.jpg")],
-    variants: { name: "Coloris", values: ["Bleu ardoise", "Vert sauge"], photos: { "Vert sauge": path.join(REAL, "maison", "oreiller-vert.jpg") } },
-    pdp: [
-      { type: "benefits", after: "price", settings: { emoji1: "🦋", title1: "Forme papillon", text1: "Un creux central pour la tête et des ailes latérales pour dormir sur le côté.", emoji2: "↕️", title2: "Deux hauteurs", text2: "Un côté bas, un côté haut : on tourne l'oreiller selon sa préférence.", emoji3: "🌬️", title3: "Housse respirante", text3: "", emoji4: "", title4: "" } },
-      { type: "bundles", after: "buy_buttons", settings: { layout: "rows", heading: "Pour toute la maison", qty1: 1, label1: "1 oreiller", discount1: 0, qty2: 2, label2: "2 oreillers", chip2: "Le duo", discount2: 10, tag2: "-10 %", qty3: 0, default_tier: "1" } },
-      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 6, business_days: true, label: "Livraison estimée" } },
-    ],
-    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio." },
+    id: "bougie", sector: "Maison", direction: "rituel", category: "Bougies",
+    productName: "Bougie parfumée aux fleurs séchées", brandName: "Lueur", price: "28 €",
+    description: "Bougie parfumée coulée à la main dans un contenant blanc cannelé, décorée de fleurs séchées et de paillettes dorées.",
+    photo: path.join(PX, "bougie.jpg"),
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/handmade-scented-candle-7793755/", note: "Vraie photo de bougie artisanale (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "drone", sector: "High-tech", direction: "nocturne", category: "Drones",
-    productName: "Drone pliable à caméra stabilisée", brandName: "Ostral", price: "189 €",
-    description: "Drone pliable avec caméra stabilisée orientable. Selon la fiche du fournisseur : capteur 1 pouce, ouverture f/1.8, autonomie annoncée de 30 minutes, retour au point de départ par GPS, détection d'obstacles dans quatre directions, prise de vue verticale, radiocommande à écran pliable de 6,9 pouces.",
-    photo: path.join(REAL, "hightech", "drone-pliable.jpg"),
-    lifestyle: [path.join(REAL, "situations", "drone-montagne.jpg")],
-    pdp: [
-      { type: "benefits", after: "price", settings: { emoji1: "📍", title1: "Retour au point de départ", text1: "Par GPS, selon la fiche du fournisseur.", emoji2: "🛰️", title2: "Détection d'obstacles", text2: "Dans quatre directions, selon la fiche du fournisseur.", emoji3: "🔋", title3: "30 minutes annoncées", text3: "Autonomie indiquée par le fournisseur, par batterie.", emoji4: "🎒", title4: "Pliable", text4: "Les bras se replient pour le transport." } },
-      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 7, business_days: true, label: "Livraison estimée" } },
-    ],
-    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Drone pliable en marque blanche d'un fournisseur ; les inscriptions du fabricant ont été retirées de la photo, la marque et la boutique sont créées par le studio." },
+    id: "casque", sector: "High-tech", direction: "signal", category: "Audio",
+    productName: "Casque audio filaire", brandName: "Sonore", price: "59 €",
+    description: "Casque audio supra-auriculaire filaire, coloris blanc, arceau réglable et coussinets rembourrés.",
+    photo: path.join(PX, "casque.jpg"),
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/headsets-music-pink-background-1971383/", note: "Vraie photo de casque sans marque visible (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "chat", sector: "Animaux", direction: "pop", storeType: "niche", category: "Toilettage",
-    productName: "Gant anti-poils", brandName: "Ronron", price: "12,90 €",
-    description: "Gant double face pour retirer les poils de chat des canapés, vêtements et coussins. Dos en maille avec dragonne, face en tissu qui accroche les poils. Dimensions : 20 × 15 cm.",
-    photo: path.join(REAL, "animaux", "gant-anti-poils.jpg"),
-    lifestyle: [path.join(REAL, "situations", "gant-canape.jpg"), path.join(REAL, "situations", "protege-canape-chat.jpg")],
-    catalog: [
-      { name: "Protège-canapé anti-griffures", category: "Maison", price: "19,90", description: "Revêtement en rouleau à découper puis coller sur les zones griffées (canapé, mur, porte) : le chat y fait ses griffes sans abîmer le meuble.", features: ["Se découpe aux ciseaux", "Dos adhésif"], photo: path.join(REAL, "animaux", "protege-canape.jpg") },
-    ],
-    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio." },
+    id: "savon", sector: "Beauté", direction: "jardin", category: "Savons",
+    productName: "Savon artisanal", brandName: "Sève", price: "8,50 €",
+    description: "Savon solide artisanal en pain rectangulaire, teintes naturelles rosées et crème.",
+    photo: path.join(PX, "savon.jpg"),
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/soap-handmade-soap-body-care-1509963/", note: "Vraie photo de savons artisanaux (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "tribunes", sector: "Mode", direction: "flux", storeType: "niche", category: "T-shirts supporters",
-    productName: "T-shirt supporter Lavande", brandName: "Les Tribunes", price: "29,90 €",
-    description: "T-shirt de supporter bleu marine, inscription FRANCE et numéro 10, brins de lavande brodés en ton sur ton, liserés bleu-blanc-rouge, drapeau sur la poitrine.",
-    photo: path.join(REAL, "vetements", "tshirt-lavande.jpg"),
-    catalog: [
-      { name: "T-shirt supporter Aquarelle", category: "T-shirts supporters", price: "29,90", description: "T-shirt de supporter écru, motif aquarelle bleu et rouge, écusson tricolore et paysage en relief (tour Eiffel, champs de lavande).", photo: path.join(REAL, "vetements", "tshirt-aquarelle.jpg") },
+    id: "fleuriste", sector: "Fleuriste", direction: "jardin", business: "services", platform: "woocommerce",
+    productName: "Atelier floral", brandName: "Atelier Pivoine", price: "",
+    description: "Fleuriste artisan : bouquets du jour, compositions sur mesure pour mariages et événements, abonnements floraux pour les entreprises, livraison en ville.",
+    photo: path.join(PX, "fleuriste-boutique.jpg"),
+    photos: [path.join(PX, "fleuriste-atelier.jpg"), path.join(PX, "fleuriste-etal.jpg")],
+    services: [
+      { name: "Bouquets du jour", description: "Fleurs de saison composées à la boutique, à emporter ou livrées." },
+      { name: "Mariages et événements", description: "Bouquet de mariée, décoration de table et de salle, sur rendez-vous." },
+      { name: "Abonnement entreprise", description: "Une composition renouvelée chaque semaine pour votre accueil." },
     ],
-    source: { supplier: "AliExpress", url: "https://fr.aliexpress.com/", note: "T-shirts de supporter d'un fournisseur (visuels du fournisseur) : la marque et la boutique sont créées par le studio. Les modèles reprenant l'écusson officiel de la fédération ont été écartés." },
+    area: "Lyon et alentours", hours: "Du mardi au samedi, 9 h – 19 h", contactModes: "quote,form",
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-shop-flowers-shop-2588972/", note: "Vraies photos de boutique et d'atelier de fleuriste (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
+  },
+  {
+    id: "barbier", sector: "Barbier", direction: "etabli", business: "services", platform: "woocommerce",
+    productName: "Salon de barbier", brandName: "Le Comptoir", price: "",
+    description: "Barbier : coupe homme aux ciseaux et à la tondeuse, taille et entretien de la barbe, rasage traditionnel à l'ancienne, coupe enfant.",
+    photo: path.join(PX, "barbier-fauteuil.jpg"),
+    photos: [path.join(PX, "barbier-coupe.jpg"), path.join(PX, "barbier-salon.jpg")],
+    services: [
+      { name: "Coupe homme", description: "Ciseaux et tondeuse, shampoing et coiffage." },
+      { name: "Taille de barbe", description: "Contours, dégradé et soin à l'huile." },
+      { name: "Rasage traditionnel", description: "Au coupe-chou, serviette chaude." },
+      { name: "Coupe enfant", description: "Jusqu'à 12 ans." },
+    ],
+    area: "Bordeaux centre", hours: "Du mardi au samedi, 9 h 30 – 19 h", contactModes: "booking,call",
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-shop-chair-barber-shop-1453064/", note: "Vraies photos de salon de barbier (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
   },
 ];
 
-/**
- * Entrées anglaises des démonstrations réelles (LANG=en) : traduction fidèle des entrées françaises,
- * sans rien ajouter. Les noms de marque (noms propres) sont inchangés.
- */
+/** Version anglaise des démonstrations (projets créés avec language=en). */
 const EN_DEMOS: Record<string, Partial<DemoDef>> = {
-  verger: {
-    sector: "Beverages", category: "Iced teas",
-    productName: "Peach Iced Tea", price: "€2.40",
-    description: "Peach iced tea in a 33 cl can.",
-    catalog: [
-      { name: "Lemon Iced Tea", category: "Iced teas", price: "2.40", description: "Lemon iced tea in a 33 cl can.", photo: path.join(REAL, "boissons", "canette-citron.png") },
-      { name: "Red Berry Iced Tea", category: "Iced teas", price: "2.40", description: "Red berry iced tea in a 33 cl can.", photo: path.join(REAL, "boissons", "canette-fruits-rouges.png") },
-    ],
-    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "A supplier's 33 cl can of iced tea, relabeled: the brand and the three flavors are created by the studio." },
-    pdp: [
-      { type: "badges", after: "title", settings: { badge1: "🥫 33 cl can", badge2: "♻️ Recyclable aluminum" } },
-      { type: "siblings", after: "badges", settings: { collection: "iced-teas", heading: "Choose your flavor" } },
-      { type: "bundles", after: "price", settings: { layout: "cards", heading: "Build your pack", units_per_pack: 1, unit_label: "can", default_tier: "2", qty1: 6, label1: "Pack of 6", discount1: 0, qty2: 12, label2: "Pack of 12", discount2: 5, tag2: "-5%", qty3: 24, label3: "Pack of 24", discount3: 10, tag3: "-10%" } },
-      { type: "delivery", after: "buy_buttons", settings: { min_days: 2, max_days: 4, business_days: true, label: "Estimated delivery" } },
-    ],
-  },
-  oreiller: {
-    sector: "Home", category: "Sleep",
-    productName: "Papillon Ergonomic Pillow", price: "€39.90",
-    description: "Butterfly-shaped ergonomic pillow. Two sides of different heights (one low side, one high side), a central hollow for the head and side wings for sleeping on your side. Breathable cover. Colors: slate blue or sage green.",
-    variants: { name: "Color", values: ["Slate blue", "Sage green"], photos: { "Sage green": path.join(REAL, "maison", "oreiller-vert.jpg") } },
-    pdp: [
-      { type: "benefits", after: "price", settings: { emoji1: "🦋", title1: "Butterfly shape", text1: "A central hollow for the head and side wings for sleeping on your side.", emoji2: "↕️", title2: "Two heights", text2: "One low side, one high side: turn the pillow to suit your preference.", emoji3: "🌬️", title3: "Breathable cover", text3: "", emoji4: "", title4: "" } },
-      { type: "bundles", after: "buy_buttons", settings: { layout: "rows", heading: "For the whole home", qty1: 1, label1: "1 pillow", discount1: 0, qty2: 2, label2: "2 pillows", chip2: "The duo", discount2: 10, tag2: "-10%", qty3: 0, default_tier: "1" } },
-      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 6, business_days: true, label: "Estimated delivery" } },
-    ],
-    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "A white-label ergonomic pillow from a supplier, in two colors: the brand, the visuals and the store are created by the studio." },
-  },
-  drone: {
-    sector: "Tech", category: "Drones",
-    productName: "Foldable Drone with Stabilized Camera", price: "€189",
-    description: "Foldable drone with an adjustable stabilized camera. According to the supplier's listing: 1-inch sensor, f/1.8 aperture, stated flight time of 30 minutes, GPS return to home, obstacle sensing in four directions, vertical shooting, remote controller with a 6.9-inch foldable screen.",
-    pdp: [
-      { type: "benefits", after: "price", settings: { emoji1: "📍", title1: "Return to home", text1: "Via GPS, according to the supplier's listing.", emoji2: "🛰️", title2: "Obstacle sensing", text2: "In four directions, according to the supplier's listing.", emoji3: "🔋", title3: "30 minutes stated", text3: "Flight time per battery, as stated by the supplier.", emoji4: "🎒", title4: "Foldable", text4: "The arms fold away for transport." } },
-      { type: "delivery", after: "buy_buttons", settings: { min_days: 3, max_days: 7, business_days: true, label: "Estimated delivery" } },
-    ],
-    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "A white-label foldable drone from a supplier; the manufacturer's markings were removed from the photo, and the brand and store are created by the studio." },
-  },
-  chat: {
-    sector: "Pets", category: "Grooming",
-    productName: "Pet Hair Remover Glove", price: "€12.90",
-    description: "Double-sided glove for removing cat hair from sofas, clothes and cushions. Mesh back with wrist strap, fabric side that catches the hair. Dimensions: 20 × 15 cm.",
-    catalog: [
-      { name: "Anti-Scratch Sofa Protector", category: "Home", price: "19.90", description: "Roll covering to cut and stick onto scratched areas (sofa, wall, door): the cat scratches it without damaging the furniture.", features: ["Cuts with scissors", "Adhesive back"], photo: path.join(REAL, "animaux", "protege-canape.jpg") },
-    ],
-    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "White-label cat products from suppliers: the brand, the visuals and the store are created by the studio." },
-  },
-  tribunes: {
-    sector: "Fashion", category: "Supporter T-shirts",
-    productName: "Lavender Supporter T-shirt", price: "€29.90",
-    description: "Navy blue supporter T-shirt with FRANCE lettering and the number 10, tone-on-tone embroidered lavender sprigs, blue-white-red trims, flag on the chest.",
-    catalog: [
-      { name: "Watercolor Supporter T-shirt", category: "Supporter T-shirts", price: "29.90", description: "Ecru supporter T-shirt with a blue and red watercolor pattern, tricolor crest and raised landscape (Eiffel Tower, lavender fields).", photo: path.join(REAL, "vetements", "tshirt-aquarelle.jpg") },
-    ],
-    source: { supplier: "AliExpress", url: "https://www.aliexpress.com/", note: "Supporter T-shirts from a supplier (supplier visuals): the brand and the store are created by the studio. Designs featuring the federation's official crest were excluded." },
-  },
+  serum: { sector: "Beauty", category: "Face care", productName: "Face serum", price: "€32", description: "Face serum in an amber glass dropper bottle with a black pipette. Light texture to apply morning and evening on clean skin.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/skincare-haircare-organic-9973091/", note: "A real photo of a serum bottle (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  bougie: { sector: "Home", category: "Candles", productName: "Dried-flower scented candle", price: "€28", description: "Hand-poured scented candle in a white fluted vessel, decorated with dried flowers and gold flakes.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/handmade-scented-candle-7793755/", note: "A real photo of a handmade candle (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  casque: { sector: "Tech", category: "Audio", productName: "Wired headphones", price: "€59", description: "Wired on-ear headphones in white, with an adjustable headband and padded ear cushions.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/headsets-music-pink-background-1971383/", note: "A real photo of unbranded headphones (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  savon: { sector: "Beauty", category: "Soaps", productName: "Handmade soap", price: "€8.50", description: "Handmade solid soap in a rectangular bar, natural pink and cream tones.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/soap-handmade-soap-body-care-1509963/", note: "A real photo of handmade soaps (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  fleuriste: { sector: "Florist", productName: "Floral studio", description: "Artisan florist: daily bouquets, custom arrangements for weddings and events, flower subscriptions for businesses, local delivery.", services: [{ name: "Daily bouquets", description: "Seasonal flowers arranged in the shop, to take away or delivered." }, { name: "Weddings and events", description: "Bridal bouquet, table and venue decoration, by appointment." }, { name: "Business subscription", description: "A fresh arrangement every week for your reception." }], area: "Lyon and surroundings", hours: "Tuesday to Saturday, 9am – 7pm", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-shop-flowers-shop-2588972/", note: "Real photos of a florist's shop and workshop (Pixabay): the business is fictional, its website and brand are created by the studio." } },
+  barbier: { sector: "Barber", productName: "Barber shop", description: "Barber: men's haircuts with scissors and clippers, beard trimming and care, traditional straight-razor shave, kids' cuts.", services: [{ name: "Men's haircut", description: "Scissors and clippers, shampoo and styling." }, { name: "Beard trim", description: "Outline, fade and oil treatment." }, { name: "Traditional shave", description: "Straight razor, hot towel." }, { name: "Kids' cut", description: "Up to age 12." }], area: "Central Bordeaux", hours: "Tuesday to Saturday, 9:30am – 7pm", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-shop-chair-barber-shop-1453064/", note: "Real photos of a barber shop (Pixabay): the business is fictional, its website and brand are created by the studio." } },
 };
 const ONLY_IDS = process.env.ONLY?.split(",");
-const PRODUCTS: DemoDef[] = EN ? REAL_DEMOS.filter((d) => !ONLY_IDS || ONLY_IDS.includes(d.id)).map((d) => ({ ...d, ...EN_DEMOS[d.id] })) : process.env.ONLY ? REAL_DEMOS.filter((d) => process.env.ONLY!.split(",").includes(d.id)) : [
-  { id: "serum", sector: "Beauté", direction: "atelier", productName: "Sérum Éclat", brandName: "Maison Ondine", price: "34,90 €", description: "Sérum visage en flacon compte-gouttes en verre de 30 ml. Formule à la niacinamide et à l'acide hyaluronique. Texture légère, à appliquer matin et soir sur peau propre." },
-  { id: "drone", sector: "High-tech", direction: "nocturne", productName: "Drone Aeris X1", brandName: "Aeris", price: "499 €", description: "Drone de loisir quadrirotor avec caméra stabilisée sur nacelle. Châssis graphite, poids : 249 g. Autonomie : 31 minutes par batterie. Vidéo 4K à 30 images par seconde." },
-  { id: "soda", sector: "Boissons", direction: "gourmand", productName: "Pétale Framboise & Hibiscus", brandName: "Pétale", price: "2,90 €", description: "Soda pétillant à la framboise et à l'hibiscus en canette de 33 cl. 4 g de sucre pour 100 ml. Sans édulcorant." },
-  { id: "montre", sector: "High-tech", direction: "clinique", productName: "Montre connectée Pulso", brandName: "Pulso", price: "229 €", description: "Montre connectée à écran AMOLED de 1,8 pouce, boîtier en aluminium de 44 mm, bracelet en silicone. Étanche 5 ATM. Autonomie : 7 jours." },
-  { id: "the", sector: "Thé", direction: "joaillerie", productName: "Thé vert Sencha", brandName: "Kumo", price: "18 €", description: "Thé vert sencha en feuilles entières, boîte métal de 100 g. Infusion : 2 minutes à 75 °C." },
-  { id: "gourde", sector: "Sport", direction: "flux", productName: "Gourde isotherme 750 ml", brandName: "Nordvik", price: "32 €", description: "Gourde en acier inoxydable à double paroi, 750 ml, bouchon vissé étanche. Garde les boissons froides ou chaudes. Sans BPA." },
-  { id: "bougie", sector: "Maison", direction: "terroir", productName: "Bougie Figuier & Bois fumé", brandName: "Atelier Braise", price: "29 €", description: "Bougie parfumée de 220 g dans un pot en verre teinté avec couvercle en bois. Notes de figue et de bois fumé. Cire végétale et mèche en coton." },
-  { id: "tasse", sector: "Maison", direction: "galerie", productName: "Tasse en grès émaillé", brandName: "Terre & Feu", price: "24 €", description: "Tasse en grès émaillé de 300 ml, tournée à la main dans notre atelier. Passe au lave-vaisselle. Chaque pièce présente de légères variations d'émail." },
-];
+const PRODUCTS: DemoDef[] = (ONLY_IDS ? REAL_DEMOS.filter((d) => ONLY_IDS.includes(d.id)) : REAL_DEMOS).map((d) => (EN ? { ...d, ...EN_DEMOS[d.id] } : d));
 
 async function api(ctx: BrowserContext, url: string, init?: { method?: string; body?: unknown }) {
   const r = await ctx.request.fetch(`${BASE}${url}`, { method: init?.method ?? (init?.body ? "POST" : "GET"), data: init?.body as any });
@@ -256,7 +201,7 @@ const { db } = await import("../src/lib/db");
 const { syncAllowance, getSubscription } = await import("../src/lib/billing");
 const me = await api(ctx, "/api/me");
 getSubscription(me.user.id);
-db().prepare("UPDATE subscriptions SET status = 'manual', stores = 20 WHERE user_id = ?").run(me.user.id);
+db().prepare("UPDATE subscriptions SET status = 'manual', stores = 20, plan = 'dominer' WHERE user_id = ?").run(me.user.id);
 syncAllowance(me.user.id);
 
 // ONLY=<id,…> : régénère ces démonstrations seulement et les fusionne dans le manifeste existant.
@@ -273,9 +218,14 @@ for (const p of PRODUCTS) {
   const photoFile = p.photo ?? [".png", ".jpg"].map((x) => path.join(RENDERS, `${p.id}-photo${x}`)).find((f) => fs.existsSync(f))!;
   // Photo transparente (produit détouré) : posée sur un fond clair, comme une photo de fournisseur.
   const photo = photoFile.endsWith(".png") ? await sharp(photoFile).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(photoFile);
-  const res = await ctx.request.post(`${BASE}/api/projects`, {
-    multipart: { photos: { name: path.basename(photoFile).replace(/\.png$/, ".jpg"), mimeType: "image/jpeg", buffer: photo }, productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: "shopify", storeType: p.storeType ?? "mono", ...(EN ? { language: "en" } : {}) },
-  });
+  // Formulaire de création, comme dans le studio (plusieurs photos possibles ; services : prestations et coordonnées).
+  const form = new FormData();
+  form.append("photos", new Blob([photo], { type: "image/jpeg" }), path.basename(photoFile).replace(/\.png$/, ".jpg"));
+  for (const f of p.photos ?? []) form.append("photos", new Blob([fs.readFileSync(f)], { type: "image/jpeg" }), path.basename(f));
+  const fields: Record<string, string> = { productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: p.platform ?? "shopify", storeType: p.storeType ?? "mono", businessType: p.business ?? "products", ...(EN ? { language: "en" } : {}) };
+  if (p.business === "services") Object.assign(fields, { services: JSON.stringify(p.services ?? []), area: p.area ?? "", hours: p.hours ?? "", contactModes: p.contactModes ?? "form", contactMode: (p.contactModes ?? "form").split(",")[0] });
+  for (const [k, v] of Object.entries(fields)) form.append(k, v);
+  const res = await ctx.request.post(`${BASE}/api/projects`, { multipart: form });
   const created = await res.json();
   if (!res.ok()) throw new Error(JSON.stringify(created));
   const pid = created.id ?? created.project?.id;
@@ -353,6 +303,17 @@ for (const p of PRODUCTS) {
       }
     }
   }
+  // Publications du calendrier (moteur de publications : modèles à la marque), dans l'ordre du fil.
+  const postAssets = assets.filter((a) => a.role === "social" && a.meta?.socialV2).sort((x, y) => (x.createdAt ?? 0) - (y.createdAt ?? 0)).slice(0, 8);
+  const posts: string[] = [];
+  for (const [i, a] of postAssets.entries()) {
+    const file = X(`post-${i + 1}.jpg`);
+    await saveImg(ctx, a.url, path.join(dir, file), 1080);
+    posts.push(`/demo/${p.id}/${file}`);
+  }
+  // Planche d'identité de marque (logo, déclinaisons, palette, typographies, motif, papeterie, mises en situation).
+  const boardAsset = byRole("brand-board").sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0))[0];
+  if (boardAsset) await saveImg(ctx, boardAsset.url, path.join(dir, X("planche.jpg")), 2000);
   const logo = byRole("logo-svg")[0] ?? byRole("logo")[0];
   const logoFile = X(logo?.mime === "image/svg+xml" ? "logo.svg" : "logo.png");
   if (logo) await saveRaw(ctx, logo.url, path.join(dir, logoFile));
@@ -368,7 +329,7 @@ for (const p of PRODUCTS) {
   const vid = theme.current.versionId;
   await shot(ctx, `/preview/${pid}/v/${vid}/`, path.join(dir, X("boutique-bureau.jpg")), { width: 1440, height: 900 });
   await shot(ctx, `/preview/${pid}/v/${vid}/`, path.join(dir, X("boutique-mobile.jpg")), { width: 390, height: 844 });
-  await shot(ctx, `/preview/${pid}/v/${vid}/products/${theme.current.product.handle}`, path.join(dir, X("fiche-produit.jpg")), { width: 1440, height: 900 });
+  if (p.business !== "services") await shot(ctx, `/preview/${pid}/v/${vid}/products/${theme.current.product.handle}`, path.join(dir, X("fiche-produit.jpg")), { width: 1440, height: 900 });
 
   demos.push({
     id: p.id,
@@ -381,7 +342,8 @@ for (const p of PRODUCTS) {
     logo: logo ? `/demo/${p.id}/${logoFile}` : "",
     shopDesktop: `/demo/${p.id}/${X("boutique-bureau.jpg")}`,
     shopMobile: `/demo/${p.id}/${X("boutique-mobile.jpg")}`,
-    productPage: `/demo/${p.id}/${X("fiche-produit.jpg")}`,
+    productPage: p.business === "services" ? "" : `/demo/${p.id}/${X("fiche-produit.jpg")}`,
+    business: p.business ?? "products",
     images,
     video: vertical ? `/demo/${p.id}/${X("video.mp4")}` : "",
     videoPoster: poster ? `/demo/${p.id}/${X("video-poster.jpg")}` : "",
@@ -389,6 +351,8 @@ for (const p of PRODUCTS) {
     storeType: p.storeType ?? "mono",
     products: 1 + (p.catalog?.length ?? 0),
     source: p.source ?? null,
+    posts,
+    board: boardAsset ? `/demo/${p.id}/${X("planche.jpg")}` : "",
   });
 }
 

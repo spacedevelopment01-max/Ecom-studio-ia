@@ -12,6 +12,7 @@ import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
+import { BoardShowcase, FeedShowcase, PostsWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
 import { directionById, directionCards } from "@/lib/theme/directions";
 import { PLANS, REFUND_DAYS, TOPUP_PRICE_EUR } from "@/lib/plans";
 import { demos, localizeDemo } from "@/lib/demo-content";
@@ -66,7 +67,7 @@ export default async function Home() {
     const w = src.replace(/\.jpe?g$/i, ".webp");
     return fs.existsSync(path.join(process.cwd(), "public", w)) ? w : src;
   };
-  const webp = (d: Demo): Demo => ({ ...d, photo: W(d.photo), shopDesktop: W(d.shopDesktop), shopMobile: W(d.shopMobile), videoPoster: W(d.videoPoster), images: d.images.map((im) => ({ ...im, src: W(im.src) })) });
+  const webp = (d: Demo): Demo => ({ ...d, photo: W(d.photo), shopDesktop: W(d.shopDesktop), shopMobile: W(d.shopMobile), videoPoster: W(d.videoPoster), images: d.images.map((im) => ({ ...im, src: W(im.src) })), posts: d.posts?.map(W), board: d.board ? W(d.board) : d.board });
   // Interface anglaise : démonstration produite en anglais (manifest.en.json) quand elle existe, sinon la française aux textes traduits.
   const rawEn = lang === "en" ? demos("manifest.en.json") : [];
   const raw = demos().map((d) => rawEn.find((x) => x.id === d.id) ?? d);
@@ -105,6 +106,7 @@ export default async function Home() {
   const nav = [
     { href: "#fonctionnalites", label: T("Fonctionnalités", "Features") },
     { href: "#fonctionnement", label: T("Fonctionnement", "How it works") },
+    { href: "#marque", label: T("Créations", "Creations") },
     { href: "#demonstrations", label: T("Démonstrations", "Demos") },
     { href: "#offre", label: T("Tarifs", "Pricing") },
   ];
@@ -148,12 +150,14 @@ export default async function Home() {
       ]
     : [];
 
+  // Publications réelles du calendrier de la marque (modèles du studio) quand elles existent.
+  const heroPosts = hero?.posts ?? [];
   const posts: SocialPost[] = story
     ? [
-        { day: 0, time: "18:00", network: "Instagram", image: story.social, caption: T(`${story.product} : la forme papillon, en deux coloris.`, `${story.product}: the butterfly shape, in two colors.`) },
-        { day: 2, time: "12:30", network: "Facebook", image: story.scene2, caption: T(`Découvrez ${story.brand} sur notre boutique.`, `Discover ${story.brand} in our store.`) },
-        { day: 4, time: "20:00", network: "Pinterest", image: story.banner, caption: T("Idée pour la chambre : l'oreiller Papillon.", "Bedroom idea: the Papillon pillow.") },
-        { day: 5, time: "11:00", network: "TikTok", image: story.scene1, caption: T("Comment bien l'installer ? Réponse en vidéo.", "How to set it up? Answer on video.") },
+        { day: 0, time: "18:00", network: "Instagram", image: heroPosts[0] ?? story.social, caption: T(`${story.product} : la forme papillon, en deux coloris.`, `${story.product}: the butterfly shape, in two colors.`) },
+        { day: 2, time: "12:30", network: "Facebook", image: heroPosts[1] ?? story.scene2, caption: T(`Découvrez ${story.brand} sur notre boutique.`, `Discover ${story.brand} in our store.`) },
+        { day: 4, time: "20:00", network: "Pinterest", image: heroPosts[2] ?? story.banner, caption: T("Idée pour la chambre : l'oreiller Papillon.", "Bedroom idea: the Papillon pillow.") },
+        { day: 5, time: "11:00", network: "TikTok", image: heroPosts[3] ?? story.scene1, caption: T("Comment bien l'installer ? Réponse en vidéo.", "How to set it up? Answer on video.") },
       ]
     : [];
 
@@ -168,6 +172,13 @@ export default async function Home() {
   ];
 
   const ba = list.find((d) => d.id === "drone");
+
+  // Créations réelles des démonstrations : planches d'identité, fils de publications, mur de publications.
+  const boards: BoardDemo[] = list.filter((d) => d.board).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));
+  const feeds: FeedDemo[] = list.filter((d) => (d.posts?.length ?? 0) >= 6).map((d) => ({ id: d.id, brand: d.brand, handle: d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""), logo: d.logo, palette: d.palette, posts: d.posts! }));
+  // Mur : les publications des marques entremêlées (jamais deux d'une même marque côte à côte).
+  const wall: WallItem[] = [];
+  for (let k = 0; k < 8; k++) for (const f of feeds) if (f.posts[k]) wall.push({ src: f.posts[k], brand: f.brand });
 
   // Plateformes : uniquement ce qui existe (src/lib/cms-v2/capabilities.ts, src/lib/social-v2/platforms.ts).
   type Cell = { ok: "yes" | "beta" | "no" | "kit"; text: string };
@@ -279,6 +290,13 @@ export default async function Home() {
               <span>{T("Kit pour Wix et Squarespace", "Kit for Wix and Squarespace")}</span>
             </p>
           </div>
+          {wall.length >= 6 && (
+            <div className="pt-14 sm:pt-20">
+              <p className="hp-eyebrow reveal mx-auto max-w-7xl px-4 text-center sm:px-6">{T("Créé par le studio, sans retouche", "Created by the studio, untouched")}</p>
+              <p className="reveal mx-auto mt-3 max-w-2xl px-4 text-center text-[15px] text-ink-2 sm:px-6">{T(`${feeds.length} marques de démonstration, une ligne graphique chacune : ce sont leurs vraies publications, telles que le studio les prépare.`, `${feeds.length} demo brands, each with its own visual line: these are their real posts, exactly as the studio prepares them.`)}</p>
+              <div className="mt-8"><PostsWall items={wall} label={T("Publications créées par le studio pour les marques de démonstration", "Posts created by the studio for the demo brands")} /></div>
+            </div>
+          )}
         </section>
 
         {/* ───────────── Comment ça fonctionne ───────────── */}
@@ -308,11 +326,11 @@ export default async function Home() {
         <section id="marque" className="scroll-mt-20 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-              <Head eyebrow={T("Création de marque", "Brand creation")} title={T("Une photo de départ,", "One starting photo,")} accent={T("une identité complète.", "a complete identity.")} lead={T("Choisissez une marque de démonstration : logo, palette et typographies ont été créés par le studio à partir de la photo du produit.", "Pick a demo brand: its logo, palette and typefaces were created by the studio from the product photo.")} />
+              <Head eyebrow={T("Création de marque", "Brand creation")} title={T("Une photo de départ,", "One starting photo,")} accent={T("une identité complète.", "a complete identity.")} lead={boards.length ? T("Logo et déclinaisons, palette, typographies, icônes, motif, papeterie et mises en situation : chaque marque reçoit sa planche d'identité, et toutes ses créations suivent cette même ligne.", "Logo and variations, palette, typefaces, icons, pattern, stationery and mockups: every brand gets its identity board, and all its creations follow that same line.") : T("Choisissez une marque de démonstration : logo, palette et typographies ont été créés par le studio à partir de la photo du produit.", "Pick a demo brand: its logo, palette and typefaces were created by the studio from the product photo.")} />
               <p className="reveal max-w-xs text-sm text-muted lg:text-right">{T("Démonstrations réalisées sans l'IA des forfaits.", "Demos made without the plans' AI.")}</p>
             </div>
             <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
-              <BrandLab brands={brands} />
+              {boards.length ? <BoardShowcase boards={boards} /> : <BrandLab brands={brands} />}
             </div>
           </div>
         </section>
@@ -392,6 +410,18 @@ export default async function Home() {
             )}
           </div>
         </section>
+
+        {/* ───────────── Publications : le fil de chaque marque ───────────── */}
+        {feeds.length > 0 && (
+          <section id="publications" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <Head eyebrow={T("Publications", "Posts")} title={T("Un fil qui a une ligne,", "A feed with a visual line,")} accent={T("pas une suite d'images.", "not a string of images.")} lead={T("Chaque marque a sa direction artistique : compositions, lumière des photos, typographie et couleurs. Les publications varient d'un jour à l'autre, la signature reste. Le produit est toujours le vrai, et seuls les arguments confirmés sont écrits.", "Each brand has its art direction: layouts, photo lighting, typography and colors. Posts change from one day to the next, the signature stays. The product is always the real one, and only confirmed claims are written.")} />
+              <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
+                <FeedShowcase feeds={feeds} />
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ───────────── Vidéo et UGC ───────────── */}
         <section id="videos" className="relative isolate scroll-mt-20 overflow-hidden bg-[#060A18] py-24 text-white sm:py-32">

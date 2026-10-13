@@ -175,6 +175,10 @@ export type Demo = {
   storeType?: "mono" | "multi" | "niche";
   products?: number;
   source?: { supplier: string; url: string; note: string } | null;
+  /** Publications du calendrier créées par le studio (modèles à la marque). */
+  posts?: string[];
+  /** Planche d'identité de la marque. */
+  board?: string;
 };
 
 export function DemoTabs({ demos }: { demos: Demo[] }) {
