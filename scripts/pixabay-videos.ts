@@ -33,11 +33,23 @@ const { rankStock } = await import("../src/lib/stock/trade-queries");
 
 const u = await createUser(`pixabay-videos-${Date.now()}@demo.local`, "motdepasse-demo", "Démo");
 const sources: string[] = [];
-for (const [name, fixture] of [["peintre", "artisan"], ["serum", "cosmetic"]] as const) {
+// Projets de démonstration (3e argument facultatif : noms séparés par des virgules, ex. « restaurant,casque »).
+const ALL = [["peintre", "artisan"], ["serum", "cosmetic"], ["restaurant", "restaurant"], ["casque", "hightech"]] as const;
+// 4e argument facultatif : durée en secondes (15 par défaut).
+const DURATION = Number(process.argv[4] ?? 15) || 15;
+const only = (process.argv[3] ?? "peintre,serum").split(",").map((x) => x.trim());
+for (const [name, fixture] of ALL.filter(([n]) => only.includes(n))) {
   const pid = seedImageFixture(u.id, fixture);
   // Démonstration réaliste : le peintre accepte de montrer des personnes au travail (choix du client dans son
   // projet) ; le sérum a une vraie photo de flacon (photo Pixabay, à la place de la photo du client).
-  if (fixture === "artisan") saveSettings(pid, { ...reload(pid).settings, peopleAllowed: true });
+  if (fixture === "artisan" || fixture === "restaurant") saveSettings(pid, { ...reload(pid).settings, peopleAllowed: true });
+  if (fixture === "hightech") {
+    const found = rankStock(await searchStock(["wireless headphones", "headphones product"], "portrait", "en", new Set(), 40), ["headphones", "headphone", "headset"], false).filter((x) => !/vintage|retro|old|broken/i.test(x.alt));
+    for (const ph of found.slice(0, 1)) {
+      await saveAsset({ projectId: pid, userId: u.id, data: await downloadStock(ph), name: "photo-produit.jpg", mime: "image/jpeg", role: "lifestyle", folderKey: "product.originals", origin: "import", status: "approved", meta: { stock: { source: ph.source, id: ph.id, page: ph.page, author: ph.author, license: ph.license } } });
+      sources.push(`casque photo du produit (exemple) : ${ph.page} — ${ph.author} (Pixabay)`);
+    }
+  }
   if (fixture === "cosmetic") {
     const found = rankStock(await searchStock(["serum dropper bottle cosmetic", "face serum bottle"], "portrait", "en", new Set(), 40), ["serum"], false).filter((x) => !/vaccine|injection|medicine|syringe|needle|hair|olive/i.test(x.alt) && /skincare|skin care|cosmetic|beauty|face/i.test(x.alt));
     for (const ph of found.slice(0, 1)) {
@@ -48,7 +60,7 @@ for (const [name, fixture] of [["peintre", "artisan"], ["serum", "cosmetic"]] as
   }
   const p = loadProject(pid);
   const deps = realVideoDeps(null, p, false);
-  const r = await runWithLang({ ui: "fr", content: "fr" }, () => runVideoEngineV2(null, pid, { ask: { text: "Reel Instagram de 15 secondes", platform: "reels", aspect: "9:16", durationS: 15, allowGeneration: false } }, deps));
+  const r = await runWithLang({ ui: "fr", content: "fr" }, () => runVideoEngineV2(null, pid, { ask: { text: `Reel Instagram de ${DURATION} secondes`, platform: "reels", aspect: "9:16", durationS: DURATION, allowGeneration: false } }, deps));
   if (!r.videoAssetId) {
     sources.push(`${name} : aucune vidéo (${r.reason})`);
     continue;

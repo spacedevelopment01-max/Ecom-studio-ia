@@ -121,6 +121,8 @@ export async function searchStockVideos(queries: string[], orientation: "landsca
       try {
         const j = await get(`https://pixabay.com/api/videos/?key=${encodeURIComponent(pixabay)}&q=${q}&per_page=10&safesearch=true&lang=${lang}`);
         for (const v of j.hits ?? []) {
+          // Vraies images filmées seulement : jamais un dessin animé, une 3D ou une animation à la place du réel.
+          if (/\b(anime|cartoon|animation|animated|3d|cgi|render|illustration|motion graphics?)\b/i.test(String(v.tags ?? ""))) continue;
           const files = ["large", "medium", "small"].map((k) => v.videos?.[k]).filter(Boolean).map((x: any) => ({ width: x.width ?? 0, height: x.height ?? 0, link: x.url as string }));
           const wantTall = orientation === "portrait";
           // Pixabay n'a presque que des vidéos horizontales : pour un format vertical, un plan horizontal assez net

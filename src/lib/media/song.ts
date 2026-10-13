@@ -189,6 +189,11 @@ export function arrange(style: SongStyle, duration: number, seed: string): { eve
     const notes = c.notes.map((n) => n + key);
     const root = c.root + key;
     const intro = b === 0;
+    // Structure : intro, couplet (A) et refrain (B) de 4 mesures en alternance ; morceau long (12 mesures et plus) :
+    // une mesure de pause (sans batterie ni basse) avant la reprise finale.
+    const chorus = !intro && Math.floor((b - 1) / 4) % 2 === 1;
+    const breakdown = bars >= 12 && b === bars - 5;
+    const sectionStart = !intro && (b - 1) % 4 === 0;
     const vel = intro ? 0.82 : 1;
     if (last) {
       // Fin : accord de la tonalité tenu jusqu'à la fin, cymbale douce.
@@ -229,7 +234,7 @@ export function arrange(style: SongStyle, duration: number, seed: string): { eve
       } else for (const [pos] of [[0.5], [1.5], [2.5], [3.5]] as const) for (const n of notes) add(I.comp.ch, t0 + pos * beat + hum(), n, 0.3 * beat, 54 * vel);
     }
     // Basse.
-    if (I.bass) {
+    if (I.bass && !breakdown) {
       if (style === "bistro") for (let k = 0; k < 4; k++) add(I.bass.ch, t0 + k * beat, [root, root + 7, root + 12, root + 7][k], 0.9 * beat, 92 * vel); // walking
       else if (style === "calm" || style === "cinematic") add(I.bass.ch, t0, root + (style === "cinematic" ? 12 : 0), bar, 80 * vel);
       else if (style === "pop" || style === "corporate") for (let k = 0; k < 8; k++) add(I.bass.ch, t0 + k * beat * 0.5, root + (k === 7 ? 7 : 0), 0.42 * beat, (k % 2 ? 76 : 96) * vel);
@@ -247,11 +252,14 @@ export function arrange(style: SongStyle, duration: number, seed: string): { eve
       const phrase = b % 4 === 2 ? 2 : 0;
       S.motif.forEach(([pos, len], k) => {
         const pick = (motifPitches[k] + phrase + (b % 2 && k === S.motif.length - 1 ? 1 : 0)) % notes.length;
-        add(I.lead!.ch, t0 + pos * beat + sw(pos) + hum(), notes[pick] + 12, len * beat * 0.95, 82 - k * 3);
+        const t = t0 + pos * beat + sw(pos) + hum();
+        add(I.lead!.ch, t, notes[pick] + 12, len * beat * 0.95, (chorus ? 90 : 80) - k * 3);
+        // Refrain : mélodie doublée à l'octave (plus d'éclat).
+        if (chorus) add(I.lead!.ch, t + 0.004, notes[pick] + 24, len * beat * 0.9, 56 - k * 2);
       });
     }
     // Batterie (canal 10) : entrée à la 2e mesure, légère et sans agressivité.
-    if (S.drums !== "none" && !intro) {
+    if (S.drums !== "none" && !intro && !breakdown) {
       const D = (pos: number, n: number, v: number) => add(9, t0 + pos * beat + sw(pos) + hum() * 0.5, n, 0.2, v);
       if (S.drums === "four") {
         for (let k = 0; k < 4; k++) D(k, 36, 92);
@@ -278,7 +286,9 @@ export function arrange(style: SongStyle, duration: number, seed: string): { eve
         D(3, 39, 66);
         for (let k = 0; k < 8; k++) D(k * 0.5, k % 2 ? 42 : 54, k % 2 ? 40 : 50);
       }
-      if (b === 1) D(0, 49, 66);
+      // Cymbale à chaque nouvelle partie ; refrain : tambourin léger en croches.
+      if (sectionStart || b === bars - 4) D(0, 49, b === 1 ? 66 : 74);
+      if (chorus && S.drums !== "brush") for (let k = 0; k < 8; k++) D(k * 0.5 + 0.25, 54, k % 2 ? 34 : 44);
     }
   }
   const inst = Object.values(I).filter((x): x is Inst => !!x);

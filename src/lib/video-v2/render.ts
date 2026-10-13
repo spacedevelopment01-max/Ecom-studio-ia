@@ -125,6 +125,58 @@ function animatedDoc(doc: AdDocument, local: number, mode: "rise" | "fade" | "no
   };
 }
 
+const easeOutBack = (t: number) => {
+  const c = 1.6;
+  const x = clamp(t) - 1;
+  return 1 + (c + 1) * x * x * x + c * x * x;
+};
+const easeIn = (t: number) => clamp(t) * clamp(t);
+
+/**
+ * Calques posés sur un plan (habillage) : chaque calque animé entre à son heure (glisse, monte, se déroule,
+ * rebondit) et TOUS sortent en douceur juste avant le plan suivant (sauf sur le dernier plan) — comme un montage
+ * fait par un graphiste. Les calques sans animation gardent l'entrée échelonnée simple.
+ */
+function animatedOverlay(doc: AdDocument, local: number, clipS: number, last: boolean): AdDocument {
+  const W = doc.width;
+  const H = doc.height;
+  const outP = last ? 0 : easeIn((local - (clipS - 0.3)) / 0.3);
+  return {
+    ...doc,
+    layers: doc.layers.map((l, k): Layer => {
+      const a = l.anim;
+      if (!a) {
+        const p = easeOut((local - 0.045 * Math.min(k, 12)) / 0.5);
+        return { ...l, opacity: l.opacity * p * (1 - outP), y: l.y + (1 - p) * H * 0.03 - outP * H * 0.015 } as Layer;
+      }
+      const raw = clamp((local - a.delay) / (a.dur ?? 0.45));
+      const p = easeOut(raw);
+      let { x, y, w, h } = l;
+      let opacity = l.opacity * Math.min(1, raw * 2.2) * (1 - outP);
+      let font = (l as { font?: { size: number } }).font;
+      if (a.in === "rise") y += (1 - p) * H * 0.045;
+      else if (a.in === "drop") y -= (1 - p) * H * 0.045;
+      else if (a.in === "left") x -= (1 - p) * W * 0.3;
+      else if (a.in === "right") x += (1 - p) * W * 0.3;
+      else if (a.in === "grow") {
+        if (l.kind === "text") x -= (1 - p) * W * 0.1;
+        else w = w * p;
+        opacity = l.opacity * (raw > 0 ? 1 : 0) * (1 - outP);
+      } else if (a.in === "pop") {
+        const s = 0.55 + 0.45 * easeOutBack(raw);
+        x += (w * (1 - s)) / 2;
+        y += (h * (1 - s)) / 2;
+        w *= s;
+        h *= s;
+        if (font) font = { ...font, size: font.size * s };
+      }
+      // Sortie : léger glissement vers le haut et fondu.
+      y -= outP * H * 0.02;
+      return { ...l, x, y, w, h, opacity, ...(font ? { font } : {}) } as Layer;
+    }),
+  };
+}
+
 function drawSubtitle(ctx: Ctx, doc: VideoDocument, text: string, appear: number) {
   const s = doc.subtitles.style;
   const W = doc.width;
@@ -212,7 +264,7 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
   } else renderDoc(ctx, animatedDoc(s.doc, local, s.animate), env);
   if (c.overlays.length) {
     const ov: AdDocument = { version: 1, width: W, height: H, background: "transparent", safe: doc.safe, format: { platform: null, aspect: doc.aspect }, layers: c.overlays, brand: doc.brand, meta: { conceptId: null, source: "engine", createdFrom: null } };
-    renderDoc(ctx, animatedDoc(ov, local, "rise"), env, (l) => l.visible);
+    renderDoc(ctx, animatedOverlay(ov, local, c.durationS, c === doc.clips[doc.clips.length - 1]), env, (l) => l.visible);
   }
 }
 
