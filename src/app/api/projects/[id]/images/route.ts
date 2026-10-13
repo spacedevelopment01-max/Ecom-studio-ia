@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
@@ -57,6 +58,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   requireCreationPlan(user, p.id, "images");
   const b = await body(req, Req);
   const kind = b.kind ?? "scene";
+  // Même demande reçue deux fois de suite (double clic, renvoi) : la même tâche est rendue, rien n'est créé en double.
+  const dedup = `images:${p.id}:${crypto.createHash("sha256").update(JSON.stringify(b)).digest("hex").slice(0, 24)}:${Math.floor(Date.now() / 30_000)}`;
   // Visuels avec texte : Advertising Engine V2 (onglet Publicités, éditeur à calques) et Social V2 (Publications).
   if (b.mode === "single" && p.business !== "services" && (kind === "social" || kind === "ad")) throw new HttpError(410, L("Les visuels avec texte se créent dans Publicités (modifiables dans l'éditeur visuel) ou Publications.", "Visuals with text are created in Ads (editable in the visual editor) or Posts."));
   // Image générée par IA : toujours Image Engine V2 (brief, fidélité au produit, contrôle, bibliothèque).
@@ -64,12 +67,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const f = b.format ? FORMATS[b.format as keyof typeof FORMATS] : null;
     const aspect = !f ? "4:5" : f.w > f.h * 1.5 ? "16:9" : f.h > f.w * 1.5 ? "9:16" : f.h > f.w * 1.1 ? "4:5" : "1:1";
     const v2kind = p.business === "services" ? (kind === "banner" ? "banner" : "trade_photo") : kind === "banner" ? "banner" : "lifestyle";
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "image.v2", label: L("Images : direction artistique et sélection", "Images: art direction and selection"), payload: { projectId: p.id, request: { kind: v2kind, aspect, count: 1, topic: b.subline ?? null, allowGenerate: true } } });
+    const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.v2", label: L("Images : direction artistique et sélection", "Images: art direction and selection"), payload: { projectId: p.id, request: { kind: v2kind, aspect, count: 1, topic: b.subline ?? null, allowGenerate: true } } });
     return ok({ jobId: job.id, engine: "image-v2" });
   }
   const job =
     b.mode === "set"
-      ? enqueue({ userId: user.id, projectId: p.id, type: "images.generate", label: L("Jeu d'images complet", "Full image set"), payload: { projectId: p.id } })
-      : enqueue({ userId: user.id, projectId: p.id, type: "image.single", label: imageLabel(b.kind ?? "scene"), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto, background: b.background, photoId: b.photoId } } });
+      ? enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "images.generate", label: L("Jeu d'images complet", "Full image set"), payload: { projectId: p.id } })
+      : enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "image.single", label: imageLabel(b.kind ?? "scene"), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto, background: b.background, photoId: b.photoId } } });
   return ok({ jobId: job.id });
 });

@@ -27,6 +27,7 @@ describe("Images : versions, tri, supprimées, nouveaux types", async () => {
   const { JobContext, enqueue } = await import("@/lib/jobs");
   const { generateServiceSingleImage } = await import("@/lib/engine/service-media");
   const files = await import("@/app/api/projects/[id]/files/route");
+  const images = await import("@/app/api/projects/[id]/images/route");
   const one = await import("@/app/api/files/[fid]/route");
   const { seedThemeScenario } = await import("./theme-v2-fixtures");
   const fr = <T,>(fn: () => Promise<T>) => runWithLang({ ui: "fr", content: "fr" }, fn);
@@ -51,6 +52,15 @@ describe("Images : versions, tri, supprimées, nouveaux types", async () => {
     expect(d.doc.layers.some((l) => l.role === "title" && "text" in l && l.text === "-20 % sur les sessions du jeudi")).toBe(true);
     await expect(fr(() => generateServiceSingleImage(new JobContext(job), pid, { kind: "review", format: "square", background: "photo" }))).rejects.toThrow(/vrai avis/);
   }, 120_000);
+
+  it("double clic : la même demande envoyée deux fois ne crée qu'une seule tâche", async () => {
+    const { pid } = await setup();
+    const post = async () => (await (await fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode: "single", kind: "promo", format: "portrait", headline: "-20 % le jeudi", background: "none" }) }), { params: Promise.resolve({ id: pid }) } as any))).json()).jobId as string;
+    const a = await post();
+    const b = await post();
+    expect(a).toBeTruthy();
+    expect(b).toBe(a);
+  });
 
   it("changement de modèle : nouvelle version liée, la liste n'affiche que la dernière ; tri par statut ; supprimées et restauration", async () => {
     const { pid, ph, job, u } = await setup();

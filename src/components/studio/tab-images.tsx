@@ -226,7 +226,17 @@ function ProductImages() {
       }
     } catch {}
   }, [id, toast, t]);
+  const [sending, setSending] = useState(false);
   const create = async (mode: "set" | "single") => {
+    if (sending) return;
+    setSending(true);
+    try {
+      await createNow(mode);
+    } finally {
+      setSending(false);
+    }
+  };
+  const createNow = async (mode: "set" | "single") => {
     if (mode === "set" && data?.ai.image && !(await cost.confirm("images"))) return;
     try {
       const r = await api<{ jobId?: string }>(`/api/projects/${id}/images`, { body: { mode, ...form, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined }, lang: cl.lang });
@@ -281,8 +291,8 @@ function ProductImages() {
               </>
             )}
             <ContentLangPicker {...cl} />
-            <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{t("Créer l'image", "Create image")}</Button>
-            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (packshots, détails, scènes, bannières, photos libres et photos en situation contrôlées)", "Full set (packshots, details, scenes, banners, royalty-free photos and checked lifestyle photos)")}</Button>
+            <Button onClick={() => create("single")} disabled={locked || sending} loading={sending} icon={<Wand2 className="size-4" />}>{t("Créer l'image", "Create image")}</Button>
+            <Button variant="secondary" disabled={locked || sending} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (packshots, détails, scènes, bannières, photos libres et photos en situation contrôlées)", "Full set (packshots, details, scenes, banners, royalty-free photos and checked lifestyle photos)")}</Button>
             {locked && <PlanRequired what="images" />}
           </div>
         </Card>
@@ -350,7 +360,17 @@ function ServiceImages() {
   const photoAllowed = true;
   // Fond du visuel : une photo de l'activité, une nouvelle image (photo libre du métier, sinon créée par l'IA) ou aucune.
   const background = form.background || (photos > 0 ? "photo" : "image");
+  const [sending, setSending] = useState(false);
   const create = async (mode: "set" | "single") => {
+    if (sending) return;
+    setSending(true);
+    try {
+      await createNow(mode);
+    } finally {
+      setSending(false);
+    }
+  };
+  const createNow = async (mode: "set" | "single") => {
     if (mode === "set" && aiImage && !(await cost.confirm("images"))) return;
     // Nouvelle image : l'IA peut la créer si aucune photo libre ne convient (budget IA du projet).
     if (mode === "single" && photoAllowed && background === "image" && aiImage && !(await cost.confirm("image"))) return;
@@ -432,8 +452,8 @@ function ServiceImages() {
               </Field>
             )}
             <ContentLangPicker {...cl} />
-            <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{form.kind === "tips" ? t("Créer le carrousel", "Create the carousel") : t("Créer le visuel", "Create visual")}</Button>
-            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (vos photos, photos libres du métier, images contrôlées par emplacement du site, bannières)", "Full set (your photos, royalty-free trade photos, checked images for each website slot, banners)")}</Button>
+            <Button onClick={() => create("single")} disabled={locked || sending} loading={sending} icon={<Wand2 className="size-4" />}>{form.kind === "tips" ? t("Créer le carrousel", "Create the carousel") : t("Créer le visuel", "Create visual")}</Button>
+            <Button variant="secondary" disabled={locked || sending} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (vos photos, photos libres du métier, images contrôlées par emplacement du site, bannières)", "Full set (your photos, royalty-free trade photos, checked images for each website slot, banners)")}</Button>
             {locked && <PlanRequired what="images" />}
           </div>
         </Card>
