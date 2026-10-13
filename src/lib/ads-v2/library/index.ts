@@ -22,8 +22,9 @@ import { TEMPLATES_H } from "./templates/h";
 import { TEMPLATES_I } from "./templates/i";
 import { TEMPLATES_J } from "./templates/j";
 import { TEMPLATES_K } from "./templates/k";
+import { TEMPLATES_L } from "./templates/l";
 
-export const TEMPLATES: Template[] = [...TEMPLATES_A, ...TEMPLATES_B, ...TEMPLATES_C, ...TEMPLATES_D, ...TEMPLATES_E, ...TEMPLATES_F, ...TEMPLATES_G, ...TEMPLATES_H, ...TEMPLATES_I, ...TEMPLATES_J, ...TEMPLATES_K];
+export const TEMPLATES: Template[] = [...TEMPLATES_A, ...TEMPLATES_B, ...TEMPLATES_C, ...TEMPLATES_D, ...TEMPLATES_E, ...TEMPLATES_F, ...TEMPLATES_G, ...TEMPLATES_H, ...TEMPLATES_I, ...TEMPLATES_J, ...TEMPLATES_K, ...TEMPLATES_L];
 export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? null;
 /**
  * Affiches « produit héros » (produit détouré en très grand dans un décor dessiné à la marque) : choisies en

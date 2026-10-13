@@ -62,6 +62,8 @@ export type PosterInput = {
   layout?: string;
   /** Graine de la composition (deux publications d'un même projet ne se ressemblent pas). */
   seed: string;
+  /** Couleurs, traitement et logo imposés (la même publicité déclinée dans un autre format). */
+  variant?: AdVariant;
 };
 
 /** Compositions et traitements des dernières affiches du projet (la plus récente d'abord). */
@@ -79,25 +81,38 @@ const familyOf = (layout: string) => (isTemplateLayout(layout) ? (templateById(l
  * schéma de couleurs, un traitement de photo et une place du logo différents de la précédente. La graine fait
  * varier l'ordre (deux projets ne suivent pas le même parcours).
  */
+/** Traitements qui voilent les couleurs de la photo (bichromie, noir et blanc). */
+const VEILS: Treatment[] = ["duotone", "mono"];
+/** Modèles « signature » (lot L), d'après les références de publicités produit du propriétaire. */
+const SIGNATURE = ["signature-row", "feature-column", "centered-signature"];
+
 export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; treatment: string | null; logo: string | null; scheme?: string | null }[], hasPhoto: boolean, hasProduct = false, productPhoto = false): { layout: string; variant: AdVariant } {
   // Produit détouré sans photo : seulement les affiches « produit héros » (jamais une composition typographique avec
   // le produit posé dans un coin).
-  const engine = (hasPhoto ? art.cycle.filter((l) => l !== "typographic" && l !== "band") : hasProduct ? [] : (["typographic"] as AdLayout[])) as string[];
+  // Photo qui montre le produit (photo du client en situation, mise en scène) : la photo reste entière, en plein
+  // cadre ; jamais découpée en cercle, en demi-image ou recadrée sur un détail (modèles « photo » de la bibliothèque).
+  const engine = (productPhoto ? [] : hasPhoto ? art.cycle.filter((l) => l !== "typographic" && l !== "band") : hasProduct ? [] : (["typographic"] as AdLayout[])) as string[];
   // Avec une photo, elle remplit le fond : pas de modèle où elle n'occupe qu'une case (collages, modèles typographiques).
   // Avec un produit détouré : les modèles « produit » qui le mettent en scène (les autres l'oublieraient).
-  const all = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto) && (hasPhoto || HERO_TEMPLATES.includes(t.id))) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage")))).filter((t) => !(productPhoto && t.coversSubject));
+  const picked = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto) && (hasPhoto || HERO_TEMPLATES.includes(t.id))) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage")))).filter((t) => !(productPhoto && (t.coversSubject || t.family !== "photo" || (t.treatments ?? []).every((x) => VEILS.includes(x)) && !!t.treatments?.length)));
+  // Aucun modèle « photo » pour ce style de marque : tous les modèles « photo » plein cadre restent possibles.
+  const all = picked.length || !productPhoto ? picked : TEMPLATES.filter((t) => t.family === "photo" && t.photo === "required" && !t.product && !t.coversSubject);
   // Direction artistique : seules les familles qui portent la ligne de la marque (s'il en reste assez).
   const da = artDirection(art);
   const inLine = all.filter((t) => da.families.includes(t.family));
   const tpls = (inLine.length >= 6 ? inLine : all).map((t) => `tpl:${t.id}`);
   // Ordre propre à la graine : mélange déterministe, modèles et compositions du moteur entremêlés.
-  const pool = [...tpls, ...engine].map((l, k) => ({ l, r: (Math.imul(n ^ (k * 2654435761), 2246822519) >>> 0) % 1000 })).sort((a, b) => a.r - b.r).map((x) => x.l);
+  // Photo du produit en situation : les modèles « signature » (marque espacée, grand titre, atouts, bouton) d'abord.
+  const first = (l: string) => (productPhoto && SIGNATURE.includes(l.slice(4)) ? 0 : 1);
+  const pool = [...tpls, ...engine].map((l, k) => ({ l, r: (Math.imul(n ^ (k * 2654435761), 2246822519) >>> 0) % 1000 })).sort((a, b) => first(a.l) - first(b.l) || a.r - b.r).map((x) => x.l);
   const avoid = new Set(recent.slice(0, Math.max(0, Math.min(10, pool.length - 2))).map((r) => r.layout));
   const lastFam = recent[0] ? familyOf(recent[0].layout) : null;
   const layout = pool.find((l) => !avoid.has(l) && familyOf(l) !== lastFam) ?? pool.find((l) => !avoid.has(l)) ?? pool.find((l) => l !== recent[0]?.layout) ?? pool[0];
   const rot = <T,>(xs: T[], k: number) => [...xs.slice(k % xs.length), ...xs.slice(0, k % xs.length)];
   const tpl = isTemplateLayout(layout) ? templateById(layout.slice(4)) : null;
-  const ts: Treatment[] = tpl ? (tpl.treatments ?? ["natural"]) : treatmentsFor(layout as AdLayout, art.style);
+  const all_ts: Treatment[] = tpl ? (tpl.treatments ?? ["natural"]) : treatmentsFor(layout as AdLayout, art.style);
+  // Photo qui montre le produit : couleurs vraies (jamais un voile bichrome ou noir et blanc qui le masque).
+  const ts = productPhoto ? (all_ts.filter((t) => !VEILS.includes(t)).length ? all_ts.filter((t) => !VEILS.includes(t)) : (["natural"] as Treatment[])) : all_ts;
   // Étalonnage signature de la marque dès que la composition le permet (le fil garde une même lumière).
   const sig = da.grades.filter((g) => ts.includes(g) && g !== recent[0]?.treatment);
   const treatment = sig[0] ?? rot(ts, Math.floor(n / 7)).find((t) => t !== recent[0]?.treatment) ?? ts[0];
@@ -133,7 +148,7 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
   // Photo d'un produit (packshot, mise en scène, photo d'origine) : le produit est au centre, jamais voilé ni rogné.
   const look = pickPosterLook(art, n, recentPosterLooks(p.id), !!i.background, !!i.product, p.business !== "services" && !!i.background);
   const layout = i.layout ?? look.layout;
-  const variant: AdVariant = i.layout ? (isTemplateLayout(i.layout) ? {} : { ...look.variant, treatment: treatmentsFor(i.layout as AdLayout, art.style).includes(look.variant.treatment!) ? look.variant.treatment : treatmentsFor(i.layout as AdLayout, art.style)[0] }) : look.variant;
+  const variant: AdVariant = i.variant ?? (i.layout ? (isTemplateLayout(i.layout) ? {} : { ...look.variant, treatment: treatmentsFor(i.layout as AdLayout, art.style).includes(look.variant.treatment!) ? look.variant.treatment : treatmentsFor(i.layout as AdLayout, art.style)[0] }) : look.variant);
   const { logo, light } = brandLogos(p);
   const cta = (i.cta ?? "").trim() || (p.business === "services" ? contactCta(p.services?.contactMode) : C("Découvrir", "Discover"));
   // Un titre qui n'est que le nom du produit n'accroche pas : la signature de la marque prend sa place (le nom du

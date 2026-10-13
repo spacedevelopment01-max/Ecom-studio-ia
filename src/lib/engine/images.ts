@@ -29,6 +29,7 @@ import { C, L } from "../i18n-server";
 import { generateServiceImageSet, generateServiceSingleImage, isServices, type ServiceSingleRequest } from "./service-media";
 import { finalImagePrompt, photoLine, photoLineInput, scenePromptFromLine, type PhotoLine } from "./photo-line";
 import type { CreativeLook } from "../media/creative-html";
+import type { AdVariant } from "../ads-v2/art";
 import type { SceneLook } from "../media/compose";
 
 /** Ligne photographique de la marque (piste créative choisie, secteur, cible) : toutes les images en découlent. */
@@ -419,23 +420,33 @@ export function ownScenePhotos(projectId: string): Asset[] {
 }
 
 /**
- * Jeu d'images sans détourage : publicités, bannière et visuel social mis en page (modèles de la bibliothèque) sur
- * les vraies photos du client. Rendu local, gratuit. null si le client n'a fourni aucune photo exploitable.
+ * Jeu d'images sans détourage : publicités, bannière et visuel social mis en page (modèles « photo » de la
+ * bibliothèque) sur les vraies photos du client, entières. Une publicité = une photo, un texte et une mise en page,
+ * déclinés dans chaque format ; une autre publicité prend une autre photo (jamais la même personne isolée ou
+ * recadrée). Rendu local, gratuit. null si le client n'a fourni aucune photo exploitable.
  */
 async function photoImageSet(ctx: JobContext, project: Project, opts: ImageSetOptions): Promise<{ created: string[] } | null> {
   const photos = ownScenePhotos(project.id);
   if (!photos.length) return null;
   const { composePoster, savePosterDoc } = await import("../ads-v2/poster");
-  const plan = photoSetPlan(project, opts);
+  const concepts = photoSetPlan(project, opts, photos.length);
+  const total = concepts.reduce((n, c) => n + c.formats.length, 0);
   const created = await ctx.step("photo-set", async () => {
     const ids: string[] = [];
-    for (const [k, f] of plan.entries()) {
-      ctx.progress(0.4 + (k / Math.max(1, plan.length)) * 0.55, L("Visuels mis en page sur vos photos", "Visuals laid out on your photos"));
+    for (const [k, c] of concepts.entries()) {
       const background = photos[k % photos.length];
-      const r = await composePoster(project, { aspect: f.aspect, headline: f.headline, subline: f.subline, eyebrow: f.eyebrow, cta: f.cta, background, product: null, features: f.features, seed: `images:${f.role}:${f.aspect}` });
-      const a = await saveAsset({ projectId: project.id, userId: project.userId, data: r.jpg, name: `${slug(project.product.name || project.name)}-${f.role === "ad" ? C("publicite", "ad") : f.role === "banner" ? C("banniere", "banner") : "post"}-${f.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: f.role, folderKey: f.folder, origin: "generated", sourceAssetId: background.id, meta: { recipe: L(`${f.angle.fr} : mise en page ${f.aspect} sur votre photo`, `${f.angle.en}: ${f.aspect} layout on your photo`), format: f.aspect, text: { headline: f.headline }, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background.id } } });
-      savePosterDoc(project.id, r.docKey, r.doc, a.id);
-      ids.push(a.id);
+      // Mise en page choisie une fois (premier format), puis reprise telle quelle dans les autres formats.
+      let layout: string | undefined;
+      let variant: AdVariant | undefined;
+      for (const f of c.formats) {
+        ctx.progress(0.4 + (ids.length / Math.max(1, total)) * 0.55, L("Visuels mis en page sur vos photos", "Visuals laid out on your photos"));
+        const r = await composePoster(project, { aspect: f.aspect, headline: c.headline, subline: c.subline, eyebrow: c.eyebrow, cta: c.cta, background, product: null, features: c.features, layout, variant, seed: `images:${c.key}` });
+        layout ??= r.layout;
+        variant ??= r.doc.meta.recipe?.variant as AdVariant | undefined;
+        const a = await saveAsset({ projectId: project.id, userId: project.userId, data: r.jpg, name: `${slug(project.product.name || project.name)}-${f.role === "ad" ? C("publicite", "ad") : f.role === "banner" ? C("banniere", "banner") : "post"}-${c.key}-${f.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: f.role, folderKey: f.folder, origin: "generated", sourceAssetId: background.id, meta: { recipe: L(`${c.angle.fr} : votre photo entière, format ${f.aspect}`, `${c.angle.en}: your whole photo, ${f.aspect} format`), format: f.aspect, concept: c.key, text: { headline: c.headline }, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background.id } } });
+        savePosterDoc(project.id, r.docKey, r.doc, a.id);
+        ids.push(a.id);
+      }
     }
     return ids;
   });
@@ -443,33 +454,38 @@ async function photoImageSet(ctx: JobContext, project: Project, opts: ImageSetOp
   return { created };
 }
 
-export type PhotoSetItem = { aspect: "4:5" | "1:1" | "9:16" | "16:9"; role: "social" | "ad" | "banner"; folder: string; angle: { fr: string; en: string }; headline: string; subline: string | null; eyebrow: string | null; cta: string | null; features: string[] | null };
+export type PhotoFormat = { aspect: "4:5" | "1:1" | "9:16" | "16:9"; role: "social" | "ad" | "banner"; folder: string };
+export type PhotoConcept = { key: string; angle: { fr: string; en: string }; headline: string; subline: string | null; eyebrow: string | null; cta: string | null; features: string[] | null; formats: PhotoFormat[] };
 
 /**
- * Visuels sur photo, un angle par visuel (méthodes des compétences ad-creative / ads, adaptées au studio) :
- * - « Lifestyle Hero » : la photo fait le travail, une phrase de marque courte, rien d'autre (texte < 20 % de l'image) ;
- * - « Offre » : nom exact du produit et prix confirmé, bouton qui nomme l'action ;
- * - « Callout » : les informations confirmées du produit (jamais d'argument inventé) ;
- * - bannière : nom du produit et sa catégorie.
+ * Publicités sur photo, un angle par publicité (méthodes des compétences ad-creative / ads, adaptées au studio) :
+ * - « Offre » (première photo) : nom exact du produit et prix confirmé, bouton qui nomme l'action ; déclinée en
+ *   carré, portrait, story et bannière ;
+ * - « Photo en situation » (deuxième photo, s'il y en a une) : la photo fait le travail, la phrase de marque seule
+ *   (texte < 20 % de l'image) ; portrait et carré.
  * Les textes viennent uniquement du projet ; un prix non confirmé n'est jamais affiché.
  */
-export function photoSetPlan(project: Project, opts: ImageSetOptions = {}): PhotoSetItem[] {
+export function photoSetPlan(project: Project, opts: ImageSetOptions = {}, photoCount = 1): PhotoConcept[] {
   const name = project.product.name || project.brand?.name || project.name;
   const tagline = project.brand?.tagline?.trim() || "";
   const category = project.product.category?.trim() || null;
   const pr = project.product.price;
   const price = pr?.status === "confirmed" && pr.amount != null ? `${(pr.amount / 100).toFixed(2).replace(".", C(",", ".")).replace(/[.,]00$/, "")} ${pr.currency === "EUR" ? "€" : pr.currency}` : null;
-  const facts = confirmedFacts(project).filter((f) => f !== name);
-  const shop = C("Voir la boutique", "Visit the store");
-  const order = C("Commander", "Order now");
-  const items: PhotoSetItem[] = [];
-  if (opts.social !== false && !opts.localOnly) {
-    items.push({ aspect: "4:5", role: "social", folder: "images.social", angle: { fr: "Photo en situation", en: "Lifestyle photo" }, headline: (tagline || name).slice(0, 60), subline: null, eyebrow: null, cta: null, features: null });
-    items.push({ aspect: "9:16", role: "ad", folder: "images.ads", angle: { fr: "Offre", en: "Offer" }, headline: name.slice(0, 60), subline: price ?? category, eyebrow: price ? category : null, cta: price ? order : shop, features: null });
-    items.push({ aspect: "1:1", role: "ad", folder: "images.ads", angle: facts.length >= 2 ? { fr: "Atouts confirmés", en: "Confirmed features" } : { fr: "Marque", en: "Brand" }, headline: name.slice(0, 60), subline: facts.length >= 2 ? null : tagline || category, eyebrow: null, cta: shop, features: facts.length >= 2 ? facts : null });
-  }
-  if (opts.banner !== false) items.push({ aspect: "16:9", role: "banner", folder: "images.banners", angle: { fr: "Bannière", en: "Banner" }, headline: (tagline || name).slice(0, 60), subline: tagline ? name : category, eyebrow: null, cta: shop, features: null });
-  return items;
+  // Atouts confirmés (valeurs des faits du projet, une idée par atout) : la rangée d'atouts des modèles « signature ».
+  const feats = [...new Set(project.product.facts.filter((f) => f.status === "confirmed" && f.key !== "price" && f.value?.trim()).flatMap((f) => f.value.split(/\s*[,;•·]\s*/)).map((v) => v.trim().replace(/\.$/, "")).filter((v) => v.length >= 3 && v.length <= 28).map((v) => v[0].toUpperCase() + v.slice(1)))].slice(0, 3);
+  const social = opts.social !== false && !opts.localOnly;
+  const offer: PhotoFormat[] = [
+    ...(social ? [
+      { aspect: "1:1" as const, role: "ad" as const, folder: "images.ads" },
+      { aspect: "4:5" as const, role: "ad" as const, folder: "images.ads" },
+      { aspect: "9:16" as const, role: "ad" as const, folder: "images.ads" },
+    ] : []),
+    ...(opts.banner !== false ? [{ aspect: "16:9" as const, role: "banner" as const, folder: "images.banners" }] : []),
+  ];
+  const out: PhotoConcept[] = [];
+  if (offer.length) out.push({ key: "offre", angle: { fr: "Offre", en: "Offer" }, headline: name.slice(0, 60), subline: price ?? (tagline || category), eyebrow: price ? category : null, cta: price ? C("Commander", "Order now") : C("Voir la boutique", "Visit the store"), features: feats.length >= 2 ? feats : null, formats: offer });
+  if (social && photoCount >= 2) out.push({ key: "situation", angle: { fr: "Photo en situation", en: "Lifestyle photo" }, headline: (tagline || name).slice(0, 60), subline: null, eyebrow: null, cta: null, features: null, formats: [{ aspect: "4:5", role: "social", folder: "images.social" }, { aspect: "1:1", role: "social", folder: "images.social" }] });
+  return out;
 }
 
 /** Informations confirmées, très courtes, pour les pastilles des visuels (jamais d'allégation inventée). */
