@@ -568,7 +568,7 @@ export async function buildAdDocument(i: ComposeInput): Promise<{ doc: AdDocumen
   // Logo hors colonne : coin opposé au texte, ou signature au pied à droite (jamais sur le bouton).
   if (logoMode !== "column" && logoId) {
     const lg0 = images.get(logoId)!;
-    const lw = Math.min((lg0.width / lg0.height) * logoH * 0.9, W * 0.36);
+    const lw = Math.min((lg0.width / lg0.height) * logoH, W * (cls === "land" ? 0.3 : 0.44));
     const lh = (lg0.height / lg0.width) * lw;
     const wide = cls === "land" || cls === "square";
     // Formats larges : le coin opposé tomberait sur le sujet de la photo ; le logo signe le pied du côté du texte.
