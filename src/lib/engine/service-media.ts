@@ -1030,8 +1030,23 @@ export async function generateServiceImageSet(ctx: JobContext, projectId: string
   return { created };
 }
 
+/**
+ * Autres publications (le texte vient du client, rien d'inventé) : surtitre propre au type, titre et ligne saisis,
+ * bouton selon le type ; rendues en affiches modifiables, sur la photo choisie.
+ */
+export const POST_KINDS = {
+  promo: { eyebrow: ["Offre du moment", "Current offer"], need: ["Écrivez l'offre (par exemple « -20 % sur la session du jeudi »).", "Write the offer (e.g. \"20% off Thursday sessions\")."], cta: true },
+  event: { eyebrow: ["Événement", "Event"], need: ["Écrivez l'événement et sa date.", "Write the event and its date."], cta: true },
+  new: { eyebrow: ["Nouveau", "New"], need: ["Écrivez la nouveauté.", "Write what's new."], cta: true },
+  review: { eyebrow: ["Avis client", "Customer review"], need: ["Collez le texte d'un vrai avis client (le studio n'en invente jamais).", "Paste the text of a real customer review (the studio never makes one up)."], cta: false },
+  question: { eyebrow: ["Et vous ?", "Your turn"], need: ["Écrivez la question à poser à votre communauté.", "Write the question to ask your community."], cta: false },
+  team: { eyebrow: ["Coulisses", "Behind the scenes"], need: ["Écrivez ce que montre la photo (l'équipe, la préparation…).", "Write what the photo shows (the team, the preparation…)."], cta: false },
+  closing: { eyebrow: ["Horaires exceptionnels", "Special hours"], need: ["Écrivez les horaires ou la fermeture à annoncer.", "Write the hours or closure to announce."], cta: false },
+} as const;
+export type PostKind = keyof typeof POST_KINDS;
+
 export type ServiceSingleRequest = {
-  kind: "banner" | "service" | "tips" | "quote" | "info" | "booking" | "ambiance" | "social" | "ad" | "scene";
+  kind: "banner" | "service" | "tips" | "quote" | "info" | "booking" | "ambiance" | "social" | "ad" | "scene" | PostKind;
   format?: string;
   headline?: string;
   subline?: string;
@@ -1080,6 +1095,46 @@ async function freshAmbiance(ctx: JobContext, p: Project, fs: ServiceFormat, top
   return a.id;
 }
 
+// ---------------------------------------------------------------- variété des textes (demandes répétées)
+
+/**
+ * Nombre de visuels déjà faits pour une même demande : sert à faire tourner les formulations, pour qu'une demande
+ * répétée (même prestation, même format) donne un texte différent. Toutes les formulations viennent des vraies
+ * informations du projet (nom, description, durée, prix, zone, signature, mode de contact) : rien n'est inventé.
+ */
+export function priorCount(projectId: string, nameLike: string): number {
+  return one<{ n: number }>("SELECT COUNT(*) n FROM assets WHERE project_id = ? AND name LIKE ?", projectId, nameLike)?.n ?? 0;
+}
+const sentencesOf = (t: string | undefined) => (t ?? "").split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter((x) => x.length >= 12 && x.length <= 110);
+const nth = <T,>(xs: T[], n: number): T => xs[((n % xs.length) + xs.length) % xs.length];
+
+/** Boutons possibles selon le mode de contact (jamais de promesse : ni « gratuit », ni « immédiat »). */
+export function ctaVariants(p: Project): string[] {
+  switch (p.services?.contactMode) {
+    case "booking": return [C("Prenez rendez-vous", "Book an appointment"), C("Réserver", "Book now"), C("Réservez votre créneau", "Book your slot"), C("Je réserve", "Reserve")];
+    case "quote": return [C("Demandez votre devis", "Request a quote"), C("Demander un devis", "Get a quote"), C("Obtenez votre devis", "Get your quote"), C("Parlons de votre projet", "Let's talk about your project")];
+    case "call": return [C("Appelez-nous", "Give us a call"), C("Appeler", "Call us"), C("Nous appeler", "Call now"), C("Parlons-en", "Let's talk")];
+    default: return [C("Contactez-nous", "Get in touch"), C("Nous contacter", "Contact us"), C("Écrivez-nous", "Write to us"), C("Parlons-en", "Let's talk")];
+  }
+}
+
+/** Formulations d'une annonce de prestation (surtitre, titre, ligne), tirées de la prestation et du projet. */
+export function serviceVariants(p: Project, s: ServiceItem): { eyebrow: string; title: string; text: string; chips: string[] }[] {
+  const meta = serviceMeta(s);
+  const sents = sentencesOf(s.description);
+  const place = placeLine(p);
+  const tagline = (p.brand?.tagline ?? "").trim();
+  const out = [
+    { eyebrow: C("Prestation", "Service"), title: clip(s.name, 60), text: clip(s.description, 150), chips: meta },
+    sents[0] ? { eyebrow: clip(s.name, 40), title: clip(sents[0], 90), text: meta.join(" • "), chips: [] } : null,
+    { eyebrow: place ? clip(place, 40) : activityName(p), title: clip(s.name, 60), text: sents[1] ?? sents[0] ?? meta.join(" • "), chips: [] },
+    tagline ? { eyebrow: clip(s.name, 40), title: clip(tagline, 80), text: meta.join(" • ") || (sents[0] ?? ""), chips: [] } : null,
+    meta.length ? { eyebrow: modeLabel(p) || C("Prestation", "Service"), title: clip(s.name, 60), text: meta.join(" • "), chips: [] } : null,
+  ].filter((x): x is { eyebrow: string; title: string; text: string; chips: string[] } => !!x && !!x.title);
+  // Formulations identiques retirées (même titre et même ligne).
+  return out.filter((x, i) => out.findIndex((y) => y.title === x.title && y.text === x.text) === i);
+}
+
 /** Image unique à la demande (studio Images) pour une entreprise de services. */
 export async function generateServiceSingleImage(ctx: JobContext, projectId: string, req: ServiceSingleRequest) {
   const p = loadProject(projectId);
@@ -1098,7 +1153,7 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
 
   // « Une nouvelle image » (pas une photo de l'activité) : photo libre de droits du métier, sinon image créée par l'IA,
   // puis le visuel est composé dessus. « Sans image » : visuel typographique.
-  if (background === "image" && ["service", "booking", "banner", "quote", "info", "tips"].includes(kind)) {
+  if (background === "image" && ["service", "booking", "banner", "quote", "info", "tips", ...Object.keys(POST_KINDS)].includes(kind)) {
     const s = kind === "service" ? items[Math.max(0, Math.min(items.length - 1, req.serviceIndex ?? 0))] : undefined;
     const topic = [s?.name, s ? clip(s.description, 120) : req.subline || clip(p.product.summary, 140)].filter(Boolean).join(" — ") || name;
     const fs: ServiceFormat = kind === "banner" ? (FORMAT_OF[req.format ?? "banner"] === "landscape" ? "landscape" : "banner") : FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
@@ -1107,7 +1162,10 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
     ctx.progress(0.7, L("Composition du visuel sur la nouvelle image", "Composing the visual on the new image"));
   }
 
-  const cta = req.cta || serviceCta(p, kind === "booking");
+  // Demande répétée : bouton et formulations changent d'un visuel à l'autre (n = visuels déjà faits pour la demande).
+  const familyName = kind === "service" ? `${C("prestation", "service")}-${slug(items[Math.max(0, Math.min(items.length - 1, req.serviceIndex ?? 0))]?.name ?? "")}` : kind === "booking" ? C("publicite", "ad") : kind === "quote" ? C("citation", "quote") : kind === "info" ? C("infos-pratiques", "practical-info") : String(kind);
+  const n = priorCount(projectId, `%${familyName}%`);
+  const cta = req.cta || (kind === "booking" ? nth([serviceCta(p, true), ...ctaVariants(p)], n) : nth(ctaVariants(p), n));
   const pick = (template: CardPlan["card"]["template"]) => serviceCardPlan(p, photo ? 1 : 0).find((x) => x.card.template === template);
   let plans: CardPlan[] = [];
   if (kind === "banner") {
@@ -1115,23 +1173,31 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
     plans = [{ role: "banner", folder: "images.banners", name: C("banniere-ouverture", "hero-banner"), card: { template: "graphic", format: f, photo: photo ? 0 : undefined } }];
   } else if (kind === "service") {
     const s = items[Math.max(0, Math.min(items.length - 1, req.serviceIndex ?? 0))];
-    plans = [{ role: "social", folder: "images.social", name: s ? `${C("prestation", "service")}-${slug(s.name)}` : C("annonce", "post"), card: { template: "announce", format: FORMAT_OF[req.format ?? "portrait"] ?? "portrait", eyebrow: s ? C("Prestation", "Service") : name, title: req.headline || (s ? clip(s.name, 60) : p.brand?.tagline || name), text: req.subline ?? (s ? clip(s.description, 150) : clip(p.product.summary, 140)), chips: s ? serviceMeta(s) : [], cta, photo: photo ? 0 : undefined } }];
+    const v = s ? nth(serviceVariants(p, s), n) : { eyebrow: name, title: p.brand?.tagline || name, text: clip(p.product.summary, 140), chips: [] as string[] };
+    plans = [{ role: "social", folder: "images.social", name: s ? `${C("prestation", "service")}-${slug(s.name)}` : C("annonce", "post"), card: { template: "announce", format: FORMAT_OF[req.format ?? "portrait"] ?? "portrait", eyebrow: v.eyebrow, title: req.headline || v.title, text: req.subline ?? v.text, chips: req.subline ? [] : v.chips, cta, photo: photo ? 0 : undefined } }];
   } else if (kind === "tips") {
     const given = parseTips(req.items ?? []);
     const tips = given.length >= 2 ? { title: req.headline || C("Nos conseils", "Our tips"), items: given } : llmConfigured() ? await ctx.step("tips", () => aiServiceTips({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:tips` }, p, req.headline)) : null;
     if (!tips && !items.length) throw new UserFacingError(L("Écrivez au moins deux conseils (un par ligne) ou ajoutez vos prestations : le carrousel n'invente rien.", "Write at least two tips (one per line) or add your services: the carousel doesn't make anything up."));
     plans = serviceCardPlan(p, photo ? Math.max(1, photos.length) : 0, tips).filter((x) => x.card.template.startsWith("carousel"));
   } else if (kind === "quote") {
-    const q = req.headline ? { text: req.headline, author: p.brand?.name ?? name } : brandQuote(p);
+    // Sans phrase saisie : signature, puis phrases de l'histoire de la marque, à tour de rôle.
+    const lines = [...new Set([(p.brand?.tagline ?? "").trim(), ...sentencesOf(p.brand?.story)].filter((x) => x.length >= 12))];
+    const q = req.headline ? { text: req.headline, author: p.brand?.name ?? name } : lines.length ? { text: nth(lines, n).replace(/^[«"“]\s*|\s*[»"”]$/g, ""), author: p.brand?.name ?? name } : brandQuote(p);
     if (!q) throw new UserFacingError(L("Aucune phrase de marque à citer : écrivez-la dans le champ « Titre » (votre engagement, votre signature).", "No brand line to quote: write it in the \"Headline\" field (your promise, your signature)."));
     plans = [{ role: "social", folder: "images.social", name: C("citation", "quote"), card: { template: "quote", format: FORMAT_OF[req.format ?? "square"] ?? "square", title: q.text, author: `— ${q.author}`, photo: photo ? 0 : undefined } }];
+  } else if (kind in POST_KINDS) {
+    const k = POST_KINDS[kind as PostKind];
+    if (!req.headline?.trim()) throw new UserFacingError(L(k.need[0], k.need[1]));
+    plans = [{ role: "social", folder: "images.social", name: slug(C(k.eyebrow[0], k.eyebrow[1])), card: { template: "announce", format: FORMAT_OF[req.format ?? "portrait"] ?? "portrait", eyebrow: C(k.eyebrow[0], k.eyebrow[1]), title: clip(req.headline, 140), text: req.subline ?? "", cta: k.cta ? cta : undefined, photo: photo ? 0 : undefined } }];
   } else if (kind === "info") {
     const base = pick("info");
     if (!base) throw new UserFacingError(L("Renseignez d'abord vos horaires, votre zone ou vos coordonnées (onglet Produit / Activité).", "First fill in your hours, area or contact details (Product / Business tab)."));
-    plans = [{ ...base, card: { ...base.card, format: FORMAT_OF[req.format ?? "portrait"] ?? "portrait", title: req.headline || base.card.title, cta, photo: photo ? 0 : undefined } }];
+    const titles = [base.card.title ?? "", C("Infos pratiques", "Practical info"), C("Où et quand nous trouver", "Where and when to find us"), C("Nous rendre visite", "Come and see us")].filter(Boolean);
+    plans = [{ ...base, card: { ...base.card, format: FORMAT_OF[req.format ?? "portrait"] ?? "portrait", title: req.headline || nth([...new Set(titles)], n), cta, photo: photo ? 0 : undefined } }];
   } else {
     const f = FORMAT_OF[req.format ?? "story"] ?? "story";
-    plans = [{ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-${SERVICE_SIZES[f].label.replace(":", "x")}`, card: { template: "booking", format: f, eyebrow: name, title: req.headline || serviceCta(p), text: req.subline ?? [name, placeLine(p)].filter(Boolean).join(" · "), contact: contactLine(p), cta, photo: photo ? 0 : undefined } }];
+    plans = [{ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-${SERVICE_SIZES[f].label.replace(":", "x")}`, card: { template: "booking", format: f, eyebrow: nth([name, modeLabel(p) || name, placeLine(p) || name], n), title: req.headline || nth([serviceCta(p), ...[p.brand?.tagline ?? "", ...items.slice(0, 3).map((x) => clip(x.name, 60))].filter(Boolean)], n), text: req.subline ?? nth([[name, placeLine(p)].filter(Boolean).join(" · "), clip(p.product.summary, 110) || name], n), contact: contactLine(p), cta, photo: photo ? 0 : undefined } }];
   }
   // L'image choisie (ou la nouvelle) en premier ; les pages d'un carrousel prennent ensuite les autres images du projet.
   const pool = photo ? [photo, ...photos.filter((a) => a.id !== photo!.id)] : [];

@@ -122,6 +122,9 @@ export async function saveAndRender(projectId: string, userId: string, docKey: s
   const { data } = await exportDoc(projectId, doc, "jpeg");
   // Affiche de publication (« post: ») : rangée avec les publications, et toujours modifiable / animable depuis sa fiche.
   const post = docKey.startsWith("post:");
-  const a = await saveAsset({ projectId, userId, data, name: `${post ? "publication" : "pub"}-modifiee-${doc.format.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: post ? "social" : "ad", folderKey: post ? "images.social" : "images.ads", origin: "generated", status: "review", meta: { adDoc: { docKey, source: doc.meta.source }, format: doc.format.aspect, ...(post ? { poster: { docKey, layout: doc.meta.recipe?.layout ?? null } } : {}) } });
+  // Nouvelle VERSION de l'image de la création (pas un nouveau visuel) : la liste n'affiche que la dernière.
+  const prevId = latestDoc(projectId, docKey)?.version.renderedAssetId ?? null;
+  const prev = prevId ? one<{ id: string; version_of: string | null }>("SELECT id, version_of FROM assets WHERE id = ?", prevId) : null;
+  const a = await saveAsset({ projectId, userId, data, versionOf: prev ? (prev.version_of ?? prev.id) : null, name: `${post ? "publication" : "pub"}-modifiee-${doc.format.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: post ? "social" : "ad", folderKey: post ? "images.social" : "images.ads", origin: "generated", status: "review", meta: { adDoc: { docKey, source: doc.meta.source }, format: doc.format.aspect, ...(post ? { poster: { docKey, layout: doc.meta.recipe?.layout ?? null } } : {}) } });
   return saveVersion(projectId, docKey, doc, { note, renderedAssetId: a.id });
 }

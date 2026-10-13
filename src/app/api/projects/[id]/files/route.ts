@@ -34,6 +34,18 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     where.push(`role IN (${role.split(",").map(() => "?").join(",")})`);
     args.push(...role.split(","));
   }
+  const status = u.get("status");
+  if (status && ["ready", "review", "approved", "rejected"].includes(status)) {
+    where.push("status = ?");
+    args.push(status);
+  }
+  // Dernière version seulement : une image refaite (changement de modèle, éditeur) remplace la précédente dans la
+  // liste (même lignée de versions, ou même création modifiable) ; les anciennes restent dans la fiche.
+  if (u.get("latest") === "1" && !trash)
+    where.push(`NOT EXISTS (SELECT 1 FROM assets b WHERE b.project_id = assets.project_id AND b.deleted_at IS NULL AND b.kind = assets.kind AND b.id != assets.id AND b.created_at >= assets.created_at AND (
+      (assets.version_of IS NOT NULL OR EXISTS (SELECT 1 FROM assets c WHERE c.version_of = assets.id)) AND COALESCE(b.version_of, b.id) = COALESCE(assets.version_of, assets.id) AND b.version > assets.version
+      OR COALESCE(json_extract(assets.meta, '$.poster.docKey'), json_extract(assets.meta, '$.adDoc.docKey')) IS NOT NULL AND COALESCE(json_extract(b.meta, '$.poster.docKey'), json_extract(b.meta, '$.adDoc.docKey')) = COALESCE(json_extract(assets.meta, '$.poster.docKey'), json_extract(assets.meta, '$.adDoc.docKey')) AND b.created_at > assets.created_at
+    ))`);
   const assets = all<Asset>(`SELECT * FROM assets WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT 400`, ...args);
   const folderList = listFolders(p.id);
   const total = (fid: string): number => (counts[fid] ?? 0) + folderList.filter((x) => x.parent_id === fid).reduce((n, x) => n + total(x.id), 0);

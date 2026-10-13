@@ -11,6 +11,63 @@ import { ContentLangPicker, useContentLang } from "./content-lang";
 import { PlanRequired, useCreationLocked } from "../billing-client";
 import { ImageV2Panel } from "./image-v2-panel";
 
+/** Tri des images par statut, et encart « Supprimées » pour retrouver (et restaurer) une image supprimée. */
+const STATUS_FILTERS = [
+  ["", "Toutes", "All"],
+  ["review", "À valider", "To review"],
+  ["approved", "Validées", "Approved"],
+  ["rejected", "Écartées", "Rejected"],
+  ["trash", "Supprimées", "Deleted"],
+] as const;
+
+function useImageList(projectId: string, roles: string) {
+  const [status, setStatus] = useState("");
+  const q = status === "trash" ? "&trash=1" : `&latest=1${status ? `&status=${status}` : ""}`;
+  const { data, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${projectId}/files?role=${roles}${q}`);
+  return { list: data, reload, status, setStatus };
+}
+
+function StatusChips({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const t = useT();
+  return (
+    <div className="scrollbar-none -mt-2 mb-5 flex gap-1.5 overflow-x-auto" role="radiogroup" aria-label={t("Trier par statut", "Filter by status")}>
+      {STATUS_FILTERS.map(([v, fr, en]) => (
+        <button key={v} type="button" role="radio" aria-checked={value === v} onClick={() => onChange(v)} className={cx("shrink-0 rounded-full border px-3 py-1 text-xs", value === v ? "border-signal bg-signal-soft font-medium" : "border-line bg-card text-muted hover:text-ink")}>
+          {t(fr, en)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function TrashGrid({ assets, onRestored }: { assets: AssetView[]; onRestored: () => void }) {
+  const t = useT();
+  const toast = useToast();
+  const restore = async (a: AssetView) => {
+    try {
+      await api(`/api/files/${a.id}`, { method: "PATCH", body: { restore: true } });
+      toast("ok", t("Image restaurée.", "Image restored."));
+      onRestored();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    }
+  };
+  if (!assets.length) return <Empty title={t("Aucune image supprimée", "No deleted images")} icon={<ImagePlus className="size-5" />}>{t("Les images que vous supprimez arrivent ici : vous pouvez les restaurer à tout moment.", "Images you delete land here: you can restore them at any time.")}</Empty>;
+  return (
+    <div className="columns-2 gap-4 sm:columns-3 xl:columns-4">
+      {assets.map((a) => (
+        <div key={a.id} className="mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-line bg-card">
+          <img src={a.thumbUrl ?? a.url} alt={a.name} className="w-full opacity-70" loading="lazy" style={{ aspectRatio: a.width && a.height ? `${a.width}/${a.height}` : undefined }} />
+          <div className="flex items-center justify-between gap-2 px-3 py-2">
+            <span className="truncate text-xs">{ROLE_LABEL[a.role ?? ""] ?? a.name}</span>
+            <Button size="sm" variant="secondary" onClick={() => restore(a)}>{t("Restaurer", "Restore")}</Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const GROUPS = [
   { id: "all", label: "Tout", en: "All", roles: "packshot,packshot-v2,detail,scene,lifestyle,ambiance,banner,social,post-photo,ad,cutout" },
   { id: "packshot", label: "Packshots", en: "Packshots", roles: "packshot,packshot-v2" },
@@ -38,8 +95,26 @@ const SERVICE_KINDS = [
   ["quote", "Citation de la marque", "Brand quote"],
   ["info", "Horaires, zone et contact", "Hours, area and contact"],
   ["booking", "Publicité « Prenez rendez-vous »", "\"Book now\" ad"],
+  ["promo", "Offre du moment", "Current offer"],
+  ["event", "Événement", "Event"],
+  ["new", "Nouveauté", "What's new"],
+  ["review", "Avis d'un client", "Customer review"],
+  ["question", "Question à votre communauté", "Question for your community"],
+  ["team", "Coulisses et équipe", "Behind the scenes and team"],
+  ["closing", "Horaires exceptionnels / fermeture", "Special hours / closure"],
   ["banner", "Bannière du site (sans texte)", "Website banner (no text)"],
 ] as const;
+
+/** Libellés et exemples des champs de texte pour les autres publications (le texte vient du client). */
+const POST_FIELDS: Record<string, { head: [string, string]; headPh: [string, string]; sub: [string, string]; subPh: [string, string] }> = {
+  promo: { head: ["Votre offre", "Your offer"], headPh: ["-20 % sur les sessions du jeudi", "20% off Thursday sessions"], sub: ["Conditions (facultatif)", "Terms (optional)"], subPh: ["Jusqu'au 30 novembre, sur réservation", "Until 30 November, booking required"] },
+  event: { head: ["L'événement", "The event"], headPh: ["Soirée Halloween le 31 octobre", "Halloween night on 31 October"], sub: ["Détails (facultatif)", "Details (optional)"], subPh: ["Dès 19 h · places limitées", "From 7pm · limited places"] },
+  new: { head: ["La nouveauté", "What's new"], headPh: ["Une nouvelle salle : Le dernier métro", "A new room: The last metro"], sub: ["En une ligne (facultatif)", "In one line (optional)"], subPh: ["Disponible dès ce week-end", "Available from this weekend"] },
+  review: { head: ["Texte de l'avis (un vrai avis reçu)", "Review text (a real review you received)"], headPh: ["Une soirée géniale, on revient vite !", "A brilliant evening, we'll be back soon!"], sub: ["Prénom du client (facultatif)", "Customer's first name (optional)"], subPh: ["Julie", "Julie"] },
+  question: { head: ["Votre question", "Your question"], headPh: ["Quelle salle voulez-vous tester en premier ?", "Which room do you want to try first?"], sub: ["Précision (facultatif)", "Detail (optional)"], subPh: ["Répondez en commentaire", "Answer in the comments"] },
+  team: { head: ["Ce que montre la photo", "What the photo shows"], headPh: ["L'équipe prépare la nouvelle salle", "The team is preparing the new room"], sub: ["En une ligne (facultatif)", "In one line (optional)"], subPh: ["Bientôt ouverte", "Opening soon"] },
+  closing: { head: ["Horaires ou fermeture", "Hours or closure"], headPh: ["Fermé le 1er novembre", "Closed on 1 November"], sub: ["Précision (facultatif)", "Detail (optional)"], subPh: ["Réouverture le 2 à 14 h", "Reopening on the 2nd at 2pm"] },
+};
 const SERVICE_FORMATS: Record<string, string[]> = {
   service: ["portrait", "square", "story", "landscape"],
   tips: ["square"],
@@ -47,6 +122,13 @@ const SERVICE_FORMATS: Record<string, string[]> = {
   info: ["portrait", "square", "story"],
   booking: ["story", "square", "portrait", "landscape"],
   banner: ["banner", "landscape"],
+  promo: ["portrait", "square", "story", "landscape"],
+  event: ["portrait", "square", "story", "landscape"],
+  new: ["portrait", "square", "story"],
+  review: ["square", "portrait", "story"],
+  question: ["square", "portrait", "story"],
+  team: ["portrait", "square", "story"],
+  closing: ["square", "portrait", "story"],
 };
 
 const STYLES = [
@@ -126,7 +208,7 @@ function ProductImages() {
   const active = useActive(["images.generate", "image.single", "canva."]);
   const cost = useCostConfirm();
   const locked = useCreationLocked();
-  const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${GROUPS.find((g) => g.id === group)!.roles}`);
+  const { list, reload, status: statusF, setStatus: setStatusF } = useImageList(id, GROUPS.find((g) => g.id === group)!.roles);
   const follow = useFollowJob(reload);
   useEffect(() => {
     if (!active.length) reload();
@@ -144,7 +226,17 @@ function ProductImages() {
       }
     } catch {}
   }, [id, toast, t]);
+  const [sending, setSending] = useState(false);
   const create = async (mode: "set" | "single") => {
+    if (sending) return;
+    setSending(true);
+    try {
+      await createNow(mode);
+    } finally {
+      setSending(false);
+    }
+  };
+  const createNow = async (mode: "set" | "single") => {
     if (mode === "set" && data?.ai.image && !(await cost.confirm("images"))) return;
     try {
       const r = await api<{ jobId?: string }>(`/api/projects/${id}/images`, { body: { mode, ...form, headline: form.headline || undefined, subline: form.subline || undefined, cta: form.cta || undefined }, lang: cl.lang });
@@ -199,8 +291,8 @@ function ProductImages() {
               </>
             )}
             <ContentLangPicker {...cl} />
-            <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{t("Créer l'image", "Create image")}</Button>
-            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (packshots, détails, scènes, bannières, photos libres et photos en situation contrôlées)", "Full set (packshots, details, scenes, banners, royalty-free photos and checked lifestyle photos)")}</Button>
+            <Button onClick={() => create("single")} disabled={locked || sending} loading={sending} icon={<Wand2 className="size-4" />}>{t("Créer l'image", "Create image")}</Button>
+            <Button variant="secondary" disabled={locked || sending} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (packshots, détails, scènes, bannières, photos libres et photos en situation contrôlées)", "Full set (packshots, details, scenes, banners, royalty-free photos and checked lifestyle photos)")}</Button>
             {locked && <PlanRequired what="images" />}
           </div>
         </Card>
@@ -212,7 +304,10 @@ function ProductImages() {
               </button>
             ))}
           </div>
-          {list && list.assets.length === 0 ? (
+          <StatusChips value={statusF} onChange={setStatusF} />
+          {statusF === "trash" ? (
+            <TrashGrid assets={list?.assets ?? []} onRestored={reload} />
+          ) : list && list.assets.length === 0 ? (
             <Empty title={t("Aucune image dans cette catégorie", "No images in this category")} icon={<ImagePlus className="size-5" />}>{t("Lancez une création à gauche ; elle apparaîtra ici, rangée automatiquement dans vos fichiers.", "Start a creation on the left; it will appear here, automatically filed in your files.")}</Empty>
           ) : (
             <div className="columns-2 gap-4 sm:columns-3 xl:columns-4">
@@ -250,7 +345,7 @@ function ServiceImages() {
   const cost = useCostConfirm();
   const locked = useCreationLocked();
   const roles = SERVICE_GROUPS.find((g) => g.id === group)!.roles;
-  const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${roles}`);
+  const { list, reload, status: statusF, setStatus: setStatusF } = useImageList(id, roles);
   const follow = useFollowJob(reload);
   useEffect(() => {
     if (!active.length) reload();
@@ -265,7 +360,17 @@ function ServiceImages() {
   const photoAllowed = true;
   // Fond du visuel : une photo de l'activité, une nouvelle image (photo libre du métier, sinon créée par l'IA) ou aucune.
   const background = form.background || (photos > 0 ? "photo" : "image");
+  const [sending, setSending] = useState(false);
   const create = async (mode: "set" | "single") => {
+    if (sending) return;
+    setSending(true);
+    try {
+      await createNow(mode);
+    } finally {
+      setSending(false);
+    }
+  };
+  const createNow = async (mode: "set" | "single") => {
     if (mode === "set" && aiImage && !(await cost.confirm("images"))) return;
     // Nouvelle image : l'IA peut la créer si aucune photo libre ne convient (budget IA du projet).
     if (mode === "single" && photoAllowed && background === "image" && aiImage && !(await cost.confirm("image"))) return;
@@ -313,9 +418,16 @@ function ServiceImages() {
             )}
             {withText && (
               <>
+                {POST_FIELDS[form.kind] ? (
+                  <>
+                    <Field label={t(...POST_FIELDS[form.kind].head)} htmlFor="shead"><Textarea id="shead" rows={2} value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} placeholder={t(...POST_FIELDS[form.kind].headPh)} maxLength={180} /></Field>
+                    <Field label={t(...POST_FIELDS[form.kind].sub)} htmlFor="ssub"><Input id="ssub" value={form.subline} onChange={(e) => setForm({ ...form, subline: e.target.value })} placeholder={t(...POST_FIELDS[form.kind].subPh)} maxLength={120} /></Field>
+                  </>
+                ) : (
                 <Field label={form.kind === "quote" ? t("Phrase à citer (votre engagement)", "Line to quote (your promise)") : form.kind === "tips" ? t("Titre de couverture", "Cover title") : t("Titre", "Headline")} htmlFor="shead"><Input id="shead" value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} placeholder={form.kind === "booking" ? t("Prenez rendez-vous", "Book an appointment") : data?.brand?.tagline || t("Titre", "Headline")} /></Field>
+                )}
                 {["service", "booking"].includes(form.kind) && <Field label={t("Texte", "Text")} htmlFor="ssub"><Input id="ssub" value={form.subline} onChange={(e) => setForm({ ...form, subline: e.target.value })} placeholder={t("Tiré de votre offre si vide", "Taken from your offer if empty")} /></Field>}
-                {["service", "booking", "info"].includes(form.kind) && <Field label={t("Bouton", "Button")} htmlFor="scta"><Input id="scta" value={form.cta} onChange={(e) => setForm({ ...form, cta: e.target.value })} placeholder={t("Selon votre mode de contact", "Based on your contact method")} /></Field>}
+                {["service", "booking", "info", "promo", "event", "new"].includes(form.kind) && <Field label={t("Bouton", "Button")} htmlFor="scta"><Input id="scta" value={form.cta} onChange={(e) => setForm({ ...form, cta: e.target.value })} placeholder={t("Selon votre mode de contact", "Based on your contact method")} /></Field>}
               </>
             )}
             {photoAllowed && (
@@ -340,8 +452,8 @@ function ServiceImages() {
               </Field>
             )}
             <ContentLangPicker {...cl} />
-            <Button onClick={() => create("single")} disabled={locked} icon={<Wand2 className="size-4" />}>{form.kind === "tips" ? t("Créer le carrousel", "Create the carousel") : t("Créer le visuel", "Create visual")}</Button>
-            <Button variant="secondary" disabled={locked} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (vos photos, photos libres du métier, images contrôlées par emplacement du site, bannières)", "Full set (your photos, royalty-free trade photos, checked images for each website slot, banners)")}</Button>
+            <Button onClick={() => create("single")} disabled={locked || sending} loading={sending} icon={<Wand2 className="size-4" />}>{form.kind === "tips" ? t("Créer le carrousel", "Create the carousel") : t("Créer le visuel", "Create visual")}</Button>
+            <Button variant="secondary" disabled={locked || sending} className="h-auto! min-h-10 whitespace-normal! py-2 text-center leading-snug" onClick={() => create("set")} icon={<Sparkles className="size-4 shrink-0" />}>{t("Jeu complet (vos photos, photos libres du métier, images contrôlées par emplacement du site, bannières)", "Full set (your photos, royalty-free trade photos, checked images for each website slot, banners)")}</Button>
             {locked && <PlanRequired what="images" />}
           </div>
         </Card>
@@ -353,7 +465,10 @@ function ServiceImages() {
               </button>
             ))}
           </div>
-          {list && list.assets.length === 0 ? (
+          <StatusChips value={statusF} onChange={setStatusF} />
+          {statusF === "trash" ? (
+            <TrashGrid assets={list?.assets ?? []} onRestored={reload} />
+          ) : list && list.assets.length === 0 ? (
             <Empty title={t("Aucune image dans cette catégorie", "No images in this category")} icon={<ImagePlus className="size-5" />}>{t("Lancez une création à gauche ; elle apparaîtra ici, rangée automatiquement dans vos fichiers.", "Start a creation on the left; it will appear here, automatically filed in your files.")}</Empty>
           ) : (
             <div className="columns-2 gap-4 sm:columns-3 xl:columns-4">
