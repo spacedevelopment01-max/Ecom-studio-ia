@@ -262,7 +262,7 @@ function ServiceImages() {
   const photos = Math.max(choices.length, (data?.counts?.lifestyle ?? 0) + (data?.counts?.original ?? 0));
   const aiImage = !!data?.ai.image;
   const FORMAT_LABEL: Record<string, [string, string]> = { portrait: ["4:5 · Instagram, Facebook", "4:5 · Instagram, Facebook"], square: ["1:1 · fil d'actualité", "1:1 · news feed"], story: ["9:16 · story, reel", "9:16 · story, reel"], landscape: ["16:9 · site, YouTube, LinkedIn", "16:9 · website, YouTube, LinkedIn"], banner: ["2:1 · bannière du site", "2:1 · website banner"] };
-  const photoAllowed = form.kind !== "tips";
+  const photoAllowed = true;
   // Fond du visuel : une photo de l'activité, une nouvelle image (photo libre du métier, sinon créée par l'IA) ou aucune.
   const background = form.background || (photos > 0 ? "photo" : "image");
   const create = async (mode: "set" | "single") => {

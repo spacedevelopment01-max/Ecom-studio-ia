@@ -77,7 +77,8 @@ const familyOf = (layout: string) => (isTemplateLayout(layout) ? (templateById(l
  */
 export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; treatment: string | null; logo: string | null; scheme?: string | null }[], hasPhoto: boolean): { layout: string; variant: AdVariant } {
   const engine = (hasPhoto ? art.cycle.filter((l) => l !== "typographic" && l !== "band") : (["typographic"] as AdLayout[])) as string[];
-  const tpls = templatesFor(hasPhoto).filter((t) => !t.styles || t.styles.includes(art.style)).map((t) => `tpl:${t.id}`);
+  // Avec une photo, elle remplit le fond : pas de modèle où elle n'occupe qu'une case (collages, modèles typographiques).
+  const tpls = templatesFor(hasPhoto).filter((t) => (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage"))).map((t) => `tpl:${t.id}`);
   // Ordre propre à la graine : mélange déterministe, modèles et compositions du moteur entremêlés.
   const pool = [...tpls, ...engine].map((l, k) => ({ l, r: (Math.imul(n ^ (k * 2654435761), 2246822519) >>> 0) % 1000 })).sort((a, b) => a.r - b.r).map((x) => x.l);
   const avoid = new Set(recent.slice(0, Math.max(0, Math.min(10, pool.length - 2))).map((r) => r.layout));
