@@ -188,7 +188,7 @@ export class Kit {
   }
   /** Halo de lumière (dégradé radial) centré sur un point. */
   glow(cx: number, cy: number, rw: number, rh: number, color: string, alpha = 0.8) {
-    return this.ellipse({ x: cx - rw, y: cy - rh, w: rw * 2, h: rh * 2 }, { type: "radial", angle: 0, stops: [{ offset: 0, color: rgba(color, alpha) }, { offset: 0.55, color: rgba(color, alpha * 0.35) }, { offset: 1, color: rgba(color, 0) }] }, { name: "Lumière" });
+    return this.ellipse({ x: cx - rw, y: cy - rh, w: rw * 2, h: rh * 2 }, { type: "radial", angle: 0, stops: [{ offset: 0, color: rgba(color, alpha) }, { offset: 0.3, color: rgba(color, alpha * 0.4) }, { offset: 0.68, color: rgba(color, 0) }] }, { name: "Lumière" });
   }
   /** Valeur selon le format (paysage, carré, portrait, story). */
   pick<T>(land: T, square: T, portrait: T, story: T = portrait): T {
