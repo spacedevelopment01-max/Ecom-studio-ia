@@ -139,6 +139,7 @@ export default function TabMarque() {
       {active[0] && <JobProgress job={active[0]} />}
       {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
       <BrandPropagationCard />
+      {byRole("logo") && <IdentityBoardCard projectId={id} board={byRole("brand-board") ?? null} onDone={reloadLogos} />}
       {!ident?.provided && <LogoV2Panel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && <FullLogoPanel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}
@@ -265,11 +266,6 @@ export default function TabMarque() {
               {byRole("logo-mark") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo-mark")!.url} alt={t("Symbole seul", "Symbol only")} className="max-h-20 object-contain" /></div>}
               {byRole("favicon") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("favicon")!.url} alt="Favicon" className="size-12 object-contain" /></div>}
             </div>
-            {byRole("brand-board") && (
-              <a href={byRole("brand-board")!.url} target="_blank" rel="noreferrer" className="mt-3 block overflow-hidden rounded-2xl border border-line" data-testid="brand-board">
-                <img src={byRole("brand-board")!.url} alt={t("Planche d'identité de marque", "Brand identity board")} className="w-full" />
-              </a>
-            )}
             <div className="mt-4 flex flex-wrap gap-2">
               {["logo", "logo-webp", "logo-svg", "logo-horizontal-svg", "logo-light", "logo-light-webp", "logo-light-svg", "logo-mono", "logo-white", "logo-mark", "logo-mark-webp", "logo-mark-svg", "favicon", "brand-board"].map((r) => byRole(r) && (
                 <a key={r} href={byRole(r)!.downloadUrl} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink"><Download className="size-3.5" /> {byRole(r)!.name}</a>
@@ -576,4 +572,47 @@ function LinesArea({ id, value, onChange }: { id: string; value: string[]; onCha
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value.join("\n")]);
   return <Textarea autoGrow rows={2} id={id} value={text} onChange={(e) => { setText(e.target.value); onChange(clean(e.target.value)); }} />;
+}
+
+/**
+ * Planche d'identité de marque en grand : logo principal, secondaire, sceau, couleurs nommées, typographies, icônes,
+ * motif et applications, tous issus du même système. « Refaire la planche » la reconstruit sans IA.
+ */
+function IdentityBoardCard({ projectId, board, onDone }: { projectId: string; board: AssetView | null; onDone: () => void }) {
+  const t = useT();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const redo = async () => {
+    setBusy(true);
+    try {
+      await api(`/api/projects/${projectId}/brand/board`, { body: {} });
+      onDone();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Card className="p-5 sm:p-7" data-testid="identity-board">
+      <SectionTitle
+        title={t("Votre identité de marque", "Your brand identity")}
+        action={
+          <div className="flex gap-2">
+            {board && <a href={board.downloadUrl} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink"><Download className="size-3.5" /> {t("Télécharger", "Download")}</a>}
+            <Button size="sm" variant="secondary" loading={busy} onClick={redo} icon={<Sparkles className="size-4" />}>{board ? t("Refaire la planche", "Rebuild the board") : t("Créer la planche", "Create the board")}</Button>
+          </div>
+        }
+      >
+        {t("Tout vient du même système : logo, symbole, couleurs, typographies, icônes et motif. Les mêmes éléments servent ensuite au site, aux publications et aux publicités. Sans IA, offert.", "Everything comes from one system: logo, symbol, colors, typefaces, icons and pattern. The same elements are then used on the website, posts and ads. No AI, free.")}
+      </SectionTitle>
+      {board ? (
+        <a href={board.url} target="_blank" rel="noreferrer" className="mt-2 block overflow-hidden rounded-2xl border border-line" data-testid="brand-board">
+          <img src={board.url} alt={t("Planche d'identité de marque", "Brand identity board")} className="w-full" />
+        </a>
+      ) : (
+        <p className="text-sm text-muted">{t("La planche apparaît ici dès que le logo est choisi.", "The board appears here once the logo is chosen.")}</p>
+      )}
+    </Card>
+  );
 }

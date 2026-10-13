@@ -12,7 +12,7 @@ import { JobCancelled, JobPaused, type JobContext } from "../jobs";
 import { getAsset, saveAsset, type Asset } from "../library";
 import { all, one } from "../db";
 import type { Project } from "../projects";
-import { composePoster, savePosterDoc, type PosterAspect } from "../ads-v2/poster";
+import { composePoster, confirmedFeatures, savePosterDoc, type PosterAspect } from "../ads-v2/poster";
 import { validCutouts } from "../engine/cutouts";
 import { isAutoUsable } from "../quality/usable";
 import { publishPost, alreadyPublished, type Connection, type PostRow, type PublishResult } from "../social/publish";
@@ -99,7 +99,7 @@ export async function posterForPost(p: Project, post: PostBrief, background: Ass
   const headline = (post.headline || post.title || p.brand?.tagline || p.brand?.name || p.name).slice(0, 70);
   const items = p.business === "services" ? (p.services?.services ?? []).map((x) => x.name.split(/\s+(?:et|and|&)\s+|,/i)[0].trim()).filter(Boolean).slice(0, 3) : [];
   const subline = items.length && items.join(" • ").length <= 48 ? items.join(" • ") : p.product.category || null;
-  const r = await composePoster(p, { aspect, headline, subline, eyebrow: p.product.category || null, background, product, seed: `post:${post.id}` });
+  const r = await composePoster(p, { aspect, headline, subline, eyebrow: p.product.category || null, background, product, features: confirmedFeatures(p), seed: `post:${post.id}` });
   const a = await saveAsset({ projectId: p.id, userId: p.userId, data: r.jpg, name: `publication-${post.network}-${post.id.slice(0, 6)}.jpg`, mime: "image/jpeg", role: "social", folderKey: "content.calendar", origin: "generated", meta: { recipe: background ? "Affiche de publication (photo + mise en page à la marque)" : "Affiche typographique à la marque (rendu local, gratuit)", post: post.id, socialV2: true, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background?.id ?? null } } });
   savePosterDoc(p.id, r.docKey, r.doc, a.id);
   return { assetId: a.id, costMicro, by };

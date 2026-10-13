@@ -136,3 +136,11 @@ export async function tradeIcon(text: string, extra: string[] = []): Promise<{ n
   }
   return null;
 }
+
+/** Tracé au trait d'une icône (grille 24 × 24, version contour) : jeux d'icônes cohérents des planches de marque. */
+export function iconOutlinePath(name: string): string | null {
+  const { outline } = load();
+  const nodes = outline[name];
+  if (!nodes) return null;
+  return nodes.map(toPath).filter(Boolean).join(" ") || null;
+}

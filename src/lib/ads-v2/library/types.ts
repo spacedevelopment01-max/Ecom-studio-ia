@@ -22,5 +22,7 @@ export type Template = {
   schemes: Scheme[];
   /** Traitements de photo possibles (le premier par défaut). */
   treatments?: Treatment[];
+  /** Modèle « produit » : met en scène le produit détouré (préféré dès qu'un détourage existe). */
+  product?: boolean;
   build: (k: Kit) => void;
 };

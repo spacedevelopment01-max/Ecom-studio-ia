@@ -6,6 +6,7 @@ import { loadProject, saveBrand, saveStrategy, remember } from "../projects";
 import type { LogoSpec } from "../media/logo";
 import { loadImage } from "@napi-rs/canvas";
 import { renderBrandBook } from "../media/brand-book";
+import { saveIdentityBoard } from "./identity-board";
 import { canvasFamily } from "../media/fonts";
 import { assetData, getAsset } from "../library";
 import { sectorLabel } from "../project-types";
@@ -119,7 +120,10 @@ export async function saveBrandBook(projectId: string) {
   // Piste de logo retenue : la charte reprend ses typographies (logo, kit et charte parlent d'une seule voix).
   const route = b.logo.route;
   const kit = latestSocialKit(projectId);
+  // Planche d'identité refaite avec la charte (logo, couleurs et photos du moment), placée en page 2.
+  const boardAsset = await saveIdentityBoard(projectId).catch((e) => (console.error(`[planche] ${projectId} : ${(e as Error).message}`), null));
   const { pages, pdf } = renderBrandBook({
+    board: await img(boardAsset ?? undefined),
     // Couleurs de la piste de logo retenue (celles du site et des visuels), pas la palette de départ.
     brand: { ...b, palette: effectivePalette(b) ?? b.palette },
     strategy: p.strategy,

@@ -299,7 +299,10 @@ describe("Logo V2 — logos complets de l'IA d'images", async () => {
     // Texture : aucune version vectorielle imposée du logo complet.
     expect(roleData("logo-svg")).toHaveLength(0);
     const board = assetData(getAsset(roleData("brand-board")[0].id)!);
-    expect(await sharp(board).metadata()).toMatchObject({ width: 2400, height: 1720 });
+    // Planche « comme en agence » (identity-board) : grille 2400 px de large.
+    const bm = await sharp(board).metadata();
+    expect(bm.width).toBe(2400);
+    expect(bm.height).toBeGreaterThan(1800);
     fs.writeFileSync(path.join(fs.mkdtempSync(path.join(os.tmpdir(), "planche-")), "planche.png"), board);
   });
 

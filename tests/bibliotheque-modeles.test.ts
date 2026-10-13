@@ -38,7 +38,8 @@ describe("Bibliothèque de modèles de publications", async () => {
   ] as const;
   const T = { brand: "Sérum Éclat", headline: "Le rituel qui change tout.", subline: "Sérum visage • Texture légère", eyebrow: "Soin visage", cta: "Découvrir" };
   const norm = (s: string) => s.replace(/ /g, " ").replace(/\s+→$/, "").trim().toLowerCase();
-  const allowed = new Set([T.brand, T.headline, T.subline, T.eyebrow, T.cta, "Sérum visage"].map(norm));
+  // Les modèles « produit » listent les segments de la ligne (atouts fournis) et les numérotent (01, 02…).
+  const allowed = new Set([T.brand, T.headline, T.subline, T.eyebrow, T.cta, "Sérum visage", "Texture légère", "01", "02", "03", "04", "05", "06"].map(norm));
 
   it("des dizaines de modèles, identifiants uniques, familles variées", () => {
     expect(new Set(TEMPLATES.map((t) => t.id)).size).toBe(TEMPLATES.length);
