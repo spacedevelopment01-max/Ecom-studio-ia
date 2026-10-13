@@ -15,8 +15,13 @@ import { TEMPLATES_A } from "./templates/a";
 import { TEMPLATES_B } from "./templates/b";
 import { TEMPLATES_C } from "./templates/c";
 import { TEMPLATES_D } from "./templates/d";
+import { TEMPLATES_E } from "./templates/e";
+import { TEMPLATES_F } from "./templates/f";
+import { TEMPLATES_G } from "./templates/g";
+import { TEMPLATES_H } from "./templates/h";
+import { TEMPLATES_I } from "./templates/i";
 
-export const TEMPLATES: Template[] = [...TEMPLATES_A, ...TEMPLATES_B, ...TEMPLATES_C, ...TEMPLATES_D];
+export const TEMPLATES: Template[] = [...TEMPLATES_A, ...TEMPLATES_B, ...TEMPLATES_C, ...TEMPLATES_D, ...TEMPLATES_E, ...TEMPLATES_F, ...TEMPLATES_G, ...TEMPLATES_H, ...TEMPLATES_I];
 export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? null;
 export const isTemplateLayout = (l: unknown): l is `tpl:${string}` => typeof l === "string" && l.startsWith("tpl:");
 

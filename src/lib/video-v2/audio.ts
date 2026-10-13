@@ -91,7 +91,9 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
     return out;
   }
   mixInputs = mixInputs.filter(Boolean);
-  chains.push(`${mixInputs.join("")}amix=inputs=${mixInputs.length}:normalize=0,apad,atrim=0:${total},loudnorm=I=${doc.audio.loudnessLufs}:TP=-1.5:LRA=11,aresample=44100[out]`);
+  // Fin du mixage : aigus extrêmes coupés (15 kHz) et limiteur ferme — mesuré : sans cela, l'encodage AAC fait
+  // remonter les crêtes de 4 dB au-dessus du maximum sur une musique dense (saturation audible).
+  chains.push(`${mixInputs.join("")}amix=inputs=${mixInputs.length}:normalize=0,apad,atrim=0:${total},loudnorm=I=${doc.audio.loudnessLufs}:TP=-2:LRA=11,aresample=44100,lowpass=f=15000,alimiter=limit=0.55:level=false:attack=3:release=60[out]`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   await exec("ffmpeg", ["-y", "-v", "error", ...inputs, "-filter_complex", chains.join(";"), "-map", "[out]", "-t", String(total), out], { maxBuffer: 16 * 1024 * 1024 });
   return out;

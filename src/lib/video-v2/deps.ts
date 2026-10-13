@@ -127,7 +127,9 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
     // brancher (phase 7B) ; le message passe par les sous-titres et le texte à l'écran.
     voice: null,
     stockClip: (req, exclude) => findStockClip(base, p, req, exclude),
-    music: async (mood, durationS, style) => (await import("../stock/music")).projectMusic(p, mood, durationS, new Set(), style),
+    // Musique : la bibliothèque du studio (morceaux choisis par le propriétaire) d'abord, puis la banque Openverse.
+    music: async (mood, durationS, style) =>
+      (style ? await (await import("../music-library")).libraryMusicForProject(p, style, mood, durationS) : null) ?? (await import("../stock/music")).projectMusic(p, mood, durationS, new Set(), style),
     available: (provider) => !!activeProviderKey(provider as never),
     preferred: preferred.product,
     preferredFor: (people) => (people ? preferred.ugc : preferred.product),

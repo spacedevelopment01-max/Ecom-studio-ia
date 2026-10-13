@@ -13,6 +13,7 @@ import type { Layer, ShapeLayer, TextLayer } from "../ad-doc/types";
 import type { Project } from "../projects";
 import { C } from "../i18n-server";
 import { songStyleFor } from "../media/song";
+import { resolveProductCategory } from "../image-v2/categories";
 import { buttonLayer, imageLayer, inkOn, rectLayer, textLayer, type Palette, type Typo } from "./doc";
 import type { Clip, ShotPlan, VideoDocument } from "./types";
 
@@ -374,6 +375,66 @@ export function productPoints(p: Project): string[] {
  * Habille les plans : chaque plan composé sans image reprend un passage d'un plan vidéo réel (jamais un aplat seul
  * quand des plans réels existent), puis reçoit son calque d'habillage selon son rôle dans le récit.
  */
+/** Mode de contact principal, dit simplement (uniquement ce que le client a choisi). */
+function contactPhrase(mode: string | undefined): string {
+  if (mode === "quote") return C("Devis sur demande", "Quotes on request");
+  if (mode === "booking") return C("Réservation en ligne", "Book online");
+  if (mode === "call") return C("Sur simple appel", "Just give us a call");
+  return C("Écrivez-nous", "Write to us");
+}
+
+/**
+ * Textes d'une vidéo, tous tirés du projet (rien d'inventé) : prestations (et leur prix s'il est donné), zone,
+ * horaires, mode de contact, téléphone, adresse, résumé découpé en points, signature, positionnement ; boutique :
+ * produit et catégorie, prix confirmé, faits confirmés, déclinaisons, usages de la catégorie. Courts, sans doublon,
+ * jamais le texte du bouton de fin ni le seul nom de la marque.
+ */
+export function projectTexts(p: Project, x: { services: boolean; items: string[]; longForm: boolean; tagline: string; area: string; city: string; price: string | null; cta: string; brand: string; shots: ShotPlan[] }): string[] {
+  const sv = p.services;
+  const summaryBits = (p.product.summary ?? "").split(/[,.;]/).map((t) => t.trim()).filter((t) => t.split(/\s+/).length >= 2 && t.length <= 60);
+  const raw: string[] = x.services
+    ? [
+        ...(x.longForm ? [] : x.items),
+        x.city && p.product.category ? C(`Votre ${p.product.category.toLowerCase()} à ${x.city}`, `Your ${p.product.category.toLowerCase()} in ${x.city}`) : "",
+        ...(sv?.services ?? []).filter((it) => it.price?.trim()).map((it) => `${it.name} : ${it.price}`),
+        x.area ? C(`Intervention : ${x.area}`, `Service area: ${x.area}`) : "",
+        sv?.hours?.trim() ? C(`Ouvert ${sv.hours.trim()}`, `Open ${sv.hours.trim()}`) : "",
+        contactPhrase(sv?.contactMode),
+        sv?.phone?.trim() ? C(`Appelez le ${sv.phone.trim()}`, `Call ${sv.phone.trim()}`) : "",
+        sv?.address?.trim() ?? "",
+        x.tagline,
+        usable(p.brand?.positioning) ? p.brand!.positioning : "",
+        ...summaryBits,
+      ]
+    : [
+        p.product.category ? `${p.product.name} · ${p.product.category}` : "",
+        usable(p.product.summary) ? p.product.summary : "",
+        ...productPoints(p),
+        x.price ? C(`Prix : ${x.price}`, `Price: ${x.price}`) : "",
+        ...(p.product.variants ?? []).filter((v) => v.values?.length > 1).map((v) => C(`${v.values.length} ${v.name.toLowerCase()} au choix`, `${v.values.length} ${v.name.toLowerCase()} options`)),
+        x.tagline,
+        usable(p.brand?.positioning) ? p.brand!.positioning : "",
+        ...summaryBits,
+        // Usages de la catégorie (« Une routine du matin en quelques gestes ») : des idées d'usage, jamais une promesse
+        // de résultat (textes français seulement : la version anglaise n'a pas d'équivalent rédigé).
+        ...(C("fr", "en") === "fr" ? resolveProductCategory(p.product).usageFr.slice(0, 3).map((u) => u.charAt(0).toUpperCase() + u.slice(1)) : []),
+      ];
+  raw.push(...x.shots.map((s) => s?.onScreen ?? "").filter((t) => usable(t) && t.split(/\s+/).length <= 10));
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const t0 of raw) {
+    if (!t0) continue;
+    const t = headline(t0, 10);
+    const low = t.toLowerCase();
+    if (t.length < 4 || /\[|\]/.test(t) || seen.has(low)) continue;
+    if (low === (x.cta ?? "").trim().toLowerCase() || low === x.brand.trim().toLowerCase()) continue;
+    if (x.longForm && x.items.some((it) => it.toLowerCase() === low)) continue;
+    seen.add(low);
+    out.push(t);
+  }
+  return out;
+}
+
 const RHYTHM = ["wipe", "cut", "slide", "cut", "wipe", "zoom"] as const;
 const LAYOUTS: StatementLayout[] = ["lower", "stack", "panel", "center"];
 
@@ -393,23 +454,11 @@ export function dressPromo(clips: Clip[], shots: ShotPlan[], o: PromoInput): Cli
   const heroLines = services ? [p.product.category || o.brand, city ? C(`à ${city}`, `in ${city}`) : ""] : [p.product.name || o.brand, p.product.category || ""];
   const heroSub = services ? items.slice(0, 2).join(" · ") : usable(p.brand?.positioning) ? headline(p.brand!.positioning, 10) : "";
   // Messages des plans suivants : uniquement des informations du projet (rien d'inventé), sans répétition.
-  const pool = [
-    ...(services && !longForm ? items : []),
-    tagline,
-    usable(p.brand?.positioning) ? headline(p.brand!.positioning, 10) : "",
-    usable(p.product.summary) ? headline(p.product.summary, 10) : "",
-    ...(services ? [area, p.services?.hours ?? ""] : productPoints(p)),
-    ...shots.map((s) => s?.onScreen ?? "").filter((t) => usable(t) && t.split(/\s+/).length <= 10),
-  ].map((t) => (t ? headline(t, 10) : "")).filter((t, i, a) => {
-    const low = t.toLowerCase();
-    if (!usable(t) || a.findIndex((x) => x.toLowerCase() === low) !== i) return false;
-    // Jamais le texte du bouton de fin, ni le seul nom de la marque, ni (format long) une prestation qui a déjà son plan.
-    if (low === (o.cta ?? "").trim().toLowerCase() || low === o.brand.trim().toLowerCase()) return false;
-    return !(longForm && items.some((it) => it.toLowerCase() === low));
-  });
+  const pool = projectTexts(p, { services, items, longForm, tagline, area, city, price, cta: o.cta, brand: o.brand, shots });
   let next = 0;
-  // Chaque message une seule fois : une fois épuisés, les plans restants « respirent » (image seule et marque).
-  const say = (): string | null => pool[next++] ?? null;
+  // Chaque plan porte un texte : d'abord chaque message une fois ; s'il en manque, les plus forts reviennent, jamais
+  // deux fois de suite (un plan sans texte faisait « vide »).
+  const say = (): string | null => (pool.length ? pool[next++ % pool.length] : null);
   let reuse = 0;
   const uses = new Map<string, number>();
   const out: Clip[] = [];
