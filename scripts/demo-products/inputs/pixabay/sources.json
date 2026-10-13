@@ -2,34 +2,6 @@
   "license": "Pixabay Content License — https://pixabay.com/service/license-summary/ (usage commercial autorisé, attribution non obligatoire)",
   "photos": [
     {
-      "file": "lunettes.jpg",
-      "id": 94813,
-      "page": "https://pixabay.com/photos/sunglasses-glasses-trend-94813/",
-      "author": "dgpr001",
-      "tags": "sunglasses, glasses, trend, sunglasses, sunglasses, sunglasses, sunglasses, sunglasses, glasses, trend, trend, trend, trend"
-    },
-    {
-      "file": "plante.jpg",
-      "id": 5939187,
-      "page": "https://pixabay.com/photos/snake-plant-plant-plant-pot-5939187/",
-      "author": "nasser336633",
-      "tags": "snake plant, plant, plant pot, decorative, nature, decoration, indoor plant, houseplant, white pot, potted plant"
-    },
-    {
-      "file": "savon.jpg",
-      "id": 430437,
-      "page": "https://pixabay.com/photos/soap-soap-making-cosmetics-making-430437/",
-      "author": "WitchFiction",
-      "tags": "soap, soap making, cosmetics, making, aromatherapy, hygiene, handmade, bubbles, toiletries, soap making, soap making, soap making, cosmetics, cosmetics, toiletries, toiletries, toiletries, toiletries, toiletries"
-    },
-    {
-      "file": "casque.jpg",
-      "id": 1971383,
-      "page": "https://pixabay.com/photos/headsets-music-pink-background-1971383/",
-      "author": "whoalice-moore",
-      "tags": "headsets, music, pink background, player, beautiful, to listen, emotions, wallpaper for girls, music, music, music, music, music"
-    },
-    {
       "file": "fleuriste-atelier.jpg",
       "id": 2264812,
       "page": "https://pixabay.com/photos/arrangement-attractive-beautiful-2264812/",
@@ -70,6 +42,72 @@
       "page": "https://pixabay.com/photos/barber-barber-shop-men-haircut-6818690/",
       "author": "mostafa_meraji",
       "tags": "barber, barber shop, men, haircut, stylist, hairstylist, iranian, persian, people, lifestyle, job, work, business, mashhad city, iran, jorj barber, mostafa meraji, barbershop in iran, barber, barber, barber, barber, barber, barber shop, barber shop, barber shop"
+    },
+    {
+      "file": "casque-1.jpg",
+      "id": 4628615,
+      "page": "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/",
+      "author": "Engin_Akyurt"
+    },
+    {
+      "file": "casque-2.jpg",
+      "id": 4628613,
+      "page": "https://pixabay.com/photos/woman-pose-model-girl-youth-4628613/",
+      "author": "Engin_Akyurt"
+    },
+    {
+      "file": "casque-3.jpg",
+      "id": 4628611,
+      "page": "https://pixabay.com/photos/woman-pose-model-girl-youth-4628611/",
+      "author": "Engin_Akyurt"
+    },
+    {
+      "file": "tillandsia-1.jpg",
+      "id": 4279379,
+      "page": "https://pixabay.com/photos/pastel-potted-plant-flowers-season-4279379/",
+      "author": "HeungSoon"
+    },
+    {
+      "file": "tillandsia-2.jpg",
+      "id": 4279377,
+      "page": "https://pixabay.com/photos/pastel-potted-plant-flower-season-4279377/",
+      "author": "HeungSoon"
+    },
+    {
+      "file": "tillandsia-3.jpg",
+      "id": 4279380,
+      "page": "https://pixabay.com/photos/pastel-potted-plant-flower-season-4279380/",
+      "author": "HeungSoon"
+    },
+    {
+      "file": "savon-1.jpg",
+      "id": 4926843,
+      "page": "https://pixabay.com/photos/handmade-soap-perilla-perilla-soap-4926843/",
+      "author": "phuonghoangthuy"
+    },
+    {
+      "file": "savon-2.jpg",
+      "id": 4926841,
+      "page": "https://pixabay.com/photos/handmade-soap-perilla-perilla-soap-4926841/",
+      "author": "phuonghoangthuy"
+    },
+    {
+      "file": "cafe-1.jpg",
+      "id": 3142562,
+      "page": "https://pixabay.com/photos/coffee-coffee-beans-bag-3142562/",
+      "author": "Bru-nO"
+    },
+    {
+      "file": "cafe-2.jpg",
+      "id": 3142560,
+      "page": "https://pixabay.com/photos/coffee-coffee-beans-bag-3142560/",
+      "author": "Bru-nO"
+    },
+    {
+      "file": "cafe-3.jpg",
+      "id": 3142559,
+      "page": "https://pixabay.com/photos/coffee-coffee-beans-coffee-pot-cup-3142559/",
+      "author": "Bru-nO"
     }
   ]
 }

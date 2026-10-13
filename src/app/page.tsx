@@ -77,10 +77,11 @@ export default async function Home() {
   const cta = user ? "/studio" : "/inscription";
   const themes = directionCards(lang).map((c) => ({ ...c, preview: W(M(c.preview)) }));
 
-  // Projet de démonstration qui traverse le parcours : le casque, sinon la première boutique de produits.
+  // Projet de démonstration qui traverse le parcours (détourage, packshot, scènes, éditeur de publicité) : la première
+  // boutique de produits dont la photo a pu être détourée, sinon la première boutique de produits.
   const productDemos = list.filter((d) => d.business !== "services");
   const serviceDemos = list.filter((d) => d.business === "services");
-  const hero = list.find((d) => d.id === "casque") ?? productDemos[0] ?? list[0];
+  const hero = productDemos.find((d) => d.images.some((x) => /détourage|cutout/i.test(x.label))) ?? productDemos[0] ?? list[0];
   const img = (d: Demo | undefined, label: RegExp, n = 0) => d?.images.filter((x) => label.test(x.label))[n]?.src ?? d?.photo ?? "";
   const fontsOf = (d: Demo) => directionById(d.direction).previewFonts;
   const story: StoryDemo | null = hero
@@ -169,8 +170,9 @@ export default async function Home() {
   ];
 
   // Avant / après : la photo d'origine (Pixabay) et une création du studio sur le vrai produit.
-  const ba = productDemos.find((d) => d.id === "lunettes") ?? productDemos[0];
-  const baAfter = ba ? (ba.images.find((x) => /scène|scene/i.test(x.label)) ?? ba.images.find((x) => /packshot/i.test(x.label)))?.src : undefined;
+  // Après : une publication faite par le studio sur la vraie photo (sinon une image du produit).
+  const ba = productDemos.find((d) => d.id === "tillandsia") ?? productDemos[0];
+  const baAfter = ba ? (ba.posts?.[0] ?? (ba.images.find((x) => /scène|scene/i.test(x.label)) ?? ba.images.find((x) => /packshot/i.test(x.label)))?.src) : undefined;
 
   // Créations réelles des démonstrations : planches d'identité, fils de publications, mur de publications.
   const boards: BoardDemo[] = list.filter((d) => d.board).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));

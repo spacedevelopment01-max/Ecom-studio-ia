@@ -89,6 +89,24 @@ function backgroundFor(p: Project, seed: string, roles: string[] = ["lifestyle",
 /** Photos qui montrent déjà le vrai produit (aucun collage nécessaire). */
 const PRODUCT_PHOTO_ROLES = ["scene", "packshot", "lifestyle", "original", "detail"];
 
+/**
+ * Photo du client qui montre son produit en situation : envoyée par le client (jamais générée ni libre de droits),
+ * sur un fond non uni (un packshot sur fond blanc n'en est pas une). La moins utilisée en premier.
+ */
+function ownScenePhoto(p: Project, seed: string): Asset | null {
+  const pool = all<Asset & { uses: number }>(
+    `SELECT a.*, (SELECT COUNT(*) FROM assets b WHERE b.project_id = a.project_id AND b.deleted_at IS NULL AND json_extract(b.meta, '$.poster.backgroundAssetId') = a.id) uses
+       FROM assets a WHERE a.project_id = ? AND a.kind = 'image' AND a.deleted_at IS NULL AND a.status != 'rejected' AND a.origin = 'upload'
+        AND a.role IN ('lifestyle', 'original') AND COALESCE(json_extract(a.meta, '$.triage.plain'), 0) = 0 AND COALESCE(json_extract(a.meta, '$.triage.kind'), 'situation') != 'packshot' AND json_extract(a.meta, '$.stock') IS NULL
+      ORDER BY a.created_at LIMIT 24`,
+    p.id,
+  ).filter(isAutoUsable);
+  if (!pool.length) return null;
+  const min = Math.min(...pool.map((a) => a.uses));
+  const least = pool.filter((a) => a.uses === min);
+  return least[parseInt(crypto.createHash("sha256").update(seed).digest("hex").slice(0, 6), 16) % least.length];
+}
+
 /** Photo libre de droits sur laquelle le produit a été collé (décor d'une banque d'images) : jamais reprise en fond. */
 export function isPastedOnStock(a: { meta?: string | null }): boolean {
   try {
@@ -152,6 +170,13 @@ export async function localRender(p: Project, post: PostBrief, ctx: JobContext |
   // studio, packshot, photo du client) ; sinon le produit posé sur le décor de studio de la marque, avec son ombre.
   // Produit détouré : trois publications sur cinq en affiche « produit héros » (le produit en grand dans un décor
   // dessiné à la marque), les autres sur une vraie photo du produit (packshot, mise en scène, photo d'origine).
+  // Photos du client qui montrent le vrai produit en situation (fond non uni) : trois publications sur cinq les
+  // mettent en page telles quelles — une vraie photo, avec sa vraie lumière, sans aucun collage.
+  if (p.business !== "services") {
+    const own = ownScenePhoto(p, post.id);
+    const turnOwn = parseInt(crypto.createHash("sha256").update(`own:${post.id}`).digest("hex").slice(0, 6), 16) % 5;
+    if (own && (turnOwn < 3 || !validCutouts(p.id).length)) return posterForPost(p, post, own, "local");
+  }
   if (p.business !== "services" && validCutouts(p.id).length) {
     const hero = parseInt(crypto.createHash("sha256").update(`hero:${post.id}`).digest("hex").slice(0, 6), 16) % 5 < 3;
     return posterForPost(p, post, hero ? null : backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true), "local");

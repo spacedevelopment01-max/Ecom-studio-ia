@@ -12,6 +12,7 @@ import { dedupeCreativeText, renderProCreatives } from "../media/creative-html";
 import sharp from "sharp";
 import { loadImage } from "@napi-rs/canvas";
 import { all, one } from "../db";
+import { isAutoUsable } from "../quality/usable";
 import { assetData, saveAsset, type Asset } from "../library";
 import { loadProject, notify, type Project } from "../projects";
 import { detailCrops } from "../media/cutout";
@@ -208,7 +209,13 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
   if (isServices(project)) return generateServiceImageSet(ctx, projectId, opts.localOnly ? { social: false, v2: true } : opts);
   const ictx: ImgCtx = { userId: project.userId, projectId, jobId: ctx.job.id };
   const cutouts = await ensureCutouts(ctx, project);
-  if (!cutouts.length) throw new Error(L("Aucune photo du produit : importez au moins une photo pour créer les images.", "No product photo: upload at least one photo to create the images."));
+  if (!cutouts.length) {
+    // Photos en situation seulement (personne, décor) : rien à détourer. Les visuels sont mis en page sur ces vraies
+    // photos, jamais sur une silhouette découpée et collée ailleurs.
+    const own = await photoImageSet(ctx, loadProject(projectId), opts);
+    if (own) return own;
+    throw new Error(L("Aucune photo du produit : importez au moins une photo pour créer les images.", "No product photo: upload at least one photo to create the images."));
+  }
   project = loadProject(projectId);
   const main = cutouts[0];
   const cutBuf = assetData(main);
@@ -396,6 +403,51 @@ export async function generateImageSet(ctx: JobContext, projectId: string, opts:
       return ids;
     });
   }
+  ctx.progress(0.98, L("Images prêtes", "Images ready"));
+  return { created };
+}
+
+/** Photos du client utilisables telles quelles (en situation, pas un packshot à détourer, pas une photo libre). */
+export function ownScenePhotos(projectId: string): Asset[] {
+  return all<Asset>(
+    `SELECT * FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND origin = 'upload'
+        AND role IN ('lifestyle', 'original') AND COALESCE(json_extract(meta, '$.triage.plain'), 0) = 0
+        AND COALESCE(json_extract(meta, '$.triage.kind'), 'situation') NOT IN ('packshot', 'text') AND json_extract(meta, '$.stock') IS NULL
+      ORDER BY created_at LIMIT 24`,
+    projectId,
+  ).filter(isAutoUsable);
+}
+
+/**
+ * Jeu d'images sans détourage : publicités, bannière et visuel social mis en page (modèles de la bibliothèque) sur
+ * les vraies photos du client. Rendu local, gratuit. null si le client n'a fourni aucune photo exploitable.
+ */
+async function photoImageSet(ctx: JobContext, project: Project, opts: ImageSetOptions): Promise<{ created: string[] } | null> {
+  const photos = ownScenePhotos(project.id);
+  if (!photos.length) return null;
+  const { composePoster, confirmedFeatures, savePosterDoc } = await import("../ads-v2/poster");
+  const headline = (project.brand?.tagline || project.product.name || project.brand?.name || project.name).slice(0, 70);
+  const subline = project.product.name || null;
+  const plan: { aspect: "4:5" | "1:1" | "9:16" | "16:9"; role: "social" | "ad" | "banner"; folder: string; cta: boolean }[] = [
+    ...(opts.social !== false && !opts.localOnly ? [
+      { aspect: "4:5" as const, role: "social" as const, folder: "images.social", cta: false },
+      { aspect: "9:16" as const, role: "ad" as const, folder: "images.ads", cta: true },
+      { aspect: "1:1" as const, role: "ad" as const, folder: "images.ads", cta: true },
+    ] : []),
+    ...(opts.banner !== false ? [{ aspect: "16:9" as const, role: "banner" as const, folder: "images.banners", cta: true }] : []),
+  ];
+  const created = await ctx.step("photo-set", async () => {
+    const ids: string[] = [];
+    for (const [k, f] of plan.entries()) {
+      ctx.progress(0.4 + (k / Math.max(1, plan.length)) * 0.55, L("Visuels mis en page sur vos photos", "Visuals laid out on your photos"));
+      const background = photos[k % photos.length];
+      const r = await composePoster(project, { aspect: f.aspect, headline, subline, eyebrow: project.product.category || null, cta: f.cta ? C("Découvrir", "Shop now") : null, background, product: null, features: confirmedFeatures(project), seed: `images:${f.role}:${f.aspect}` });
+      const a = await saveAsset({ projectId: project.id, userId: project.userId, data: r.jpg, name: `${slug(project.product.name || project.name)}-${f.role === "ad" ? C("publicite", "ad") : f.role === "banner" ? C("banniere", "banner") : "post"}-${f.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: f.role, folderKey: f.folder, origin: "generated", sourceAssetId: background.id, meta: { recipe: L(`Mise en page ${f.aspect} sur votre photo`, `${f.aspect} layout on your photo`), format: f.aspect, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background.id } } });
+      savePosterDoc(project.id, r.docKey, r.doc, a.id);
+      ids.push(a.id);
+    }
+    return ids;
+  });
   ctx.progress(0.98, L("Images prêtes", "Images ready"));
   return { created };
 }

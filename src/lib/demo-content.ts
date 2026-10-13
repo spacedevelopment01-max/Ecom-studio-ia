@@ -18,14 +18,14 @@ export function demos(file: "manifest.json" | "manifest.en.json" = "manifest.jso
 
 /** Repli si public/demo/manifest.en.json n'est pas généré : textes des démonstrations françaises traduits pour l'interface anglaise. */
 const DEMO_EN: Record<string, { product?: string; note?: string }> = {
-  lunettes: { product: "Aviator sunglasses", note: "A real photo of sunglasses with no visible brand (Pixabay): the brand, the visuals and the store are created by the studio." },
-  plante: { product: "Potted snake plant", note: "A real photo of a potted plant (Pixabay): the brand, the visuals and the store are created by the studio." },
-  casque: { product: "Wired headphones", note: "A real photo of unbranded headphones (Pixabay): the brand, the visuals and the store are created by the studio." },
-  savon: { product: "Handmade soap", note: "A real photo of handmade soaps (Pixabay): the brand, the visuals and the store are created by the studio." },
+  casque: { product: "Headphones", note: "Real in-context photos of unbranded headphones (Pixabay, Engin_Akyurt series): the brand, the visuals and the store are created by the studio." },
+  tillandsia: { product: "Potted air plant", note: "Real photos of a potted plant (Pixabay, HeungSoon series): the brand, the visuals and the store are created by the studio." },
+  savon: { product: "Perilla soap", note: "Real photos of a handmade perilla soap (Pixabay, phuonghoangthuy series): the brand, the visuals and the store are created by the studio." },
+  cafe: { product: "Coffee beans", note: "Real photos of coffee beans (Pixabay, Bru-nO series): the brand, the visuals and the store are created by the studio." },
   fleuriste: { product: "Floral studio", note: "Real photos of a florist's shop and workshop (Pixabay): the business is fictional, its website and brand are created by the studio." },
   barbier: { product: "Barber shop", note: "Real photos of a barber shop (Pixabay): the business is fictional, its website and brand are created by the studio." },
 };
-const SECTOR_EN: Record<string, string> = { Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids" };
+const SECTOR_EN: Record<string, string> = { "Épicerie fine": "Fine food", Accessoires: "Accessories", Plantes: "Plants", Fleuriste: "Florist", Barbier: "Barber", Boissons: "Beverages", Maison: "Home", "High-tech": "Tech", Animaux: "Pets", Mode: "Fashion", Beauté: "Beauty", Sport: "Sports", Alimentation: "Food", Bijoux: "Jewelry", Enfants: "Kids" };
 const IMAGE_LABEL_EN: Record<string, string> = { Bannière: "Banner", Détail: "Detail", Détourage: "Cutout", Packshot: "Packshot", Publicité: "Ad", Scène: "Scene", "Visuel social": "Social visual" };
 
 export function localizeDemo(d: Demo, lang: Lang): Demo {

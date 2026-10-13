@@ -60,32 +60,38 @@ const PX = path.join(REAL, "pixabay");
  */
 const REAL_DEMOS: DemoDef[] = [
   {
-    id: "lunettes", sector: "Accessoires", direction: "lookbook", category: "Lunettes de soleil",
-    productName: "Lunettes de soleil aviateur", brandName: "Cap Sud", price: "65 €",
-    description: "Lunettes de soleil forme aviateur, monture métal argentée, verres dégradés, branches noires.",
-    photo: path.join(PX, "lunettes.jpg"),
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/sunglasses-glasses-trend-94813/", note: "Vraie photo de lunettes sans marque visible (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
-  },
-  {
-    id: "plante", sector: "Plantes", direction: "jardin", category: "Plantes d'intérieur",
-    productName: "Sansevieria en pot", brandName: "Verdure", price: "34 €",
-    description: "Sansevieria (langue de belle-mère) en pot blanc, feuilles vertes bordées de jaune. Plante d'intérieur.",
-    photo: path.join(PX, "plante.jpg"),
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/snake-plant-plant-plant-pot-5939187/", note: "Vraie photo de plante en pot (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
-  },
-  {
+    // Série d'un même photographe : le même casque sur trois vraies photos (plage, lumière du soir).
     id: "casque", sector: "High-tech", direction: "signal", category: "Audio",
-    productName: "Casque audio filaire", brandName: "Sonore", price: "59 €",
-    description: "Casque audio supra-auriculaire filaire, coloris blanc, arceau réglable et coussinets rembourrés.",
-    photo: path.join(PX, "casque.jpg"),
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/headsets-music-pink-background-1971383/", note: "Vraie photo de casque sans marque visible (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
+    productName: "Casque audio", brandName: "Sonore", price: "79 €",
+    description: "Casque audio supra-auriculaire noir, coques argentées, arceau rembourré. Se porte autour du cou entre deux écoutes.",
+    photo: path.join(PX, "casque-1.jpg"),
+    photos: [path.join(PX, "casque-2.jpg"), path.join(PX, "casque-3.jpg")],
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/", note: "Vraies photos d'un casque sans marque visible, en situation (Pixabay, série d'Engin_Akyurt) : la marque, les visuels et la boutique sont créés par le studio." },
+  },
+  {
+    id: "tillandsia", sector: "Plantes", direction: "jardin", category: "Plantes d'intérieur",
+    productName: "Tillandsia en pot", brandName: "Verdure", price: "24 €",
+    description: "Tillandsia (fille de l'air) dans un petit pot en terre cuite peint, coloris rose ou vert.",
+    photo: path.join(PX, "tillandsia-1.jpg"),
+    photos: [path.join(PX, "tillandsia-2.jpg")],
+    variants: { name: "Couleur du pot", values: ["Rose", "Vert"], photos: { Vert: path.join(PX, "tillandsia-3.jpg") } },
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/pastel-potted-plant-flowers-season-4279379/", note: "Vraies photos d'une plante en pot (Pixabay, série de HeungSoon) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
     id: "savon", sector: "Beauté", direction: "manifeste", category: "Savons",
-    productName: "Savon artisanal", brandName: "Sève", price: "8,50 €",
-    description: "Savons solides artisanaux en pains, teinte jaune miel, décor de cœur incrusté.",
-    photo: path.join(PX, "savon.jpg"),
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/soap-soap-making-cosmetics-making-430437/", note: "Vraie photo de savons artisanaux (Pixabay) : la marque, les visuels et la boutique sont créés par le studio." },
+    productName: "Savon à la périlla", brandName: "Sève", price: "7,50 €",
+    description: "Savon solide artisanal à la périlla, pain vert, saponifié à froid.",
+    photo: path.join(PX, "savon-1.jpg"),
+    photos: [path.join(PX, "savon-2.jpg")],
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/handmade-soap-perilla-perilla-soap-4926843/", note: "Vraies photos d'un savon artisanal à la périlla (Pixabay, série de phuonghoangthuy) : la marque, les visuels et la boutique sont créés par le studio." },
+  },
+  {
+    id: "cafe", sector: "Épicerie fine", direction: "terroir", category: "Café",
+    productName: "Café en grains", brandName: "Moulin Brun", price: "12,90 €",
+    description: "Café en grains torréfié, vendu en sachet de 250 g ; grains présentés dans leur sac de jute.",
+    photo: path.join(PX, "cafe-1.jpg"),
+    photos: [path.join(PX, "cafe-2.jpg"), path.join(PX, "cafe-3.jpg")],
+    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/coffee-coffee-beans-bag-3142562/", note: "Vraies photos de café en grains (Pixabay, série de Bru-nO) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
     id: "fleuriste", sector: "Fleuriste", direction: "magazine", business: "services", platform: "woocommerce",
@@ -120,10 +126,10 @@ const REAL_DEMOS: DemoDef[] = [
 
 /** Version anglaise des démonstrations (projets créés avec language=en). */
 const EN_DEMOS: Record<string, Partial<DemoDef>> = {
-  lunettes: { sector: "Accessories", category: "Sunglasses", productName: "Aviator sunglasses", price: "€65", description: "Aviator sunglasses, silver metal frame, gradient lenses, black temples.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/sunglasses-glasses-trend-94813/", note: "A real photo of sunglasses with no visible brand (Pixabay): the brand, the visuals and the store are created by the studio." } },
-  plante: { sector: "Plants", category: "Houseplants", productName: "Potted snake plant", price: "€34", description: "Snake plant (sansevieria) in a white pot, green leaves edged with yellow. Houseplant.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/snake-plant-plant-plant-pot-5939187/", note: "A real photo of a potted plant (Pixabay): the brand, the visuals and the store are created by the studio." } },
-  casque: { sector: "Tech", category: "Audio", productName: "Wired headphones", price: "€59", description: "Wired on-ear headphones in white, with an adjustable headband and padded ear cushions.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/headsets-music-pink-background-1971383/", note: "A real photo of unbranded headphones (Pixabay): the brand, the visuals and the store are created by the studio." } },
-  savon: { sector: "Beauty", category: "Soaps", productName: "Handmade soap", price: "€8.50", description: "Handmade solid soap bars, honey-yellow, with an inlaid heart.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/soap-soap-making-cosmetics-making-430437/", note: "A real photo of handmade soaps (Pixabay): the brand, the visuals and the store are created by the studio." } },
+  tillandsia: { sector: "Plants", category: "Houseplants", productName: "Potted air plant", price: "€24", description: "Tillandsia (air plant) in a small painted terracotta pot, pink or green.", variants: { name: "Pot color", values: ["Pink", "Green"], photos: { Green: path.join(PX, "tillandsia-3.jpg") } }, source: { supplier: "Pixabay", url: "https://pixabay.com/photos/pastel-potted-plant-flowers-season-4279379/", note: "Real photos of a potted plant (Pixabay, HeungSoon series): the brand, the visuals and the store are created by the studio." } },
+  casque: { sector: "Tech", category: "Audio", productName: "Headphones", price: "€79", description: "Black on-ear headphones with silver ear cups and a padded headband. Worn around the neck between listens.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/", note: "Real in-context photos of unbranded headphones (Pixabay, Engin_Akyurt series): the brand, the visuals and the store are created by the studio." } },
+  cafe: { sector: "Fine food", category: "Coffee", productName: "Coffee beans", price: "€12.90", description: "Roasted coffee beans, sold in 250 g bags; beans shown in their jute sack.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/coffee-coffee-beans-bag-3142562/", note: "Real photos of coffee beans (Pixabay, Bru-nO series): the brand, the visuals and the store are created by the studio." } },
+  savon: { sector: "Beauty", category: "Soaps", productName: "Perilla soap", price: "€7.50", description: "Handmade perilla solid soap, green bar, cold-processed.", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/handmade-soap-perilla-perilla-soap-4926843/", note: "Real photos of a handmade perilla soap (Pixabay, phuonghoangthuy series): the brand, the visuals and the store are created by the studio." } },
   fleuriste: { sector: "Florist", productName: "Floral studio", description: "Artisan florist: daily bouquets, custom arrangements for weddings and events, flower subscriptions for businesses, local delivery.", services: [{ name: "Daily bouquets", description: "Seasonal flowers arranged in the shop, to take away or delivered." }, { name: "Weddings and events", description: "Bridal bouquet, table and venue decoration, by appointment." }, { name: "Business subscription", description: "A fresh arrangement every week for your reception." }], area: "Lyon and surroundings", hours: "Tuesday to Saturday, 9am – 7pm", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-bouquet-petal-bloom-garden-2588972/", note: "Real photos of a florist's shop and workshop (Pixabay): the business is fictional, its website and brand are created by the studio." } },
   barbier: { sector: "Barber", productName: "Barber shop", description: "Barber: men's haircuts with scissors and clippers, beard trimming and care, traditional straight-razor shave, kids' cuts.", services: [{ name: "Men's haircut", description: "Scissors and clippers, shampoo and styling." }, { name: "Beard trim", description: "Outline, fade and oil treatment." }, { name: "Traditional shave", description: "Straight razor, hot towel." }, { name: "Kids' cut", description: "Up to age 12." }], area: "Central Bordeaux", hours: "Tuesday to Saturday, 9:30am – 7pm", source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-chair-salon-hairdresser-1453064/", note: "Real photos of a barber shop (Pixabay): the business is fictional, its website and brand are created by the studio." } },
 };
@@ -227,6 +233,8 @@ for (const p of PRODUCTS) {
   console.log(`▶ ${p.id}`);
   const dir = path.join(OUT, p.id);
   fs.mkdirSync(dir, { recursive: true });
+  // Fichiers de la langue en cours retirés : un visuel que la nouvelle création ne produit plus ne reste pas en ligne.
+  for (const f of fs.readdirSync(dir)) if (/\.en\.[a-z0-9]+$/.test(f) === EN) fs.rmSync(path.join(dir, f), { force: true });
   const photoFile = p.photo ?? [".png", ".jpg"].map((x) => path.join(RENDERS, `${p.id}-photo${x}`)).find((f) => fs.existsSync(f))!;
   // Photo transparente (produit détouré) : posée sur un fond clair, comme une photo de fournisseur.
   const photo = photoFile.endsWith(".png") ? await sharp(photoFile).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(photoFile);

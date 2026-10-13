@@ -66,3 +66,25 @@ describe("publications d'une entreprise de services avec ses propres photos", ()
     expect(ownUsed).toBeGreaterThanOrEqual(5);
   }, 120_000);
 });
+
+describe("publications d'un produit avec les vraies photos du client", () => {
+  it("la plupart des publications montrent les photos en situation du client ; un packshot sur fond uni n'en est pas une", async () => {
+    const sharp = (await import("sharp")).default;
+    const { saveAsset } = await import("@/lib/library");
+    const { localRender } = await import("@/lib/social-v2/deps");
+    const { loadProject } = await import("@/lib/projects");
+    const { seedImageFixture } = await import("./image-v2-fixtures");
+    const u = await createUser(`prodown${Date.now()}@test.fr`, "motdepasse-test", "P");
+    const pid = seedImageFixture(u.id, "cosmetic");
+    const scene = (await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 1200, height: 1500, channels: 3, background: { r: 150, g: 90, b: 70 } } }).jpeg().toBuffer(), name: "plage.jpg", mime: "image/jpeg", role: "original", folderKey: "images.originals", origin: "upload", meta: { triage: { kind: "busy", plain: false } }, status: "ready" })).id;
+    const pack = (await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 1200, height: 1200, channels: 3, background: { r: 255, g: 255, b: 255 } } }).jpeg().toBuffer(), name: "packshot.jpg", mime: "image/jpeg", role: "original", folderKey: "images.originals", origin: "upload", meta: { triage: { kind: "packshot", plain: true } }, status: "ready" })).id;
+    const p = loadProject(pid);
+    const used: string[] = [];
+    for (let n = 0; n < 10; n++) {
+      const r = await runWithLang({ ui: "fr", content: "fr" }, () => localRender(p, { id: `post-prod-${n}`, network: "instagram", format: "image", title: "Le sérum", caption: "Notre sérum.", hashtags: [], headline: "Le sérum", pillar: null } as any));
+      used.push(JSON.parse(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ?", r.assetId)!.meta).poster?.backgroundAssetId);
+    }
+    expect(used.filter((x) => x === scene).length).toBeGreaterThanOrEqual(5);
+    expect(used.filter((x) => x === pack).length).toBeLessThanOrEqual(2);
+  }, 120_000);
+});
