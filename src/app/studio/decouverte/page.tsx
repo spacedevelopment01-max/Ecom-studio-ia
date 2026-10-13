@@ -25,13 +25,15 @@ export default async function DiscoveryPage() {
   const lang = await serverLang();
   const T = (fr: string, en: string) => pick(lang, fr, en);
   const list = demoList(lang);
-  const hero = list.find((d) => d.id === "oreiller") ?? list[0];
+  const productDemos = list.filter((d) => d.business !== "services");
+  const hero = list.find((d) => d.id === "casque") ?? productDemos[0] ?? list[0];
   const img = (label: RegExp, n = 0) => hero?.images.filter((x) => label.test(x.label))[n]?.src ?? hero?.photo ?? "";
   const brands: BrandDemo[] = list.map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: directionById(d.direction).previewFonts }));
   const stores: StoreDemo[] = [
-    ...list.slice(0, 4).map((d) => ({ id: d.id, label: d.brand, text: `${d.product} · ${d.sector}`, desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().replace(/\s+/g, "")}.myshopify.com` })),
-    { id: "services", label: T("Services", "Services"), text: T("Démonstration fictive : « Studio Maëlle », coach sportive, site WordPress avec prise de rendez-vous.", "Fictional demo: \"Studio Maëlle\", a personal trainer, WordPress website with booking."), desktop: webpOf(localMedia("/demo/services/site-bureau.jpg", lang)), mobile: webpOf(localMedia("/demo/services/site-mobile.jpg", lang)), caption: "studio-maelle.fr" },
+    ...productDemos.slice(0, 4).map((d) => ({ id: d.id, label: d.brand, text: `${d.product} · ${d.sector}`, desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().replace(/\s+/g, "")}.myshopify.com` })),
+    ...list.filter((d) => d.business === "services").map((d) => ({ id: d.id, label: d.brand, text: T(`Entreprise fictive : ${d.sector.toLowerCase()}, site WordPress sans panier.`, `Fictional business: ${d.sector.toLowerCase()}, WordPress website with no cart.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "")}.fr` })),
   ];
+
   const posts: SocialPost[] = hero
     ? [
         { day: 0, time: "18:00", network: "Instagram", image: img(/social/i), caption: T(`${hero.product} : découvrez-le en images.`, `${hero.product}: see it in pictures.`) },

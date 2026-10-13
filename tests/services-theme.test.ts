@@ -64,6 +64,15 @@ describe("site d'entreprise de services", () => {
     }
   });
 
+  it.each(DIRECTIONS.map((d) => d.id))("%s : aucun bouton de vente sur l'accueil d'un site de services ; l'appel à l'action suit le mode de contact (devis)", async (dir) => {
+    for (const lang of ["fr", "en"] as const) {
+      const spec = serviceSpec(dir, lang, { ...serviceProfile, contactMode: "quote" });
+      const files = compileTheme(spec);
+      const text = visible((await renderPage({ spec, base: "/p", files, cart: [] }, "/", new URLSearchParams())).html);
+      expect(text, `${dir} ${lang}`).not.toMatch(lang === "fr" ? /voir le produit/i : /view (the )?product|see the product/i);
+    }
+  });
+
   it("avis, équipe et réalisations : espaces réservés honnêtes, jamais d'avis inventé", () => {
     const spec = serviceSpec("atelier");
     const index = spec.templates.index;

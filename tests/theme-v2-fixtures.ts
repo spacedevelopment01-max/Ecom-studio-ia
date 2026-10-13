@@ -129,7 +129,7 @@ async function saasMedia(userId: string, projectId: string) {
 }
 
 async function droneMedia(userId: string, projectId: string) {
-  const dir = path.join(process.cwd(), "public/demo/drone");
+  const dir = path.join(process.cwd(), "tests/assets/demo-drone");
   const add = async (file: string, role: string, folderKey: string, mime = "image/jpeg") => {
     let data = fs.readFileSync(path.join(dir, file));
     if (file.endsWith(".webp")) {

@@ -77,8 +77,10 @@ export default async function Home() {
   const cta = user ? "/studio" : "/inscription";
   const themes = directionCards(lang).map((c) => ({ ...c, preview: W(M(c.preview)) }));
 
-  // Projet de démonstration qui traverse le parcours : Somnéa (oreiller), sinon la première démonstration.
-  const hero = list.find((d) => d.id === "oreiller") ?? list[0];
+  // Projet de démonstration qui traverse le parcours : le casque, sinon la première boutique de produits.
+  const productDemos = list.filter((d) => d.business !== "services");
+  const serviceDemos = list.filter((d) => d.business === "services");
+  const hero = list.find((d) => d.id === "casque") ?? productDemos[0] ?? list[0];
   const img = (d: Demo | undefined, label: RegExp, n = 0) => d?.images.filter((x) => label.test(x.label))[n]?.src ?? d?.photo ?? "";
   const fontsOf = (d: Demo) => directionById(d.direction).previewFonts;
   const story: StoryDemo | null = hero
@@ -129,24 +131,19 @@ export default async function Home() {
   ];
 
   const brands: BrandDemo[] = list.map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: fontsOf(d) }));
+  // Boutiques de produits puis sites d'entreprises de services, tels que le studio les a composés.
+  const handle = (b: string) => b.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
   const stores: StoreDemo[] = [
-    ...["drone", "tribunes", "chat"]
-      .map((id, k): StoreDemo | null => {
-        const d = list.find((x) => x.id === id);
-        if (!d) return null;
-        const label = [T("Monoproduit", "Single-product"), T("Multiproduits", "Multi-product"), "Niche"][k];
-        const text = [T("Un produit phare mis en scène sur toute la boutique.", "One hero product showcased across the whole store."), T("Un catalogue, des collections et une fiche pour chaque article.", "A catalog, collections and a page for every item."), T("Plusieurs produits d'un même univers, pour une communauté précise.", "Several products from the same world, for a specific community.")][k];
-        return { id, label, text: `${text} ${T("Démonstration :", "Demo:")} ${d.brand} · ${d.product}.`, desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${d.brand.toLowerCase().replace(/\s+/g, "")}.myshopify.com` };
-      })
-      .filter((x): x is StoreDemo => !!x),
-    { id: "services", label: T("Entreprise de services", "Service business"), text: T("Démonstration fictive : « Studio Maëlle », coach sportive, publiée pour WordPress. Aucun panier : chaque bouton mène à la prise de rendez-vous.", "Fictional demo: \"Studio Maëlle\", a personal trainer, published for WordPress. No cart: every button leads to booking."), desktop: W(M("/demo/services/site-bureau.jpg")), mobile: W(M("/demo/services/site-mobile.jpg")), caption: "studio-maelle.fr" },
+    ...productDemos.slice(0, 3).map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Boutique ${directionById(d.direction).name} composée pour ${d.brand} · ${d.product}.`, `${directionById(d.direction).name} store designed for ${d.brand} · ${d.product}.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.myshopify.com` })),
+    ...serviceDemos.map((d): StoreDemo => ({ id: d.id, label: d.sector, text: T(`Entreprise fictive : ${d.brand}, site WordPress. Aucun panier : chaque bouton mène au devis, au rendez-vous ou à l'appel.`, `Fictional business: ${d.brand}, WordPress website. No cart: every button leads to a quote, a booking or a call.`), desktop: d.shopDesktop, mobile: d.shopMobile, caption: `${handle(d.brand)}.fr` })),
   ];
+
 
   const docs = story
     ? [
-        { tab: T("Fiche produit", "Product page"), kind: `${T("Fiche produit", "Product page")} · ${story.brand}`, meta: T(`${story.product} · ${story.brand} — forme papillon, deux coloris.`, `${story.product} · ${story.brand} — butterfly shape, two colors.`), blocks: [{ k: "h1" as const, text: story.product }, { k: "p" as const, text: T("Oreiller ergonomique en forme de papillon, proposé en deux coloris.", "Butterfly-shaped ergonomic pillow, available in two colors.") }, { k: "li" as const, text: T("Forme papillon", "Butterfly shape") }, { k: "li" as const, text: T("Deux coloris", "Two colors") }, { k: "li" as const, text: T("Garantie : [À compléter : durée de la garantie]", "Warranty: [To complete: warranty length]") }, { k: "faq" as const, text: T("Comment l'entretenir ? [À compléter : consignes du fabricant]", "How do I care for it? [To complete: manufacturer's instructions]") }] },
-        { tab: T("Page d'accueil", "Home page"), kind: `${T("Page d'accueil", "Home page")} · ${story.brand}`, meta: T(`${story.brand} · des objets à vivre pour la chambre.`, `${story.brand} · objects to live with, for the bedroom.`), blocks: [{ k: "h1" as const, text: T("Des objets à vivre.", "Objects to live with.") }, { k: "p" as const, text: T(`${story.brand} présente son oreiller ergonomique Papillon.`, `${story.brand} presents its Papillon ergonomic pillow.`) }, { k: "li" as const, text: T("Livraison : [À compléter]", "Shipping: [To complete]") }, { k: "li" as const, text: T("Retours : [À compléter]", "Returns: [To complete]") }, { k: "faq" as const, text: T("Où expédiez-vous ? [À compléter]", "Where do you ship? [To complete]") }] },
-        { tab: T("Article de blog", "Blog post"), kind: T("Article de blog", "Blog post"), meta: T("Comment choisir un oreiller ergonomique : forme, hauteur, entretien.", "How to choose an ergonomic pillow: shape, height, care."), blocks: [{ k: "h1" as const, text: T("Comment choisir un oreiller ergonomique ?", "How do you choose an ergonomic pillow?") }, { k: "p" as const, text: T("Forme, hauteur, entretien : les critères à regarder avant d'acheter.", "Shape, height, care: what to look at before buying.") }, { k: "li" as const, text: T("La forme", "The shape") }, { k: "li" as const, text: T("La hauteur", "The height") }, { k: "faq" as const, text: T("Faut-il le changer régulièrement ? [À compléter : source à citer]", "Should it be replaced regularly? [To complete: source to cite]") }] },
+        { tab: T("Fiche produit", "Product page"), kind: `${T("Fiche produit", "Product page")} · ${story.brand}`, meta: `${story.product} · ${story.brand}`, blocks: [{ k: "h1" as const, text: story.product }, { k: "p" as const, text: hero?.source ? T(`${story.product} signé ${story.brand}.`, `${story.product} by ${story.brand}.`) : story.product }, { k: "li" as const, text: T("Ce que l'on voit sur la photo, décrit sans exagérer", "What the photo shows, described without exaggerating") }, { k: "li" as const, text: T("Garantie : [À compléter : durée de la garantie]", "Warranty: [To complete: warranty length]") }, { k: "faq" as const, text: T("Comment l'entretenir ? [À compléter : consignes du fabricant]", "How do I care for it? [To complete: manufacturer's instructions]") }] },
+        { tab: T("Page d'accueil", "Home page"), kind: `${T("Page d'accueil", "Home page")} · ${story.brand}`, meta: T(`${story.brand} · page d'accueil`, `${story.brand} · home page`), blocks: [{ k: "h1" as const, text: story.brand }, { k: "p" as const, text: T(`${story.brand} présente ${story.product.toLowerCase()}.`, `${story.brand} presents its ${story.product.toLowerCase()}.`) }, { k: "li" as const, text: T("Livraison : [À compléter]", "Shipping: [To complete]") }, { k: "li" as const, text: T("Retours : [À compléter]", "Returns: [To complete]") }, { k: "faq" as const, text: T("Où expédiez-vous ? [À compléter]", "Where do you ship? [To complete]") }] },
+        { tab: T("Article de blog", "Blog post"), kind: T("Article de blog", "Blog post"), meta: T(`Comment bien choisir : ${story.product.toLowerCase()}.`, `How to choose: ${story.product.toLowerCase()}.`), blocks: [{ k: "h1" as const, text: T(`Comment bien choisir son ${story.product.toLowerCase()} ?`, `How do you choose a ${story.product.toLowerCase()}?`) }, { k: "p" as const, text: T("Les critères à regarder avant d'acheter, sans promesse inventée.", "What to look at before buying, with no made-up promises.") }, { k: "li" as const, text: T("L'usage", "The use") }, { k: "li" as const, text: T("Le confort", "Comfort") }, { k: "faq" as const, text: T("Combien de temps dure-t-il ? [À compléter : source à citer]", "How long does it last? [To complete: source to cite]") }] },
       ]
     : [];
 
@@ -154,9 +151,9 @@ export default async function Home() {
   const heroPosts = hero?.posts ?? [];
   const posts: SocialPost[] = story
     ? [
-        { day: 0, time: "18:00", network: "Instagram", image: heroPosts[0] ?? story.social, caption: T(`${story.product} : la forme papillon, en deux coloris.`, `${story.product}: the butterfly shape, in two colors.`) },
+        { day: 0, time: "18:00", network: "Instagram", image: heroPosts[0] ?? story.social, caption: T(`${story.product}, signé ${story.brand}.`, `${story.product}, by ${story.brand}.`) },
         { day: 2, time: "12:30", network: "Facebook", image: heroPosts[1] ?? story.scene2, caption: T(`Découvrez ${story.brand} sur notre boutique.`, `Discover ${story.brand} in our store.`) },
-        { day: 4, time: "20:00", network: "Pinterest", image: heroPosts[2] ?? story.banner, caption: T("Idée pour la chambre : l'oreiller Papillon.", "Bedroom idea: the Papillon pillow.") },
+        { day: 4, time: "20:00", network: "Pinterest", image: heroPosts[2] ?? story.banner, caption: T(`Idée cadeau : ${story.product.toLowerCase()}.`, `Gift idea: ${story.product.toLowerCase()}.`) },
         { day: 5, time: "11:00", network: "TikTok", image: heroPosts[3] ?? story.scene1, caption: T("Comment bien l'installer ? Réponse en vidéo.", "How to set it up? Answer on video.") },
       ]
     : [];
@@ -171,7 +168,9 @@ export default async function Home() {
     { key: "social", label: T("Réseaux", "Social"), text: T("Le calendrier puise dans les mêmes visuels et textes ; rien ne part sans votre accord.", "The calendar draws on the same visuals and copy; nothing goes out without your approval.") },
   ];
 
-  const ba = list.find((d) => d.id === "drone");
+  // Avant / après : la photo d'origine (Pixabay) et une création du studio sur le vrai produit.
+  const ba = productDemos.find((d) => d.id === "lunettes") ?? productDemos[0];
+  const baAfter = ba ? (ba.images.find((x) => /scène|scene/i.test(x.label)) ?? ba.images.find((x) => /packshot/i.test(x.label)))?.src : undefined;
 
   // Créations réelles des démonstrations : planches d'identité, fils de publications, mur de publications.
   const boards: BoardDemo[] = list.filter((d) => d.board).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));
@@ -207,7 +206,7 @@ export default async function Home() {
     [T("J'ai déjà un site et un logo : puis-je utiliser le studio ?", "I already have a website and a logo: can I use the studio?"), T("Oui. Choisissez « J'ai déjà mon site et mon logo » et indiquez son adresse (le site doit vous appartenir ou vous devez être autorisé à l'utiliser). Le studio reconnaît la plateforme et reprend votre logo, vos pages, vos produits, vos couleurs et vos polices, sans créer de nouvelle marque. Sur Shopify, WordPress / WooCommerce, PrestaShop, Wix ou Squarespace, votre site reste tel quel ; sur une autre plateforme ou un site sur mesure, il est reproduit sur Shopify (boutique) ou WordPress (services), avec les mêmes textes et images — le studio indique ce qui est fidèle et ce qui est approché. Les contenus que votre site charge uniquement en JavaScript peuvent ne pas être lus : c'est signalé.", "Yes. Choose \"I already have my website and logo\" and enter its address (the website must be yours or you must be authorized to use it). The studio recognizes the platform and takes your logo, pages, products, colors and fonts, without creating a new brand. On Shopify, WordPress / WooCommerce, PrestaShop, Wix or Squarespace, your website stays as it is; on another platform or a custom-built site, it is reproduced on Shopify (store) or WordPress (services), with the same text and images — the studio shows what is exact and what is approximated. Content your website loads only with JavaScript may not be read: this is flagged.")],
     [T("Où choisir Shopify, WordPress ou une autre plateforme ?", "Where do I choose Shopify, WordPress or another platform?"), T("Dans le formulaire de création du projet, juste après le choix « boutique » ou « entreprise de services » : rubrique « Sur quelle plateforme vendrez-vous ? » (ou « Où sera publié votre site ? » pour une entreprise de services), avec une carte par plateforme. Vous pouvez aussi en changer plus tard depuis l'onglet Boutique : le studio relivre le site pour la nouvelle plateforme.", "In the project creation form, right after choosing \"store\" or \"services business\": \"Which platform will you sell on?\" (or \"Where will your website live?\" for a services business), with one card per platform. You can also change it later from the Store tab: the studio redelivers the site for the new platform.")],
     [T("Faut-il une photo pour commencer ?", "Do I need a photo to get started?"), T("Non. Vous pouvez ouvrir le studio sans rien, explorer les espaces et les thèmes, puis ajouter une photo, un lien ou quelques lignes quand vous êtes prêt : la création démarre à ce moment-là.", "No. You can open the studio with nothing, explore the workspaces and themes, then add a photo, a link or a few lines when you're ready: creation starts at that point.")],
-    [T("Les démonstrations de cette page sont-elles des résultats clients ?", "Are the demos on this page client results?"), T("Non. Ce sont des marques créées par le studio, sans l'IA des forfaits, à partir de produits vendus en marque blanche par des fournisseurs (et un site de services fictif). Les petites démonstrations interactives tournent dans votre navigateur : rien n'est enregistré ni publié.", "No. They are brands created by the studio, without the plans' AI, from products sold white-label by suppliers (plus a fictional services website). The small interactive demos run in your browser: nothing is saved or published.")],
+    [T("Les démonstrations de cette page sont-elles des résultats clients ?", "Are the demos on this page client results?"), T("Non. Ce sont des marques et des entreprises fictives créées par le studio, sans l'IA des forfaits, à partir de vraies photos libres de droits (Pixabay) : des produits sans marque visible, une boutique de fleuriste et un salon de barbier. Les petites démonstrations interactives tournent dans votre navigateur : rien n'est enregistré ni publié.", "No. They are fictional brands and businesses created by the studio, without the plans' AI, from real royalty-free photos (Pixabay): products with no visible brand, a florist's shop and a barber shop. The small interactive demos run in your browser: nothing is saved or published.")],
     [T("Puis-je arrêter une création en cours ?", "Can I stop a creation in progress?"), T("Oui. Le bouton « Pause » arrête la création à la fin de l'étape en cours ; « Reprendre » repart de là. Les étapes déjà terminées sont conservées et ne sont ni refaites ni refacturées.", "Yes. The \"Pause\" button stops the creation at the end of the current step; \"Resume\" picks up from there. Completed steps are kept and are neither redone nor charged again.")],
     [T("Le thème Shopify est-il vraiment installable ?", "Can the Shopify theme really be installed?"), T("Oui : c'est un thème Online Store 2.0 complet (sections, blocs, réglages natifs, panier latéral, recherche, pages), vérifié par Theme Check, l'outil officiel de Shopify. Vous l'importez en ZIP. L'envoi direct dans votre boutique est développé mais pas encore essayé sur une vraie boutique.", "Yes: it's a complete Online Store 2.0 theme (sections, blocks, native settings, cart drawer, search, pages), checked by Theme Check, Shopify's official tool. You upload it as a ZIP. Direct upload to your store is built but not yet tried on a real store.")],
     [T("Que se passe-t-il si une information manque ?", "What happens if some information is missing?"), T("Elle reste visible « à compléter » dans les textes, et le studio vous pose la question. Quand vous répondez, seuls les passages concernés sont mis à jour, sans écraser ce que vous avez validé.", "It stays visible as \"to complete\" in the copy, and the studio asks you about it. When you answer, only the relevant passages are updated, without overwriting what you've approved.")],
@@ -387,10 +386,10 @@ export default async function Home() {
         <section id="visuels" className="scroll-mt-20 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <Head eyebrow={T("Images et publicités", "Images and ads")} title={T("Fidèle au produit.", "True to the product.")} accent={T("Modifiable à la main.", "Editable by hand.")} lead={T("Le studio ne réinvente jamais votre produit : il le détoure et compose autour de ses pixels réels. Ensuite, chaque publicité se retouche comme dans un logiciel de mise en page.", "The studio never reinvents your product: it cuts it out and builds around its real pixels. Then every ad can be edited like in a layout tool.")} />
-            {ba && (
+            {ba && baAfter && (
               <div className="mt-12 grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-14">
                 <div className="reveal reveal-scale overflow-hidden rounded-[1.75rem] border border-line hp-elev">
-                  <BeforeAfter before={ba.photo} after={W(M("/demo/drone/avant-apres.jpg"))} aspect="18 / 11" beforeLabel={T("Photo d'origine", "Original photo")} afterLabel={T("Création du studio", "Studio creation")} />
+                  <BeforeAfter before={ba.photo} after={baAfter} aspect="18 / 11" beforeLabel={T("Photo d'origine", "Original photo")} afterLabel={T("Création du studio", "Studio creation")} />
                 </div>
                 <div>
                   <p className="font-display text-2xl font-semibold leading-snug">{T("Glissez pour comparer.", "Drag to compare.")}</p>
@@ -399,7 +398,7 @@ export default async function Home() {
                       <li key={x} className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" aria-hidden /> {x}</li>
                     ))}
                   </ul>
-                  <p className="mt-5 text-xs text-muted">{T(`Démonstration : ${ba.brand}, produit de fournisseur (inscriptions d'origine retirées).`, `Demo: ${ba.brand}, a supplier product (original markings removed).`)}</p>
+                  <p className="mt-5 text-xs text-muted">{T(`Démonstration : ${ba.brand}, à partir d'une vraie photo de produit (Pixabay).`, `Demo: ${ba.brand}, from a real product photo (Pixabay).`)}</p>
                 </div>
               </div>
             )}
@@ -563,7 +562,7 @@ export default async function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
               <Head eyebrow={T("Démonstrations", "Demos")} title={T(`${list.length} produits,`, `${list.length} products,`)} accent={T("une seule photo chacun.", "a single photo each.")} />
-              <p className="reveal max-w-md text-sm leading-relaxed text-muted">{T("Chaque démonstration part d'un vrai produit vendu en marque blanche par un fournisseur : photo retouchée, inscriptions du fabricant retirées, marque refaite par le studio. Réalisées sans l'IA des forfaits ; ce ne sont pas des résultats clients.", "Each demo starts from a real product sold white-label by a supplier: photo retouched, manufacturer markings removed, brand redone by the studio. Made without the plans' AI; these are not client results.")}</p>
+              <p className="reveal max-w-md text-sm leading-relaxed text-muted">{T("Chaque démonstration part de vraies photos (Pixabay) : un vrai produit sans marque visible, ou une vraie boutique de fleuriste ou de barbier. Les marques et les entreprises sont fictives, créées par le studio sans l'IA des forfaits ; ce ne sont pas des résultats clients.", "Each demo starts from real photos (Pixabay): a real product with no visible brand, or a real florist's or barber's shop. The brands and businesses are fictional, created by the studio without the plans' AI; these are not client results.")}</p>
             </div>
             {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">{T("Les démonstrations s'affichent après génération (script « npm run demos »).", "Demos appear once generated (\"npm run demos\" script).")}</p>}
           </div>

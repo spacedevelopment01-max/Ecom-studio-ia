@@ -179,6 +179,8 @@ export type Demo = {
   posts?: string[];
   /** Planche d'identité de la marque. */
   board?: string;
+  /** Boutique de produits ou site d'entreprise de services. */
+  business?: "products" | "services";
 };
 
 export function DemoTabs({ demos }: { demos: Demo[] }) {

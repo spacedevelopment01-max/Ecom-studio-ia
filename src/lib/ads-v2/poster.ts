@@ -6,6 +6,7 @@
  * Le document en calques est enregistré : le client modifie ensuite textes, couleurs et placement dans l'éditeur.
  * Aucun appel à l'IA ici (composition locale, gratuite).
  */
+import { contactCta } from "../engine/services-text";
 import crypto from "node:crypto";
 import { all, json } from "../db";
 import { assetData, getAsset, type Asset } from "../library";
@@ -131,7 +132,7 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
   const layout = i.layout ?? look.layout;
   const variant: AdVariant = i.layout ? (isTemplateLayout(i.layout) ? {} : { ...look.variant, treatment: treatmentsFor(i.layout as AdLayout, art.style).includes(look.variant.treatment!) ? look.variant.treatment : treatmentsFor(i.layout as AdLayout, art.style)[0] }) : look.variant;
   const { logo, light } = brandLogos(p);
-  const cta = (i.cta ?? "").trim() || (p.business === "services" ? C("Prendre rendez-vous", "Book now") : C("Découvrir", "Discover"));
+  const cta = (i.cta ?? "").trim() || (p.business === "services" ? contactCta(p.services?.contactMode) : C("Découvrir", "Discover"));
   const r = await composeAd({
     format: posterFormat(i.aspect),
     layout: layout as ComposeInput["layout"],

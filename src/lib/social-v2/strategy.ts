@@ -136,7 +136,7 @@ export function socialStrategy(p: Project, o: { lang?: string; platforms?: Platf
     saas: [t("Montrer la valeur du logiciel en démonstration", "Show the software's value in demos"), t("Éduquer le public cible", "Educate the target audience"), t("Obtenir des essais ou des démonstrations", "Get trials or demos")],
     product: [t("Faire connaître le produit", "Make the product known"), t("Lever les doutes d'achat", "Remove buying doubts"), t("Amener vers la boutique", "Drive to the shop")],
   }[a];
-  const ctas = {
+  const ctasByKind = {
     trade: [t("Demander un devis", "Request a quote"), t("Appeler", "Call"), t("Posez votre question en commentaire", "Ask your question in the comments")],
     restaurant: [t("Réserver une table", "Book a table"), t("Appeler", "Call"), t("Dites-nous votre plat préféré", "Tell us your favourite dish")],
     service: [t("Prendre rendez-vous", "Book an appointment"), t("Nous contacter", "Contact us"), t("Enregistrez ce conseil", "Save this tip")],
@@ -145,6 +145,10 @@ export function socialStrategy(p: Project, o: { lang?: string; platforms?: Platf
     saas: [t("Essayer", "Try it"), t("Demander une démo", "Book a demo"), t("Enregistrez la méthode", "Save the method")],
     product: [t("Voir le produit", "See the product"), t("Enregistrez", "Save it"), t("Votre question en commentaire", "Your question in the comments")],
   }[a];
+  // Entreprise de services : le premier appel à l'action est celui que le client a choisi (devis, rendez-vous, appel…).
+  const mode = p.business === "services" ? p.services?.contactMode : undefined;
+  const own = mode === "booking" ? t("Prendre rendez-vous", "Book an appointment") : mode === "quote" ? t("Demander un devis", "Request a quote") : mode === "call" ? t("Appeler", "Call") : mode === "form" ? t("Nous contacter", "Contact us") : null;
+  const ctas = own ? [own, ...ctasByKind.filter((x) => x !== own && !/rendez-vous|appointment|devis|quote/i.test(x))].slice(0, 3) : ctasByKind;
   const moments = o.startDate ? keyMoments(o.startDate, o.days ?? 30, p.product.sector ?? null, lang === "en" ? "en" : "fr").map((m) => ({ label: m.label, date: m.date })) : [];
   const gaps = [...f.unknowns];
   if (a === "restaurant") gaps.push(t("événements confirmés (soirées, menus spéciaux) — aucun ne sera inventé", "confirmed events (evenings, special menus) — none will be invented"));
