@@ -102,6 +102,32 @@ describe("Affiches de publication", async () => {
     out("prestation-4x5.jpg", (await import("@/lib/library")).assetData(a));
   }, 120_000);
 
+  it("citation et infos pratiques : affiches modifiables dans l'éditeur, avec l'image choisie parmi toutes les images", async () => {
+    const { u, pid } = await setup();
+    // Une image qui n'est pas une « photo de l'activité » (photo recadrée) : le client peut quand même la choisir.
+    const other = await saveAsset({ projectId: pid, userId: u.id, data: await testPhoto(), name: "salle.jpg", mime: "image/jpeg", role: "scene", folderKey: "images.scenes", origin: "upload", meta: {} });
+    const job = enqueue({ userId: u.id, projectId: pid, type: "image.single", payload: { projectId: pid, request: {} } });
+    const quote = await fr(() => generateServiceSingleImage(new JobContext(job), pid, { kind: "quote", format: "square", headline: "Quatre salles, une seule sortie", background: "photo", photoId: other.id }));
+    const qm = assetMeta<any>(getAsset(quote.assetId)!);
+    expect(qm.engine).toBe("poster");
+    expect(qm.poster.backgroundAssetId).toBe(other.id);
+    const qd = latestDoc(pid, qm.poster.docKey)!;
+    expect(qd.doc.layers.some((l) => l.role === "title" && "text" in l && l.text === "Quatre salles, une seule sortie")).toBe(true);
+    // Sans image : toujours modifiable (texte, couleurs, modèles), sans fond photo.
+    const plain = await fr(() => generateServiceSingleImage(new JobContext(job), pid, { kind: "quote", format: "square", headline: "Quatre salles, une seule sortie", background: "none" }));
+    const pm = assetMeta<any>(getAsset(plain.assetId)!);
+    expect(pm.engine).toBe("poster");
+    expect(pm.poster.backgroundAssetId).toBeNull();
+    const info = await fr(() => generateServiceSingleImage(new JobContext(job), pid, { kind: "info", format: "portrait", background: "photo", photoId: other.id }));
+    const im = assetMeta<any>(getAsset(info.assetId)!);
+    expect(im.engine).toBe("poster");
+    expect(im.poster.backgroundAssetId).toBe(other.id);
+    const lib = await import("@/lib/library");
+    out("citation-photo-1x1.jpg", lib.assetData(getAsset(quote.assetId)!));
+    out("citation-1x1.jpg", lib.assetData(getAsset(plain.assetId)!));
+    out("infos-4x5.jpg", lib.assetData(getAsset(info.assetId)!));
+  }, 180_000);
+
   it("chaque format : texte lisible, dans les marges, sans chevauchement", async () => {
     const { pid, photo } = await setup();
     const p = loadProject(pid);

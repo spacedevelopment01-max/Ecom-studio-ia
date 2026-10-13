@@ -23,6 +23,7 @@ const Req = z.object({
   items: z.array(z.string().max(300)).max(6).optional(),
   usePhoto: z.boolean().optional(),
   background: z.enum(["photo", "image", "none"]).optional(),
+  photoId: z.string().max(64).optional(),
 });
 
 /** Libellé lisible de la tâche (jamais la clé interne). */
@@ -62,6 +63,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const job =
     b.mode === "set"
       ? enqueue({ userId: user.id, projectId: p.id, type: "images.generate", label: L("Jeu d'images complet", "Full image set"), payload: { projectId: p.id } })
-      : enqueue({ userId: user.id, projectId: p.id, type: "image.single", label: imageLabel(b.kind ?? "scene"), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto, background: b.background } } });
+      : enqueue({ userId: user.id, projectId: p.id, type: "image.single", label: imageLabel(b.kind ?? "scene"), payload: { projectId: p.id, request: { kind: b.kind ?? "scene", style: b.style, format: b.format, layout: b.layout, headline: b.headline, subline: b.subline, cta: b.cta, useAi: b.useAi, sourceCutoutId: b.sourceCutoutId, serviceIndex: b.serviceIndex, items: b.items, usePhoto: b.usePhoto, background: b.background, photoId: b.photoId } } });
   return ok({ jobId: job.id });
 });
