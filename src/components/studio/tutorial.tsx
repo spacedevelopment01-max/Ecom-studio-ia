@@ -59,7 +59,7 @@ function TutorialNudge({ id, onWatch, onClose }: { id: TutorialId; onWatch: () =
   const t = useT();
   const { lang } = useLang();
   return (
-    <div data-tuto-nudge className="fixed bottom-5 right-5 z-[60] flex w-[min(360px,calc(100vw-2.5rem))] items-start gap-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
+    <div data-tuto-nudge className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-5 z-[60] lg:bottom-5 flex w-[min(360px,calc(100vw-2.5rem))] items-start gap-3 rounded-2xl border border-line bg-card p-4 shadow-soft">
       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-signal-soft text-signal"><GraduationCap className="size-5" aria-hidden /></span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold">{t("Première visite ?", "First time here?")}</p>

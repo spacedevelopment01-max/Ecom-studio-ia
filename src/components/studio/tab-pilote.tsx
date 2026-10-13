@@ -14,6 +14,49 @@ import { isPlatform, PlatformCards } from "./platform-picker";
 import { missingActivity } from "./services-editor";
 import { SitePilotCard } from "./existing-site";
 import { BrandPropagationCard, WorkflowPanel } from "./workflow-panel";
+import { projectProgress } from "@/lib/project-progress";
+import { useLang } from "../i18n";
+
+/** « Où en est mon projet ? » : les grandes étapes cochées, et la prochaine à faire en un clic. */
+function ProgressCard() {
+  const { id, data } = useProject();
+  const t = useT();
+  const { lang } = useLang();
+  if (!data) return null;
+  const pr = projectProgress({ business: data.business, product: data.product, missingActivity: data.business === "services" ? missingActivity(data.services).length : 0, brand: data.brand, theme: data.theme, counts: data.counts, posts: data.posts });
+  const L2 = (x: [string, string]) => (lang === "en" ? x[1] : x[0]);
+  return (
+    <Card className="p-5 sm:p-6" data-progress>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm text-muted">{t("Où en est votre projet ?", "Where is your project at?")}</p>
+          <p className="font-display text-2xl font-semibold">{t(`${pr.done} étape${pr.done > 1 ? "s" : ""} sur ${pr.steps.length}`, `${pr.done} of ${pr.steps.length} steps`)}</p>
+        </div>
+        {pr.next ? (
+          <Link href={`/studio/${id}/${pr.next.tab}`} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper hover:opacity-90" data-next-step>
+            {t("Prochaine étape :", "Next step:")} {L2(pr.next.action)} <ArrowRight className="size-4" />
+          </Link>
+        ) : (
+          <Badge tone="ok" dot>{t("Tout est prêt", "All set")}</Badge>
+        )}
+      </div>
+      <Progress value={pr.done / pr.steps.length} className="mt-4" />
+      <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {pr.steps.map((s) => (
+          <li key={s.id}>
+            <Link href={`/studio/${id}/${s.tab}`} className={cx("flex h-full items-start gap-2.5 rounded-xl border p-3 text-sm transition hover:border-ink", s.done ? "border-line bg-paper-2/60" : s === pr.next ? "border-signal bg-signal-soft" : "border-line")} title={L2(s.hint)}>
+              {s.done ? <span className="grid size-5 shrink-0 place-items-center rounded-full bg-ok text-white"><Check className="size-3" /></span> : <span className={cx("mt-0.5 size-4 shrink-0 rounded-full border-2", s === pr.next ? "border-signal" : "border-line")} />}
+              <span className="min-w-0">
+                <span className={cx("block font-medium", s.done && "text-muted line-through decoration-1")}>{L2(s.label)}</span>
+                {!s.done && <span className="mt-0.5 block text-xs text-muted">{L2(s.hint)}</span>}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </Card>
+  );
+}
 
 function StepIcon({ status }: { status: string }) {
   if (status === "done") return <span className="grid size-7 place-items-center rounded-full bg-ok text-white"><Check className="size-4" /></span>;
@@ -278,6 +321,7 @@ export default function TabPilote() {
   return (
     <div className="mx-auto grid max-w-6xl gap-6">
       <EngineNotice what={t("l'analyse, la marque et les textes", "the analysis, the brand and the copy")} />
+      {(pl || data.brand) && <ProgressCard />}
       {!pl && <StartCreation />}
       <WorkflowPanel />
       <BrandPropagationCard />
