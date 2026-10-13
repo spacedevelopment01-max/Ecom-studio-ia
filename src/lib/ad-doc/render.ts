@@ -16,11 +16,17 @@ export type RenderEnv = {
   images: Map<string, { width: number; height: number } & object>;
 };
 
+/**
+ * Mots insécables : la ponctuation haute française (« : », « ? », « ! », « ; », guillemets) reste collée au mot
+ * qui la précède ou la suit, jamais seule en début de ligne.
+ */
+const glue = (t: string) => t.replace(/[ \u00A0\u202F]+([:;?!»])/g, "\u00A0$1").replace(/«[ \u00A0\u202F]+/g, "«\u00A0");
+
 export function wrap(ctx: Ctx2D, text: string, maxWidth: number): string[] {
   const out: string[] = [];
-  for (const para of text.split(/\n/)) {
+  for (const para of glue(text).split(/\n/)) {
     let line = "";
-    for (const w of para.split(/\s+/).filter(Boolean)) {
+    for (const w of para.split(/[ \t\r\f\v]+/).filter(Boolean)) {
       const test = line ? `${line} ${w}` : w;
       if (ctx.measureText(test).width > maxWidth && line) {
         out.push(line);

@@ -338,7 +338,15 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         });
       }
       const has = validCutouts(projectId).length > 0;
-      if (!has) return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
+      if (!has) {
+        // Photos en situation seulement (rien à détourer) : visuels mis en page sur ces vraies photos.
+        const { generateImageSet, ownScenePhotos } = await import("./images");
+        if (ownScenePhotos(projectId).length) {
+          const r = await ctx.step("photo-images", () => generateImageSet(ctx, projectId));
+          return note("images.done", { n: r.created.length });
+        }
+        return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
+      }
       const r = await runImageSetV2(ctx, projectId);
       const ads = await pipelineAds(ctx, projectId);
       return note("images.done", { n: r.created.length + ads });

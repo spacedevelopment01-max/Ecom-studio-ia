@@ -306,7 +306,8 @@ for (const p of PRODUCTS) {
   const all = (await api(ctx, `/api/projects/${pid}/files`)).assets as any[];
   const assets = files.length ? files : all;
   // Scènes dans l'ordre de création : la première (« vie quotidienne ») sert d'exemple principal.
-  const byRole = (r: string) => assets.filter((a) => a.role === r).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
+  // Visuel social : celui du jeu d'images, pas une publication du calendrier (déjà montrée dans le fil).
+  const byRole = (r: string) => assets.filter((a) => a.role === r && !(r === "social" && a.meta?.socialV2)).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
   await sharp(photo).resize({ width: 900 }).jpeg({ quality: 84 }).toFile(path.join(dir, X("photo.jpg")));
   const images: { src: string; label: string }[] = [];
   const pick: [string, string, number][] = EN

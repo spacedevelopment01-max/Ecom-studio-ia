@@ -425,24 +425,15 @@ export function ownScenePhotos(projectId: string): Asset[] {
 async function photoImageSet(ctx: JobContext, project: Project, opts: ImageSetOptions): Promise<{ created: string[] } | null> {
   const photos = ownScenePhotos(project.id);
   if (!photos.length) return null;
-  const { composePoster, confirmedFeatures, savePosterDoc } = await import("../ads-v2/poster");
-  const headline = (project.brand?.tagline || project.product.name || project.brand?.name || project.name).slice(0, 70);
-  const subline = project.product.name || null;
-  const plan: { aspect: "4:5" | "1:1" | "9:16" | "16:9"; role: "social" | "ad" | "banner"; folder: string; cta: boolean }[] = [
-    ...(opts.social !== false && !opts.localOnly ? [
-      { aspect: "4:5" as const, role: "social" as const, folder: "images.social", cta: false },
-      { aspect: "9:16" as const, role: "ad" as const, folder: "images.ads", cta: true },
-      { aspect: "1:1" as const, role: "ad" as const, folder: "images.ads", cta: true },
-    ] : []),
-    ...(opts.banner !== false ? [{ aspect: "16:9" as const, role: "banner" as const, folder: "images.banners", cta: true }] : []),
-  ];
+  const { composePoster, savePosterDoc } = await import("../ads-v2/poster");
+  const plan = photoSetPlan(project, opts);
   const created = await ctx.step("photo-set", async () => {
     const ids: string[] = [];
     for (const [k, f] of plan.entries()) {
       ctx.progress(0.4 + (k / Math.max(1, plan.length)) * 0.55, L("Visuels mis en page sur vos photos", "Visuals laid out on your photos"));
       const background = photos[k % photos.length];
-      const r = await composePoster(project, { aspect: f.aspect, headline, subline, eyebrow: project.product.category || null, cta: f.cta ? C("Découvrir", "Shop now") : null, background, product: null, features: confirmedFeatures(project), seed: `images:${f.role}:${f.aspect}` });
-      const a = await saveAsset({ projectId: project.id, userId: project.userId, data: r.jpg, name: `${slug(project.product.name || project.name)}-${f.role === "ad" ? C("publicite", "ad") : f.role === "banner" ? C("banniere", "banner") : "post"}-${f.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: f.role, folderKey: f.folder, origin: "generated", sourceAssetId: background.id, meta: { recipe: L(`Mise en page ${f.aspect} sur votre photo`, `${f.aspect} layout on your photo`), format: f.aspect, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background.id } } });
+      const r = await composePoster(project, { aspect: f.aspect, headline: f.headline, subline: f.subline, eyebrow: f.eyebrow, cta: f.cta, background, product: null, features: f.features, seed: `images:${f.role}:${f.aspect}` });
+      const a = await saveAsset({ projectId: project.id, userId: project.userId, data: r.jpg, name: `${slug(project.product.name || project.name)}-${f.role === "ad" ? C("publicite", "ad") : f.role === "banner" ? C("banniere", "banner") : "post"}-${f.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: f.role, folderKey: f.folder, origin: "generated", sourceAssetId: background.id, meta: { recipe: L(`${f.angle.fr} : mise en page ${f.aspect} sur votre photo`, `${f.angle.en}: ${f.aspect} layout on your photo`), format: f.aspect, text: { headline: f.headline }, poster: { docKey: r.docKey, layout: r.layout, backgroundAssetId: background.id } } });
       savePosterDoc(project.id, r.docKey, r.doc, a.id);
       ids.push(a.id);
     }
@@ -450,6 +441,35 @@ async function photoImageSet(ctx: JobContext, project: Project, opts: ImageSetOp
   });
   ctx.progress(0.98, L("Images prêtes", "Images ready"));
   return { created };
+}
+
+export type PhotoSetItem = { aspect: "4:5" | "1:1" | "9:16" | "16:9"; role: "social" | "ad" | "banner"; folder: string; angle: { fr: string; en: string }; headline: string; subline: string | null; eyebrow: string | null; cta: string | null; features: string[] | null };
+
+/**
+ * Visuels sur photo, un angle par visuel (méthodes des compétences ad-creative / ads, adaptées au studio) :
+ * - « Lifestyle Hero » : la photo fait le travail, une phrase de marque courte, rien d'autre (texte < 20 % de l'image) ;
+ * - « Offre » : nom exact du produit et prix confirmé, bouton qui nomme l'action ;
+ * - « Callout » : les informations confirmées du produit (jamais d'argument inventé) ;
+ * - bannière : nom du produit et sa catégorie.
+ * Les textes viennent uniquement du projet ; un prix non confirmé n'est jamais affiché.
+ */
+export function photoSetPlan(project: Project, opts: ImageSetOptions = {}): PhotoSetItem[] {
+  const name = project.product.name || project.brand?.name || project.name;
+  const tagline = project.brand?.tagline?.trim() || "";
+  const category = project.product.category?.trim() || null;
+  const pr = project.product.price;
+  const price = pr?.status === "confirmed" && pr.amount != null ? `${(pr.amount / 100).toFixed(2).replace(".", C(",", ".")).replace(/[.,]00$/, "")} ${pr.currency === "EUR" ? "€" : pr.currency}` : null;
+  const facts = confirmedFacts(project).filter((f) => f !== name);
+  const shop = C("Voir la boutique", "Visit the store");
+  const order = C("Commander", "Order now");
+  const items: PhotoSetItem[] = [];
+  if (opts.social !== false && !opts.localOnly) {
+    items.push({ aspect: "4:5", role: "social", folder: "images.social", angle: { fr: "Photo en situation", en: "Lifestyle photo" }, headline: (tagline || name).slice(0, 60), subline: null, eyebrow: null, cta: null, features: null });
+    items.push({ aspect: "9:16", role: "ad", folder: "images.ads", angle: { fr: "Offre", en: "Offer" }, headline: name.slice(0, 60), subline: price ?? category, eyebrow: price ? category : null, cta: price ? order : shop, features: null });
+    items.push({ aspect: "1:1", role: "ad", folder: "images.ads", angle: facts.length >= 2 ? { fr: "Atouts confirmés", en: "Confirmed features" } : { fr: "Marque", en: "Brand" }, headline: name.slice(0, 60), subline: facts.length >= 2 ? null : tagline || category, eyebrow: null, cta: shop, features: facts.length >= 2 ? facts : null });
+  }
+  if (opts.banner !== false) items.push({ aspect: "16:9", role: "banner", folder: "images.banners", angle: { fr: "Bannière", en: "Banner" }, headline: (tagline || name).slice(0, 60), subline: tagline ? name : category, eyebrow: null, cta: shop, features: null });
+  return items;
 }
 
 /** Informations confirmées, très courtes, pour les pastilles des visuels (jamais d'allégation inventée). */
