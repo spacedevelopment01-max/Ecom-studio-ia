@@ -19,6 +19,34 @@ const { adFitOrder } = await import("../src/lib/stock/ad-fit");
 const { rankStock } = await import("../src/lib/stock/trade-queries");
 const { composeAd } = await import("../src/lib/ads-v2/compose");
 const sharp = (await import("sharp")).default;
+const { createCanvas } = await import("@napi-rs/canvas");
+const { ensureFonts } = await import("../src/lib/media/fonts");
+const { serverFont } = await import("../src/lib/ad-doc/server");
+ensureFonts();
+
+/** Logo d'exemple (pastille à l'initiale + nom dans la police de titre), version foncée et version claire. */
+function demoLogo(name: string, font: string, ink: string, accent: string): Buffer {
+  const H = 240;
+  const probe = createCanvas(10, 10).getContext("2d");
+  probe.font = serverFont(font, 700, 150, false);
+  const tw = probe.measureText(name).width;
+  const c = createCanvas(Math.ceil(H + 40 + tw + 20), H);
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.arc(H / 2, H / 2, H / 2 - 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = serverFont(font, 700, 130, false);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(name[0], H / 2, H / 2 + 8);
+  ctx.fillStyle = ink;
+  ctx.font = serverFont(font, 700, 150, false);
+  ctx.textAlign = "left";
+  ctx.fillText(name, H + 40, H / 2 + 8);
+  return c.toBuffer("image/png");
+}
 
 if (!process.env.PIXABAY_API_KEY) {
   console.error("PIXABAY_API_KEY manquante (variable d'environnement) : aucune recherche possible.");
@@ -65,9 +93,11 @@ for (const ex of EX) {
   }
   sources.push(`${ex.name} : ${best.page} — ${best.author} (${best.license}) — « ${best.alt} »`);
   const art = { style: ex.style ?? "warm", heading: ex.heading, headingWeight: ex.heading === "Anton" ? 400 : ex.heading === "Cormorant" ? 500 : 600, body: ex.body ?? "Jost", display: ex.heading === "Anton" ? "Anton" : "Archivo", displayWeight: ex.heading === "Anton" ? 400 : 800, uppercase: false, cta: ex.style === "craft" ? "rounded" : "pill", arrow: ex.style !== "bold", cycle: ["editorial"] } as const;
+  const logo = process.env.NO_LOGO ? null : demoLogo(ex.brand, ex.heading, ex.pal.dark, ex.pal.primary);
+  const logoLight = process.env.NO_LOGO ? null : demoLogo(ex.brand, ex.heading, "#FFFFFF", ex.pal.primary);
   for (const [k, f] of ASPECTS.entries()) {
     const layout = ex.layouts[k % ex.layouts.length];
-    const r = await composeAd({ format: { platform: "meta_feed", aspect: f.aspect as never, width: f.width, height: f.height, label: f.aspect, safe: { top: 0.05, bottom: 0.06, side: 0.05 } }, layout: layout as never, palette: ex.pal as never, typo: { heading: ex.heading, body: ex.body ?? "Jost" }, art: art as never, brand: ex.brand, headline: ex.head, subline: ex.sub, cta: ex.cta, background: bg, product: null });
+    const r = await composeAd({ format: { platform: "meta_feed", aspect: f.aspect as never, width: f.width, height: f.height, label: f.aspect, safe: { top: 0.05, bottom: 0.06, side: 0.05 } }, layout: layout as never, palette: ex.pal as never, typo: { heading: ex.heading, body: ex.body ?? "Jost" }, art: art as never, brand: ex.brand, headline: ex.head, subline: ex.sub, cta: ex.cta, background: bg, product: null, logo, logoLight, variant: { logo: (["column", "corner", "foot"] as const)[(k + EX.indexOf(ex)) % 3] } });
     const file = path.join(out, `${ex.name}-${f.aspect.replace(":", "x")}-${layout}.jpg`);
     fs.writeFileSync(file, r.jpg);
     if (k < 2) tiles.push(await sharp(r.jpg).resize(540, 540, { fit: "contain", background: "#ffffff" }).toBuffer());
