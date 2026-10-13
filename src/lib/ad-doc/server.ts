@@ -6,6 +6,10 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { contrast } from "../color";
 import { ensureFonts, font } from "../media/fonts";
 import { layoutText, renderDoc, type RenderEnv } from "./render";
+import { setCanvasFactory } from "./image-fx";
+
+// Traitements de photo calculés sur des canevas du serveur (mêmes calculs que dans le navigateur).
+setCanvasFactory((w, h) => createCanvas(w, h) as never);
 import type { AdDocument, Layer } from "./types";
 
 export const serverFont: RenderEnv["font"] = (family, weight, size, italic) => font(family, weight, size, italic);

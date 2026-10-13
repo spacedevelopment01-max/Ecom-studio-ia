@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
     "liquidjs",
     "playwright",
     "nodemailer",
+    // Composition musicale (vrais instruments enregistrés, banque GeneralUser GS lue sur le disque).
+    "spessasynth_core",
     // Theme Check (contrôle des exports Shopify) lit ses fichiers de configuration à côté de son code : il ne doit
     // pas être empaqueté par Next (sinon « configs/recommended.yml » introuvable et export en erreur).
     "@shopify/theme-check-node",

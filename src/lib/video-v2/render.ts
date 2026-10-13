@@ -14,6 +14,8 @@ import type { AdDocument, Layer } from "../ad-doc/types";
 import { absoluteCues, timeline } from "./doc";
 import type { CameraMove, Clip, VideoDocument } from "./types";
 import { TOOL_TIMEOUT_MS } from "../exec-tool";
+import { accentOf } from "./promo";
+import type { Palette } from "./doc";
 
 type Ctx = any;
 export type VideoSources = { images: RenderEnv["images"]; videos: Map<string, string> };
@@ -26,15 +28,20 @@ const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t 
 
 /** Lecture séquentielle des images d'un plan vidéo (ffmpeg → RGBA), à la taille du rendu. */
 class FrameReader {
-  private buf = Buffer.alloc(0);
+  // Morceaux reçus de ffmpeg, sans recopie : ffmpeg est mis en pause dès quelques images d'avance (sinon la mémoire
+  // tampon grossit sans fin et chaque morceau recopiait tout ce qui attendait — rendu très lent sur un vrai plan).
+  private chunks: Buffer[] = [];
+  private queued = 0;
   private ended = false;
   private waiters: (() => void)[] = [];
   private last: Buffer | null = null;
   private proc;
   constructor(file: string, inS: number, durS: number, private w: number, private h: number, fps: number) {
-    this.proc = spawn("ffmpeg", ["-v", "error", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps}`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
+    this.proc = spawn("ffmpeg", ["-v", "error", "-ss", String(Math.max(0, inS)), "-t", String(Math.max(0.05, durS)), "-i", file, "-an", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},fps=${fps},eq=contrast=1.05:saturation=1.12`, "-f", "rawvideo", "-pix_fmt", "rgba", "pipe:1"], { stdio: ["ignore", "pipe", "ignore"] });
     this.proc.stdout.on("data", (d: Buffer) => {
-      this.buf = Buffer.concat([this.buf, d]);
+      this.chunks.push(d);
+      this.queued += d.length;
+      if (this.queued >= this.w * this.h * 4 * 4) this.proc.stdout.pause();
       this.wake();
     });
     const end = () => {
@@ -52,11 +59,18 @@ class FrameReader {
   /** Image suivante (la dernière est tenue si le plan source est plus court que prévu). */
   async next(): Promise<Buffer | null> {
     const size = this.w * this.h * 4;
-    while (this.buf.length < size && !this.ended) await new Promise<void>((r) => this.waiters.push(r));
-    if (this.buf.length >= size) {
-      this.last = this.buf.subarray(0, size);
-      this.buf = this.buf.subarray(size);
+    while (this.queued < size && !this.ended) {
+      this.proc.stdout.resume();
+      await new Promise<void>((r) => this.waiters.push(r));
     }
+    if (this.queued >= size) {
+      const all = this.chunks.length === 1 ? this.chunks[0] : Buffer.concat(this.chunks, this.queued);
+      this.last = Buffer.from(all.subarray(0, size));
+      const rest = all.subarray(size);
+      this.chunks = rest.length ? [rest] : [];
+      this.queued = rest.length;
+    }
+    if (this.queued < this.w * this.h * 4 * 4) this.proc.stdout.resume();
     return this.last;
   }
   close() {
@@ -105,7 +119,7 @@ function animatedDoc(doc: AdDocument, local: number, mode: "rise" | "fade" | "no
     ...doc,
     layers: doc.layers.map((l, k): Layer => {
       if (l.role === "background") return l;
-      const p = easeOut((local - 0.08 * k) / 0.55);
+      const p = easeOut((local - 0.045 * Math.min(k, 12)) / 0.5);
       return { ...l, opacity: l.opacity * p, y: mode === "rise" ? l.y + (1 - p) * doc.height * 0.03 : l.y } as Layer;
     }),
   };
@@ -184,7 +198,11 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
       scratch.ctx.putImageData(id, 0, 0);
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.drawImage(scratch.canvas, 0, 0);
+      // Vidéo habillée : léger zoom lent sur la durée du plan (mouvement de caméra continu, jamais d'arrêt sur image).
+      const z = doc.meta.promo ? 1 + 0.06 * easeInOut(p) : 1;
+      const cw = scratch.canvas.width;
+      const ch = scratch.canvas.height;
+      ctx.drawImage(scratch.canvas, (cw - cw * z) / 2, (ch - ch * z) / 2, cw * z, ch * z);
       ctx.restore();
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
     } else {
@@ -194,18 +212,48 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
   } else renderDoc(ctx, animatedDoc(s.doc, local, s.animate), env);
   if (c.overlays.length) {
     const ov: AdDocument = { version: 1, width: W, height: H, background: "transparent", safe: doc.safe, format: { platform: null, aspect: doc.aspect }, layers: c.overlays, brand: doc.brand, meta: { conceptId: null, source: "engine", createdFrom: null } };
-    renderDoc(ctx, animatedDoc(ov, local, "fade"), env, (l) => l.visible);
+    renderDoc(ctx, animatedDoc(ov, local, "rise"), env, (l) => l.visible);
   }
 }
 
 /** Transition à l'entrée d'un plan : mélange avec la dernière image du plan précédent (tenue). */
-function drawTransition(ctx: Ctx, kind: Clip["transitionIn"]["kind"], p: number, prev: any, W: number, H: number) {
+function drawTransition(ctx: Ctx, kind: Clip["transitionIn"]["kind"], p: number, prev: any, W: number, H: number, colors?: { a: string; b: string }) {
   if (!prev || kind === "cut" || p >= 1) return;
   const e = easeInOut(p);
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   const cw = prev.width;
   const ch = prev.height;
+  if (kind === "wipe" && colors) {
+    // Balayage aux couleurs de la marque : deux bandes diagonales traversent l'image ; l'ancien plan reste devant
+    // la bande, le nouveau apparaît derrière (comme les transitions des modèles d'agence).
+    const skew = cw * 0.35;
+    const x = -skew + (cw + skew * 2) * e;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(cw + skew, 0);
+    ctx.lineTo(cw + skew, ch);
+    ctx.lineTo(x - skew, ch);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(prev, 0, 0);
+    ctx.restore();
+    const band = (off: number, wd: number, color: string) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x - off, 0);
+      ctx.lineTo(x - off + wd, 0);
+      ctx.lineTo(x - off + wd - skew, ch);
+      ctx.lineTo(x - off - skew, ch);
+      ctx.closePath();
+      ctx.fill();
+    };
+    band(0, cw * 0.09, colors.a);
+    band(cw * 0.09, cw * 0.025, colors.b);
+    ctx.restore();
+    return;
+  }
   if (kind === "fade") {
     ctx.globalAlpha = 1 - e;
     ctx.drawImage(prev, 0, 0);
@@ -279,7 +327,7 @@ export async function renderVideoDoc(doc: VideoDocument, src: VideoSources, outF
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       ctx.clearRect(0, 0, doc.width, doc.height);
       await drawClip(ctx, doc, c, local, src, reader, scratch, scale);
-      if (ci > 0 && hasPrev && c.transitionIn.kind !== "cut" && local < c.transitionIn.durationS) drawTransition(ctx, c.transitionIn.kind, local / c.transitionIn.durationS, prevCanvas, OW, OH);
+      if (ci > 0 && hasPrev && c.transitionIn.kind !== "cut" && local < c.transitionIn.durationS) drawTransition(ctx, c.transitionIn.kind, local / c.transitionIn.durationS, prevCanvas, OW, OH, doc.meta.promo ? { a: accentOf(doc.brand.palette as Palette), b: "#FFFFFF" } : undefined);
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       const cue = cues.find((q) => t >= q.start && t < q.end);
       if (cue) drawSubtitle(ctx, doc, cue.text, t - cue.start);

@@ -7,6 +7,7 @@
  * Entreprise de services : pas de produit (`product: null`) — photos réelles de l'activité ou typographie
  * animée, liste des prestations, infos pratiques et écran final à la marque.
  */
+import { composeMusic } from "./music";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -957,61 +958,12 @@ function drawTransition(ctx: Ctx, kind: VideoSpec["transition"], p: number, P: P
 
 // ---------------------------------------------------------------- musique
 
-/** Fond musical synthétisé (aucun droit tiers) : nappe d'accords et pulsation légère. */
-export function synthMusic(duration: number, kind: "calm" | "pulse", cuts: number[], sampleRate = 44100): Buffer {
-  const n = Math.ceil(duration * sampleRate);
-  const L = new Float32Array(n), R = new Float32Array(n);
-  const chords = [
-    [220.0, 277.18, 329.63, 415.3],
-    [196.0, 246.94, 293.66, 369.99],
-    [174.61, 220.0, 261.63, 329.63],
-    [196.0, 246.94, 293.66, 392.0],
-  ];
-  const bar = kind === "pulse" ? 2 : 3;
-  for (let i = 0; i < n; i++) {
-    const t = i / sampleRate;
-    const ci = Math.floor(t / bar) % chords.length;
-    const tin = (t % bar) / bar;
-    const env = Math.min(1, tin * 6) * (1 - Math.max(0, tin - 0.85) / 0.15 * 0.5);
-    let s = 0;
-    for (const [k, f] of chords[ci].entries()) {
-      const det = 1 + (k % 2 ? 0.003 : -0.003);
-      s += (Math.sin(2 * Math.PI * f * det * t) * 0.6 + Math.sin(2 * Math.PI * f * 2 * t) * 0.15) * (0.22 - k * 0.03);
-    }
-    s *= env * (0.85 + 0.15 * Math.sin(2 * Math.PI * 0.25 * t));
-    if (kind === "pulse") {
-      const beat = (t % 0.5) / 0.5;
-      const kick = Math.sin(2 * Math.PI * (55 + 90 * Math.exp(-beat * 30)) * (t % 0.5)) * Math.exp(-beat * 9) * 0.5;
-      s += kick;
-    }
-    // Souffle aux transitions.
-    for (const c of cuts) {
-      const d = t - (c - 0.35);
-      if (d > 0 && d < 0.7) s += (Math.random() * 2 - 1) * Math.sin((d / 0.7) * Math.PI) * 0.08;
-    }
-    const fade = Math.min(1, t / 0.8, (duration - t) / 1.2);
-    s *= Math.max(0, fade) * 0.55;
-    L[i] = s * (1 + 0.05 * Math.sin(t * 0.7));
-    R[i] = s * (1 - 0.05 * Math.sin(t * 0.7));
-  }
-  const data = Buffer.alloc(44 + n * 4);
-  data.write("RIFF", 0);
-  data.writeUInt32LE(36 + n * 4, 4);
-  data.write("WAVEfmt ", 8);
-  data.writeUInt32LE(16, 16);
-  data.writeUInt16LE(1, 20);
-  data.writeUInt16LE(2, 22);
-  data.writeUInt32LE(sampleRate, 24);
-  data.writeUInt32LE(sampleRate * 4, 28);
-  data.writeUInt16LE(4, 32);
-  data.writeUInt16LE(16, 34);
-  data.write("data", 36);
-  data.writeUInt32LE(n * 4, 40);
-  for (let i = 0; i < n; i++) {
-    data.writeInt16LE(Math.round(clamp(L[i], -1, 1) * 32767), 44 + i * 4);
-    data.writeInt16LE(Math.round(clamp(R[i], -1, 1) * 32767), 46 + i * 4);
-  }
-  return data;
+/**
+ * Fond musical composé par le studio (aucun droit tiers) : voir `music.ts`. Les coupes ne reçoivent plus de souffle
+ * (bruit blanc) : la musique porte seule le rythme du montage.
+ */
+export function synthMusic(duration: number, kind: "calm" | "pulse", _cuts: number[], sampleRate = 44100): Buffer {
+  return composeMusic(duration, kind, sampleRate);
 }
 
 // ---------------------------------------------------------------- sous-titres

@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { synthMusic } from "../media/video";
+import { renderSong } from "../media/song";
 import { timeline } from "./doc";
 import type { VideoDocument } from "./types";
 import { execTool } from "../exec-tool";
@@ -15,12 +16,17 @@ const exec = execTool;
 export type AudioFiles = { voice: Map<string, string>; sfx: Map<string, string>; music: string | null };
 export type AudioMeasure = { lufs: number | null; truePeakDb: number | null; durationS: number; silent: boolean };
 
-/** Musique composée par le studio (aucune licence tierce) : ambiance selon l'humeur, accents sur les coupes. */
-export function synthTrack(doc: VideoDocument, file: string): string | null {
+/**
+ * Musique composée par le studio (aucune licence tierce) : un vrai morceau joué par de vrais instruments, dans le
+ * style du produit ou du métier ; à défaut (banque d'instruments absente), la musique de secours synthétisée.
+ */
+export async function synthTrack(doc: VideoDocument, file: string): Promise<string | null> {
   const m = doc.audio.music;
   if (!m || m.source !== "synth" || m.mood === "none") return null;
   const { starts, total } = timeline(doc);
-  fs.writeFileSync(file, synthMusic(total, m.mood === "pulse" ? "pulse" : "calm", starts.slice(1)));
+  const style = m.style ?? (m.mood === "pulse" ? "pop" : m.mood === "warm" ? "acoustic" : "calm");
+  const song = await renderSong(style, total, m.seed ?? doc.brand.name ?? "studio").catch(() => null);
+  fs.writeFileSync(file, song ?? synthMusic(total, m.mood === "pulse" ? "pulse" : "calm", starts.slice(1)));
   return file;
 }
 
@@ -61,7 +67,9 @@ export async function mixAudio(doc: VideoDocument, files: AudioFiles, out: strin
   let music: string | null = null;
   if (files.music && doc.audio.music) {
     const i = add(files.music);
-    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,aloop=loop=-1:size=2e9,atrim=0:${total},volume=${doc.audio.music.gainDb}dB[mus]`);
+    // Piste de la banque : entrée et sortie en fondu (jamais une coupure sèche à la fin de la vidéo).
+    const fades = doc.audio.music.source === "library" ? `,afade=t=in:st=0:d=0.5,afade=t=out:st=${Math.max(0, total - 1.6).toFixed(2)}:d=1.6` : "";
+    chains.push(`[${i}:a]aformat=sample_rates=44100:channel_layouts=stereo,aloop=loop=-1:size=2e9,atrim=0:${total}${fades},volume=${doc.audio.music.gainDb}dB[mus]`);
     music = "[mus]";
   }
   let mixInputs: string[] = [...effects];

@@ -9,7 +9,7 @@ import { CANVAS_FONTS } from "../media/fonts";
 import type { Typo } from "../media/compose";
 import type { Project } from "../projects";
 
-export const AD_LAYOUTS = ["editorial", "poster", "panel", "band", "frame", "typographic", "lower", "corner"] as const;
+export const AD_LAYOUTS = ["editorial", "poster", "panel", "band", "frame", "typographic", "lower", "corner", "capsule", "tilt", "bigtype", "detail", "glass"] as const;
 export type AdLayout = (typeof AD_LAYOUTS)[number];
 
 /** Anciennes mises en page (créations et tests existants) → composition actuelle la plus proche. */
@@ -34,12 +34,48 @@ export type AdArt = {
   cycle: AdLayout[];
 };
 
+/**
+ * Rotation des compositions : les compositions « graphiques » (photo en capsule, carte inclinée et pastille, titre
+ * géant sur photo bichromie, loupe sur le détail, carte en verre dépoli) alternent avec les compositions photo, pour
+ * que deux créations qui se suivent ne se ressemblent jamais.
+ */
 const CYCLES: Record<AdStyle, AdLayout[]> = {
-  premium: ["editorial", "corner", "poster", "panel", "lower", "frame"],
-  bold: ["poster", "lower", "band", "frame", "editorial"],
-  craft: ["panel", "lower", "frame", "editorial", "corner", "poster"],
-  warm: ["editorial", "panel", "lower", "poster", "corner", "band"],
+  premium: ["editorial", "capsule", "glass", "corner", "detail", "poster", "panel", "lower", "frame"],
+  bold: ["bigtype", "tilt", "poster", "detail", "lower", "glass", "frame", "editorial"],
+  craft: ["panel", "detail", "glass", "lower", "capsule", "frame", "editorial", "tilt"],
+  warm: ["tilt", "editorial", "capsule", "detail", "panel", "lower", "glass", "poster", "corner"],
 };
+
+/**
+ * Traitements de la photo (étalonnage d'affiche) : la photo est TRAVAILLÉE, pas simplement posée.
+ *  - natural : telle quelle ; punch : contraste et couleurs relevés ; warm : chaude et dorée ; cool : fraîche ;
+ *  - mono : noir et blanc contrasté ; moody : assombrie, vignette ; duotone : bichromie aux couleurs de la marque.
+ */
+export const TREATMENTS = ["natural", "punch", "warm", "cool", "mono", "moody", "duotone"] as const;
+export type Treatment = (typeof TREATMENTS)[number];
+export const TREATMENT_FILTER: Record<Treatment, string | null> = {
+  natural: null,
+  punch: "contrast(1.12) saturate(1.22)",
+  warm: "sepia(0.22) saturate(1.18) contrast(1.06)",
+  cool: "hue-rotate(-10deg) saturate(1.08) contrast(1.1) brightness(0.98)",
+  mono: "grayscale(1) contrast(1.18)",
+  moody: "brightness(0.84) contrast(1.16) saturate(0.92)",
+  duotone: "contrast(1.1)",
+};
+/** Traitements qui vont bien avec une composition et un style (le premier sert par défaut). */
+export function treatmentsFor(layout: AdLayout, style: AdStyle): Treatment[] {
+  if (layout === "bigtype") return ["duotone", "mono", "moody"];
+  if (layout === "glass" || layout === "capsule" || layout === "tilt") return style === "bold" ? ["punch", "natural", "cool"] : ["natural", "warm", "punch"];
+  if (layout === "frame") return ["moody", "mono", "cool"];
+  if (style === "premium") return ["warm", "natural", "moody", "mono"];
+  if (style === "bold") return ["punch", "cool", "moody", "duotone"];
+  if (style === "craft") return ["natural", "punch", "warm", "cool"];
+  return ["warm", "punch", "natural", "cool"];
+}
+
+/** Placement du logo : dans la colonne de texte, au coin opposé, ou en signature au pied de la création. */
+export type LogoPlacement = "column" | "corner" | "foot";
+export type AdVariant = { treatment?: Treatment; logo?: LogoPlacement; scheme?: string };
 
 const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
@@ -93,7 +129,9 @@ export const layoutForConcept = (art: AdArt, k: number): AdLayout => art.cycle[k
 export function textZoneFor(layout: AdLayout, width: number, height: number): "none" | "left" | "top" {
   const land = width / height >= 1.4;
   const square = !land && width / height > 0.9;
-  if (layout === "panel" || layout === "typographic") return "none";
+  if (layout === "panel" || layout === "typographic" || layout === "capsule" || layout === "tilt") return "none";
+  if (layout === "bigtype") return "top";
+  if (layout === "detail" || layout === "glass") return land || square ? "left" : "top";
   if (layout === "lower") return "top"; // le sujet reste en haut, le texte en bas (zone à garder « calme » : le bas)
   if (layout === "corner") return land || square ? "left" : "top";
   if (layout === "editorial" || layout === "frame") return land || square ? "left" : "top";

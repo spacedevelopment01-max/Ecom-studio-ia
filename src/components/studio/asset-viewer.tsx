@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { Check, Download, ExternalLink, PenLine, Send, Store, X, Package } from "lucide-react";
 import { AdEditor } from "./ad-editor/ad-editor";
+import { AnimatePost } from "./animate-post";
+import { StyleGallery } from "./style-gallery";
 import { api, Badge, Button, cx, formatBytes, formatDate, Modal, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, ROLE_LABEL, StatusBadge, type AssetView } from "./common";
@@ -111,6 +113,12 @@ export function AssetViewer({ asset, onClose, onChanged }: { asset: AssetView | 
               <p className="text-xs font-medium">{t("Mise en page", "Layout")}</p>
               <Button size="sm" variant="secondary" className="mt-2" icon={<PenLine className="size-3.5" />} onClick={() => setEditDoc(a.meta.poster.docKey)}>{t("Modifier le texte, les couleurs et la mise en page", "Edit text, colors and layout")}</Button>
               <p className="mt-1.5 text-[11px] text-muted">{t("Titre, ligne, bouton, couleurs, placement : sans refaire la photo.", "Headline, line, button, colors, placement: without redoing the photo.")}</p>
+              <div className="mt-2">
+                <StyleGallery projectId={projectId} docKey={a.meta.poster.docKey} onApplied={() => (reloadInfo(), onChanged?.())} />
+              </div>
+              <div className="mt-3 border-t border-line pt-3">
+                <AnimatePost projectId={projectId} docKey={a.meta.poster.docKey} onDone={() => onChanged?.()} />
+              </div>
             </div>
           )}
           {(a.kind === "image" || a.kind === "video") && (

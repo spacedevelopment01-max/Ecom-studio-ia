@@ -86,7 +86,7 @@ export type VisualConcept = {
   kind: "ad_image" | "lifestyle" | "usage_scene" | "trade_photo" | "ambiance" | "site_image";
   subject: string;
   /** Mise en page publicitaire. */
-  layout: "hero_left" | "hero_center" | "full_bleed" | "split" | "typographic" | "editorial" | "poster" | "panel" | "band" | "frame" | "lower" | "corner";
+  layout: "hero_left" | "hero_center" | "full_bleed" | "split" | "typographic" | "editorial" | "poster" | "panel" | "band" | "frame" | "lower" | "corner" | "capsule" | "tilt" | "bigtype" | "detail" | "glass";
   /** Le produit réel (détourage) est-il posé sur la création ? */
   productOnTop: boolean;
 };

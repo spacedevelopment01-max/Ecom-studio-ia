@@ -59,7 +59,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     expect(doc.clips.some((c) => c.generated)).toBe(true);
     expect(doc.disclosure).toMatch(/générée par IA/);
     // Calques de l'éditeur publicitaire réutilisés (packshot, carte de fin).
-    expect(doc.clips.some((c) => c.source.kind === "doc" && c.source.doc.layers.some((l) => l.kind === "button"))).toBe(true);
+    expect(doc.clips.some((c) => [...(c.source.kind === "doc" ? c.source.doc.layers : []), ...c.overlays].some((l) => l.kind === "button"))).toBe(true);
     // Sous-titres rangés à part (modifiables), voix enregistrées, audio mesuré proche de la cible.
     const files = all<{ name: string; mime: string }>("SELECT name, mime FROM assets WHERE project_id = ? AND role = 'subtitles'", p.id);
     expect(files.map((f) => f.mime).sort()).toEqual(["application/x-subrip", "text/vtt"]);

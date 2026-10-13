@@ -3,6 +3,7 @@
  * navigateur) et l'export du serveur (@napi-rs/canvas). Aucune dépendance Node ici : l'environnement fournit la
  * correspondance des polices et les images déjà chargées. Ce qui est vu dans l'éditeur est ce qui est exporté.
  */
+import { processedImage } from "./image-fx";
 import type { AdDocument, Fill, ImageLayer, Layer, Shadow, TextLayer } from "./types";
 
 /** Sous-ensemble de CanvasRenderingContext2D commun au navigateur et à @napi-rs/canvas. */
@@ -68,6 +69,11 @@ function balanced(ctx: Ctx2D, text: string, w: number, lines: string[]): string[
 
 function fillStyle(ctx: Ctx2D, f: Fill, x: number, y: number, w: number, h: number) {
   if (typeof f === "string") return f;
+  if (f.type === "radial") {
+    const g = ctx.createRadialGradient(x + w / 2, y + h / 2, 0, x + w / 2, y + h / 2, Math.hypot(w, h) / 2);
+    for (const s of f.stops) g.addColorStop(Math.max(0, Math.min(1, s.offset)), s.color);
+    return g;
+  }
   const a = (f.angle * Math.PI) / 180;
   const cx = x + w / 2;
   const cy = y + h / 2;
@@ -116,9 +122,20 @@ function drawImage(ctx: Ctx2D, l: ImageLayer, env: RenderEnv) {
     roundRect(ctx, l.x, l.y, l.w, l.h, l.radius);
     ctx.clip();
     const s = Math.max(l.w / sw, l.h / sh);
+    shadowOn(ctx, null);
+    if ((l.filter && l.filter !== "none") || l.duotone) {
+      // Photo traitée (étalonnage, bichromie, flou) calculée pixel par pixel : identique dans l'éditeur et à l'export.
+      const vw = l.w / s;
+      const vh = l.h / s;
+      const fx = processedImage(img, { sx: sx + (sw - vw) / 2, sy: sy + (sh - vh) / 2, sw: vw, sh: vh }, l.w, l.h, l.filter, l.duotone);
+      if (fx) {
+        ctx.drawImage(fx, l.x, l.y, l.w, l.h);
+        ctx.restore();
+        return;
+      }
+    }
     const w = sw * s;
     const h = sh * s;
-    shadowOn(ctx, null);
     ctx.drawImage(img, sx, sy, sw, sh, l.x + (l.w - w) / 2, l.y + (l.h - h) / 2, w, h);
   } else {
     const b = containBox(l, sw, sh);
@@ -137,7 +154,9 @@ function drawImage(ctx: Ctx2D, l: ImageLayer, env: RenderEnv) {
       ctx.restore();
     }
     shadowOn(ctx, l.shadow);
-    ctx.drawImage(img, sx, sy, sw, sh, b.x, b.y, b.w, b.h);
+    const fx = l.filter && l.filter !== "none" ? processedImage(img, { sx, sy, sw, sh }, b.w, b.h, l.filter, null) : null;
+    if (fx) ctx.drawImage(fx, b.x, b.y, b.w, b.h);
+    else ctx.drawImage(img, sx, sy, sw, sh, b.x, b.y, b.w, b.h);
   }
   ctx.restore();
 }

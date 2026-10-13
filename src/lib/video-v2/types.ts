@@ -163,6 +163,9 @@ export type ClipSource =
   | { kind: "doc"; doc: AdDocument; animate: "rise" | "fade" | "none" }
   | { kind: "color"; color: string };
 
+export type { SongStyle } from "../media/song";
+import type { SongStyle } from "../media/song";
+
 export type Clip = {
   id: string;
   shotId: string;
@@ -209,7 +212,7 @@ export type AudioTracks = {
   /** Voix choisie (identifiant du fournisseur) ; null : aucune voix synthétique disponible. */
   voiceId: string | null;
   /** Musique : synthèse locale (droits du studio) ou piste de la bibliothèque AVEC licence enregistrée. */
-  music: { source: "synth"; mood: MusicMood; gainDb: number } | { source: "library"; assetId: string; licence: string; gainDb: number } | null;
+  music: { source: "synth"; mood: MusicMood; gainDb: number; /** Style du morceau composé (vrais instruments), choisi pour le produit ou le métier. */ style?: SongStyle; /** Variante propre au projet. */ seed?: string } | { source: "library"; assetId: string; licence: string; gainDb: number } | null;
   sfx: AudioClip[];
   /** Baisse de la musique sous la voix (dB). */
   duckingDb: number;
@@ -232,7 +235,7 @@ export type VideoDocument = {
   brand: AdDocument["brand"];
   /** Mention obligatoire quand un personnage ou des plans sont générés (ex. « Vidéo générée par IA »). */
   disclosure: string | null;
-  meta: { intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null };
+  meta: { intent: VideoIntentKind; source: "engine" | "user" | "ai_local" | "ai"; createdFrom: string | null; runId: string | null; /** Habillage publicitaire (titres, panneau, carte de fin posés sur les plans réels). */ promo?: boolean };
 };
 
 // ------------------------------------------------------------------------------------------- qualité et résultat

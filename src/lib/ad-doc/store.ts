@@ -8,7 +8,7 @@ import { z } from "zod";
 import { all, id, json, now, one, run } from "../db";
 import { assetData, getAsset, saveAsset } from "../library";
 import { loadDocImages, renderDocToBuffer } from "./server";
-import type { AdDocument } from "./types";
+import { IMAGE_FILTER_RE, type AdDocument } from "./types";
 
 export type DocVersion = { id: string; docKey: string; version: number; source: AdDocument["meta"]["source"]; note: string; renderedAssetId: string | null; createdAt: number };
 
@@ -18,12 +18,12 @@ export const engineDocKey = (projectId: string, conceptId: string, platform: str
 // ---------------------------------------------------------------- validation (document reçu du navigateur)
 
 const num = z.number().finite();
-const fill = z.union([z.string().max(64), z.object({ type: z.literal("linear"), angle: num, stops: z.array(z.object({ offset: num, color: z.string().max(64) })).max(8) })]);
+const fill = z.union([z.string().max(64), z.object({ type: z.enum(["linear", "radial"]), angle: num, stops: z.array(z.object({ offset: num, color: z.string().max(64) })).max(8) })]);
 const shadow = z.object({ color: z.string().max(64), blur: num, x: num, y: num }).nullable();
 const fontS = z.object({ family: z.string().max(60), weight: num, size: num.min(4).max(800), italic: z.boolean() });
 const baseS = { id: z.string().min(1).max(40), name: z.string().max(80), role: z.enum(["background", "image", "product", "title", "subtitle", "body", "cta", "logo", "shape", "decor", "scrim"]), x: num, y: num, w: num.min(0), h: num.min(0), rotation: num, opacity: num.min(0).max(1), visible: z.boolean(), locked: z.boolean(), anchor: z.object({ h: z.enum(["left", "center", "right", "stretch"]), v: z.enum(["top", "middle", "bottom", "stretch"]) }), userEdited: z.boolean().optional() };
 export const LayerSchema = z.discriminatedUnion("kind", [
-  z.object({ ...baseS, kind: z.literal("image"), assetId: z.string().max(40).nullable(), fit: z.enum(["cover", "contain"]), crop: z.object({ x: num, y: num, w: num, h: num }).nullable(), radius: num, shadow, contactShadow: z.boolean().optional() }),
+  z.object({ ...baseS, kind: z.literal("image"), assetId: z.string().max(40).nullable(), fit: z.enum(["cover", "contain"]), crop: z.object({ x: num, y: num, w: num, h: num }).nullable(), radius: num, shadow, contactShadow: z.boolean().optional(), filter: z.string().max(160).regex(IMAGE_FILTER_RE).nullable().optional(), duotone: z.object({ dark: z.string().max(64), light: z.string().max(64) }).nullable().optional() }),
   z.object({ ...baseS, kind: z.literal("text"), text: z.string().max(600), font: fontS, color: z.string().max(64), align: z.enum(["left", "center", "right"]), lineHeight: num, letterSpacing: num, uppercase: z.boolean(), autoFit: z.object({ minSize: num }).nullable(), shadow }),
   z.object({ ...baseS, kind: z.literal("shape"), shape: z.enum(["rect", "ellipse", "line"]), fill: fill.nullable(), stroke: z.object({ color: z.string().max(64), width: num }).nullable(), radius: num, shadow }),
   z.object({ ...baseS, kind: z.literal("button"), text: z.string().max(80), font: fontS, fill, color: z.string().max(64), radius: num, stroke: z.object({ color: z.string().max(64), width: num }).nullable(), shadow }),
@@ -41,7 +41,7 @@ export const AdDocumentSchema = z.object({
     conceptId: z.string().max(40).nullable(),
     source: z.enum(["engine", "user", "ai_local", "ai"]),
     createdFrom: z.string().max(60).nullable(),
-    recipe: z.object({ layout: z.string().max(20), art: z.record(z.string(), z.unknown()), palette: z.record(z.string(), z.string().max(30)), typo: z.object({ heading: z.string().max(60), body: z.string().max(60), headingWeight: z.number().optional(), uppercase: z.boolean().optional() }), brand: z.string().max(120), eyebrow: z.string().max(120).nullable(), logo: z.string().max(60).nullable(), logoLight: z.string().max(60).nullable() }).optional(),
+    recipe: z.object({ layout: z.string().max(60), art: z.record(z.string(), z.unknown()), palette: z.record(z.string(), z.string().max(30)), typo: z.object({ heading: z.string().max(60), body: z.string().max(60), headingWeight: z.number().optional(), uppercase: z.boolean().optional() }), brand: z.string().max(120), eyebrow: z.string().max(120).nullable(), logo: z.string().max(60).nullable(), logoLight: z.string().max(60).nullable(), variant: z.object({ treatment: z.string().max(20).optional(), logo: z.string().max(20).optional(), scheme: z.string().max(20).optional() }).optional() }).optional(),
   }),
 });
 
@@ -120,6 +120,8 @@ export async function exportDoc(projectId: string, doc: AdDocument, format: "png
 /** Enregistre une version ET son rendu dans la bibliothèque (création modifiée par le client). */
 export async function saveAndRender(projectId: string, userId: string, docKey: string, doc: AdDocument, note = ""): Promise<DocVersion> {
   const { data } = await exportDoc(projectId, doc, "jpeg");
-  const a = await saveAsset({ projectId, userId, data, name: `pub-modifiee-${doc.format.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: "ad", folderKey: "images.ads", origin: "generated", status: "review", meta: { adDoc: { docKey, source: doc.meta.source }, format: doc.format.aspect } });
+  // Affiche de publication (« post: ») : rangée avec les publications, et toujours modifiable / animable depuis sa fiche.
+  const post = docKey.startsWith("post:");
+  const a = await saveAsset({ projectId, userId, data, name: `${post ? "publication" : "pub"}-modifiee-${doc.format.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: post ? "social" : "ad", folderKey: post ? "images.social" : "images.ads", origin: "generated", status: "review", meta: { adDoc: { docKey, source: doc.meta.source }, format: doc.format.aspect, ...(post ? { poster: { docKey, layout: doc.meta.recipe?.layout ?? null } } : {}) } });
   return saveVersion(projectId, docKey, doc, { note, renderedAssetId: a.id });
 }
