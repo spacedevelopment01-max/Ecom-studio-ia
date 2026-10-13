@@ -44,6 +44,9 @@ export type ComposeInput = {
   cta: string;
   /** Atouts confirmés du produit ou prestations (listes à puces, légendes des modèles « produit »). */
   features?: string[] | null;
+  /** Signature de la marque et nom du produit (affiches « produit héros »). */
+  tagline?: string | null;
+  productName?: string | null;
   background: Buffer | null;
   product: Buffer | null;
   logo?: Buffer | null;

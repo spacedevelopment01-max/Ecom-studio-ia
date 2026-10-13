@@ -167,3 +167,37 @@ export function processedImage(img: object & { width: number; height: number }, 
   m.set(key, c);
   return c;
 }
+
+const reflections = new WeakMap<object, Map<string, Canvas>>();
+/**
+ * Reflet d'un produit détouré : le bas de l'image renversé (hauteur `rh`), effacé progressivement vers le bas.
+ * Calculé une fois par image et par taille (identique dans l'éditeur et à l'export).
+ */
+export function reflectionOf(img: object & { width: number; height: number }, src: { sx: number; sy: number; sw: number; sh: number }, w: number, h: number, rh: number): Canvas | null {
+  const key = `${[src.sx, src.sy, src.sw, src.sh].map((x) => x.toFixed(1)).join(",")}|${w}x${h}|${rh}`;
+  let m = reflections.get(img);
+  const hit = m?.get(key);
+  if (hit) return hit;
+  const W = Math.max(1, w);
+  const RH = Math.max(1, rh);
+  const c = makeCanvas(W, RH);
+  if (!c) return null;
+  const ctx = c.getContext("2d") as any;
+  ctx.save();
+  ctx.translate(0, RH);
+  ctx.scale(1, -1);
+  // Image renversée : son bas (au contact du sol) se retrouve en haut du reflet.
+  ctx.drawImage(img, src.sx, src.sy, src.sw, src.sh, 0, RH - Math.max(1, h), W, Math.max(1, h));
+  ctx.restore();
+  const g = ctx.createLinearGradient(0, 0, 0, RH);
+  g.addColorStop(0, "rgba(0,0,0,0.55)");
+  g.addColorStop(0.55, "rgba(0,0,0,0.12)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.globalCompositeOperation = "destination-in";
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, RH);
+  ctx.globalCompositeOperation = "source-over";
+  if (!m) reflections.set(img, (m = new Map()));
+  m.set(key, c);
+  return c;
+}

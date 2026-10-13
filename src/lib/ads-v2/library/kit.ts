@@ -39,6 +39,10 @@ export type KitInput = {
   product?: { id: string; width: number; height: number } | null;
   /** Atouts confirmés (jamais inventés) : listes, légendes, cases des modèles « produit ». */
   features?: string[];
+  /** Signature de la marque (« Le son pur, toute la journée. ») : titre des affiches « produit héros ». */
+  tagline?: string | null;
+  /** Nom du produit (ligne sous la signature). */
+  productName?: string | null;
   logo: { id: string; width: number; height: number; lightId: string | null } | null;
   images: RenderEnv["images"];
 };
@@ -153,15 +157,38 @@ export class Kit {
    * Produit détouré posé dans la boîte (sans recadrage, proportions gardées), avec ombre portée douce et ombre de
    * contact au sol. Renvoie la boîte réellement occupée, ou null sans produit.
    */
-  productShot(b: Box, o: { shadow?: boolean; contact?: boolean; name?: string; align?: "center" | "bottom" } = {}): Box | null {
+  productShot(b: Box, o: { shadow?: boolean; contact?: boolean; name?: string; align?: "center" | "bottom"; reflection?: number } = {}): Box | null {
     const p = this.i.product;
     if (!p) return null;
     const s = Math.min(b.w / p.width, b.h / p.height);
     const w = p.width * s, h = p.height * s;
     const box = { x: b.x + (b.w - w) / 2, y: o.align === "center" ? b.y + (b.h - h) / 2 : b.y + b.h - h, w, h };
-    const l: ImageLayer = { ...this.base(this.id("product"), o.name ?? "Produit", "product", box, this.anchorOf(box)), kind: "image", assetId: p.id, fit: "contain", crop: null, radius: 0, shadow: o.shadow === false ? null : { color: "rgba(0,0,0,0.28)", blur: Math.round(this.U * 0.04), x: 0, y: Math.round(this.U * 0.02) }, contactShadow: o.contact !== false };
+    const l: ImageLayer = { ...this.base(this.id("product"), o.name ?? "Produit", "product", box, this.anchorOf(box)), kind: "image", assetId: p.id, fit: "contain", crop: null, radius: 0, shadow: o.shadow === false ? null : { color: "rgba(0,0,0,0.28)", blur: Math.round(this.U * 0.04), x: 0, y: Math.round(this.U * 0.02) }, contactShadow: o.contact !== false, ...(o.reflection ? { reflection: o.reflection } : {}) };
     this.layers.push(l);
     return box;
+  }
+  /**
+   * Textes d'une affiche « produit héros » : un titre qui accroche (la signature de la marque quand le titre n'est
+   * que le nom du produit), et le nom du produit dessous. Rien d'inventé : signature et nom viennent du projet.
+   */
+  heroText(): { title: string; sub: string | null } {
+    const fold = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const h = this.i.headline.trim();
+    const name = this.i.productName?.trim() || null;
+    const tag = this.i.tagline?.trim() || null;
+    const plain = !h || (name && fold(h) === fold(name)) || fold(h) === fold(this.i.brand);
+    if (plain && tag) return { title: tag, sub: name ?? this.i.subline };
+    return { title: h || tag || this.i.brand, sub: this.i.subline ?? (name && fold(name) !== fold(h) ? name : null) };
+  }
+  /** Faisceau d'ondes lumineuses (décor « son », « énergie »). */
+  waves(b: Box, color: string, o: { width?: number; glow?: string | null; opacity?: number; rotation?: number } = {}) {
+    const l = this.rect(b, null, { stroke: { color, width: o.width ?? Math.max(2, Math.round(this.U * 0.0022)) }, shadow: o.glow ? { color: o.glow, blur: Math.round(this.U * 0.012), x: 0, y: 0 } : null, opacity: o.opacity ?? 0.9, rotation: o.rotation, name: "Ondes" });
+    l.shape = "waves";
+    return l;
+  }
+  /** Halo de lumière (dégradé radial) centré sur un point. */
+  glow(cx: number, cy: number, rw: number, rh: number, color: string, alpha = 0.8) {
+    return this.ellipse({ x: cx - rw, y: cy - rh, w: rw * 2, h: rh * 2 }, { type: "radial", angle: 0, stops: [{ offset: 0, color: rgba(color, alpha) }, { offset: 0.55, color: rgba(color, alpha * 0.35) }, { offset: 1, color: rgba(color, 0) }] }, { name: "Lumière" });
   }
   /** Valeur selon le format (paysage, carré, portrait, story). */
   pick<T>(land: T, square: T, portrait: T, story: T = portrait): T {

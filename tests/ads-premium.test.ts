@@ -90,7 +90,7 @@ describe("Publicités premium — direction artistique et formats", async () => 
     expect(new Set(r.concepts.map((c) => c.visual.layout)).size).toBe(3);
   });
 
-  it("sans mise en scène possible (aucune génération) : décor d'univers puis produit réel posé par la composition", async () => {
+  it("sans mise en scène possible (aucune génération) : jamais de décor d'univers sous le produit, affiche « produit héros »", async () => {
     const p = fresh("cosmetic");
     const cutId = await seedCutout(u.id, p.id);
     const cut = await sharp({ create: { width: 300, height: 600, channels: 4, background: { r: 199, g: 123, b: 48, alpha: 1 } } }).png().toBuffer();
@@ -100,8 +100,12 @@ describe("Publicités premium — direction artistique et formats", async () => 
     deps.image = async (req) => (kinds.push(String(req.kind)), req.kind === "lifestyle" ? null : image(req));
     const r = await fr(() => runAdEngineV2(null, p.id, { count: 2, platforms: ["meta_feed"] }, deps));
     expect(kinds).toContain("lifestyle");
-    expect(kinds).toContain("ambiance");
+    expect(kinds).not.toContain("ambiance");
     expect(r.outcomes.length).toBeGreaterThan(0);
+    const { all } = await import("@/lib/db");
+    const layouts = all<{ l: string }>("SELECT json_extract(meta, '$.adV2.layout') l FROM assets WHERE project_id = ? AND role = 'ad'", p.id).map((x) => x.l);
+    expect(layouts.length).toBeGreaterThan(0);
+    expect(layouts.every((l) => /^tpl:(light-stage|sunlit-stone|color-room)$/.test(l))).toBe(true);
   });
 
   it("textes en français : les usages d'une famille de produits ne reprennent jamais le vocabulaire anglais des banques d'images", async () => {

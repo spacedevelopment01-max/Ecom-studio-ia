@@ -52,6 +52,8 @@ export type ImageLayer = LayerBase & {
   shadow: Shadow | null;
   /** Ombre de contact au sol (produit posé). */
   contactShadow?: boolean;
+  /** Reflet du produit sur un sol brillant (opacité 0-1, s'efface vers le bas). */
+  reflection?: number;
   /**
    * Traitement de la photo (étalonnage d'affiche) : filtre limité à IMAGE_FILTERS (luminosité, contraste,
    * saturation, noir et blanc, sépia, flou, teinte), identique dans l'éditeur et à l'export.
@@ -83,7 +85,8 @@ export type TextLayer = LayerBase & {
 
 export type ShapeLayer = LayerBase & {
   kind: "shape";
-  shape: "rect" | "ellipse" | "line";
+  /** « waves » : faisceau d'ondes lumineuses tracées au trait (couleur et épaisseur du contour). */
+  shape: "rect" | "ellipse" | "line" | "waves";
   fill: Fill | null;
   stroke: { color: string; width: number } | null;
   radius: number;

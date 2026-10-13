@@ -150,7 +150,12 @@ export async function localRender(p: Project, post: PostBrief, ctx: JobContext |
   // Boutique avec détourage validé : jamais le produit collé sur une photo d'intérieur qui ne le montre pas
   // (échelle, perspective et lumière fausses). Fond = une photo qui montre déjà le vrai produit (mise en scène du
   // studio, packshot, photo du client) ; sinon le produit posé sur le décor de studio de la marque, avec son ombre.
-  if (p.business !== "services" && validCutouts(p.id).length) return posterForPost(p, post, backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true), "local");
+  // Produit détouré : trois publications sur cinq en affiche « produit héros » (le produit en grand dans un décor
+  // dessiné à la marque), les autres sur une vraie photo du produit (packshot, mise en scène, photo d'origine).
+  if (p.business !== "services" && validCutouts(p.id).length) {
+    const hero = parseInt(crypto.createHash("sha256").update(`hero:${post.id}`).digest("hex").slice(0, 6), 16) % 5 < 3;
+    return posterForPost(p, post, hero ? null : backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true), "local");
+  }
   const aspect = aspectOf(post.network, post.format);
   const { bestAdPhoto } = await import("../engine/service-media");
   const fresh = await bestAdPhoto({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null }, p, { key: `post-${post.id}`, topic: photoTopic(p, post), aspect: aspect === "2:3" ? "4:5" : aspect, name: `publication-${post.network}-${post.id.slice(0, 6)}-photo.jpg` }).catch((e) => {

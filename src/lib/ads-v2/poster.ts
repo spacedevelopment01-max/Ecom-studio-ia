@@ -17,7 +17,7 @@ import { saveVersion } from "../ad-doc/store";
 import type { AdDocument } from "../ad-doc/types";
 import { adArt, treatmentsFor, type AdArt, type AdLayout, type AdVariant, type LogoPlacement, type Treatment } from "./art";
 import { artDirection } from "../art-direction";
-import { isTemplateLayout, templateById, templatesFor, TEMPLATES } from "./library";
+import { HERO_TEMPLATES, isTemplateLayout, templateById, templatesFor, TEMPLATES } from "./library";
 import { composeAd, type ComposeInput, type ComposeMetrics } from "./compose";
 import type { FormatSpec } from "./types";
 
@@ -80,10 +80,12 @@ const familyOf = (layout: string) => (isTemplateLayout(layout) ? (templateById(l
  * varier l'ordre (deux projets ne suivent pas le même parcours).
  */
 export function pickPosterLook(art: AdArt, n: number, recent: { layout: string; treatment: string | null; logo: string | null; scheme?: string | null }[], hasPhoto: boolean, hasProduct = false, productPhoto = false): { layout: string; variant: AdVariant } {
-  const engine = (hasPhoto ? art.cycle.filter((l) => l !== "typographic" && l !== "band") : (["typographic"] as AdLayout[])) as string[];
+  // Produit détouré sans photo : seulement les affiches « produit héros » (jamais une composition typographique avec
+  // le produit posé dans un coin).
+  const engine = (hasPhoto ? art.cycle.filter((l) => l !== "typographic" && l !== "band") : hasProduct ? [] : (["typographic"] as AdLayout[])) as string[];
   // Avec une photo, elle remplit le fond : pas de modèle où elle n'occupe qu'une case (collages, modèles typographiques).
   // Avec un produit détouré : les modèles « produit » qui le mettent en scène (les autres l'oublieraient).
-  const all = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto)) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage")))).filter((t) => !(productPhoto && t.coversSubject));
+  const all = (hasProduct ? TEMPLATES.filter((t) => t.product && (t.photo !== "required" || hasPhoto) && (hasPhoto || HERO_TEMPLATES.includes(t.id))) : templatesFor(hasPhoto).filter((t) => !t.product && (!t.styles || t.styles.includes(art.style)) && (!hasPhoto || (t.photo === "required" && t.family !== "collage")))).filter((t) => !(productPhoto && t.coversSubject));
   // Direction artistique : seules les familles qui portent la ligne de la marque (s'il en reste assez).
   const da = artDirection(art);
   const inLine = all.filter((t) => da.families.includes(t.family));
@@ -134,6 +136,12 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
   const variant: AdVariant = i.layout ? (isTemplateLayout(i.layout) ? {} : { ...look.variant, treatment: treatmentsFor(i.layout as AdLayout, art.style).includes(look.variant.treatment!) ? look.variant.treatment : treatmentsFor(i.layout as AdLayout, art.style)[0] }) : look.variant;
   const { logo, light } = brandLogos(p);
   const cta = (i.cta ?? "").trim() || (p.business === "services" ? contactCta(p.services?.contactMode) : C("Découvrir", "Discover"));
+  // Un titre qui n'est que le nom du produit n'accroche pas : la signature de la marque prend sa place (le nom du
+  // produit passe dessous) dès que le produit est mis en scène.
+  const fold = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const name = p.business === "services" ? "" : p.product.name?.trim() ?? "";
+  const tag = p.brand?.tagline?.trim() ?? "";
+  const plainTitle = !!i.product && !!tag && !!name && fold(i.headline) === fold(name);
   const r = await composeAd({
     format: posterFormat(i.aspect),
     layout: layout as ComposeInput["layout"],
@@ -141,11 +149,13 @@ export async function composePoster(p: Project, i: PosterInput): Promise<{ jpg: 
     typo,
     art,
     brand: p.brand?.name ?? p.name,
-    headline: i.headline.trim() || p.brand?.tagline || p.brand?.name || p.name,
-    subline: i.subline?.trim() || null,
+    headline: plainTitle ? tag : i.headline.trim() || p.brand?.tagline || p.brand?.name || p.name,
+    subline: i.subline?.trim() || (plainTitle ? name : null),
     eyebrow: i.eyebrow?.trim() || null,
     cta,
     features: i.features ?? null,
+    tagline: p.brand?.tagline?.trim() || null,
+    productName: p.business === "services" ? null : p.product.name?.trim() || null,
     background: i.background ? assetData(i.background) : null,
     product: i.product ? assetData(i.product) : null,
     logo: logo ? assetData(logo) : null,

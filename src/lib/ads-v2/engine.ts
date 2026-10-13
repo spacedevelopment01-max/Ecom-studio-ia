@@ -30,7 +30,8 @@ import { adInsight } from "./insight";
 import { planAngles } from "./angles";
 import { copyPrompt, copySystem, localCopy } from "./copy";
 import { claimIssues, type ClaimIssue } from "./claims";
-import { composeAd } from "./compose";
+import { composeAd, type ComposeInput } from "./compose";
+import { HERO_TEMPLATES } from "./library";
 import { adArt, layoutForConcept, textZoneFor, toAdLayout, treatmentsFor, type AdArt, type LogoPlacement } from "./art";
 import { gateAd, localAdChecks } from "./quality";
 import { peopleAllowedFor } from "../people-policy";
@@ -289,7 +290,11 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
     tried.add(sig);
     // Le produit réel est posé par la composition seulement quand l'image ne le montre pas déjà.
     const pasteProduct = !!o.cut && p.business === "products" && !img?.withProduct && (concept.visual.productOnTop || !img);
-    const { jpg, metrics, doc } = await composeAd({ format: f, layout: img ? layout : "typographic", palette: o.pal, typo: o.typo, art: o.art, brand: o.insight.brand, headline: copy.hook, subline: sublineFor(o.insight, copy), eyebrow: o.insight.category.label || null, cta: copy.cta, background: img?.data ?? null, product: pasteProduct ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, logoLight: o.logoLight?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null, logoLight: o.logoLight?.id ?? null }, conceptId: concept.id, variant: adVariant(o.art, toAdLayout(layout), concept.id) });
+    // Sans photo du produit en situation : affiche « produit héros » (produit en grand dans un décor dessiné à la
+    // marque), une par concept, plutôt qu'une composition typographique avec un produit posé dans un coin.
+    const hero = !img && pasteProduct ? `tpl:${HERO_TEMPLATES.slice(0, 3)[(parseInt(crypto.createHash("sha256").update(`${concept.id}:${variant}`).digest("hex").slice(0, 6), 16) + attempt) % 3]}` : null;
+    const used = hero ?? (img ? layout : "typographic");
+    const { jpg, metrics, doc } = await composeAd({ format: f, layout: used as ComposeInput["layout"], palette: o.pal, typo: o.typo, art: o.art, brand: o.insight.brand, headline: copy.hook, subline: sublineFor(o.insight, copy), eyebrow: o.insight.category.label || null, cta: copy.cta, tagline: p.brand?.tagline ?? null, productName: p.product.name ?? null, background: img?.data ?? null, product: pasteProduct ? (o.cut?.data ?? null) : null, logo: o.logo?.data ?? null, logoLight: o.logoLight?.data ?? null, ids: { background: img?.assetId ?? null, product: o.cut?.id ?? null, logo: o.logo?.id ?? null, logoLight: o.logoLight?.id ?? null }, conceptId: concept.id, variant: adVariant(o.art, toAdLayout(layout), concept.id) });
     const local = localAdChecks(metrics, claims, f.platform);
     let review: AdReview | null = null;
     let reviewError: string | null = null;
@@ -316,7 +321,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       sourceAssetId: img?.assetId ?? null,
       status: d.verdict === "REJECTED" ? "rejected" : "review",
       meta: {
-        adV2: { version: ADS_V2_VERSION, docKey: d.verdict === "REJECTED" ? null : docKey, hash: d.verdict === "FINAL" ? h : `trial:${h}`, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy, platform: f.platform, aspect: f.aspect, layout, imageAssetId: img?.assetId ?? null, metrics, claims: claims.map((c) => c.fix), attempt },
+        adV2: { version: ADS_V2_VERSION, docKey: d.verdict === "REJECTED" ? null : docKey, hash: d.verdict === "FINAL" ? h : `trial:${h}`, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy, platform: f.platform, aspect: f.aspect, layout: used, imageAssetId: img?.assetId ?? null, metrics, claims: claims.map((c) => c.fix), attempt },
         format: f.aspect,
         text: { headline: copy.hook },
         ...g.meta,
