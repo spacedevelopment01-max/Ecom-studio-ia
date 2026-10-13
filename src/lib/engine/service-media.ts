@@ -537,14 +537,14 @@ export function serviceCardPlan(p: Project, photos: number, tips?: { title: stri
     const group = tips?.items.length ? "tips" : "services";
     const coverTitle = tips?.items.length ? clip(tips.title, 80) : C(`${name} : nos prestations en détail`, `${name}: our services in detail`);
     const eyebrow = tips?.items.length ? C("Conseil d'expert", "Expert tip") : C("Nos prestations", "Our services");
-    out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-01`, card: { template: "carousel-cover", format: "square", eyebrow, title: coverTitle, index: 1, total, swipe: C("Faites glisser", "Swipe") } });
-    slides.forEach((s, k) => out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-${String(k + 2).padStart(2, "0")}`, card: { template: "carousel-slide", format: "square", eyebrow, title: s.title, text: s.text, index: k + 2, total } }));
-    out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-${String(total).padStart(2, "0")}`, card: { template: "carousel-end", format: "square", eyebrow: name, title: cta, text: place, contact, cta: ctaShort, index: total, total } });
+    out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-01`, card: { template: "carousel-cover", format: "square", eyebrow, title: coverTitle, index: 1, total, swipe: C("Faites glisser", "Swipe"), photo: ph(2) } });
+    slides.forEach((s, k) => out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-${String(k + 2).padStart(2, "0")}`, card: { template: "carousel-slide", format: "square", eyebrow, title: s.title, text: s.text, index: k + 2, total, photo: ph(3 + k) } }));
+    out.push({ role: "social", folder: "images.social", group, name: `${C("carrousel", "carousel")}-${group}-${String(total).padStart(2, "0")}`, card: { template: "carousel-end", format: "square", eyebrow: name, title: cta, text: place, contact, cta: ctaShort, index: total, total, photo: ph(1) } });
   }
   const q = brandQuote(p);
-  if (q) out.push({ role: "social", folder: "images.social", name: C("citation", "quote"), card: { template: "quote", format: "square", title: q.text, author: `— ${q.author}` } });
+  if (q) out.push({ role: "social", folder: "images.social", name: C("citation", "quote"), card: { template: "quote", format: "square", title: q.text, author: `— ${q.author}`, photo: ph(3) } });
   const rows = infoRows(p);
-  if (rows.length) out.push({ role: "social", folder: "images.social", name: C("infos-pratiques", "practical-info"), card: { template: "info", format: "portrait", eyebrow: name, title: rows.some((r) => r.icon === "clock") && place ? C("Horaires et zone", "Hours and area") : rows.some((r) => r.icon === "clock") ? C("Nos horaires", "Opening hours") : C("Infos pratiques", "Practical info"), rows, cta } });
+  if (rows.length) out.push({ role: "social", folder: "images.social", name: C("infos-pratiques", "practical-info"), card: { template: "info", format: "portrait", eyebrow: name, title: rows.some((r) => r.icon === "clock") && place ? C("Horaires et zone", "Hours and area") : rows.some((r) => r.icon === "clock") ? C("Nos horaires", "Opening hours") : C("Infos pratiques", "Practical info"), rows, cta, photo: ph(4) } });
 
   // Publicités : « Prenez rendez-vous » aux formats des régies (9:16, 1:1, 16:9).
   const adText = [name, place].filter(Boolean).join(" · ");
@@ -827,12 +827,19 @@ function posterSubline(c: CardPlan["card"]): string | null {
  */
 async function renderPosterCard(p: Project, x: CardPlan & { photoAsset?: Asset }, jobId: string, k: number) {
   const c = x.card;
-  const r = await composePoster(p, { aspect: POSTER_OF[c.format] ?? "4:5", headline: c.title ?? activityName(p), subline: posterSubline(c), eyebrow: c.eyebrow ?? null, cta: c.cta ?? null, background: x.photoAsset ?? null, seed: `${jobId}:${k}:${x.name}` });
+  // Citation : la phrase en titre (la marque signe déjà l'affiche). Infos pratiques : horaires, zone, téléphone.
+  const author = (c.author ?? "").replace(/^—\s*/, "").trim();
+  const subline = c.template === "quote" ? (author && author !== (p.brand?.name ?? p.name) ? author : null) : c.template === "info" ? (c.rows ?? []).filter((r) => r.icon !== "mail").map((r) => r.text).slice(0, 3).join(" • ") || null : posterSubline(c);
+  const r = await composePoster(p, { aspect: POSTER_OF[c.format] ?? "4:5", headline: c.title ?? activityName(p), subline, eyebrow: c.eyebrow ?? null, cta: c.cta ?? null, background: x.photoAsset ?? null, seed: `${jobId}:${k}:${x.name}` });
   return { jpg: r.jpg, label: SERVICE_SIZES[c.format].label, engine: "poster" as const, docKey: r.docKey, doc: r.doc, layout: r.layout };
 }
 
+const POSTER_TEMPLATES = new Set<ServiceCard["template"]>(["announce", "booking", "quote", "info"]);
+
 async function saveCards(p: Project, plans: (CardPlan & { photoAsset?: Asset })[], jobId: string): Promise<Saved[]> {
-  const poster = (x: CardPlan & { photoAsset?: Asset }) => !!x.photoAsset && (x.card.template === "announce" || x.card.template === "booking");
+  // Affiches modifiables dans l'éditeur du studio (texte, couleurs, image, modèles) : annonces, rendez-vous, citations
+  // et infos pratiques, avec ou sans photo. Les carrousels et la bannière sans texte gardent leur composition.
+  const poster = (x: CardPlan & { photoAsset?: Asset }) => POSTER_TEMPLATES.has(x.card.template);
   const cards: ServiceCard[] = plans.filter((x) => !poster(x)).map((x) => ({ ...x.card, photo: x.photoAsset ? assetData(x.photoAsset) : null }));
   const plain = await renderCards(p, cards);
   const rendered: { jpg: Buffer; label: string; engine: string; docKey?: string; doc?: Awaited<ReturnType<typeof composePoster>>["doc"]; layout?: string }[] = [];
@@ -1074,7 +1081,9 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
   const photos = activityPhotos(projectId);
   // Image de fond : une photo de l'activité (par défaut), une nouvelle image (libre de droits ou IA), ou aucune.
   const background = req.background ?? (req.usePhoto === false ? "none" : "photo");
-  let photo = background !== "photo" ? undefined : (req.photoId && photos.find((a) => a.id === req.photoId)) || photos[0];
+  // Image choisie par le client parmi toutes les images du projet (ses photos, photos libres, ambiances…).
+  const chosen = req.photoId ? one<Asset>("SELECT * FROM assets WHERE id = ? AND project_id = ? AND kind = 'image' AND deleted_at IS NULL", req.photoId, projectId) : undefined;
+  let photo = background !== "photo" ? undefined : chosen || photos[0];
   const kind = req.kind === "scene" ? "ambiance" : req.kind === "social" ? "service" : req.kind === "ad" ? "booking" : req.kind;
   const items = serviceItems(p);
   const name = activityName(p);
@@ -1084,7 +1093,7 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
 
   // « Une nouvelle image » (pas une photo de l'activité) : photo libre de droits du métier, sinon image créée par l'IA,
   // puis le visuel est composé dessus. « Sans image » : visuel typographique.
-  if (background === "image" && ["service", "booking", "banner"].includes(kind)) {
+  if (background === "image" && ["service", "booking", "banner", "quote", "info", "tips"].includes(kind)) {
     const s = kind === "service" ? items[Math.max(0, Math.min(items.length - 1, req.serviceIndex ?? 0))] : undefined;
     const topic = [s?.name, s ? clip(s.description, 120) : req.subline || clip(p.product.summary, 140)].filter(Boolean).join(" — ") || name;
     const fs: ServiceFormat = kind === "banner" ? (FORMAT_OF[req.format ?? "banner"] === "landscape" ? "landscape" : "banner") : FORMAT_OF[req.format ?? "portrait"] ?? "portrait";
@@ -1106,20 +1115,22 @@ export async function generateServiceSingleImage(ctx: JobContext, projectId: str
     const given = parseTips(req.items ?? []);
     const tips = given.length >= 2 ? { title: req.headline || C("Nos conseils", "Our tips"), items: given } : llmConfigured() ? await ctx.step("tips", () => aiServiceTips({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:tips` }, p, req.headline)) : null;
     if (!tips && !items.length) throw new UserFacingError(L("Écrivez au moins deux conseils (un par ligne) ou ajoutez vos prestations : le carrousel n'invente rien.", "Write at least two tips (one per line) or add your services: the carousel doesn't make anything up."));
-    plans = serviceCardPlan(p, 0, tips).filter((x) => x.card.template.startsWith("carousel"));
+    plans = serviceCardPlan(p, photo ? Math.max(1, photos.length) : 0, tips).filter((x) => x.card.template.startsWith("carousel"));
   } else if (kind === "quote") {
     const q = req.headline ? { text: req.headline, author: p.brand?.name ?? name } : brandQuote(p);
     if (!q) throw new UserFacingError(L("Aucune phrase de marque à citer : écrivez-la dans le champ « Titre » (votre engagement, votre signature).", "No brand line to quote: write it in the \"Headline\" field (your promise, your signature)."));
-    plans = [{ role: "social", folder: "images.social", name: C("citation", "quote"), card: { template: "quote", format: FORMAT_OF[req.format ?? "square"] ?? "square", title: q.text, author: `— ${q.author}` } }];
+    plans = [{ role: "social", folder: "images.social", name: C("citation", "quote"), card: { template: "quote", format: FORMAT_OF[req.format ?? "square"] ?? "square", title: q.text, author: `— ${q.author}`, photo: photo ? 0 : undefined } }];
   } else if (kind === "info") {
     const base = pick("info");
     if (!base) throw new UserFacingError(L("Renseignez d'abord vos horaires, votre zone ou vos coordonnées (onglet Produit / Activité).", "First fill in your hours, area or contact details (Product / Business tab)."));
-    plans = [{ ...base, card: { ...base.card, format: FORMAT_OF[req.format ?? "portrait"] ?? "portrait", title: req.headline || base.card.title, cta } }];
+    plans = [{ ...base, card: { ...base.card, format: FORMAT_OF[req.format ?? "portrait"] ?? "portrait", title: req.headline || base.card.title, cta, photo: photo ? 0 : undefined } }];
   } else {
     const f = FORMAT_OF[req.format ?? "story"] ?? "story";
     plans = [{ role: "ad", folder: "images.ads", name: `${C("publicite", "ad")}-${SERVICE_SIZES[f].label.replace(":", "x")}`, card: { template: "booking", format: f, eyebrow: name, title: req.headline || serviceCta(p), text: req.subline ?? [name, placeLine(p)].filter(Boolean).join(" · "), contact: contactLine(p), cta, photo: photo ? 0 : undefined } }];
   }
-  const saved = await saveCards(p, plans.map((x) => ({ ...x, photoAsset: x.card.photo !== undefined ? photo : undefined })), ctx.job.id);
+  // L'image choisie (ou la nouvelle) en premier ; les pages d'un carrousel prennent ensuite les autres images du projet.
+  const pool = photo ? [photo, ...photos.filter((a) => a.id !== photo!.id)] : [];
+  const saved = await saveCards(p, plans.map((x) => ({ ...x, photoAsset: x.card.photo !== undefined && pool.length ? pool[x.card.photo % pool.length] : undefined })), ctx.job.id);
   return { assetId: saved[0].id, assetIds: saved.map((s) => s.id) };
 }
 
