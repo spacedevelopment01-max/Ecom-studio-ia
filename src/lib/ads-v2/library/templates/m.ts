@@ -33,7 +33,9 @@ function caps(k: Kit, text: string | null | undefined, b: { x: number; y: number
 function signature(k: Kit, b0: { x: number; y: number; w: number }, align: "left" | "center" | "right", color: string, bottom = false) {
   // Boîte étroite dans son coin : la signature ne recouvre jamais le bouton ni le titre.
   const w = Math.min(b0.w, k.W * 0.3);
-  const b = { x: align === "right" ? b0.x + b0.w - w : align === "center" ? b0.x + (b0.w - w) / 2 : b0.x, y: b0.y, w };
+  // Posée en bas : sa hauteur est connue d'avance, la version du logo (claire ou sombre) est choisie à sa vraie place.
+  const y = bottom ? k.H - k.m.bottom - (k.i.logo ? k.logoHeight(0.5) : Math.max(22, k.U * 0.024) * 1.3) : b0.y;
+  const b = { x: align === "right" ? b0.x + b0.w - w : align === "center" ? b0.x + (b0.w - w) / 2 : b0.x, y, w };
   const l = k.i.logo
     ? k.brandMark(b, { align, height: k.logoHeight(0.5) })
     : k.text("body", k.i.brand, b, { family: k.i.art.heading, size: Math.max(22, k.U * 0.024), align, color, upper: true, spacing: Math.round(Math.max(22, k.U * 0.024) * 0.38), weight: 600, maxLines: 1, minSize: 22 }, "brand", "Marque");
@@ -217,13 +219,16 @@ export const TEMPLATES_M: Template[] = [
       y += t.h + k.U * 0.022;
       y += caps(k, k.i.subline, { x: col.x, y, w: col.w * 0.9 }, "left", soft) + k.U * 0.04;
       pill(k, col.x, y, col.w, "left", tone);
-      signature(k, { x: k.m.side, y: k.m.top, w: k.W - k.m.side * 2 }, col.x + col.w / 2 < k.W / 2 ? "right" : "left", ink);
+      // Formats hauts : la colonne prend toute la largeur ; la signature va en bas à droite, la phrase en bas à gauche.
+      const leftCol = k.wide ? col.x + col.w / 2 < k.W / 2 : true;
+      if (k.wide) signature(k, { x: k.m.side, y: k.m.top, w: k.W - k.m.side * 2 }, leftCol ? "right" : "left", ink);
+      else signature(k, { x: k.m.side, y: 0, w: k.W - k.m.side * 2 }, "right", ink, true);
       // Phrase manuscrite : la signature de la marque, si elle n'est pas déjà le titre (jamais un slogan inventé).
       const sig = k.i.tagline?.trim();
       if (sig && sig.toLowerCase() !== k.i.headline.trim().toLowerCase() && sig.length <= 40) {
         const size = Math.max(30, k.U * k.pick(0.06, 0.062, 0.062, 0.068));
         const w = k.W * (k.wide ? 0.42 : 0.7);
-        const x = col.x + col.w / 2 < k.W / 2 ? k.W - k.m.side - w : k.m.side;
+        const x = k.wide ? (leftCol ? k.W - k.m.side - w : k.m.side) : k.m.side;
         const probeS = { x, y: k.H - k.m.bottom - size * 2.6, w, h: size * 2.4 };
         const s = inkFor(k, probeS);
         const l = k.text("body", sig, { x, y: 0, w }, { family: SCRIPT, size, align: "center", color: s.ink, maxLines: 2, minSize: 24, lineHeight: 1.05 }, "script", "Phrase manuscrite");
