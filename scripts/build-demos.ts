@@ -53,6 +53,7 @@ type DemoDef = {
 
 const REAL = path.join(process.cwd(), "scripts", "demo-products", "inputs");
 const PX = path.join(REAL, "pixabay");
+const IA = path.join(REAL, "ia");
 /**
  * Démonstrations à partir de vraies photos de produits et de vrais métiers (Pixabay, licence de contenu Pixabay :
  * usage commercial autorisé, sans attribution obligatoire ; sources dans scripts/demo-products/inputs/pixabay/sources.json).
@@ -69,29 +70,24 @@ const REAL_DEMOS: DemoDef[] = [
     source: { supplier: "Pixabay", url: "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/", note: "Vraies photos d'un casque sans marque visible, en situation (Pixabay, série d'Engin_Akyurt) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "tillandsia", sector: "Plantes", direction: "jardin", category: "Plantes d'intérieur",
-    productName: "Tillandsia en pot", brandName: "Verdure", price: "24 €",
-    description: "Tillandsia (fille de l'air) dans un petit pot en terre cuite peint, coloris rose ou vert.",
-    photo: path.join(PX, "tillandsia-1.jpg"),
-    photos: [path.join(PX, "tillandsia-2.jpg")],
-    variants: { name: "Couleur du pot", values: ["Rose", "Vert"], photos: { Vert: path.join(PX, "tillandsia-3.jpg") } },
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/pastel-potted-plant-flowers-season-4279379/", note: "Vraies photos d'une plante en pot (Pixabay, série de HeungSoon) : la marque, les visuels et la boutique sont créés par le studio." },
+    // Plusieurs produits : deux t-shirts de fournisseur (sans écusson officiel) et deux accessoires créés par l'IA.
+    id: "tribunes", sector: "Mode", direction: "flux", storeType: "multi", category: "Supporters",
+    productName: "T-shirt supporter Lavande", brandName: "Les Tribunes", price: "29,90 €",
+    description: "T-shirt de supporter bleu marine, inscription FRANCE et numéro 10, brins de lavande brodés en ton sur ton, liserés bleu-blanc-rouge, drapeau sur la poitrine.",
+    photo: path.join(REAL, "vetements", "tshirt-lavande.jpg"),
+    catalog: [
+      { name: "T-shirt supporter Aquarelle", category: "T-shirts", price: "29,90", description: "T-shirt de supporter écru, motif aquarelle bleu et rouge, écusson tricolore et paysage en relief (tour Eiffel, champs de lavande).", photo: path.join(REAL, "vetements", "tshirt-aquarelle.jpg") },
+      { name: "Écharpe tricolore", category: "Accessoires", price: "19,90", description: "Écharpe de supporter en maille, rayures bleu marine, blanc et rouge, franges courtes.", photo: path.join(IA, "tribunes-echarpe.jpg") },
+      { name: "Casquette Lavande", category: "Accessoires", price: "24,90", description: "Casquette en coton bleu marine, brin de lavande brodé sur le devant, bande tricolore sur la patte de serrage.", photo: path.join(IA, "tribunes-casquette.jpg") },
+    ],
+    source: { supplier: "Fournisseur + IA", url: "", note: "Deux t-shirts de supporter d'un fournisseur (visuels du fournisseur) et deux accessoires dont la photo a été créée par l'IA : la marque et la boutique sont créées par le studio. Aucun écusson officiel." },
   },
   {
-    id: "savon", sector: "Beauté", direction: "manifeste", category: "Savons",
-    productName: "Savon à la périlla", brandName: "Sève", price: "7,50 €",
-    description: "Savon solide artisanal à la périlla, pain vert, saponifié à froid.",
-    photo: path.join(PX, "savon-1.jpg"),
-    photos: [path.join(PX, "savon-2.jpg")],
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/handmade-soap-perilla-perilla-soap-4926843/", note: "Vraies photos d'un savon artisanal à la périlla (Pixabay, série de phuonghoangthuy) : la marque, les visuels et la boutique sont créés par le studio." },
-  },
-  {
-    id: "cafe", sector: "Épicerie fine", direction: "terroir", category: "Café",
-    productName: "Café en grains", brandName: "Moulin Brun", price: "12,90 €",
-    description: "Café en grains torréfié, vendu en sachet de 250 g ; grains présentés dans leur sac de jute.",
-    photo: path.join(PX, "cafe-1.jpg"),
-    photos: [path.join(PX, "cafe-2.jpg"), path.join(PX, "cafe-3.jpg")],
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/coffee-coffee-beans-bag-3142562/", note: "Vraies photos de café en grains (Pixabay, série de Bru-nO) : la marque, les visuels et la boutique sont créés par le studio." },
+    id: "gourde", sector: "Sport et plein air", direction: "elan", category: "Gourdes",
+    productName: "Gourde isotherme 750 ml", brandName: "Cime", price: "34,90 €",
+    description: "Gourde isotherme double paroi en inox, 750 ml, finition mate vert sauge, bouchon en bambou à anse inox.\nContenance : 750 ml\nMatières : inox double paroi, bouchon bambou",
+    photo: path.join(IA, "gourde.jpg"),
+    source: { supplier: "Photo créée par l'IA", url: "", note: "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie." },
   },
   {
     id: "fleuriste", sector: "Fleuriste", direction: "magazine", business: "services", platform: "woocommerce",
@@ -108,19 +104,18 @@ const REAL_DEMOS: DemoDef[] = [
     source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-bouquet-petal-bloom-garden-2588972/", note: "Vraies photos de boutique et d'atelier de fleuriste (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
   },
   {
-    id: "barbier", sector: "Barbier", direction: "etabli", business: "services", platform: "woocommerce",
-    productName: "Salon de barbier", brandName: "Le Comptoir", price: "",
-    description: "Barbier : coupe homme aux ciseaux et à la tondeuse, taille et entretien de la barbe, rasage traditionnel à l'ancienne, coupe enfant.",
-    photo: path.join(PX, "barbier-fauteuil.jpg"),
-    photos: [path.join(PX, "barbier-coupe.jpg"), path.join(PX, "barbier-salon.jpg")],
+    id: "paysagiste", sector: "Paysagiste", direction: "jardin", business: "services", platform: "woocommerce",
+    productName: "Création et entretien de jardins", brandName: "Racines & Pierres", price: "",
+    description: "Paysagiste : conception et création de jardins, terrasses en bois et murets en pierre sèche, plantations, entretien à l'année.",
+    photo: path.join(IA, "paysagiste-jardin.jpg"),
+    photos: [path.join(IA, "paysagiste-terrasse.jpg"), path.join(IA, "paysagiste-outils.jpg")],
     services: [
-      { name: "Coupe homme", description: "Ciseaux et tondeuse, shampoing et coiffage." },
-      { name: "Taille de barbe", description: "Contours, dégradé et soin à l'huile." },
-      { name: "Rasage traditionnel", description: "Au coupe-chou, serviette chaude." },
-      { name: "Coupe enfant", description: "Jusqu'à 12 ans." },
+      { name: "Création de jardin", description: "Plan, choix des végétaux, allées et murets, du projet à la plantation." },
+      { name: "Terrasses et aménagements", description: "Terrasses en bois, jardinières, éclairage extérieur." },
+      { name: "Entretien à l'année", description: "Taille, tonte, désherbage et suivi des plantations." },
     ],
-    area: "Bordeaux centre", hours: "Du mardi au samedi, 9 h 30 – 19 h", contactModes: "booking,call",
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-chair-salon-hairdresser-1453064/", note: "Vraies photos de salon de barbier (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
+    area: "Aix-en-Provence et alentours", hours: "Du lundi au vendredi, 8 h – 18 h", contactModes: "quote,call",
+    source: { supplier: "Photos créées par l'IA", url: "", note: "Entreprise fictive : les photos de jardins ont été créées par l'IA (OpenAI) pour la démonstration ; le site et la marque sont créés par le studio." },
   },
 ];
 
@@ -141,7 +136,7 @@ async function api(ctx: BrowserContext, url: string, init?: { method?: string; b
   // Une lecture coupée (serveur de développement occupé) est relancée ; une écriture ne l'est jamais.
   const send = async (k = 0): Promise<Awaited<ReturnType<typeof ctx.request.fetch>>> => {
     try {
-      return await ctx.request.fetch(`${BASE}${url}`, { method, data: init?.body as any });
+      return await ctx.request.fetch(`${BASE}${url}`, { method, data: init?.body as any, timeout: 600_000 });
     } catch (e) {
       if (method !== "GET" || k >= 4) throw e;
       await new Promise((r) => setTimeout(r, 3000 * (k + 1)));
@@ -159,7 +154,7 @@ async function waitIdle(ctx: BrowserContext, pid: string) {
   for (;;) {
     const r = await api(ctx, `/api/projects/${pid}`);
     if (!r.active?.length) return r;
-    if (Date.now() - t0 > 600_000) throw new Error("délai dépassé");
+    if (Date.now() - t0 > Number(process.env.WAIT_S ?? 600) * 1000) throw new Error("délai dépassé");
     await new Promise((res) => setTimeout(res, 2500));
   }
 }
@@ -211,8 +206,9 @@ if (ONLY_DIRECTIONS) {
   await browser.close();
   process.exit(0);
 }
-const email = `demo-${Date.now()}@ecom-studio.local`;
-await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: EN ? "Demos" : "Démonstrations" } });
+const email = process.env.EMAIL ?? `demo-${Date.now()}@ecom-studio.local`;
+if (process.env.EMAIL) await api(ctx, "/api/auth/login", { body: { email, password: PASSWORD } });
+else await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: EN ? "Demos" : "Démonstrations" } });
 // Le compte de démonstration a besoin de plusieurs boutiques : activation manuelle locale.
 const { db } = await import("../src/lib/db");
 const { syncAllowance, getSubscription } = await import("../src/lib/billing");
@@ -228,6 +224,9 @@ fs.mkdirSync(path.join(OUT, "directions"), { recursive: true });
 const previous = process.env.ONLY && fs.existsSync(path.join(OUT, MANIFEST)) ? JSON.parse(fs.readFileSync(path.join(OUT, MANIFEST), "utf8")).demos : [];
 const demos: any[] = [];
 let firstProject: { pid: string } | null = null;
+// SOCIAL_ONLY=1 (avec PID) : refait seulement la semaine de publications d'un projet existant (sans IA), puis la collecte.
+// COLLECT_ONLY=1 (avec PID) : seulement la collecte des fichiers (rien n'est recréé).
+const REDO = !process.env.SOCIAL_ONLY && !process.env.COLLECT_ONLY;
 
 for (const p of PRODUCTS) {
   console.log(`▶ ${p.id}`);
@@ -239,7 +238,7 @@ for (const p of PRODUCTS) {
   // Photo transparente (produit détouré) : posée sur un fond clair, comme une photo de fournisseur.
   const photo = photoFile.endsWith(".png") ? await sharp(photoFile).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(photoFile);
   // Un abonnement = un projet : chaque démonstration reçoit son propre abonnement offert (forfait le plus complet).
-  createSubscription(me.user.id, { plan: "dominer", status: "manual", source: "admin" });
+  if (!process.env.PID) createSubscription(me.user.id, { plan: "dominer", status: "manual", source: "admin" });
   // Formulaire de création, comme dans le studio (plusieurs photos possibles ; services : prestations et coordonnées).
   const form = new FormData();
   form.append("photos", new Blob([photo], { type: "image/jpeg" }), path.basename(photoFile).replace(/\.png$/, ".jpg"));
@@ -247,15 +246,19 @@ for (const p of PRODUCTS) {
   const fields: Record<string, string> = { productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: p.platform ?? "shopify", storeType: p.storeType ?? "mono", businessType: p.business ?? "products", ...(EN ? { language: "en" } : {}) };
   if (p.business === "services") Object.assign(fields, { services: JSON.stringify(p.services ?? []), area: p.area ?? "", hours: p.hours ?? "", contactModes: p.contactModes ?? "form", contactMode: (p.contactModes ?? "form").split(",")[0] });
   for (const [k, v] of Object.entries(fields)) form.append(k, v);
-  const res = await ctx.request.post(`${BASE}/api/projects`, { multipart: form });
-  const created = await res.json();
-  if (!res.ok()) throw new Error(JSON.stringify(created));
-  const pid = created.id ?? created.project?.id;
+  // PID=<id> : reprend un projet déjà créé (création longue avec l'IA) au lieu d'en refaire un (et de le repayer).
+  let pid = process.env.PID ?? "";
+  if (!pid) {
+    const res = await ctx.request.post(`${BASE}/api/projects`, { multipart: form });
+    const created = await res.json();
+    if (!res.ok()) throw new Error(JSON.stringify(created));
+    pid = created.id ?? created.project?.id;
+  }
   const t0 = Date.now();
   let ov = await waitIdle(ctx, pid);
   console.log(`  pipeline ${Math.round((Date.now() - t0) / 1000)} s`, ov.pipeline?.job?.status);
   // Catalogue (niche, multi) : les autres produits, avec leur photo réelle.
-  if (p.catalog?.length) {
+  if (REDO && p.catalog?.length) {
     for (const c of p.catalog) {
       const buf = c.photo.endsWith(".png") ? await sharp(c.photo).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(c.photo);
       const r = await ctx.request.post(`${BASE}/api/projects/${pid}/catalog`, { multipart: { name: c.name, category: c.category, price: c.price, description: c.description, features: (c.features ?? []).join("\n"), photo: { name: `${c.name}.jpg`, mimeType: "image/jpeg", buffer: buf } } });
@@ -263,18 +266,18 @@ for (const p of PRODUCTS) {
     }
   }
   // Photos en situation (héros de la boutique).
-  for (const file of p.lifestyle ?? []) {
+  for (const file of REDO ? p.lifestyle ?? [] : []) {
     const r = await ctx.request.post(`${BASE}/api/projects/${pid}/files`, { multipart: { role: "lifestyle", files: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
     if (!r.ok()) throw new Error(await r.text());
   }
   // Vidéos refaites avec les photos en situation (elles ouvrent le montage).
-  if (p.lifestyle?.length) {
+  if (REDO && p.lifestyle?.length) {
     await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "9:16", target: "ads", goal: EN ? "short ad for social media" : "publicité courte pour les réseaux sociaux" } });
     await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "16:9", target: "shop", goal: EN ? "mood video for the store" : "vidéo d'ambiance pour la boutique", music: "none" } });
     await waitIdle(ctx, pid);
   }
   // Variante (coloris…) : valeurs du produit, puis photo de chaque valeur.
-  if (p.variants) {
+  if (REDO && p.variants) {
     await api(ctx, `/api/projects/${pid}/product`, { method: "PATCH", body: { variants: [{ name: p.variants.name, values: p.variants.values }] } });
     for (const [value, file] of Object.entries(p.variants.photos ?? {})) {
       const r = await ctx.request.post(`${BASE}/api/projects/${pid}/product/variant-photo`, { multipart: { value, photo: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
@@ -282,11 +285,26 @@ for (const p of PRODUCTS) {
     }
   }
   // Chaque démonstration montre une direction différente.
-  await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
-  ov = await waitIdle(ctx, pid);
+  if (REDO) {
+    await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
+    ov = await waitIdle(ctx, pid);
+  }
+  // Comme un client dans l'onglet Images : deux photos du vrai produit en situation créées par l'IA (CLIENT_STEPS=1).
+  if (REDO && process.env.CLIENT_STEPS && p.business !== "services") {
+    for (const [k, topic] of (EN ? ["in everyday use", "close-up of the details, in its setting"] : ["en situation, au quotidien", "gros plan sur les détails, en situation"]).entries()) {
+      await api(ctx, `/api/projects/${pid}/images`, { body: { mode: "single", kind: "scene", useAi: true, subline: topic, format: k ? "portrait" : "landscape" } }).catch((e) => console.log("  image :", String(e).slice(0, 160)));
+      await waitIdle(ctx, pid);
+    }
+  }
+  // Puis, comme un client dans l'onglet Publications : une semaine de publications, produite après les images.
+  if (process.env.CLIENT_STEPS || process.env.SOCIAL_ONLY) {
+    const start = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+    const plan = await api(ctx, `/api/projects/${pid}/social/v2`, { body: { action: "plan", request: { startDate: start, days: 8, perDay: 1, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }] } } });
+    await api(ctx, `/api/projects/${pid}/social/v2`, { body: { action: "produce", planId: plan.planId } });
+  }
   firstProject ??= { pid };
   // Fiche produit réglée comme le ferait le marchand (nouvelle version du thème).
-  if (p.pdp?.length) {
+  if (REDO && p.pdp?.length) {
     const { currentTheme, saveThemeVersion } = await import("../src/lib/projects");
     const cur = currentTheme(pid)!;
     const spec = structuredClone(cur.spec);
@@ -307,7 +325,7 @@ for (const p of PRODUCTS) {
   const assets = files.length ? files : all;
   // Scènes dans l'ordre de création : la première (« vie quotidienne ») sert d'exemple principal.
   // Visuel social : celui du jeu d'images, pas une publication du calendrier (déjà montrée dans le fil).
-  const byRole = (r: string) => assets.filter((a) => a.role === r && !(r === "social" && a.meta?.socialV2)).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
+  const byRole = (r: string) => assets.filter((a) => a.role === r && !(r === "social" && (a.meta?.socialV2 || a.meta?.poster))).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
   await sharp(photo).resize({ width: 900 }).jpeg({ quality: 84 }).toFile(path.join(dir, X("photo.jpg")));
   const images: { src: string; label: string }[] = [];
   const pick: [string, string, number][] = EN
@@ -327,11 +345,26 @@ for (const p of PRODUCTS) {
     }
   }
   // Publications du calendrier (moteur de publications : modèles à la marque), dans l'ordre du fil.
-  const postAssets = assets.filter((a) => a.role === "social" && a.meta?.socialV2).sort((x, y) => (x.createdAt ?? 0) - (y.createdAt ?? 0)).slice(0, 8);
+  // Les plus récentes (le dernier calendrier produit), remises dans l'ordre du fil.
+  // Images des deux derniers calendriers (le plus récent d'abord, dans l'ordre du fil) : jamais une image d'un
+  // calendrier plus ancien. Le plus récent peut être celui des publications faites par l'IA.
+  // Une publication retouchée (nouvelle version de son affiche) pointe vers la nouvelle image : elle compte aussi.
+  const socialImgs = [...assets, ...all.filter((x) => !assets.some((y) => y.id === x.id))].filter((a) => a.role === "social" && (a.meta?.socialV2 || a.meta?.poster));
+  const plans = (db().prepare("SELECT plan_id FROM posts WHERE project_id = ? AND plan_id IS NOT NULL GROUP BY plan_id ORDER BY MAX(created_at) DESC LIMIT 2").all(pid) as { plan_id: string }[]).map((r) => r.plan_id);
+  const lastPlan = plans.flatMap((pl) => db().prepare("SELECT media FROM posts WHERE project_id = ? AND plan_id = ? ORDER BY scheduled_at").all(pid, pl) as { media: string }[]);
+  const planIds = [...new Set(lastPlan.flatMap((r) => JSON.parse(r.media || "[]") as string[]))];
+  // Produit : seulement les publications où le produit se voit (pas une photo d'ambiance libre de droits seule).
+  const ambiance = (a: any) => { const bg = assets.find((x) => x.id === a.meta?.poster?.backgroundAssetId) ?? all.find((x) => x.id === a.meta?.poster?.backgroundAssetId); return !!bg && bg.role === "ambiance"; };
+  const fromPlan = (planIds.map((id) => socialImgs.find((a) => a.id === id)).filter(Boolean) as typeof socialImgs).filter((a) => p.business === "services" || !ambiance(a));
+  const postAssets = fromPlan.length ? fromPlan.slice(0, 8) : socialImgs.sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0)).slice(0, 8).reverse();
   const posts: string[] = [];
-  for (const [i, a] of postAssets.entries()) {
-    const file = X(`post-${i + 1}.jpg`);
+  for (const a of postAssets) {
+    const file = X(`post-${posts.length + 1}.jpg`);
     await saveImg(ctx, a.url, path.join(dir, file), 1080);
+    // Publication presque noire (texte sombre sur fond sombre, illisible) : pas montrée sur l'accueil.
+    const { channels } = await sharp(path.join(dir, file)).stats();
+    const avg = (k: "mean" | "stdev") => channels.slice(0, 3).reduce((s, c) => s + c[k], 0) / 3;
+    if (avg("mean") < 45 && avg("stdev") < 30) { fs.rmSync(path.join(dir, file)); continue; }
     posts.push(`/demo/${p.id}/${file}`);
   }
   // Planche d'identité de marque (logo, déclinaisons, palette, typographies, motif, papeterie, mises en situation).

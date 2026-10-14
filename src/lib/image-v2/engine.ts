@@ -120,7 +120,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
   const count = Math.max(1, Math.min(8, req.count ?? 1));
   const seriesHashes: string[] = [];
   // Détourage valide du produit (référence obligatoire pour toute image du produit).
-  const refs = req.references ?? (PRODUCT_KINDS.includes(req.kind) && p.business === "products" ? validCutouts(p.id).slice(0, 1).map((a) => a.id) : []);
+  const refs = req.references ?? (PRODUCT_KINDS.includes(req.kind) && p.business === "products" ? productReferences(p.id) : []);
   const refsUsed = refs.length ? refs : undefined;
 
   try {
@@ -315,3 +315,22 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   return { outcome: { ...last, verdict: last.verdict === "FINAL" ? "FINAL" : last.verdict === "PROVISIONAL" ? "PROVISIONAL" : "REJECTED" }, changeDirection: false };
 }
 
+
+/**
+ * Référence du produit réel pour une image du produit : le détourage validé ; à défaut (détourage refusé), la photo
+ * d'origine du client si c'est un packshot propre (produit seul sur fond uni : rien d'autre à reproduire). Une photo
+ * où le produit est porté ou mis en scène n'est jamais une référence (une personne ou un décor seraient recopiés).
+ */
+export function productReferences(projectId: string): string[] {
+  const cut = validCutouts(projectId)[0];
+  if (cut) return [cut.id];
+  const plain = all<{ id: string }>(
+    `SELECT id FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status != 'rejected' AND origin = 'upload' AND role = 'original'
+        AND (COALESCE(json_extract(meta, '$.triage.plain'), 0) = 1 OR json_extract(meta, '$.triage.kind') = 'packshot') ORDER BY created_at LIMIT 1`,
+    projectId,
+  );
+  if (plain.length) return plain.map((a) => a.id);
+  // Produit recadré dans la photo du client par le module publicités (photo où le produit est porté) : le produit
+  // seul, sans la personne, sert de référence.
+  return all<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'product-ref' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", projectId).map((a) => a.id);
+}

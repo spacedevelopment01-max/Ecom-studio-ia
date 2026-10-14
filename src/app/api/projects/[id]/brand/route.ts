@@ -15,7 +15,8 @@ import { lockedPalette } from "@/lib/theme/direction-palettes";
 import { effectivePalette } from "@/lib/route-palette";
 import { L } from "@/lib/i18n-server";
 import { brandIssues } from "@/lib/engine/brand-check";
-import { applyPaletteToSite } from "@/lib/workflow/propagation";
+import { applyPaletteToSite, applyTaglineToCreations, applyTaglineToSite } from "@/lib/workflow/propagation";
+import { saveIdentityBoard } from "@/lib/engine/identity-board";
 
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
@@ -93,7 +94,12 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   if (!recolored) await saveBrandGuide(p.id);
   // Le site actuel prend la nouvelle palette tout de suite (sans IA, retouches conservées).
   const siteUpdated = paletteChanged ? await applyPaletteToSite(p.id).catch((e) => (console.warn("[brand] palette du site", (e as Error).message), false)) : false;
-  return ok({ brand: loadProject(p.id).brand ?? brand, logoUpdated: v2 || (regenerate && latestProposals(p.id).length > 0) || recolored, recolored, siteUpdated, logoKept: touchesLogo && logoLocked && !recolored });
+  // Nouvelle signature : le site l'affiche et la planche d'identité est refaite (localement, sans IA).
+  const taglineChanged = b.tagline !== undefined && b.tagline.trim() !== (p.brand.tagline ?? "").trim();
+  const taglineOnSite = taglineChanged && p.brand.tagline ? (() => { try { return applyTaglineToSite(p.id, p.brand!.tagline!, b.tagline!); } catch (e) { console.warn("[brand] signature du site", (e as Error).message); return false; } })() : false;
+  if (taglineChanged && p.brand.tagline) await applyTaglineToCreations(p.id, owner, p.brand.tagline, b.tagline!).catch((e) => console.warn("[brand] signature des créations", (e as Error).message));
+  if (taglineChanged) await saveIdentityBoard(p.id).catch((e) => console.warn("[brand] planche", (e as Error).message));
+  return ok({ brand: loadProject(p.id).brand ?? brand, logoUpdated: v2 || (regenerate && latestProposals(p.id).length > 0) || recolored, recolored, siteUpdated: siteUpdated || taglineOnSite, logoKept: touchesLogo && logoLocked && !recolored });
 });
 
 /** Nouvelle proposition de marque (les éléments validés sont conservés). */

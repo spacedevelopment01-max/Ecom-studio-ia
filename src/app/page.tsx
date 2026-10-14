@@ -25,18 +25,42 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await serverLang();
-  const title = pick(lang, "E-COM STUDIO IA · Toute votre activité e-commerce, un seul studio", "E-COM STUDIO IA · Your entire e-commerce business, one studio");
+  // Titre et résumé affichés par Google : les mots que tape un client (boutique en ligne, logo, publicités, IA).
+  const title = pick(lang, "Boutique en ligne, logo et publicités avec l'IA · E-COM STUDIO IA", "Online store, logo and ads with AI · E-COM STUDIO IA");
   const description = pick(
     lang,
-    "Créez votre marque, concevez votre boutique, produisez vos contenus et développez votre activité grâce à l'intelligence artificielle, depuis une seule plateforme.",
-    "Create your brand, design your store, produce your content and grow your business with artificial intelligence, all from a single platform.",
+    "Une photo de votre produit suffit : l'IA crée votre logo, votre boutique Shopify, WordPress ou PrestaShop, vos images, vos publicités et vos publications. Vous validez tout. Découverte gratuite.",
+    "One product photo is enough: AI creates your logo, your Shopify, WordPress or PrestaShop store, your images, your ads and your posts. You approve everything. Free discovery.",
   );
   return {
     title: { absolute: title },
     description,
+    twitter: { card: "summary_large_image", title, description, images: ["/explainers/film-court.jpg"] },
     alternates: { canonical: "/" },
-    openGraph: { title, description, type: "website", siteName: "E-COM STUDIO IA", images: [{ url: "/explainers/film-court.jpg", width: 1280, height: 720 }] },
+    openGraph: { title, description, url: "/", type: "website", siteName: "E-COM STUDIO IA", locale: lang === "en" ? "en_US" : "fr_FR", images: [{ url: "/explainers/film-court.jpg", width: 1280, height: 720 }] },
   };
+}
+
+/** Données structurées (schema.org) : uniquement ce que la page affiche, sans note, avis ni prix inventés. */
+function jsonLd(lang: "fr" | "en", faq: [string, string][]) {
+  const data = [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "E-COM STUDIO IA",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      inLanguage: lang,
+      description: pick(lang, "Studio en ligne qui crée avec l'IA le logo, la boutique en ligne (Shopify, WordPress, PrestaShop), les images, les publicités, les vidéos et les publications d'une marque.", "Online studio that uses AI to create a brand's logo, online store (Shopify, WordPress, PrestaShop), images, ads, videos and posts."),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      inLanguage: lang,
+      mainEntity: faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+    },
+  ];
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 /** En-tête de section : sur-titre, titre (dont une partie mise en valeur) et chapeau. */
@@ -116,18 +140,18 @@ export default async function Home() {
 
   const steps = [
     { title: T("Vous donnez une photo, un lien ou une description.", "You provide a photo, a link or a description."), text: T("Une photo de votre produit, l'adresse de votre site ou quelques lignes sur votre activité suffisent. Pas encore de photo ? Ouvrez le studio quand même : vous l'ajouterez plus tard.", "A photo of your product, your website's address or a few lines about your business is enough. No photo yet? Open the studio anyway: you can add one later."), video: M("/explainers/photo.mp4"), poster: M("/explainers/photo.jpg") },
-    { title: T("Le studio comprend le projet et prépare les créations.", "The studio understands the project and prepares the creations."), text: T("Analyse du produit, marque et logo, boutique ou site, images, textes et publications : tout est préparé dans un seul projet, à vos couleurs.", "Product analysis, brand and logo, store or website, images, copy and posts: everything is prepared in a single project, in your colors."), video: M("/explainers/themes.mp4"), poster: M("/explainers/themes.jpg") },
-    { title: T("Vous personnalisez et vous validez.", "You customize and approve."), text: T("Désignez un élément et demandez ce que vous voulez, ou modifiez-le vous-même. Seul l'élément visé change, et chaque version reste restaurable.", "Point to an element and ask for what you want, or edit it yourself. Only that element changes, and every version can be restored."), video: M("/explainers/chat.mp4"), poster: M("/explainers/chat.jpg") },
-    { title: T("Vos créations développent votre activité.", "Your creations grow your business."), text: T("Boutique exportée pour votre plateforme, publicités aux bons formats, publications prêtes dans le calendrier. Rien n'est publié sans votre accord.", "Store exported for your platform, ads in the right formats, posts ready in the calendar. Nothing is published without your approval."), video: M("/explainers/cal.mp4"), poster: M("/explainers/cal.jpg") },
+    { title: T("Le studio prépare tout pour vous.", "The studio prepares everything for you."), text: T("Votre logo, vos couleurs, votre boutique ou votre site, vos images, vos textes et vos publications : tout est créé au même endroit, dans le même style.", "Your logo, your colors, your store or website, your images, your copy and your posts: everything is created in one place, in the same style."), video: M("/explainers/themes.mp4"), poster: M("/explainers/themes.jpg") },
+    { title: T("Vous changez ce que vous voulez, puis vous validez.", "You change what you want, then approve."), text: T("Cliquez sur un élément et dites ce que vous voulez, ou modifiez-le vous-même. Le reste ne bouge pas, et vous pouvez toujours revenir en arrière.", "Click an element and say what you want, or edit it yourself. Nothing else moves, and you can always go back."), video: M("/explainers/chat.mp4"), poster: M("/explainers/chat.jpg") },
+    { title: T("Vous publiez et vous vendez.", "You publish and you sell."), text: T("Votre boutique est prête pour votre plateforme, vos publicités sont aux bonnes tailles et vos publications attendent dans le calendrier. Rien n'est publié sans votre accord.", "Your store is ready for your platform, your ads are in the right sizes and your posts wait in the calendar. Nothing is published without your approval."), video: M("/explainers/cal.mp4"), poster: M("/explainers/cal.jpg") },
   ];
 
   const modules: StoryStep[] = [
-    { key: "brand", label: T("Marque", "Brand"), title: T("Une identité qui part de votre produit.", "An identity that starts from your product."), text: T("Nom, logo vectoriel, palette mesurée sur l'objet lui-même et typographies : la marque est posée avant tout le reste, puis réutilisée partout.", "Name, vector logo, a palette measured on the object itself, and typefaces: the brand comes first, then is reused everywhere."), points: [T("Logo SVG", "SVG logo"), T("Palette", "Palette"), T("Typographies", "Typefaces")] },
-    { key: "store", label: T("Boutique", "Store"), title: T("Une boutique composée pour votre marque.", "A store designed for your brand."), text: T("Mise en page, sections et textes pensés pour votre produit, vérifiés sur ordinateur et téléphone, puis livrés pour votre plateforme.", "Layout, sections and copy designed around your product, checked on desktop and mobile, then delivered for your platform."), points: ["Shopify", "WooCommerce", "PrestaShop"] },
-    { key: "images", label: T("Images", "Images"), title: T("Des visuels fidèles au vrai produit.", "Visuals true to the real product."), text: T("Détourage, packshots, détails et scènes d'usage : le studio compose autour des pixels réels de votre produit, sans le réinventer.", "Cutouts, packshots, details and lifestyle scenes: the studio builds around your product's real pixels, without reinventing it."), points: [T("Détourage", "Cutout"), "Packshot", T("Scènes", "Scenes")] },
-    { key: "ads", label: T("Publicités", "Ads"), title: T("Des publicités que vous retouchez vous-même.", "Ads you can edit yourself."), text: T("Chaque publicité s'ouvre dans un éditeur : texte, photo, formes et logo se modifient à la main, puis s'exportent aux formats des réseaux.", "Every ad opens in an editor: text, photo, shapes and logo are edited by hand, then exported in the networks' formats."), points: ["1:1", "4:5", "9:16", "16:9"] },
-    { key: "video", label: T("Vidéos", "Videos"), title: T("Du storyboard à la vidéo exportée.", "From storyboard to exported video."), text: T("Plan, script et storyboard d'abord ; l'estimation s'affiche et le rendu attend votre accord. Vous approuvez, puis vous exportez.", "Plan, script and storyboard first; the estimate is shown and rendering waits for your approval. You approve, then export."), points: [T("Storyboard", "Storyboard"), T("Accord avant rendu", "Approval before render"), "MP4"] },
-    { key: "seo", label: "SEO", title: T("Des textes qui se modifient comme un document.", "Copy you edit like a document."), text: T("Fiches produit, pages et articles sont des documents éditables. Une information inconnue reste « à compléter » au lieu d'être inventée.", "Product pages, pages and articles are editable documents. Unknown information stays \"to complete\" instead of being made up."), points: [T("Fiche produit", "Product page"), T("Pages", "Pages"), T("Articles", "Articles")] },
+    { key: "brand", label: T("Marque", "Brand"), title: T("Un logo et des couleurs qui vous ressemblent.", "A logo and colors that look like you."), text: T("Le studio crée votre logo, choisit vos couleurs à partir de votre produit et les polices de vos textes. Ensuite, tout le reste suit ce style.", "The studio creates your logo, picks your colors from your product and the fonts for your text. Everything else then follows that style."), points: [T("Logo", "Logo"), T("Couleurs", "Colors"), T("Polices", "Fonts")] },
+    { key: "store", label: T("Boutique", "Store"), title: T("Une boutique en ligne faite pour votre produit.", "An online store made for your product."), text: T("Les pages, les textes et la mise en page sont pensés pour votre produit, vérifiés sur ordinateur et sur téléphone, puis livrés pour votre plateforme.", "Pages, copy and layout are designed around your product, checked on desktop and mobile, then delivered for your platform."), points: ["Shopify", "WooCommerce", "PrestaShop"] },
+    { key: "images", label: T("Images", "Images"), title: T("Des visuels fidèles au vrai produit.", "Visuals true to the real product."), text: T("Photo sur fond blanc, gros plans et mises en situation : le studio part de la photo de votre vrai produit et le garde tel qu'il est.", "White-background photo, close-ups and lifestyle shots: the studio starts from the photo of your real product and keeps it as it is."), points: [T("Fond blanc", "White background"), T("Gros plans", "Close-ups"), T("Mises en situation", "Lifestyle shots")] },
+    { key: "ads", label: T("Publicités", "Ads"), title: T("Des publicités que vous retouchez vous-même.", "Ads you can edit yourself."), text: T("Vous changez le texte, la photo ou le logo d'un clic, puis vous téléchargez la publicité aux bonnes tailles pour chaque réseau.", "You change the text, photo or logo in a click, then download the ad in the right sizes for each network."), points: [T("Carré", "Square"), T("Portrait", "Portrait"), T("Story", "Story"), T("Paysage", "Landscape")] },
+    { key: "video", label: T("Vidéos", "Videos"), title: T("Des vidéos préparées pas à pas.", "Videos prepared step by step."), text: T("Le studio écrit le déroulé de la vidéo et vous montre chaque image avant de la fabriquer. Le prix s'affiche, et rien n'est lancé sans votre accord.", "The studio writes the video's outline and shows you each frame before making it. The price is shown, and nothing starts without your approval."), points: [T("Déroulé en images", "Outline in pictures"), T("Votre accord d'abord", "Your approval first"), T("Prête à publier", "Ready to post")] },
+    { key: "seo", label: T("Google", "Google"), title: T("Des textes qui aident Google à vous trouver.", "Copy that helps Google find you."), text: T("Le studio écrit vos fiches produit, vos pages et vos articles avec des mots simples que vos clients pourraient chercher. Vous les modifiez comme un texte normal. Ce qu'il ne sait pas reste « à compléter », jamais inventé.", "The studio writes your product pages, pages and articles with simple words your customers might search for. You edit them like any text. What it doesn't know stays \"to complete\", never made up."), points: [T("Fiche produit", "Product page"), T("Pages", "Pages"), T("Articles", "Articles")] },
     { key: "social", label: T("Réseaux sociaux", "Social media"), title: T("Un calendrier que vous validez.", "A calendar you approve."), text: T("Publications préparées pour chaque réseau, réparties dans la semaine. Vous approuvez une par une ou en lot ; rien ne part sans vous.", "Posts prepared for each network, spread across the week. You approve one by one or in bulk; nothing goes out without you."), points: ["Instagram", "Facebook", "TikTok", "Pinterest"] },
   ];
 
@@ -160,23 +184,23 @@ export default async function Home() {
     : [];
 
   const hub = [
-    { key: "brand", label: T("Marque", "Brand"), text: T("Couleurs, logo et typographies validés une fois, puis réutilisés par tous les modules du projet.", "Colors, logo and typefaces approved once, then reused by every module in the project.") },
-    { key: "store", label: T("Boutique", "Store"), text: T("La boutique reprend la marque, les textes de référence et les images du projet.", "The store uses the project's brand, reference copy and images.") },
+    { key: "brand", label: T("Marque", "Brand"), text: T("Couleurs, logo et polices validés une fois, puis repris partout dans le projet.", "Colors, logo and fonts approved once, then reused everywhere in the project.") },
+    { key: "store", label: T("Boutique", "Store"), text: T("La boutique reprend votre logo, vos couleurs, vos textes et vos images.", "The store uses your logo, colors, copy and images.") },
     { key: "images", label: T("Images", "Images"), text: T("Chaque visuel est rangé dans le projet et réutilisable dans la boutique, les publicités et les publications.", "Every visual is stored in the project and reusable in the store, the ads and the posts.") },
-    { key: "copy", label: T("Textes", "Copy"), text: T("Les textes de référence (fiche produit, accueil) sont ceux qu'affichent la boutique et ses exports.", "The reference copy (product page, home page) is what the store and its exports display.") },
-    { key: "ads", label: T("Publicités", "Ads"), text: T("Les publicités utilisent les images, la palette et le logo du projet.", "Ads use the project's images, palette and logo.") },
-    { key: "video", label: T("Vidéos", "Videos"), text: T("Les vidéos partent du produit et des images du projet, avec votre accord avant le rendu.", "Videos start from the project's product and images, with your approval before rendering.") },
+    { key: "copy", label: T("Textes", "Copy"), text: T("La fiche produit et la page d'accueil que vous validez sont celles qu'affiche votre boutique.", "The product page and home page you approve are the ones your store shows.") },
+    { key: "ads", label: T("Publicités", "Ads"), text: T("Les publicités reprennent vos images, vos couleurs et votre logo.", "Ads use your images, colors and logo.") },
+    { key: "video", label: T("Vidéos", "Videos"), text: T("Les vidéos partent de votre produit et de vos images, et ne sont fabriquées qu'avec votre accord.", "Videos start from your product and your images, and are only made with your approval.") },
     { key: "social", label: T("Réseaux", "Social"), text: T("Le calendrier puise dans les mêmes visuels et textes ; rien ne part sans votre accord.", "The calendar draws on the same visuals and copy; nothing goes out without your approval.") },
   ];
 
   // Avant / après : la photo d'origine (Pixabay) et une création du studio sur le vrai produit.
   // Après : une publication faite par le studio sur la vraie photo (sinon une image du produit).
-  const ba = productDemos.find((d) => d.id === "tillandsia") ?? productDemos[0];
+  const ba = productDemos.find((d) => d.id === "gourde") ?? productDemos[0];
   const baAfter = ba ? (ba.posts?.[0] ?? (ba.images.find((x) => /scène|scene/i.test(x.label)) ?? ba.images.find((x) => /packshot/i.test(x.label)))?.src) : undefined;
 
   // Créations réelles des démonstrations : planches d'identité, fils de publications, mur de publications.
   const boards: BoardDemo[] = list.filter((d) => d.board).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, board: d.board!, palette: d.palette }));
-  const feeds: FeedDemo[] = list.filter((d) => (d.posts?.length ?? 0) >= 6).map((d) => ({ id: d.id, brand: d.brand, handle: d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""), logo: d.logo, palette: d.palette, posts: d.posts! }));
+  const feeds: FeedDemo[] = list.filter((d) => (d.posts?.length ?? 0) >= 4).map((d) => ({ id: d.id, brand: d.brand, handle: d.brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""), logo: d.logo, palette: d.palette, posts: d.posts! }));
   // Mur : les publications des marques entremêlées (jamais deux d'une même marque côte à côte).
   const wall: WallItem[] = [];
   for (let k = 0; k < 8; k++) for (const f of feeds) if (f.posts[k]) wall.push({ src: f.posts[k], brand: f.brand });
@@ -186,10 +210,10 @@ export default async function Home() {
   const yes = (text: string): Cell => ({ ok: "yes", text });
   const no = (text = T("Non", "No")): Cell => ({ ok: "no", text });
   const platforms: { name: string; native: Cell; connect: Cell; kit: Cell }[] = [
-    { name: "Shopify", native: yes(T("Thème Online Store 2.0 en ZIP, vérifié par Theme Check", "Online Store 2.0 theme as a ZIP, checked by Theme Check")), connect: { ok: "beta", text: T("Envoi comme thème non publié : développé, pas encore essayé sur une vraie boutique", "Upload as an unpublished theme: built, not yet tried on a real store") }, kit: no(T("Inutile", "Not needed")) },
-    { name: "WordPress · WooCommerce", native: yes(T("Thème de blocs en ZIP (Apparence › Thèmes), catalogue CSV", "Block theme as a ZIP (Appearance › Themes), CSV catalog")), connect: no(), kit: no(T("Inutile", "Not needed")) },
-    { name: "PrestaShop 1.7 · 8", native: yes(T("Thème enfant de Classic en ZIP", "Child theme of Classic as a ZIP")), connect: no(), kit: no(T("Inutile", "Not needed")) },
-    { name: "Wix · Squarespace", native: no(T("Ces plateformes n'acceptent pas de thème importé", "These platforms don't accept imported themes")), connect: no(), kit: { ok: "kit", text: T("Pages, textes, médias, couleurs, typographies et guide pas à pas", "Pages, copy, media, colors, typefaces and a step-by-step guide") } },
+    { name: "Shopify", native: yes(T("Thème Shopify complet à importer, vérifié par l'outil officiel de Shopify", "Complete Shopify theme to import, checked by Shopify's official tool")), connect: { ok: "beta", text: T("Envoi dans votre boutique sans la mettre en ligne : prêt, pas encore essayé sur une vraie boutique", "Sent to your store without going live: built, not yet tried on a real store") }, kit: no(T("Pas besoin", "Not needed")) },
+    { name: "WordPress · WooCommerce", native: yes(T("Thème à importer (Apparence › Thèmes) et fichier de vos produits", "Theme to import (Appearance › Themes) and a file of your products")), connect: no(), kit: no(T("Pas besoin", "Not needed")) },
+    { name: "PrestaShop 1.7 · 8", native: yes(T("Thème à importer, basé sur le thème Classic", "Theme to import, based on the Classic theme")), connect: no(), kit: no(T("Pas besoin", "Not needed")) },
+    { name: "Wix · Squarespace", native: no(T("Ces plateformes n'acceptent pas de thème importé", "These platforms don't accept imported themes")), connect: no(), kit: { ok: "kit", text: T("Vos pages, textes, images, couleurs et polices, avec un guide pas à pas", "Your pages, copy, images, colors and fonts, with a step-by-step guide") } },
   ];
   const Mark = ({ c }: { c: Cell }) => (
     <span className="flex gap-2.5">
@@ -204,13 +228,13 @@ export default async function Home() {
   );
 
   const faq: [string, string][] = [
-    [T("Et si je vends des services, pas des produits ?", "What if I sell services, not products?"), T("Choisissez « Le site de mon entreprise de services » en créant le projet. Le studio construit alors un site vitrine (prestations, tarifs, rendez-vous ou devis, horaires, zone d'intervention) au lieu d'une boutique, et adapte les textes, images, publications et publicités. WordPress est conseillé ; Shopify convient aussi, et Wix ou Squarespace avec un kit de reprise.", "Pick \"My services business website\" when creating the project. The studio then builds a business website (services, prices, booking or quotes, opening hours, service area) instead of a store, and adapts the copy, images, posts and ads. WordPress is recommended; Shopify works too, and Wix or Squarespace with a rebuild kit.")],
-    [T("J'ai déjà un site et un logo : puis-je utiliser le studio ?", "I already have a website and a logo: can I use the studio?"), T("Oui. Choisissez « J'ai déjà mon site et mon logo » et indiquez son adresse (le site doit vous appartenir ou vous devez être autorisé à l'utiliser). Le studio reconnaît la plateforme et reprend votre logo, vos pages, vos produits, vos couleurs et vos polices, sans créer de nouvelle marque. Sur Shopify, WordPress / WooCommerce, PrestaShop, Wix ou Squarespace, votre site reste tel quel ; sur une autre plateforme ou un site sur mesure, il est reproduit sur Shopify (boutique) ou WordPress (services), avec les mêmes textes et images — le studio indique ce qui est fidèle et ce qui est approché. Les contenus que votre site charge uniquement en JavaScript peuvent ne pas être lus : c'est signalé.", "Yes. Choose \"I already have my website and logo\" and enter its address (the website must be yours or you must be authorized to use it). The studio recognizes the platform and takes your logo, pages, products, colors and fonts, without creating a new brand. On Shopify, WordPress / WooCommerce, PrestaShop, Wix or Squarespace, your website stays as it is; on another platform or a custom-built site, it is reproduced on Shopify (store) or WordPress (services), with the same text and images — the studio shows what is exact and what is approximated. Content your website loads only with JavaScript may not be read: this is flagged.")],
+    [T("Et si je vends des services, pas des produits ?", "What if I sell services, not products?"), T("Choisissez « Le site de mon entreprise de services » en créant le projet. Le studio construit alors un site pour présenter votre activité (prestations, tarifs, rendez-vous ou devis, horaires, zone d'intervention) au lieu d'une boutique, et adapte les textes, images, publications et publicités. WordPress est conseillé ; Shopify convient aussi, et Wix ou Squarespace avec un guide pas à pas.", "Pick \"My services business website\" when creating the project. The studio then builds a business website (services, prices, booking or quotes, opening hours, service area) instead of a store, and adapts the copy, images, posts and ads. WordPress is recommended; Shopify works too, and Wix or Squarespace with a step-by-step guide.")],
+    [T("J'ai déjà un site et un logo : puis-je utiliser le studio ?", "I already have a website and a logo: can I use the studio?"), T("Oui. Choisissez « J'ai déjà mon site et mon logo » et indiquez son adresse (le site doit vous appartenir ou vous devez être autorisé à l'utiliser). Le studio reconnaît la plateforme et reprend votre logo, vos pages, vos produits, vos couleurs et vos polices, sans créer de nouvelle marque. Sur Shopify, WordPress / WooCommerce, PrestaShop, Wix ou Squarespace, votre site reste tel quel ; sur une autre plateforme ou un site sur mesure, il est reproduit sur Shopify (boutique) ou WordPress (services), avec les mêmes textes et images — le studio indique ce qui est fidèle et ce qui est approché. Certains contenus de sites très techniques peuvent ne pas être lus : le studio vous le signale.", "Yes. Choose \"I already have my website and logo\" and enter its address (the website must be yours or you must be authorized to use it). The studio recognizes the platform and takes your logo, pages, products, colors and fonts, without creating a new brand. On Shopify, WordPress / WooCommerce, PrestaShop, Wix or Squarespace, your website stays as it is; on another platform or a custom-built site, it is reproduced on Shopify (store) or WordPress (services), with the same text and images — the studio shows what is exact and what is approximated. Some content on very technical websites may not be read: the studio tells you.")],
     [T("Où choisir Shopify, WordPress ou une autre plateforme ?", "Where do I choose Shopify, WordPress or another platform?"), T("Dans le formulaire de création du projet, juste après le choix « boutique » ou « entreprise de services » : rubrique « Sur quelle plateforme vendrez-vous ? » (ou « Où sera publié votre site ? » pour une entreprise de services), avec une carte par plateforme. Vous pouvez aussi en changer plus tard depuis l'onglet Boutique : le studio relivre le site pour la nouvelle plateforme.", "In the project creation form, right after choosing \"store\" or \"services business\": \"Which platform will you sell on?\" (or \"Where will your website live?\" for a services business), with one card per platform. You can also change it later from the Store tab: the studio redelivers the site for the new platform.")],
     [T("Faut-il une photo pour commencer ?", "Do I need a photo to get started?"), T("Non. Vous pouvez ouvrir le studio sans rien, explorer les espaces et les thèmes, puis ajouter une photo, un lien ou quelques lignes quand vous êtes prêt : la création démarre à ce moment-là.", "No. You can open the studio with nothing, explore the workspaces and themes, then add a photo, a link or a few lines when you're ready: creation starts at that point.")],
-    [T("Les démonstrations de cette page sont-elles des résultats clients ?", "Are the demos on this page client results?"), T("Non. Ce sont des marques et des entreprises fictives créées par le studio, sans l'IA des forfaits, à partir de vraies photos libres de droits (Pixabay) : des produits sans marque visible, une boutique de fleuriste et un salon de barbier. Les petites démonstrations interactives tournent dans votre navigateur : rien n'est enregistré ni publié.", "No. They are fictional brands and businesses created by the studio, without the plans' AI, from real royalty-free photos (Pixabay): products with no visible brand, a florist's shop and a barber shop. The small interactive demos run in your browser: nothing is saved or published.")],
+    [T("Les démonstrations de cette page sont-elles des résultats clients ?", "Are the demos on this page client results?"), T("Non. Ce sont des marques et des entreprises fictives, créées dans le studio avec l'IA comme pour un client, à partir de vraies photos (Pixabay, fournisseur) ou de photos créées par l'IA : un casque, des articles de supporter, une gourde, un fleuriste et un paysagiste. Les petites démonstrations interactives tournent dans votre navigateur : rien n'est enregistré ni publié.", "No. They are fictional brands and businesses, created in the studio with AI just like for a client, from real photos (Pixabay, supplier) or AI-created photos: headphones, supporter gear, a water bottle, a florist and a landscaper. The small interactive demos run in your browser: nothing is saved or published.")],
     [T("Puis-je arrêter une création en cours ?", "Can I stop a creation in progress?"), T("Oui. Le bouton « Pause » arrête la création à la fin de l'étape en cours ; « Reprendre » repart de là. Les étapes déjà terminées sont conservées et ne sont ni refaites ni refacturées.", "Yes. The \"Pause\" button stops the creation at the end of the current step; \"Resume\" picks up from there. Completed steps are kept and are neither redone nor charged again.")],
-    [T("Le thème Shopify est-il vraiment installable ?", "Can the Shopify theme really be installed?"), T("Oui : c'est un thème Online Store 2.0 complet (sections, blocs, réglages natifs, panier latéral, recherche, pages), vérifié par Theme Check, l'outil officiel de Shopify. Vous l'importez en ZIP. L'envoi direct dans votre boutique est développé mais pas encore essayé sur une vraie boutique.", "Yes: it's a complete Online Store 2.0 theme (sections, blocks, native settings, cart drawer, search, pages), checked by Theme Check, Shopify's official tool. You upload it as a ZIP. Direct upload to your store is built but not yet tried on a real store.")],
+    [T("Le thème Shopify est-il vraiment installable ?", "Can the Shopify theme really be installed?"), T("Oui. C'est un thème Shopify complet (pages, panier, recherche, réglages), vérifié par l'outil officiel de Shopify. Vous l'importez en un seul fichier. L'envoi direct dans votre boutique est prêt, mais pas encore essayé sur une vraie boutique.", "Yes. It's a complete Shopify theme (pages, cart, search, settings), checked by Shopify's official tool. You import it as a single file. Sending it directly to your store is built, but not yet tried on a real store.")],
     [T("Que se passe-t-il si une information manque ?", "What happens if some information is missing?"), T("Elle reste visible « à compléter » dans les textes, et le studio vous pose la question. Quand vous répondez, seuls les passages concernés sont mis à jour, sans écraser ce que vous avez validé.", "It stays visible as \"to complete\" in the copy, and the studio asks you about it. When you answer, only the relevant passages are updated, without overwriting what you've approved.")],
     [T("Mes publications partent-elles toutes seules ?", "Do my posts go out on their own?"), T("Seulement celles que vous avez approuvées, et une fois vos comptes connectés. La publication par les connexions officielles (Instagram, Facebook, TikTok, YouTube, Pinterest) est développée mais pas encore essayée sur de vrais comptes ; pour LinkedIn, le studio prépare les publications à publier vous-même.", "Only the ones you've approved, once your accounts are connected. Publishing through the official connections (Instagram, Facebook, TikTok, YouTube, Pinterest) is built but not yet tried on real accounts; for LinkedIn, the studio prepares posts for you to publish yourself.")],
     [T("La découverte gratuite, c'est quoi ?", "What is the free discovery?"), T("Un compte gratuit, sans carte bancaire, qui ouvre le studio de démonstration : les 30 thèmes en aperçu, des marques, boutiques, publicités, vidéos et calendriers d'exemple que vous manipulez dans votre navigateur. Aucun projet réel, aucun appel IA, aucune publication ni export. Pour créer votre projet, choisissez un forfait.", "A free account, with no credit card, that opens the demo studio: all 30 themes in preview, plus sample brands, stores, ads, videos and calendars you can play with in your browser. No real project, no AI calls, no posting or export. To create your project, choose a plan.")],
@@ -227,6 +251,8 @@ export default async function Home() {
       <ScrollFX />
       <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-full focus:bg-card focus:px-4 focus:py-2">{T("Aller au contenu", "Skip to content")}</a>
       <HomeHeader links={nav} loggedIn={!!user} ctaHref={cta} />
+      {/* Données lues par Google : le studio (application en ligne) et les questions fréquentes affichées plus bas. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(lang, faq) }} />
 
       <main id="contenu">
         {/* ───────────── Hero : la vidéo d'entrée (fichier d'origine) dans la fenêtre du studio ───────────── */}
@@ -243,7 +269,7 @@ export default async function Home() {
                 {lang === "en" ? <>Your entire <span className="whitespace-nowrap">e&#8209;commerce</span> business.</> : <>Toute votre activité <span className="whitespace-nowrap">e&#8209;commerce.</span></>} <span className="hp-accent">{T("Un seul studio.", "One studio.")}</span>
               </h1>
               <p className="hp-lead hp-load mt-5 max-w-xl sm:mt-6" style={{ ["--d" as any]: 2 }}>
-                {T("Créez votre marque, concevez votre boutique, produisez vos contenus et développez votre activité grâce à l'intelligence artificielle, depuis une seule plateforme.", "Create your brand, design your store, produce your content and grow your business with artificial intelligence, all from a single platform.")}
+                {T("Une photo de votre produit ou quelques lignes sur votre activité suffisent. L'IA crée votre logo, votre boutique en ligne, vos images, vos publicités et vos publications. Vous gardez la main sur tout.", "A photo of your product or a few lines about your business is all it takes. AI creates your logo, your online store, your images, your ads and your posts. You stay in control of everything.")}
               </p>
               <div className="hp-load mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap" style={{ ["--d" as any]: 3 }}>
                 <Link href={cta} className="hp-btn hp-btn-primary !min-h-14 !px-6">
@@ -269,7 +295,7 @@ export default async function Home() {
                   </div>
                   <HeroFilm src={M("/explainers/film-court.mp4")} poster={M("/explainers/film-court.jpg")} description={T("Film explicatif sans voix : de la photo à la publication en 7 étapes", "Explainer film without voice-over: from photo to post in 7 steps")} />
                 </div>
-                <ol className="scrollbar-none mt-5 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible" aria-label={T("Les modules du studio", "The studio's modules")}>
+                <ol className="scrollbar-none mt-5 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible" aria-label={T("Ce que fait le studio", "What the studio does")}>
                   {modules.map((m, i) => (
                     <li key={m.key}>
                       <a href={`#module-${m.key}`} className="hp-chip min-h-11 whitespace-nowrap transition hover:border-signal hover:text-ink sm:min-h-9">
@@ -288,7 +314,7 @@ export default async function Home() {
               <span className="font-display text-base font-semibold text-ink">Shopify</span>
               <span className="font-display text-base font-semibold text-ink">WordPress · WooCommerce</span>
               <span className="font-display text-base font-semibold text-ink">PrestaShop</span>
-              <span>{T("Kit pour Wix et Squarespace", "Kit for Wix and Squarespace")}</span>
+              <span>{T("Guide pour Wix et Squarespace", "Guide for Wix and Squarespace")}</span>
             </p>
           </div>
           {wall.length >= 6 && (
@@ -314,7 +340,7 @@ export default async function Home() {
         {/* ───────────── Parcours au défilement : les sept modules ───────────── */}
         <section id="fonctionnalites" className="hp-band relative scroll-mt-16 border-y border-line py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <Head eyebrow={T("Fonctionnalités", "Features")} title={T("De la marque aux réseaux sociaux,", "From brand to social media,")} accent={T("dans le même studio.", "in the same studio.")} lead={T("Faites défiler : un même projet passe par les sept modules. Chacun reprend ce que les précédents ont créé.", "Scroll on: one project moves through all seven modules. Each one builds on what the previous ones created.")} />
+            <Head eyebrow={T("Fonctionnalités", "Features")} title={T("De la marque aux réseaux sociaux,", "From brand to social media,")} accent={T("dans le même studio.", "in the same studio.")} lead={T("Faites défiler : un même projet passe par sept étapes, et chacune reprend ce que les précédentes ont créé.", "Scroll on: one project goes through seven steps, and each one builds on what the previous ones created.")} />
             {story && (
               <div className="mt-8 lg:mt-4">
                 <StoryScroll steps={modules} demo={story} />
@@ -327,8 +353,8 @@ export default async function Home() {
         <section id="marque" className="scroll-mt-20 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-              <Head eyebrow={T("Création de marque", "Brand creation")} title={T("Une photo de départ,", "One starting photo,")} accent={T("une identité complète.", "a complete identity.")} lead={boards.length ? T("Logo et déclinaisons, palette, typographies, icônes, motif, papeterie et mises en situation : chaque marque reçoit sa planche d'identité, et toutes ses créations suivent cette même ligne.", "Logo and variations, palette, typefaces, icons, pattern, stationery and mockups: every brand gets its identity board, and all its creations follow that same line.") : T("Choisissez une marque de démonstration : logo, palette et typographies ont été créés par le studio à partir de la photo du produit.", "Pick a demo brand: its logo, palette and typefaces were created by the studio from the product photo.")} />
-              <p className="reveal max-w-xs text-sm text-muted lg:text-right">{T("Démonstrations réalisées sans l'IA des forfaits.", "Demos made without the plans' AI.")}</p>
+              <Head eyebrow={T("Création de marque", "Brand creation")} title={T("Une photo de départ,", "One starting photo,")} accent={T("une identité complète.", "a complete identity.")} lead={boards.length ? T("Logo et ses variantes, couleurs, polices, icônes, motif, cartes de visite et exemples d'utilisation : chaque marque reçoit sa planche, et toutes ses créations gardent ce style.", "Logo and its variants, colors, fonts, icons, pattern, business cards and usage examples: every brand gets its board, and all its creations keep that style.") : T("Choisissez une marque de démonstration : son logo, ses couleurs et ses polices ont été créés par le studio à partir de la photo du produit.", "Pick a demo brand: its logo, colors and fonts were created by the studio from the product photo.")} />
+              <p className="reveal max-w-xs text-sm text-muted lg:text-right">{T("Projets de démonstration réalisés dans le studio, avec l'IA, comme pour un client.", "Demo projects made in the studio, with AI, just like for a client.")}</p>
             </div>
             <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
               {boards.length ? <BoardShowcase boards={boards} /> : <BrandLab brands={brands} />}
@@ -339,7 +365,7 @@ export default async function Home() {
         {/* ───────────── Création de boutique ───────────── */}
         <section id="boutiques" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <Head eyebrow={T("Création de boutique", "Store creation")} title={T("Votre boutique,", "Your store,")} accent={T("sur ordinateur et téléphone.", "on desktop and mobile.")} lead={T("Un produit, un catalogue, une niche ou une entreprise de services : le studio adapte la mise en page, les collections et la navigation.", "One product, a catalog, a niche or a service business: the studio adapts the layout, the collections and the navigation.")} />
+            <Head eyebrow={T("Création de boutique", "Store creation")} title={T("Votre boutique,", "Your store,")} accent={T("sur ordinateur et téléphone.", "on desktop and mobile.")} lead={T("Un seul produit, beaucoup de produits ou une entreprise de services : le studio adapte les pages et les menus.", "One product, many products or a service business: the studio adapts the pages and menus.")} />
             <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
               <StoreDevices stores={stores} />
             </div>
@@ -349,15 +375,15 @@ export default async function Home() {
               <div className="lg:col-span-4">
                 <p className="hp-eyebrow reveal">{T("Sur mesure", "Custom-made")}</p>
                 <h3 className="hp-title reveal mt-4 text-[clamp(1.9rem,3.6vw,2.8rem)]">{T("Pas un modèle repeint.", "Not a repainted template.")}</h3>
-                <p className="hp-lead reveal mt-4">{T("Le studio conçoit la boutique comme une agence, puis la vérifie lui-même avant de vous la montrer.", "The studio designs the store the way an agency would, then checks it itself before showing it to you.")}</p>
+                <p className="hp-lead reveal mt-4">{T("Le studio crée votre boutique comme le ferait une agence, puis la vérifie lui-même avant de vous la montrer.", "The studio builds your store the way an agency would, then checks it itself before showing it to you.")}</p>
               </div>
               <ol className="grid gap-x-8 sm:grid-cols-2 lg:col-span-8">
                 {[
-                  [T("Identité", "Identity"), T("Logo, palette, typographies et ton : la marque d'abord, le thème ensuite.", "Logo, palette, typefaces and tone: brand first, theme second.")],
-                  [T("Composition", "Layout"), T("Sections choisies et ordonnées pour raconter votre produit.", "Sections chosen and ordered to tell your product's story.")],
-                  [T("Sections inédites", "Brand-new sections"), T("Avec l'IA, une section nouvelle peut être codée pour votre idée, réglable dans l'éditeur.", "With AI, a new section can be coded for your idea, adjustable in the theme editor.")],
-                  [T("Relecture visuelle", "Visual review"), T("La boutique est photographiée sur ordinateur et téléphone, puis corrigée.", "The store is captured on desktop and mobile, then corrected.")],
-                  [T("Retouches", "Edits"), T("Seul l'élément visé change ; chaque version reste restaurable.", "Only the targeted element changes; every version can be restored.")],
+                  [T("Votre marque d'abord", "Your brand first"), T("Logo, couleurs, polices et façon de parler : la marque d'abord, la boutique ensuite.", "Logo, colors, fonts and tone of voice: brand first, store second.")],
+                  [T("Mise en page", "Layout"), T("Les blocs de chaque page sont choisis et rangés pour bien présenter votre produit.", "The blocks on each page are chosen and ordered to show your product well.")],
+                  [T("Blocs sur mesure", "Custom blocks"), T("Avec l'IA, un bloc nouveau peut être créé pour votre idée, puis réglé dans l'éditeur.", "With AI, a new block can be created for your idea, then adjusted in the editor.")],
+                  [T("Vérifiée à l'écran", "Checked on screen"), T("La boutique est regardée sur ordinateur et sur téléphone, puis corrigée.", "The store is looked at on desktop and mobile, then corrected.")],
+                  [T("Retouches", "Edits"), T("Seul ce que vous changez bouge, et vous pouvez toujours revenir en arrière.", "Only what you change moves, and you can always go back.")],
                   [T("Trente thèmes", "Thirty themes"), T("Une bibliothèque de 30 thèmes : 10 avec Créer, 20 avec Développer, les 30 avec Dominer.", "A library of 30 themes: 10 with Create, 20 with Grow, all 30 with Dominate.")],
                 ].map(([t, d], i) => (
                   <li key={t} className="reveal flex gap-4 border-t border-line py-5" style={{ ["--d" as any]: i % 2 }}>
@@ -378,7 +404,7 @@ export default async function Home() {
               <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("Trente points de départ.", "Thirty starting points.")} <span className="hp-accent">{T("Ou aucun.", "Or none.")}</span></h2>
             </div>
             <div>
-              <p className="hp-lead reveal">{T("L'IA peut partir de l'un de ces 30 thèmes ou composer un thème entièrement nouveau. Tout reste modifiable : en discutant avec le studio, puis dans l'éditeur de votre plateforme.", "The AI can start from one of these 30 themes or design an entirely new theme. Everything stays editable: by chatting with the studio, then in your platform's editor.")}</p>
+              <p className="hp-lead reveal">{T("L'IA peut partir de l'un de ces 30 modèles de boutique ou en créer un tout nouveau. Tout reste modifiable : en écrivant au studio, puis dans l'éditeur de votre plateforme.", "The AI can start from one of these 30 store designs or create a brand-new one. Everything stays editable: by writing to the studio, then in your platform's editor.")}</p>
               <Link href={user ? "/studio/themes" : "/inscription"} className="hp-btn hp-btn-ghost reveal mt-5">{T("Voir la galerie", "View the gallery")} <ArrowUpRight className="size-4" aria-hidden /></Link>
             </div>
           </div>
@@ -387,7 +413,7 @@ export default async function Home() {
         {/* ───────────── Images et publicités ───────────── */}
         <section id="visuels" className="scroll-mt-20 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <Head eyebrow={T("Images et publicités", "Images and ads")} title={T("Fidèle au produit.", "True to the product.")} accent={T("Modifiable à la main.", "Editable by hand.")} lead={T("Le studio ne réinvente jamais votre produit : il le détoure et compose autour de ses pixels réels. Ensuite, chaque publicité se retouche comme dans un logiciel de mise en page.", "The studio never reinvents your product: it cuts it out and builds around its real pixels. Then every ad can be edited like in a layout tool.")} />
+            <Head eyebrow={T("Images et publicités", "Images and ads")} title={T("Fidèle au produit.", "True to the product.")} accent={T("Modifiable à la main.", "Editable by hand.")} lead={T("Le studio part de la photo de votre vrai produit et le garde tel qu'il est : même forme, mêmes couleurs, même étiquette. Ensuite, vous retouchez chaque publicité vous-même, en quelques clics.", "The studio starts from the photo of your real product and keeps it as it is: same shape, same colors, same label. Then you edit each ad yourself, in a few clicks.")} />
             {ba && baAfter && (
               <div className="mt-12 grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-14">
                 <div className="reveal reveal-scale overflow-hidden rounded-[1.75rem] border border-line hp-elev">
@@ -396,11 +422,11 @@ export default async function Home() {
                 <div>
                   <p className="font-display text-2xl font-semibold leading-snug">{T("Glissez pour comparer.", "Drag to compare.")}</p>
                   <ul className="mt-5 grid gap-3 text-[15px] text-ink-2">
-                    {[T("Forme, proportions, étiquette et logo conservés", "Shape, proportions, label and logo preserved"), T("Textes publicitaires composés typographiquement, nets", "Ad copy typeset properly, crisp"), T("Cadrages et marges de sécurité contrôlés pour chaque format", "Framing and safe margins checked for every format")].map((x) => (
+                    {[T("Forme, proportions, étiquette et logo conservés", "Shape, proportions, label and logo preserved"), T("Des textes nets et faciles à lire", "Crisp, easy-to-read text"), T("Rien n'est coupé, quelle que soit la taille de la publicité", "Nothing gets cut off, whatever the ad size")].map((x) => (
                       <li key={x} className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" aria-hidden /> {x}</li>
                     ))}
                   </ul>
-                  <p className="mt-5 text-xs text-muted">{T(`Démonstration : ${ba.brand}, à partir d'une vraie photo de produit (Pixabay).`, `Demo: ${ba.brand}, from a real product photo (Pixabay).`)}</p>
+                  <p className="mt-5 text-xs text-muted">{T(`Démonstration : ${ba.brand}, à partir de la photo du produit fournie à la création du projet.`, `Demo: ${ba.brand}, from the product photo provided when the project was created.`)}</p>
                 </div>
               </div>
             )}
@@ -416,7 +442,7 @@ export default async function Home() {
         {feeds.length > 0 && (
           <section id="publications" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
-              <Head eyebrow={T("Publications", "Posts")} title={T("Un fil qui a une ligne,", "A feed with a visual line,")} accent={T("pas une suite d'images.", "not a string of images.")} lead={T("Chaque marque a sa direction artistique : compositions, lumière des photos, typographie et couleurs. Les publications varient d'un jour à l'autre, la signature reste. Le produit est toujours le vrai, et seuls les arguments confirmés sont écrits.", "Each brand has its art direction: layouts, photo lighting, typography and colors. Posts change from one day to the next, the signature stays. The product is always the real one, and only confirmed claims are written.")} />
+              <Head eyebrow={T("Publications", "Posts")} title={T("Des publications qui vont ensemble,", "Posts that belong together,")} accent={T("sans se répéter.", "without repeating.")} lead={T("Chaque marque garde son style : mêmes couleurs, mêmes polices, même ambiance. Les publications changent d'un jour à l'autre, mais on reconnaît la marque. Le produit est toujours le vrai, et rien n'est inventé.", "Each brand keeps its style: same colors, same fonts, same mood. Posts change from day to day, but you recognize the brand. The product is always the real one, and nothing is made up.")} />
               <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
                 <FeedShowcase feeds={feeds} />
               </div>
@@ -429,16 +455,16 @@ export default async function Home() {
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(700px_420px_at_85%_0%,rgba(88,101,242,.35),transparent_60%),radial-gradient(600px_420px_at_0%_100%,rgba(168,144,255,.16),transparent_60%)]" aria-hidden />
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="max-w-3xl">
-              <p className="reveal text-[.78rem] font-semibold uppercase tracking-[.18em] text-[#AEB7FF]">{T("Vidéo et UGC", "Video and UGC")}</p>
-              <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4.1rem)] text-white">{T("Un storyboard d'abord.", "A storyboard first.")} <span className="bg-gradient-to-r from-[#AEB7FF] to-[#C9B8FF] bg-clip-text text-transparent">{T("La vidéo ensuite.", "Then the video.")}</span></h2>
-              <p className="reveal mt-5 max-w-2xl text-lg leading-relaxed text-white/75">{T("Le studio prépare le plan et le storyboard, affiche l'estimation, puis attend votre accord avant le rendu. Vous approuvez la vidéo et vous l'exportez.", "The studio prepares the plan and the storyboard, shows the estimate, then waits for your approval before rendering. You approve the video and export it.")}</p>
+              <p className="reveal text-[.78rem] font-semibold uppercase tracking-[.18em] text-[#AEB7FF]">{T("Vidéos", "Videos")}</p>
+              <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4.1rem)] text-white">{T("Vous voyez la vidéo en images,", "You see the video in pictures,")} <span className="bg-gradient-to-r from-[#AEB7FF] to-[#C9B8FF] bg-clip-text text-transparent">{T("avant qu'elle soit fabriquée.", "before it is made.")}</span></h2>
+              <p className="reveal mt-5 max-w-2xl text-lg leading-relaxed text-white/75">{T("Le studio prépare le déroulé de la vidéo et vous montre chaque image. Le prix s'affiche. La vidéo n'est fabriquée qu'avec votre accord, puis vous la téléchargez.", "The studio prepares the video's outline and shows you each frame. The price is shown. The video is only made with your approval, then you download it.")}</p>
             </div>
             <ol className="mt-12 grid gap-px overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                [Wand2, T("Stratégie et script", "Strategy and script"), T("Message, ton et déroulé adaptés à votre produit et au réseau visé.", "Message, tone and flow adapted to your product and the target network.")],
-                [Clapperboard, T("Storyboard plan par plan", "Shot-by-shot storyboard"), T("Chaque plan est décrit et illustré avant toute dépense.", "Every shot is described and illustrated before any spending.")],
-                [FileCheck2, T("Votre accord", "Your approval"), T("L'estimation s'affiche ; rien n'est rendu sans votre autorisation.", "The estimate is shown; nothing is rendered without your authorization.")],
-                [PackageOpen, T("Rendu et exports", "Render and exports"), T("MP4 aux formats 9:16, 1:1, 4:5 et 16:9, après approbation.", "MP4 in 9:16, 1:1, 4:5 and 16:9, after approval.")],
+                [Wand2, T("Le message", "The message"), T("Ce que la vidéo doit dire, adapté à votre produit et au réseau choisi.", "What the video should say, adapted to your product and the chosen network.")],
+                [Clapperboard, T("Le déroulé en images", "The outline in pictures"), T("Chaque moment de la vidéo est montré en image avant de dépenser quoi que ce soit.", "Each moment of the video is shown as a picture before anything is spent.")],
+                [FileCheck2, T("Votre accord", "Your approval"), T("Le prix s'affiche ; rien n'est fabriqué sans votre feu vert.", "The price is shown; nothing is made without your go-ahead.")],
+                [PackageOpen, T("La vidéo prête", "The finished video"), T("Une vidéo à télécharger, en vertical, carré ou horizontal.", "A video to download, vertical, square or horizontal.")],
               ].map(([Icon, t, d]: any, i) => (
                 <li key={t} className="reveal bg-[#0A1024] p-6" style={{ ["--d" as any]: i }}>
                   <span className="flex items-center justify-between"><Icon className="size-5 text-[#AEB7FF]" aria-hidden /><span className="font-display text-sm text-white/40">{String(i + 1).padStart(2, "0")}</span></span>
@@ -448,24 +474,9 @@ export default async function Home() {
               ))}
             </ol>
             <div className="mt-8 grid gap-4 lg:grid-cols-2">
-              <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><UserRound className="mt-0.5 size-5 shrink-0 text-[#AEB7FF]" aria-hidden /> {T("Vidéo UGC (forfaits Vendre et Dominer) : une personne générée par IA présente votre produit réel face caméra, signalée comme contenu IA.", "UGC video (Sell and Dominate plans): an AI-generated person presents your real product to camera, labeled as AI content.")}</p>
-              <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><Minus className="mt-0.5 size-5 shrink-0 text-white/50" aria-hidden /> {T("Pas encore de montage plan par plan dans une timeline interactive : vous retouchez en français et pouvez régénérer un plan, avec votre accord.", "No shot-by-shot editing in an interactive timeline yet: you make edits in plain language and can regenerate a shot, with your approval.")}</p>
+              <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><UserRound className="mt-0.5 size-5 shrink-0 text-[#AEB7FF]" aria-hidden /> {T("Vidéo « témoignage » (forfaits Vendre et Dominer) : une personne créée par l'IA présente votre vrai produit face caméra. La vidéo est signalée comme créée par l'IA.", "\"Testimonial\" video (Sell and Dominate plans): an AI-created person presents your real product to camera. The video is labeled as AI-made.")}</p>
+              <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><Minus className="mt-0.5 size-5 shrink-0 text-white/50" aria-hidden /> {T("Pas encore de montage image par image : vous demandez les changements avec vos mots et pouvez refaire un passage, avec votre accord.", "No frame-by-frame editing yet: you ask for changes in your own words and can redo a part, with your approval.")}</p>
             </div>
-            {list.length > 0 && (
-              <div className="mt-14">
-                <p className="reveal font-display text-2xl font-semibold">{T("Publicités vidéo 9:16 des démonstrations", "9:16 video ads from the demos")}</p>
-                <div className="scrollbar-none -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6">
-                  {list.map((d) => (
-                    <figure key={d.id} className="w-[44vw] max-w-[220px] shrink-0 snap-start">
-                      <div className="overflow-hidden rounded-[1.4rem] border-[5px] border-white/10 bg-black">
-                        <AutoVideo src={d.video} poster={d.videoPoster} label={T(`Publicité vidéo 9:16 pour ${d.brand}`, `9:16 video ad for ${d.brand}`)} className="aspect-[9/16] w-full object-cover" />
-                      </div>
-                      <figcaption className="mt-2 text-sm"><span className="font-medium">{d.brand}</span> <span className="text-white/60">· {d.sector}</span></figcaption>
-                    </figure>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
@@ -474,7 +485,7 @@ export default async function Home() {
           <section id="seo" className="scroll-mt-20 py-24 sm:py-32">
             <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-14">
               <div className="lg:col-span-4">
-                <Head compact eyebrow={T("SEO et rédaction", "SEO and copywriting")} title={T("Des textes que vous", "Copy you")} accent={T("modifiez comme un document.", "edit like a document.")} lead={T("Fiches produit, pages et articles de blog : le studio rédige, contrôle le référencement et signale ce qu'il ne sait pas. Ce que vous modifiez n'est jamais écrasé.", "Product pages, pages and blog posts: the studio writes, checks the SEO and flags what it doesn't know. What you edit is never overwritten.")} />
+                <Head compact eyebrow={T("Textes et Google", "Copy and Google")} title={T("Des textes clairs,", "Clear copy,")} accent={T("pensés pour Google.", "written for Google.")} lead={T("Fiches produit, pages et articles de blog : le studio les écrit avec des mots simples que vos clients pourraient chercher, prépare le titre et le résumé que Google affiche, et signale ce qu'il ne sait pas. Vos modifications ne sont jamais écrasées. Aucune place sur Google n'est promise.", "Product pages, pages and blog posts: the studio writes them with simple words your customers might search for, prepares the title and summary Google shows, and flags what it doesn't know. Your edits are never overwritten. No Google ranking is promised.")} />
               </div>
               <div className="reveal lg:col-span-8" style={{ ["--d" as any]: 2 }}>
                 <SeoDocDemo docs={docs} />
@@ -487,15 +498,15 @@ export default async function Home() {
         {posts.length > 0 && (
           <section id="social" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
-              <Head eyebrow={T("Réseaux sociaux", "Social media")} title={T("Votre semaine de publications,", "Your week of posts,")} accent={T("validée en quelques clics.", "approved in a few clicks.")} lead={T("Cliquez sur une publication pour l'ouvrir, puis approuvez-la. Dans le studio, la publication programmée tourne même navigateur fermé, une fois vos comptes connectés.", "Click a post to open it, then approve it. In the studio, scheduled publishing runs even with your browser closed, once your accounts are connected.")} />
+              <Head eyebrow={T("Réseaux sociaux", "Social media")} title={T("Votre semaine de publications,", "Your week of posts,")} accent={T("validée en quelques clics.", "approved in a few clicks.")} lead={T("Cliquez sur une publication pour l'ouvrir, puis approuvez-la. Une fois vos comptes connectés, le studio publie à l'heure prévue, même si vous avez fermé votre navigateur.", "Click a post to open it, then approve it. Once your accounts are connected, the studio posts at the planned time, even if you have closed your browser.")} />
               <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
                 <SocialCalendarDemo posts={posts} />
               </div>
               <ul className="mt-8 flex flex-wrap gap-2 text-sm">
                 {["Instagram", "Facebook", "TikTok", "YouTube", "Pinterest"].map((n) => <li key={n} className="hp-chip !text-sm">{n} <span className="rounded bg-[#FCEBD0] px-1.5 text-xs font-semibold text-[#7A4500]">{T("Bêta", "Beta")}</span></li>)}
-                <li className="hp-chip !text-sm">LinkedIn <span className="text-muted">· {T("export", "export")}</span></li>
+                <li className="hp-chip !text-sm">LinkedIn <span className="text-muted">· {T("à publier vous-même", "post it yourself")}</span></li>
               </ul>
-              <p className="mt-3 text-xs text-muted">{T("Bêta : publication par la connexion officielle développée, pas encore essayée sur de vrais comptes. Export : publications préparées, à publier vous-même.", "Beta: publishing through the official connection is built, not yet tried on real accounts. Export: posts prepared for you to publish yourself.")}</p>
+              <p className="mt-3 text-xs text-muted">{T("Bêta : la publication automatique est prête, mais pas encore essayée sur de vrais comptes. LinkedIn : le studio prépare la publication, vous la publiez vous-même.", "Beta: automatic posting is built but not yet tried on real accounts. LinkedIn: the studio prepares the post, you publish it yourself.")}</p>
             </div>
           </section>
         )}
@@ -515,7 +526,7 @@ export default async function Home() {
         {story && (
           <section id="personnalisation" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
-              <Head eyebrow={T("Personnalisation", "Customization")} title={T("L'IA crée.", "AI creates.")} accent={T("Vous gardez le contrôle.", "You stay in control.")} lead={T("Les retouches simples se font à la main ou par le moteur du studio, sans IA : un titre, une couleur, un arrondi, une section à masquer. Essayez.", "Simple edits are made by hand or by the studio engine, without AI: a heading, a color, rounded corners, a section to hide. Try it.")} />
+              <Head eyebrow={T("Personnalisation", "Customization")} title={T("L'IA crée.", "AI creates.")} accent={T("Vous gardez le contrôle.", "You stay in control.")} lead={T("Les petits changements se font tout de suite, sans IA : un titre, une couleur, des coins arrondis, un bloc à cacher. Essayez.", "Small changes happen instantly, without AI: a heading, a color, rounded corners, a block to hide. Try it.")} />
               <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
                 <ControlDemo brand={story.brand} image={story.scene1} palette={story.palette} />
               </div>
@@ -526,20 +537,20 @@ export default async function Home() {
         {/* ───────────── Plateformes et exports ───────────── */}
         <section id="plateformes" className="scroll-mt-20 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <Head eyebrow={T("Plateformes et exports", "Platforms and exports")} title={T("Ce qui est livré,", "What is delivered,")} accent={T("plateforme par plateforme.", "platform by platform.")} lead={T("Rien n'est promis au-delà de ce que chaque plateforme accepte. Vous choisissez la plateforme en créant le projet et pouvez en changer ensuite.", "Nothing is promised beyond what each platform accepts. You pick the platform when creating the project and can change it later.")} />
+            <Head eyebrow={T("Plateformes et exports", "Platforms and exports")} title={T("Ce que vous recevez,", "What you get,")} accent={T("selon votre plateforme.", "depending on your platform.")} lead={T("Voici exactement ce qui est livré pour chaque plateforme, sans rien promettre de plus. Vous la choisissez en créant le projet et pouvez en changer ensuite.", "Here is exactly what is delivered for each platform, with nothing more promised. You pick it when creating the project and can change it later.")} />
             <div className="reveal mt-12 overflow-hidden rounded-[1.75rem] border border-line bg-card hp-elev" style={{ ["--d" as any]: 2 }}>
               <div className="hidden grid-cols-[1.1fr_1.3fr_1.3fr_1.2fr] gap-6 border-b border-line bg-paper-2/60 px-6 py-4 text-xs font-semibold uppercase tracking-[.14em] text-muted md:grid">
                 <span>{T("Plateforme", "Platform")}</span>
-                <span className="flex items-center gap-1.5"><PackageOpen className="size-3.5" aria-hidden /> {T("Export natif", "Native export")}</span>
-                <span className="flex items-center gap-1.5"><PlugZap className="size-3.5" aria-hidden /> {T("Connexion", "Connection")}</span>
-                <span className="flex items-center gap-1.5"><Briefcase className="size-3.5" aria-hidden /> {T("Kit de reconstruction", "Rebuild kit")}</span>
+                <span className="flex items-center gap-1.5"><PackageOpen className="size-3.5" aria-hidden /> {T("Fichier à installer", "File to install")}</span>
+                <span className="flex items-center gap-1.5"><PlugZap className="size-3.5" aria-hidden /> {T("Envoi direct", "Direct sending")}</span>
+                <span className="flex items-center gap-1.5"><Briefcase className="size-3.5" aria-hidden /> {T("Guide pour refaire le site", "Guide to rebuild the site")}</span>
               </div>
               {platforms.map((p) => (
                 <div key={p.name} className="grid gap-3 border-b border-line px-5 py-5 text-sm last:border-b-0 md:grid-cols-[1.1fr_1.3fr_1.3fr_1.2fr] md:gap-6 md:px-6">
                   <p className="font-display text-lg font-semibold text-ink">{p.name}</p>
-                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Export natif", "Native export")}</span><Mark c={p.native} /></div>
-                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Connexion", "Connection")}</span><Mark c={p.connect} /></div>
-                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Kit de reconstruction", "Rebuild kit")}</span><Mark c={p.kit} /></div>
+                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Fichier à installer", "File to install")}</span><Mark c={p.native} /></div>
+                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Envoi direct", "Direct sending")}</span><Mark c={p.connect} /></div>
+                  <div><span className="mb-1 block text-xs font-semibold uppercase tracking-[.12em] text-muted md:hidden">{T("Guide pour refaire le site", "Guide to rebuild the site")}</span><Mark c={p.kit} /></div>
                 </div>
               ))}
             </div>
@@ -563,8 +574,8 @@ export default async function Home() {
         <section id="demonstrations" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-              <Head eyebrow={T("Démonstrations", "Demos")} title={T(`${list.length} produits,`, `${list.length} products,`)} accent={T("une seule photo chacun.", "a single photo each.")} />
-              <p className="reveal max-w-md text-sm leading-relaxed text-muted">{T("Chaque démonstration part de vraies photos (Pixabay) : un vrai produit sans marque visible, ou une vraie boutique de fleuriste ou de barbier. Les marques et les entreprises sont fictives, créées par le studio sans l'IA des forfaits ; ce ne sont pas des résultats clients.", "Each demo starts from real photos (Pixabay): a real product with no visible brand, or a real florist's or barber's shop. The brands and businesses are fictional, created by the studio without the plans' AI; these are not client results.")}</p>
+              <Head eyebrow={T("Démonstrations", "Demos")} title={T(`${list.length} projets,`, `${list.length} projects,`)} accent={T("de A à Z dans le studio.", "from A to Z in the studio.")} />
+              <p className="reveal max-w-md text-sm leading-relaxed text-muted">{T("Cinq projets menés comme par cinq clients : un produit, une boutique de plusieurs produits, un produit de sport, un fleuriste et un paysagiste. Les marques et les entreprises sont fictives ; les photos de départ sont de vraies photos (Pixabay, fournisseur) ou des photos créées par l'IA, comme indiqué sur chaque projet. Ce ne sont pas des résultats clients.", "Five projects run as if by five clients: a product, a multi-product store, a sports product, a florist and a landscaper. The brands and businesses are fictional; the starting photos are real photos (Pixabay, supplier) or AI-created photos, as stated on each project. These are not client results.")}</p>
             </div>
             {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">{T("Les démonstrations s'affichent après génération (script « npm run demos »).", "Demos appear once generated (\"npm run demos\" script).")}</p>}
           </div>
@@ -583,8 +594,8 @@ export default async function Home() {
               {[
                 [T("N'invente pas", "Doesn't make things up"), T("Pas de certification, de délai, d'avis ou de chiffre tiré d'une photo : un manque reste « à compléter ».", "No certifications, delivery times, reviews or figures drawn from a photo: a gap stays \"to complete.\"")],
                 [T("Ne publie pas sans vous", "Doesn't publish without you"), T("Aucune publication ni dépense publicitaire sans votre autorisation.", "No post and no ad spend without your authorization.")],
-                [T("N'obéit pas aux pages importées", "Doesn't obey imported pages"), T("Un lien importé est une source d'information, jamais une instruction.", "An imported link is a source of information, never an instruction.")],
-                [T("Ne simule pas", "Doesn't fake it"), T("Un script n'est pas une vidéo ; une publication préparée n'est pas une publication envoyée.", "A script is not a video; a prepared post is not a sent one.")],
+                [T("Ne suit pas d'ordres cachés", "Doesn't follow hidden orders"), T("Quand vous donnez l'adresse d'un site, le studio y lit des informations, jamais des ordres.", "When you give a website address, the studio reads information there, never orders.")],
+                [T("Ne fait pas semblant", "Doesn't pretend"), T("Il dit clairement ce qui est fait et ce qui reste à faire : une publication préparée n'est pas une publication envoyée.", "It says clearly what is done and what is left: a prepared post is not a sent one.")],
               ].map(([t, d], i) => (
                 <div key={t} className="reveal bg-card p-6" style={{ ["--d" as any]: i }}>
                   <ShieldCheck className="size-5 text-signal" aria-hidden />
@@ -653,7 +664,7 @@ export default async function Home() {
             <h2 className="hp-title max-w-3xl text-[clamp(2.4rem,6vw,4.8rem)] text-white">
               {T("Toute votre activité e-commerce.", "Your entire e-commerce business.")} <span className="bg-gradient-to-r from-[#AEB7FF] to-[#C9B8FF] bg-clip-text text-transparent">{T("Un seul studio.", "One studio.")}</span>
             </h2>
-            <p className="mt-5 max-w-xl text-lg text-white/75">{T("Commencez par la découverte gratuite : votre marque, vos logos et un aperçu de votre page d'accueil, sans carte bancaire.", "Start with the free discovery: your brand, your logos and a preview of your home page, no credit card.")}</p>
+            <p className="mt-5 max-w-xl text-lg text-white/75">{T("Commencez par la découverte gratuite, sans carte bancaire : explorez le studio, les 30 thèmes et les exemples. Choisissez ensuite un forfait pour créer votre projet.", "Start with the free discovery, no credit card: explore the studio, the 30 themes and the examples. Then choose a plan to create your project.")}</p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link href={cta} className="hp-btn !min-h-14 bg-white !px-7 !text-base text-[#0B1533] hover:-translate-y-0.5">{user ? T("Ouvrir mon studio", "Open my studio") : T("Commencer mon projet", "Start my project")} <ArrowRight className="size-4" aria-hidden /></Link>
               <a href="#themes" className="hp-btn !min-h-14 border border-white/25 !px-7 !text-base text-white hover:border-white/60">{T("Revoir les thèmes", "See the themes again")}</a>

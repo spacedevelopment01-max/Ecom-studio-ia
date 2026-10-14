@@ -3,6 +3,7 @@
  * prestations, famille du produit, métier), sans appel à l'IA. Ce qui manque est signalé, jamais inventé :
  * une objection sans réponse, une preuve « manquante » ou une offre non configurée ne sont pas utilisées.
  */
+import { customerVoice } from "../copy-voice";
 import type { Project } from "../projects";
 import { resolveProductCategory } from "../image-v2/categories";
 import { resolveTrade, tradeText } from "../brain/trade";
@@ -38,7 +39,8 @@ export function adInsight(p: Project, opts: { audience?: string | null; offer?: 
     audience: { declared, persona: clean(pf?.persona), adultsOnly: p.product.sector === "enfants" },
     problem: clean(pf?.problem),
     alternatives: clean(pf?.alternatives),
-    difference: clean(pf?.difference),
+    // Phrase d'analyse réutilisée dans des textes clients : sans vocabulaire d'analyste (copy-voice).
+    difference: customerVoice(clean(pf?.difference)),
     facts: [...facts, ...answered].slice(0, 12),
     objections,
     proofs,

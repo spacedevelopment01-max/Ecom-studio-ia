@@ -479,6 +479,15 @@ No text, no lettering, no captions, no watermark, no added logo, no price tag. N
 }
 
 /**
+ * Publication entièrement conçue par l'IA d'images (mise en page, typographie, bouton, produit réel dans sa scène) :
+ * le visuel complet d'une publication de réseau social, comme le ferait un directeur artistique. Les textes à écrire
+ * sont donnés mot pour mot (vérifiés ensuite par le contrôle) ; `reference` : photo du vrai produit (fidélité).
+ */
+export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null }) {
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: input.aspect, reference: input.reference, quality: "high", strictQuality: true, usage: "ad_visual", need: { text: true } });
+}
+
+/**
  * Retouche par l'IA d'une photo déjà livrée (publicité, publication) : la photo est envoyée telle quelle avec la
  * demande du client ; seul ce qui est demandé change (composition, produit, lumière gardés). Même format que la
  * photo d'origine : le cadrage de la création reste valable.
@@ -559,6 +568,15 @@ export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): 
   return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
 }
 
+/** Coût MAXIMAL d'une publication conçue par l'IA (même calcul que la réservation faite avant l'appel). null : aucun modèle. */
+export function aiPostMaxMicro(): number | null {
+  const r = mediaRouteFor("ad_visual", { text: true, references: 1 });
+  if (!r) return null;
+  const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
+  const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: 1, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: 1 }) : cost(r.provider, r.model, { images: 1 }).micro;
+  return Math.ceil(micro * MEDIA_MAX_FACTOR * FX_SAFETY * Math.max(1, getJsonSetting<number>("billing.markup", 1)));
+}
+
 /**
  * Fond transparent demandé à OpenAI seulement si le modèle le permet (catalogue) : sinon la demande est refusée
  * (ex. GPT Image 2). Le fond blanc est alors retiré par le studio après coup.
@@ -577,8 +595,8 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed> }) {
-  const input = { ...input0, quality: imageQuality(input0.usage, input0.quality) };
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean }) {
+  const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
   const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
   const text = input.text;

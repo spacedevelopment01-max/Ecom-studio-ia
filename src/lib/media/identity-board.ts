@@ -92,6 +92,30 @@ export async function knockoutWhite(buf: Buffer): Promise<Buffer> {
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
 
+/**
+ * Symbole « plein et détaillé » (écusson, emblème avec chiffres ou dessin intérieur) : recoloré d'une seule teinte,
+ * il deviendrait une tache sans détail (constaté : l'écusson des Tribunes). Mesure : part couverte de son cadre et
+ * contraste intérieur. Un symbole au trait (fleur, arbre stylisé) reste recolorable.
+ */
+export async function isDetailedSolidMark(buf: Buffer): Promise<boolean> {
+  const { data, info } = await sharp(buf).ensureAlpha().resize({ width: 200, height: 200, fit: "inside" }).raw().toBuffer({ resolveWithObject: true });
+  let minX = info.width, minY = info.height, maxX = -1, maxY = -1;
+  for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) if (data[(y * info.width + x) * 4 + 3] > 128) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
+  if (maxX < 0) return false;
+  let opaque = 0, sum = 0, sum2 = 0;
+  for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) {
+    const i = (y * info.width + x) * 4;
+    if (data[i + 3] <= 128) continue;
+    const l = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    opaque++; sum += l; sum2 += l * l;
+  }
+  const coverage = opaque / ((maxX - minX + 1) * (maxY - minY + 1));
+  const sd = Math.sqrt(Math.max(0, sum2 / opaque - (sum / opaque) ** 2));
+  return coverage > 0.55 && sd > 28;
+}
+/** Symboles à garder dans leurs couleurs (voir isDetailedSolidMark). */
+const KEEP_COLORS = new WeakSet<object>();
+
 /** Image recolorée d'une seule teinte (logo blanc sur couleur, symbole ton sur ton). */
 function tint(img: Image | null | undefined, color: string): Canvas | null {
   if (!img) return null;
@@ -164,7 +188,7 @@ const initials = (name: string) => (name.trim().split(/\s+/).filter((w) => /\p{L
 /** Symbole (ou monogramme) dessiné centré dans un carré, d'une seule couleur. */
 function drawMark(ctx: Ctx, mark: Image | null, b: IdentityBoardInput, cx: number, cy: number, size: number, color: string) {
   if (mark) {
-    contain(ctx, tint(mark, color), cx - size / 2, cy - size / 2, size, size);
+    contain(ctx, KEEP_COLORS.has(mark) ? mark : tint(mark, color), cx - size / 2, cy - size / 2, size, size);
     return;
   }
   ctx.fillStyle = color;
@@ -283,7 +307,9 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   const col = boardColors(b.palette);
   const HF = b.fonts.heading, BF = b.fonts.body, HW = b.fonts.headingWeight ?? 600;
   const logo = await loadImage(await knockoutWhite(b.logo));
-  const mark = b.mark ? await loadImage(await knockoutWhite(b.mark)) : null;
+  const markBuf = b.mark ? await knockoutWhite(b.mark) : null;
+  const mark = markBuf ? await loadImage(markBuf) : null;
+  if (mark && markBuf && (await isDetailedSolidMark(markBuf))) KEEP_COLORS.add(mark);
   const photos: Image[] = [];
   for (const p of (b.photos ?? []).slice(0, 8)) photos.push(await loadImage(p).catch(() => null as unknown as Image));
   const pics = photos.filter(Boolean);

@@ -18,8 +18,9 @@ import { isAutoUsable } from "../quality/usable";
 import { publishPost, alreadyPublished, type Connection, type PostRow, type PublishResult } from "../social/publish";
 import { platformSpec } from "./platforms";
 import { estimateMicro } from "../ai/estimate";
+import { aiPostMaxMicro } from "../ai/media-providers";
 
-export type MediaBy = "library" | "local" | "image_v2" | "ads_v2" | "video_v2";
+export type MediaBy = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post";
 export type MediaResult = { assetId: string | null; costMicro: number; by: MediaBy; note?: string };
 export type PostBrief = { id: string; network: string; format: string; title: string; caption: string; pillar: string | null; objective: string | null; headline: string; scheduled_at: number | null };
 export type MediaOpts = { allowPaid: boolean; maxCostEur: number };
@@ -30,12 +31,14 @@ export type SocialDeps = {
   image: (p: Project, post: PostBrief, o: MediaOpts) => Promise<MediaResult>;
   video: (p: Project, post: PostBrief, o: MediaOpts) => Promise<MediaResult>;
   ad: (p: Project, post: PostBrief, o: MediaOpts) => Promise<MediaResult>;
+  /** Publication entièrement conçue par l'IA (scène, mise en page, textes, produit réel) ; absente : Image V2. */
+  aiPost?: (p: Project, post: PostBrief, o: MediaOpts) => Promise<MediaResult>;
   /** Rendu local gratuit (visuel à la marque). */
   local: (p: Project, post: PostBrief, o?: { background?: Asset | null }) => Promise<MediaResult>;
   /** Réécriture IA d'une publication (réutilise la rédaction sociale existante, Router V2, budget du compte). */
   rewrite: (p: Project, post: PostBrief & { network: string; format: string }, instruction: string, key: string) => Promise<{ title: string; caption: string; hashtags: string[]; costMicro: number }>;
   /** Estimation prudente (micro-euros) d'une production payante, vérifiée avant l'envoi. */
-  estimate: (kind: "image" | "video" | "ad" | "rewrite") => number;
+  estimate: (kind: "image" | "video" | "ad" | "rewrite" | "ai_post") => number;
 };
 
 /** Publication réelle : interface séparée (les tests en injectent une simulée). */
@@ -181,6 +184,12 @@ export async function localRender(p: Project, post: PostBrief, ctx: JobContext |
     const hero = parseInt(crypto.createHash("sha256").update(`hero:${post.id}`).digest("hex").slice(0, 6), 16) % 5 < 3;
     return posterForPost(p, post, hero ? null : backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true), "local");
   }
+  // Produit sans détourage utilisable ni photo en situation du client : une publication sur deux montre quand même le
+  // vrai produit (packshot, mise en scène, photo d'origine) au lieu d'un paysage libre de droits sans le produit.
+  if (p.business !== "services" && parseInt(crypto.createHash("sha256").update(`prod:${post.id}`).digest("hex").slice(0, 6), 16) % 2 === 0) {
+    const prod = backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true);
+    if (prod) return posterForPost(p, post, prod, "local");
+  }
   // Entreprise de services avec ses propres photos : deux publications sur trois les montrent (rien ne vaut le vrai
   // salon, le vrai atelier) ; la troisième cherche une photo libre du métier.
   if (p.business === "services" && parseInt(crypto.createHash("sha256").update(`own:${post.id}`).digest("hex").slice(0, 6), 16) % 3 < 2) {
@@ -199,12 +208,19 @@ export async function localRender(p: Project, post: PostBrief, ctx: JobContext |
 const PLATFORM_VIDEO: Record<string, "reels" | "tiktok" | "shorts" | "meta_feed"> = { instagram: "reels", tiktok: "tiktok", youtube: "shorts", facebook: "meta_feed", pinterest: "reels", linkedin: "meta_feed" };
 const PLATFORM_AD: Record<string, "meta_feed" | "meta_story" | "tiktok" | "pinterest" | "linkedin"> = { instagram: "meta_feed", facebook: "meta_feed", tiktok: "tiktok", youtube: "meta_story", pinterest: "pinterest", linkedin: "linkedin" };
 
+/** Estimation d'une publication conçue par l'IA : deux essais au plus (image + contrôle) et l'accroche. */
+function aiPostEstimate(): number {
+  const one = aiPostMaxMicro() ?? estimateMicro("image");
+  return 2 * one + Math.round(estimateMicro("blog") / 10);
+}
+
 export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boolean): SocialDeps {
   return {
     aiActive,
     async image(pp, post, o) {
+      // Produit : scène créée par l'IA avec le VRAI produit en référence (jamais un produit inventé ni un décor sans lui).
       const { runImageEngineV2 } = await import("../image-v2/engine");
-      const r = await runImageEngineV2(ctx, pp.id, { kind: pp.business === "services" ? "trade_photo" : "social_image", support: "social", aspect: aspectOf(post.network, post.format), topic: `${post.pillar ?? ""} — ${post.title}`, allowGenerate: o.allowPaid, maxCostEur: o.maxCostEur, name: `publication-${post.network}` });
+      const r = await runImageEngineV2(ctx, pp.id, { kind: pp.business === "services" ? "trade_photo" : "usage_scene", support: "social", aspect: aspectOf(post.network, post.format), topic: `${post.pillar ?? ""} — ${post.title}`, allowGenerate: o.allowPaid, ...(o.allowPaid && pp.business !== "services" ? { noStock: true } : {}), maxCostEur: o.maxCostEur, name: `publication-${post.network}` });
       const ok = r.outcomes.find((x) => x.assetId && (x.verdict === "FINAL" || x.verdict === "PROVISIONAL"));
       const a = ok?.assetId ? getAsset(ok.assetId) : undefined;
       if (!a || !isAutoUsable(a)) return { assetId: null, costMicro: r.costMicro, by: "image_v2", note: "aucune image validée par Image Engine V2" };
@@ -223,6 +239,14 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       const out = r.outcomes.find((x) => x.assetId);
       return { assetId: out?.assetId ?? null, costMicro: r.costMicro, by: "ads_v2" };
     },
+    async aiPost(pp, post, o) {
+      if (!o.allowPaid) return localRender(pp, post, ctx);
+      const { designPostWithAi, realAiPostDeps } = await import("./ai-post");
+      const { productReferences } = await import("../image-v2/engine");
+      const a = aspectOf(post.network, post.format);
+      const aspect = a === "2:3" ? "4:5" : a;
+      return designPostWithAi(pp, post, { aspect, maxCostEur: o.maxCostEur, reference: productReferences(pp.id)[0] ?? null }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null }));
+    },
     local: (pp, post, o) => localRender(pp, post, ctx, o),
     async rewrite(pp, post, instruction, key) {
       const { aiRewritePost } = await import("../ai/tasks");
@@ -231,6 +255,6 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       return { ...r, costMicro: c };
     },
     // Estimations du studio (tarifs de l'administration, marge de sécurité comprise).
-    estimate: (kind) => (kind === "video" ? estimateMicro("video-clip") : kind === "rewrite" ? Math.round(estimateMicro("blog") / 20) : estimateMicro("image")),
+    estimate: (kind) => (kind === "video" ? estimateMicro("video-clip") : kind === "rewrite" ? Math.round(estimateMicro("blog") / 20) : kind === "ai_post" ? aiPostEstimate() : estimateMicro("image")),
   };
 }

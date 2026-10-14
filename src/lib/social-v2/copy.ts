@@ -24,15 +24,18 @@ const strip = (s: string) => s.trim().replace(/[.!?\s]+$/, "");
 /** Titre court du visuel : la partie avant « : » si elle suffit, sinon coupé sur un mot (jamais « des »/« de » final). */
 const short = (s: string, n = 40) => {
   let t = cap(strip(s));
-  if (t.length <= n) return t;
+  if (t.length <= n) return t.replace(/[\s,;:–·•|-]+$/, "");
   const head = t.split(" : ")[0];
   if (head.length >= 6 && head.length <= n) return head;
   t = t.slice(0, n + 1);
   t = t.slice(0, Math.max(t.lastIndexOf(" "), 8));
-  return t.replace(/\s+(de|des|du|la|le|les|d'|l'|et|à|au|aux|en|pour|of|the|and|to)$/i, "").replace(/[,;:–-]+$/, "");
+  return t.replace(/\s+(de|des|du|la|le|les|d'|l'|et|à|au|aux|en|pour|of|the|and|to)$/i, "").replace(/[\s,;:–·•|-]+$/, "");
 };
-/** Titre tiré d'une question : garde son point d'interrogation (« En quelle matière ? »). */
-const qmark = (s: string, sep = " ") => (/[?…!.]$/.test(s.trim()) ? s : `${s.trim()}${sep}?`);
+/** Vraie question (« Comment l'entretenir », « Quel prix prévoir ») et non un nom ou une prestation. */
+export const isQuestion = (s: string) => /\?\s*$/.test(s.trim()) || /:\s*(comment|pourquoi|quel(le)?s?|combien|où|quand|how|why|what|which|when)\b/i.test(s) || /^(comment|pourquoi|quel(le)?s?|combien|où|quand|faut-il|peut-on|est-ce|qui|que|qu['’]|à quoi|de quoi|how|why|what|which|when|where|who|can|do|does|is|are|should)\b/i.test(s.trim());
+/** Titre tiré d'une question : garde son point d'interrogation (« En quelle matière ? ») ; jamais de « ? » ajouté à
+ * un nom ou à une prestation (« Création de jardin ? », « Fleuriste artisan · atelier floral · ? »). */
+export const qmark = (s: string, sep = " ") => (/[?…!.]$/.test(s.trim()) || !isQuestion(s) ? s.trim().replace(/[\s·•|,;:–-]+$/, "") : `${s.trim()}${sep}?`);
 
 /** Matière vérifiée d'un pilier (ce qui peut être affirmé). */
 export function atomsFor(pillar: Pillar, archetype: Archetype, f: VerifiedFacts, questions: string[]): Atom[] {
@@ -237,7 +240,9 @@ export function writeLocal(o: { pillar: Pillar; archetype: Archetype; f: Verifie
   const bank = TBANK[pillar.id === "carte" ? "sell" : pillar.objective] ?? TBANK.educate;
   const local = LOCALBANK(o.archetype);
   // La tournure suit la nature de la matière (une caractéristique se montre, une question se répond).
-  const pickBank = (a: Atom) => (a.kind === "q" ? QBANK : a.kind === "local" ? local : a.kind === "price" || a.kind === "offer" ? BUYBANK : a.kind === "fact" ? TBANK.demonstrate : a.kind === "brand" ? TBANK.brand : bank);
+  // Tournures de question (« On nous la pose souvent ») réservées aux vraies questions.
+  const asked = (a: Atom) => (bank === TBANK.engage && !isQuestion(a.a) ? TBANK.educate : bank);
+  const pickBank = (a: Atom) => (a.kind === "q" ? (isQuestion(a.a) ? QBANK : TBANK.educate) : a.kind === "local" ? local : a.kind === "price" || a.kind === "offer" ? BUYBANK : a.kind === "fact" ? TBANK.demonstrate : a.kind === "brand" ? TBANK.brand : asked(a));
   const tplsOf = (a: Atom) => (lang === "en" ? pickBank(a).en : pickBank(a).fr);
   const tpls = atoms.length ? tplsOf(atoms[0]) : lang === "en" ? bank.en : bank.fr;
   const c: Ctx = { f, lang, city: mainCity(f.area), brand: f.brand, offer: f.offerName, cta: o.cta };

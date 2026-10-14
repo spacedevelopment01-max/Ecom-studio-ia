@@ -1,259 +1,7 @@
 {
-  "generatedAt": "2026-10-03T19:34:06.702Z",
+  "generatedAt": "2026-10-14T20:24:23.653Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
-    {
-      "id": "verger",
-      "brand": "Verger",
-      "product": "Thé glacé Pêche",
-      "sector": "Boissons",
-      "direction": "gourmand",
-      "palette": [
-        "#955223",
-        "#E4D4C8",
-        "#CFC159",
-        "#F7F4F2",
-        "#1F1914"
-      ],
-      "photo": "/demo/verger/photo.jpg",
-      "logo": "/demo/verger/logo.svg",
-      "shopDesktop": "/demo/verger/boutique-bureau.jpg",
-      "shopMobile": "/demo/verger/boutique-mobile.jpg",
-      "productPage": "/demo/verger/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/verger/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/verger/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/verger/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/verger/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/verger/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/verger/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/verger/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/verger/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/verger/video.mp4",
-      "videoPoster": "/demo/verger/video-poster.jpg",
-      "shopVideo": "/demo/verger/video-boutique.mp4",
-      "storeType": "niche",
-      "products": 3,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Canette de thé glacé 33 cl d'un fournisseur, ré-étiquetée : la marque et les trois goûts sont créés par le studio."
-      }
-    },
-    {
-      "id": "oreiller",
-      "brand": "Somnéa",
-      "product": "Oreiller ergonomique Papillon",
-      "sector": "Maison",
-      "direction": "clinique",
-      "palette": [
-        "#454873",
-        "#D3D4D9",
-        "#8D74B4",
-        "#F2F3F7",
-        "#14151F"
-      ],
-      "photo": "/demo/oreiller/photo.jpg",
-      "logo": "/demo/oreiller/logo.svg",
-      "shopDesktop": "/demo/oreiller/boutique-bureau.jpg",
-      "shopMobile": "/demo/oreiller/boutique-mobile.jpg",
-      "productPage": "/demo/oreiller/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/oreiller/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/oreiller/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/oreiller/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/oreiller/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/oreiller/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/oreiller/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/oreiller/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/oreiller/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/oreiller/video.mp4",
-      "videoPoster": "/demo/oreiller/video-poster.jpg",
-      "shopVideo": "/demo/oreiller/video-boutique.mp4",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Oreiller ergonomique en marque blanche d'un fournisseur, en deux coloris : la marque, les visuels et la boutique sont créés par le studio."
-      }
-    },
-    {
-      "id": "drone",
-      "brand": "Ostral",
-      "product": "Drone pliable à caméra stabilisée",
-      "sector": "High-tech",
-      "direction": "nocturne",
-      "palette": [
-        "#455773",
-        "#D4D6D8",
-        "#7874B4",
-        "#F2F4F7",
-        "#14181F"
-      ],
-      "photo": "/demo/drone/photo.jpg",
-      "logo": "/demo/drone/logo.svg",
-      "shopDesktop": "/demo/drone/boutique-bureau.jpg",
-      "shopMobile": "/demo/drone/boutique-mobile.jpg",
-      "productPage": "/demo/drone/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/drone/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/drone/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/drone/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/drone/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/drone/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/drone/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/drone/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/drone/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/drone/video.mp4",
-      "videoPoster": "/demo/drone/video-poster.jpg",
-      "shopVideo": "/demo/drone/video-boutique.mp4",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Drone pliable en marque blanche d'un fournisseur ; les inscriptions du fabricant ont été retirées de la photo, la marque et la boutique sont créées par le studio."
-      }
-    },
-    {
-      "id": "chat",
-      "brand": "Ronron",
-      "product": "Gant anti-poils",
-      "sector": "Animaux",
-      "direction": "pop",
-      "palette": [
-        "#454573",
-        "#D6D6D7",
-        "#9274B4",
-        "#F2F2F7",
-        "#14141F"
-      ],
-      "photo": "/demo/chat/photo.jpg",
-      "logo": "/demo/chat/logo.svg",
-      "shopDesktop": "/demo/chat/boutique-bureau.jpg",
-      "shopMobile": "/demo/chat/boutique-mobile.jpg",
-      "productPage": "/demo/chat/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/chat/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/chat/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/chat/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/chat/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/chat/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/chat/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/chat/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/chat/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/chat/video.mp4",
-      "videoPoster": "/demo/chat/video-poster.jpg",
-      "shopVideo": "/demo/chat/video-boutique.mp4",
-      "storeType": "niche",
-      "products": 2,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio."
-      }
-    },
     {
       "id": "tribunes",
       "brand": "Les Tribunes",
@@ -261,17 +9,18 @@
       "sector": "Mode",
       "direction": "flux",
       "palette": [
-        "#263C91",
-        "#C8CEE4",
-        "#7859CF",
-        "#F2F3F7",
-        "#14161F"
+        "#0D0D0D",
+        "#C4C4C4",
+        "#E10600",
+        "#FAFAFA",
+        "#050505"
       ],
       "photo": "/demo/tribunes/photo.jpg",
-      "logo": "/demo/tribunes/logo.svg",
+      "logo": "/demo/tribunes/logo.png",
       "shopDesktop": "/demo/tribunes/boutique-bureau.jpg",
       "shopMobile": "/demo/tribunes/boutique-mobile.jpg",
       "productPage": "/demo/tribunes/fiche-produit.jpg",
+      "business": "products",
       "images": [
         {
           "src": "/demo/tribunes/cutout-1.webp",
@@ -294,10 +43,6 @@
           "label": "Scène"
         },
         {
-          "src": "/demo/tribunes/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
           "src": "/demo/tribunes/ad-1.jpg",
           "label": "Publicité"
         },
@@ -308,14 +53,258 @@
       ],
       "video": "/demo/tribunes/video.mp4",
       "videoPoster": "/demo/tribunes/video-poster.jpg",
-      "shopVideo": "/demo/tribunes/video-boutique.mp4",
-      "storeType": "niche",
-      "products": 2,
+      "storeType": "multi",
+      "products": 4,
       "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "T-shirts de supporter d'un fournisseur (visuels du fournisseur) : la marque et la boutique sont créées par le studio. Les modèles reprenant l'écusson officiel de la fédération ont été écartés."
-      }
+        "supplier": "Fournisseur + IA",
+        "url": "",
+        "note": "Deux t-shirts de supporter d'un fournisseur (visuels du fournisseur) et deux accessoires dont la photo a été créée par l'IA : la marque et la boutique sont créées par le studio. Aucun écusson officiel."
+      },
+      "posts": [
+        "/demo/tribunes/post-1.jpg",
+        "/demo/tribunes/post-2.jpg",
+        "/demo/tribunes/post-3.jpg",
+        "/demo/tribunes/post-4.jpg",
+        "/demo/tribunes/post-5.jpg",
+        "/demo/tribunes/post-6.jpg",
+        "/demo/tribunes/post-7.jpg",
+        "/demo/tribunes/post-8.jpg"
+      ],
+      "board": "/demo/tribunes/planche.jpg"
+    },
+    {
+      "id": "gourde",
+      "brand": "Cime",
+      "product": "Gourde isotherme 750 ml",
+      "sector": "Sport et plein air",
+      "direction": "elan",
+      "palette": [
+        "#1E2326",
+        "#9AA5AA",
+        "#FF4D00",
+        "#F4F6F6",
+        "#0E1214"
+      ],
+      "photo": "/demo/gourde/photo.jpg",
+      "logo": "/demo/gourde/logo.png",
+      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
+      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
+      "productPage": "/demo/gourde/fiche-produit.jpg",
+      "business": "products",
+      "images": [
+        {
+          "src": "/demo/gourde/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/gourde/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/gourde/scene-2.jpg",
+          "label": "Scène"
+        }
+      ],
+      "video": "/demo/gourde/video.mp4",
+      "videoPoster": "/demo/gourde/video-poster.jpg",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Photo créée par l'IA",
+        "url": "",
+        "note": "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie."
+      },
+      "posts": [
+        "/demo/gourde/post-1.jpg",
+        "/demo/gourde/post-2.jpg",
+        "/demo/gourde/post-3.jpg",
+        "/demo/gourde/post-4.jpg",
+        "/demo/gourde/post-5.jpg"
+      ],
+      "board": "/demo/gourde/planche.jpg"
+    },
+    {
+      "id": "casque",
+      "brand": "Sonore",
+      "product": "Casque audio",
+      "sector": "High-tech",
+      "direction": "signal",
+      "palette": [
+        "#0B0F1A",
+        "#8A9BC2",
+        "#00E0A4",
+        "#E8EEF6",
+        "#05070D"
+      ],
+      "photo": "/demo/casque/photo.jpg",
+      "logo": "/demo/casque/logo.png",
+      "shopDesktop": "/demo/casque/boutique-bureau.jpg",
+      "shopMobile": "/demo/casque/boutique-mobile.jpg",
+      "productPage": "/demo/casque/fiche-produit.jpg",
+      "business": "products",
+      "images": [
+        {
+          "src": "/demo/casque/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/casque/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/casque/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/casque/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/casque/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/casque/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/casque/video.mp4",
+      "videoPoster": "/demo/casque/video-poster.jpg",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Pixabay",
+        "url": "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/",
+        "note": "Vraies photos d'un casque sans marque visible, en situation (Pixabay, série d'Engin_Akyurt) : la marque, les visuels et la boutique sont créés par le studio."
+      },
+      "posts": [
+        "/demo/casque/post-1.jpg",
+        "/demo/casque/post-2.jpg",
+        "/demo/casque/post-3.jpg",
+        "/demo/casque/post-4.jpg",
+        "/demo/casque/post-5.jpg",
+        "/demo/casque/post-6.jpg",
+        "/demo/casque/post-7.jpg"
+      ],
+      "board": "/demo/casque/planche.jpg"
+    },
+    {
+      "id": "paysagiste",
+      "brand": "Racines & Pierres",
+      "product": "Création et entretien de jardins",
+      "sector": "Paysagiste",
+      "direction": "jardin",
+      "palette": [
+        "#3F6B4A",
+        "#DCE6D2",
+        "#E89BA7",
+        "#F7F8F1",
+        "#1D2E22"
+      ],
+      "photo": "/demo/paysagiste/photo.jpg",
+      "logo": "/demo/paysagiste/logo.png",
+      "shopDesktop": "/demo/paysagiste/boutique-bureau.jpg",
+      "shopMobile": "/demo/paysagiste/boutique-mobile.jpg",
+      "productPage": "",
+      "business": "services",
+      "images": [
+        {
+          "src": "/demo/paysagiste/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/paysagiste/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/paysagiste/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/paysagiste/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/paysagiste/video.mp4",
+      "videoPoster": "/demo/paysagiste/video-poster.jpg",
+      "shopVideo": "/demo/paysagiste/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Photos créées par l'IA",
+        "url": "",
+        "note": "Entreprise fictive : les photos de jardins ont été créées par l'IA (OpenAI) pour la démonstration ; le site et la marque sont créés par le studio."
+      },
+      "posts": [
+        "/demo/paysagiste/post-1.jpg",
+        "/demo/paysagiste/post-2.jpg",
+        "/demo/paysagiste/post-3.jpg",
+        "/demo/paysagiste/post-4.jpg",
+        "/demo/paysagiste/post-5.jpg",
+        "/demo/paysagiste/post-6.jpg",
+        "/demo/paysagiste/post-7.jpg",
+        "/demo/paysagiste/post-8.jpg"
+      ],
+      "board": "/demo/paysagiste/planche.jpg"
+    },
+    {
+      "id": "fleuriste",
+      "brand": "Atelier Pivoine",
+      "product": "Atelier floral",
+      "sector": "Fleuriste",
+      "direction": "magazine",
+      "palette": [
+        "#A3122B",
+        "#F0E7DB",
+        "#E0A100",
+        "#FBF8F3",
+        "#1B1717"
+      ],
+      "photo": "/demo/fleuriste/photo.jpg",
+      "logo": "/demo/fleuriste/logo.png",
+      "shopDesktop": "/demo/fleuriste/boutique-bureau.jpg",
+      "shopMobile": "/demo/fleuriste/boutique-mobile.jpg",
+      "productPage": "",
+      "business": "services",
+      "images": [
+        {
+          "src": "/demo/fleuriste/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/fleuriste/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/fleuriste/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/fleuriste/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/fleuriste/video.mp4",
+      "videoPoster": "/demo/fleuriste/video-poster.jpg",
+      "shopVideo": "/demo/fleuriste/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Pixabay",
+        "url": "https://pixabay.com/photos/flower-bouquet-petal-bloom-garden-2588972/",
+        "note": "Vraies photos de boutique et d'atelier de fleuriste (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio."
+      },
+      "posts": [
+        "/demo/fleuriste/post-1.jpg",
+        "/demo/fleuriste/post-2.jpg",
+        "/demo/fleuriste/post-3.jpg",
+        "/demo/fleuriste/post-4.jpg",
+        "/demo/fleuriste/post-5.jpg",
+        "/demo/fleuriste/post-6.jpg",
+        "/demo/fleuriste/post-7.jpg",
+        "/demo/fleuriste/post-8.jpg"
+      ],
+      "board": "/demo/fleuriste/planche.jpg"
     }
   ]
 }

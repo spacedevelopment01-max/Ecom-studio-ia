@@ -1,0 +1,55 @@
+/**
+ * Accueil : textes compréhensibles par un client non spécialiste (pas de jargon technique) et référencement Google
+ * (titre et résumé, données structurées, plan du site, robots). Le grand titre du haut ne change pas.
+ */
+import fs from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const page = fs.readFileSync("src/app/page.tsx", "utf8");
+const comps = ["home-story", "home-demos"].map((f) => fs.readFileSync(`src/components/home/${f}.tsx`, "utf8")).join("\n");
+// Textes français affichés (premier argument de T(...) / t(...)).
+const frTexts = (src: string) => [...src.matchAll(/\b[Tt]\("((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]);
+
+describe("Accueil en mots simples", () => {
+  it("le grand titre du haut est inchangé", () => {
+    expect(page).toContain("<>Toute votre activité <span className=\"whitespace-nowrap\">e&#8209;commerce.</span></>");
+    expect(page).toContain('T("Un seul studio.", "One studio.")');
+  });
+
+  it("aucun mot technique dans les textes français de l'accueil", () => {
+    const jargon = /\b(SVG|vectoriel|packshot|détour(age|e|é)|pixels?|storyboard|rendu|UGC|Online Store 2\.0|Theme Check|natif|méta-description|SEO|typographies?|modules?)\b/i;
+    const bad = [...frTexts(page), ...frTexts(comps)].filter((x) => jargon.test(x));
+    expect(bad).toEqual([]);
+  });
+
+  it("la découverte gratuite n'est pas présentée comme une création de marque", () => {
+    expect(page).not.toContain("votre marque, vos logos et un aperçu de votre page d'accueil, sans carte bancaire");
+  });
+
+  it("aucune place sur Google n'est promise", () => {
+    expect(page).toContain("Aucune place sur Google n'est promise.");
+  });
+});
+
+describe("Référencement de l'accueil", () => {
+  it("titre et résumé avec les mots que cherchent les clients", () => {
+    expect(page).toContain("Boutique en ligne, logo et publicités avec l'IA · E-COM STUDIO IA");
+    expect(page).toMatch(/l'IA crée votre logo, votre boutique Shopify, WordPress ou PrestaShop/);
+  });
+
+  it("données structurées : l'application et les questions fréquentes affichées", () => {
+    expect(page).toContain('type="application/ld+json"');
+    expect(page).toContain('"@type": "FAQPage"');
+    expect(page).not.toMatch(/aggregateRating|reviewCount/);
+  });
+
+  it("plan du site et robots : pages publiques seulement", async () => {
+    const robots = (await import("@/app/robots")).default();
+    const rules = Array.isArray(robots.rules) ? robots.rules[0] : robots.rules;
+    expect(rules.disallow).toEqual(expect.arrayContaining(["/studio", "/admin", "/api/"]));
+    expect(String(robots.sitemap)).toMatch(/\/sitemap\.xml$/);
+    const urls = (await import("@/app/sitemap")).default().map((u) => new URL(u.url).pathname);
+    expect(urls).toContain("/");
+    expect(urls.some((u) => /studio|admin|api/.test(u))).toBe(false);
+  });
+});
