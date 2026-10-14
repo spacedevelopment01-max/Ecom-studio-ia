@@ -7,7 +7,7 @@ import { pick } from "@/lib/i18n";
 import { serverLang } from "@/lib/i18n-server";
 import { SiteFooter } from "@/components/site-footer";
 import { FilesSorter } from "@/components/files-sorter";
-import { AutoVideo, BeforeAfter, DemoTabs, RevealObserver, ScrollFX, type Demo } from "@/components/landing-client";
+import { BeforeAfter, RevealObserver, ScrollFX, type Demo } from "@/components/landing-client";
 import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
@@ -361,6 +361,7 @@ export default async function Home() {
 
         {/* ───────────── Création de marque ───────────── */}
         <section id="marque" className="scroll-mt-20 py-24 sm:py-32">
+          <span id="demonstrations" className="sr-only" aria-hidden />
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
               <Head eyebrow={T("Création de marque", "Brand creation")} title={T("Une photo de départ,", "One starting photo,")} accent={T("une identité complète.", "a complete identity.")} lead={boards.length ? T("Logo et ses variantes, couleurs, polices, icônes, motif, cartes de visite et exemples d'utilisation : chaque marque reçoit sa planche, et toutes ses créations gardent ce style.", "Logo and its variants, colors, fonts, icons, pattern, business cards and usage examples: every brand gets its board, and all its creations keep that style.") : T("Choisissez une marque de démonstration : son logo, ses couleurs et ses polices ont été créés par le studio à partir de la photo du produit.", "Pick a demo brand: its logo, colors and fonts were created by the studio from the product photo.")} />
@@ -581,17 +582,6 @@ export default async function Home() {
                 </ul>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* ───────────── Démonstrations complètes ───────────── */}
-        <section id="demonstrations" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-              <Head eyebrow={T("Démonstrations", "Demos")} title={T(`${list.length} projets,`, `${list.length} projects,`)} accent={T("de A à Z dans le studio.", "from A to Z in the studio.")} />
-              <p className="reveal max-w-md text-sm leading-relaxed text-muted">{T("Cinq projets menés comme par cinq clients : un produit, une boutique de plusieurs produits, un produit de sport, un fleuriste et un paysagiste. Les marques et les entreprises sont fictives ; les photos de départ sont de vraies photos (Pixabay, fournisseur) ou des photos créées par l'IA, comme indiqué sur chaque projet. Ce ne sont pas des résultats clients.", "Five projects run as if by five clients: a product, a multi-product store, a sports product, a florist and a landscaper. The brands and businesses are fictional; the starting photos are real photos (Pixabay, supplier) or AI-created photos, as stated on each project. These are not client results.")}</p>
-            </div>
-            {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">{T("Les démonstrations s'affichent après génération (script « npm run demos »).", "Demos appear once generated (\"npm run demos\" script).")}</p>}
           </div>
         </section>
 

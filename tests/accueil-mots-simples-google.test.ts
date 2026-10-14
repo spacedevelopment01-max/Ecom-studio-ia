@@ -41,6 +41,11 @@ describe("Accueil en mots simples", () => {
     expect(gallery).not.toContain("/studio/themes");
   });
 
+  it("section « 5 projets, de A à Z » retirée (le menu Démonstrations mène aux marques de démonstration)", () => {
+    expect(page).not.toContain("<DemoTabs");
+    expect(page).toContain('<span id="demonstrations"');
+  });
+
   it("démonstrations à manipuler signalées « À vous d'essayer »", () => {
     expect(page.match(/<TryHint /g)?.length).toBe(2);
   });
