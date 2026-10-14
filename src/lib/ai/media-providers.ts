@@ -479,6 +479,22 @@ No text, no lettering, no captions, no watermark, no added logo, no price tag. N
 }
 
 /**
+ * Retouche par l'IA d'une photo déjà livrée (publicité, publication) : la photo est envoyée telle quelle avec la
+ * demande du client ; seul ce qui est demandé change (composition, produit, lumière gardés). Même format que la
+ * photo d'origine : le cadrage de la création reste valable.
+ */
+async function editPhotoImpl(ctx: Ctx, input: { image: Buffer; instruction: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; usage?: MediaUsage }) {
+  return generateImageImpl(ctx, { text: editPhotoPrompt(input.instruction, input.aspect), aspect: input.aspect, reference: input.image, quality: "high", usage: input.usage ?? "ad_visual" });
+}
+
+/** Consigne de retouche d'une photo livrée : la demande du client, rien d'autre ne bouge. */
+export function editPhotoPrompt(instruction: string, aspect: string): string {
+  return `Edit the attached photograph. Change requested by the client: "${instruction.replace(/"/g, "'").slice(0, 400)}".
+Apply only this change. Keep everything else exactly as it is: the same framing and composition, the same camera angle, the same light and colours, and the same product (shape, proportions, colours, materials, details, label and printed text) unless the client explicitly asks to change it.
+Do not add any text, lettering, caption, watermark, logo or price. Do not add people, hands or faces unless the client asks for them. Photorealistic result. Aspect ratio ${aspect}.`;
+}
+
+/**
  * Image d'ambiance d'une activité de services (texte vers image) : lieu, gestes, matériaux, lumière.
  * Consignes d'honnêteté ajoutées à chaque demande : aucun visage identifiable présenté comme un client,
  * aucun texte, logo, diplôme, certificat ni récompense. `reference` : photo réelle de l'activité (ambiance seulement).
@@ -870,6 +886,7 @@ export function falRefusal(status: number, body: string): string {
 export const openaiScene = withMediaBackup("image", traced("image_generation", openaiSceneImpl), { usage: (_c, i) => i.usage ?? "product_edit", providers: ["openai"] });
 export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const productScene = withMediaBackup("image", traced("image_generation", productSceneImpl), { usage: (_c, i) => i.usage ?? "product_image" });
+export const editPhoto = withMediaBackup("image", traced("image_generation", editPhotoImpl), { usage: (_c, i) => i.usage ?? "ad_visual" });
 /** Ancien nom (décor vide) : même génération, par le modèle de l'usage. */
 export const geminiPlate = productPlate;
 export const veoClip = traced("video_generation", veoClipImpl);
