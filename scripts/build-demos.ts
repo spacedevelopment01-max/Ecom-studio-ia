@@ -225,7 +225,8 @@ const previous = process.env.ONLY && fs.existsSync(path.join(OUT, MANIFEST)) ? J
 const demos: any[] = [];
 let firstProject: { pid: string } | null = null;
 // SOCIAL_ONLY=1 (avec PID) : refait seulement la semaine de publications d'un projet existant (sans IA), puis la collecte.
-const REDO = !process.env.SOCIAL_ONLY;
+// COLLECT_ONLY=1 (avec PID) : seulement la collecte des fichiers (rien n'est recréé).
+const REDO = !process.env.SOCIAL_ONLY && !process.env.COLLECT_ONLY;
 
 for (const p of PRODUCTS) {
   console.log(`▶ ${p.id}`);
@@ -296,7 +297,7 @@ for (const p of PRODUCTS) {
     }
   }
   // Puis, comme un client dans l'onglet Publications : une semaine de publications, produite après les images.
-  if (process.env.CLIENT_STEPS || !REDO) {
+  if (process.env.CLIENT_STEPS || process.env.SOCIAL_ONLY) {
     const start = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
     const plan = await api(ctx, `/api/projects/${pid}/social/v2`, { body: { action: "plan", request: { startDate: start, days: 8, perDay: 1, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }] } } });
     await api(ctx, `/api/projects/${pid}/social/v2`, { body: { action: "produce", planId: plan.planId } });
@@ -345,16 +346,24 @@ for (const p of PRODUCTS) {
   }
   // Publications du calendrier (moteur de publications : modèles à la marque), dans l'ordre du fil.
   // Les plus récentes (le dernier calendrier produit), remises dans l'ordre du fil.
-  // Images du DERNIER calendrier seulement (dans l'ordre du fil) : jamais une image d'un calendrier précédent.
+  // Images des deux derniers calendriers (le plus récent d'abord, dans l'ordre du fil) : jamais une image d'un
+  // calendrier plus ancien. Le plus récent peut être celui des publications faites par l'IA.
   const socialImgs = assets.filter((a) => a.role === "social" && a.meta?.socialV2);
-  const lastPlan = db().prepare("SELECT media FROM posts WHERE project_id = ? AND plan_id = (SELECT plan_id FROM posts WHERE project_id = ? AND plan_id IS NOT NULL ORDER BY created_at DESC LIMIT 1) ORDER BY scheduled_at").all(pid, pid) as { media: string }[];
-  const planIds = lastPlan.flatMap((r) => JSON.parse(r.media || "[]") as string[]);
-  const fromPlan = planIds.map((id) => socialImgs.find((a) => a.id === id)).filter(Boolean) as typeof socialImgs;
+  const plans = (db().prepare("SELECT plan_id FROM posts WHERE project_id = ? AND plan_id IS NOT NULL GROUP BY plan_id ORDER BY MAX(created_at) DESC LIMIT 2").all(pid) as { plan_id: string }[]).map((r) => r.plan_id);
+  const lastPlan = plans.flatMap((pl) => db().prepare("SELECT media FROM posts WHERE project_id = ? AND plan_id = ? ORDER BY scheduled_at").all(pid, pl) as { media: string }[]);
+  const planIds = [...new Set(lastPlan.flatMap((r) => JSON.parse(r.media || "[]") as string[]))];
+  // Produit : seulement les publications où le produit se voit (pas une photo d'ambiance libre de droits seule).
+  const ambiance = (a: any) => { const bg = assets.find((x) => x.id === a.meta?.poster?.backgroundAssetId) ?? all.find((x) => x.id === a.meta?.poster?.backgroundAssetId); return !!bg && bg.role === "ambiance"; };
+  const fromPlan = (planIds.map((id) => socialImgs.find((a) => a.id === id)).filter(Boolean) as typeof socialImgs).filter((a) => p.business === "services" || !ambiance(a));
   const postAssets = fromPlan.length ? fromPlan.slice(0, 8) : socialImgs.sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0)).slice(0, 8).reverse();
   const posts: string[] = [];
-  for (const [i, a] of postAssets.entries()) {
-    const file = X(`post-${i + 1}.jpg`);
+  for (const a of postAssets) {
+    const file = X(`post-${posts.length + 1}.jpg`);
     await saveImg(ctx, a.url, path.join(dir, file), 1080);
+    // Publication presque noire (texte sombre sur fond sombre, illisible) : pas montrée sur l'accueil.
+    const { channels } = await sharp(path.join(dir, file)).stats();
+    const avg = (k: "mean" | "stdev") => channels.slice(0, 3).reduce((s, c) => s + c[k], 0) / 3;
+    if (avg("mean") < 45 && avg("stdev") < 30) { fs.rmSync(path.join(dir, file)); continue; }
     posts.push(`/demo/${p.id}/${file}`);
   }
   // Planche d'identité de marque (logo, déclinaisons, palette, typographies, motif, papeterie, mises en situation).

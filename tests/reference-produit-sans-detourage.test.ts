@@ -34,6 +34,13 @@ describe("Référence du produit sans détourage validé", async () => {
     expect(productReferences(pid)).toEqual([]);
   });
 
+  it("produit porté : le produit recadré par le module publicités sert de référence", async () => {
+    const { u, pid } = await setup();
+    await saveAsset({ projectId: pid, userId: u.id, data: await jpg(), name: "porte.jpg", mime: "image/jpeg", role: "lifestyle", folderKey: "product", origin: "upload", meta: { triage: { plain: 0, kind: "situation" } } });
+    const ref = await saveAsset({ projectId: pid, userId: u.id, data: await jpg(), name: "reference-produit.jpg", mime: "image/jpeg", role: "product-ref", folderKey: "images", origin: "generated", status: "ready", meta: {} });
+    expect(productReferences(pid)).toEqual([ref.id]);
+  });
+
   it("détourage validé : il reste la référence prioritaire", async () => {
     const { u, pid } = await setup();
     await saveAsset({ projectId: pid, userId: u.id, data: await jpg(), name: "gourde.jpg", mime: "image/jpeg", role: "original", folderKey: "product", origin: "upload", meta: { triage: { plain: 1, kind: "packshot" } } });

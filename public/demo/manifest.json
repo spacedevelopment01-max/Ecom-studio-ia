@@ -1,7 +1,193 @@
 {
-  "generatedAt": "2026-10-14T18:41:58.076Z",
+  "generatedAt": "2026-10-14T19:32:37.308Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
+    {
+      "id": "gourde",
+      "brand": "Cime",
+      "product": "Gourde isotherme 750 ml",
+      "sector": "Sport et plein air",
+      "direction": "elan",
+      "palette": [
+        "#1E2326",
+        "#9AA5AA",
+        "#FF4D00",
+        "#F4F6F6",
+        "#0E1214"
+      ],
+      "photo": "/demo/gourde/photo.jpg",
+      "logo": "/demo/gourde/logo.png",
+      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
+      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
+      "productPage": "/demo/gourde/fiche-produit.jpg",
+      "business": "products",
+      "images": [
+        {
+          "src": "/demo/gourde/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/gourde/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/gourde/scene-2.jpg",
+          "label": "Scène"
+        }
+      ],
+      "video": "/demo/gourde/video.mp4",
+      "videoPoster": "/demo/gourde/video-poster.jpg",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Photo créée par l'IA",
+        "url": "",
+        "note": "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie."
+      },
+      "posts": [
+        "/demo/gourde/post-1.jpg",
+        "/demo/gourde/post-2.jpg",
+        "/demo/gourde/post-3.jpg",
+        "/demo/gourde/post-4.jpg",
+        "/demo/gourde/post-5.jpg"
+      ],
+      "board": "/demo/gourde/planche.jpg"
+    },
+    {
+      "id": "tribunes",
+      "brand": "Les Tribunes",
+      "product": "T-shirt supporter Lavande",
+      "sector": "Mode",
+      "direction": "flux",
+      "palette": [
+        "#0D0D0D",
+        "#C4C4C4",
+        "#E10600",
+        "#FAFAFA",
+        "#050505"
+      ],
+      "photo": "/demo/tribunes/photo.jpg",
+      "logo": "/demo/tribunes/logo.png",
+      "shopDesktop": "/demo/tribunes/boutique-bureau.jpg",
+      "shopMobile": "/demo/tribunes/boutique-mobile.jpg",
+      "productPage": "/demo/tribunes/fiche-produit.jpg",
+      "business": "products",
+      "images": [
+        {
+          "src": "/demo/tribunes/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/tribunes/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/tribunes/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/tribunes/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/tribunes/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/tribunes/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/tribunes/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/tribunes/video.mp4",
+      "videoPoster": "/demo/tribunes/video-poster.jpg",
+      "storeType": "multi",
+      "products": 4,
+      "source": {
+        "supplier": "Fournisseur + IA",
+        "url": "",
+        "note": "Deux t-shirts de supporter d'un fournisseur (visuels du fournisseur) et deux accessoires dont la photo a été créée par l'IA : la marque et la boutique sont créées par le studio. Aucun écusson officiel."
+      },
+      "posts": [
+        "/demo/tribunes/post-1.jpg",
+        "/demo/tribunes/post-2.jpg",
+        "/demo/tribunes/post-3.jpg",
+        "/demo/tribunes/post-4.jpg",
+        "/demo/tribunes/post-5.jpg",
+        "/demo/tribunes/post-6.jpg",
+        "/demo/tribunes/post-7.jpg",
+        "/demo/tribunes/post-8.jpg"
+      ],
+      "board": "/demo/tribunes/planche.jpg"
+    },
+    {
+      "id": "casque",
+      "brand": "Sonore",
+      "product": "Casque audio",
+      "sector": "High-tech",
+      "direction": "signal",
+      "palette": [
+        "#0B0F1A",
+        "#8A9BC2",
+        "#00E0A4",
+        "#E8EEF6",
+        "#05070D"
+      ],
+      "photo": "/demo/casque/photo.jpg",
+      "logo": "/demo/casque/logo.png",
+      "shopDesktop": "/demo/casque/boutique-bureau.jpg",
+      "shopMobile": "/demo/casque/boutique-mobile.jpg",
+      "productPage": "/demo/casque/fiche-produit.jpg",
+      "business": "products",
+      "images": [
+        {
+          "src": "/demo/casque/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/casque/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/casque/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/casque/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/casque/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/casque/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/casque/video.mp4",
+      "videoPoster": "/demo/casque/video-poster.jpg",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Pixabay",
+        "url": "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/",
+        "note": "Vraies photos d'un casque sans marque visible, en situation (Pixabay, série d'Engin_Akyurt) : la marque, les visuels et la boutique sont créés par le studio."
+      },
+      "posts": [
+        "/demo/casque/post-1.jpg",
+        "/demo/casque/post-2.jpg",
+        "/demo/casque/post-3.jpg",
+        "/demo/casque/post-4.jpg",
+        "/demo/casque/post-5.jpg",
+        "/demo/casque/post-6.jpg",
+        "/demo/casque/post-7.jpg"
+      ],
+      "board": "/demo/casque/planche.jpg"
+    },
     {
       "id": "paysagiste",
       "brand": "Racines & Pierres",
@@ -119,191 +305,6 @@
         "/demo/fleuriste/post-8.jpg"
       ],
       "board": "/demo/fleuriste/planche.jpg"
-    },
-    {
-      "id": "gourde",
-      "brand": "Cime",
-      "product": "Gourde isotherme 750 ml",
-      "sector": "Sport et plein air",
-      "direction": "elan",
-      "palette": [
-        "#1E2326",
-        "#9AA5AA",
-        "#FF4D00",
-        "#F4F6F6",
-        "#0E1214"
-      ],
-      "photo": "/demo/gourde/photo.jpg",
-      "logo": "/demo/gourde/logo.png",
-      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
-      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
-      "productPage": "/demo/gourde/fiche-produit.jpg",
-      "business": "products",
-      "images": [
-        {
-          "src": "/demo/gourde/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/gourde/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/gourde/scene-2.jpg",
-          "label": "Scène"
-        }
-      ],
-      "video": "/demo/gourde/video.mp4",
-      "videoPoster": "/demo/gourde/video-poster.jpg",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "Photo créée par l'IA",
-        "url": "",
-        "note": "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie."
-      },
-      "posts": [
-        "/demo/gourde/post-1.jpg",
-        "/demo/gourde/post-2.jpg",
-        "/demo/gourde/post-3.jpg",
-        "/demo/gourde/post-4.jpg",
-        "/demo/gourde/post-5.jpg",
-        "/demo/gourde/post-6.jpg",
-        "/demo/gourde/post-7.jpg"
-      ],
-      "board": "/demo/gourde/planche.jpg"
-    },
-    {
-      "id": "tribunes",
-      "brand": "Les Tribunes",
-      "product": "T-shirt supporter Lavande",
-      "sector": "Mode",
-      "direction": "flux",
-      "palette": [
-        "#0D0D0D",
-        "#C4C4C4",
-        "#E10600",
-        "#FAFAFA",
-        "#050505"
-      ],
-      "photo": "/demo/tribunes/photo.jpg",
-      "logo": "/demo/tribunes/logo.png",
-      "shopDesktop": "/demo/tribunes/boutique-bureau.jpg",
-      "shopMobile": "/demo/tribunes/boutique-mobile.jpg",
-      "productPage": "/demo/tribunes/fiche-produit.jpg",
-      "business": "products",
-      "images": [
-        {
-          "src": "/demo/tribunes/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/tribunes/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/tribunes/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/tribunes/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tribunes/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tribunes/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/tribunes/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/tribunes/video.mp4",
-      "videoPoster": "/demo/tribunes/video-poster.jpg",
-      "storeType": "multi",
-      "products": 4,
-      "source": {
-        "supplier": "Fournisseur + IA",
-        "url": "",
-        "note": "Deux t-shirts de supporter d'un fournisseur (visuels du fournisseur) et deux accessoires dont la photo a été créée par l'IA : la marque et la boutique sont créées par le studio. Aucun écusson officiel."
-      },
-      "posts": [
-        "/demo/tribunes/post-1.jpg",
-        "/demo/tribunes/post-2.jpg",
-        "/demo/tribunes/post-3.jpg",
-        "/demo/tribunes/post-4.jpg",
-        "/demo/tribunes/post-5.jpg",
-        "/demo/tribunes/post-6.jpg",
-        "/demo/tribunes/post-7.jpg"
-      ],
-      "board": "/demo/tribunes/planche.jpg"
-    },
-    {
-      "id": "casque",
-      "brand": "Sonore",
-      "product": "Casque audio",
-      "sector": "High-tech",
-      "direction": "signal",
-      "palette": [
-        "#0B0F1A",
-        "#8A9BC2",
-        "#00E0A4",
-        "#E8EEF6",
-        "#05070D"
-      ],
-      "photo": "/demo/casque/photo.jpg",
-      "logo": "/demo/casque/logo.png",
-      "shopDesktop": "/demo/casque/boutique-bureau.jpg",
-      "shopMobile": "/demo/casque/boutique-mobile.jpg",
-      "productPage": "/demo/casque/fiche-produit.jpg",
-      "business": "products",
-      "images": [
-        {
-          "src": "/demo/casque/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/casque/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/casque/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/casque/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/casque/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/casque/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/casque/video.mp4",
-      "videoPoster": "/demo/casque/video-poster.jpg",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "Pixabay",
-        "url": "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/",
-        "note": "Vraies photos d'un casque sans marque visible, en situation (Pixabay, série d'Engin_Akyurt) : la marque, les visuels et la boutique sont créés par le studio."
-      },
-      "posts": [
-        "/demo/casque/post-1.jpg",
-        "/demo/casque/post-2.jpg",
-        "/demo/casque/post-3.jpg",
-        "/demo/casque/post-4.jpg",
-        "/demo/casque/post-5.jpg"
-      ],
-      "board": "/demo/casque/planche.jpg"
     },
     {
       "id": "verger",

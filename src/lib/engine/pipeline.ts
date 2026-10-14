@@ -442,6 +442,9 @@ async function pipelineVideo(ctx: JobContext, projectId: string, ask: { kind: "v
   return r.videoAssetId;
 }
 
+/** Publications de la création dont le visuel est entièrement fait par l'IA (forfaits avec IA). */
+export const FIRST_AI_POSTS = 3;
+
 /** Identifiant stable du calendrier de la création complète : une reprise retrouve le même, jamais un second. */
 export const creationPlanId = (projectId: string) => `creation-${projectId}`;
 
@@ -463,7 +466,14 @@ export async function startWeekCalendar(ctx: JobContext, projectId: string, _ide
     const { realSocialDeps } = await import("../social-v2/deps");
     const fresh = loadProject(projectId);
     planFromAsk(fresh, "7 jours, 1 publication par jour", { planId, lang: fresh.settings.language === "en" ? "en" : "fr" });
-    await produceBatch(fresh, postsOfPlan(planId), realSocialDeps(ctx, fresh, false), { allowPaid: false, maxCostEur: 0, approvedEstimateMicro: null, batchSize: 50 });
+    // Forfait avec IA : les 3 premières publications en image ont un visuel entièrement créé par l'IA (le vrai
+    // produit en référence), dans un plafond calculé d'avance ; le client en change ensuite le format à volonté.
+    // Forfait Découverte (0 € d'IA) : tout reste local.
+    const { aiActiveFor } = await import("../ai/access");
+    const ai = aiActiveFor(fresh.userId, projectId);
+    const deps = realSocialDeps(ctx, fresh, ai);
+    const capMicro = ai ? FIRST_AI_POSTS * deps.estimate("image") : 0;
+    await produceBatch(fresh, postsOfPlan(planId), deps, { allowPaid: ai, maxCostEur: capMicro / 1e6, approvedEstimateMicro: ai ? capMicro : null, batchSize: 50, aiImages: ai ? FIRST_AI_POSTS : 0 });
     remember(projectId, { kind: "artifact", key: "social_plan_v2", value: JSON.stringify({ planId, days: 7, origin: "creation" }), source: "local" });
     return planId;
   });

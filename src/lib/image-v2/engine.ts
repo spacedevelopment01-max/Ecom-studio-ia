@@ -329,5 +329,8 @@ export function productReferences(projectId: string): string[] {
         AND (COALESCE(json_extract(meta, '$.triage.plain'), 0) = 1 OR json_extract(meta, '$.triage.kind') = 'packshot') ORDER BY created_at LIMIT 1`,
     projectId,
   );
-  return plain.map((a) => a.id);
+  if (plain.length) return plain.map((a) => a.id);
+  // Produit recadré dans la photo du client par le module publicités (photo où le produit est porté) : le produit
+  // seul, sans la personne, sert de référence.
+  return all<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'product-ref' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", projectId).map((a) => a.id);
 }

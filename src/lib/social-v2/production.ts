@@ -14,7 +14,7 @@ import { EUR } from "../billing";
 import { afterEdit } from "./approval";
 import type { MediaResult, PostBrief, SocialDeps } from "./deps";
 
-export type ProduceMethod = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "none";
+export type ProduceMethod = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post" | "none";
 export type EstimateLine = { postId: string; method: ProduceMethod; paid: boolean; estimateMicro: number };
 export type ProductionEstimate = { posts: number; free: number; paid: number; estimateMicro: number; lines: EstimateLine[]; notes: string[] };
 
@@ -37,7 +37,10 @@ function libraryPool(projectId: string, kind: "image" | "video"): Asset[] {
   return rows.filter(isAutoUsable).filter((a) => a.uses < 3);
 }
 
-function pick(r: Row, opts: { allowPaid: boolean }, pools: { image: Asset[]; video: Asset[] }): { method: ProduceMethod; paid: boolean } {
+function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean }, pools: { image: Asset[]; video: Asset[] }): { method: ProduceMethod; paid: boolean } {
+  // Visuel demandé « entièrement par l'IA » (premières publications d'un projet, ou choix du client) : image créée
+  // par l'IA d'images avec le vrai produit en référence, même si la bibliothèque a déjà des photos.
+  if (opts.ai && opts.allowPaid && !needsVideo(r)) return { method: "ai_post", paid: true };
   if (needsVideo(r)) return pools.video.length ? { method: "library", paid: false } : { method: "video_v2", paid: opts.allowPaid };
   if (r.objective === "convert" || r.objective === "sell") return { method: opts.allowPaid && !pools.image.length ? "ads_v2" : "local", paid: opts.allowPaid && !pools.image.length };
   // Image : une affiche par publication, sur LA photo cherchée pour elle (Pixabay d'abord, gratuite ; « local »),
@@ -50,14 +53,21 @@ function pick(r: Row, opts: { allowPaid: boolean }, pools: { image: Asset[]; vid
 const selectRows = (projectId: string, ids: string[]) =>
   ids.length ? all<Row>(`SELECT * FROM posts WHERE project_id = ? AND id IN (${ids.map(() => "?").join(",")}) ORDER BY scheduled_at`, projectId, ...ids).map((r) => ({ ...r, headline: json<{ headline?: string }>(r.brief, {}).headline ?? r.title })) : [];
 
+/** Les `n` premières publications en image (dans l'ordre du calendrier) : celles dont le visuel est fait par l'IA. */
+export function aiImageIds(rows: { id: string; format: string }[], n: number | null | undefined): Set<string> {
+  return new Set(n ? rows.filter((r) => !VIDEO_FORMATS.has(r.format)).slice(0, n).map((r) => r.id) : []);
+}
+
 /** Estimation AVANT tout envoi : nombre de contenus, part gratuite, part payante et coût estimé. */
-export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialDeps, "estimate" | "aiActive">, opts: { allowPaid: boolean }): ProductionEstimate {
+export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialDeps, "estimate" | "aiActive">, opts: { allowPaid: boolean; aiImages?: number | null }): ProductionEstimate {
   const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && r.media === "[]");
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const allowPaid = opts.allowPaid && deps.aiActive;
+  const aiIds = aiImageIds(rows, opts.aiImages);
   const lines = rows.map((r) => {
-    const m = pick(r, { allowPaid }, pools);
-    const est = m.paid ? deps.estimate(m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : "image") : 0;
+    // Visuels IA demandés pour N publications : seules celles-là sont payantes, les autres restent gratuites.
+    const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id) }, pools);
+    const est = m.paid ? deps.estimate(m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image") : 0;
     return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: est };
   });
   const notes: string[] = [];
@@ -88,7 +98,7 @@ function planBackgrounds(planId: string | null): { asset: Asset; uses: number }[
   return rows.map((r) => ({ asset: getAsset(r.bg)!, uses: r.uses })).filter((x) => x.asset && !x.asset.deleted_at);
 }
 
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null }): Promise<ProductionResult> {
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
@@ -96,23 +106,24 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
   const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && r.media === "[]").slice(0, o.batchSize ?? 30);
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const used = new Map<string, number>();
+  const aiIds = aiImageIds(rows, o.aiImages);
   const res: ProductionResult = { produced: 0, skipped: 0, failed: 0, spentMicro: 0, stoppedByCap: false, notes, byMethod: {} };
   for (const r of rows) {
-    let m = pick(r, { allowPaid }, pools);
+    let m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id) }, pools);
     let out: MediaResult | null = null;
     // Nombre d'images différentes atteint pour ce calendrier : on reprend l'une d'elles (gratuit), sans nouvelle photo.
     const bgs = o.distinctImages && !needsVideo(r) ? planBackgrounds(r.plan_id) : [];
     const reuse = o.distinctImages && bgs.length >= o.distinctImages ? bgs.slice(0, o.distinctImages).sort((a, b) => a.uses - b.uses)[0].asset : null;
-    if (reuse) m = { method: "local", paid: false };
+    if (reuse && !aiIds.has(r.id)) m = { method: "local", paid: false };
     try {
-      if (reuse) {
+      if (reuse && !aiIds.has(r.id)) {
         out = await deps.local(p, r, { background: reuse });
       } else if (m.method === "library") {
         const pool = needsVideo(r) ? pools.video : pools.image;
         const a = [...pool].sort((x, y) => (used.get(x.id) ?? 0) - (used.get(y.id) ?? 0))[0];
         out = a ? { assetId: a.id, costMicro: 0, by: "library" } : null;
       } else {
-        const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : "image";
+        const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
         const est = m.paid ? deps.estimate(kind) : 0;
         if (m.paid && res.spentMicro + est > cap) {
           res.stoppedByCap = true;
@@ -120,9 +131,15 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
           out = await deps.local(p, r);
         } else {
           const opts = { allowPaid: m.paid, maxCostEur: Math.max(0, (cap - res.spentMicro) / EUR) };
-          out = m.method === "video_v2" ? await deps.video(p, r, opts) : m.method === "ads_v2" ? await deps.ad(p, r, opts) : m.method === "image_v2" ? await deps.image(p, r, opts) : await deps.local(p, r);
-          // Rien d'exploitable du moteur : rendu local (vidéo : la publication attend une vidéo).
-          if (!out?.assetId && m.method !== "video_v2") out = await deps.local(p, r);
+          out = m.method === "video_v2" ? await deps.video(p, r, opts) : m.method === "ads_v2" ? await deps.ad(p, r, opts) : m.method === "image_v2" ? await deps.image(p, r, opts) : m.method === "ai_post" ? await (deps.aiPost ?? deps.image)(p, r, opts) : await deps.local(p, r);
+          // Rien d'exploitable du moteur : rendu local (vidéo : la publication attend une vidéo). Ce qui a été payé
+          // pour l'essai refusé reste compté (jamais une dépense cachée).
+          if (!out?.assetId && m.method !== "video_v2") {
+            const paidForNothing = out?.costMicro ?? 0;
+            if (out?.note) notes.push(out.note);
+            out = await deps.local(p, r);
+            if (out) out = { ...out, costMicro: (out.costMicro ?? 0) + paidForNothing };
+          }
         }
       }
     } catch (e) {
