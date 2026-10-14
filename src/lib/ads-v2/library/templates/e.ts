@@ -117,6 +117,8 @@ export const TEMPLATES_E: Template[] = [
     name: ["Voile en biais", "Slanted veil"],
     family: "photo",
     photo: "required",
+    // Forme presque opaque sur la moitié basse : cachait le produit (constaté : la gourde Cime invisible).
+    coversSubject: true,
     schemes: ["brand", "dark", "accent"],
     treatments: ["natural", "punch", "warm"],
     build(k) {
