@@ -171,7 +171,7 @@ export default async function Home() {
 
   // Avant / après : la photo d'origine (Pixabay) et une création du studio sur le vrai produit.
   // Après : une publication faite par le studio sur la vraie photo (sinon une image du produit).
-  const ba = productDemos.find((d) => d.id === "tillandsia") ?? productDemos[0];
+  const ba = productDemos.find((d) => d.id === "gourde") ?? productDemos[0];
   const baAfter = ba ? (ba.posts?.[0] ?? (ba.images.find((x) => /scène|scene/i.test(x.label)) ?? ba.images.find((x) => /packshot/i.test(x.label)))?.src) : undefined;
 
   // Créations réelles des démonstrations : planches d'identité, fils de publications, mur de publications.
@@ -208,7 +208,7 @@ export default async function Home() {
     [T("J'ai déjà un site et un logo : puis-je utiliser le studio ?", "I already have a website and a logo: can I use the studio?"), T("Oui. Choisissez « J'ai déjà mon site et mon logo » et indiquez son adresse (le site doit vous appartenir ou vous devez être autorisé à l'utiliser). Le studio reconnaît la plateforme et reprend votre logo, vos pages, vos produits, vos couleurs et vos polices, sans créer de nouvelle marque. Sur Shopify, WordPress / WooCommerce, PrestaShop, Wix ou Squarespace, votre site reste tel quel ; sur une autre plateforme ou un site sur mesure, il est reproduit sur Shopify (boutique) ou WordPress (services), avec les mêmes textes et images — le studio indique ce qui est fidèle et ce qui est approché. Les contenus que votre site charge uniquement en JavaScript peuvent ne pas être lus : c'est signalé.", "Yes. Choose \"I already have my website and logo\" and enter its address (the website must be yours or you must be authorized to use it). The studio recognizes the platform and takes your logo, pages, products, colors and fonts, without creating a new brand. On Shopify, WordPress / WooCommerce, PrestaShop, Wix or Squarespace, your website stays as it is; on another platform or a custom-built site, it is reproduced on Shopify (store) or WordPress (services), with the same text and images — the studio shows what is exact and what is approximated. Content your website loads only with JavaScript may not be read: this is flagged.")],
     [T("Où choisir Shopify, WordPress ou une autre plateforme ?", "Where do I choose Shopify, WordPress or another platform?"), T("Dans le formulaire de création du projet, juste après le choix « boutique » ou « entreprise de services » : rubrique « Sur quelle plateforme vendrez-vous ? » (ou « Où sera publié votre site ? » pour une entreprise de services), avec une carte par plateforme. Vous pouvez aussi en changer plus tard depuis l'onglet Boutique : le studio relivre le site pour la nouvelle plateforme.", "In the project creation form, right after choosing \"store\" or \"services business\": \"Which platform will you sell on?\" (or \"Where will your website live?\" for a services business), with one card per platform. You can also change it later from the Store tab: the studio redelivers the site for the new platform.")],
     [T("Faut-il une photo pour commencer ?", "Do I need a photo to get started?"), T("Non. Vous pouvez ouvrir le studio sans rien, explorer les espaces et les thèmes, puis ajouter une photo, un lien ou quelques lignes quand vous êtes prêt : la création démarre à ce moment-là.", "No. You can open the studio with nothing, explore the workspaces and themes, then add a photo, a link or a few lines when you're ready: creation starts at that point.")],
-    [T("Les démonstrations de cette page sont-elles des résultats clients ?", "Are the demos on this page client results?"), T("Non. Ce sont des marques et des entreprises fictives créées par le studio, sans l'IA des forfaits, à partir de vraies photos libres de droits (Pixabay) : des produits sans marque visible, une boutique de fleuriste et un salon de barbier. Les petites démonstrations interactives tournent dans votre navigateur : rien n'est enregistré ni publié.", "No. They are fictional brands and businesses created by the studio, without the plans' AI, from real royalty-free photos (Pixabay): products with no visible brand, a florist's shop and a barber shop. The small interactive demos run in your browser: nothing is saved or published.")],
+    [T("Les démonstrations de cette page sont-elles des résultats clients ?", "Are the demos on this page client results?"), T("Non. Ce sont des marques et des entreprises fictives, créées dans le studio avec l'IA comme pour un client, à partir de vraies photos (Pixabay, fournisseur) ou de photos créées par l'IA : un casque, des articles de supporter, une gourde, un fleuriste et un paysagiste. Les petites démonstrations interactives tournent dans votre navigateur : rien n'est enregistré ni publié.", "No. They are fictional brands and businesses, created in the studio with AI just like for a client, from real photos (Pixabay, supplier) or AI-created photos: headphones, supporter gear, a water bottle, a florist and a landscaper. The small interactive demos run in your browser: nothing is saved or published.")],
     [T("Puis-je arrêter une création en cours ?", "Can I stop a creation in progress?"), T("Oui. Le bouton « Pause » arrête la création à la fin de l'étape en cours ; « Reprendre » repart de là. Les étapes déjà terminées sont conservées et ne sont ni refaites ni refacturées.", "Yes. The \"Pause\" button stops the creation at the end of the current step; \"Resume\" picks up from there. Completed steps are kept and are neither redone nor charged again.")],
     [T("Le thème Shopify est-il vraiment installable ?", "Can the Shopify theme really be installed?"), T("Oui : c'est un thème Online Store 2.0 complet (sections, blocs, réglages natifs, panier latéral, recherche, pages), vérifié par Theme Check, l'outil officiel de Shopify. Vous l'importez en ZIP. L'envoi direct dans votre boutique est développé mais pas encore essayé sur une vraie boutique.", "Yes: it's a complete Online Store 2.0 theme (sections, blocks, native settings, cart drawer, search, pages), checked by Theme Check, Shopify's official tool. You upload it as a ZIP. Direct upload to your store is built but not yet tried on a real store.")],
     [T("Que se passe-t-il si une information manque ?", "What happens if some information is missing?"), T("Elle reste visible « à compléter » dans les textes, et le studio vous pose la question. Quand vous répondez, seuls les passages concernés sont mis à jour, sans écraser ce que vous avez validé.", "It stays visible as \"to complete\" in the copy, and the studio asks you about it. When you answer, only the relevant passages are updated, without overwriting what you've approved.")],
@@ -328,7 +328,7 @@ export default async function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
               <Head eyebrow={T("Création de marque", "Brand creation")} title={T("Une photo de départ,", "One starting photo,")} accent={T("une identité complète.", "a complete identity.")} lead={boards.length ? T("Logo et déclinaisons, palette, typographies, icônes, motif, papeterie et mises en situation : chaque marque reçoit sa planche d'identité, et toutes ses créations suivent cette même ligne.", "Logo and variations, palette, typefaces, icons, pattern, stationery and mockups: every brand gets its identity board, and all its creations follow that same line.") : T("Choisissez une marque de démonstration : logo, palette et typographies ont été créés par le studio à partir de la photo du produit.", "Pick a demo brand: its logo, palette and typefaces were created by the studio from the product photo.")} />
-              <p className="reveal max-w-xs text-sm text-muted lg:text-right">{T("Démonstrations réalisées sans l'IA des forfaits.", "Demos made without the plans' AI.")}</p>
+              <p className="reveal max-w-xs text-sm text-muted lg:text-right">{T("Projets de démonstration réalisés dans le studio, avec l'IA, comme pour un client.", "Demo projects made in the studio, with AI, just like for a client.")}</p>
             </div>
             <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
               {boards.length ? <BoardShowcase boards={boards} /> : <BrandLab brands={brands} />}
@@ -400,7 +400,7 @@ export default async function Home() {
                       <li key={x} className="flex gap-3"><Check className="mt-0.5 size-5 shrink-0 text-signal" aria-hidden /> {x}</li>
                     ))}
                   </ul>
-                  <p className="mt-5 text-xs text-muted">{T(`Démonstration : ${ba.brand}, à partir d'une vraie photo de produit (Pixabay).`, `Demo: ${ba.brand}, from a real product photo (Pixabay).`)}</p>
+                  <p className="mt-5 text-xs text-muted">{T(`Démonstration : ${ba.brand}, à partir de la photo du produit fournie à la création du projet.`, `Demo: ${ba.brand}, from the product photo provided when the project was created.`)}</p>
                 </div>
               </div>
             )}
@@ -451,21 +451,6 @@ export default async function Home() {
               <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><UserRound className="mt-0.5 size-5 shrink-0 text-[#AEB7FF]" aria-hidden /> {T("Vidéo UGC (forfaits Vendre et Dominer) : une personne générée par IA présente votre produit réel face caméra, signalée comme contenu IA.", "UGC video (Sell and Dominate plans): an AI-generated person presents your real product to camera, labeled as AI content.")}</p>
               <p className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-5 text-sm leading-relaxed text-white/80"><Minus className="mt-0.5 size-5 shrink-0 text-white/50" aria-hidden /> {T("Pas encore de montage plan par plan dans une timeline interactive : vous retouchez en français et pouvez régénérer un plan, avec votre accord.", "No shot-by-shot editing in an interactive timeline yet: you make edits in plain language and can regenerate a shot, with your approval.")}</p>
             </div>
-            {list.length > 0 && (
-              <div className="mt-14">
-                <p className="reveal font-display text-2xl font-semibold">{T("Publicités vidéo 9:16 des démonstrations", "9:16 video ads from the demos")}</p>
-                <div className="scrollbar-none -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6">
-                  {list.map((d) => (
-                    <figure key={d.id} className="w-[44vw] max-w-[220px] shrink-0 snap-start">
-                      <div className="overflow-hidden rounded-[1.4rem] border-[5px] border-white/10 bg-black">
-                        <AutoVideo src={d.video} poster={d.videoPoster} label={T(`Publicité vidéo 9:16 pour ${d.brand}`, `9:16 video ad for ${d.brand}`)} className="aspect-[9/16] w-full object-cover" />
-                      </div>
-                      <figcaption className="mt-2 text-sm"><span className="font-medium">{d.brand}</span> <span className="text-white/60">· {d.sector}</span></figcaption>
-                    </figure>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
@@ -563,8 +548,8 @@ export default async function Home() {
         <section id="demonstrations" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-              <Head eyebrow={T("Démonstrations", "Demos")} title={T(`${list.length} produits,`, `${list.length} products,`)} accent={T("une seule photo chacun.", "a single photo each.")} />
-              <p className="reveal max-w-md text-sm leading-relaxed text-muted">{T("Chaque démonstration part de vraies photos (Pixabay) : un vrai produit sans marque visible, ou une vraie boutique de fleuriste ou de barbier. Les marques et les entreprises sont fictives, créées par le studio sans l'IA des forfaits ; ce ne sont pas des résultats clients.", "Each demo starts from real photos (Pixabay): a real product with no visible brand, or a real florist's or barber's shop. The brands and businesses are fictional, created by the studio without the plans' AI; these are not client results.")}</p>
+              <Head eyebrow={T("Démonstrations", "Demos")} title={T(`${list.length} projets,`, `${list.length} projects,`)} accent={T("de A à Z dans le studio.", "from A to Z in the studio.")} />
+              <p className="reveal max-w-md text-sm leading-relaxed text-muted">{T("Cinq projets menés comme par cinq clients : un produit, une boutique de plusieurs produits, un produit de sport, un fleuriste et un paysagiste. Les marques et les entreprises sont fictives ; les photos de départ sont de vraies photos (Pixabay, fournisseur) ou des photos créées par l'IA, comme indiqué sur chaque projet. Ce ne sont pas des résultats clients.", "Five projects run as if by five clients: a product, a multi-product store, a sports product, a florist and a landscaper. The brands and businesses are fictional; the starting photos are real photos (Pixabay, supplier) or AI-created photos, as stated on each project. These are not client results.")}</p>
             </div>
             {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">{T("Les démonstrations s'affichent après génération (script « npm run demos »).", "Demos appear once generated (\"npm run demos\" script).")}</p>}
           </div>

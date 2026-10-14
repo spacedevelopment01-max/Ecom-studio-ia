@@ -154,7 +154,7 @@ async function waitIdle(ctx: BrowserContext, pid: string) {
   for (;;) {
     const r = await api(ctx, `/api/projects/${pid}`);
     if (!r.active?.length) return r;
-    if (Date.now() - t0 > 600_000) throw new Error("délai dépassé");
+    if (Date.now() - t0 > Number(process.env.WAIT_S ?? 600) * 1000) throw new Error("délai dépassé");
     await new Promise((res) => setTimeout(res, 2500));
   }
 }
@@ -206,8 +206,9 @@ if (ONLY_DIRECTIONS) {
   await browser.close();
   process.exit(0);
 }
-const email = `demo-${Date.now()}@ecom-studio.local`;
-await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: EN ? "Demos" : "Démonstrations" } });
+const email = process.env.EMAIL ?? `demo-${Date.now()}@ecom-studio.local`;
+if (process.env.EMAIL) await api(ctx, "/api/auth/login", { body: { email, password: PASSWORD } });
+else await api(ctx, "/api/auth/register", { body: { email, password: PASSWORD, name: EN ? "Demos" : "Démonstrations" } });
 // Le compte de démonstration a besoin de plusieurs boutiques : activation manuelle locale.
 const { db } = await import("../src/lib/db");
 const { syncAllowance, getSubscription } = await import("../src/lib/billing");
@@ -234,7 +235,7 @@ for (const p of PRODUCTS) {
   // Photo transparente (produit détouré) : posée sur un fond clair, comme une photo de fournisseur.
   const photo = photoFile.endsWith(".png") ? await sharp(photoFile).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(photoFile);
   // Un abonnement = un projet : chaque démonstration reçoit son propre abonnement offert (forfait le plus complet).
-  createSubscription(me.user.id, { plan: "dominer", status: "manual", source: "admin" });
+  if (!process.env.PID) createSubscription(me.user.id, { plan: "dominer", status: "manual", source: "admin" });
   // Formulaire de création, comme dans le studio (plusieurs photos possibles ; services : prestations et coordonnées).
   const form = new FormData();
   form.append("photos", new Blob([photo], { type: "image/jpeg" }), path.basename(photoFile).replace(/\.png$/, ".jpg"));
@@ -242,10 +243,14 @@ for (const p of PRODUCTS) {
   const fields: Record<string, string> = { productName: p.productName, brandName: p.brandName, price: p.price, description: p.description, mode: "autopilot", platform: p.platform ?? "shopify", storeType: p.storeType ?? "mono", businessType: p.business ?? "products", ...(EN ? { language: "en" } : {}) };
   if (p.business === "services") Object.assign(fields, { services: JSON.stringify(p.services ?? []), area: p.area ?? "", hours: p.hours ?? "", contactModes: p.contactModes ?? "form", contactMode: (p.contactModes ?? "form").split(",")[0] });
   for (const [k, v] of Object.entries(fields)) form.append(k, v);
-  const res = await ctx.request.post(`${BASE}/api/projects`, { multipart: form });
-  const created = await res.json();
-  if (!res.ok()) throw new Error(JSON.stringify(created));
-  const pid = created.id ?? created.project?.id;
+  // PID=<id> : reprend un projet déjà créé (création longue avec l'IA) au lieu d'en refaire un (et de le repayer).
+  let pid = process.env.PID ?? "";
+  if (!pid) {
+    const res = await ctx.request.post(`${BASE}/api/projects`, { multipart: form });
+    const created = await res.json();
+    if (!res.ok()) throw new Error(JSON.stringify(created));
+    pid = created.id ?? created.project?.id;
+  }
   const t0 = Date.now();
   let ov = await waitIdle(ctx, pid);
   console.log(`  pipeline ${Math.round((Date.now() - t0) / 1000)} s`, ov.pipeline?.job?.status);
