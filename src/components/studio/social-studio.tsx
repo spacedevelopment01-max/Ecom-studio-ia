@@ -167,6 +167,10 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   const [result, setResult] = useState<{ created: number; warnings: string[]; notes?: string[] } | null>(null);
   const [est, setEst] = useState<{ posts: number; free: number; paid: number; estimateMicro: number; notes: string[] } | null>(null);
   const [cap, setCap] = useState(5);
+  // Avec l'IA : publication entièrement conçue par l'IA (scène, mise en page, textes, produit réel) ou seulement
+  // l'image de fond par l'IA, mise en page faite par le studio.
+  const [aiMode, setAiMode] = useState<"full" | "background">("full");
+  const aiImages = aiMode === "full" ? 60 : null;
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const latest = data.plans.find((p) => p.engine === "v2");
   const days = Math.max(1, Math.round((Date.parse(f.endDate) - Date.parse(f.startDate)) / 86_400_000) + 1);
@@ -231,11 +235,11 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   }, { key: "social-produce", label: t("Production des visuels…", "Producing visuals…"), ms: 60000 });
   const estimate = () => run(async () => {
     if (!latest) throw new Error(t("Préparez d'abord un calendrier.", "Prepare a calendar first."));
-    setEst(await api(`/api/projects/${id}/social/v2`, { body: { action: "estimate", planId: latest.id, allowPaid: true } }));
+    setEst(await api(`/api/projects/${id}/social/v2`, { body: { action: "estimate", planId: latest.id, allowPaid: true, aiImages } }));
   }, { key: "social-estimate", label: t("Estimation de la production…", "Estimating the production…"), ms: 10000 });
   const producePaid = () => run(async () => {
     if (!latest || !est) return;
-    await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", planId: latest.id, allowPaid: true, maxCostEur: cap, approvedEstimateMicro: est.estimateMicro, distinctImages: distinct || null } });
+    await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", planId: latest.id, allowPaid: true, maxCostEur: cap, approvedEstimateMicro: est.estimateMicro, distinctImages: distinct || null, aiImages } });
     toast("ok", t("Production lancée dans le plafond accepté.", "Production started within the accepted cap."));
     setEst(null);
   });
@@ -327,6 +331,20 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
             <span className="text-xs text-muted">{t("Chaque image est cherchée pour votre métier ou votre produit ; au-delà, elles sont reprises avec un autre texte et une autre mise en page.", "Each image is searched for your trade or product; beyond that, they are reused with different text and layout.")}</span>
           </div>
         </Field>
+        <fieldset className="grid gap-2" data-ai-mode>
+          <legend className="mb-1.5 text-sm font-medium">{t("Avec l'IA, que doit-elle faire ?", "With AI, what should it do?")}</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {([
+              ["full", t("Toute la publication par l'IA", "The whole post by AI"), t("Scène, mise en page, titre et bouton créés ensemble par l'IA, avec votre vrai produit ; textes relus lettre par lettre.", "Scene, layout, headline and button created together by AI, with your real product; texts checked letter by letter.")],
+              ["background", t("Seulement l'image de fond par l'IA", "Only the background image by AI"), t("L'IA crée la photo ; le studio pose le titre, le texte et le bouton aux couleurs de la marque (modifiables ensuite).", "AI creates the photo; the studio adds the headline, text and button in the brand colors (editable afterwards).")],
+            ] as const).map(([v, label, help]) => (
+              <label key={v} className={cx("flex cursor-pointer gap-3 rounded-2xl border p-3 text-sm", aiMode === v ? "border-ink bg-paper-2" : "border-line")}>
+                <input type="radio" name="ai-mode" value={v} checked={aiMode === v} onChange={() => (setAiMode(v), setEst(null))} className="mt-1" data-ai-mode-option={v} />
+                <span><span className="block font-medium">{label}</span><span className="text-xs text-muted">{help}</span></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" icon={<Sparkles className="size-4" />} loading={busy} disabled={!latest} onClick={produceFree} data-action="produce-free">{t("Produire gratuitement (30 publications)", "Produce for free (30 posts)")}</Button>
           <Button variant="secondary" loading={busy} disabled={!latest || !data.ai} onClick={estimate} title={!data.ai ? t("IA non disponible pour ce compte", "AI not available for this account") : undefined}>{t("Estimer la production avec l'IA", "Estimate AI production")}</Button>
