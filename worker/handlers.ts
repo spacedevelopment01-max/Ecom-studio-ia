@@ -341,7 +341,7 @@ export const handlers: Record<string, Handler> = {
     const { aiActiveFor } = await import("../src/lib/ai/access");
     const p = loadProject(ctx.payload.projectId);
     const deps = realSocialDeps(ctx, p, aiActiveFor(p.userId, p.id));
-    return ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null, distinctImages: ctx.payload.distinctImages ?? null, aiImages: ctx.payload.aiImages ?? null }));
+    return ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null, distinctImages: ctx.payload.distinctImages ?? null, aiImages: ctx.payload.aiImages ?? null, aiBackground: !!ctx.payload.aiBackground, replace: !!ctx.payload.replace }));
   },
   "post.publish": async (ctx) => {
     // Social Engine V2 : prise en charge atomique, version approuvée, journal des tentatives, état incertain en cas

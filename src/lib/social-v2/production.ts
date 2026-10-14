@@ -37,10 +37,13 @@ function libraryPool(projectId: string, kind: "image" | "video"): Asset[] {
   return rows.filter(isAutoUsable).filter((a) => a.uses < 3);
 }
 
-function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean }, pools: { image: Asset[]; video: Asset[] }): { method: ProduceMethod; paid: boolean } {
+function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean; bg?: boolean }, pools: { image: Asset[]; video: Asset[] }): { method: ProduceMethod; paid: boolean } {
   // Visuel demandé « entièrement par l'IA » (premières publications d'un projet, ou choix du client) : image créée
   // par l'IA d'images avec le vrai produit en référence, même si la bibliothèque a déjà des photos.
   if (opts.ai && opts.allowPaid && !needsVideo(r)) return { method: "ai_post", paid: true };
+  // « Image de fond par l'IA, le studio fait le reste » choisi par le client : photo créée par l'IA (avec le vrai
+  // produit), mise en page du studio — même si la bibliothèque a déjà des photos.
+  if (opts.bg && opts.allowPaid && !needsVideo(r)) return { method: "image_v2", paid: true };
   if (needsVideo(r)) return pools.video.length ? { method: "library", paid: false } : { method: "video_v2", paid: opts.allowPaid };
   if (r.objective === "convert" || r.objective === "sell") return { method: opts.allowPaid && !pools.image.length ? "ads_v2" : "local", paid: opts.allowPaid && !pools.image.length };
   // Image : une affiche par publication, sur LA photo cherchée pour elle (Pixabay d'abord, gratuite ; « local »),
@@ -59,14 +62,14 @@ export function aiImageIds(rows: { id: string; format: string }[], n: number | n
 }
 
 /** Estimation AVANT tout envoi : nombre de contenus, part gratuite, part payante et coût estimé. */
-export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialDeps, "estimate" | "aiActive">, opts: { allowPaid: boolean; aiImages?: number | null }): ProductionEstimate {
-  const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && r.media === "[]");
+export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialDeps, "estimate" | "aiActive">, opts: { allowPaid: boolean; aiImages?: number | null; aiBackground?: boolean; replace?: boolean }): ProductionEstimate {
+  const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && (opts.replace || r.media === "[]"));
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const allowPaid = opts.allowPaid && deps.aiActive;
   const aiIds = aiImageIds(rows, opts.aiImages);
   const lines = rows.map((r) => {
     // Visuels IA demandés pour N publications : seules celles-là sont payantes, les autres restent gratuites.
-    const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id) }, pools);
+    const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: opts.aiBackground }, pools);
     const est = m.paid ? deps.estimate(m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image") : 0;
     return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: est };
   });
@@ -98,25 +101,25 @@ function planBackgrounds(planId: string | null): { asset: Asset; uses: number }[
   return rows.map((r) => ({ asset: getAsset(r.bg)!, uses: r.uses })).filter((x) => x.asset && !x.asset.deleted_at);
 }
 
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null }): Promise<ProductionResult> {
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
   if (o.allowPaid && !allowPaid) notes.push(deps.aiActive ? "estimation non acceptée ou au-delà du plafond : production gratuite seulement" : "IA non disponible : production gratuite seulement");
-  const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && r.media === "[]").slice(0, o.batchSize ?? 30);
+  const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && (o.replace || r.media === "[]")).slice(0, o.batchSize ?? 30);
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const used = new Map<string, number>();
   const aiIds = aiImageIds(rows, o.aiImages);
   const res: ProductionResult = { produced: 0, skipped: 0, failed: 0, spentMicro: 0, stoppedByCap: false, notes, byMethod: {} };
   for (const r of rows) {
-    let m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id) }, pools);
+    let m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, pools);
     let out: MediaResult | null = null;
     // Nombre d'images différentes atteint pour ce calendrier : on reprend l'une d'elles (gratuit), sans nouvelle photo.
     const bgs = o.distinctImages && !needsVideo(r) ? planBackgrounds(r.plan_id) : [];
     const reuse = o.distinctImages && bgs.length >= o.distinctImages ? bgs.slice(0, o.distinctImages).sort((a, b) => a.uses - b.uses)[0].asset : null;
-    if (reuse && !aiIds.has(r.id)) m = { method: "local", paid: false };
+    if (reuse && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) m = { method: "local", paid: false };
     try {
-      if (reuse && !aiIds.has(r.id)) {
+      if (reuse && !aiIds.has(r.id) && !(o.aiBackground && allowPaid)) {
         out = await deps.local(p, r, { background: reuse });
       } else if (m.method === "library") {
         const pool = needsVideo(r) ? pools.video : pools.image;
@@ -154,7 +157,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
       continue;
     }
     used.set(out.assetId, (used.get(out.assetId) ?? 0) + 1);
-    run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND media = '[]'", JSON.stringify([out.assetId]), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id);
+    run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND (media = '[]' OR ?)", JSON.stringify([out.assetId]), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id, o.replace ? 1 : 0);
     addUsage(out.assetId, "post", r.id, "Publication (Social V2)");
     // L'empreinte change (nouveau média) : une approbation antérieure ne couvre plus cette version.
     afterEdit(r.id);
