@@ -56,7 +56,8 @@ export function hookSimilarity(a: string, b: string): number {
   const words = (s: string) => new Set(fold(s).split(/[^a-z0-9]+/).filter((w) => w.length > 3));
   const x = words(a);
   const y = words(b);
-  if (!x.size || !y.size) return 0;
+  // Trop peu de mots significatifs pour juger : pas de rapprochement.
+  if (Math.min(x.size, y.size) < 3) return 0;
   let common = 0;
   for (const w of x) if (y.has(w)) common++;
   return common / Math.min(x.size, y.size);

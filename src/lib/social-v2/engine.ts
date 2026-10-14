@@ -20,6 +20,7 @@ import { afterEdit, approvePosts } from "./approval";
 import { checkPost } from "./quality";
 import { produceBatch } from "./production";
 import { moveRefusal, setPlanPaused } from "./scheduler";
+import { rememberRefused } from "./memory";
 import { moveToWeekday, planSocialEdit } from "./local-edit";
 import type { SocialDeps } from "./deps";
 
@@ -122,11 +123,15 @@ export function duplicatePostV2(p: Project, postId: string): string {
 
 /** Supprimer : seulement ce qui n'est jamais parti (l'historique des publications envoyées est conservé). */
 export function deletePostV2(p: Project, postId: string) {
-  const r = one<{ project_id: string; status: string }>("SELECT project_id, status FROM posts WHERE id = ?", postId);
+  const r = one<{ project_id: string; status: string; caption: string; plan_id: string | null }>("SELECT project_id, status, caption, plan_id FROM posts WHERE id = ?", postId);
   if (!r || r.project_id !== p.id) throw new Error("publication introuvable");
   if (["publishing", "published", "uncertain"].includes(r.status)) throw new Error("publication envoyée ou en cours : historique conservé");
+  // Refusée par le client : son accroche ne revient plus (mémoire éditoriale).
+  rememberRefused(p.id, r.caption);
   removeUsages("post", postId);
-  run("DELETE FROM posts WHERE id = ?", postId);
+  // Calendrier du pilote automatique : la case reste réservée (annulée), pour que le remplissage ne la recrée pas.
+  if (r.plan_id?.startsWith("auto-")) run("UPDATE posts SET status = 'cancelled', updated_at = ? WHERE id = ?", now(), postId);
+  else run("DELETE FROM posts WHERE id = ?", postId);
 }
 
 export const approve = (p: Project, ids: string[], userId: string) => approvePosts(ids.filter((x) => one("SELECT 1 FROM posts WHERE id = ? AND project_id = ?", x, p.id)), userId, (pid) => checkPost(p, pid));
@@ -151,7 +156,10 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
         break;
       case "cancel":
       case "reduce_per_day":
-        for (const pid of plan.ids) run("UPDATE posts SET status = 'cancelled', updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", now(), pid);
+        for (const pid of plan.ids) {
+          const changed = run("UPDATE posts SET status = 'cancelled', updated_at = ? WHERE id = ? AND status NOT IN ('publishing','published','uncertain')", now(), pid).changes;
+          if (changed && plan.action === "cancel") rememberRefused(p.id, one<{ caption: string }>("SELECT caption FROM posts WHERE id = ?", pid)?.caption ?? "");
+        }
         break;
       case "move_weekday":
         for (const pid of plan.ids) {

@@ -172,6 +172,7 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
   let existing = 0;
   // Un même créneau publié sur plusieurs réseaux partage la matière (même idée), adaptée à chaque réseau.
   const groupDraft = new Map<string, ReturnType<typeof writeLocal>>();
+  const aboutOf = new Map<string, { key: string; name: string; price: number | null }[]>();
   tx(() => {
     for (const [i, s] of slots.entries()) {
       const key = `v2:${planId}:${s.ymd}:${s.time}:${s.platform}`;
@@ -208,6 +209,9 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
           rememberUse(p.id, "role", r.id);
           rememberUse(p.id, "material", `${r.id}:${d.material}`);
           if (r.pillarId === "item" && item) rememberUse(p.id, "item", item.key);
+          // Produits dont parle la publication (et leur prix ce jour-là) : suivi des changements du catalogue.
+          const about = r.pillarId === "item" ? [item] : r.pillarId === "items" ? [items[w % Math.max(1, items.length)], items[(w + 1) % Math.max(1, items.length)]] : [items.length ? items[w % items.length] : null];
+          aboutOf.set(s.groupId ?? key, [...new Set(about.filter((x): x is Atom => !!x).map((x) => x.key))].map((k) => ({ key: k, name: p.catalog.find((c) => c.key === k)?.name ?? k, price: p.catalog.find((c) => c.key === k)?.price ?? null })));
           rememberUse(p.id, "hook", fold(d.caption.split("\n")[0] ?? ""));
         } else {
           const n = nth.get(s.pillar.id) ?? 0;
@@ -218,7 +222,7 @@ export function createPlanV2(p: Project, req: PlanRequest, o: { planId?: string 
       }
       const a = adaptForPlatform(s.platform, { caption: d.caption, title: d.title, hashtags: d.hashtags, link: req.link ?? null, format: s.format, mediaCount: 0 }, lang);
       const pid = id();
-      const brief = { kind: d.visual, headline: d.headline, subline: "", layout: "editorial", material: d.material, adapt: a.notes, ...(s.role ? { role: s.role.id, roleKind: s.role.kind, roleTitle: s.role.title[lang] } : {}) };
+      const brief = { kind: d.visual, headline: d.headline, subline: "", layout: "editorial", material: d.material, adapt: a.notes, ...(aboutOf.get(s.groupId ?? key)?.length ? { items: aboutOf.get(s.groupId ?? key) } : {}), ...(s.role ? { role: s.role.id, roleKind: s.role.kind, roleTitle: s.role.title[lang] } : {}) };
       const row = { network: s.platform, format: a.format, title: a.title, caption: a.caption, hashtags: a.hashtags.join(" "), link: a.link, media: "[]" };
       run(
         `INSERT INTO posts (id, project_id, plan_id, connection_id, network, format, status, scheduled_at, timezone, title, caption, hashtags, link, angle, media, brief, publish_key, created_at, updated_at, engine, pillar, objective, content_hash, group_id)

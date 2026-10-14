@@ -16,7 +16,8 @@
 import crypto from "node:crypto";
 import { all, id, now, one, run } from "../db";
 import { enqueue, PermanentError } from "../jobs";
-import { notify } from "../projects";
+import { loadProject, notify } from "../projects";
+import { brainIssues } from "./brain-check";
 import { planOfProject, planOfUserId, scheduledPostsOn } from "../plan-gates";
 import { PLANS } from "../plans";
 import { L } from "../i18n-server";
@@ -69,6 +70,14 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
     return { outcome: "skipped", detail: "calendrier en pause" };
   }
   const pre = one<Full>("SELECT p.*, pr.user_id FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId)!;
+  // Project Brain : produit retiré ou prix modifié depuis l'approbation — jamais envoyée, remise en relecture.
+  const brain = pre.status === "scheduled" ? brainIssues(loadProject(owner.project_id), (pre as Full & { brief?: string }).brief) : { removed: [], priceChanged: [] };
+  if (brain.removed.length || brain.priceChanged.length) {
+    const msg = brain.removed.length ? L(`Produit retiré du catalogue (${brain.removed.join(", ")}) : publication non envoyée, à revoir.`, `Product removed from the catalog (${brain.removed.join(", ")}): post not sent, to review.`) : L(`Prix modifié (${brain.priceChanged.join(", ")}) : publication non envoyée, relisez-la puis validez-la.`, `Price changed (${brain.priceChanged.join(", ")}): post not sent, review and approve it again.`);
+    const moved = run("UPDATE posts SET status = 'review', approved_hash = NULL, error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", msg, now(), postId);
+    if (moved.changes) notify(owner.user_id, owner.project_id, L("Une publication a été retenue", "A post was held back"), msg, "warning");
+    return { outcome: "skipped", detail: "catalogue modifié" };
+  }
   // Version différente de celle approuvée : jamais publiée.
   if (pre.status === "scheduled" && !approvalValid(pre)) {
     run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", L("Contenu modifié après approbation : nouvelle approbation nécessaire.", "Content changed after approval: a new approval is required."), now(), postId);
@@ -296,12 +305,16 @@ export function moveRefusal(projectId: string, postId: string, at: number): stri
  */
 export function setPlanPaused(planId: string, paused: boolean): { resumed: string[]; kept: { id: string; reason: string }[] } {
   run("UPDATE content_plans SET paused = ?, updated_at = ? WHERE id = ?", paused ? 1 : 0, now(), planId);
-  const out = { resumed: [] as string[], kept: [] as { id: string; reason: string }[] };
   if (paused) {
     run("UPDATE posts SET status = 'paused', updated_at = ? WHERE plan_id = ? AND status = 'scheduled'", now(), planId);
-    return out;
+    return { resumed: [], kept: [] };
   }
-  const rows = all<{ id: string; project_id: string; scheduled_at: number }>("SELECT id, project_id, scheduled_at FROM posts WHERE plan_id = ? AND status = 'paused' ORDER BY scheduled_at", planId);
+  return resumePosts(all<{ id: string; project_id: string; scheduled_at: number }>("SELECT id, project_id, scheduled_at FROM posts WHERE plan_id = ? AND status = 'paused' ORDER BY scheduled_at", planId));
+}
+
+/** Reprise de publications en pause, une à une, avec les contrôles du forfait (voir `setPlanPaused`). */
+export function resumePosts(rows: { id: string; project_id: string; scheduled_at: number }[]): { resumed: string[]; kept: { id: string; reason: string }[] } {
+  const out = { resumed: [] as string[], kept: [] as { id: string; reason: string }[] };
   for (const r of rows) {
     const plan = planOfProject(r.project_id);
     const why = !plan
