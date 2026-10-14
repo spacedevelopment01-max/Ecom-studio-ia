@@ -284,6 +284,19 @@ for (const p of PRODUCTS) {
   // Chaque démonstration montre une direction différente.
   await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
   ov = await waitIdle(ctx, pid);
+  // Comme un client dans l'onglet Images : deux photos du vrai produit en situation créées par l'IA (CLIENT_STEPS=1).
+  if (process.env.CLIENT_STEPS && p.business !== "services") {
+    for (const [k, topic] of (EN ? ["in everyday use", "close-up of the details, in its setting"] : ["en situation, au quotidien", "gros plan sur les détails, en situation"]).entries()) {
+      await api(ctx, `/api/projects/${pid}/images`, { body: { mode: "single", kind: "scene", useAi: true, subline: topic, format: k ? "portrait" : "landscape" } }).catch((e) => console.log("  image :", String(e).slice(0, 160)));
+      await waitIdle(ctx, pid);
+    }
+  }
+  // Puis, comme un client dans l'onglet Publications : une semaine de publications, produite après les images.
+  if (process.env.CLIENT_STEPS) {
+    const start = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+    const plan = await api(ctx, `/api/projects/${pid}/social/v2`, { body: { action: "plan", request: { startDate: start, days: 8, perDay: 1, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }] } } });
+    await api(ctx, `/api/projects/${pid}/social/v2`, { body: { action: "produce", planId: plan.planId } });
+  }
   firstProject ??= { pid };
   // Fiche produit réglée comme le ferait le marchand (nouvelle version du thème).
   if (p.pdp?.length) {
@@ -327,7 +340,8 @@ for (const p of PRODUCTS) {
     }
   }
   // Publications du calendrier (moteur de publications : modèles à la marque), dans l'ordre du fil.
-  const postAssets = assets.filter((a) => a.role === "social" && a.meta?.socialV2).sort((x, y) => (x.createdAt ?? 0) - (y.createdAt ?? 0)).slice(0, 8);
+  // Les plus récentes (le dernier calendrier produit), remises dans l'ordre du fil.
+  const postAssets = assets.filter((a) => a.role === "social" && a.meta?.socialV2).sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0)).slice(0, 8).reverse();
   const posts: string[] = [];
   for (const [i, a] of postAssets.entries()) {
     const file = X(`post-${i + 1}.jpg`);

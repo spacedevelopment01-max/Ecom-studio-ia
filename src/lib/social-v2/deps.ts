@@ -181,6 +181,12 @@ export async function localRender(p: Project, post: PostBrief, ctx: JobContext |
     const hero = parseInt(crypto.createHash("sha256").update(`hero:${post.id}`).digest("hex").slice(0, 6), 16) % 5 < 3;
     return posterForPost(p, post, hero ? null : backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true), "local");
   }
+  // Produit sans détourage utilisable ni photo en situation du client : une publication sur deux montre quand même le
+  // vrai produit (packshot, mise en scène, photo d'origine) au lieu d'un paysage libre de droits sans le produit.
+  if (p.business !== "services" && parseInt(crypto.createHash("sha256").update(`prod:${post.id}`).digest("hex").slice(0, 6), 16) % 2 === 0) {
+    const prod = backgroundFor(p, post.id, PRODUCT_PHOTO_ROLES, true);
+    if (prod) return posterForPost(p, post, prod, "local");
+  }
   // Entreprise de services avec ses propres photos : deux publications sur trois les montrent (rien ne vaut le vrai
   // salon, le vrai atelier) ; la troisième cherche une photo libre du métier.
   if (p.business === "services" && parseInt(crypto.createHash("sha256").update(`own:${post.id}`).digest("hex").slice(0, 6), 16) % 3 < 2) {
