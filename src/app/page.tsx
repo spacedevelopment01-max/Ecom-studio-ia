@@ -442,12 +442,6 @@ export default async function Home() {
                 </div>
               </div>
             )}
-            {story && (
-              <div id="editeur-publicite" className="reveal mt-20 scroll-mt-24" style={{ ["--d" as any]: 1 }}>
-                <TryHint text={T("Changez le titre, le bouton, la couleur du fond, la place du logo ou le format : la publicité de gauche change en direct.", "Change the title, the button, the background color, the logo position or the format: the ad on the left updates live.")} label={T("À vous d'essayer", "Try it yourself")} />
-                <AdEditorDemo cutout={story.cutout} logo={story.logo} palette={story.palette} brand={story.brand} />
-              </div>
-            )}
           </div>
         </section>
 
@@ -459,6 +453,12 @@ export default async function Home() {
               <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
                 <FeedShowcase feeds={feeds} />
               </div>
+            {story && (
+              <div id="editeur-publicite" className="reveal mt-16 scroll-mt-24" style={{ ["--d" as any]: 1 }}>
+                <TryHint text={T("Changez le titre, le bouton, la couleur du fond, la place du logo ou le format : la publicité de gauche change en direct.", "Change the title, the button, the background color, the logo position or the format: the ad on the left updates live.")} label={T("À vous d'essayer", "Try it yourself")} />
+                <AdEditorDemo cutout={story.cutout} logo={story.logo} palette={story.palette} brand={story.brand} />
+              </div>
+            )}
             </div>
           </section>
         )}
