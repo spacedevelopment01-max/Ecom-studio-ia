@@ -1,7 +1,66 @@
 {
-  "generatedAt": "2026-10-14T17:09:47.091Z",
+  "generatedAt": "2026-10-14T17:40:36.689Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
+    {
+      "id": "fleuriste",
+      "brand": "Atelier Pivoine",
+      "product": "Atelier floral",
+      "sector": "Fleuriste",
+      "direction": "magazine",
+      "palette": [
+        "#A3122B",
+        "#F0E7DB",
+        "#E0A100",
+        "#FBF8F3",
+        "#1B1717"
+      ],
+      "photo": "/demo/fleuriste/photo.jpg",
+      "logo": "/demo/fleuriste/logo.png",
+      "shopDesktop": "/demo/fleuriste/boutique-bureau.jpg",
+      "shopMobile": "/demo/fleuriste/boutique-mobile.jpg",
+      "productPage": "",
+      "business": "services",
+      "images": [
+        {
+          "src": "/demo/fleuriste/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/fleuriste/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/fleuriste/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/fleuriste/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/fleuriste/video.mp4",
+      "videoPoster": "/demo/fleuriste/video-poster.jpg",
+      "shopVideo": "/demo/fleuriste/video-boutique.mp4",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Pixabay",
+        "url": "https://pixabay.com/photos/flower-bouquet-petal-bloom-garden-2588972/",
+        "note": "Vraies photos de boutique et d'atelier de fleuriste (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio."
+      },
+      "posts": [
+        "/demo/fleuriste/post-1.jpg",
+        "/demo/fleuriste/post-2.jpg",
+        "/demo/fleuriste/post-3.jpg",
+        "/demo/fleuriste/post-4.jpg",
+        "/demo/fleuriste/post-5.jpg",
+        "/demo/fleuriste/post-6.jpg",
+        "/demo/fleuriste/post-7.jpg",
+        "/demo/fleuriste/post-8.jpg"
+      ],
+      "board": "/demo/fleuriste/planche.jpg"
+    },
     {
       "id": "tribunes",
       "brand": "Les Tribunes",
