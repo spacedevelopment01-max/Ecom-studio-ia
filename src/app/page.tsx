@@ -2,17 +2,17 @@ import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, ArrowUpRight, Briefcase, Check, Clapperboard, FileCheck2, Lock, Minus, PackageOpen, PlugZap, ShieldCheck, Sparkles, UserRound, Wand2 } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Briefcase, Check, Clapperboard, FileCheck2, Lock, Minus, MousePointerClick, PackageOpen, PlugZap, ShieldCheck, Sparkles, UserRound, Wand2 } from "lucide-react";
 import { pick } from "@/lib/i18n";
 import { serverLang } from "@/lib/i18n-server";
 import { SiteFooter } from "@/components/site-footer";
 import { FilesSorter } from "@/components/files-sorter";
-import { AutoVideo, BeforeAfter, DemoTabs, RevealObserver, ScrollFX, ThemeShowcase, type Demo } from "@/components/landing-client";
+import { BeforeAfter, RevealObserver, ScrollFX, type Demo } from "@/components/landing-client";
 import { HomeHeader } from "@/components/home/home-chrome";
 import { HeroFilm, HowItWorks } from "@/components/home/home-media";
 import { StoryScroll, type StoryDemo, type StoryStep } from "@/components/home/home-story";
 import { AdEditorDemo, BrandLab, ConnectedHub, ControlDemo, SeoDocDemo, SocialCalendarDemo, StoreDevices, type BrandDemo, type SocialPost, type StoreDemo } from "@/components/home/home-demos";
-import { BoardShowcase, FeedShowcase, PostsWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
+import { BoardShowcase, FeedShowcase, PostsWall, ThemesWall, type BoardDemo, type FeedDemo, type WallItem } from "@/components/home/home-showcase";
 import { directionById, directionCards } from "@/lib/theme/directions";
 import { PLANS, REFUND_DAYS, TOPUP_PRICE_EUR } from "@/lib/plans";
 import { demos, localizeDemo } from "@/lib/demo-content";
@@ -63,6 +63,16 @@ function jsonLd(lang: "fr" | "en", faq: [string, string][]) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
+/** Bandeau « À vous d'essayer » au-dessus d'une démonstration qu'on peut manipuler. */
+function TryHint({ label, text }: { label: string; text: string }) {
+  return (
+    <p className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-signal/30 bg-signal-soft px-4 py-3 text-[15px] text-ink-2">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-signal px-3 py-1 text-sm font-semibold text-signal-ink"><MousePointerClick className="size-4" aria-hidden /> {label}</span>
+      <span>{text}</span>
+    </p>
+  );
+}
+
 /** En-tête de section : sur-titre, titre (dont une partie mise en valeur) et chapeau. */
 function Head({ eyebrow, title, accent, lead, center, compact, className = "" }: { eyebrow: string; title: string; accent?: string; lead?: string; center?: boolean; compact?: boolean; className?: string }) {
   return (
@@ -99,7 +109,7 @@ export default async function Home() {
   const user = await currentUser();
   const live = paymentsLive();
   const cta = user ? "/studio" : "/inscription";
-  const themes = directionCards(lang).map((c) => ({ ...c, preview: W(M(c.preview)) }));
+  const themes = directionCards(lang).map((c) => ({ ...c, preview: W(M(c.preview.replace(/\.en\.jpg$/, ".jpg"))) }));
 
   // Projet de démonstration qui traverse le parcours (détourage, packshot, scènes, éditeur de publicité) : la première
   // boutique de produits dont la photo a pu être détourée, sinon la première boutique de produits.
@@ -351,6 +361,7 @@ export default async function Home() {
 
         {/* ───────────── Création de marque ───────────── */}
         <section id="marque" className="scroll-mt-20 py-24 sm:py-32">
+          <span id="demonstrations" className="sr-only" aria-hidden />
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
               <Head eyebrow={T("Création de marque", "Brand creation")} title={T("Une photo de départ,", "One starting photo,")} accent={T("une identité complète.", "a complete identity.")} lead={boards.length ? T("Logo et ses variantes, couleurs, polices, icônes, motif, cartes de visite et exemples d'utilisation : chaque marque reçoit sa planche, et toutes ses créations gardent ce style.", "Logo and its variants, colors, fonts, icons, pattern, business cards and usage examples: every brand gets its board, and all its creations keep that style.") : T("Choisissez une marque de démonstration : son logo, ses couleurs et ses polices ont été créés par le studio à partir de la photo du produit.", "Pick a demo brand: its logo, colors and fonts were created by the studio from the product photo.")} />
@@ -374,7 +385,7 @@ export default async function Home() {
             <div id="sur-mesure" className="mt-20 scroll-mt-24 grid gap-10 lg:grid-cols-12">
               <div className="lg:col-span-4">
                 <p className="hp-eyebrow reveal">{T("Sur mesure", "Custom-made")}</p>
-                <h3 className="hp-title reveal mt-4 text-[clamp(1.9rem,3.6vw,2.8rem)]">{T("Pas un modèle repeint.", "Not a repainted template.")}</h3>
+                <h3 className="hp-title reveal mt-4 text-[clamp(1.9rem,3.6vw,2.8rem)]">{T("Une boutique vraiment à vous.", "A store that is truly yours.")}</h3>
                 <p className="hp-lead reveal mt-4">{T("Le studio crée votre boutique comme le ferait une agence, puis la vérifie lui-même avant de vous la montrer.", "The studio builds your store the way an agency would, then checks it itself before showing it to you.")}</p>
               </div>
               <ol className="grid gap-x-8 sm:grid-cols-2 lg:col-span-8">
@@ -396,28 +407,30 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Les 30 thèmes (défilement horizontal fixé sur ordinateur, carrousel sur téléphone) */}
-        <ThemeShowcase themes={themes}>
-          <div className="grid items-end gap-6 lg:grid-cols-2 lg:gap-12">
+        {/* Les 30 thèmes : de simples captures qui défilent ; la galerie complète est une page du site (/themes). */}
+        <section id="themes" className="scroll-mt-16 overflow-hidden bg-paper-2 py-24 sm:py-28">
+          <div className="mx-auto grid max-w-7xl items-end gap-6 px-4 sm:px-6 lg:grid-cols-2 lg:gap-12">
             <div>
               <p className="hp-eyebrow reveal">{T("Les thèmes", "The themes")}</p>
-              <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("Trente points de départ.", "Thirty starting points.")} <span className="hp-accent">{T("Ou aucun.", "Or none.")}</span></h2>
+              <h2 className="hp-title reveal mt-4 text-[clamp(2.2rem,5vw,4rem)]">{T("30 modèles de boutique,", "30 store designs,")} <span className="hp-accent">{T("à vos couleurs.", "in your colors.")}</span></h2>
             </div>
             <div>
-              <p className="hp-lead reveal">{T("L'IA peut partir de l'un de ces 30 modèles de boutique ou en créer un tout nouveau. Tout reste modifiable : en écrivant au studio, puis dans l'éditeur de votre plateforme.", "The AI can start from one of these 30 store designs or create a brand-new one. Everything stays editable: by writing to the studio, then in your platform's editor.")}</p>
-              <Link href={user ? "/studio/themes" : "/inscription"} className="hp-btn hp-btn-ghost reveal mt-5">{T("Voir la galerie", "View the gallery")} <ArrowUpRight className="size-4" aria-hidden /></Link>
+              <p className="hp-lead reveal">{T("L'IA part de l'un de ces modèles ou en crée un tout nouveau pour vous. Tout reste modifiable : en écrivant au studio, puis dans l'éditeur de votre plateforme.", "The AI starts from one of these designs or creates a brand-new one for you. Everything stays editable: by writing to the studio, then in your platform's editor.")}</p>
+              <Link href="/themes" className="hp-btn hp-btn-ghost reveal mt-5">{T("Voir la galerie", "View the gallery")} <ArrowUpRight className="size-4" aria-hidden /></Link>
             </div>
           </div>
-        </ThemeShowcase>
+          <div className="mt-12"><ThemesWall themes={themes.map((c) => ({ id: c.id, name: c.name, src: c.preview }))} label={T("Captures des 30 thèmes de boutique, avec la gourde de démonstration Cime", "Screenshots of the 30 store themes, with the Cime demo water bottle")} /></div>
+        </section>
 
         {/* ───────────── Images et publicités ───────────── */}
         <section id="visuels" className="scroll-mt-20 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <Head eyebrow={T("Images et publicités", "Images and ads")} title={T("Fidèle au produit.", "True to the product.")} accent={T("Modifiable à la main.", "Editable by hand.")} lead={T("Le studio part de la photo de votre vrai produit et le garde tel qu'il est : même forme, mêmes couleurs, même étiquette. Ensuite, vous retouchez chaque publicité vous-même, en quelques clics.", "The studio starts from the photo of your real product and keeps it as it is: same shape, same colors, same label. Then you edit each ad yourself, in a few clicks.")} />
             {ba && baAfter && (
-              <div className="mt-12 grid items-center gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-14">
-                <div className="reveal reveal-scale overflow-hidden rounded-[1.75rem] border border-line hp-elev">
-                  <BeforeAfter before={ba.photo} after={baAfter} aspect="18 / 11" beforeLabel={T("Photo d'origine", "Original photo")} afterLabel={T("Création du studio", "Studio creation")} />
+              <div className="mt-12 grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
+                {/* Format des photos (portrait 2:3) : la gourde se voit en entier, avant comme après. */}
+                <div className="reveal reveal-scale mx-auto w-full max-w-[26rem] overflow-hidden rounded-[1.75rem] border border-line hp-elev">
+                  <BeforeAfter before={ba.photo} after={baAfter} aspect="2 / 3" beforeLabel={T("Photo d'origine", "Original photo")} afterLabel={T("Création du studio", "Studio creation")} />
                 </div>
                 <div>
                   <p className="font-display text-2xl font-semibold leading-snug">{T("Glissez pour comparer.", "Drag to compare.")}</p>
@@ -428,11 +441,6 @@ export default async function Home() {
                   </ul>
                   <p className="mt-5 text-xs text-muted">{T(`Démonstration : ${ba.brand}, à partir de la photo du produit fournie à la création du projet.`, `Demo: ${ba.brand}, from the product photo provided when the project was created.`)}</p>
                 </div>
-              </div>
-            )}
-            {story && (
-              <div id="editeur-publicite" className="reveal mt-20 scroll-mt-24" style={{ ["--d" as any]: 1 }}>
-                <AdEditorDemo cutout={story.cutout} logo={story.logo} palette={story.palette} brand={story.brand} />
               </div>
             )}
           </div>
@@ -446,6 +454,12 @@ export default async function Home() {
               <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
                 <FeedShowcase feeds={feeds} />
               </div>
+            {story && (
+              <div id="editeur-publicite" className="reveal mt-16 scroll-mt-24" style={{ ["--d" as any]: 1 }}>
+                <TryHint text={T("Changez le titre, le bouton, la couleur du fond, la place du logo ou le format : la publicité de gauche change en direct.", "Change the title, the button, the background color, the logo position or the format: the ad on the left updates live.")} label={T("À vous d'essayer", "Try it yourself")} />
+                <AdEditorDemo cutout={story.cutout} logo={story.logo} palette={story.palette} brand={story.brand} />
+              </div>
+            )}
             </div>
           </section>
         )}
@@ -485,7 +499,7 @@ export default async function Home() {
           <section id="seo" className="scroll-mt-20 py-24 sm:py-32">
             <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-14">
               <div className="lg:col-span-4">
-                <Head compact eyebrow={T("Textes et Google", "Copy and Google")} title={T("Des textes clairs,", "Clear copy,")} accent={T("pensés pour Google.", "written for Google.")} lead={T("Fiches produit, pages et articles de blog : le studio les écrit avec des mots simples que vos clients pourraient chercher, prépare le titre et le résumé que Google affiche, et signale ce qu'il ne sait pas. Vos modifications ne sont jamais écrasées. Aucune place sur Google n'est promise.", "Product pages, pages and blog posts: the studio writes them with simple words your customers might search for, prepares the title and summary Google shows, and flags what it doesn't know. Your edits are never overwritten. No Google ranking is promised.")} />
+                <Head compact eyebrow={T("Textes et Google", "Copy and Google")} title={T("Des textes clairs,", "Clear copy,")} accent={T("pensés pour Google.", "written for Google.")} lead={T("Fiches produit, pages et articles de blog : le studio les écrit avec des mots simples que vos clients pourraient chercher, prépare le titre et le résumé que Google affiche, et signale ce qu'il ne sait pas. Vos modifications ne sont jamais écrasées. Votre site part ainsi sur de bonnes bases ; le classement final, lui, c'est Google qui le décide.", "Product pages, pages and blog posts: the studio writes them with simple words your customers might search for, prepares the title and summary Google shows, and flags what it doesn't know. Your edits are never overwritten. Your site starts on a solid footing; the final ranking is up to Google.")} />
               </div>
               <div className="reveal lg:col-span-8" style={{ ["--d" as any]: 2 }}>
                 <SeoDocDemo docs={docs} />
@@ -528,6 +542,7 @@ export default async function Home() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
               <Head eyebrow={T("Personnalisation", "Customization")} title={T("L'IA crée.", "AI creates.")} accent={T("Vous gardez le contrôle.", "You stay in control.")} lead={T("Les petits changements se font tout de suite, sans IA : un titre, une couleur, des coins arrondis, un bloc à cacher. Essayez.", "Small changes happen instantly, without AI: a heading, a color, rounded corners, a block to hide. Try it.")} />
               <div className="reveal mt-12" style={{ ["--d" as any]: 2 }}>
+                <TryHint text={T("Modifiez le titre, la couleur du bouton, les coins arrondis ou le bandeau : l'aperçu de la boutique change en direct.", "Edit the heading, the button color, the rounded corners or the banner: the store preview updates live.")} label={T("À vous d'essayer", "Try it yourself")} />
                 <ControlDemo brand={story.brand} image={story.scene1} palette={story.palette} />
               </div>
             </div>
@@ -567,17 +582,6 @@ export default async function Home() {
                 </ul>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* ───────────── Démonstrations complètes ───────────── */}
-        <section id="demonstrations" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-              <Head eyebrow={T("Démonstrations", "Demos")} title={T(`${list.length} projets,`, `${list.length} projects,`)} accent={T("de A à Z dans le studio.", "from A to Z in the studio.")} />
-              <p className="reveal max-w-md text-sm leading-relaxed text-muted">{T("Cinq projets menés comme par cinq clients : un produit, une boutique de plusieurs produits, un produit de sport, un fleuriste et un paysagiste. Les marques et les entreprises sont fictives ; les photos de départ sont de vraies photos (Pixabay, fournisseur) ou des photos créées par l'IA, comme indiqué sur chaque projet. Ce ne sont pas des résultats clients.", "Five projects run as if by five clients: a product, a multi-product store, a sports product, a florist and a landscaper. The brands and businesses are fictional; the starting photos are real photos (Pixabay, supplier) or AI-created photos, as stated on each project. These are not client results.")}</p>
-            </div>
-            {list.length ? <DemoTabs demos={list} /> : <p className="text-muted">{T("Les démonstrations s'affichent après génération (script « npm run demos »).", "Demos appear once generated (\"npm run demos\" script).")}</p>}
           </div>
         </section>
 

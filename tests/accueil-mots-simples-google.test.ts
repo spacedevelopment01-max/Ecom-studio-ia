@@ -26,8 +26,36 @@ describe("Accueil en mots simples", () => {
     expect(page).not.toContain("votre marque, vos logos et un aperçu de votre page d'accueil, sans carte bancaire");
   });
 
+  it("titre « sur mesure » clair pour un client", () => {
+    expect(page).toContain('T("Une boutique vraiment à vous.", "A store that is truly yours.")');
+    expect(page).not.toContain("Pas un modèle repeint.");
+  });
+
+  it("thèmes : simples captures, galerie publique du site (le retour ramène à l'accueil)", () => {
+    expect(page).toContain('T("30 modèles de boutique,", "30 store designs,")');
+    expect(page).not.toContain("Trente points de départ.");
+    expect(page).toContain('<Link href="/themes"');
+    expect(page).toContain("<ThemesWall");
+    const gallery = fs.readFileSync("src/app/themes/page.tsx", "utf8");
+    expect(gallery).toContain('href="/#themes"');
+    expect(gallery).not.toContain("/studio/themes");
+  });
+
+  it("section « 5 projets, de A à Z » retirée (le menu Démonstrations mène aux marques de démonstration)", () => {
+    expect(page).not.toContain("<DemoTabs");
+    expect(page).toContain('<span id="demonstrations"');
+  });
+
+  it("démonstrations à manipuler signalées « À vous d'essayer »", () => {
+    expect(page.match(/<TryHint /g)?.length).toBe(2);
+  });
+
+  it("avant / après : la gourde se voit en entier (format portrait)", () => {
+    expect(page).toContain('aspect="2 / 3"');
+  });
+
   it("aucune place sur Google n'est promise", () => {
-    expect(page).toContain("Aucune place sur Google n'est promise.");
+    expect(page).toContain("le classement final, lui, c'est Google qui le décide.");
   });
 });
 

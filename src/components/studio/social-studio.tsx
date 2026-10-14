@@ -4,6 +4,7 @@
  * Le client voit ce qui est prêt, à valider, programmé, publié, en échec ou à vérifier ; il modifie, déplace
  * (glisser-déposer sur ordinateur, date et heure sur téléphone), approuve et programme. Rien ne part sans son accord.
  */
+import { visualParams, type VisualMode } from "@/lib/social-v2/visual-mode";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
 import { enUS, fr } from "date-fns/locale";
@@ -169,8 +170,8 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   const [cap, setCap] = useState(5);
   // Avec l'IA : publication entièrement conçue par l'IA (scène, mise en page, textes, produit réel) ou seulement
   // l'image de fond par l'IA, mise en page faite par le studio.
-  const [aiMode, setAiMode] = useState<"full" | "background">("full");
-  const aiImages = aiMode === "full" ? 60 : null;
+  const [mode, setModeState] = useState<VisualMode>("free");
+  const setMode = (m: VisualMode) => (setModeState(m), setEst(null));
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const latest = data.plans.find((p) => p.engine === "v2");
   const days = Math.max(1, Math.round((Date.parse(f.endDate) - Date.parse(f.startDate)) / 86_400_000) + 1);
@@ -235,11 +236,11 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   }, { key: "social-produce", label: t("Production des visuels…", "Producing visuals…"), ms: 60000 });
   const estimate = () => run(async () => {
     if (!latest) throw new Error(t("Préparez d'abord un calendrier.", "Prepare a calendar first."));
-    setEst(await api(`/api/projects/${id}/social/v2`, { body: { action: "estimate", planId: latest.id, allowPaid: true, aiImages } }));
+    setEst(await api(`/api/projects/${id}/social/v2`, { body: { action: "estimate", planId: latest.id, ...visualParams(mode) } }));
   }, { key: "social-estimate", label: t("Estimation de la production…", "Estimating the production…"), ms: 10000 });
   const producePaid = () => run(async () => {
     if (!latest || !est) return;
-    await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", planId: latest.id, allowPaid: true, maxCostEur: cap, approvedEstimateMicro: est.estimateMicro, distinctImages: distinct || null, aiImages } });
+    await api(`/api/projects/${id}/social/v2`, { body: { action: "produce", planId: latest.id, ...visualParams(mode), maxCostEur: cap, approvedEstimateMicro: est.estimateMicro, distinctImages: distinct || null } });
     toast("ok", t("Production lancée dans le plafond accepté.", "Production started within the accepted cap."));
     setEst(null);
   });
@@ -331,23 +332,11 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
             <span className="text-xs text-muted">{t("Chaque image est cherchée pour votre métier ou votre produit ; au-delà, elles sont reprises avec un autre texte et une autre mise en page.", "Each image is searched for your trade or product; beyond that, they are reused with different text and layout.")}</span>
           </div>
         </Field>
-        <fieldset className="grid gap-2" data-ai-mode>
-          <legend className="mb-1.5 text-sm font-medium">{t("Avec l'IA, que doit-elle faire ?", "With AI, what should it do?")}</legend>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {([
-              ["full", t("Toute la publication par l'IA", "The whole post by AI"), t("Scène, mise en page, titre et bouton créés ensemble par l'IA, avec votre vrai produit ; textes relus lettre par lettre.", "Scene, layout, headline and button created together by AI, with your real product; texts checked letter by letter.")],
-              ["background", t("Seulement l'image de fond par l'IA", "Only the background image by AI"), t("L'IA crée la photo ; le studio pose le titre, le texte et le bouton aux couleurs de la marque (modifiables ensuite).", "AI creates the photo; the studio adds the headline, text and button in the brand colors (editable afterwards).")],
-            ] as const).map(([v, label, help]) => (
-              <label key={v} className={cx("flex cursor-pointer gap-3 rounded-2xl border p-3 text-sm", aiMode === v ? "border-ink bg-paper-2" : "border-line")}>
-                <input type="radio" name="ai-mode" value={v} checked={aiMode === v} onChange={() => (setAiMode(v), setEst(null))} className="mt-1" data-ai-mode-option={v} />
-                <span><span className="block font-medium">{label}</span><span className="text-xs text-muted">{help}</span></span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <VisualChoice value={mode} onChange={setMode} ai={!!data.ai} name="visual-mode-batch" />
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" icon={<Sparkles className="size-4" />} loading={busy} disabled={!latest} onClick={produceFree} data-action="produce-free">{t("Produire gratuitement (30 publications)", "Produce for free (30 posts)")}</Button>
-          <Button variant="secondary" loading={busy} disabled={!latest || !data.ai} onClick={estimate} title={!data.ai ? t("IA non disponible pour ce compte", "AI not available for this account") : undefined}>{t("Estimer la production avec l'IA", "Estimate AI production")}</Button>
+          {mode === "free"
+            ? <Button variant="signal" icon={<Sparkles className="size-4" />} loading={busy} disabled={!latest} onClick={produceFree} data-action="produce-free">{t("Produire gratuitement (30 publications)", "Produce for free (30 posts)")}</Button>
+            : <Button variant="signal" loading={busy} disabled={!latest || !data.ai} onClick={estimate} data-action="estimate">{t("Voir le prix avant de lancer", "See the price before starting")}</Button>}
         </div>
         {progress && <p className="text-sm text-muted" data-produce-progress>{t(`Production gratuite : ${progress.done} / ${progress.total}`, `Free production: ${progress.done} / ${progress.total}`)}</p>}
         {est && (
@@ -872,6 +861,7 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
             {!locked && <button type="button" onClick={() => setPicker(true)} className="grid size-20 place-items-center rounded-xl border border-dashed border-line text-xs text-muted">{t("+ Média", "+ Media")}</button>}
           </div>
           <MediaPicker open={picker} onClose={() => setPicker(false)} multiple kinds={["image", "video"]} onPick={(as) => (setF({ ...f, media: [...f.media, ...as].slice(0, 10) }), setPicker(false))} />
+          {!locked && <PostVisualMaker postId={p.id} ai={!!data.ai} hasMedia={f.media.length > 0} onDone={async () => (setF(null), await refresh())} />}
         </div>
         </div>
         </div>
@@ -895,5 +885,92 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
         {v.platform.level !== "ready_to_connect" && <p className="text-xs text-muted">{t("Ce réseau n'a pas de publication directe depuis le studio : copiez le texte et téléchargez les médias pour publier à la main.", "This network has no direct publishing from the studio: copy the text and download the media to post manually.")}</p>}
       </div>
     </Modal>
+  );
+}
+
+// ------------------------------------------------------------------ choix du visuel
+
+function VisualChoice({ value, onChange, ai, name }: { value: VisualMode; onChange: (m: VisualMode) => void; ai: boolean; name: string }) {
+  const t = useT();
+  const options: [VisualMode, string, string, string][] = [
+    ["free", t("Image gratuite, mise en page du studio", "Free image, studio layout"), t("Une photo libre de droits choisie pour votre activité ou votre produit ; le studio pose le titre, le texte et le bouton à vos couleurs.", "A royalty-free photo chosen for your business or product; the studio adds the headline, text and button in your colors."), t("Gratuit", "Free")],
+    ["ai_image", t("Image par l'IA, le studio fait le reste", "AI image, the studio does the rest"), t("L'IA crée la photo avec votre vrai produit ; le studio pose le titre, le texte et le bouton (modifiables ensuite).", "AI creates the photo with your real product; the studio adds the headline, text and button (editable afterwards)."), t("Payant · prix affiché avant", "Paid · price shown first")],
+    ["ai_post", t("Publication entièrement par l'IA", "Post entirely by AI"), t("Scène, mise en page, titre et bouton créés ensemble par l'IA, avec votre vrai produit ; textes relus lettre par lettre.", "Scene, layout, headline and button created together by AI, with your real product; texts checked letter by letter."), t("Payant · prix affiché avant", "Paid · price shown first")],
+  ];
+  return (
+    <fieldset className="grid gap-2" data-visual-mode>
+      <legend className="mb-1.5 text-sm font-medium">{t("Comment faire le visuel ?", "How should the visual be made?")}</legend>
+      <div className="grid gap-2 lg:grid-cols-3">
+        {options.map(([v, label, help, price]) => {
+          const off = v !== "free" && !ai;
+          return (
+            <label key={v} className={cx("flex gap-3 rounded-2xl border p-3 text-sm", off ? "cursor-not-allowed opacity-55" : "cursor-pointer", value === v ? "border-ink bg-paper-2" : "border-line")}>
+              <input type="radio" name={name} value={v} checked={value === v} disabled={off} onChange={() => onChange(v)} className="mt-1" data-visual-option={v} />
+              <span>
+                <span className="block font-medium">{label}</span>
+                <span className="block text-xs text-muted">{help}</span>
+                <span className={cx("mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold", v === "free" ? "bg-ok-soft text-ok" : "bg-signal-soft text-signal")}>{price}</span>
+              </span>
+            </label>
+          );
+        })}
+      </div>
+      {!ai && <p className="text-xs text-muted">{t("Les choix avec l'IA ne sont pas disponibles pour ce projet (forfait Découverte, budget IA épuisé ou fournisseur désactivé).", "AI choices aren't available for this project (Discovery plan, AI budget used up or provider disabled).")}</p>}
+    </fieldset>
+  );
+}
+
+/** Visuel d'UNE publication : le client choisit (gratuit / image IA / publication entièrement IA), voit le prix, accepte. */
+function PostVisualMaker({ postId, ai, hasMedia, onDone }: { postId: string; ai: boolean; hasMedia: boolean; onDone: () => Promise<void> }) {
+  const { id } = useProject();
+  const t = useT();
+  const toast = useToast();
+  const [mode, setMode] = useState<VisualMode>("free");
+  const [busy, setBusy] = useState(false);
+  const [est, setEst] = useState<{ estimateMicro: number; paid: number; notes: string[] } | null>(null);
+  const url = `/api/projects/${id}/social/v2`;
+  const go = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await fn();
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const make = () => go(async () => {
+    if (mode === "free") {
+      const r = await api<{ produced: number; notes: string[] }>(url, { body: { action: "produce", ids: [postId], allowPaid: false, replace: true } });
+      toast(r.produced ? "ok" : "bad", r.produced ? t("Visuel créé gratuitement.", "Visual created for free.") : (r.notes[0] ?? t("Aucun visuel créé.", "No visual created.")));
+      await onDone();
+      return;
+    }
+    setEst(await api(url, { body: { action: "estimate", ids: [postId], replace: true, ...visualParams(mode) } }));
+  });
+  const accept = () => go(async () => {
+    if (!est) return;
+    const cap = Math.ceil(est.estimateMicro / 10_000) / 100;
+    await api(url, { body: { action: "produce", ids: [postId], replace: true, ...visualParams(mode), maxCostEur: cap, approvedEstimateMicro: est.estimateMicro } });
+    toast("ok", t("C'est lancé : le visuel arrive dans quelques minutes (suivi en haut de l'onglet).", "Started: the visual arrives in a few minutes (progress at the top of the tab)."));
+    setEst(null);
+    await onDone();
+  });
+  return (
+    <div className="mt-4 grid gap-3 rounded-2xl border border-line p-3" data-post-visual>
+      <p className="text-sm font-semibold">{hasMedia ? t("Refaire le visuel de cette publication", "Remake this post's visual") : t("Créer le visuel de cette publication", "Create this post's visual")}</p>
+      <VisualChoice value={mode} onChange={(m) => (setMode(m), setEst(null))} ai={ai} name={`visual-mode-${postId}`} />
+      {hasMedia && <p className="text-xs text-muted">{t("Le visuel actuel est remplacé ; il reste dans votre bibliothèque.", "The current visual is replaced; it stays in your library.")}</p>}
+      {!est ? (
+        <div><Button size="sm" variant="signal" loading={busy} disabled={mode !== "free" && !ai} onClick={make} data-action="post-visual">{mode === "free" ? t("Créer le visuel (gratuit)", "Create the visual (free)") : t("Voir le prix", "See the price")}</Button></div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span>{t(`Prix estimé : ${(est.estimateMicro / 1e6).toFixed(2)} € au plus.`, `Estimated price: €${(est.estimateMicro / 1e6).toFixed(2)} at most.`)}</span>
+          {est.notes.map((n) => <span key={n} className="text-warn">{n}</span>)}
+          <Button size="sm" variant="signal" loading={busy} disabled={!est.paid} onClick={accept} data-action="post-visual-accept">{t("J'accepte et je lance", "I accept, start")}</Button>
+          <Button size="sm" variant="ghost" onClick={() => setEst(null)}>{t("Annuler", "Cancel")}</Button>
+        </div>
+      )}
+    </div>
   );
 }
