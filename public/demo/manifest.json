@@ -1,7 +1,77 @@
 {
-  "generatedAt": "2026-10-14T16:24:45.083Z",
+  "generatedAt": "2026-10-14T17:09:47.091Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
+    {
+      "id": "tribunes",
+      "brand": "Les Tribunes",
+      "product": "T-shirt supporter Lavande",
+      "sector": "Mode",
+      "direction": "flux",
+      "palette": [
+        "#0D0D0D",
+        "#C4C4C4",
+        "#E10600",
+        "#FAFAFA",
+        "#050505"
+      ],
+      "photo": "/demo/tribunes/photo.jpg",
+      "logo": "/demo/tribunes/logo.png",
+      "shopDesktop": "/demo/tribunes/boutique-bureau.jpg",
+      "shopMobile": "/demo/tribunes/boutique-mobile.jpg",
+      "productPage": "/demo/tribunes/fiche-produit.jpg",
+      "business": "products",
+      "images": [
+        {
+          "src": "/demo/tribunes/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/tribunes/packshot-1.jpg",
+          "label": "Packshot"
+        },
+        {
+          "src": "/demo/tribunes/detail-1.jpg",
+          "label": "Détail"
+        },
+        {
+          "src": "/demo/tribunes/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/tribunes/scene-2.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/tribunes/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/tribunes/banner-1.jpg",
+          "label": "Bannière"
+        }
+      ],
+      "video": "/demo/tribunes/video.mp4",
+      "videoPoster": "/demo/tribunes/video-poster.jpg",
+      "storeType": "multi",
+      "products": 4,
+      "source": {
+        "supplier": "Fournisseur + IA",
+        "url": "",
+        "note": "Deux t-shirts de supporter d'un fournisseur (visuels du fournisseur) et deux accessoires dont la photo a été créée par l'IA : la marque et la boutique sont créées par le studio. Aucun écusson officiel."
+      },
+      "posts": [
+        "/demo/tribunes/post-1.jpg",
+        "/demo/tribunes/post-2.jpg",
+        "/demo/tribunes/post-3.jpg",
+        "/demo/tribunes/post-4.jpg",
+        "/demo/tribunes/post-5.jpg",
+        "/demo/tribunes/post-6.jpg",
+        "/demo/tribunes/post-7.jpg",
+        "/demo/tribunes/post-8.jpg"
+      ],
+      "board": "/demo/tribunes/planche.jpg"
+    },
     {
       "id": "paysagiste",
       "brand": "Racines & Pierres",
@@ -354,69 +424,6 @@
         "supplier": "AliExpress",
         "url": "https://fr.aliexpress.com/",
         "note": "Produits pour chat en marque blanche de fournisseurs : la marque, les visuels et la boutique sont créés par le studio."
-      }
-    },
-    {
-      "id": "tribunes",
-      "brand": "Les Tribunes",
-      "product": "T-shirt supporter Lavande",
-      "sector": "Mode",
-      "direction": "flux",
-      "palette": [
-        "#263C91",
-        "#C8CEE4",
-        "#7859CF",
-        "#F2F3F7",
-        "#14161F"
-      ],
-      "photo": "/demo/tribunes/photo.jpg",
-      "logo": "/demo/tribunes/logo.svg",
-      "shopDesktop": "/demo/tribunes/boutique-bureau.jpg",
-      "shopMobile": "/demo/tribunes/boutique-mobile.jpg",
-      "productPage": "/demo/tribunes/fiche-produit.jpg",
-      "images": [
-        {
-          "src": "/demo/tribunes/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/tribunes/packshot-1.jpg",
-          "label": "Packshot"
-        },
-        {
-          "src": "/demo/tribunes/detail-1.jpg",
-          "label": "Détail"
-        },
-        {
-          "src": "/demo/tribunes/scene-1.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tribunes/scene-2.jpg",
-          "label": "Scène"
-        },
-        {
-          "src": "/demo/tribunes/social-1.jpg",
-          "label": "Visuel social"
-        },
-        {
-          "src": "/demo/tribunes/ad-1.jpg",
-          "label": "Publicité"
-        },
-        {
-          "src": "/demo/tribunes/banner-1.jpg",
-          "label": "Bannière"
-        }
-      ],
-      "video": "/demo/tribunes/video.mp4",
-      "videoPoster": "/demo/tribunes/video-poster.jpg",
-      "shopVideo": "/demo/tribunes/video-boutique.mp4",
-      "storeType": "niche",
-      "products": 2,
-      "source": {
-        "supplier": "AliExpress",
-        "url": "https://fr.aliexpress.com/",
-        "note": "T-shirts de supporter d'un fournisseur (visuels du fournisseur) : la marque et la boutique sont créées par le studio. Les modèles reprenant l'écusson officiel de la fédération ont été écartés."
       }
     }
   ]
