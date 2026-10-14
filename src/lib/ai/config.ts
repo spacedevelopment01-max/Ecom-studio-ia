@@ -8,7 +8,7 @@ import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
 import { POLICY_ROUTES } from "../orchestrator/policy";
 import { GATEWAY_KEY, gatewayProviders } from "./gateway";
-export { bearer, GATEWAY_KEY, gatewayProviders, isGatewayKey } from "./gateway";
+export { bearer, falAuth, GATEWAY_KEY, gatewayProviders, isGatewayKey } from "./gateway";
 
 export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "pexels" | "pixabay";
 

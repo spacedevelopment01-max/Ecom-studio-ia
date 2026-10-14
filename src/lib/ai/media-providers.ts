@@ -18,7 +18,7 @@ import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
-import { activeProviderKey, bearer, FX_SAFETY, requirePrice, routeFor, usdToEur } from "./config";
+import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
@@ -767,7 +767,7 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
   const seconds = falBilledSeconds(model, input.seconds);
   gate(ctx, cost("fal", model, { seconds }).micro, "video", "fal", model);
   const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
-  const headers = { Authorization: `Key ${key}`, "Content-Type": "application/json" };
+  const headers = { ...falAuth(key), "Content-Type": "application/json" };
   const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
   // (Kling 2.1 et Kling 3 : « image_url », « duration » en texte — paramètres du dépôt officiel fal-ai/fal-blender-extension.)
   if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
@@ -805,7 +805,7 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
   if (p.unit !== "image") throw new PermanentError(L(`Tarif « par image » attendu pour fal:${model} : coût maximal non borné, génération bloquée.`, `A per-image price is expected for fal:${model}: maximum cost not bounded, generation blocked.`));
   const max = cost("fal", model, { images: 1 }).micro;
   gate(ctx, max, "image", "fal", model);
-  const headers = { Authorization: `Key ${key}`, "Content-Type": "application/json" };
+  const headers = { ...falAuth(key), "Content-Type": "application/json" };
   const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt, image_urls: refs.map((b) => `data:image/jpeg;base64,${b.toString("base64")}`), num_images: 1, output_format: "png", aspect_ratio: aspect }) });
   if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
   // Dépôt dans la file fal : aucune génération créée en cas d'erreur (facturation à la fin) : refus net.
@@ -861,9 +861,9 @@ export async function pingProvider(p: "openai" | "google" | "fal"): Promise<stri
     if (!r.ok) throw new Error(`Google ${r.status}`);
     return L("Clé Gemini valide.", "Gemini key is valid.");
   }
-  const shape = falKeyShapeProblem(key);
+  const shape = isGatewayKey(key) ? null : falKeyShapeProblem(key);
   if (shape) throw new Error(shape);
-  const r = await fetch("https://queue.fal.run/fal-ai/fast-sdxl/requests/00000000-0000-0000-0000-000000000000/status", { headers: { Authorization: `Key ${key}` } });
+  const r = await fetch("https://queue.fal.run/fal-ai/fast-sdxl/requests/00000000-0000-0000-0000-000000000000/status", { headers: falAuth(key) });
   if (r.status === 401 || r.status === 403) throw new Error(falRefusal(r.status, await r.text().catch(() => "")));
   return L("Clé fal.ai acceptée.", "fal.ai key accepted.");
 }
