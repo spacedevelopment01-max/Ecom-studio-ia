@@ -16,8 +16,9 @@
 import crypto from "node:crypto";
 import { all, id, now, one, run } from "../db";
 import { enqueue, PermanentError } from "../jobs";
-import { notify } from "../projects";
-import { planOfUserId, scheduledPostsOn } from "../plan-gates";
+import { loadProject, notify } from "../projects";
+import { brainIssues } from "./brain-check";
+import { planOfProject, planOfUserId, scheduledPostsOn } from "../plan-gates";
 import { PLANS } from "../plans";
 import { L } from "../i18n-server";
 import { connectionFor, markConnection, type PostRow } from "../social/publish";
@@ -69,6 +70,14 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
     return { outcome: "skipped", detail: "calendrier en pause" };
   }
   const pre = one<Full>("SELECT p.*, pr.user_id FROM posts p JOIN projects pr ON pr.id = p.project_id WHERE p.id = ?", postId)!;
+  // Project Brain : produit retiré ou prix modifié depuis l'approbation — jamais envoyée, remise en relecture.
+  const brain = pre.status === "scheduled" ? brainIssues(loadProject(owner.project_id), (pre as Full & { brief?: string }).brief) : { removed: [], priceChanged: [] };
+  if (brain.removed.length || brain.priceChanged.length) {
+    const msg = brain.removed.length ? L(`Produit retiré du catalogue (${brain.removed.join(", ")}) : publication non envoyée, à revoir.`, `Product removed from the catalog (${brain.removed.join(", ")}): post not sent, to review.`) : L(`Prix modifié (${brain.priceChanged.join(", ")}) : publication non envoyée, relisez-la puis validez-la.`, `Price changed (${brain.priceChanged.join(", ")}): post not sent, review and approve it again.`);
+    const moved = run("UPDATE posts SET status = 'review', approved_hash = NULL, error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", msg, now(), postId);
+    if (moved.changes) notify(owner.user_id, owner.project_id, L("Une publication a été retenue", "A post was held back"), msg, "warning");
+    return { outcome: "skipped", detail: "catalogue modifié" };
+  }
   // Version différente de celle approuvée : jamais publiée.
   if (pre.status === "scheduled" && !approvalValid(pre)) {
     run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", L("Contenu modifié après approbation : nouvelle approbation nécessaire.", "Content changed after approval: a new approval is required."), now(), postId);
@@ -273,11 +282,59 @@ export function unschedule(ids: string[]) {
   for (const pid of ids) run("UPDATE posts SET status = CASE WHEN approved_hash IS NOT NULL THEN 'approved' ELSE 'review' END, updated_at = ? WHERE id = ? AND status IN ('scheduled','paused')", now(), pid);
 }
 
-/** Pause / reprise d'un calendrier : en pause, aucune publication ne part (les programmées passent « en pause »). */
-export function setPlanPaused(planId: string, paused: boolean) {
+/**
+ * Contrôle d'un déplacement de date (glisser-déposer, modification, « tout décaler au mardi ») : jamais dans le passé,
+ * jamais au-delà du calendrier du forfait, et pour une publication déjà approuvée ou programmée, jamais au-delà des
+ * 1, 3 ou 5 contenus par jour du forfait. Renvoie la raison du refus, ou null. Aucune route ne contourne ce contrôle.
+ */
+export function moveRefusal(projectId: string, postId: string, at: number): string | null {
+  if (!Number.isFinite(at)) return "date invalide";
+  if (at < now() - 60_000) return "date passée : choisissez une date à venir";
+  const plan = planOfProject(projectId);
+  if (!plan) return null; // Découverte : brouillons de démonstration, rien ne peut être programmé.
+  if (at > now() + PLANS[plan].calendarDays * 86_400_000 + 3_600_000) return `au-delà des ${PLANS[plan].calendarDays} jours de calendrier du forfait`;
+  const r = one<{ status: string }>("SELECT status FROM posts WHERE id = ?", postId);
+  if (r && ["approved", "scheduled", "paused"].includes(r.status) && scheduledPostsOn(projectId, at, postId) >= PLANS[plan].postsPerDay) return `déjà ${PLANS[plan].postsPerDay} publication(s) prévue(s) ce jour-là (limite du forfait)`;
+  return null;
+}
+
+/**
+ * Pause / reprise d'un calendrier : en pause, aucune publication ne part (les programmées passent « en pause »).
+ * Reprise : chaque publication est revérifiée (date future, calendrier et nombre par jour du forfait) ; celles qui
+ * ne passent plus restent approuvées, avec la raison, au lieu de partir.
+ */
+export function setPlanPaused(planId: string, paused: boolean): { resumed: string[]; kept: { id: string; reason: string }[] } {
   run("UPDATE content_plans SET paused = ?, updated_at = ? WHERE id = ?", paused ? 1 : 0, now(), planId);
-  if (paused) run("UPDATE posts SET status = 'paused', updated_at = ? WHERE plan_id = ? AND status = 'scheduled'", now(), planId);
-  else run("UPDATE posts SET status = 'scheduled', updated_at = ? WHERE plan_id = ? AND status = 'paused' AND scheduled_at > ?", now(), planId, now());
+  if (paused) {
+    run("UPDATE posts SET status = 'paused', updated_at = ? WHERE plan_id = ? AND status = 'scheduled'", now(), planId);
+    return { resumed: [], kept: [] };
+  }
+  return resumePosts(all<{ id: string; project_id: string; scheduled_at: number }>("SELECT id, project_id, scheduled_at FROM posts WHERE plan_id = ? AND status = 'paused' ORDER BY scheduled_at", planId));
+}
+
+/** Reprise de publications en pause, une à une, avec les contrôles du forfait (voir `setPlanPaused`). */
+export function resumePosts(rows: { id: string; project_id: string; scheduled_at: number }[]): { resumed: string[]; kept: { id: string; reason: string }[] } {
+  const out = { resumed: [] as string[], kept: [] as { id: string; reason: string }[] };
+  for (const r of rows) {
+    const plan = planOfProject(r.project_id);
+    const why = !plan
+      ? "projet sans forfait actif"
+      : r.scheduled_at <= now()
+        ? "date passée pendant la pause : choisissez une nouvelle date"
+        : r.scheduled_at > now() + PLANS[plan].calendarDays * 86_400_000 + 3_600_000
+          ? `au-delà des ${PLANS[plan].calendarDays} jours de calendrier du forfait`
+          : scheduledPostsOn(r.project_id, r.scheduled_at, r.id) >= PLANS[plan].postsPerDay
+            ? `déjà ${PLANS[plan].postsPerDay} publication(s) programmée(s) ce jour-là (limite du forfait)`
+            : null;
+    if (why) {
+      run("UPDATE posts SET status = 'approved', error = ?, updated_at = ? WHERE id = ?", `Non reprise : ${why}`, now(), r.id);
+      out.kept.push({ id: r.id, reason: why });
+    } else {
+      run("UPDATE posts SET status = 'scheduled', error = NULL, updated_at = ? WHERE id = ?", now(), r.id);
+      out.resumed.push(r.id);
+    }
+  }
+  return out;
 }
 
 export const attemptsOf = (postId: string) => all<{ attempt: number; started_at: number; ended_at: number | null; outcome: string; detail: string; remote_id: string | null }>("SELECT attempt, started_at, ended_at, outcome, detail, remote_id FROM post_attempts WHERE post_id = ? ORDER BY started_at", postId);

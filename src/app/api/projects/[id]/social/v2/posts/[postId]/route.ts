@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { now, one, run } from "@/lib/db";
+import { all, now, one, run } from "@/lib/db";
 import { enqueue } from "@/lib/jobs";
 import { L } from "@/lib/i18n-server";
 import { requirePlan } from "@/lib/plan-gates";
@@ -19,7 +19,11 @@ type PostCtx = Ctx<{ id: string; postId: string }>;
 function view(p: Project, postId: string) {
   const r = one<any>("SELECT p.*, c.name AS connection_name FROM posts p LEFT JOIN connections c ON c.id = p.connection_id WHERE p.id = ? AND p.project_id = ?", postId, p.id);
   if (!r) throw new HttpError(404, L("Publication introuvable.", "Post not found."));
-  return { post: postViewV2(p, r, { gate: true }), attempts: attemptsOf(postId), platform: platformSpec(r.network) };
+  // Variantes du même contenu éditorial (un réseau chacune) : visibles avant publication, avec ce qui les bloque.
+  const variants = r.group_id
+    ? all<any>("SELECT id, network, format, status FROM posts WHERE project_id = ? AND group_id = ? AND id != ? ORDER BY network", p.id, r.group_id, postId).map((x) => ({ id: x.id, network: x.network, label: platformSpec(x.network).label, format: x.format, status: x.status, blocking: checkPost(p, x.id).blocking }))
+    : [];
+  return { post: postViewV2(p, r, { gate: true }), attempts: attemptsOf(postId), platform: platformSpec(r.network), variants };
 }
 
 export const GET = handle(async (_req: Request, ctx: PostCtx) => {

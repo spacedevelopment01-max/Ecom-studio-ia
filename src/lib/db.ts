@@ -841,6 +841,41 @@ CREATE TABLE IF NOT EXISTS post_metrics (
   PRIMARY KEY (post_id, metric)
 );
 
+-- Social Autopilot V2 : réglages de « Ma communication automatique » (un par projet) et consentement au pilote.
+CREATE TABLE IF NOT EXISTS social_settings (
+  project_id TEXT PRIMARY KEY,
+  config TEXT NOT NULL,
+  autopilot INTEGER NOT NULL DEFAULT 0,
+  consent_at INTEGER,
+  consent_by TEXT,
+  consent_text TEXT,
+  paused INTEGER NOT NULL DEFAULT 0,
+  last_run_at INTEGER,
+  next_run_at INTEGER,
+  last_result TEXT,
+  updated_at INTEGER NOT NULL
+);
+
+-- Mémoire éditoriale : produits présentés, matières, accroches, rôles, publications refusées (rotation sans répétition).
+CREATE TABLE IF NOT EXISTS social_memory (
+  project_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  key TEXT NOT NULL,
+  uses INTEGER NOT NULL DEFAULT 0,
+  last_at INTEGER NOT NULL,
+  PRIMARY KEY (project_id, kind, key)
+);
+
+-- Historique des actions du pilote automatique (traçabilité).
+CREATE TABLE IF NOT EXISTS social_autopilot_log (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  at INTEGER NOT NULL,
+  action TEXT NOT NULL,
+  detail TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS social_autopilot_log_project ON social_autopilot_log(project_id, at);
+
 CREATE TABLE IF NOT EXISTS content_runs (
   project_id TEXT NOT NULL,
   run_key TEXT NOT NULL,

@@ -10,10 +10,11 @@ import { stopInterruptedPaidJob } from "../src/lib/job-recovery";
 import { retryStripeCancellations } from "../src/lib/payments";
 import { db, logError, now, run } from "../src/lib/db";
 import { enqueueDueV2, recoverStale } from "../src/lib/social-v2/scheduler";
-import { realPublisher } from "../src/lib/social-v2/deps";
+import { realPublisher, realSocialDeps } from "../src/lib/social-v2/deps";
 import { runDueAutomations } from "../src/lib/social-v2/automations";
+import { runDueAutopilots } from "../src/lib/social-v2/autopilot";
 import { handlers, HANDLER_TYPES } from "./handlers";
-import { runForUser, withAiDisabled } from "../src/lib/ai/access";
+import { aiActiveFor, runForUser, withAiDisabled } from "../src/lib/ai/access";
 import { withTrace } from "../src/lib/ai/trace";
 import { intentsFromAction } from "../src/lib/orchestrator/intent";
 
@@ -117,6 +118,8 @@ async function tick() {
     await recoverStale(realPublisher).catch((e) => logError("worker:social-recover", e));
     enqueueDueV2();
     await runDueAutomations().catch((e: unknown) => logError("worker:social-automations", e));
+    // « Ma communication automatique » : remplissage glissant, visuels progressifs, validation (client ou pilote).
+    await runDueAutopilots((p) => realSocialDeps(null, p, aiActiveFor(p.userId, p.id))).catch((e: unknown) => logError("worker:social-autopilot", e));
     // Anciens abonnements Stripe dont l'arrêt a échoué (changement de forfait) : nouvel essai.
     await retryStripeCancellations().catch((e) => logError("worker:stripe-cancel", e));
     // L'identifiant du worker change à chaque démarrage : les battements des anciens démarrages sont purgés.

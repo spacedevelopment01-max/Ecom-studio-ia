@@ -14,12 +14,14 @@ import { lintClaims, lintHollow } from "../ai/tasks";
 import { decide, type GateDecision } from "../quality/gate";
 import { fold } from "../seo-v2/lang";
 import { platformSpec } from "./platforms";
+import { hookSimilarity } from "./memory";
+import { brainIssues } from "./brain-check";
 
 export type PostCheck = { blocking: string[]; issues: string[]; codes: string[]; score: number };
 const PLACEHOLDER = /\[(À|A) compléter[^\]]*\]|\[To complete[^\]]*\]/i;
 const firstLine = (s: string) => fold((s.split("\n").find((l) => l.trim()) ?? "").trim());
 
-type Row = { id: string; project_id: string; network: string; format: string; title: string; caption: string; hashtags: string; media: string; scheduled_at: number | null; plan_id: string | null; status: string };
+type Row = { id: string; project_id: string; network: string; format: string; title: string; caption: string; hashtags: string; media: string; scheduled_at: number | null; plan_id: string | null; status: string; group_id: string | null };
 
 export function checkPost(p: Project, postId: string): PostCheck {
   const r = one<Row>("SELECT * FROM posts WHERE id = ?", postId);
@@ -38,6 +40,10 @@ export function checkPost(p: Project, postId: string): PostCheck {
     if (k.length > 2 && fold(text).includes(k)) add("forbidden_claim", `affirmation à éviter : « ${a} »`, true);
   }
   if (PLACEHOLDER.test(text)) add("incomplete", "information à compléter dans le texte", true);
+  // Project Brain : produit retiré du catalogue (plus jamais promu) ou prix modifié depuis la rédaction (à relire).
+  const brain = brainIssues(p, (r as Row & { brief?: string }).brief);
+  for (const n of brain.removed) add("product_removed", `« ${n} » n'est plus au catalogue : publication à revoir`, true);
+  for (const n of brain.priceChanged) add("price_changed", `prix de « ${n} » modifié depuis la rédaction : relisez la publication puis validez-la`, true);
   for (const h of lintHollow(text)) add("hollow_copy", `formule creuse : « ${h.term} »`, false);
   // Médias : du projet, non supprimés, non refusés, avec des droits connus.
   const spec = platformSpec(r.network);
@@ -60,11 +66,18 @@ export function checkPost(p: Project, postId: string): PostCheck {
   const tags = r.hashtags.split(/\s+/).filter(Boolean);
   if (tags.length > spec.hashtags[1]) add("too_many_hashtags", `${tags.length} hashtags (au plus ${spec.hashtags[1]})`, false);
   if (!r.caption.trim() && r.network !== "youtube") add("empty_caption", "légende vide", true);
-  // Répétition : même accroche qu'une autre publication du projet dans les 14 jours.
+  // Réseau tout vidéo (TikTok, YouTube) : sans vraie vidéo, la publication ne peut pas partir (jamais d'image
+  // transformée en vidéo vide pour contourner le réseau).
+  if (spec.formats.every((f) => ["video", "short", "reel"].includes(f)) && !(assets[0]?.kind === "video")) add("no_compatible_format", `${spec.label} : ne peut pas partir sans vraie vidéo (aucun format compatible)`, true);
+  // Répétition : même accroche qu'une autre publication du projet dans les 14 jours (ses propres adaptations pour
+  // d'autres réseaux — même contenu — ne comptent pas) ; accroche très proche : simple avertissement.
   if (r.scheduled_at) {
-    const near = all<{ id: string; caption: string }>("SELECT id, caption FROM posts WHERE project_id = ? AND id != ? AND status != 'cancelled' AND scheduled_at BETWEEN ? AND ?", r.project_id, r.id, r.scheduled_at - 14 * 86_400_000, r.scheduled_at + 14 * 86_400_000);
+    const near = all<{ id: string; caption: string; group_id: string | null }>("SELECT id, caption, group_id FROM posts WHERE project_id = ? AND id != ? AND status != 'cancelled' AND scheduled_at BETWEEN ? AND ?", r.project_id, r.id, r.scheduled_at - 14 * 86_400_000, r.scheduled_at + 14 * 86_400_000).filter((x) => !(r.group_id && x.group_id === r.group_id));
     const mine = firstLine(r.caption);
-    if (mine && !PLACEHOLDER.test(mine) && near.some((x) => firstLine(x.caption) === mine)) add("duplicate_hook", "même accroche qu'une autre publication proche", true);
+    if (mine && !PLACEHOLDER.test(mine)) {
+      if (near.some((x) => firstLine(x.caption) === mine)) add("duplicate_hook", "même accroche qu'une autre publication proche", true);
+      else if (near.some((x) => hookSimilarity(firstLine(x.caption), mine) >= 0.8)) add("similar_hook", "accroche très proche d'une autre publication des 14 jours", false);
+    }
   }
   const score = Math.max(0, 10 - blocking.length * 2 - issues.length * 0.5);
   return { blocking, issues, codes: [...codes], score };

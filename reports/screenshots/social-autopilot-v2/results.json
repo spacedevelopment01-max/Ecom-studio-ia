@@ -1,0 +1,98 @@
+{
+  "scheduled": {
+    "A": "2a8ygpb4ofbjaq85",
+    "B": "6xp5d54vxu7ac8eu"
+  },
+  "results": [
+    [
+      "A-cosmetique : état réel des réseaux affiché",
+      true,
+      "instagram:auto_available facebook:auto_available tiktok:to_connect youtube:to_connect pinterest:auto_available linkedin:unavailable"
+    ],
+    [
+      "A-cosmetique : préparation gratuite lancée depuis l'écran",
+      true,
+      "63 publication(s) préparée(s), 15 visuel(s) gratuit(s), 0 approuvée(s) par le pilote, 0 programmée(s), 15 en attente de votre validation."
+    ],
+    [
+      "A-cosmetique : 3 contenus par jour sur 7 jours, 3 réseaux chacun",
+      true,
+      "63 variantes, contenus par jour : 3,3,3,3,3,3,3"
+    ],
+    [
+      "A-cosmetique : rien d'approuvé ni de programmé sans accord",
+      true,
+      ""
+    ],
+    [
+      "A-cosmetique : vue d'ensemble sans statistique inventée",
+      true,
+      ""
+    ],
+    [
+      "A-cosmetique : publication prête sans défaut",
+      true,
+      ""
+    ],
+    [
+      "A-cosmetique : variantes Facebook et Pinterest visibles avant publication",
+      true,
+      ""
+    ],
+    [
+      "A-cosmetique : modifiée, approuvée puis programmée depuis l'éditeur",
+      true,
+      "scheduled"
+    ],
+    [
+      "B-platrier : état réel des réseaux affiché",
+      true,
+      "instagram:auto_available facebook:auto_available tiktok:to_connect youtube:to_connect pinterest:auto_available linkedin:unavailable"
+    ],
+    [
+      "B-platrier : préparation gratuite lancée depuis l'écran",
+      true,
+      "105 publication(s) préparée(s), 15 visuel(s) gratuit(s), 0 approuvée(s) par le pilote, 0 programmée(s), 15 en attente de votre validation."
+    ],
+    [
+      "B-platrier : 5 contenus par jour sur 7 jours, 3 réseaux chacun",
+      true,
+      "105 variantes, contenus par jour : 5,5,5,5,5,5,5"
+    ],
+    [
+      "B-platrier : rien d'approuvé ni de programmé sans accord",
+      true,
+      ""
+    ],
+    [
+      "B-platrier : vue d'ensemble sans statistique inventée",
+      true,
+      ""
+    ],
+    [
+      "B-platrier : publication prête après complément par le client",
+      true,
+      "bloquée avant : information à compléter dans le texte"
+    ],
+    [
+      "B-platrier : variantes Facebook et Pinterest visibles avant publication",
+      true,
+      ""
+    ],
+    [
+      "B-platrier : modifiée, approuvée puis programmée depuis l'éditeur",
+      true,
+      "scheduled"
+    ],
+    [
+      "téléphone : pas de débordement horizontal",
+      true,
+      "0px"
+    ],
+    [
+      "aucune erreur JavaScript dans la page",
+      true,
+      ""
+    ]
+  ]
+}

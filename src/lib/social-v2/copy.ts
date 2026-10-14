@@ -14,9 +14,9 @@ import type { Archetype, Pillar } from "./strategy";
 
 export type Draft = { title: string; caption: string; hashtags: string[]; headline: string; visual: "packshot" | "scene" | "detail" | "creative" | "video"; material: string };
 
-type Atom = { key: string; a: string; b?: string; kind?: "q" | "fact" | "topic" | "svc" | "local" | "brand" | "price" | "offer" };
-type Tpl = (x: Atom, c: Ctx) => { hook: string; body?: string; headline: string } | null;
-type Ctx = { f: VerifiedFacts; lang: string; city: string | null; brand: string; offer: string; cta: string };
+export type Atom = { key: string; a: string; b?: string; kind?: "q" | "fact" | "topic" | "svc" | "local" | "brand" | "price" | "offer" | "objection" | "item" };
+export type Tpl = (x: Atom, c: Ctx) => { hook: string; body?: string; headline: string } | null;
+export type Ctx = { f: VerifiedFacts; lang: string; city: string | null; brand: string; offer: string; cta: string };
 
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const low = (s: string) => (s ? s.charAt(0).toLowerCase() + s.slice(1) : s);
@@ -39,7 +39,8 @@ export const qmark = (s: string, sep = " ") => (/[?…!.]$/.test(s.trim()) || !i
 
 /** Matière vérifiée d'un pilier (ce qui peut être affirmé). */
 export function atomsFor(pillar: Pillar, archetype: Archetype, f: VerifiedFacts, questions: string[]): Atom[] {
-  const facts: Atom[] = f.facts.map((x, i) => ({ key: `fact${i}`, a: x.label || x.value, b: x.value, kind: "fact" }));
+  // Caractéristiques du produit ou de l'offre : jamais une zone, un horaire ou un numéro présentés comme un avantage.
+  const facts: Atom[] = f.facts.map((x, i) => ({ key: `fact${i}`, a: x.label || x.value, b: x.value, kind: "fact" as const })).filter((x) => !/^(zone|secteur|ville|horaires?|t[ée]l[ée]?phone|contact|adresse|e-?mail)\b/i.test(x.a));
   const answers: Atom[] = f.answers.map((x, i) => ({ key: `qa${i}`, a: strip(x.q), b: strip(x.a), kind: "q" }));
   const svc: Atom[] = f.services.map((s, i) => ({ key: `svc${i}`, a: s.name, b: s.description || s.price || "", kind: "svc" }));
   const topics: Atom[] = f.services.length ? tradeTopics(["plasterer", "painter", "electrician", "plumber", "tiler", "carpenter", "caterer", "hairdresser"], f.services.map((s) => `${s.name} ${s.description}`).join(" ")).declared.map((t) => ({ key: `topic:${t.key}`, a: topicLabel(t, "fr"), b: "", kind: "topic" as const })) : [];
@@ -78,6 +79,21 @@ export function atomsFor(pillar: Pillar, archetype: Archetype, f: VerifiedFacts,
     case "cuisine":
       return brand;
     case "evenements":
+      return [];
+    // Objections avec leur réponse (saisies par le client) : jamais d'objection inventée.
+    case "objections":
+      return f.objections.map((o, i) => ({ key: `obj${i}`, a: strip(o.objection), b: strip(o.answer), kind: "objection" as const }));
+    // Communauté : ce dont on peut parler sans rien inventer (caractéristiques, prestations, questions).
+    case "communaute":
+      return [...facts, ...svc, ...answers];
+    // Questions à poser à la communauté (sinon une question ouverte sur la marque, sans rien affirmer).
+    case "community":
+      return [...answers, ...qs].length ? [...answers, ...qs] : [{ key: "brand", a: f.brand, kind: "brand" as const }];
+    // Le problème auquel l'offre répond : seulement s'il a été décrit.
+    case "problem":
+      return f.problem ? [{ key: "problem", a: f.problem, kind: "brand" as const }] : [];
+    // Coulisses réelles (étapes, préparation) : rien n'est écrit sans information du client.
+    case "none":
       return [];
     default:
       return [...facts, ...answers];
@@ -207,6 +223,8 @@ const BUYBANK: { fr: Tpl[]; en: Tpl[] } = {
 
 /** Pas de matière : une publication qui demande précisément ce qui manque (jamais d'invention). */
 function missing(pillar: Pillar, lang: string, n: number): { hook: string; body: string; headline: string } {
+  // Rôle de la structure hebdomadaire : demande précise (« vos vraies étapes de fabrication… »).
+  if (pillar.id.includes(":")) return { hook: lang === "en" ? `[To complete: ${pillar.idea}]` : `[À compléter : ${pillar.idea}]`, body: "", headline: short(pillar.title) };
   const fr = [`[À compléter : ${pillar.idea}]`, `[À compléter : une photo et deux phrases pour « ${pillar.title} »]`, `[À compléter : un exemple réel pour « ${pillar.title} »]`];
   const en = [`[To complete: ${pillar.idea}]`, `[To complete: a photo and two sentences for "${pillar.title}"]`, `[To complete: a real example for "${pillar.title}"]`];
   const list = lang === "en" ? en : fr;
@@ -234,16 +252,16 @@ export function hashtagsFor(f: VerifiedFacts, archetype: Archetype, pillar: Pill
  * Publication locale du n-ième passage dans un pilier. `used` : accroches déjà utilisées dans le calendrier
  * (une accroche n'est jamais répétée ; on passe à la combinaison suivante).
  */
-export function writeLocal(o: { pillar: Pillar; archetype: Archetype; f: VerifiedFacts; questions: string[]; n: number; lang: string; cta: string; used: Set<string> }): Draft {
+export function writeLocal(o: { pillar: Pillar; archetype: Archetype; f: VerifiedFacts; questions: string[]; n: number; lang: string; cta: string; used: Set<string>; /** Tournures propres au rôle du jour (structure hebdomadaire). */ tpls?: { fr: Tpl[]; en: Tpl[] }; /** Matière imposée (ex. : le produit présenté cette semaine). */ atoms?: Atom[] }): Draft {
   const { pillar, f, lang } = o;
-  const atoms = atomsFor(pillar, o.archetype, f, o.questions);
+  const atoms = o.atoms ?? atomsFor(pillar, o.archetype, f, o.questions);
   const bank = TBANK[pillar.id === "carte" ? "sell" : pillar.objective] ?? TBANK.educate;
   const local = LOCALBANK(o.archetype);
   // La tournure suit la nature de la matière (une caractéristique se montre, une question se répond).
   // Tournures de question (« On nous la pose souvent ») réservées aux vraies questions.
   const asked = (a: Atom) => (bank === TBANK.engage && !isQuestion(a.a) ? TBANK.educate : bank);
   const pickBank = (a: Atom) => (a.kind === "q" ? (isQuestion(a.a) ? QBANK : TBANK.educate) : a.kind === "local" ? local : a.kind === "price" || a.kind === "offer" ? BUYBANK : a.kind === "fact" ? TBANK.demonstrate : a.kind === "brand" ? TBANK.brand : asked(a));
-  const tplsOf = (a: Atom) => (lang === "en" ? pickBank(a).en : pickBank(a).fr);
+  const tplsOf = (a: Atom) => (o.tpls ? (lang === "en" ? o.tpls.en : o.tpls.fr) : lang === "en" ? pickBank(a).en : pickBank(a).fr);
   const tpls = atoms.length ? tplsOf(atoms[0]) : lang === "en" ? bank.en : bank.fr;
   const c: Ctx = { f, lang, city: mainCity(f.area), brand: f.brand, offer: f.offerName, cta: o.cta };
   let chosen: { hook: string; body?: string; headline: string } | null = null;
