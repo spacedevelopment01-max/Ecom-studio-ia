@@ -170,9 +170,21 @@ async function saveRaw(ctx: BrowserContext, url: string, dest: string) {
 }
 
 async function shot(ctx: BrowserContext, url: string, dest: string, viewport: { width: number; height: number }, clipH?: number) {
-  const page = await ctx.newPage();
-  await page.setViewportSize(viewport);
-  await page.goto(`${BASE}${url}`, { waitUntil: "networkidle" });
+  // Une capture ne montre jamais une page en erreur (cadre d'erreur de Next.js, réponse en échec) : nouvel essai, sinon arrêt.
+  for (let attempt = 1; ; attempt++) {
+    const page = await ctx.newPage();
+    await page.setViewportSize(viewport);
+    const res = await page.goto(`${BASE}${url}`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(800);
+    const broken = !res?.ok() || (await page.locator("[data-nextjs-dialog], [data-nextjs-dialog-overlay]").count()) > 0;
+    if (!broken) return shotPage(page, dest, viewport, clipH);
+    await page.close();
+    if (attempt >= 3) throw new Error(`Capture refusée (page en erreur) : ${url}`);
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+}
+
+async function shotPage(page: import("playwright").Page, dest: string, viewport: { width: number; height: number }, clipH?: number) {
   await page.addStyleTag({ content: ".es-pv-bar{display:none!important}" });
   await page.evaluate(async () => { for (let y = 0; y < 2400; y += 400) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } window.scrollTo(0, 0); });
   await page.waitForTimeout(1200);

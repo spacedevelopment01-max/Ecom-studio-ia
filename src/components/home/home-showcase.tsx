@@ -118,3 +118,27 @@ export function FeedShowcase({ feeds }: { feeds: FeedDemo[] }) {
     </div>
   );
 }
+
+export type ThemeShot = { id: string; name: string; src: string };
+
+/** Les 30 thèmes en simples captures, sur deux rangées qui défilent lentement (pause au survol, fixes si mouvement réduit). */
+export function ThemesWall({ themes, label }: { themes: ThemeShot[]; label: string }) {
+  if (!themes.length) return null;
+  const half = Math.ceil(themes.length / 2);
+  const rows = [themes.slice(0, half), themes.slice(half)];
+  return (
+    <div className="relative overflow-hidden py-2" aria-label={label} role="img">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-paper-2 to-transparent sm:w-32" aria-hidden />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-paper-2 to-transparent sm:w-32" aria-hidden />
+      {rows.map((row, r) => (
+        <div key={r} className="group flex overflow-hidden py-2.5" aria-hidden>
+          <div className={cx("hp-wall flex shrink-0 gap-4 pr-4 sm:gap-5 sm:pr-5", r === 1 && "hp-wall-rev")}>
+            {[...row, ...row].map((x, k) => (
+              <img key={k} src={x.src} alt="" loading="lazy" decoding="async" className="aspect-[16/10] w-72 shrink-0 rounded-2xl object-cover object-top shadow-[0_22px_48px_-26px_rgba(10,16,40,.6)] ring-1 ring-black/5 sm:w-[26rem]" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
