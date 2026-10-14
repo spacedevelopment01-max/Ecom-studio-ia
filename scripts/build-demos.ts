@@ -53,6 +53,7 @@ type DemoDef = {
 
 const REAL = path.join(process.cwd(), "scripts", "demo-products", "inputs");
 const PX = path.join(REAL, "pixabay");
+const IA = path.join(REAL, "ia");
 /**
  * Démonstrations à partir de vraies photos de produits et de vrais métiers (Pixabay, licence de contenu Pixabay :
  * usage commercial autorisé, sans attribution obligatoire ; sources dans scripts/demo-products/inputs/pixabay/sources.json).
@@ -69,29 +70,24 @@ const REAL_DEMOS: DemoDef[] = [
     source: { supplier: "Pixabay", url: "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/", note: "Vraies photos d'un casque sans marque visible, en situation (Pixabay, série d'Engin_Akyurt) : la marque, les visuels et la boutique sont créés par le studio." },
   },
   {
-    id: "tillandsia", sector: "Plantes", direction: "jardin", category: "Plantes d'intérieur",
-    productName: "Tillandsia en pot", brandName: "Verdure", price: "24 €",
-    description: "Tillandsia (fille de l'air) dans un petit pot en terre cuite peint, coloris rose ou vert.",
-    photo: path.join(PX, "tillandsia-1.jpg"),
-    photos: [path.join(PX, "tillandsia-2.jpg")],
-    variants: { name: "Couleur du pot", values: ["Rose", "Vert"], photos: { Vert: path.join(PX, "tillandsia-3.jpg") } },
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/pastel-potted-plant-flowers-season-4279379/", note: "Vraies photos d'une plante en pot (Pixabay, série de HeungSoon) : la marque, les visuels et la boutique sont créés par le studio." },
+    // Plusieurs produits : deux t-shirts de fournisseur (sans écusson officiel) et deux accessoires créés par l'IA.
+    id: "tribunes", sector: "Mode", direction: "flux", storeType: "multi", category: "Supporters",
+    productName: "T-shirt supporter Lavande", brandName: "Les Tribunes", price: "29,90 €",
+    description: "T-shirt de supporter bleu marine, inscription FRANCE et numéro 10, brins de lavande brodés en ton sur ton, liserés bleu-blanc-rouge, drapeau sur la poitrine.",
+    photo: path.join(REAL, "vetements", "tshirt-lavande.jpg"),
+    catalog: [
+      { name: "T-shirt supporter Aquarelle", category: "T-shirts", price: "29,90", description: "T-shirt de supporter écru, motif aquarelle bleu et rouge, écusson tricolore et paysage en relief (tour Eiffel, champs de lavande).", photo: path.join(REAL, "vetements", "tshirt-aquarelle.jpg") },
+      { name: "Écharpe tricolore", category: "Accessoires", price: "19,90", description: "Écharpe de supporter en maille, rayures bleu marine, blanc et rouge, franges courtes.", photo: path.join(IA, "tribunes-echarpe.jpg") },
+      { name: "Casquette Lavande", category: "Accessoires", price: "24,90", description: "Casquette en coton bleu marine, brin de lavande brodé sur le devant, bande tricolore sur la patte de serrage.", photo: path.join(IA, "tribunes-casquette.jpg") },
+    ],
+    source: { supplier: "Fournisseur + IA", url: "", note: "Deux t-shirts de supporter d'un fournisseur (visuels du fournisseur) et deux accessoires dont la photo a été créée par l'IA : la marque et la boutique sont créées par le studio. Aucun écusson officiel." },
   },
   {
-    id: "savon", sector: "Beauté", direction: "manifeste", category: "Savons",
-    productName: "Savon à la périlla", brandName: "Sève", price: "7,50 €",
-    description: "Savon solide artisanal à la périlla, pain vert, saponifié à froid.",
-    photo: path.join(PX, "savon-1.jpg"),
-    photos: [path.join(PX, "savon-2.jpg")],
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/handmade-soap-perilla-perilla-soap-4926843/", note: "Vraies photos d'un savon artisanal à la périlla (Pixabay, série de phuonghoangthuy) : la marque, les visuels et la boutique sont créés par le studio." },
-  },
-  {
-    id: "cafe", sector: "Épicerie fine", direction: "terroir", category: "Café",
-    productName: "Café en grains", brandName: "Moulin Brun", price: "12,90 €",
-    description: "Café en grains torréfié, vendu en sachet de 250 g ; grains présentés dans leur sac de jute.",
-    photo: path.join(PX, "cafe-1.jpg"),
-    photos: [path.join(PX, "cafe-2.jpg"), path.join(PX, "cafe-3.jpg")],
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/coffee-coffee-beans-bag-3142562/", note: "Vraies photos de café en grains (Pixabay, série de Bru-nO) : la marque, les visuels et la boutique sont créés par le studio." },
+    id: "gourde", sector: "Sport et plein air", direction: "elan", category: "Gourdes",
+    productName: "Gourde isotherme 750 ml", brandName: "Cime", price: "34,90 €",
+    description: "Gourde isotherme double paroi en inox, 750 ml, finition mate vert sauge, bouchon en bambou à anse inox.\nContenance : 750 ml\nMatières : inox double paroi, bouchon bambou",
+    photo: path.join(IA, "gourde.jpg"),
+    source: { supplier: "Photo créée par l'IA", url: "", note: "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie." },
   },
   {
     id: "fleuriste", sector: "Fleuriste", direction: "magazine", business: "services", platform: "woocommerce",
@@ -108,19 +104,18 @@ const REAL_DEMOS: DemoDef[] = [
     source: { supplier: "Pixabay", url: "https://pixabay.com/photos/flower-bouquet-petal-bloom-garden-2588972/", note: "Vraies photos de boutique et d'atelier de fleuriste (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
   },
   {
-    id: "barbier", sector: "Barbier", direction: "etabli", business: "services", platform: "woocommerce",
-    productName: "Salon de barbier", brandName: "Le Comptoir", price: "",
-    description: "Barbier : coupe homme aux ciseaux et à la tondeuse, taille et entretien de la barbe, rasage traditionnel à l'ancienne, coupe enfant.",
-    photo: path.join(PX, "barbier-fauteuil.jpg"),
-    photos: [path.join(PX, "barbier-coupe.jpg"), path.join(PX, "barbier-salon.jpg")],
+    id: "paysagiste", sector: "Paysagiste", direction: "jardin", business: "services", platform: "woocommerce",
+    productName: "Création et entretien de jardins", brandName: "Racines & Pierres", price: "",
+    description: "Paysagiste : conception et création de jardins, terrasses en bois et murets en pierre sèche, plantations, entretien à l'année.",
+    photo: path.join(IA, "paysagiste-jardin.jpg"),
+    photos: [path.join(IA, "paysagiste-terrasse.jpg"), path.join(IA, "paysagiste-outils.jpg")],
     services: [
-      { name: "Coupe homme", description: "Ciseaux et tondeuse, shampoing et coiffage." },
-      { name: "Taille de barbe", description: "Contours, dégradé et soin à l'huile." },
-      { name: "Rasage traditionnel", description: "Au coupe-chou, serviette chaude." },
-      { name: "Coupe enfant", description: "Jusqu'à 12 ans." },
+      { name: "Création de jardin", description: "Plan, choix des végétaux, allées et murets, du projet à la plantation." },
+      { name: "Terrasses et aménagements", description: "Terrasses en bois, jardinières, éclairage extérieur." },
+      { name: "Entretien à l'année", description: "Taille, tonte, désherbage et suivi des plantations." },
     ],
-    area: "Bordeaux centre", hours: "Du mardi au samedi, 9 h 30 – 19 h", contactModes: "booking,call",
-    source: { supplier: "Pixabay", url: "https://pixabay.com/photos/barber-chair-salon-hairdresser-1453064/", note: "Vraies photos de salon de barbier (Pixabay) : l'entreprise est fictive, son site et sa marque sont créés par le studio." },
+    area: "Aix-en-Provence et alentours", hours: "Du lundi au vendredi, 8 h – 18 h", contactModes: "quote,call",
+    source: { supplier: "Photos créées par l'IA", url: "", note: "Entreprise fictive : les photos de jardins ont été créées par l'IA (OpenAI) pour la démonstration ; le site et la marque sont créés par le studio." },
   },
 ];
 
