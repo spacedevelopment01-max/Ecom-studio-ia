@@ -21,7 +21,7 @@ import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
-import { getJsonSetting } from "../settings";
+import { getJsonSetting, setSetting } from "../settings";
 import { putFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
@@ -765,9 +765,14 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
   // Durées acceptées par le modèle (Kling 2.1 : 5 ou 10 s ; Kling 3 : 3 à 15 s) : la durée retenue est demandée,
   // réservée et comptée (jamais moins que facturé).
   const seconds = falBilledSeconds(model, input.seconds);
+  const headers = { ...falAuth(key), "Content-Type": "application/json" };
+  // Plan déjà terminé (et payé) chez fal mais pas encore récupéré (téléchargement coupé) : on le reprend, sans
+  // nouvelle génération ni nouveau coût.
+  const doneKey = ctx.usageKey ? `fal.done.${ctx.usageKey}` : null;
+  const done = doneKey ? getJsonSetting<{ responseUrl: string } | null>(doneKey, null) : null;
+  if (done?.responseUrl) return falDownload(await (await providerFetch(done.responseUrl, { headers })).json(), doneKey);
   gate(ctx, cost("fal", model, { seconds }).micro, "video", "fal", model);
   const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
-  const headers = { ...falAuth(key), "Content-Type": "application/json" };
   const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
   // (Kling 2.1 et Kling 3 : « image_url », « duration » en texte — paramètres du dépôt officiel fal-ai/fal-blender-extension.)
   if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
@@ -779,17 +784,32 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
     onWait?.(L(`Génération du plan vidéo (${(i + 1) * 6} s)…`, `Generating the video shot (${(i + 1) * 6} s)…`));
     const st: any = await (await providerFetch(q.status_url, { headers })).json();
     if (st.status === "COMPLETED") {
-      const out: any = await (await providerFetch(q.response_url, { headers })).json();
-      const url = out.video?.url;
-      if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune vidéo.", "fal.ai returned no video."));
-      const v = await providerFetch(url);
+      // Plan terminé = plan facturé par fal : coût enregistré AVANT le téléchargement, et adresse du résultat gardée
+      // pour une reprise sans repayer si le téléchargement échoue.
       const c = cost("fal", model, { seconds });
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider: "fal", model, unit: "video_second", quantity: seconds, costMicro: c.micro, estimated: true, idempotencyKey: ctx.usageKey });
-      return Buffer.from(await v.arrayBuffer());
+      if (doneKey) setSetting(doneKey, JSON.stringify({ responseUrl: q.response_url }));
+      return falDownload(await (await providerFetch(q.response_url, { headers })).json(), doneKey);
     }
     if (st.status === "FAILED" || st.status === "ERROR") throw new PermanentError(L("La génération fal.ai a échoué.", "fal.ai generation failed."));
   }
   throw new Error(L("Délai dépassé pour la génération fal.ai.", "fal.ai generation timed out."));
+}
+
+/** Téléchargement du plan terminé (fichier hébergé par fal.media) ; la reprise est oubliée une fois le fichier reçu. */
+async function falDownload(out: any, doneKey: string | null): Promise<Buffer> {
+  const url = out?.video?.url;
+  if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune vidéo.", "fal.ai returned no video."));
+  let data: Buffer;
+  try {
+    const v = await providerFetch(url);
+    if (!v.ok) throw new Error(`HTTP ${v.status}`);
+    data = Buffer.from(await v.arrayBuffer());
+  } catch (e) {
+    throw new PermanentError(L(`Plan vidéo terminé chez fal.ai mais impossible à télécharger (${new URL(url).host}) : vérifiez l'accès réseau à ce site. Une nouvelle tentative le récupérera sans le repayer.`, `Video shot finished at fal.ai but could not be downloaded (${new URL(url).host}): check network access to this host. A retry will fetch it without paying again.`) + ` ${redact(String((e as Error)?.message ?? e)).slice(0, 120)}`);
+  }
+  if (doneKey) setSetting(doneKey, null);
+  return data;
 }
 
 /**

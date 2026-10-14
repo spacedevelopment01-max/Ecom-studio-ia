@@ -43,7 +43,7 @@ vi.mock("openai", () => {
 });
 
 // Réseau simulé : Gemini (images), Veo (vidéo), fal (file d'attente) — chaque requête est enregistrée.
-const net = { calls: [] as { url: string; body: any }[], veo503: false };
+const net = { calls: [] as { url: string; body: any }[], veo503: false, falFileDown: false };
 const mp4 = Buffer.from("00000018667479706d703432", "hex");
 async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   const body = init?.body ? JSON.parse(String(init.body)) : null;
@@ -55,6 +55,7 @@ async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   if (url.startsWith("https://queue.fal.run/") && init?.method === "POST") return json({ status_url: "https://queue.fal.run/x/requests/1/status", response_url: "https://queue.fal.run/x/requests/1" });
   if (url.endsWith("/status")) return json({ status: "COMPLETED" });
   if (url === "https://queue.fal.run/x/requests/1") return json({ video: { url: "https://video.test/fal.mp4" }, images: [{ url: "https://img.test/fal.png" }] });
+  if (url === "https://video.test/fal.mp4" && net.falFileDown) throw new TypeError("fetch failed");
   if (url.startsWith("https://video.test/")) return new Response(mp4);
   if (url.startsWith("https://img.test/")) return new Response(Buffer.from(PNG, "base64"));
   return json({}, 404);
@@ -96,6 +97,7 @@ describe("routage multimédia V2", async () => {
     oa.mode = "ok";
     net.calls = [];
     net.veo503 = false;
+    net.falFileDown = false;
     vi.stubGlobal("fetch", fakeFetch);
     setSetting("ai.prices.checkedAt", String(Date.now()));
     for (const k of ["ai.routes", "ai.media.backup", "ai.media.mode", "ai.media.models", "ai.prices"]) setJsonSetting(k, {});
@@ -192,6 +194,23 @@ describe("routage multimédia V2", async () => {
     const post = net.calls.find((x) => x.url === "https://queue.fal.run/fal-ai/kling-video/v3/pro/image-to-video")!;
     expect(post.body).toMatchObject({ duration: "7" });
     expect(mp.falBilledSeconds("fal-ai/kling-video/v2.1/pro/image-to-video", 7)).toBe(10);
+  });
+
+  it("fal : plan terminé mais fichier injoignable → coût enregistré une fois, la reprise récupère le plan sans repayer", async () => {
+    const c = await client();
+    setJsonSetting("ai.routes", { video_generation: { provider: "fal", model: "fal-ai/kling-video/v2.1/pro/image-to-video" } });
+    const k = ctx(c, "reprise-fal-1");
+    net.falFileDown = true;
+    await expect(fr(() => mp.aiClip("fal", k, { image: png, prompt: "rotation lente", aspect: "9:16", seconds: 5 }))).rejects.toThrow(/sans le repayer/);
+    expect(all("SELECT 1 FROM ai_calls WHERE user_id = ? AND task = 'video_generation' AND status = 'ok'", c.userId)).toHaveLength(1);
+    net.falFileDown = false;
+    net.calls = [];
+    const v = await fr(() => mp.aiClip("fal", k, { image: png, prompt: "rotation lente", aspect: "9:16", seconds: 5 }));
+    expect(v.equals(mp4)).toBe(true);
+    // Aucune nouvelle génération envoyée, aucun second coût.
+    expect(net.calls.some((x) => x.url.startsWith("https://queue.fal.run/fal-ai/") && x.body)).toBe(false);
+    expect(all("SELECT 1 FROM ai_calls WHERE user_id = ? AND task = 'video_generation' AND status = 'ok'", c.userId)).toHaveLength(1);
+    expect(getJsonSetting("fal.done.reprise-fal-1", null)).toBeNull();
   });
 
   it("panne du principal sans coût → secours compatible avec SA propre réservation (vidéo produit)", async () => {
