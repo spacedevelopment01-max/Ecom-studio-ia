@@ -412,8 +412,8 @@ export function routeFromDraft(d: RouteDraft, brand: BrandInput): { ok: true; ro
   if (why.length > 360) { why = clipText(why, 360); fixes.push("justification raccourcie"); }
   if (why.length < 20) return no("« pourquoi ce logo » absent : deux phrases sur l'idée du symbole");
   const fallback = FONT_PAIRS[0];
-  const heading = CANVAS_FONTS[d.heading] ? d.heading : (fixes.push(`police ${d.heading} remplacée`), fallback.heading);
-  const body = CANVAS_FONTS[d.body] ? d.body : (fixes.push(`police ${d.body} remplacée`), fallback.body);
+  const heading = CANVAS_FONTS[d.heading] && CANVAS_FONTS[d.heading].kind !== "script" ? d.heading : (fixes.push(`police ${d.heading} remplacée`), fallback.heading);
+  const body = CANVAS_FONTS[d.body] && CANVAS_FONTS[d.body].kind !== "script" ? d.body : (fixes.push(`police ${d.body} remplacée`), fallback.body);
   const role = (r: PaletteRole, def: PaletteRole) => (ROLES.includes(r) ? r : (fixes.push("couleur hors palette remplacée"), def));
   const ink = role(d.ink, "dark");
   const accent = role(d.accent, "accent");

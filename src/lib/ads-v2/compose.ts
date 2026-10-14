@@ -150,7 +150,9 @@ const PLACEHOLDER = /\[(?:À|A) compléter[^\]]*\]?|\[To complete[^\]]*\]?/gi;
 export function noPlaceholders(i: ComposeInput): ComposeInput {
   // Seul un texte qui contient un espace réservé est retouché (« -20 % » garde son signe).
   const clean = (x: string | null | undefined) => (x == null || !new RegExp(PLACEHOLDER.source, "i").test(x) ? x : x.replace(PLACEHOLDER, "").replace(/\s{2,}/g, " ").replace(/^[\s:·—-]+|[\s:·—-]+$/g, "").trim());
-  const headline = clean(i.headline) || i.brand;
+  // Titre d'affiche : toujours une majuscule initiale (« partout avec vous » → « Partout avec vous »).
+  const h0 = clean(i.headline) || i.brand;
+  const headline = /^\p{Ll}/u.test(h0) ? h0.charAt(0).toUpperCase() + h0.slice(1) : h0;
   return { ...i, headline, subline: clean(i.subline) || null, eyebrow: clean(i.eyebrow) || null, features: i.features ? i.features.map((f) => clean(f) ?? "").filter(Boolean) : i.features };
 }
 

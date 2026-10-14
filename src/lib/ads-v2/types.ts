@@ -96,6 +96,8 @@ export type AdConcept = {
   angle: AnglePlan;
   copy: AdCopy;
   visual: VisualConcept;
+  /** Direction artistique de la publicité (moteur V3) : concept, prise de vue, mise en page de la bibliothèque. */
+  direction?: { id: string; name: string; objective: string; layout: string; shot: { composition: string; lighting: string; framing: string; environment?: string }; textZone: "left" | "right" | "top" | "bottom"; templates: string[] };
 };
 
 export type FormatSpec = { platform: Platform; aspect: AspectId; width: number; height: number; label: string; safe: { top: number; bottom: number; side: number } };

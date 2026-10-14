@@ -31,6 +31,8 @@ export type BriefRequest = {
   references?: string[];
   /** Zone à garder calme pour le texte, imposée par la composition qui utilisera l'image (publicités). */
   textZone?: "none" | "left" | "right" | "top" | "bottom" | "center";
+  /** Prise de vue imposée par la direction artistique d'une publicité (cadrage, lumière, décor). */
+  shot?: { composition: string; lighting: string; framing: string; environment?: string | null } | null;
 };
 
 const uniq = <T,>(a: T[]) => [...new Set(a.filter(Boolean))];
@@ -155,13 +157,13 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     support,
     subject,
     action,
-    environment,
+    environment: req.shot?.environment ?? environment,
     purpose: `${req.kind} for ${support}${(req.textZone ?? FORMATS[aspect].textZone) !== "none" && (support === "ad" || support === "banner" || support === "social") ? `, keep the ${req.textZone ?? FORMATS[aspect].textZone} area calm for text` : ""}`,
     audience: brand?.audience && !/\[(À|A) compléter/i.test(brand.audience) ? brand.audience : null,
     artDirection: dir.id,
-    composition: d.composition,
-    lighting: vIndex == null ? d.lighting : `${d.lighting}; ${LIGHTS[v % LIGHTS.length]}`,
-    framing: vIndex == null ? d.framing : `${d.framing}; ${angles[v % angles.length]}`,
+    composition: req.shot?.composition ?? d.composition,
+    lighting: req.shot?.lighting ?? (vIndex == null ? d.lighting : `${d.lighting}; ${LIGHTS[v % LIGHTS.length]}`),
+    framing: req.shot?.framing ?? (vIndex == null ? d.framing : `${d.framing}; ${angles[v % angles.length]}`),
     palette,
     format: req.textZone ? { ...FORMATS[aspect], textZone: req.textZone } : FORMATS[aspect],
     positive,
@@ -175,13 +177,14 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     variant: vIndex == null ? null : { index: vIndex, angle: angles[v % angles.length], setting: environment ?? "", light: LIGHTS[v % LIGHTS.length], intent: intents[v % intents.length] },
     understanding,
     people,
+    ...(req.shot ? { shotKey: crypto.createHash("sha256").update(JSON.stringify(req.shot)).digest("hex").slice(0, 12) } : {}),
   };
 }
 
 /** Empreinte stable du brief : même brief → même image réutilisable, même contrôle déjà payé. */
 export function briefHash(b: VisualBrief): string {
   // Sans personne : clé distincte (une image faite quand les personnes étaient permises n'est pas réutilisée).
-  const key = { v: b.version, k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
+  const key = { v: b.version, k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 

@@ -86,7 +86,10 @@ export type TextLayer = LayerBase & {
 export type ShapeLayer = LayerBase & {
   kind: "shape";
   /** « waves » : faisceau d'ondes lumineuses tracées au trait (couleur et épaisseur du contour). */
-  shape: "rect" | "ellipse" | "line" | "waves";
+  /** « icon » : pictogramme au trait (tracé SVG `path` sur une grille 24 × 24, couleur et épaisseur du contour). */
+  shape: "rect" | "ellipse" | "line" | "waves" | "icon";
+  /** Tracé SVG du pictogramme (forme « icon ») : commandes de tracé seulement, grille 24 × 24. */
+  path?: string;
   fill: Fill | null;
   stroke: { color: string; width: number } | null;
   radius: number;

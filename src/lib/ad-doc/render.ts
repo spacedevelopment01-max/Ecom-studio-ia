@@ -206,6 +206,22 @@ function drawWaves(ctx: Ctx2D, l: ShapeLayer) {
   ctx.globalAlpha = base;
 }
 
+/** Pictogramme au trait : tracé SVG (grille 24 × 24) mis à l'échelle de la boîte, trait d'épaisseur constante. */
+function drawIcon(ctx: Ctx2D, l: Extract<Layer, { kind: "shape" }>) {
+  const P = (globalThis as { Path2D?: new (d: string) => unknown }).Path2D;
+  if (!l.path || !P) return;
+  const s = Math.min(l.w, l.h) / 24;
+  ctx.save();
+  ctx.translate(l.x + (l.w - 24 * s) / 2, l.y + (l.h - 24 * s) / 2);
+  ctx.scale(s, s);
+  ctx.strokeStyle = l.stroke?.color ?? (typeof l.fill === "string" ? l.fill : "#000");
+  ctx.lineWidth = (l.stroke?.width ?? 1.6 * s) / s;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  (ctx as unknown as { stroke: (p: unknown) => void }).stroke(new P(l.path));
+  ctx.restore();
+}
+
 function drawLayer(ctx: Ctx2D, l: Layer, env: RenderEnv) {
   if (!l.visible || l.opacity <= 0) return;
   ctx.save();
@@ -219,6 +235,7 @@ function drawLayer(ctx: Ctx2D, l: Layer, env: RenderEnv) {
   else if (l.kind === "shape") {
     shadowOn(ctx, l.shadow);
     if (l.shape === "waves") drawWaves(ctx, l);
+    else if (l.shape === "icon") drawIcon(ctx, l);
     else if (l.shape === "line") {
       ctx.strokeStyle = l.stroke?.color ?? (typeof l.fill === "string" ? l.fill : "#000");
       ctx.lineWidth = l.stroke?.width ?? 2;

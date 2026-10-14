@@ -25,7 +25,7 @@ const baseS = { id: z.string().min(1).max(40), name: z.string().max(80), role: z
 export const LayerSchema = z.discriminatedUnion("kind", [
   z.object({ ...baseS, kind: z.literal("image"), assetId: z.string().max(40).nullable(), fit: z.enum(["cover", "contain"]), crop: z.object({ x: num, y: num, w: num, h: num }).nullable(), radius: num, shadow, contactShadow: z.boolean().optional(), reflection: num.min(0).max(1).optional(), filter: z.string().max(160).regex(IMAGE_FILTER_RE).nullable().optional(), duotone: z.object({ dark: z.string().max(64), light: z.string().max(64) }).nullable().optional() }),
   z.object({ ...baseS, kind: z.literal("text"), text: z.string().max(600), font: fontS, color: z.string().max(64), align: z.enum(["left", "center", "right"]), lineHeight: num, letterSpacing: num, uppercase: z.boolean(), autoFit: z.object({ minSize: num }).nullable(), shadow }),
-  z.object({ ...baseS, kind: z.literal("shape"), shape: z.enum(["rect", "ellipse", "line", "waves"]), fill: fill.nullable(), stroke: z.object({ color: z.string().max(64), width: num }).nullable(), radius: num, shadow }),
+  z.object({ ...baseS, kind: z.literal("shape"), shape: z.enum(["rect", "ellipse", "line", "waves", "icon"]), path: z.string().max(6000).regex(/^[MmLlHhVvCcSsQqTtAaZz0-9 .,\-eE]*$/).optional(), fill: fill.nullable(), stroke: z.object({ color: z.string().max(64), width: num }).nullable(), radius: num, shadow }),
   z.object({ ...baseS, kind: z.literal("button"), text: z.string().max(80), font: fontS, fill, color: z.string().max(64), radius: num, stroke: z.object({ color: z.string().max(64), width: num }).nullable(), shadow }),
 ]);
 export const AdDocumentSchema = z.object({

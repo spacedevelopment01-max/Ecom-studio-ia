@@ -95,6 +95,8 @@ export type VisualBrief = {
    * Absent (anciens briefs) : autorisées.
    */
   people?: boolean;
+  /** Prise de vue imposée par une direction artistique de publicité (empreinte : image propre à ce concept). */
+  shotKey?: string;
 };
 
 /** Licence et provenance d'une image de banque : jamais « libre de droits » sans vérification. */

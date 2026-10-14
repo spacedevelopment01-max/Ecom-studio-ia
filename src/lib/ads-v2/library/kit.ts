@@ -229,6 +229,13 @@ export class Kit {
     l.shape = "line";
     return l;
   }
+  /** Pictogramme au trait d'un atout (tracé SVG 24 × 24), même épaisseur de trait pour toute la rangée. */
+  icon(path: string, b: Box, color: string, width = Math.max(2, Math.round(Math.min(b.w, b.h) * 0.06))) {
+    const l = this.rect(b, null, { stroke: { color, width }, name: "Pictogramme" });
+    l.shape = "icon";
+    l.path = path;
+    return l;
+  }
   /** Dégradé (voile) vers une couleur : angle 0 = de gauche, 90 = du haut, 180 = de droite, 270 = du bas. */
   veil(b: Box, angle: number, color: string, alpha: number, o: { id?: string } = {}) {
     return this.rect(b, { type: "linear", angle, stops: [{ offset: 0, color: rgba(color, alpha) }, { offset: 0.55, color: rgba(color, alpha * 0.6) }, { offset: 1, color: rgba(color, 0) }] }, { name: "Voile", role: "scrim", id: o.id });
@@ -451,6 +458,17 @@ export class Kit {
   private doc(layers: Layer[]): AdDocument {
     const i = this.i;
     return { version: DOC_VERSION, width: this.W, height: this.H, background: this.c.bg, safe: { top: Math.round(this.H * i.format.safe.top), bottom: Math.round(this.H * i.format.safe.bottom), side: Math.round(this.W * i.format.safe.side) }, format: { platform: i.format.platform, aspect: i.format.aspect }, layers, brand: { palette: { ...i.palette }, fonts: { heading: i.typo.heading, body: i.typo.body }, name: i.brand }, meta: { conceptId: null, source: "engine", createdFrom: null } };
+  }
+  /** Ton de ce qui est déjà dessiné sous une zone (photo, voiles) : encre claire sur « dark », sombre sur « light ». */
+  toneAt(b: Box): "dark" | "light" {
+    return isDark(this.under(b, this.layers.filter((l) => l.kind !== "text" && l.kind !== "button"))) ? "dark" : "light";
+  }
+  /** Côté de la photo le plus calme pour le texte (à l'opposé de ses points d'intérêt). */
+  calmSide(): "left" | "right" {
+    const pts = this.i.photo?.points?.slice(0, 4) ?? [];
+    if (!pts.length) return "left";
+    const u = pts.reduce((a, p) => a + p.u, 0) / pts.length;
+    return u > 0.5 ? "left" : "right";
   }
   private under(b: Box, behind: Layer[]): string {
     const c = createCanvas(this.W, this.H);

@@ -18,7 +18,8 @@ const shift = (ls: Layer[], dy: number) => ls.forEach((l) => (l.y += dy));
 /** Marque en capitales très espacées, et la signature dessous en petites capitales. Renvoie la hauteur occupée. */
 function wordmark(k: Kit, b: { x: number; y: number; w: number }, align: "left" | "center"): number {
   const size = Math.max(26, k.U * k.pick(0.05, 0.05, 0.05, 0.055));
-  const m = k.text("body", k.i.brand, b, { family: k.i.art.heading, weight: Math.min(600, k.i.art.headingWeight), size, align, color: WHITE, upper: true, spacing: Math.round(size * 0.42), maxLines: 1, minSize: 24 }, "brand", "Marque");
+  // Logo de la marque s'il existe (signature), sinon le nom en capitales très espacées.
+  const m = k.i.logo ? k.brandMark(b, { align, height: k.logoHeight(0.55) }) : k.text("body", k.i.brand, b, { family: k.i.art.heading, weight: Math.min(600, k.i.art.headingWeight), size, align, color: WHITE, upper: true, spacing: Math.round(size * 0.42), maxLines: 1, minSize: 24 }, "brand", "Marque");
   let h = m.h;
   const tag = k.i.tagline?.trim();
   if (tag && tag.length <= 46) {
@@ -87,7 +88,7 @@ export const TEMPLATES_L: Template[] = [
     family: "photo",
     photo: "required",
     schemes: ["dark"],
-    treatments: ["natural", "moody", "warm"],
+    treatments: ["natural", "moody", "warm", "punch", "cool"],
     build(k) {
       k.fill(k.c.dark);
       k.fullPhoto();
@@ -117,7 +118,7 @@ export const TEMPLATES_L: Template[] = [
     family: "photo",
     photo: "required",
     schemes: ["dark"],
-    treatments: ["natural", "moody", "cool"],
+    treatments: ["natural", "moody", "cool", "punch"],
     build(k) {
       k.fill(k.c.dark);
       k.fullPhoto();
@@ -151,7 +152,7 @@ export const TEMPLATES_L: Template[] = [
     family: "photo",
     photo: "required",
     schemes: ["dark"],
-    treatments: ["natural", "warm", "moody"],
+    treatments: ["natural", "warm", "moody", "punch", "cool"],
     build(k) {
       k.fill(k.c.dark);
       k.fullPhoto();
