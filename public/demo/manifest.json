@@ -1,7 +1,61 @@
 {
-  "generatedAt": "2026-10-14T17:40:36.689Z",
+  "generatedAt": "2026-10-14T17:47:34.614Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
+    {
+      "id": "gourde",
+      "brand": "Cime",
+      "product": "Gourde isotherme 750 ml",
+      "sector": "Sport et plein air",
+      "direction": "elan",
+      "palette": [
+        "#1E2326",
+        "#9AA5AA",
+        "#FF4D00",
+        "#F4F6F6",
+        "#0E1214"
+      ],
+      "photo": "/demo/gourde/photo.jpg",
+      "logo": "/demo/gourde/logo.png",
+      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
+      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
+      "productPage": "/demo/gourde/fiche-produit.jpg",
+      "business": "products",
+      "images": [
+        {
+          "src": "/demo/gourde/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/gourde/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/gourde/scene-2.jpg",
+          "label": "Scène"
+        }
+      ],
+      "video": "/demo/gourde/video.mp4",
+      "videoPoster": "/demo/gourde/video-poster.jpg",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Photo créée par l'IA",
+        "url": "",
+        "note": "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie."
+      },
+      "posts": [
+        "/demo/gourde/post-1.jpg",
+        "/demo/gourde/post-2.jpg",
+        "/demo/gourde/post-3.jpg",
+        "/demo/gourde/post-4.jpg",
+        "/demo/gourde/post-5.jpg",
+        "/demo/gourde/post-6.jpg",
+        "/demo/gourde/post-7.jpg",
+        "/demo/gourde/post-8.jpg"
+      ],
+      "board": "/demo/gourde/planche.jpg"
+    },
     {
       "id": "fleuriste",
       "brand": "Atelier Pivoine",
@@ -188,50 +242,6 @@
         "/demo/paysagiste/post-7.jpg"
       ],
       "board": "/demo/paysagiste/planche.jpg"
-    },
-    {
-      "id": "gourde",
-      "brand": "Cime",
-      "product": "Gourde isotherme 750 ml",
-      "sector": "Sport et plein air",
-      "direction": "elan",
-      "palette": [
-        "#1E2326",
-        "#9AA5AA",
-        "#FF4D00",
-        "#F4F6F6",
-        "#0E1214"
-      ],
-      "photo": "/demo/gourde/photo.jpg",
-      "logo": "/demo/gourde/logo.png",
-      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
-      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
-      "productPage": "/demo/gourde/fiche-produit.jpg",
-      "business": "products",
-      "images": [
-        {
-          "src": "/demo/gourde/cutout-1.webp",
-          "label": "Détourage"
-        }
-      ],
-      "video": "/demo/gourde/video.mp4",
-      "videoPoster": "/demo/gourde/video-poster.jpg",
-      "storeType": "mono",
-      "products": 1,
-      "source": {
-        "supplier": "Photo créée par l'IA",
-        "url": "",
-        "note": "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie."
-      },
-      "posts": [
-        "/demo/gourde/post-1.jpg",
-        "/demo/gourde/post-2.jpg",
-        "/demo/gourde/post-3.jpg",
-        "/demo/gourde/post-4.jpg",
-        "/demo/gourde/post-5.jpg",
-        "/demo/gourde/post-6.jpg"
-      ],
-      "board": "/demo/gourde/planche.jpg"
     },
     {
       "id": "verger",
