@@ -76,6 +76,12 @@ export const handlers: Record<string, Handler> = {
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats };
   },
 
+  /** Retouche par l'IA d'une photo livrée (publicité, publication) : seule la demande du client change, original gardé. */
+  "image.edit": async (ctx) => {
+    const { editProjectPhoto } = await import("../src/lib/image-v2/edit-photo");
+    return editProjectPhoto(ctx, ctx.payload.projectId, ctx.payload.assetId, ctx.payload.instruction);
+  },
+
   /** SEO & Copywriting V2 : stratégie, brief, rédaction (locale puis IA contrôlée), barrière SEO, document versionné. */
   "content.v2": async (ctx) => {
     const { runContentEngineV2 } = await import("../src/lib/seo-v2/engine");

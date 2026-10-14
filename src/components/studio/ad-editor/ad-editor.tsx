@@ -10,7 +10,7 @@
  * pour modifier un texte au clavier.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, ChevronLeft, Circle, Download, Hand, History as HistoryIcon, ImagePlus, Layers, Maximize2, Minus, MoreHorizontal, Plus, Redo2, Save, Send, SlidersHorizontal, Square, Type, Undo2, X, Copy, Ratio, PenLine, Play } from "lucide-react";
+import { AlertTriangle, ChevronLeft, Circle, Download, Hand, History as HistoryIcon, ImagePlus, Layers, Maximize2, Minus, MoreHorizontal, Plus, Redo2, Save, Send, SlidersHorizontal, Square, Type, Undo2, X, Copy, Ratio, PenLine, Play, Sparkles } from "lucide-react";
 import { api, Button, cx, Modal, Spinner, useToast } from "../../ui";
 import { useT } from "../../i18n";
 import { JobProgress, MediaPicker } from "../common";
@@ -305,6 +305,38 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     }
   };
 
+  /**
+   * Retouche de la photo livrée par l'IA : la photo actuelle de la création et la demande du client partent au modèle
+   * d'images ; seule la demande change. Coût annoncé et accord demandé avant l'appel ; la nouvelle photo est posée
+   * à la place de l'ancienne (« Annuler » la remet), à enregistrer pour la garder.
+   */
+  const editPhotoAi = async (instruction: string) => {
+    const q = instruction.trim();
+    const target = layer?.kind === "image" && layer.assetId && layer.role !== "logo" ? layer : (doc.layers.find((l) => l.id === photoLayer()) as Extract<Layer, { kind: "image" }> | undefined);
+    if (!q || !target?.assetId) return toast("bad", t("Aucune photo à retoucher dans cette création.", "No photo to edit in this creative."));
+    if (!(await cost.confirm("images"))) return;
+    setBusy(t("Retouche de la photo par l'IA…", "AI is editing the photo…"));
+    try {
+      const r = await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action: "edit", assetId: target.assetId, instruction: q } });
+      for (let i = 0; i < 300; i++) {
+        await new Promise((res) => setTimeout(res, 2000));
+        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.edit`);
+        const j = jobs.jobs.find((x) => x.id === r.jobId);
+        if (!j || j.status === "queued" || j.status === "running") continue;
+        if (j.status !== "done" || !j.result?.assetId) throw new Error(j.error || t("La retouche n'a pas abouti.", "The edit did not complete."));
+        apply({ op: "image", id: target.id, assetId: j.result.assetId });
+        setAsk("");
+        toast("ok", t("Photo retouchée par l'IA : enregistrez pour la garder (« Annuler » remet l'ancienne).", "Photo edited by AI: save to keep it (“Undo” brings back the previous one)."));
+        return;
+      }
+      throw new Error(t("La retouche prend trop de temps : réessayez plus tard.", "The edit is taking too long: try again later."));
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   /** Retouche en langage naturel : locale et gratuite si possible ; sinon annoncée (rien n'est dépensé sans accord). */
   const askEdit = async () => {
     const q = ask.trim();
@@ -402,8 +434,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const layersPanel = <LayersPanel doc={doc} selectedId={selected} onSelect={(id) => (setSelected(id), setSheet(null))} apply={apply} />;
   const askBox = (
     <form className="flex items-center gap-2" onSubmit={(e) => (e.preventDefault(), askEdit())}>
-      <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Demander une retouche : « Agrandis le titre », « Bouton en vert »…", "Ask for a change: “Make the title bigger”, “Green button”…")} className="h-10 min-w-0 flex-1 rounded-full border border-line bg-card px-4 text-sm outline-none focus:border-ink" aria-label={t("Demander une retouche", "Ask for a change")} data-testid="ask-input" />
+      <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Demander une retouche : « Agrandis le titre », « Ajoute des pétales sur la table »…", "Ask for a change: “Make the title bigger”, “Add petals on the table”…")} className="h-10 min-w-0 flex-1 rounded-full border border-line bg-card px-4 text-sm outline-none focus:border-ink" aria-label={t("Demander une retouche", "Ask for a change")} data-testid="ask-input" />
       <Button type="submit" size="sm" icon={<Send className="size-4" />} disabled={!ask.trim()}>{t("Appliquer", "Apply")}</Button>
+      {project?.ai.image && photoLayer() && (
+        <Button type="button" size="sm" variant="secondary" icon={<Sparkles className="size-4" />} disabled={!ask.trim() || !!busy} onClick={() => editPhotoAi(ask)} data-testid="ai-photo-edit" title={t("Envoie la photo de la publicité à l'IA avec votre demande : seule la demande change (payant, accord demandé).", "Sends the ad's photo to the AI with your request: only what you ask changes (paid, approval asked).")}>{t("Modifier la photo avec l'IA", "Edit the photo with AI")}</Button>
+      )}
     </form>
   );
 
@@ -593,8 +628,9 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       <Modal open={panel === "formats"} onClose={() => setPanel(null)} title={t("Adapter à un autre format", "Adapt to another format")}>{formatsList}</Modal>
       <Modal open={panel === "export"} onClose={() => setPanel(null)} title={t("Exporter", "Export")}>{exportList}</Modal>
       <Modal open={panel === "problems"} onClose={() => setPanel(null)} title={t("Points à vérifier", "Things to check")}>{problemsList}</Modal>
-      <Modal open={!!photoChoice} onClose={() => setPhotoChoice(null)} title={t("Remplacer la photo", "Replace the photo")}>
+      <Modal open={!!photoChoice} onClose={() => setPhotoChoice(null)} title={t("Changer la photo", "Change the photo")}>
         <div className="grid gap-3 text-sm">
+          {project?.ai.image && photoLayer() && <Button onClick={() => { setPhotoChoice(null); editPhotoAi(ask); }} data-testid="ai-photo-edit-modal">{t("Modifier cette photo avec l'IA (le reste ne bouge pas)…", "Edit this photo with AI (the rest stays)…")}</Button>}
           <Button variant="secondary" onClick={() => (setPhotoChoice(null), setSelected(photoLayer()), setPicker(photoLayer() ? "replace" : "add"))}>{t("Choisir dans la bibliothèque (gratuit)", "Choose from the library (free)")}</Button>
           <Button onClick={() => { const topic = photoChoice?.paid?.imageRequest?.topic ?? ask; setPhotoChoice(null); setAsk(""); generateBackground(topic); }}>{t("Créer une nouvelle image avec l'IA…", "Create a new image with AI…")}</Button>
           <p className="text-xs text-muted">{t("La création par l'IA utilise votre forfait : le nombre exact vous est indiqué avant de lancer.", "AI creation uses your plan: the exact amount is shown before starting.")}</p>

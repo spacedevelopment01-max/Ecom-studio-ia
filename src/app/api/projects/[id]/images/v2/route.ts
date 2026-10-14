@@ -61,7 +61,7 @@ const ImageRequestSchema = z.object({
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["generate", "reject", "reject_direction"]), assetId: z.string().max(40).optional(), direction: z.enum(ART_DIRECTIONS).optional(), request: ImageRequestSchema.optional() }));
+  const b = await body(req, z.object({ action: z.enum(["generate", "edit", "reject", "reject_direction"]), assetId: z.string().max(40).optional(), instruction: z.string().max(400).optional(), direction: z.enum(ART_DIRECTIONS).optional(), request: ImageRequestSchema.optional() }));
   if (b.action === "reject") {
     // Image refusée par le client : jamais réutilisée automatiquement (statut refusé, choix humain mémorisé).
     const a = one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND json_extract(meta, '$.imageV2') IS NOT NULL", b.assetId ?? "", p.id);
@@ -77,6 +77,15 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   }
   // Même droit que les autres créations d'images : un forfait de création est requis (aucun passe-droit).
   requireCreationPlan(user, p.id, "images");
+  if (b.action === "edit") {
+    // Retouche par l'IA d'une photo livrée (accord sur le coût demandé dans le studio avant l'appel).
+    const a = one<{ id: string }>("SELECT id FROM assets WHERE id = ? AND project_id = ? AND deleted_at IS NULL AND mime LIKE 'image/%'", b.assetId ?? "", p.id);
+    if (!a) throw new HttpError(404, L("Photo introuvable.", "Photo not found."));
+    const instruction = (b.instruction ?? "").trim();
+    if (instruction.length < 3) throw new HttpError(400, L("Décrivez la modification souhaitée.", "Describe the change you want."));
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "image.edit", label: L("Retouche de la photo par l'IA", "AI photo edit"), payload: { projectId: p.id, assetId: a.id, instruction } });
+    return ok({ jobId: job.id });
+  }
   const r = b.request ?? {};
   const intent = r.kind ? { kind: r.kind, support: r.support } : visualIntent(r.text ?? "", p.business);
   const job = enqueue({
