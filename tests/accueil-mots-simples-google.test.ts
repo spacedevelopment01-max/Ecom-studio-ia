@@ -50,7 +50,7 @@ describe("Accueil en mots simples", () => {
   });
 
   it("aucune place sur Google n'est promise", () => {
-    expect(page).toContain("Aucune place sur Google n'est promise.");
+    expect(page).toContain("le classement final, lui, c'est Google qui le décide.");
   });
 });
 
