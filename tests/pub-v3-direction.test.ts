@@ -199,3 +199,40 @@ describe("une seule image payante par création", () => {
     expect(paid).toBe(1);
   }, 240_000);
 });
+
+describe("nombre d'images et formats choisis par le client", () => {
+  it("2 images au format 4:5 : 2 publications, 2 photos payées ; les autres formats reprennent la même photo", async () => {
+    const { createUser } = await import("@/lib/auth");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { runAdEngineV2 } = await import("@/lib/ads-v2/engine");
+    const { saveAsset } = await import("@/lib/library");
+    const { seedImageFixture } = await import("./image-v2-fixtures");
+    const { mockAdDeps } = await import("./ads-v2-mock");
+    const { PIPELINE_ADS } = await import("@/lib/engine/pipeline");
+    const u = await createUser(`formats-${Date.now()}@test.fr`, "motdepasse-test", "F");
+    const pid = seedImageFixture(u.id, "saas");
+    const { deps } = mockAdDeps({ userId: u.id, projectId: pid });
+    deps.canGenerate = true;
+    let paid = 0;
+    const asks: any[] = [];
+    deps.image = async (req) => {
+      paid++;
+      asks.push(req);
+      const data = fs.readFileSync("scripts/demo-products/inputs/pixabay/cafe-1.jpg");
+      const a = await saveAsset({ projectId: pid, userId: u.id, data, name: "gen.jpg", mime: "image/jpeg", role: "scene", origin: "generated", status: "review" });
+      return { assetId: a.id, data };
+    };
+    const fr = (fn: () => Promise<any>) => runWithLang({ ui: "fr", content: "fr" }, fn);
+    const r = await fr(() => runAdEngineV2(null, pid, { count: 2, platforms: ["meta_feed"], aspects: ["4:5"] }, deps));
+    expect(r.outcomes.map((o: any) => o.aspect)).toEqual(["4:5", "4:5"]);
+    expect(paid).toBe(2);
+    // Publicité générée par l'IA : jamais de photo de banque (Pixabay) demandée.
+    expect(asks.every((q) => q.noStock === true)).toBe(true);
+    // Tous les formats d'une campagne : une seule photo payée par publication.
+    paid = 0;
+    const r2 = await fr(() => runAdEngineV2(null, pid, { count: 1, platforms: ["meta_feed", "meta_story"], objective: "autre" }, deps));
+    expect(new Set(r2.outcomes.map((o: any) => o.aspect)).size).toBe(3);
+    expect(paid).toBe(1);
+    expect(PIPELINE_ADS).toBe(3);
+  }, 240_000);
+});

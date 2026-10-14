@@ -46,6 +46,8 @@ export type ImageRequestV2 = BriefRequest & {
   count?: number;
   /** Génération permise en dernier recours (sinon recherche seule). */
   allowGenerate?: boolean;
+  /** Aucune photo de banque (Pixabay…) : image générée seulement (publicités créées par l'IA, choix du propriétaire). */
+  noStock?: boolean;
   /** Plafond de dépense RÉEL de la tâche, en euros (vérifié avant chaque appel payant). */
   maxCostEur?: number;
   /** Emplacement du site (meta.slot) et nom de fichier. */
@@ -114,7 +116,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
   const result: ImageRunResult = { runId, outcomes: [], search: [], stats: { reused: 0, candidatesSeen: 0, controls: 0, controlsSkippedByMemo: 0, generations: 0, retries: 0, directionChanges: 0 }, stoppedByCostCap: false, costMicro: 0, notes };
   const memory = brainSnapshot(p).memory;
   const rejectedDirs = rejectedDirections(memory);
-  const stages = stagesFor(req.kind);
+  const stages = req.noStock ? stagesFor(req.kind).filter((s) => s !== "search") : stagesFor(req.kind);
   const count = Math.max(1, Math.min(8, req.count ?? 1));
   const seriesHashes: string[] = [];
   // Détourage valide du produit (référence obligatoire pour toute image du produit).

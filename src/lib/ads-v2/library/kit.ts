@@ -34,7 +34,7 @@ export type KitInput = {
   cta: string;
   scheme: Scheme;
   treatment: Treatment;
-  photo: { id: string; width: number; height: number; points: { u: number; v: number }[]; subject?: { u0: number; v0: number; u1: number; v1: number } | null } | null;
+  photo: { id: string; width: number; height: number; points: { u: number; v: number }[]; subject?: { u0: number; v0: number; u1: number; v1: number; cu?: number; cv?: number } | null } | null;
   /** Produit détouré (pixels d'origine) : posé en grand par les modèles « produit ». */
   product?: { id: string; width: number; height: number } | null;
   /** Atouts confirmés (jamais inventés) : listes, légendes, cases des modèles « produit ». */
@@ -111,7 +111,7 @@ export async function interestPoints(buf: Buffer): Promise<{ u: number; v: numbe
  * publicitaire est flou ou uni). Chaque cellule d'une grille 16 × 16 (image légèrement floutée) est notée par ses
  * contours, un peu par son écart de couleur au fond (médiane du pourtour). Le sujet est la région connexe autour de la cellule la plus marquée (boîte normalisée 0–1).
  */
-export async function subjectBox(buf: Buffer): Promise<{ u0: number; v0: number; u1: number; v1: number } | null> {
+export async function subjectBox(buf: Buffer): Promise<{ u0: number; v0: number; u1: number; v1: number; cu?: number; cv?: number } | null> {
   const n = 16;
   const { data, info } = await sharp(buf).rotate().resize(64, 64, { fit: "fill" }).blur(1.2).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const px = (x: number, y: number) => {
@@ -153,7 +153,24 @@ export async function subjectBox(buf: Buffer): Promise<{ u0: number; v0: number;
     }
   }
   const set = [...seen].map((i) => cells[i]);
-  return { u0: Math.min(...set.map((c) => c.x)) / n, v0: Math.min(...set.map((c) => c.y)) / n, u1: (Math.max(...set.map((c) => c.x)) + 1) / n, v1: (Math.max(...set.map((c) => c.y)) + 1) / n };
+  // Centre du produit, pour centrer un recadrage : là où se concentrent les petits détails nets (écart à l'image
+  // floutée). Un décor flou ou un grand bord contrasté (fenêtre éclairée) n'en a presque pas ; le produit, si.
+  const N = 128, cs = N / n;
+  const grey = sharp(buf).rotate().resize(N, N, { fit: "fill" }).greyscale();
+  const [ga, gb] = await Promise.all([grey.clone().raw().toBuffer(), grey.clone().blur(2).raw().toBuffer()]);
+  const fine: { x: number; y: number; e: number }[] = [];
+  for (let cy = 0; cy < n; cy++)
+    for (let cx = 0; cx < n; cx++) {
+      let e = 0;
+      for (let y = cy * cs; y < cy * cs + cs; y++) for (let x = cx * cs; x < cx * cs + cs; x++) e += Math.abs(ga[y * N + x] - gb[y * N + x]);
+      fine.push({ x: cx, y: cy, e });
+    }
+  const fmax = Math.max(...fine.map((c) => c.e));
+  const top = fine.filter((c) => c.e >= fmax * 0.5);
+  const tw = top.reduce((a, c) => a + c.e, 0) || 1;
+  const cu = top.reduce((a, c) => a + (c.x + 0.5) * c.e, 0) / tw / n;
+  const cv = top.reduce((a, c) => a + (c.y + 0.5) * c.e, 0) / tw / n;
+  return { u0: Math.min(...set.map((c) => c.x)) / n, v0: Math.min(...set.map((c) => c.y)) / n, u1: (Math.max(...set.map((c) => c.x)) + 1) / n, v1: (Math.max(...set.map((c) => c.y)) + 1) / n , cu, cv };
 }
 
 type TextStyle = { family?: string; weight?: number; size: number; italic?: boolean; align?: TextLayer["align"]; upper?: boolean; spacing?: number; lineHeight?: number; maxLines?: number; color?: string; minSize?: number; shadow?: TextLayer["shadow"] };
@@ -288,6 +305,9 @@ export class Kit {
   }
   /** Dégradé (voile) vers une couleur : angle 0 = de gauche, 90 = du haut, 180 = de droite, 270 = du bas. */
   veil(b: Box, angle: number, color: string, alpha: number, o: { id?: string } = {}) {
+    // Avec un panneau photo, le voile reste sur l'aplat : il ne ternit jamais la photo.
+    // (le texte s'y lit déjà sans voile : voile vide, gardé pour l'ordre des calques).
+    if (this.panel) b = { ...b, w: 0, h: 0 };
     return this.rect(b, { type: "linear", angle, stops: [{ offset: 0, color: rgba(color, alpha) }, { offset: 0.55, color: rgba(color, alpha * 0.6) }, { offset: 1, color: rgba(color, 0) }] }, { name: "Voile", role: "scrim", id: o.id });
   }
 
@@ -318,8 +338,61 @@ export class Kit {
     this.layers.push(l);
     return l;
   }
-  fullPhoto() {
-    return this.photo({ x: 0, y: 0, w: this.W, h: this.H }, { full: true });
+  /** `panel` : le modèle accepte le panneau photo (sa colonne de texte et sa signature savent s'y placer). */
+  fullPhoto(o: { panel?: boolean } = {}) {
+    this.panelOk = !!o.panel;
+    const pn = this.panel;
+    if (pn) {
+      // Photo en panneau : le reste de l'affiche reçoit l'aplat de la marque (le texte s'y lit sans voile).
+      this.rect({ x: 0, y: 0, w: this.W, h: this.H }, this.c.bg, { name: "Fond", role: "background" });
+      return this.photo(pn, { crop: this.panelCrop(), name: "Photo" });
+    }
+    return this.photo({ x: 0, y: 0, w: this.W, h: this.H }, { full: true, crop: this.fullCrop() });
+  }
+  private _panel: Box | null | undefined;
+  private panelOk = false;
+  /**
+   * Panneau photo des formats plus larges que la photo (portrait décliné en carré ou en paysage) : quand le sujet
+   * recouvrirait la zone du texte en plein cadre, la photo occupe un côté de l'affiche, entière autour du produit, et
+   * le texte s'installe sur l'aplat de l'autre côté. Sinon (null), la photo reste en plein cadre.
+   */
+  get panel(): Box | null {
+    if (!this.panelOk) return null;
+    if (this._panel !== undefined) return this._panel;
+    this._panel = null;
+    const p = this.i.photo;
+    const b = p?.subject;
+    if (!p || !b || !this.wide || p.width / p.height > (this.W / this.H) * 0.8) return this._panel;
+    const z = this.subjectRect();
+    if (!z) return this._panel;
+    const left = z.x + z.w / 2 > this.W / 2;
+    const zone = { x: left ? 0 : this.W / 2, y: 0, w: this.W / 2, h: this.H * 0.62 };
+    if (this.subjectOverlap(zone) < 0.3) return this._panel;
+    const w = Math.round(this.W * (this.cls === "land" ? 0.54 : 0.52));
+    this._panel = { x: left ? this.W - w : 0, y: 0, w, h: this.H };
+    return this._panel;
+  }
+  /** Recadrage de la photo dans son panneau, centré sur le sujet. */
+  private panelCrop(): ImageLayer["crop"] {
+    const b = this.i.photo?.subject;
+    return this.panel && b ? this.cropFor(this.panel, { u: b.cu ?? (b.u0 + b.u1) / 2, v: b.cv ?? (b.v0 + b.v1) / 2 }) : null;
+  }
+  /** Zone libre pour le texte (toute l'affiche, ou le côté opposé au panneau photo). */
+  get free(): Box {
+    const pn = this.panel;
+    if (!pn) return { x: 0, y: 0, w: this.W, h: this.H };
+    return pn.x > 0 ? { x: 0, y: 0, w: pn.x, h: this.H } : { x: pn.w, y: 0, w: this.W - pn.w, h: this.H };
+  }
+  /**
+   * Recadrage de la photo pleine page centré sur son sujet (le produit) quand elle n'a pas la forme de l'affiche :
+   * une photo portrait déclinée en paysage garde le produit entier au lieu d'être coupée au milieu.
+   */
+  fullCrop(): ImageLayer["crop"] {
+    const p = this.i.photo;
+    const b = p?.subject;
+    if (!p || !b) return null;
+    if (Math.abs(p.width / p.height - this.W / this.H) < 0.02) return null;
+    return this.cropFor({ x: 0, y: 0, w: this.W, h: this.H }, { u: b.cu ?? (b.u0 + b.u1) / 2, v: b.cv ?? (b.v0 + b.v1) / 2 });
   }
 
   /** Largeur d'un texte sur une ligne (onglets, étiquettes ajustées à leur texte). */
@@ -380,13 +453,15 @@ export class Kit {
     const lg = this.i.logo;
     const hgt = o.height ?? this.logoHeight();
     if (lg) {
-      // Fond sombre sous le logo (mesuré sur ce qui est déjà dessiné) : version claire du logo.
-      const dark = o.onDark ?? isDark(this.under({ x: b.x, y: b.y, w: Math.min(b.w, this.W * 0.3), h: hgt }, this.layers.filter((l) => l.kind !== "text" && l.kind !== "button")));
-      const id = dark && lg.lightId ? lg.lightId : lg.id;
-      const im = this.i.images.get(id)!;
-      const lw = Math.min((im.width / im.height) * hgt, b.w, this.W * 0.5);
-      const lh = (im.height / im.width) * lw;
+      const im0 = this.i.images.get(lg.id)!;
+      const lw = Math.min((im0.width / im0.height) * hgt, b.w, this.W * 0.5);
+      const lh = (im0.height / im0.width) * lw;
       const x = o.align === "center" ? b.x + (b.w - lw) / 2 : o.align === "right" ? b.x + b.w - lw : b.x;
+      // Fond mesuré exactement sous le logo (ce qui est déjà dessiné) : version claire dès que le blanc s'y lit
+      // mieux que le noir (un gris moyen de photo prend donc la version claire).
+      const under = this.under({ x, y: b.y, w: lw, h: lh }, this.layers.filter((l) => l.kind !== "text" && l.kind !== "button"));
+      const dark = o.onDark ?? contrast("#FFFFFF", under) >= contrast("#111111", under);
+      const id = dark && lg.lightId ? lg.lightId : lg.id;
       const l: ImageLayer = { ...this.base("logo", "Logo", "logo", { x, y: b.y, w: lw, h: lh }, { h: o.align === "center" ? "center" : o.align === "right" ? "right" : "left", v: "top" }), kind: "image", assetId: id, fit: "contain", crop: null, radius: 0, shadow: null };
       this.layers.push(l);
       return l;
@@ -518,6 +593,13 @@ export class Kit {
     const p = this.i.photo;
     const b = p?.subject;
     if (!p || !b) return null;
+    if (this._panel) {
+      const c = this.panelCrop()!;
+      const pn = this._panel;
+      return { x: pn.x + ((b.u0 - c.x) / c.w) * pn.w, y: pn.y + ((b.v0 - c.y) / c.h) * pn.h, w: ((b.u1 - b.u0) / c.w) * pn.w, h: ((b.v1 - b.v0) / c.h) * pn.h };
+    }
+    const c = this.fullCrop();
+    if (c) return { x: ((b.u0 - c.x) / c.w) * this.W, y: ((b.v0 - c.y) / c.h) * this.H, w: ((b.u1 - b.u0) / c.w) * this.W, h: ((b.v1 - b.v0) / c.h) * this.H };
     const s = Math.max(this.W / p.width, this.H / p.height);
     const dw = p.width * s;
     const dh = p.height * s;
@@ -538,6 +620,7 @@ export class Kit {
   }
   /** Côté de la photo le plus calme pour le texte (à l'opposé de ses points d'intérêt). */
   calmSide(): "left" | "right" {
+    if (this.panel) return this.panel.x > 0 ? "left" : "right";
     const z = this.subjectRect();
     if (z) return z.x + z.w / 2 > this.W / 2 ? "left" : "right";
     const pts = this.i.photo?.points?.slice(0, 4) ?? [];

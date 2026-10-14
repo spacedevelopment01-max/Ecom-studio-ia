@@ -20,7 +20,8 @@ function inkFor(k: Kit, b: Box): { ink: string; soft: string; veil: string; tone
 
 /** Ligne en petites capitales espacées (« UN SON QUI VOUS SUIT PARTOUT »). Renvoie sa hauteur (0 sans texte). */
 function caps(k: Kit, text: string | null | undefined, b: { x: number; y: number; w: number }, align: "left" | "center" | "right", color: string, scale = 1): number {
-  const t = text?.trim();
+  // Le séparateur reste collé au mot qui le précède : une ligne ne commence jamais par « · ».
+  const t = text?.trim().replace(/\s+([•·|])\s+/g, "\u00A0$1 ");
   if (!t) return 0;
   const size = Math.max(22, k.U * 0.022 * scale);
   return k.text("subtitle", t, b, { size, align, color, upper: true, spacing: Math.round(size * 0.2), weight: 500, maxLines: 2, minSize: 22, lineHeight: 1.35 }, "subline", "Ligne").h;
@@ -31,6 +32,14 @@ function caps(k: Kit, text: string | null | undefined, b: { x: number; y: number
  * capitales très espacées. `bottom` : posée sur la marge basse.
  */
 function signature(k: Kit, b0: { x: number; y: number; w: number }, align: "left" | "center" | "right", color: string, bottom = false) {
+  // Panneau photo : la signature reste sur l'aplat, au pied de la colonne de texte (jamais sur la photo).
+  if (k.panel) {
+    const f = k.free;
+    const x = f.x + (f.x > 0 ? k.m.side * 0.8 : k.m.side);
+    b0 = { x, y: b0.y, w: f.w - k.m.side * 1.8 };
+    align = "left";
+    bottom = true;
+  }
   // Boîte étroite dans son coin : la signature ne recouvre jamais le bouton ni le titre.
   const w = Math.min(b0.w, k.W * 0.3);
   // Posée en bas : sa hauteur est connue d'avance, la version du logo (claire ou sombre) est choisie à sa vraie place.
@@ -86,6 +95,12 @@ function iconList(k: Kit, b: { x: number; y: number; w: number }, feats: string[
 /** Colonne de texte du côté calme de la photo. */
 function column(k: Kit, share: number): Box & { align: "left" | "right" } {
   const side = k.calmSide();
+  // Panneau photo : la colonne remplit l'aplat, à distance de la photo.
+  if (k.panel) {
+    const f = k.free;
+    const x = f.x + (f.x > 0 ? k.m.side * 0.8 : k.m.side);
+    return { x, y: k.m.top, w: f.w - k.m.side * 1.8, h: k.H - k.m.top - k.m.bottom, align: "left" };
+  }
   const w = k.wide ? k.W * share : k.W - k.m.side * 2;
   const x = !k.wide ? k.m.side : side === "left" ? k.m.side : k.W - k.m.side - w;
   return { x, y: k.m.top, w, h: k.H - k.m.top - k.m.bottom, align: k.wide && side === "right" ? "left" : "left" };
@@ -109,7 +124,7 @@ export const TEMPLATES_M: Template[] = [
     treatments: ["natural", "warm", "cool", "punch"],
     build(k) {
       k.fill(k.c.bg);
-      k.fullPhoto();
+      k.fullPhoto({ panel: true });
       const col = column(k, 0.5);
       const probe = { x: col.x, y: col.y, w: col.w, h: k.H * 0.4 };
       const t0 = inkFor(k, probe);
@@ -136,7 +151,8 @@ export const TEMPLATES_M: Template[] = [
       const bw = Math.min(col.w, k.W * 0.42);
       const at = (by: number) => k.subjectOverlap({ x: col.x, y: by, w: bw, h: bh });
       // Formats larges : en bas de colonne comme la référence, sauf si le produit y est.
-      const by = k.wide && at(low) < 0.1 ? Math.max(under, low) : at(low) < at(under) - 0.05 ? low : under;
+      // Panneau photo : bouton sous le texte, la signature tient le pied de la colonne.
+      const by = k.panel ? under : k.wide && at(low) < 0.1 ? Math.max(under, low) : at(low) < at(under) - 0.05 ? low : under;
       pill(k, col.x, by, col.w, "left", by > under + 1 ? k.toneAt({ x: col.x, y: by, w: bw, h: bh }) : tone);
       // Formats larges : signature dans le coin bas opposé au texte (jamais contre le titre).
       if (k.wide) signature(k, { x: k.m.side, y: 0, w: k.W - k.m.side * 2 }, col.x + col.w / 2 < k.W / 2 ? "right" : "left", ink, true);
@@ -232,7 +248,7 @@ export const TEMPLATES_M: Template[] = [
     treatments: ["natural", "warm", "punch", "cool"],
     build(k) {
       k.fill(k.c.bg);
-      k.fullPhoto();
+      k.fullPhoto({ panel: true });
       const col = column(k, 0.46);
       const probe = { x: col.x, y: col.y, w: col.w, h: k.H * 0.45 };
       const t0 = inkFor(k, probe);
@@ -253,8 +269,9 @@ export const TEMPLATES_M: Template[] = [
       const sig = k.i.tagline?.trim();
       if (sig && sig.toLowerCase() !== k.i.headline.trim().toLowerCase() && sig.length <= 40) {
         const size = Math.max(30, k.U * k.pick(0.06, 0.062, 0.062, 0.068));
-        const w = k.W * (k.wide ? 0.42 : 0.7);
-        const x = k.wide ? (leftCol ? k.W - k.m.side - w : k.m.side) : k.m.side;
+        // Panneau photo : la phrase reste dans la colonne, sur l'aplat.
+        const w = k.panel ? col.w : k.W * (k.wide ? 0.42 : 0.7);
+        const x = k.panel ? col.x : k.wide ? (leftCol ? k.W - k.m.side - w : k.m.side) : k.m.side;
         const hh = size * 2.4;
         const spots = [{ x: k.wide ? x : col.x, y: y + k.U * 0.05 }, { x, y: k.H - k.m.bottom - hh }]
           .filter((p) => p.y + hh <= k.H - k.m.bottom + 1)

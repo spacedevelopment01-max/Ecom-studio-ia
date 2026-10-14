@@ -343,7 +343,8 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
         const { generateImageSet, ownScenePhotos } = await import("./images");
         if (ownScenePhotos(projectId).length) {
           const r = await ctx.step("photo-images", () => generateImageSet(ctx, projectId));
-          return note("images.done", { n: r.created.length });
+          const ads = await pipelineAds(ctx, projectId);
+          return note("images.done", { n: r.created.length + ads });
         }
         return { skipped: p.settings.existingSite ? NO_CUTOUT_SITE() : note("skip.noCutout") };
       }
@@ -398,12 +399,16 @@ async function runStep(step: StepId, ctx: JobContext, payload: PipelinePayload):
  * documents à calques ouverts dans l'éditeur visuel. Une publicité impossible (pas assez de faits confirmés) ne
  * bloque pas la création. Point de reprise : une reprise ne refait ni ne repaie rien.
  */
+/** Publicités créées pendant la conception du projet (produit ou service). */
+export const PIPELINE_ADS = 3;
+
 async function pipelineAds(ctx: JobContext, projectId: string): Promise<number> {
   return ctx.step("ads-v2", async () => {
     ctx.progress(0.96, L("Publicités (moteur publicitaire)", "Ads (advertising engine)"));
     try {
       const { runAdEngineV2 } = await import("../ads-v2/engine");
-      const r = await runAdEngineV2(ctx, projectId, { count: 2, maxCostEur: 1 });
+      // 3 vraies publicités (3 concepts, 3 photos différentes ; les autres formats reprennent la même photo).
+      const r = await runAdEngineV2(ctx, projectId, { count: PIPELINE_ADS, maxCostEur: 1.5 });
       return r.outcomes.filter((o) => o.assetId).length;
     } catch (e) {
       if (e instanceof JobPaused || e instanceof JobCancelled) throw e;

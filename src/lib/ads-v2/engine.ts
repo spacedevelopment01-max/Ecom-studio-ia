@@ -64,6 +64,8 @@ export type AdRequestV2 = {
   maxCostEur?: number;
   /** Textes seulement (fenêtre « Campagne ») : angles, textes contrôlés et plan de test, sans création d'image. */
   copyOnly?: boolean;
+  /** Formats voulus par le client (ex. ["4:5"]) parmi ceux des plateformes ; absent : tous. */
+  aspects?: string[];
 };
 
 export type AdRunResult = {
@@ -187,7 +189,9 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
 
     if (req.copyOnly) return result;
     // 2. Créations par concept et par format.
-    const formats = formatsFor(platforms);
+    const all = formatsFor(platforms);
+    const wanted = req.aspects?.length ? all.filter((f) => req.aspects!.includes(f.aspect)) : all;
+    const formats = wanted.length ? wanted : all;
     for (const [ci, concept] of result.concepts.entries()) {
       const images = new Map<AspectId, { assetId: string; data: Buffer; withProduct: boolean } | null>();
       // Produit montré seulement sur les photos du client (en situation, rien à détourer) : une photo ENTIÈRE par
@@ -313,6 +317,12 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     // Image (Image Engine V2) : une par orientation et par variante, réutilisée entre formats.
     const key = `${orientation(f.aspect)}:${variant}` as AspectId;
+    // Photo générée (payée) pour ce concept dans un autre format : la même photo sert à tous ses formats, recadrée sur
+    // le produit par la mise en page — jamais une nouvelle image payée pour un autre format.
+    if (!o.images.has(key)) {
+      const paid = [...o.images.entries()].find(([k, v]) => k.endsWith(`:${variant}`) && v && getAsset(v.assetId)?.origin === "generated");
+      if (paid) o.images.set(key, paid[1]);
+    }
     if (!o.images.has(key)) {
       stats.images++;
       const aspect = orientation(f.aspect);
@@ -320,7 +330,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       const textZone = textZoneFor(toAdLayout(layout), fmt[0], fmt[1]);
       const topic = [concept.visual.subject, copy.visual].filter(Boolean).join(" — ").slice(0, 300);
       const dir = concept.direction;
-      const common = { support: "ad" as const, aspect, topic, variant: variant || null, allowGenerate: true, name: `pub-${concept.angle.type}`, maxControls: 3, textZone: dir?.textZone ?? textZone, ...(dir ? { shot: dir.shot } : {}) };
+      const common = { support: "ad" as const, aspect, topic, variant: variant || null, allowGenerate: true, ...(deps.canGenerate ? { noStock: true } : {}), name: `pub-${concept.angle.type}`, maxControls: 3, textZone: dir?.textZone ?? textZone, ...(dir ? { shot: dir.shot } : {}) };
       // Produit : d'abord une vraie mise en scène publicitaire AVEC le produit réel (photo de référence, pixels
       // d'origine remis par-dessus) ; à défaut, un décor d'univers et le détourage posé par la composition.
       let got: { assetId: string; data: Buffer; withProduct: boolean } | null = null;

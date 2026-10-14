@@ -57,6 +57,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       audience: z.string().max(600).optional(),
       /** Offre RÉELLE de la campagne (sinon aucune promotion n'est écrite). */
       offer: z.string().max(200).optional(),
+      /** Format voulu par le client (une image différente par publicité, à ce format). */
+      aspects: z.array(z.enum(["1:1", "4:5", "9:16", "16:9", "1.91:1", "2:3"])).max(4).optional(),
     }),
   );
   if (b.action === "reject") {
@@ -67,6 +69,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   }
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'ads.v2' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Des publicités sont déjà en préparation.", "Ads are already being prepared."));
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "ads.v2", label: L("Publicités : angles, textes et créations", "Ads: angles, copy and creatives"), payload: { projectId: p.id, request: { count: b.count, platforms: b.platforms, objective: b.objective, audience: b.audience, offer: b.offer } } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "ads.v2", label: L("Publicités : angles, textes et créations", "Ads: angles, copy and creatives"), payload: { projectId: p.id, request: { count: b.count, platforms: b.platforms, objective: b.objective, audience: b.audience, offer: b.offer, aspects: b.aspects } } });
   return ok({ jobId: job.id, ...view(p.id) });
 });
