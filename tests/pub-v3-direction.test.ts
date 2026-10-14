@@ -147,3 +147,55 @@ describe("contrôle de fidélité du produit (photos générées)", () => {
     expect(AD_REVIEW_SYSTEM).toContain("Le produit réel est celui des photos du client");
   });
 });
+
+describe("coût et sévérité des photos publicitaires", () => {
+  it("publicités en qualité « medium » par défaut, seuils du contrôle baissés d'un cran", async () => {
+    const { imageQuality, openaiImageMax } = await import("@/lib/ai/media-providers");
+    const { POLICIES } = await import("@/lib/quality/policies");
+    expect(imageQuality("ad_visual", "high")).toBe("medium");
+    expect(imageQuality("logo", "high")).toBe("high");
+    expect(POLICIES.image_v2.final).toBe(7);
+    expect(POLICIES.image_v2.criteriaFloors?.fidelity).toBe(7);
+    expect(POLICIES.ad_v2.final).toBe(7);
+    expect(typeof openaiImageMax).toBe("function");
+  });
+});
+
+describe("création correcte mais perfectible", () => {
+  it("essais épuisés sans défaut grave (note ≥ 6) : gardée « à améliorer », jamais jetée", async () => {
+    const { createUser } = await import("@/lib/auth");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { runAdEngineV2 } = await import("@/lib/ads-v2/engine");
+    const { getAsset } = await import("@/lib/library");
+    const { seedImageFixture } = await import("./image-v2-fixtures");
+    const { mockAdDeps, adReview } = await import("./ads-v2-mock");
+    const u = await createUser(`garde-${Date.now()}@test.fr`, "motdepasse-test", "G");
+    const pid = seedImageFixture(u.id, "hightech");
+    const { deps } = mockAdDeps({ userId: u.id, projectId: pid, review: () => adReview(6.3, { generic: true, issues: ["accroche banale"], fix: { target: "hook", instruction: "accroche plus précise" } }) });
+    const r = await runWithLang({ ui: "fr", content: "fr" }, () => runAdEngineV2(null, pid, { count: 1, platforms: ["meta_story"] }, deps));
+    expect(r.outcomes[0].verdict).toBe("PROVISIONAL");
+    expect(getAsset(r.outcomes[0].assetId!)!.status).toBe("review");
+  }, 240_000);
+});
+
+describe("une seule image payante par création", () => {
+  it("le contrôle demande un autre visuel : la photo générée (payée) n'est pas remplacée par une autre photo payée", async () => {
+    const { createUser } = await import("@/lib/auth");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { runAdEngineV2 } = await import("@/lib/ads-v2/engine");
+    const { saveAsset } = await import("@/lib/library");
+    const { seedImageFixture } = await import("./image-v2-fixtures");
+    const { mockAdDeps, adReview } = await import("./ads-v2-mock");
+    const u = await createUser(`unepaye-${Date.now()}@test.fr`, "motdepasse-test", "P");
+    const pid = seedImageFixture(u.id, "saas");
+    const { deps } = mockAdDeps({ userId: u.id, projectId: pid, review: () => adReview(6.3, { issues: ["image banale"], fix: { target: "visual", instruction: "image plus forte" } }) });
+    let paid = 0;
+    deps.image = async () => {
+      paid++;
+      const a = await saveAsset({ projectId: pid, userId: u.id, data: fs.readFileSync("scripts/demo-products/inputs/pixabay/cafe-1.jpg"), name: "gen.jpg", mime: "image/jpeg", role: "scene", origin: "generated", status: "review" });
+      return { assetId: a.id, data: fs.readFileSync("scripts/demo-products/inputs/pixabay/cafe-1.jpg") };
+    };
+    await runWithLang({ ui: "fr", content: "fr" }, () => runAdEngineV2(null, pid, { count: 1, platforms: ["meta_story"] }, deps));
+    expect(paid).toBe(1);
+  }, 240_000);
+});

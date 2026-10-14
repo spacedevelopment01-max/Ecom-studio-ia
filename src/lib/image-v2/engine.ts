@@ -73,8 +73,10 @@ type Plan = { action: "regenerate" | "change_direction" | "abandon" | "stop"; in
 /** Correction ciblée à partir du verdict et de la relecture : jamais une reprise « à l'aveugle ». */
 export function targetedCorrection(d: GateDecision, r: ImageReview | null, brief: VisualBrief): Plan {
   const codes = [...d.fatalCodes, ...d.blockingCodes];
-  if (brief.productFidelity && (codes.includes("product_altered") || codes.includes("wrong_product") || r?.fix.target === "product"))
+  if (brief.productFidelity && (codes.includes("product_altered") || codes.includes("wrong_product")))
     return { action: "abandon", instruction: "produit transformé : la transformation est abandonnée, la photo d'origine (détourage) reste la référence" };
+  // Produit ressemblant aux détails près : pas de nouvelle génération payante pour un détail (gardée « à vérifier »).
+  if (brief.productFidelity && r?.fix.target === "product") return { action: "stop", instruction: null };
   if (codes.includes("off_topic") || r?.fix.target === "direction") return { action: "change_direction", instruction: r?.fix.instruction || "scène hors sujet : changer de direction artistique" };
   if (d.verdict !== "RETRY" || d.action !== "regenerate") return { action: "stop", instruction: null };
   const target = r?.fix.target ?? "none";
@@ -273,6 +275,11 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     const d = gateImage({ brief, origin: "generated", local, review, reviewError, attempt });
     const g = gateSave({ ...base, candidateId: `img2:${bh}` }, d);
     const plan = targetedCorrection(d, review, brief);
+    // Dernier essai (ou plus de correction utile) : une image payée correcte (contrôlée, sans défaut rédhibitoire, note
+    // ≥ plancher « à vérifier ») est gardée et utilisée, marquée à vérifier — jamais jetée pour un détail.
+    const stopping = plan.action === "stop" || !plan.instruction || attempt >= maxAttempts - 1;
+    const floor = POLICIES.image_v2.provisional?.floor ?? Infinity;
+    const keep = d.verdict === "PROVISIONAL" || (stopping && plan.action !== "abandon" && plan.action !== "change_direction" && d.verdict === "RETRY" && d.checked && !d.fatalCodes.length && (d.score ?? 0) >= floor);
     // Image payée : gardée (refusée ou à vérifier) pour le diagnostic ; seule une FINAL est réutilisable automatiquement.
     const asset = await saveImageV2({
       projectId: p.id,
@@ -283,7 +290,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       brief,
       meta: { version: IMAGE_V2_VERSION, origin: brief.productFidelity ? "edited" : "generated", provider: gen.provider, model: gen.model, briefHash: d.verdict === "FINAL" ? bh : `trial:${bh}`, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], license: null, productRef: brief.references[0] ?? null, corrections: [...corrections], phash: local.hash, attempts: attempt + 1 },
       gate: g,
-      status: d.verdict === "FINAL" ? "review" : "rejected",
+      status: d.verdict === "FINAL" || keep ? "review" : "rejected",
       slot: req.slot ?? null,
       service: req.service?.name ?? null,
       sourceAssetId: brief.references[0] ?? null,
@@ -294,6 +301,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       seriesHashes.push(local.hash);
       return { outcome: last, changeDirection: false };
     }
+    if (keep) return { outcome: { ...last, verdict: "PROVISIONAL", assetId: asset.id, reason: `${d.reason} — gardée, à vérifier` }, changeDirection: false };
     if (plan.action === "abandon") return { outcome: { ...last, verdict: "REJECTED", reason: plan.instruction ?? d.reason }, changeDirection: false };
     if (plan.action === "change_direction") return { outcome: { ...last, verdict: "REJECTED" }, changeDirection: true };
     if (plan.action !== "regenerate" || !plan.instruction) break;

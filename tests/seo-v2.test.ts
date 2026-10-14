@@ -295,7 +295,7 @@ describe("SEO V2 — briques locales", async () => {
     expect(gateContent({ type: "product_page", local: { ...local, codes: ["invented_claim"], issues: ["x"] }, review: null, attempt: 2 }).verdict).toBe("REJECTED");
     // Une politique par type ; version des politiques changée.
     for (const k of ["seo_product_v2", "seo_service_v2", "seo_category_v2", "seo_home_v2", "seo_article_v2", "seo_metadata_v2", "seo_strategy_v2", "seo_tech_audit_v2"] as const) expect(POLICIES[k]).toBeTruthy();
-    expect(POLICY_VERSION).toBe("2026-10-p11g"); // politiques changées (présence humaine : unauthorized_person fatal pour images et vidéos)
+    expect(POLICY_VERSION).toBe("2026-10-p11h"); // politiques changées (présence humaine : unauthorized_person fatal pour images et vidéos)
     expect(POLICIES.seo_product_v2.blocking).toEqual(expect.arrayContaining(["invented_claim", "invented_source", "wrong_fact", "unconfirmed_commercial"]));
   });
 

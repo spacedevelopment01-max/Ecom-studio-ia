@@ -58,7 +58,9 @@ const words = (s: string) => s.toLowerCase().split(/[^a-z]+/).filter((w) => w.le
 export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirections?: ArtDirectionId[]; peopleAllowed?: boolean } = {}): VisualBrief {
   const services = p.business === "services";
   // Règle de présence humaine : sans photo du client avec une personne ni accord explicite, aucune personne demandée.
-  const people = opts.peopleAllowed ?? peopleAllowedFor(p);
+  // Photo du produit réel générée d'après sa photo (référence) : jamais de personne (la consigne du modèle l'interdit ;
+  // un brief qui en demanderait une se contredirait, et la personne d'une photo du client ne se reproduit pas).
+  const people = (req.references?.length ? false : undefined) ?? opts.peopleAllowed ?? peopleAllowedFor(p);
   const angles = people ? ANGLES : ANGLES_NO_PEOPLE;
   const intents = people ? INTENTS : INTENTS_NO_PEOPLE;
   const noPerson = (xs: string[]) => (people ? xs : xs.filter((x) => !mentionsPerson(x)));

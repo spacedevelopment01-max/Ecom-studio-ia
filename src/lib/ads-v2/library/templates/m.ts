@@ -117,6 +117,11 @@ export const TEMPLATES_M: Template[] = [
       const veilAt = k.layers.length;
       const { ink, soft, tone } = t0;
       let y = col.y;
+      // Formats hauts : la signature en tête, dans la zone calme du texte (en bas, elle tomberait sur la photo).
+      if (!k.wide) {
+        const sg = signature(k, { x: col.x, y, w: col.w }, "left", ink);
+        y += sg.h + k.U * 0.035;
+      }
       const t = k.title({ x: col.x, y, w: col.w }, { size: titleSize(k), color: ink, maxLines: 3, lineHeight: 1.0 });
       y += t.h + k.U * 0.025;
       y += caps(k, k.i.subline, { x: col.x, y, w: col.w * 0.9 }, "left", soft);
@@ -133,8 +138,8 @@ export const TEMPLATES_M: Template[] = [
       // Formats larges : en bas de colonne comme la référence, sauf si le produit y est.
       const by = k.wide && at(low) < 0.1 ? Math.max(under, low) : at(low) < at(under) - 0.05 ? low : under;
       pill(k, col.x, by, col.w, "left", by > under + 1 ? k.toneAt({ x: col.x, y: by, w: bw, h: bh }) : tone);
-      // Signature dans le coin bas opposé au texte (jamais contre le titre).
-      signature(k, { x: k.m.side, y: 0, w: k.W - k.m.side * 2 }, col.x + col.w / 2 < k.W / 2 ? "right" : "left", ink, true);
+      // Formats larges : signature dans le coin bas opposé au texte (jamais contre le titre).
+      if (k.wide) signature(k, { x: k.m.side, y: 0, w: k.W - k.m.side * 2 }, col.x + col.w / 2 < k.W / 2 ? "right" : "left", ink, true);
     },
   },
   {
@@ -234,25 +239,33 @@ export const TEMPLATES_M: Template[] = [
       sideVeil(k, col, t0.veil, 0.6);
       const { ink, soft, tone } = inkFor(k, probe);
       let y = col.y;
+      // Formats hauts : la signature en tête, dans la zone calme du texte (en bas, elle tomberait sur la photo).
+      if (!k.wide) y += signature(k, { x: col.x, y, w: col.w }, "left", ink).h + k.U * 0.035;
       const t = k.title({ x: col.x, y, w: col.w }, { size: titleSize(k), color: ink, maxLines: 3, lineHeight: 1.0 });
       y += t.h + k.U * 0.022;
       y += caps(k, k.i.subline, { x: col.x, y, w: col.w * 0.9 }, "left", soft) + k.U * 0.04;
-      pill(k, col.x, y, col.w, "left", tone);
-      // Formats hauts : la colonne prend toute la largeur ; la signature va en bas à droite, la phrase en bas à gauche.
+      const b = pill(k, col.x, y, col.w, "left", tone);
+      y += b.h;
       const leftCol = k.wide ? col.x + col.w / 2 < k.W / 2 : true;
       if (k.wide) signature(k, { x: k.m.side, y: k.m.top, w: k.W - k.m.side * 2 }, leftCol ? "right" : "left", ink);
-      else signature(k, { x: k.m.side, y: 0, w: k.W - k.m.side * 2 }, "right", ink, true);
-      // Phrase manuscrite : la signature de la marque, si elle n'est pas déjà le titre (jamais un slogan inventé).
+      // Phrase manuscrite : la signature de la marque, si elle n'est pas déjà le titre (jamais un slogan inventé). Posée
+      // sous le bouton ou en bas — la place qui ne recouvre pas le produit de la photo ; sinon pas de phrase.
       const sig = k.i.tagline?.trim();
       if (sig && sig.toLowerCase() !== k.i.headline.trim().toLowerCase() && sig.length <= 40) {
         const size = Math.max(30, k.U * k.pick(0.06, 0.062, 0.062, 0.068));
         const w = k.W * (k.wide ? 0.42 : 0.7);
         const x = k.wide ? (leftCol ? k.W - k.m.side - w : k.m.side) : k.m.side;
-        const probeS = { x, y: k.H - k.m.bottom - size * 2.6, w, h: size * 2.4 };
-        const s = inkFor(k, probeS);
-        const l = k.text("body", sig, { x, y: 0, w }, { family: SCRIPT, size, align: "center", color: s.ink, maxLines: 2, minSize: 24, lineHeight: 1.05 }, "script", "Phrase manuscrite");
-        l.y = k.H - k.m.bottom - l.h;
-        l.rotation = -6;
+        const hh = size * 2.4;
+        const spots = [{ x: k.wide ? x : col.x, y: y + k.U * 0.05 }, { x, y: k.H - k.m.bottom - hh }]
+          .filter((p) => p.y + hh <= k.H - k.m.bottom + 1)
+          .map((p) => ({ ...p, o: k.subjectOverlap({ x: p.x, y: p.y, w, h: hh }) }))
+          .sort((a, b) => a.o - b.o);
+        const at = spots[0];
+        if (at && at.o < 0.02) {
+          const s2 = inkFor(k, { x: at.x, y: at.y, w, h: hh });
+          const l = k.text("body", sig, { x: at.x, y: at.y, w }, { family: SCRIPT, size, align: k.wide ? "center" : "left", color: s2.ink, maxLines: 2, minSize: 24, lineHeight: 1.05 }, "script", "Phrase manuscrite");
+          l.rotation = -6;
+        }
       }
     },
   },

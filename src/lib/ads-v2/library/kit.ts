@@ -527,8 +527,11 @@ export class Kit {
   }
   /** Part d'une zone posée sur le sujet de la photo (0 = à côté du produit, 1 = entièrement dessus). */
   subjectOverlap(b: Box): number {
-    const z = this.subjectRect();
-    if (!z) return 0;
+    const z0 = this.subjectRect();
+    if (!z0) return 0;
+    // Marge de sécurité autour du produit (le repérage est approximatif : un bord, un arceau peuvent dépasser).
+    const pad = this.U * 0.06;
+    const z = { x: z0.x - pad, y: z0.y - pad, w: z0.w + pad * 2, h: z0.h + pad * 2 };
     const w = Math.min(b.x + b.w, z.x + z.w) - Math.max(b.x, z.x);
     const h = Math.min(b.y + b.h, z.y + z.h) - Math.max(b.y, z.y);
     return w > 0 && h > 0 ? (w * h) / Math.max(1, b.w * b.h) : 0;

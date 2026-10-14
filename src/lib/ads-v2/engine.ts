@@ -35,7 +35,7 @@ import { HERO_TEMPLATES } from "./library";
 import { planDirections, templateFor } from "./direction";
 import { confirmedFeatures } from "./poster";
 import { ownScenePhotos } from "../engine/images";
-import { assetData } from "../library";
+import { assetData, getAsset } from "../library";
 import { dHash, hamming } from "../image-v2/quality";
 
 /** Distance minimale (dHash, 64 bits) entre deux publicités d'une campagne pour les dire différentes. */
@@ -51,6 +51,8 @@ import { projectRights } from "../plan-gates";
 
 export const ADS_V2_VERSION = "7.1";
 export const DEFAULT_AD_CAP_EUR = 3;
+/** Note à partir de laquelle une création sans défaut rédhibitoire est gardée « à améliorer » plutôt que refusée. */
+export const AD_KEEP_FLOOR = 6;
 
 export type AdRequestV2 = {
   count?: number;
@@ -192,7 +194,8 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
       // concept, la même dans tous les formats du concept.
       // Avec l'IA d'images : chaque concept a sa propre photo publicitaire, générée à partir de la vraie photo du
       // produit (référence) ; le concept « mise en situation » garde la photo entière du client.
-      const own = ownPhotos.length && (!deps.canGenerate || concept.direction?.id === "lifestyle") ? ownPhotos[ci % ownPhotos.length] : null;
+      // Une seule publicité demandée : la photo générée (le produit seul, en scène) plutôt que la photo d'origine.
+      const own = ownPhotos.length && (!deps.canGenerate || (concept.direction?.id === "lifestyle" && result.concepts.length > 1)) ? ownPhotos[ci % ownPhotos.length] : null;
       if (own) for (const a of ["1:1", "4:5", "16:9"]) for (const v of [0, 1, 2]) images.set(`${a}:${v}` as AspectId, { assetId: own.id, data: assetData(own), withProduct: true });
       let conceptReview: AdReview | null = null;
       let reviewed = false;
@@ -362,7 +365,10 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
         reviewError = (e as Error).message;
       }
     } else if (!local.codes.length && o.prior) review = o.prior; // autre format du même concept : relecture du format principal reprise
-    const d = gateAd({ local, review, reviewError, attempt, peopleAllowed: peopleAllowedFor(p) });
+    const d0 = gateAd({ local, review, reviewError, attempt, peopleAllowed: peopleAllowedFor(p) });
+    // Essais épuisés sans défaut rédhibitoire et note correcte (≥ 6/10) : la création reste visible et modifiable,
+    // marquée « à améliorer » (jamais jetée pour une accroche jugée banale ou un critère un peu faible).
+    const d = d0.verdict === "REJECTED" && !d0.fatal && d0.checked && (d0.score ?? 0) >= AD_KEEP_FLOOR ? { ...d0, verdict: "PROVISIONAL" as const, reason: `${d0.reason} — gardée, à améliorer` } : d0;
     const g = gateSave({ userId: p.userId, projectId: p.id, jobId, candidateId: `ads2:${concept.id}:${f.platform}:${f.aspect}` }, d);
     const asset = await saveAsset({
       projectId: p.id,
@@ -409,7 +415,16 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       if (next.hook === copy.hook && next.primary === copy.primary) break;
       copy = next;
       claims = claimIssues([{ id: concept.id, copy }], p, o.insight, o.limits).get(concept.id)!;
-    } else variant++;
+    } else {
+      // Nouvelle image : seulement si l'actuelle n'a rien coûté (photo du client, banque d'images). Une photo générée
+      // (payée) n'est jamais remplacée par une autre photo payée : une seule image payante par création.
+      const cur = img?.assetId ? getAsset(img.assetId) : undefined;
+      if (cur?.origin === "generated") break;
+      variant++;
+    }
   }
+  // Reprises arrêtées (rien de gratuit à tenter) : une création correcte sans défaut rédhibitoire reste « à améliorer ».
+  if (last && last.outcome.verdict === "RETRY" && (last.outcome.score ?? 0) >= AD_KEEP_FLOOR && !last.outcome.codes.some((c) => POLICIES.ad_v2.fatal.includes(c)))
+    last = { ...last, outcome: { ...last.outcome, verdict: "PROVISIONAL", reason: `${last.outcome.reason} — gardée, à améliorer` } };
   return last!;
 }

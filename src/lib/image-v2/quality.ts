@@ -111,7 +111,9 @@ export function reviewCodes(r: ImageReview, brief: VisualBrief): string[] {
   // Règle de présence humaine : personne visible sans autorisation du client = refus (défaut fatal).
   codes.push(...personCodes(r.personVisible, brief.people !== false));
   if (brief.productFidelity && r.wrongProduct) codes.push("wrong_product");
-  if (brief.productFidelity && (r.productAltered || r.criteria.fidelity < 6)) codes.push("product_altered");
+  // Produit réellement autre (fidélité très faible, ou modification signalée avec une fidélité faible) : refus. Un
+  // produit ressemblant aux détails près reste jugé par la note de fidélité (reprise, puis « à vérifier »).
+  if (brief.productFidelity && (r.criteria.fidelity < 5 || (r.productAltered && r.criteria.fidelity < 6))) codes.push("product_altered");
   if (r.textInImage) codes.push("text_in_image");
   if (r.deformed) codes.push("deformed");
   if (r.artifacts || r.criteria.artifacts < 5) codes.push("artifacts");

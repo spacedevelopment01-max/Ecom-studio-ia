@@ -281,7 +281,9 @@ export function openaiImageMax(model: string, o: { prompt: string; images: numbe
   // Avec le flux, les aperçus s'ajoutent (≈ 2 × 100 jetons, < 5 % d'une image haute qualité) : +5 % sur le tarif par image.
   if (p.unit === "image") return Math.ceil(cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro * (openaiStreams(model) ? 1.05 : 1));
   // Au jeton : seulement pour le modèle dont la table officielle des jetons de sortie est connue.
-  if (model !== "gpt-image-1") throw new PermanentError(L(`Jetons de sortie de ${model} inconnus : saisissez un tarif par image dans l'administration (coût maximal non borné, génération bloquée).`, `Output tokens of ${model} are unknown: enter a per-image price in the admin settings (maximum cost not bounded, generation blocked).`));
+  // gpt-image-1.5 : mêmes jetons de sortie par taille et qualité (page officielle du modèle : « medium » 1024² = 1 056 ;
+  // mesuré en réel : « high » 1024×1536 ≈ 6 240 + aperçus).
+  if (model !== "gpt-image-1" && model !== "gpt-image-1.5") throw new PermanentError(L(`Jetons de sortie de ${model} inconnus : saisissez un tarif par image dans l'administration (coût maximal non borné, génération bloquée).`, `Output tokens of ${model} are unknown: enter a per-image price in the admin settings (maximum cost not bounded, generation blocked).`));
   const out = OPENAI_OUT_TOKENS[o.quality]?.[o.size];
   if (!out) throw new PermanentError(L(`Taille d'image ${o.size} sans borne de coût connue : génération bloquée.`, `Image size ${o.size} has no known cost bound: generation blocked.`));
   // Réponse en flux : chaque image partielle est facturée en plus (≈ 100 jetons de sortie).
@@ -548,7 +550,19 @@ export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): 
 const openaiTransparent = (model: string) => !!mediaModel("openai", model)?.caps.transparent;
 
 /** Génération d'image par le fournisseur d'images configuré (Gemini ou OpenAI), décomptée et facturée. */
-async function generateImageImpl(ctx: Ctx, input: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed> }) {
+/**
+ * Qualité des images d'un usage (administration : `ai.media.quality`). Publicités : « medium » par défaut — tarif
+ * officiel GPT Image 1.5 ≈ 0,05 $ l'image portrait au lieu de ≈ 0,20 $ en « high », pour un rendu publicitaire
+ * jugé suffisant (texte et bouton posés ensuite par le studio).
+ */
+export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "high"): "medium" | "high" {
+  const set = getJsonSetting<Partial<Record<MediaUsage, string>>>("ai.media.quality", {});
+  const v = usage ? (set[usage] ?? (usage === "ad_visual" ? "medium" : undefined)) : undefined;
+  return v === "medium" || v === "high" ? v : asked;
+}
+
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference: Buffer | null; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed> }) {
+  const input = { ...input0, quality: imageQuality(input0.usage, input0.quality) };
   const provider = imageProviderAvailable({ references: input.reference ? 1 : 0, ...(input.usage ? { usage: input.usage } : {}), ...input.need });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
   const text = input.text;

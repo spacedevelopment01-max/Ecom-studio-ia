@@ -187,7 +187,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     expect(local.ok).toBe(true);
     const off = gateImage({ brief: b, origin: "generated", local, review: review(9.6, { offTopic: true }), attempt: 0 });
     expect(off).toMatchObject({ verdict: "REJECTED", fatal: true });
-    const dull = gateImage({ brief: b, origin: "generated", local, review: review(8, {}, { aesthetics: 6 }), attempt: 2 });
+    const dull = gateImage({ brief: b, origin: "generated", local, review: review(8, {}, { aesthetics: 5.5 }), attempt: 2 });
     expect(dull.verdict).not.toBe("FINAL");
     expect(gateImage({ brief: b, origin: "generated", local, review: null, reviewError: "délai", attempt: 0 }).verdict).not.toBe("FINAL");
     expect(gateImage({ brief: b, origin: "generated", local, review: null, attempt: 0 }).verdict).not.toBe("FINAL");
@@ -203,14 +203,14 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     const b = buildBrief(p, { kind: "packshot", references: ["ref"] });
     expect(b.productFidelity).toBe(true);
     const local = await localImageCheck(await mockImage(4, 1080, 1080), b);
-    const d = gateImage({ brief: b, origin: "generated", local, review: review(9, { productAltered: true, fix: { target: "product", instruction: "étiquette redessinée" } }), attempt: 0 });
+    const d = gateImage({ brief: b, origin: "generated", local, review: review(9, { productAltered: true, fix: { target: "product", instruction: "étiquette redessinée" } }, { fidelity: 4 }), attempt: 0 });
     expect(d).toMatchObject({ verdict: "REJECTED", fatal: true });
-    expect(targetedCorrection(d, review(9, { productAltered: true }), b).action).toBe("abandon");
+    expect(targetedCorrection(d, review(9, { productAltered: true }, { fidelity: 4 }), b).action).toBe("abandon");
   });
 
   it("reprises ciblées : correction précise, jamais deux fois la même consigne, au plus maxRetries", async () => {
     const b = buildBrief(fresh("restaurant"), { kind: "trade_photo" });
-    const r = review(7, { issues: ["lumière plate"], fix: { target: "lighting", instruction: "lumière latérale chaude" } });
+    const r = review(6.5, { issues: ["lumière plate"], fix: { target: "lighting", instruction: "lumière latérale chaude" } });
     const local = await localImageCheck(await mockImage(5, 1920, 1080), b);
     const d = gateImage({ brief: b, origin: "generated", local, review: r, attempt: 0 });
     expect(d.verdict).toBe("RETRY");
@@ -309,7 +309,7 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
   it("B — produit transformé par la génération : refusé, jamais réutilisé, aucune nouvelle tentative", async () => {
     const p = fresh("cosmetic");
     const ref = await seedCutout(u.id, p.id);
-    const { deps, log } = mockDeps({ reference: Buffer.from("x"), reviewFor: () => review(9, { productAltered: true, fix: { target: "product", instruction: "pipette redessinée" } }) });
+    const { deps, log } = mockDeps({ reference: Buffer.from("x"), reviewFor: () => review(9, { productAltered: true, fix: { target: "product", instruction: "pipette redessinée" } }, { fidelity: 4 }) });
     const r = await fr(() => runImageEngineV2(null, p.id, { kind: "packshot", aspect: "1:1", references: [ref] }, deps));
     expect(r.outcomes[0].verdict).toBe("REJECTED");
     expect(r.outcomes[0].reason).toMatch(/transformation est abandonnée/);
@@ -321,9 +321,20 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
     expect(json<any>(trial[0].meta, {}).imageV2.productRef).toBe(ref);
   });
 
+  it("produit ressemblant aux détails près : gardé « à vérifier », sans nouvelle génération payante", async () => {
+    const p = fresh("cosmetic");
+    const ref = await seedCutout(u.id, p.id);
+    const { deps, log } = mockDeps({ reference: Buffer.from("x"), reviewFor: () => review(7.2, { issues: ["charnière légèrement redessinée"], fix: { target: "product", instruction: "reprendre la charnière" } }, { fidelity: 6.5 }) });
+    const r = await fr(() => runImageEngineV2(null, p.id, { kind: "packshot", aspect: "1:1", references: [ref] }, deps));
+    expect(r.outcomes[0].verdict).toBe("PROVISIONAL");
+    expect(r.outcomes[0].assetId).toBeTruthy();
+    expect(log.generations).toHaveLength(1);
+    expect(getAsset(r.outcomes[0].assetId!)!.status).toBe("review");
+  });
+
   it("reprise ciblée réelle : deuxième consigne différente et corrigée, puis FINAL", async () => {
     const p = fresh("restaurant");
-    const { deps, log } = mockDeps({ providers: [], reviewFor: (_k, _b, n) => (n === 1 ? review(7, { issues: ["lumière plate"], fix: { target: "lighting", instruction: "lumière chaude de fin d'après-midi" } }) : review(8.6)) });
+    const { deps, log } = mockDeps({ providers: [], reviewFor: (_k, _b, n) => (n === 1 ? review(6.5, { issues: ["lumière plate"], fix: { target: "lighting", instruction: "lumière chaude de fin d'après-midi" } }) : review(8.6)) });
     const r = await fr(() => runImageEngineV2(null, p.id, { kind: "trade_photo", aspect: "16:9" }, deps));
     expect(r.outcomes[0]).toMatchObject({ verdict: "FINAL", attempts: 2 });
     expect(r.stats.retries).toBe(1);
@@ -395,12 +406,12 @@ describe("Phase 5A — Image & Search Engine V2", async () => {
         return mockImage(42, b.format.width, b.format.height);
       },
       // Correction différente à chaque essai (une consigne identique ne serait jamais relancée).
-      reviewFor: (_k, _b, n) => review(7, { issues: [`lumière ${n}`], fix: { target: "lighting", instruction: `plus chaude, essai ${n}` } }),
+      reviewFor: (_k, _b, n) => review(6.5, { issues: [`lumière ${n}`], fix: { target: "lighting", instruction: `plus chaude, essai ${n}` } }),
     });
-    const r = await fr(() => runImageEngineV2(ctx, p.id, { kind: "trade_photo", aspect: "16:9", maxCostEur: 1 }, deps));
+    const r = await fr(() => runImageEngineV2(ctx, p.id, { kind: "trade_photo", aspect: "16:9", maxCostEur: 0.6 }, deps));
     expect(r.stoppedByCostCap).toBe(true);
-    expect(r.costMicro).toBeLessThanOrEqual(1_000_000);
-    expect(r.costMicro).toBe(800_000);
+    expect(r.costMicro).toBeLessThanOrEqual(600_000);
+    expect(r.costMicro).toBe(400_000);
     expect(r.notes.join(" ")).toMatch(/plafond/);
     expect(new CostCapReached(1, 1, 1).name).toBe("CostCapReached");
   });
