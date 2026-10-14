@@ -139,7 +139,14 @@ describe("Éditeur visuel des publicités — documents en calques", async () =>
     expect(big.local).toBe(true);
     if (big.local) {
       expect((byRole(big.doc, "title") as any).font.size).toBeGreaterThan((byRole(doc, "title") as any).font.size);
-      expect(big.doc.layers.filter((l, i) => JSON.stringify(l) !== JSON.stringify(doc.layers[i])).map((l) => l.role)).toEqual(["title"]);
+      // Seul le titre change de taille ; ce qu'il recouvrirait en grandissant descend juste assez (même taille).
+      const changed = big.doc.layers.filter((l, i) => JSON.stringify(l) !== JSON.stringify(doc.layers[i]));
+      expect(changed.map((l) => l.role)).toContain("title");
+      for (const l of changed.filter((l) => l.role !== "title")) {
+        const o = doc.layers.find((x) => x.id === l.id)!;
+        expect([l.x, l.w, l.h, (l as any).font?.size]).toEqual([o.x, o.w, o.h, (o as any).font?.size]);
+        expect(l.y).toBeGreaterThan(o.y);
+      }
     }
     const btn = localAdEdit(doc, "Change la couleur du bouton en vert");
     expect(btn.local && (byRole(btn.doc, "cta") as any).fill).toBe("#2E7D32");

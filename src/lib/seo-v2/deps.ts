@@ -5,6 +5,7 @@
  * Chaque outil renvoie son coût RÉEL (mesuré dans le journal des appels) ; l'estimation sert à refuser AVANT
  * l'envoi un appel qui dépasserait le plafond de la tâche. Injectables : les tests utilisent des outils simulés.
  */
+import { seoIntent, skillReference } from "../ai/skills";
 import { z } from "zod";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
@@ -66,7 +67,7 @@ export function realSeoDeps(ctx: JobContext | null, p: Project, aiActive: boolea
     canReview: ai,
     async write(system, prompt, key, kind) {
       const k = KIND_ROUTE[kind];
-      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: `seo-v2-${kind}`, routing: { difficulty: k.difficulty }, system, context: brainView(p, "seo").stable, prompt, maxTokens: kind === "write_article" ? 6000 : 3500 }, AiDraftSchema);
+      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: `seo-v2-${kind}`, routing: { difficulty: k.difficulty }, system, context: brainView(p, "seo").stable, reference: skillReference(seoIntent(p, kind === "write_article" ? "article" : kind === "write_meta" ? "meta" : "page")), prompt, maxTokens: kind === "write_article" ? 6000 : 3500 }, AiDraftSchema);
       return { value: value as AiDraft, costMicro: measured(key) };
     },
     async review(prompt, key) {
@@ -76,7 +77,7 @@ export function realSeoDeps(ctx: JobContext | null, p: Project, aiActive: boolea
     },
     async rewrite(system, prompt, key) {
       const k = KIND_ROUTE.rewrite;
-      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: "seo-v2-rewrite", routing: { difficulty: k.difficulty }, system, context: brainView(p, "seo").stable, prompt, maxTokens: 2000 }, RewriteSchema);
+      const value = await llmJson({ task: k.task, ...base, usageKey: key, promptKey: "seo-v2-rewrite", routing: { difficulty: k.difficulty }, system, context: brainView(p, "seo").stable, reference: skillReference(seoIntent(p, "meta")), prompt, maxTokens: 2000 }, RewriteSchema);
       return { value: value as RewriteOut, costMicro: measured(key) };
     },
     estimate: estimateCall,
