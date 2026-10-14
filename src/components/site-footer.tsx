@@ -59,7 +59,7 @@ export async function SiteFooter() {
       <div className="relative border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-xs text-white/55 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>© {new Date().getFullYear()} {COMPANY.brand}. {T("Tous droits réservés.", "All rights reserved.")}</p>
-          <p>{T("Démonstrations : produits réels de fournisseurs, marques et boutiques créées par le studio.", "Demos: real supplier products; brands and stores created by the studio.")}</p>
+          <p>{T("Démonstrations : entreprises fictives, photos de départ réelles (Pixabay, fournisseur) ou créées par l’IA ; marques, boutiques et contenus créés par le studio.", "Demos: fictional businesses, starting photos either real (Pixabay, supplier) or AI-created; brands, stores and content created by the studio.")}</p>
         </div>
       </div>
     </footer>

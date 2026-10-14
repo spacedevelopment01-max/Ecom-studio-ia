@@ -28,7 +28,7 @@ export default async function Page() {
         </section>
         <section>
           <h2>Intellectual property</h2>
-          <p>The texts, software, visuals and videos on this website are protected. Any reproduction without permission is prohibited. The demos feature real supplier products; the brands and stores shown are example creations by the studio.</p>
+          <p>The texts, software, visuals and videos on this website are protected. Any reproduction without permission is prohibited. The demos feature fictional businesses, from real photos (Pixabay, supplier) or AI-created ones; the brands and stores shown are example creations by the studio.</p>
           <p>Creations made by a customer with the studio (brand, theme, images, videos, texts) belong to them, under the conditions set out in the <a href="/conditions">terms and conditions</a>.</p>
         </section>
         <section>
@@ -52,7 +52,7 @@ export default async function Page() {
       </section>
       <section>
         <h2>Propriété intellectuelle</h2>
-        <p>Les textes, logiciels, visuels et vidéos de ce site sont protégés. Toute reproduction sans autorisation est interdite. Les démonstrations présentent des produits réels de fournisseurs ; les marques et boutiques qui y figurent sont des créations du studio à titre d'exemple.</p>
+        <p>Les textes, logiciels, visuels et vidéos de ce site sont protégés. Toute reproduction sans autorisation est interdite. Les démonstrations présentent des entreprises fictives, à partir de photos réelles (Pixabay, fournisseur) ou créées par l’IA ; les marques et boutiques qui y figurent sont des créations du studio à titre d’exemple.</p>
         <p>Les créations réalisées par un client avec le studio (marque, thème, images, vidéos, textes) lui appartiennent, dans les conditions prévues par les <a href="/conditions">conditions générales</a>.</p>
       </section>
       <section>

@@ -120,7 +120,7 @@ const backgroundsColor = (list: string[], i: number) => list[i] ?? list[0];
 export function AdEditorDemo({ cutout, logo, palette, brand }: { cutout: string; logo: string; palette: string[]; brand: string }) {
   const t = useT();
   const id = useId();
-  const [title, setTitle] = useState(t("Des nuits plus douces.", "Softer nights."));
+  const [title, setTitle] = useState(t("Votre produit, en grand.", "Your product, front and center."));
   const [cta, setCta] = useState(t("Découvrir", "Discover"));
   const backgrounds = [palette[3] ?? "#F2F3F7", palette[1] ?? "#D3D4D9", palette[0] ?? "#454873", palette[4] ?? "#14151F"];
   const [bg, setBg] = useState(0);
@@ -132,7 +132,7 @@ export function AdEditorDemo({ cutout, logo, palette, brand }: { cutout: string;
   const aspect = { "1:1": "1 / 1", "4:5": "4 / 5", "9:16": "9 / 16" }[format];
   const ring = (k: typeof sel) => (sel === k ? "outline outline-2 outline-offset-4 outline-[#5A63E8]" : "");
   const reset = () => {
-    setTitle(t("Des nuits plus douces.", "Softer nights."));
+    setTitle(t("Votre produit, en grand.", "Your product, front and center."));
     setCta(t("Découvrir", "Discover"));
     setBg(0);
     setLogoPos("tl");

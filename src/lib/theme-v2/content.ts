@@ -4,6 +4,7 @@
  * Aucune information inventée : chiffres, horaires, prix, avis, garanties, labels n'apparaissent que s'ils sont
  * confirmés ; ce qui manque est marqué « [À compléter : …] » et listé dans `todo` (plan du site, studio, rapport).
  */
+import { customerVoice } from "../copy-voice";
 import type { Project } from "../projects";
 import type { ShopCopy } from "../theme/copy";
 import type { ImageSlots } from "../theme/directions";
@@ -244,13 +245,15 @@ const okHeading = (s: string | undefined) => {
 const okText = (s: string | undefined) => (clean(s) && !TODO.test(s ?? "") ? clean(s) : "");
 
 function sectionLines(copy: ShopCopy): SiteContent["lines"] {
-  const block = (x: { eyebrow: string; heading: string; text: string } | undefined) => (x && okHeading(x.heading) ? { eyebrow: okText(x.eyebrow), heading: okHeading(x.heading), text: okText(x.text) } : null);
+  // Texte lu par le client : jamais la tournure d'analyse de la stratégie (« la différence défendable tient à… »).
+  const voice = (x: string) => customerVoice(okText(x)) ?? "";
+  const block = (x: { eyebrow: string; heading: string; text: string } | undefined) => (x && okHeading(x.heading) ? { eyebrow: okText(x.eyebrow), heading: okHeading(x.heading), text: voice(x.text) } : null);
   return {
     statement: block(copy.statement),
     detail: block(copy.detail),
-    cta: copy.cta && okHeading(copy.cta.heading) ? { heading: okHeading(copy.cta.heading), text: okText(copy.cta.text), button: okText(copy.cta.button) } : null,
+    cta: copy.cta && okHeading(copy.cta.heading) ? { heading: okHeading(copy.cta.heading), text: voice(copy.cta.text), button: okText(copy.cta.button) } : null,
     gallery: okHeading(copy.gallery?.heading),
     features: okHeading(copy.features?.heading),
-    about: okText(copy.footer?.about).length <= 160 ? okText(copy.footer?.about) : "",
+    about: okText(copy.footer?.about).length <= 160 ? voice(copy.footer?.about ?? "") : "",
   };
 }

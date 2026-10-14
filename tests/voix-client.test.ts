@@ -21,6 +21,12 @@ describe("Voix client : la phrase d'analyse de marque n'apparaît jamais telle q
     expect(customerVoice("")).toBeNull();
   });
 
+  it("tournure après « : » (cas réel : fiche de la boutique Cime)", () => {
+    const v = customerVoice("Gourde isotherme 750 ml de Cime : la différence défendable tient à l’association confirmée d’un corps en inox double paroi et d’un bouchon en bambou.")!;
+    expect(v).toBe("Gourde isotherme 750 ml de Cime : l’association d’un corps en inox double paroi et d’un bouchon en bambou.");
+    expect(v).not.toMatch(STRATEGY_JARGON);
+  });
+
   it("le contrôle des textes du site repère la tournure dans le texte d'ouverture", async () => {
     const { lintJargon } = await import("../src/lib/ai/tasks");
     const r = lintJargon({ hero: { heading: "Paysagiste à Aix", text: "La différence la mieux étayée est la continuité de l’offre." } } as any);
