@@ -2,6 +2,7 @@
  * Vue d'une publication pour l'interface (ancienne ou V2) : statut, réseau, format, médias, pilier, approbation de la
  * version actuelle, défauts bloquants, niveau de prise en charge du réseau.
  */
+import { json } from "../db";
 import { postView } from "../posts";
 import type { Project } from "../projects";
 import { approvalValid } from "./approval";
@@ -14,7 +15,8 @@ export function postViewV2(p: Project, r: any, o: { gate?: boolean } = {}) {
   return {
     ...base,
     engine: r.engine ?? "v1",
-    pillar: r.pillar ?? null,
+    // Semaine éditoriale : le nom du rôle (« Question fréquente »), jamais son code interne (« 5:faq »).
+    pillar: (/^\d:/.test(r.pillar ?? "") ? json<{ roleTitle?: string }>(r.brief ?? "{}", {}).roleTitle : null) ?? r.pillar ?? null,
     objective: r.objective ?? null,
     approvedValid: approvalValid(r),
     approvedHash: r.approved_hash ?? null,

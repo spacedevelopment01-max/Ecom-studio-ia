@@ -30,7 +30,9 @@ type Conn = { id: string; provider: string; name: string; status: string; scopes
 export function networkStatus(p: Project, platform: Platform): NetworkStatus {
   const spec = platformSpec(platform);
   const base = { platform, label: spec.label, account: null as string | null, connectionId: null as string | null, missing: [] as string[], note: null as NetworkStatus["note"] };
-  const verified = !!one("SELECT 1 FROM posts WHERE project_id IN (SELECT id FROM projects WHERE user_id = ?) AND network = ? AND status = 'published' AND remote_id IS NOT NULL LIMIT 1", p.userId, platform);
+  // Vérifiée = un envoi a réellement abouti depuis un compte connecté par OAuth (jeton présent). Les comptes simulés
+  // (démonstration, tests : aucun jeton) ne comptent jamais.
+  const verified = !!one("SELECT 1 FROM posts po JOIN connections c ON c.id = po.connection_id WHERE c.user_id = ? AND po.network = ? AND po.status = 'published' AND po.remote_id IS NOT NULL AND c.access_token IS NOT NULL LIMIT 1", p.userId, platform);
   const out = (state: NetworkState, extra: Partial<NetworkStatus> = {}): NetworkStatus => ({ ...base, state, text: NETWORK_STATE_LABEL[state], verified, ...extra });
   if (spec.level !== "ready_to_connect") return out("unavailable", { note: { fr: `${spec.label} : pas de publication depuis le studio, le contenu se copie et se publie à la main.`, en: `${spec.label}: no publishing from the studio, the content is copied and posted by hand.` } });
   const conns = all<Conn>("SELECT c.id, c.provider, c.name, c.status, c.scopes, c.expires_at, c.refresh_token FROM connections c LEFT JOIN project_connections pc ON pc.connection_id = c.id AND pc.project_id = ? WHERE c.user_id = ? AND c.provider = ? ORDER BY pc.project_id IS NULL, c.status = 'active' DESC, c.updated_at DESC", p.id, p.userId, platform);

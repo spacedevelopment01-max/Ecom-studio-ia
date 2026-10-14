@@ -42,6 +42,10 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     automations: listAutomations(p.id),
     ai: aiActiveFor(p.userId, p.id),
     canPublish: !!planOfUserId(user.id, p.id),
+    limits: (() => {
+      const pl = planOfUserId(user.id, p.id);
+      return pl ? { perDay: PLANS[pl].postsPerDay, calendarDays: PLANS[pl].calendarDays } : null;
+    })(),
     timezone: p.settings.timezone,
   });
 });
@@ -62,6 +66,10 @@ const Plan = z.object({
   exclude: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).max(366).optional(),
   link: z.string().max(500).nullable().optional(),
   approval: z.enum(["each", "week", "plan"]).optional(),
+  structure: z.enum(["weekly", "pillars"]).optional(),
+  goal: z.enum(["awareness", "sales", "community", "balanced"]).optional(),
+  commercial: z.union([z.literal(0), z.literal(1), z.literal(2)]).optional(),
+  focus: z.array(z.string().max(80)).max(10).optional(),
 });
 
 /**

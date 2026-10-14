@@ -9,14 +9,21 @@ import { networkStatuses } from "@/lib/social-v2/networks";
 import { memorySummary } from "@/lib/social-v2/memory";
 import { realSocialDeps } from "@/lib/social-v2/deps";
 import { PLATFORMS } from "@/lib/social-v2/platforms";
-import { GOALS } from "@/lib/social-v2/editorial";
+import { GOALS, WEEK, rolesFor } from "@/lib/social-v2/editorial";
 
 export const runtime = "nodejs";
 
 function view(p: Parameters<typeof getSettings>[0]) {
   const plan = planOfProject(p.id);
+  const s = getSettings(p);
+  const lang = s.config.language;
   return {
-    settings: getSettings(p),
+    // Semaine éditoriale réelle pour les réglages choisis (thème du jour et rôle de chaque publication).
+    week: [1, 2, 3, 4, 5, 6, 0].map((day) => {
+      const d = WEEK.find((x) => x.day === day)!;
+      return { day, title: d.title[lang], goal: d.goal[lang], roles: rolesFor(day, s.config.perDay, s.config.goal, s.config.commercial).map((r) => ({ title: r.title[lang], kind: r.kind })) };
+    }),
+    settings: s,
     networks: networkStatuses(p),
     limits: plan ? { plan, perDay: PLANS[plan].postsPerDay, calendarDays: PLANS[plan].calendarDays, autopublish: PLANS[plan].autopublish } : null,
     consentText: CONSENT_TEXT,
@@ -46,7 +53,7 @@ const Config = z
     language: z.enum(["fr", "en"]),
     commercial: z.union([z.literal(0), z.literal(1), z.literal(2)]),
     focus: z.array(z.string().max(80)).max(10),
-    formats: z.record(z.enum(["image", "carousel", "video", "text"]), z.number().min(0).max(100)),
+    formats: z.object({ image: z.number().min(0).max(100), carousel: z.number().min(0).max(100), video: z.number().min(0).max(100), text: z.number().min(0).max(100) }).partial(),
     approval: z.enum(["manual", "auto"]),
     autoKinds: z.array(z.enum(["main", "info", "demo", "more", "engage", "convert"])).max(6),
     exclude: z.array(z.string().max(60)).max(30),

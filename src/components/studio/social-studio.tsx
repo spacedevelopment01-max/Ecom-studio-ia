@@ -9,12 +9,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
 import { enUS, fr } from "date-fns/locale";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
-import { ArrowDown, ArrowUp, BarChart3, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Link2, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, Type, Wand2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, BarChart3, Bot, Gauge, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Link2, ListChecks, MessageSquare, Pause, Pencil, Play, Plus, Send, Sparkles, Target, Trash2, Type, Wand2, X } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import { AiWait } from "../wait-time";
+import { AutopilotPanel, SocialOverview } from "./social-autopilot";
 
 type PostV = {
   id: string; network: string; format: string; status: string; scheduledAt: number | null; timezone: string; title: string; caption: string; hashtags: string; link: string | null;
@@ -34,6 +35,7 @@ type Data = {
   ai: boolean;
   canPublish: boolean;
   timezone: string;
+  limits: { perDay: number; calendarDays: number } | null;
 };
 
 const NET: Record<string, { label: string; color: string }> = {
@@ -45,10 +47,11 @@ const NET: Record<string, { label: string; color: string }> = {
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
 };
 const STATUS: Record<string, [string, string, "neutral" | "info" | "warn" | "ok" | "bad" | "ink" | "signal"]> = {
-  planned: ["Planifiée (texte)", "Planned (copy)", "neutral"],
-  draft: ["Brouillon", "Draft", "neutral"],
-  generating: ["En création", "Generating", "info"],
-  review: ["À valider", "To review", "warn"],
+  planned: ["Idée", "Idea", "neutral"],
+  draft: ["Brouillon IA", "AI draft", "neutral"],
+  generating: ["En attente de génération", "Awaiting generation", "info"],
+  review: ["En attente de validation", "Awaiting approval", "warn"],
+  incomplete: ["À compléter", "To complete", "warn"],
   approved: ["Approuvée", "Approved", "signal"],
   scheduled: ["Programmée", "Scheduled", "ok"],
   paused: ["En pause", "Paused", "neutral"],
@@ -58,6 +61,8 @@ const STATUS: Record<string, [string, string, "neutral" | "info" | "warn" | "ok"
   uncertain: ["À vérifier", "To verify", "bad"],
   cancelled: ["Annulée", "Cancelled", "neutral"],
 };
+/** Statut affiché : « À compléter » quand une information manque (jamais présenté comme prêt). */
+const stKey = (p: Pick<PostV, "status" | "blocking">) => (["planned", "draft", "review"].includes(p.status) && p.blocking.some((b) => /compléter|to complete/i.test(b)) ? "incomplete" : p.status);
 const LEVEL: Record<string, [string, string, "ok" | "info" | "warn" | "neutral"]> = {
   connected: ["CONNECTÉ", "CONNECTED", "ok"],
   ready_to_connect: ["PRÊT À CONNECTER", "READY TO CONNECT", "info"],
@@ -65,8 +70,10 @@ const LEVEL: Record<string, [string, string, "ok" | "info" | "warn" | "neutral"]
   unavailable: ["NON DISPONIBLE", "UNAVAILABLE", "neutral"],
 };
 const SECTIONS = [
+  ["vue", "Vue d'ensemble", "Overview", Gauge],
+  ["pilote", "Ma communication automatique", "My automatic communication", Bot],
   ["strategie", "Stratégie", "Strategy", Target],
-  ["creer", "Créer", "Create", Sparkles],
+  ["creer", "Création IA", "AI creation", Sparkles],
   ["calendrier", "Calendrier", "Calendar", CalendarDays],
   ["publications", "Publications", "Posts", ListChecks],
   ["comptes", "Comptes", "Accounts", Link2],
@@ -108,6 +115,8 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
           ))}
         </nav>
       </Card>
+      {section === "vue" && <SocialOverview counts={data.stats.counts} posts={data.posts} statsNote={data.stats.note} hasMetrics={data.stats.byPlatform.some((b) => Object.values(b.metrics).some((m) => m.value != null))} onGo={(s: string) => setSection(s as Section)} />}
+      {section === "pilote" && <AutopilotPanel onChanged={reload} />}
       {section === "strategie" && <StrategyPanel data={data} />}
       {section === "creer" && <CreatePanel data={data} onDone={() => (reload(), setSection("calendrier"))} reload={reload} />}
       {section === "calendrier" && <CalendarPanel data={data} reload={reload} onOpen={setOpen} onRange={setRange} />}
@@ -161,7 +170,7 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   const t = useT();
   const toast = useToast();
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
-  const [f, setF] = useState({ startDate: tomorrow, endDate: format(addDays(new Date(), 30), "yyyy-MM-dd"), perDay: 2, weekdays: [0, 1, 2, 3, 4, 5, 6], slots: ["11:30", "18:30", "08:30", "13:00", "21:00"], timezone: data.timezone || "Europe/Paris", exclude: "", distribution: "rotate" as "rotate" | "all", priority: [] as string[], mix: { image: 40, carousel: 20, video: 30, text: 10 } });
+  const [f, setF] = useState({ startDate: tomorrow, endDate: format(addDays(new Date(), 30), "yyyy-MM-dd"), perDay: Math.min(2, data.limits?.perDay ?? 1), weekdays: [0, 1, 2, 3, 4, 5, 6], slots: ["11:30", "18:30", "08:30", "13:00", "21:00"], timezone: data.timezone || "Europe/Paris", exclude: "", distribution: "rotate" as "rotate" | "all", priority: [] as string[], mix: { image: 40, carousel: 20, video: 30, text: 10 } });
   const [nets, setNets] = useState<Record<string, { on: boolean; account: string }>>(() => Object.fromEntries(["instagram", "facebook", "tiktok", "youtube", "pinterest", "linkedin"].map((n) => [n, { on: n === "instagram" || n === "facebook", account: data.accounts.find((a) => a.provider === n && a.status === "active")?.id ?? "" }])));
   const [ask, setAsk] = useState("");
   const [busy, setBusy] = useState(false);
@@ -193,7 +202,7 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
   const plan = () => run(async () => {
     const platforms = Object.entries(nets).filter(([, v]) => v.on).map(([platform, v]) => ({ platform, connectionId: v.account || null }));
     if (!platforms.length) throw new Error(t("Choisissez au moins un réseau.", "Choose at least one network."));
-    const r = await api<{ created: number; warnings: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "plan", request: { startDate: f.startDate, endDate: f.endDate, perDay: f.perDay, weekdays: f.weekdays, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, platforms, distribution: f.distribution, priority: f.priority, formatMix: f.mix, exclude: f.exclude.split(/[\s,;]+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)) } } });
+    const r = await api<{ created: number; warnings: string[] }>(`/api/projects/${id}/social/v2`, { body: { action: "plan", request: { startDate: f.startDate, endDate: f.endDate, perDay: f.perDay, weekdays: f.weekdays, slots: f.slots.slice(0, f.perDay), timezone: f.timezone, platforms, distribution: f.distribution, priority: f.priority, formatMix: f.mix, structure: "weekly", exclude: f.exclude.split(/[\s,;]+/).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)) } } });
     setResult(r);
     toast("ok", t(`${r.created} publications planifiées (textes proposés, aucun média payant).`, `${r.created} posts planned (proposed copy, no paid media).`));
     reload();
@@ -263,7 +272,7 @@ function CreatePanel({ data, onDone, reload }: { data: Data; onDone: () => void;
         </div>
         <Field label={t("Publications par jour", "Posts per day")} htmlFor="s-per">
           <div className="flex gap-1.5" id="s-per">
-            {[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" data-per-day={n} onClick={() => setF({ ...f, perDay: n })} className={cx("h-10 flex-1 rounded-xl border text-sm", f.perDay === n ? "border-ink bg-ink text-paper" : "border-line")}>{n}</button>)}
+            {[1, 2, 3, 4, 5].map((n) => { const over = !!data.limits && n > data.limits.perDay; return <button key={n} type="button" data-per-day={n} disabled={over} title={over ? t("Forfait supérieur nécessaire", "Higher plan needed") : undefined} onClick={() => setF({ ...f, perDay: n })} className={cx("h-10 flex-1 rounded-xl border text-sm", f.perDay === n ? "border-ink bg-ink text-paper" : "border-line", over && "cursor-not-allowed opacity-40")}>{n}</button>; })}
           </div>
         </Field>
         <Field label={t("Horaires", "Times")} htmlFor="s-slot0">
@@ -376,7 +385,7 @@ const NetAvatar = ({ n }: { n: string }) => (
  */
 function CalCard({ p, tz, onOpen, onAction, row = false }: { p: PostV; tz: string; onOpen: (id: string) => void; onAction: (id: string, a: "duplicate" | "delete") => void; row?: boolean }) {
   const t = useT();
-  const st = STATUS[p.status];
+  const st = STATUS[stKey(p)];
   const media = p.media[0];
   const video = media?.kind === "video" || /reel|video|story/i.test(p.format);
   const locked = LOCKED.includes(p.status);
@@ -422,16 +431,18 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
   const tz = data.timezone || "Europe/Paris";
   const [view, setView] = useState<View>("month");
   const [cursor, setCursor] = useState(() => new Date());
+  const [net, setNet] = useState<string>("all");
+  const posts = useMemo(() => (net === "all" ? data.posts : data.posts.filter((p) => p.network === net)), [data.posts, net]);
   const [chat, setChat] = useState("");
   const [pending, setPending] = useState<{ text: string; estimateMicro: number } | null>(null);
   const locale = lang === "en" ? enUS : fr;
   const ymd = (ms: number) => formatInTimeZone(ms, tz, "yyyy-MM-dd");
   const byDay = useMemo(() => {
     const m = new Map<string, PostV[]>();
-    for (const p of data.posts) if (p.scheduledAt) m.set(ymd(p.scheduledAt), [...(m.get(ymd(p.scheduledAt)) ?? []), p]);
+    for (const p of posts) if (p.scheduledAt) m.set(ymd(p.scheduledAt), [...(m.get(ymd(p.scheduledAt)) ?? []), p]);
     for (const list of m.values()) list.sort((a, b) => (a.scheduledAt ?? 0) - (b.scheduledAt ?? 0));
     return m;
-  }, [data.posts, tz]);
+  }, [posts, tz]);
   const days = useMemo(() => {
     if (view === "day") return [cursor];
     const start = view === "week" ? startOfWeek(cursor, { weekStartsOn: 1 }) : startOfWeek(startOfMonth(cursor), { weekStartsOn: 1 });
@@ -499,6 +510,10 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
           <span className="ml-2 font-display text-lg font-semibold capitalize">{format(cursor, view === "day" ? "EEEE d MMMM yyyy" : "MMMM yyyy", { locale })}</span>
         </div>
         <div className="flex flex-wrap items-center gap-1">
+          <select value={net} onChange={(e) => setNet(e.target.value)} data-net-filter aria-label={t("Réseau", "Network")} className="h-9 rounded-xl border border-line bg-card px-2 text-sm">
+            <option value="all">{t("Tous les réseaux", "All networks")}</option>
+            {[...new Set(data.posts.map((p) => p.network))].map((n) => <option key={n} value={n}>{NET[n]?.label ?? n}</option>)}
+          </select>
           {(["month", "week", "day", "list"] as View[]).map((v) => <button key={v} type="button" data-view={v} onClick={() => setView(v)} className={cx("h-9 rounded-xl px-3 text-sm", view === v ? "bg-ink text-paper" : "border border-line")}>{t({ month: "Mois", week: "Semaine", day: "Jour", list: "Liste" }[v], { month: "Month", week: "Week", day: "Day", list: "List" }[v])}</button>)}
           {latest && (latest.paused
             ? <Button size="sm" variant="secondary" icon={<Play className="size-4" />} onClick={async () => { await api(`/api/projects/${id}/social/v2`, { body: { action: "resume", planId: latest.id } }); reload(); }}>{t("Reprendre", "Resume")}</Button>
@@ -507,12 +522,12 @@ function CalendarPanel({ data, reload, onOpen, onRange }: { data: Data; reload: 
       </Card>
       {view === "list" ? (
         <Card className="divide-y divide-line">
-          {data.posts.filter((p) => p.scheduledAt && p.scheduledAt >= Date.now() - 86_400_000).slice(0, 200).map((p) => (
+          {posts.filter((p) => p.scheduledAt && p.scheduledAt >= Date.now() - 86_400_000).slice(0, 200).map((p) => (
             <button key={p.id} type="button" onClick={() => onOpen(p.id)} className="flex w-full items-center gap-3 p-3 text-left hover:bg-paper-2" data-post={p.id}>
               <Dot n={p.network} />
               <span className="w-32 shrink-0 text-xs tabular-nums text-muted">{formatInTimeZone(p.scheduledAt!, tz, "dd/MM HH:mm")}</span>
               <span className="min-w-0 flex-1 truncate text-sm">{p.title || p.caption.slice(0, 60)}</span>
-              <Badge tone={STATUS[p.status]?.[2] ?? "neutral"}>{t(STATUS[p.status]?.[0] ?? p.status, STATUS[p.status]?.[1] ?? p.status)}</Badge>
+              <Badge tone={STATUS[stKey(p)]?.[2] ?? "neutral"}>{t(STATUS[stKey(p)]?.[0] ?? p.status, STATUS[stKey(p)]?.[1] ?? p.status)}</Badge>
             </button>
           ))}
         </Card>
@@ -641,7 +656,7 @@ function PostsPanel({ data, reload, onOpen }: { data: Data; reload: () => void; 
                   {p.blocking.length > 0 && <span className="block truncate text-xs text-warn">⚠ {p.blocking[0]}</span>}
                   {p.status === "uncertain" && <span className="block truncate text-xs text-bad">{p.error}</span>}
                 </span>
-                <Badge tone={STATUS[p.status]?.[2] ?? "neutral"}>{t(STATUS[p.status]?.[0] ?? p.status, STATUS[p.status]?.[1] ?? p.status)}</Badge>
+                <Badge tone={STATUS[stKey(p)]?.[2] ?? "neutral"}>{t(STATUS[stKey(p)]?.[0] ?? p.status, STATUS[stKey(p)]?.[1] ?? p.status)}</Badge>
               </button>
             </div>
           ))}
@@ -764,7 +779,7 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
   const t = useT();
   const toast = useToast();
   const base = `/api/projects/${id}/social/v2/posts/${postId}`;
-  const { data: v, reload } = useApi<{ post: PostV; attempts: { attempt: number; started_at: number; outcome: string; detail: string }[]; platform: { label: string; captionMax: number; hashtags: [number, number]; level: string; formats: string[] } }>(base);
+  const { data: v, reload } = useApi<{ post: PostV; attempts: { attempt: number; started_at: number; outcome: string; detail: string }[]; platform: { label: string; captionMax: number; hashtags: [number, number]; level: string; formats: string[] }; variants?: { id: string; network: string; label: string; format: string; status: string; blocking: string[] }[] }>(base);
   const tz = data.timezone || "Europe/Paris";
   const [f, setF] = useState<{ title: string; caption: string; hashtags: string; link: string; date: string; time: string; media: AssetView[]; network: string; connectionId: string } | null>(null);
   const [picker, setPicker] = useState(false);
@@ -812,7 +827,7 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
       <div className="grid min-w-0 grid-cols-1 gap-4" data-post-editor>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Dot n={p.network} /> {NET[p.network]?.label} · {p.format}
-          <Badge tone={STATUS[p.status]?.[2] ?? "neutral"}>{t(STATUS[p.status]?.[0] ?? p.status, STATUS[p.status]?.[1] ?? p.status)}</Badge>
+          <Badge tone={STATUS[stKey(p)]?.[2] ?? "neutral"}>{t(STATUS[stKey(p)]?.[0] ?? p.status, STATUS[stKey(p)]?.[1] ?? p.status)}</Badge>
           {p.engine === "v2" && (p.approvedValid ? <Badge tone="ok">{t("version approuvée", "approved version")}</Badge> : <Badge tone="warn">{t("à approuver", "needs approval")}</Badge>)}
           {p.userEdited && <Badge>{t("modifiée par vous", "edited by you")}</Badge>}
           {p.pillar && <span className="text-muted">· {p.pillar}</span>}
@@ -876,6 +891,18 @@ function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; da
           </div>
         )}
         {p.remoteUrl && <a className="text-sm underline" href={p.remoteUrl} target="_blank" rel="noreferrer">{t("Voir sur le réseau", "View on the network")}</a>}
+        {(v.variants?.length ?? 0) > 0 && (
+          <div className="grid gap-1.5 rounded-2xl border border-line p-3 text-sm" data-variants>
+            <p className="font-medium">{t("Le même contenu, adapté pour", "The same content, adapted for")}</p>
+            {v.variants!.map((x) => (
+              <p key={x.id} className="flex flex-wrap items-center gap-2">
+                <Dot n={x.network} /> {x.label} <span className="text-xs text-muted">({x.format})</span>
+                <Badge tone={STATUS[x.status]?.[2] ?? "neutral"}>{t(STATUS[x.status]?.[0] ?? x.status, STATUS[x.status]?.[1] ?? x.status)}</Badge>
+                {x.blocking.length > 0 && <span className="basis-full text-xs text-warn">{x.blocking[0]}</span>}
+              </p>
+            ))}
+          </div>
+        )}
         {v.attempts.length > 0 && (
           <div className="rounded-xl bg-paper-2 p-3 text-xs">
             <p className="font-semibold">{t("Historique des envois", "Sending history")}</p>

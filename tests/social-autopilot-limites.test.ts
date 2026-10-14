@@ -179,3 +179,12 @@ describe("Autopilot V2 — structure éditoriale et limites", async () => {
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM posts WHERE project_id = ?", free.id)!.n).toBe(0);
   });
 });
+
+describe("Autopilot V2 — affichage", async () => {
+  const { postViewV2 } = await import("@/lib/social-v2/view");
+  it("le calendrier affiche le nom du rôle (« Question fréquente »), pas son code interne", () => {
+    const row = { id: "x", project_id: "p", network: "instagram", format: "image", status: "planned", scheduled_at: null, caption: "c", title: "", hashtags: "", media: "[]", pillar: "5:faq", brief: JSON.stringify({ roleTitle: "Question fréquente" }) };
+    const v = postViewV2({ id: "p", catalog: [], business: "product", product: {} } as never, row as never, { gate: false });
+    expect(v.pillar).toBe("Question fréquente");
+  });
+});
