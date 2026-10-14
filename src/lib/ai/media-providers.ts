@@ -459,14 +459,19 @@ async function productPlateImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
  * `reference` : photo du produit (détourage posé sur fond blanc, ou packshot).
  */
 async function productSceneImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3"; reference: Buffer; textZone?: string | null; usage?: MediaUsage }) {
-  const text = `Professional advertising photograph for a premium brand campaign. Scene: ${input.prompt}.
+  const text = productScenePrompt(input);
+  const aspect = input.aspect === "2:3" ? "4:5" : input.aspect;
+  const reference = await sharp(input.reference).rotate().flatten({ background: "#FFFFFF" }).jpeg({ quality: 90 }).toBuffer();
+  return generateImageImpl(ctx, { text, aspect, reference, quality: "high", usage: input.usage ?? "product_image" });
+}
+
+/** Consigne d'une photographie publicitaire du produit réel (référence jointe à la demande). */
+export function productScenePrompt(input: { prompt: string; aspect: string; textZone?: string | null }): string {
+  return `Professional advertising photograph for a premium brand campaign. Scene: ${input.prompt}.
 The product shown in the reference image is the hero of the picture: reproduce it exactly as it is (same shape, proportions, materials, colours, details, label, logo and printed text); do not redesign it, do not change its colour, do not add a second product or copies of it.
 The product sits naturally in the scene at a realistic scale, sharp and in focus, lit by the same light as the scene, with a real contact shadow on the surface it rests on; shallow depth of field behind it, never a flat cut-out look.
 Leave clean, uncluttered negative space ${input.textZone ? `in the ${input.textZone}` : "on one side"} for a headline that will be added later.
 No text, no lettering, no captions, no watermark, no added logo, no price tag. No people, no hands, no faces. Aspect ratio ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
-  const aspect = input.aspect === "2:3" ? "4:5" : input.aspect;
-  const reference = await sharp(input.reference).rotate().flatten({ background: "#FFFFFF" }).jpeg({ quality: 90 }).toBuffer();
-  return generateImageImpl(ctx, { text, aspect, reference, quality: "high", usage: input.usage ?? "product_image" });
 }
 
 /**

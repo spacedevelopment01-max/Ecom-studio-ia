@@ -96,3 +96,14 @@ describe("titre d'affiche", () => {
     expect(noPlaceholders({ headline: "-20 % sur le casque", brand: "Sonore" } as any).headline).toBe("-20 % sur le casque");
   });
 });
+
+describe("consigne de la photo publicitaire (produit réel en référence)", () => {
+  it("reproduit le produit, garde la zone de texte, sans texte ni personne", async () => {
+    const { productScenePrompt } = await import("@/lib/ai/media-providers");
+    const p = productScenePrompt({ prompt: "headphones on stone", aspect: "2:3", textZone: "left" });
+    expect(p).toContain("reproduce it exactly");
+    expect(p).toContain("in the left");
+    expect(p).toContain("No people");
+    expect(p).toContain("Aspect ratio 4:5");
+  });
+});
