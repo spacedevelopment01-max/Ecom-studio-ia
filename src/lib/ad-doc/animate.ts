@@ -48,6 +48,7 @@ export function animatedLayers(doc: AdDocument, style: AnimStyle, t: number): La
     return k < 0 ? 3 : k;
   };
   return doc.layers.filter(isAnimatedLayer).map((l): Layer => {
+    if (l.anim) return customLayer(l, l.anim, t, W, H);
     const start = 0.15 + rank(l) * 0.18;
     const p = (t - start) / 0.6;
     if (l.id === "cta" || l.role === "cta") {
@@ -69,4 +70,31 @@ export function animatedLayers(doc: AdDocument, style: AnimStyle, t: number): La
     if (style === "zoom" && l.role === "title") return { ...scaled(l, 1.18 - 0.18 * e), opacity: op };
     return { ...l, opacity: op, y: l.y + (1 - e) * H * 0.035 };
   });
+}
+
+/**
+ * Animation choisie par le client pour un calque (éditeur › Animation) : entrée, retard, durée, puis effet continu
+ * (bouton qui bat, texte qui flotte). Même calcul pour l'aperçu du studio et la vidéo exportée.
+ */
+export function customLayer(l: Layer, a: NonNullable<Layer["anim"]>, t: number, W: number, H: number): Layer {
+  const dur = a.dur ?? 0.6;
+  const enter = t - a.delay;
+  if (a.in !== "none" && enter < 0) return { ...l, opacity: 0 };
+  const raw = a.in === "none" ? 1 : clamp(enter / dur);
+  const e = easeOut(raw);
+  let out: Layer = { ...l };
+  if (a.in === "fade") out.opacity = l.opacity * e;
+  else if (a.in === "rise") out = { ...out, opacity: l.opacity * clamp(raw * 2.2), y: l.y + (1 - e) * H * 0.045 };
+  else if (a.in === "drop") out = { ...out, opacity: l.opacity * clamp(raw * 2.2), y: l.y - (1 - e) * H * 0.045 };
+  else if (a.in === "left") out = { ...out, opacity: l.opacity * clamp(raw * 2.2), x: l.x - (1 - e) * W * 0.3 };
+  else if (a.in === "right") out = { ...out, opacity: l.opacity * clamp(raw * 2.2), x: l.x + (1 - e) * W * 0.3 };
+  else if (a.in === "grow") out = { ...scaled(l, Math.max(0.05, e)), opacity: l.opacity * clamp(raw * 3) };
+  else if (a.in === "pop") out = { ...scaled(l, 0.55 + 0.45 * backOut(raw)), opacity: l.opacity * clamp(raw * 3) };
+  // Effet continu, une fois l'entrée terminée.
+  const after = a.in === "none" ? t : enter - dur;
+  if (after > 0 && a.loop === "pulse") {
+    const beat = Math.sin(Math.PI * clamp((after % 1.4) / 0.45));
+    out = { ...scaled(out, 1 + 0.075 * beat), opacity: out.opacity };
+  } else if (after > 0 && a.loop === "float") out = { ...out, y: out.y + Math.sin(after * 2.4) * H * 0.006 };
+  return out;
 }

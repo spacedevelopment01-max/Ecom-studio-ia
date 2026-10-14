@@ -38,8 +38,11 @@ export type LayerBase = {
   anim?: LayerAnim;
 };
 
-/** Animation d'un calque dans une vidéo : glisse, monte, se déroule, rebondit ; retard et durée en secondes. */
-export type LayerAnim = { in: "rise" | "drop" | "left" | "right" | "grow" | "pop" | "fade"; delay: number; dur?: number };
+/**
+ * Animation d'un calque (vidéo, publication animée) : entrée (glisse, monte, se déroule, rebondit, ou « none » : présent
+ * dès le début), retard et durée en secondes ; `loop` : effet continu après l'entrée (bouton qui bat, texte qui flotte).
+ */
+export type LayerAnim = { in: "rise" | "drop" | "left" | "right" | "grow" | "pop" | "fade" | "none"; delay: number; dur?: number; loop?: "pulse" | "float" | "none" };
 
 export type ImageLayer = LayerBase & {
   kind: "image";

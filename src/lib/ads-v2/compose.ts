@@ -704,6 +704,11 @@ async function recomposeDoc(src: AdDocument, format: FormatSpec, load: (assetId:
   // Modèle de la bibliothèque : un calque ajouté ou modifié à la main qui n'existe pas dans la composition refaite
   // est gardé par l'adaptation géométrique (relayout refusé).
   if (!over?.force && tpl && src.layers.some((l) => l.userEdited && !doc.layers.some((n) => n.id === l.id))) return null;
+  // Animations choisies par le client (titre, bouton, logo…) : gardées dans la nouvelle composition.
+  for (const l of doc.layers) {
+    const a = src.layers.find((o) => o.id === l.id)?.anim;
+    if (a) l.anim = a;
+  }
   return doc;
 }
 

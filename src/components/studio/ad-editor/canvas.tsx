@@ -7,6 +7,7 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { renderDoc, type RenderEnv } from "@/lib/ad-doc/render";
+import { animatedLayers, backdropZoom, isAnimatedLayer } from "@/lib/ad-doc/animate";
 import { angleAt, hitTest, resizeBox, snapBox, type Guide, type Handle } from "@/lib/ad-doc/geometry";
 import type { DocOp } from "@/lib/ad-doc/ops";
 import type { AdDocument, Layer } from "@/lib/ad-doc/types";
@@ -30,6 +31,7 @@ export function EditorCanvas({
   onCommit,
   editingId,
   onEditText,
+  playT = null,
 }: {
   doc: AdDocument;
   env: RenderEnv | null;
@@ -40,6 +42,8 @@ export function EditorCanvas({
   onCommit: (ops: DocOp[]) => void;
   editingId: string | null;
   onEditText: (id: string | null) => void;
+  /** Aperçu animé : instant (secondes) de l'animation affiché ; null = création fixe, modifiable. */
+  playT?: number | null;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
@@ -57,9 +61,24 @@ export function EditorCanvas({
     if (!ctx) return;
     ctx.save();
     ctx.clearRect(0, 0, c.width, c.height);
+    if (playT !== null) {
+      // Même calcul que la vidéo exportée : la photo avance, le texte, le logo et le bouton s'animent.
+      const z = backdropZoom("pop", playT);
+      ctx.fillStyle = shown.background;
+      ctx.fillRect(0, 0, shown.width, shown.height);
+      ctx.save();
+      ctx.translate((shown.width * (1 - z)) / 2, (shown.height * (1 - z)) / 2);
+      ctx.scale(z, z);
+      renderDoc(ctx, shown, env, (l) => l.role === "background");
+      ctx.restore();
+      renderDoc(ctx, shown, env, (l) => l.role !== "background" && !isAnimatedLayer(l));
+      renderDoc(ctx, { ...shown, layers: animatedLayers(shown, "pop", playT) }, env, () => true);
+      ctx.restore();
+      return;
+    }
     renderDoc(ctx, editingId ? { ...shown, layers: shown.layers.map((l) => (l.id === editingId ? { ...l, visible: false } : l)) } : shown, env);
     ctx.restore();
-  }, [shown, env, editingId]);
+  }, [shown, env, editingId, playT]);
 
   const point = (e: { clientX: number; clientY: number }) => {
     const r = overlay.current!.getBoundingClientRect();
@@ -143,6 +162,7 @@ export function EditorCanvas({
       <canvas ref={canvas} width={shown.width} height={shown.height} style={{ width: W, height: H }} className="block rounded-[2px] shadow-[0_8px_40px_rgba(0,0,0,0.18)]" aria-label="Aperçu de la publicité" />
       <div
         ref={overlay}
+        hidden={playT !== null}
         className="absolute inset-0 touch-none"
         style={{ cursor: drag.current?.kind === "move" ? "grabbing" : "default" }}
         onPointerDown={down}
