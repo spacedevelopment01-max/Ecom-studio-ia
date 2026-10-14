@@ -325,7 +325,7 @@ for (const p of PRODUCTS) {
   const assets = files.length ? files : all;
   // Scènes dans l'ordre de création : la première (« vie quotidienne ») sert d'exemple principal.
   // Visuel social : celui du jeu d'images, pas une publication du calendrier (déjà montrée dans le fil).
-  const byRole = (r: string) => assets.filter((a) => a.role === r && !(r === "social" && a.meta?.socialV2)).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
+  const byRole = (r: string) => assets.filter((a) => a.role === r && !(r === "social" && (a.meta?.socialV2 || a.meta?.poster))).sort((x, y) => (r === "scene" ? (x.createdAt ?? 0) - (y.createdAt ?? 0) : 0));
   await sharp(photo).resize({ width: 900 }).jpeg({ quality: 84 }).toFile(path.join(dir, X("photo.jpg")));
   const images: { src: string; label: string }[] = [];
   const pick: [string, string, number][] = EN
@@ -348,7 +348,8 @@ for (const p of PRODUCTS) {
   // Les plus récentes (le dernier calendrier produit), remises dans l'ordre du fil.
   // Images des deux derniers calendriers (le plus récent d'abord, dans l'ordre du fil) : jamais une image d'un
   // calendrier plus ancien. Le plus récent peut être celui des publications faites par l'IA.
-  const socialImgs = assets.filter((a) => a.role === "social" && a.meta?.socialV2);
+  // Une publication retouchée (nouvelle version de son affiche) pointe vers la nouvelle image : elle compte aussi.
+  const socialImgs = [...assets, ...all.filter((x) => !assets.some((y) => y.id === x.id))].filter((a) => a.role === "social" && (a.meta?.socialV2 || a.meta?.poster));
   const plans = (db().prepare("SELECT plan_id FROM posts WHERE project_id = ? AND plan_id IS NOT NULL GROUP BY plan_id ORDER BY MAX(created_at) DESC LIMIT 2").all(pid) as { plan_id: string }[]).map((r) => r.plan_id);
   const lastPlan = plans.flatMap((pl) => db().prepare("SELECT media FROM posts WHERE project_id = ? AND plan_id = ? ORDER BY scheduled_at").all(pid, pl) as { media: string }[]);
   const planIds = [...new Set(lastPlan.flatMap((r) => JSON.parse(r.media || "[]") as string[]))];

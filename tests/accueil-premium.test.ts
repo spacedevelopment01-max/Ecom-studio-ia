@@ -65,7 +65,7 @@ describe("Accueil premium", () => {
     expect(page).not.toMatch(/\d+[,.]\d{2}\s?€/); // aucun prix écrit à la main
     expect(page).toContain('T("Bêta", "Beta")');
     expect(page).toContain("pas encore essayé sur une vraie boutique");
-    expect(page).toContain("Pas encore de montage plan par plan dans une timeline interactive");
+    expect(page).toContain("Pas encore de montage image par image");
   });
 
   it("textes bilingues : chaque libellé de l'accueil passe par T(fr, en) ou t(fr, en)", () => {

@@ -39,14 +39,14 @@ export function BrandLab({ brands }: { brands: BrandDemo[] }) {
       <div role="tabpanel" key={b.id} className="grid gap-3 [animation:hp-rise_.45s_cubic-bezier(.16,1,.3,1)_both] sm:grid-cols-6">
         <figure className="relative col-span-6 grid min-h-56 place-items-center overflow-hidden rounded-3xl border border-line p-8 sm:col-span-4" style={{ background: light }}>
           <img src={b.logo} alt={t(`Logo ${b.brand} créé par le studio`, `${b.brand} logo created by the studio`)} className="max-h-36 w-auto object-contain" />
-          <figcaption className="absolute bottom-3 left-4 text-xs font-medium" style={{ color: dark }}>{t("Logo vectoriel (SVG)", "Vector logo (SVG)")}</figcaption>
+          <figcaption className="absolute bottom-3 left-4 text-xs font-medium" style={{ color: dark }}>{t("Logo créé par le studio", "Logo created by the studio")}</figcaption>
         </figure>
         <figure className="col-span-3 overflow-hidden rounded-3xl border border-line bg-card sm:col-span-2">
           <img src={b.photo} alt={t(`Photo de départ du produit ${b.brand}`, `${b.brand} starting product photo`)} loading="lazy" className="aspect-square w-full object-cover" />
           <figcaption className="px-3 py-2 text-xs text-muted">{t("Photo de départ", "Starting photo")}</figcaption>
         </figure>
         <div className="col-span-3 flex flex-col justify-between rounded-3xl border border-line bg-card p-5 sm:col-span-3">
-          <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Typographies", "Typefaces")}</p>
+          <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Polices", "Fonts")}</p>
           <p className={cx("my-3 text-5xl leading-none text-ink", SERIF.test(b.fonts.heading) ? "font-serif" : "font-display font-semibold")}>Aa</p>
           <p className="text-sm text-ink-2">{b.fonts.heading} <span className="text-muted">/</span> {b.fonts.body}</p>
         </div>
@@ -250,10 +250,10 @@ export function SeoDocDemo({ docs }: { docs: Doc[] }) {
           <p className="mt-5 text-xs text-muted">{t("Cliquez sur un texte pour le modifier.", "Click any text to edit it.")}</p>
         </article>
         <aside className="border-t border-line bg-paper-2/50 p-5 text-sm md:border-l md:border-t-0 sm:p-6">
-          <p className="font-semibold text-ink">{t("Référencement", "SEO")}</p>
+          <p className="font-semibold text-ink">{t("Pour Google", "For Google")}</p>
           <p className="mt-2 rounded-xl border border-line bg-card px-3 py-2 text-xs text-ink-2">{d.meta}</p>
           <ul className="mt-4 grid gap-2 text-xs text-ink-2">
-            {[t("Titre et méta-description contrôlés", "Title and meta description checked"), t("Questions fréquentes structurées", "Structured FAQ"), t("Aucun chiffre ni avis inventé", "No invented figures or reviews")].map((l) => (
+            {[t("Titre et résumé pour Google vérifiés", "Title and Google summary checked"), t("Questions fréquentes lisibles par Google", "FAQ that Google can read"), t("Aucun chiffre ni avis inventé", "No invented figures or reviews")].map((l) => (
               <li key={l} className="flex gap-2"><Check className="mt-0.5 size-3.5 shrink-0 text-signal" aria-hidden /> {l}</li>
             ))}
           </ul>

@@ -50,7 +50,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
             <img src={d.logo} alt={t(`Logo ${d.brand}`, `${d.brand} logo`)} className="max-h-28 w-auto object-contain" loading="lazy" />
           </div>
           <div className="flex flex-col justify-between rounded-2xl border border-line bg-paper-2 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Typographies", "Typefaces")}</p>
+            <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Polices", "Fonts")}</p>
             <p className="font-display text-4xl font-semibold leading-none text-ink">Aa</p>
             <ul className="grid gap-0.5 text-xs text-ink-2">
               <li>{t("Titres", "Headings")} · {d.fonts.heading}</li>
@@ -83,7 +83,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
       </div>
     );
   if (k === "images") {
-    const tiles: [string, string][] = [[d.cutout, t("Détourage", "Cutout")], [d.packshot, "Packshot"], [d.scene1, t("Scène", "Scene")], [d.detail, t("Détail", "Detail")]];
+    const tiles: [string, string][] = [[d.cutout, t("Produit découpé", "Cut-out product")], [d.packshot, t("Fond blanc", "White background")], [d.scene1, t("Scène", "Scene")], [d.detail, t("Détail", "Detail")]];
     return (
       <div className="grid h-full grid-cols-2 grid-rows-2 gap-2.5 p-4 sm:gap-3 sm:p-5">
         {tiles.map(([src, l], i) => (
@@ -124,7 +124,7 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-line bg-[#070B17]">
           <Img src={d.videoPoster} alt={t(`Image de la vidéo ${d.brand}`, `${d.brand} video frame`)} className="opacity-90" />
           <span className="absolute inset-0 grid place-items-center"><span className="grid size-12 place-items-center rounded-full bg-white/90 text-[#0B1533] shadow-lg"><Play className="size-5" aria-hidden /></span></span>
-          <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{t("Rendu MP4 après votre accord", "MP4 render after your approval")}</span>
+          <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">{t("Vidéo fabriquée après votre accord", "Video made after your approval")}</span>
         </div>
         <ol className="grid grid-cols-4 gap-2">
           {shots.map(([src, l], i) => (
@@ -143,16 +143,16 @@ function Panel({ k, d }: { k: string; d: StoryDemo }) {
         <article className="overflow-hidden rounded-2xl border border-line bg-card p-4 text-xs leading-relaxed text-ink-2">
           <p className="text-xs font-semibold uppercase tracking-[.16em] text-muted">{t("Fiche produit · modifiable", "Product page · editable")}</p>
           <h4 className="mt-2 font-display text-lg font-semibold leading-tight text-ink">{d.product}</h4>
-          <p className="mt-1.5">{t("Oreiller ergonomique en forme de papillon.", "Butterfly-shaped ergonomic pillow.")}</p>
+          <p className="mt-1.5">{t("Ce que montre la photo, décrit sans exagérer.", "What the photo shows, described without exaggerating.")}</p>
           <ul className="mt-2 grid gap-1">
-            <li>• {t("Coloris : deux teintes", "Colors: two shades")}</li>
+            <li>• {t("Points forts confirmés seulement", "Confirmed strengths only")}</li>
             <li>• {t("Garantie :", "Warranty:")} <mark className="rounded bg-[#FCEBD0] px-1 text-[#7A4500]">{t("[À compléter]", "[To complete]")}</mark></li>
           </ul>
           <p className="mt-3 font-semibold text-ink">FAQ</p>
           <p>{t("Comment l'entretenir ?", "How do I care for it?")}</p>
         </article>
         <div className="hidden flex-col gap-2 text-xs sm:flex">
-          {[[t("Titre SEO", "SEO title"), t("longueur vérifiée", "length checked")], [t("Méta-description", "Meta description"), t("présente", "present")], ["FAQ", t("au moins deux questions", "at least two questions")], [t("Faits inventés", "Invented facts"), t("aucun : les manques sont signalés", "none: gaps are flagged")]].map(([a, b]) => (
+          {[[t("Titre pour Google", "Title for Google"), t("longueur vérifiée", "length checked")], [t("Résumé pour Google", "Summary for Google"), t("présent", "present")], ["FAQ", t("au moins deux questions", "at least two questions")], [t("Faits inventés", "Invented facts"), t("aucun : les manques sont signalés", "none: gaps are flagged")]].map(([a, b]) => (
             <p key={a} className="rounded-xl border border-line bg-card px-3 py-2"><span className="flex items-center gap-1.5 font-semibold text-ink"><Check className="size-3.5 text-signal" aria-hidden /> {a}</span><span className="text-muted">{b}</span></p>
           ))}
         </div>
@@ -212,7 +212,7 @@ export function StoryScroll({ steps, demo }: { steps: StoryStep[]; demo: StoryDe
     <div className="relative">
       {/* Rail des modules (téléphone et tablette) */}
       <div className="hp-glass sticky top-16 z-30 -mx-4 border-y border-line/70 px-4 py-2.5 sm:top-[72px] sm:-mx-6 sm:px-6 lg:hidden">
-        <div ref={rail} className="scrollbar-none flex gap-1.5 overflow-x-auto" role="list" aria-label={t("Modules du studio", "Studio modules")}>
+        <div ref={rail} className="scrollbar-none flex gap-1.5 overflow-x-auto" role="list" aria-label={t("Étapes du studio", "Studio steps")}>
           {steps.map((s, i) => {
             const Icon = ICONS[s.key];
             return (
@@ -261,7 +261,7 @@ export function StoryScroll({ steps, demo }: { steps: StoryStep[]; demo: StoryDe
                 <span className="ml-auto rounded-full bg-signal-soft px-2 py-0.5 text-xs font-semibold text-signal">{t("Démonstration", "Demo")}</span>
               </div>
               <div className="grid grid-cols-[176px_minmax(0,1fr)]">
-                <nav className="border-r border-line bg-paper-2/60 p-2" aria-label={t("Modules du studio", "Studio modules")}>
+                <nav className="border-r border-line bg-paper-2/60 p-2" aria-label={t("Étapes du studio", "Studio steps")}>
                   {steps.map((s, i) => {
                     const Icon = ICONS[s.key];
                     return (
@@ -281,7 +281,7 @@ export function StoryScroll({ steps, demo }: { steps: StoryStep[]; demo: StoryDe
               </div>
               <div className="h-1 bg-line" aria-hidden><div className="h-full bg-signal transition-[width] duration-500" style={{ width: `${((active + 1) / steps.length) * 100}%` }} /></div>
             </div>
-            <p className="mt-3 text-xs text-muted">{t(`Démonstration : la marque ${demo.brand} et ses contenus ont été créés par le studio, sans l'IA des forfaits, à partir d'un produit vendu en marque blanche. Ce n'est pas un résultat client.`, `Demo: the ${demo.brand} brand and its content were created by the studio, without the plans' AI, from a white-label product. This is not a client result.`)}</p>
+            <p className="mt-3 text-xs text-muted">{t(`Démonstration : la marque ${demo.brand} et ses contenus ont été créés dans le studio, avec l'IA, comme pour un client, à partir d'une photo de produit. C'est une marque fictive, pas un résultat client.`, `Demo: the ${demo.brand} brand and its content were created in the studio, with AI, just like for a client, from a product photo. It is a fictional brand, not a client result.`)}</p>
           </div>
         </div>
       </div>

@@ -307,3 +307,57 @@ export async function applyPaletteToSite(projectId: string): Promise<boolean> {
   const r = await applyBrandUpdate(projectId, [item.key], { includeEdited: true });
   return r.updated.length > 0;
 }
+
+/** Remplace l'ancienne signature par la nouvelle dans un texte (même casse en début de phrase ou en minuscules). */
+export function replaceTagline(text: string, from: string, to: string): string {
+  const a = from.trim().replace(/[.!…]+$/, "");
+  const b = to.trim().replace(/[.!…]+$/, "");
+  if (!a || a === b) return text;
+  const esc = a.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.replace(new RegExp(esc, "gi"), (m) => (m === m.toUpperCase() && m !== m.toLowerCase() ? b.toUpperCase() : m[0] === m[0].toLowerCase() ? b.charAt(0).toLowerCase() + b.slice(1) : b.charAt(0).toUpperCase() + b.slice(1)));
+}
+
+/**
+ * Signature (slogan) changée par le client : le site actuel l'affiche aussitôt (pied de page, textes), localement et
+ * gratuitement, dans une nouvelle version du thème (l'ancienne reste restaurable). Rien à faire si elle n'y figure pas.
+ */
+export function applyTaglineToSite(projectId: string, from: string, to: string): boolean {
+  const th = currentTheme(projectId);
+  if (!th || !from.trim()) return false;
+  const before = JSON.stringify(th.spec);
+  // Remplacement dans les valeurs texte seulement (les clés et identifiants ne contiennent jamais la signature).
+  const walk = (v: unknown): unknown => (typeof v === "string" ? replaceTagline(v, from, to) : Array.isArray(v) ? v.map(walk) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)])) : v);
+  const spec = walk(th.spec) as ThemeSpec;
+  if (JSON.stringify(spec) === before) return false;
+  saveThemeVersion(projectId, spec, JSON.stringify({ fr: "Signature de marque mise à jour", en: "Brand tagline updated" }), "system");
+  return true;
+}
+
+/**
+ * Publicités et affiches de publication du studio qui portent l'ancienne signature : nouvelle version rendue avec la
+ * nouvelle (localement, sans IA). Une création modifiée à la main par le client n'est pas touchée.
+ */
+export async function applyTaglineToCreations(projectId: string, userId: string, from: string, to: string): Promise<number> {
+  if (!from.trim()) return 0;
+  const { latestDoc, saveAndRender } = await import("../ad-doc/store");
+  const keys = all<{ doc_key: string }>("SELECT DISTINCT doc_key FROM ad_documents WHERE project_id = ?", projectId).map((r) => r.doc_key);
+  let n = 0;
+  for (const key of keys) {
+    const cur = latestDoc(projectId, key);
+    if (!cur || cur.version.source === "user") continue;
+    const layers = cur.doc.layers.map((l) => (l.kind === "text" && typeof (l as { text?: unknown }).text === "string" ? { ...l, text: replaceTagline((l as { text: string }).text, from, to) } : l)) as Layer[];
+    if (JSON.stringify(layers) === JSON.stringify(cur.doc.layers)) continue;
+    const v = await saveAndRender(projectId, userId, key, { ...cur.doc, layers }, L("signature de marque mise à jour", "brand tagline updated"));
+    run("UPDATE ad_documents SET source = 'engine' WHERE id = ?", v.id);
+    // Affiche d'une publication : la publication montre la nouvelle image (une approbation antérieure ne vaut plus).
+    const prev = cur.version.renderedAssetId;
+    if (key.startsWith("post:") && prev && v.renderedAssetId) {
+      for (const r of all<{ id: string; media: string; status: string }>("SELECT id, media, status FROM posts WHERE project_id = ? AND media LIKE ? AND status NOT IN ('published','publishing')", projectId, `%${prev}%`)) {
+        const media = (json<string[]>(r.media, []) ?? []).map((m) => (m === prev ? v.renderedAssetId! : m));
+        run("UPDATE posts SET media = ?, status = CASE WHEN status IN ('approved','scheduled') THEN 'review' ELSE status END, updated_at = ? WHERE id = ?", JSON.stringify(media), now(), r.id);
+      }
+    }
+    n++;
+  }
+  return n;
+}

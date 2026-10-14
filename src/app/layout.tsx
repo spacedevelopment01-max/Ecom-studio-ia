@@ -4,10 +4,13 @@ import { LangProvider } from "@/components/i18n";
 import { serverLang } from "@/lib/i18n-server";
 import { pick } from "@/lib/i18n";
 import { IntroSplash } from "@/components/intro/intro-splash";
+import { appUrl } from "@/lib/settings";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await serverLang();
   return {
+    // Adresse du site : liens complets pour Google et les aperçus de partage (réseaux sociaux, messageries).
+    metadataBase: new URL(appUrl()),
     title: { default: pick(lang, "E-COM STUDIO IA · du produit à la boutique", "E-COM STUDIO IA · from product to store"), template: "%s · E-COM STUDIO IA" },
     description: pick(
       lang,
