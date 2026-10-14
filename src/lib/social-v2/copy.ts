@@ -24,15 +24,15 @@ const strip = (s: string) => s.trim().replace(/[.!?\s]+$/, "");
 /** Titre court du visuel : la partie avant « : » si elle suffit, sinon coupé sur un mot (jamais « des »/« de » final). */
 const short = (s: string, n = 40) => {
   let t = cap(strip(s));
-  if (t.length <= n) return t;
+  if (t.length <= n) return t.replace(/[\s,;:–·•|-]+$/, "");
   const head = t.split(" : ")[0];
   if (head.length >= 6 && head.length <= n) return head;
   t = t.slice(0, n + 1);
   t = t.slice(0, Math.max(t.lastIndexOf(" "), 8));
-  return t.replace(/\s+(de|des|du|la|le|les|d'|l'|et|à|au|aux|en|pour|of|the|and|to)$/i, "").replace(/[,;:–-]+$/, "");
+  return t.replace(/\s+(de|des|du|la|le|les|d'|l'|et|à|au|aux|en|pour|of|the|and|to)$/i, "").replace(/[\s,;:–·•|-]+$/, "");
 };
 /** Vraie question (« Comment l'entretenir », « Quel prix prévoir ») et non un nom ou une prestation. */
-export const isQuestion = (s: string) => /\?\s*$/.test(s.trim()) || /^(comment|pourquoi|quel(le)?s?|combien|où|quand|faut-il|peut-on|est-ce|qui|que|qu['’]|à quoi|de quoi|how|why|what|which|when|where|who|can|do|does|is|are|should)\b/i.test(s.trim());
+export const isQuestion = (s: string) => /\?\s*$/.test(s.trim()) || /:\s*(comment|pourquoi|quel(le)?s?|combien|où|quand|how|why|what|which|when)\b/i.test(s) || /^(comment|pourquoi|quel(le)?s?|combien|où|quand|faut-il|peut-on|est-ce|qui|que|qu['’]|à quoi|de quoi|how|why|what|which|when|where|who|can|do|does|is|are|should)\b/i.test(s.trim());
 /** Titre tiré d'une question : garde son point d'interrogation (« En quelle matière ? ») ; jamais de « ? » ajouté à
  * un nom ou à une prestation (« Création de jardin ? », « Fleuriste artisan · atelier floral · ? »). */
 export const qmark = (s: string, sep = " ") => (/[?…!.]$/.test(s.trim()) || !isQuestion(s) ? s.trim().replace(/[\s·•|,;:–-]+$/, "") : `${s.trim()}${sep}?`);

@@ -1,60 +1,65 @@
 {
-  "generatedAt": "2026-10-14T17:47:34.614Z",
+  "generatedAt": "2026-10-14T18:41:58.076Z",
   "note": "Marques créées par E-COM STUDIO IA (moteur intégré) à partir de photos de produits réels de fournisseurs, retouchées (inscriptions d'origine retirées).",
   "demos": [
     {
-      "id": "gourde",
-      "brand": "Cime",
-      "product": "Gourde isotherme 750 ml",
-      "sector": "Sport et plein air",
-      "direction": "elan",
+      "id": "paysagiste",
+      "brand": "Racines & Pierres",
+      "product": "Création et entretien de jardins",
+      "sector": "Paysagiste",
+      "direction": "jardin",
       "palette": [
-        "#1E2326",
-        "#9AA5AA",
-        "#FF4D00",
-        "#F4F6F6",
-        "#0E1214"
+        "#3F6B4A",
+        "#DCE6D2",
+        "#E89BA7",
+        "#F7F8F1",
+        "#1D2E22"
       ],
-      "photo": "/demo/gourde/photo.jpg",
-      "logo": "/demo/gourde/logo.png",
-      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
-      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
-      "productPage": "/demo/gourde/fiche-produit.jpg",
-      "business": "products",
+      "photo": "/demo/paysagiste/photo.jpg",
+      "logo": "/demo/paysagiste/logo.png",
+      "shopDesktop": "/demo/paysagiste/boutique-bureau.jpg",
+      "shopMobile": "/demo/paysagiste/boutique-mobile.jpg",
+      "productPage": "",
+      "business": "services",
       "images": [
         {
-          "src": "/demo/gourde/cutout-1.webp",
-          "label": "Détourage"
-        },
-        {
-          "src": "/demo/gourde/scene-1.jpg",
+          "src": "/demo/paysagiste/scene-1.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/gourde/scene-2.jpg",
+          "src": "/demo/paysagiste/scene-2.jpg",
           "label": "Scène"
+        },
+        {
+          "src": "/demo/paysagiste/ad-1.jpg",
+          "label": "Publicité"
+        },
+        {
+          "src": "/demo/paysagiste/banner-1.jpg",
+          "label": "Bannière"
         }
       ],
-      "video": "/demo/gourde/video.mp4",
-      "videoPoster": "/demo/gourde/video-poster.jpg",
+      "video": "/demo/paysagiste/video.mp4",
+      "videoPoster": "/demo/paysagiste/video-poster.jpg",
+      "shopVideo": "/demo/paysagiste/video-boutique.mp4",
       "storeType": "mono",
       "products": 1,
       "source": {
-        "supplier": "Photo créée par l'IA",
+        "supplier": "Photos créées par l'IA",
         "url": "",
-        "note": "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie."
+        "note": "Entreprise fictive : les photos de jardins ont été créées par l'IA (OpenAI) pour la démonstration ; le site et la marque sont créés par le studio."
       },
       "posts": [
-        "/demo/gourde/post-1.jpg",
-        "/demo/gourde/post-2.jpg",
-        "/demo/gourde/post-3.jpg",
-        "/demo/gourde/post-4.jpg",
-        "/demo/gourde/post-5.jpg",
-        "/demo/gourde/post-6.jpg",
-        "/demo/gourde/post-7.jpg",
-        "/demo/gourde/post-8.jpg"
+        "/demo/paysagiste/post-1.jpg",
+        "/demo/paysagiste/post-2.jpg",
+        "/demo/paysagiste/post-3.jpg",
+        "/demo/paysagiste/post-4.jpg",
+        "/demo/paysagiste/post-5.jpg",
+        "/demo/paysagiste/post-6.jpg",
+        "/demo/paysagiste/post-7.jpg",
+        "/demo/paysagiste/post-8.jpg"
       ],
-      "board": "/demo/gourde/planche.jpg"
+      "board": "/demo/paysagiste/planche.jpg"
     },
     {
       "id": "fleuriste",
@@ -114,6 +119,59 @@
         "/demo/fleuriste/post-8.jpg"
       ],
       "board": "/demo/fleuriste/planche.jpg"
+    },
+    {
+      "id": "gourde",
+      "brand": "Cime",
+      "product": "Gourde isotherme 750 ml",
+      "sector": "Sport et plein air",
+      "direction": "elan",
+      "palette": [
+        "#1E2326",
+        "#9AA5AA",
+        "#FF4D00",
+        "#F4F6F6",
+        "#0E1214"
+      ],
+      "photo": "/demo/gourde/photo.jpg",
+      "logo": "/demo/gourde/logo.png",
+      "shopDesktop": "/demo/gourde/boutique-bureau.jpg",
+      "shopMobile": "/demo/gourde/boutique-mobile.jpg",
+      "productPage": "/demo/gourde/fiche-produit.jpg",
+      "business": "products",
+      "images": [
+        {
+          "src": "/demo/gourde/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/gourde/scene-1.jpg",
+          "label": "Scène"
+        },
+        {
+          "src": "/demo/gourde/scene-2.jpg",
+          "label": "Scène"
+        }
+      ],
+      "video": "/demo/gourde/video.mp4",
+      "videoPoster": "/demo/gourde/video-poster.jpg",
+      "storeType": "mono",
+      "products": 1,
+      "source": {
+        "supplier": "Photo créée par l'IA",
+        "url": "",
+        "note": "Produit et photo d'origine créés par l'IA (OpenAI) pour la démonstration : la marque, les visuels et la boutique sont créés par le studio. Aucune caractéristique technique n'est annoncée sans être fournie."
+      },
+      "posts": [
+        "/demo/gourde/post-1.jpg",
+        "/demo/gourde/post-2.jpg",
+        "/demo/gourde/post-3.jpg",
+        "/demo/gourde/post-4.jpg",
+        "/demo/gourde/post-5.jpg",
+        "/demo/gourde/post-6.jpg",
+        "/demo/gourde/post-7.jpg"
+      ],
+      "board": "/demo/gourde/planche.jpg"
     },
     {
       "id": "tribunes",
@@ -180,68 +238,72 @@
         "/demo/tribunes/post-4.jpg",
         "/demo/tribunes/post-5.jpg",
         "/demo/tribunes/post-6.jpg",
-        "/demo/tribunes/post-7.jpg",
-        "/demo/tribunes/post-8.jpg"
+        "/demo/tribunes/post-7.jpg"
       ],
       "board": "/demo/tribunes/planche.jpg"
     },
     {
-      "id": "paysagiste",
-      "brand": "Racines & Pierres",
-      "product": "Création et entretien de jardins",
-      "sector": "Paysagiste",
-      "direction": "jardin",
+      "id": "casque",
+      "brand": "Sonore",
+      "product": "Casque audio",
+      "sector": "High-tech",
+      "direction": "signal",
       "palette": [
-        "#3F6B4A",
-        "#DCE6D2",
-        "#E89BA7",
-        "#F7F8F1",
-        "#1D2E22"
+        "#0B0F1A",
+        "#8A9BC2",
+        "#00E0A4",
+        "#E8EEF6",
+        "#05070D"
       ],
-      "photo": "/demo/paysagiste/photo.jpg",
-      "logo": "/demo/paysagiste/logo.png",
-      "shopDesktop": "/demo/paysagiste/boutique-bureau.jpg",
-      "shopMobile": "/demo/paysagiste/boutique-mobile.jpg",
-      "productPage": "",
-      "business": "services",
+      "photo": "/demo/casque/photo.jpg",
+      "logo": "/demo/casque/logo.png",
+      "shopDesktop": "/demo/casque/boutique-bureau.jpg",
+      "shopMobile": "/demo/casque/boutique-mobile.jpg",
+      "productPage": "/demo/casque/fiche-produit.jpg",
+      "business": "products",
       "images": [
         {
-          "src": "/demo/paysagiste/scene-1.jpg",
+          "src": "/demo/casque/cutout-1.webp",
+          "label": "Détourage"
+        },
+        {
+          "src": "/demo/casque/scene-1.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/paysagiste/scene-2.jpg",
+          "src": "/demo/casque/scene-2.jpg",
           "label": "Scène"
         },
         {
-          "src": "/demo/paysagiste/ad-1.jpg",
+          "src": "/demo/casque/social-1.jpg",
+          "label": "Visuel social"
+        },
+        {
+          "src": "/demo/casque/ad-1.jpg",
           "label": "Publicité"
         },
         {
-          "src": "/demo/paysagiste/banner-1.jpg",
+          "src": "/demo/casque/banner-1.jpg",
           "label": "Bannière"
         }
       ],
-      "video": "/demo/paysagiste/video.mp4",
-      "videoPoster": "/demo/paysagiste/video-poster.jpg",
-      "shopVideo": "/demo/paysagiste/video-boutique.mp4",
+      "video": "/demo/casque/video.mp4",
+      "videoPoster": "/demo/casque/video-poster.jpg",
       "storeType": "mono",
       "products": 1,
       "source": {
-        "supplier": "Photos créées par l'IA",
-        "url": "",
-        "note": "Entreprise fictive : les photos de jardins ont été créées par l'IA (OpenAI) pour la démonstration ; le site et la marque sont créés par le studio."
+        "supplier": "Pixabay",
+        "url": "https://pixabay.com/photos/woman-pose-model-girl-youth-4628615/",
+        "note": "Vraies photos d'un casque sans marque visible, en situation (Pixabay, série d'Engin_Akyurt) : la marque, les visuels et la boutique sont créés par le studio."
       },
       "posts": [
-        "/demo/paysagiste/post-1.jpg",
-        "/demo/paysagiste/post-2.jpg",
-        "/demo/paysagiste/post-3.jpg",
-        "/demo/paysagiste/post-4.jpg",
-        "/demo/paysagiste/post-5.jpg",
-        "/demo/paysagiste/post-6.jpg",
-        "/demo/paysagiste/post-7.jpg"
+        "/demo/casque/post-1.jpg",
+        "/demo/casque/post-2.jpg",
+        "/demo/casque/post-3.jpg",
+        "/demo/casque/post-4.jpg",
+        "/demo/casque/post-5.jpg"
       ],
-      "board": "/demo/paysagiste/planche.jpg"
+      "board": "/demo/casque/planche.jpg"
     },
     {
       "id": "verger",

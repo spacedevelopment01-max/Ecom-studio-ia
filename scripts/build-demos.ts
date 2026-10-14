@@ -224,6 +224,8 @@ fs.mkdirSync(path.join(OUT, "directions"), { recursive: true });
 const previous = process.env.ONLY && fs.existsSync(path.join(OUT, MANIFEST)) ? JSON.parse(fs.readFileSync(path.join(OUT, MANIFEST), "utf8")).demos : [];
 const demos: any[] = [];
 let firstProject: { pid: string } | null = null;
+// SOCIAL_ONLY=1 (avec PID) : refait seulement la semaine de publications d'un projet existant (sans IA), puis la collecte.
+const REDO = !process.env.SOCIAL_ONLY;
 
 for (const p of PRODUCTS) {
   console.log(`▶ ${p.id}`);
@@ -255,7 +257,7 @@ for (const p of PRODUCTS) {
   let ov = await waitIdle(ctx, pid);
   console.log(`  pipeline ${Math.round((Date.now() - t0) / 1000)} s`, ov.pipeline?.job?.status);
   // Catalogue (niche, multi) : les autres produits, avec leur photo réelle.
-  if (p.catalog?.length) {
+  if (REDO && p.catalog?.length) {
     for (const c of p.catalog) {
       const buf = c.photo.endsWith(".png") ? await sharp(c.photo).resize({ height: 1600, withoutEnlargement: true }).extend({ top: 120, bottom: 120, left: 400, right: 400, background: "#F3F1ED" }).flatten({ background: "#F3F1ED" }).jpeg({ quality: 92 }).toBuffer() : fs.readFileSync(c.photo);
       const r = await ctx.request.post(`${BASE}/api/projects/${pid}/catalog`, { multipart: { name: c.name, category: c.category, price: c.price, description: c.description, features: (c.features ?? []).join("\n"), photo: { name: `${c.name}.jpg`, mimeType: "image/jpeg", buffer: buf } } });
@@ -263,18 +265,18 @@ for (const p of PRODUCTS) {
     }
   }
   // Photos en situation (héros de la boutique).
-  for (const file of p.lifestyle ?? []) {
+  for (const file of REDO ? p.lifestyle ?? [] : []) {
     const r = await ctx.request.post(`${BASE}/api/projects/${pid}/files`, { multipart: { role: "lifestyle", files: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
     if (!r.ok()) throw new Error(await r.text());
   }
   // Vidéos refaites avec les photos en situation (elles ouvrent le montage).
-  if (p.lifestyle?.length) {
+  if (REDO && p.lifestyle?.length) {
     await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "9:16", target: "ads", goal: EN ? "short ad for social media" : "publicité courte pour les réseaux sociaux" } });
     await api(ctx, `/api/projects/${pid}/videos`, { body: { format: "16:9", target: "shop", goal: EN ? "mood video for the store" : "vidéo d'ambiance pour la boutique", music: "none" } });
     await waitIdle(ctx, pid);
   }
   // Variante (coloris…) : valeurs du produit, puis photo de chaque valeur.
-  if (p.variants) {
+  if (REDO && p.variants) {
     await api(ctx, `/api/projects/${pid}/product`, { method: "PATCH", body: { variants: [{ name: p.variants.name, values: p.variants.values }] } });
     for (const [value, file] of Object.entries(p.variants.photos ?? {})) {
       const r = await ctx.request.post(`${BASE}/api/projects/${pid}/product/variant-photo`, { multipart: { value, photo: { name: path.basename(file), mimeType: "image/jpeg", buffer: fs.readFileSync(file) } } });
@@ -282,24 +284,26 @@ for (const p of PRODUCTS) {
     }
   }
   // Chaque démonstration montre une direction différente.
-  await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
-  ov = await waitIdle(ctx, pid);
+  if (REDO) {
+    await api(ctx, `/api/projects/${pid}/theme/build`, { body: { direction: p.direction } });
+    ov = await waitIdle(ctx, pid);
+  }
   // Comme un client dans l'onglet Images : deux photos du vrai produit en situation créées par l'IA (CLIENT_STEPS=1).
-  if (process.env.CLIENT_STEPS && p.business !== "services") {
+  if (REDO && process.env.CLIENT_STEPS && p.business !== "services") {
     for (const [k, topic] of (EN ? ["in everyday use", "close-up of the details, in its setting"] : ["en situation, au quotidien", "gros plan sur les détails, en situation"]).entries()) {
       await api(ctx, `/api/projects/${pid}/images`, { body: { mode: "single", kind: "scene", useAi: true, subline: topic, format: k ? "portrait" : "landscape" } }).catch((e) => console.log("  image :", String(e).slice(0, 160)));
       await waitIdle(ctx, pid);
     }
   }
   // Puis, comme un client dans l'onglet Publications : une semaine de publications, produite après les images.
-  if (process.env.CLIENT_STEPS) {
+  if (process.env.CLIENT_STEPS || !REDO) {
     const start = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
     const plan = await api(ctx, `/api/projects/${pid}/social/v2`, { body: { action: "plan", request: { startDate: start, days: 8, perDay: 1, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }] } } });
     await api(ctx, `/api/projects/${pid}/social/v2`, { body: { action: "produce", planId: plan.planId } });
   }
   firstProject ??= { pid };
   // Fiche produit réglée comme le ferait le marchand (nouvelle version du thème).
-  if (p.pdp?.length) {
+  if (REDO && p.pdp?.length) {
     const { currentTheme, saveThemeVersion } = await import("../src/lib/projects");
     const cur = currentTheme(pid)!;
     const spec = structuredClone(cur.spec);
@@ -341,7 +345,12 @@ for (const p of PRODUCTS) {
   }
   // Publications du calendrier (moteur de publications : modèles à la marque), dans l'ordre du fil.
   // Les plus récentes (le dernier calendrier produit), remises dans l'ordre du fil.
-  const postAssets = assets.filter((a) => a.role === "social" && a.meta?.socialV2).sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0)).slice(0, 8).reverse();
+  // Images du DERNIER calendrier seulement (dans l'ordre du fil) : jamais une image d'un calendrier précédent.
+  const socialImgs = assets.filter((a) => a.role === "social" && a.meta?.socialV2);
+  const lastPlan = db().prepare("SELECT media FROM posts WHERE project_id = ? AND plan_id = (SELECT plan_id FROM posts WHERE project_id = ? AND plan_id IS NOT NULL ORDER BY created_at DESC LIMIT 1) ORDER BY scheduled_at").all(pid, pid) as { media: string }[];
+  const planIds = lastPlan.flatMap((r) => JSON.parse(r.media || "[]") as string[]);
+  const fromPlan = planIds.map((id) => socialImgs.find((a) => a.id === id)).filter(Boolean) as typeof socialImgs;
+  const postAssets = fromPlan.length ? fromPlan.slice(0, 8) : socialImgs.sort((x, y) => (y.createdAt ?? 0) - (x.createdAt ?? 0)).slice(0, 8).reverse();
   const posts: string[] = [];
   for (const [i, a] of postAssets.entries()) {
     const file = X(`post-${i + 1}.jpg`);
