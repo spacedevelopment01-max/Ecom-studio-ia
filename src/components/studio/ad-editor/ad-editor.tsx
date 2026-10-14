@@ -87,6 +87,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const [photoChoice, setPhotoChoice] = useState<View["edit"] | null>(null);
   const [draft, setDraft] = useState<{ doc: AdDocument } | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const [fmtPreview, setFmtPreview] = useState<{ f: { platform: string; aspect: string; label: string }; image: string } | null>(null);
   // Aperçu animé (gratuit, dans le navigateur) : même calcul que la vidéo exportée, joué une fois (7 s).
   const [playT, setPlayT] = useState<number | null>(null);
   const playing = useRef<number | null>(null);
@@ -364,6 +365,22 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       }
       return;
     }
+    // Demande composée ou libre que le moteur local ne sait pas faire : proposée à l'IA (accord demandé avant).
+    if (project?.ai.llm) {
+      if (!(await cost.confirm("edit"))) return;
+      setBusy(t("L'IA prépare la retouche…", "AI is preparing the edit…"));
+      try {
+        const res = await api<{ ops: DocOp[]; summary: string }>(base, { body: { action: "ai_edit", instruction: q, doc } });
+        applyMany(res.ops);
+        setAsk("");
+        toast("ok", t(`Fait par l'IA : ${res.summary} (« Annuler » pour revenir en arrière).`, `Done by AI: ${res.summary} (“Undo” to go back).`));
+      } catch (e) {
+        toast("bad", (e as Error).message);
+      } finally {
+        setBusy(null);
+      }
+      return;
+    }
     toast("bad", r.reason);
   };
 
@@ -384,7 +401,18 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       toast("bad", (e as Error).message);
     }
   };
+  // Autre format : aperçu d'abord (rien n'est créé), copie créée seulement à la validation du client.
+  const previewFormat = async (f: { platform: string; aspect: string; label: string }) => {
+    if (dirty && !(await save())) return;
+    try {
+      const r = await api<{ preview: { image: string } }>(base, { body: { action: "preview_reflow", platform: f.platform, aspect: f.aspect } });
+      setFmtPreview({ f, image: r.preview.image });
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    }
+  };
   const reformat = async (f: { platform: string; aspect: string }) => {
+    setFmtPreview(null);
     if (dirty && !(await save())) return;
     try {
       const v = await api<View>(base, { body: { action: "reflow", platform: f.platform, aspect: f.aspect } });
@@ -464,9 +492,18 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const formatsList = (
     <div className="grid gap-2 sm:grid-cols-2">
       {FORMATS.map((f) => (
-        <Button key={`${f.platform}-${f.aspect}`} variant="secondary" disabled={f.aspect === doc.format.aspect && f.platform === doc.format.platform} onClick={() => reformat(f)}>{f.label}</Button>
+        <Button key={`${f.platform}-${f.aspect}`} variant="secondary" disabled={f.aspect === doc.format.aspect && f.platform === doc.format.platform} onClick={() => previewFormat(f)} data-testid={`editor-format-${f.aspect}`}>{f.label}</Button>
       ))}
-      <p className="text-xs text-muted sm:col-span-2">{t("Une copie adaptée est créée : textes, couleurs, images et éléments ajoutés sont conservés ; textes, bouton, logo et produit restent entiers dans la zone visible.", "An adapted copy is created: text, colours, images and added elements are kept; text, button, logo and product stay whole in the visible area.")}</p>
+      {fmtPreview && (
+        <div className="grid gap-2 rounded-xl border border-line p-3 sm:col-span-2" data-testid="editor-format-preview">
+          <img src={fmtPreview.image} alt={fmtPreview.f.label} className="mx-auto max-h-[45vh] w-auto rounded-lg object-contain" />
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setFmtPreview(null)}>{t("Annuler", "Cancel")}</Button>
+            <Button size="sm" onClick={() => reformat(fmtPreview.f)} data-testid="editor-format-validate">{t("Valider ce format", "Confirm this format")}</Button>
+          </div>
+        </div>
+      )}
+      <p className="text-xs text-muted sm:col-span-2">{t("Cliquez sur un format pour voir l'aperçu : rien n'est créé tant que vous ne validez pas. À la validation, une copie adaptée est créée : textes, couleurs, images et éléments ajoutés sont conservés ; textes, bouton, logo et produit restent entiers dans la zone visible.", "An adapted copy is created: text, colours, images and added elements are kept; text, button, logo and product stay whole in the visible area.")}</p>
     </div>
   );
   const exportList = (
@@ -625,7 +662,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       )}
 
       <Modal open={panel === "versions"} onClose={() => setPanel(null)} title={t("Versions enregistrées", "Saved versions")}>{versionsList}</Modal>
-      <Modal open={panel === "formats"} onClose={() => setPanel(null)} title={t("Adapter à un autre format", "Adapt to another format")}>{formatsList}</Modal>
+      <Modal open={panel === "formats"} onClose={() => (setPanel(null), setFmtPreview(null))} title={t("Adapter à un autre format", "Adapt to another format")}>{formatsList}</Modal>
       <Modal open={panel === "export"} onClose={() => setPanel(null)} title={t("Exporter", "Export")}>{exportList}</Modal>
       <Modal open={panel === "problems"} onClose={() => setPanel(null)} title={t("Points à vérifier", "Things to check")}>{problemsList}</Modal>
       <Modal open={!!photoChoice} onClose={() => setPhotoChoice(null)} title={t("Changer la photo", "Change the photo")}>

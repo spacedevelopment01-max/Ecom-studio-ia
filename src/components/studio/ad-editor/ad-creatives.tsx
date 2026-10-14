@@ -78,13 +78,29 @@ export function AdCreatives() {
     }
   };
 
-  // Autre format : même photo et mêmes textes, mise en page recomposée (aucune IA, gratuit).
+  // Autre format : d'abord un APERÇU (rien n'est créé) ; la copie n'est créée que si le client valide ce format.
+  // Même photo et mêmes textes, mise en page recomposée (aucune IA, gratuit) ; modifiable ensuite dans l'éditeur.
+  const [preview, setPreview] = useState<{ docKey: string; f: (typeof FORMAT_OPTIONS)[number]; image: string } | null>(null);
   const reformat = async (docKey: string, f: (typeof FORMAT_OPTIONS)[number]) => {
     setDerive(docKey);
     try {
-      await api(`/api/projects/${id}/ads/docs/${encodeURIComponent(docKey)}`, { body: { action: "reflow", platform: f.platform, aspect: f.aspect } });
+      const r = await api<{ preview: { image: string } }>(`/api/projects/${id}/ads/docs/${encodeURIComponent(docKey)}`, { body: { action: "preview_reflow", platform: f.platform, aspect: f.aspect } });
+      setPreview({ docKey, f, image: r.preview.image });
+    } catch (e) {
+      toast("bad", (e as Error).message);
+    } finally {
+      setDerive(null);
+    }
+  };
+  const validateFormat = async (edit: boolean) => {
+    if (!preview) return;
+    setDerive(preview.docKey);
+    try {
+      const v = await api<{ docKey: string }>(`/api/projects/${id}/ads/docs/${encodeURIComponent(preview.docKey)}`, { body: { action: "reflow", platform: preview.f.platform, aspect: preview.f.aspect } });
       await reload();
-      toast("ok", t(`Publicité déclinée au format ${f.aspect} (même photo, sans frais).`, `Ad adapted to ${f.aspect} (same photo, free).`));
+      toast("ok", t(`Format ${preview.f.aspect} ajouté à vos créations (même photo, sans frais).`, `${preview.f.aspect} format added to your creatives (same photo, free).`));
+      setPreview(null);
+      if (edit) setOpen(v.docKey);
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
@@ -124,7 +140,7 @@ export function AdCreatives() {
                 <div className="flex flex-wrap items-center gap-1.5" aria-label={t("Autres formats", "Other formats")}>
                   <span className="text-xs text-muted">{t("Autres formats :", "Other formats:")}</span>
                   {FORMAT_OPTIONS.filter((f) => f.aspect !== d.aspect).map((f) => (
-                    <button key={f.aspect} type="button" disabled={derive === d.docKey} onClick={() => reformat(d.docKey, f)} className="rounded-full border border-line px-2 py-0.5 text-xs hover:bg-paper-2 disabled:opacity-50" title={t(`Décliner en ${f.fr} (même photo, gratuit)`, `Adapt to ${f.en} (same photo, free)`)} data-testid={`derive-${f.aspect}`}>
+                    <button key={f.aspect} type="button" disabled={derive === d.docKey} onClick={() => reformat(d.docKey, f)} className="rounded-full border border-line px-2 py-0.5 text-xs hover:bg-paper-2 disabled:opacity-50" title={t(`Voir l'aperçu en ${f.fr} (même photo, gratuit)`, `Preview in ${f.en} (same photo, free)`)} data-testid={`derive-${f.aspect}`}>
                       {f.aspect}
                     </button>
                   ))}
@@ -136,6 +152,19 @@ export function AdCreatives() {
           ))}
         </div>
       )}
+      <Modal open={!!preview} onClose={() => setPreview(null)} title={preview ? t(`Aperçu au format ${preview.f.fr}`, `Preview in ${preview.f.en}`) : ""}>
+        {preview && (
+          <div className="grid gap-3" data-testid="format-preview">
+            <img src={preview.image} alt={t("Aperçu du format", "Format preview")} className="mx-auto max-h-[60vh] w-auto rounded-lg border border-line object-contain" />
+            <p className="text-xs text-muted">{t("Simple aperçu : rien n'est créé tant que vous ne validez pas. Après validation, vous pourrez la modifier dans l'éditeur autant de fois que vous voulez.", "Preview only: nothing is created until you confirm. Once confirmed, you can edit it in the editor as many times as you like.")}</p>
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button variant="secondary" onClick={() => setPreview(null)} data-testid="format-cancel">{t("Annuler", "Cancel")}</Button>
+              <Button variant="secondary" disabled={!!derive} onClick={() => validateFormat(true)} data-testid="format-validate-edit">{t("Valider et modifier", "Confirm and edit")}</Button>
+              <Button disabled={!!derive} onClick={() => validateFormat(false)} data-testid="format-validate">{t("Valider ce format", "Confirm this format")}</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
       <Modal open={!!form} onClose={() => setForm(null)} title={t("Créer des publicités", "Create ads")}>
         {form && (
           <div className="grid gap-4">

@@ -7,6 +7,7 @@ import { AdDocumentSchema, docImages, duplicateDoc, exportDoc, foreignAssets, la
 import { docMetrics } from "@/lib/ad-doc/server";
 import { reflow } from "@/lib/ad-doc/reflow";
 import { localAdEdit } from "@/lib/ad-doc/local-edit";
+import { assertAiAllowed } from "@/lib/ai/access";
 import { PLATFORM_SPECS } from "@/lib/ads-v2/platforms";
 import type { AdDocument } from "@/lib/ad-doc/types";
 import { ANIM_STYLES } from "@/lib/ad-doc/animate";
@@ -57,7 +58,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
   const b = await body(
     req,
     z.object({
-      action: z.enum(["save", "restore", "duplicate", "reflow", "edit", "animate", "gallery", "restyle"]),
+      action: z.enum(["save", "restore", "duplicate", "reflow", "preview_reflow", "edit", "ai_edit", "animate", "gallery", "restyle"]),
       family: z.string().max(20).optional(),
       layout: z.string().max(60).optional(),
       scheme: z.enum(["dark", "light", "brand", "accent", "mono"]).optional(),
@@ -115,13 +116,27 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     const d = duplicateDoc(p.id, docKey);
     return ok(await view(p, d.docKey));
   }
-  if (b.action === "reflow") {
+  if (b.action === "ai_edit") {
+    // Retouche que le moteur local ne comprend pas : l'IA propose des modifications bornées de la création ouverte
+    // (document envoyé par l'éditeur, non enregistré) ; rien n'est sauvegardé ici, l'éditeur les applique.
+    const instruction = (b.instruction ?? "").trim();
+    if (!instruction) throw new HttpError(400, L("Demande manquante.", "Missing request."));
+    assertAiAllowed(user.id, p.id);
+    const src = b.doc ?? latestDoc(p.id, docKey)!.doc;
+    const { aiAdEdit } = await import("@/lib/ad-doc/ai-edit");
+    const r = await aiAdEdit({ userId: user.id, projectId: p.id }, src, instruction);
+    if (!r.ops.length) throw new HttpError(422, L("L'IA n'a trouvé aucune modification à faire pour cette demande : précisez-la.", "The AI found nothing to change for this request: make it more precise."));
+    return ok({ ops: r.ops, summary: r.summary });
+  }
+  if (b.action === "reflow" || b.action === "preview_reflow") {
     // Autre format : nouvelle création (lignée dupliquée) ; textes, couleurs, images et calques ajoutés conservés.
+    // « preview_reflow » : même calcul, rien n'est enregistré (aperçu avant validation par le client).
     const platform = (b.platform ?? latestDoc(p.id, docKey)!.doc.format.platform ?? "meta_feed") as Platform;
     const spec = PLATFORM_SPECS[platform];
     const f = spec?.formats.find((x) => x.aspect === b.aspect) ?? (b.aspect === "16:9" ? { aspect: "16:9", width: 1920, height: 1080 } : b.aspect === "1.91:1" ? { aspect: "1.91:1", width: 1200, height: 628 } : b.aspect === "9:16" ? { aspect: "9:16", width: 1080, height: 1920 } : b.aspect === "4:5" ? { aspect: "4:5", width: 1080, height: 1350 } : b.aspect === "3:1" ? { aspect: "3:1", width: 2400, height: 800 } : b.aspect === "1:1" ? { aspect: "1:1", width: 1080, height: 1080 } : null);
     if (!f || !spec) throw new HttpError(400, L("Format inconnu.", "Unknown format."));
-    const d = duplicateDoc(p.id, docKey);
+    const preview = b.action === "preview_reflow";
+    const d = preview ? { docKey } : duplicateDoc(p.id, docKey);
     const src = latestDoc(p.id, d.docKey)!.doc;
     // Création du moteur : RECOMPOSÉE pour le format (colonne, tailles, marges, produit) ; sinon adaptation géométrique.
     const { relayoutDoc } = await import("@/lib/ads-v2/compose");
@@ -132,6 +147,12 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     };
     const recomposed = await relayoutDoc(src, { platform, aspect: f.aspect as never, width: f.width, height: f.height, label: f.aspect, safe: spec.safe }, load).catch(() => null);
     const next = recomposed ?? reflow(src, { width: f.width, height: f.height, aspect: f.aspect, platform, safe: { top: Math.round(f.height * spec.safe.top), bottom: Math.round(f.height * spec.safe.bottom), side: Math.round(f.width * spec.safe.side) } });
+    if (preview) {
+      // Aperçu rendu par le moteur de l'export (ce que le client verra s'il valide) ; rien n'est enregistré.
+      const shown = { ...next, meta: { ...next.meta, source: "user" as const } };
+      const { data } = await exportDoc(p.id, shown, "jpeg");
+      return ok({ preview: { aspect: f.aspect, platform, width: f.width, height: f.height, image: `data:image/jpeg;base64,${data.toString("base64")}` } });
+    }
     await saveAndRender(p.id, user.id, d.docKey, { ...next, meta: { ...next.meta, source: "user" } }, `adaptation au format ${f.aspect}`);
     return ok(await view(p, d.docKey));
   }

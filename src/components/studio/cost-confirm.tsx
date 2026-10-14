@@ -14,7 +14,7 @@ import { useOptionalProject } from "./project-context";
 import { TOPUP_PRICE_EUR } from "@/lib/plans";
 import type { ProjectSub } from "./project-subscription";
 
-export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc" | "blog";
+export type CostAction = "pipeline" | "theme" | "images" | "image" | "video-clip" | "ugc" | "blog" | "edit";
 
 /**
  * L'action consomme-t-elle le budget IA, et faut-il le confirmer ? (`ask` faux : on ne prévient que si le budget est
@@ -29,6 +29,7 @@ export function costUsage(action: CostAction, videos?: "ai" | "edited" | "none")
     case "image":
       return { ask: false, local: true };
     case "blog":
+    case "edit":
       return { ask: true, local: true };
     // Vidéos filmées par l'IA et UGC : pas d'équivalent sans IA.
     case "video-clip":
