@@ -49,7 +49,7 @@ import { engineDocKey, latestDoc, saveVersion, userOwned } from "../ad-doc/store
 import type { AdConcept, AdCopy, AdInsight, AdOutcome, AdReview, AnglePlan, FormatSpec, Platform, VisualConcept } from "./types";
 import { projectRights } from "../plan-gates";
 
-export const ADS_V2_VERSION = "7.0";
+export const ADS_V2_VERSION = "7.1";
 export const DEFAULT_AD_CAP_EUR = 3;
 
 export type AdRequestV2 = {
@@ -178,6 +178,9 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
       result.concepts.push({ id: a.id, angle: a, copy: copies.get(a.id)!.copy, visual: { ...v, layout: layoutForConcept(art, k) }, direction, copyBy: copies.get(a.id)!.by, claims: allClaims.get(a.id)! });
     });
     const ownPhotos = p.business === "products" && !cut ? ownScenePhotos(p.id) : [];
+    // Référence des photos publicitaires générées quand le produit n'est montré que sur les photos du client : le
+    // produit seul, recadré dans la première photo (jamais la photo entière, où il n'est qu'un détail).
+    const refId = ownPhotos[0] && deps.canGenerate && !req.copyOnly ? await deps.productReference?.(ownPhotos[0].id).catch(() => null) ?? null : null;
     const renders: { id: string; angle: string; hash: string; layout: string | null }[] = [];
 
     if (req.copyOnly) return result;
@@ -187,12 +190,14 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
       const images = new Map<AspectId, { assetId: string; data: Buffer; withProduct: boolean } | null>();
       // Produit montré seulement sur les photos du client (en situation, rien à détourer) : une photo ENTIÈRE par
       // concept, la même dans tous les formats du concept.
-      const own = ownPhotos.length ? ownPhotos[ci % ownPhotos.length] : null;
+      // Avec l'IA d'images : chaque concept a sa propre photo publicitaire, générée à partir de la vraie photo du
+      // produit (référence) ; le concept « mise en situation » garde la photo entière du client.
+      const own = ownPhotos.length && (!deps.canGenerate || concept.direction?.id === "lifestyle") ? ownPhotos[ci % ownPhotos.length] : null;
       if (own) for (const a of ["1:1", "4:5", "16:9"]) for (const v of [0, 1, 2]) images.set(`${a}:${v}` as AspectId, { assetId: own.id, data: assetData(own), withProduct: true });
       let conceptReview: AdReview | null = null;
       let reviewed = false;
       for (const [fi, f] of formats.entries()) {
-        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, insight, limits, stats, prior: conceptReview, features: feats });
+        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, refPhoto: ownPhotos[0] ?? null, refId, insight, limits, stats, prior: conceptReview, features: feats });
         if (out.review) {
           conceptReview = out.review;
           reviewed = true;
@@ -267,6 +272,10 @@ type OneInput = {
   logo: { id: string; data: Buffer } | null;
   logoLight: { id: string; data: Buffer } | null;
   cut: { id: string; data: Buffer } | null;
+  /** Photo du client montrant le produit (sans détourage) : référence de la photo publicitaire générée. */
+  refPhoto: Asset | null;
+  /** Produit recadré dans cette photo (référence de la génération), null si non repéré. */
+  refId?: string | null;
   insight: AdInsight;
   limits: ReturnType<typeof strictestText>;
   stats: AdRunResult["stats"];
@@ -277,7 +286,7 @@ type OneInput = {
 async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdReview | null }> {
   const { p, deps, concept, f, stats } = o;
   const jobId = o.ctx?.job.id ?? null;
-  const h = hash({ v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style });
+  const h = hash({ v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, f: `${f.platform}:${f.aspect}`, pal: o.pal, typo: o.typo, layout: concept.visual.layout, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, art: o.art.style, gen: !!deps.canGenerate });
   // Création modifiée par le client (éditeur visuel) : jamais écrasée en silence par une régénération.
   const docKey = engineDocKey(p.id, concept.id, f.platform, f.aspect);
   if (userOwned(p.id, docKey)) {
@@ -312,10 +321,13 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       // Produit : d'abord une vraie mise en scène publicitaire AVEC le produit réel (photo de référence, pixels
       // d'origine remis par-dessus) ; à défaut, un décor d'univers et le détourage posé par la composition.
       let got: { assetId: string; data: Buffer; withProduct: boolean } | null = null;
-      if (p.business === "products" && o.cut) {
-        const scene = await o.deps.image({ ...common, kind: "lifestyle", references: [o.cut.id] });
+      const ref = o.cut?.id ?? (deps.canGenerate ? (o.refId ?? undefined) : undefined);
+      if (p.business === "products" && ref) {
+        const scene = await o.deps.image({ ...common, kind: "lifestyle", references: [ref] });
         if (scene) got = { ...scene, withProduct: true };
       }
+      // Génération impossible ou refusée : la photo entière du client (jamais un produit inventé).
+      if (!got && !o.cut && o.refPhoto && p.business === "products") got = { assetId: o.refPhoto.id, data: assetData(o.refPhoto), withProduct: true };
       // Jamais de produit collé sur une photo d'univers qui ne le montre pas (échelle, perspective et lumière fausses) :
       // sans mise en scène réelle du produit, la publicité le pose sur le décor de studio de la marque.
       if (!got && !(p.business === "products" && o.cut)) {

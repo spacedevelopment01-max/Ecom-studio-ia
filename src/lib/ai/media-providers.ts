@@ -18,7 +18,7 @@ import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
-import { activeProviderKey, FX_SAFETY, requirePrice, routeFor, usdToEur } from "./config";
+import { activeProviderKey, bearer, FX_SAFETY, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
@@ -469,6 +469,8 @@ async function productSceneImpl(ctx: Ctx, input: { prompt: string; aspect: "1:1"
 export function productScenePrompt(input: { prompt: string; aspect: string; textZone?: string | null }): string {
   return `Professional advertising photograph for a premium brand campaign. Scene: ${input.prompt}.
 The product shown in the reference image is the hero of the picture: reproduce it exactly as it is (same shape, proportions, materials, colours, details, label, logo and printed text); do not redesign it, do not change its colour, do not add a second product or copies of it.
+If the reference photo shows the product worn or held by a person, or inside a wider scene, take only the product itself from it: never reproduce the person, their clothes, their body or that background.
+Never write a brand name, a word or a logo on the product that is not on the reference.
 The product sits naturally in the scene at a realistic scale, sharp and in focus, lit by the same light as the scene, with a real contact shadow on the surface it rests on; shallow depth of field behind it, never a flat cut-out look.
 Leave clean, uncluttered negative space ${input.textZone ? `in the ${input.textZone}` : "on one side"} for a headline that will be added later.
 No text, no lettering, no captions, no watermark, no added logo, no price tag. No people, no hands, no faces. Aspect ratio ${input.aspect === "2:3" ? "4:5" : input.aspect}.`;
@@ -820,7 +822,7 @@ export async function pingProvider(p: "openai" | "google" | "fal"): Promise<stri
   const key = activeProviderKey(p);
   if (!key) throw new Error(L("Aucune clé enregistrée.", "No key saved."));
   if (p === "openai") {
-    const r = await fetch("https://api.openai.com/v1/models", { headers: { Authorization: `Bearer ${key}` } });
+    const r = await fetch("https://api.openai.com/v1/models", { headers: bearer(key) });
     if (!r.ok) throw new Error(`OpenAI ${r.status}`);
     return L("Clé OpenAI valide.", "OpenAI key is valid.");
   }

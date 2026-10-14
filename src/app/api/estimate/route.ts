@@ -2,7 +2,7 @@ import { handle, ok } from "@/lib/http";
 import { HttpError, requireUser } from "@/lib/auth";
 import { estimateFor, type CostAction } from "@/lib/ai/estimate";
 import { aiActiveFor } from "@/lib/ai/access";
-import { aiAvailability } from "@/lib/ai/config";
+import { aiReady } from "@/lib/ai/llm";
 import { L } from "@/lib/i18n-server";
 
 const ACTIONS: CostAction[] = ["pipeline", "theme", "images", "image", "video-clip", "ugc", "blog"];
@@ -13,7 +13,7 @@ export const GET = handle(async (req: Request) => {
   const q = new URL(req.url).searchParams;
   const action = q.get("action") as CostAction;
   if (!ACTIONS.includes(action)) throw new HttpError(400, L("Action inconnue.", "Unknown action."));
-  const av = aiAvailability();
+  const av = aiReady();
   const configured = action === "video-clip" || action === "ugc" ? av.video : action === "images" || action === "image" ? av.image : av.llm || av.image;
   // ai : l'IA sera réellement utilisée (mode IA choisi, crédits disponibles, fournisseur connecté).
   const v = q.get("videos");

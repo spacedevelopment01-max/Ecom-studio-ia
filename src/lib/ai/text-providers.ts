@@ -6,6 +6,8 @@
  * tous les fournisseurs. Aucune relance automatique ici : une réponse d'erreur HTTP remonte avec son code, toute
  * autre erreur est un résultat incertain.
  */
+import { bearer } from "./gateway";
+
 export type TextPart = { type: "text"; text: string } | { type: "image"; jpegBase64: string };
 export type TextTurn = { role: "user" | "assistant"; parts: TextPart[] };
 
@@ -84,7 +86,7 @@ export function openaiBody(req: TextRequest) {
 /** Nombre exact de jetons d'entrée (endpoint gratuit de comptage de la Responses API). */
 export async function openaiCount(req: TextRequest, key: string, fetcher: Fetch = fetch): Promise<number> {
   const b = openaiBody(req);
-  const j = await postJson(fetcher, `${OPENAI}/responses/input_tokens`, { authorization: `Bearer ${key}` }, { model: b.model, instructions: b.instructions, input: b.input, ...(b.reasoning ? { reasoning: b.reasoning } : {}), ...(b.text ? { text: b.text } : {}) });
+  const j = await postJson(fetcher, `${OPENAI}/responses/input_tokens`, bearer(key), { model: b.model, instructions: b.instructions, input: b.input, ...(b.reasoning ? { reasoning: b.reasoning } : {}), ...(b.text ? { text: b.text } : {}) });
   return Number(j?.input_tokens);
 }
 
@@ -136,7 +138,7 @@ async function postStream(fetcher: Fetch, url: string, headers: Record<string, s
 }
 
 export async function openaiSend(req: TextRequest, key: string, fetcher: Fetch = fetch): Promise<TextResult> {
-  const j = await postStream(fetcher, `${OPENAI}/responses`, { authorization: `Bearer ${key}` }, openaiBody(req));
+  const j = await postStream(fetcher, `${OPENAI}/responses`, bearer(key), openaiBody(req));
   if (j?.status === "failed") throw new Error(`Réponse OpenAI en échec : ${String(j?.error?.message ?? "sans détail").slice(0, 200)} (résultat incertain)`);
   let text = "";
   let refused = false;

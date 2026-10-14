@@ -113,15 +113,26 @@ export const TEMPLATES_M: Template[] = [
       const col = column(k, 0.5);
       const probe = { x: col.x, y: col.y, w: col.w, h: k.H * 0.4 };
       const t0 = inkFor(k, probe);
-      sideVeil(k, col, t0.veil, t0.tone === "dark" ? 0.6 : 0.62);
-      const { ink, soft, tone } = inkFor(k, probe);
+      // Voile posé après la mesure du texte (glissé dessous) : il s'arrête sous le titre au lieu de laver la photo.
+      const veilAt = k.layers.length;
+      const { ink, soft, tone } = t0;
       let y = col.y;
       const t = k.title({ x: col.x, y, w: col.w }, { size: titleSize(k), color: ink, maxLines: 3, lineHeight: 1.0 });
       y += t.h + k.U * 0.025;
       y += caps(k, k.i.subline, { x: col.x, y, w: col.w * 0.9 }, "left", soft);
-      // Bouton : sous le texte ; dans les formats larges, en bas de la colonne s'il y a la place (comme la référence).
-      const by = k.wide ? Math.max(y + k.U * 0.05, k.H - k.m.bottom - btnH(k)) : y + k.U * 0.05;
-      pill(k, col.x, by, col.w, "left", tone);
+      const alpha = t0.tone === "dark" ? 0.6 : 0.62;
+      if (k.wide) sideVeil(k, col, t0.veil, alpha);
+      else k.veil({ x: 0, y: 0, w: k.W, h: Math.min(k.H * 0.6, y + k.U * 0.14) }, 90, t0.veil, alpha);
+      k.layers.splice(veilAt, 0, k.layers.pop()!);
+      // Bouton : sous le texte, ou en bas de la colonne — la place qui cache le moins le produit de la photo.
+      const bh = btnH(k);
+      const under = y + k.U * 0.05;
+      const low = k.H - k.m.bottom - bh;
+      const bw = Math.min(col.w, k.W * 0.42);
+      const at = (by: number) => k.subjectOverlap({ x: col.x, y: by, w: bw, h: bh });
+      // Formats larges : en bas de colonne comme la référence, sauf si le produit y est.
+      const by = k.wide && at(low) < 0.1 ? Math.max(under, low) : at(low) < at(under) - 0.05 ? low : under;
+      pill(k, col.x, by, col.w, "left", by > under + 1 ? k.toneAt({ x: col.x, y: by, w: bw, h: bh }) : tone);
       // Signature dans le coin bas opposé au texte (jamais contre le titre).
       signature(k, { x: k.m.side, y: 0, w: k.W - k.m.side * 2 }, col.x + col.w / 2 < k.W / 2 ? "right" : "left", ink, true);
     },
@@ -192,9 +203,17 @@ export const TEMPLATES_M: Template[] = [
         const card = k.rect({ x: 0, y: 0, w: cw, h: 10 }, rgba("#FFFFFF", 0.94), { radius: Math.round(k.U * 0.025), shadow: { color: "rgba(0,0,0,0.16)", blur: Math.round(k.U * 0.04), x: 0, y: Math.round(k.U * 0.012) }, name: "Carte" });
         const h = iconList(k, { x: pad, y: pad, w: cw - pad * 2 }, feats, k.c.dark, 0.82);
         card.h = h + pad * 2;
-        const cx = k.W - k.m.side - cw;
-        const cy = k.wide ? (k.H - card.h) / 2 : y + k.U * 0.06;
-        if (cy + card.h <= k.H - k.m.bottom - btnH(k) - k.U * 0.03) k.layers.slice(start).forEach((l) => ((l.x += cx), (l.y += cy)));
+        // Place de la carte : celle qui cache le moins le produit de la photo, dans les marges, sous le titre et
+        // au-dessus du bouton ; aucune place libre → pas de carte (le produit reste entier).
+        const top = y + k.U * 0.06;
+        const bottom = k.H - k.m.bottom - btnH(k) - k.U * 0.03 - card.h;
+        const xs = [k.W - k.m.side - cw, k.m.side];
+        const ys = k.wide ? [(k.H - card.h) / 2, top, bottom] : [top, (top + bottom) / 2, bottom];
+        const spots = xs.flatMap((x) => ys.filter((yy) => yy >= top - 1 && yy <= bottom + 1).map((yy) => ({ x, y: yy, o: k.subjectOverlap({ x, y: yy, w: cw, h: card.h }) })));
+        // Le texte occupe la gauche en haut dans les formats larges : la carte n'y va pas.
+        const ok = spots.filter((p) => !(k.wide && p.x < k.W / 2)).sort((a, b) => a.o - b.o);
+        const best = ok[0];
+        if (best && best.o < 0.2) k.layers.slice(start).forEach((l) => ((l.x += best.x), (l.y += best.y)));
         else k.layers.splice(start);
       }
     },

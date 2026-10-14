@@ -2,7 +2,7 @@ import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
 import { enqueue } from "@/lib/jobs";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { aiAvailability } from "@/lib/ai/config";
+import { aiReady } from "@/lib/ai/llm";
 import { shopifyConnection } from "@/lib/integrations/shopify";
 import { articleView, blogAccess, countTrashed, blogPlanReason, INTENTS, listArticles, storeLinks } from "@/lib/engine/blog";
 import { L } from "@/lib/i18n-server";
@@ -19,7 +19,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     trashCount: countTrashed(p.id),
     access: { allowed: a.allowed, admin: a.admin, plan: a.plan, left: a.left, included: a.included, reason: blogPlanReason(user.id, p.id) },
     shopify: !!shopifyConnection(user.id, p.id),
-    ai: aiAvailability().llm,
+    ai: aiReady().llm,
     links: storeLinks(p.id),
   });
 });

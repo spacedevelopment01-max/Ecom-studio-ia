@@ -8,7 +8,7 @@ import { localizeQuestions } from "@/lib/engine/local";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { aiUsage, hasAiCredits } from "@/lib/ai/access";
 import { assertAutopublish, planOfProject } from "@/lib/plan-gates";
-import { aiAvailability } from "@/lib/ai/config";
+import { aiReady } from "@/lib/ai/llm";
 import { balance, currentPeriod } from "@/lib/billing";
 import { accountKeyFor } from "@/lib/project-billing";
 import { contactModesOf, sectorLabel } from "@/lib/project-types";
@@ -56,7 +56,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     coverUrl: cover ? `/api/files/${cover.id}?thumb=1` : null,
     cutoutUrl: cutout ? `/api/files/${cutout.id}?thumb=1` : null,
     // credits : l'IA est réellement utilisée pour ce client (budget caché suffisant ; sinon moteur local, sans le dire).
-    ai: { ...aiAvailability(), credits: hasAiCredits(user.id, p.id), mode: "ai" as const },
+    ai: { ...aiReady(), credits: hasAiCredits(user.id, p.id), mode: "ai" as const },
     credits: { usedPct: b.usedPct, alert: b.alert, paused: b.paused, empty: b.capacity === 0 },
     // Budget IA de CE projet en % (jauge « Reste X % » et confirmation avant une création) ; null en découverte.
     aiBudget: (() => {

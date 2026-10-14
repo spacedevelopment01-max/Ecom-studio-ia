@@ -7,6 +7,8 @@ import { getJsonSetting, getSetting } from "../settings";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
 import { POLICY_ROUTES } from "../orchestrator/policy";
+import { GATEWAY_KEY, gatewayProviders } from "./gateway";
+export { bearer, GATEWAY_KEY, gatewayProviders, isGatewayKey } from "./gateway";
 
 export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "pexels" | "pixabay";
 
@@ -229,7 +231,7 @@ export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map(
 
 export function providerKey(p: ProviderId): string | null {
   // Espaces ou retour à la ligne copiés avec la clé : retirés (sinon le fournisseur la refuse).
-  return getSetting(`provider.${p}.apiKey`)?.trim() || providerEnvKey(p);
+  return getSetting(`provider.${p}.apiKey`)?.trim() || providerEnvKey(p) || (gatewayProviders().includes(p) ? GATEWAY_KEY : null);
 }
 
 export function providerEnabled(p: ProviderId): boolean {

@@ -9,7 +9,7 @@ import type { RenderEnv } from "../../ad-doc/render";
 import type { AdDocument } from "../../ad-doc/types";
 import { ensureFonts } from "../../media/fonts";
 import type { ComposeInput } from "../compose";
-import { interestPoints, Kit, type Scheme } from "./kit";
+import { interestPoints, Kit, subjectBox, type Scheme } from "./kit";
 import type { Template } from "./types";
 import { TEMPLATES_A } from "./templates/a";
 import { TEMPLATES_B } from "./templates/b";
@@ -71,7 +71,7 @@ export async function buildTemplateDocument(i: ComposeInput, id: string): Promis
     cta: i.cta,
     scheme,
     treatment,
-    photo: bg && bgId ? { id: bgId, width: bg.width, height: bg.height, points: await interestPoints(i.background!).catch(() => []) } : null,
+    photo: bg && bgId ? { id: bgId, width: bg.width, height: bg.height, points: await interestPoints(i.background!).catch(() => []), subject: await subjectBox(i.background!).catch(() => null) } : null,
     logo: lg && logoId ? { id: logoId, width: lg.width, height: lg.height, lightId } : null,
     product: productId ? { id: productId, width: images.get(productId)!.width, height: images.get(productId)!.height } : null,
     features: (i.features ?? []).filter(Boolean),

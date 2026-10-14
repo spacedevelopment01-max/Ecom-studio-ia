@@ -34,7 +34,7 @@ export type KitInput = {
   cta: string;
   scheme: Scheme;
   treatment: Treatment;
-  photo: { id: string; width: number; height: number; points: { u: number; v: number }[] } | null;
+  photo: { id: string; width: number; height: number; points: { u: number; v: number }[]; subject?: { u0: number; v0: number; u1: number; v1: number } | null } | null;
   /** Produit détouré (pixels d'origine) : posé en grand par les modèles « produit ». */
   product?: { id: string; width: number; height: number } | null;
   /** Atouts confirmés (jamais inventés) : listes, légendes, cases des modèles « produit ». */
@@ -104,6 +104,56 @@ export async function interestPoints(buf: Buffer): Promise<{ u: number; v: numbe
   const out: { u: number; v: number }[] = [];
   for (const c of cells) if (out.every((o) => Math.hypot(o.u - c.u, o.v - c.v) > 0.3)) out.push({ u: c.u, v: c.v });
   return out.slice(0, 4);
+}
+
+/**
+ * Sujet de la photo (le produit, la réalisation) : la zone la plus nette et la plus détaillée (le fond d'une photo
+ * publicitaire est flou ou uni). Chaque cellule d'une grille 16 × 16 (image légèrement floutée) est notée par ses
+ * contours, un peu par son écart de couleur au fond (médiane du pourtour). Le sujet est la région connexe autour de la cellule la plus marquée (boîte normalisée 0–1).
+ */
+export async function subjectBox(buf: Buffer): Promise<{ u0: number; v0: number; u1: number; v1: number } | null> {
+  const n = 16;
+  const { data, info } = await sharp(buf).rotate().resize(64, 64, { fit: "fill" }).blur(1.2).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const px = (x: number, y: number) => {
+    const i = (Math.min(info.height - 1, y) * info.width + Math.min(info.width - 1, x)) * 3;
+    return [data[i], data[i + 1], data[i + 2]];
+  };
+  const border: number[][] = [];
+  for (let k = 0; k < 64; k += 2) border.push(px(k, 0), px(k, 63), px(0, k), px(63, k));
+  // Fond = médiane du pourtour (robuste à un objet qui touche un bord).
+  const med = [0, 1, 2].map((c) => border.map((b) => b[c]).sort((a, b) => a - b)[border.length >> 1]);
+  const cells: { x: number; y: number; e: number }[] = [];
+  for (let cy = 0; cy < n; cy++)
+    for (let cx = 0; cx < n; cx++) {
+      let d = 0, g = 0;
+      for (let y = cy * 4; y < cy * 4 + 4; y++)
+        for (let x = cx * 4; x < cx * 4 + 4; x++) {
+          const c = px(x, y);
+          d += Math.hypot(c[0] - med[0], c[1] - med[1], c[2] - med[2]);
+          const r = px(x + 1, y), b = px(x, y + 1);
+          g += Math.abs(c[0] + c[1] + c[2] - r[0] - r[1] - r[2]) + Math.abs(c[0] + c[1] + c[2] - b[0] - b[1] - b[2]);
+        }
+      cells.push({ x: cx, y: cy, e: g / 16 + d / 64 });
+    }
+  const max = Math.max(...cells.map((c) => c.e));
+  if (!(max > 18)) return null;
+  // Sujet = la région connexe autour de la cellule la plus marquée (cellules ≥ 30 % du maximum) : un décor détaillé
+  // mais séparé du produit (herbes, galets) n'en fait pas partie.
+  const at = (x: number, y: number) => cells[y * n + x];
+  const seed = cells.reduce((a, c) => (c.e > a.e ? c : a));
+  const seen = new Set<number>([seed.y * n + seed.x]);
+  const stack = [seed];
+  while (stack.length) {
+    const c = stack.pop()!;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const x = c.x + dx, y = c.y + dy;
+      if (x < 0 || y < 0 || x >= n || y >= n || seen.has(y * n + x) || at(x, y).e < max * 0.3) continue;
+      seen.add(y * n + x);
+      stack.push(at(x, y));
+    }
+  }
+  const set = [...seen].map((i) => cells[i]);
+  return { u0: Math.min(...set.map((c) => c.x)) / n, v0: Math.min(...set.map((c) => c.y)) / n, u1: (Math.max(...set.map((c) => c.x)) + 1) / n, v1: (Math.max(...set.map((c) => c.y)) + 1) / n };
 }
 
 type TextStyle = { family?: string; weight?: number; size: number; italic?: boolean; align?: TextLayer["align"]; upper?: boolean; spacing?: number; lineHeight?: number; maxLines?: number; color?: string; minSize?: number; shadow?: TextLayer["shadow"] };
@@ -463,8 +513,30 @@ export class Kit {
   toneAt(b: Box): "dark" | "light" {
     return isDark(this.under(b, this.layers.filter((l) => l.kind !== "text" && l.kind !== "button"))) ? "dark" : "light";
   }
+  /** Sujet de la photo pleine page (produit, réalisation) en coordonnées de l'affiche (photo en « cover » centrée). */
+  subjectRect(): Box | null {
+    const p = this.i.photo;
+    const b = p?.subject;
+    if (!p || !b) return null;
+    const s = Math.max(this.W / p.width, this.H / p.height);
+    const dw = p.width * s;
+    const dh = p.height * s;
+    const ox = (this.W - dw) / 2;
+    const oy = (this.H - dh) / 2;
+    return { x: ox + b.u0 * dw, y: oy + b.v0 * dh, w: (b.u1 - b.u0) * dw, h: (b.v1 - b.v0) * dh };
+  }
+  /** Part d'une zone posée sur le sujet de la photo (0 = à côté du produit, 1 = entièrement dessus). */
+  subjectOverlap(b: Box): number {
+    const z = this.subjectRect();
+    if (!z) return 0;
+    const w = Math.min(b.x + b.w, z.x + z.w) - Math.max(b.x, z.x);
+    const h = Math.min(b.y + b.h, z.y + z.h) - Math.max(b.y, z.y);
+    return w > 0 && h > 0 ? (w * h) / Math.max(1, b.w * b.h) : 0;
+  }
   /** Côté de la photo le plus calme pour le texte (à l'opposé de ses points d'intérêt). */
   calmSide(): "left" | "right" {
+    const z = this.subjectRect();
+    if (z) return z.x + z.w / 2 > this.W / 2 ? "left" : "right";
     const pts = this.i.photo?.points?.slice(0, 4) ?? [];
     if (!pts.length) return "left";
     const u = pts.reduce((a, p) => a + p.u, 0) / pts.length;

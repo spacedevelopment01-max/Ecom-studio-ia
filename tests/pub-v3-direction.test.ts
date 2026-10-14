@@ -73,6 +73,33 @@ describe("Publicités V3 : direction artistique par publicité", async () => {
     expect(main.length).toBeGreaterThan(0);
   }, 240_000);
 
+  it("avec l'IA d'images : une photo publicitaire par concept générée depuis la photo du client, la mise en situation garde la photo entière", async () => {
+    const pid = seedImageFixture(u.id, "hightech");
+    const photos: string[] = [];
+    for (const f of ["casque-1", "casque-2"]) photos.push((await saveAsset({ projectId: pid, userId: u.id, data: fs.readFileSync(`scripts/demo-products/inputs/pixabay/${f}.jpg`), name: `${f}.jpg`, mime: "image/jpeg", role: "original", folderKey: "images.originals", origin: "upload", meta: { triage: { kind: "busy", plain: false } }, status: "ready" })).id);
+    const p = loadProject(pid);
+    const seen: any[] = [];
+    const { deps } = mockAdDeps({ userId: u.id, projectId: pid, canReview: false });
+    deps.canGenerate = true;
+    // Produit recadré dans la photo du client (ici : la photo elle-même, l'IA de vision étant simulée).
+    const asked: string[] = [];
+    deps.productReference = async (id) => (asked.push(id), `ref-${id}`);
+    const image = deps.image;
+    deps.image = async (req) => (seen.push(req), image(req));
+    const r = await fr(() => runAdEngineV2(null, p.id, { count: 3, platforms: ["meta_feed"] }, deps));
+    const generated = r.concepts.filter((c) => c.direction!.id !== "lifestyle");
+    expect(generated.length).toBeGreaterThan(0);
+    // Référence = la vraie photo du produit (jamais une photo d'univers sans le produit).
+    expect(seen.length).toBeGreaterThan(0);
+    expect(asked).toEqual([photos[0]]);
+    for (const req of seen) expect(req.references).toEqual([`ref-${photos[0]}`]);
+    const life = r.concepts.find((c) => c.direction!.id === "lifestyle");
+    if (life) {
+      const o = r.outcomes.find((x) => x.conceptId === life.id && x.assetId)!;
+      expect(photos).toContain(getAsset(o.assetId!)!.source_asset_id);
+    }
+  }, 240_000);
+
   it("prise de vue du concept transmise au moteur d'images (cadrage, lumière, zone de texte)", async () => {
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     const seen: any[] = [];
@@ -105,5 +132,18 @@ describe("consigne de la photo publicitaire (produit réel en référence)", () 
     expect(p).toContain("in the left");
     expect(p).toContain("No people");
     expect(p).toContain("Aspect ratio 4:5");
+    // Photo du client portée par une personne : seul le produit est repris.
+    expect(p).toContain("never reproduce the person");
+    expect(p).toContain("Never write a brand name");
+  });
+});
+
+describe("contrôle de fidélité du produit (photos générées)", () => {
+  it("juge ce que la référence montre, sans refuser un détail caché ou non décrit", async () => {
+    const { REVIEW_SYSTEM } = await import("@/lib/image-v2/quality");
+    const { AD_REVIEW_SYSTEM } = await import("@/lib/ads-v2/quality");
+    expect(REVIEW_SYSTEM).toContain("ce que la référence MONTRE");
+    expect(REVIEW_SYSTEM).toContain("autre couleur, autre forme");
+    expect(AD_REVIEW_SYSTEM).toContain("Le produit réel est celui des photos du client");
   });
 });

@@ -1,10 +1,11 @@
 import { all, one } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { requireAdmin } from "@/lib/auth";
-import { DEFAULT_PRICES, DEFAULT_ROUTES, PRICE_REVIEW_DAYS, PROVIDERS, TASKS, providerKey, routeFor, priceFor, priceValid, pricesCheckedAt, usdToEur, type ProviderId, type TaskId } from "@/lib/ai/config";
+import { DEFAULT_PRICES, DEFAULT_ROUTES, PRICE_REVIEW_DAYS, PROVIDERS, TASKS, isGatewayKey, providerKey, routeFor, priceFor, priceValid, pricesCheckedAt, usdToEur, type ProviderId, type TaskId } from "@/lib/ai/config";
 import { mask } from "@/lib/secrets";
 import { balance, getSubscription, EUR } from "@/lib/billing";
 import { getSetting, getJsonSetting, appUrl } from "@/lib/settings";
+import { L } from "@/lib/i18n-server";
 import { PROVIDER_INFO, providerConfig, redirectUri, type ProviderKey } from "@/lib/social/oauth";
 import { paymentsLive, stripeKeys } from "@/lib/payments";
 import { mailConfigured } from "@/lib/mail";
@@ -24,7 +25,7 @@ export const GET = handle(async () => {
   const hb = one<{ beat_at: number; info: string }>("SELECT beat_at, info FROM worker_heartbeat ORDER BY beat_at DESC LIMIT 1");
   return ok({
     appUrl: appUrl(),
-    providers: (Object.keys(PROVIDERS) as ProviderId[]).map((p) => ({ id: p, ...PROVIDERS[p], keyMasked: mask(providerKey(p)), configured: !!providerKey(p), disabled: getSetting(`provider.${p}.disabled`) === "1" })),
+    providers: (Object.keys(PROVIDERS) as ProviderId[]).map((p) => ({ id: p, ...PROVIDERS[p], keyMasked: isGatewayKey(providerKey(p)) ? L("fournie par l'hébergement", "provided by the hosting") : mask(providerKey(p)), configured: !!providerKey(p), disabled: getSetting(`provider.${p}.disabled`) === "1" })),
     tasks: (Object.keys(TASKS) as TaskId[]).map((t) => ({ id: t, ...TASKS[t], route: routeFor(t), defaultRoute: DEFAULT_ROUTES[t], price: priceFor(routeFor(t).provider, routeFor(t).model) })),
     prices: { ...DEFAULT_PRICES, ...getJsonSetting<Record<string, unknown>>("ai.prices", {}) },
     usdToEur: usdToEur(),
